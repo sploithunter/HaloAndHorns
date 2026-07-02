@@ -1,27 +1,39 @@
 local PetAnimState = loadModule("src/Shared/Game/PetAnimState.lua")
 
-local CFG = { run_speed = 2.0, idle_speed = 0.8, fade = 0.2 }
+-- walk enters at 1.0 (exits 0.7), run enters at 8.0 (exits 5.6)
+local CFG = { walk_speed = 1.0, run_speed = 8.0, hysteresis = 0.7, fade = 0.2 }
 
 return function()
-    describe("PetAnimState.resolve (idle/run hysteresis)", function()
-        it("starts idle and stays idle below the run threshold", function()
+    describe("PetAnimState.resolve (idle/walk/run hysteresis)", function()
+        it("starts idle and stays idle below the walk threshold", function()
             expect(PetAnimState.resolve(nil, 0, CFG)).to.equal("idle")
-            expect(PetAnimState.resolve("idle", 1.9, CFG)).to.equal("idle")
+            expect(PetAnimState.resolve("idle", 0.9, CFG)).to.equal("idle")
         end)
 
-        it("enters run only above run_speed", function()
-            expect(PetAnimState.resolve("idle", 2.1, CFG)).to.equal("run")
+        it("enters walk above walk_speed (the meander stroll band)", function()
+            expect(PetAnimState.resolve("idle", 1.2, CFG)).to.equal("walk")
+            expect(PetAnimState.resolve("idle", 4, CFG)).to.equal("walk")
         end)
 
-        it("keeps running inside the hysteresis band (no flicker)", function()
-            -- 1.5 is below run_speed but above idle_speed: idle stays idle, run stays run
-            expect(PetAnimState.resolve("idle", 1.5, CFG)).to.equal("idle")
-            expect(PetAnimState.resolve("run", 1.5, CFG)).to.equal("run")
+        it("enters run above run_speed, from idle or walk", function()
+            expect(PetAnimState.resolve("idle", 9, CFG)).to.equal("run")
+            expect(PetAnimState.resolve("walk", 8.5, CFG)).to.equal("run")
         end)
 
-        it("drops to idle only below idle_speed", function()
-            expect(PetAnimState.resolve("run", 0.9, CFG)).to.equal("run")
-            expect(PetAnimState.resolve("run", 0.7, CFG)).to.equal("idle")
+        it("holds each state inside its hysteresis band (no flicker)", function()
+            -- 6.5 is below run-enter (8) but above run-exit (5.6): run holds, walk holds
+            expect(PetAnimState.resolve("run", 6.5, CFG)).to.equal("run")
+            expect(PetAnimState.resolve("walk", 6.5, CFG)).to.equal("walk")
+            -- 0.8 is below walk-enter (1.0) but above walk-exit (0.7): walk holds, idle holds
+            expect(PetAnimState.resolve("walk", 0.8, CFG)).to.equal("walk")
+            expect(PetAnimState.resolve("idle", 0.8, CFG)).to.equal("idle")
+        end)
+
+        it("steps down run -> walk -> idle as speed decays", function()
+            expect(PetAnimState.resolve("run", 4, CFG)).to.equal("walk")
+            expect(PetAnimState.resolve("walk", 0.5, CFG)).to.equal("idle")
+            -- a hard stop from run goes straight to idle
+            expect(PetAnimState.resolve("run", 0.1, CFG)).to.equal("idle")
         end)
 
         it("defaults safely with missing cfg and bad speed", function()

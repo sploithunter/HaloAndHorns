@@ -1,32 +1,44 @@
 --[[
     PetAnimState — pure locomotion-state resolver for rigged (skeletal) pets.
 
-    Maps a pet's horizontal speed to "idle" | "run" with hysteresis: the run threshold and the
-    idle threshold differ so a pet hovering at one speed never flickers between clips.
-    Consumed by PetAnimator (client) each frame; knobs in configs/animations.lua `locomotion`.
+    Maps a pet's horizontal speed to "idle" | "walk" | "run" with hysteresis: a state's exit
+    threshold sits below its enter threshold (enter × cfg.hysteresis) so a pet hovering at a
+    boundary never flickers between clips. The meander stroll reads as a WALK; formation
+    chasing reads as a RUN. Consumed by PetAnimator (client) each frame; knobs in
+    configs/animations.lua `locomotion`.
 ]]
 
 local PetAnimState = {}
 
---- prev: "idle" | "run" (nil treated as "idle"); speed: studs/sec (>=0); cfg: locomotion knobs.
+--- prev: "idle" | "walk" | "run" (nil treated as "idle"); speed: studs/sec; cfg: locomotion.
 function PetAnimState.resolve(prev, speed, cfg)
     cfg = cfg or {}
-    local runAt = tonumber(cfg.run_speed) or 2.0
-    local idleAt = tonumber(cfg.idle_speed) or 0.8
+    local walkAt = tonumber(cfg.walk_speed) or 1.0
+    local runAt = tonumber(cfg.run_speed) or 8.0
+    local h = tonumber(cfg.hysteresis) or 0.7
     speed = tonumber(speed) or 0
 
+    -- a state is KEPT until speed leaves its band by the hysteresis margin
+    local exitRun = runAt * h
+    local exitWalk = walkAt * h
+
     if prev == "run" then
-        -- keep running until we drop below the LOWER threshold
-        if speed < idleAt then
-            return "idle"
+        if speed >= exitRun then
+            return "run"
         end
+        return speed >= exitWalk and "walk" or "idle"
+    end
+    if prev == "walk" then
+        if speed >= runAt then
+            return "run"
+        end
+        return speed >= exitWalk and "walk" or "idle"
+    end
+    -- idle (or unknown)
+    if speed >= runAt then
         return "run"
     end
-    -- idle (or unknown) until we exceed the UPPER threshold
-    if speed > runAt then
-        return "run"
-    end
-    return "idle"
+    return speed >= walkAt and "walk" or "idle"
 end
 
 --- Stable pool pick: a clip entry may be one id or a POOL of ids; each pet picks one,

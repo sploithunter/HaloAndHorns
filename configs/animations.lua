@@ -26,6 +26,7 @@ return {
                 "rbxassetid://107633065661523", -- MeshyStretchIdle
                 "rbxassetid://135125543047142", -- MeshyLazyIdle
             },
+            walk = "rbxassetid://94535910240811", -- biped_walk_crystalwood (meander stroll pace)
             run = {
                 "rbxassetid://130063719118527", -- biped_run (auto pipeline)
                 "rbxassetid://116710242362195", -- MeshyRun (editor publish)
@@ -57,12 +58,15 @@ return {
         -- quadruped = { ... }  -- pending the first quadruped clip set
     },
 
-    -- Locomotion state machine (client, PetAnimator): horizontal speed in studs/sec with
-    -- hysteresis so the pet doesn't flicker between idle and run at the threshold.
+    -- Locomotion state machine (client, PetAnimator): horizontal speed in studs/sec, THREE
+    -- states — idle / walk / run. The meander stroll (~4 studs/s) reads as a WALK; real
+    -- formation-chasing (player at full speed) reads as a RUN. `hysteresis` scales each
+    -- enter threshold down for the exit, so a pet hovering at a boundary never flickers.
     locomotion = {
-        run_speed = 2.0, -- speed above this (while idle) -> run
-        idle_speed = 0.8, -- speed below this (while running) -> idle
-        fade = 0.2, -- crossfade seconds between idle/run
+        walk_speed = 1.0, -- above this (from idle) -> walk
+        run_speed = 8.0, -- above this -> run
+        hysteresis = 0.7, -- exit thresholds = enter × this
+        fade = 0.2, -- crossfade seconds between states
     },
 
     -- Attack: played ONCE per real server swing (Combat_PetHit), layered over locomotion.
