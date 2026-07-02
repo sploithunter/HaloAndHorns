@@ -1,6 +1,49 @@
 # Current Status
 
-Status: current
+Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
+
+## Combat Endgame (landed 2026-07-02, all live-verified)
+
+The CoH-style combat game is now END-TO-END: one symmetric threat-table aggro model driving both
+sides, a capital-baddie encounter ladder, and the powers roster fully implemented and honest.
+
+- **Aggro v2 Phase 2 complete** (`docs/AGGRO_MODEL.md`, `configs/aggro.lua`): taunt (pet-centered
+  AoE pull, live-position radius math), **fear = negative aggro** (flee the most-feared pet at a
+  1.5× panicked sprint, passive build suspended, `pet_refocus_mult` knob), and the **rage tipping
+  point** (`AggroTable.heat` + `AggroModel.rageLatch`, PER-SIDE tips — pet 200/80, enemy
+  25000/10000 — berserk = ×`rage.amp` outgoing damage; the `Enraged` attribute is the public seam).
+  Emergent keepers: a boss's pulse aura tips the WHOLE squad into rage together; taunt provokes
+  enemy rage. GOTCHA: the enemy tick's local `aggroCfg` is the legacy combat.lua block — rage/fear
+  knobs must read `self._aggroConfig`. Double-taunt reinforce now anchors to the top NON-taunt
+  attacker (two taunt tanks used to leapfrog threat exponentially — observed 1.6M heat).
+- **Capital baddies**: `archvillain` tier above boss (rank_offset 3, ×6 XP/coins;
+  `infernal_archvillain` = the kit that wiped a 10-pet squad, on 150k HP / armor 300 / scale 22).
+  Config-only abilities ANY enemy can wear: `attack.splash` cleave, `abilities.slam` (telegraphed
+  red-rune targeted AoE via `PowerService:SpawnGroundRune`), `abilities.pulse` (radiating aura —
+  "everybody gets somewhat damaged"). Boss ladder calibrated empirically: boss = hard/downs-pets/
+  beatable, AV = the wipe kit × 3 duration. Admin bar spawn buttons: ☠ BOSS / 𖤐 PACK / 👑 AV /
+  💀 WAR (full composition: boss + 2 LTs + healer-behind-boss + whelp screen) riding
+  `combat.spawnEnemy` (Studio-or-IsAdmin).
+- **Powers audit closed**: `target="single"` is REAL (resolves the squad's engaged target — it used
+  to hit the whole combat set at the widest default radius); `_applyEffect` warns on unknown
+  families (how fear + Armor Field once shipped dead); Armor Field re-kinded to defense_buff;
+  Fire Nova really burns; Simoom really blinds; every hostile family rolls accuracy (blind /
+  heal_blind / root_guard included). Shield = absorb pool / armor = +Defense curve / evade = miss
+  roll — three defensive pillars, deliberately no fourth.
+- **Veteran levels** (`docs/VETERAN_LEVELS.md`): 50 stays the build cap; overflow XP = flat
+  2000-XP vet levels paying enhancement ROLLS (not currency), `data.VeteranPaid` once-only ledger,
+  PlayerBar shows `VET N · x/y XP` at cap. The "keep going" branch vs Rebirth/dragons.
+- **Genie of the Dunes v2**: the RESURRECTION capstone — follows the FIGHT centroid, revive-on-down
+  all window (35s, 300s cd), +5 focus/s wish aura (`FocusRegenBonus` seam in FocusService), 700
+  arrival burst. **Res sickness**: every partial revive stamps a heal FLOOR for
+  `squad.revive.sickness_seconds` (8s) — `ResSickness.clampTaken` applied at EVERY heal write.
+  **Powered revives must call `EnemyService:ResurrectPet`** (releases the #179 `PetLockout` ledger
+  first — plain PetRevive gets held right back down by the lockout enforcement).
+- **Ops notes**: `combat.combat_trace` gates ALL balance traces (currently FALSE = player-quiet);
+  `aggro_trace`/`glass_trace` are per-second-flood sub-flags. The loader only injects DECLARED
+  deps into `self._modules` — resolve cross-service at runtime via `_G.RBXTemplateServices`.
+  Focus is the raid's true health bar (boss `sundering` attacks it; "focus capped" is the loss
+  condition).
 
 ## Summary
 

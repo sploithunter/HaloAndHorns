@@ -1,6 +1,11 @@
 # Project Wiki
 
-This is the living project wiki for the RBX Template pet/clicker game. It follows the LLM Wiki pattern: raw/reference material is preserved, and agents maintain concise Markdown pages that compile current project knowledge.
+This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblox pet game. It follows the LLM Wiki pattern: raw/reference material is preserved, and agents maintain concise Markdown pages that compile current project knowledge.
+
+> **Repo lineage (2026-07-02):** this repo (`sploithunter/HaloAndHorns`) began as a fresh single-commit
+> import of the working tree — deliberately no history. The predecessor `sploithunter/RBX-Template`
+> holds all pre-import commit history AND the alpha GitHub-issue queue; look there for archaeology,
+> work HERE going forward. Older wiki/docs text saying "RBX Template" refers to this same codebase.
 
 ## Start Here
 

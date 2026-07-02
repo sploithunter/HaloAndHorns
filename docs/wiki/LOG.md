@@ -339,3 +339,31 @@ migration is needed for the abandoned "element splits stacks" spec.
   - **Healing Field enhancement fix**: the at-feet zone parked its heal in `hot` with `magnitude=0`, so the health/healing enhancements (both fold into magnitude) scaled zero — dead slots. Moved the per-tick heal into `magnitude`; `_healZone` takes the effective (enhancement-scaled) magnitude + duration.
 - **Control-leak fix (cross-cutting)**: `_loiter` (the idle / post-disengage mover) had no root gate, so a controlled enemy that lost its target wandered out of the snare while `RootedUntil` was still ticking. Gated `_loiter` on RootedUntil/HeldUntil like the chase path — fixes EVERY control power (frost_bind, deep_freeze, seismic_hold, quicksand) on disengage. Rule: every enemy MOVER must honour the control gate, not just the chase branch.
 - **Process lesson** (saved to agent memory): search the WHOLE codebase before building a new path. Reinvented the miss float as a `BillboardGui` after grepping only 2 files — `FloatingText`+`combat_text` had rendered misses for weeks. In a 150k-line repo, an empty narrow grep means "look harder," not "doesn't exist."
+
+## 2026-07-02 — Combat endgame lands (aggro Phase 2, capital baddies, veteran levels, Genie v2) + repo fresh-start
+
+- **Repo fresh-start**: the working tree moved to `sploithunter/HaloAndHorns` as a single-commit
+  import (no history, by design). `sploithunter/RBX-Template` remains the archive: all pre-import
+  commits AND the alpha GitHub-issue queue live there. Local working checkout =
+  `~/Documents/HaloAndHorns` (env/assets/excludes carried over; full gate green in place).
+- **Aggro Phase 2 complete + live-verified** (fear f4/refocus knob, rage tipping point both sides,
+  taunt live-position fix, the double-taunt EXPONENTIAL threat leapfrog killed — reinforce anchors
+  to the top NON-taunt attacker). See CURRENT_STATUS "Combat Endgame" for the full contract +
+  gotchas (`self._aggroConfig` vs the tick-local `aggroCfg`; per-side rage tips).
+- **Powers audit** (fix batch + true single-target + Seismic knockback): every "Single-Target"
+  power now resolves ONE enemy; `_applyEffect` warns on unknown families; Armor Field/Fire Nova/
+  Simoom made real; every hostile family rolls accuracy; shield/armor/evade = the three pillars.
+- **Capital baddies**: `archvillain` tier + config-only splash/slam/pulse abilities; boss ladder
+  calibrated by a live 10-pet squad wipe (that kit = the Archfiend's). Admin spawn buttons
+  ☠/𖤐/👑/💀 (WAR = boss + 2 LTs + healer-behind-boss + whelp screen, one click).
+- **Veteran levels** (`docs/VETERAN_LEVELS.md`): post-50 flat 2000-XP track paying enhancement
+  rolls; VET bar on PlayerBar; `data.VeteranPaid` ledger never advances without a granter.
+- **Genie of the Dunes v2**: resurrection capstone — fight-centroid follow, revive-on-down window,
+  +5 focus/s wish aura, 700 arrival burst, 35s/300s. **Res sickness** (`ResSickness` heal-floor
+  clamp at every heal write, `squad.revive` knobs) so a revive isn't a free 100% heal. Powered
+  revives route through `EnemyService:ResurrectPet` (releases the PetLockout ledger — plain
+  PetRevive gets re-downed by the lockout enforcement).
+- **Systemic lessons banked**: the loader injects only DECLARED deps into `self._modules` (resolve
+  cross-service via `_G.RBXTemplateServices` at runtime — a nil-module fallback silently masked
+  the revive bug AND ate the first vet rewards); trace hierarchy = `combat_trace` (now FALSE,
+  player-quiet) gating `aggro_trace`/`glass_trace` per-second sub-floods.

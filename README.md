@@ -12,9 +12,15 @@ The project started as a generic pet/clicker template and **is now the game itse
 
 Pets are the stars: each has a two-number profile (⛏ mining vs ⚔ combat), an origin element, and a role (tank/melee/blaster/support). You build *you* through archetypes, a pick-10 power roster, and slotted enhancements; your pets carry the fight.
 
+> **This repo** (`sploithunter/HaloAndHorns`) started 2026-07-02 as a fresh single-commit import of
+> the working tree. The predecessor repo `sploithunter/RBX-Template` holds all pre-import commit
+> history and the alpha GitHub-issue queue. New agents: start with
+> [`AGENTS.md`](AGENTS.md) and the [project wiki](docs/wiki/INDEX.md) —
+> [`CURRENT_STATUS`](docs/wiki/CURRENT_STATUS.md) is the fastest orientation.
+
 ## Current Checkpoint
 
-The game is built in two stacked tracks, both well past their core milestones, with an active polish/content lane on top.
+The game is built in two stacked tracks, both well past their core milestones, with an active polish/content lane on top. **Newest layer (2026-07-02): the combat endgame** — a symmetric threat-table aggro game (taunt / fear-as-negative-aggro / rage tipping points on both sides), a boss→arch-villain encounter ladder with config-driven AoE kits (splash / telegraphed slam / pulse), an honest fully-implemented power roster, post-50 **Veteran Levels**, and the Genie of the Dunes resurrection capstone with tunable res sickness. All live-verified; details in [`docs/wiki/CURRENT_STATUS.md`](docs/wiki/CURRENT_STATUS.md).
 
 **Template baseline — Phases 0–11 complete** (the config-as-code foundation):
 - P0 data spine · P1 map integration contract · P2 economy depth · P3 stats/achievements/leaderboards · P4 progression & enchants · P5 auto-systems · …through P11 the SSOT pet-inventory model.
