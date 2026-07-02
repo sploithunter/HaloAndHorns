@@ -3,5 +3,13 @@
   "biped_punch": "125428500789381",
   "biped_run_editor": "134376487222069",
   "biped_idle": "107633065661523",
-  "biped_walk_crystalwood": "94535910240811"
+  "biped_walk_crystalwood": "94535910240811",
+  "biped_run2": "116710242362195",
+  "biped_punch_combo": "94514790292736",
+  "biped_idle_lazy": "135125543047142",
+  "biped_jump_down": "83347370148290",
+  "biped_jump": "71078514678985",
+  "biped_spartan_kick": "99468897317934",
+  "biped_cast_underhand": "104092507617195",
+  "biped_cast_heavy_push": "89717257727043"
 }

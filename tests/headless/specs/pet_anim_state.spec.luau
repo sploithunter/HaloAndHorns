@@ -29,4 +29,33 @@ return function()
             expect(PetAnimState.resolve("run", 10, nil)).to.equal("run")
         end)
     end)
+
+    describe("PetAnimState.pick (stable pool selection)", function()
+        local POOL = { "rbxassetid://1", "rbxassetid://2", "rbxassetid://3" }
+
+        it("passes single ids through", function()
+            expect(PetAnimState.pick("rbxassetid://9", "seed")).to.equal("rbxassetid://9")
+        end)
+
+        it("is deterministic for the same seed", function()
+            expect(PetAnimState.pick(POOL, "pet-a#1")).to.equal(PetAnimState.pick(POOL, "pet-a#1"))
+        end)
+
+        it("varies across seeds (some pair differs)", function()
+            local seen = {}
+            for i = 1, 12 do
+                seen[PetAnimState.pick(POOL, "pet#" .. i)] = true
+            end
+            local distinct = 0
+            for _ in pairs(seen) do
+                distinct += 1
+            end
+            expect(distinct > 1).to.equal(true)
+        end)
+
+        it("returns nil for empty/invalid entries", function()
+            expect(PetAnimState.pick(nil, "s")).to.equal(nil)
+            expect(PetAnimState.pick({}, "s")).to.equal(nil)
+        end)
+    end)
 end

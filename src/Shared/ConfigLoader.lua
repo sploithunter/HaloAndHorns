@@ -707,7 +707,23 @@ function ConfigLoader:ValidateConfig(configName, config)
 end
 
 -- Pet skeletal animations (configs/animations.lua): rig classes -> published clip ids.
--- Permissive (shape, not every knob) so adding a clip or a class never breaks Studio boot.
+-- A clip entry is one id string, a POOL (array of ids), or a role map of ids/pools —
+-- validated recursively so every leaf is an rbxassetid. Permissive on knobs otherwise.
+local function validAnimEntry(entry, depth)
+    if type(entry) == "string" then
+        return entry:match("^rbxassetid://%d+$") ~= nil
+    end
+    if type(entry) ~= "table" or depth > 2 then
+        return false
+    end
+    for _, sub in pairs(entry) do
+        if not validAnimEntry(sub, depth + 1) then
+            return false
+        end
+    end
+    return true
+end
+
 function ConfigLoader:_validateAnimationsConfig(config)
     if type(config) ~= "table" then
         return false, "Animations config must be a table"
@@ -719,14 +735,14 @@ function ConfigLoader:_validateAnimationsConfig(config)
         if type(clips) ~= "table" then
             return false, "Animations rig_classes." .. tostring(className) .. " must be a table"
         end
-        for clipName, id in pairs(clips) do
-            if type(id) ~= "string" or not id:match("^rbxassetid://%d+$") then
+        for clipName, entry in pairs(clips) do
+            if not validAnimEntry(entry, 0) then
                 return false,
                     "Animations rig_classes."
                         .. tostring(className)
                         .. "."
                         .. tostring(clipName)
-                        .. " must be an rbxassetid:// string"
+                        .. " must be an rbxassetid:// string, a pool of them, or a role map"
             end
         end
     end

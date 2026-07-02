@@ -29,4 +29,21 @@ function PetAnimState.resolve(prev, speed, cfg)
     return "idle"
 end
 
+--- Stable pool pick: a clip entry may be one id or a POOL of ids; each pet picks one,
+--- deterministically from its seed string, so a squad varies but no pet ever re-rolls.
+--- Accepts a string (returned as-is), a non-empty array, or nil.
+function PetAnimState.pick(entry, seed)
+    if type(entry) == "string" then
+        return entry
+    end
+    if type(entry) ~= "table" or #entry == 0 then
+        return nil
+    end
+    local hash = 5381
+    for i = 1, #tostring(seed or "") do
+        hash = (hash * 33 + string.byte(seed, i)) % 2147483647
+    end
+    return entry[(hash % #entry) + 1]
+end
+
 return PetAnimState
