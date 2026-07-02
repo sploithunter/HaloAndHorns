@@ -1,0 +1,56 @@
+{
+  "pets": {
+    "ashmane_lion": {
+      "prebaked": true,
+      "rig_asset": "78366659327055",
+      "skeleton": "quadruped"
+    },
+    "rimeguard_bear": {
+      "prebaked": true,
+      "rig_asset": "83903219841691",
+      "skeleton": "quadruped"
+    },
+    "worldbloom_ent": {
+      "prebaked": true,
+      "rig_asset": "135208930872261",
+      "skeleton": "biped"
+    },
+    "worldroot_ent": {
+      "prebaked": true,
+      "rig_asset": "107519892318201",
+      "skeleton": "biped"
+    }
+  },
+  "zips": {
+    "1cbebf055d53edbb": {
+      "first_seen": "Meshy_AI_Crystalwood_Sprite_biped.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "5f4def22ece0a720": {
+      "first_seen": "ashmane_lion.zip",
+      "kind": "rig",
+      "pet_id": "ashmane_lion",
+      "skeleton": "quadruped"
+    },
+    "b367054dda824baa": {
+      "first_seen": "Worldroot_run.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "c8ced9fd2ec50933": {
+      "first_seen": "Meshy_AI_Crystalwood_Sprite_biped (1).zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "f80cd4900f9dfccb": {
+      "first_seen": "WorldrootEnt.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    }
+  }
+}
