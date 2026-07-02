@@ -80,3 +80,4 @@ coverage/
 /assets/ui/imports/manifest_*.txt __pycache__/
 
 __pycache__/
+scripts/bin/
