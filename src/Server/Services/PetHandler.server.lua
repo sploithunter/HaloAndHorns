@@ -756,7 +756,6 @@ local function applyHugePetScale(petModel)
         return
     end
 
-    local assetScale = tonumber(petModel:GetAttribute("AssetScale")) or 1
     local hugeScale = tonumber(petModel:GetAttribute("HugeScale")) or 1
     if hugeScale <= 0 then
         hugeScale = 1
@@ -766,8 +765,13 @@ local function applyHugePetScale(petModel)
         return
     end
 
+    -- RELATIVE to the model's current scale: huge = HugeScale × its basic size. The old
+    -- absolute ScaleTo(assetScale * hugeScale) assumed the stored model's scale-1 size is
+    -- the raw mesh — true for transform-built statics (their Scale == AssetScale, identical
+    -- result) but a rigged prebake stores a tiny fraction of a ~170-stud FBX, and absolute
+    -- 7.2 blew the huge Worldroot up to map size.
     local ok, err = pcall(function()
-        petModel:ScaleTo(assetScale * hugeScale)
+        petModel:ScaleTo(petModel:GetScale() * hugeScale)
     end)
     if ok then
         petModel:SetAttribute("Huge", true)
@@ -1424,7 +1428,10 @@ function loadEquipped(Player)
                                     if
                                         rawEntry
                                         and rawEntry.rig_class
-                                        and PetModel:FindFirstChildWhichIsA("AnimationController", true)
+                                        and PetModel:FindFirstChildWhichIsA(
+                                            "AnimationController",
+                                            true
+                                        )
                                     then
                                         PetModel:SetAttribute("RigClass", rawEntry.rig_class)
                                     end
