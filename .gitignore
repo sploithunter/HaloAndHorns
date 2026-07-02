@@ -1,0 +1,82 @@
+# Roblox Studio files
+*.rbxlx.lock
+*.rbxl.lock
+
+# Build outputs
+/build/
+*.rbxm
+*.rbxl
+# ...EXCEPT the place geometry, which IS source: default.project.json maps
+# assets/place/PlaceAssets, so a clean checkout (CI) needs these to `rojo build`.
+!assets/place/PlaceAssets/**/*.rbxm
+# ...and the pre-baked pet/egg model folder (captured from a fully-loaded runtime), which
+# default.project.json maps to ReplicatedStorage.Assets.Models so the boot skips slow LoadAsset.
+!assets/place/Models.rbxm
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+.vscode/settings.json
+
+# Node modules (if using npm/yarn)
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Tool-specific files
+.mise.local.toml
+.tool-versions
+
+# Rojo sourcemap (contains file system paths)
+sourcemap.json
+
+# Test outputs
+test-results/
+coverage/
+
+# Backup files
+*.bak
+*.backup
+
+# === Heavy art SOURCE/EXPORTS (≈2GB of pet/egg/prop PNG + OBJ + MTL) ===
+# Generated/decimated art that is uploaded to Roblox via Open Cloud, so it is NOT needed in git or
+# the rojo build. Kept OUT going forward to avoid multi-GB bloat — in particular the 122MB
+# assets/source/props/world_tree.obj, which exceeds GitHub's 100MB limit and would break the push.
+# UI icons under assets/ui/ are deliberately NOT matched. Already-tracked art stays tracked; this
+# only stops NEW art from being committed.
+*.obj
+*.mtl
+/assets/source/pets/
+/assets/source/eggs/
+/assets/source/props/
+/assets/exports/pets/
+/assets/exports/eggs/
+/assets/exports/props/
+/assets/model_test/
+/assets/ui/imports/manifest_*.txt __pycache__/
+
+__pycache__/

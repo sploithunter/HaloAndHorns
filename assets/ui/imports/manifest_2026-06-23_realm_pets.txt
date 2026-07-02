@@ -1,0 +1,197 @@
+# Realm pet 3D model import (2026-06-23)
+# 40 species × basic + gold = 80 meshes
+# Gold variants share identical geometry with basic — texture reskin only.
+# Policy: keep native mesh when source <= 10000 tris; decimate to 10000 when over.
+# Upload per mesh: {stem}_10k.fbx + {stem}.png (+ matching {stem}_10k.fbm folder)
+
+## Preview images
+Basic PNGs -> assets/exports/pets/basic/{pet}_basic.png
+Gold PNGs   -> assets/exports/pets/gold/{pet}_gold.png
+Contact sheets:
+  assets/exports/pets/realm_pets_2026-06-23_basic_contact_sheet.png
+  assets/exports/pets/realm_pets_2026-06-23_gold_contact_sheet.png
+
+## Roster (Heaven 2 + Hell 2)
+# Heaven 2 · Fire: coronal_cherub, prism_lion, lance_seraph, lumen_salamander, dawnfire_phoenix
+# Heaven 2 · Ice: frostlight_doe, prism_fox, starlight_owl, glacial_bear, aurora_dragon
+# Heaven 2 · Grass: bloomspirit_lamb, lightleaf_hare, crystalbark_stag, radiant_sprite, worldbloom_ent
+# Heaven 2 · Desert: aurora_dove, prism_scarab, mirage_meerkat, sunwell_camel, empyreal_couatl
+# Hell 2 · Fire: frostcinder_imp, rimemane_lion, hoarfrost_phoenix, frostbrand_salamander, deadfire_phoenix
+# Hell 2 · Ice: rimegloom_hare, dread_fox, gravefrost_owl, rimeguard_bear, rimewraith_dragon
+# Hell 2 · Grass: frostblight_lamb, gloom_hare, icerot_stag, rimewither_sprite, frostgrave_ent
+# Hell 2 · Desert: wraith_dove, rime_scarab, gloom_jackal, frostdust_camel, dread_couatl
+
+## Source
+
+pet	variant	stem	download_zip	preview_png	original_tris	export_tris
+coronal_cherub	basic	coronal_cherub_basic	Coronal Cherub.zip	~/Downloads/Coronal Cherub.png	8300	8300
+coronal_cherub	gold	coronal_cherub_gold	Coronal Cherub Gold.zip	~/Downloads/Coronal Cherub Gold.png	8300	8300
+prism_lion	basic	prism_lion_basic	Prism Lion.zip	~/Downloads/Prism Lion.png	5909	5909
+prism_lion	gold	prism_lion_gold	Prism Lion Gold.zip	~/Downloads/Prism Lion Gold.png	5909	5909
+lance_seraph	basic	lance_seraph_basic	Lance Seraph.zip	~/Downloads/Lance Seraph.png	6719	6719
+lance_seraph	gold	lance_seraph_gold	Lance Seraph Gold.zip	~/Downloads/Lance Seraph Gold.png	6719	6719
+lumen_salamander	basic	lumen_salamander_basic	Lumen Salamander.zip	~/Downloads/Lumen Salamander.png	6678	6678
+lumen_salamander	gold	lumen_salamander_gold	Lumen Salamander Gold.zip	~/Downloads/Lumen Salamander Gold.png	6678	6678
+dawnfire_phoenix	basic	dawnfire_phoenix_basic	Dawnfire Phoenix.zip	~/Downloads/Dawnfire Phoenix.png	7738	7738
+dawnfire_phoenix	gold	dawnfire_phoenix_gold	Dawnfire Phoenix Gold.zip	~/Downloads/Dawnfire Phoenix Gold.png	7738	7738
+frostlight_doe	basic	frostlight_doe_basic	Frostlight Doe.zip	~/Downloads/Frostlight Doe.png	7880	7880
+frostlight_doe	gold	frostlight_doe_gold	Frostlight Doe Gold.zip	~/Downloads/Frostlight Doe Gold.png	7880	7880
+prism_fox	basic	prism_fox_basic	Prism Fox.zip	~/Downloads/Prism Fox.png	5083	5083
+prism_fox	gold	prism_fox_gold	Prism Fox Gold.zip	~/Downloads/Prism Fox Gold.png	5083	5083
+starlight_owl	basic	starlight_owl_basic	Starlight Owl.zip	~/Downloads/Starlight Owl.png	8186	8186
+starlight_owl	gold	starlight_owl_gold	Starlight Owl Gold.zip	~/Downloads/Starlight Owl Gold.png	8186	8186
+glacial_bear	basic	glacial_bear_basic	Glacial Bear.zip	~/Downloads/Glacial Bear.png	7909	7909
+glacial_bear	gold	glacial_bear_gold	Glacial Bear Gold.zip	~/Downloads/Glacial Bear Gold.png	7909	7909
+aurora_dragon	basic	aurora_dragon_basic	Aurora Dragon.zip	~/Downloads/Aurora Dragon.png	7012	7012
+aurora_dragon	gold	aurora_dragon_gold	Aurora Dragon Gold.zip	~/Downloads/Aurora Dragon Gold.png	7012	7012
+bloomspirit_lamb	basic	bloomspirit_lamb_basic	Bloomspirit Lamb.zip	~/Downloads/Bloomspirit Lamb.png	8648	8648
+bloomspirit_lamb	gold	bloomspirit_lamb_gold	Bloomspirit Lamb Gold.zip	~/Downloads/Bloomspirit Lamb Gold.png	8648	8648
+lightleaf_hare	basic	lightleaf_hare_basic	Lightleaf Hare.zip	~/Downloads/Lightleaf Hare.png	5260	5260
+lightleaf_hare	gold	lightleaf_hare_gold	Lightleaf Hare Gold.zip	~/Downloads/Lightleaf Hare Gold.png	5260	5260
+crystalbark_stag	basic	crystalbark_stag_basic	Crystalbark Stag.zip	~/Downloads/Crystalbark Stag.png	6693	6693
+crystalbark_stag	gold	crystalbark_stag_gold	Crystalbark Stag Gold.zip	~/Downloads/Crystalbark Stag Gold.png	6693	6693
+radiant_sprite	basic	radiant_sprite_basic	Radiant Sprite.zip	~/Downloads/Radiant Sprite.png	6503	6503
+radiant_sprite	gold	radiant_sprite_gold	Radiant Sprite Gold.zip	~/Downloads/Radiant Sprite Gold.png	6503	6503
+worldbloom_ent	basic	worldbloom_ent_basic	Worldbloom Ent.zip	~/Downloads/Worldbloom Ent.png	11949	10000
+worldbloom_ent	gold	worldbloom_ent_gold	Worldbloom Ent Gold.zip	~/Downloads/Worldbloom Ent Gold.png	11949	10000
+aurora_dove	basic	aurora_dove_basic	Aurora Dove.zip	~/Downloads/Aurora Dove.png	4888	4888
+aurora_dove	gold	aurora_dove_gold	Aurora Dove Gold.zip	~/Downloads/Aurora Dove Gold.png	4888	4888
+prism_scarab	basic	prism_scarab_basic	Prism Scarab.zip	~/Downloads/Prism Scarab.png	5705	5705
+prism_scarab	gold	prism_scarab_gold	Prism Scarab Gold.zip	~/Downloads/Prism Scarab Gold.png	5705	5705
+mirage_meerkat	basic	mirage_meerkat_basic	Mirage Meerkat.zip	~/Downloads/Mirage Meerkat.png	7348	7348
+mirage_meerkat	gold	mirage_meerkat_gold	Mirage Meerkat Gold.zip	~/Downloads/Mirage Meerkat Gold.png	7348	7348
+sunwell_camel	basic	sunwell_camel_basic	Sunwell Camel.zip	~/Downloads/Sunwell Camel.png	8708	8708
+sunwell_camel	gold	sunwell_camel_gold	Sunwell Camel Gold.zip	~/Downloads/Sunwell Camel Gold.png	8708	8708
+empyreal_couatl	basic	empyreal_couatl_basic	Empyreal Couatl.zip	~/Downloads/Empyreal Couatl.png	7969	7969
+empyreal_couatl	gold	empyreal_couatl_gold	Empyreal Couatl Gold.zip	~/Downloads/Empyreal Couatl Gold.png	7969	7969
+frostcinder_imp	basic	frostcinder_imp_basic	Frostcinder Imp.zip	~/Downloads/Frostcinder Imp.png	6833	6833
+frostcinder_imp	gold	frostcinder_imp_gold	Frostcinder Imp Gold.zip	~/Downloads/Frostcinder Imp Gold.png	6833	6833
+rimemane_lion	basic	rimemane_lion_basic	Rimemane Lion.zip	~/Downloads/Rimemane Lion.png	5840	5840
+rimemane_lion	gold	rimemane_lion_gold	Rimemane Lion Gold.zip	~/Downloads/Rimemane Lion Gold.png	5840	5840
+hoarfrost_phoenix	basic	hoarfrost_phoenix_basic	Hoarfrost Phoenix.zip	~/Downloads/Hoarfrost Phoenix.png	7755	7755
+hoarfrost_phoenix	gold	hoarfrost_phoenix_gold	Hoarfrost Phoenix Gold.zip	~/Downloads/Hoarfrost Phoenix Gold.png	7755	7755
+frostbrand_salamander	basic	frostbrand_salamander_basic	Frostbrand Salamander.zip	~/Downloads/Frostbrand Salamander.png	8442	8442
+frostbrand_salamander	gold	frostbrand_salamander_gold	Frostbrand Salamander Gold.zip	~/Downloads/Frostbrand Salamander Gold.png	8442	8442
+deadfire_phoenix	basic	deadfire_phoenix_basic	Deadfire Phoenix.zip	~/Downloads/Deadfire Phoenix.png	5870	5870
+deadfire_phoenix	gold	deadfire_phoenix_gold	Deadfire Phoenix Gold.zip	~/Downloads/Deadfire Phoenix Gold.png	5870	5870
+rimegloom_hare	basic	rimegloom_hare_basic	Rimegloom Hare.zip	~/Downloads/Rimegloom Hare.png	5645	5645
+rimegloom_hare	gold	rimegloom_hare_gold	Rimegloom Hare Gold.zip	~/Downloads/Rimegloom Hare Gold.png	5645	5645
+dread_fox	basic	dread_fox_basic	Dread Fox.zip	~/Downloads/Dread Fox.png	6880	6880
+dread_fox	gold	dread_fox_gold	Dread Fox Gold.zip	~/Downloads/Dread Fox Gold.png	6880	6880
+gravefrost_owl	basic	gravefrost_owl_basic	Gravefrost Owl.zip	~/Downloads/Gravefrost Owl.png	6607	6607
+gravefrost_owl	gold	gravefrost_owl_gold	Gravefrost Owl Gold.zip	~/Downloads/Gravefrost Owl Gold.png	6607	6607
+rimeguard_bear	basic	rimeguard_bear_basic	Rimeguard Bear.zip	~/Downloads/Rimeguard Bear.png	6742	6742
+rimeguard_bear	gold	rimeguard_bear_gold	Rimeguard Bear Gold.zip	~/Downloads/Rimeguard Bear Gold.png	6742	6742
+rimewraith_dragon	basic	rimewraith_dragon_basic	Rimewraith Dragon.zip	~/Downloads/Rimewraith Dragon.png	7337	7337
+rimewraith_dragon	gold	rimewraith_dragon_gold	Rimewraith Dragon Gold.zip	~/Downloads/Rimewraith Dragon Gold.png	7337	7337
+frostblight_lamb	basic	frostblight_lamb_basic	Frostblight Lamb.zip	~/Downloads/Frostblight Lamb.png	8579	8579
+frostblight_lamb	gold	frostblight_lamb_gold	Frostblight Lamb Gold.zip	~/Downloads/Frostblight Lamb Gold.png	8579	8579
+gloom_hare	basic	gloom_hare_basic	Gloom Hare.zip	~/Downloads/Gloom Hare.png	5735	5735
+gloom_hare	gold	gloom_hare_gold	Gloom Hare Gold.zip	~/Downloads/Gloom Hare Gold.png	5735	5735
+icerot_stag	basic	icerot_stag_basic	Icerot Stag.zip	~/Downloads/Icerot Stag.png	6715	6715
+icerot_stag	gold	icerot_stag_gold	Icerot Stag Gold.zip	~/Downloads/Icerot Stag Gold.png	6715	6715
+rimewither_sprite	basic	rimewither_sprite_basic	Rimewither Sprite.zip	~/Downloads/Rimewither Sprite.png	9609	9609
+rimewither_sprite	gold	rimewither_sprite_gold	Rimewither Sprite Gold.zip	~/Downloads/Rimewither Sprite Gold.png	9609	9609
+frostgrave_ent	basic	frostgrave_ent_basic	Frostgrave Ent.zip	~/Downloads/Frostgrave Ent.png	7639	7639
+frostgrave_ent	gold	frostgrave_ent_gold	Frostgrave Ent Gold.zip	~/Downloads/Frostgrave Ent Gold.png	7639	7639
+wraith_dove	basic	wraith_dove_basic	Wraith Dove.zip	~/Downloads/Wraith Dove.png	6715	6715
+wraith_dove	gold	wraith_dove_gold	Wraith Dove Gold.zip	~/Downloads/Wraith Dove Gold.png	6715	6715
+rime_scarab	basic	rime_scarab_basic	Rime Scarab.zip	~/Downloads/Rime Scarab.png	6287	6287
+rime_scarab	gold	rime_scarab_gold	Rime Scarab Gold.zip	~/Downloads/Rime Scarab Gold.png	6287	6287
+gloom_jackal	basic	gloom_jackal_basic	Gloom Jackal.zip	~/Downloads/Gloom Jackal.png	7773	7773
+gloom_jackal	gold	gloom_jackal_gold	Gloom Jackal Gold.zip	~/Downloads/Gloom Jackal Gold.png	7773	7773
+frostdust_camel	basic	frostdust_camel_basic	Frostdust Camel.zip	~/Downloads/Frostdust Camel.png	6524	6524
+frostdust_camel	gold	frostdust_camel_gold	Frostdust Camel Gold.zip	~/Downloads/Frostdust Camel Gold.png	6524	6524
+dread_couatl	basic	dread_couatl_basic	Dread Couatl.zip	~/Downloads/Dread Couatl.png	8640	8640
+dread_couatl	gold	dread_couatl_gold	Dread Couatl Gold.zip	~/Downloads/Dread Couatl Gold.png	8640	8640
+
+## Exports (recommended upload per mesh)
+
+pet	variant	realm	origin	recommended_fbx	mesh_texture	preview_image
+coronal_cherub	basic	heaven	fire	assets/exports/pets/coronal_cherub_basic/coronal_cherub_basic_10k.fbx	assets/exports/pets/coronal_cherub_basic/coronal_cherub_basic.png	assets/exports/pets/basic/coronal_cherub_basic.png
+coronal_cherub	gold	heaven	fire	assets/exports/pets/coronal_cherub_gold/coronal_cherub_gold_10k.fbx	assets/exports/pets/coronal_cherub_gold/coronal_cherub_gold.png	assets/exports/pets/gold/coronal_cherub_gold.png
+prism_lion	basic	heaven	fire	assets/exports/pets/prism_lion_basic/prism_lion_basic_10k.fbx	assets/exports/pets/prism_lion_basic/prism_lion_basic.png	assets/exports/pets/basic/prism_lion_basic.png
+prism_lion	gold	heaven	fire	assets/exports/pets/prism_lion_gold/prism_lion_gold_10k.fbx	assets/exports/pets/prism_lion_gold/prism_lion_gold.png	assets/exports/pets/gold/prism_lion_gold.png
+lance_seraph	basic	heaven	fire	assets/exports/pets/lance_seraph_basic/lance_seraph_basic_10k.fbx	assets/exports/pets/lance_seraph_basic/lance_seraph_basic.png	assets/exports/pets/basic/lance_seraph_basic.png
+lance_seraph	gold	heaven	fire	assets/exports/pets/lance_seraph_gold/lance_seraph_gold_10k.fbx	assets/exports/pets/lance_seraph_gold/lance_seraph_gold.png	assets/exports/pets/gold/lance_seraph_gold.png
+lumen_salamander	basic	heaven	fire	assets/exports/pets/lumen_salamander_basic/lumen_salamander_basic_10k.fbx	assets/exports/pets/lumen_salamander_basic/lumen_salamander_basic.png	assets/exports/pets/basic/lumen_salamander_basic.png
+lumen_salamander	gold	heaven	fire	assets/exports/pets/lumen_salamander_gold/lumen_salamander_gold_10k.fbx	assets/exports/pets/lumen_salamander_gold/lumen_salamander_gold.png	assets/exports/pets/gold/lumen_salamander_gold.png
+dawnfire_phoenix	basic	heaven	fire	assets/exports/pets/dawnfire_phoenix_basic/dawnfire_phoenix_basic_10k.fbx	assets/exports/pets/dawnfire_phoenix_basic/dawnfire_phoenix_basic.png	assets/exports/pets/basic/dawnfire_phoenix_basic.png
+dawnfire_phoenix	gold	heaven	fire	assets/exports/pets/dawnfire_phoenix_gold/dawnfire_phoenix_gold_10k.fbx	assets/exports/pets/dawnfire_phoenix_gold/dawnfire_phoenix_gold.png	assets/exports/pets/gold/dawnfire_phoenix_gold.png
+frostlight_doe	basic	heaven	ice	assets/exports/pets/frostlight_doe_basic/frostlight_doe_basic_10k.fbx	assets/exports/pets/frostlight_doe_basic/frostlight_doe_basic.png	assets/exports/pets/basic/frostlight_doe_basic.png
+frostlight_doe	gold	heaven	ice	assets/exports/pets/frostlight_doe_gold/frostlight_doe_gold_10k.fbx	assets/exports/pets/frostlight_doe_gold/frostlight_doe_gold.png	assets/exports/pets/gold/frostlight_doe_gold.png
+prism_fox	basic	heaven	ice	assets/exports/pets/prism_fox_basic/prism_fox_basic_10k.fbx	assets/exports/pets/prism_fox_basic/prism_fox_basic.png	assets/exports/pets/basic/prism_fox_basic.png
+prism_fox	gold	heaven	ice	assets/exports/pets/prism_fox_gold/prism_fox_gold_10k.fbx	assets/exports/pets/prism_fox_gold/prism_fox_gold.png	assets/exports/pets/gold/prism_fox_gold.png
+starlight_owl	basic	heaven	ice	assets/exports/pets/starlight_owl_basic/starlight_owl_basic_10k.fbx	assets/exports/pets/starlight_owl_basic/starlight_owl_basic.png	assets/exports/pets/basic/starlight_owl_basic.png
+starlight_owl	gold	heaven	ice	assets/exports/pets/starlight_owl_gold/starlight_owl_gold_10k.fbx	assets/exports/pets/starlight_owl_gold/starlight_owl_gold.png	assets/exports/pets/gold/starlight_owl_gold.png
+glacial_bear	basic	heaven	ice	assets/exports/pets/glacial_bear_basic/glacial_bear_basic_10k.fbx	assets/exports/pets/glacial_bear_basic/glacial_bear_basic.png	assets/exports/pets/basic/glacial_bear_basic.png
+glacial_bear	gold	heaven	ice	assets/exports/pets/glacial_bear_gold/glacial_bear_gold_10k.fbx	assets/exports/pets/glacial_bear_gold/glacial_bear_gold.png	assets/exports/pets/gold/glacial_bear_gold.png
+aurora_dragon	basic	heaven	ice	assets/exports/pets/aurora_dragon_basic/aurora_dragon_basic_10k.fbx	assets/exports/pets/aurora_dragon_basic/aurora_dragon_basic.png	assets/exports/pets/basic/aurora_dragon_basic.png
+aurora_dragon	gold	heaven	ice	assets/exports/pets/aurora_dragon_gold/aurora_dragon_gold_10k.fbx	assets/exports/pets/aurora_dragon_gold/aurora_dragon_gold.png	assets/exports/pets/gold/aurora_dragon_gold.png
+bloomspirit_lamb	basic	heaven	grass	assets/exports/pets/bloomspirit_lamb_basic/bloomspirit_lamb_basic_10k.fbx	assets/exports/pets/bloomspirit_lamb_basic/bloomspirit_lamb_basic.png	assets/exports/pets/basic/bloomspirit_lamb_basic.png
+bloomspirit_lamb	gold	heaven	grass	assets/exports/pets/bloomspirit_lamb_gold/bloomspirit_lamb_gold_10k.fbx	assets/exports/pets/bloomspirit_lamb_gold/bloomspirit_lamb_gold.png	assets/exports/pets/gold/bloomspirit_lamb_gold.png
+lightleaf_hare	basic	heaven	grass	assets/exports/pets/lightleaf_hare_basic/lightleaf_hare_basic_10k.fbx	assets/exports/pets/lightleaf_hare_basic/lightleaf_hare_basic.png	assets/exports/pets/basic/lightleaf_hare_basic.png
+lightleaf_hare	gold	heaven	grass	assets/exports/pets/lightleaf_hare_gold/lightleaf_hare_gold_10k.fbx	assets/exports/pets/lightleaf_hare_gold/lightleaf_hare_gold.png	assets/exports/pets/gold/lightleaf_hare_gold.png
+crystalbark_stag	basic	heaven	grass	assets/exports/pets/crystalbark_stag_basic/crystalbark_stag_basic_10k.fbx	assets/exports/pets/crystalbark_stag_basic/crystalbark_stag_basic.png	assets/exports/pets/basic/crystalbark_stag_basic.png
+crystalbark_stag	gold	heaven	grass	assets/exports/pets/crystalbark_stag_gold/crystalbark_stag_gold_10k.fbx	assets/exports/pets/crystalbark_stag_gold/crystalbark_stag_gold.png	assets/exports/pets/gold/crystalbark_stag_gold.png
+radiant_sprite	basic	heaven	grass	assets/exports/pets/radiant_sprite_basic/radiant_sprite_basic_10k.fbx	assets/exports/pets/radiant_sprite_basic/radiant_sprite_basic.png	assets/exports/pets/basic/radiant_sprite_basic.png
+radiant_sprite	gold	heaven	grass	assets/exports/pets/radiant_sprite_gold/radiant_sprite_gold_10k.fbx	assets/exports/pets/radiant_sprite_gold/radiant_sprite_gold.png	assets/exports/pets/gold/radiant_sprite_gold.png
+worldbloom_ent	basic	heaven	grass	assets/exports/pets/worldbloom_ent_basic/worldbloom_ent_basic_10k.fbx	assets/exports/pets/worldbloom_ent_basic/worldbloom_ent_basic.png	assets/exports/pets/basic/worldbloom_ent_basic.png
+worldbloom_ent	gold	heaven	grass	assets/exports/pets/worldbloom_ent_gold/worldbloom_ent_gold_10k.fbx	assets/exports/pets/worldbloom_ent_gold/worldbloom_ent_gold.png	assets/exports/pets/gold/worldbloom_ent_gold.png
+aurora_dove	basic	heaven	desert	assets/exports/pets/aurora_dove_basic/aurora_dove_basic_10k.fbx	assets/exports/pets/aurora_dove_basic/aurora_dove_basic.png	assets/exports/pets/basic/aurora_dove_basic.png
+aurora_dove	gold	heaven	desert	assets/exports/pets/aurora_dove_gold/aurora_dove_gold_10k.fbx	assets/exports/pets/aurora_dove_gold/aurora_dove_gold.png	assets/exports/pets/gold/aurora_dove_gold.png
+prism_scarab	basic	heaven	desert	assets/exports/pets/prism_scarab_basic/prism_scarab_basic_10k.fbx	assets/exports/pets/prism_scarab_basic/prism_scarab_basic.png	assets/exports/pets/basic/prism_scarab_basic.png
+prism_scarab	gold	heaven	desert	assets/exports/pets/prism_scarab_gold/prism_scarab_gold_10k.fbx	assets/exports/pets/prism_scarab_gold/prism_scarab_gold.png	assets/exports/pets/gold/prism_scarab_gold.png
+mirage_meerkat	basic	heaven	desert	assets/exports/pets/mirage_meerkat_basic/mirage_meerkat_basic_10k.fbx	assets/exports/pets/mirage_meerkat_basic/mirage_meerkat_basic.png	assets/exports/pets/basic/mirage_meerkat_basic.png
+mirage_meerkat	gold	heaven	desert	assets/exports/pets/mirage_meerkat_gold/mirage_meerkat_gold_10k.fbx	assets/exports/pets/mirage_meerkat_gold/mirage_meerkat_gold.png	assets/exports/pets/gold/mirage_meerkat_gold.png
+sunwell_camel	basic	heaven	desert	assets/exports/pets/sunwell_camel_basic/sunwell_camel_basic_10k.fbx	assets/exports/pets/sunwell_camel_basic/sunwell_camel_basic.png	assets/exports/pets/basic/sunwell_camel_basic.png
+sunwell_camel	gold	heaven	desert	assets/exports/pets/sunwell_camel_gold/sunwell_camel_gold_10k.fbx	assets/exports/pets/sunwell_camel_gold/sunwell_camel_gold.png	assets/exports/pets/gold/sunwell_camel_gold.png
+empyreal_couatl	basic	heaven	desert	assets/exports/pets/empyreal_couatl_basic/empyreal_couatl_basic_10k.fbx	assets/exports/pets/empyreal_couatl_basic/empyreal_couatl_basic.png	assets/exports/pets/basic/empyreal_couatl_basic.png
+empyreal_couatl	gold	heaven	desert	assets/exports/pets/empyreal_couatl_gold/empyreal_couatl_gold_10k.fbx	assets/exports/pets/empyreal_couatl_gold/empyreal_couatl_gold.png	assets/exports/pets/gold/empyreal_couatl_gold.png
+frostcinder_imp	basic	hell	fire	assets/exports/pets/frostcinder_imp_basic/frostcinder_imp_basic_10k.fbx	assets/exports/pets/frostcinder_imp_basic/frostcinder_imp_basic.png	assets/exports/pets/basic/frostcinder_imp_basic.png
+frostcinder_imp	gold	hell	fire	assets/exports/pets/frostcinder_imp_gold/frostcinder_imp_gold_10k.fbx	assets/exports/pets/frostcinder_imp_gold/frostcinder_imp_gold.png	assets/exports/pets/gold/frostcinder_imp_gold.png
+rimemane_lion	basic	hell	fire	assets/exports/pets/rimemane_lion_basic/rimemane_lion_basic_10k.fbx	assets/exports/pets/rimemane_lion_basic/rimemane_lion_basic.png	assets/exports/pets/basic/rimemane_lion_basic.png
+rimemane_lion	gold	hell	fire	assets/exports/pets/rimemane_lion_gold/rimemane_lion_gold_10k.fbx	assets/exports/pets/rimemane_lion_gold/rimemane_lion_gold.png	assets/exports/pets/gold/rimemane_lion_gold.png
+hoarfrost_phoenix	basic	hell	fire	assets/exports/pets/hoarfrost_phoenix_basic/hoarfrost_phoenix_basic_10k.fbx	assets/exports/pets/hoarfrost_phoenix_basic/hoarfrost_phoenix_basic.png	assets/exports/pets/basic/hoarfrost_phoenix_basic.png
+hoarfrost_phoenix	gold	hell	fire	assets/exports/pets/hoarfrost_phoenix_gold/hoarfrost_phoenix_gold_10k.fbx	assets/exports/pets/hoarfrost_phoenix_gold/hoarfrost_phoenix_gold.png	assets/exports/pets/gold/hoarfrost_phoenix_gold.png
+frostbrand_salamander	basic	hell	fire	assets/exports/pets/frostbrand_salamander_basic/frostbrand_salamander_basic_10k.fbx	assets/exports/pets/frostbrand_salamander_basic/frostbrand_salamander_basic.png	assets/exports/pets/basic/frostbrand_salamander_basic.png
+frostbrand_salamander	gold	hell	fire	assets/exports/pets/frostbrand_salamander_gold/frostbrand_salamander_gold_10k.fbx	assets/exports/pets/frostbrand_salamander_gold/frostbrand_salamander_gold.png	assets/exports/pets/gold/frostbrand_salamander_gold.png
+deadfire_phoenix	basic	hell	fire	assets/exports/pets/deadfire_phoenix_basic/deadfire_phoenix_basic_10k.fbx	assets/exports/pets/deadfire_phoenix_basic/deadfire_phoenix_basic.png	assets/exports/pets/basic/deadfire_phoenix_basic.png
+deadfire_phoenix	gold	hell	fire	assets/exports/pets/deadfire_phoenix_gold/deadfire_phoenix_gold_10k.fbx	assets/exports/pets/deadfire_phoenix_gold/deadfire_phoenix_gold.png	assets/exports/pets/gold/deadfire_phoenix_gold.png
+rimegloom_hare	basic	hell	ice	assets/exports/pets/rimegloom_hare_basic/rimegloom_hare_basic_10k.fbx	assets/exports/pets/rimegloom_hare_basic/rimegloom_hare_basic.png	assets/exports/pets/basic/rimegloom_hare_basic.png
+rimegloom_hare	gold	hell	ice	assets/exports/pets/rimegloom_hare_gold/rimegloom_hare_gold_10k.fbx	assets/exports/pets/rimegloom_hare_gold/rimegloom_hare_gold.png	assets/exports/pets/gold/rimegloom_hare_gold.png
+dread_fox	basic	hell	ice	assets/exports/pets/dread_fox_basic/dread_fox_basic_10k.fbx	assets/exports/pets/dread_fox_basic/dread_fox_basic.png	assets/exports/pets/basic/dread_fox_basic.png
+dread_fox	gold	hell	ice	assets/exports/pets/dread_fox_gold/dread_fox_gold_10k.fbx	assets/exports/pets/dread_fox_gold/dread_fox_gold.png	assets/exports/pets/gold/dread_fox_gold.png
+gravefrost_owl	basic	hell	ice	assets/exports/pets/gravefrost_owl_basic/gravefrost_owl_basic_10k.fbx	assets/exports/pets/gravefrost_owl_basic/gravefrost_owl_basic.png	assets/exports/pets/basic/gravefrost_owl_basic.png
+gravefrost_owl	gold	hell	ice	assets/exports/pets/gravefrost_owl_gold/gravefrost_owl_gold_10k.fbx	assets/exports/pets/gravefrost_owl_gold/gravefrost_owl_gold.png	assets/exports/pets/gold/gravefrost_owl_gold.png
+rimeguard_bear	basic	hell	ice	assets/exports/pets/rimeguard_bear_basic/rimeguard_bear_basic_10k.fbx	assets/exports/pets/rimeguard_bear_basic/rimeguard_bear_basic.png	assets/exports/pets/basic/rimeguard_bear_basic.png
+rimeguard_bear	gold	hell	ice	assets/exports/pets/rimeguard_bear_gold/rimeguard_bear_gold_10k.fbx	assets/exports/pets/rimeguard_bear_gold/rimeguard_bear_gold.png	assets/exports/pets/gold/rimeguard_bear_gold.png
+rimewraith_dragon	basic	hell	ice	assets/exports/pets/rimewraith_dragon_basic/rimewraith_dragon_basic_10k.fbx	assets/exports/pets/rimewraith_dragon_basic/rimewraith_dragon_basic.png	assets/exports/pets/basic/rimewraith_dragon_basic.png
+rimewraith_dragon	gold	hell	ice	assets/exports/pets/rimewraith_dragon_gold/rimewraith_dragon_gold_10k.fbx	assets/exports/pets/rimewraith_dragon_gold/rimewraith_dragon_gold.png	assets/exports/pets/gold/rimewraith_dragon_gold.png
+frostblight_lamb	basic	hell	grass	assets/exports/pets/frostblight_lamb_basic/frostblight_lamb_basic_10k.fbx	assets/exports/pets/frostblight_lamb_basic/frostblight_lamb_basic.png	assets/exports/pets/basic/frostblight_lamb_basic.png
+frostblight_lamb	gold	hell	grass	assets/exports/pets/frostblight_lamb_gold/frostblight_lamb_gold_10k.fbx	assets/exports/pets/frostblight_lamb_gold/frostblight_lamb_gold.png	assets/exports/pets/gold/frostblight_lamb_gold.png
+gloom_hare	basic	hell	grass	assets/exports/pets/gloom_hare_basic/gloom_hare_basic_10k.fbx	assets/exports/pets/gloom_hare_basic/gloom_hare_basic.png	assets/exports/pets/basic/gloom_hare_basic.png
+gloom_hare	gold	hell	grass	assets/exports/pets/gloom_hare_gold/gloom_hare_gold_10k.fbx	assets/exports/pets/gloom_hare_gold/gloom_hare_gold.png	assets/exports/pets/gold/gloom_hare_gold.png
+icerot_stag	basic	hell	grass	assets/exports/pets/icerot_stag_basic/icerot_stag_basic_10k.fbx	assets/exports/pets/icerot_stag_basic/icerot_stag_basic.png	assets/exports/pets/basic/icerot_stag_basic.png
+icerot_stag	gold	hell	grass	assets/exports/pets/icerot_stag_gold/icerot_stag_gold_10k.fbx	assets/exports/pets/icerot_stag_gold/icerot_stag_gold.png	assets/exports/pets/gold/icerot_stag_gold.png
+rimewither_sprite	basic	hell	grass	assets/exports/pets/rimewither_sprite_basic/rimewither_sprite_basic_10k.fbx	assets/exports/pets/rimewither_sprite_basic/rimewither_sprite_basic.png	assets/exports/pets/basic/rimewither_sprite_basic.png
+rimewither_sprite	gold	hell	grass	assets/exports/pets/rimewither_sprite_gold/rimewither_sprite_gold_10k.fbx	assets/exports/pets/rimewither_sprite_gold/rimewither_sprite_gold.png	assets/exports/pets/gold/rimewither_sprite_gold.png
+frostgrave_ent	basic	hell	grass	assets/exports/pets/frostgrave_ent_basic/frostgrave_ent_basic_10k.fbx	assets/exports/pets/frostgrave_ent_basic/frostgrave_ent_basic.png	assets/exports/pets/basic/frostgrave_ent_basic.png
+frostgrave_ent	gold	hell	grass	assets/exports/pets/frostgrave_ent_gold/frostgrave_ent_gold_10k.fbx	assets/exports/pets/frostgrave_ent_gold/frostgrave_ent_gold.png	assets/exports/pets/gold/frostgrave_ent_gold.png
+wraith_dove	basic	hell	desert	assets/exports/pets/wraith_dove_basic/wraith_dove_basic_10k.fbx	assets/exports/pets/wraith_dove_basic/wraith_dove_basic.png	assets/exports/pets/basic/wraith_dove_basic.png
+wraith_dove	gold	hell	desert	assets/exports/pets/wraith_dove_gold/wraith_dove_gold_10k.fbx	assets/exports/pets/wraith_dove_gold/wraith_dove_gold.png	assets/exports/pets/gold/wraith_dove_gold.png
+rime_scarab	basic	hell	desert	assets/exports/pets/rime_scarab_basic/rime_scarab_basic_10k.fbx	assets/exports/pets/rime_scarab_basic/rime_scarab_basic.png	assets/exports/pets/basic/rime_scarab_basic.png
+rime_scarab	gold	hell	desert	assets/exports/pets/rime_scarab_gold/rime_scarab_gold_10k.fbx	assets/exports/pets/rime_scarab_gold/rime_scarab_gold.png	assets/exports/pets/gold/rime_scarab_gold.png
+gloom_jackal	basic	hell	desert	assets/exports/pets/gloom_jackal_basic/gloom_jackal_basic_10k.fbx	assets/exports/pets/gloom_jackal_basic/gloom_jackal_basic.png	assets/exports/pets/basic/gloom_jackal_basic.png
+gloom_jackal	gold	hell	desert	assets/exports/pets/gloom_jackal_gold/gloom_jackal_gold_10k.fbx	assets/exports/pets/gloom_jackal_gold/gloom_jackal_gold.png	assets/exports/pets/gold/gloom_jackal_gold.png
+frostdust_camel	basic	hell	desert	assets/exports/pets/frostdust_camel_basic/frostdust_camel_basic_10k.fbx	assets/exports/pets/frostdust_camel_basic/frostdust_camel_basic.png	assets/exports/pets/basic/frostdust_camel_basic.png
+frostdust_camel	gold	hell	desert	assets/exports/pets/frostdust_camel_gold/frostdust_camel_gold_10k.fbx	assets/exports/pets/frostdust_camel_gold/frostdust_camel_gold.png	assets/exports/pets/gold/frostdust_camel_gold.png
+dread_couatl	basic	hell	desert	assets/exports/pets/dread_couatl_basic/dread_couatl_basic_10k.fbx	assets/exports/pets/dread_couatl_basic/dread_couatl_basic.png	assets/exports/pets/basic/dread_couatl_basic.png
+dread_couatl	gold	hell	desert	assets/exports/pets/dread_couatl_gold/dread_couatl_gold_10k.fbx	assets/exports/pets/dread_couatl_gold/dread_couatl_gold.png	assets/exports/pets/gold/dread_couatl_gold.png
+
+## Decimation notes
+Decimated to 10000 tris: worldbloom_ent
+All others exported at native triangle count in {stem}_10k.fbx.
+
+## Wired
+pending: configs/pets.lua + assets/manifest/pets.json entries

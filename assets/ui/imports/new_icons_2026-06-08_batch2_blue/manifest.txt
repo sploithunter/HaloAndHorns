@@ -1,0 +1,8 @@
+size: native-crop
+padding: 0px
+square: True
+
+critical_hit.png	1217x1217	<- CriticalHit.png	(white)
+ice_hold.png	1046x1046	<- IceHold.png	(white)
+winter_hold.png	1170x1170	<- WinterHold.png	(white)
+pet.png	1215x1215	<- Pet.png	(white)

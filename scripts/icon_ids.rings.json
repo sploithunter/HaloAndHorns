@@ -1,0 +1,27 @@
+{
+ "_note": "Open Cloud uploads images as Decal assets. The Decal id does NOT render in ImageLabel.Image; use the resolved Image content id (Decal.Texture, obtained via InsertService:LoadAsset in Studio edit mode). The 'image' ids are the ones wired into configs/power_icons.lua.",
+ "ring_aoe": {
+  "decal": "115953506041881",
+  "image": "128177741420839"
+ },
+ "ring_aura": {
+  "decal": "76032353374470",
+  "image": "121697559002218"
+ },
+ "ring_target_aoe": {
+  "decal": "78886679306044",
+  "image": "130533151036887"
+ },
+ "ring_target_in": {
+  "decal": "116214377637854",
+  "image": "73447619254562"
+ },
+ "ring_target_out": {
+  "decal": "120073694232878",
+  "image": "96971740848796"
+ },
+ "ring_enhancement": {
+  "decal": "119931294818761",
+  "image": "134951242987225"
+ }
+}

@@ -1,0 +1,6 @@
+source: /Users/jason/Documents/RBX-Template/assets/source/lairs/ice_titan_lair.obj
+original_tris: 12852
+
+5k: ice_titan_lair_5k.fbx (5000 tris, target 5000)
+7500tris: ice_titan_lair_7500tris.fbx (7500 tris, target 7500)
+10k: ice_titan_lair_10k.fbx (10000 tris, target 10000)

@@ -1,0 +1,58 @@
+# Homeworld starter pet viewport renders — Roblox Studio captures (2026-06-28)
+# Pets Home starters: bear, bunny, doggy, dragon, kitty × basic + gold
+# NOT concept art (assets/exports/pets/basic|gold/) — gameplay model_renders only
+# Process: scripts/normalize_studio_pet_capture.py (blue key, largest blob, crop_png framing)
+# Hero views reuse front capture until angled Studio screenshots exist
+
+## Source screenshots (Cursor assets cache)
+
+pet	variant	studio_capture
+bear	basic	image-7d922ed3-1ae7-4699-8e5c-819499ac2e15.png
+bear	gold	Screenshot_2026-06-28_at_2.52.13_PM-d3c3630d-f940-4f4d-acbd-b3eba170c78d.png
+bunny	basic	Screenshot_2026-06-28_at_2.38.44_PM-419e8419-314b-4875-9722-85c6fcb8024d.png
+bunny	gold	Screenshot_2026-06-28_at_2.53.03_PM-e8331b41-b496-4fdd-bf8d-40298429a9a2.png
+doggy	basic	Screenshot_2026-06-28_at_2.40.17_PM-11ae96d4-c366-4617-8c11-56b02c8dfd15.png
+doggy	gold	Screenshot_2026-06-28_at_2.52.38_PM-ebf46c9c-1711-4aff-9421-6d84a0230cfa.png
+dragon	basic	Screenshot_2026-06-28_at_2.40.51_PM-e75b9afe-de27-4d22-83b5-9574c682abe1.png
+dragon	gold	Screenshot_2026-06-28_at_2.53.36_PM-09bcf4c3-1322-40ea-ae41-6e51385a095a.png
+kitty	basic	Screenshot_2026-06-28_at_2.54.25_PM-d904c088-302a-4b6c-99a8-b6218a7c13b5.png
+kitty	gold	Screenshot_2026-06-28_at_2.54.02_PM-feff928a-d6ff-49c7-bce9-45e72ed5247b.png
+
+## Model renders (transparent PNG)
+
+view	pet	variant	stem	width	height	bytes	output
+front	bear	basic	bear_basic	508	508	40015	assets/exports/pets/model_renders/front/basic/bear_basic.png
+hero	bear	basic	bear_basic	508	508	40015	assets/exports/pets/model_renders/hero/basic/bear_basic.png
+front	bear	gold	bear_gold	506	506	52948	assets/exports/pets/model_renders/front/gold/bear_gold.png
+hero	bear	gold	bear_gold	506	506	52948	assets/exports/pets/model_renders/hero/gold/bear_gold.png
+front	bunny	basic	bunny_basic	554	554	48190	assets/exports/pets/model_renders/front/basic/bunny_basic.png
+hero	bunny	basic	bunny_basic	554	554	48190	assets/exports/pets/model_renders/hero/basic/bunny_basic.png
+front	bunny	gold	bunny_gold	553	553	53012	assets/exports/pets/model_renders/front/gold/bunny_gold.png
+hero	bunny	gold	bunny_gold	553	553	53012	assets/exports/pets/model_renders/hero/gold/bunny_gold.png
+front	doggy	basic	doggy_basic	480	480	34365	assets/exports/pets/model_renders/front/basic/doggy_basic.png
+hero	doggy	basic	doggy_basic	480	480	34365	assets/exports/pets/model_renders/hero/basic/doggy_basic.png
+front	doggy	gold	doggy_gold	477	477	31647	assets/exports/pets/model_renders/front/gold/doggy_gold.png
+hero	doggy	gold	doggy_gold	477	477	31647	assets/exports/pets/model_renders/hero/gold/doggy_gold.png
+front	dragon	basic	dragon_basic	492	492	41479	assets/exports/pets/model_renders/front/basic/dragon_basic.png
+hero	dragon	basic	dragon_basic	492	492	41479	assets/exports/pets/model_renders/hero/basic/dragon_basic.png
+front	dragon	gold	dragon_gold	491	491	42618	assets/exports/pets/model_renders/front/gold/dragon_gold.png
+hero	dragon	gold	dragon_gold	491	491	42618	assets/exports/pets/model_renders/hero/gold/dragon_gold.png
+front	kitty	basic	kitty_basic	539	539	33458	assets/exports/pets/model_renders/front/basic/kitty_basic.png
+hero	kitty	basic	kitty_basic	539	539	33458	assets/exports/pets/model_renders/hero/basic/kitty_basic.png
+front	kitty	gold	kitty_gold	536	536	59038	assets/exports/pets/model_renders/front/gold/kitty_gold.png
+hero	kitty	gold	kitty_gold	536	536	59038	assets/exports/pets/model_renders/hero/gold/kitty_gold.png
+
+## Per-pet review contact sheets
+
+bear	4 icons	assets/exports/pets/model_renders/bear_homeworld_review/contact_sheet.png
+bunny	4 icons	assets/exports/pets/model_renders/bunny_homeworld_review/contact_sheet.png
+doggy	4 icons	assets/exports/pets/model_renders/doggy_homeworld_review/contact_sheet.png
+dragon	4 icons	assets/exports/pets/model_renders/dragon_homeworld_review/contact_sheet.png
+kitty	4 icons	assets/exports/pets/model_renders/kitty_homeworld_review/contact_sheet.png
+
+## Regenerate
+
+python3 scripts/normalize_studio_pet_capture.py
+
+# Or single capture:
+# python3 scripts/normalize_studio_pet_capture.py --capture bear:gold

@@ -1,0 +1,10 @@
+-- Copy this into Studio Command Bar to test ultra-fast egg hatching (FIXED)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local hatchingConfig = require(ReplicatedStorage.Configs.egg_hatching)
+print("Config loaded, current preset:", hatchingConfig.current_preset)
+print("Speed multiplier:", hatchingConfig.helpers.get_speed_multiplier())
+hatchingConfig.current_preset = "ultra_fast"
+print("Changed to ultra_fast, new multiplier:", hatchingConfig.helpers.get_speed_multiplier())
+local EggHatchingService = require(ReplicatedStorage.Shared.Services.EggHatchingService)
+local testEggs = {{eggType = "basic_egg", petType = "bear", variant = "basic", imageId = "generated_image", petImageId = "generated_image"},{eggType = "basic_egg", petType = "bear", variant = "basic", imageId = "generated_image", petImageId = "generated_image"},{eggType = "basic_egg", petType = "bear", variant = "basic", imageId = "generated_image", petImageId = "generated_image"}}
+EggHatchingService:StartHatchingAnimation(testEggs)

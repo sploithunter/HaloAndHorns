@@ -1,0 +1,14 @@
+# Enhancement drop cogwheel — upload-ready FBX exports (2026-06-09)
+# Pair each FBX with its cogwheel_{color}.png texture in the same folder.
+# Recommended Roblox import: cogwheel_{color}_3500tris.fbx (matches gem drop budget).
+
+color	export_dir	3500tris	5k	7500tris	10k	texture
+silver	assets/exports/drops/cogwheel_silver/	cogwheel_silver_3500tris.fbx (3500)	cogwheel_silver_5k.fbx (5000)	cogwheel_silver_7500tris.fbx (7500)	cogwheel_silver_10k.fbx (10000)	cogwheel_silver.png
+green	assets/exports/drops/cogwheel_green/	cogwheel_green_3500tris.fbx (3500)	cogwheel_green_5k.fbx (5000)	cogwheel_green_7500tris.fbx (7500)	cogwheel_green_10k.fbx (10000)	cogwheel_green.png
+blue	assets/exports/drops/cogwheel_blue/	cogwheel_blue_3500tris.fbx (3500)	cogwheel_blue_5k.fbx (5000)	cogwheel_blue_7500tris.fbx (7500)	cogwheel_blue_10k.fbx (10000)	cogwheel_blue.png
+purple	assets/exports/drops/cogwheel_purple/	cogwheel_purple_3500tris.fbx (3500)	cogwheel_purple_5k.fbx (5000)	cogwheel_purple_7500tris.fbx (7500)	cogwheel_purple_10k.fbx (10000)	cogwheel_purple.png
+yellow	assets/exports/drops/cogwheel_yellow/	cogwheel_yellow_3500tris.fbx (3500)	cogwheel_yellow_5k.fbx (5000)	cogwheel_yellow_7500tris.fbx (7500)	cogwheel_yellow_10k.fbx (10000)	cogwheel_yellow.png
+red	assets/exports/drops/cogwheel_red/	cogwheel_red_3500tris.fbx (3500)	cogwheel_red_5k.fbx (5000)	cogwheel_red_7500tris.fbx (7500)	cogwheel_red_10k.fbx (10000)	cogwheel_red.png
+
+contact_sheet: assets/exports/drops/cogwheel_contact_sheet.png
+source_manifest: assets/source/drops/manifest.txt

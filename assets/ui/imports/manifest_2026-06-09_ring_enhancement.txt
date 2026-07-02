@@ -1,0 +1,57 @@
+# Enhancement ring import (2026-06-09)
+# Source: ~/Downloads/ChatGPT Image Jun 9, 2026, 04_35_58 PM.png
+# Pipeline: remove_image_background.py --mode ring-white -> blue source -> recolor -> color folders
+
+## Ring asset (7 total ring styles; 1 added/updated this batch)
+
+asset_name	download_source	bg_mode	recolor_mode	reads_as
+ring_enhancement.png	ChatGPT Image Jun 9, 2026, 04_35_58 PM.png	ring-white (edge + center hole)	hue + white	gear/cog enhancement ring frame
+
+## Processing commands
+
+python3 scripts/remove_image_background.py \
+  "~/Downloads/ChatGPT Image Jun 9, 2026, 04_35_58 PM.png" \
+  assets/ui/ring_frames_blue/ring_enhancement.png \
+  --mode ring-white
+
+python3 scripts/recolor_blue_to_green.py \
+  assets/ui/ring_frames_blue/ring_enhancement.png \
+  assets/ui/ring_frames_white/ring_enhancement.png \
+  --mode white
+
+python3 scripts/recolor_blue_to_green.py \
+  assets/ui/ring_frames_blue/ring_enhancement.png \
+  assets/ui/ring_frames_{green,red,yellow,purple}/ring_enhancement.png \
+  --color {green|red|yellow|purple} --mode hue
+
+## Color outputs (all 6 sets)
+
+color	folder	path
+blue	assets/ui/ring_frames_blue/	ring_enhancement.png
+white	assets/ui/ring_frames_white/	ring_enhancement.png (grayscale — tint via ImageColor3 in game)
+green	assets/ui/ring_frames_green/	ring_enhancement.png
+red	assets/ui/ring_frames_red/	ring_enhancement.png
+yellow	assets/ui/ring_frames_yellow/	ring_enhancement.png
+purple	assets/ui/ring_frames_purple/	ring_enhancement.png
+
+## Transparency check
+
+outside (corners): alpha 0
+inside (center): alpha 0
+
+## Contact sheets rebuilt
+
+assets/ui/ring_frames_blue/contact_sheet.png
+assets/ui/ring_frames_white/contact_sheet.png
+assets/ui/ring_frames_green/contact_sheet.png
+assets/ui/ring_frames_red/contact_sheet.png
+assets/ui/ring_frames_yellow/contact_sheet.png
+assets/ui/ring_frames_purple/contact_sheet.png
+assets/ui/ring_frames_all_colors.png
+
+## Wired (2026-06-09)
+
+scripts/asset_manifest.json rings.ring_enhancement = { decal = 119931294818761, image = 134951242987225 }
+configs/power_icons_assets.lua rings.enhancement (generated via mise run gen-icons)
+Available in code as power_icons.rings.enhancement (grayscale; tint via ImageColor3).
+USAGE pending: assign to the enhancement-slot UI when the enhancement layer is built.

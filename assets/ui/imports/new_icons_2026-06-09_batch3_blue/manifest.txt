@@ -1,0 +1,8 @@
+size: native-crop
+padding: 0px
+square: True
+
+impact_burst.png	1217x1217	<- ChatGPT Image Jun 9, 2026, 01_12_27 PM.png	(white)
+heart.png	1218x1218	<- ChatGPT Image Jun 9, 2026, 01_12_32 PM.png	(white)
+haste.png	1209x1209	<- ChatGPT Image Jun 9, 2026, 01_12_42 PM.png	(white)
+hourglass.png	1228x1228	<- ChatGPT Image Jun 9, 2026, 01_13_03 PM.png	(white)

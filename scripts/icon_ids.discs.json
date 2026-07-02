@@ -1,0 +1,38 @@
+{
+  "_note": "Resolved IMAGE content ids (not Decal ids) for the colored archetype disc-icons. Keyed [element_symbol]. Element colors: earth=green, fire=red, desert=yellow, ice=blue. Use in configs/power_icons.lua discs[element][symbol]. Resolved via InsertService:LoadAsset in Studio edit mode.",
+  "green": {
+    "armor_chest": "117196376134677",
+    "fist_impact": "107483427967238",
+    "arrow_right": "89629994898328",
+    "star_sparkle": "70922319936021",
+    "hand_stop": "100801154207594",
+    "shield": "113193953850265"
+  },
+  "red": {
+    "armor_chest": "80412131835560",
+    "fist_impact": "111009476265182",
+    "arrow_right": "102767415664686",
+    "star_sparkle": "112938645728666",
+    "hand_stop": "129326094066674",
+    "shield": "87662561870844"
+  },
+  "yellow": {
+    "armor_chest": "138256777477472",
+    "fist_impact": "92759715093176",
+    "arrow_right": "95570155438599",
+    "star_sparkle": "115581368440623",
+    "hand_stop": "134819309651243",
+    "shield": "126464933309161"
+  },
+  "blue": {
+    "armor_chest": "99602330844217",
+    "fist_impact": "138777877678894",
+    "arrow_right": "110668229230948",
+    "star_sparkle": "117884715579847",
+    "hand_stop": "86991673939412",
+    "shield": "127714891076758"
+  },
+  "white": {
+    "shield": "121311806877255"
+  }
+}

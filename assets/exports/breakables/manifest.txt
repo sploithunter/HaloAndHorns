@@ -1,0 +1,6 @@
+# Roblox-ready breakable meshes (~5k tris). Import the *_5k.fbx + texture into Studio.
+# Per-model details in each subfolder manifest.txt.
+
+boulder/       boulder_5k.fbx + boulder.png       (4998 tris from 303946)
+ice_boulder/   ice_boulder_5k.fbx + ice_boulder.png (4999 tris from 442639)
+asteroid/      asteroid_5k.fbx + asteroid.png       (5000 tris from 15644)

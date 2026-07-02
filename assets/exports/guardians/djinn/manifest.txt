@@ -1,0 +1,6 @@
+source: /Users/jason/Documents/RBX-Template/assets/source/guardians/djinn.obj
+original_tris: 4488
+
+5k: djinn_5k.fbx (4488 tris, target 5000)
+7500tris: djinn_7500tris.fbx (4488 tris, target 7500)
+10k: djinn_10k.fbx (4488 tris, target 10000)

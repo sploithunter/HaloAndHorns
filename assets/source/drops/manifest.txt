@@ -1,0 +1,13 @@
+# Enhancement drop cogwheel — source meshes (2026-06-09)
+# Same Silver Cogwheel geometry; six texture variants (origin colors + silver neutral).
+# Used by DropService enhancement pickups (configs/enhancements.lua drops.model_name — TBD).
+
+color	download_zip	source_obj	original_tris	texture
+silver	Meshy_AI_Cogwheel_silver.zip	cogwheel_silver.obj	10546	cogwheel_silver.png
+green	Meshy_AI_Cogwheel_green.zip	cogwheel_green.obj	10546	cogwheel_green.png
+blue	Meshy_AI_Cogwheel_red_blue.zip	cogwheel_blue.obj	10546	cogwheel_blue.png
+purple	Meshy_AI_Cogwheel_purple.zip	cogwheel_purple.obj	10546	cogwheel_purple.png
+yellow	Meshy_AI_Cogwheel_yellow.zip	cogwheel_yellow.obj	10546	cogwheel_yellow.png
+red	Meshy_AI_Cogwheel_red.zip	cogwheel_red.obj	10546	cogwheel_red.png
+
+pipeline: bash scripts/decimate_mesh.sh --targets 3500,5000,7500,10000

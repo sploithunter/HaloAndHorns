@@ -1,0 +1,46 @@
+# Desert pet 3D model import (2026-06-14 afternoon batch)
+
+## Preview images
+Downloads PNGs copied to assets/exports/pets/basic/{pet}_basic.png for contact sheet.
+Master contact sheet: assets/exports/pets/desert_pets_2026-06-14_contact_sheet.png
+
+## Processing
+
+for stem in carrion_vulture_basic golden_scarab_basic sand_scorpion_basic dune_tortoise_basic sand_jackal_basic; do
+  bash scripts/decimate_mesh.sh "assets/source/pets/${stem}.obj" \
+    --output "assets/exports/pets/${stem}" \
+    --targets 5000,7500,10000
+done
+
+## Source
+
+pet	variant	stem	download_zip	preview_png	original_tris
+carrion_vulture	basic	carrion_vulture_basic	CarrionVulture.zip	CarrionVulture.png	12458
+golden_scarab	basic	golden_scarab_basic	GoldenScarab.zip	GoldenScarab.png	6816
+sand_scorpion	basic	sand_scorpion_basic	SandScorpion.zip	SandScorpion.png	11128
+dune_tortoise	basic	dune_tortoise_basic	DuneTortoise.zip	DuneTortoise.png	17350
+sand_jackal	basic	sand_jackal_basic	SandJackal.zip	SandJackal.png	13138
+
+## Exports (FBX + mesh texture)
+
+pet	recommended_fbx	mesh_texture	preview_image
+carrion_vulture	assets/exports/pets/carrion_vulture_basic/carrion_vulture_basic_5k.fbx	assets/exports/pets/carrion_vulture_basic/carrion_vulture_basic.png	assets/exports/pets/basic/carrion_vulture_basic.png
+golden_scarab	assets/exports/pets/golden_scarab_basic/golden_scarab_basic_5k.fbx	assets/exports/pets/golden_scarab_basic/golden_scarab_basic.png	assets/exports/pets/basic/golden_scarab_basic.png
+sand_scorpion	assets/exports/pets/sand_scorpion_basic/sand_scorpion_basic_5k.fbx	assets/exports/pets/sand_scorpion_basic/sand_scorpion_basic.png	assets/exports/pets/basic/sand_scorpion_basic.png
+dune_tortoise	assets/exports/pets/dune_tortoise_basic/dune_tortoise_basic_5k.fbx	assets/exports/pets/dune_tortoise_basic/dune_tortoise_basic.png	assets/exports/pets/basic/dune_tortoise_basic.png
+sand_jackal	assets/exports/pets/sand_jackal_basic/sand_jackal_basic_5k.fbx	assets/exports/pets/sand_jackal_basic/sand_jackal_basic.png	assets/exports/pets/basic/sand_jackal_basic.png
+
+## Decimation targets
+5000 / 7500 / 10000 tris — golden_scarab source is 6816 tris (7500/10k kept at native count).
+
+## Wired
+All five wired into configs/enemies.lua as the DESERT faction (self-serve upload, group 15872767):
+  sand_jackal     mesh 133579601499458 / image 81743984263831   (melee)
+  carrion_vulture mesh 72134348866721  / image 109527952252689  (ranged, bolt_kind=rock)
+  golden_scarab   mesh 113362318411916 / image 91987727517751   (support healer)
+  dune_tortoise   mesh 86038686611345  / image 126431717175323  (tank)
+  sand_scorpion   mesh 83939345076794  / image 113335145419297  (boss — admin/special, NOT field waves)
+Routing: BaddieSpawnerDesert -> "desert" faction; 4 desert waves added. dust-mote aura (def.dust).
+Reminder: texture_asset = the resolved IMAGE id, not the Decal id (scripts/pet_pipeline.md).
+Full ids in scripts/pet_mesh_ids.json.
+pending: configs/pets.lua + assets/manifest/pets.json entries (pet variants)

@@ -1,0 +1,7 @@
+source: /Users/jason/Documents/RBX-Template/assets/source/drops/cogwheel/green/cogwheel_green.obj
+original_tris: 10546
+
+3500tris: cogwheel_green_3500tris.fbx (3500 tris, target 3500)
+5k: cogwheel_green_5k.fbx (5000 tris, target 5000)
+7500tris: cogwheel_green_7500tris.fbx (7500 tris, target 7500)
+10k: cogwheel_green_10k.fbx (10000 tris, target 10000)

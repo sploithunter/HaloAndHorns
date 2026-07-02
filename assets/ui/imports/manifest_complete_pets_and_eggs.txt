@@ -1,0 +1,187 @@
+# Complete pet + egg model manifest
+# Repo root: RBX-Template/
+# Recommended upload: {stem}_5k.fbx + mesh texture PNG in export folder
+
+================================================================================
+PETS (3D meshes)
+================================================================================
+
+Canonical manifests:
+  assets/source/pets/manifest.txt
+  assets/exports/pets/manifest.txt
+
+Path conventions:
+  source:  assets/source/pets/{stem}.obj|.mtl|.png
+  export:  assets/exports/pets/{stem}/
+           assets/exports/pets/{stem}/{stem}_5k.fbx
+           assets/exports/pets/{stem}/{stem}_7500tris.fbx
+           assets/exports/pets/{stem}/{stem}_10k.fbx
+           assets/exports/pets/{stem}/{stem}.png
+  preview: assets/exports/pets/basic/{pet_id}_basic.png
+           assets/exports/pets/gold/{pet_id}_gold.png
+
+Total mesh stems: 98 (58 species)
+
+pet_id	variant	stem	source_tris	source_obj	export_dir	recommended_fbx	mesh_texture	preview_png
+abyssal_wyrm	basic	abyssal_wyrm_basic	15078	assets/source/pets/abyssal_wyrm_basic.obj	assets/exports/pets/abyssal_wyrm_basic/	assets/exports/pets/abyssal_wyrm_basic/abyssal_wyrm_basic_5k.fbx	assets/exports/pets/abyssal_wyrm_basic/abyssal_wyrm_basic.png	assets/exports/pets/basic/abyssal_wyrm_basic.png
+abyssal_wyrm	gold	abyssal_wyrm_gold	15078	assets/source/pets/abyssal_wyrm_gold.obj	assets/exports/pets/abyssal_wyrm_gold/	assets/exports/pets/abyssal_wyrm_gold/abyssal_wyrm_gold_5k.fbx	assets/exports/pets/abyssal_wyrm_gold/abyssal_wyrm_gold.png	assets/exports/pets/gold/abyssal_wyrm_gold.png
+ash_roc	basic	ash_roc_basic	19076	assets/source/pets/ash_roc_basic.obj	assets/exports/pets/ash_roc_basic/	assets/exports/pets/ash_roc_basic/ash_roc_basic_5k.fbx	assets/exports/pets/ash_roc_basic/ash_roc_basic.png	assets/exports/pets/basic/ash_roc_basic.png
+ash_roc	gold	ash_roc_gold	19058	assets/source/pets/ash_roc_gold.obj	assets/exports/pets/ash_roc_gold/	assets/exports/pets/ash_roc_gold/ash_roc_gold_5k.fbx	assets/exports/pets/ash_roc_gold/ash_roc_gold.png	assets/exports/pets/gold/ash_roc_gold.png
+ashfeather_phoenix	basic	ashfeather_phoenix_basic	22337	assets/source/pets/ashfeather_phoenix_basic.obj	assets/exports/pets/ashfeather_phoenix_basic/	assets/exports/pets/ashfeather_phoenix_basic/ashfeather_phoenix_basic_5k.fbx	assets/exports/pets/ashfeather_phoenix_basic/ashfeather_phoenix_basic.png	assets/exports/pets/basic/ashfeather_phoenix_basic.png
+ashfeather_phoenix	gold	ashfeather_phoenix_gold	22337	assets/source/pets/ashfeather_phoenix_gold.obj	assets/exports/pets/ashfeather_phoenix_gold/	assets/exports/pets/ashfeather_phoenix_gold/ashfeather_phoenix_gold_5k.fbx	assets/exports/pets/ashfeather_phoenix_gold/ashfeather_phoenix_gold.png	assets/exports/pets/gold/ashfeather_phoenix_gold.png
+ashmane_lion	basic	ashmane_lion_basic	11892	assets/source/pets/ashmane_lion_basic.obj	assets/exports/pets/ashmane_lion_basic/	assets/exports/pets/ashmane_lion_basic/ashmane_lion_basic_5k.fbx	assets/exports/pets/ashmane_lion_basic/ashmane_lion_basic.png	assets/exports/pets/basic/ashmane_lion_basic.png
+ashmane_lion	gold	ashmane_lion_gold	11892	assets/source/pets/ashmane_lion_gold.obj	assets/exports/pets/ashmane_lion_gold/	assets/exports/pets/ashmane_lion_gold/ashmane_lion_gold_5k.fbx	assets/exports/pets/ashmane_lion_gold/ashmane_lion_gold.png	assets/exports/pets/gold/ashmane_lion_gold.png
+aurora_fox	basic	aurora_fox_basic	11272	assets/source/pets/aurora_fox_basic.obj	assets/exports/pets/aurora_fox_basic/	assets/exports/pets/aurora_fox_basic/aurora_fox_basic_5k.fbx	assets/exports/pets/aurora_fox_basic/aurora_fox_basic.png	assets/exports/pets/basic/aurora_fox_basic.png
+aurora_fox	gold	aurora_fox_gold	11272	assets/source/pets/aurora_fox_gold.obj	assets/exports/pets/aurora_fox_gold/	assets/exports/pets/aurora_fox_gold/aurora_fox_gold_5k.fbx	assets/exports/pets/aurora_fox_gold/aurora_fox_gold.png	assets/exports/pets/gold/aurora_fox_gold.png
+aurora_leviathan	basic	aurora_leviathan_basic	13042	assets/source/pets/aurora_leviathan_basic.obj	assets/exports/pets/aurora_leviathan_basic/	assets/exports/pets/aurora_leviathan_basic/aurora_leviathan_basic_5k.fbx	assets/exports/pets/aurora_leviathan_basic/aurora_leviathan_basic.png	assets/exports/pets/basic/aurora_leviathan_basic.png
+aurora_leviathan	gold	aurora_leviathan_gold	13042	assets/source/pets/aurora_leviathan_gold.obj	assets/exports/pets/aurora_leviathan_gold/	assets/exports/pets/aurora_leviathan_gold/aurora_leviathan_gold_5k.fbx	assets/exports/pets/aurora_leviathan_gold/aurora_leviathan_gold.png	assets/exports/pets/gold/aurora_leviathan_gold.png
+aurora_seal	basic	aurora_seal_basic	12862	assets/source/pets/aurora_seal_basic.obj	assets/exports/pets/aurora_seal_basic/	assets/exports/pets/aurora_seal_basic/aurora_seal_basic_5k.fbx	assets/exports/pets/aurora_seal_basic/aurora_seal_basic.png	assets/exports/pets/basic/aurora_seal_basic.png
+black_ice_leviathan	basic	black_ice_leviathan_basic	23242	assets/source/pets/black_ice_leviathan_basic.obj	assets/exports/pets/black_ice_leviathan_basic/	assets/exports/pets/black_ice_leviathan_basic/black_ice_leviathan_basic_5k.fbx	assets/exports/pets/black_ice_leviathan_basic/black_ice_leviathan_basic.png	assets/exports/pets/basic/black_ice_leviathan_basic.png
+black_ice_leviathan	gold	black_ice_leviathan_gold	23242	assets/source/pets/black_ice_leviathan_gold.obj	assets/exports/pets/black_ice_leviathan_gold/	assets/exports/pets/black_ice_leviathan_gold/black_ice_leviathan_gold_5k.fbx	assets/exports/pets/black_ice_leviathan_gold/black_ice_leviathan_gold.png	assets/exports/pets/gold/black_ice_leviathan_gold.png
+black_seraph	basic	black_seraph_basic	16299	assets/source/pets/black_seraph_basic.obj	assets/exports/pets/black_seraph_basic/	assets/exports/pets/black_seraph_basic/black_seraph_basic_5k.fbx	assets/exports/pets/black_seraph_basic/black_seraph_basic.png	assets/exports/pets/basic/black_seraph_basic.png
+black_seraph	gold	black_seraph_gold	16299	assets/source/pets/black_seraph_gold.obj	assets/exports/pets/black_seraph_gold/	assets/exports/pets/black_seraph_gold/black_seraph_gold_5k.fbx	assets/exports/pets/black_seraph_gold/black_seraph_gold.png	assets/exports/pets/gold/black_seraph_gold.png
+blightlamb	basic	blightlamb_basic	14516	assets/source/pets/blightlamb_basic.obj	assets/exports/pets/blightlamb_basic/	assets/exports/pets/blightlamb_basic/blightlamb_basic_5k.fbx	assets/exports/pets/blightlamb_basic/blightlamb_basic.png	assets/exports/pets/basic/blightlamb_basic.png
+blightlamb	gold	blightlamb_gold	14512	assets/source/pets/blightlamb_gold.obj	assets/exports/pets/blightlamb_gold/	assets/exports/pets/blightlamb_gold/blightlamb_gold_5k.fbx	assets/exports/pets/blightlamb_gold/blightlamb_gold.png	assets/exports/pets/gold/blightlamb_gold.png
+bloomlamb	basic	bloomlamb_basic	9110	assets/source/pets/bloomlamb_basic.obj	assets/exports/pets/bloomlamb_basic/	assets/exports/pets/bloomlamb_basic/bloomlamb_basic_5k.fbx	assets/exports/pets/bloomlamb_basic/bloomlamb_basic.png	assets/exports/pets/basic/bloomlamb_basic.png
+bloomlamb	gold	bloomlamb_gold	9110	assets/source/pets/bloomlamb_gold.obj	assets/exports/pets/bloomlamb_gold/	assets/exports/pets/bloomlamb_gold/bloomlamb_gold_5k.fbx	assets/exports/pets/bloomlamb_gold/bloomlamb_gold.png	assets/exports/pets/gold/bloomlamb_gold.png
+brimstone_salamander	basic	brimstone_salamander_basic	10478	assets/source/pets/brimstone_salamander_basic.obj	assets/exports/pets/brimstone_salamander_basic/	assets/exports/pets/brimstone_salamander_basic/brimstone_salamander_basic_5k.fbx	assets/exports/pets/brimstone_salamander_basic/brimstone_salamander_basic.png	assets/exports/pets/basic/brimstone_salamander_basic.png
+brimstone_salamander	gold	brimstone_salamander_gold	10478	assets/source/pets/brimstone_salamander_gold.obj	assets/exports/pets/brimstone_salamander_gold/	assets/exports/pets/brimstone_salamander_gold/brimstone_salamander_gold_5k.fbx	assets/exports/pets/brimstone_salamander_gold/brimstone_salamander_gold.png	assets/exports/pets/gold/brimstone_salamander_gold.png
+carrion_scarab	basic	carrion_scarab_basic	10816	assets/source/pets/carrion_scarab_basic.obj	assets/exports/pets/carrion_scarab_basic/	assets/exports/pets/carrion_scarab_basic/carrion_scarab_basic_5k.fbx	assets/exports/pets/carrion_scarab_basic/carrion_scarab_basic.png	assets/exports/pets/basic/carrion_scarab_basic.png
+carrion_scarab	gold	carrion_scarab_gold	10816	assets/source/pets/carrion_scarab_gold.obj	assets/exports/pets/carrion_scarab_gold/	assets/exports/pets/carrion_scarab_gold/carrion_scarab_gold_5k.fbx	assets/exports/pets/carrion_scarab_gold/carrion_scarab_gold.png	assets/exports/pets/gold/carrion_scarab_gold.png
+carrion_vulture	basic	carrion_vulture_basic	12458	assets/source/pets/carrion_vulture_basic.obj	assets/exports/pets/carrion_vulture_basic/	assets/exports/pets/carrion_vulture_basic/carrion_vulture_basic_5k.fbx	assets/exports/pets/carrion_vulture_basic/carrion_vulture_basic.png	assets/exports/pets/basic/carrion_vulture_basic.png
+cinder_whelp	basic	cinder_whelp_basic	11334	assets/source/pets/cinder_whelp_basic.obj	assets/exports/pets/cinder_whelp_basic/	assets/exports/pets/cinder_whelp_basic/cinder_whelp_basic_5k.fbx	assets/exports/pets/cinder_whelp_basic/cinder_whelp_basic.png	assets/exports/pets/basic/cinder_whelp_basic.png
+cinderling_imp	basic	cinderling_imp_basic	11848	assets/source/pets/cinderling_imp_basic.obj	assets/exports/pets/cinderling_imp_basic/	assets/exports/pets/cinderling_imp_basic/cinderling_imp_basic_5k.fbx	assets/exports/pets/cinderling_imp_basic/cinderling_imp_basic.png	assets/exports/pets/basic/cinderling_imp_basic.png
+cinderling_imp	gold	cinderling_imp_gold	11848	assets/source/pets/cinderling_imp_gold.obj	assets/exports/pets/cinderling_imp_gold/	assets/exports/pets/cinderling_imp_gold/cinderling_imp_gold_5k.fbx	assets/exports/pets/cinderling_imp_gold/cinderling_imp_gold.png	assets/exports/pets/gold/cinderling_imp_gold.png
+cube_dog	basic	cube_dog_basic	7004	assets/source/pets/cube_dog_basic.obj	assets/exports/pets/cube_dog_basic/	assets/exports/pets/cube_dog_basic/cube_dog_basic_5k.fbx	assets/exports/pets/cube_dog_basic/cube_dog_basic.png	assets/exports/pets/basic/cube_dog_basic.png
+dawn_camel	basic	dawn_camel_basic	6156	assets/source/pets/dawn_camel_basic.obj	assets/exports/pets/dawn_camel_basic/	assets/exports/pets/dawn_camel_basic/dawn_camel_basic_5k.fbx	assets/exports/pets/dawn_camel_basic/dawn_camel_basic.png	assets/exports/pets/basic/dawn_camel_basic.png
+dawn_camel	gold	dawn_camel_gold	6156	assets/source/pets/dawn_camel_gold.obj	assets/exports/pets/dawn_camel_gold/	assets/exports/pets/dawn_camel_gold/dawn_camel_gold_5k.fbx	assets/exports/pets/dawn_camel_gold/dawn_camel_gold.png	assets/exports/pets/gold/dawn_camel_gold.png
+dread_hare	basic	dread_hare_basic	14449	assets/source/pets/dread_hare_basic.obj	assets/exports/pets/dread_hare_basic/	assets/exports/pets/dread_hare_basic/dread_hare_basic_5k.fbx	assets/exports/pets/dread_hare_basic/dread_hare_basic.png	assets/exports/pets/basic/dread_hare_basic.png
+dread_hare	gold	dread_hare_gold	14449	assets/source/pets/dread_hare_gold.obj	assets/exports/pets/dread_hare_gold/	assets/exports/pets/dread_hare_gold/dread_hare_gold_5k.fbx	assets/exports/pets/dread_hare_gold/dread_hare_gold.png	assets/exports/pets/gold/dread_hare_gold.png
+dread_owl	basic	dread_owl_basic	11278	assets/source/pets/dread_owl_basic.obj	assets/exports/pets/dread_owl_basic/	assets/exports/pets/dread_owl_basic/dread_owl_basic_5k.fbx	assets/exports/pets/dread_owl_basic/dread_owl_basic.png	assets/exports/pets/basic/dread_owl_basic.png
+dread_owl	gold	dread_owl_gold	11278	assets/source/pets/dread_owl_gold.obj	assets/exports/pets/dread_owl_gold/	assets/exports/pets/dread_owl_gold/dread_owl_gold_5k.fbx	assets/exports/pets/dread_owl_gold/dread_owl_gold.png	assets/exports/pets/gold/dread_owl_gold.png
+dune_tortoise	basic	dune_tortoise_basic	17350	assets/source/pets/dune_tortoise_basic.obj	assets/exports/pets/dune_tortoise_basic/	assets/exports/pets/dune_tortoise_basic/dune_tortoise_basic_5k.fbx	assets/exports/pets/dune_tortoise_basic/dune_tortoise_basic.png	assets/exports/pets/basic/dune_tortoise_basic.png
+dust_camel	basic	dust_camel_basic	18084	assets/source/pets/dust_camel_basic.obj	assets/exports/pets/dust_camel_basic/	assets/exports/pets/dust_camel_basic/dust_camel_basic_5k.fbx	assets/exports/pets/dust_camel_basic/dust_camel_basic.png	assets/exports/pets/basic/dust_camel_basic.png
+dust_camel	gold	dust_camel_gold	18084	assets/source/pets/dust_camel_gold.obj	assets/exports/pets/dust_camel_gold/	assets/exports/pets/dust_camel_gold/dust_camel_gold_5k.fbx	assets/exports/pets/dust_camel_gold/dust_camel_gold.png	assets/exports/pets/gold/dust_camel_gold.png
+ember_moth	basic	ember_moth_basic	13124	assets/source/pets/ember_moth_basic.obj	assets/exports/pets/ember_moth_basic/	assets/exports/pets/ember_moth_basic/ember_moth_basic_5k.fbx	assets/exports/pets/ember_moth_basic/ember_moth_basic.png	assets/exports/pets/basic/ember_moth_basic.png
+emberling_cherub	basic	emberling_cherub_basic	12234	assets/source/pets/emberling_cherub_basic.obj	assets/exports/pets/emberling_cherub_basic/	assets/exports/pets/emberling_cherub_basic/emberling_cherub_basic_5k.fbx	assets/exports/pets/emberling_cherub_basic/emberling_cherub_basic.png	assets/exports/pets/basic/emberling_cherub_basic.png
+emberling_cherub	gold	emberling_cherub_gold	12234	assets/source/pets/emberling_cherub_gold.obj	assets/exports/pets/emberling_cherub_gold/	assets/exports/pets/emberling_cherub_gold/emberling_cherub_gold_5k.fbx	assets/exports/pets/emberling_cherub_gold/emberling_cherub_gold.png	assets/exports/pets/gold/emberling_cherub_gold.png
+empyrean_dragon	basic	empyrean_dragon_basic	13398	assets/source/pets/empyrean_dragon_basic.obj	assets/exports/pets/empyrean_dragon_basic/	assets/exports/pets/empyrean_dragon_basic/empyrean_dragon_basic_5k.fbx	assets/exports/pets/empyrean_dragon_basic/empyrean_dragon_basic.png	assets/exports/pets/basic/empyrean_dragon_basic.png
+empyrean_dragon	gold	empyrean_dragon_gold	13398	assets/source/pets/empyrean_dragon_gold.obj	assets/exports/pets/empyrean_dragon_gold/	assets/exports/pets/empyrean_dragon_gold/empyrean_dragon_gold_5k.fbx	assets/exports/pets/empyrean_dragon_gold/empyrean_dragon_gold.png	assets/exports/pets/gold/empyrean_dragon_gold.png
+frost_fox	basic	frost_fox_basic	12742	assets/source/pets/frost_fox_basic.obj	assets/exports/pets/frost_fox_basic/	assets/exports/pets/frost_fox_basic/frost_fox_basic_5k.fbx	assets/exports/pets/frost_fox_basic/frost_fox_basic.png	assets/exports/pets/basic/frost_fox_basic.png
+frostlight_hare	basic	frostlight_hare_basic	6988	assets/source/pets/frostlight_hare_basic.obj	assets/exports/pets/frostlight_hare_basic/	assets/exports/pets/frostlight_hare_basic/frostlight_hare_basic_5k.fbx	assets/exports/pets/frostlight_hare_basic/frostlight_hare_basic.png	assets/exports/pets/basic/frostlight_hare_basic.png
+frostlight_hare	gold	frostlight_hare_gold	6988	assets/source/pets/frostlight_hare_gold.obj	assets/exports/pets/frostlight_hare_gold/	assets/exports/pets/frostlight_hare_gold/frostlight_hare_gold_5k.fbx	assets/exports/pets/frostlight_hare_gold/frostlight_hare_gold.png	assets/exports/pets/gold/frostlight_hare_gold.png
+gilded_sphinx	basic	gilded_sphinx_basic	10088	assets/source/pets/gilded_sphinx_basic.obj	assets/exports/pets/gilded_sphinx_basic/	assets/exports/pets/gilded_sphinx_basic/gilded_sphinx_basic_5k.fbx	assets/exports/pets/gilded_sphinx_basic/gilded_sphinx_basic.png	assets/exports/pets/basic/gilded_sphinx_basic.png
+gilded_sphinx	gold	gilded_sphinx_gold	10088	assets/source/pets/gilded_sphinx_gold.obj	assets/exports/pets/gilded_sphinx_gold/	assets/exports/pets/gilded_sphinx_gold/gilded_sphinx_gold_5k.fbx	assets/exports/pets/gilded_sphinx_gold/gilded_sphinx_gold.png	assets/exports/pets/gold/gilded_sphinx_gold.png
+glacial_leviathan	basic	glacial_leviathan_basic	12100	assets/source/pets/glacial_leviathan_basic.obj	assets/exports/pets/glacial_leviathan_basic/	assets/exports/pets/glacial_leviathan_basic/glacial_leviathan_basic_5k.fbx	assets/exports/pets/glacial_leviathan_basic/glacial_leviathan_basic.png	assets/exports/pets/basic/glacial_leviathan_basic.png
+glacial_mammoth	basic	glacial_mammoth_basic	12573	assets/source/pets/glacial_mammoth_basic.obj	assets/exports/pets/glacial_mammoth_basic/	assets/exports/pets/glacial_mammoth_basic/glacial_mammoth_basic_5k.fbx	assets/exports/pets/glacial_mammoth_basic/glacial_mammoth_basic.png	assets/exports/pets/basic/glacial_mammoth_basic.png
+glacial_seraph	basic	glacial_seraph_basic	11438	assets/source/pets/glacial_seraph_basic.obj	assets/exports/pets/glacial_seraph_basic/	assets/exports/pets/glacial_seraph_basic/glacial_seraph_basic_5k.fbx	assets/exports/pets/glacial_seraph_basic/glacial_seraph_basic.png	assets/exports/pets/basic/glacial_seraph_basic.png
+glacial_seraph	gold	glacial_seraph_gold	11438	assets/source/pets/glacial_seraph_gold.obj	assets/exports/pets/glacial_seraph_gold/	assets/exports/pets/glacial_seraph_gold/glacial_seraph_gold_5k.fbx	assets/exports/pets/glacial_seraph_gold/glacial_seraph_gold.png	assets/exports/pets/gold/glacial_seraph_gold.png
+glass_sphinx	basic	glass_sphinx_basic	11794	assets/source/pets/glass_sphinx_basic.obj	assets/exports/pets/glass_sphinx_basic/	assets/exports/pets/glass_sphinx_basic/glass_sphinx_basic_5k.fbx	assets/exports/pets/glass_sphinx_basic/glass_sphinx_basic.png	assets/exports/pets/basic/glass_sphinx_basic.png
+glass_sphinx	gold	glass_sphinx_gold	11794	assets/source/pets/glass_sphinx_gold.obj	assets/exports/pets/glass_sphinx_gold/	assets/exports/pets/glass_sphinx_gold/glass_sphinx_gold_5k.fbx	assets/exports/pets/glass_sphinx_gold/glass_sphinx_gold.png	assets/exports/pets/gold/glass_sphinx_gold.png
+golden_scarab	basic	golden_scarab_basic	6816	assets/source/pets/golden_scarab_basic.obj	assets/exports/pets/golden_scarab_basic/	assets/exports/pets/golden_scarab_basic/golden_scarab_basic_5k.fbx	assets/exports/pets/golden_scarab_basic/golden_scarab_basic.png	assets/exports/pets/basic/golden_scarab_basic.png
+goldleaf_stag	basic	goldleaf_stag_basic	12416	assets/source/pets/goldleaf_stag_basic.obj	assets/exports/pets/goldleaf_stag_basic/	assets/exports/pets/goldleaf_stag_basic/goldleaf_stag_basic_5k.fbx	assets/exports/pets/goldleaf_stag_basic/goldleaf_stag_basic.png	assets/exports/pets/basic/goldleaf_stag_basic.png
+goldleaf_stag	gold	goldleaf_stag_gold	12416	assets/source/pets/goldleaf_stag_gold.obj	assets/exports/pets/goldleaf_stag_gold/	assets/exports/pets/goldleaf_stag_gold/goldleaf_stag_gold_5k.fbx	assets/exports/pets/goldleaf_stag_gold/goldleaf_stag_gold.png	assets/exports/pets/gold/goldleaf_stag_gold.png
+gravewood_ent	basic	gravewood_ent_basic	16990	assets/source/pets/gravewood_ent_basic.obj	assets/exports/pets/gravewood_ent_basic/	assets/exports/pets/gravewood_ent_basic/gravewood_ent_basic_5k.fbx	assets/exports/pets/gravewood_ent_basic/gravewood_ent_basic.png	assets/exports/pets/basic/gravewood_ent_basic.png
+gravewood_ent	gold	gravewood_ent_gold	16990	assets/source/pets/gravewood_ent_gold.obj	assets/exports/pets/gravewood_ent_gold/	assets/exports/pets/gravewood_ent_gold/gravewood_ent_gold_5k.fbx	assets/exports/pets/gravewood_ent_gold/gravewood_ent_gold.png	assets/exports/pets/gold/gravewood_ent_gold.png
+grumpy_cat	basic	grumpy_cat_basic	7500	assets/source/pets/grumpy_cat_basic.obj	assets/exports/pets/grumpy_cat_basic/	assets/exports/pets/grumpy_cat_basic/grumpy_cat_basic_5k.fbx	assets/exports/pets/grumpy_cat_basic/grumpy_cat_basic.png	assets/exports/pets/basic/grumpy_cat_basic.png
+halo_hare	basic	halo_hare_basic	14008	assets/source/pets/halo_hare_basic.obj	assets/exports/pets/halo_hare_basic/	assets/exports/pets/halo_hare_basic/halo_hare_basic_5k.fbx	assets/exports/pets/halo_hare_basic/halo_hare_basic.png	assets/exports/pets/basic/halo_hare_basic.png
+halo_hare	gold	halo_hare_gold	14008	assets/source/pets/halo_hare_gold.obj	assets/exports/pets/halo_hare_gold/	assets/exports/pets/halo_hare_gold/halo_hare_gold_5k.fbx	assets/exports/pets/halo_hare_gold/halo_hare_gold.png	assets/exports/pets/gold/halo_hare_gold.png
+jackalope	basic	jackalope_basic	16812	assets/source/pets/jackalope_basic.obj	assets/exports/pets/jackalope_basic/	assets/exports/pets/jackalope_basic/jackalope_basic_5k.fbx	assets/exports/pets/jackalope_basic/jackalope_basic.png	assets/exports/pets/basic/jackalope_basic.png
+magma_wyrm	basic	magma_wyrm_basic	11782	assets/source/pets/magma_wyrm_basic.obj	assets/exports/pets/magma_wyrm_basic/	assets/exports/pets/magma_wyrm_basic/magma_wyrm_basic_5k.fbx	assets/exports/pets/magma_wyrm_basic/magma_wyrm_basic.png	assets/exports/pets/basic/magma_wyrm_basic.png
+mirage_jackal	basic	mirage_jackal_basic	8444	assets/source/pets/mirage_jackal_basic.obj	assets/exports/pets/mirage_jackal_basic/	assets/exports/pets/mirage_jackal_basic/mirage_jackal_basic_5k.fbx	assets/exports/pets/mirage_jackal_basic/mirage_jackal_basic.png	assets/exports/pets/basic/mirage_jackal_basic.png
+mirage_jackal	gold	mirage_jackal_gold	8444	assets/source/pets/mirage_jackal_gold.obj	assets/exports/pets/mirage_jackal_gold/	assets/exports/pets/mirage_jackal_gold/mirage_jackal_gold_5k.fbx	assets/exports/pets/mirage_jackal_gold/mirage_jackal_gold.png	assets/exports/pets/gold/mirage_jackal_gold.png
+molten_rhino	basic	molten_rhino_basic	17488	assets/source/pets/molten_rhino_basic.obj	assets/exports/pets/molten_rhino_basic/	assets/exports/pets/molten_rhino_basic/molten_rhino_basic_5k.fbx	assets/exports/pets/molten_rhino_basic/molten_rhino_basic.png	assets/exports/pets/basic/molten_rhino_basic.png
+phantom_jackal	basic	phantom_jackal_basic	14014	assets/source/pets/phantom_jackal_basic.obj	assets/exports/pets/phantom_jackal_basic/	assets/exports/pets/phantom_jackal_basic/phantom_jackal_basic_5k.fbx	assets/exports/pets/phantom_jackal_basic/phantom_jackal_basic.png	assets/exports/pets/basic/phantom_jackal_basic.png
+phantom_jackal	gold	phantom_jackal_gold	14014	assets/source/pets/phantom_jackal_gold.obj	assets/exports/pets/phantom_jackal_gold/	assets/exports/pets/phantom_jackal_gold/phantom_jackal_gold_5k.fbx	assets/exports/pets/phantom_jackal_gold/phantom_jackal_gold.png	assets/exports/pets/gold/phantom_jackal_gold.png
+radiant_salamander	basic	radiant_salamander_basic	18207	assets/source/pets/radiant_salamander_basic.obj	assets/exports/pets/radiant_salamander_basic/	assets/exports/pets/radiant_salamander_basic/radiant_salamander_basic_5k.fbx	assets/exports/pets/radiant_salamander_basic/radiant_salamander_basic.png	assets/exports/pets/basic/radiant_salamander_basic.png
+radiant_salamander	gold	radiant_salamander_gold	18207	assets/source/pets/radiant_salamander_gold.obj	assets/exports/pets/radiant_salamander_gold/	assets/exports/pets/radiant_salamander_gold/radiant_salamander_gold_5k.fbx	assets/exports/pets/radiant_salamander_gold/radiant_salamander_gold.png	assets/exports/pets/gold/radiant_salamander_gold.png
+raven	basic	raven_basic	12588	assets/source/pets/raven_basic.obj	assets/exports/pets/raven_basic/	assets/exports/pets/raven_basic/raven_basic_5k.fbx	assets/exports/pets/raven_basic/raven_basic.png	assets/exports/pets/basic/raven_basic.png
+rimelight_hare	basic	rimelight_hare_basic	11962	assets/source/pets/rimelight_hare_basic.obj	assets/exports/pets/rimelight_hare_basic/	assets/exports/pets/rimelight_hare_basic/rimelight_hare_basic_5k.fbx	assets/exports/pets/rimelight_hare_basic/rimelight_hare_basic.png	assets/exports/pets/basic/rimelight_hare_basic.png
+rimelight_hare	gold	rimelight_hare_gold	11962	assets/source/pets/rimelight_hare_gold.obj	assets/exports/pets/rimelight_hare_gold/	assets/exports/pets/rimelight_hare_gold/rimelight_hare_gold_5k.fbx	assets/exports/pets/rimelight_hare_gold/rimelight_hare_gold.png	assets/exports/pets/gold/rimelight_hare_gold.png
+rimewraith_fox	basic	rimewraith_fox_basic	10823	assets/source/pets/rimewraith_fox_basic.obj	assets/exports/pets/rimewraith_fox_basic/	assets/exports/pets/rimewraith_fox_basic/rimewraith_fox_basic_5k.fbx	assets/exports/pets/rimewraith_fox_basic/rimewraith_fox_basic.png	assets/exports/pets/basic/rimewraith_fox_basic.png
+rimewraith_fox	gold	rimewraith_fox_gold	10821	assets/source/pets/rimewraith_fox_gold.obj	assets/exports/pets/rimewraith_fox_gold/	assets/exports/pets/rimewraith_fox_gold/rimewraith_fox_gold_5k.fbx	assets/exports/pets/rimewraith_fox_gold/rimewraith_fox_gold.png	assets/exports/pets/gold/rimewraith_fox_gold.png
+rotleaf_stag	basic	rotleaf_stag_basic	13182	assets/source/pets/rotleaf_stag_basic.obj	assets/exports/pets/rotleaf_stag_basic/	assets/exports/pets/rotleaf_stag_basic/rotleaf_stag_basic_5k.fbx	assets/exports/pets/rotleaf_stag_basic/rotleaf_stag_basic.png	assets/exports/pets/basic/rotleaf_stag_basic.png
+rotleaf_stag	gold	rotleaf_stag_gold	13182	assets/source/pets/rotleaf_stag_gold.obj	assets/exports/pets/rotleaf_stag_gold/	assets/exports/pets/rotleaf_stag_gold/rotleaf_stag_gold_5k.fbx	assets/exports/pets/rotleaf_stag_gold/rotleaf_stag_gold.png	assets/exports/pets/gold/rotleaf_stag_gold.png
+sand_jackal	basic	sand_jackal_basic	13138	assets/source/pets/sand_jackal_basic.obj	assets/exports/pets/sand_jackal_basic/	assets/exports/pets/sand_jackal_basic/sand_jackal_basic_5k.fbx	assets/exports/pets/sand_jackal_basic/sand_jackal_basic.png	assets/exports/pets/basic/sand_jackal_basic.png
+sand_scorpion	basic	sand_scorpion_basic	11128	assets/source/pets/sand_scorpion_basic.obj	assets/exports/pets/sand_scorpion_basic/	assets/exports/pets/sand_scorpion_basic/sand_scorpion_basic_5k.fbx	assets/exports/pets/sand_scorpion_basic/sand_scorpion_basic.png	assets/exports/pets/basic/sand_scorpion_basic.png
+seraph_owl	basic	seraph_owl_basic	7127	assets/source/pets/seraph_owl_basic.obj	assets/exports/pets/seraph_owl_basic/	assets/exports/pets/seraph_owl_basic/seraph_owl_basic_5k.fbx	assets/exports/pets/seraph_owl_basic/seraph_owl_basic.png	assets/exports/pets/basic/seraph_owl_basic.png
+seraph_owl	gold	seraph_owl_gold	7127	assets/source/pets/seraph_owl_gold.obj	assets/exports/pets/seraph_owl_gold/	assets/exports/pets/seraph_owl_gold/seraph_owl_gold_5k.fbx	assets/exports/pets/seraph_owl_gold/seraph_owl_gold.png	assets/exports/pets/gold/seraph_owl_gold.png
+snowy_owl	basic	snowy_owl_basic	14678	assets/source/pets/snowy_owl_basic.obj	assets/exports/pets/snowy_owl_basic/	assets/exports/pets/snowy_owl_basic/snowy_owl_basic_5k.fbx	assets/exports/pets/snowy_owl_basic/snowy_owl_basic.png	assets/exports/pets/basic/snowy_owl_basic.png
+solar_phoenix	basic	solar_phoenix_basic	17672	assets/source/pets/solar_phoenix_basic.obj	assets/exports/pets/solar_phoenix_basic/	assets/exports/pets/solar_phoenix_basic/solar_phoenix_basic_5k.fbx	assets/exports/pets/solar_phoenix_basic/solar_phoenix_basic.png	assets/exports/pets/basic/solar_phoenix_basic.png
+solar_phoenix	gold	solar_phoenix_gold	17672	assets/source/pets/solar_phoenix_gold.obj	assets/exports/pets/solar_phoenix_gold/	assets/exports/pets/solar_phoenix_gold/solar_phoenix_gold_5k.fbx	assets/exports/pets/solar_phoenix_gold/solar_phoenix_gold.png	assets/exports/pets/gold/solar_phoenix_gold.png
+solar_roc	basic	solar_roc_basic	11313	assets/source/pets/solar_roc_basic.obj	assets/exports/pets/solar_roc_basic/	assets/exports/pets/solar_roc_basic/solar_roc_basic_5k.fbx	assets/exports/pets/solar_roc_basic/solar_roc_basic.png	assets/exports/pets/basic/solar_roc_basic.png
+solar_roc	gold	solar_roc_gold	11313	assets/source/pets/solar_roc_gold.obj	assets/exports/pets/solar_roc_gold/	assets/exports/pets/solar_roc_gold/solar_roc_gold_5k.fbx	assets/exports/pets/solar_roc_gold/solar_roc_gold.png	assets/exports/pets/gold/solar_roc_gold.png
+sun_scarab	basic	sun_scarab_basic	11060	assets/source/pets/sun_scarab_basic.obj	assets/exports/pets/sun_scarab_basic/	assets/exports/pets/sun_scarab_basic/sun_scarab_basic_5k.fbx	assets/exports/pets/sun_scarab_basic/sun_scarab_basic.png	assets/exports/pets/basic/sun_scarab_basic.png
+sun_scarab	gold	sun_scarab_gold	11060	assets/source/pets/sun_scarab_gold.obj	assets/exports/pets/sun_scarab_gold/	assets/exports/pets/sun_scarab_gold/sun_scarab_gold_5k.fbx	assets/exports/pets/sun_scarab_gold/sun_scarab_gold.png	assets/exports/pets/gold/sun_scarab_gold.png
+sunmane_lion	basic	sunmane_lion_basic	19226	assets/source/pets/sunmane_lion_basic.obj	assets/exports/pets/sunmane_lion_basic/	assets/exports/pets/sunmane_lion_basic/sunmane_lion_basic_5k.fbx	assets/exports/pets/sunmane_lion_basic/sunmane_lion_basic.png	assets/exports/pets/basic/sunmane_lion_basic.png
+sunmane_lion	gold	sunmane_lion_gold	19226	assets/source/pets/sunmane_lion_gold.obj	assets/exports/pets/sunmane_lion_gold/	assets/exports/pets/sunmane_lion_gold/sunmane_lion_gold_5k.fbx	assets/exports/pets/sunmane_lion_gold/sunmane_lion_gold.png	assets/exports/pets/gold/sunmane_lion_gold.png
+verdant_sprite	basic	verdant_sprite_basic	17182	assets/source/pets/verdant_sprite_basic.obj	assets/exports/pets/verdant_sprite_basic/	assets/exports/pets/verdant_sprite_basic/verdant_sprite_basic_5k.fbx	assets/exports/pets/verdant_sprite_basic/verdant_sprite_basic.png	assets/exports/pets/basic/verdant_sprite_basic.png
+verdant_sprite	gold	verdant_sprite_gold	17182	assets/source/pets/verdant_sprite_gold.obj	assets/exports/pets/verdant_sprite_gold/	assets/exports/pets/verdant_sprite_gold/verdant_sprite_gold_5k.fbx	assets/exports/pets/verdant_sprite_gold/verdant_sprite_gold.png	assets/exports/pets/gold/verdant_sprite_gold.png
+wither_sprite	basic	wither_sprite_basic	26633	assets/source/pets/wither_sprite_basic.obj	assets/exports/pets/wither_sprite_basic/	assets/exports/pets/wither_sprite_basic/wither_sprite_basic_5k.fbx	assets/exports/pets/wither_sprite_basic/wither_sprite_basic.png	assets/exports/pets/basic/wither_sprite_basic.png
+wither_sprite	gold	wither_sprite_gold	26633	assets/source/pets/wither_sprite_gold.obj	assets/exports/pets/wither_sprite_gold/	assets/exports/pets/wither_sprite_gold/wither_sprite_gold_5k.fbx	assets/exports/pets/wither_sprite_gold/wither_sprite_gold.png	assets/exports/pets/gold/wither_sprite_gold.png
+worldroot_ent	basic	worldroot_ent_basic	12026	assets/source/pets/worldroot_ent_basic.obj	assets/exports/pets/worldroot_ent_basic/	assets/exports/pets/worldroot_ent_basic/worldroot_ent_basic_5k.fbx	assets/exports/pets/worldroot_ent_basic/worldroot_ent_basic.png	assets/exports/pets/basic/worldroot_ent_basic.png
+worldroot_ent	gold	worldroot_ent_gold	12026	assets/source/pets/worldroot_ent_gold.obj	assets/exports/pets/worldroot_ent_gold/	assets/exports/pets/worldroot_ent_gold/worldroot_ent_gold_5k.fbx	assets/exports/pets/worldroot_ent_gold/worldroot_ent_gold.png	assets/exports/pets/gold/worldroot_ent_gold.png
+
+Batch contact sheets:
+  [OK] assets/exports/pets/lava_pets_2026-06-14_contact_sheet.png
+  [OK] assets/exports/pets/desert_pets_2026-06-14_contact_sheet.png
+  [OK] assets/exports/pets/ice_pets_2026-06-14_contact_sheet.png
+  [OK] assets/exports/pets/premium_pets_2026-06-15_basic_contact_sheet.png
+  [OK] assets/exports/pets/premium_pets_2026-06-15_gold_contact_sheet.png
+  [OK] assets/exports/pets/nature_pets_2026-06-16_basic_contact_sheet.png
+  [OK] assets/exports/pets/nature_pets_2026-06-16_gold_contact_sheet.png
+  [OK] assets/exports/pets/sun_pets_2026-06-16_basic_contact_sheet.png
+  [OK] assets/exports/pets/sun_pets_2026-06-16_gold_contact_sheet.png
+  [OK] assets/exports/pets/blight_pets_2026-06-16_basic_contact_sheet.png
+  [OK] assets/exports/pets/blight_pets_2026-06-16_gold_contact_sheet.png
+  [OK] assets/exports/pets/basic_models_contact_sheet.png
+  [OK] assets/exports/pets/gold_models_contact_sheet.png
+
+Batch import manifests (assets/ui/imports/):
+  assets/ui/imports/manifest_2026-06-14_desert_pets.txt
+  assets/ui/imports/manifest_2026-06-14_ice_pets.txt
+  assets/ui/imports/manifest_2026-06-14_lava_pets.txt
+  assets/ui/imports/manifest_2026-06-14_pet_models.txt
+  assets/ui/imports/manifest_2026-06-15_premium_pets.txt
+  assets/ui/imports/manifest_2026-06-16_blight_pets.txt
+  assets/ui/imports/manifest_2026-06-16_nature_pets.txt
+  assets/ui/imports/manifest_2026-06-16_sun_pets.txt
+
+================================================================================
+EGGS
+================================================================================
+
+Canonical manifests:
+  assets/source/eggs/manifest.txt
+  assets/exports/eggs/manifest.txt
+  assets/ui/imports/manifest_2026-06-16_eggs.txt
+
+2D icon contact sheet:
+  assets/source/eggs/eggs_2026-06-16_contact_sheet.png
+
+--- 2D inventory icons (transparent PNG) ---
+egg_id	icon_png
+colorado_egg	assets/source/eggs/colorado_egg.png
+colorado_egg_back	assets/source/eggs/colorado_egg_back.png
+colorado_egg_left	assets/source/eggs/colorado_egg_left.png
+colorado_egg_right	assets/source/eggs/colorado_egg_right.png
+ash_egg	assets/source/eggs/ash_egg.png
+blight_egg	assets/source/eggs/blight_egg.png
+black_ice_egg	assets/source/eggs/black_ice_egg.png
+infernal_egg	assets/source/eggs/infernal_egg.png
+gilded_egg	assets/source/eggs/gilded_egg.png
+bloom_egg	assets/source/eggs/bloom_egg.png
+aurora_egg	assets/source/eggs/aurora_egg.png
+solar_egg	assets/source/eggs/solar_egg.png
+
+--- 3D meshes ---
+egg_id	source_tris	source_obj	export_dir	recommended_fbx	mesh_texture
+ash_egg	13270	assets/source/eggs/ash_egg/ash_egg.obj	assets/exports/eggs/ash_egg/	assets/exports/eggs/ash_egg/ash_egg_5k.fbx	assets/exports/eggs/ash_egg/ash_egg.png
+blight_egg	1508	assets/source/eggs/blight_egg/blight_egg.obj	assets/exports/eggs/blight_egg/	assets/exports/eggs/blight_egg/blight_egg_5k.fbx	assets/exports/eggs/blight_egg/blight_egg.png
+black_ice_egg	13353	assets/source/eggs/black_ice_egg/black_ice_egg.obj	assets/exports/eggs/black_ice_egg/	assets/exports/eggs/black_ice_egg/black_ice_egg_5k.fbx	assets/exports/eggs/black_ice_egg/black_ice_egg.png
+infernal_egg	11886	assets/source/eggs/infernal_egg/infernal_egg.obj	assets/exports/eggs/infernal_egg/	assets/exports/eggs/infernal_egg/infernal_egg_5k.fbx	assets/exports/eggs/infernal_egg/infernal_egg.png
+gilded_egg	12126	assets/source/eggs/gilded_egg/gilded_egg.obj	assets/exports/eggs/gilded_egg/	assets/exports/eggs/gilded_egg/gilded_egg_5k.fbx	assets/exports/eggs/gilded_egg/gilded_egg.png
+bloom_egg	15754	assets/source/eggs/bloom_egg/bloom_egg.obj	assets/exports/eggs/bloom_egg/	assets/exports/eggs/bloom_egg/bloom_egg_5k.fbx	assets/exports/eggs/bloom_egg/bloom_egg.png
+aurora_egg	1022	assets/source/eggs/aurora_egg/aurora_egg.obj	assets/exports/eggs/aurora_egg/	assets/exports/eggs/aurora_egg/aurora_egg_5k.fbx	assets/exports/eggs/aurora_egg/aurora_egg.png
+solar_egg	4508	assets/source/eggs/solar_egg/solar_egg.obj	assets/exports/eggs/solar_egg/	assets/exports/eggs/solar_egg/solar_egg_5k.fbx	assets/exports/eggs/solar_egg/solar_egg.png
+colorado_egg	1461	assets/source/eggs/colorado_egg/colorado_egg.obj	assets/exports/eggs/colorado_egg/	(native OBJ copy — no FBX decimation)	assets/source/eggs/colorado_egg/colorado_egg.png

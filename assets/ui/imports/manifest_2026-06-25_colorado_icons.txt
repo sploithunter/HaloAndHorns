@@ -1,0 +1,31 @@
+# Colorado-themed UI icons (2026-06-25)
+# Source: ~/Downloads/colorado_green_screen_icons/
+# Pipeline: normalize_icons.py --background-mode green (edge-connected key + despill)
+
+asset_name	download_source	background_mode
+armor_chest.png	armor_chest_colorado_green.png	green
+arrow_right.png	arrow_right_colorado_green.png	green
+fist_impact.png	fist_impact_colorado_green.png	green
+hand_stop.png	hand_stop_colorado_green.png	green
+star_sparkle.png	star_sparkle_colorado_green.png	green
+
+## Destination
+
+assets/ui/colorado_icons/
+
+## Processing
+
+for f in ~/Downloads/colorado_green_screen_icons/*_colorado_green.png; do
+  stem=$(basename "$f" .png); stem=${stem%_colorado_green}
+  python3 scripts/normalize_icons.py "$f" "assets/ui/colorado_icons/${stem}.png" \
+    --background-mode green --padding 4
+done
+
+python3 scripts/build_icon_contact_sheet.py --rebuild-from assets/ui/colorado_icons \
+  --contact-sheet assets/ui/colorado_icons/contact_sheet.png
+
+## Notes
+
+- Colorado palette (state-flag red/blue/gold on white disk) — separate from element color sets.
+- Not recolored from blue_icons; authored green-screen exports keyed directly.
+- Upload via scripts/upload_icons.js when ready to wire rbxassetid into configs.

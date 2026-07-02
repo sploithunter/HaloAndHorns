@@ -1,0 +1,13 @@
+{
+  "_note": "DECAL ids from Open Cloud (re-upload of the transparent-center frames). Resolve to IMAGE ids in Studio: InsertService:LoadAsset(decalId):FindFirstChildWhichIsA('Decal').Texture -> write pill_ids.images.json + configs/pill_ui.lua.",
+  "sapphire_pill_frame": "128128563172829",
+  "emerald_pill_frame": "89624404733351",
+  "ruby_pill_frame": "129539091838946",
+  "citrine_pill_frame": "114128136590155",
+  "neutral_pill_frame": "83234502753083",
+  "sapphire_pill_panel": "91684191731034",
+  "emerald_pill_panel": "102169719096089",
+  "ruby_pill_panel": "126177005184086",
+  "citrine_pill_panel": "128900253648532",
+  "neutral_pill_panel": "75188860125738"
+}

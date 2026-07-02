@@ -1,0 +1,8 @@
+[package]
+name = "vyon/profilestore"
+description = "Fork of [ProfileStore](https://github.com/MadStudioRoblox/ProfileStore) uses shared realm instead of server"
+version = "1.0.3"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]

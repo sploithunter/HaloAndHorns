@@ -1,0 +1,151 @@
+# Blight pet 3D model import (2026-06-16)
+# 20 species × basic + gold = 40 meshes
+
+## Preview images
+Basic PNGs -> assets/exports/pets/basic/{pet}_basic.png
+Gold PNGs   -> assets/exports/pets/gold/{pet}_gold.png
+Contact sheets:
+  assets/exports/pets/blight_pets_2026-06-16_basic_contact_sheet.png
+  assets/exports/pets/blight_pets_2026-06-16_gold_contact_sheet.png
+
+## Processing
+
+for stem in \
+  wither_sprite_basic \
+  wither_sprite_gold \
+  ash_roc_basic \
+  ash_roc_gold \
+  dust_camel_basic \
+  dust_camel_gold \
+  glass_sphinx_basic \
+  glass_sphinx_gold \
+  phantom_jackal_basic \
+  phantom_jackal_gold \
+  carrion_scarab_basic \
+  carrion_scarab_gold \
+  gravewood_ent_basic \
+  gravewood_ent_gold \
+  rotleaf_stag_basic \
+  rotleaf_stag_gold \
+  dread_hare_basic \
+  dread_hare_gold \
+  blightlamb_basic \
+  blightlamb_gold \
+  abyssal_wyrm_basic \
+  abyssal_wyrm_gold \
+  brimstone_salamander_basic \
+  brimstone_salamander_gold \
+  ashfeather_phoenix_basic \
+  ashfeather_phoenix_gold \
+  ashmane_lion_basic \
+  ashmane_lion_gold \
+  rimelight_hare_basic \
+  rimelight_hare_gold \
+  black_ice_leviathan_basic \
+  black_ice_leviathan_gold \
+  black_seraph_basic \
+  black_seraph_gold \
+  dread_owl_basic \
+  dread_owl_gold \
+  rimewraith_fox_basic \
+  rimewraith_fox_gold \
+  cinderling_imp_basic \
+  cinderling_imp_gold; do
+  bash scripts/decimate_mesh.sh "assets/source/pets/${stem}.obj" \
+    --output "assets/exports/pets/${stem}" \
+    --targets 5000,7500,10000
+done
+
+## Source
+
+pet	variant	stem	download_zip	preview_png	original_tris
+wither_sprite	basic	wither_sprite_basic	Wither Sprite.zip	Wither Sprite.png	26633
+wither_sprite	gold	wither_sprite_gold	Wither Sprite Gold.zip	Wither Sprite Gold.png	26633
+ash_roc	basic	ash_roc_basic	Ash Roc.zip	Ash Roc.png	19076
+ash_roc	gold	ash_roc_gold	Ash Roc Gold.zip	Ash Roc Gold.png	19058
+dust_camel	basic	dust_camel_basic	Dust Camel.zip	Dust Camel.png	18084
+dust_camel	gold	dust_camel_gold	Dust Camel Gold.zip	Dust Camel Gold.png	18084
+glass_sphinx	basic	glass_sphinx_basic	Glass Sphinx.zip	Glass Sphinx.png	11794
+glass_sphinx	gold	glass_sphinx_gold	Glass Sphinx Gold.zip	Glass Sphinx Gold.png	11794
+phantom_jackal	basic	phantom_jackal_basic	Phantom Jackal.zip	Phantom Jackal.png	14014
+phantom_jackal	gold	phantom_jackal_gold	Phantom Jackal Gold.zip	Phantom Jackal Gold.png	14014
+carrion_scarab	basic	carrion_scarab_basic	Carrion Scarab.zip	Carrion Scarab.png	10816
+carrion_scarab	gold	carrion_scarab_gold	Carrion Scarab Gold.zip	Carrion Scarab Gold.png	10816
+gravewood_ent	basic	gravewood_ent_basic	Gravewood Ent.zip	Gravewood Ent.png	16990
+gravewood_ent	gold	gravewood_ent_gold	Gravewood Ent Gold.zip	Gravewood Ent Gold.png	16990
+rotleaf_stag	basic	rotleaf_stag_basic	Rotleaf Stag.zip	Rotleaf Stag.png	13182
+rotleaf_stag	gold	rotleaf_stag_gold	Rotleaf Stag Gold.zip	Rotleaf Stag Gold.png	13182
+dread_hare	basic	dread_hare_basic	Dread Hare.zip	Dread Hare.png	14449
+dread_hare	gold	dread_hare_gold	Dread Hare Gold.zip	Dread Hare Gold.png	14449
+blightlamb	basic	blightlamb_basic	Blightlamb.zip	Blightlamb.png	14516
+blightlamb	gold	blightlamb_gold	Blightlamb Gold.zip	Blightlamb Gold.png	14512
+abyssal_wyrm	basic	abyssal_wyrm_basic	Abyssal Wyrm.zip	Abyssal Wyrm.png	15078
+abyssal_wyrm	gold	abyssal_wyrm_gold	Abyssal Wyrm Gold.zip	Abyssal Wyrm Gold.png	15078
+brimstone_salamander	basic	brimstone_salamander_basic	Brimstone Salamander.zip	Brimstone Salamander.png	10478
+brimstone_salamander	gold	brimstone_salamander_gold	Brimstone Salamander Gold.zip	Brimstone Salamander Gold.png	10478
+ashfeather_phoenix	basic	ashfeather_phoenix_basic	Ashfeather Phoenix.zip	Ashfeather Phoenix.png	22337
+ashfeather_phoenix	gold	ashfeather_phoenix_gold	Ashfeather Phoenix Gold.zip	Ashfeather Phoenix Gold.png	22337
+ashmane_lion	basic	ashmane_lion_basic	Ashmane Lion.zip	Ashmane Lion.png	11892
+ashmane_lion	gold	ashmane_lion_gold	Ashmane Lion Gold.zip	Ashmane Lion Gold.png	11892
+rimelight_hare	basic	rimelight_hare_basic	Rimelight Hare.zip	Rimelight Hare.png	11962
+rimelight_hare	gold	rimelight_hare_gold	Rimelight Hare Gold.zip	Rimelight Hare Gold.png	11962
+black_ice_leviathan	basic	black_ice_leviathan_basic	Black-Ice Leviathan.zip	Black-Ice Leviathan.png	23242
+black_ice_leviathan	gold	black_ice_leviathan_gold	Black-Ice Leviathan Gold.zip	Black-Ice Leviathan Gold.png	23242
+black_seraph	basic	black_seraph_basic	Black Seraph.zip	Black Seraph.png	16299
+black_seraph	gold	black_seraph_gold	Black Seraph Gold.zip	Black Seraph Gold.png	16299
+dread_owl	basic	dread_owl_basic	Dread Owl.zip	Dread Owl.png	11278
+dread_owl	gold	dread_owl_gold	Dread Owl Gold.zip	Dread Owl Gold.png	11278
+rimewraith_fox	basic	rimewraith_fox_basic	Rimewraith Fox.zip	Rimewraith Fox.png	10823
+rimewraith_fox	gold	rimewraith_fox_gold	Rimewraith Fox Gold.zip	Rimewraith Fox Gold.png	10821
+cinderling_imp	basic	cinderling_imp_basic	Cinderling Imp.zip	Cinderling Imp.png	11848
+cinderling_imp	gold	cinderling_imp_gold	Cinderling Imp Gold.zip	Cinderling Imp Gold.png	11848
+
+## Exports (recommended upload per mesh)
+
+pet	variant	recommended_fbx	mesh_texture	preview_image
+wither_sprite	basic	assets/exports/pets/wither_sprite_basic/wither_sprite_basic_5k.fbx	assets/exports/pets/wither_sprite_basic/wither_sprite_basic.png	assets/exports/pets/basic/wither_sprite_basic.png
+wither_sprite	gold	assets/exports/pets/wither_sprite_gold/wither_sprite_gold_5k.fbx	assets/exports/pets/wither_sprite_gold/wither_sprite_gold.png	assets/exports/pets/gold/wither_sprite_gold.png
+ash_roc	basic	assets/exports/pets/ash_roc_basic/ash_roc_basic_5k.fbx	assets/exports/pets/ash_roc_basic/ash_roc_basic.png	assets/exports/pets/basic/ash_roc_basic.png
+ash_roc	gold	assets/exports/pets/ash_roc_gold/ash_roc_gold_5k.fbx	assets/exports/pets/ash_roc_gold/ash_roc_gold.png	assets/exports/pets/gold/ash_roc_gold.png
+dust_camel	basic	assets/exports/pets/dust_camel_basic/dust_camel_basic_5k.fbx	assets/exports/pets/dust_camel_basic/dust_camel_basic.png	assets/exports/pets/basic/dust_camel_basic.png
+dust_camel	gold	assets/exports/pets/dust_camel_gold/dust_camel_gold_5k.fbx	assets/exports/pets/dust_camel_gold/dust_camel_gold.png	assets/exports/pets/gold/dust_camel_gold.png
+glass_sphinx	basic	assets/exports/pets/glass_sphinx_basic/glass_sphinx_basic_5k.fbx	assets/exports/pets/glass_sphinx_basic/glass_sphinx_basic.png	assets/exports/pets/basic/glass_sphinx_basic.png
+glass_sphinx	gold	assets/exports/pets/glass_sphinx_gold/glass_sphinx_gold_5k.fbx	assets/exports/pets/glass_sphinx_gold/glass_sphinx_gold.png	assets/exports/pets/gold/glass_sphinx_gold.png
+phantom_jackal	basic	assets/exports/pets/phantom_jackal_basic/phantom_jackal_basic_5k.fbx	assets/exports/pets/phantom_jackal_basic/phantom_jackal_basic.png	assets/exports/pets/basic/phantom_jackal_basic.png
+phantom_jackal	gold	assets/exports/pets/phantom_jackal_gold/phantom_jackal_gold_5k.fbx	assets/exports/pets/phantom_jackal_gold/phantom_jackal_gold.png	assets/exports/pets/gold/phantom_jackal_gold.png
+carrion_scarab	basic	assets/exports/pets/carrion_scarab_basic/carrion_scarab_basic_5k.fbx	assets/exports/pets/carrion_scarab_basic/carrion_scarab_basic.png	assets/exports/pets/basic/carrion_scarab_basic.png
+carrion_scarab	gold	assets/exports/pets/carrion_scarab_gold/carrion_scarab_gold_5k.fbx	assets/exports/pets/carrion_scarab_gold/carrion_scarab_gold.png	assets/exports/pets/gold/carrion_scarab_gold.png
+gravewood_ent	basic	assets/exports/pets/gravewood_ent_basic/gravewood_ent_basic_5k.fbx	assets/exports/pets/gravewood_ent_basic/gravewood_ent_basic.png	assets/exports/pets/basic/gravewood_ent_basic.png
+gravewood_ent	gold	assets/exports/pets/gravewood_ent_gold/gravewood_ent_gold_5k.fbx	assets/exports/pets/gravewood_ent_gold/gravewood_ent_gold.png	assets/exports/pets/gold/gravewood_ent_gold.png
+rotleaf_stag	basic	assets/exports/pets/rotleaf_stag_basic/rotleaf_stag_basic_5k.fbx	assets/exports/pets/rotleaf_stag_basic/rotleaf_stag_basic.png	assets/exports/pets/basic/rotleaf_stag_basic.png
+rotleaf_stag	gold	assets/exports/pets/rotleaf_stag_gold/rotleaf_stag_gold_5k.fbx	assets/exports/pets/rotleaf_stag_gold/rotleaf_stag_gold.png	assets/exports/pets/gold/rotleaf_stag_gold.png
+dread_hare	basic	assets/exports/pets/dread_hare_basic/dread_hare_basic_5k.fbx	assets/exports/pets/dread_hare_basic/dread_hare_basic.png	assets/exports/pets/basic/dread_hare_basic.png
+dread_hare	gold	assets/exports/pets/dread_hare_gold/dread_hare_gold_5k.fbx	assets/exports/pets/dread_hare_gold/dread_hare_gold.png	assets/exports/pets/gold/dread_hare_gold.png
+blightlamb	basic	assets/exports/pets/blightlamb_basic/blightlamb_basic_5k.fbx	assets/exports/pets/blightlamb_basic/blightlamb_basic.png	assets/exports/pets/basic/blightlamb_basic.png
+blightlamb	gold	assets/exports/pets/blightlamb_gold/blightlamb_gold_5k.fbx	assets/exports/pets/blightlamb_gold/blightlamb_gold.png	assets/exports/pets/gold/blightlamb_gold.png
+abyssal_wyrm	basic	assets/exports/pets/abyssal_wyrm_basic/abyssal_wyrm_basic_5k.fbx	assets/exports/pets/abyssal_wyrm_basic/abyssal_wyrm_basic.png	assets/exports/pets/basic/abyssal_wyrm_basic.png
+abyssal_wyrm	gold	assets/exports/pets/abyssal_wyrm_gold/abyssal_wyrm_gold_5k.fbx	assets/exports/pets/abyssal_wyrm_gold/abyssal_wyrm_gold.png	assets/exports/pets/gold/abyssal_wyrm_gold.png
+brimstone_salamander	basic	assets/exports/pets/brimstone_salamander_basic/brimstone_salamander_basic_5k.fbx	assets/exports/pets/brimstone_salamander_basic/brimstone_salamander_basic.png	assets/exports/pets/basic/brimstone_salamander_basic.png
+brimstone_salamander	gold	assets/exports/pets/brimstone_salamander_gold/brimstone_salamander_gold_5k.fbx	assets/exports/pets/brimstone_salamander_gold/brimstone_salamander_gold.png	assets/exports/pets/gold/brimstone_salamander_gold.png
+ashfeather_phoenix	basic	assets/exports/pets/ashfeather_phoenix_basic/ashfeather_phoenix_basic_5k.fbx	assets/exports/pets/ashfeather_phoenix_basic/ashfeather_phoenix_basic.png	assets/exports/pets/basic/ashfeather_phoenix_basic.png
+ashfeather_phoenix	gold	assets/exports/pets/ashfeather_phoenix_gold/ashfeather_phoenix_gold_5k.fbx	assets/exports/pets/ashfeather_phoenix_gold/ashfeather_phoenix_gold.png	assets/exports/pets/gold/ashfeather_phoenix_gold.png
+ashmane_lion	basic	assets/exports/pets/ashmane_lion_basic/ashmane_lion_basic_5k.fbx	assets/exports/pets/ashmane_lion_basic/ashmane_lion_basic.png	assets/exports/pets/basic/ashmane_lion_basic.png
+ashmane_lion	gold	assets/exports/pets/ashmane_lion_gold/ashmane_lion_gold_5k.fbx	assets/exports/pets/ashmane_lion_gold/ashmane_lion_gold.png	assets/exports/pets/gold/ashmane_lion_gold.png
+rimelight_hare	basic	assets/exports/pets/rimelight_hare_basic/rimelight_hare_basic_5k.fbx	assets/exports/pets/rimelight_hare_basic/rimelight_hare_basic.png	assets/exports/pets/basic/rimelight_hare_basic.png
+rimelight_hare	gold	assets/exports/pets/rimelight_hare_gold/rimelight_hare_gold_5k.fbx	assets/exports/pets/rimelight_hare_gold/rimelight_hare_gold.png	assets/exports/pets/gold/rimelight_hare_gold.png
+black_ice_leviathan	basic	assets/exports/pets/black_ice_leviathan_basic/black_ice_leviathan_basic_5k.fbx	assets/exports/pets/black_ice_leviathan_basic/black_ice_leviathan_basic.png	assets/exports/pets/basic/black_ice_leviathan_basic.png
+black_ice_leviathan	gold	assets/exports/pets/black_ice_leviathan_gold/black_ice_leviathan_gold_5k.fbx	assets/exports/pets/black_ice_leviathan_gold/black_ice_leviathan_gold.png	assets/exports/pets/gold/black_ice_leviathan_gold.png
+black_seraph	basic	assets/exports/pets/black_seraph_basic/black_seraph_basic_5k.fbx	assets/exports/pets/black_seraph_basic/black_seraph_basic.png	assets/exports/pets/basic/black_seraph_basic.png
+black_seraph	gold	assets/exports/pets/black_seraph_gold/black_seraph_gold_5k.fbx	assets/exports/pets/black_seraph_gold/black_seraph_gold.png	assets/exports/pets/gold/black_seraph_gold.png
+dread_owl	basic	assets/exports/pets/dread_owl_basic/dread_owl_basic_5k.fbx	assets/exports/pets/dread_owl_basic/dread_owl_basic.png	assets/exports/pets/basic/dread_owl_basic.png
+dread_owl	gold	assets/exports/pets/dread_owl_gold/dread_owl_gold_5k.fbx	assets/exports/pets/dread_owl_gold/dread_owl_gold.png	assets/exports/pets/gold/dread_owl_gold.png
+rimewraith_fox	basic	assets/exports/pets/rimewraith_fox_basic/rimewraith_fox_basic_5k.fbx	assets/exports/pets/rimewraith_fox_basic/rimewraith_fox_basic.png	assets/exports/pets/basic/rimewraith_fox_basic.png
+rimewraith_fox	gold	assets/exports/pets/rimewraith_fox_gold/rimewraith_fox_gold_5k.fbx	assets/exports/pets/rimewraith_fox_gold/rimewraith_fox_gold.png	assets/exports/pets/gold/rimewraith_fox_gold.png
+cinderling_imp	basic	assets/exports/pets/cinderling_imp_basic/cinderling_imp_basic_5k.fbx	assets/exports/pets/cinderling_imp_basic/cinderling_imp_basic.png	assets/exports/pets/basic/cinderling_imp_basic.png
+cinderling_imp	gold	assets/exports/pets/cinderling_imp_gold/cinderling_imp_gold_5k.fbx	assets/exports/pets/cinderling_imp_gold/cinderling_imp_gold.png	assets/exports/pets/gold/cinderling_imp_gold.png
+
+## Decimation notes
+5000 / 7500 / 10000 tris for all meshes — all forty fully hit each target.
+
+## Wired
+pending: configs/pets.lua + assets/manifest/pets.json entries

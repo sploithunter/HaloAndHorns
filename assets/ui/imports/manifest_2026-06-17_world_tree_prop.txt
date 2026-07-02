@@ -1,0 +1,28 @@
+# World Tree map prop import (2026-06-17)
+
+## Asset type
+Map prop / scenery — NOT a pet, lair, or breakable.
+
+## Processing
+
+bash scripts/decimate_mesh.sh assets/source/props/world_tree.obj \
+  --output assets/exports/props/world_tree \
+  --targets 5000,7500,10000
+
+## Source
+
+prop_id	stem	download_zip	display_name	original_tris
+world_tree	world_tree	Meshy_AI_World_Tree_0618034829_texture_obj.zip	World Tree	1186198
+
+## Exports (recommended upload)
+
+prop_id	recommended_fbx	mesh_texture
+world_tree	assets/exports/props/world_tree/world_tree_5k.fbx	assets/exports/props/world_tree/world_tree.png
+
+Also available: world_tree_7500tris.fbx, world_tree_10k.fbx
+
+## Decimation notes
+1,186,198 tris source → 5000 / 7500 / 10000 tris (all targets hit).
+
+## Wired
+pending: map placement in Studio

@@ -1,0 +1,6 @@
+# Pet lair source meshes (Meshy OBJ + texture)
+# Decimate via: bash scripts/decimate_mesh.sh assets/source/lairs/<stem>.obj --targets 5000,7500,10000 --output assets/exports/lairs/<stem>/
+
+stem	lair_id	biome	download_zip	original_tris	display_name
+ice_titan_lair	ice_titan_lair	ice	Meshy_AI_Maw of the Ice Titan_1781532013_texture.zip	12852	Maw of the Ice Titan
+inferno_gate_lair	inferno_gate_lair	lava	Meshy_AI_Inferno Gate_1781533177_texture.zip	21066	Inferno Gate

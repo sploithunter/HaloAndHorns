@@ -1,0 +1,40 @@
+# New UI icon import batch 4 (2026-06-10)
+# Source: ~/Downloads — Proc.png, Focus.png, Potency.png
+# Pipeline: normalize_icons.py (edge-connected white bg) -> blue_icons -> recolor -> color folders
+
+## New blue source icons (52 total in blue_icons; 3 added this batch)
+
+asset_name	download_source	background_mode
+proc.png	Proc.png	white-edge
+focus.png	Focus.png	white-edge
+potency.png	Potency.png	white-edge
+
+## Staging
+
+assets/ui/imports/new_icons_2026-06-10_batch4_blue/
+
+## Color variants (all 6 sets)
+
+color	folder	recolor_flag
+blue	assets/ui/blue_icons/	(source)
+white	assets/ui/white_icons/	--mode white
+green	assets/ui/green_icons/	--color green
+red	assets/ui/red_icons/	--color red
+yellow	assets/ui/yellow_icons/	--color yellow
+purple	assets/ui/purple_icons/	--color purple
+
+## Per-icon outputs
+
+proc.png
+focus.png
+potency.png
+
+## Contact sheets rebuilt
+
+assets/ui/blue_icons/contact_sheet.png
+assets/ui/white_icons/contact_sheet.png
+assets/ui/green_icons/contact_sheet.png
+assets/ui/red_icons/contact_sheet.png
+assets/ui/yellow_icons/contact_sheet.png
+assets/ui/purple_icons/contact_sheet.png
+assets/ui/icons_all_colors.png

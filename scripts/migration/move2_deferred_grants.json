@@ -1,0 +1,11 @@
+{
+ "strategy": "grant new universe asset-permissions once group experience exists",
+ "assets": {
+  "71266985896124": "short_realistic_thunder (Audio, no local source)",
+  "79256976981602": "snare_drum_roll (Audio, no local source)",
+  "81826046653344": "unnamed_audio (Audio, no local source)",
+  "98548849463653": "SFX_Pop_Bubble (Audio, no local source)",
+  "102357151476128": "gemui_purple_gem_single (Decal, no local source \u2014 no amethyst export)"
+ },
+ "status": "RESOLVED 2026-06-11: Jason added Open Simulator Group as collaborator on all 5 assets (group-level access \u2014 any group experience inherits it). 4 audio verified loading in the group experience (PreloadAsync Success, real durations). The purple gem decal needs no grant at all: its only consumer is CurrencyStyle thumb() via the public rbxthumb:// thumbnails service."
+}

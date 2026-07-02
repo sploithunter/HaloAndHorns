@@ -1,0 +1,17 @@
+# Upload-ready FBX meshes (3500 tri budget). Pair each FBX with its .png texture.
+
+citrine_gem_bag	citrine_gem_bag_3500tris.fbx	3499 tris	citrine_gem_bag.png
+citrine_gem_pile	citrine_gem_pile_3500tris.fbx	3500 tris	citrine_gem_pile.png
+citrine_gem_single	citrine_gem_single_3500tris.fbx	2610 tris	citrine_gem_single.png
+emerald_gem_bag	emerald_gem_bag_3500tris.fbx	3499 tris	emerald_gem_bag.png
+emerald_gem_pile	emerald_gem_pile_3500tris.fbx	3500 tris	emerald_gem_pile.png
+emerald_gem_single	emerald_gem_single_3500tris.fbx	2610 tris	emerald_gem_single.png
+ruby_gem_bag	ruby_gem_bag_3500tris.fbx	3499 tris	ruby_gem_bag.png
+ruby_gem_pile	ruby_gem_pile_3500tris.fbx	3500 tris	ruby_gem_pile.png
+ruby_gem_single	ruby_gem_single_3500tris.fbx	2610 tris	ruby_gem_single.png
+sapphire_gem_bag	sapphire_gem_bag_3500tris.fbx	3499 tris	sapphire_gem_bag.png
+sapphire_gem_pile	sapphire_gem_pile_3500tris.fbx	3500 tris	sapphire_gem_pile.png
+sapphire_gem_single	sapphire_gem_single_3500tris.fbx	2610 tris	sapphire_gem_single.png
+amethyst_gem_bag	amethyst_gem_bag.obj	9777 tris (source)	amethyst_gem_bag.png	decimation pending
+amethyst_gem_pile	amethyst_gem_pile.obj	6076 tris (source)	amethyst_gem_pile.png	decimation pending
+amethyst_gem_single	amethyst_gem_single.obj	2610 tris (source)	amethyst_gem_single.png	decimation pending

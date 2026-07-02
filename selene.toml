@@ -1,0 +1,12 @@
+std = "roblox+testez"
+
+# Headless lune specs use the `@lune/*` stdlib which is not part of the Roblox
+# std; they run via `mise run test-headless`, not Selene.
+exclude = ["tests/headless/**"]
+
+[rules]
+shadowing = "warn"
+undefined_variable = "deny"
+unused_variable = "warn"
+global_usage = "warn"
+incorrect_standard_library_use = "deny" 

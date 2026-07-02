@@ -1,0 +1,7 @@
+# Breakable / obstacle meshes from Meshy (Jun 8 2026). Source OBJ + texture; import FBX from assets/exports/breakables/.
+# Decimated to ~5k tris for Roblox via: bash scripts/decimate_mesh.sh assets/source/breakables/<name>.obj --targets 5000 --output assets/exports/breakables
+
+name	display	meshy_zip	original_tris
+boulder	Boulder (generic rock)	Meshy_AI_Low_Poly_Boulder_0608143504_texture_obj.zip	303946
+ice_boulder	Ice boulder / blue ice crystal	Meshy_AI_Blue_Ice_Crystal_0608142912_texture_obj.zip	442639
+asteroid	Pitted asteroid	Meshy_AI_Pitted_Asteroid_0608142844_texture_obj.zip	15644

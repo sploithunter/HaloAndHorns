@@ -1,0 +1,76 @@
+# GameTemplate1 Codebase Patterns
+
+This file documents specific API patterns and quirks in the GameTemplate1 codebase that developers should be aware of.
+
+## Logger API Pattern
+
+**IMPORTANT**: The Logger module (`src/Shared/Utils/Logger.lua`) is a SINGLETON, NOT instance-based.
+
+### ❌ Wrong (will cause "Logger.new is nil" errors):
+```lua
+local Logger = require(ReplicatedStorage.Shared.Utils.Logger)
+self.logger = Logger.new("ComponentName") -- FAILS!
+```
+
+### ✅ Correct (use LoggerWrapper pattern):
+```lua
+local LoggerWrapper
+local loggerSuccess, loggerResult = pcall(function()
+    return require(ReplicatedStorage.Shared.Utils.Logger)
+end)
+
+if loggerSuccess and loggerResult then
+    LoggerWrapper = {
+        new = function(name)
+            return {
+                info = function(self, ...) loggerResult:Info("[" .. name .. "] " .. tostring((...)), {context = name}) end,
+                warn = function(self, ...) loggerResult:Warn("[" .. name .. "] " .. tostring((...)), {context = name}) end,
+                error = function(self, ...) loggerResult:Error("[" .. name .. "] " .. tostring((...)), {context = name}) end,
+                debug = function(self, ...) loggerResult:Debug("[" .. name .. "] " .. tostring((...)), {context = name}) end,
+            }
+        end
+    }
+else
+    -- Fallback implementation
+    LoggerWrapper = {
+        new = function(name)
+            return {
+                info = function(self, ...) print("[" .. name .. "] INFO:", ...) end,
+                warn = function(self, ...) warn("[" .. name .. "] WARN:", ...) end,
+                error = function(self, ...) warn("[" .. name .. "] ERROR:", ...) end,
+                debug = function(self, ...) print("[" .. name .. "] DEBUG:", ...) end,
+            }
+        end
+    }
+end
+
+-- Then use:
+self.logger = LoggerWrapper.new("ComponentName")
+```
+
+## Module Loading Patterns
+
+Always use `pcall` when requiring modules that might not exist yet:
+
+```lua
+local moduleSuccess, moduleResult = pcall(function()
+    return require(path.to.module)
+end)
+
+if moduleSuccess and moduleResult then
+    -- Use the real module
+else
+    -- Provide fallback implementation
+end
+```
+
+## UI Component Guidelines
+
+- Use template-based UI creation when possible
+- Always provide fallback UI creation for robustness
+- Use the LoggerWrapper pattern for component logging
+- Follow the configuration-as-code principle
+description:
+globs:
+alwaysApply: false
+---

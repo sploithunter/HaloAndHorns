@@ -1,0 +1,4 @@
+source: /Users/jason/Documents/RBX-Template/assets/source/breakables/asteroid.obj
+original_tris: 15644
+
+5k: asteroid_5k.fbx (5000 tris, target 5000)

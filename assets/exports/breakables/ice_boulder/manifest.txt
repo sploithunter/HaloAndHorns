@@ -1,0 +1,4 @@
+source: /Users/jason/Documents/RBX-Template/assets/source/breakables/ice_boulder.obj
+original_tris: 442639
+
+5k: ice_boulder_5k.fbx (4999 tris, target 5000)

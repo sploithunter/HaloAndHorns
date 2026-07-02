@@ -1,0 +1,7 @@
+source: ~/Downloads/ChatGPT Image Jun 15, 2026, 04_31_39 PM.png
+pipeline: normalize_icons.py (white-edge background removal)
+output_size: 1217x1217
+
+flag.png	1217x1217	<- ChatGPT Image Jun 15, 2026, 04_31_39 PM.png	(white)
+
+contact_sheet: ../new_icons_2026-06-15_batch5_contact_sheet.png

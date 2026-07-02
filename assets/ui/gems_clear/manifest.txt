@@ -1,0 +1,16 @@
+# Transparent 2D gem reference art (white background removed).
+# Pairs with 3D meshes in assets/source/gems and assets/exports/gems.
+
+name	gem	kind
+sapphire_gem_single	sapphire	gem_single
+sapphire_gem_pile	sapphire	gem_pile
+sapphire_gem_bag	sapphire	gem_bag
+emerald_gem_single	emerald	gem_single
+emerald_gem_pile	emerald	gem_pile
+emerald_gem_bag	emerald	gem_bag
+ruby_gem_single	ruby	gem_single
+ruby_gem_pile	ruby	gem_pile
+ruby_gem_bag	ruby	gem_bag
+citrine_gem_single	citrine	gem_single
+citrine_gem_pile	citrine	gem_pile
+citrine_gem_bag	citrine	gem_bag

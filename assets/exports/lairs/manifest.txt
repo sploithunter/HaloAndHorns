@@ -1,0 +1,13 @@
+# Pet lair export art (FBX + texture)
+#
+# Recommended Roblox import: {stem}_5k.fbx + texture PNG in same folder.
+# Pipeline: bash scripts/decimate_mesh.sh assets/source/lairs/<stem>.obj --targets 5000,7500,10000 --output assets/exports/lairs/<stem>/
+
+lair_id	biome	source_tris	export_dir	5k	7500tris	10k	texture
+ice_titan_lair	ice	12852	assets/exports/lairs/ice_titan_lair/	5000 tris	7500 tris	10000 tris	ice_titan_lair.png
+inferno_gate_lair	lava	21066	assets/exports/lairs/inferno_gate_lair/	5000 tris	7500 tris	10000 tris	inferno_gate_lair.png
+
+source_manifest: assets/source/lairs/manifest.txt
+download:
+  ice_titan_lair: ~/Downloads/Meshy_AI_Maw of the Ice Titan_1781532013_texture.zip
+  inferno_gate_lair: ~/Downloads/Meshy_AI_Inferno Gate_1781533177_texture.zip

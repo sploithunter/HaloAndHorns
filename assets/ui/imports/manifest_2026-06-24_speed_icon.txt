@@ -1,0 +1,65 @@
+# Speed UI icon import (2026-06-24)
+# Source: ~/Downloads/ChatGPT Image Jun 24, 2026, 12_41_36 PM.png
+# Pipeline: normalize_icons.py (edge-connected white bg) -> blue_icons -> recolor -> color folders
+
+## New blue source icon (54 total in blue_icons; 1 added this batch)
+
+asset_name	download_source	background_mode	reads_as
+speed.png	ChatGPT Image Jun 24, 2026, 12_41_36 PM.png	white-edge	running figure / speed / haste
+
+## Staging (normalized blue source)
+
+assets/ui/imports/new_icons_2026-06-24_speed_blue/
+
+## Color variants generated for speed.png
+
+color	folder	recolor_flag
+blue	assets/ui/blue_icons/	(source — no recolor)
+white	assets/ui/white_icons/	recolor_blue_to_green.py --mode white
+green	assets/ui/green_icons/	recolor_blue_to_green.py --color green
+red	assets/ui/red_icons/	recolor_blue_to_green.py --color red
+yellow	assets/ui/yellow_icons/	recolor_blue_to_green.py --color yellow
+purple	assets/ui/purple_icons/	recolor_blue_to_green.py --color purple
+
+## Per-icon color outputs (all 6 sets above)
+
+speed.png
+
+## Processing commands
+
+python3 scripts/normalize_icons.py \
+  "~/Downloads/ChatGPT Image Jun 24, 2026, 12_41_36 PM.png" \
+  assets/ui/imports/new_icons_2026-06-24_speed_blue/speed.png \
+  --background-mode white
+
+cp assets/ui/imports/new_icons_2026-06-24_speed_blue/speed.png assets/ui/blue_icons/speed.png
+
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons assets/ui/green_icons --color green
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons assets/ui/red_icons --color red
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons assets/ui/yellow_icons --color yellow
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons assets/ui/purple_icons --color purple
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons assets/ui/white_icons --mode white
+
+python3 scripts/build_icon_contact_sheet.py --rebuild-from assets/ui/blue_icons
+python3 scripts/build_icon_contact_sheet.py --rebuild-from assets/ui/white_icons --contact-sheet assets/ui/white_icons/contact_sheet.png
+python3 scripts/build_icon_contact_sheet.py --rebuild-from assets/ui/green_icons --contact-sheet assets/ui/green_icons/contact_sheet.png
+python3 scripts/build_icon_contact_sheet.py --rebuild-from assets/ui/red_icons --contact-sheet assets/ui/red_icons/contact_sheet.png
+python3 scripts/build_icon_contact_sheet.py --rebuild-from assets/ui/yellow_icons --contact-sheet assets/ui/yellow_icons/contact_sheet.png
+python3 scripts/build_icon_contact_sheet.py --rebuild-from assets/ui/purple_icons --contact-sheet assets/ui/purple_icons/contact_sheet.png
+python3 scripts/build_icon_contact_sheet.py --rebuild-from assets/ui/imports/new_icons_2026-06-24_speed_blue --contact-sheet assets/ui/imports/speed_icon_2026-06-24_contact_sheet.png
+python3 scripts/build_icon_contact_sheet.py --all-colors
+
+## Contact sheets rebuilt
+
+assets/ui/imports/speed_icon_2026-06-24_contact_sheet.png
+assets/ui/blue_icons/contact_sheet.png
+assets/ui/white_icons/contact_sheet.png
+assets/ui/green_icons/contact_sheet.png
+assets/ui/red_icons/contact_sheet.png
+assets/ui/yellow_icons/contact_sheet.png
+assets/ui/purple_icons/contact_sheet.png
+assets/ui/icons_all_colors.png
+
+## Wired
+
+pending: configs/powers.lua or UI icon registry if needed

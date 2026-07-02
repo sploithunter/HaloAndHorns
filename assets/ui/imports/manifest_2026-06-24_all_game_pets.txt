@@ -1,0 +1,107 @@
+# All game pets — preview contact sheets (gold manifest section)
+# Source of truth: configs/pets.lua (96 species)
+# Preview PNGs: assets/exports/pets/{basic|gold}/{pet_id}_{variant}.png
+
+basic_contact_sheet: assets/exports/pets/all_game_pets_2026-06-24_gold_contact_sheet.png
+gold_contact_sheet: assets/exports/pets/all_game_pets_2026-06-24_gold_contact_sheet.png
+
+pet_id	display_name	category	realm	origin	section	basic_preview	gold_preview
+coronal_cherub	Coronal Cherub	heaven	heaven	lava	heaven 2 · fire	assets/exports/pets/basic/coronal_cherub_basic.png	assets/exports/pets/gold/coronal_cherub_gold.png
+prism_lion	Prism Lion	heaven	heaven	lava	heaven 2 · fire	assets/exports/pets/basic/prism_lion_basic.png	assets/exports/pets/gold/prism_lion_gold.png
+lance_seraph	Lance Seraph	heaven	heaven	lava	heaven 2 · fire	assets/exports/pets/basic/lance_seraph_basic.png	assets/exports/pets/gold/lance_seraph_gold.png
+lumen_salamander	Lumen Salamander	heaven	heaven	lava	heaven 2 · fire	assets/exports/pets/basic/lumen_salamander_basic.png	assets/exports/pets/gold/lumen_salamander_gold.png
+dawnfire_phoenix	Dawnfire Phoenix	heaven	heaven	lava	heaven 2 · fire	assets/exports/pets/basic/dawnfire_phoenix_basic.png	assets/exports/pets/gold/dawnfire_phoenix_gold.png
+frostlight_doe	Frostlight Doe	heaven	heaven	ice	heaven 2 · ice	assets/exports/pets/basic/frostlight_doe_basic.png	assets/exports/pets/gold/frostlight_doe_gold.png
+prism_fox	Prism Fox	heaven	heaven	ice	heaven 2 · ice	assets/exports/pets/basic/prism_fox_basic.png	assets/exports/pets/gold/prism_fox_gold.png
+starlight_owl	Starlight Owl	heaven	heaven	ice	heaven 2 · ice	assets/exports/pets/basic/starlight_owl_basic.png	assets/exports/pets/gold/starlight_owl_gold.png
+glacial_bear	Glacial Bear	heaven	heaven	ice	heaven 2 · ice	assets/exports/pets/basic/glacial_bear_basic.png	assets/exports/pets/gold/glacial_bear_gold.png
+aurora_dragon	Aurora Dragon	heaven	heaven	ice	heaven 2 · ice	assets/exports/pets/basic/aurora_dragon_basic.png	assets/exports/pets/gold/aurora_dragon_gold.png
+bloomspirit_lamb	Bloomspirit Lamb	heaven	heaven	grass	heaven 2 · grass	assets/exports/pets/basic/bloomspirit_lamb_basic.png	assets/exports/pets/gold/bloomspirit_lamb_gold.png
+lightleaf_hare	Lightleaf Hare	heaven	heaven	grass	heaven 2 · grass	assets/exports/pets/basic/lightleaf_hare_basic.png	assets/exports/pets/gold/lightleaf_hare_gold.png
+crystalbark_stag	Crystalbark Stag	heaven	heaven	grass	heaven 2 · grass	assets/exports/pets/basic/crystalbark_stag_basic.png	assets/exports/pets/gold/crystalbark_stag_gold.png
+radiant_sprite	Radiant Sprite	heaven	heaven	grass	heaven 2 · grass	assets/exports/pets/basic/radiant_sprite_basic.png	assets/exports/pets/gold/radiant_sprite_gold.png
+worldbloom_ent	Worldbloom Ent	heaven	heaven	grass	heaven 2 · grass	assets/exports/pets/basic/worldbloom_ent_basic.png	assets/exports/pets/gold/worldbloom_ent_gold.png
+aurora_dove	Aurora Dove	heaven	heaven	desert	heaven 2 · desert	assets/exports/pets/basic/aurora_dove_basic.png	assets/exports/pets/gold/aurora_dove_gold.png
+prism_scarab	Prism Scarab	heaven	heaven	desert	heaven 2 · desert	assets/exports/pets/basic/prism_scarab_basic.png	assets/exports/pets/gold/prism_scarab_gold.png
+mirage_meerkat	Mirage Meerkat	heaven	heaven	desert	heaven 2 · desert	assets/exports/pets/basic/mirage_meerkat_basic.png	assets/exports/pets/gold/mirage_meerkat_gold.png
+sunwell_camel	Sunwell Camel	heaven	heaven	desert	heaven 2 · desert	assets/exports/pets/basic/sunwell_camel_basic.png	assets/exports/pets/gold/sunwell_camel_gold.png
+empyreal_couatl	Empyreal Couatl	heaven	heaven	desert	heaven 2 · desert	assets/exports/pets/basic/empyreal_couatl_basic.png	assets/exports/pets/gold/empyreal_couatl_gold.png
+frostcinder_imp	Frostcinder Imp	hell	hell	lava	hell 2 · fire	assets/exports/pets/basic/frostcinder_imp_basic.png	assets/exports/pets/gold/frostcinder_imp_gold.png
+rimemane_lion	Rimemane Lion	hell	hell	lava	hell 2 · fire	assets/exports/pets/basic/rimemane_lion_basic.png	assets/exports/pets/gold/rimemane_lion_gold.png
+hoarfrost_phoenix	Hoarfrost Phoenix	hell	hell	lava	hell 2 · fire	assets/exports/pets/basic/hoarfrost_phoenix_basic.png	assets/exports/pets/gold/hoarfrost_phoenix_gold.png
+frostbrand_salamander	Frostbrand Salamander	hell	hell	lava	hell 2 · fire	assets/exports/pets/basic/frostbrand_salamander_basic.png	assets/exports/pets/gold/frostbrand_salamander_gold.png
+deadfire_phoenix	Deadfire Phoenix	hell	hell	lava	hell 2 · fire	assets/exports/pets/basic/deadfire_phoenix_basic.png	assets/exports/pets/gold/deadfire_phoenix_gold.png
+rimegloom_hare	Rimegloom Hare	hell	hell	ice	hell 2 · ice	assets/exports/pets/basic/rimegloom_hare_basic.png	assets/exports/pets/gold/rimegloom_hare_gold.png
+dread_fox	Dread Fox	hell	hell	ice	hell 2 · ice	assets/exports/pets/basic/dread_fox_basic.png	assets/exports/pets/gold/dread_fox_gold.png
+gravefrost_owl	Gravefrost Owl	hell	hell	ice	hell 2 · ice	assets/exports/pets/basic/gravefrost_owl_basic.png	assets/exports/pets/gold/gravefrost_owl_gold.png
+rimeguard_bear	Rimeguard Bear	hell	hell	ice	hell 2 · ice	assets/exports/pets/basic/rimeguard_bear_basic.png	assets/exports/pets/gold/rimeguard_bear_gold.png
+rimewraith_dragon	Rimewraith Dragon	hell	hell	ice	hell 2 · ice	assets/exports/pets/basic/rimewraith_dragon_basic.png	assets/exports/pets/gold/rimewraith_dragon_gold.png
+frostblight_lamb	Frostblight Lamb	hell	hell	grass	hell 2 · grass	assets/exports/pets/basic/frostblight_lamb_basic.png	assets/exports/pets/gold/frostblight_lamb_gold.png
+gloom_hare	Gloom Hare	hell	hell	grass	hell 2 · grass	assets/exports/pets/basic/gloom_hare_basic.png	assets/exports/pets/gold/gloom_hare_gold.png
+icerot_stag	Icerot Stag	hell	hell	grass	hell 2 · grass	assets/exports/pets/basic/icerot_stag_basic.png	assets/exports/pets/gold/icerot_stag_gold.png
+rimewither_sprite	Rimewither Sprite	hell	hell	grass	hell 2 · grass	assets/exports/pets/basic/rimewither_sprite_basic.png	assets/exports/pets/gold/rimewither_sprite_gold.png
+frostgrave_ent	Frostgrave Ent	hell	hell	grass	hell 2 · grass	assets/exports/pets/basic/frostgrave_ent_basic.png	assets/exports/pets/gold/frostgrave_ent_gold.png
+wraith_dove	Wraith Dove	hell	hell	desert	hell 2 · desert	assets/exports/pets/basic/wraith_dove_basic.png	assets/exports/pets/gold/wraith_dove_gold.png
+rime_scarab	Rime Scarab	hell	hell	desert	hell 2 · desert	assets/exports/pets/basic/rime_scarab_basic.png	assets/exports/pets/gold/rime_scarab_gold.png
+gloom_jackal	Gloom Jackal	hell	hell	desert	hell 2 · desert	assets/exports/pets/basic/gloom_jackal_basic.png	assets/exports/pets/gold/gloom_jackal_gold.png
+frostdust_camel	Frostdust Camel	hell	hell	desert	hell 2 · desert	assets/exports/pets/basic/frostdust_camel_basic.png	assets/exports/pets/gold/frostdust_camel_gold.png
+dread_couatl	Dread Couatl	hell	hell	desert	hell 2 · desert	assets/exports/pets/basic/dread_couatl_basic.png	assets/exports/pets/gold/dread_couatl_gold.png
+emberling	Emberling	lava	-	-	EMBER FAMILY (lava biome — EmberEgg). One asset per pet for now; golden/rainbow reuse	assets/exports/pets/basic/emberling_basic.png	assets/exports/pets/gold/emberling_gold.png
+emberfox	Emberfox	lava	-	-	EMBER FAMILY (lava biome — EmberEgg). One asset per pet for now; golden/rainbow reuse	assets/exports/pets/basic/emberfox_basic.png	assets/exports/pets/gold/emberfox_gold.png
+emberimp	Ember Imp	lava	-	-	EMBER FAMILY (lava biome — EmberEgg). One asset per pet for now; golden/rainbow reuse	MISSING	MISSING
+emberowl	Ember Owl	lava	-	-	EMBER FAMILY (lava biome — EmberEgg). One asset per pet for now; golden/rainbow reuse	assets/exports/pets/basic/emberowl_basic.png	assets/exports/pets/gold/emberowl_gold.png
+emberlion	Ember Lion	lava	-	-	EMBER FAMILY (lava biome — EmberEgg). One asset per pet for now; golden/rainbow reuse	assets/exports/pets/basic/emberlion_basic.png	assets/exports/pets/gold/emberlion_gold.png
+snowflakeowl	Snowflake Owl	ice	-	-	ICE FAMILY (BasicIce egg). Ice-biome pets; same scale/framing as the ember family.	assets/exports/pets/basic/snowflakeowl_basic.png	assets/exports/pets/gold/snowflakeowl_gold.png
+snowfox	Snow Fox	ice	-	-	ICE FAMILY (BasicIce egg). Ice-biome pets; same scale/framing as the ember family.	assets/exports/pets/basic/snowfox_basic.png	assets/exports/pets/gold/snowfox_gold.png
+penguin	Penguin	ice	-	-	ICE FAMILY (BasicIce egg). Ice-biome pets; same scale/framing as the ember family.	assets/exports/pets/basic/penguin_basic.png	assets/exports/pets/gold/penguin_gold.png
+snowleopard	Snow Leopard	ice	-	-	ICE FAMILY (BasicIce egg). Ice-biome pets; same scale/framing as the ember family.	assets/exports/pets/basic/snowleopard_basic.png	assets/exports/pets/gold/snowleopard_gold.png
+polarbear	Polar Bear	ice	-	-	ICE FAMILY (BasicIce egg). Ice-biome pets; same scale/framing as the ember family.	assets/exports/pets/basic/polarbear_basic.png	assets/exports/pets/gold/polarbear_gold.png
+fennec	Fennec	desert	-	-	SAND FAMILY (BasicSand egg). Desert-biome pets; same scale/framing as ember/ice.	assets/exports/pets/basic/fennec_basic.png	assets/exports/pets/gold/fennec_gold.png
+camel	Camel	desert	-	-	SAND FAMILY (BasicSand egg). Desert-biome pets; same scale/framing as ember/ice.	assets/exports/pets/basic/camel_basic.png	assets/exports/pets/gold/camel_gold.png
+meerkat	Meerkat	desert	-	-	SAND FAMILY (BasicSand egg). Desert-biome pets; same scale/framing as ember/ice.	assets/exports/pets/basic/meerkat_basic.png	assets/exports/pets/gold/meerkat_gold.png
+desertiguana	Desert Iguana	desert	-	-	SAND FAMILY (BasicSand egg). Desert-biome pets; same scale/framing as ember/ice.	assets/exports/pets/basic/desertiguana_basic.png	assets/exports/pets/gold/desertiguana_gold.png
+scorpion	Scorpion	desert	-	-	SAND FAMILY (BasicSand egg). Desert-biome pets; same scale/framing as ember/ice.	assets/exports/pets/basic/scorpion_basic.png	assets/exports/pets/gold/scorpion_gold.png
+dragon	Dragon	mythical	-	-	DRAGON FAMILY	assets/exports/pets/basic/dragon_basic.png	assets/exports/pets/gold/dragon_gold.png
+emberling_cherub	Emberling Cherub	heaven	heaven	-	--- HEAVEN FIRE (solar) ---	assets/exports/pets/basic/emberling_cherub_basic.png	assets/exports/pets/gold/emberling_cherub_gold.png
+sunmane_lion	Sunmane Lion	heaven	heaven	-	--- HEAVEN FIRE (solar) ---	assets/exports/pets/basic/sunmane_lion_basic.png	assets/exports/pets/gold/sunmane_lion_gold.png
+solar_phoenix	Solar Phoenix	heaven	heaven	-	--- HEAVEN FIRE (solar) ---	assets/exports/pets/basic/solar_phoenix_basic.png	assets/exports/pets/gold/solar_phoenix_gold.png
+radiant_salamander	Radiant Salamander	heaven	heaven	-	--- HEAVEN FIRE (solar) ---	assets/exports/pets/basic/radiant_salamander_basic.png	assets/exports/pets/gold/radiant_salamander_gold.png
+empyrean_dragon	Empyrean Dragon	heaven	heaven	-	--- HEAVEN FIRE (solar) ---	assets/exports/pets/basic/empyrean_dragon_basic.png	assets/exports/pets/gold/empyrean_dragon_gold.png
+frostlight_hare	Frostlight Hare	heaven	heaven	-	--- HEAVEN ICE (aurora) ---	assets/exports/pets/basic/frostlight_hare_basic.png	assets/exports/pets/gold/frostlight_hare_gold.png
+aurora_fox	Aurora Fox	heaven	heaven	-	--- HEAVEN ICE (aurora) ---	assets/exports/pets/basic/aurora_fox_basic.png	assets/exports/pets/gold/aurora_fox_gold.png
+seraph_owl	Seraph Owl	heaven	heaven	-	--- HEAVEN ICE (aurora) ---	assets/exports/pets/basic/seraph_owl_basic.png	assets/exports/pets/gold/seraph_owl_gold.png
+glacial_seraph	Glacial Seraph	heaven	heaven	-	--- HEAVEN ICE (aurora) ---	assets/exports/pets/basic/glacial_seraph_basic.png	assets/exports/pets/gold/glacial_seraph_gold.png
+aurora_leviathan	Aurora Leviathan	heaven	heaven	-	--- HEAVEN ICE (aurora) ---	assets/exports/pets/basic/aurora_leviathan_basic.png	assets/exports/pets/gold/aurora_leviathan_gold.png
+bloomlamb	Bloomlamb	heaven	heaven	-	--- HEAVEN GRASS (bloom) ---	assets/exports/pets/basic/bloomlamb_basic.png	assets/exports/pets/gold/bloomlamb_gold.png
+halo_hare	Halo Hare	heaven	heaven	-	--- HEAVEN GRASS (bloom) ---	assets/exports/pets/basic/halo_hare_basic.png	assets/exports/pets/gold/halo_hare_gold.png
+goldleaf_stag	Goldleaf Stag	heaven	heaven	-	--- HEAVEN GRASS (bloom) ---	assets/exports/pets/basic/goldleaf_stag_basic.png	assets/exports/pets/gold/goldleaf_stag_gold.png
+verdant_sprite	Verdant Sprite	heaven	heaven	-	--- HEAVEN GRASS (bloom) ---	assets/exports/pets/basic/verdant_sprite_basic.png	assets/exports/pets/gold/verdant_sprite_gold.png
+worldroot_ent	Worldroot Ent	heaven	heaven	-	--- HEAVEN GRASS (bloom) ---	assets/exports/pets/basic/worldroot_ent_basic.png	assets/exports/pets/gold/worldroot_ent_gold.png
+sun_scarab	Sun Scarab	heaven	heaven	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/sun_scarab_basic.png	assets/exports/pets/gold/sun_scarab_gold.png
+mirage_jackal	Mirage Jackal	heaven	heaven	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/mirage_jackal_basic.png	assets/exports/pets/gold/mirage_jackal_gold.png
+dawn_camel	Dawn Camel	heaven	heaven	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/dawn_camel_basic.png	assets/exports/pets/gold/dawn_camel_gold.png
+gilded_sphinx	Gilded Sphinx	heaven	heaven	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/gilded_sphinx_basic.png	assets/exports/pets/gold/gilded_sphinx_gold.png
+solar_roc	Solar Roc	heaven	heaven	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/solar_roc_basic.png	assets/exports/pets/gold/solar_roc_gold.png
+cinderling_imp	Cinderling Imp	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/cinderling_imp_basic.png	assets/exports/pets/gold/cinderling_imp_gold.png
+brimstone_salamander	Brimstone Salamander	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/brimstone_salamander_basic.png	assets/exports/pets/gold/brimstone_salamander_gold.png
+ashmane_lion	Ashmane Lion	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/ashmane_lion_basic.png	assets/exports/pets/gold/ashmane_lion_gold.png
+ashfeather_phoenix	Ashfeather Phoenix	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/ashfeather_phoenix_basic.png	assets/exports/pets/gold/ashfeather_phoenix_gold.png
+abyssal_wyrm	Abyssal Wyrm	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/abyssal_wyrm_basic.png	assets/exports/pets/gold/abyssal_wyrm_gold.png
+carrion_scarab	Carrion Scarab	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/carrion_scarab_basic.png	assets/exports/pets/gold/carrion_scarab_gold.png
+phantom_jackal	Phantom Jackal	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/phantom_jackal_basic.png	assets/exports/pets/gold/phantom_jackal_gold.png
+dust_camel	Dust Camel	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/dust_camel_basic.png	assets/exports/pets/gold/dust_camel_gold.png
+glass_sphinx	Glass Sphinx	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/glass_sphinx_basic.png	assets/exports/pets/gold/glass_sphinx_gold.png
+ash_roc	Ash Roc	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/ash_roc_basic.png	assets/exports/pets/gold/ash_roc_gold.png
+rimelight_hare	Rimelight Hare	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/rimelight_hare_basic.png	assets/exports/pets/gold/rimelight_hare_gold.png
+rimewraith_fox	Rimewraith Fox	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/rimewraith_fox_basic.png	assets/exports/pets/gold/rimewraith_fox_gold.png
+dread_owl	Dread Owl	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/dread_owl_basic.png	assets/exports/pets/gold/dread_owl_gold.png
+black_seraph	Black Seraph	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/black_seraph_basic.png	assets/exports/pets/gold/black_seraph_gold.png
+black_ice_leviathan	Black-Ice Leviathan	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/black_ice_leviathan_basic.png	assets/exports/pets/gold/black_ice_leviathan_gold.png
+blightlamb	Blightlamb	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/blightlamb_basic.png	assets/exports/pets/gold/blightlamb_gold.png
+dread_hare	Dread Hare	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/dread_hare_basic.png	assets/exports/pets/gold/dread_hare_gold.png
+rotleaf_stag	Rotleaf Stag	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/rotleaf_stag_basic.png	assets/exports/pets/gold/rotleaf_stag_gold.png
+wither_sprite	Wither Sprite	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/wither_sprite_basic.png	assets/exports/pets/gold/wither_sprite_gold.png
+gravewood_ent	Gravewood Ent	hell	hell	-	REALM PETS (Heaven Desert + Hell) — generated, scripts/gen_realm_content.py	assets/exports/pets/basic/gravewood_ent_basic.png	assets/exports/pets/gold/gravewood_ent_gold.png
+
+# Missing gold previews (1):
+#   emberimp

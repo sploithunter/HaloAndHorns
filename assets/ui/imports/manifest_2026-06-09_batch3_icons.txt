@@ -1,0 +1,43 @@
+# New UI icon import batch 3 (2026-06-09)
+# Source: ~/Downloads — four ChatGPT blue disc icons (Jun 9 afternoon)
+# Pipeline: normalize_icons.py (edge-connected white bg) -> blue_icons -> recolor -> color folders
+
+## New blue source icons (49 total in blue_icons; 4 added this batch)
+
+asset_name	download_source	background_mode	reads_as
+impact_burst.png	ChatGPT Image Jun 9, 2026, 01_12_27 PM.png	white-edge	explosion / burst impact
+heart.png	ChatGPT Image Jun 9, 2026, 01_12_32 PM.png	white-edge	heart / heal
+haste.png	ChatGPT Image Jun 9, 2026, 01_12_42 PM.png	white-edge	speed / hasten (arrow + motion lines)
+hourglass.png	ChatGPT Image Jun 9, 2026, 01_13_03 PM.png	white-edge	time / slow / duration
+
+## Staging (normalized blue sources)
+
+assets/ui/imports/new_icons_2026-06-09_batch3_blue/
+
+## Color variants generated for each new icon
+
+color	folder	recolor_flag
+blue	assets/ui/blue_icons/	(source — no recolor)
+white	assets/ui/white_icons/	--mode white
+green	assets/ui/green_icons/	--color green
+red	assets/ui/red_icons/	--color red
+yellow	assets/ui/yellow_icons/	--color yellow
+purple	assets/ui/purple_icons/	--color purple
+
+## Per-icon color outputs (all 6 sets above)
+
+impact_burst.png
+heart.png
+haste.png
+hourglass.png
+
+## Contact sheets rebuilt
+
+assets/ui/imports/new_icons_2026-06-09_batch3_contact_sheet.png
+assets/ui/blue_icons/contact_sheet.png
+assets/ui/white_icons/contact_sheet.png
+assets/ui/green_icons/contact_sheet.png
+assets/ui/red_icons/contact_sheet.png
+assets/ui/yellow_icons/contact_sheet.png
+assets/ui/purple_icons/contact_sheet.png
+assets/ui/icons_all_colors.png

@@ -1,0 +1,50 @@
+# New UI icon import batch (2026-06-08)
+# Source: ~/Downloads (PascalCase filenames, already named by author)
+# Pipeline: normalize_icons.py (edge white / dark bg) -> blue_icons -> recolor -> color folders
+
+## New blue source icons (41 total in blue_icons; 10 added this batch)
+
+asset_name	download_source	background_mode
+rage.png	Rage.png	dark
+fear.png	Fear.png	dark
+taunt.png	Taunt.png	dark
+ranged_impact.png	RangedImpact.png	white-edge
+scortch.png	Scortch.png	white-edge
+ice_shard.png	IceShard.png	dark
+nuke.png	Nuke.png	white-edge
+fire_storm.png	FireStorm.png	white-edge
+ice_storm.png	IceStorm.png	white-edge
+sand_storm.png	SandStorm.png	white-edge
+
+## Color variants generated for each new icon
+
+color	folder	recolor_flag
+blue	assets/ui/blue_icons/	(source — no recolor)
+white	assets/ui/white_icons/	--mode white
+green	assets/ui/green_icons/	--color green
+red	assets/ui/red_icons/	--color red
+yellow	assets/ui/yellow_icons/	--color yellow
+purple	assets/ui/purple_icons/	--color purple
+
+## Per-icon color outputs (all 6 sets above)
+
+rage.png
+fear.png
+taunt.png
+ranged_impact.png
+scortch.png
+ice_shard.png
+nuke.png
+fire_storm.png
+ice_storm.png
+sand_storm.png
+
+## Contact sheets rebuilt
+
+assets/ui/blue_icons/contact_sheet.png
+assets/ui/white_icons/contact_sheet.png
+assets/ui/green_icons/contact_sheet.png
+assets/ui/red_icons/contact_sheet.png
+assets/ui/yellow_icons/contact_sheet.png
+assets/ui/purple_icons/contact_sheet.png
+assets/ui/icons_all_colors.png

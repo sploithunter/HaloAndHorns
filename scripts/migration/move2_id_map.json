@@ -1,0 +1,351 @@
+{
+ "102909461111791": {
+  "file": "assets/source/drops/cogwheel/blue/cogwheel_blue.png",
+  "image_id": "131082834586557",
+  "moderation": "Approved",
+  "name": "cogwheel_blue",
+  "new_id": "95497285071915",
+  "type": "Image"
+ },
+ "104177688657054": {
+  "file": "assets/ui/gems_clear/citrine_gem_single.png",
+  "moderation": "Approved",
+  "name": "gemui_yellow_gem_single",
+  "new_id": "134037429410412",
+  "type": "Decal"
+ },
+ "106127747169545": {
+  "file": "assets/ui/gems_clear/ruby_gem_single.png",
+  "moderation": "Approved",
+  "name": "gemui_red_gem_single",
+  "new_id": "121052659627160",
+  "type": "Decal"
+ },
+ "106984872505048": {
+  "file": "assets/ui/gems_clear/ruby_gem_single.png",
+  "image_id": "138551458441135",
+  "moderation": "Approved",
+  "name": "ruby_gem_single",
+  "new_id": "133422349036846",
+  "type": "Image"
+ },
+ "108675846735651": {
+  "file": "assets/source/drops/cogwheel/red/cogwheel_red.png",
+  "image_id": "88662935252644",
+  "moderation": "Approved",
+  "name": "cogwheel_red",
+  "new_id": "77916253978784",
+  "type": "Image"
+ },
+ "108940406293408": {
+  "file": "assets/audio/sfx/desert_magic_cast_long.mp3",
+  "moderation": "Approved",
+  "name": "desert_magic_cast_long",
+  "new_id": "104317755911761",
+  "type": "Audio"
+ },
+ "110721051431892": {
+  "file": "assets/ui/gems_clear/emerald_gem_pile.png",
+  "image_id": "110028734760296",
+  "moderation": "Approved",
+  "name": "emerald_gem_pile",
+  "new_id": "138663115944067",
+  "type": "Image"
+ },
+ "111577083207352": {
+  "file": "assets/ui/gems_clear/sapphire_gem_bag.png",
+  "image_id": "103860519092179",
+  "moderation": "Approved",
+  "name": "sapphire_gem_bag",
+  "new_id": "78789508732647",
+  "type": "Image"
+ },
+ "115145476379087": {
+  "file": "assets/ui/gems_clear/citrine_gem_bag.png",
+  "image_id": "96892408129617",
+  "moderation": "Approved",
+  "name": "citrine_gem_bag",
+  "new_id": "72134949097249",
+  "type": "Image"
+ },
+ "117318156254750": {
+  "file": "assets/audio/sfx/fire_impact_targeted_3.mp3",
+  "moderation": "Approved",
+  "name": "fire_impact_targeted_3",
+  "new_id": "77080228500140",
+  "type": "Audio"
+ },
+ "119007782066562": {
+  "file": "assets/source/drops/cogwheel/yellow/cogwheel_yellow.png",
+  "image_id": "79723645423878",
+  "moderation": "Approved",
+  "name": "cogwheel_yellow",
+  "new_id": "86309474366377",
+  "type": "Image"
+ },
+ "119450165143759": {
+  "file": "assets/ui/gems_clear/sapphire_gem_single.png",
+  "moderation": "Approved",
+  "name": "gemui_blue_gem_single",
+  "new_id": "88757009582701",
+  "type": "Decal"
+ },
+ "121215976414474": {
+  "file": "assets/audio/sfx/arrow_impact_desert.mp3",
+  "moderation": "Approved",
+  "name": "arrow_impact_desert",
+  "new_id": "74442492755990",
+  "type": "Audio"
+ },
+ "121697559002218": {
+  "file": "assets/ui/ring_frames_white/ring_aura.png",
+  "image_id": "132051312589044",
+  "moderation": "Approved",
+  "name": "ring_white_ring_aura",
+  "new_id": "127196786591127",
+  "type": "Image"
+ },
+ "122469397847650": {
+  "file": "assets/audio/music/awe_loop.mp3",
+  "moderation": "Approved",
+  "name": "awe_loop",
+  "new_id": "137816344186500",
+  "type": "Audio"
+ },
+ "123560213437578": {
+  "file": "assets/source/drops/cogwheel/silver/cogwheel_silver.png",
+  "image_id": "70588294918015",
+  "moderation": "Approved",
+  "name": "cogwheel_silver",
+  "new_id": "118323389241379",
+  "type": "Image"
+ },
+ "125017003780089": {
+  "file": "assets/audio/sfx/fire_impact_targeted_2.mp3",
+  "moderation": "Approved",
+  "name": "fire_impact_targeted_2",
+  "new_id": "126370526115474",
+  "type": "Audio"
+ },
+ "125923588431694": {
+  "file": "assets/audio/sfx/force_field_raise.mp3",
+  "moderation": "Approved",
+  "name": "force_field_raise",
+  "new_id": "124911631879452",
+  "type": "Audio"
+ },
+ "127988865093771": {
+  "file": "assets/audio/sfx/icy_wind_casting.mp3",
+  "moderation": "Approved",
+  "name": "icy_wind_casting",
+  "new_id": "125126568964512",
+  "type": "Audio"
+ },
+ "128240762228140": {
+  "file": "assets/audio/sfx/cartoony_spell_cast.mp3",
+  "moderation": "Approved",
+  "name": "cartoony_spell_cast",
+  "new_id": "140394538590179",
+  "type": "Audio"
+ },
+ "128882337386374": {
+  "file": "assets/audio/sfx/earth_magic_casting.mp3",
+  "moderation": "Approved",
+  "name": "earth_magic_casting",
+  "new_id": "132509816311774",
+  "type": "Audio"
+ },
+ "129756458235378": {
+  "file": "assets/audio/music/celebratory_jingle.mp3",
+  "moderation": "Approved",
+  "name": "celebratory_jingle",
+  "new_id": "118066342271463",
+  "type": "Audio"
+ },
+ "130117829099103": {
+  "file": "assets/ui/gems_clear/citrine_gem_pile.png",
+  "image_id": "106846660303472",
+  "moderation": "Approved",
+  "name": "citrine_gem_pile",
+  "new_id": "89902262899457",
+  "type": "Image"
+ },
+ "130629017706281": {
+  "file": "assets/audio/sfx/single_target_punch.mp3",
+  "moderation": "Approved",
+  "name": "single_target_punch",
+  "new_id": "70478220013693",
+  "type": "Audio"
+ },
+ "131694228494794": {
+  "file": "assets/audio/sfx/power_up_stronger.mp3",
+  "moderation": "Approved",
+  "name": "power_up_stronger",
+  "new_id": "105379088796995",
+  "type": "Audio"
+ },
+ "133214678271304": {
+  "file": "assets/audio/music/viking_drum_loop.mp3",
+  "moderation": "Approved",
+  "name": "viking_drum_loop",
+  "new_id": "92543861599965",
+  "type": "Audio"
+ },
+ "135624983070582": {
+  "file": "assets/audio/sfx/desert_magic_long.mp3",
+  "moderation": "Approved",
+  "name": "desert_magic_long",
+  "new_id": "126096328746681",
+  "type": "Audio"
+ },
+ "137697638458544": {
+  "file": "assets/ui/gems_clear/emerald_gem_single.png",
+  "moderation": "Approved",
+  "name": "gemui_green_gem_single",
+  "new_id": "80734166119788",
+  "type": "Decal"
+ },
+ "140074573067134": {
+  "file": "assets/ui/gems_clear/sapphire_gem_pile.png",
+  "image_id": "106895217994427",
+  "moderation": "Approved",
+  "name": "sapphire_gem_pile",
+  "new_id": "114760741112126",
+  "type": "Image"
+ },
+ "71912785258456": {
+  "file": "assets/audio/sfx/rippling_rock_magic.mp3",
+  "moderation": "Approved",
+  "name": "rippling_rock_magic",
+  "new_id": "126442843540204",
+  "type": "Audio"
+ },
+ "72910842757132": {
+  "file": "assets/audio/sfx/fireball_launch.mp3",
+  "moderation": "Approved",
+  "name": "fireball_launch",
+  "new_id": "87704208327077",
+  "type": "Audio"
+ },
+ "75441224405966": {
+  "file": "assets/audio/music/epic_drum_loop.mp3",
+  "moderation": "Approved",
+  "name": "epic_drum_loop",
+  "new_id": "131000740431597",
+  "type": "Audio"
+ },
+ "76239838028664": {
+  "file": "assets/audio/sfx/fire_impact_targeted_1.mp3",
+  "moderation": "Approved",
+  "name": "fire_impact_targeted_1",
+  "new_id": "80359931572884",
+  "type": "Audio"
+ },
+ "80309644035251": {
+  "file": "assets/ui/gems_clear/ruby_gem_bag.png",
+  "image_id": "83118221453427",
+  "moderation": "Approved",
+  "name": "ruby_gem_bag",
+  "new_id": "78137007412009",
+  "type": "Image"
+ },
+ "87632216595220": {
+  "file": "assets/audio/sfx/fireball_impact_targeted.mp3",
+  "moderation": "Approved",
+  "name": "fireball_impact_targeted",
+  "new_id": "137088339818106",
+  "type": "Audio"
+ },
+ "88555005076540": {
+  "file": "assets/ui/gems_clear/citrine_gem_single.png",
+  "image_id": "134350323528645",
+  "moderation": "Approved",
+  "name": "citrine_gem_single",
+  "new_id": "120801798255392",
+  "type": "Image"
+ },
+ "88946068227454": {
+  "file": "assets/source/drops/cogwheel/purple/cogwheel_purple.png",
+  "image_id": "97999269673992",
+  "moderation": "Approved",
+  "name": "cogwheel_purple",
+  "new_id": "103969254149522",
+  "type": "Image"
+ },
+ "89319434061596": {
+  "file": "assets/ui/gems_clear/ruby_gem_pile.png",
+  "image_id": "74868057637890",
+  "moderation": "Approved",
+  "name": "ruby_gem_pile",
+  "new_id": "126363411255168",
+  "type": "Image"
+ },
+ "89849279170806": {
+  "file": "assets/ui/gems_clear/emerald_gem_single.png",
+  "image_id": "95635117262920",
+  "moderation": "Approved",
+  "name": "emerald_gem_single",
+  "new_id": "117103605868668",
+  "type": "Image"
+ },
+ "91612068059535": {
+  "file": "assets/ui/gems_clear/emerald_gem_bag.png",
+  "image_id": "123355196999439",
+  "moderation": "Approved",
+  "name": "emerald_gem_bag",
+  "new_id": "140029546915697",
+  "type": "Image"
+ },
+ "92087344212010": {
+  "file": "assets/ui/gems_clear/sapphire_gem_single.png",
+  "image_id": "85476193238451",
+  "moderation": "Approved",
+  "name": "sapphire_gem_single",
+  "new_id": "116631469507017",
+  "type": "Image"
+ },
+ "93387065123336": {
+  "file": "assets/audio/sfx/fireball_impact_aoe.mp3",
+  "moderation": "Approved",
+  "name": "fireball_impact_aoe",
+  "new_id": "101676922943791",
+  "type": "Audio"
+ },
+ "96154251218473": {
+  "file": "assets/audio/sfx/deep_winter_wind.mp3",
+  "moderation": "Approved",
+  "name": "deep_winter_wind",
+  "new_id": "85365931736854",
+  "type": "Audio"
+ },
+ "96567599651432": {
+  "file": "assets/audio/sfx/freezing_crack_single_target.mp3",
+  "moderation": "Approved",
+  "name": "freezing_crack_single_target",
+  "new_id": "76218561522804",
+  "type": "Audio"
+ },
+ "98891214914756": {
+  "file": "assets/audio/sfx/deep_earthen_impact.mp3",
+  "moderation": "Approved",
+  "name": "deep_earthen_impact",
+  "new_id": "90412394528626",
+  "type": "Audio"
+ },
+ "99084444950159": {
+  "file": "assets/audio/sfx/earthen_impact.mp3",
+  "moderation": "Approved",
+  "name": "earthen_impact",
+  "new_id": "115890628962398",
+  "type": "Audio"
+ },
+ "99887919204355": {
+  "file": "assets/source/drops/cogwheel/green/cogwheel_green.png",
+  "image_id": "129292347025511",
+  "moderation": "Approved",
+  "name": "cogwheel_green",
+  "new_id": "107948677817959",
+  "type": "Image"
+ },
+ "_failed": {}
+}

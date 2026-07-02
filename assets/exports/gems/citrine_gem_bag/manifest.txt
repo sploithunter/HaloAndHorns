@@ -1,0 +1,4 @@
+source: /Users/jason/Documents/RBX-Template/assets/source/gems/citrine_gem_bag.obj
+original_tris: 9777
+
+3500tris: citrine_gem_bag_3500tris.fbx (3499 tris, target 3500)

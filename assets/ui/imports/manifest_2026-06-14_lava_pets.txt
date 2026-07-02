@@ -1,0 +1,41 @@
+# Lava pet 3D model import (2026-06-14 afternoon batch)
+
+## Preview images
+Downloads PNGs copied to assets/exports/pets/basic/{pet}_basic.png for contact sheet.
+Master contact sheet: assets/exports/pets/lava_pets_2026-06-14_contact_sheet.png
+
+## Processing
+
+for stem in ember_moth_basic magma_wyrm_basic molten_rhino_basic cinder_whelp_basic; do
+  bash scripts/decimate_mesh.sh "assets/source/pets/${stem}.obj" \
+    --output "assets/exports/pets/${stem}" \
+    --targets 5000,7500,10000
+done
+
+## Source
+
+pet	variant	stem	download_zip	preview_png	original_tris
+ember_moth	basic	ember_moth_basic	Ember Moth.zip	Ember Moth.png	13124
+magma_wyrm	basic	magma_wyrm_basic	Magma Wyrm.zip	Magma Wyrm.png	11782
+molten_rhino	basic	molten_rhino_basic	molten rhino.zip	molten rhino.png	17488
+cinder_whelp	basic	cinder_whelp_basic	Cinder Whelp.zip	Cinder Whelp.png	11334
+
+## Exports (FBX + mesh texture)
+
+pet	recommended_fbx	mesh_texture	preview_image
+ember_moth	assets/exports/pets/ember_moth_basic/ember_moth_basic_5k.fbx	assets/exports/pets/ember_moth_basic/ember_moth_basic.png	assets/exports/pets/basic/ember_moth_basic.png
+magma_wyrm	assets/exports/pets/magma_wyrm_basic/magma_wyrm_basic_5k.fbx	assets/exports/pets/magma_wyrm_basic/magma_wyrm_basic.png	assets/exports/pets/basic/magma_wyrm_basic.png
+molten_rhino	assets/exports/pets/molten_rhino_basic/molten_rhino_basic_5k.fbx	assets/exports/pets/molten_rhino_basic/molten_rhino_basic.png	assets/exports/pets/basic/molten_rhino_basic.png
+cinder_whelp	assets/exports/pets/cinder_whelp_basic/cinder_whelp_basic_5k.fbx	assets/exports/pets/cinder_whelp_basic/cinder_whelp_basic.png	assets/exports/pets/basic/cinder_whelp_basic.png
+
+## Decimation targets
+5000 / 7500 / 10000 tris — all four meshes fully hit each target.
+
+## Wired
+All four wired into configs/enemies.lua (self-serve upload to Open Simulator group 15872767):
+  cinder_whelp -> lava_imp       (display "Cinder Whelp")  mesh 131428937593668 / image 113493690033768
+  ember_moth   -> ember_acolyte  (display "Ember Moth")    mesh 119015123255528 / image 129651164618641
+  molten_rhino -> ember_brute    (display "Ember Brute")   mesh 80444941740535  / image 84646732890800
+  magma_wyrm   -> infernal_boss  (display "Magma Wyrm")    mesh 73070415401707  / image 120005508573070
+Reminder: texture_asset = the resolved IMAGE id, not the Decal id (see scripts/pet_pipeline.md).
+Full ids in scripts/pet_mesh_ids.json. Lava faction is now fully modeled + admin-spawnable.

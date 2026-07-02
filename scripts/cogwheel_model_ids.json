@@ -1,0 +1,21 @@
+{
+  "_note": "Enhancement drop cogwheel. ONE shared mesh (silver 3500tris FBX) + 6 color textures. model = the uploaded Model asset; meshId = the MeshPart's resolved MeshId (use this in-engine); textures = resolved Image content ids (decal -> Texture).",
+  "model": "119144344494713",
+  "meshId": "76065631196112",
+  "decals": {
+    "silver": "111128773287822",
+    "green": "107771421551218",
+    "blue": "132425110899160",
+    "purple": "139882473066782",
+    "red": "112185923938149",
+    "yellow": "102541047900963"
+  },
+  "textures": {
+    "silver": "123560213437578",
+    "green": "99887919204355",
+    "blue": "102909461111791",
+    "purple": "88946068227454",
+    "red": "108675846735651",
+    "yellow": "119007782066562"
+  }
+}

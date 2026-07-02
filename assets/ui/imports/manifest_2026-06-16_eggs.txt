@@ -1,0 +1,83 @@
+# Egg 2D icon import (2026-06-16)
+# Pipeline: scripts/normalize_icons.py (auto-detect green or blue screen)
+
+## Processing
+
+python3 scripts/normalize_icons.py ~/Downloads/<source>.png assets/source/eggs/<egg_id>.png
+
+Blue-screen sources used where egg art contains green tints (Ash, Blight, Bloom).
+
+## Source
+
+egg_id	download	source_key	output_size
+ash_egg	AshEgg.png	blue-screen	989x989
+blight_egg	BlightEgg.png	blue-screen	989x989
+black_ice_egg	BlackIceEgg.png	green-screen	1014x1014
+infernal_egg	InfernalEgg.png	green-screen	1087x1087
+gilded_egg	GildedEgg.png	green-screen	1061x1061
+bloom_egg	BloomEgg.png	blue-screen	1029x1029
+aurora_egg	auroraEgg.png	green-screen	983x983
+solar_egg	SolarEggBlueScreen.png	blue-screen	1037x1037	replaced SolarEgg.png (green-screen left spill on gold/orange art)
+
+## Outputs
+
+egg_id	path
+ash_egg	assets/source/eggs/ash_egg.png
+blight_egg	assets/source/eggs/blight_egg.png
+black_ice_egg	assets/source/eggs/black_ice_egg.png
+infernal_egg	assets/source/eggs/infernal_egg.png
+gilded_egg	assets/source/eggs/gilded_egg.png
+bloom_egg	assets/source/eggs/bloom_egg.png
+aurora_egg	assets/source/eggs/aurora_egg.png
+solar_egg	assets/source/eggs/solar_egg.png
+
+## Contact sheet
+assets/source/eggs/eggs_2026-06-16_contact_sheet.png
+
+## Script update
+Added blue-screen auto-detect + edge-connected key to scripts/normalize_icons.py
+(shared helpers in scripts/remove_image_background.py).
+
+## Wired
+pending: configs/pets.lua egg_sources / inventory image_id upload
+
+---
+
+# Egg 3D mesh import (2026-06-16)
+# Pipeline: import zip -> assets/source/eggs/<egg_id>/ -> decimate_mesh.sh -> assets/exports/eggs/<egg_id>/
+
+for egg_id in ash_egg blight_egg black_ice_egg infernal_egg gilded_egg bloom_egg aurora_egg solar_egg; do
+  bash scripts/decimate_mesh.sh "assets/source/eggs/${egg_id}/${egg_id}.obj" \
+    --output "assets/exports/eggs/${egg_id}" \
+    --targets 5000,7500,10000
+done
+
+## 3D source
+
+egg_id	download_zip	original_tris	source_dir
+ash_egg	AshEgg.zip	13270	assets/source/eggs/ash_egg/
+blight_egg	BlightEgg.zip	1508	assets/source/eggs/blight_egg/
+black_ice_egg	BlackIceEgg.zip	13353	assets/source/eggs/black_ice_egg/
+infernal_egg	InfernalEgg.zip	11886	assets/source/eggs/infernal_egg/
+gilded_egg	GildedEgg.zip	12126	assets/source/eggs/gilded_egg/
+bloom_egg	BloomEgg.zip	15754	assets/source/eggs/bloom_egg/
+aurora_egg	AuroraEgg.zip	1022	assets/source/eggs/aurora_egg/
+solar_egg	SolarEgg.zip	4508	assets/source/eggs/solar_egg/
+
+## 3D exports (recommended upload)
+
+egg_id	recommended_fbx	mesh_texture
+ash_egg	assets/exports/eggs/ash_egg/ash_egg_5k.fbx	assets/exports/eggs/ash_egg/ash_egg.png
+blight_egg	assets/exports/eggs/blight_egg/blight_egg_5k.fbx	assets/exports/eggs/blight_egg/blight_egg.png
+black_ice_egg	assets/exports/eggs/black_ice_egg/black_ice_egg_5k.fbx	assets/exports/eggs/black_ice_egg/black_ice_egg.png
+infernal_egg	assets/exports/eggs/infernal_egg/infernal_egg_5k.fbx	assets/exports/eggs/infernal_egg/infernal_egg.png
+gilded_egg	assets/exports/eggs/gilded_egg/gilded_egg_5k.fbx	assets/exports/eggs/gilded_egg/gilded_egg.png
+bloom_egg	assets/exports/eggs/bloom_egg/bloom_egg_5k.fbx	assets/exports/eggs/bloom_egg/bloom_egg.png
+aurora_egg	assets/exports/eggs/aurora_egg/aurora_egg_5k.fbx	assets/exports/eggs/aurora_egg/aurora_egg.png
+solar_egg	assets/exports/eggs/solar_egg/solar_egg_5k.fbx	assets/exports/eggs/solar_egg/solar_egg.png
+
+## Decimation notes
+5000 / 7500 / 10000 tris. blight_egg (1508), aurora_egg (1022), solar_egg (4508) kept at native count for all targets.
+
+## 3D wired
+pending: egg mesh upload + configs/pets.lua egg_sources

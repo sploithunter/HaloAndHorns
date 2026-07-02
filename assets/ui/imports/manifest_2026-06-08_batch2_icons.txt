@@ -1,0 +1,43 @@
+# New UI icon import batch 2 (2026-06-08)
+# Source: ~/Downloads top four (newest first)
+# Pipeline: normalize_icons.py (edge-connected white bg) -> blue_icons -> recolor -> color folders
+
+## New blue source icons (45 total in blue_icons; 4 added this batch)
+
+asset_name	download_source	background_mode
+critical_hit.png	CriticalHit.png	white-edge
+ice_hold.png	IceHold.png	white-edge
+winter_hold.png	WinterHold.png	white-edge
+pet.png	Pet.png	white-edge
+
+## Staging (normalized blue sources)
+
+assets/ui/imports/new_icons_2026-06-08_batch2_blue/
+
+## Color variants generated for each new icon
+
+color	folder	recolor_flag
+blue	assets/ui/blue_icons/	(source — no recolor)
+white	assets/ui/white_icons/	--mode white
+green	assets/ui/green_icons/	--color green
+red	assets/ui/red_icons/	--color red
+yellow	assets/ui/yellow_icons/	--color yellow
+purple	assets/ui/purple_icons/	--color purple
+
+## Per-icon color outputs (all 6 sets above)
+
+critical_hit.png
+ice_hold.png
+winter_hold.png
+pet.png
+
+## Contact sheets rebuilt
+
+assets/ui/imports/new_icons_2026-06-08_batch2_contact_sheet.png
+assets/ui/blue_icons/contact_sheet.png
+assets/ui/white_icons/contact_sheet.png
+assets/ui/green_icons/contact_sheet.png
+assets/ui/red_icons/contact_sheet.png
+assets/ui/yellow_icons/contact_sheet.png
+assets/ui/purple_icons/contact_sheet.png
+assets/ui/icons_all_colors.png

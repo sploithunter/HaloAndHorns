@@ -1,0 +1,10 @@
+assets_dir: /Users/jason/Documents/RBX-Template/assets/ui/colorado_icons
+icon_count: 5
+
+armor_chest.png
+arrow_right.png
+fist_impact.png
+hand_stop.png
+star_sparkle.png
+
+contact_sheet: contact_sheet.png

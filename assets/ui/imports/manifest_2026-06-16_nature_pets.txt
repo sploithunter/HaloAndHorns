@@ -1,0 +1,57 @@
+# Nature pet 3D model import (2026-06-16)
+# 5 species × basic + gold = 10 meshes
+
+## Preview images
+Basic PNGs -> assets/exports/pets/basic/{pet}_basic.png
+Gold PNGs   -> assets/exports/pets/gold/{pet}_gold.png
+Contact sheets:
+  assets/exports/pets/nature_pets_2026-06-16_basic_contact_sheet.png
+  assets/exports/pets/nature_pets_2026-06-16_gold_contact_sheet.png
+
+## Processing
+
+for stem in \
+  bloomlamb_basic bloomlamb_gold \
+  worldroot_ent_basic worldroot_ent_gold \
+  verdant_sprite_basic verdant_sprite_gold \
+  goldleaf_stag_basic goldleaf_stag_gold \
+  halo_hare_basic halo_hare_gold; do
+  bash scripts/decimate_mesh.sh "assets/source/pets/${stem}.obj" \
+    --output "assets/exports/pets/${stem}" \
+    --targets 5000,7500,10000
+done
+
+## Source
+
+pet	variant	stem	download_zip	preview_png	original_tris
+bloomlamb	basic	bloomlamb_basic	Bloomlamb.zip	Bloomlamb.png	9110
+bloomlamb	gold	bloomlamb_gold	Bloomlamb Gold.zip	Bloomlamb Gold.png	9110
+worldroot_ent	basic	worldroot_ent_basic	Worldroot Ent.zip	Worldroot Ent.png	12026
+worldroot_ent	gold	worldroot_ent_gold	Worldroot Ent Gold.zip	Worldroot Ent Gold.png	12026
+verdant_sprite	basic	verdant_sprite_basic	Verdant Sprite.zip	Verdant Sprite.png	17182
+verdant_sprite	gold	verdant_sprite_gold	Verdant Sprite Gold.zip	Verdant Sprite Gold.png	17182
+goldleaf_stag	basic	goldleaf_stag_basic	Goldleaf Stag.zip	Goldleaf Stag.png	12416
+goldleaf_stag	gold	goldleaf_stag_gold	Goldleaf Stag Gold.zip	Goldleaf Stag Gold.png	12416
+halo_hare	basic	halo_hare_basic	Halo Hare.zip	Halo Hare.png	14008
+halo_hare	gold	halo_hare_gold	Halo Hare Gold.zip	Halo Hare Gold.png	14008
+
+## Exports (recommended upload per mesh)
+
+pet	variant	recommended_fbx	mesh_texture	preview_image
+bloomlamb	basic	assets/exports/pets/bloomlamb_basic/bloomlamb_basic_5k.fbx	assets/exports/pets/bloomlamb_basic/bloomlamb_basic.png	assets/exports/pets/basic/bloomlamb_basic.png
+bloomlamb	gold	assets/exports/pets/bloomlamb_gold/bloomlamb_gold_5k.fbx	assets/exports/pets/bloomlamb_gold/bloomlamb_gold.png	assets/exports/pets/gold/bloomlamb_gold.png
+worldroot_ent	basic	assets/exports/pets/worldroot_ent_basic/worldroot_ent_basic_5k.fbx	assets/exports/pets/worldroot_ent_basic/worldroot_ent_basic.png	assets/exports/pets/basic/worldroot_ent_basic.png
+worldroot_ent	gold	assets/exports/pets/worldroot_ent_gold/worldroot_ent_gold_5k.fbx	assets/exports/pets/worldroot_ent_gold/worldroot_ent_gold.png	assets/exports/pets/gold/worldroot_ent_gold.png
+verdant_sprite	basic	assets/exports/pets/verdant_sprite_basic/verdant_sprite_basic_5k.fbx	assets/exports/pets/verdant_sprite_basic/verdant_sprite_basic.png	assets/exports/pets/basic/verdant_sprite_basic.png
+verdant_sprite	gold	assets/exports/pets/verdant_sprite_gold/verdant_sprite_gold_5k.fbx	assets/exports/pets/verdant_sprite_gold/verdant_sprite_gold.png	assets/exports/pets/gold/verdant_sprite_gold.png
+goldleaf_stag	basic	assets/exports/pets/goldleaf_stag_basic/goldleaf_stag_basic_5k.fbx	assets/exports/pets/goldleaf_stag_basic/goldleaf_stag_basic.png	assets/exports/pets/basic/goldleaf_stag_basic.png
+goldleaf_stag	gold	assets/exports/pets/goldleaf_stag_gold/goldleaf_stag_gold_5k.fbx	assets/exports/pets/goldleaf_stag_gold/goldleaf_stag_gold.png	assets/exports/pets/gold/goldleaf_stag_gold.png
+halo_hare	basic	assets/exports/pets/halo_hare_basic/halo_hare_basic_5k.fbx	assets/exports/pets/halo_hare_basic/halo_hare_basic.png	assets/exports/pets/basic/halo_hare_basic.png
+halo_hare	gold	assets/exports/pets/halo_hare_gold/halo_hare_gold_5k.fbx	assets/exports/pets/halo_hare_gold/halo_hare_gold.png	assets/exports/pets/gold/halo_hare_gold.png
+
+## Decimation notes
+5000 / 7500 / 10000 tris for all meshes.
+bloomlamb source < 10000 tris — 10k export kept at native count (9110).
+
+## Wired
+pending: configs/pets.lua + assets/manifest/pets.json entries

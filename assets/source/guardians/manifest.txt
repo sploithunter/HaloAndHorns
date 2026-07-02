@@ -1,0 +1,6 @@
+# Guardian summon meshes (Gaia Colossus / Genie of the Dunes).
+# Upload FBX + texture from assets/exports/guardians/.
+
+name	display	meshy_folder	original_tris
+colossus	Gaia Colossus (Verdant Guardian)	Meshy_AI_Verdant_Guardian_0607123558_texture_obj	11316
+djinn	Genie of the Dunes (Golden Djinn)	Meshy_AI_Golden_Djinn_0607123441_texture_obj	4488

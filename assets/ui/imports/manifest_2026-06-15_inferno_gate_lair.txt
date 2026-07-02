@@ -1,0 +1,26 @@
+# Lava pet lair 3D model import (2026-06-15)
+
+## Asset type
+Pet lair (map prop / egg hatcher shell) — NOT a pet creature mesh.
+
+## Processing
+
+bash scripts/decimate_mesh.sh assets/source/lairs/inferno_gate_lair.obj \
+  --output assets/exports/lairs/inferno_gate_lair \
+  --targets 5000,7500,10000
+
+## Source
+
+lair_id	stem	download_zip	display_name	original_tris
+inferno_gate_lair	inferno_gate_lair	Meshy_AI_Inferno Gate_1781533177_texture.zip	Inferno Gate	21066
+
+## Exports (FBX + texture)
+
+lair_id	recommended_fbx	texture
+inferno_gate_lair	assets/exports/lairs/inferno_gate_lair/inferno_gate_lair_5k.fbx	assets/exports/lairs/inferno_gate_lair/inferno_gate_lair.png
+
+## Decimation targets
+5000 / 7500 / 10000 tris — all targets hit from 21066-tris source.
+
+## Wired
+pending: map placement / egg_stand_placements / Studio upload

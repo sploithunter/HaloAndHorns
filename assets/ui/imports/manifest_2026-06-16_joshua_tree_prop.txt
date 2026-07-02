@@ -1,0 +1,30 @@
+# Joshua tree map prop import (2026-06-16)
+
+## Asset type
+Map prop / scenery — NOT a pet, lair, or breakable.
+
+## Paths (new category)
+Source: assets/source/props/joshua_tree.{obj,mtl,png}
+Export: assets/exports/props/joshua_tree/
+
+## Processing
+
+bash scripts/decimate_mesh.sh assets/source/props/joshua_tree.obj \
+  --output assets/exports/props/joshua_tree \
+  --targets 5000,7500,10000
+
+## Source
+
+prop_id	stem	download_zip	preview_png	display_name	original_tris
+joshua_tree	joshua_tree	Meshy_AI_Desert_Bloom_Tree_0616211659_texture_obj.zip	Joshua Tree.png	Joshua Tree	18851
+
+## Exports (recommended upload)
+
+prop_id	recommended_fbx	mesh_texture	preview_image
+joshua_tree	assets/exports/props/joshua_tree/joshua_tree_5k.fbx	assets/exports/props/joshua_tree/joshua_tree.png	assets/exports/props/joshua_tree/joshua_tree_preview.png
+
+## Decimation targets
+5000 / 7500 / 10000 tris — all targets hit from 18851-tris source.
+
+## Wired
+pending: map placement in Studio / configs (no props.lua yet)

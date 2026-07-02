@@ -1,0 +1,8 @@
+# Upload-ready guardian FBX meshes. Pair each FBX with its .png texture.
+
+colossus	colossus_10k.fbx	10000 tris	colossus.png
+colossus	colossus_5k.fbx	5000 tris	colossus.png
+colossus	colossus_7500tris.fbx	7500 tris	colossus.png
+djinn	djinn_10k.fbx	4488 tris	djinn.png
+djinn	djinn_5k.fbx	4488 tris	djinn.png
+djinn	djinn_7500tris.fbx	4488 tris	djinn.png

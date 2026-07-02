@@ -1,0 +1,46 @@
+# Ice pet 3D model import (2026-06-14 evening batch)
+
+## Preview images
+Downloads PNGs copied to assets/exports/pets/basic/{pet}_basic.png for contact sheet.
+Master contact sheet: assets/exports/pets/ice_pets_2026-06-14_contact_sheet.png
+
+## Processing
+
+for stem in snowy_owl_basic glacial_mammoth_basic glacial_leviathan_basic aurora_seal_basic frost_fox_basic; do
+  bash scripts/decimate_mesh.sh "assets/source/pets/${stem}.obj" \
+    --output "assets/exports/pets/${stem}" \
+    --targets 5000,7500,10000
+done
+
+## Source
+
+pet	variant	stem	download_zip	preview_png	original_tris
+snowy_owl	basic	snowy_owl_basic	SnowyOwl.zip	SnowyOwl.png	14678
+glacial_mammoth	basic	glacial_mammoth_basic	GlacialMammoth.zip	GlacialMammoth.png	12573
+glacial_leviathan	basic	glacial_leviathan_basic	GlacialLeviathan.zip	GlacialLeviathan.png	12100
+aurora_seal	basic	aurora_seal_basic	AuroraSeal.zip	AuroraSeal.png	12862
+frost_fox	basic	frost_fox_basic	FrostFox.zip	FrostFox.png	12742
+
+## Exports (FBX + mesh texture)
+
+pet	recommended_fbx	mesh_texture	preview_image
+snowy_owl	assets/exports/pets/snowy_owl_basic/snowy_owl_basic_5k.fbx	assets/exports/pets/snowy_owl_basic/snowy_owl_basic.png	assets/exports/pets/basic/snowy_owl_basic.png
+glacial_mammoth	assets/exports/pets/glacial_mammoth_basic/glacial_mammoth_basic_5k.fbx	assets/exports/pets/glacial_mammoth_basic/glacial_mammoth_basic.png	assets/exports/pets/basic/glacial_mammoth_basic.png
+glacial_leviathan	assets/exports/pets/glacial_leviathan_basic/glacial_leviathan_basic_5k.fbx	assets/exports/pets/glacial_leviathan_basic/glacial_leviathan_basic.png	assets/exports/pets/basic/glacial_leviathan_basic.png
+aurora_seal	assets/exports/pets/aurora_seal_basic/aurora_seal_basic_5k.fbx	assets/exports/pets/aurora_seal_basic/aurora_seal_basic.png	assets/exports/pets/basic/aurora_seal_basic.png
+frost_fox	assets/exports/pets/frost_fox_basic/frost_fox_basic_5k.fbx	assets/exports/pets/frost_fox_basic/frost_fox_basic.png	assets/exports/pets/basic/frost_fox_basic.png
+
+## Decimation targets
+5000 / 7500 / 10000 tris — all five meshes fully hit each target.
+
+## Wired
+All five wired into configs/enemies.lua as the ICE faction (self-serve upload, group 15872767):
+  frost_fox         mesh 73221295389959  / image 79395384255362   (melee)
+  snowy_owl         mesh 78750320845033  / image 98079418333409   (ranged, bolt_kind=frost)
+  aurora_seal       mesh 107376865437053 / image 102794256383293  (support healer)
+  glacial_mammoth   mesh 112055300686821 / image 100199878594533  (tank)
+  glacial_leviathan mesh 71215778120863  / image 131210888307665  (boss — admin/special, NOT field waves)
+Routing: zone_faction Ice -> "ice"; 4 ice waves added (ready for a BaddieSpawnerIce part). frost aura (def.frost).
+Reminder: texture_asset = the resolved IMAGE id, not the Decal id (scripts/pet_pipeline.md).
+Full ids in scripts/pet_mesh_ids.json.
+pending: configs/pets.lua + assets/manifest/pets.json entries (pet variants)

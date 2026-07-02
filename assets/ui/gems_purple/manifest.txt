@@ -1,0 +1,8 @@
+assets_dir: /Users/jason/Documents/RBX-Template/assets/ui/gems_purple
+icon_count: 3
+
+gem_bag.png
+gem_pile.png
+gem_single.png
+
+contact_sheet: contact_sheet.png

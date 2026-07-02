@@ -1,0 +1,54 @@
+{
+  "name": "game-template",
+  "servePort": 34872,
+  "globIgnorePaths": [
+    "Packages/**/*.project.json"
+  ],
+  "tree": {
+    "$className": "DataModel",
+    "Workspace": {
+      "$ignoreUnknownInstances": true,
+      "$properties": {
+        "FallenPartsDestroyHeight": -50000
+      }
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/Server"
+      }
+    },
+    "ReplicatedStorage": {
+      "Assets": {
+        "$className": "Folder",
+        "Models": {
+          "$path": "assets/place/Models.rbxm"
+        }
+      },
+      "Shared": {
+        "$path": "src/Shared"
+      },
+      "Packages": {
+        "$path": "Packages"
+      },
+      "Tests": {
+        "$path": "tests"
+      },
+      "Configs": {
+        "$path": "configs"
+      },
+      "PlaceAssets": {
+        "$path": "assets/place/PlaceAssets"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/Client"
+        }
+      }
+    },
+    "ReplicatedFirst": {
+      "$path": "src/ReplicatedFirst"
+    }
+  }
+}

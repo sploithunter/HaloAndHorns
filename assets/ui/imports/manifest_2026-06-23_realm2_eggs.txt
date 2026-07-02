@@ -1,0 +1,39 @@
+# Realm 2 egg import manifest (2026-06-23)
+# 8 eggs × (2D icon + 3D mesh)
+# Icons: green-screen keyed via scripts/normalize_icons.py --background-mode green
+# Meshes: native kept (all <= 10000 tris); export as {egg_id}_10k.fbx
+
+## Contact sheets
+  2D key compare: assets/source/eggs/realm2/egg_key_compare_2026-06-23_contact_sheet.png
+  2D final icons: assets/source/eggs/realm2_eggs_2026-06-23_icons_contact_sheet.png
+  3D preview icons: same as 2D final (used for visual index)
+
+## 2D icons (inventory / UI)
+
+egg_id	display	realm	origin	selected_key	source_screen	output_icon	size
+heaven2_fire_egg	Coronal Egg	heaven	fire	green	~/Downloads/Heaven2-Fire_green_screen.png	assets/source/eggs/heaven2_fire_egg.png	1103x1103
+heaven2_grass_egg	Bloomlight Egg	heaven	grass	green	~/Downloads/Heaven2-Grass_green_screen.png	assets/source/eggs/heaven2_grass_egg.png	1118x1118
+heaven2_ice_egg	Prism Egg	heaven	ice	green	~/Downloads/Heaven2-Ice_green_screen.png	assets/source/eggs/heaven2_ice_egg.png	1128x1128
+heaven2_desert_egg	Mirage Egg	heaven	desert	green	~/Downloads/Heaven2-Desert_green_screen.png	assets/source/eggs/heaven2_desert_egg.png	1135x1135
+hell2_fire_egg	Frostcinder Egg	hell	fire	green	~/Downloads/Hell2-Fire_green_screen.png	assets/source/eggs/hell2_fire_egg.png	1160x1160
+hell2_grass_egg	Frostblight Egg	hell	grass	green	~/Downloads/Hell2-Grass_green_screen.png	assets/source/eggs/hell2_grass_egg.png	1136x1136
+hell2_ice_egg	Black-Ice Egg	hell	ice	green	~/Downloads/Hell2-Ice_green_screen.png	assets/source/eggs/hell2_ice_egg.png	1140x1140
+hell2_desert_egg	Frostcarrion Egg	hell	desert	green	~/Downloads/Hell2-Desert_green_screen.png	assets/source/eggs/hell2_desert_egg.png	1158x1158
+
+## 3D meshes
+
+egg_id	display	realm	origin	download_zip	original_tris	export_tris	source_dir	recommended_fbx	mesh_texture
+heaven2_fire_egg	Coronal Egg	heaven	fire	Heaven2-Fire.zip	4400	4400	assets/source/eggs/heaven2_fire_egg/	assets/exports/eggs/heaven2_fire_egg/heaven2_fire_egg_10k.fbx	assets/exports/eggs/heaven2_fire_egg/heaven2_fire_egg.png
+heaven2_grass_egg	Bloomlight Egg	heaven	grass	Heaven2-Grass.zip	6199	6199	assets/source/eggs/heaven2_grass_egg/	assets/exports/eggs/heaven2_grass_egg/heaven2_grass_egg_10k.fbx	assets/exports/eggs/heaven2_grass_egg/heaven2_grass_egg.png
+heaven2_ice_egg	Prism Egg	heaven	ice	Heaven2-Ice.zip	4400	4400	assets/source/eggs/heaven2_ice_egg/	assets/exports/eggs/heaven2_ice_egg/heaven2_ice_egg_10k.fbx	assets/exports/eggs/heaven2_ice_egg/heaven2_ice_egg.png
+heaven2_desert_egg	Mirage Egg	heaven	desert	Heaven2-Desert.zip	4400	4400	assets/source/eggs/heaven2_desert_egg/	assets/exports/eggs/heaven2_desert_egg/heaven2_desert_egg_10k.fbx	assets/exports/eggs/heaven2_desert_egg/heaven2_desert_egg.png
+hell2_fire_egg	Frostcinder Egg	hell	fire	Hell2-Fire.zip	4400	4400	assets/source/eggs/hell2_fire_egg/	assets/exports/eggs/hell2_fire_egg/hell2_fire_egg_10k.fbx	assets/exports/eggs/hell2_fire_egg/hell2_fire_egg.png
+hell2_grass_egg	Frostblight Egg	hell	grass	Hell2-Grass.zip	6586	6586	assets/source/eggs/hell2_grass_egg/	assets/exports/eggs/hell2_grass_egg/hell2_grass_egg_10k.fbx	assets/exports/eggs/hell2_grass_egg/hell2_grass_egg.png
+hell2_ice_egg	Black-Ice Egg	hell	ice	Hell2-Ice.zip	4140	4140	assets/source/eggs/hell2_ice_egg/	assets/exports/eggs/hell2_ice_egg/hell2_ice_egg_10k.fbx	assets/exports/eggs/hell2_ice_egg/hell2_ice_egg.png
+hell2_desert_egg	Frostcarrion Egg	hell	desert	Hell2-Desert.zip	3336	3336	assets/source/eggs/hell2_desert_egg/	assets/exports/eggs/hell2_desert_egg/hell2_desert_egg_10k.fbx	assets/exports/eggs/hell2_desert_egg/hell2_desert_egg.png
+
+## Decimation notes
+All 8 eggs exported at native triangle count (none exceeded 10000 tris).
+
+## Wired
+pending: configs/pets.lua egg_sources + Roblox upload

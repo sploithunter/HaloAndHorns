@@ -1,0 +1,82 @@
+# Continuous integration — the FAST GATE of the remote dev pipeline.
+#
+# This runs the fully-automatable stages on every push/PR:
+#   selene (lint errors) → stylua --check (owned paths) → rojo build → lune headless tests
+#
+# NOT run here (see docs/wiki/REMOTE_DEV_PIPELINE.md, gap analysis):
+#   • Studio integration tier — needs an open Roblox Studio + the MCP; hosted
+#     runners have no Studio, and run-in-roblox is unreliable on CI. Run locally.
+#   • Release (`rojo upload`) — needs the ROBLOX_OPEN_CLOUD_KEY secret + per-release
+#     authorization; intentionally not auto-published from CI.
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  fast-gate:
+    name: Fast gate (static + headless)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install toolchain (mise → rojo, wally, selene, stylua, lune)
+        uses: jdx/mise-action@v2
+
+      - name: Install Wally packages
+        run: mise exec -- wally install
+
+      # mise's github backend can install release binaries without the execute
+      # bit on the Linux runner (e.g. selene), causing "Permission denied".
+      # Tools are registered by full backend names (github:Kampfkarren/selene,
+      # etc.), so chmod the whole installs tree rather than guessing short names.
+      - name: Make mise-installed tools executable
+        run: |
+          install_root="${MISE_DATA_DIR:-$HOME/.local/share/mise}/installs"
+          echo "chmod +x under: $install_root"
+          chmod -R u+x "$install_root" || true
+
+      - name: Fast gate (selene + stylua + rojo build + headless tests)
+        run: mise run ci
+
+  # After the fast gate PASSES on a push to main, refresh configs/build_info.lua to that exact
+  # green commit + the current Mountain time, and commit it back. Keeps the load-screen stamp (the
+  # committed value dev/Rojo shows) always matching the latest passing main commit — no more stale
+  # "updated <old date>". The stamp commit carries [skip ci] so it doesn't re-trigger this workflow
+  # (no loop); the concurrency group serialises overlapping main pushes.
+  stamp-build-info:
+    name: Stamp build_info on main
+    needs: fast-gate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: stamp-build-info
+      cancel-in-progress: false
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Re-stamp build_info.lua from the green commit
+        run: bash scripts/stamp_build.sh
+
+      - name: Commit + push the stamp (skip ci to avoid a loop)
+        run: |
+          if git diff --quiet -- configs/build_info.lua; then
+            echo "build_info.lua unchanged — nothing to stamp."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add configs/build_info.lua
+          git commit -m "chore(build-stamp): refresh build_info to ${GITHUB_SHA:0:7} [skip ci]"
+          # tolerate a race if main advanced while the gate ran
+          git pull --rebase --autostash origin main || true
+          git push origin HEAD:main

@@ -1,0 +1,26 @@
+# Code ownership for multi-agent coordination.
+#
+# Agents currently push as the repo owner, so review routes to @sploithunter;
+# the sections below document the TEMPLATE vs GAME domain boundary that agents
+# follow (see AGENTS.md "Multi-Agent Collaboration" and the decision in
+# docs/wiki/DECISIONS.md). Update paths as game-specific code lands.
+
+# Default
+*                                       @sploithunter
+
+# ── Template (reusable infrastructure) ─────────────────────────────────
+/src/Shared/                            @sploithunter
+/scripts/                               @sploithunter
+/.github/                               @sploithunter
+/tests/headless/                        @sploithunter
+/.mise.toml                             @sploithunter
+/default.project.json                   @sploithunter
+/docs/wiki/REMOTE_DEV_PIPELINE.md       @sploithunter
+/docs/wiki/AUTOMATION_API_DESIGN.md     @sploithunter
+
+# ── Game (Pet Realm) ───────────────────────────────────────────────────
+# Game-specific configs/services/maps/design docs are owned by the game agent.
+# Add concrete paths here as Pet Realm content lands, e.g.:
+#   /configs/ring_topology.lua           @sploithunter
+#   /src/Server/Services/SoulService.lua @sploithunter
+/docs/wiki/REFERENCE_GAME_INSIGHTS.md   @sploithunter

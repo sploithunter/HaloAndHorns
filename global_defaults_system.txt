@@ -1,0 +1,135 @@
+🌐 GLOBAL DEFAULTS SYSTEM - COMPLETE!
+
+## ✅ CENTRALIZED CONFIGURATION WITH INTELLIGENT INHERITANCE
+
+The UI system now supports global defaults that are automatically applied to any element that doesn't override them, creating cleaner configurations and consistent styling.
+
+### 📋 GLOBAL DEFAULTS STRUCTURE
+
+Located in `configs/ui.lua` under `uiConfig.defaults`:
+
+```lua
+defaults = {
+    menu_button = {
+        -- Icon defaults
+        icon_config = {
+            size = {scale_x = 0.4, scale_y = 0.4},      -- Default 40% of button size
+            position = {scale_x = 0.5, scale_y = 0.5},  -- Default center position
+            offset = {x = 0, y = 0}                     -- Default no offset
+        },
+        
+        -- Text defaults
+        text_config = {
+            font = Enum.Font.GothamBold,                -- Default font
+            size = {height = 20, margin = 10},          -- Default text area size
+            color = Color3.fromRGB(255, 255, 255),      -- Default white text
+            text_scaled = true,                         -- Default auto-scale text
+            text_size = 14,                             -- Default font size when not scaled
+            position = {bottom_offset = 25, side_margin = 5},  -- Default text position
+            shadow = {
+                enabled = true,                         -- Default shadow enabled
+                color = Color3.fromRGB(0, 0, 0),        -- Default black shadow
+                thickness = 2,                          -- Default shadow thickness
+                transparency = 0.5                      -- Default shadow transparency
+            }
+        },
+        
+        -- Notification defaults
+        notification = {
+            enabled = false,                            -- Default no notification
+            text = "!",                                 -- Default notification text
+            background_color = Color3.fromRGB(255, 0, 0),  -- Default red background
+            text_color = Color3.fromRGB(255, 255, 255), -- Default white text
+            position = "top-right"                      -- Default position
+        },
+        
+        -- Button defaults
+        color = Color3.fromRGB(100, 100, 100),          -- Default button color (fallback mode)
+        background_image = nil                          -- Default no background image (uses fallback)
+    }
+}
+```
+
+### 🔧 HOW IT WORKS
+
+1. **Automatic Inheritance**: When a button doesn't specify a property, it inherits from global defaults
+2. **Selective Override**: Buttons can override specific properties while keeping defaults for others
+3. **Deep Merging**: Nested configurations merge intelligently (e.g., override shadow color but keep thickness)
+
+### 📝 CONFIGURATION EXAMPLES
+
+**Simple Button (Uses All Defaults):**
+```lua
+{type = "menu_button", config = {
+    name = "Settings", 
+    icon = "⚙️", 
+    text = "Settings", 
+    color = Color3.fromRGB(149, 165, 166), 
+    action = "settings_action"
+    -- Everything else inherited from defaults
+}}
+```
+
+**Partial Override (Mix of Custom + Defaults):**
+```lua
+{type = "menu_button", config = {
+    name = "Daily", 
+    icon = "📅", 
+    text = "Daily", 
+    color = Color3.fromRGB(255, 165, 0), 
+    action = "daily_login_action",
+    notification = {
+        enabled = true,
+        text = "!"
+        -- background_color, text_color, position inherit from defaults
+    }
+}}
+```
+
+**Full Override (Like Shop Button):**
+```lua
+{type = "menu_button", config = {
+    name = "Shop", 
+    background_image = "rbxassetid://18852000893",
+    icon = "6031075938", 
+    icon_config = {
+        size = {scale_x = 0.5, scale_y = 0.5},  -- Override default 0.4
+        offset = {x = 0, y = -5}                -- Override default 0,0
+        -- position inherits from defaults (0.5, 0.5)
+    },
+    text_config = {
+        font = Enum.Font.SourceSansBold,        -- Override default GothamBold
+        size = {height = 25, margin = 8}        -- Override default 20,10
+        -- color, text_scaled, shadow all inherit from defaults
+    }
+}}
+```
+
+### 🎯 BENEFITS
+
+1. **Cleaner Configs**: Most buttons only need name, icon, text, color, action
+2. **Consistency**: All buttons use same fonts, sizes, shadows unless overridden
+3. **Easy Changes**: Change defaults once, affects all buttons using them
+4. **Flexibility**: Can still override any property when needed
+5. **Maintainability**: Less duplication, easier to maintain
+
+### 🔄 INHERITANCE RULES
+
+- **Complete Property**: If not specified, entire property group inherits (e.g., all of icon_config)
+- **Partial Property**: If partially specified, missing sub-properties inherit (e.g., specify icon size but inherit position)
+- **Deep Merging**: Nested objects merge intelligently
+- **Override Priority**: Specific config always overrides defaults
+
+### 📊 CURRENT DEMO
+
+- **Settings, Admin, Quest**: Use pure defaults (minimal config)
+- **Daily**: Partial override (custom notification text, inherits colors/position)
+- **Effects**: Mixed override (custom icon config, custom text config)
+- **Shop**: Full override (custom everything, but still merges with defaults)
+
+### 🎨 EASY CUSTOMIZATION
+
+Want to change all button fonts globally? Just update `defaults.menu_button.text_config.font`!
+Want bigger icons across all buttons? Update `defaults.menu_button.icon_config.size`!
+
+**The system makes global styling changes effortless while preserving the ability to customize individual elements!**

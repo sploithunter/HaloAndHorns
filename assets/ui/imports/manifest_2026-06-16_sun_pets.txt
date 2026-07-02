@@ -1,0 +1,58 @@
+# Sun pet 3D model import (2026-06-16)
+# 5 species × basic + gold = 10 meshes
+
+## Preview images
+Basic PNGs -> assets/exports/pets/basic/{pet}_basic.png
+Gold PNGs   -> assets/exports/pets/gold/{pet}_gold.png
+Contact sheets:
+  assets/exports/pets/sun_pets_2026-06-16_basic_contact_sheet.png
+  assets/exports/pets/sun_pets_2026-06-16_gold_contact_sheet.png
+
+## Processing
+
+for stem in \
+  solar_roc_basic solar_roc_gold \
+  dawn_camel_basic dawn_camel_gold \
+  gilded_sphinx_basic gilded_sphinx_gold \
+  mirage_jackal_basic mirage_jackal_gold \
+  sun_scarab_basic sun_scarab_gold; do
+  bash scripts/decimate_mesh.sh "assets/source/pets/${stem}.obj" \
+    --output "assets/exports/pets/${stem}" \
+    --targets 5000,7500,10000
+done
+
+## Source
+
+pet	variant	stem	download_zip	preview_png	original_tris
+solar_roc	basic	solar_roc_basic	Solar Roc.zip	Solar Roc.png	11313
+solar_roc	gold	solar_roc_gold	Solar Roc Gold.zip	Solar Roc Gold.png	11313
+dawn_camel	basic	dawn_camel_basic	Dawn Camel.zip	Dawn Camel.png	6156
+dawn_camel	gold	dawn_camel_gold	Dawn Camel Gold.zip	Dawn Camel Gold.png	6156
+gilded_sphinx	basic	gilded_sphinx_basic	Gilded Sphinx.zip	Gilded Sphinx.png	10088
+gilded_sphinx	gold	gilded_sphinx_gold	Gilded Sphinx Gold.zip	Gilded Sphinx Gold.png	10088
+mirage_jackal	basic	mirage_jackal_basic	Mirage Jackal.zip	Mirage Jackal.png	8444
+mirage_jackal	gold	mirage_jackal_gold	Mirage Jackal Gold.zip	Mirage Jackal Gold.png	8444
+sun_scarab	basic	sun_scarab_basic	Sun Scarab.zip	Sun Scarab.png	11060
+sun_scarab	gold	sun_scarab_gold	Sun Scarab Gold.zip	Sun Scarab Gold.png	11060
+
+## Exports (recommended upload per mesh)
+
+pet	variant	recommended_fbx	mesh_texture	preview_image
+solar_roc	basic	assets/exports/pets/solar_roc_basic/solar_roc_basic_5k.fbx	assets/exports/pets/solar_roc_basic/solar_roc_basic.png	assets/exports/pets/basic/solar_roc_basic.png
+solar_roc	gold	assets/exports/pets/solar_roc_gold/solar_roc_gold_5k.fbx	assets/exports/pets/solar_roc_gold/solar_roc_gold.png	assets/exports/pets/gold/solar_roc_gold.png
+dawn_camel	basic	assets/exports/pets/dawn_camel_basic/dawn_camel_basic_5k.fbx	assets/exports/pets/dawn_camel_basic/dawn_camel_basic.png	assets/exports/pets/basic/dawn_camel_basic.png
+dawn_camel	gold	assets/exports/pets/dawn_camel_gold/dawn_camel_gold_5k.fbx	assets/exports/pets/dawn_camel_gold/dawn_camel_gold.png	assets/exports/pets/gold/dawn_camel_gold.png
+gilded_sphinx	basic	assets/exports/pets/gilded_sphinx_basic/gilded_sphinx_basic_5k.fbx	assets/exports/pets/gilded_sphinx_basic/gilded_sphinx_basic.png	assets/exports/pets/basic/gilded_sphinx_basic.png
+gilded_sphinx	gold	assets/exports/pets/gilded_sphinx_gold/gilded_sphinx_gold_5k.fbx	assets/exports/pets/gilded_sphinx_gold/gilded_sphinx_gold.png	assets/exports/pets/gold/gilded_sphinx_gold.png
+mirage_jackal	basic	assets/exports/pets/mirage_jackal_basic/mirage_jackal_basic_5k.fbx	assets/exports/pets/mirage_jackal_basic/mirage_jackal_basic.png	assets/exports/pets/basic/mirage_jackal_basic.png
+mirage_jackal	gold	assets/exports/pets/mirage_jackal_gold/mirage_jackal_gold_5k.fbx	assets/exports/pets/mirage_jackal_gold/mirage_jackal_gold.png	assets/exports/pets/gold/mirage_jackal_gold.png
+sun_scarab	basic	assets/exports/pets/sun_scarab_basic/sun_scarab_basic_5k.fbx	assets/exports/pets/sun_scarab_basic/sun_scarab_basic.png	assets/exports/pets/basic/sun_scarab_basic.png
+sun_scarab	gold	assets/exports/pets/sun_scarab_gold/sun_scarab_gold_5k.fbx	assets/exports/pets/sun_scarab_gold/sun_scarab_gold.png	assets/exports/pets/gold/sun_scarab_gold.png
+
+## Decimation notes
+5000 / 7500 / 10000 tris for all meshes.
+dawn_camel source < 7500 tris — 7500/10k exports kept at native count (6156).
+mirage_jackal source < 10000 tris — 10k export kept at native count (8444).
+
+## Wired
+pending: configs/pets.lua + assets/manifest/pets.json entries

@@ -1,0 +1,27 @@
+# Realm 2 egg icon keying review (2026-06-23)
+# Source zip: ~/Downloads/egg_green_blue_screens.zip
+# Pipeline: scripts/normalize_icons.py --background-mode green|blue
+# Pick the better key per egg; fill selected_key column, then copy winner to assets/source/eggs/{egg_id}.png
+
+## Outputs
+Green-keyed: assets/source/eggs/realm2/keyed/green/{egg_id}.png
+Blue-keyed:  assets/source/eggs/realm2/keyed/blue/{egg_id}.png
+Contact sheet: assets/source/eggs/realm2/egg_key_compare_2026-06-23_contact_sheet.png
+
+egg_id	label	screen	source	output	size	auto_detect_hint	selected_key
+heaven2_fire_egg	Heaven 2 · Fire	green	Heaven2-Fire_green_screen.png	assets/source/eggs/realm2/keyed/green/heaven2_fire_egg.png	1103x1103	green	TBD
+heaven2_fire_egg	Heaven 2 · Fire	blue	Heaven2-Fire_blue_screen.png	assets/source/eggs/realm2/keyed/blue/heaven2_fire_egg.png	1103x1103	blue	TBD
+heaven2_grass_egg	Heaven 2 · Grass	green	Heaven2-Grass_green_screen.png	assets/source/eggs/realm2/keyed/green/heaven2_grass_egg.png	1118x1118	green	TBD
+heaven2_grass_egg	Heaven 2 · Grass	blue	Heaven2-Grass_blue_screen.png	assets/source/eggs/realm2/keyed/blue/heaven2_grass_egg.png	1118x1118	blue	TBD
+heaven2_ice_egg	Heaven 2 · Ice	green	Heaven2-Ice_green_screen.png	assets/source/eggs/realm2/keyed/green/heaven2_ice_egg.png	1128x1128	green	TBD
+heaven2_ice_egg	Heaven 2 · Ice	blue	Heaven2-Ice_blue_screen.png	assets/source/eggs/realm2/keyed/blue/heaven2_ice_egg.png	1128x1128	blue	TBD
+heaven2_desert_egg	Heaven 2 · Desert	green	Heaven2-Desert_green_screen.png	assets/source/eggs/realm2/keyed/green/heaven2_desert_egg.png	1135x1135	green	TBD
+heaven2_desert_egg	Heaven 2 · Desert	blue	Heaven2-Desert_blue_screen.png	assets/source/eggs/realm2/keyed/blue/heaven2_desert_egg.png	1135x1135	blue	TBD
+hell2_fire_egg	Hell 2 · Fire	green	Hell2-Fire_green_screen.png	assets/source/eggs/realm2/keyed/green/hell2_fire_egg.png	1160x1160	green	TBD
+hell2_fire_egg	Hell 2 · Fire	blue	Hell2-Fire_blue_screen.png	assets/source/eggs/realm2/keyed/blue/hell2_fire_egg.png	1160x1160	blue	TBD
+hell2_grass_egg	Hell 2 · Grass	green	Hell2-Grass_green_screen.png	assets/source/eggs/realm2/keyed/green/hell2_grass_egg.png	1136x1136	green	TBD
+hell2_grass_egg	Hell 2 · Grass	blue	Hell2-Grass_blue_screen.png	assets/source/eggs/realm2/keyed/blue/hell2_grass_egg.png	1136x1136	blue	TBD
+hell2_ice_egg	Hell 2 · Ice	green	Hell2-Ice_green_screen.png	assets/source/eggs/realm2/keyed/green/hell2_ice_egg.png	1140x1140	green	TBD
+hell2_ice_egg	Hell 2 · Ice	blue	Hell2-Ice_blue_screen.png	assets/source/eggs/realm2/keyed/blue/hell2_ice_egg.png	1137x1137	blue	TBD
+hell2_desert_egg	Hell 2 · Desert	green	Hell2-Desert_green_screen.png	assets/source/eggs/realm2/keyed/green/hell2_desert_egg.png	1158x1158	green	TBD
+hell2_desert_egg	Hell 2 · Desert	blue	Hell2-Desert_blue_screen.png	assets/source/eggs/realm2/keyed/blue/hell2_desert_egg.png	1154x1154	blue	TBD

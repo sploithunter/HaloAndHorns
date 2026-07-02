@@ -1,0 +1,26 @@
+# Comparative UI reference art (not production chrome — do not upload to Roblox as-is).
+
+player_status_bar_reference.jpg — CoH-style player HUD bar mockup: left avatar/icon disc,
+player name, stacked HP + energy bars, right level ring. Use for layout and tone comparison
+when building SquadHud / player status UI.
+
+quest_button_reference.jpg — Glossy blue quest menu button mockup: target/bullseye icon,
+"Quest" label, neon border. Use for layout and tone comparison when building quest UI.
+
+player_status_quest_combo_reference.png — Combined HUD mockup: player status bar (avatar,
+name, XP bar, level ring) stacked above a quest progress box ("Daily Grind", 0/100).
+Use for layout and tone comparison when building player status + quest tracker UI.
+
+power_bar_reference.png — Power bar / hotbar mockup: blue glossy frame, Farm Off toggle,
+two rows of 10 circular slots (powers, roster, Scatter/Focus/Regroup). Use for layout and
+tone comparison when building the pet power bar UI.
+
+power_slotting_reference.png — Single power row + sub-slot strip mockup: left archetype disc
+(green clover / Luck), glossy blue pill bar with power name, row of six circular gem/enhancement
+slots along the bottom edge. Use for layout and tone comparison when building per-power slotting
+UI (main slot + enhancement sockets).
+
+power_slotting_menu_reference.jpg — Multi-row power slotting menu mockup ("SPINES"): stacked
+power rows (icon disc + name + blue pill bar), each with 1–6 circular enhancement sockets along
+the bottom and green level labels on filled slots. Use for layout and tone comparison when
+building the full slotting screen / multi-power assignment UI.

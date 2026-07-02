@@ -1,0 +1,134 @@
+# mise configuration for Roblox development tools
+# https://mise.jdx.dev/
+
+[tools]
+# Rojo for file sync between IDE and Roblox Studio
+"github:rojo-rbx/rojo" = { version = "7.6.1", exe = "rojo" }
+
+# Wally for package management
+"github:UpliftGames/wally" = { version = "0.3.2", exe = "wally" }
+
+# Selene for Lua linting
+"github:Kampfkarren/selene" = { version = "0.25.0", exe = "selene" }
+
+# StyLua for code formatting
+stylua = "0.18.2"
+
+# Lune standalone Luau runtime for headless (no-Studio) pure-logic unit tests
+"github:lune-org/lune" = { version = "0.10.4", exe = "lune" }
+
+[env]
+# Environment variables for development
+ROJO_PORT = "34872"
+WALLY_REGISTRY = "https://github.com/UpliftGames/wally-index"
+
+[tasks.install]
+description = "Install all development dependencies"
+run = [
+    "mise install",
+    "wally install"
+]
+
+[tasks.serve]
+description = "Start Rojo file sync server"
+run = "rojo serve"
+
+[tasks.stamp]
+description = "Stamp configs/build_info.lua from git + Mountain Time (shown on the load screen). Run before publishing; rojo syncs it into Studio."
+run = "bash scripts/stamp_build.sh"
+
+[tasks.build]
+description = "Build the project for production"
+run = ["bash scripts/stamp_build.sh", "rojo build --output game.rbxl"]
+
+[tasks.release]
+description = "Publish to Roblox via Open Cloud (rojo upload). Needs ROBLOX_OPEN_CLOUD_KEY/UNIVERSE_ID/PLACE_ID env; refuses if unset. DRY_RUN=1 to validate only."
+run = ["bash scripts/stamp_build.sh", "bash scripts/release.sh"]
+
+[tasks.publish-studio]
+description = "Publish the place open in Roblox Studio via File -> Publish (AppleScript; macOS; needs Accessibility). Preserves the authored map, no Open Cloud key. Works for a headless agent."
+run = ["bash scripts/stamp_build.sh", "bash scripts/studio_publish.sh"]
+
+[tasks.gen-icons]
+description = "Generate configs/power_icons_assets.lua from scripts/asset_manifest.json (icon registry)"
+run = "node scripts/gen_power_icons.js && mise exec -- stylua configs/power_icons_assets.lua"
+
+[tasks.gen-pet-thumbnails]
+description = "Generate configs/pet_thumbnail_assets.lua from scripts/pet_thumbnail_ids.json (card thumbnail registry)"
+run = "node scripts/gen_pet_thumbnails.js && mise exec -- stylua configs/pet_thumbnail_assets.lua"
+
+[tasks.asset-report]
+description = "Report tracked pet assets and source-file gaps"
+run = "node scripts/assets_report.js"
+
+[tasks.asset-check]
+description = "Check pet asset manifest against configs/pets.lua"
+run = "node scripts/assets_report.js --check"
+
+[tasks.asset-prompts]
+description = "Print Meshy-ready prompts from the pet manifest"
+run = "node scripts/assets_report.js --prompts"
+
+[tasks.asset-meshy]
+description = "Run the local Meshy developer asset helper"
+run = "node scripts/meshy_asset.js"
+
+[tasks.decimate-mesh]
+description = "Decimate OBJ/FBX/GLB meshes to Roblox triangle budgets via Blender (needs Blender.app on macOS)"
+run = "bash scripts/decimate_mesh.sh"
+
+[tasks.render-pet-previews]
+description = "Render front + hero viewport PNGs from pet FBX into model_renders/ (via Blender)"
+run = "python3 scripts/render_pet_previews.py --views front,hero --crop"
+
+[tasks.skybox-from-panorama]
+description = "Convert a 2:1 equirectangular panorama PNG into Roblox Sky face images (needs py360convert)"
+run = "python3 scripts/panorama_to_roblox_skybox.py"
+
+[tasks.asset-balance]
+description = "Show Meshy API credit balance"
+run = "node scripts/meshy_asset.js balance"
+
+[tasks.test]
+description = "Run tests (requires Studio)"
+run = "echo 'Run tests/TestBootstrap.lua in Roblox Studio'"
+
+[tasks.test-headless]
+description = "Run headless pure-logic unit tests with lune (no Studio required)"
+run = "lune run tests/headless/run.luau"
+
+[tasks.fmt-check]
+description = "StyLua --check on pipeline-owned paths (whole-repo stylua is a separate cleanup lane)"
+run = "mise exec -- stylua --check src/Shared/API src/Shared/Game src/Shared/Inventory src/Server/Services/GameAPIService.lua src/Server/Services/AutomationService.lua src/Server/Services/AlignmentService.lua src/Server/Services/LayerService.lua src/Server/Services/ActiveSquadService.lua src/Server/Services/SpiritFormService.lua src/Server/Services/StackPoolService.lua src/Server/Services/FocusService.lua src/Server/Services/CombatService.lua src/Server/Services/ArchetypeService.lua src/Server/Services/PowerService.lua src/Server/Services/AugmentationService.lua src/Server/Services/HotbarService.lua src/Server/Services/RosterService.lua src/Server/Services/PartyService.lua src/Server/Services/TradeService.lua src/Server/Services/FusionService.lua src/Server/Services/RewardService.lua src/Server/Services/QuestService.lua src/Server/Services/DailyService.lua src/Server/Services/ShopService.lua src/Server/Services/PetFollowService.lua src/Server/Services/EnemyService.lua src/Server/Services/ZoneTrackerService.lua src/Server/Services/DailyRewardZoneService.lua tests/headless"
+
+# Tools are invoked via `mise exec --` so they resolve identically in local
+# shells and on CI runners (a bare tool name can hit a PATH/permission quirk
+# inside `mise run` on hosted runners).
+[tasks.ci]
+description = "Fast gate (no Studio): selene errors + format (owned paths) + rojo build + headless tests"
+run = [
+    "mise exec -- selene --allow-warnings src configs tests",
+    "mise exec -- stylua --check src/Shared/API src/Shared/Game src/Shared/Inventory src/Server/Services/GameAPIService.lua src/Server/Services/AutomationService.lua src/Server/Services/AlignmentService.lua src/Server/Services/LayerService.lua src/Server/Services/ActiveSquadService.lua src/Server/Services/SpiritFormService.lua src/Server/Services/StackPoolService.lua src/Server/Services/FocusService.lua src/Server/Services/CombatService.lua src/Server/Services/ArchetypeService.lua src/Server/Services/PowerService.lua src/Server/Services/AugmentationService.lua src/Server/Services/HotbarService.lua src/Server/Services/RosterService.lua src/Server/Services/PartyService.lua src/Server/Services/TradeService.lua src/Server/Services/FusionService.lua src/Server/Services/RewardService.lua src/Server/Services/QuestService.lua src/Server/Services/DailyService.lua src/Server/Services/ShopService.lua src/Server/Services/PetFollowService.lua src/Server/Services/EnemyService.lua src/Server/Services/ZoneTrackerService.lua src/Server/Services/DailyRewardZoneService.lua tests/headless",
+    "mise exec -- rojo build --output game.rbxl",
+    "mise exec -- lune run tests/headless/run.luau",
+]
+
+[tasks.lint]
+description = "Lint Lua files with Selene, failing on errors"
+run = "selene --allow-warnings src configs tests"
+
+[tasks.lint-strict]
+description = "Lint Lua files with Selene, failing on warnings"
+run = "selene src configs tests"
+
+[tasks.format]
+description = "Format Lua files with StyLua"
+run = "stylua src/"
+
+[tasks.dev]
+description = "Start development environment"
+depends = ["install", "serve"] 
+
+[tasks.assets-audit]
+description = "Every consumed rbxassetid must be manifest-traceable or allowlisted (template hygiene)"
+run = "python3 scripts/audit_assets.py --strict"

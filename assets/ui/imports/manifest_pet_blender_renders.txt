@@ -1,0 +1,5 @@
+# Pet viewport renders from FBX (2026-06-28)
+# Blender: /Applications/Blender.app/Contents/MacOS/Blender
+# views: front,hero  size: 1024  crop: False
+
+view	stem	fbx	texture	output

@@ -1,0 +1,43 @@
+# Enchant metal ring import (2026-06-12)
+# Pairs with configs/enchants.lua display.ring_tiers (Copper..Onyx)
+
+## Processing
+
+python3 scripts/remove_image_background.py \
+  "~/Downloads/ChatGPT Image Jun 12, 2026, 08_26_09 AM.png" \
+  assets/ui/enchant_rings/ring_copper.png --mode ring-white
+
+python3 scripts/remove_image_background.py \
+  "~/Downloads/ChatGPT Image Jun 12, 2026, 08_26_03 AM.png" \
+  assets/ui/enchant_rings/ring_bronze.png --mode ring-white
+
+python3 scripts/remove_image_background.py \
+  "~/Downloads/ChatGPT Image Jun 12, 2026, 08_30_00 AM.png" \
+  assets/ui/enchant_rings/ring_silver.png --mode ring-green
+
+python3 scripts/remove_image_background.py \
+  "~/Downloads/ChatGPT Image Jun 12, 2026, 08_26_16 AM.png" \
+  assets/ui/enchant_rings/ring_gold.png --mode ring-white
+
+python3 scripts/remove_image_background.py \
+  "~/Downloads/ChatGPT Image Jun 12, 2026, 08_25_57 AM (2).png" \
+  assets/ui/enchant_rings/ring_onyx.png --mode ring-white
+
+## Outputs
+
+tier	strength	asset	path
+Copper	1	ring_copper.png	assets/ui/enchant_rings/ring_copper.png
+Bronze	2	ring_bronze.png	assets/ui/enchant_rings/ring_bronze.png
+Silver	3	ring_silver.png	assets/ui/enchant_rings/ring_silver.png
+Gold	4	ring_gold.png	assets/ui/enchant_rings/ring_gold.png
+Onyx	5	ring_onyx.png	assets/ui/enchant_rings/ring_onyx.png
+
+## Transparency check
+
+outside (corners): alpha 0
+inside (center): alpha 0
+silver: annulus fully opaque with ring-green on green-screen source (replaces white-bg attempt)
+
+## Wired
+
+pending: tier.asset rbxassetid in configs/enchants.lua display.ring_tiers

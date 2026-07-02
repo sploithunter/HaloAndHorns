@@ -1,0 +1,9 @@
+# Badge pill UI chrome (gems-pill style). Blue = ice/sapphire source art.
+# pill_frame = hollow rounded-square border (ring-white: edge + center flood → transparent hole).
+# pill_panel = solid disc fill (edge-white background removal only).
+# Recolor from blue: green/red/yellow/purple = channel; white = --mode white.
+# purple folders = amethyst gem color (pill_frames_purple / pill_panels_purple).
+
+asset	kind	blue_dir
+pill_frame	frame	pill_frames_blue
+pill_panel	panel	pill_panels_blue

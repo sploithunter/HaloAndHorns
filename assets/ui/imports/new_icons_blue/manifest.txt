@@ -1,0 +1,15 @@
+assets_dir: /Users/jason/Documents/RBX-Template/assets/ui/imports/new_icons_blue
+icon_count: 10
+
+fear.png
+fire_storm.png
+ice_shard.png
+ice_storm.png
+nuke.png
+rage.png
+ranged_impact.png
+sand_storm.png
+scortch.png
+taunt.png
+
+contact_sheet: new_icons_blue_contact_sheet.png

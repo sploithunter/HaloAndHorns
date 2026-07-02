@@ -1,0 +1,4 @@
+source: /Users/jason/Documents/RBX-Template/assets/source/gems/sapphire_gem_pile.obj
+original_tris: 6076
+
+3500tris: sapphire_gem_pile_3500tris.fbx (3500 tris, target 3500)

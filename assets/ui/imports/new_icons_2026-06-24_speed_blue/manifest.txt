@@ -1,0 +1,9 @@
+size: native-crop
+padding: 0px
+square: True
+background_mode: white (edge-connected)
+
+speed.png	1213x1213	<- ChatGPT Image Jun 24, 2026, 12_41_36 PM.png	(white)
+
+# Recolor + sheets: see assets/ui/imports/manifest_2026-06-24_speed_icon.txt
+# scripts/recolor_blue_to_green.py + scripts/build_icon_contact_sheet.py --all-colors

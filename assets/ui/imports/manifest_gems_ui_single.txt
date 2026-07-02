@@ -1,0 +1,19 @@
+# Flat UI gem_single icons — upload batch
+# 2D icon art only (NOT 3D mesh textures in assets/source/gems/).
+# Source: assets/ui/gems_blue/ recolored via scripts/recolor_blue_to_green.py
+# Recolor: gem_single uses --mode hue; pile/bag not included in this batch.
+
+## Upload list (5 assets)
+
+asset_key	color	element_alias	file_path
+gem_single_blue	blue	ice / sapphire	assets/ui/gems_blue/gem_single.png
+gem_single_green	green	earth / emerald	assets/ui/gems_green/gem_single.png
+gem_single_red	red	fire / ruby	assets/ui/gems_red/gem_single.png
+gem_single_yellow	yellow	desert / citrine	assets/ui/gems_yellow/gem_single.png
+gem_single_purple	purple	purple (innate/generic tier)	assets/ui/gems_purple/gem_single.png
+
+## Notes for uploader
+
+- Pair each upload with BOTH decal id and resolved Image id (see scripts/asset_manifest.json pattern).
+- These are glossy faceted gem icons on transparent backgrounds.
+- Do not upload assets/source/gems/*_gem_single.png — those are UV texture maps for 3D models.

@@ -1,0 +1,4 @@
+source: /Users/jason/Documents/RBX-Template/assets/source/gems/amethyst_gem_pile.obj
+original_tris: 6076
+download: ~/Downloads/Meshy_AI_Azure Faceted Orbs_1781217447_texture.zip
+decimation: pending (other gem colors export at 3500 tris via scripts/decimate_mesh.sh)

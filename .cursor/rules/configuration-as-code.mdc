@@ -1,0 +1,5 @@
+---
+description: This is a configuation as code project.  We want to apply configuation as code whenever possible.  To add an item, currency, power-up, etc, should be a configuation change.  Scripts should loop though this configuration file to generate code to handle their saves, tracking, etc.
+globs:
+alwaysApply: true
+---

@@ -1,0 +1,38 @@
+-- Test script for the new image-based panel system
+-- Run this in the command bar to test the settings panel
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+-- Get the settings panel
+local SettingsPanel = require(ReplicatedStorage.Client.UI.Menus.SettingsPanel)
+
+-- Create and show settings panel
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Create a test ScreenGui
+local testGui = Instance.new("ScreenGui")
+testGui.Name = "TestImagePanelGui"
+testGui.Parent = playerGui
+
+-- Create settings panel
+local settingsPanel = SettingsPanel.new()
+settingsPanel:Show(testGui)
+
+print("✅ Image-based settings panel created successfully!")
+print("🎨 Panel should have:")
+print("   • Blue panel background (image: 6208057940)")
+print("   • Teal header with gear icon (image: 16809347055, icon: 1003379313)")
+print("   • Image-based toggle buttons (on: 5533192672, off: 5533209494)")
+print("   • Professional layout with proper spacing")
+
+-- Test function to close
+_G.closeTestPanel = function()
+    if testGui then
+        testGui:Destroy()
+        print("🚮 Test panel closed")
+    end
+end
+
+print("💡 Type '_G.closeTestPanel()' to close the test panel")

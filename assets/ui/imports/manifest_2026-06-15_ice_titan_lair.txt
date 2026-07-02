@@ -1,0 +1,26 @@
+# Ice pet lair 3D model import (2026-06-15)
+
+## Asset type
+Pet lair (map prop / egg hatcher shell) — NOT a pet creature mesh.
+
+## Processing
+
+bash scripts/decimate_mesh.sh assets/source/lairs/ice_titan_lair.obj \
+  --output assets/exports/lairs/ice_titan_lair \
+  --targets 5000,7500,10000
+
+## Source
+
+lair_id	stem	download_zip	display_name	original_tris
+ice_titan_lair	ice_titan_lair	Meshy_AI_Maw of the Ice Titan_1781532013_texture.zip	Maw of the Ice Titan	12852
+
+## Exports (FBX + texture)
+
+lair_id	recommended_fbx	texture
+ice_titan_lair	assets/exports/lairs/ice_titan_lair/ice_titan_lair_5k.fbx	assets/exports/lairs/ice_titan_lair/ice_titan_lair.png
+
+## Decimation targets
+5000 / 7500 / 10000 tris — all targets hit from 12852-tris source.
+
+## Wired
+pending: map placement / egg_stand_placements / Studio upload

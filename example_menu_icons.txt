@@ -1,0 +1,20 @@
+-- Examples of different icon formats in configs/ui.lua menu_buttons_pane
+
+-- EMOJI ICONS (TextLabel)
+{type = "menu_button", config = {name = "Settings", icon = "⚙️", text = "Settings", color = Color3.fromRGB(149, 165, 166), action = "settings_action"}},
+
+-- ASSET ID ONLY (ImageLabel) - Auto-converts to rbxassetid://
+{type = "menu_button", config = {name = "Admin", icon = "15300827397", text = "Admin", color = Color3.fromRGB(231, 76, 60), action = "admin_action", admin_only = true}},
+
+-- FULL RBXASSETID FORMAT (ImageLabel)
+{type = "menu_button", config = {name = "Shop", icon = "rbxassetid://7733920644", text = "Shop", color = Color3.fromRGB(46, 204, 113), action = "shop_action"}},
+
+-- MIX AND MATCH - You can use any format for any button!
+{type = "menu_button", config = {name = "Custom", icon = "12345678901", text = "Custom", color = Color3.fromRGB(100, 200, 255), action = "custom_action"}},
+
+-- THE SYSTEM AUTOMATICALLY:
+-- 1. Detects if icon is emoji, asset ID, or rbxassetid format
+-- 2. Creates appropriate UI element (TextLabel for emoji, ImageLabel for assets)
+-- 3. Handles loading errors with fallbacks
+-- 4. Applies proper scaling and positioning
+-- 5. Tints asset images to white for consistency

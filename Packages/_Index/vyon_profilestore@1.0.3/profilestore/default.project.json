@@ -1,0 +1,6 @@
+{
+  "name": "profilestore",
+  "tree": {
+    "$path": "ProfileStore.luau"
+  }
+}

@@ -1,0 +1,50 @@
+# Enhancement ring (filled center) import (2026-06-09)
+# Source: ~/Downloads/ChatGPT Image Jun 9, 2026, 04_58_06 PM.png
+# B&W source — center disc kept opaque; only outer white removed (NOT ring-white)
+
+## Asset
+
+asset_name	download_source	bg_mode	blue_prep	recolor_mode	reads_as
+ring_enhancement_filled.png	ChatGPT Image Jun 9, 2026, 04_58_06 PM.png	edge-white (normalize_icons)	luminance -> sapphire blue (B>R,G)	hue + white	gear ring with glossy filled center disc
+
+## Pipeline
+
+python3 scripts/normalize_icons.py \
+  "~/Downloads/ChatGPT Image Jun 9, 2026, 04_58_06 PM.png" \
+  assets/ui/imports/ring_enhancement_filled_2026-06-09/ring_enhancement_filled_transparent.png
+
+# Grayscale -> blue (required before recolor_blue_to_green.py)
+# R=lum*0.28, G=lum*0.52, B=lum*1.05 on visible pixels
+
+python3 scripts/recolor_blue_to_green.py \
+  assets/ui/ring_frames_blue/ring_enhancement_filled.png \
+  assets/ui/ring_frames_white/ring_enhancement_filled.png --mode white
+
+python3 scripts/recolor_blue_to_green.py \
+  assets/ui/ring_frames_blue/ring_enhancement_filled.png \
+  assets/ui/ring_frames_{green,red,yellow,purple}/ring_enhancement_filled.png \
+  --color {green|red|yellow|purple} --mode hue
+
+## Color outputs
+
+color	folder
+blue	assets/ui/ring_frames_blue/ring_enhancement_filled.png
+white	assets/ui/ring_frames_white/ring_enhancement_filled.png
+green	assets/ui/ring_frames_green/ring_enhancement_filled.png
+red	assets/ui/ring_frames_red/ring_enhancement_filled.png
+yellow	assets/ui/ring_frames_yellow/ring_enhancement_filled.png
+purple	assets/ui/ring_frames_purple/ring_enhancement_filled.png
+
+## Staging
+
+assets/ui/imports/ring_enhancement_filled_2026-06-09/
+
+## Contact sheets rebuilt
+
+assets/ui/ring_frames_blue/contact_sheet.png
+assets/ui/ring_frames_white/contact_sheet.png
+assets/ui/ring_frames_green/contact_sheet.png
+assets/ui/ring_frames_red/contact_sheet.png
+assets/ui/ring_frames_yellow/contact_sheet.png
+assets/ui/ring_frames_purple/contact_sheet.png
+assets/ui/ring_frames_all_colors.png

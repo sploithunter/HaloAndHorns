@@ -1,0 +1,6 @@
+source: /Users/jason/Documents/RBX-Template/assets/source/lairs/inferno_gate_lair.obj
+original_tris: 21066
+
+5k: inferno_gate_lair_5k.fbx (5000 tris, target 5000)
+7500tris: inferno_gate_lair_7500tris.fbx (7499 tris, target 7500)
+10k: inferno_gate_lair_10k.fbx (10000 tris, target 10000)

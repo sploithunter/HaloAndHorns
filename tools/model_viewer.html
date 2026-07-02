@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RBX Template Model Viewer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101217;
+      --panel: #191c24;
+      --panel-2: #222735;
+      --text: #f4f6fb;
+      --muted: #aeb6c6;
+      --line: #343a4a;
+      --accent: #24c8db;
+      --danger: #ef596f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    body {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+    }
+
+    aside {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+      padding: 18px;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 750;
+      line-height: 1.2;
+    }
+
+    .drop-zone {
+      display: grid;
+      place-items: center;
+      min-height: 170px;
+      padding: 18px;
+      border: 1px dashed #506072;
+      border-radius: 8px;
+      background: #12151d;
+      text-align: center;
+      transition: border-color 120ms ease, background 120ms ease;
+    }
+
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      background: #142029;
+    }
+
+    .drop-main {
+      font-weight: 750;
+      font-size: 16px;
+    }
+
+    .drop-sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .file-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      background: #12323a;
+      color: var(--text);
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .file-button:hover {
+      background: #16404a;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    select,
+    input[type="range"] {
+      width: 100%;
+    }
+
+    select {
+      min-height: 38px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      gap: 6px;
+      padding-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      border-top: 1px solid var(--line);
+    }
+
+    .status {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    main {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hint {
+      position: absolute;
+      right: 16px;
+      bottom: 14px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(16, 18, 23, 0.76);
+      color: var(--muted);
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      aside {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <h1>Model Viewer</h1>
+
+    <div id="dropZone" class="drop-zone">
+      <div>
+        <div class="drop-main">Drop GLB, GLTF, or FBX</div>
+        <div class="drop-sub">Local files stay on this computer.</div>
+      </div>
+    </div>
+
+    <label class="file-button" for="fileInput">Choose File</label>
+    <input id="fileInput" type="file" accept=".glb,.gltf,.fbx,model/gltf-binary,model/gltf+json">
+
+    <div class="field">
+      <label for="viewSelect">View</label>
+      <select id="viewSelect">
+        <option value="free">Free Orbit</option>
+        <option value="front">Front</option>
+        <option value="right">Right</option>
+        <option value="back">Back</option>
+        <option value="left">Left</option>
+        <option value="top">Top</option>
+        <option value="bottom">Bottom</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="exposureRange">Brightness</label>
+      <input id="exposureRange" type="range" min="0.4" max="2.2" step="0.05" value="1.15">
+    </div>
+
+    <div class="checks">
+      <label class="check">
+        <input id="wireToggle" type="checkbox">
+        Wireframe
+      </label>
+      <label class="check">
+        <input id="gridToggle" type="checkbox" checked>
+        Grid
+      </label>
+      <label class="check">
+        <input id="spinToggle" type="checkbox">
+        Auto rotate
+      </label>
+    </div>
+
+    <div id="stats" class="stats">
+      <div>No model loaded.</div>
+    </div>
+
+    <div id="status" class="status"></div>
+  </aside>
+
+  <main>
+    <canvas id="viewer"></canvas>
+    <div class="hint">Drag to orbit · Scroll to zoom · Right-drag to pan</div>
+  </main>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+    import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+
+    const canvas = document.getElementById("viewer");
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const statusEl = document.getElementById("status");
+    const statsEl = document.getElementById("stats");
+    const viewSelect = document.getElementById("viewSelect");
+    const exposureRange = document.getElementById("exposureRange");
+    const wireToggle = document.getElementById("wireToggle");
+    const gridToggle = document.getElementById("gridToggle");
+    const spinToggle = document.getElementById("spinToggle");
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x151821);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = Number(exposureRange.value);
+
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 500);
+    camera.position.set(4, 3, 6);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.target.set(0, 0.8, 0);
+
+    const rootGroup = new THREE.Group();
+    scene.add(rootGroup);
+
+    const grid = new THREE.GridHelper(10, 20, 0x607080, 0x2d3442);
+    grid.position.y = 0;
+    scene.add(grid);
+
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x242833, 2.2);
+    scene.add(hemiLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
+    keyLight.position.set(3, 5, 4);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xbfdcff, 1.1);
+    fillLight.position.set(-4, 3, -3);
+    scene.add(fillLight);
+
+    let loadedObject = null;
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    function clearModel() {
+      if (!loadedObject) return;
+      rootGroup.remove(loadedObject);
+      loadedObject.traverse((child) => {
+        if (!child.isMesh) return;
+        child.geometry?.dispose?.();
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        for (const material of materials) {
+          if (!material) continue;
+          for (const value of Object.values(material)) {
+            if (value && value.isTexture) value.dispose();
+          }
+          material.dispose?.();
+        }
+      });
+      loadedObject = null;
+    }
+
+    function normalizeModel(object) {
+      const box = new THREE.Box3().setFromObject(object);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const maxAxis = Math.max(size.x, size.y, size.z) || 1;
+      const scale = 3 / maxAxis;
+
+      object.position.sub(center);
+      object.scale.multiplyScalar(scale);
+
+      const scaledBox = new THREE.Box3().setFromObject(object);
+      object.position.y -= scaledBox.min.y;
+    }
+
+    function collectStats(object, file) {
+      let meshes = 0;
+      let vertices = 0;
+      let triangles = 0;
+      const box = new THREE.Box3().setFromObject(object);
+      const size = box.getSize(new THREE.Vector3());
+
+      object.traverse((child) => {
+        if (!child.isMesh || !child.geometry) return;
+        meshes += 1;
+        const position = child.geometry.getAttribute("position");
+        vertices += position ? position.count : 0;
+        const index = child.geometry.index;
+        triangles += index ? index.count / 3 : (position ? position.count / 3 : 0);
+      });
+
+      statsEl.innerHTML = `
+        <div><strong>${file.name}</strong></div>
+        <div>${meshes} mesh${meshes === 1 ? "" : "es"}</div>
+        <div>${Math.round(vertices).toLocaleString()} vertices</div>
+        <div>${Math.round(triangles).toLocaleString()} triangles</div>
+        <div>${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}</div>
+      `;
+    }
+
+    function updateWireframe() {
+      if (!loadedObject) return;
+      loadedObject.traverse((child) => {
+        if (!child.isMesh) return;
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        for (const material of materials) {
+          if (material) material.wireframe = wireToggle.checked;
+        }
+      });
+    }
+
+    function setView(view) {
+      if (!loadedObject) return;
+
+      const box = new THREE.Box3().setFromObject(loadedObject);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const radius = Math.max(size.x, size.y, size.z) * 1.25 || 4;
+      const vectors = {
+        front: new THREE.Vector3(0, 0.2, radius),
+        right: new THREE.Vector3(radius, 0.2, 0),
+        back: new THREE.Vector3(0, 0.2, -radius),
+        left: new THREE.Vector3(-radius, 0.2, 0),
+        top: new THREE.Vector3(0, radius, 0.001),
+        bottom: new THREE.Vector3(0, -radius, 0.001),
+      };
+
+      if (!vectors[view]) return;
+
+      camera.position.copy(center).add(vectors[view]);
+      controls.target.copy(center);
+      controls.update();
+    }
+
+    function frameModel() {
+      if (!loadedObject) return;
+
+      const box = new THREE.Box3().setFromObject(loadedObject);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const maxSize = Math.max(size.x, size.y, size.z) || 3;
+      const distance = maxSize / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
+
+      camera.position.set(center.x + distance * 0.9, center.y + distance * 0.55, center.z + distance * 1.15);
+      camera.near = Math.max(0.01, distance / 100);
+      camera.far = Math.max(100, distance * 20);
+      camera.updateProjectionMatrix();
+      controls.target.copy(center);
+      controls.update();
+    }
+
+    async function loadFile(file) {
+      clearModel();
+      setStatus(`Loading ${file.name}...`);
+
+      const ext = file.name.split(".").pop().toLowerCase();
+      const data = await file.arrayBuffer();
+
+      try {
+        if (ext === "glb" || ext === "gltf") {
+          const loader = new GLTFLoader();
+          const gltf = await new Promise((resolve, reject) => {
+            loader.parse(data, "", resolve, reject);
+          });
+          loadedObject = gltf.scene;
+        } else if (ext === "fbx") {
+          const loader = new FBXLoader();
+          loadedObject = loader.parse(data, "");
+        } else {
+          throw new Error("Choose a .glb, .gltf, or .fbx file.");
+        }
+
+        normalizeModel(loadedObject);
+        rootGroup.add(loadedObject);
+        updateWireframe();
+        frameModel();
+        collectStats(loadedObject, file);
+        viewSelect.value = "free";
+        setStatus("Loaded.");
+      } catch (error) {
+        clearModel();
+        statsEl.innerHTML = "<div>No model loaded.</div>";
+        setStatus(error.message || String(error), true);
+      }
+    }
+
+    function resize() {
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height, false);
+      camera.aspect = width / Math.max(height, 1);
+      camera.updateProjectionMatrix();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      rootGroup.rotation.y += spinToggle.checked ? 0.006 : 0;
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
+      if (file) loadFile(file);
+    });
+
+    dropZone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", (event) => {
+      event.preventDefault();
+      dropZone.classList.remove("dragover");
+      const file = event.dataTransfer.files?.[0];
+      if (file) loadFile(file);
+    });
+
+    viewSelect.addEventListener("change", () => setView(viewSelect.value));
+    exposureRange.addEventListener("input", () => {
+      renderer.toneMappingExposure = Number(exposureRange.value);
+    });
+    wireToggle.addEventListener("change", updateWireframe);
+    gridToggle.addEventListener("change", () => {
+      grid.visible = gridToggle.checked;
+    });
+
+    window.addEventListener("resize", resize);
+    resize();
+    animate();
+  </script>
+</body>
+</html>

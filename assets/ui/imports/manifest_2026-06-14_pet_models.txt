@@ -1,0 +1,37 @@
+# Pet 3D model import (2026-06-14)
+
+## Naming fixes
+Meshy zip "Grumpy Nightbat" -> pet id `grumpy_cat` (art is a grumpy cat)
+Meshy zip "Midnight Horned Rabbit" -> pet id `jackalope` (art is a jackalope)
+
+## Processing
+
+for stem in grumpy_cat_basic cube_dog_basic raven_basic jackalope_basic; do
+  bash scripts/decimate_mesh.sh "assets/source/pets/${stem}.obj" \
+    --output "assets/exports/pets/${stem}" \
+    --targets 5000,7500,10000
+done
+
+## Source
+
+pet	variant	stem	download	original_tris
+grumpy_cat	basic	grumpy_cat_basic	Meshy_AI_Grumpy Nightbat_1781457563_texture.zip	7500
+cube_dog	basic	cube_dog_basic	Meshy_AI_Crimson Eyed Cube Dog_1781457955_texture.zip	7004
+raven	basic	raven_basic	Meshy_AI_Red-Eyed Raven_1781457967_texture.zip	12588
+jackalope	basic	jackalope_basic	Meshy_AI_Midnight Horned Rabbit_1781458991_texture.zip	16812
+
+## Exports (FBX + texture)
+
+pet	recommended_fbx	texture
+grumpy_cat	assets/exports/pets/grumpy_cat_basic/grumpy_cat_basic_5k.fbx	assets/exports/pets/grumpy_cat_basic/grumpy_cat_basic.png
+cube_dog	assets/exports/pets/cube_dog_basic/cube_dog_basic_5k.fbx	assets/exports/pets/cube_dog_basic/cube_dog_basic.png
+raven	assets/exports/pets/raven_basic/raven_basic_5k.fbx	assets/exports/pets/raven_basic/raven_basic.png
+jackalope	assets/exports/pets/jackalope_basic/jackalope_basic_5k.fbx	assets/exports/pets/jackalope_basic/jackalope_basic.png
+
+## Wired
+jackalope -> configs/enemies.lua rabid_bunny (real art for the support healer).
+  Self-serve upload to Open Simulator group 15872767 (Claude, 2026-06-14):
+    mesh    Model 92963403852789 -> MeshId rbxassetid://111943527947344
+    texture Decal 80470033415118 -> Image  rbxassetid://71212761122379  (TextureID needs the IMAGE id)
+  Pipeline + the Decal->Image gotcha in scripts/pet_pipeline.md; ids in scripts/pet_mesh_ids.json.
+pending: configs/pets.lua + assets/manifest/pets.json entries (pet variants)

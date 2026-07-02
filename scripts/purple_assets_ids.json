@@ -1,0 +1,10 @@
+{
+  "_note": "Amethyst/purple pill + ring assets (Jason's art). decal = Open Cloud upload id; image = resolved content id used in ImageLabel (configs/pill_ui.lua). Creator 3200870803.",
+  "amethyst_pill_frame": { "decal": 131952489778454, "image": 131602200875465, "src": "assets/ui/pill_frames_purple/pill_frame.png" },
+  "amethyst_pill_panel": { "decal": 134891393358205, "image": 137324436662260, "src": "assets/ui/pill_panels_purple/pill_panel.png" },
+  "purple_ring_aoe": { "decal": 140648871208423, "image": 96291808922382, "src": "assets/ui/ring_frames_purple/ring_aoe.png" },
+  "purple_ring_aura": { "decal": 125045898835163, "image": 94531377035272, "src": "assets/ui/ring_frames_purple/ring_aura.png" },
+  "purple_ring_target_aoe": { "decal": 121113587020564, "image": 111636420673094, "src": "assets/ui/ring_frames_purple/ring_target_aoe.png" },
+  "purple_ring_target_in": { "decal": 81701010695914, "image": 71914479063156, "src": "assets/ui/ring_frames_purple/ring_target_in.png" },
+  "purple_ring_target_out": { "decal": 121570278624636, "image": 89740074626860, "src": "assets/ui/ring_frames_purple/ring_target_out.png" }
+}

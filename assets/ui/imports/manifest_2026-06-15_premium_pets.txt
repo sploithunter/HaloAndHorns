@@ -1,0 +1,82 @@
+# Premium pet 3D model import (2026-06-15)
+# 10 species × basic + gold = 20 meshes
+
+## Preview images
+Basic PNGs -> assets/exports/pets/basic/{pet}_basic.png
+Gold PNGs   -> assets/exports/pets/gold/{pet}_gold.png
+Contact sheets:
+  assets/exports/pets/premium_pets_2026-06-15_basic_contact_sheet.png
+  assets/exports/pets/premium_pets_2026-06-15_gold_contact_sheet.png
+
+## Processing
+
+for stem in \
+  empyrean_dragon_basic empyrean_dragon_gold \
+  aurora_leviathan_basic aurora_leviathan_gold \
+  glacial_seraph_basic glacial_seraph_gold \
+  seraph_owl_basic seraph_owl_gold \
+  aurora_fox_basic aurora_fox_gold \
+  frostlight_hare_basic frostlight_hare_gold \
+  sunmane_lion_basic sunmane_lion_gold \
+  solar_phoenix_basic solar_phoenix_gold \
+  radiant_salamander_basic radiant_salamander_gold \
+  emberling_cherub_basic emberling_cherub_gold; do
+  bash scripts/decimate_mesh.sh "assets/source/pets/${stem}.obj" \
+    --output "assets/exports/pets/${stem}" \
+    --targets 5000,7500,10000
+done
+
+## Source
+
+pet	variant	stem	download_zip	preview_png	original_tris
+empyrean_dragon	basic	empyrean_dragon_basic	Empyrean Dragon.zip	Empyrean Dragon.png	13398
+empyrean_dragon	gold	empyrean_dragon_gold	Empyrean Dragon Gold.zip	Empyrean Dragon Gold.png	13398
+aurora_leviathan	basic	aurora_leviathan_basic	Aurora Leviathan.zip	Aurora Leviathan.png	13042
+aurora_leviathan	gold	aurora_leviathan_gold	Aurora Leviathan Gold.zip	Aurora Leviathan Gold.png	13042
+glacial_seraph	basic	glacial_seraph_basic	Glacial Seraph.zip	Glacial Seraph.png	11438
+glacial_seraph	gold	glacial_seraph_gold	Glacial Seraph Gold.zip	Glacial Seraph Gold.png	11438
+seraph_owl	basic	seraph_owl_basic	Seraph Owl.zip	Seraph Owl.png	7127
+seraph_owl	gold	seraph_owl_gold	Seraph Owl Gold.zip	Seraph Owl Gold.png	7127
+aurora_fox	basic	aurora_fox_basic	Aurora Fox.zip	Aurora Fox.png	11272
+aurora_fox	gold	aurora_fox_gold	Aurora Fox Gold.zip	Aurora Fox Gold.png	11272
+frostlight_hare	basic	frostlight_hare_basic	Frostlight Hare.zip	Frostlight Hare.png	6988
+frostlight_hare	gold	frostlight_hare_gold	Frostlight Hare Gold.zip	Frostlight Hare Gold.png	6988
+sunmane_lion	basic	sunmane_lion_basic	Sunmane Lion.zip	Sunmane Lion.png	19226
+sunmane_lion	gold	sunmane_lion_gold	Sunmane Lion Gold.zip	Sunmane Lion Gold.png	19226
+solar_phoenix	basic	solar_phoenix_basic	Solar Phoenix.zip	Solar Phoenix.png	17672
+solar_phoenix	gold	solar_phoenix_gold	Solar Phoenix Gold.zip	Solar Phoenix Gold.png	17672
+radiant_salamander	basic	radiant_salamander_basic	Radiant Salamander.zip	Radiant Salamander.png	18207
+radiant_salamander	gold	radiant_salamander_gold	Radiant Salamander Gold.zip	Radiant Salamander Gold.png	18207
+emberling_cherub	basic	emberling_cherub_basic	Emberling Cherub.zip	Emberling Cherub.png	12234
+emberling_cherub	gold	emberling_cherub_gold	Emberling Cherub Gold.zip	Emberling Cherub Gold.png	12234
+
+## Exports (recommended upload per mesh)
+
+pet	variant	recommended_fbx	mesh_texture	preview_image
+empyrean_dragon	basic	assets/exports/pets/empyrean_dragon_basic/empyrean_dragon_basic_5k.fbx	assets/exports/pets/empyrean_dragon_basic/empyrean_dragon_basic.png	assets/exports/pets/basic/empyrean_dragon_basic.png
+empyrean_dragon	gold	assets/exports/pets/empyrean_dragon_gold/empyrean_dragon_gold_5k.fbx	assets/exports/pets/empyrean_dragon_gold/empyrean_dragon_gold.png	assets/exports/pets/gold/empyrean_dragon_gold.png
+aurora_leviathan	basic	assets/exports/pets/aurora_leviathan_basic/aurora_leviathan_basic_5k.fbx	assets/exports/pets/aurora_leviathan_basic/aurora_leviathan_basic.png	assets/exports/pets/basic/aurora_leviathan_basic.png
+aurora_leviathan	gold	assets/exports/pets/aurora_leviathan_gold/aurora_leviathan_gold_5k.fbx	assets/exports/pets/aurora_leviathan_gold/aurora_leviathan_gold.png	assets/exports/pets/gold/aurora_leviathan_gold.png
+glacial_seraph	basic	assets/exports/pets/glacial_seraph_basic/glacial_seraph_basic_5k.fbx	assets/exports/pets/glacial_seraph_basic/glacial_seraph_basic.png	assets/exports/pets/basic/glacial_seraph_basic.png
+glacial_seraph	gold	assets/exports/pets/glacial_seraph_gold/glacial_seraph_gold_5k.fbx	assets/exports/pets/glacial_seraph_gold/glacial_seraph_gold.png	assets/exports/pets/gold/glacial_seraph_gold.png
+seraph_owl	basic	assets/exports/pets/seraph_owl_basic/seraph_owl_basic_5k.fbx	assets/exports/pets/seraph_owl_basic/seraph_owl_basic.png	assets/exports/pets/basic/seraph_owl_basic.png
+seraph_owl	gold	assets/exports/pets/seraph_owl_gold/seraph_owl_gold_5k.fbx	assets/exports/pets/seraph_owl_gold/seraph_owl_gold.png	assets/exports/pets/gold/seraph_owl_gold.png
+aurora_fox	basic	assets/exports/pets/aurora_fox_basic/aurora_fox_basic_5k.fbx	assets/exports/pets/aurora_fox_basic/aurora_fox_basic.png	assets/exports/pets/basic/aurora_fox_basic.png
+aurora_fox	gold	assets/exports/pets/aurora_fox_gold/aurora_fox_gold_5k.fbx	assets/exports/pets/aurora_fox_gold/aurora_fox_gold.png	assets/exports/pets/gold/aurora_fox_gold.png
+frostlight_hare	basic	assets/exports/pets/frostlight_hare_basic/frostlight_hare_basic_5k.fbx	assets/exports/pets/frostlight_hare_basic/frostlight_hare_basic.png	assets/exports/pets/basic/frostlight_hare_basic.png
+frostlight_hare	gold	assets/exports/pets/frostlight_hare_gold/frostlight_hare_gold_5k.fbx	assets/exports/pets/frostlight_hare_gold/frostlight_hare_gold.png	assets/exports/pets/gold/frostlight_hare_gold.png
+sunmane_lion	basic	assets/exports/pets/sunmane_lion_basic/sunmane_lion_basic_5k.fbx	assets/exports/pets/sunmane_lion_basic/sunmane_lion_basic.png	assets/exports/pets/basic/sunmane_lion_basic.png
+sunmane_lion	gold	assets/exports/pets/sunmane_lion_gold/sunmane_lion_gold_5k.fbx	assets/exports/pets/sunmane_lion_gold/sunmane_lion_gold.png	assets/exports/pets/gold/sunmane_lion_gold.png
+solar_phoenix	basic	assets/exports/pets/solar_phoenix_basic/solar_phoenix_basic_5k.fbx	assets/exports/pets/solar_phoenix_basic/solar_phoenix_basic.png	assets/exports/pets/basic/solar_phoenix_basic.png
+solar_phoenix	gold	assets/exports/pets/solar_phoenix_gold/solar_phoenix_gold_5k.fbx	assets/exports/pets/solar_phoenix_gold/solar_phoenix_gold.png	assets/exports/pets/gold/solar_phoenix_gold.png
+radiant_salamander	basic	assets/exports/pets/radiant_salamander_basic/radiant_salamander_basic_5k.fbx	assets/exports/pets/radiant_salamander_basic/radiant_salamander_basic.png	assets/exports/pets/basic/radiant_salamander_basic.png
+radiant_salamander	gold	assets/exports/pets/radiant_salamander_gold/radiant_salamander_gold_5k.fbx	assets/exports/pets/radiant_salamander_gold/radiant_salamander_gold.png	assets/exports/pets/gold/radiant_salamander_gold.png
+emberling_cherub	basic	assets/exports/pets/emberling_cherub_basic/emberling_cherub_basic_5k.fbx	assets/exports/pets/emberling_cherub_basic/emberling_cherub_basic.png	assets/exports/pets/basic/emberling_cherub_basic.png
+emberling_cherub	gold	assets/exports/pets/emberling_cherub_gold/emberling_cherub_gold_5k.fbx	assets/exports/pets/emberling_cherub_gold/emberling_cherub_gold.png	assets/exports/pets/gold/emberling_cherub_gold.png
+
+## Decimation notes
+5000 / 7500 / 10000 tris for all meshes.
+seraph_owl and frostlight_hare source < 7500 tris — 7500/10k exports kept at native count.
+
+## Wired
+pending: configs/pets.lua + assets/manifest/pets.json entries

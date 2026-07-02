@@ -1,0 +1,1242 @@
+{
+ "assets": {
+  "1003379313": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua"
+   ],
+   "creator": "MLGBoy_XxX",
+   "mine": false,
+   "name": "Gear"
+  },
+  "100466492312776": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Colorado_normal"
+  },
+  "100630669468901": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Emerald_Crystal_Garde"
+  },
+  "102018563424862": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Emberling"
+  },
+  "102357151476128": {
+   "asset_type": "Decal",
+   "consumed_by": [
+    "src/Client/Systems/CurrencyStyle.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "gemui_purple_gem_single"
+  },
+  "102826053899109": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Penguin"
+  },
+  "102909461111791": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/enhancements.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "cogwheel_blue"
+  },
+  "104177688657054": {
+   "asset_type": "Decal",
+   "consumed_by": [
+    "src/Client/Systems/CurrencyStyle.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "gemui_yellow_gem_single"
+  },
+  "106127747169545": {
+   "asset_type": "Decal",
+   "consumed_by": [
+    "src/Client/Systems/CurrencyStyle.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "gemui_red_gem_single"
+  },
+  "106635944648380": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Citrine_Crystal_Cluster_3"
+  },
+  "106984872505048": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "ruby_gem_single"
+  },
+  "107758879638540": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Golden_Bear"
+  },
+  "108502787971065": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenSnowFox"
+  },
+  "108675846735651": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/enhancements.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "cogwheel_red"
+  },
+  "108940406293408": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "desert_magic_cast_long"
+  },
+  "109710590640681": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "BigBlueCrystal"
+  },
+  "110721051431892": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "emerald_gem_pile"
+  },
+  "111062651596295": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "EmberImp"
+  },
+  "111577083207352": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "sapphire_gem_bag"
+  },
+  "112188519963572": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "SmallBlueCrystal"
+  },
+  "113112612195316": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Rainbow_Bunny"
+  },
+  "113134007876507": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Scorpion"
+  },
+  "113452230594676": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "MediumBlueCrystal"
+  },
+  "115145476379087": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "citrine_gem_bag"
+  },
+  "115312269011682": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenCamel"
+  },
+  "116652270757215": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Azure_Crystal_Cluster_2"
+  },
+  "117318156254750": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "fire_impact_targeted_3"
+  },
+  "117740863969382": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Emberfox"
+  },
+  "118620301664836": {
+   "asset_type": "Mesh",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "mesh"
+  },
+  "119007782066562": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/enhancements.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "cogwheel_yellow"
+  },
+  "119309359317545": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenMeerkat"
+  },
+  "119448221139567": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Bunny"
+  },
+  "119450165143759": {
+   "asset_type": "Decal",
+   "consumed_by": [
+    "src/Client/Systems/CurrencyStyle.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "gemui_blue_gem_single"
+  },
+  "120821607721730": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Rainbow_Dragon"
+  },
+  "120847768657487": {
+   "asset_type": "Mesh",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "mesh"
+  },
+  "121055776582247": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Emerald_Crystal_Garde_2"
+  },
+  "121192248833075": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "ColoradoPlays_golden"
+  },
+  "121215976414474": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "arrow_impact_desert"
+  },
+  "12155643116": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua",
+    "src/Shared/Services/TemplateManager.lua"
+   ],
+   "creator": "ItsDaRealBeast",
+   "mine": false,
+   "name": "FrameBG"
+  },
+  "121697559002218": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "src/Client/UI/PowerSlotRow.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "ring_white_ring_aura"
+  },
+  "122469397847650": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "awe_loop"
+  },
+  "123560213437578": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/enhancements.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "cogwheel_silver"
+  },
+  "123822224997280": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "EmberLion"
+  },
+  "124744079930917": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Rainbow_Kitty"
+  },
+  "125017003780089": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "fire_impact_targeted_2"
+  },
+  "125491041555430": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenEmberling"
+  },
+  "125923588431694": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "force_field_raise"
+  },
+  "127129905024932": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenEmberImp"
+  },
+  "127988865093771": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "icy_wind_casting"
+  },
+  "128240762228140": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua",
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "cartoony_spell_cast"
+  },
+  "128882337386374": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "earth_magic_casting"
+  },
+  "129139046533482": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "DesertIguana"
+  },
+  "129756458235378": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "celebratory_jingle"
+  },
+  "130117829099103": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "citrine_gem_pile"
+  },
+  "130629017706281": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "single_target_punch"
+  },
+  "130738884436725": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenScorpion"
+  },
+  "131332151549245": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenEmberFox"
+  },
+  "131694228494794": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua",
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "power_up_stronger"
+  },
+  "131968646516737": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Golden_Kitty"
+  },
+  "133150464787030": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Golden_Bunny"
+  },
+  "133184779588286": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenEmberOwl"
+  },
+  "133214678271304": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "viking_drum_loop"
+  },
+  "135624983070582": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "desert_magic_long"
+  },
+  "136309678310342": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua",
+    "src/Client/Systems/CurrencyStyle.lua"
+   ],
+   "creator": "Gigachadisinuses",
+   "mine": false,
+   "name": "gem"
+  },
+  "137697638458544": {
+   "asset_type": "Decal",
+   "consumed_by": [
+    "src/Client/Systems/CurrencyStyle.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "gemui_green_gem_single"
+  },
+  "137944510499979": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenPenguin"
+  },
+  "138609231264349": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "EmbercrestOwl"
+  },
+  "139713750428794": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Azure_Crystal_Cluster_1"
+  },
+  "139772169909973": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Rainbow_Doggy"
+  },
+  "140074573067134": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "sapphire_gem_pile"
+  },
+  "140667375594889": {
+   "asset_type": "Mesh",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "mesh"
+  },
+  "140708476776029": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenDesertIguana"
+  },
+  "16809347055": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua"
+   ],
+   "creator": "Lwllace Studios",
+   "mine": false,
+   "name": "TEX_Mazercise_Panels"
+  },
+  "18852000893": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua"
+   ],
+   "creator": "Firelex_FR",
+   "mine": false,
+   "name": "obtn"
+  },
+  "5088859456": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua"
+   ],
+   "creator": "epicflamingtornado",
+   "mine": false,
+   "name": "Gem"
+  },
+  "5533192672": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua",
+    "src/Client/UI/BaseUI.lua"
+   ],
+   "creator": "Vezipe",
+   "mine": false,
+   "name": "ToggleOn"
+  },
+  "5533209494": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua",
+    "src/Client/UI/BaseUI.lua"
+   ],
+   "creator": "Vezipe",
+   "mine": false,
+   "name": "ToggleOff2"
+  },
+  "6031068421": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua"
+   ],
+   "creator": "qwreey74_icon",
+   "mine": false,
+   "name": "baseline_toggle_check_box"
+  },
+  "6031075938": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua"
+   ],
+   "creator": "qwreey74_icon",
+   "mine": false,
+   "name": "baseline_action_wysiwyg"
+  },
+  "6208057940": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua"
+   ],
+   "creator": "Chocopain",
+   "mine": false,
+   "name": "blue_panel"
+  },
+  "71266985896124": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/enchants.lua",
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "short_realistic_thunder"
+  },
+  "71645322477288": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Dragon"
+  },
+  "71912785258456": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "rippling_rock_magic"
+  },
+  "71993023026266": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "PolarBear"
+  },
+  "72360244393742": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Emerald_Crystals"
+  },
+  "72606573858620": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "SnowFox"
+  },
+  "72910842757132": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "fireball_launch"
+  },
+  "73405612786363": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Kitty"
+  },
+  "74298032032655": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Azure_Crystal_Cluster_3"
+  },
+  "75441224405966": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "epic_drum_loop"
+  },
+  "76065631196112": {
+   "asset_type": "Mesh",
+   "consumed_by": [
+    "configs/enhancements.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "mesh"
+  },
+  "76239838028664": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "fire_impact_targeted_1"
+  },
+  "77266088122632": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Fennec"
+  },
+  "77451518796778": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "BasicEgg"
+  },
+  "79256976981602": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "snare_drum_roll"
+  },
+  "79770174701008": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "EmberEgg"
+  },
+  "80309644035251": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "ruby_gem_bag"
+  },
+  "81424041024347": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Ember Crystal 1"
+  },
+  "81826046653344": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "unnamed_audio"
+  },
+  "83292549021438": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "SnowflakeOwl"
+  },
+  "83699970022054": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Meerkat"
+  },
+  "83992435784076": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Golden_BasicEgg"
+  },
+  "84600281598015": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "EmberCrystal3"
+  },
+  "84866938216699": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "SnowLeopard"
+  },
+  "85179217604910": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua"
+   ],
+   "creator": "XxSupreme_JoshxX",
+   "mine": false,
+   "name": "Backpack Button"
+  },
+  "85924824230409": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenFennec"
+  },
+  "86029647986485": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Camel"
+  },
+  "86278537786961": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "SandEgg"
+  },
+  "86681945642413": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenSnowLeopard"
+  },
+  "86818999673257": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenSnowflakeOwl"
+  },
+  "87286616937220": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenPolarBear"
+  },
+  "87632216595220": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "fireball_impact_targeted"
+  },
+  "87755009672242": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "GoldenEmberLion"
+  },
+  "88555005076540": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "citrine_gem_single"
+  },
+  "88946068227454": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/enhancements.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "cogwheel_purple"
+  },
+  "89257673063270": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/ui.lua",
+    "src/Client/UI/Menus/InventoryPanel.lua",
+    "src/Client/UI/Menus/SettingsPanel.lua"
+   ],
+   "creator": "rochix11",
+   "mine": false,
+   "name": "X Button"
+  },
+  "89319434061596": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "ruby_gem_pile"
+  },
+  "89849279170806": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "emerald_gem_single"
+  },
+  "90886294637792": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Citrine_Crystal_Cluster_2"
+  },
+  "91219330332155": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "EmberCrystal2"
+  },
+  "91261941530299": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Golden_Dragon"
+  },
+  "91612068059535": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "emerald_gem_bag"
+  },
+  "92087344212010": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/gems.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "sapphire_gem_single"
+  },
+  "92437511216136": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Bear"
+  },
+  "93387065123336": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "fireball_impact_aoe"
+  },
+  "94786603011124": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/breakables.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Citrine_Crystal_Cluster_1"
+  },
+  "95237477079273": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "LushEgg"
+  },
+  "95584496209726": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Doggy"
+  },
+  "96154251218473": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "deep_winter_wind"
+  },
+  "96544163202240": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "IceEgg"
+  },
+  "96567599651432": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "freezing_crack_single_target"
+  },
+  "97337398672225": {
+   "asset_type": "Model",
+   "consumed_by": [
+    "configs/pets.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "Golden_Doggy"
+  },
+  "98548849463653": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/flash_effects.lua",
+    "configs/pet_follow.lua",
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "SFX_Pop_Bubble"
+  },
+  "98891214914756": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua",
+    "configs/sounds.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "deep_earthen_impact"
+  },
+  "99084444950159": {
+   "asset_type": "Audio",
+   "consumed_by": [
+    "configs/power_fx.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "earthen_impact"
+  },
+  "99887919204355": {
+   "asset_type": "Image",
+   "consumed_by": [
+    "configs/enhancements.lua"
+   ],
+   "creator": "coloradoplays",
+   "mine": true,
+   "name": "cogwheel_green"
+  }
+ },
+ "generated": "2026-06-11",
+ "owner_user_id": 3200870803
+}

@@ -1,0 +1,11 @@
+# Enchant tier metal rings (configs/enchants.lua display.ring_tiers)
+# Copper -> Bronze -> Silver -> Gold -> Onyx (strength 1-5)
+
+asset	download_source	mode	notes
+ring_copper.png	ChatGPT Image Jun 12, 2026, 08_26_09 AM.png	ring-white
+ring_bronze.png	ChatGPT Image Jun 12, 2026, 08_26_03 AM.png	ring-white
+ring_silver.png	ChatGPT Image Jun 12, 2026, 08_30_00 AM.png	ring-green	green-screen source; edge + center hole
+ring_gold.png	ChatGPT Image Jun 12, 2026, 08_26_16 AM.png	ring-white
+ring_onyx.png	ChatGPT Image Jun 12, 2026, 08_25_57 AM (2).png	ring-white	onyx band with gold/silver runes
+
+pipeline: scripts/remove_image_background.py --mode ring-white (edge + center hole)

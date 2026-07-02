@@ -1,0 +1,7 @@
+size: native-crop
+padding: 0px
+square: True
+
+proc.png	1254x1254	<- Proc.png	(white)
+focus.png	1218x1218	<- Focus.png	(white)
+potency.png	1222x1222	<- Potency.png	(white)

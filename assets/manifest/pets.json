@@ -1,0 +1,649 @@
+{
+  "version": 1,
+  "description": "Source-of-truth tracking for generated pet assets. Roblox runtime config still lives in configs/pets.lua.",
+  "defaults": {
+    "generator": "meshy",
+    "workflow": "generate -> remesh -> texture -> send_to_roblox",
+    "target_formats": [
+      "glb",
+      "fbx"
+    ],
+    "style_prompt": "cute low-poly Roblox pet simulator companion, toy-like proportions, clean silhouette, bright readable colors, single-character model, game-ready mesh"
+  },
+  "pets": [
+    {
+      "key": "bear.basic",
+      "pet": "bear",
+      "variant": "basic",
+      "display_name": "Bear",
+      "status": "needs_source",
+      "prompt": "cute low-poly bear pet companion for a Roblox pet simulator, rounded ears, small paws, friendly face, warm brown fur, chunky toy-like silhouette",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": "A Meshy replacement was generated on 2026-05-26 but is not used because the original Bear better matches the existing art style."
+      },
+      "files": {
+        "source_glb": "",
+        "source_fbx": ""
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://102676279378350",
+        "image_asset_id": "rbxassetid://0",
+        "unused_meshi_model_asset_id": "rbxassetid://130306156035035",
+        "unused_imported_model_asset_id": "rbxassetid://112539359698557"
+      },
+      "notes": "Runtime uses the original remote Bear asset for style consistency. The Meshy-generated Bear source remains in assets/source/pets/bear_basic.glb as an unused experiment."
+    },
+    {
+      "key": "bear.golden",
+      "pet": "bear",
+      "variant": "golden",
+      "display_name": "Golden Bear",
+      "status": "needs_source",
+      "prompt": "golden version of a cute low-poly bear Roblox pet, metallic gold fur, friendly face, toy-like rounded body, subtle coin sparkle accents",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/bear_golden.glb",
+        "source_fbx": "assets/source/pets/bear_golden.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://107758879638540",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "bear.rainbow",
+      "pet": "bear",
+      "variant": "rainbow",
+      "display_name": "Rainbow Bear",
+      "status": "needs_source",
+      "prompt": "rainbow version of a cute low-poly bear Roblox pet, colorful gradient fur panels, friendly face, bright magical toy-like companion",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/bear_rainbow.glb",
+        "source_fbx": "assets/source/pets/bear_rainbow.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://92437511216136",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "bunny.basic",
+      "pet": "bunny",
+      "variant": "basic",
+      "display_name": "Bunny",
+      "status": "needs_source",
+      "prompt": "cute low-poly bunny pet companion for Roblox, long soft ears, tiny round tail, pastel cream fur, cheerful face, compact toy-like body",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/bunny_basic.glb",
+        "source_fbx": "assets/source/pets/bunny_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://119448221139567",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "bunny.golden",
+      "pet": "bunny",
+      "variant": "golden",
+      "display_name": "Golden Bunny",
+      "status": "needs_source",
+      "prompt": "golden cute low-poly bunny Roblox pet, long ears, tiny tail, shiny gold material, cheerful toy-like face, small sparkle accents",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/bunny_golden.glb",
+        "source_fbx": "assets/source/pets/bunny_golden.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://133150464787030",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "bunny.rainbow",
+      "pet": "bunny",
+      "variant": "rainbow",
+      "display_name": "Rainbow Bunny",
+      "status": "needs_source",
+      "prompt": "rainbow cute low-poly bunny Roblox pet, long ears with colorful bands, magical pastel gradient, cheerful face, toy-like proportions",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/bunny_rainbow.glb",
+        "source_fbx": "assets/source/pets/bunny_rainbow.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://113112612195316",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "doggy.basic",
+      "pet": "doggy",
+      "variant": "basic",
+      "display_name": "Doggy",
+      "status": "needs_source",
+      "prompt": "cute low-poly dog pet companion for Roblox, floppy ears, wagging tail pose, friendly face, warm tan and brown colors, chunky toy-like body",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/doggy_basic.glb",
+        "source_fbx": "assets/source/pets/doggy_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://95584496209726",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "doggy.golden",
+      "pet": "doggy",
+      "variant": "golden",
+      "display_name": "Golden Doggy",
+      "status": "needs_source",
+      "prompt": "golden cute low-poly dog Roblox pet, floppy ears, shiny gold coat, friendly face, premium toy-like companion, subtle glow accents",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/doggy_golden.glb",
+        "source_fbx": "assets/source/pets/doggy_golden.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://97337398672225",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "doggy.rainbow",
+      "pet": "doggy",
+      "variant": "rainbow",
+      "display_name": "Rainbow Doggy",
+      "status": "needs_source",
+      "prompt": "rainbow cute low-poly dog Roblox pet, floppy ears, colorful magical fur gradient, friendly face, bright toy-like companion",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/doggy_rainbow.glb",
+        "source_fbx": "assets/source/pets/doggy_rainbow.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://139772169909973",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "dragon.basic",
+      "pet": "dragon",
+      "variant": "basic",
+      "display_name": "Dragon",
+      "status": "needs_source",
+      "prompt": "cute low-poly baby dragon Roblox pet, small wings, tiny horns, friendly face, emerald scales, chunky toy-like fantasy companion",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/dragon_basic.glb",
+        "source_fbx": "assets/source/pets/dragon_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://71645322477288",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Secret-tier pet in config; existing Roblox asset id from configs/pets.lua."
+    },
+    {
+      "key": "dragon.golden",
+      "pet": "dragon",
+      "variant": "golden",
+      "display_name": "Golden Dragon",
+      "status": "needs_source",
+      "prompt": "golden cute low-poly baby dragon Roblox pet, small wings, tiny horns, shiny golden scales, treasure guardian vibe, toy-like fantasy companion",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/dragon_golden.glb",
+        "source_fbx": "assets/source/pets/dragon_golden.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://91261941530299",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Secret-tier pet in config; existing Roblox asset id from configs/pets.lua."
+    },
+    {
+      "key": "dragon.rainbow",
+      "pet": "dragon",
+      "variant": "rainbow",
+      "display_name": "Rainbow Dragon",
+      "status": "needs_source",
+      "prompt": "rainbow cute low-poly baby dragon Roblox pet, small wings, tiny horns, prismatic scales, magical aura, premium secret pet silhouette",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/dragon_rainbow.glb",
+        "source_fbx": "assets/source/pets/dragon_rainbow.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://120821607721730",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Secret-tier pet in config; existing Roblox asset id from configs/pets.lua."
+    },
+    {
+      "key": "kitty.basic",
+      "pet": "kitty",
+      "variant": "basic",
+      "display_name": "Kitty",
+      "status": "needs_source",
+      "prompt": "cute low-poly cat pet companion for Roblox, pointy ears, tiny whiskers, curled tail, friendly face, soft gray fur, toy-like body",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/kitty_basic.glb",
+        "source_fbx": "assets/source/pets/kitty_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://73405612786363",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "kitty.golden",
+      "pet": "kitty",
+      "variant": "golden",
+      "display_name": "Golden Kitty",
+      "status": "needs_source",
+      "prompt": "golden cute low-poly cat Roblox pet, pointy ears, curled tail, shiny gold fur, friendly premium toy-like companion",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/kitty_golden.glb",
+        "source_fbx": "assets/source/pets/kitty_golden.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://131968646516737",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "kitty.rainbow",
+      "pet": "kitty",
+      "variant": "rainbow",
+      "display_name": "Rainbow Kitty",
+      "status": "needs_source",
+      "prompt": "rainbow cute low-poly cat Roblox pet, pointy ears, curled tail, colorful magical fur, friendly face, premium toy-like companion",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/kitty_rainbow.glb",
+        "source_fbx": "assets/source/pets/kitty_rainbow.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://124744079930917",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+    },
+    {
+      "key": "colorado.basic",
+      "pet": "colorado",
+      "variant": "basic",
+      "display_name": "Colorado Plays",
+      "status": "needs_source",
+      "prompt": "cute low-poly Roblox creator avatar pet companion, square toy-like head, blue shirt, friendly face, compact proportions, game-ready pet simulator style",
+      "reference_image": "",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/colorado_basic.glb",
+        "source_fbx": "assets/source/pets/colorado_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://100466492312776",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Creator reward pet. Runtime uses the imported Roblox asset; source model file is not present locally yet."
+    },
+    {
+      "key": "colorado.golden",
+      "pet": "colorado",
+      "variant": "golden",
+      "display_name": "Golden Colorado Plays",
+      "status": "needs_source",
+      "prompt": "golden cute low-poly Roblox creator avatar pet companion, square toy-like head, golden accents, friendly face, compact pet simulator proportions",
+      "reference_image": "",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/colorado_golden.glb",
+        "source_fbx": "assets/source/pets/colorado_golden.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://121192248833075",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Creator reward pet. Runtime uses the imported Roblox asset; source model file is not present locally yet."
+    },
+    {
+      "key": "colorado.rainbow",
+      "pet": "colorado",
+      "variant": "rainbow",
+      "display_name": "Rainbow Colorado Plays",
+      "status": "needs_source",
+      "prompt": "rainbow cute low-poly Roblox creator avatar pet companion, square toy-like head, colorful magical accents, friendly face, compact pet simulator proportions",
+      "reference_image": "",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": "Runtime intentionally reuses the normal Colorado model and applies Rainbow visual treatment in code."
+      },
+      "files": {
+        "source_glb": "assets/source/pets/colorado_basic.glb",
+        "source_fbx": "assets/source/pets/colorado_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://100466492312776",
+        "image_asset_id": "rbxassetid://0",
+        "shares_model_asset_with": "colorado.basic"
+      },
+      "notes": "Creator reward pet. This variant intentionally shares the normal model asset and relies on runtime Rainbow treatment."
+    },
+    {
+      "key": "cobra.basic",
+      "pet": "cobra",
+      "variant": "basic",
+      "display_name": "Cobra",
+      "status": "concept",
+      "prompt": "cute low-poly cobra pet companion for a Roblox pet simulator, friendly stylized snake, readable hood silhouette, toy-like proportions, bright eyes, clean game-ready shape",
+      "reference_image": "assets/source/references/pets/cobra_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/cobra_basic.glb",
+        "source_fbx": "assets/source/pets/cobra_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://0",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Manifest-only concept. Do not wire into configs/pets.lua until source model and Roblox asset are approved."
+    },
+    {
+      "key": "elephant.basic",
+      "pet": "elephant",
+      "variant": "basic",
+      "display_name": "Elephant",
+      "status": "rejected",
+      "prompt": "cute low-poly elephant pet companion for a Roblox pet simulator, oversized ears, short trunk, blue friendly eyes, soft gray body, toy-like proportions, clean game-ready shape",
+      "reference_image": "assets/source/references/pets/elephant_basic.png",
+      "meshy": {
+        "task_id": "019e6c1d-5ccc-7855-95a5-4a6be3c76a4e",
+        "source_url": "",
+        "notes": "",
+        "submitted_at": "2026-05-28T01:05:26.493Z",
+        "status": "SUCCEEDED",
+        "downloaded_at": "2026-05-28T01:08:01.074Z",
+        "consumed_credits": 30
+      },
+      "files": {
+        "source_glb": "assets/source/pets/elephant_basic.glb",
+        "source_fbx": "assets/source/pets/elephant_basic.fbx",
+        "preview_image": "assets/exports/pets/elephant_basic_preview.png",
+        "preview_front": "assets/exports/pets/elephant_basic_preview_front.png",
+        "preview_right": "assets/exports/pets/elephant_basic_preview_right.png",
+        "preview_back": "assets/exports/pets/elephant_basic_preview_back.png",
+        "preview_left": "assets/exports/pets/elephant_basic_preview_left.png"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://0",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Manifest-only concept. Do not wire into configs/pets.lua until source model and Roblox asset are approved. Rejected 2026-05-27: Meshy side previews show eye texture wrapping onto body sides."
+    },
+    {
+      "key": "giraffe.basic",
+      "pet": "giraffe",
+      "variant": "basic",
+      "display_name": "Giraffe",
+      "status": "concept",
+      "prompt": "cute low-poly giraffe pet companion for a Roblox pet simulator, small ossicones, short friendly neck, warm yellow body with brown spots, toy-like proportions, clean game-ready shape",
+      "reference_image": "assets/source/references/pets/giraffe_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/giraffe_basic.glb",
+        "source_fbx": "assets/source/pets/giraffe_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://0",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Manifest-only concept. Do not wire into configs/pets.lua until source model and Roblox asset are approved."
+    },
+    {
+      "key": "hippo.basic",
+      "pet": "hippo",
+      "variant": "basic",
+      "display_name": "Hippo",
+      "status": "concept",
+      "prompt": "cute low-poly hippo pet companion for a Roblox pet simulator, rounded snout, tiny ears, friendly eyes, chunky gray-purple toy-like body, clean game-ready shape",
+      "reference_image": "assets/source/references/pets/hippo_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/hippo_basic.glb",
+        "source_fbx": "assets/source/pets/hippo_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://0",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Manifest-only concept. Do not wire into configs/pets.lua until source model and Roblox asset are approved."
+    },
+    {
+      "key": "lion.basic",
+      "pet": "lion",
+      "variant": "basic",
+      "display_name": "Lion",
+      "status": "concept",
+      "prompt": "cute low-poly lion pet companion for a Roblox pet simulator, soft round mane, friendly face, warm tan body, toy-like proportions, clean game-ready shape",
+      "reference_image": "assets/source/references/pets/lion_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/lion_basic.glb",
+        "source_fbx": "assets/source/pets/lion_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://0",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Manifest-only concept. Do not wire into configs/pets.lua until source model and Roblox asset are approved."
+    },
+    {
+      "key": "rhino.basic",
+      "pet": "rhino",
+      "variant": "basic",
+      "display_name": "Rhino",
+      "status": "concept",
+      "prompt": "cute low-poly rhino pet companion for a Roblox pet simulator, small rounded horn, friendly eyes, sturdy gray toy-like body, clean game-ready shape",
+      "reference_image": "assets/source/references/pets/rhino_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/rhino_basic.glb",
+        "source_fbx": "assets/source/pets/rhino_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://0",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Manifest-only concept. Do not wire into configs/pets.lua until source model and Roblox asset are approved."
+    },
+    {
+      "key": "tiger.basic",
+      "pet": "tiger",
+      "variant": "basic",
+      "display_name": "Tiger",
+      "status": "concept",
+      "prompt": "cute low-poly tiger pet companion for a Roblox pet simulator, orange body with readable black stripes, friendly face, rounded ears, toy-like proportions, clean game-ready shape",
+      "reference_image": "assets/source/references/pets/tiger_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/tiger_basic.glb",
+        "source_fbx": "assets/source/pets/tiger_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://0",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Manifest-only concept. Do not wire into configs/pets.lua until source model and Roblox asset are approved."
+    },
+    {
+      "key": "water_buffalo.basic",
+      "pet": "water_buffalo",
+      "variant": "basic",
+      "display_name": "Water Buffalo",
+      "status": "concept",
+      "prompt": "cute low-poly water buffalo pet companion for a Roblox pet simulator, broad curved horns, friendly eyes, dark sturdy toy-like body, clean game-ready shape",
+      "reference_image": "assets/source/references/pets/water_buffalo_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/water_buffalo_basic.glb",
+        "source_fbx": "assets/source/pets/water_buffalo_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://0",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Manifest-only concept. Do not wire into configs/pets.lua until source model and Roblox asset are approved."
+    },
+    {
+      "key": "zebra.basic",
+      "pet": "zebra",
+      "variant": "basic",
+      "display_name": "Zebra",
+      "status": "generated",
+      "prompt": "cute low-poly zebra pet companion for a Roblox pet simulator, readable black and white stripes, small mane, friendly eyes, toy-like proportions, clean game-ready shape",
+      "reference_image": "assets/source/references/pets/zebra_basic_front.png",
+      "meshy": {
+        "task_id": "019e6c29-2359-7b7a-a73d-89b7c98306c9",
+        "source_url": "",
+        "notes": "",
+        "task_type": "multi-image-to-3d",
+        "submitted_at": "2026-05-28T01:18:19.093Z",
+        "status": "SUCCEEDED",
+        "downloaded_at": "2026-05-28T01:21:22.975Z",
+        "consumed_credits": 30
+      },
+      "files": {
+        "source_glb": "assets/source/pets/zebra_basic.glb",
+        "source_fbx": "assets/source/pets/zebra_basic.fbx",
+        "preview_image": "assets/exports/pets/zebra_basic_preview.png",
+        "preview_front": "assets/exports/pets/zebra_basic_preview_front.png",
+        "preview_right": "assets/exports/pets/zebra_basic_preview_right.png",
+        "preview_back": "assets/exports/pets/zebra_basic_preview_back.png",
+        "preview_left": "assets/exports/pets/zebra_basic_preview_left.png",
+        "icon_image": "assets/exports/pets/zebra_basic_icon.png"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://0",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Manifest-only concept. Do not wire into configs/pets.lua until source model and Roblox asset are approved.",
+      "reference_images": {
+        "front": "assets/source/references/pets/zebra_basic_front.png",
+        "right": "assets/source/references/pets/zebra_basic_right.png",
+        "back": "assets/source/references/pets/zebra_basic_back.png"
+      }
+    }
+  ]
+}

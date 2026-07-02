@@ -1,0 +1,431 @@
+{
+  "_comment": "SSOT for pre-uploaded pet/egg inventory-card THUMBNAILS (flat IMAGE asset ids). Consumed by scripts/gen_pet_thumbnails.js -> configs/pet_thumbnail_assets.lua, which the inventory card (InventoryPanel) renders as a flat ImageLabel when present (else the baked ViewportFrame). Keys are the CONFIG petType + variant (configs/pets.lua is authoritative); render filenames map basic->basic and gold->golden (rainbow has no render — it's an inventory background + an in-game outline-recolor script, so it stays on the basic texture/viewport). IMPORTANT: ids MUST be uploaded GROUP-owned (15872767) via Open Cloud — the Studio MCP upload_image uploads to the logged-in USER and greys out for everyone else. Keys starting with _ are ignored by the generator. Pet keys: pets.<petType>.<variant> and pets.<petType>.<variant>__huge. Egg keys: eggs.<eggType>.",
+  "pets": {
+    "abyssal_wyrm": {
+      "basic": 105394355425851,
+      "golden": 97610625399961,
+      "rainbow": 105394355425851
+    },
+    "ash_roc": {
+      "basic": 126599530022566,
+      "golden": 130021741948767,
+      "rainbow": 126599530022566
+    },
+    "ashfeather_phoenix": {
+      "basic": 118152682535745,
+      "golden": 110481029820828,
+      "rainbow": 118152682535745
+    },
+    "ashmane_lion": {
+      "basic": 81746669615812,
+      "golden": 133069105234494,
+      "rainbow": 81746669615812
+    },
+    "aurora_dove": {
+      "basic": 79580655558950,
+      "golden": 87513671084960,
+      "rainbow": 79580655558950
+    },
+    "aurora_dragon": {
+      "basic": 76232091257215,
+      "golden": 109185800773431,
+      "rainbow": 76232091257215
+    },
+    "aurora_fox": {
+      "basic": 91204861852621,
+      "golden": 133210005699377,
+      "rainbow": 91204861852621
+    },
+    "aurora_leviathan": {
+      "basic": 99266399523523,
+      "golden": 104956815483275,
+      "rainbow": 99266399523523
+    },
+    "bear": {
+      "basic": 132898172629788,
+      "golden": 136779094190302,
+      "rainbow": 132898172629788
+    },
+    "black_ice_leviathan": {
+      "basic": 75529001594380,
+      "golden": 109718682132004,
+      "rainbow": 75529001594380
+    },
+    "black_seraph": {
+      "basic": 124830786102910,
+      "golden": 75270404867134,
+      "rainbow": 124830786102910
+    },
+    "blightlamb": {
+      "basic": 134788157102235,
+      "golden": 128504933441916,
+      "rainbow": 134788157102235
+    },
+    "bloomlamb": {
+      "basic": 105045149735810,
+      "golden": 94807053083344,
+      "rainbow": 105045149735810
+    },
+    "bloomspirit_lamb": {
+      "basic": 75557644578840,
+      "golden": 93871476446901,
+      "rainbow": 75557644578840
+    },
+    "brimstone_salamander": {
+      "basic": 74377905542360,
+      "golden": 129838951095980,
+      "rainbow": 74377905542360
+    },
+    "bunny": {
+      "basic": 86015752579339,
+      "golden": 118293906514573,
+      "rainbow": 86015752579339
+    },
+    "carrion_scarab": {
+      "basic": 119013107088989,
+      "golden": 109245649471200,
+      "rainbow": 119013107088989
+    },
+    "cinderling_imp": {
+      "basic": 98615522952678,
+      "golden": 107018379137294,
+      "rainbow": 98615522952678
+    },
+    "coronal_cherub": {
+      "basic": 88767858148542,
+      "golden": 81528263606985,
+      "rainbow": 88767858148542
+    },
+    "crystalbark_stag": {
+      "basic": 79652786339903,
+      "golden": 86343124783765,
+      "rainbow": 79652786339903
+    },
+    "dawn_camel": {
+      "basic": 117936718721076,
+      "golden": 122636500171806,
+      "rainbow": 117936718721076
+    },
+    "dawnfire_phoenix": {
+      "basic": 132097618429068,
+      "golden": 76182978528458,
+      "rainbow": 132097618429068
+    },
+    "deadfire_phoenix": {
+      "basic": 80305773011759,
+      "golden": 128046744698667,
+      "rainbow": 80305773011759
+    },
+    "doggy": {
+      "basic": 138165368211446,
+      "golden": 126156854984685,
+      "rainbow": 138165368211446
+    },
+    "dragon": {
+      "basic": 101613154333266,
+      "golden": 110690957767384,
+      "rainbow": 101613154333266
+    },
+    "dread_couatl": {
+      "basic": 72558702818239,
+      "golden": 88443802656767,
+      "rainbow": 72558702818239
+    },
+    "dread_fox": {
+      "basic": 120318087700480,
+      "golden": 73092628721770,
+      "rainbow": 120318087700480
+    },
+    "dread_hare": {
+      "basic": 74033750782847,
+      "golden": 107718256123233,
+      "rainbow": 74033750782847
+    },
+    "dread_owl": {
+      "basic": 110005218949980,
+      "golden": 94707096049963,
+      "rainbow": 110005218949980
+    },
+    "dust_camel": {
+      "basic": 93017452970741,
+      "golden": 112025343607492,
+      "rainbow": 93017452970741
+    },
+    "emberling_cherub": {
+      "basic": 100104061128272,
+      "golden": 78898939057620,
+      "rainbow": 100104061128272
+    },
+    "empyreal_couatl": {
+      "basic": 116808476791394,
+      "golden": 77815053649889,
+      "rainbow": 116808476791394
+    },
+    "empyrean_dragon": {
+      "basic": 89883939065664,
+      "golden": 121623796091249,
+      "rainbow": 89883939065664
+    },
+    "frostblight_lamb": {
+      "basic": 140411132928255,
+      "golden": 137801343514369,
+      "rainbow": 140411132928255
+    },
+    "frostbrand_salamander": {
+      "basic": 134469430529076,
+      "golden": 76142885541916,
+      "rainbow": 134469430529076
+    },
+    "frostcinder_imp": {
+      "basic": 121951797391866,
+      "golden": 130708840494733,
+      "rainbow": 121951797391866
+    },
+    "frostdust_camel": {
+      "basic": 123575752532636,
+      "golden": 93140659498044,
+      "rainbow": 123575752532636
+    },
+    "frostgrave_ent": {
+      "basic": 107786605592741,
+      "golden": 126375420327281,
+      "rainbow": 107786605592741
+    },
+    "frostlight_doe": {
+      "basic": 114210893563381,
+      "golden": 138960441247895,
+      "rainbow": 114210893563381
+    },
+    "frostlight_hare": {
+      "basic": 107456862601107,
+      "golden": 122785845832141,
+      "rainbow": 107456862601107
+    },
+    "gilded_sphinx": {
+      "basic": 139993087832876,
+      "golden": 118684911565527,
+      "rainbow": 139993087832876
+    },
+    "glacial_bear": {
+      "basic": 111693557323085,
+      "golden": 136599935044269,
+      "rainbow": 111693557323085
+    },
+    "glacial_seraph": {
+      "basic": 114703205158408,
+      "golden": 101262186672837,
+      "rainbow": 114703205158408
+    },
+    "glass_sphinx": {
+      "basic": 82214521047015,
+      "golden": 100046018172597,
+      "rainbow": 82214521047015
+    },
+    "gloom_hare": {
+      "basic": 89177278490447,
+      "golden": 106504138945967,
+      "rainbow": 89177278490447
+    },
+    "gloom_jackal": {
+      "basic": 140400841991548,
+      "golden": 115078743555329,
+      "rainbow": 140400841991548
+    },
+    "goldleaf_stag": {
+      "basic": 87498939054141,
+      "golden": 98202750376594,
+      "rainbow": 87498939054141
+    },
+    "gravefrost_owl": {
+      "basic": 91918610711175,
+      "golden": 89036867371886,
+      "rainbow": 91918610711175
+    },
+    "gravewood_ent": {
+      "basic": 121598238267038,
+      "golden": 108620030989512,
+      "rainbow": 121598238267038
+    },
+    "halo_hare": {
+      "basic": 126045475952644,
+      "golden": 105604090481196,
+      "rainbow": 126045475952644
+    },
+    "hoarfrost_phoenix": {
+      "basic": 87991721985832,
+      "golden": 71267854889152,
+      "rainbow": 87991721985832
+    },
+    "icerot_stag": {
+      "basic": 97905820660842,
+      "golden": 114765493146860,
+      "rainbow": 97905820660842
+    },
+    "kitty": {
+      "basic": 109096120035326,
+      "golden": 106255845993455,
+      "rainbow": 109096120035326
+    },
+    "lance_seraph": {
+      "basic": 103467096045656,
+      "golden": 96466354878167,
+      "rainbow": 103467096045656
+    },
+    "lightleaf_hare": {
+      "basic": 139389852735214,
+      "golden": 80892827935744,
+      "rainbow": 139389852735214
+    },
+    "lumen_salamander": {
+      "basic": 84143492516331,
+      "golden": 92169333930749,
+      "rainbow": 84143492516331
+    },
+    "mirage_jackal": {
+      "basic": 90052768512443,
+      "golden": 131724771561930,
+      "rainbow": 90052768512443
+    },
+    "mirage_meerkat": {
+      "basic": 97681032634157,
+      "golden": 71768088457260,
+      "rainbow": 97681032634157
+    },
+    "phantom_jackal": {
+      "basic": 87816495826130,
+      "golden": 98737039707791,
+      "rainbow": 87816495826130
+    },
+    "prism_fox": {
+      "basic": 140292224862725,
+      "golden": 76537372691743,
+      "rainbow": 140292224862725
+    },
+    "prism_lion": {
+      "basic": 97995562975789,
+      "golden": 131299751160380,
+      "rainbow": 97995562975789
+    },
+    "prism_scarab": {
+      "basic": 85274024869303,
+      "golden": 136581823639554,
+      "rainbow": 85274024869303
+    },
+    "radiant_salamander": {
+      "basic": 116236822477663,
+      "golden": 101998578414175,
+      "rainbow": 116236822477663
+    },
+    "radiant_sprite": {
+      "basic": 80509064603455,
+      "golden": 105430802613104,
+      "rainbow": 80509064603455
+    },
+    "rime_scarab": {
+      "basic": 79924357335974,
+      "golden": 134282463972631,
+      "rainbow": 79924357335974
+    },
+    "rimegloom_hare": {
+      "basic": 84955292995146,
+      "golden": 131767826204802,
+      "rainbow": 84955292995146
+    },
+    "rimeguard_bear": {
+      "basic": 101358568386477,
+      "golden": 92367699214651,
+      "rainbow": 101358568386477
+    },
+    "rimelight_hare": {
+      "basic": 92288518486682,
+      "golden": 101563875213032,
+      "rainbow": 92288518486682
+    },
+    "rimemane_lion": {
+      "basic": 115227667542417,
+      "golden": 112453751151966,
+      "rainbow": 115227667542417
+    },
+    "rimewither_sprite": {
+      "basic": 128908090207793,
+      "golden": 91728510513031,
+      "rainbow": 128908090207793
+    },
+    "rimewraith_dragon": {
+      "basic": 83126391239112,
+      "golden": 120166367353336,
+      "rainbow": 83126391239112
+    },
+    "rimewraith_fox": {
+      "basic": 97398697322604,
+      "golden": 71000993149643,
+      "rainbow": 97398697322604
+    },
+    "rotleaf_stag": {
+      "basic": 120424701447302,
+      "golden": 81220177210733,
+      "rainbow": 120424701447302
+    },
+    "seraph_owl": {
+      "basic": 83432339015268,
+      "golden": 100615512051791,
+      "rainbow": 83432339015268
+    },
+    "solar_phoenix": {
+      "basic": 132304635491245,
+      "golden": 136475446301158,
+      "rainbow": 132304635491245
+    },
+    "solar_roc": {
+      "basic": 123477410837004,
+      "golden": 112634269821853,
+      "rainbow": 123477410837004
+    },
+    "starlight_owl": {
+      "basic": 84553579808261,
+      "golden": 107624737169877,
+      "rainbow": 84553579808261
+    },
+    "sun_scarab": {
+      "basic": 137439384008786,
+      "golden": 90568265537668,
+      "rainbow": 137439384008786
+    },
+    "sunmane_lion": {
+      "basic": 98489938311290,
+      "golden": 131905924672983,
+      "rainbow": 98489938311290
+    },
+    "sunwell_camel": {
+      "basic": 79127150108268,
+      "golden": 140601733762566,
+      "rainbow": 79127150108268
+    },
+    "verdant_sprite": {
+      "basic": 139619918066914,
+      "golden": 95516570341344,
+      "rainbow": 139619918066914
+    },
+    "wither_sprite": {
+      "basic": 134787295000636,
+      "golden": 132375057320160,
+      "rainbow": 134787295000636
+    },
+    "worldbloom_ent": {
+      "basic": 99308212873511,
+      "golden": 78707189232086,
+      "rainbow": 99308212873511
+    },
+    "worldroot_ent": {
+      "basic": 95096456274476,
+      "golden": 77606164465813,
+      "rainbow": 95096456274476
+    },
+    "wraith_dove": {
+      "basic": 101697025544772,
+      "golden": 107349510202334,
+      "rainbow": 101697025544772
+    }
+  },
+  "eggs": {}
+}

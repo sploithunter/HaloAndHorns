@@ -1,0 +1,29 @@
+# Combat / power SFX — local source before Roblox Sound upload.
+# Upload as Audio (Sound) assets; wire ids into configs/power_fx.lua primitives later.
+# element: grass | lava | ice | desert | neutral (matches CombatFX biomes)
+# phase: cast | impact | buff | ambient
+# seconds: measured clip length (ffprobe) — VISUAL-TIMING BASELINE. Some clips have a long tail /
+#          after-effect (the 14s ones "peter out"); trim the effective length when syncing visuals.
+
+key	file	element	phase	seconds	bytes	source_download	notes
+fireball_launch	fireball_launch.mp3	lava	cast	3	73197	A_fireball_being_launched.mp3	Fireball projectile launch
+fireball_impact_targeted	fireball_impact_targeted.mp3	lava	impact	14	337581	The_impact_of_a_fireball_targered.mp3	Single-target fireball impact (long tail)
+fireball_impact_aoe	fireball_impact_aoe.mp3	lava	impact	14	337581	The_impact_of_a_fireballAOE.mp3	AoE fireball impact (long tail)
+fire_impact_targeted_1	fire_impact_targeted_1.mp3	lava	impact	1	25389	FireImapct1Targeted1.mp3	Targeted fire impact variant 1
+fire_impact_targeted_2	fire_impact_targeted_2.mp3	lava	impact	1	25389	FireImpactTargeted2.mp3	Targeted fire impact variant 2
+fire_impact_targeted_3	fire_impact_targeted_3.mp3	lava	impact	1	25389	FireImpactTargeted3.mp3	Targeted fire impact variant 3
+earth_magic_casting	earth_magic_casting.mp3	grass	cast	2	49581	EarthMagicCasting.mp3	Earth/grass magic casting
+rippling_rock_magic	rippling_rock_magic.mp3	grass	cast	14	337581	RipplingRockMagic.mp3	Rippling rock magic (long tail)
+icy_wind_casting	icy_wind_casting.mp3	ice	cast	2	49581	IcyWindCasting.mp3	Icy wind casting
+desert_magic_cast_long	desert_magic_cast_long.mp3	desert	cast	14	337581	DesertMagicCastLong.mp3	Desert magic cast (long tail)
+desert_magic_long	desert_magic_long.mp3	desert	cast	14	337581	DesertMagicLong.mp3	Desert magic (long tail)
+single_target_punch	single_target_punch.mp3	neutral	impact	0.48	12717	SingleTargetPunch.mp3	Melee single-target punch
+force_field_raise	force_field_raise.mp3	neutral	cast	1	25389	ForceFieldRaise.mp3	Shield / force-field raise
+earthen_impact	earthen_impact.mp3	grass	impact	8	193581	EathenImpact.mp3	Earthen impact
+deep_earthen_impact	deep_earthen_impact.mp3	grass	impact	8	193581	DeepEarthenImpact.mp3	Deep earthen impact (longer)
+freezing_crack_single_target	freezing_crack_single_target.mp3	ice	impact	3	73197	FreezingCrackSingleTarget.mp3	Freezing crack single-target hit
+machine_hum	machine_hum.mp3	neutral	ambient	3	73197	MachineHum.mp3	Machine / engine hum loop
+deep_winter_wind	deep_winter_wind.mp3	ice	ambient	3	73197	DeepWinterWind.mp3	Deep winter wind (ambient)
+arrow_impact_desert	arrow_impact_desert.mp3	desert	impact	2	49581	ArrowImpactDesertPrompt.mp3	Arrow impact (desert)
+cartoony_spell_cast	cartoony_spell_cast.mp3	neutral	cast	2	49581	CartoonySpeelCast.mp3	Cartoony generic spell cast
+power_up_stronger	power_up_stronger.mp3	neutral	buff	1	25389	PowerUpStronger.mp3	Power-up / buff strengthen

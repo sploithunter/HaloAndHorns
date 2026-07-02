@@ -1,0 +1,54 @@
+# New UI icon import batch 5 (2026-06-15)
+# Source: ~/Downloads — ChatGPT Image Jun 15, 2026, 04_31_39 PM.png
+# Pipeline: normalize_icons.py (edge-connected white bg) -> blue_icons -> recolor -> color folders
+
+## New blue source icon (53 total in blue_icons; 1 added this batch)
+
+asset_name	download_source	background_mode	reads_as
+flag.png	ChatGPT Image Jun 15, 2026, 04_31_39 PM.png	white-edge	flag / banner / claim marker
+
+## Staging (normalized blue source)
+
+assets/ui/imports/new_icons_2026-06-15_batch5_blue/
+
+## Processing
+
+python3 scripts/normalize_icons.py \
+  "~/Downloads/ChatGPT Image Jun 15, 2026, 04_31_39 PM.png" \
+  assets/ui/imports/new_icons_2026-06-15_batch5_blue/flag.png
+
+cp assets/ui/imports/new_icons_2026-06-15_batch5_blue/flag.png assets/ui/blue_icons/flag.png
+
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons/flag.png assets/ui/white_icons/flag.png --mode white
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons/flag.png assets/ui/green_icons/flag.png --color green
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons/flag.png assets/ui/red_icons/flag.png --color red
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons/flag.png assets/ui/yellow_icons/flag.png --color yellow
+python3 scripts/recolor_blue_to_green.py assets/ui/blue_icons/flag.png assets/ui/purple_icons/flag.png --color purple
+
+## Color variants (all 6 sets)
+
+color	folder	recolor_flag
+blue	assets/ui/blue_icons/	(source)
+white	assets/ui/white_icons/	--mode white
+green	assets/ui/green_icons/	--color green
+red	assets/ui/red_icons/	--color red
+yellow	assets/ui/yellow_icons/	--color yellow
+purple	assets/ui/purple_icons/	--color purple
+
+## Per-icon outputs
+
+flag.png
+
+## Contact sheets rebuilt
+
+assets/ui/imports/new_icons_2026-06-15_batch5_contact_sheet.png
+assets/ui/blue_icons/contact_sheet.png
+assets/ui/white_icons/contact_sheet.png
+assets/ui/green_icons/contact_sheet.png
+assets/ui/red_icons/contact_sheet.png
+assets/ui/yellow_icons/contact_sheet.png
+assets/ui/purple_icons/contact_sheet.png
+assets/ui/icons_all_colors.png
+
+## Wired
+pending: upload via scripts/upload_icons.js + mise run gen-icons if assigned to a power/status slot
