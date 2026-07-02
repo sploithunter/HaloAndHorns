@@ -1412,6 +1412,23 @@ function loadEquipped(Player)
                                         PetModel:SetAttribute("AttackTargeting", hugeTargeting)
                                     end
                                 end
+                                -- Rigged (skeletal) pets: RigClass tells every client's PetAnimator
+                                -- to drive the published clip set (configs/animations.lua) instead
+                                -- of the code gait. Raw entry read, same as huge_attack_targeting.
+                                -- Gated on the model ACTUALLY carrying a rig: variants that still
+                                -- use the static mesh (golden/rainbow) must keep the code gait.
+                                do
+                                    local rawEntry = petsConfig
+                                        and petsConfig.pets
+                                        and petsConfig.pets[petIdName]
+                                    if
+                                        rawEntry
+                                        and rawEntry.rig_class
+                                        and PetModel:FindFirstChildWhichIsA("AnimationController", true)
+                                    then
+                                        PetModel:SetAttribute("RigClass", rawEntry.rig_class)
+                                    end
+                                end
                                 -- #179 down-lockout identity: SPECIAL pets (huges) lock by their UID
                                 -- (petFolder.Name is the stable uid); STACKED pets lock by id:variant
                                 -- COUNT. EnemyService reads these on a down + to enforce re-teaming.

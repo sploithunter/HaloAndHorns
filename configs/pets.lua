@@ -946,6 +946,13 @@ local petConfig = {
             base_power = 40,
             base_health = 290,
             viewport_zoom = 1.6,
+            -- FIRST RIGGED (skeletal) PET: the basic variant's runtime model is a skinned Meshy
+            -- rig (Bones + AnimationController, prebaked TEXTURED at
+            -- ReplicatedStorage.Assets.Models.Pets.worldbloom_ent.basic) playing the shared biped
+            -- clip set (configs/animations.lua) instead of the code gait. PetHandler stamps
+            -- RigClass from this field; every client's PetAnimator does the rest. The static
+            -- mesh_asset fields below remain the golden/rainbow look + the fallback rebuild.
+            rig_class = "biped",
             asset_transform = {
                 scale = 2.4,
                 -- huge tank: matched to the Worldroot Ent (2.4 × 3 = 7.2). Was 4.5 (double-scaled).

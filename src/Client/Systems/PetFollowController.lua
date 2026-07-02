@@ -25,6 +25,7 @@ local PetMeander = require(ReplicatedStorage.Shared.Game.PetMeander)
 local Gait = require(ReplicatedStorage.Shared.Game.Gait)
 local HitReact = require(ReplicatedStorage.Shared.Game.HitReact)
 local AttackAnim = require(ReplicatedStorage.Shared.Game.AttackAnim)
+local PetAnimator = require(script.Parent.PetAnimator)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local RangedFX = require(ReplicatedStorage.Shared.Effects.RangedFX)
 local CombatHitFX = require(ReplicatedStorage.Shared.Effects.CombatHitFX)
@@ -132,6 +133,51 @@ local function petFootprint(pet, config)
     f = math.floor(f * 10 + 0.5) / 10 -- quantize to 0.1 stud
     pet:SetAttribute("PetFootprint", f)
     return f
+end
+
+-- Rigged (skeletal) pets stand ON the ground — no formation bob, no float height: one downward
+-- ray per frame from above the target plants the feet on MAP geometry (Game folder, pets and
+-- characters excluded; RespectCanCollide skips phantoms). Falls back to the formation Y on a
+-- miss (cliff edges, void) so the pet never teleports into the abyss.
+local groundParams = RaycastParams.new()
+groundParams.FilterType = Enum.RaycastFilterType.Exclude
+groundParams.RespectCanCollide = true
+-- pivot-to-FEET distance (studs), measured once per model: FBX pivots are rarely at the
+-- bounding-box center, so "ground + half extents" floats the model. PivotY - bboxBottomY is
+-- exactly how far above its feet the pivot rides.
+local pivotToFeet = setmetatable({}, { __mode = "k" })
+local function feetOffset(model)
+    local cached = pivotToFeet[model]
+    if cached then
+        return cached
+    end
+    local cf, size = model:GetBoundingBox()
+    local offset = model:GetPivot().Position.Y - (cf.Position.Y - size.Y / 2)
+    pivotToFeet[model] = offset
+    return offset
+end
+local function groundedY(model, x, z, fallbackY)
+    local exclude = { model }
+    local gameFolder = Workspace:FindFirstChild("Game")
+    if gameFolder then
+        exclude[#exclude + 1] = gameFolder
+    end
+    local petsRoot = Workspace:FindFirstChild("PlayerPets")
+    if petsRoot then
+        exclude[#exclude + 1] = petsRoot
+    end
+    for _, pl in ipairs(Players:GetPlayers()) do
+        if pl.Character then
+            exclude[#exclude + 1] = pl.Character
+        end
+    end
+    groundParams.FilterDescendantsInstances = exclude
+    local hit =
+        Workspace:Raycast(Vector3.new(x, fallbackY + 20, z), Vector3.new(0, -80, 0), groundParams)
+    if not hit then
+        return fallbackY
+    end
+    return hit.Position.Y + feetOffset(model)
 end
 
 -- Vertical float touch-up (studs): huge models scale up but keep the flat formation.height, so
@@ -373,6 +419,11 @@ function PetFollowController.start()
         local isCrit = data.crit == true
         local element = elementFor(pet)
         local ranged = roleKites(pet)
+        -- Rigged pets swing their published attack clip on the REAL hit (replaces the spin/face
+        -- flourish suppressed in applyMotion) — the punch lines up with the damage number.
+        if PetAnimator.isRigged(pet) then
+            PetAnimator.punch(pet)
+        end
         -- ranged cast-lock is a PET-only counterplay (a pet that just fired can't move); not part
         -- of "how they attack", so it stays here rather than in the shared dispatcher.
         if ranged and castLockSeconds > 0 then
@@ -643,17 +694,26 @@ function PetFollowController.start()
         -- the lerp or the position report. `anim` is a resolved AttackAnim (or nil to follow).
         local function applyMotion(model, cleanPivot, stepDist, anim)
             baseCF[model] = cleanPivot
-            local st = gaitState[model]
-            if not st then
-                st = { phase = 0, amp = 0 }
-                gaitState[model] = st
+            -- Rigged (skeletal) pets: published clips own the body motion — skip the procedural
+            -- gait/bob AND the attack flourish (PetAnimator plays idle/run here + a punch per
+            -- real server hit). Hit-react below still applies: it moves the whole model.
+            local rigged = PetAnimator.isRigged(model)
+            local bob, roll, yaw = 0, 0, 0
+            if rigged then
+                PetAnimator.update(model, dt > 0 and stepDist / dt or 0)
+            else
+                local st = gaitState[model]
+                if not st then
+                    st = { phase = 0, amp = 0 }
+                    gaitState[model] = st
+                end
+                local gait = resolveGait(model:GetAttribute("PetType"))
+                bob, roll, yaw = Gait.advance(st, gait, stepDist, dt)
             end
-            local gait = resolveGait(model:GetAttribute("PetType"))
-            local bob, roll, yaw = Gait.advance(st, gait, stepDist, dt)
 
             -- Attack flourish (spin / pounce). Resets its clock when the pet stops attacking.
             local aYaw, aLunge, aBob = 0, 0, 0
-            if anim and anim.enabled then
+            if anim and anim.enabled and not rigged then
                 local ts = attackTimer[model]
                 if not ts then
                     ts = { t = 0 }
@@ -840,13 +900,11 @@ function PetFollowController.start()
                 local t = PetFormation.toWorld(frame, e.offset)
                 local bob = PetFormation.floatOffset(phase + slot, config.float)
                 local mx, mz = meanderOffset(model, kiterFace[model] == nil)
+                local ty = PetAnimator.isRigged(model) and groundedY(model, t.x + mx, t.z + mz, t.y)
+                    or (t.y + bob + floatTouchup(model, config))
                 followPlace[#followPlace + 1] = {
                     model = model,
-                    target = Vector3.new(
-                        t.x + mx,
-                        t.y + bob + floatTouchup(model, config),
-                        t.z + mz
-                    ),
+                    target = Vector3.new(t.x + mx, ty, t.z + mz),
                 }
             end
         else
@@ -854,13 +912,11 @@ function PetFollowController.start()
                 local t = PetFormation.targetPosition(frame, f.index, count, config.formation)
                 local bob = PetFormation.floatOffset(phase + f.index, config.float)
                 local mx, mz = meanderOffset(f.pet, kiterFace[f.pet] == nil)
+                local ty = PetAnimator.isRigged(f.pet) and groundedY(f.pet, t.x + mx, t.z + mz, t.y)
+                    or (t.y + bob + floatTouchup(f.pet, config))
                 followPlace[#followPlace + 1] = {
                     model = f.pet,
-                    target = Vector3.new(
-                        t.x + mx,
-                        t.y + bob + floatTouchup(f.pet, config),
-                        t.z + mz
-                    ),
+                    target = Vector3.new(t.x + mx, ty, t.z + mz),
                 }
             end
         end
@@ -962,7 +1018,19 @@ function PetFollowController.start()
                             { x = off.x * ca - off.z * sa, y = off.y, z = off.x * sa + off.z * ca }
                     end
                 end
-                local target = g.center + Vector3.new(off.x, off.y, off.z)
+                -- Same per-pet vertical touch-up as the follow paths: the ring anchors at the
+                -- TARGET's pivot with a flat ring_height, so a huge pet loses its float_offsets
+                -- tune the moment it attacks (the huge Ent sank mid-body into the floor).
+                -- Rigged pets instead plant on the map via the ground ray, like when following.
+                local target = g.center
+                    + Vector3.new(off.x, off.y + floatTouchup(pet, config), off.z)
+                if PetAnimator.isRigged(pet) then
+                    target = Vector3.new(
+                        target.X,
+                        groundedY(pet, target.X, target.Z, target.Y),
+                        target.Z
+                    )
+                end
                 -- Map clamp: the standoff slot can land inside authored geometry (a rock/cliff the
                 -- foe hovers against, a cactus). Do NOT freeze the pet at its current spot — that
                 -- strands the whole squad whenever an enemy sits near terrain (combat just stops,

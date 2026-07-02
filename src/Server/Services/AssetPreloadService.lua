@@ -624,6 +624,12 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
                         -- weld/normalize (it's the already-processed runtime output). MUST be the FIRST
                         -- branch: otherwise meshy pets fall into the combine branch below and rebuild
                         -- every model (the actual ~25s boot cost — the bug Jason caught).
+                        -- SELF-HEAL: a hand-dropped model (e.g. a rigged Meshy import placed straight
+                        -- into the prebake) lacks the pet-system Values (PositionNumber etc.) the
+                        -- processed runtime output carries — loadEquipped hard-errors without them.
+                        if not existingVariant:FindFirstChild("PositionNumber") then
+                            self:AddPetSystemComponents(existingVariant)
+                        end
                         adoptedCount = adoptedCount + 1
                         modelSuccess = true
                     elseif hasMeshAsset then

@@ -698,9 +698,38 @@ function ConfigLoader:ValidateConfig(configName, config)
         return self:_validateLeaderboardsConfig(config)
     elseif configName == "aggro" then
         return self:_validateAggroConfig(config)
+    elseif configName == "animations" then
+        return self:_validateAnimationsConfig(config)
     end
 
     -- Default validation for other configs
+    return true
+end
+
+-- Pet skeletal animations (configs/animations.lua): rig classes -> published clip ids.
+-- Permissive (shape, not every knob) so adding a clip or a class never breaks Studio boot.
+function ConfigLoader:_validateAnimationsConfig(config)
+    if type(config) ~= "table" then
+        return false, "Animations config must be a table"
+    end
+    if type(config.rig_classes) ~= "table" then
+        return false, "Animations config missing required 'rig_classes' table"
+    end
+    for className, clips in pairs(config.rig_classes) do
+        if type(clips) ~= "table" then
+            return false, "Animations rig_classes." .. tostring(className) .. " must be a table"
+        end
+        for clipName, id in pairs(clips) do
+            if type(id) ~= "string" or not id:match("^rbxassetid://%d+$") then
+                return false,
+                    "Animations rig_classes."
+                        .. tostring(className)
+                        .. "."
+                        .. tostring(clipName)
+                        .. " must be an rbxassetid:// string"
+            end
+        end
+    end
     return true
 end
 
