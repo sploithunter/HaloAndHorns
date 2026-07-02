@@ -3460,6 +3460,9 @@ local petConfig = {
             base_power = 42,
             base_health = 220,
             viewport_zoom = 1.5,
+            -- Rigged (skeletal): all three variants share the rig in the prebake (golden/rainbow
+            -- are scripted tints on this pet); shared biped clip set drives it. See worldbloom_ent.
+            rig_class = "biped",
             -- The ent is a tank sized up in its NORMAL form (scale 2.4 vs the usual 1.6). Its huge
             -- multiplier was ALSO inflated (4.5), so huge = 2.4 × 4.5 = 10.8 — double-scaled, way
             -- bigger than a normal huge (1.6 × 3 = 4.8). Dropped huge_scale to the standard 3.0 →
