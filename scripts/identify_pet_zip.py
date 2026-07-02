@@ -203,22 +203,32 @@ def main():
             continue
 
         line = f"{name} -> {info['pet_id']} (dist={info['dist']}, {info['skeleton']}, {info['kind']})"
+        record = False  # PLANNING MUST NOT PERSIST: only actioned zips enter the manifest
         if info["kind"] == "rig" and do_upload:
-            asset = upload_rig(zpath, info["rig_fbx"], info["pet_id"])
+            try:
+                asset = upload_rig(zpath, info["rig_fbx"], info["pet_id"])
+            except Exception as e:
+                # one bad upload must not kill the batch — report, save progress, move on
+                print(f"{name} -> {info['pet_id']} UPLOAD FAILED: {e}")
+                save_manifest(manifest)
+                continue
             manifest["pets"][info["pet_id"]] = {
                 "rig_asset": asset,
                 "skeleton": info["skeleton"],
                 "prebaked": False,
             }
             line += f" -> uploaded rig {asset}"
+            record = True
         elif info["kind"] == "clips":
             line += " -> clip zip (feed to import_animation.sh)"
         else:
             line += " -> would upload (rerun with --upload)"
-        manifest["zips"][info["hash"]] = {"first_seen": name, **{k: info[k] for k in ("kind", "skeleton", "pet_id")}}
+        if record:
+            manifest["zips"][info["hash"]] = {"first_seen": name, **{k: info[k] for k in ("kind", "skeleton", "pet_id")}}
         print(line)
 
-    save_manifest(manifest)
+    if do_upload:
+        save_manifest(manifest)
 
 
 if __name__ == "__main__":

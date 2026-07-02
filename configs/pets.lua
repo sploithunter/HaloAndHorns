@@ -1105,6 +1105,8 @@ local petConfig = {
             },
         },
         sunwell_camel = {
+            -- Rigged (skeletal): shared QUADRUPED clip set (configs/animations.lua). See worldbloom_ent.
+            rig_class = "quadruped",
             display_name = "Sunwell Camel",
             category = "heaven",
             realm = "heaven",
@@ -1375,6 +1377,8 @@ local petConfig = {
 
         -- ===== hell 2 · ice =====
         rimegloom_hare = {
+            -- Rigged (skeletal): shared QUADRUPED clip set (configs/animations.lua). See worldbloom_ent.
+            rig_class = "quadruped",
             display_name = "Rimegloom Hare",
             category = "hell",
             realm = "hell",
@@ -1530,6 +1534,8 @@ local petConfig = {
             },
         },
         rimewraith_dragon = {
+            -- Rigged (skeletal): shared QUADRUPED clip set (configs/animations.lua). See worldbloom_ent.
+            rig_class = "quadruped",
             display_name = "Rimewraith Dragon",
             category = "hell",
             realm = "hell",
@@ -1574,6 +1580,8 @@ local petConfig = {
 
         -- ===== hell 2 · grass =====
         frostblight_lamb = {
+            -- Rigged (skeletal): shared QUADRUPED clip set (configs/animations.lua). See worldbloom_ent.
+            rig_class = "quadruped",
             display_name = "Frostblight Lamb",
             category = "hell",
             realm = "hell",
@@ -1612,6 +1620,8 @@ local petConfig = {
             },
         },
         gloom_hare = {
+            -- Rigged (skeletal): shared BIPED clip set (configs/animations.lua). See worldbloom_ent.
+            rig_class = "biped",
             display_name = "Gloom Hare",
             category = "hell",
             realm = "hell",
@@ -1726,6 +1736,8 @@ local petConfig = {
             },
         },
         frostgrave_ent = {
+            -- Rigged (skeletal): shared BIPED clip set (configs/animations.lua). See worldbloom_ent.
+            rig_class = "biped",
             display_name = "Frostgrave Ent",
             category = "hell",
             realm = "hell",
@@ -1886,6 +1898,8 @@ local petConfig = {
             },
         },
         frostdust_camel = {
+            -- Rigged (skeletal): shared QUADRUPED clip set (configs/animations.lua). See worldbloom_ent.
+            rig_class = "quadruped",
             display_name = "Frostdust Camel",
             category = "hell",
             realm = "hell",

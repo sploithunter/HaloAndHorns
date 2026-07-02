@@ -5,9 +5,44 @@
       "rig_asset": "78366659327055",
       "skeleton": "quadruped"
     },
+    "frostblight_lamb": {
+      "prebaked": false,
+      "rig_asset": "78432967884838",
+      "skeleton": "quadruped"
+    },
+    "frostdust_camel": {
+      "prebaked": false,
+      "rig_asset": "74000437914712",
+      "skeleton": "quadruped"
+    },
+    "frostgrave_ent": {
+      "prebaked": false,
+      "rig_asset": "132619230578005",
+      "skeleton": "biped"
+    },
+    "gloom_hare": {
+      "prebaked": false,
+      "rig_asset": "136066082092506",
+      "skeleton": "biped"
+    },
+    "rimegloom_hare": {
+      "prebaked": false,
+      "rig_asset": "99931014862135",
+      "skeleton": "quadruped"
+    },
     "rimeguard_bear": {
       "prebaked": true,
       "rig_asset": "83903219841691",
+      "skeleton": "quadruped"
+    },
+    "rimewraith_dragon": {
+      "prebaked": false,
+      "rig_asset": "91096733870190",
+      "skeleton": "quadruped"
+    },
+    "sunwell_camel": {
+      "prebaked": false,
+      "rig_asset": "132933270009914",
       "skeleton": "quadruped"
     },
     "worldbloom_ent": {
@@ -22,11 +57,119 @@
     }
   },
   "zips": {
+    "068488382f0370af": {
+      "first_seen": "Worldroot_ent_lazy_idle.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "1cbebf055d53edbb": {
+      "first_seen": "Meshy_AI_Crystalwood_Sprite_biped.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "2be0b92474ae519e": {
+      "first_seen": "Worldroot_punchCombo.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
     "5f4def22ece0a720": {
       "first_seen": "ashmane_lion.zip",
       "kind": "rig",
       "pet_id": "ashmane_lion",
       "skeleton": "quadruped"
+    },
+    "5f5d96af546dd4c6": {
+      "first_seen": "Meshy_AI_Frostbound_Colossus_biped.zip",
+      "kind": "rig",
+      "pet_id": "frostgrave_ent",
+      "skeleton": "biped"
+    },
+    "677fee466a4f4787": {
+      "first_seen": "Meshy_AI_Icebound_Bunny_quadruped.zip",
+      "kind": "rig",
+      "pet_id": "rimegloom_hare",
+      "skeleton": "quadruped"
+    },
+    "6897ca5daec79361": {
+      "first_seen": "Meshy_AI_Abyssal_Crystalgoat_quadruped (1).zip",
+      "kind": "rig",
+      "pet_id": "frostdust_camel",
+      "skeleton": "quadruped"
+    },
+    "752ca8fe82972b74": {
+      "first_seen": "MeshyUnderhandSpellCast.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "86b76c235fdf55b8": {
+      "first_seen": "MeshyHeavyPushSpellCast.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "a89c06c6a1daea4d": {
+      "first_seen": "Meshy_AI_Icebound_Lamb_quadruped.zip",
+      "kind": "rig",
+      "pet_id": "frostblight_lamb",
+      "skeleton": "quadruped"
+    },
+    "a949b33079e7df94": {
+      "first_seen": "Meshy_AI_Icebound_Bunny_biped.zip",
+      "kind": "rig",
+      "pet_id": "gloom_hare",
+      "skeleton": "biped"
+    },
+    "b1a156ca6e107885": {
+      "first_seen": "Meshy_AI_Azure_Jewel_Camel_quadruped.zip",
+      "kind": "rig",
+      "pet_id": "sunwell_camel",
+      "skeleton": "quadruped"
+    },
+    "b367054dda824baa": {
+      "first_seen": "Worldroot_run.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "b65316f4cc01c267": {
+      "first_seen": "rimeguard_bear.zip",
+      "kind": "rig",
+      "pet_id": "rimeguard_bear",
+      "skeleton": "quadruped"
+    },
+    "bfa271c42f5b95ed": {
+      "first_seen": "Meshy_AI_Violet_Crystal_Dragon_quadruped.zip",
+      "kind": "rig",
+      "pet_id": "rimewraith_dragon",
+      "skeleton": "quadruped"
+    },
+    "c74965a7e0008659": {
+      "first_seen": "MeshyStretchIdle.zip",
+      "kind": "rig",
+      "pet_id": "worldbloom_ent",
+      "skeleton": "biped"
+    },
+    "c8ced9fd2ec50933": {
+      "first_seen": "Meshy_AI_Crystalwood_Sprite_biped (1).zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "d28a53d3a5fa0324": {
+      "first_seen": "Meshy_AI_Luminous_Sakura_Tree__biped.zip",
+      "kind": "rig",
+      "pet_id": "worldbloom_ent",
+      "skeleton": "biped"
+    },
+    "d6d49bac9007bb9a": {
+      "first_seen": "MeshyPunch.zip",
+      "kind": "rig",
+      "pet_id": "worldbloom_ent",
+      "skeleton": "biped"
     },
     "f80cd4900f9dfccb": {
       "first_seen": "WorldrootEnt.zip",

@@ -26,7 +26,10 @@ return {
                 "rbxassetid://107633065661523", -- MeshyStretchIdle
                 "rbxassetid://135125543047142", -- MeshyLazyIdle
             },
-            walk = "rbxassetid://94535910240811", -- biped_walk_crystalwood (meander stroll pace)
+            walk = {
+                "rbxassetid://94535910240811", -- biped_walk_crystalwood
+                "rbxassetid://85051630214138", -- biped_walk_cryoshard
+            },
             run = {
                 "rbxassetid://130063719118527", -- biped_run (auto pipeline)
                 "rbxassetid://116710242362195", -- MeshyRun (editor publish)
@@ -60,8 +63,16 @@ return {
             -- Walk doubles as run at class_knobs.quadruped.run_speed_mult tempo. No idle
             -- (standing pose) or attack clips yet — richer sets can come from any source,
             -- the skeleton is standardized (verified: lion + bear diff = identical 27 bones).
-            walk = "rbxassetid://91206058452622", -- quadruped_walk (auto pipeline)
-            run = "rbxassetid://91206058452622",
+            walk = {
+                "rbxassetid://91206058452622", -- quadruped_walk (ashmane lion)
+                "rbxassetid://96781308918926", -- quadruped_walk_nightdrake
+                "rbxassetid://87604652590062", -- quadruped_walk_lioncub
+            },
+            run = {
+                "rbxassetid://91206058452622",
+                "rbxassetid://96781308918926",
+                "rbxassetid://87604652590062",
+            },
         },
     },
 
