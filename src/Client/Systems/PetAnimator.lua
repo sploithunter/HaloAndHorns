@@ -80,7 +80,8 @@ local function ensure(model)
     end
     local role = roleOf(model)
     local seed = seedOf(model)
-    rig = { tracks = {}, state = nil }
+    local knobs = cfg.class_knobs and cfg.class_knobs[model:GetAttribute("RigClass")] or {}
+    rig = { tracks = {}, state = nil, runSpeedMult = tonumber(knobs.run_speed_mult) }
     for name, entry in pairs(clips) do
         local id = resolveClip(entry, role, seed)
         if type(id) == "string" then
@@ -117,6 +118,10 @@ function PetAnimator.update(model, speed)
     if track then
         track.Looped = true
         track:Play(fade)
+        -- classes without a real run clip reuse the walk clip at run tempo (class_knobs)
+        if nextState == "run" and rig.runSpeedMult then
+            track:AdjustSpeed(rig.runSpeedMult)
+        end
     end
     rig.state = nextState
 end

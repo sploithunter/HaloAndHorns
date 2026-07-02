@@ -11,5 +11,6 @@
   "biped_jump": "71078514678985",
   "biped_spartan_kick": "99468897317934",
   "biped_cast_underhand": "104092507617195",
-  "biped_cast_heavy_push": "89717257727043"
+  "biped_cast_heavy_push": "89717257727043",
+  "quadruped_walk": "91206058452622"
 }

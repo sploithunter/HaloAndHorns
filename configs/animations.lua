@@ -55,7 +55,21 @@ return {
             -- Banked, unwired: biped_jump 71078514678985, biped_jump_down 83347370148290,
             -- biped_walk_crystalwood 94535910240811 (see scripts/animation_ids.json).
         },
-        -- quadruped = { ... }  -- pending the first quadruped clip set
+        quadruped = {
+            -- Meshy's quadruped library ships ONE clip (walking); the rig is what matters.
+            -- Walk doubles as run at class_knobs.quadruped.run_speed_mult tempo. No idle
+            -- (standing pose) or attack clips yet — richer sets can come from any source,
+            -- the skeleton is standardized (verified: lion + bear diff = identical 27 bones).
+            walk = "rbxassetid://91206058452622", -- quadruped_walk (auto pipeline)
+            run = "rbxassetid://91206058452622",
+        },
+    },
+
+    -- Per-class playback knobs (kept OUT of rig_classes so clip tables stay pure ids).
+    class_knobs = {
+        quadruped = {
+            run_speed_mult = 1.6, -- the walk clip played at run tempo
+        },
     },
 
     -- Locomotion state machine (client, PetAnimator): horizontal speed in studs/sec, THREE

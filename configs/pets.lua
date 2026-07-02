@@ -1498,6 +1498,8 @@ local petConfig = {
             base_power = 33,
             base_health = 245,
             viewport_zoom = 1.6,
+            -- Rigged (skeletal): shared QUADRUPED clip set (configs/animations.lua). See worldbloom_ent.
+            rig_class = "quadruped",
             asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
             camera = {
                 distance = 3.5,
@@ -3779,6 +3781,8 @@ local petConfig = {
             base_power = 22,
             base_health = 160,
             viewport_zoom = 1.5,
+            -- Rigged (skeletal): shared QUADRUPED clip set (configs/animations.lua). See worldbloom_ent.
+            rig_class = "quadruped",
             asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
             camera = {
                 distance = 3.5,
