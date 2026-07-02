@@ -22,32 +22,20 @@
     }
   },
   "zips": {
-    "1cbebf055d53edbb": {
-      "first_seen": "Meshy_AI_Crystalwood_Sprite_biped.zip",
-      "kind": "rig",
-      "pet_id": "worldroot_ent",
-      "skeleton": "biped"
-    },
     "5f4def22ece0a720": {
       "first_seen": "ashmane_lion.zip",
       "kind": "rig",
       "pet_id": "ashmane_lion",
       "skeleton": "quadruped"
     },
-    "b367054dda824baa": {
-      "first_seen": "Worldroot_run.zip",
-      "kind": "rig",
-      "pet_id": "worldroot_ent",
-      "skeleton": "biped"
-    },
-    "c8ced9fd2ec50933": {
-      "first_seen": "Meshy_AI_Crystalwood_Sprite_biped (1).zip",
-      "kind": "rig",
-      "pet_id": "worldroot_ent",
-      "skeleton": "biped"
-    },
     "f80cd4900f9dfccb": {
       "first_seen": "WorldrootEnt.zip",
+      "kind": "rig",
+      "pet_id": "worldroot_ent",
+      "skeleton": "biped"
+    },
+    "fcc091eca1cb7d39": {
+      "first_seen": "MeshySpartanKick.zip",
       "kind": "rig",
       "pet_id": "worldroot_ent",
       "skeleton": "biped"

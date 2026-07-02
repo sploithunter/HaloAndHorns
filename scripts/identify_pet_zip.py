@@ -73,6 +73,21 @@ def content_hash(z):
     return hashlib.sha256(repr(parts).encode()).hexdigest()[:16]
 
 
+# disjoint bone-name vocabularies (verified by full hierarchy diffs): the FBX binary
+# carries bone names as plain strings, so classification = a byte scan, no Blender.
+SKELETON_MARKERS = {
+    "quadruped": (b"frontleg", b"backleg"),
+    "biped": (b"LeftUpLeg", b"LeftForeArm"),
+}
+
+
+def classify_skeleton(fbx_bytes):
+    for skel, markers in SKELETON_MARKERS.items():
+        if all(m in fbx_bytes for m in markers):
+            return skel
+    return None
+
+
 def inspect(zpath, index):
     with zipfile.ZipFile(zpath) as z:
         chash = content_hash(z)
@@ -80,15 +95,24 @@ def inspect(zpath, index):
         rig_fbx = [n for n in names if n.endswith("Character_output.fbx")]
         anim_fbx = [n for n in names if n.lower().endswith(".fbx") and n not in rig_fbx]
         kind = "rig" if rig_fbx else ("clips" if anim_fbx else "other")
-        skeleton = "?"
-        for n in names:
-            low = n.lower()
-            if "quadruped" in low:
-                skeleton = "quadruped"
-                break
-            if "biped" in low:
-                skeleton = "biped"
-                break
+        # skeleton: AUTHORITATIVE = bone markers in the FBX bytes; filename convention
+        # is the fallback. An FBX with bones matching NEITHER vocabulary reports
+        # "unknown-skeleton" — the flag for a new rig class (bird/dragon) needing a diff.
+        skeleton = None
+        probe = rig_fbx[0] if rig_fbx else (anim_fbx[0] if anim_fbx else None)
+        if probe:
+            skeleton = classify_skeleton(z.read(probe))
+        if skeleton is None:
+            for n in names:
+                low = n.lower()
+                if "quadruped" in low:
+                    skeleton = "quadruped?"
+                    break
+                if "biped" in low:
+                    skeleton = "biped?"
+                    break
+        if skeleton is None:
+            skeleton = "unknown-skeleton" if probe else "?"
         pid, d = None, None
         tex = [n for n in names if re.search(r"texture_0\.png$", n)]
         if tex and index:
