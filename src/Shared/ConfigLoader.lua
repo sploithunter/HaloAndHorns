@@ -700,9 +700,26 @@ function ConfigLoader:ValidateConfig(configName, config)
         return self:_validateAggroConfig(config)
     elseif configName == "animations" then
         return self:_validateAnimationsConfig(config)
+    elseif configName == "teaming" then
+        return self:_validateTeamingConfig(config)
     end
 
     -- Default validation for other configs
+    return true
+end
+
+-- Teaming (configs/teaming.lua): cross-player support families + pack scaling knobs.
+-- Permissive (shape, not every knob) so tuning never breaks Studio boot.
+function ConfigLoader:_validateTeamingConfig(config)
+    if type(config) ~= "table" then
+        return false, "Teaming config must be a table"
+    end
+    if type(config.support_families) ~= "table" then
+        return false, "Teaming config missing required 'support_families' table"
+    end
+    if config.pack ~= nil and type(config.pack) ~= "table" then
+        return false, "Teaming config 'pack' must be a table when present"
+    end
     return true
 end
 
