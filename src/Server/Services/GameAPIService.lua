@@ -1238,6 +1238,33 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    -- Teaming (docs/TEAMING.md): the invite/accept dance + leave. State replicates via
+    -- player attributes (TeamId/TeamLead/TeamMembers/TeamInviteFrom) — no polling.
+    for cmd, spec in pairs({
+        invite = {
+            desc = "Invite a player to your team (creates one if needed).",
+            fn = "Invite",
+            arg = "target",
+        },
+        accept = { desc = "Accept your pending team invite.", fn = "Accept" },
+        decline = { desc = "Decline your pending team invite.", fn = "Decline" },
+        leave = { desc = "Leave your team.", fn = "Leave" },
+    }) do
+        bus:register("team." .. cmd, {
+            description = spec.desc,
+            validate = spec.arg and function(args)
+                return Validators.fields(args, { [spec.arg] = "string" })
+            end or nil,
+            handler = function(context, args)
+                local s = self:_service("PartyService")
+                if not s then
+                    return { ok = false, reason = "service_unavailable" }
+                end
+                return s[spec.fn](s, context.player, spec.arg and args[spec.arg] or nil)
+            end,
+        })
+    end
+
     bus:register("party.get", {
         description = "The player's party state (members + size).",
         handler = function(context)

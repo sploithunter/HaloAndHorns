@@ -608,6 +608,13 @@ end
 -- CombatBuffTarget == -1 is the TEAM sentinel (the player picked the squad-strip TEAM header card):
 -- a single_pet power then applies to the WHOLE squad, so you can shield/heal/buff everyone on demand.
 function PowerService:_targetPets(player, powerId)
+    -- CAST-THROUGH-PLAYER (docs/TEAMING.md): a selected TEAMMATE (CombatBuffTargetPlayer
+    -- attribute) redirects support families to THEIR squad, resolved by the pure TeamCast
+    -- core (heal -> most hurt, absorb -> aggro holder/tank, buffs -> squad). Team-verified.
+    local redirected = self:_teamTargetPets(player, powerId)
+    if redirected then
+        return redirected
+    end
     local folder = Workspace:FindFirstChild("PlayerPets")
         and Workspace.PlayerPets:FindFirstChild(player.Name)
     if not folder then
@@ -636,6 +643,79 @@ function PowerService:_targetPets(player, powerId)
         end
     end
     return live[1] and { live[1] } or {} -- fallback: first non-downed pet
+end
+
+-- Resolve a cross-player support cast (docs/TEAMING.md), or nil to fall through to the
+-- caster's own squad. Requires: a CombatBuffTargetPlayer selection, same team (PartyService,
+-- located via the runtime registry — the loader only injects DECLARED deps), and a power
+-- family listed in configs/teaming.lua support_families. TeamCast (pure) picks the pets.
+function PowerService:_teamTargetPets(player, powerId)
+    local targetName = player:GetAttribute("CombatBuffTargetPlayer")
+    if type(targetName) ~= "string" or targetName == "" or targetName == player.Name then
+        return nil
+    end
+    if not self._teamingConfig then
+        local ok, cfg = pcall(function()
+            return require(ReplicatedStorage.Configs:WaitForChild("teaming"))
+        end)
+        self._teamingConfig = ok and cfg or { support_families = {} }
+        self._teamCast = require(ReplicatedStorage.Shared.Game.TeamCast)
+        self._petEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
+    end
+    local def = self._powersConfig.powers and self._powersConfig.powers[powerId]
+    local kind = def
+        and self._powersConfig.effect_kinds
+        and self._powersConfig.effect_kinds[def.effect]
+    local family = kind and kind.family
+    if not (family and self._teamingConfig.support_families[family]) then
+        return nil
+    end
+    local target = Players:FindFirstChild(targetName)
+    if not target then
+        return nil
+    end
+    local partySvc = _G.RBXTemplateServices
+        and select(
+            2,
+            pcall(function()
+                return _G.RBXTemplateServices:Get("PartyService")
+            end)
+        )
+    if not (partySvc and partySvc.SameTeam and partySvc:SameTeam(player, target)) then
+        return nil -- not teamed: never touch another player's pets
+    end
+    local folder = Workspace:FindFirstChild("PlayerPets")
+        and Workspace.PlayerPets:FindFirstChild(targetName)
+    if not folder then
+        return nil
+    end
+    local states = {}
+    for _, pet in ipairs(folder:GetChildren()) do
+        if pet:IsA("Model") then
+            local taken = tonumber(pet:GetAttribute("CombatDamageTaken")) or 0
+            local power = tonumber(pet:GetAttribute("EffectivePower"))
+                or (pet:FindFirstChild("Power") and tonumber(pet.Power.Value))
+                or 1
+            local okMax, max = pcall(self._petEndurance.maxEndurance, power, nil)
+            max = (okMax and tonumber(max)) or math.max(power * 10, 1)
+            states[#states + 1] = {
+                key = pet,
+                enduranceFrac = math.clamp(1 - taken / math.max(max, 1), 0, 1),
+                downed = pet:GetAttribute("CombatDowned") == true,
+                hasAggro = false, -- aggro introspection is a TM2 follow-up; tank fallback covers it
+                isTank = pet:GetAttribute("PetRole") == "tank",
+            }
+        end
+    end
+    local picked = self._teamCast.pick(family, states)
+    if #picked == 0 then
+        return nil -- nothing appropriate on their side: fall back to own squad
+    end
+    local pets = {}
+    for _, state in ipairs(picked) do
+        pets[#pets + 1] = state.key
+    end
+    return pets
 end
 
 -- Who soaks the aggro a TAUNT pulls. Player intent first: an explicitly SELECTED squad card
