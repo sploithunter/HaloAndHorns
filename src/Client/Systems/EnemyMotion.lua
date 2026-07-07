@@ -66,7 +66,11 @@ function EnemyMotion.start()
             return
         end
         local enemyLevel = model:GetAttribute("Level") or 1
-        local myLevel = localPlayer:GetAttribute("Level") or 1
+        -- COMBAT level (EffectiveLevel = sidekick-synced), not earned Level, so the con
+        -- colour matches how the fight will actually roll for a sidekicked player.
+        local myLevel = localPlayer:GetAttribute("EffectiveLevel")
+            or localPlayer:GetAttribute("Level")
+            or 1
         lbl.TextColor3 = tierColor[LevelScale.tier(enemyLevel - myLevel)] or WHITE
         lbl.Text = (model:GetAttribute("DisplayName") or "Enemy") .. "  Lv " .. tostring(enemyLevel)
     end

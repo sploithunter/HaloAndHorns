@@ -40,7 +40,12 @@ local function threatColor(enemyLvl)
     if not enemyLvl then
         return Color3.fromRGB(240, 240, 245)
     end
-    return EnemyCon.colorForLevels(enemyLvl, localPlayer:GetAttribute("Level"))
+    -- COMBAT level (EffectiveLevel = sidekick/exemplar-synced), not earned Level: a
+    -- 20-sidekicked-to-49 player must con a level-23 mob gray, not purple (live-caught).
+    return EnemyCon.colorForLevels(
+        enemyLvl,
+        localPlayer:GetAttribute("EffectiveLevel") or localPlayer:GetAttribute("Level")
+    )
 end
 
 -- Status badges shown on an enemy card — the SAME engine + chrome the squad cards use (the row
