@@ -40,12 +40,18 @@ return {
     -- pulse:  aura tick around the anchor (element resolves to the cave origin at spawn).
     -- heal:   band-mender (enemy auto_heal — "kill the healer" gameplay). fraction of the
     --         anchor's OWN max hp healed to the most-hurt bandmate per interval.
+    -- band_buff / single_buff:     WARCRY — bandmates deal ×mult for duration (band = boss,
+    --                              single strongest mate = lieutenant).
+    -- band_debuff / single_debuff: CURSE — pets within radius take ×mult from EVERY enemy
+    --                              (band = boss, single nearest pet = lieutenant).
     kits = {
         lieutenant = {
             hp_mult = 2.0,
             dmg_mult = 1.3,
             splash = { radius = 10, frac = 0.3 },
             pulse = { damage = 12, radius = 20, interval = 5 },
+            single_buff = { mult = 1.4, radius = 40, interval = 9, duration = 6 },
+            single_debuff = { mult = 1.3, radius = 25, interval = 9, duration = 5 },
         },
         boss = {
             hp_mult = 4.0,
@@ -54,6 +60,8 @@ return {
             slam = { damage = 120, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },
             pulse = { damage = 22, radius = 30, interval = 4 },
             heal = { interval = 3.0, fraction = 0.05, range = 45 },
+            band_buff = { mult = 1.25, radius = 40, interval = 10, duration = 6 },
+            band_debuff = { mult = 1.2, radius = 28, interval = 10, duration = 5 },
         },
         archvillain = {
             hp_mult = 7.0,

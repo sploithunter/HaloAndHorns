@@ -1499,6 +1499,16 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     dmg = dmg * roll.multiplier
     -- Level scaling: a higher-level enemy hits harder; out-level it and it softens.
     dmg = dmg * LevelScale.factor(enemyLevel or 1, petLevel or 1, self._levelingConfig.scale)
+    -- CAPITAL WARCRY (configs/capital_baddies.lua): a band-buffed attacker deals more while
+    -- its buff window is live. CAPITAL CURSE: an exposed pet takes more from EVERY enemy.
+    -- Both are attribute channels stamped by anchor support kits (and badge-visible via the
+    -- generic Power_<id>_Until pass on every card).
+    if enemyModel and (tonumber(enemyModel:GetAttribute("EnemyDmgBuffUntil")) or 0) > now then
+        dmg = dmg * (tonumber(enemyModel:GetAttribute("EnemyDmgBuffMult")) or 1)
+    end
+    if (tonumber(pet:GetAttribute("EnemyExposeUntil")) or 0) > now then
+        dmg = dmg * (tonumber(pet:GetAttribute("EnemyExposeMult")) or 1)
+    end
     -- AGGRO MODEL v2: a landed hit builds the PET's threat toward this enemy (pre-mitigation, so a
     -- shielded tank still aggros its attacker), splashing a little to nearby squad-mates. Flag-off = skip.
     local v2 = self:_aggroV2()
@@ -2672,6 +2682,88 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     -- boss fight too, and the healer never idles). Small by design: the slam is the burst, the
     -- pulse is the ambience. Per-pet rolls via _hitPet (shields/evade/blind all answer it) and
     -- the Enraged amp applies. The nova visual reuses the shared-world AreaFx.
+    -- CAPITAL SUPPORT KIT (configs/capital_baddies.lua — Jason: anchors have POWERS):
+    -- WARCRY buffs bandmates' damage (band_buff = boss/AV, single_buff = lieutenant) and
+    -- CURSE exposes pets (band_debuff / single_debuff — exposed pets take more from every
+    -- enemy). Attribute channels consumed in _hitPet; Power_<id>_Until stamps make the
+    -- badges show on enemy AND pet cards through the one shared reader.
+    local kitBuff = def and def.abilities and (def.abilities.band_buff or def.abilities.single_buff)
+    local kitCurse = def
+        and def.abilities
+        and (def.abilities.band_debuff or def.abilities.single_debuff)
+    if (kitBuff or kitCurse) and not held then
+        entry.nextSupport = entry.nextSupport or (now + 2)
+        if now >= entry.nextSupport then
+            entry.nextSupport = now + (tonumber((kitBuff or kitCurse).interval) or 8)
+            if kitBuff then
+                local single = def.abilities.band_buff == nil
+                local r2b = (tonumber(kitBuff.radius) or 40) ^ 2
+                local untilT = now + (tonumber(kitBuff.duration) or 6)
+                local mult = tonumber(kitBuff.mult) or 1.25
+                local bestMate, bestHp
+                for _, e in pairs(self._enemies) do
+                    local m = e.model
+                    if
+                        m
+                        and m.Parent
+                        and m ~= model
+                        and (m:GetAttribute("HP") or 0) > 0
+                        and e.pos
+                    then
+                        local dx, dz = e.pos.X - ePos.X, e.pos.Z - ePos.Z
+                        if dx * dx + dz * dz <= r2b then
+                            if single then
+                                local hp = m:GetAttribute("HP") or 0
+                                if not bestHp or hp > bestHp then
+                                    bestHp, bestMate = hp, m
+                                end
+                            else
+                                m:SetAttribute("EnemyDmgBuffMult", mult)
+                                m:SetAttribute("EnemyDmgBuffUntil", untilT)
+                                m:SetAttribute("Power_warcry_Until", untilT)
+                            end
+                        end
+                    end
+                end
+                if bestMate then
+                    bestMate:SetAttribute("EnemyDmgBuffMult", mult)
+                    bestMate:SetAttribute("EnemyDmgBuffUntil", untilT)
+                    bestMate:SetAttribute("Power_warcry_Until", untilT)
+                end
+            end
+            if kitCurse then
+                local single = def.abilities.band_debuff == nil
+                local r2c = (tonumber(kitCurse.radius) or 25) ^ 2
+                local untilT = now + (tonumber(kitCurse.duration) or 5)
+                local mult = tonumber(kitCurse.mult) or 1.25
+                local closest, closestD
+                for pet in pairs(valid) do
+                    if pet.Parent and not pet:GetAttribute("CombatDowned") then
+                        local pp2 = self:_petPosition(pet, pfs)
+                        local dx, dz = pp2.X - ePos.X, pp2.Z - ePos.Z
+                        local d2 = dx * dx + dz * dz
+                        if d2 <= r2c then
+                            if single then
+                                if not closestD or d2 < closestD then
+                                    closestD, closest = d2, pet
+                                end
+                            else
+                                pet:SetAttribute("EnemyExposeMult", mult)
+                                pet:SetAttribute("EnemyExposeUntil", untilT)
+                                pet:SetAttribute("Power_curse_Until", untilT)
+                            end
+                        end
+                    end
+                end
+                if closest then
+                    closest:SetAttribute("EnemyExposeMult", mult)
+                    closest:SetAttribute("EnemyExposeUntil", untilT)
+                    closest:SetAttribute("Power_curse_Until", untilT)
+                end
+            end
+        end
+    end
+
     local pulse = def and def.abilities and def.abilities.pulse
     if pulse and not held then
         entry.nextPulse = entry.nextPulse or (now + (tonumber(pulse.interval) or 4))
