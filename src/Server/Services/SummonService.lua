@@ -56,6 +56,26 @@ function SummonService:Init()
     self._folder.Name = "Guardians"
     self._folder.Parent = Workspace
 
+    -- PRE-WARM guardian model templates (Jason live-caught: the genie's mechanics land instantly
+    -- but the model shows up seconds late). The guardian asset ids aren't in the PlaceAssets
+    -- cache, so every cast paid a live InsertService:LoadAsset round-trip before the model
+    -- existed. Load each once at boot; _buildModel clones the warm template at cast.
+    self._templates = {}
+    task.spawn(function()
+        for gkind, assetId in pairs(self._config.model_asset or {}) do
+            local ok, loaded = pcall(function()
+                return AssetFetch.load(assetId)
+            end)
+            if ok and loaded then
+                local m = loaded:FindFirstChildWhichIsA("Model") or loaded
+                if m.Parent == loaded then
+                    m.Parent = nil
+                end
+                self._templates[gkind] = m
+            end
+        end
+    end)
+
     self._conn = RunService.Heartbeat:Connect(function()
         self:_step()
     end)
@@ -110,8 +130,15 @@ end
 function SummonService:_buildModel(player, gkind, gcfg)
     local model
     local usingPlaceholder = true -- real asset keeps its own textures; placeholder gets tinted
+    -- boot-warmed template first (instant clone); fall back to a live load only if the warm-up
+    -- failed or hasn't finished yet (a cast in the first seconds after server start)
+    local template = self._templates and self._templates[gkind]
+    if template then
+        model = template:Clone()
+        usingPlaceholder = false
+    end
     local assetId = self._config.model_asset and self._config.model_asset[gkind]
-    if assetId then
+    if not model and assetId then
         local ok, loaded = pcall(function()
             return AssetFetch.load(assetId)
         end)
