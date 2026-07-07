@@ -353,9 +353,14 @@ function TeamPanel:_showInvitePopup(fromName)
     s.Parent = pop
     self.invitePopup = pop
 
+    -- Show the inviter's LEVEL (Jason QoL): accepting means sidekicking up or exemplaring
+    -- down to their lead — you should know which before you say yes.
+    local inviter = Players:FindFirstChild(fromName)
+    local lvl = inviter and tonumber(inviter:GetAttribute("Level"))
+    local who = lvl and string.format("%s (Lv %d)", fromName, lvl) or fromName
     local msg = label(
         pop,
-        "👥 " .. fromName .. " invited you to team up",
+        "👥 " .. who .. " invited you to team up",
         UDim2.new(1, -20, 0, 50),
         UDim2.new(0, 10, 0, 16),
         COLORS.text,
