@@ -4583,7 +4583,18 @@ function EnemyService:_pickPatrolBand(cfg, part)
                 bandCap
             )
             local specs = {}
-            local scary = math.random() < (tonumber(cfg.pet_invader_scary_chance) or 0.18)
+            -- TEAMS ATTRACT SCARY BANDS (variance smoothing — Jason: duo bands were "most
+            -- times 8 and trivial, sometimes ridiculous and hard"): each extra engaged
+            -- teammate adds teaming pack.scary_chance_per_extra, so a team's bands anchor a
+            -- strongest-invader far more often than the solo dice.
+            local scaryChance = tonumber(cfg.pet_invader_scary_chance) or 0.18
+            scaryChance = math.min(
+                1,
+                scaryChance
+                    + (tonumber((teamingCfg.pack or {}).scary_chance_per_extra) or 0)
+                        * (engaged - 1)
+            )
+            local scary = math.random() < scaryChance
             if scary then
                 local boss = roster[#roster] -- strongest opposing pet anchors the scary band
                 specs[#specs + 1] =

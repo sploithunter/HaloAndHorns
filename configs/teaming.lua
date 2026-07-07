@@ -46,7 +46,7 @@ return {
     -- (PartyMath.scaledHp) so packs are more bodies AND meatier — tune either axis to 0
     -- to disable it. Boss-tier enemies never multiply in COUNT (hp only).
     pack = {
-        count_per_extra = 1.0, -- 2 engaged = double pack (was 0.8 — read too thin vs 15 pets)
+        count_per_extra = 1.5, -- duo = 2.5× pack (1.0 read trivial: duo invader bands of 8 vs 16 pets)
         max_count_mult = 3.0, -- hard ceiling on the count multiplier
         hp_scaling = true, -- apply PartyMath.scaledHp on top
         count_scales_tiers = { minion = true, elite = true }, -- boss/archvillain: hp only
@@ -54,5 +54,10 @@ return {
         -- Realm-cave PATROL bands scale by the biggest team near the cave stop at sortie
         -- time; patrols roam, so the "near" test is looser than the homeworld spawner one.
         patrol_engaged_radius = 150,
+        -- TEAMS ATTRACT SCARY BANDS (variance smoothing — Jason: "most times 8 and trivial,
+        -- sometimes ridiculous and hard"): each extra engaged teammate ADDS this to the
+        -- pet_invader_scary_chance, so teamed caves anchor far more bands with a
+        -- strongest-invader instead of leaving difficulty to the 18% dice.
+        scary_chance_per_extra = 0.3,
     },
 }
