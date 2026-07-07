@@ -4495,6 +4495,43 @@ function EnemyService:_onTeamName(player, name)
     return false
 end
 
+-- Engaged team size for a spawn POSITION, realm-aware (live-caught: a duo in Hell_1 got
+-- solo-sized patrol bands — bands spawn at DISTANT sortie stops, so the proximity radius
+-- never saw the team). In a REALM WORLD the band roams to whoever is in the cave, so the
+-- engaged team = the biggest team with members IN THAT WORLD (via the CurrentArea SSOT:
+-- "Hell_1_Lava" prefix-matches "Hell_1"). Outside realms, the proximity rule stands.
+function EnemyService:_engagedTeamFor(position)
+    local area = self:_areaAt(position)
+    local world = type(area) == "string"
+        and (area:match("^(Heaven_%d+)") or area:match("^(Hell_%d+)"))
+    if not world then
+        return self:_engagedTeamAt(position)
+    end
+    local function inWorld(p)
+        local a = p:GetAttribute("CurrentArea")
+        return type(a) == "string" and (a == world or a:sub(1, #world + 1) == world .. "_")
+    end
+    local best = 1
+    for _, p in ipairs(Players:GetPlayers()) do
+        if inWorld(p) then
+            local n = 1
+            local members = p:GetAttribute("TeamMembers")
+            if type(members) == "string" and members ~= "" then
+                for name in members:gmatch("[^,]+") do
+                    if name ~= p.Name then
+                        local mate = Players:FindFirstChild(name)
+                        if mate and inWorld(mate) then
+                            n += 1
+                        end
+                    end
+                end
+            end
+            best = math.max(best, n)
+        end
+    end
+    return best
+end
+
 -- The engaged TEAM's squads: the aggro owner's { player, folder } first, then each present
 -- teammate's. Solo = just the owner's, so unteamed combat is identical to before.
 function EnemyService:_teamSquads(player)
@@ -4523,7 +4560,7 @@ function EnemyService:_pickPatrolBand(cfg, part)
     local allegiance = self:_caveAllegiance(part)
     -- PACK SCALING (docs/TEAMING.md): band size + unit counts + the band cap all grow with
     -- the biggest engaged team near this cave stop. Solo/ambient = 1 → identical to before.
-    local engaged = self:_engagedTeamAt(part.Position)
+    local engaged = self:_engagedTeamFor(part.Position)
     local teamingCfg = self:_teamingConfig()
     local bandCap = PackScale.count(
         math.max(1, math.floor(tonumber(cfg.max_band_units) or 8)),
@@ -5099,7 +5136,7 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     -- TEAM HP (docs/TEAMING.md — PartyMath.scaledHp, finally wired): packs facing an engaged
     -- TEAM are meatier as well as more numerous. HP × (1 + per_extra × (engaged−1)), toggled
     -- by teaming pack.hp_scaling; applies to EVERY tier (bosses scale hp-only by design).
-    local engaged = self:_engagedTeamAt(position)
+    local engaged = self:_engagedTeamFor(position)
     if engaged > 1 and (self:_teamingConfig().pack or {}).hp_scaling ~= false then
         local perExtra = tonumber(
             (self._combatConfig and self._combatConfig.group_scaling or {}).per_extra_player
