@@ -1249,6 +1249,11 @@ do
         buildPanel("Trade", function()
             return require(script.UI.Menus.TradePanel).new()
         end)
+        -- Team (docs/TEAMING.md TM4): built eagerly like Trade so its live invite-popup
+        -- layer (TeamInviteFrom attribute watcher) is armed from boot, panel open or not.
+        buildPanel("Team", function()
+            return require(script.UI.Menus.TeamPanel).new()
+        end)
         buildPanel("EnhancementSell", function()
             return require(script.UI.Menus.EnhancementSellPanel).new()
         end)

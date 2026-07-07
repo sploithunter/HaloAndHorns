@@ -690,6 +690,32 @@ function SquadHud.start()
         lbl.TextColor3 = Color3.fromRGB(235, 240, 255)
         lbl.Text = "MY TEAM"
         lbl.Parent = frame
+        -- ➕ on the header's right edge opens the Team panel (invite/roster — docs/TEAMING.md TM4).
+        -- A child button consumes its own click, so the card's squad-scope toggle is untouched.
+        local teamBtn = Instance.new("TextButton")
+        teamBtn.Name = "TeamMenu"
+        teamBtn.AnchorPoint = Vector2.new(1, 0.5)
+        teamBtn.Position = UDim2.new(1, -5, 0.5, 0)
+        teamBtn.Size = UDim2.new(0.75, 0, 0.75, 0) -- relative to the header card
+        teamBtn.BackgroundColor3 = Color3.fromRGB(46, 120, 90)
+        teamBtn.BackgroundTransparency = 0.15
+        teamBtn.Text = "➕"
+        teamBtn.TextSize = 14
+        teamBtn.Font = Enum.Font.GothamBold
+        teamBtn.TextColor3 = Color3.fromRGB(235, 240, 255)
+        teamBtn.Parent = frame
+        local tbAspect = Instance.new("UIAspectRatioConstraint")
+        tbAspect.AspectRatio = 1
+        tbAspect.Parent = teamBtn
+        local tbCorner = Instance.new("UICorner")
+        tbCorner.CornerRadius = UDim.new(1, 0)
+        tbCorner.Parent = teamBtn
+        teamBtn.MouseButton1Click:Connect(function()
+            local mm = _G.MenuManager
+            if mm then
+                mm:OpenPanel("Team", "slide_in_right")
+            end
+        end)
         teamCard = { frame = frame, stroke = stroke }
         frame.MouseButton1Click:Connect(function()
             -- toggle: pick TEAM scope, or if it's already the pick, clear back to no selection
