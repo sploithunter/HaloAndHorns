@@ -628,11 +628,14 @@ function PowerService:_targetPets(player, powerId)
     end
     local def = self._powersConfig.powers and self._powersConfig.powers[powerId]
     if not (def and def.target == "single_pet") then
-        return live -- squad-wide
+        -- Squad-wide SUPPORT casts cover the whole TEAM's pets when teamed (Jason: bastion
+        -- was buffing only the caster's squad). Non-support families stay own-squad.
+        return self:_withTeamPets(player, powerId, live)
     end
     local sel = player:GetAttribute("CombatBuffTarget")
     if sel == -1 then
-        return live -- TEAM scope: a single_pet power cast on the whole squad (team header selected)
+        -- TEAM scope (header card): the whole squad — and the whole TEAM when teamed.
+        return self:_withTeamPets(player, powerId, live)
     end
     if sel and sel ~= 0 then
         for _, pet in ipairs(live) do
@@ -645,6 +648,69 @@ function PowerService:_targetPets(player, powerId)
     return live[1] and { live[1] } or {} -- fallback: first non-downed pet
 end
 
+-- Lazy teaming deps (config + pure cores). Shared by every team-cast path below.
+function PowerService:_teamingInit()
+    if not self._teamingConfig then
+        local ok, cfg = pcall(function()
+            return require(ReplicatedStorage.Configs:WaitForChild("teaming"))
+        end)
+        self._teamingConfig = ok and cfg or { support_families = {} }
+        self._teamCast = require(ReplicatedStorage.Shared.Game.TeamCast)
+        self._petEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
+    end
+    return self._teamingConfig
+end
+
+-- The power's support family (heal/absorb/defense_buff/...), or nil when it isn't one that
+-- may cross player boundaries (configs/teaming.lua support_families).
+function PowerService:_supportFamily(powerId)
+    local cfg = self:_teamingInit()
+    local def = self._powersConfig.powers and self._powersConfig.powers[powerId]
+    local kind = def
+        and self._powersConfig.effect_kinds
+        and self._powersConfig.effect_kinds[def.effect]
+    local family = kind and kind.family
+    return (family and cfg.support_families[family]) and family or nil
+end
+
+-- Squad-wide team cover (docs/TEAMING.md): extend a squad-wide SUPPORT cast's target list
+-- with every TEAMMATE's live pets, SameTeam-gated per member. Non-support powers (or an
+-- unteamed caster) get the caster's own list back untouched.
+function PowerService:_withTeamPets(player, powerId, live)
+    if not self:_supportFamily(powerId) then
+        return live
+    end
+    local members = player:GetAttribute("TeamMembers")
+    if type(members) ~= "string" or members == "" then
+        return live
+    end
+    local partySvc = _G.RBXTemplateServices
+        and select(
+            2,
+            pcall(function()
+                return _G.RBXTemplateServices:Get("PartyService")
+            end)
+        )
+    if not (partySvc and partySvc.SameTeam) then
+        return live
+    end
+    local pp = Workspace:FindFirstChild("PlayerPets")
+    for name in members:gmatch("[^,]+") do
+        if name ~= player.Name then
+            local mate = Players:FindFirstChild(name)
+            local folder = mate and pp and pp:FindFirstChild(name)
+            if mate and folder and partySvc:SameTeam(player, mate) then
+                for _, pet in ipairs(folder:GetChildren()) do
+                    if pet:IsA("Model") and not pet:GetAttribute("CombatDowned") then
+                        live[#live + 1] = pet
+                    end
+                end
+            end
+        end
+    end
+    return live
+end
+
 -- Resolve a cross-player support cast (docs/TEAMING.md), or nil to fall through to the
 -- caster's own squad. Requires: a CombatBuffTargetPlayer selection, same team (PartyService,
 -- located via the runtime registry — the loader only injects DECLARED deps), and a power
@@ -654,20 +720,9 @@ function PowerService:_teamTargetPets(player, powerId)
     if type(targetName) ~= "string" or targetName == "" or targetName == player.Name then
         return nil
     end
-    if not self._teamingConfig then
-        local ok, cfg = pcall(function()
-            return require(ReplicatedStorage.Configs:WaitForChild("teaming"))
-        end)
-        self._teamingConfig = ok and cfg or { support_families = {} }
-        self._teamCast = require(ReplicatedStorage.Shared.Game.TeamCast)
-        self._petEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
-    end
-    local def = self._powersConfig.powers and self._powersConfig.powers[powerId]
-    local kind = def
-        and self._powersConfig.effect_kinds
-        and self._powersConfig.effect_kinds[def.effect]
-    local family = kind and kind.family
-    if not (family and self._teamingConfig.support_families[family]) then
+    self:_teamingInit()
+    local family = self:_supportFamily(powerId)
+    if not family then
         return nil
     end
     local target = Players:FindFirstChild(targetName)
@@ -688,6 +743,21 @@ function PowerService:_teamTargetPets(player, powerId)
         and Workspace.PlayerPets:FindFirstChild(targetName)
     if not folder then
         return nil
+    end
+    -- EXPLICIT teammate-pet pick (Jason: clicking a teammate's pet card should select IT):
+    -- the client sends the pet's PositionNumber alongside playerName, stamped as
+    -- CombatBuffTarget. When set, the cast lands on that exact pet — TeamCast auto-pick is
+    -- the fallback for the header-card (whole-player) selection.
+    local sel = tonumber(player:GetAttribute("CombatBuffTarget")) or 0
+    if sel > 0 then
+        for _, pet in ipairs(folder:GetChildren()) do
+            if pet:IsA("Model") then
+                local pn = pet:FindFirstChild("PositionNumber")
+                if pn and pn.Value == sel then
+                    return { pet }
+                end
+            end
+        end
     end
     local states = {}
     for _, pet in ipairs(folder:GetChildren()) do

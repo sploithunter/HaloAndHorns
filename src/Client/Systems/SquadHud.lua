@@ -467,11 +467,13 @@ function SquadHud.start()
     -- cast-through target (CombatBuffTargetPlayer server-side). Mutually exclusive with a
     -- pet/TEAM pick — forward-declared so setSelected can clear it. Cards built further down.
     local selectedMate = nil
+    local selectedMateSlot = nil -- a SPECIFIC teammate pet (PositionNumber); nil = whole player
     local refreshMateHighlights = nil
 
     local function setSelected(slot)
         selectedSlot = slot
         selectedMate = nil -- picking a pet/TEAM scope drops the teammate pick
+        selectedMateSlot = nil
         if refreshMateHighlights then
             refreshMateHighlights()
         end
@@ -746,7 +748,19 @@ function SquadHud.start()
 
         refreshMateHighlights = function()
             for name, card in pairs(mateCards) do
-                HudCard.applyHighlight(card, (selectedMate == name) and "select" or nil)
+                -- header lights for a whole-player pick; a specific pet card lights instead
+                -- when that pet is the pick
+                HudCard.applyHighlight(
+                    card,
+                    (selectedMate == name and not selectedMateSlot) and "select" or nil
+                )
+                for pet, pc in pairs(card.petCards) do
+                    HudCard.applyHighlight(
+                        pc,
+                        (selectedMate == name and selectedMateSlot == petSlot(pet)) and "select"
+                            or nil
+                    )
+                end
             end
         end
 
@@ -904,6 +918,26 @@ function SquadHud.start()
                                 height = 36,
                             })
                             card.petCards[pet] = pc
+                            -- click = select THIS teammate pet as the cast-through target
+                            -- (slot + playerName → server stamps CombatBuffTarget +
+                            -- CombatBuffTargetPlayer; a single-pet heal/shield lands on it)
+                            pc.frame.MouseButton1Click:Connect(function()
+                                local slot = petSlot(pet)
+                                local wasPicked = selectedMate == name and selectedMateSlot == slot
+                                setSelected(nil) -- clears every pick, client + server
+                                if not wasPicked then
+                                    selectedMate = name
+                                    selectedMateSlot = slot
+                                    pcall(function()
+                                        Signals.Combat_SelectPetTarget:FireServer({
+                                            slot = slot,
+                                            playerName = name,
+                                        })
+                                    end)
+                                end
+                                refreshMateHighlights()
+                            end)
+                            refreshMateHighlights() -- new card: pick up any live selection
                         end
                         pc.frame.LayoutOrder = 1000 + order * 20 + i
                         local downed = pet:GetAttribute("CombatDowned") == true
