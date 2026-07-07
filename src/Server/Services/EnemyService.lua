@@ -4775,6 +4775,9 @@ end
 
 function EnemyService:_pickPatrolBand(cfg, part)
     local origin = self:_caveOrigin(part)
+    -- normalized lowercase origin id ("Ice" -> "ice") for pet-origin filtering, element
+    -- themes, and pulse tinting — _caveOrigin returns the capitalized stand suffix.
+    local originId = type(origin) == "string" and origin:lower() or nil
     local allegiance = self:_caveAllegiance(part)
     -- PACK SCALING (docs/TEAMING.md): band size + unit counts + the band cap all grow with
     -- the biggest engaged team near this cave stop. Solo/ambient = 1 → identical to before.
@@ -4790,6 +4793,21 @@ function EnemyService:_pickPatrolBand(cfg, part)
     -- PET INVADERS — opposing-realm pet models as the band.
     if cfg.use_pet_invaders and allegiance then
         local roster = self:_realmPetRoster(allegiance) -- weak -> strong
+        -- ORIGIN THEMING (Jason: "why am I getting an Ashmane Lion out of Hell 2 ICE?"):
+        -- the band draws only pets of the CAVE's origin — def.origin is backfilled from the
+        -- egg SSOT and CI-guarded in sync (pet_origin_integrity). Falls back to the full
+        -- realm roster if an origin has no pets yet (never an empty cave).
+        if originId then
+            local sliced = {}
+            for _, e in ipairs(roster) do
+                if e.def and e.def.origin == originId then
+                    sliced[#sliced + 1] = e
+                end
+            end
+            if #sliced > 0 then
+                roster = sliced
+            end
+        end
         if #roster > 0 then
             local size = math.min(
                 PackScale.count(
@@ -4817,7 +4835,7 @@ function EnemyService:_pickPatrolBand(cfg, part)
                 -- CAPITAL ANCHORS (configs/capital_baddies.lua — Jason: anchors have POWERS,
                 -- trash just does damage; authored, not random). Tiered anchors by engaged
                 -- team size, models from the roster's strongest slices, kits attached.
-                for _, spec in ipairs(self:_capitalAnchors(roster, engaged, origin)) do
+                for _, spec in ipairs(self:_capitalAnchors(roster, engaged, originId)) do
                     specs[#specs + 1] = spec
                 end
             end
