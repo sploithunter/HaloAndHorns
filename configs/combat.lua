@@ -126,6 +126,20 @@ return {
         pet_enemy_hp_mult = 10, -- base_health -> enemy hp (matches the 10x world pool scaling)
         pet_enemy_cadence = 1.5, -- seconds between an invader's attacks
         pet_enemy_move_speed = 15, -- studs/sec chase speed
+        -- ROLE-FAITHFUL INVADERS (Jason live-caught 2026-07-07: patrols read all-melee — the
+        -- roster's tanks/ranged/control were flattened to melee by the synth). Overlays keyed by
+        -- pet_roles.by_type: tank soaks (hp up, dmg down), ranged/BLASTER stands off and fires
+        -- (attack_range like the crow) hitting harder but squishier, control roots a nearby pet
+        -- on an interval (movement pin — the full hold stays a boss-kit power). Support is its
+        -- own path (damage 0 + band mending). Melee = the unmodified baseline.
+        pet_invader_roles = {
+            tank = { hp_mult = 2.2, dmg_mult = 0.7 },
+            ranged = { hp_mult = 0.7, dmg_mult = 1.4, attack_range = 30 },
+            control = {
+                dmg_mult = 0.8,
+                root = { duration = 1.8, radius = 20, interval = 9, targets = 1 },
+            },
+        },
         pet_invader_scary_chance = 0.18, -- chance a sortie leads with the strongest opposing pet
         -- VARIED BANDS (Jason: "a random-ish mix like home; one band somewhat scary"). Each sortie
         -- rolls a weighted composition from the cave origin's pool (mirrors the home wave tables:

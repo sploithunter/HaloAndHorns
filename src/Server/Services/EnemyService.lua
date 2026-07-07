@@ -4535,8 +4535,23 @@ function EnemyService:_petEnemyDef(petId, petDef)
     -- by_type is the petId -> roleId map ("roles" is the role DEFINITIONS table keyed by role
     -- id — indexing it by petId was always nil, so EVERY invader synthesized as melee and
     -- heal-aura supports never mended their band; live-caught as all-melee badges in Hell 2 Ice).
-    local isSupport = (roles.by_type and roles.by_type[petId]) == "support"
+    local roleId = (roles.by_type and roles.by_type[petId]) or "melee"
+    local isSupport = roleId == "support"
     local aura = roles.support_auras and roles.support_auras[petId]
+    -- ROLE KITS (Jason: "any patrols that spawn tanks? … I don't think I've seen a blaster"):
+    -- non-support roles get their archetype back via pet_invader_roles overlays — tank soaks,
+    -- ranged stands off and fires (attack_range), control interval-roots a pet (the generic
+    -- def.abilities.root executor). Melee is the unmodified baseline.
+    local kit = not isSupport and (cfg.pet_invader_roles or {})[roleId] or nil
+    local attackRange, abilities
+    if kit then
+        hp = math.max(1, math.floor(hp * (tonumber(kit.hp_mult) or 1)))
+        dmg = math.max(1, math.floor(dmg * (tonumber(kit.dmg_mult) or 1)))
+        attackRange = tonumber(kit.attack_range)
+        if type(kit.root) == "table" then
+            abilities = { root = kit.root }
+        end
+    end
     local attack = { damage = dmg, cadence = tonumber(cfg.pet_enemy_cadence) or 1.5, sundering = 0 }
     local autoHeal
     if isSupport then
@@ -4548,7 +4563,9 @@ function EnemyService:_petEnemyDef(petId, petDef)
         end
     end
     return {
-        role = isSupport and "support" or "melee",
+        role = roleId,
+        attack_range = attackRange, -- ranged/blaster invaders hold out and fire (nil = melee reach)
+        abilities = abilities, -- control invaders carry root; capital anchor kits overlay on top
         hp = hp,
         display_name = petDef.display_name or petId,
         tier = tierByRarity[petDef.rarity] or "trash_mob",
