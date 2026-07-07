@@ -438,7 +438,9 @@ function EggCurrentTargetService:CallSetLastEgg(eggType)
     end)
 
     if success then
-        Logger:Debug("Set last egg on server", { eggType = eggType or "nil" })
+        if eggSystemConfig.debug.log_server_calls then
+            Logger:Debug("Set last egg on server", { eggType = eggType or "nil" })
+        end
     else
         Logger:Warn("Failed to set last egg on server", { error = tostring(result) })
     end

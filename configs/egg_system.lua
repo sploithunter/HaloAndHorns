@@ -484,9 +484,12 @@ return {
     },
 
     -- === DEBUG SETTINGS ===
+    -- All OFF for real players (Jason 2026-07-07 log-hygiene pass: every walk near/away from a
+    -- hatcher printed a console line). Flip on when debugging egg targeting — the proximity
+    -- CHECK itself never reads these, only the log gates do.
     debug = {
-        log_proximity_changes = true, -- Log when entering/leaving egg range
-        log_server_calls = true, -- Log setLastEgg server calls
+        log_proximity_changes = false, -- Log when entering/leaving egg range
+        log_server_calls = false, -- Log setLastEgg server calls
         log_ui_updates = false, -- Log UI position updates (performance impact)
         log_distance_checks = false, -- Log distance calculations (very verbose)
     },
