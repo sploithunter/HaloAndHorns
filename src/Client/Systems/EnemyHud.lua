@@ -139,14 +139,28 @@ local function engagedEnemies(now)
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     local origin = hrp and hrp.Position
 
+    -- TEAM WIDENING (Jason live-caught: the rail showed fewer enemies than the team was
+    -- fighting): a team battle is ONE fight, so "my squad" = my folder + every TEAMMATE's
+    -- folder, and an AggroOwner naming any team member counts. Solo, teamNames = just me.
+    local teamNames = { [localPlayer.Name] = true }
+    local members = localPlayer:GetAttribute("TeamMembers")
+    if type(members) == "string" and members ~= "" then
+        for name in members:gmatch("[^,]+") do
+            teamNames[name] = true
+        end
+    end
+
     local petTargets = {}
-    local pf = petsFolder()
-    if pf then
-        for _, pet in ipairs(pf:GetChildren()) do
-            if pet:IsA("Model") then
-                local bid = petEnemyBid(pet)
-                if bid then
-                    petTargets[bid] = true
+    local pp = Workspace:FindFirstChild("PlayerPets")
+    for name in pairs(teamNames) do
+        local folder = pp and pp:FindFirstChild(name)
+        if folder then
+            for _, pet in ipairs(folder:GetChildren()) do
+                if pet:IsA("Model") then
+                    local bid = petEnemyBid(pet)
+                    if bid then
+                        petTargets[bid] = true
+                    end
                 end
             end
         end
@@ -161,8 +175,9 @@ local function engagedEnemies(now)
                 if bidObj then
                     local bid = bidObj.Value
                     liveBids[bid] = true
-                    -- engaged RIGHT NOW → refresh the grace window
-                    if m:GetAttribute("AggroOwner") == localPlayer.Name or petTargets[bid] then
+                    -- engaged RIGHT NOW (with anyone on the TEAM) → refresh the grace window
+                    local owner = m:GetAttribute("AggroOwner")
+                    if (owner and teamNames[owner]) or petTargets[bid] then
                         engagedUntil[bid] = now + ENGAGE_GRACE
                     end
                     -- shown if engaged within the grace window (rides the aggro flicker)
