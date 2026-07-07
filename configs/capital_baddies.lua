@@ -71,4 +71,42 @@ return {
             pulse = { damage = 30, radius = 30, interval = 4 },
         },
     },
+
+    -- ELEMENT THEMES (Jason: bands fight like OUR archetypes — earth tanky, fire damage-y,
+    -- ice control, sand buff/debuff). Overlays merged over the base tier kits by the cave's
+    -- origin, so an earth band's boss soaks while an ice band's boss ROOTS your pets.
+    -- root: enemy CONTROL — freezes up to `targets` nearest pets in place for `duration`
+    -- (movement root; they keep attacking what's in reach). Badge = the hold glyph, so
+    -- "that one is the controller — kill it" reads on the enemy card.
+    themes = {
+        grass = { -- TANKY
+            lieutenant = { hp_mult = 3.0, dmg_mult = 1.1 },
+            boss = { hp_mult = 6.0, dmg_mult = 1.3 },
+        },
+        lava = { -- DAMAGE
+            lieutenant = {
+                dmg_mult = 1.6,
+                pulse = { damage = 18, radius = 22, interval = 4 },
+            },
+            boss = {
+                dmg_mult = 2.0,
+                slam = { damage = 150, radius = 16, cooldown = 10, telegraph = 1.4, range = 40 },
+                pulse = { damage = 30, radius = 30, interval = 4 },
+            },
+        },
+        ice = { -- CONTROL
+            lieutenant = { root = { duration = 2.0, radius = 20, interval = 9, targets = 1 } },
+            boss = { root = { duration = 2.5, radius = 24, interval = 8, targets = 3 } },
+        },
+        desert = { -- BUFF/DEBUFF specialists
+            lieutenant = {
+                single_buff = { mult = 1.6, radius = 40, interval = 8, duration = 6 },
+                single_debuff = { mult = 1.45, radius = 25, interval = 8, duration = 5 },
+            },
+            boss = {
+                band_buff = { mult = 1.4, radius = 40, interval = 9, duration = 6 },
+                band_debuff = { mult = 1.3, radius = 28, interval = 9, duration = 5 },
+            },
+        },
+    },
 }

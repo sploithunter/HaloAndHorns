@@ -2764,6 +2764,37 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         end
     end
 
+    -- CAPITAL ROOT (ice-theme control): freeze up to `targets` nearest pets in place —
+    -- PetRootedUntil (client stops positioning them) + the hold badge on their cards.
+    local kitRoot = def and def.abilities and def.abilities.root
+    if kitRoot and not held then
+        entry.nextRoot = entry.nextRoot or (now + 3)
+        if now >= entry.nextRoot then
+            entry.nextRoot = now + (tonumber(kitRoot.interval) or 8)
+            local rr2 = (tonumber(kitRoot.radius) or 22) ^ 2
+            local untilT = now + (tonumber(kitRoot.duration) or 2)
+            local near = {}
+            for pet in pairs(valid) do
+                if pet.Parent and not pet:GetAttribute("CombatDowned") then
+                    local pp2 = self:_petPosition(pet, pfs)
+                    local dx, dz = pp2.X - ePos.X, pp2.Z - ePos.Z
+                    local d2 = dx * dx + dz * dz
+                    if d2 <= rr2 then
+                        near[#near + 1] = { pet = pet, d2 = d2 }
+                    end
+                end
+            end
+            table.sort(near, function(a, b)
+                return a.d2 < b.d2
+            end)
+            for i = 1, math.min(#near, math.max(1, math.floor(tonumber(kitRoot.targets) or 1))) do
+                local pet = near[i].pet
+                pet:SetAttribute("PetRootedUntil", untilT)
+                pet:SetAttribute("Power_hold_Until", untilT)
+            end
+        end
+    end
+
     local pulse = def and def.abilities and def.abilities.pulse
     if pulse and not held then
         entry.nextPulse = entry.nextPulse or (now + (tonumber(pulse.interval) or 4))
@@ -4677,6 +4708,15 @@ function EnemyService:_capitalAnchors(roster, engaged, origin)
             local idx = lo + ((k - 1) % math.max(1, hi - lo + 1))
             local pick = strongest[math.min(idx, #strongest)]
             if pick and kit then
+                -- ELEMENT THEME overlay: the cave origin's kit tweaks win over the base tier
+                -- kit (earth = tanky, fire = damage, ice = control root, sand = buff/debuff).
+                local themed = ((cap.themes or {})[origin] or {})[tier]
+                if themed then
+                    kit = table.clone(kit)
+                    for tk, tv in pairs(themed) do
+                        kit[tk] = tv
+                    end
+                end
                 local def = self:_petEnemyDef(pick.id, pick.def)
                 def.tier = tier
                 def.hp = math.max(1, math.floor(def.hp * (tonumber(kit.hp_mult) or 1)))
@@ -4695,6 +4735,9 @@ function EnemyService:_capitalAnchors(roster, engaged, origin)
                     local p = table.clone(kit.pulse)
                     p.element = p.element or origin -- pulse reads in the cave's element
                     abilities.pulse = p
+                end
+                if kit.root then
+                    abilities.root = kit.root
                 end
                 if next(abilities) then
                     def.abilities = abilities

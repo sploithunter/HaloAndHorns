@@ -611,14 +611,16 @@ function PetFollowController.start()
                         d.Enabled = not downed
                     end
                 end
-                if not downed then
+                -- CAPITAL ROOT (enemy ice control): a rooted pet FREEZES in place — skip
+                -- positioning it while the window is live (it stays visible; the hold badge
+                -- on its card says why it stopped).
+                local rooted = (tonumber(m:GetAttribute("PetRootedUntil")) or 0) > os.time()
+                if not downed and not rooted then
                     table.insert(pets, m)
                 else
-                    -- Forget the cached transform while down (Jason's wandering-revive
-                    -- saga): the client skips positioning downed pets, so the server's
-                    -- revive teleport replicates cleanly — but resuming the lerp from
-                    -- this stale cache rendered the pet back at its death spot. With
-                    -- the cache cleared, revival reads the fresh (at-the-player) pivot.
+                    -- Downed OR rooted: skip positioning, and forget the cached transform
+                    -- (Jason's wandering-revive saga) so revival / root-release resumes
+                    -- from the fresh pivot instead of a stale death-spot lerp.
                     baseCF[m] = nil
                 end
             end
