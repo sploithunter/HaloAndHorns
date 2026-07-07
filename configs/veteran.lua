@@ -12,8 +12,12 @@
 return {
     enabled = true,
 
-    -- XP per veteran level (constant). Ballpark = a late-curve level step; tune freely.
-    xp_per_level = 2000,
+    -- XP per veteran level (constant). Recalibrated 2026-07-07: level-scaled combat XP +
+    -- teamed shared credit pushed endgame farming to ~2k XP/min (Jason hit VET 75 in one
+    -- session at the old 2000 — "half a bar every kill"). 20000 ≈ one vet level per ~10 min
+    -- of active team farming. Retro-safe: VeteranPaid is a high-water ledger, so raising
+    -- this only lowers the DISPLAYED vet level — no reward double-pay, paid rolls stay paid.
+    xp_per_level = 20000,
 
     rewards = {
         rolls_per_level = 1, -- enhancement cog rolls granted per vet level
