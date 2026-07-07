@@ -66,6 +66,30 @@ local function squadFolder(player)
     return pp and pp:FindFirstChild(player.Name)
 end
 
+-- TEAM COVER (docs/TEAMING.md — Jason live-caught: Genie revived the caster's downed pet but
+-- not the teammate's): a guardian is squad-wide SUPPORT, so its revive/heal/HoT reach every
+-- TEAMMATE's folder too. Own folder first; solo = just the own folder (identical to before).
+local function teamSquadFolders(player)
+    local folders = {}
+    local own = player and squadFolder(player)
+    if own then
+        folders[#folders + 1] = own
+    end
+    local members = player and player:GetAttribute("TeamMembers")
+    if type(members) == "string" and members ~= "" then
+        local pp = Workspace:FindFirstChild("PlayerPets")
+        for name in members:gmatch("[^,]+") do
+            if name ~= player.Name then
+                local f = pp and pp:FindFirstChild(name)
+                if f then
+                    folders[#folders + 1] = f
+                end
+            end
+        end
+    end
+    return folders
+end
+
 -- Resolve a loader-registered service at RUNTIME via the global locator (init.server.lua).
 -- NOT self._modules: the loader only injects DECLARED deps there — self._modules.EnemyService
 -- was nil, so the resurrect path silently fell back to plain PetRevive and the lockout ledger
@@ -206,7 +230,7 @@ function SummonService:Summon(player, kind, now, powerId)
     -- Genie's arrival burst is kind.magnitude (already enhancement-scaled at cast), but the gcfg-sourced
     -- strength (Colossus squad defense/damage, Djinn HoT) is NOT — so apply the potency factor here.
     local strengthMult = tonumber(kind._strengthMult) or 1
-    local pets = squadFolder(player)
+    local petFolders = teamSquadFolders(player)
 
     -- Powered revives must go through EnemyService:ResurrectPet — it releases the #179 lockout
     -- ledger FIRST. PetRevive alone stands the pet up and the lockout enforcement holds it right
@@ -220,8 +244,8 @@ function SummonService:Summon(player, kind, now, powerId)
         end
     end
 
-    -- immediate payoff: revive + heal (Genie's never-wipe)
-    if pets then
+    -- immediate payoff: revive + heal (Genie's never-wipe) — the whole TEAM's pets
+    for _, pets in ipairs(petFolders) do
         if kind.revive then
             for _, pet in ipairs(pets:GetChildren()) do
                 if pet:IsA("Model") and pet:GetAttribute("CombatDowned") then
@@ -381,8 +405,7 @@ function SummonService:_step()
             -- capstone earns it; downs inside the window cost nothing).
             if rec.healEvery and now - rec.lastHeal >= rec.healEvery then
                 rec.lastHeal = now
-                local pets = plr and squadFolder(plr)
-                if pets then
+                for _, pets in ipairs(plr and teamSquadFolders(plr) or {}) do
                     for _, pet in ipairs(pets:GetChildren()) do
                         if
                             rec.reviveDuring
