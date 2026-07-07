@@ -2092,16 +2092,21 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         return
     end
     local aggroCfg = eng.aggro or {}
+    -- TEAM BATTLE: every scan below (leash, threat build, valid targets) covers the aggro
+    -- owner's whole TEAM — the enemy fights ONE combined squad, not per-owner groups.
+    local squads = self:_teamSquads(player)
 
     -- Nearest live-pet distance drives the leash: locked-on while close, threat decays faster the
     -- farther the squad runs, hard drop past give_up_range (a teleport / world-hop takes the whole
     -- squad out of range at once -> instant give-up, so nothing chases you to another world).
     local nearestDist = math.huge
-    for _, pet in ipairs(petsFolder:GetChildren()) do
-        if pet:IsA("Model") and pet.PrimaryPart and not pet:GetAttribute("CombatDowned") then
-            local d = (self:_petPosition(pet, pfs) - ePos).Magnitude
-            if d < nearestDist then
-                nearestDist = d
+    for _, squad in ipairs(squads) do
+        for _, pet in ipairs(squad.folder:GetChildren()) do
+            if pet:IsA("Model") and pet.PrimaryPart and not pet:GetAttribute("CombatDowned") then
+                local d = (self:_petPosition(pet, pfs) - ePos).Magnitude
+                if d < nearestDist then
+                    nearestDist = d
+                end
             end
         end
     end
@@ -2132,41 +2137,43 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     local valid = {}
     local proxRange = aggroCfg.proximity_range or 30
     local proxFloor = aggroCfg.proximity_floor or 6
-    for _, pet in ipairs(petsFolder:GetChildren()) do
-        if
-            pet:IsA("Model")
-            and pet.PrimaryPart
-            and not pet:GetAttribute("CombatDowned")
-            and self:_enemyHostileToPet(entry, pet, player) -- only attack pets it's hostile to
-        then
-            -- (pets self-select their target in _assignPetTargets; the enemy no longer
-            -- force-claims them — it just builds its aggro on the nearby squad here.)
-            valid[pet] = true
-            -- Distance to this pet (server-truth positions) gates BOTH the passive build and the
-            -- proximity floor below — compute it once.
-            local d = (self:_petPosition(pet, pfs) - ePos).Magnitude
-            -- PASSIVE THREAT (the tank's Threat stat holding aggro) only builds while the pet is
-            -- genuinely NEAR. A pet idling across the area — still inside give_up_range but not
-            -- actually fighting — must NOT keep refilling aggro as fast as it decays; that is what
-            -- pinned abandoned enemies "in combat" forever (AggroOwner never cleared → never
-            -- disengaged, never despawned). Past passive_range only decay runs, so the table bleeds
-            -- to zero → targetPet nil → the disengage below fires → patrol. (Jason: the always-on
-            -- decay must WIN whenever nothing is actually engaging the enemy.)
-            -- FEAR EXCEPTION: a terrified enemy isn't sizing up threats — passive build is
-            -- SUSPENDED while its fear window is live (live-verified: +31/s passive was erasing
-            -- the -50 fear write in ~1.5s, flipping the table positive mid-flee).
-            local fearLive = entry.fear and (tonumber(entry.fear.until_) or 0) > os.time()
-            if not fearLive and d <= (aggroCfg.passive_range or 60) then
-                AggroTable.add(
-                    entry.aggro,
-                    pet,
-                    self:_petThreat(pet) * (aggroCfg.passive_per_second or 1.5) * (dt or 0.15)
-                )
-            end
-            -- Proximity floor: a pet within range (and not stealthed) keeps a baseline
-            -- aggro so the enemy never disengages from something right next to it.
-            if not pet:GetAttribute("Stealth") and d <= proxRange then
-                AggroTable.reinforce(entry.aggro, pet, proxFloor)
+    for _, squad in ipairs(squads) do
+        for _, pet in ipairs(squad.folder:GetChildren()) do
+            if
+                pet:IsA("Model")
+                and pet.PrimaryPart
+                and not pet:GetAttribute("CombatDowned")
+                and self:_enemyHostileToPet(entry, pet, squad.player) -- only pets it's hostile to
+            then
+                -- (pets self-select their target in _assignPetTargets; the enemy no longer
+                -- force-claims them — it just builds its aggro on the nearby squad here.)
+                valid[pet] = true
+                -- Distance to this pet (server-truth positions) gates BOTH the passive build and the
+                -- proximity floor below — compute it once.
+                local d = (self:_petPosition(pet, pfs) - ePos).Magnitude
+                -- PASSIVE THREAT (the tank's Threat stat holding aggro) only builds while the pet is
+                -- genuinely NEAR. A pet idling across the area — still inside give_up_range but not
+                -- actually fighting — must NOT keep refilling aggro as fast as it decays; that is what
+                -- pinned abandoned enemies "in combat" forever (AggroOwner never cleared → never
+                -- disengaged, never despawned). Past passive_range only decay runs, so the table bleeds
+                -- to zero → targetPet nil → the disengage below fires → patrol. (Jason: the always-on
+                -- decay must WIN whenever nothing is actually engaging the enemy.)
+                -- FEAR EXCEPTION: a terrified enemy isn't sizing up threats — passive build is
+                -- SUSPENDED while its fear window is live (live-verified: +31/s passive was erasing
+                -- the -50 fear write in ~1.5s, flipping the table positive mid-flee).
+                local fearLive = entry.fear and (tonumber(entry.fear.until_) or 0) > os.time()
+                if not fearLive and d <= (aggroCfg.passive_range or 60) then
+                    AggroTable.add(
+                        entry.aggro,
+                        pet,
+                        self:_petThreat(pet) * (aggroCfg.passive_per_second or 1.5) * (dt or 0.15)
+                    )
+                end
+                -- Proximity floor: a pet within range (and not stealthed) keeps a baseline
+                -- aggro so the enemy never disengages from something right next to it.
+                if not pet:GetAttribute("Stealth") and d <= proxRange then
+                    AggroTable.reinforce(entry.aggro, pet, proxFloor)
+                end
             end
         end
     end
@@ -3162,7 +3169,8 @@ function EnemyService:_focusEnemy(player)
             for _, e in pairs(self._enemies) do
                 local m = e.model
                 if
-                    e.aggroPlayerName == player.Name
+                    -- TEAM BATTLE: pets auto-join fights engaged with any TEAMMATE too
+                    self:_onTeamName(player, e.aggroPlayerName)
                     and m
                     and m.Parent
                     and (m:GetAttribute("HP") or 0) > 0
@@ -4291,7 +4299,9 @@ end
 function EnemyService:_petHostileToEnemy(pet, entry, player)
     local petRealm = self:_petRealmOf(pet:GetAttribute("PetType"))
     if petRealm == "neutral" then
-        return entry.aggroPlayerName == player.Name
+        -- TEAM BATTLE: a fight engaged with any TEAMMATE counts as "already on" for the
+        -- reactive-join rule, so both squads pile into the same pack.
+        return self:_onTeamName(player, entry.aggroPlayerName)
     end
     return Allegiance.hostile(petRealm, entry.allegiance, self:_currentRealm(player))
 end
@@ -4463,6 +4473,51 @@ function EnemyService:_engagedTeamAt(position)
         end
     end
     return best
+end
+
+-- TEAM BATTLE (docs/TEAMING.md — Jason: "it's not a team battle if you're fighting as two
+-- individual groups"): an enemy engaged with one player is engaged with their whole TEAM.
+-- True when `name` is the player themself or on their TeamMembers roster.
+function EnemyService:_onTeamName(player, name)
+    if not player or type(name) ~= "string" then
+        return false
+    end
+    if player.Name == name then
+        return true
+    end
+    local members = player:GetAttribute("TeamMembers")
+    if type(members) ~= "string" or members == "" then
+        return false
+    end
+    for m in members:gmatch("[^,]+") do
+        if m == name then
+            return true
+        end
+    end
+    return false
+end
+
+-- The engaged TEAM's squads: the aggro owner's { player, folder } first, then each present
+-- teammate's. Solo = just the owner's, so unteamed combat is identical to before.
+function EnemyService:_teamSquads(player)
+    local pp = Workspace:FindFirstChild("PlayerPets")
+    local squads = {}
+    local function add(p)
+        local folder = p and pp and pp:FindFirstChild(p.Name)
+        if folder then
+            squads[#squads + 1] = { player = p, folder = folder }
+        end
+    end
+    add(player)
+    local members = player and player:GetAttribute("TeamMembers")
+    if type(members) == "string" and members ~= "" then
+        for name in members:gmatch("[^,]+") do
+            if name ~= player.Name then
+                add(Players:FindFirstChild(name))
+            end
+        end
+    end
+    return squads
 end
 
 function EnemyService:_pickPatrolBand(cfg, part)
