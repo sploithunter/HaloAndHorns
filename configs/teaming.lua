@@ -7,13 +7,22 @@
 return {
     -- Cast-through-player: which power families may be redirected at a TEAMMATE's squad
     -- (resolved to actual pets by TeamCast). Everything else stays self/owner-only.
+    -- Keys MUST be the actual effect_kinds family ids in configs/powers.lua (live-caught
+    -- 2026-07-07: "damage_buff"/"heal_over_time" matched nothing — the real damage-buff
+    -- family is "buff" — so those casts silently never redirected, and taunt landed on the
+    -- CASTER's same-numbered slot). Rule of thumb: every family whose effect lands ON PETS
+    -- is a support family; player-economy buffs (luck/coin/xp/...) stay self-only.
     support_families = {
         heal = true,
-        heal_over_time = true,
+        heal_blind = true, -- heal + blind the attackers
         revive = true,
-        absorb = true,
+        absorb = true, -- shields (aegis / bastion)
         defense_buff = true,
-        damage_buff = true,
+        buff = true, -- damage buff
+        taunt = true, -- pull aggro onto their tank
+        fortify = true,
+        root_guard = true, -- squad +Def half (the knockback half stays battlefield-side)
+        evade = true, -- dodge (mirage)
     },
 
     -- Sidekick/exemplar (task #150): a teamed member's COMBAT level anchors to the lead.

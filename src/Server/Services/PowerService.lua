@@ -633,6 +633,14 @@ function PowerService:_targetPets(player, powerId)
         return self:_withTeamPets(player, powerId, live)
     end
     local sel = player:GetAttribute("CombatBuffTarget")
+    -- SLOT-COLLISION guard (live-caught: taunt at a teammate's Ent landed on the caster's
+    -- same-numbered Ent): a selection pointing at ANOTHER player's pet carries THEIR
+    -- PositionNumber — never match it against our own squad. A cast that reaches here with
+    -- a mate selected (family not redirectable) falls to the default pick instead.
+    local mateSel = player:GetAttribute("CombatBuffTargetPlayer")
+    if type(mateSel) == "string" and mateSel ~= "" and mateSel ~= player.Name then
+        sel = 0
+    end
     if sel == -1 then
         -- TEAM scope (header card): the whole squad — and the whole TEAM when teamed.
         return self:_withTeamPets(player, powerId, live)
