@@ -1096,14 +1096,24 @@ function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
             if not player.Parent then
                 return
             end
-            -- Re-resolve the squad each tick (heal whoever is alive), then radius-gate against the
-            -- FIXED zone centre. Pet positions come from the replicated report the aggro system
-            -- trusts (server pivots are stale for client-driven pets); fall back to the pivot.
-            for _, pet in ipairs(self:_targetPets(player, powerId)) do
-                local reported = pfs and pfs.GetReportedPosition and pfs:GetReportedPosition(pet)
-                local pos = (reported and reported.Position) or pet:GetPivot().Position
-                if (pos - center).Magnitude <= radius then
-                    self:_healPet(player, pet, perTick, os.time())
+            -- BATTLEFIELD PRINCIPLE (Jason, CoH-style): once placed, the field is a battlefield
+            -- entity, not a roster query — EVERY friendly standing in it gets the tick. Friendly
+            -- = any player's pets (player pets never fight each other), teamed or NOT, so you
+            -- can drop a heal field under a stranger's squad. Radius-gated against the FIXED
+            -- centre; pet positions come from the replicated report the aggro system trusts
+            -- (server pivots are stale for client-driven pets), falling back to the pivot.
+            local pp = Workspace:FindFirstChild("PlayerPets")
+            for _, folder in ipairs(pp and pp:GetChildren() or {}) do
+                for _, pet in ipairs(folder:GetChildren()) do
+                    if pet:IsA("Model") and not pet:GetAttribute("CombatDowned") then
+                        local reported = pfs
+                            and pfs.GetReportedPosition
+                            and pfs:GetReportedPosition(pet)
+                        local pos = (reported and reported.Position) or pet:GetPivot().Position
+                        if (pos - center).Magnitude <= radius then
+                            self:_healPet(player, pet, perTick, os.time())
+                        end
+                    end
                 end
             end
         end

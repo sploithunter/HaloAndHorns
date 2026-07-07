@@ -31,6 +31,14 @@ today's static spawns are tuned for one level-50 player with 10 pets.
    tier so bosses don't multiply.
 5. **Shared credit**: enemy `contrib` ledger already records per-pet damage; route kill
    XP/coins through `PartyMath.attribution`/`splitLoot` for teamed contributors.
+6. **Battlefield principle** (Jason, 2026-07-07, CoH-style): a PLACED area effect is a
+   battlefield entity, not a roster query on the caster. Anything friendly standing in it is
+   affected — teammates AND strangers (friendly = any player's pets; player pets never fight
+   each other). You can run around buffing/healing other people's squads without teaming.
+   First application: the ground heal field (`_healZone` sweeps ALL of `Workspace.PlayerPets`
+   radius-gated, not `_targetPets`). Every future positioned/radius support power (fields,
+   auras, ground runes) must follow this; list-scoped squad buffs with no position
+   (bastion-style) stay team-gated via `support_families`.
 
 ## Known blockers (scouted 2026-07-06, file:line in the scout report)
 
