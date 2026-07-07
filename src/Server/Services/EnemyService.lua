@@ -5074,10 +5074,13 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     model:SetAttribute("MoveTarget", position)
     model:SetAttribute("MoveFace", Vector3.new(hrp.Position.X, position.Y, hrp.Position.Z))
 
-    -- Effective level = base (config `level`, else the spawning player's level so a
+    -- Effective level = base (config `level`, else the spawning player's COMBAT level so a
     -- standard mob reads "even"/white) + the elite rank offset (lieutenant/boss read
-    -- higher). Drives damage scaling + the difficulty colour label.
-    local playerLevel = player:GetAttribute("Level") or 1
+    -- higher). Drives damage scaling + the difficulty colour label. EffectiveLevel, NOT
+    -- Level: a SIDEKICKED member fights at the lead's level, so the packs they trigger must
+    -- come out at team level too (live-caught: Macros at 20-sidekicked-49 was spawning
+    -- level-23 mobs that the level-50 lead trivially deleted).
+    local playerLevel = player:GetAttribute("EffectiveLevel") or player:GetAttribute("Level") or 1
     local rankOff = (
         self._levelingConfig.rank_offset and self._levelingConfig.rank_offset[def.tier]
     ) or 0
