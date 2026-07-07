@@ -214,14 +214,15 @@ function PowerService:_stampPassive(player, powerId, slots)
     -- POTENCY enhancements scale a passive's magnitude (this stamp IS the passive's "cast", so the slot
     -- fold happens here — Swift runs faster). ONE resolver (PowerStats), shared with the ENHANCE
     -- preview so the two can't drift; radius/damage/heal-as-magnitude families fold their axis in.
-    local enhAxes = Enhancements.aggregate(
-        self._enhConfig,
-        slots or {},
-        tonumber(player:GetAttribute("Level")) or 1
-    )
+    -- COMBAT level (EffectiveLevel = sidekick/exemplar-synced): a sidekicked caster's powers
+    -- and enhancement realization scale at the level they FIGHT at (power axis only, #244 audit).
+    local combatLevel = tonumber(player:GetAttribute("EffectiveLevel"))
+        or tonumber(player:GetAttribute("Level"))
+        or 1
+    local enhAxes = Enhancements.aggregate(self._enhConfig, slots or {}, combatLevel)
     local record = PowerRegistry.record(tostring(powerId), self._powersConfig)
     local eff = PowerStats.resolveEffective(record, {
-        casterLevel = tonumber(player:GetAttribute("Level")) or 1,
+        casterLevel = combatLevel,
         scaling = self._powersConfig.scaling,
         enhancements = enhAxes,
         radiusMagnitude = (self._enhConfig.radius_families or {})[kind.family] == true,
@@ -343,7 +344,10 @@ end
 -- less; enough of them make it free (effectiveRate clamps reduction to 1).
 function PowerService:_activeUpkeepRate(player, active)
     local data = self._dataService and self._dataService:GetData(player)
-    local level = tonumber(player:GetAttribute("Level")) or 1
+    -- combat level: focus-upkeep reduction rides the same sidekick-synced axis as the cast
+    local level = tonumber(player:GetAttribute("EffectiveLevel"))
+        or tonumber(player:GetAttribute("Level"))
+        or 1
     local rates = {}
     for powerId in pairs(active or {}) do
         local def = self._powersConfig.powers[tostring(powerId)]
@@ -1330,7 +1334,9 @@ function PowerService:_dotHit(player, enemy, perTick, critChance, critMult, now,
                 Enhancements.procs(
                     self._enhConfig,
                     slots,
-                    tonumber(player:GetAttribute("Level")) or 1
+                    tonumber(player:GetAttribute("EffectiveLevel"))
+                        or tonumber(player:GetAttribute("Level"))
+                        or 1
                 )
             )
         do

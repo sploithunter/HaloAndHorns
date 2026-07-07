@@ -55,40 +55,8 @@ end
 --          "kill the healer to flip the fight" tell, now on the card (matches the world heal splash).
 --   HEX  — YOUR debuff landing on the foe (DebuffUntil; set by every vulnerable/sunder/expose power),
 --          a timed countdown so you can read when it lapses.
--- New enemy casts drop in as one more row here — no new rendering code.
-local ENEMY_EFFECTS = {
-    {
-        key = "heal",
-        source = "enemy",
-        untilAttr = "HealFxUntil",
-        pulse = true,
-        color = Color3.fromRGB(90, 210, 110),
-        label = "HEAL",
-        icon = POWER_ICONS.discFor("earth", "plus"), -- green heal cross (same disc the pets show)
-        ringElement = "earth", -- standard tinted ring (no more ringless disc)
-    },
-    {
-        key = "hex",
-        source = "enemy",
-        untilAttr = "DebuffUntil",
-        -- Resolve the ACTUAL power's disc + tinted ring via PetBadge (the one canonical path —
-        -- identical to the overhead badge, the hotbar, and the pet cards). The server stamps
-        -- DebuffPowerId alongside DebuffUntil, so Sandstorm reads as the desert sand_storm disc, not a
-        -- generic chip. The "HEX" label below is only the fallback for an untagged/unresolvable debuff.
-        powerIdAttr = "DebuffPowerId",
-        color = Color3.fromRGB(175, 110, 215),
-        label = "HEX",
-    },
-    {
-        key = "held",
-        source = "enemy",
-        untilAttr = "HeldUntil", -- controller HOLD pinning this foe (no move/attack) — timed countdown
-        color = Color3.fromRGB(150, 110, 215), -- control violet (matches the world HELD badge)
-        label = "HELD",
-        icon = POWER_ICONS.discFor("ice", "capacitor"), -- hold glyph (capacitor IS the hold art)
-        ringElement = "ice", -- standard tinted ring (matches the world HELD badge) — was ringless
-    },
-}
+-- Descriptors live in the SHARED StatusEffectsRegistry (#244 S4); new enemy casts drop in as
+-- one more row THERE (or just a Power_<id>_Until stamp) and show on every surface at once.
 -- Expiry-blink cadence (matches SquadHud's defaults; a near-expiry timed badge flashes).
 local BLINK_LEAD = 5
 local BLINK_PERIOD = 0.5
@@ -440,7 +408,7 @@ function EnemyHud.start()
                 -- leftward from the card's inner edge (a healed foe lights HEAL, a debuffed foe HEX).
                 StatusBadges.update(
                     card,
-                    StatusBadges.resolveEffects(ENEMY_EFFECTS, { enemy = m }, os.time()),
+                    StatusBadges.resolve("enemy", { enemy = m }, os.time()),
                     BLINK_LEAD
                 )
             end

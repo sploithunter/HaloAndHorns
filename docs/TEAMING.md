@@ -99,3 +99,7 @@ All slices landed plus everything the verify shook out:
 - Known follow-ups: #244 (one badge reader + one target resolver everywhere), per-player
   EnemyLevelOffset on teamed spawns (currently the trigger player's setting), hasAggro
   introspection in TeamCast states.
+- IDEA (Jason, 2026-07-07): **Teleport-to-teammate as a POWER** ("Recall Friend"-style), not a
+  free HUD button — fits the perma-build power chase; gate travel convenience behind a pick.
+  Complement: a find-teammate waypoint beacon (screen-edge arrow + beam, client-only) as the
+  free tier. Teammate location line on the rail card shipped (CurrentArea).

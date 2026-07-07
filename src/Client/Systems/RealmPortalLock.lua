@@ -124,7 +124,11 @@ function RealmPortalLock.start()
     end
 
     local function level()
-        return tonumber(player:GetAttribute("Level")) or 1
+        -- EffectiveLevel first: the SERVER access gate (LayerService) reads it, so a teamed
+        -- guest-pass player must see the same portals unlocked that the server will let through.
+        return tonumber(player:GetAttribute("EffectiveLevel"))
+            or tonumber(player:GetAttribute("Level"))
+            or 1
     end
 
     -- Apply the per-player lock state to one open portal's badges.
@@ -157,6 +161,8 @@ function RealmPortalLock.start()
 
     refreshAll()
     player:GetAttributeChangedSignal("Level"):Connect(refreshAll)
+    -- team join/leave moves the COMBAT level (sidekick) -> refresh the lock badges too
+    player:GetAttributeChangedSignal("EffectiveLevel"):Connect(refreshAll)
     -- Portals/badges can stream in or be stamped slightly after we start — re-run a few times so the
     -- lock lands once everything exists (cheap: a handful of FindFirstChild scans).
     task.spawn(function()

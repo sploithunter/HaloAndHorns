@@ -6,7 +6,7 @@
     a `status` frame anchored at the card's inner edge (grows toward screen centre — "out to the
     left"). The only thing that ever differed was this renderer, which used to live privately in
     SquadHud hardcoded to its pet effects. Extracted here so both strips drive the SAME badge code
-    off their own descriptor table (PET_EFFECTS vs ENEMY_EFFECTS) — a buffed pet and a healed enemy
+    off the SHARED StatusEffectsRegistry descriptor tables (#244 S4) — a buffed pet and a healed enemy
     light up through one path. (Jason: "there's not a lot of difference between pets and enemies —
     they're little expert systems on the same model.")
 
@@ -36,6 +36,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local POWER_ICONS = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("power_icons"))
 local PetBadge = require(script.Parent.PetBadge)
+local PowerBadges = require(script.Parent.PowerBadges)
+local Registry = require(script.Parent.StatusEffectsRegistry)
 
 local StatusBadges = {}
 
@@ -125,6 +127,7 @@ function StatusBadges.resolveEffects(EFFECTS, sources, now)
                         -- # of same-kind sources stacked into this buff (e.g. 3 lava pets -> ATK x3) so the
                         -- card can pile the badge + show "xN" (same buff stacks; different ones stay separate).
                         stacks = e.stacksAttr and (src:GetAttribute(e.stacksAttr) or 1) or nil,
+                        powerId = pid, -- lets resolve() dedupe the generic PowerBadges pass
                     }
                 end
             elseif e.poolAttr then
@@ -139,12 +142,54 @@ function StatusBadges.resolveEffects(EFFECTS, sources, now)
                         ringImg = ringImg,
                         ringColor = ringColor,
                         order = idx,
+                        powerId = pid,
                     }
                 end
             end
         end
     end
     return out
+end
+
+-- #244 S4: THE one call every entity HUD makes. The shared Registry descriptors carry the
+-- tuned semantics (steady auras, pulses, potion channels, stacks); a GENERIC pass then folds
+-- in every OTHER live power id from PowerBadges (the Power_<id>_Until SSOT), so a brand-new
+-- server-stamped power badge appears on every surface with ZERO per-surface edits. `kind` is
+-- "pet" or "enemy"; `sources` maps descriptor sources to Instances ({pet=, player=} / {enemy=})
+-- and sources[kind] is the primary entity the generic pass scans.
+function StatusBadges.resolve(kind, sources, now)
+    now = now or os.time()
+    local effects = StatusBadges.resolveEffects(Registry[kind] or {}, sources, now)
+    local entity = sources[kind]
+    if entity then
+        local shown = {}
+        for _, eff in ipairs(effects) do
+            if eff.powerId then
+                shown[eff.powerId] = true
+            end
+        end
+        for _, p in ipairs(PowerBadges.active(entity, now)) do
+            if not shown[p.powerId] then
+                local badge = PetBadge.forPower(p.powerId)
+                local disc = badge and POWER_ICONS.discFor(badge.element, badge.symbol)
+                effects[#effects + 1] = {
+                    key = "power_" .. p.powerId,
+                    color = Color3.fromRGB(120, 124, 138),
+                    label = string.upper(string.sub(tostring(p.powerId), 1, 4)),
+                    timer = math.ceil(p.untilT - now) .. "s",
+                    icon = disc,
+                    ringImg = disc
+                            and (badge and POWER_ICONS.rings[badge.ring] or POWER_ICONS.rings.aura)
+                        or nil,
+                    ringColor = disc and POWER_ICONS.elementColor3(badge.element, "dark") or nil,
+                    remaining = p.untilT - now,
+                    order = 1000, -- after every registry descriptor
+                    powerId = p.powerId,
+                }
+            end
+        end
+    end
+    return effects
 end
 
 -- A small status badge — one per buff INSTANCE (duplicates included). Positioned manually by
