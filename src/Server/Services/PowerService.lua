@@ -879,8 +879,17 @@ end
 -- the pull. No selection AND no tank => empty => Cast refuses (never burns focus for nothing).
 -- Returns { { pet = <model>, weight = <number> }, … }.
 function PowerService:_tauntHolders(player)
+    -- SELECTABLE = AFFECTABLE (Jason live-caught: shields crossed to a teammate's pet but
+    -- taunt refused — taunt/rage never route through _targetPets, they resolve holders
+    -- HERE): a selected PLAYER (CombatBuffTargetPlayer) makes THEIR folder the holder pool,
+    -- so their selected pet holds the pull, or their tanks on a whole-player pick.
+    local holderOwner = player.Name
+    local mateName = player:GetAttribute("CombatBuffTargetPlayer")
+    if type(mateName) == "string" and mateName ~= "" and mateName ~= player.Name then
+        holderOwner = mateName
+    end
     local folder = Workspace:FindFirstChild("PlayerPets")
-        and Workspace.PlayerPets:FindFirstChild(player.Name)
+        and Workspace.PlayerPets:FindFirstChild(holderOwner)
     if not folder then
         return {}
     end
@@ -1462,9 +1471,18 @@ function PowerService:_enemiesInRange(player, radius)
     local name = player.Name
     local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     local cx, cz = hrp and hrp.Position.X, hrp and hrp.Position.Z
+    -- TEAM BATTLE (docs/TEAMING.md): enemies engaged with any TEAMMATE count as the
+    -- caster's fight too — a taunt/debuff reaches the pack mauling your teammate's squad.
+    local team = { [name] = true }
+    local members = player:GetAttribute("TeamMembers")
+    if type(members) == "string" and members ~= "" then
+        for m in members:gmatch("[^,]+") do
+            team[m] = true
+        end
+    end
     local out, seen = {}, {}
     for _, e in ipairs(enemiesAlive()) do
-        local include = e:GetAttribute("AggroOwner") == name
+        local include = team[e:GetAttribute("AggroOwner")] == true
         if not include and hrp then
             local pp = e.PrimaryPart or e:FindFirstChildWhichIsA("BasePart")
             if pp then
