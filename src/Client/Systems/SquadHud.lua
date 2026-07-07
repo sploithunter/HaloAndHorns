@@ -766,6 +766,20 @@ function SquadHud.start()
             end
         end
 
+        -- Prettify a CurrentArea id for the card: "Hell_1_Lava" -> "Hell 1 Lava",
+        -- "grass" -> "Earth" (frozen persisted id vs. the player-facing biome name).
+        local ORIGIN_LABEL = { grass = "Earth" }
+        local function areaLabel(id)
+            if type(id) ~= "string" or id == "" then
+                return nil
+            end
+            local words = {}
+            for w in id:gmatch("[^_]+") do
+                words[#words + 1] = ORIGIN_LABEL[w:lower()] or (w:sub(1, 1):upper() .. w:sub(2))
+            end
+            return table.concat(words, " ")
+        end
+
         local function matePets(name)
             local pp = Workspace:FindFirstChild("PlayerPets")
             local folder = pp and pp:FindFirstChild(name)
@@ -1075,8 +1089,13 @@ function SquadHud.start()
                     local frac, downs, pets = matePets(name)
                     card.fill.Size = UDim2.fromScale(math.clamp(frac, 0, 1), 1)
                     card.fill.BackgroundColor3 = healthColor(frac)
-                    card.sub.Text = downs > 0 and ("%d pets · %d DOWN"):format(pets, downs)
+                    -- WHERE they are (Jason QoL): CurrentArea is the server-authoritative
+                    -- replicated SSOT ("Hell_1_Lava" / "grass"), prettified per-viewer.
+                    local mate = Players:FindFirstChild(name)
+                    local loc = areaLabel(mate and mate:GetAttribute("CurrentArea"))
+                    local stats = downs > 0 and ("%d pets · %d DOWN"):format(pets, downs)
                         or ("%d pets"):format(pets)
+                    card.sub.Text = loc and (stats .. " · " .. loc) or stats
                     card.sub.TextColor3 = downs > 0 and Color3.fromRGB(240, 120, 110)
                         or Color3.fromRGB(190, 196, 212)
                     syncMatePets(name, card, order, teamSize == 2 or selectedMate == name)
