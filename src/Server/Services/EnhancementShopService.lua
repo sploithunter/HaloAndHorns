@@ -194,8 +194,12 @@ function EnhancementShopService:Sell(player, args)
     end
 
     local currency = shop.currency or CURRENCY_FALLBACK
-    local ok = self._inventoryService:RemoveItem(player, BUCKET, uid, qty)
-    if not ok then
+    -- same atomic shape as SellJunk: BulkRemove is pure data mutation with rollback and a
+    -- POST-commit folder rebuild, so nothing fallible sits between the take and the pay
+    -- (RemoveItem rebuilt replication folders BETWEEN mutation and credit — the loss window)
+    local ok, removedMap =
+        self._inventoryService:BulkRemove(player, BUCKET, { { uid = uid, quantity = qty } })
+    if not (ok and removedMap and removedMap[uid]) then
         return { ok = false, reason = "remove_failed" }
     end
 
@@ -330,55 +334,37 @@ function EnhancementShopService:SellJunk(player, args)
     if #toSell == 0 then
         return { ok = false, reason = "nothing_to_sell" }
     end
-    -- CHUNKED + LOSS-PROOF (Jason live-lost an ~80k batch 2026-07-07: the old loop did a
-    -- per-stack RemoveItem — each one a full folder rebuild + save request, O(N²) churn that
-    -- ran forever — and credited the gems only once at the END, so an error mid-loop stripped
-    -- the items with no payment). Now: 50 stacks per chunk through InventoryService:BulkRemove
-    -- (snapshot rollback inside — a failed chunk restores its items), gems credited after
-    -- EVERY chunk, and a yield between chunks so a huge sweep can't hitch the server. Worst
-    -- case on any failure: items kept or already paid — never both gone.
-    local CHUNK = 50
+    -- ATOMIC TRANSACTION (Jason live-lost an ~80k batch 2026-07-07, then called the redesign:
+    -- "that should be an atomic transaction — it shouldn't even be able to fail"). The old loop
+    -- interleaved a FALLIBLE side effect into the mutation: every RemoveItem rebuilt the bucket
+    -- replication folders (Instance churn, O(N²) across a sweep) between data writes, so a
+    -- cosmetic hiccup could kill the sale halfway — items stripped, payment line never reached.
+    -- Now the entire sale is pure in-memory data: ONE BulkRemove (plain table writes, snapshot
+    -- rollback as insurance, replication deferred to a single post-commit rebuild) + ONE
+    -- AddCurrency (plain data). Nothing fallible sits between taking the items and paying for
+    -- them; the folder rebuild happens after the transaction and can't void it.
     local currency = shop.currency or CURRENCY_FALLBACK
-    local soldQty, gems, soldStacks = 0, 0, 0
-    local failedChunk = false
-    local i = 1
-    while i <= #toSell do
-        local last = math.min(i + CHUNK - 1, #toSell)
-        local chunk = {}
-        local gemsByUid = {}
-        for j = i, last do
-            local it = toSell[j]
-            chunk[#chunk + 1] = { uid = it.uid, quantity = it.quantity }
-            gemsByUid[it.uid] = it.gems
-        end
-        local okChunk, removedMap, qty = self._inventoryService:BulkRemove(player, BUCKET, chunk)
-        if okChunk and removedMap then
-            local chunkGems = 0
-            for uid in pairs(removedMap) do
-                chunkGems += gemsByUid[uid] or 0
-                soldStacks += 1
-            end
-            soldQty += qty
-            if chunkGems > 0 then
-                self._dataService:AddCurrency(player, currency, chunkGems, "enh_sell_junk")
-                gems += chunkGems
-            end
-        else
-            failedChunk = true -- that chunk rolled back intact; stop and report what DID sell
-            break
-        end
-        i = last + 1
-        if i <= #toSell then
-            task.wait() -- yield between chunks: no server hitch on thousand-stack sweeps
-        end
+    local entries, gemsByUid = {}, {}
+    for _, it in ipairs(toSell) do
+        entries[#entries + 1] = { uid = it.uid, quantity = it.quantity }
+        gemsByUid[it.uid] = it.gems
+    end
+    local okAll, removedMap, soldQty = self._inventoryService:BulkRemove(player, BUCKET, entries)
+    if not okAll then
+        -- rolled back inside BulkRemove: the player still owns everything, nothing was paid
+        return { ok = false, reason = "sweep_failed_nothing_taken" }
+    end
+    local gems, soldStacks = 0, 0
+    for uid in pairs(removedMap) do
+        gems += gemsByUid[uid] or 0
+        soldStacks += 1
     end
     if gems > 0 then
+        self._dataService:AddCurrency(player, currency, gems, "enh_sell_junk")
         self._dataService:RequestSave(player, "enh_shop_sell_junk", { critical = true })
     end
     return {
-        ok = not failedChunk or gems > 0, -- partial success still reports what was paid
-        partial = failedChunk or nil,
-        reason = failedChunk and "chunk_failed_rolled_back" or nil,
+        ok = true,
         sold = soldQty,
         stacks = soldStacks,
         gems = gems,

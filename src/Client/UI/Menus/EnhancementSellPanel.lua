@@ -922,16 +922,7 @@ function EnhancementSellPanel:_onSellJunk()
                 if not self.isVisible then
                     return
                 end
-                if r.ok and r.partial then
-                    self:_toast(
-                        ("Salvaged %d stack(s) for 💎%d — some kept, press again"):format(
-                            r.stacks or 0,
-                            r.gems or 0
-                        ),
-                        COLORS.junk
-                    )
-                    self:_refresh()
-                elseif r.ok then
+                if r.ok then
                     self:_toast(
                         ("Salvaged %d stack(s) for 💎%d"):format(r.stacks or 0, r.gems or 0),
                         COLORS.junk
