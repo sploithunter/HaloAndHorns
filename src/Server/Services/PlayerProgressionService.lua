@@ -172,17 +172,28 @@ function PlayerProgressionService:GetEffectiveLevel(player)
     -- the level-diff curves via the EffectiveLevel attribute; entitlements (power picks,
     -- claims, shop) read claimed level. The lead anchors to themself (TeamLead == own name
     -- skips the override), so there is no loop.
+    local own = self:GetEarnedLevel(player)
     local leadName = player:GetAttribute("TeamLead")
     if type(leadName) == "string" and leadName ~= "" and leadName ~= player.Name then
         local lead = Players:FindFirstChild(leadName)
         if lead then
             local leadLevel = self:GetEarnedLevel(lead)
             if leadLevel and leadLevel > 0 then
-                return leadLevel
+                local offset = -1
+                pcall(function()
+                    local teaming = require(ReplicatedStorage.Configs:WaitForChild("teaming"))
+                    offset = tonumber(teaming.sidekick and teaming.sidekick.level_offset) or offset
+                end)
+                local anchor = math.max(1, leadLevel + offset)
+                if own < anchor then
+                    return anchor -- sidekick UP to just below the lead
+                elseif own > leadLevel then
+                    return leadLevel -- exemplar DOWN to the lead
+                end
             end
         end
     end
-    return self:GetEarnedLevel(player)
+    return own
 end
 
 -- Progress object at the EARNED level (used by AddExperience/SetLevel return values).

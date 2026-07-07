@@ -377,8 +377,22 @@ function PlayerBar.start()
         else
             xpText.Text = need > 0 and string.format("%d / %d XP", math.floor(xp), need) or ""
         end
-        levelText.Text = (ready and not blinkOn) and "▲" or tostring(level)
-        levelText.TextColor3 = ready and READY or Color3.fromRGB(245, 248, 255)
+        -- SIDEKICK/EXEMPLAR (docs/TEAMING.md): while teamed, the disc shows the COMBAT level
+        -- (EffectiveLevel, anchored to the team lead) tinted so the sync reads at a glance —
+        -- green = sidekicked up, orange = exemplared down. The XP bar + pending stay on the
+        -- real progression, and the number reverts the moment the team dissolves.
+        local eff = tonumber(player:GetAttribute("EffectiveLevel")) or level
+        local synced = eff ~= level
+        local SIDEKICK_UP = Color3.fromRGB(120, 235, 130)
+        local EXEMPLAR_DOWN = Color3.fromRGB(255, 170, 80)
+        levelText.Text = (ready and not blinkOn) and "▲" or tostring(synced and eff or level)
+        if ready then
+            levelText.TextColor3 = READY
+        elseif synced then
+            levelText.TextColor3 = eff > level and SIDEKICK_UP or EXEMPLAR_DOWN
+        else
+            levelText.TextColor3 = Color3.fromRGB(245, 248, 255)
+        end
 
         -- Focus pool (mana spent to cast) — replicated by FocusService via Focus / FocusMax.
         -- Stash the server value; the Heartbeat below glides the bar toward it so the +5/sec regen

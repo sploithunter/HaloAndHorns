@@ -16,6 +16,14 @@ return {
         damage_buff = true,
     },
 
+    -- Sidekick/exemplar (task #150): a teamed member's COMBAT level anchors to the lead.
+    -- A lower-level member is raised to lead + level_offset (CoH-style: one below the
+    -- lead, so the lead stays the strongest); a higher-level member is lowered to the
+    -- lead's level exactly. Power axis only — entitlements stay on claimed level.
+    sidekick = {
+        level_offset = -1,
+    },
+
     -- Enemy pack scaling: when a spawner/patrol triggers with N engaged team members,
     -- wave count = ceil(base * (1 + (N-1) * count_per_extra)), capped by max_count_mult.
     -- Enemy HP additionally scales via combat.group_scaling.per_extra_player
