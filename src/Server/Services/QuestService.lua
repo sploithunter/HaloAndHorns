@@ -253,14 +253,16 @@ function QuestService:_announceUnlocks(player, data, level)
 end
 
 function QuestService:List(player)
-    self:_reconcile(player) -- keep the single open window honest before reading
-    local snapshot = self:_snapshot(player)
     local data = self._dataService:GetData(player)
     if type(data) ~= "table" then
-        -- Fresh-join race: a GameAPI quest.list can land before the profile loads. No data yet ->
-        -- report no quests rather than nil-indexing (the panel just shows an empty list briefly).
+        -- Fresh-join race (#260): a GameAPI quest.list can land before the profile loads. The
+        -- guard must run FIRST — _reconcile/_snapshot below also index the profile, so the old
+        -- ordering could still nil-error before this check was ever reached. No data yet ->
+        -- report no quests rather than erroring (the panel just shows an empty list briefly).
         return { ok = true, quests = {}, activeTrack = nil }
     end
+    self:_reconcile(player) -- keep the single open window honest before reading
+    local snapshot = self:_snapshot(player)
     -- LEVEL-GATED FOCUS (Jason): a quest is an ACTIVE task. Before reading, make sure the single focus
     -- is correct — auto-activate First Steps once the tutorial's done (so its since_start windows
     -- baseline AFTER the tutorial, not pre-completed by tutorial casts) and drop a stale/hidden focus —

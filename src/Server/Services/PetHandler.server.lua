@@ -99,13 +99,6 @@ end
 local PET_CIRCLE_RADIUS = 8
 local FOLLOW_SPACING = 4 -- studs between control boxes in a chain
 
--- TEMPORARY: Model override to help debug missing/vanishing pets
--- When enabled, certain pet IDs will be swapped to known-good models.
-local TEMP_MODEL_OVERRIDE_ENABLED = false
-local TEMP_MODEL_OVERRIDES = {
-    dragon = "bunny", -- map dragon -> bunny
-}
-
 -- Diagnostics options for comparing suspect pets against a known good reference
 local DIAGNOSTICS_ENABLED = false
 local DIAG_REFERENCE_ID = "bunny"
@@ -1326,26 +1319,8 @@ function loadEquipped(Player)
                 teamPowerContext
             )
 
-            -- Apply temporary override if enabled
             local effectiveIdName = petIdName
             local effectiveVariantName = petVariantName
-            if
-                TEMP_MODEL_OVERRIDE_ENABLED
-                and effectiveIdName
-                and TEMP_MODEL_OVERRIDES[string.lower(effectiveIdName)]
-            then
-                local target = TEMP_MODEL_OVERRIDES[string.lower(effectiveIdName)]
-                print(
-                    "🧪 TEMP OVERRIDE: Swapping pet id",
-                    effectiveIdName,
-                    "->",
-                    target,
-                    "(variant:",
-                    effectiveVariantName,
-                    ")"
-                )
-                effectiveIdName = target
-            end
 
             print(
                 "🐾 PetHandler: Loading REAL pet model",

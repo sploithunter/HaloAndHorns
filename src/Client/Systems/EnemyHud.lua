@@ -167,10 +167,6 @@ local function engagedEnemies(now)
     end
 
     local out, liveBids = {}, {}
-    -- TEMPORARY DIAG (mirror hunt, Jason two-account 2026-07-07): which signal produced each
-    -- card — team aggro, team pet-bite, or grace-only coasting. Rendered as a dim line under
-    -- the rail with the build stamp; strip once the rails provably mirror.
-    local dbg = { aggro = 0, bite = 0, grace = 0 }
     local enemies = enemiesFolder()
     if enemies then
         for _, m in ipairs(enemies:GetChildren()) do
@@ -181,9 +177,7 @@ local function engagedEnemies(now)
                     liveBids[bid] = true
                     -- engaged RIGHT NOW (with anyone on the TEAM) → refresh the grace window
                     local owner = m:GetAttribute("AggroOwner")
-                    local viaAggro = owner ~= nil and teamNames[owner] == true
-                    local viaBite = petTargets[bid] == true
-                    if viaAggro or viaBite then
+                    if (owner ~= nil and teamNames[owner] == true) or petTargets[bid] == true then
                         engagedUntil[bid] = now + ENGAGE_GRACE
                     end
                     -- shown if engaged within the grace window (rides the aggro flicker)
@@ -193,13 +187,6 @@ local function engagedEnemies(now)
                             model = m,
                             dist = origin and (m.PrimaryPart.Position - origin).Magnitude or 0,
                         }
-                        if viaAggro then
-                            dbg.aggro += 1
-                        elseif viaBite then
-                            dbg.bite += 1
-                        else
-                            dbg.grace += 1
-                        end
                     end
                 end
             end
@@ -214,7 +201,7 @@ local function engagedEnemies(now)
     table.sort(out, function(a, b)
         return a.dist < b.dist
     end)
-    return out, dbg
+    return out
 end
 
 function EnemyHud.start()
@@ -271,27 +258,6 @@ function EnemyHud.start()
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
     layout.Padding = UDim.new(0, 4)
     layout.Parent = listFrame
-
-    -- TEMPORARY DIAG (mirror hunt): count + signal breakdown + build stamp, dim line pinned
-    -- under the cards. Two screenshots (one per account) localise any rail divergence: build
-    -- mismatch = stale client, A/B split difference = predicate half, count-equal = ordering.
-    local buildStamp = "?"
-    pcall(function()
-        local info = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("build_info"))
-        buildStamp = tostring(info.commit or "?")
-    end)
-    local dbgLabel = Instance.new("TextLabel")
-    dbgLabel.Name = "Diag"
-    dbgLabel.BackgroundTransparency = 1
-    dbgLabel.Size = UDim2.new(0, 186, 0, 10)
-    dbgLabel.LayoutOrder = 1000000 -- below every card
-    dbgLabel.Font = Enum.Font.Gotham
-    dbgLabel.TextSize = 9
-    dbgLabel.TextXAlignment = Enum.TextXAlignment.Left
-    dbgLabel.TextColor3 = Color3.fromRGB(150, 156, 172)
-    dbgLabel.TextTransparency = 0.25
-    dbgLabel.Visible = false
-    dbgLabel.Parent = listFrame
 
     local cards = {} -- bid -> card refs
 
@@ -391,18 +357,7 @@ function EnemyHud.start()
         end
         accum = 0
 
-        local list, dbg = engagedEnemies(os.clock())
-        dbgLabel.Visible = #list > 0
-        if dbg then
-            dbgLabel.Text = string.format(
-                "%d engaged · aggro %d · bite %d · grace %d · %s",
-                #list,
-                dbg.aggro,
-                dbg.bite,
-                dbg.grace,
-                buildStamp
-            )
-        end
+        local list = engagedEnemies(os.clock())
         local focusBid = indirectTargetBid()
         -- The player's directed FOCUS (assist target) — set server-side when you click an enemy card
         -- (Combat_SetAssist), replicated back as this attribute. Drives the blue card + world select.

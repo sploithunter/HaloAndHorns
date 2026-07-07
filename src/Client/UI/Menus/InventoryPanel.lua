@@ -2312,9 +2312,6 @@ function InventoryPanel:_getConfiguredCategories()
             shouldShow = true -- Show all categories if hiding is disabled
         end
 
-        -- TEMPORARY: Force show all categories for debugging
-        shouldShow = true
-
         self.logger:info("🔍 CATEGORY VISIBILITY", {
             categoryName = categoryConfig.name,
             totalCount = totalCount,

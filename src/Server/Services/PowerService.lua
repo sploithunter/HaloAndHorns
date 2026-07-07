@@ -1500,21 +1500,6 @@ function PowerService:_applyEffect(player, kind, now, powerId)
             return one and { one } or {}
         end
     end
-    -- INSTRUMENTATION ([PowerCast]): one line per cast — proves the cast REACHED _applyEffect, names
-    -- the family, and reports how many enemies the combat-set gate (AggroOwner / in-range) resolved.
-    -- The usual "nothing happened" culprit is targets=0 (gate found nobody). TEMPORARY debug — remove
-    -- once player-power targeting is settled.
-    print(
-        string.format(
-            "[PowerCast] %s cast %s family=%s targets=%d dur=%.1f mag=%.2f",
-            player.Name,
-            tostring(powerId),
-            tostring(family),
-            #enemiesAlive(),
-            dur,
-            mag
-        )
-    )
     -- A `dot` block layers damage-over-time on top of whatever the family does (a vulnerable MARK
     -- that also burns, an ice HOLD that chips). Generic — any power opts in via config. aoe=true
     -- hits every alive enemy; aoe=false the single primary target. Fires alongside the family below.

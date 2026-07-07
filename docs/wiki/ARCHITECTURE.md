@@ -59,6 +59,10 @@ Workspace instances are presentation and map hooks, not state of record. Durable
 
 Feature flags exist in `configs/game.lua`, `ConfigLoader:IsFeatureEnabled`, and server boot registration for safe optional modules. Keep future feature services behind the same flag pattern. `features.map_binding` is enabled for Phase 1.
 
+## Boot Orchestration (shipped + live-verified)
+
+Boot is **event-driven milestones**, not polling (design: [BOOT_ORCHESTRATION.md](../BOOT_ORCHESTRATION.md)). `BootReadiness` is a latch — a milestone fires once and stays up, so late awaiters resolve immediately. `configs/boot.lua` declares the producer→consumer dependency graph; `BootOrchestrator` mirrors milestone state to `ReplicatedStorage.BootStatus` for the config-driven client loading screen. **The invariant for any boot-path code: await a milestone.** Never `:Wait()` on a fire-once event (you may have missed it), never `FindFirstChild`-and-abort, never poll-loop. Producers: AssetPreloadService, GameStructureService; migrated consumers: PetHandler, BreakableSpawner, EggStandPlacement. Live-verified: every published-game boot since 2026-07 runs this path — the loading screen gates on real milestones and play starts with data loaded.
+
 ## Links
 
 - [Implementation Plan](../IMPLEMENTATION_PLAN.md)
