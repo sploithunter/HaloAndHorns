@@ -13,7 +13,10 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+
+local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 
 local BaddieSpawnerService = {}
 BaddieSpawnerService.__index = BaddieSpawnerService
@@ -92,6 +95,40 @@ function BaddieSpawnerService:_pickWave(rng, faction)
     return pool[#pool]
 end
 
+-- configs/teaming.lua, lazily (safe default = no scaling).
+function BaddieSpawnerService:_teamingConfig()
+    if not self._teaming then
+        local ok, cfg = pcall(function()
+            return require(ReplicatedStorage.Configs:WaitForChild("teaming"))
+        end)
+        self._teaming = (ok and cfg) or { pack = {} }
+    end
+    return self._teaming
+end
+
+-- How many of the triggering player's TEAM are engaged here: the player plus any teammate
+-- whose character stands within pack.engaged_radius of the spawn point. Unteamed = 1.
+function BaddieSpawnerService:_engagedTeamCount(player, position)
+    local members = player:GetAttribute("TeamMembers")
+    if type(members) ~= "string" or members == "" then
+        return 1
+    end
+    local radius = tonumber(self:_teamingConfig().pack.engaged_radius) or 60
+    local engaged = 1
+    for name in members:gmatch("[^,]+") do
+        if name ~= player.Name then
+            local mate = Players:FindFirstChild(name)
+            local hrp = mate
+                and mate.Character
+                and mate.Character:FindFirstChild("HumanoidRootPart")
+            if hrp and (hrp.Position - position).Magnitude <= radius then
+                engaged += 1
+            end
+        end
+    end
+    return engaged
+end
+
 function BaddieSpawnerService:_trigger(part, player, rng)
     local wave = self:_pickWave(rng, self:_factionFor(part))
     if not wave then
@@ -103,9 +140,14 @@ function BaddieSpawnerService:_trigger(part, player, rng)
     end
     local scatter = tonumber(self._config.scatter) or 8
     local state = self._spawners[part]
-    local cap = tonumber(self._config.max_alive) or 6
+    -- PACK SCALING (docs/TEAMING.md): waves grow with the ENGAGED team — the triggering
+    -- player's teammates within pack.engaged_radius of the spawner. Unit counts AND the
+    -- alive cap scale together (else the cap defeats the pack). Config: configs/teaming.lua.
+    local engaged = self:_engagedTeamCount(player, part.Position)
+    local teamingCfg = self:_teamingConfig()
+    local cap = PackScale.count(tonumber(self._config.max_alive) or 6, engaged, nil, teamingCfg)
     for _, unit in ipairs(wave.units or {}) do
-        for _ = 1, (tonumber(unit.count) or 1) do
+        for _ = 1, PackScale.count(unit.count, engaged, nil, teamingCfg) do
             if #state.alive >= cap then
                 break -- never bury the player / stockpile for the next one
             end
