@@ -1028,10 +1028,40 @@ function EnemyService:_onDefeated(targetId)
         )
     end
     if combat and contrib then
+        -- TM5 SHARED CREDIT (docs/TEAMING.md pillar 5): the credited set = every damage
+        -- contributor PLUS their teammates near the down site — the healer/buffer who landed
+        -- no hit still gets the award (CoH-style). Contributors are paid regardless of
+        -- distance; a zero-damage teammate must be within teaming kill_credit.radius of the
+        -- kill so parked alts don't leech across the map.
+        local credited = {} -- Player -> true
+        local creditR = tonumber((self:_teamingConfig().kill_credit or {}).radius) or 150
         for _, nv in ipairs(contrib:GetChildren()) do
             local userId = tonumber(nv.Name)
-            local player = userId and Players:GetPlayerByUserId(userId)
-            if player then
+            local contributor = userId and Players:GetPlayerByUserId(userId)
+            if contributor then
+                credited[contributor] = true
+                local members = contributor:GetAttribute("TeamMembers")
+                if type(members) == "string" and members ~= "" then
+                    for name in members:gmatch("[^,]+") do
+                        if name ~= contributor.Name then
+                            local mate = Players:FindFirstChild(name)
+                            local hrp = mate
+                                and mate.Character
+                                and mate.Character:FindFirstChild("HumanoidRootPart")
+                            if
+                                hrp
+                                and entry.pos
+                                and (hrp.Position - entry.pos).Magnitude <= creditR
+                            then
+                                credited[mate] = true
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        for player in pairs(credited) do
+            if player.Parent then
                 pcall(function()
                     combat:AwardLoot(
                         player,

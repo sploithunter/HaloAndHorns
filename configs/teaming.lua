@@ -24,6 +24,13 @@ return {
         level_offset = -1,
     },
 
+    -- Kill credit (TM5): teammates of any damage contributor SHARE the kill award when
+    -- within `radius` studs of the down site — the healer/buffer gets paid without landing
+    -- a hit. Contributors themselves are always paid regardless of distance.
+    kill_credit = {
+        radius = 150,
+    },
+
     -- Enemy pack scaling: when a spawner/patrol triggers with N engaged team members,
     -- wave count = ceil(base * (1 + (N-1) * count_per_extra)), capped by max_count_mult.
     -- Enemy HP additionally scales via combat.group_scaling.per_extra_player
