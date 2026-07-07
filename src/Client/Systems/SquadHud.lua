@@ -469,6 +469,8 @@ function SquadHud.start()
     local selectedMate = nil
     local selectedMateSlot = nil -- a SPECIFIC teammate pet (PositionNumber); nil = whole player
     local refreshMateHighlights = nil
+    -- flat pet -> card map for the shared expiry-blink engine (mate pet cards blink like own)
+    local matePetBlink = {}
 
     local function setSelected(slot)
         selectedSlot = slot
@@ -917,7 +919,33 @@ function SquadHud.start()
                                 width = 170,
                                 height = 36,
                             })
+                            -- thin SHIELD bar (blue), same construction as own cards — so the
+                            -- caster SEES their bastion/aegis land on a teammate's pet (Jason:
+                            -- "it works, the HUD just doesn't show it")
+                            local shieldBg = Instance.new("Frame")
+                            shieldBg.Name = "ShieldBg"
+                            shieldBg.Position = UDim2.fromOffset(40, 29)
+                            shieldBg.Size = UDim2.new(1, -48, 0, 4)
+                            shieldBg.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
+                            shieldBg.BorderSizePixel = 0
+                            shieldBg.ClipsDescendants = true
+                            shieldBg.Visible = false
+                            shieldBg.Parent = pc.frame
+                            local sbCorner = Instance.new("UICorner")
+                            sbCorner.CornerRadius = UDim.new(1, 0)
+                            sbCorner.Parent = shieldBg
+                            local shieldFill = Instance.new("Frame")
+                            shieldFill.Name = "ShieldFill"
+                            shieldFill.Size = UDim2.fromScale(0, 1)
+                            shieldFill.BackgroundColor3 = SHIELD_BAR_COLOR
+                            shieldFill.BorderSizePixel = 0
+                            shieldFill.Parent = shieldBg
+                            local sfCorner = Instance.new("UICorner")
+                            sfCorner.CornerRadius = UDim.new(1, 0)
+                            sfCorner.Parent = shieldFill
+                            pc.shieldBg, pc.shieldFill = shieldBg, shieldFill
                             card.petCards[pet] = pc
+                            matePetBlink[pet] = pc
                             -- click = select THIS teammate pet as the cast-through target
                             -- (slot + playerName → server stamps CombatBuffTarget +
                             -- CombatBuffTargetPlayer; a single-pet heal/shield lands on it)
@@ -973,6 +1001,29 @@ function SquadHud.start()
                         pc.roleChip.BackgroundTransparency = hasBadge and 1 or 0
                         pc.roleGlyph.Visible = not hasBadge
                         pc.roleGlyph.Text = role.glyph
+                        -- shield pool bar + status badges, mirrored from own cards (every
+                        -- attribute replicates globally). Badges resolve against the pet's
+                        -- OWNER — player-level buff channels live on them, not the caster.
+                        local maxEnd = PetEndurance.maxEndurance(petPower(pet), factor)
+                        local shieldF = maxEnd > 0
+                                and math.clamp(
+                                    (pet:GetAttribute("CombatShield") or 0) / maxEnd,
+                                    0,
+                                    1
+                                )
+                            or 0
+                        pc.shieldBg.Visible = not downed and shieldF > 0
+                        pc.shieldFill.Size = UDim2.fromScale(shieldF, 1)
+                        local owner = Players:FindFirstChild(name)
+                        StatusBadges.update(
+                            pc,
+                            StatusBadges.resolveEffects(
+                                PET_EFFECTS,
+                                { pet = pet, player = owner or localPlayer },
+                                os.time()
+                            ),
+                            blinkLead
+                        )
                     end
                 end
             end
@@ -980,6 +1031,7 @@ function SquadHud.start()
                 if not present[pet] then
                     pc.frame:Destroy()
                     card.petCards[pet] = nil
+                    matePetBlink[pet] = nil
                 end
             end
         end
@@ -1001,8 +1053,9 @@ function SquadHud.start()
                 end
                 for name, card in pairs(mateCards) do
                     if not want[name] then
-                        for _, pc in pairs(card.petCards) do
+                        for pet, pc in pairs(card.petCards) do
                             pc.frame:Destroy()
+                            matePetBlink[pet] = nil
                         end
                         card.frame:Destroy()
                         mateCards[name] = nil
@@ -1359,6 +1412,7 @@ function SquadHud.start()
     -- Expiry blink: runs every frame (not the 0.2s reconcile) so the flash is smooth (shared engine).
     RunService.RenderStepped:Connect(function()
         StatusBadges.applyBlink(cards, blinkPeriod)
+        StatusBadges.applyBlink(matePetBlink, blinkPeriod) -- teammate pet cards blink too
     end)
 end
 
