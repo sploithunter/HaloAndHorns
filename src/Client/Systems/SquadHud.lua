@@ -878,16 +878,87 @@ function SquadHud.start()
                 refreshMateHighlights()
             end)
 
-            return { frame = frame, stroke = stroke, fill = fill, sub = sub }
+            return { frame = frame, stroke = stroke, fill = fill, sub = sub, petCards = {} }
+        end
+
+        -- EXPANDED roster (Jason: "by a team of two we should just see all pets"): a DUO always
+        -- shows the teammate's full pet list under their header card — both squads on the rail,
+        -- each under its owner. Larger teams stay collapsed to the aggregate header and expand
+        -- while that teammate is the SELECTED cast-through target (click to peek). Cards are the
+        -- shared HudCard chrome, slightly narrower so they read as indented under the header.
+        local function syncMatePets(name, card, order, expanded)
+            local pp = Workspace:FindFirstChild("PlayerPets")
+            local folder = pp and pp:FindFirstChild(name)
+            local present = {}
+            if expanded and folder then
+                local i = 0
+                for _, pet in ipairs(folder:GetChildren()) do
+                    if pet:IsA("Model") then
+                        i += 1
+                        present[pet] = true
+                        local pc = card.petCards[pet]
+                        if not pc then
+                            pc = HudCard.createCard(root, {
+                                name = "MatePet_" .. name .. "_" .. i,
+                                width = 170,
+                                height = 36,
+                            })
+                            card.petCards[pet] = pc
+                        end
+                        pc.frame.LayoutOrder = 1000 + order * 20 + i
+                        local downed = pet:GetAttribute("CombatDowned") == true
+                        local frac = downed and 0
+                            or PetEndurance.healthFraction(
+                                pet:GetAttribute("CombatDamageTaken") or 0,
+                                petPower(pet),
+                                factor
+                            )
+                        applyVariantName(
+                            pc.name,
+                            petDisplayName(tostring(pet:GetAttribute("PetType") or pet.Name)),
+                            tostring(pet:GetAttribute("Variant") or "basic")
+                        )
+                        pc.fill.Size = UDim2.fromScale(math.clamp(frac, 0, 1), 1)
+                        pc.fill.BackgroundColor3 = healthColor(frac)
+                        pc.note.Text = downed and "DOWN" or ""
+                        -- same element-disc + targeting-ring badge as the player's own cards
+                        local roleId = pet:GetAttribute("PetRole")
+                            or (PET_ROLES.by_type and PET_ROLES.by_type[pet:GetAttribute("PetType")])
+                            or PET_ROLES.default
+                        local element = PetBadge.elementForPetType(pet:GetAttribute("PetType"))
+                        local atkScope = PetTargeting.attackScope(
+                            pet:GetAttribute("AttackTargeting"),
+                            roleId,
+                            PET_ROLES
+                        )
+                        local hasBadge = PetBadge.apply(pc.roleIcon, pc.roleRing, element, roleId, {
+                            ring = POWER_ICONS.targeting_ring[atkScope],
+                        })
+                        local role = roleFor(pet)
+                        pc.roleChip.BackgroundColor3 = role.color
+                        pc.roleChip.BackgroundTransparency = hasBadge and 1 or 0
+                        pc.roleGlyph.Visible = not hasBadge
+                        pc.roleGlyph.Text = role.glyph
+                    end
+                end
+            end
+            for pet, pc in pairs(card.petCards) do
+                if not present[pet] then
+                    pc.frame:Destroy()
+                    card.petCards[pet] = nil
+                end
+            end
         end
 
         task.spawn(function()
             while gui.Parent do
                 local want = {} -- name -> order
+                local teamSize = 0 -- members INCLUDING self (2 = duo -> always expanded)
                 local members = localPlayer:GetAttribute("TeamMembers")
                 if type(members) == "string" and members ~= "" then
                     local order = 0
                     for name in members:gmatch("[^,]+") do
+                        teamSize += 1
                         if name ~= localPlayer.Name then
                             order += 1
                             want[name] = order
@@ -896,6 +967,9 @@ function SquadHud.start()
                 end
                 for name, card in pairs(mateCards) do
                     if not want[name] then
+                        for _, pc in pairs(card.petCards) do
+                            pc.frame:Destroy()
+                        end
                         card.frame:Destroy()
                         mateCards[name] = nil
                         if selectedMate == name then -- teammate left: drop the stale pick
@@ -910,7 +984,7 @@ function SquadHud.start()
                         mateCards[name] = card
                         refreshMateHighlights()
                     end
-                    card.frame.LayoutOrder = 1000 + order
+                    card.frame.LayoutOrder = 1000 + order * 20
                     local frac, downs, pets = matePets(name)
                     card.fill.Size = UDim2.fromScale(math.clamp(frac, 0, 1), 1)
                     card.fill.BackgroundColor3 = healthColor(frac)
@@ -918,6 +992,7 @@ function SquadHud.start()
                         or ("%d pets"):format(pets)
                     card.sub.TextColor3 = downs > 0 and Color3.fromRGB(240, 120, 110)
                         or Color3.fromRGB(190, 196, 212)
+                    syncMatePets(name, card, order, teamSize == 2 or selectedMate == name)
                 end
                 task.wait(0.25)
             end
