@@ -169,11 +169,15 @@ function EnhancementService:_migrateLegacy(player, data)
                 origins = rec.origins,
                 origins_csv = table.concat(rec.origins, ","), -- folder-mirror friendly
                 name = Enhancements.displayName(self._config, rec),
-            })
+            }, { deferFlush = true }) -- #274: one folder rebuild below, not one per record
         end)
     end
     data.EnhancementInv = nil
-    self._dataService:RequestSave(player, "enhancement_migrate", { critical = true })
+    if invSvc.FlushBucket then
+        invSvc:FlushBucket(player, BUCKET, "enhancement_migrate")
+    else
+        self._dataService:RequestSave(player, "enhancement_migrate", { critical = true })
+    end
 end
 
 local function ownsPower(data, powerId, powersConfig)
@@ -230,7 +234,9 @@ function EnhancementService:GetState(player)
 end
 
 -- Grant an enhancement into the inventory (drops + admin). Returns the uid.
-function EnhancementService:Grant(player, record)
+-- `opts.deferFlush` (bulk-grant seam, #274): batch callers (veteran back-pay) grant N records
+-- in pure data and FlushBucket once after their loop instead of a folder rebuild per grant.
+function EnhancementService:Grant(player, record, opts)
     local data = self._dataService:GetData(player)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
@@ -258,7 +264,7 @@ function EnhancementService:Grant(player, record)
         origins_csv = table.concat(record.origins, ","), -- folder-mirror friendly
         level = math.max(1, math.floor(tonumber(record.level) or 1)),
         name = name,
-    })
+    }, { deferFlush = opts ~= nil and opts.deferFlush == true })
     if not uid then
         return { ok = false, reason = err or "inventory_full" }
     end

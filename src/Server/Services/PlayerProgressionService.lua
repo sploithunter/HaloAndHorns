@@ -310,6 +310,7 @@ function PlayerProgressionService:_veteranPass(player, vetLevel)
         return
     end
     local areaId = player:GetAttribute("CurrentArea")
+    local grantedAny = false
     for lvl = paid + 1, vetLevel do
         local rolls = VeteranTrack.rollsFor(lvl, cfg)
         for _ = 1, rolls do
@@ -317,7 +318,9 @@ function PlayerProgressionService:_veteranPass(player, vetLevel)
                 local rec =
                     enh:RollDrop(nil, areaId, { playerLevel = player:GetAttribute("Level") })
                 if rec then
-                    enh:Grant(player, rec)
+                    -- #274: pure-data grants; ONE FlushBucket after the back-pay loop
+                    enh:Grant(player, rec, { deferFlush = true })
+                    grantedAny = true
                 end
             end
         end
@@ -328,6 +331,12 @@ function PlayerProgressionService:_veteranPass(player, vetLevel)
         })
     end
     data.VeteranPaid = vetLevel
+    if grantedAny then -- the one flush pairing the deferFlush grants above (#274)
+        local inventory = self:_service("InventoryService")
+        if inventory and inventory.FlushBucket then
+            inventory:FlushBucket(player, "enhancements", "veteran_backpay")
+        end
+    end
     self._dataService:RequestSave(player, "veteran_level")
 end
 
@@ -487,7 +496,7 @@ end
 -- Apply ONE level: advance ClaimedLevel, pay its rewards, republish, and fire LevelUp_Claimed.
 -- `auto` distinguishes a field auto-claim (filler -> client toast) from an altar claim (training
 -- -> client reveal modal). Shared by _advanceAuto and ClaimLevel.
-function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent)
+function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent, skipProjection)
     self._dataService:SetStat(player, "ClaimedLevel", newLevel)
     local entry = LevelTrack.entryForLevel(newLevel, self._levelTrack)
     -- Gate-then-pay with a REVERT (2026-07-07 transaction audit): ClaimedLevel advanced first,
@@ -512,7 +521,7 @@ function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent)
     -- InventoryService:_getMaxEquippedSlots → the PetEquipSlots attribute the Pets window draws).
     -- Re-run the projection so a milestone slot appears LIVE — without this it only refreshed on the
     -- next relog (Jason: "ascended to 8, no new pet slot until I logged out and back in").
-    do
+    if not skipProjection then -- catch-up loops pass true and rebuild ONCE after (#274)
         local inventory = self:_service("InventoryService")
         if inventory and inventory.RebuildPetProjections then
             pcall(function()
@@ -551,6 +560,7 @@ function PlayerProgressionService:_advanceAuto(player)
     end
     local maxLevel = math.floor(tonumber(self._xpConfig.max_level) or 0)
     local guard = 0
+    local applied = 0
     while guard < 200 do
         guard += 1
         local claimed = self:GetClaimedLevel(player)
@@ -565,8 +575,19 @@ function PlayerProgressionService:_advanceAuto(player)
         if LevelTrack.entryForLevel(nextLevel, self._levelTrack).requiresAltar then
             break -- stall: this level must be trained at the altar
         end
-        if not self:_applyLevel(player, nextLevel, true) then
+        -- skipProjection: a big catch-up used to run a FULL RebuildPetProjections per level
+        -- (up to 200 in one synchronous loop, #274) — the single rebuild below covers them all
+        if not self:_applyLevel(player, nextLevel, true, nil, true) then
             break -- grant failed + gate reverted: stop, don't spin the guard retrying
+        end
+        applied += 1
+    end
+    if applied > 0 then -- the ONE projection rebuild for every level just applied
+        local inventory = self:_service("InventoryService")
+        if inventory and inventory.RebuildPetProjections then
+            pcall(function()
+                inventory:RebuildPetProjections(player)
+            end)
         end
     end
 end

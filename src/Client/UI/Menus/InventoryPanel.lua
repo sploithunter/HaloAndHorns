@@ -6631,7 +6631,10 @@ function InventoryPanel:_performBulkDelete(entries)
         self:_setDeleteMode(false)
         return
     end
-    local fired = 0
+    -- ONE batched request (#274): the server processes the whole selection with deferred
+    -- per-item flushes + one rebuild/save per touched bucket — this used to fire one remote
+    -- PER stack, each costing a full folder rebuild + critical save server-side.
+    local batch = {}
     for _, entry in ipairs(entries) do
         local item = entry.item
         -- re-check the gate (server is the backstop, but never even ask for a unique)
@@ -6641,14 +6644,13 @@ function InventoryPanel:_performBulkDelete(entries)
             local total = math.max(1, math.floor(tonumber(item.count) or 1))
             local qty = math.clamp(math.floor(tonumber(entry.quantity) or total), 1, total)
             if item.folder_source and itemUid then
-                self.signals.DeleteInventoryItem:FireServer({
+                batch[#batch + 1] = {
                     bucket = item.folder_source,
                     itemUid = itemUid,
                     itemId = item.id,
                     quantity = qty,
                     reason = "player_deleted",
-                })
-                fired += 1
+                }
             else
                 self.logger:warn("❌ Skipped delete - missing source or UID", {
                     itemId = item.id,
@@ -6657,7 +6659,10 @@ function InventoryPanel:_performBulkDelete(entries)
             end
         end
     end
-    self.logger:info("🗑️ BULK DELETE", { requested = #entries, fired = fired })
+    if #batch > 0 then
+        self.signals.DeleteInventoryItem:FireServer({ entries = batch })
+    end
+    self.logger:info("🗑️ BULK DELETE", { requested = #entries, fired = #batch })
     self:_setDeleteMode(false)
     task.wait(0.1)
     self:RefreshFromRealData()

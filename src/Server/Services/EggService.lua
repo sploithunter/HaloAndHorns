@@ -1407,6 +1407,10 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
                 variant = hatchResult.variant,
                 huge = hatchResult.huge == true, -- BuildPetData serials it (NextHugeSerial)
                 source = "egg_hatch",
+                -- bulk-grant seam (#274): pure-data grants in the loop; ONE folder refresh +
+                -- ONE critical save via FlushBucket after the loop (was a full pets-folder
+                -- rebuild + two critical saves PER EGG — the hottest O(N²) path in the game)
+                deferFlush = true,
             })
             if grantResult.ok then
                 Logger:Info("Pet granted from egg hatch", {
@@ -1468,6 +1472,12 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
             autoDeleted = outcome.autoDeleted,
             autoDeleteReason = outcome.autoDeleteReason,
         })
+    end
+
+    -- the deferred flush that pairs with the loop's deferFlush grants: one pets-folder
+    -- refresh + one critical save for the whole batch, granted or partial
+    if processedCount > 0 and self._inventoryService and self._inventoryService.FlushBucket then
+        self._inventoryService:FlushBucket(player, "pets", "egg_hatch_batch")
     end
 
     if processedCount < #outcomes then

@@ -273,7 +273,12 @@ function PetGrantService:GrantPet(player, request)
         }
     end
 
-    local uid, addError = self._inventoryService:AddItem(player, "pets", petData)
+    -- request.deferFlush (bulk-grant seam, task #274): a multi-hatch loop grants N pets in
+    -- pure data and flushes replication + the save ONCE after the loop (FlushBucket) —
+    -- previously EVERY hatched pet paid a full pets-folder rebuild + two critical saves.
+    local deferFlush = request ~= nil and request.deferFlush == true
+    local uid, addError =
+        self._inventoryService:AddItem(player, "pets", petData, { deferFlush = deferFlush })
     if not uid then
         return {
             ok = false,
@@ -282,11 +287,13 @@ function PetGrantService:GrantPet(player, request)
         }
     end
 
-    self._dataService:RequestSave(
-        player,
-        "pet_grant_" .. tostring(request and request.source or "generic"),
-        { critical = true }
-    )
+    if not deferFlush then
+        self._dataService:RequestSave(
+            player,
+            "pet_grant_" .. tostring(request and request.source or "generic"),
+            { critical = true }
+        )
+    end
 
     self._logger:Info("Pet granted", {
         context = "PetGrantService",

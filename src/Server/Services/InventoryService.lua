@@ -136,7 +136,11 @@ end
 -- 📦 CORE INVENTORY OPERATIONS
 -- ═══════════════════════════════════════════════════════════════════════════════════
 
-function InventoryService:AddItem(player, bucketName, itemData)
+-- `opts.deferFlush` (2026-07-07 bulk-grant seam): skip the per-item folder rebuild + save so
+-- BULK grant loops (multi-hatch, veteran back-pay, migrations) can mutate N items in pure data
+-- and pay the replication/save cost ONCE via FlushBucket after the loop. Single-item callers
+-- omit opts and behave exactly as before.
+function InventoryService:AddItem(player, bucketName, itemData, opts)
     if self._inventoryConfig.settings.trace_operations then
         self._logger:Info("📦 ADD ITEM - Starting", {
             player = player.Name,
@@ -200,26 +204,28 @@ function InventoryService:AddItem(player, bucketName, itemData)
     end
 
     if success then
-        -- Update folder replication. Adding a pet only INCREASES ownership — it can never
-        -- invalidate an equip ref — so refresh the inventory folder only (no equip re-validate
-        -- / equipped-folder churn). This keeps mass hatching cheap.
-        if bucketName == "pets" then
-            self:RefreshPetInventory(player)
-        else
-            self:_updateBucketFolders(player, bucketName)
+        if not (opts and opts.deferFlush) then
+            -- Update folder replication. Adding a pet only INCREASES ownership — it can never
+            -- invalidate an equip ref — so refresh the inventory folder only (no equip
+            -- re-validate / equipped-folder churn). This keeps mass hatching cheap.
+            if bucketName == "pets" then
+                self:RefreshPetInventory(player)
+            else
+                self:_updateBucketFolders(player, bucketName)
+            end
+
+            self._logger:Info("✅ ADD ITEM SUCCESS", {
+                player = player.Name,
+                bucket = bucketName,
+                uid = uid,
+                itemId = itemData.id,
+                storageType = bucketConfig.storage_type,
+            })
+
+            self._dataService:RequestSave(player, "inventory_add_" .. tostring(bucketName), {
+                critical = bucketName == "pets",
+            })
         end
-
-        self._logger:Info("✅ ADD ITEM SUCCESS", {
-            player = player.Name,
-            bucket = bucketName,
-            uid = uid,
-            itemId = itemData.id,
-            storageType = bucketConfig.storage_type,
-        })
-
-        self._dataService:RequestSave(player, "inventory_add_" .. tostring(bucketName), {
-            critical = bucketName == "pets",
-        })
 
         if bucketName == "pets" then
             self:_recordPetIndex(player, itemData)
@@ -659,7 +665,8 @@ function InventoryService:_addPetRecords(player, itemData, bucket)
     return stackKey, true
 end
 
-function InventoryService:RemoveItem(player, bucketName, uid, quantity)
+-- `opts.deferFlush` mirrors AddItem's (bulk loops: mutate N in pure data, FlushBucket once).
+function InventoryService:RemoveItem(player, bucketName, uid, quantity, opts)
     if self._inventoryConfig.settings.trace_operations then
         self._logger:Info("📦 REMOVE ITEM - Starting", {
             player = player.Name,
@@ -728,7 +735,7 @@ function InventoryService:RemoveItem(player, bucketName, uid, quantity)
         end
     end
 
-    if success then
+    if success and not (opts and opts.deferFlush) then
         -- Update folder replication. For pets, rebuild BOTH mirrors (a removed pet may
         -- have been equipped — the equipped slot must clear too).
         if bucketName == "pets" then
@@ -750,6 +757,21 @@ function InventoryService:RemoveItem(player, bucketName, uid, quantity)
     end
 
     return success
+end
+
+-- The ONE-TIME flush that pairs with deferFlush: full replication rebuild for the bucket
+-- (pets = both mirrors — equip refs may have changed on removals) + one critical save.
+function InventoryService:FlushBucket(player, bucketName, saveTag)
+    pcall(function()
+        if bucketName == "pets" then
+            self:RebuildPetProjections(player)
+        else
+            self:_updateBucketFolders(player, bucketName)
+        end
+    end)
+    self._dataService:RequestSave(player, saveTag or ("inventory_flush_" .. tostring(bucketName)), {
+        critical = true,
+    })
 end
 
 -- BULK remove for NON-PET buckets (built for the enhancement junk sweep — Jason live-lost an
@@ -1646,6 +1668,36 @@ function InventoryService:_isDeletionDenied(record)
 end
 
 function InventoryService:_handleDeleteInventoryItem(player, data)
+    -- BATCH form (#274): { entries = { {bucket, itemUid, itemId, quantity, reason}, ... } } —
+    -- the multi-select delete arrives as ONE remote; per-entry flushes are deferred and each
+    -- touched bucket gets ONE FlushBucket at the end (was one remote + a full folder rebuild
+    -- + a critical save PER selected stack — the client-side twin of the junk-sweep incident).
+    if type(data) == "table" and type(data.entries) == "table" then
+        local touched, n = {}, 0
+        for _, entry in ipairs(data.entries) do
+            if n >= 300 then
+                break -- defensive cap on one request
+            end
+            n += 1
+            if type(entry) == "table" then
+                local bucketName = self:_deleteOne(player, entry, true)
+                if bucketName then
+                    touched[bucketName] = true
+                end
+            end
+        end
+        for bucketName in pairs(touched) do
+            self:FlushBucket(player, bucketName, "inventory_bulk_delete")
+        end
+        return
+    end
+    self:_deleteOne(player, data, false)
+end
+
+-- One delete intent (the original single-item handler body). `deferFlush` = batch mode: skip
+-- per-item replication/save; the caller flushes each touched bucket once. Returns the bucket
+-- name on success (nil on any refusal) so the batch wrapper knows what to flush.
+function InventoryService:_deleteOne(player, data, deferFlush)
     self._logger:Info("🗑️ DELETE ITEM REQUEST", {
         player = player.Name,
         bucket = data.bucket,
@@ -1698,7 +1750,13 @@ function InventoryService:_handleDeleteInventoryItem(player, data)
             return
         end
         local deleteQuantity = math.max(1, math.floor(tonumber(data.quantity) or 1))
-        local ok = self:RemoveItem(player, "pets", data.itemUid, deleteQuantity)
+        local ok = self:RemoveItem(
+            player,
+            "pets",
+            data.itemUid,
+            deleteQuantity,
+            { deferFlush = deferFlush == true }
+        )
         if not ok then
             self._logger:Warn(
                 "❌ Pet not found for delete",
@@ -1711,8 +1769,8 @@ function InventoryService:_handleDeleteInventoryItem(player, data)
             itemUid = data.itemUid,
             quantity = deleteQuantity,
         })
-        -- RemoveItem already rebuilt projections + requested a critical save.
-        return
+        -- single mode: RemoveItem already rebuilt projections + requested the save
+        return "pets"
     end
 
     local item = bucketData.items[data.itemUid]
@@ -1751,13 +1809,17 @@ function InventoryService:_handleDeleteInventoryItem(player, data)
         })
     end
 
-    -- Update replication folders immediately. For pets, rebuild BOTH mirrors so a
-    -- deleted equipped pet also clears its equipped slot.
-    if data.bucket == "pets" then
-        self:RebuildPetProjections(player)
-    else
-        self:_updateBucketFolders(player, data.bucket)
+    -- Update replication folders immediately (deferred in batch mode — the wrapper flushes
+    -- once per bucket). For pets, rebuild BOTH mirrors so a deleted equipped pet also clears
+    -- its equipped slot.
+    if not deferFlush then
+        if data.bucket == "pets" then
+            self:RebuildPetProjections(player)
+        else
+            self:_updateBucketFolders(player, data.bucket)
+        end
     end
+    return data.bucket
 end
 
 function InventoryService:_handleCleanupInventory(player, data)
