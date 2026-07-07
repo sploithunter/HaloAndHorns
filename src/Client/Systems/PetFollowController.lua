@@ -535,6 +535,8 @@ function PetFollowController.start()
 
     -- OTHER players' pets, server-relayed (the server never relays our own — those stay local).
     local remoteTargets = setmetatable({}, { __mode = "k" }) -- pet model -> latest relayed CFrame
+    local remoteDownAccum = 0 -- throttle for the remote downed-hide sweep (~4 Hz)
+    local remoteDownApplied = setmetatable({}, { __mode = "k" }) -- pet -> last applied downed bool
     Signals.PetPositionsRelay.OnClientEvent:Connect(function(list)
         if type(list) ~= "table" then
             return
@@ -555,6 +557,35 @@ function PetFollowController.start()
                 pet:PivotTo(pet:GetPivot():Lerp(targetCf, remoteAlpha))
             else
                 remoteTargets[pet] = nil
+            end
+        end
+
+        -- Downed pets hide on EVERY client, not just their owner's (Jason live-caught: a
+        -- teammate's downed bear froze mid-world on the other screen — the owner's client
+        -- stops positioning it AND was the only one hiding it). CombatDowned replicates;
+        -- once invisible the stale pivot doesn't matter. Throttled — it's a rare state.
+        remoteDownAccum += dt
+        if remoteDownAccum >= 0.25 then
+            remoteDownAccum = 0
+            local pp = Workspace:FindFirstChild("PlayerPets")
+            for _, folder in ipairs(pp and pp:GetChildren() or {}) do
+                if folder.Name ~= localPlayer.Name then
+                    for _, m in ipairs(folder:GetChildren()) do
+                        if m:IsA("Model") then
+                            local downed = m:GetAttribute("CombatDowned") == true
+                            if remoteDownApplied[m] ~= downed then -- touch parts only on change
+                                remoteDownApplied[m] = downed
+                                for _, d in ipairs(m:GetDescendants()) do
+                                    if d:IsA("BasePart") then
+                                        d.LocalTransparencyModifier = downed and 1 or 0
+                                    elseif d:IsA("BillboardGui") then
+                                        d.Enabled = not downed
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
             end
         end
 
