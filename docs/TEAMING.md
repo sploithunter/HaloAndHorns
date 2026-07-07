@@ -103,6 +103,13 @@ All slices landed plus everything the verify shook out:
   free HUD button — fits the perma-build power chase; gate travel convenience behind a pick.
   Complement: a find-teammate waypoint beacon (screen-edge arrow + beam, client-only) as the
   free tier. Teammate location line on the rail card shipped (CurrentArea).
+- POSTPONED (Jason, 2026-07-07): **teams are capped at TWO for now** (configs/party.lua
+  max_size=2) — the TeamPanel has no invite-while-teamed flow, so a third member was never
+  reachable anyway; the config now matches the truth. The 4-player design when we pick it up:
+  (a) invite from the teamed roster (not just the solo picker), (b) rail scaling — click a
+  teammate's card to EXPAND their pet list while the other members' groups collapse to
+  aggregate headers (SquadHud already collapses >2-member rosters and expands the selected
+  mate, so most of the rail work exists; the missing piece is the invite flow + polish).
 - TEAM FOLLOW shipped (Jason, 2026-07-07): any member auto-follows any teammate (not just the
   lead). Client `TeamFollowController` walk-follows via Humanoid:MoveTo; ANY manual movement
   input (WASD or mobile joystick, via the PlayerModule move vector) breaks it. Toggle = follow

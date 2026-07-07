@@ -8,11 +8,13 @@ local config = loadModule("configs/party.lua")
 
 return function()
     describe("PartyMath.canJoin", function()
+        -- tested RELATIVE to the configured cap (max_size is a live design knob: 2 for the
+        -- duo era, 4 when the postponed 4-player UI ships — the math must hold either way)
         it("allows joining below max size", function()
-            expect(PartyMath.canJoin(3, config.max_size)).to.equal(true)
+            expect(PartyMath.canJoin(config.max_size - 1, config.max_size)).to.equal(true)
         end)
         it("rejects joining a full party", function()
-            expect(PartyMath.canJoin(4, config.max_size)).to.equal(false)
+            expect(PartyMath.canJoin(config.max_size, config.max_size)).to.equal(false)
         end)
     end)
 
