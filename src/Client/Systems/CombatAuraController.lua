@@ -199,7 +199,10 @@ local powersCfg = {} -- configs/powers.lua: powerId -> def (for power-driven shi
 local function elementForPet(pet)
     local petEl = originCfg.pettype_element
         and originCfg.pettype_element[pet:GetAttribute("PetType")]
-    local archetype = localPlayer and localPlayer:GetAttribute("Archetype")
+    -- unify_to_player themes the aura to the pet's OWNER, not this viewer — resolve the
+    -- owner from the pet's folder so a teammate's bubbles keep THEIR archetype colour.
+    local owner = pet.Parent and Players:FindFirstChild(pet.Parent.Name) or localPlayer
+    local archetype = owner and owner:GetAttribute("Archetype")
     return CombatOrigin.resolve(petEl, archetype, originCfg)
 end
 
@@ -526,10 +529,13 @@ end
 
 -- Player-level damage buff -> a buff aura on every owned pet for the remaining duration.
 local function refreshPlayerDamageBuff(petsFolder)
-    local secs = remaining(localPlayer, "PetDamageBuffUntil")
     if not petsFolder then
         return
     end
+    -- The buff channel lives on the pets' OWNER — resolve them from the folder name so the
+    -- aura renders identically for every player's squad (entity-state = attributes, any pet).
+    local owner = Players:FindFirstChild(petsFolder.Name) or localPlayer
+    local secs = remaining(owner, "PetDamageBuffUntil")
     for _, pet in ipairs(petsFolder:GetChildren()) do
         if pet:IsA("Model") then
             if secs > 0.05 then
@@ -674,15 +680,29 @@ function CombatAuraController.start()
     end)
     powersCfg = (okP and powers) or {}
 
-    -- Pets: workspace.PlayerPets[<localPlayer>] (each level appears when pets first spawn).
+    -- Pets: EVERY folder under workspace.PlayerPets — combat auras are world-state, so a
+    -- teammate's (or stranger's) shield bubble renders on THIS client too (Jason: "I can see
+    -- the visualization of my pets but not my teammate['s]"). The attributes replicate
+    -- globally; the watch was just scoped to the local folder. Per-owner buff channels
+    -- (PetDamageBuffUntil) subscribe on that folder's OWNER.
     whenChild(Workspace, "PlayerPets", function(root)
-        whenChild(root, localPlayer.Name, function(mine)
-            watchFolder(mine, hookPet)
-            localPlayer:GetAttributeChangedSignal("PetDamageBuffUntil"):Connect(function()
-                refreshPlayerDamageBuff(mine)
-            end)
-            refreshPlayerDamageBuff(mine)
-        end)
+        local function hookOwnerFolder(folder)
+            if not folder:IsA("Folder") and not folder:IsA("Model") then
+                return
+            end
+            watchFolder(folder, hookPet)
+            local owner = Players:FindFirstChild(folder.Name)
+            if owner then
+                owner:GetAttributeChangedSignal("PetDamageBuffUntil"):Connect(function()
+                    refreshPlayerDamageBuff(folder)
+                end)
+            end
+            refreshPlayerDamageBuff(folder)
+        end
+        for _, folder in ipairs(root:GetChildren()) do
+            hookOwnerFolder(folder)
+        end
+        root.ChildAdded:Connect(hookOwnerFolder)
     end)
 
     -- Enemies: workspace.Game.Enemies.
