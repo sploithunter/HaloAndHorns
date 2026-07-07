@@ -685,23 +685,11 @@ end
 -- with every TEAMMATE's live pets, SameTeam-gated per member. Non-support powers (or an
 -- unteamed caster) get the caster's own list back untouched.
 function PowerService:_withTeamPets(player, powerId, live)
-    -- [TeamCast] TEMPORARY traces (teaming live-verify): one line per TEAMED squad-wide
-    -- cast saying what the team extension decided. Strip after TM6.
     local members = player:GetAttribute("TeamMembers")
-    local teamed = type(members) == "string" and members ~= ""
     if not self:_supportFamily(powerId) then
-        if teamed then
-            print(
-                string.format(
-                    "[TeamCast] %s cast %s squad-wide: NOT a support family -> own squad only",
-                    player.Name,
-                    tostring(powerId)
-                )
-            )
-        end
         return live
     end
-    if not teamed then
+    if type(members) ~= "string" or members == "" then
         return live
     end
     local partySvc = _G.RBXTemplateServices
@@ -712,10 +700,8 @@ function PowerService:_withTeamPets(player, powerId, live)
             end)
         )
     if not (partySvc and partySvc.SameTeam) then
-        print("[TeamCast] " .. player.Name .. " PartyService unavailable -> own squad only")
         return live
     end
-    local before = #live
     local pp = Workspace:FindFirstChild("PlayerPets")
     for name in members:gmatch("[^,]+") do
         if name ~= player.Name then
@@ -727,29 +713,9 @@ function PowerService:_withTeamPets(player, powerId, live)
                         live[#live + 1] = pet
                     end
                 end
-            else
-                print(
-                    string.format(
-                        "[TeamCast] %s mate %s skipped (present=%s folder=%s sameTeam=%s)",
-                        player.Name,
-                        name,
-                        tostring(mate ~= nil),
-                        tostring(folder ~= nil),
-                        tostring(mate ~= nil and partySvc:SameTeam(player, mate))
-                    )
-                )
             end
         end
     end
-    print(
-        string.format(
-            "[TeamCast] %s cast %s squad-wide: own=%d +team=%d",
-            player.Name,
-            tostring(powerId),
-            before,
-            #live - before
-        )
-    )
     return live
 end
 
@@ -763,23 +729,12 @@ function PowerService:_teamTargetPets(player, powerId)
         return nil
     end
     self:_teamingInit()
-    -- [TeamCast] TEMPORARY trace: fires on every cast made with a player selected. Strip
-    -- after TM6.
     local family = self:_supportFamily(powerId)
     if not family then
-        print(
-            string.format(
-                "[TeamCast] %s cast %s at %s: NOT a support family -> falls to own squad",
-                player.Name,
-                tostring(powerId),
-                targetName
-            )
-        )
         return nil
     end
     local target = Players:FindFirstChild(targetName)
     if not target then
-        print("[TeamCast] " .. player.Name .. " target " .. targetName .. " not present")
         return nil
     end
     -- SELECTABLE = AFFECTABLE (Jason, CoH-style): an EXPLICITLY selected player's pets take
@@ -802,28 +757,10 @@ function PowerService:_teamTargetPets(player, powerId)
             if pet:IsA("Model") then
                 local pn = pet:FindFirstChild("PositionNumber")
                 if pn and pn.Value == sel then
-                    print(
-                        string.format(
-                            "[TeamCast] %s cast %s -> %s's pet slot %d (%s) EXPLICIT",
-                            player.Name,
-                            tostring(powerId),
-                            targetName,
-                            sel,
-                            tostring(pet:GetAttribute("PetType"))
-                        )
-                    )
                     return { pet }
                 end
             end
         end
-        print(
-            string.format(
-                "[TeamCast] %s slot %d not found in %s's folder -> auto-pick",
-                player.Name,
-                sel,
-                targetName
-            )
-        )
     end
     local states = {}
     for _, pet in ipairs(folder:GetChildren()) do
@@ -845,31 +782,12 @@ function PowerService:_teamTargetPets(player, powerId)
     end
     local picked = self._teamCast.pick(family, states)
     if #picked == 0 then
-        print(
-            string.format(
-                "[TeamCast] %s cast %s at %s: TeamCast picked NOTHING (%d states) -> own squad",
-                player.Name,
-                tostring(powerId),
-                targetName,
-                #states
-            )
-        )
         return nil -- nothing appropriate on their side: fall back to own squad
     end
     local pets = {}
     for _, state in ipairs(picked) do
         pets[#pets + 1] = state.key
     end
-    print(
-        string.format(
-            "[TeamCast] %s cast %s -> %s x%d pets (family=%s AUTO)",
-            player.Name,
-            tostring(powerId),
-            targetName,
-            #pets,
-            family
-        )
-    )
     return pets
 end
 

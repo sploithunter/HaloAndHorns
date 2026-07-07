@@ -71,3 +71,31 @@ today's static spawns are tuned for one level-50 player with 10 pets.
 
 Screen density at 3–4 players: aggregate bars carry the info load; if pet clutter hurts,
 follow-ups are FX distance-culling and nameplate thinning — NOT fewer pets.
+
+## Status (2026-07-07): SHIPPED — live-verified two-account in the published game
+
+All slices landed plus everything the verify shook out:
+
+- Invite UI: TeamPanel (TradePanel framework) + ➕ on the squad-rail MY TEAM header; live
+  TeamInviteFrom popup armed from boot. Duo = BOTH full squads on the rail (teammate pets as
+  HudCard cards under their owner's header); 3–4 players collapse to aggregate cards that
+  expand while selected.
+- Sidekick/exemplar: `GetEffectiveLevel` anchors members to lead + `sidekick.level_offset`
+  (-1); PlayerBar disc shows the synced combat level (green up / orange down). EVERY
+  EffectiveLevel consumer verified: accuracy/damage curves, layer access (= the guest pass),
+  enemy SPAWN level, and both con-colour readers (rail cards + nameplates).
+- Selection contract ("if you can select it you should be able to affect it"): world-click or
+  card-click ANY player's pet → support casts land on it, teamed or not. support_families
+  keys = REAL effect_kinds ids ("buff", not "damage_buff") + every lands-on-pets family
+  (taunt/fortify/root_guard/evade/heal_blind). Taunt/rage resolve holders via _tauntHolders —
+  redirected separately (bespoke-resolver gotcha). Slot-collision guard: a mate selection
+  never slot-matches the caster's own squad.
+- Battlefield principle: placed fields (heal zone) tick EVERY player's pets in radius; squad
+  buffs (bastion) cover the whole TEAM via _withTeamPets; combat auras render on all clients
+  for all owners (CombatAuraController watches every PlayerPets folder).
+- TEAM BATTLE aggro: the engaged tick's leash/threat/valid scans iterate _teamSquads; neutral
+  pets join teammates' fights; assist pick + _enemiesInRange cover team-engaged enemies.
+- Shared kill credit: contributors ∪ teammates within kill_credit.radius of the down site.
+- Known follow-ups: #244 (one badge reader + one target resolver everywhere), per-player
+  EnemyLevelOffset on teamed spawns (currently the trigger player's setting), hasAggro
+  introspection in TeamCast states.

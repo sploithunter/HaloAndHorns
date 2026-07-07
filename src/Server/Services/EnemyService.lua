@@ -221,9 +221,6 @@ function EnemyService:Init()
         else
             player:SetAttribute("CombatBuffTargetPlayer", nil)
         end
-        -- [TeamSel] TEMPORARY trace (teaming live-verify): confirms the selection payload
-        -- reached the server and what got stamped. One line per selection click.
-        print(string.format("[TeamSel] %s slot=%d mate=%s", player.Name, slot, tostring(mate)))
     end)
 end
 
