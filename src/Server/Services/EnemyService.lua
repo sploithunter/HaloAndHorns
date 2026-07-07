@@ -2766,7 +2766,8 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
 
     -- CAPITAL ROOT (ice-theme control): freeze up to `targets` nearest pets in place —
     -- PetRootedUntil (client stops positioning them) + the hold badge on their cards.
-    local kitRoot = def and def.abilities and def.abilities.root
+    local kitRoot = def and def.abilities and (def.abilities.hold or def.abilities.root)
+    local kitIsHold = def and def.abilities and def.abilities.hold ~= nil
     if kitRoot and not held then
         entry.nextRoot = entry.nextRoot or (now + 3)
         if now >= entry.nextRoot then
@@ -2790,6 +2791,11 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
             for i = 1, math.min(#near, math.max(1, math.floor(tonumber(kitRoot.targets) or 1))) do
                 local pet = near[i].pet
                 pet:SetAttribute("PetRootedUntil", untilT)
+                if kitIsHold then
+                    -- full MEZ (#269): held = frozen AND silenced (attack gate in _mine;
+                    -- severed as an aura source / taunt holder)
+                    pet:SetAttribute("PetHeldUntil", untilT)
+                end
                 pet:SetAttribute("Power_hold_Until", untilT)
             end
         end
@@ -3521,7 +3527,14 @@ function EnemyService:_supportPass(now)
         local vmults = self._petRoles and self._petRoles.variant_effect_multipliers or {}
         local counts, weights, rep = {}, {}, {}
         for _, pet in ipairs(folder:GetChildren()) do
-            if pet:IsA("Model") and pet.PrimaryPart and not pet:GetAttribute("CombatDowned") then
+            -- MEZ (#269): a HELD buffer is severed from the support graph — its auras stop
+            -- flowing to the band until the hold lapses (hold the healer = the counter-play).
+            if
+                pet:IsA("Model")
+                and pet.PrimaryPart
+                and not pet:GetAttribute("CombatDowned")
+                and (tonumber(pet:GetAttribute("PetHeldUntil")) or 0) <= now
+            then
                 local vmult = tonumber(vmults[pet:GetAttribute("PetVariant")]) or 1
                 for _, aura in ipairs(self:_petAuras(pet) or {}) do
                     if aura.kind then

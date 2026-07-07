@@ -531,6 +531,11 @@ function PetFollowService:_mine(player, pet, breakable)
     if pet:GetAttribute("CombatDowned") then
         return -- downed pets are out healing; they neither mine nor fight
     end
+    -- MEZ (#269): a HELD pet is fully controlled — no attacks, no mining, until the window
+    -- lapses (root only stops movement; hold stops output too).
+    if (tonumber(pet:GetAttribute("PetHeldUntil")) or 0) > os.time() then
+        return
+    end
     -- the SERVER enforcement: pets of a player who hasn't unlocked this node's
     -- zone do no damage and earn nothing (walking in is allowed; profiting isn't)
     local nodeWorld = breakable:GetAttribute("World")

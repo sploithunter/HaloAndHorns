@@ -96,7 +96,9 @@ return {
         },
         ice = { -- CONTROL
             lieutenant = { root = { duration = 2.0, radius = 20, interval = 9, targets = 1 } },
-            boss = { root = { duration = 2.5, radius = 24, interval = 8, targets = 3 } },
+            -- boss = full HOLD (frozen + silenced: no attacks, no aura output, can't taunt);
+            -- the lieutenant's root only pins movement — the mez ladder reads on the badges.
+            boss = { hold = { duration = 2.5, radius = 24, interval = 8, targets = 3 } },
         },
         desert = { -- BUFF/DEBUFF specialists
             lieutenant = {

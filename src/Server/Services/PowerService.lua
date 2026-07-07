@@ -823,8 +823,14 @@ function PowerService:_tauntHolders(player)
         return {}
     end
     local live = {}
+    local nowT = os.time()
     for _, pet in ipairs(folder:GetChildren()) do
-        if pet:IsA("Model") and not pet:GetAttribute("CombatDowned") then
+        -- MEZ (#269): a HELD pet cannot hold aggro — it is never a taunt holder.
+        if
+            pet:IsA("Model")
+            and not pet:GetAttribute("CombatDowned")
+            and (tonumber(pet:GetAttribute("PetHeldUntil")) or 0) <= nowT
+        then
             live[#live + 1] = pet
         end
     end
@@ -1651,18 +1657,40 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         -- Revive: instantly bring a DOWNED pet back, ignoring its recharge cooldown (the tactical
         -- "summon before the clock" power, EnemyService:_revivePet's clears). Prefers the selected
         -- squad pet (CombatBuffTarget), else the first downed pet.
-        local pets = Workspace:FindFirstChild("PlayerPets")
-            and Workspace.PlayerPets:FindFirstChild(player.Name)
-        if pets then
+        -- SELECTABLE = AFFECTABLE (#270, Jason: Genie of the Desert wasn't ressing teammates'
+        -- pets): a selected PLAYER (CombatBuffTargetPlayer) makes THEIR folder the revive pool
+        -- first — their selected downed pet, else their first downed — falling back to the
+        -- caster's own squad when their side has nobody down (the cast is never wasted).
+        -- Bespoke resolver on purpose: _targetPets excludes downed pets (same gotcha as taunt).
+        local pp = Workspace:FindFirstChild("PlayerPets")
+        local folders = {}
+        local mateName = player:GetAttribute("CombatBuffTargetPlayer")
+        if type(mateName) == "string" and mateName ~= "" and mateName ~= player.Name then
+            local f = pp and pp:FindFirstChild(mateName)
+            if f then
+                folders[#folders + 1] = f
+            end
+        end
+        local own = pp and pp:FindFirstChild(player.Name)
+        if own then
+            folders[#folders + 1] = own
+        end
+        if #folders > 0 then
             local sel = player:GetAttribute("CombatBuffTarget")
             local target, firstDowned
-            for _, pet in ipairs(pets:GetChildren()) do
-                if pet:IsA("Model") and pet:GetAttribute("CombatDowned") then
-                    firstDowned = firstDowned or pet
-                    local pn = pet:FindFirstChild("PositionNumber")
-                    if sel and sel ~= 0 and pn and pn.Value == sel then
-                        target = pet
+            for _, pets in ipairs(folders) do
+                for _, pet in ipairs(pets:GetChildren()) do
+                    if pet:IsA("Model") and pet:GetAttribute("CombatDowned") then
+                        firstDowned = firstDowned or pet
+                        local pn = pet:FindFirstChild("PositionNumber")
+                        if sel and sel ~= 0 and pn and pn.Value == sel then
+                            target = pet
+                        end
                     end
+                end
+                -- the SELECTED player's downed outrank falling through to the caster's own
+                if target or firstDowned then
+                    break
                 end
             end
             target = target or firstDowned
