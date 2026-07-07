@@ -909,15 +909,29 @@ function EnhancementSellPanel:_onSellJunk()
         confirmText = "🧹 Sell Junk",
         accent = COLORS.junk,
         onConfirm = function()
+            if self._junkInFlight then
+                return -- the server sweep yields between chunks; never run two at once
+            end
+            self._junkInFlight = true
             task.spawn(function()
                 local r = self:_callBus(
                     "enhancement.shop.sell_junk",
                     { includeDuals = self.includeDuals }
                 ) or {}
+                self._junkInFlight = false
                 if not self.isVisible then
                     return
                 end
-                if r.ok then
+                if r.ok and r.partial then
+                    self:_toast(
+                        ("Salvaged %d stack(s) for 💎%d — some kept, press again"):format(
+                            r.stacks or 0,
+                            r.gems or 0
+                        ),
+                        COLORS.junk
+                    )
+                    self:_refresh()
+                elseif r.ok then
                     self:_toast(
                         ("Salvaged %d stack(s) for 💎%d"):format(r.stacks or 0, r.gems or 0),
                         COLORS.junk

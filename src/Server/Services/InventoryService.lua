@@ -752,6 +752,88 @@ function InventoryService:RemoveItem(player, bucketName, uid, quantity)
     return success
 end
 
+-- BULK remove for NON-PET buckets (built for the enhancement junk sweep — Jason live-lost an
+-- ~80k-gem batch 2026-07-07: per-item RemoveItem does a FULL bucket folder rebuild + save
+-- request EACH call, so a big sweep was O(N²) instance churn, and any error mid-loop left
+-- items removed with the payment never reached). Removes the whole batch against the raw data
+-- with SNAPSHOT ROLLBACK — if anything throws mid-batch every touched stack is restored —
+-- then rebuilds the bucket folders and requests the save ONCE.
+-- Returns ok, removedMap (uid -> qty actually removed), totalQty.
+function InventoryService:BulkRemove(player, bucketName, entries)
+    if bucketName == "pets" then
+        return false, nil, 0 -- pets have projection/equip side effects; use RemoveItem
+    end
+    local data = self._dataService:GetData(player)
+    local bucket = data and data.Inventory and data.Inventory[bucketName]
+    local bucketConfig = self._inventoryConfig.buckets[bucketName]
+    if not (bucket and bucket.items and bucketConfig) then
+        return false, nil, 0
+    end
+
+    local snapshots = {} -- uid -> shallow copy of the item as it was before this batch
+    local removedMap, totalQty = {}, 0
+    local usedSlotsBefore = bucket.used_slots
+
+    local okAll, err = pcall(function()
+        for _, entry in ipairs(entries) do
+            local uid = entry.uid
+            local item = bucket.items[uid]
+            if item then
+                if not snapshots[uid] then
+                    local copy = {}
+                    for k, v in pairs(item) do
+                        copy[k] = v
+                    end
+                    snapshots[uid] = copy
+                end
+                if bucketConfig.storage_type == "stackable" then
+                    local qty = math.max(1, math.floor(tonumber(entry.quantity) or 1))
+                    local have = tonumber(item.quantity) or 1
+                    local take = math.min(qty, have)
+                    if take >= have then
+                        bucket.items[uid] = nil
+                        bucket.used_slots = bucket.used_slots - 1
+                    else
+                        item.quantity = have - take
+                    end
+                    removedMap[uid] = take
+                    totalQty += take
+                else
+                    bucket.items[uid] = nil
+                    bucket.used_slots = bucket.used_slots - 1
+                    removedMap[uid] = 1
+                    totalQty += 1
+                end
+            end
+        end
+    end)
+
+    if not okAll then
+        -- ROLLBACK: restore every touched stack exactly as it was — a failed sweep must
+        -- never end with the player owning fewer items than they started with.
+        for uid, copy in pairs(snapshots) do
+            bucket.items[uid] = copy
+        end
+        bucket.used_slots = usedSlotsBefore
+        self._logger:Warn("📦 BULK REMOVE - rolled back after error", {
+            player = player.Name,
+            bucket = bucketName,
+            error = tostring(err),
+        })
+        return false, nil, 0
+    end
+
+    -- The batch is committed in DATA at this point; replication is cosmetic — a folder
+    -- rebuild hiccup must not read as a failed sale (the save below is what matters).
+    pcall(function()
+        self:_updateBucketFolders(player, bucketName)
+    end)
+    self._dataService:RequestSave(player, "inventory_bulk_remove_" .. tostring(bucketName), {
+        critical = true,
+    })
+    return true, removedMap, totalQty
+end
+
 function InventoryService:_removeStackableItem(player, bucketName, uid, quantity, bucket, item)
     if item.quantity <= quantity then
         -- Remove entire stack

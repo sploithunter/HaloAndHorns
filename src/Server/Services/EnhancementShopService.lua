@@ -330,22 +330,57 @@ function EnhancementShopService:SellJunk(player, args)
     if #toSell == 0 then
         return { ok = false, reason = "nothing_to_sell" }
     end
+    -- CHUNKED + LOSS-PROOF (Jason live-lost an ~80k batch 2026-07-07: the old loop did a
+    -- per-stack RemoveItem — each one a full folder rebuild + save request, O(N²) churn that
+    -- ran forever — and credited the gems only once at the END, so an error mid-loop stripped
+    -- the items with no payment). Now: 50 stacks per chunk through InventoryService:BulkRemove
+    -- (snapshot rollback inside — a failed chunk restores its items), gems credited after
+    -- EVERY chunk, and a yield between chunks so a huge sweep can't hitch the server. Worst
+    -- case on any failure: items kept or already paid — never both gone.
+    local CHUNK = 50
     local currency = shop.currency or CURRENCY_FALLBACK
-    local soldQty, gems = 0, 0
-    for _, it in ipairs(toSell) do
-        if self._inventoryService:RemoveItem(player, BUCKET, it.uid, it.quantity) then
-            soldQty += it.quantity
-            gems += it.gems
+    local soldQty, gems, soldStacks = 0, 0, 0
+    local failedChunk = false
+    local i = 1
+    while i <= #toSell do
+        local last = math.min(i + CHUNK - 1, #toSell)
+        local chunk = {}
+        local gemsByUid = {}
+        for j = i, last do
+            local it = toSell[j]
+            chunk[#chunk + 1] = { uid = it.uid, quantity = it.quantity }
+            gemsByUid[it.uid] = it.gems
+        end
+        local okChunk, removedMap, qty = self._inventoryService:BulkRemove(player, BUCKET, chunk)
+        if okChunk and removedMap then
+            local chunkGems = 0
+            for uid in pairs(removedMap) do
+                chunkGems += gemsByUid[uid] or 0
+                soldStacks += 1
+            end
+            soldQty += qty
+            if chunkGems > 0 then
+                self._dataService:AddCurrency(player, currency, chunkGems, "enh_sell_junk")
+                gems += chunkGems
+            end
+        else
+            failedChunk = true -- that chunk rolled back intact; stop and report what DID sell
+            break
+        end
+        i = last + 1
+        if i <= #toSell then
+            task.wait() -- yield between chunks: no server hitch on thousand-stack sweeps
         end
     end
     if gems > 0 then
-        self._dataService:AddCurrency(player, currency, gems, "enh_sell_junk")
         self._dataService:RequestSave(player, "enh_shop_sell_junk", { critical = true })
     end
     return {
-        ok = true,
+        ok = not failedChunk or gems > 0, -- partial success still reports what was paid
+        partial = failedChunk or nil,
+        reason = failedChunk and "chunk_failed_rolled_back" or nil,
         sold = soldQty,
-        stacks = #toSell,
+        stacks = soldStacks,
         gems = gems,
         includedDuals = includeDuals,
         balance = self._dataService:GetCurrency(player, currency),
