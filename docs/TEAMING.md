@@ -103,3 +103,12 @@ All slices landed plus everything the verify shook out:
   free HUD button — fits the perma-build power chase; gate travel convenience behind a pick.
   Complement: a find-teammate waypoint beacon (screen-edge arrow + beam, client-only) as the
   free tier. Teammate location line on the rail card shipped (CurrentArea).
+- TEAM FOLLOW shipped (Jason, 2026-07-07): any member auto-follows any teammate (not just the
+  lead). Client `TeamFollowController` walk-follows via Humanoid:MoveTo; ANY manual movement
+  input (WASD or mobile joystick, via the PlayerModule move vector) breaks it. Toggle = follow
+  chip on the SquadHud mate card (mobile-first, lights green while active) or F with the
+  teammate selected. REALM PORTALS: on a CurrentLayer mismatch the client requests
+  `team.follow_warp` — PartyService:FollowWarp re-runs the portal's own gates (geometry +
+  requires_level vs EffectiveLevel) then LayerService:UseLayer, landing at the realm entry as
+  if the follower touched the portal. Never a same-layer teleport, so the teleport POWER idea
+  above keeps its value; knobs in configs/teaming.lua `follow{}`.
