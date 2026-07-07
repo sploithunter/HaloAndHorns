@@ -463,10 +463,21 @@ function SquadHud.start()
     targetHighlight.Enabled = false
     targetHighlight.Parent = gui
 
+    -- TEAMMATE selection (docs/TEAMING.md TM4): picking a teammate's card makes THEM the
+    -- cast-through target (CombatBuffTargetPlayer server-side). Mutually exclusive with a
+    -- pet/TEAM pick — forward-declared so setSelected can clear it. Cards built further down.
+    local selectedMate = nil
+    local refreshMateHighlights = nil
+
     local function setSelected(slot)
         selectedSlot = slot
+        selectedMate = nil -- picking a pet/TEAM scope drops the teammate pick
+        if refreshMateHighlights then
+            refreshMateHighlights()
+        end
         -- Tell the server which pet is selected, so single-target buffs (aegis / ironclad) land on
         -- it. The slot IS the pet's PositionNumber, which the server matches in _targetPets.
+        -- (No playerName field ⇒ the server also clears CombatBuffTargetPlayer.)
         pcall(function()
             Signals.Combat_SelectPetTarget:FireServer({ slot = slot or 0 })
         end)
@@ -722,6 +733,195 @@ function SquadHud.start()
             setSelected(selectedSlot == TEAM_SEL and nil or TEAM_SEL)
         end)
         refreshTeamHighlight()
+    end
+
+    -- TEAMMATE cards (docs/TEAMING.md TM4): one header-style card per teamed player, below the
+    -- pet cards, rendered purely from replicated state (TeamMembers csv + the mate's pets'
+    -- CombatDamageTaken/CombatDowned attributes, which replicate globally). The bar is the
+    -- AGGREGATE endurance across their squad (downed pets count as empty); the sub-label counts
+    -- downs. Clicking selects the PLAYER as the cast-through target — a heal cast then lands on
+    -- their neediest pet (server-side TeamCast pick).
+    do
+        local mateCards = {} -- name -> { frame, stroke, fill, sub }
+
+        refreshMateHighlights = function()
+            for name, card in pairs(mateCards) do
+                HudCard.applyHighlight(card, (selectedMate == name) and "select" or nil)
+            end
+        end
+
+        local function matePets(name)
+            local pp = Workspace:FindFirstChild("PlayerPets")
+            local folder = pp and pp:FindFirstChild(name)
+            local sum, n, downs = 0, 0, 0
+            if folder then
+                for _, pet in ipairs(folder:GetChildren()) do
+                    if pet:IsA("Model") then
+                        n += 1
+                        if pet:GetAttribute("CombatDowned") == true then
+                            downs += 1
+                        else
+                            sum += PetEndurance.healthFraction(
+                                pet:GetAttribute("CombatDamageTaken") or 0,
+                                petPower(pet),
+                                factor
+                            )
+                        end
+                    end
+                end
+            end
+            return (n > 0 and sum / n or 1), downs, n
+        end
+
+        local function makeMateCard(name, order)
+            local frame = Instance.new("TextButton")
+            frame.Name = "Mate_" .. name
+            frame.AutoButtonColor = false
+            frame.Text = ""
+            frame.Size = UDim2.fromOffset(186, 40)
+            frame.BackgroundColor3 = Color3.fromRGB(28, 30, 40)
+            frame.BackgroundTransparency = 0.1
+            frame.BorderSizePixel = 0
+            frame.LayoutOrder = 1000 + order -- below every pet card
+            frame.Parent = root
+            local mCorner = Instance.new("UICorner")
+            mCorner.CornerRadius = UDim.new(0, 6)
+            mCorner.Parent = frame
+            local stroke = Instance.new("UIStroke")
+            stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            stroke.Color = HudCard.STROKE_IDLE
+            stroke.Thickness = 1.5
+            stroke.Transparency = 0.4
+            stroke.Parent = frame
+            -- circular headshot poking off the inner edge, matching the MY TEAM header
+            local mate = Players:FindFirstChild(name)
+            local avatarChip = Instance.new("Frame")
+            avatarChip.Name = "Avatar"
+            avatarChip.AnchorPoint = Vector2.new(HudCard.BADGE_OVERHANG, 0.5)
+            avatarChip.Position = UDim2.new(0, 0, 0.5, 0)
+            avatarChip.Size = UDim2.new(1, 0, 1, 0)
+            avatarChip.BackgroundColor3 = Color3.fromRGB(120, 80, 160)
+            avatarChip.BorderSizePixel = 0
+            avatarChip.Parent = frame
+            local avAspect = Instance.new("UIAspectRatioConstraint")
+            avAspect.AspectRatio = 1
+            avAspect.AspectType = Enum.AspectType.FitWithinMaxSize
+            avAspect.Parent = avatarChip
+            local avCorner = Instance.new("UICorner")
+            avCorner.CornerRadius = UDim.new(1, 0)
+            avCorner.Parent = avatarChip
+            local headshot = Instance.new("ImageLabel")
+            headshot.BackgroundTransparency = 1
+            headshot.AnchorPoint = Vector2.new(0.5, 0.5)
+            headshot.Position = UDim2.fromScale(0.5, 0.5)
+            headshot.Size = UDim2.fromScale(1, 1)
+            headshot.Image = mate
+                    and ("rbxthumb://type=AvatarHeadShot&id=" .. mate.UserId .. "&w=150&h=150")
+                or ""
+            headshot.Parent = avatarChip
+            local hsCorner = Instance.new("UICorner")
+            hsCorner.CornerRadius = UDim.new(1, 0)
+            hsCorner.Parent = headshot
+            local lbl = Instance.new("TextLabel")
+            lbl.Name = "Label"
+            lbl.BackgroundTransparency = 1
+            lbl.Position = UDim2.fromOffset(40, 2)
+            lbl.Size = UDim2.new(1, -48, 0, 16)
+            lbl.Font = Enum.Font.GothamBold
+            lbl.TextSize = 13
+            lbl.TextXAlignment = Enum.TextXAlignment.Left
+            lbl.TextTruncate = Enum.TextTruncate.AtEnd
+            lbl.TextColor3 = Color3.fromRGB(235, 240, 255)
+            lbl.Text = name
+            lbl.Parent = frame
+            local sub = Instance.new("TextLabel")
+            sub.Name = "Sub"
+            sub.BackgroundTransparency = 1
+            sub.Position = UDim2.fromOffset(40, 17)
+            sub.Size = UDim2.new(1, -48, 0, 12)
+            sub.Font = Enum.Font.Gotham
+            sub.TextSize = 10
+            sub.TextXAlignment = Enum.TextXAlignment.Left
+            sub.TextColor3 = Color3.fromRGB(190, 196, 212)
+            sub.Text = ""
+            sub.Parent = frame
+            -- aggregate endurance bar along the bottom (same palette as pet cards)
+            local barBg = Instance.new("Frame")
+            barBg.Name = "BarBg"
+            barBg.Position = UDim2.new(0, 40, 1, -8)
+            barBg.Size = UDim2.new(1, -48, 0, 5)
+            barBg.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+            barBg.BorderSizePixel = 0
+            barBg.Parent = frame
+            local bbCorner = Instance.new("UICorner")
+            bbCorner.CornerRadius = UDim.new(1, 0)
+            bbCorner.Parent = barBg
+            local fill = Instance.new("Frame")
+            fill.Name = "Fill"
+            fill.Size = UDim2.fromScale(1, 1)
+            fill.BackgroundColor3 = healthColor(1)
+            fill.BorderSizePixel = 0
+            fill.Parent = barBg
+            local fCorner = Instance.new("UICorner")
+            fCorner.CornerRadius = UDim.new(1, 0)
+            fCorner.Parent = fill
+
+            frame.MouseButton1Click:Connect(function()
+                local wasPicked = selectedMate == name
+                setSelected(nil) -- clears pet/TEAM pick + selectedMate; server clears both attrs
+                if not wasPicked then
+                    selectedMate = name
+                    pcall(function()
+                        Signals.Combat_SelectPetTarget:FireServer({ slot = 0, playerName = name })
+                    end)
+                end
+                refreshMateHighlights()
+            end)
+
+            return { frame = frame, stroke = stroke, fill = fill, sub = sub }
+        end
+
+        task.spawn(function()
+            while gui.Parent do
+                local want = {} -- name -> order
+                local members = localPlayer:GetAttribute("TeamMembers")
+                if type(members) == "string" and members ~= "" then
+                    local order = 0
+                    for name in members:gmatch("[^,]+") do
+                        if name ~= localPlayer.Name then
+                            order += 1
+                            want[name] = order
+                        end
+                    end
+                end
+                for name, card in pairs(mateCards) do
+                    if not want[name] then
+                        card.frame:Destroy()
+                        mateCards[name] = nil
+                        if selectedMate == name then -- teammate left: drop the stale pick
+                            selectedMate = nil
+                        end
+                    end
+                end
+                for name, order in pairs(want) do
+                    local card = mateCards[name]
+                    if not card then
+                        card = makeMateCard(name, order)
+                        mateCards[name] = card
+                        refreshMateHighlights()
+                    end
+                    card.frame.LayoutOrder = 1000 + order
+                    local frac, downs, pets = matePets(name)
+                    card.fill.Size = UDim2.fromScale(math.clamp(frac, 0, 1), 1)
+                    card.fill.BackgroundColor3 = healthColor(frac)
+                    card.sub.Text = downs > 0 and ("%d pets · %d DOWN"):format(pets, downs)
+                        or ("%d pets"):format(pets)
+                    card.sub.TextColor3 = downs > 0 and Color3.fromRGB(240, 120, 110)
+                        or Color3.fromRGB(190, 196, 212)
+                end
+                task.wait(0.25)
+            end
+        end)
     end
 
     -- (Removed the per-slot Recall/Summon/Heal/Buff action row — squad control now

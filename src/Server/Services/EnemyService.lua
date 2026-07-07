@@ -211,6 +211,15 @@ function EnemyService:Init()
     Signals.Combat_SelectPetTarget.OnServerEvent:Connect(function(player, payload)
         local slot = tonumber(type(payload) == "table" and payload.slot or payload) or 0
         player:SetAttribute("CombatBuffTarget", slot)
+        -- CAST-THROUGH-PLAYER (docs/TEAMING.md): the squad strip's teammate card selects a
+        -- PLAYER instead of a slot; support powers redirect to their neediest pet via
+        -- PowerService._teamTargetPets (SameTeam-gated there — a stale/forged name is inert).
+        local mate = type(payload) == "table" and payload.playerName or nil
+        if type(mate) == "string" and mate ~= "" and mate ~= player.Name then
+            player:SetAttribute("CombatBuffTargetPlayer", mate)
+        else
+            player:SetAttribute("CombatBuffTargetPlayer", nil)
+        end
     end)
 end
 
