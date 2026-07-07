@@ -22,10 +22,13 @@ return {
     -- (PartyMath.scaledHp) so packs are more bodies AND meatier — tune either axis to 0
     -- to disable it. Boss-tier enemies never multiply in COUNT (hp only).
     pack = {
-        count_per_extra = 0.8, -- +80% pack size per extra engaged teammate
-        max_count_mult = 3.0, -- hard ceiling on the count multiplier (4p ≈ 2.6 finds it)
+        count_per_extra = 1.0, -- 2 engaged = double pack (was 0.8 — read too thin vs 15 pets)
+        max_count_mult = 3.0, -- hard ceiling on the count multiplier
         hp_scaling = true, -- apply PartyMath.scaledHp on top
         count_scales_tiers = { minion = true, elite = true }, -- boss/archvillain: hp only
-        engaged_radius = 60, -- studs from the spawn trigger that counts a teammate as engaged
+        engaged_radius = 90, -- studs from the spawn trigger that counts a teammate as engaged
+        -- Realm-cave PATROL bands scale by the biggest team near the cave stop at sortie
+        -- time; patrols roam, so the "near" test is looser than the homeworld spawner one.
+        patrol_engaged_radius = 150,
     },
 }

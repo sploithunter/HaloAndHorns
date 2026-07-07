@@ -35,6 +35,7 @@ local EnemyAI = require(ReplicatedStorage.Shared.Game.EnemyAI)
 local PetMeander = require(ReplicatedStorage.Shared.Game.PetMeander)
 local RingSeparate = require(ReplicatedStorage.Shared.Game.RingSeparate)
 local AggroTable = require(ReplicatedStorage.Shared.Game.AggroTable)
+local PackScale = require(ReplicatedStorage.Shared.Game.PackScale) -- team-scaled patrol bands
 local Allegiance = require(ReplicatedStorage.Shared.Game.Allegiance)
 local AggroLeash = require(ReplicatedStorage.Shared.Game.AggroLeash)
 local AggroModel = require(ReplicatedStorage.Shared.Game.AggroModel) -- unified aggro game (configs/aggro.lua)
@@ -4388,17 +4389,75 @@ end
 --   PET INVADERS (use_pet_invaders): the band IS opposing-realm PET models wearing the attack script
 --   (pets whose realm == this cave's allegiance). One rare SCARY slot = the strongest opposing pet.
 --   ELEMENT PACKS (default): weighted comp from patrol_bands_by_origin (the home-style wave tables).
+-- configs/teaming.lua, lazily (safe default = no pack scaling).
+function EnemyService:_teamingConfig()
+    if not self._teamingCfg then
+        local ok, cfg = pcall(function()
+            return require(ReplicatedStorage.Configs:WaitForChild("teaming"))
+        end)
+        self._teamingCfg = (ok and cfg) or { pack = {} }
+    end
+    return self._teamingCfg
+end
+
+-- The largest engaged TEAM near a position (docs/TEAMING.md pack scaling for PATROL bands —
+-- the homeworld proximity spawners have their own player-triggered version in
+-- BaddieSpawnerService). For each player within pack.patrol_engaged_radius, count them plus
+-- teammates also within it; take the max. Nobody around = 1 (ambient bands stay base-size).
+function EnemyService:_engagedTeamAt(position)
+    local pack = self:_teamingConfig().pack or {}
+    local radius = tonumber(pack.patrol_engaged_radius) or tonumber(pack.engaged_radius) or 90
+    local best = 1
+    for _, player in ipairs(Players:GetPlayers()) do
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp and (hrp.Position - position).Magnitude <= radius then
+            local n = 1
+            local members = player:GetAttribute("TeamMembers")
+            if type(members) == "string" and members ~= "" then
+                for name in members:gmatch("[^,]+") do
+                    if name ~= player.Name then
+                        local mate = Players:FindFirstChild(name)
+                        local mh = mate
+                            and mate.Character
+                            and mate.Character:FindFirstChild("HumanoidRootPart")
+                        if mh and (mh.Position - position).Magnitude <= radius then
+                            n += 1
+                        end
+                    end
+                end
+            end
+            best = math.max(best, n)
+        end
+    end
+    return best
+end
+
 function EnemyService:_pickPatrolBand(cfg, part)
     local origin = self:_caveOrigin(part)
     local allegiance = self:_caveAllegiance(part)
+    -- PACK SCALING (docs/TEAMING.md): band size + unit counts + the band cap all grow with
+    -- the biggest engaged team near this cave stop. Solo/ambient = 1 → identical to before.
+    local engaged = self:_engagedTeamAt(part.Position)
+    local teamingCfg = self:_teamingConfig()
+    local bandCap = PackScale.count(
+        math.max(1, math.floor(tonumber(cfg.max_band_units) or 8)),
+        engaged,
+        nil,
+        teamingCfg
+    )
 
     -- PET INVADERS — opposing-realm pet models as the band.
     if cfg.use_pet_invaders and allegiance then
         local roster = self:_realmPetRoster(allegiance) -- weak -> strong
         if #roster > 0 then
             local size = math.min(
-                math.max(1, math.floor(cfg.band_size or 4)),
-                math.max(1, math.floor(tonumber(cfg.max_band_units) or 8))
+                PackScale.count(
+                    math.max(1, math.floor(cfg.band_size or 4)),
+                    engaged,
+                    nil,
+                    teamingCfg
+                ),
+                bandCap
             )
             local specs = {}
             local scary = math.random() < (tonumber(cfg.pet_invader_scary_chance) or 0.18)
@@ -4454,12 +4513,18 @@ function EnemyService:_pickPatrolBand(cfg, part)
             },
         }
     end
-    -- clamp total head count so a mis-edited pool can't field a horde; emit { id } specs
-    local cap = math.max(1, math.floor(tonumber(cfg.max_band_units) or 8))
+    -- clamp total head count so a mis-edited pool can't field a horde; emit { id } specs.
+    -- Both the per-unit counts and the cap ride the team-scaled multiplier from above.
     local specs = {}
     for _, u in ipairs(units) do
-        for _ = 1, math.max(1, math.floor(tonumber(u.count) or 1)) do
-            if #specs >= cap then
+        local unitCount = PackScale.count(
+            math.max(1, math.floor(tonumber(u.count) or 1)),
+            engaged,
+            nil,
+            teamingCfg
+        )
+        for _ = 1, unitCount do
+            if #specs >= bandCap then
                 break
             end
             specs[#specs + 1] = { id = u.enemy }

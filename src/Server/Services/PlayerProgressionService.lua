@@ -99,9 +99,17 @@ function PlayerProgressionService:Start()
             end
         end)
     end
-    Players.PlayerAdded:Connect(publishLater)
-    for _, player in ipairs(Players:GetPlayers()) do
+    -- SIDEKICK refresh: joining/leaving a team republishes the combat level immediately
+    -- (PartyService stamps TeamLead), so the accuracy/damage curves see the sync at once.
+    local function hook(player)
         publishLater(player)
+        player:GetAttributeChangedSignal("TeamLead"):Connect(function()
+            player:SetAttribute("EffectiveLevel", self:GetEffectiveLevel(player))
+        end)
+    end
+    Players.PlayerAdded:Connect(hook)
+    for _, player in ipairs(Players:GetPlayers()) do
+        hook(player)
     end
 end
 
@@ -158,7 +166,22 @@ function PlayerProgressionService:GetEffectiveLevel(player)
     if not player then
         return 1
     end
-    -- Future: a team-sync override stored on the player; for now it's the earned/combat level.
+    -- SIDEKICK/EXEMPLAR (task #150, docs/TEAMING.md): a teamed player fights at the TEAM
+    -- LEAD's combat level — up (sidekick: an L20 teaming with an L50 lead can actually hit
+    -- the lead's content) or down (exemplar). POWER AXIS ONLY by construction: this feeds
+    -- the level-diff curves via the EffectiveLevel attribute; entitlements (power picks,
+    -- claims, shop) read claimed level. The lead anchors to themself (TeamLead == own name
+    -- skips the override), so there is no loop.
+    local leadName = player:GetAttribute("TeamLead")
+    if type(leadName) == "string" and leadName ~= "" and leadName ~= player.Name then
+        local lead = Players:FindFirstChild(leadName)
+        if lead then
+            local leadLevel = self:GetEarnedLevel(lead)
+            if leadLevel and leadLevel > 0 then
+                return leadLevel
+            end
+        end
+    end
     return self:GetEarnedLevel(player)
 end
 
@@ -210,6 +233,14 @@ function PlayerProgressionService:_publish(player)
     -- Combat level the level-diff curves read (Accuracy + LevelScale). = earned today; teaming
     -- will override this attribute to sync sidekicks/exemplars to the team lead.
     player:SetAttribute("EffectiveLevel", self:GetEffectiveLevel(player))
+    -- SIDEKICK cascade: this player's earned level anchors their teammates' combat level —
+    -- when the LEAD levels, every member synced to them re-derives (members are never anyone
+    -- else's anchor, so this fans out exactly one hop).
+    for _, other in ipairs(Players:GetPlayers()) do
+        if other ~= player and other:GetAttribute("TeamLead") == player.Name then
+            other:SetAttribute("EffectiveLevel", self:GetEffectiveLevel(other))
+        end
+    end
     player:SetAttribute("PendingLevels", pending)
     player:SetAttribute("PendingTraining", self:GetPendingTraining(player))
     player:SetAttribute("XP", prog.xpIntoLevel)
