@@ -651,12 +651,29 @@ function TradeService:_giveAll(player, escrowForOwner)
     end
 end
 
--- Both confirmed: deliver A's escrow to B and B's escrow to A. All-or-nothing —
--- the items are already escrowed, so neither side can be left holding both/none.
+-- Both confirmed: deliver A's escrow to B and B's escrow to A. The items are already
+-- escrowed, so neither side can be left holding both/none. DETACH-THEN-GIVE (2026-07-07
+-- transaction audit): the escrow tables are detached from the session BEFORE granting, so a
+-- grant that throws mid-delivery can no longer be double-paid by a second Confirm re-entering
+-- _deliver, nor by the disconnect refund — the session's escrow is already empty.
 function TradeService:_deliver(session)
     local pa, pb = playerById(session.a), playerById(session.b)
-    self:_giveAll(pb, session.escrow[session.a])
-    self:_giveAll(pa, session.escrow[session.b])
+    local escrowA, escrowB = session.escrow[session.a], session.escrow[session.b]
+    session.escrow[session.a], session.escrow[session.b] = {}, {}
+    local okA = pcall(function()
+        self:_giveAll(pb, escrowA)
+    end)
+    local okB = pcall(function()
+        self:_giveAll(pa, escrowB)
+    end)
+    if not (okA and okB) and self._logger then
+        self._logger:Warn("Trade delivery grant threw mid-way (escrow detached, no re-entry)", {
+            a = session.a,
+            b = session.b,
+            okA = okA,
+            okB = okB,
+        })
+    end
 
     local rec = TradeLogic.auditRecord(
         session.a,

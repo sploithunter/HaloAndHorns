@@ -70,16 +70,42 @@ function FusionService:Fuse(player, uidA, uidB)
     local outputTheme = FusionLogic.resolveTheme(recA.theme, recB.theme, self._config)
     local outputElement = FusionLogic.outputElement(self._config)
 
-    -- Consume both inputs permanently, then produce the Chaotic output.
-    inventory:RemoveItem(player, "pets", uidA, 1)
-    inventory:RemoveItem(player, "pets", uidB, 1)
+    -- MINT-FIRST ordering (2026-07-07 transaction audit: this was the SellJunk loss class —
+    -- both inputs consumed, then an UNCHECKED AddItem; a full bucket or a folder-rebuild throw
+    -- ate two pets with no output and no rollback). Produce the Chaotic output FIRST: if the
+    -- mint fails nothing was taken; if an input removal then fails, revert the mint (and put
+    -- back the first input if it already went). Every failure point leaves the player whole —
+    -- or momentarily one pet ahead, never behind.
     local outputData = {
         id = recA.id,
         variant = recA.variant or "basic",
         element = outputElement,
         theme = outputTheme,
     }
-    local outUid = inventory:AddItem(player, "pets", outputData)
+    local okMint, outUid = pcall(function()
+        return inventory:AddItem(player, "pets", outputData)
+    end)
+    if not okMint or not outUid then
+        return { ok = false, reason = "no_space", message = "No room for the fused pet" }
+    end
+    local removedA = inventory:RemoveItem(player, "pets", uidA, 1)
+    local removedB = removedA and inventory:RemoveItem(player, "pets", uidB, 1)
+    if not (removedA and removedB) then
+        pcall(function()
+            inventory:RemoveItem(player, "pets", outUid, 1) -- un-mint
+        end)
+        if removedA then -- put the consumed first input back
+            pcall(function()
+                inventory:AddItem(player, "pets", {
+                    id = recA.id,
+                    variant = recA.variant or "basic",
+                    element = elemA,
+                    theme = recA.theme,
+                })
+            end)
+        end
+        return { ok = false, reason = "consume_failed" }
+    end
 
     local rec = FusionLogic.fusionRecord(player.UserId, uidA, uidB, outUid, os.time())
     self:_appendLog(rec)

@@ -87,18 +87,31 @@ function ShopService:Purchase(player, offerId)
         return verdict
     end
 
-    -- Spend the cost (server-authoritative), then grant the reward.
+    -- SPEND → GRANT → REFUND-ON-FAILURE (2026-07-07 transaction audit: this spent the
+    -- currency then ran an un-pcalled Grant — and even reported ok=true with NO reward when
+    -- RewardService wasn't resolvable — leaving the buyer currency-poor with nothing. Same
+    -- contract as EnhancementShopService:Buy now: the grant must land or the spend comes back.)
+    local rewards = self:_service("RewardService")
+    if not rewards then
+        return { ok = false, reason = "service_unavailable" }
+    end
+    local spent = {}
     for currency, amount in pairs((offer.cost and offer.cost.currencies) or {}) do
         self._dataService:RemoveCurrency(player, currency, amount, "shop:" .. offerId)
+        spent[currency] = amount
     end
-    local rewards = self:_service("RewardService")
-    local granted
-    if rewards then
-        granted = rewards:Grant(player, offer.reward, "shop:" .. offerId)
+    local okGrant, granted = pcall(function()
+        return rewards:Grant(player, offer.reward, "shop:" .. offerId)
+    end)
+    if not okGrant or not granted then
+        for currency, amount in pairs(spent) do
+            self._dataService:AddCurrency(player, currency, amount, "shop:" .. offerId .. ":refund")
+        end
+        return { ok = false, reason = "grant_failed" }
     end
     counts[offerId] = (counts[offerId] or 0) + 1
     self._dataService:RequestSave(player, "shop_purchase", { critical = true })
-    return { ok = true, offer = offerId, reward = granted and granted.granted }
+    return { ok = true, offer = offerId, reward = granted.granted }
 end
 
 return ShopService

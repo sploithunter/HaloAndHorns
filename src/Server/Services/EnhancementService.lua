@@ -330,10 +330,14 @@ function EnhancementService:Slot(player, powerId, slotIndex, uid)
     if slot.enh ~= nil and self._config.replace_destroys ~= true then
         return { ok = false, reason = "slot_occupied" }
     end
-    -- Commit: fill the slot (replace destroys the old record) + consume from the bucket.
+    -- Commit: consume from the bucket FIRST (the fallible step — folder rebuild inside), THEN
+    -- fill the slot (pure data, cannot fail). The old grant-first order could dup the
+    -- enhancement if the removal threw after the slot was set (2026-07-07 transaction audit).
     -- Level rides along — aggregate() scales (or kills) the boost vs the player's level.
+    if not invSvc:RemoveItem(player, BUCKET, uid, 1) then
+        return { ok = false, reason = "consume_failed" }
+    end
     slot.enh = { type = rec.type, origins = rec.origins, level = rec.level }
-    invSvc:RemoveItem(player, BUCKET, uid, 1)
     self._dataService:RequestSave(player, "enhancement_slot", { critical = true })
     pcall(function() -- mission counter (Origin Story "Slot an Enhancement")
         _G.RBXTemplateServices:Get("StatsService"):Increment(player, "enhancements_slotted", 1)
@@ -431,14 +435,25 @@ function EnhancementService:WipeAll(player)
     if not bucket then
         return { ok = false, reason = "service_unavailable" }
     end
-    local uids = {}
-    for uid in pairs(bucket.items or {}) do
-        uids[#uids + 1] = uid
+    -- one atomic BulkRemove (2026-07-07 audit: the per-uid RemoveItem loop was the SellJunk
+    -- O(N²) shape — N folder rebuilds + N saves — AND only removed qty 1 from each stack, so
+    -- a wipe left stack remainders behind). Full quantities, one rebuild, one save.
+    local entries = {}
+    for uid, item in pairs(bucket.items or {}) do
+        entries[#entries + 1] = {
+            uid = uid,
+            quantity = (type(item) == "table" and tonumber(item.quantity)) or 1,
+        }
     end
-    for _, uid in ipairs(uids) do
-        invSvc:RemoveItem(player, BUCKET, uid, 1)
+    local okAll, removedMap = invSvc:BulkRemove(player, BUCKET, entries)
+    if not okAll then
+        return { ok = false, reason = "wipe_failed" }
     end
-    return { ok = true, removed = #uids }
+    local n = 0
+    for _ in pairs(removedMap or {}) do
+        n += 1
+    end
+    return { ok = true, removed = n }
 end
 
 return EnhancementService

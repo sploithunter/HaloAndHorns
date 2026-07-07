@@ -490,7 +490,24 @@ end
 function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent)
     self._dataService:SetStat(player, "ClaimedLevel", newLevel)
     local entry = LevelTrack.entryForLevel(newLevel, self._levelTrack)
-    self:_grantLevelRewards(player, entry)
+    -- Gate-then-pay with a REVERT (2026-07-07 transaction audit): ClaimedLevel advanced first,
+    -- so a throw inside the reward grant used to eat the level's bundle permanently (marked
+    -- claimed, never paid, unreachable). A failed grant now rolls the gate back — the level
+    -- stays claimable and the retry pays it.
+    local okGrant, grantErr = pcall(function()
+        self:_grantLevelRewards(player, entry)
+    end)
+    if not okGrant then
+        self._dataService:SetStat(player, "ClaimedLevel", newLevel - 1)
+        if self._logger then
+            self._logger:Warn("Level reward grant failed; claim reverted", {
+                player = player.Name,
+                level = newLevel,
+                error = tostring(grantErr),
+            })
+        end
+        return false
+    end
     -- Equipped-pet slots are derived from LEVEL (GetEquippedPetSlotBonus, read in
     -- InventoryService:_getMaxEquippedSlots → the PetEquipSlots attribute the Pets window draws).
     -- Re-run the projection so a milestone slot appears LIVE — without this it only refreshed on the
@@ -548,7 +565,9 @@ function PlayerProgressionService:_advanceAuto(player)
         if LevelTrack.entryForLevel(nextLevel, self._levelTrack).requiresAltar then
             break -- stall: this level must be trained at the altar
         end
-        self:_applyLevel(player, nextLevel, true)
+        if not self:_applyLevel(player, nextLevel, true) then
+            break -- grant failed + gate reverted: stop, don't spin the guard retrying
+        end
     end
 end
 
@@ -578,6 +597,9 @@ function PlayerProgressionService:ClaimLevel(player, expectedLevel, silent)
 
     local newLevel = claimed + 1
     local entry = self:_applyLevel(player, newLevel, false, silent)
+    if not entry then -- grant failed, gate reverted: the level is still claimable
+        return { ok = false, reason = "grant_failed", claimedLevel = self:GetClaimedLevel(player) }
+    end
     self:_advanceAuto(player) -- auto-claim any filler that follows the trained level
     -- bus source (no default reactions — the client LevelUpController owns the level_up juice;
     -- this is the SERVER-truth signal consumers like the tutorial need)
