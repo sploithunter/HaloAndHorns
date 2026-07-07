@@ -181,6 +181,73 @@ function PartyService:SameTeam(a, b)
     return idA ~= nil and idA == self._playerParty[b.UserId]
 end
 
+-- TEAM FOLLOW across realm portals (Jason: follow must account for portal hops between realms):
+-- the client walk-follow (TeamFollowController) can't cross a portal — realm worlds sit at ±Y
+-- offsets — so when the followed teammate's CurrentLayer changes, the follower requests this
+-- warp. Deliberately NOT a free teleport (teleport-to-teammate stays a future POWER, per
+-- docs/TEAMING.md): it only fires on a LAYER mismatch and passes the same gates as touching the
+-- portal — built geometry + requires_level against EffectiveLevel (the sidekick guest pass).
+local FOLLOW_WARP_COOLDOWN = 4 -- seconds between accepted warps per player
+
+function PartyService:FollowWarp(player, targetName)
+    local target = type(targetName) == "string" and Players:FindFirstChild(targetName) or nil
+    if not target or target == player then
+        return { ok = false, reason = "no_target" }
+    end
+    if not self:SameTeam(player, target) then
+        return { ok = false, reason = "not_teamed" }
+    end
+    self._followWarpAt = self._followWarpAt or {}
+    local last = self._followWarpAt[player.UserId] or 0
+    if os.clock() - last < FOLLOW_WARP_COOLDOWN then
+        return { ok = false, reason = "cooldown" }
+    end
+    local okLoc, layers = pcall(function()
+        local locator = _G.RBXTemplateServices
+        return locator and locator:Get("LayerService")
+    end)
+    if not okLoc or not layers then
+        return { ok = false, reason = "service_unavailable" }
+    end
+    local myLayer = layers:GetCurrentLayer(player) or "base"
+    local destLayer = layers:GetCurrentLayer(target) or "base"
+    if myLayer == destLayer then
+        return { ok = false, reason = "same_layer" }
+    end
+    if destLayer ~= "base" then
+        -- never warp into unbuilt geometry (the void fall), same as RealmPortalService
+        local folderName = destLayer:gsub("^%l", string.upper) -- heaven_1 -> Heaven_1
+        local maps = workspace:FindFirstChild("Maps")
+        if not (maps and maps:FindFirstChild(folderName)) then
+            return { ok = false, reason = "no_geometry" }
+        end
+        local layersConfig = (self._configLoader and self._configLoader:LoadConfig("layers")) or {}
+        local access = layersConfig.access and layersConfig.access[destLayer]
+        local required = access and tonumber(access.requires_level)
+        if required and required > 1 then
+            local level = tonumber(player:GetAttribute("EffectiveLevel"))
+                or tonumber(player:GetAttribute("Level"))
+                or 1
+            if level < required then
+                return { ok = false, reason = "level_too_low", required = required }
+            end
+        end
+    end
+    -- force = the portal's bypass_access semantic (skip the soul/token economy; gates ran above)
+    local res = layers:UseLayer(player, destLayer, { force = true })
+    if type(res) == "table" and res.ok == false then
+        return res
+    end
+    self._followWarpAt[player.UserId] = os.clock()
+    if self._logger then
+        self._logger:Info(
+            "Follow warp",
+            { player = player.Name, target = target.Name, layer = destLayer }
+        )
+    end
+    return { ok = true, layer = destLayer }
+end
+
 -- Pure group math (difficulty scaling / loot split / attribution) for tests + UI.
 function PartyService:Simulate(opts)
     opts = opts or {}

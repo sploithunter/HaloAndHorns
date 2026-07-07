@@ -25,6 +25,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local TeamFollow = require(script.Parent.TeamFollowController)
 local POWER_ICONS = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("power_icons"))
 local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local PETS = require(ReplicatedStorage.Configs:WaitForChild("pets"))
@@ -577,6 +578,13 @@ function SquadHud.start()
                     card,
                     (selectedMate == name and not selectedMateSlot) and "select" or nil
                 )
+                if card.followBtn then -- following = the chip lights green (state, not memory)
+                    local active = TeamFollow.following() == name
+                    card.followBtn.BackgroundColor3 = active and Color3.fromRGB(60, 130, 70)
+                        or Color3.fromRGB(45, 48, 62)
+                    card.followBtn.TextColor3 = active and Color3.fromRGB(235, 255, 235)
+                        or Color3.fromRGB(190, 196, 212)
+                end
                 for pet, pc in pairs(card.petCards) do
                     HudCard.applyHighlight(
                         pc,
@@ -677,7 +685,7 @@ function SquadHud.start()
             lbl.Name = "Label"
             lbl.BackgroundTransparency = 1
             lbl.Position = UDim2.fromOffset(40, 2)
-            lbl.Size = UDim2.new(1, -48, 0, 16)
+            lbl.Size = UDim2.new(1, -72, 0, 16) -- leave the right edge to the follow chip
             lbl.Font = Enum.Font.GothamBold
             lbl.TextSize = 13
             lbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -689,7 +697,7 @@ function SquadHud.start()
             sub.Name = "Sub"
             sub.BackgroundTransparency = 1
             sub.Position = UDim2.fromOffset(40, 17)
-            sub.Size = UDim2.new(1, -48, 0, 12)
+            sub.Size = UDim2.new(1, -72, 0, 12)
             sub.Font = Enum.Font.Gotham
             sub.TextSize = 10
             sub.TextXAlignment = Enum.TextXAlignment.Left
@@ -717,6 +725,29 @@ function SquadHud.start()
             fCorner.CornerRadius = UDim.new(1, 0)
             fCorner.Parent = fill
 
+            -- FOLLOW chip (Jason: any member follows any teammate; "F wouldn't work for
+            -- mobile") — the toggle is a real button on the card so touch is first-class;
+            -- F with the teammate selected is the keyboard shortcut to the same state.
+            local followBtn = Instance.new("TextButton")
+            followBtn.Name = "Follow"
+            followBtn.AnchorPoint = Vector2.new(1, 0.5)
+            followBtn.Position = UDim2.new(1, -4, 0.5, 0)
+            followBtn.Size = UDim2.fromOffset(24, 24)
+            followBtn.BackgroundColor3 = Color3.fromRGB(45, 48, 62)
+            followBtn.BackgroundTransparency = 0.2
+            followBtn.BorderSizePixel = 0
+            followBtn.Font = Enum.Font.GothamBold
+            followBtn.TextSize = 12
+            followBtn.Text = "👣"
+            followBtn.TextColor3 = Color3.fromRGB(190, 196, 212)
+            followBtn.Parent = frame
+            local fbCorner = Instance.new("UICorner")
+            fbCorner.CornerRadius = UDim.new(1, 0)
+            fbCorner.Parent = followBtn
+            followBtn.MouseButton1Click:Connect(function()
+                TeamFollow.toggle(name)
+            end)
+
             frame.MouseButton1Click:Connect(function()
                 local wasPicked = selectedMate == name
                 setSelected(nil) -- clears pet/TEAM pick + selectedMate; server clears both attrs
@@ -729,7 +760,14 @@ function SquadHud.start()
                 refreshMateHighlights()
             end)
 
-            return { frame = frame, stroke = stroke, fill = fill, sub = sub, petCards = {} }
+            return {
+                frame = frame,
+                stroke = stroke,
+                fill = fill,
+                sub = sub,
+                followBtn = followBtn,
+                petCards = {},
+            }
         end
 
         -- EXPANDED roster (Jason: "by a team of two we should just see all pets"): a DUO always
@@ -1114,6 +1152,16 @@ function SquadHud.start()
             cycle(reverse and -1 or 1)
         elseif input.KeyCode == enemyCycleKey then
             cycleEnemy(reverse and -1 or 1)
+        elseif input.KeyCode == Enum.KeyCode.F and selectedMate then
+            -- keyboard shortcut for the mate-card follow chip: F follows the selected teammate
+            TeamFollow.toggle(selectedMate)
+        end
+    end)
+
+    -- follow state changes from anywhere (chip, F, auto-cancel on input/portal-gate) re-tint
+    TeamFollow.onChanged(function()
+        if refreshMateHighlights then
+            refreshMateHighlights()
         end
     end)
 

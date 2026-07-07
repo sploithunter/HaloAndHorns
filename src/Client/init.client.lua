@@ -139,6 +139,18 @@ do
     end
 end
 
+-- Team follow (docs/TEAMING.md): CoH-style /follow of a TEAMMATE — walk-follow with a
+-- manual-input break; realm-portal hops ride team.follow_warp. Toggled from SquadHud
+-- (follow chip on the mate card / F with the teammate selected).
+do
+    local ok, err = pcall(function()
+        require(script.Systems.TeamFollowController).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start TeamFollowController", { error = tostring(err) })
+    end
+end
+
 -- Enemy movement smoothing (Feature 10): interpolates the visible enemy model toward
 -- the server's authoritative step target each frame, so chasing looks smooth despite
 -- the coarse server tick. Self-gates on pet_follow.service_owned.

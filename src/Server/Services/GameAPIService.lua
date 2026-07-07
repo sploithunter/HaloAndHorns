@@ -1249,6 +1249,11 @@ function GameAPIService:_registerCommands()
         accept = { desc = "Accept your pending team invite.", fn = "Accept" },
         decline = { desc = "Decline your pending team invite.", fn = "Decline" },
         leave = { desc = "Leave your team.", fn = "Leave" },
+        follow_warp = {
+            desc = "While following a teammate, take the realm portal they took (portal gates apply).",
+            fn = "FollowWarp",
+            arg = "target",
+        },
     }) do
         bus:register("team." .. cmd, {
             description = spec.desc,

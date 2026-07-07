@@ -33,6 +33,18 @@ return {
         level_offset = -1,
     },
 
+    -- TEAM FOLLOW (client TeamFollowController + PartyService:FollowWarp): any member can
+    -- auto-follow any teammate — follow chip on the mate card (mobile-first) or F with the
+    -- teammate selected. Walking is client-side; manual movement input breaks it. When the
+    -- target takes a realm portal the client requests team.follow_warp, which re-runs the
+    -- portal's own gates server-side (never a free same-layer teleport — that idea stays a
+    -- future POWER, docs/TEAMING.md).
+    follow = {
+        stop_distance = 7, -- studs: hang back this far instead of crowding the target
+        refresh = 0.15, -- seconds between follow movement steps
+        warp_cooldown = 5, -- client seconds between follow_warp requests (server holds 4 too)
+    },
+
     -- Kill credit (TM5): teammates of any damage contributor SHARE the kill award when
     -- within `radius` studs of the down site — the healer/buffer gets paid without landing
     -- a hit. Contributors themselves are always paid regardless of distance.
