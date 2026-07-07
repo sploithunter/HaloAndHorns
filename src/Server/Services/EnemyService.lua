@@ -36,6 +36,7 @@ local PetMeander = require(ReplicatedStorage.Shared.Game.PetMeander)
 local RingSeparate = require(ReplicatedStorage.Shared.Game.RingSeparate)
 local AggroTable = require(ReplicatedStorage.Shared.Game.AggroTable)
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale) -- team-scaled patrol bands
+local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath) -- team-scaled enemy HP
 local Allegiance = require(ReplicatedStorage.Shared.Game.Allegiance)
 local AggroLeash = require(ReplicatedStorage.Shared.Game.AggroLeash)
 local AggroModel = require(ReplicatedStorage.Shared.Game.AggroModel) -- unified aggro game (configs/aggro.lua)
@@ -5073,19 +5074,44 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
 
     -- Effective level = base (config `level`, else the spawning player's COMBAT level so a
     -- standard mob reads "even"/white) + the elite rank offset (lieutenant/boss read
-    -- higher). Drives damage scaling + the difficulty colour label. EffectiveLevel, NOT
-    -- Level: a SIDEKICKED member fights at the lead's level, so the packs they trigger must
-    -- come out at team level too (live-caught: Macros at 20-sidekicked-49 was spawning
-    -- level-23 mobs that the level-50 lead trivially deleted).
-    local playerLevel = player:GetAttribute("EffectiveLevel") or player:GetAttribute("Level") or 1
+    -- higher). Drives damage scaling + the difficulty colour label.
+    -- TEAM SPAWNS TUNE TO THE LEAD (Jason): when the trigger player is teamed, BOTH the level
+    -- and the ±3 difficulty knob come from the TEAM LEAD — the lead's settings define the
+    -- team's content (lead 50 at +2 ⇒ level-52 packs, whoever trips the spawner). Solo
+    -- players tune to themselves; EffectiveLevel keeps a solo-triggering sidekick correct.
+    local tuner = player
+    local leadName = player:GetAttribute("TeamLead")
+    if type(leadName) == "string" and leadName ~= "" and leadName ~= player.Name then
+        local lead = Players:FindFirstChild(leadName)
+        if lead then
+            tuner = lead
+        end
+    end
+    local playerLevel = tuner:GetAttribute("EffectiveLevel") or tuner:GetAttribute("Level") or 1
     local rankOff = (
         self._levelingConfig.rank_offset and self._levelingConfig.rank_offset[def.tier]
     ) or 0
-    -- Per-player difficulty knob (SettingsService EnemyLevelOffset, -3..+3): scoots the
-    -- spawn level easier/harder vs the player. Clamped here as a guard; floored at 1.
-    local lvlOffset = math.clamp(tonumber(player:GetAttribute("EnemyLevelOffset")) or 0, -3, 3)
+    -- Difficulty knob (SettingsService EnemyLevelOffset, -3..+3) — the tuner's, i.e. the
+    -- LEAD's when teamed. Clamped here as a guard; floored at 1.
+    local lvlOffset = math.clamp(tonumber(tuner:GetAttribute("EnemyLevelOffset")) or 0, -3, 3)
     local baseLevel = math.max(1, (def.level or playerLevel) + lvlOffset)
     model:SetAttribute("Level", LevelScale.effectiveLevel(baseLevel, rankOff))
+    -- TEAM HP (docs/TEAMING.md — PartyMath.scaledHp, finally wired): packs facing an engaged
+    -- TEAM are meatier as well as more numerous. HP × (1 + per_extra × (engaged−1)), toggled
+    -- by teaming pack.hp_scaling; applies to EVERY tier (bosses scale hp-only by design).
+    local engaged = self:_engagedTeamAt(position)
+    if engaged > 1 and (self:_teamingConfig().pack or {}).hp_scaling ~= false then
+        local perExtra = tonumber(
+            (self._combatConfig and self._combatConfig.group_scaling or {}).per_extra_player
+        ) or 0.5
+        local hp = PartyMath.scaledHp(
+            tonumber(model:GetAttribute("MaxHP")) or tonumber(def.hp) or 1,
+            engaged,
+            perExtra
+        )
+        model:SetAttribute("HP", hp)
+        model:SetAttribute("MaxHP", hp)
+    end
     -- Stamp the elite TIER so the loot award can resolve the rank multiplier for enemies with no
     -- STATIC def — the realms are pet-invaders (petinv_*, synthesized defs) whose tier lived only in
     -- the transient def, so bosses/lieutenants were paying trash-mob XP+coins (and warning). Now the
