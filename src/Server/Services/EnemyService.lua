@@ -4532,7 +4532,10 @@ function EnemyService:_petEnemyDef(petId, petDef)
     -- Other auras (defense/offense/yield/luck/hold) have no enemy mechanic yet, so those are simply
     -- neutral non-combatants.
     local roles = self._petRoles or {}
-    local isSupport = (roles.roles and roles.roles[petId]) == "support"
+    -- by_type is the petId -> roleId map ("roles" is the role DEFINITIONS table keyed by role
+    -- id — indexing it by petId was always nil, so EVERY invader synthesized as melee and
+    -- heal-aura supports never mended their band; live-caught as all-melee badges in Hell 2 Ice).
+    local isSupport = (roles.by_type and roles.by_type[petId]) == "support"
     local aura = roles.support_auras and roles.support_auras[petId]
     local attack = { damage = dmg, cadence = tonumber(cfg.pet_enemy_cadence) or 1.5, sundering = 0 }
     local autoHeal
