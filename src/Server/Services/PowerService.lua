@@ -732,6 +732,13 @@ function PowerService:_teamTargetPets(player, powerId)
     if type(targetName) ~= "string" or targetName == "" or targetName == player.Name then
         return nil
     end
+    -- The cast-through redirect applies to SINGLE-TARGET powers only (live-caught: bastion
+    -- with a teammate pet selected shrank to that ONE pet). A squad-wide cast IGNORES the
+    -- selection and falls through to _withTeamPets — the whole team gets it, as designed.
+    local def = self._powersConfig.powers and self._powersConfig.powers[powerId]
+    if not (def and def.target == "single_pet") then
+        return nil
+    end
     self:_teamingInit()
     local family = self:_supportFamily(powerId)
     if not family then
