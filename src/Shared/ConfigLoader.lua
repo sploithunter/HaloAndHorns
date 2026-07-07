@@ -702,9 +702,26 @@ function ConfigLoader:ValidateConfig(configName, config)
         return self:_validateAnimationsConfig(config)
     elseif configName == "teaming" then
         return self:_validateTeamingConfig(config)
+    elseif configName == "capital_baddies" then
+        return self:_validateCapitalBaddiesConfig(config)
     end
 
     -- Default validation for other configs
+    return true
+end
+
+-- Capital baddies (configs/capital_baddies.lua): the authored anchor ladder for scary bands.
+-- Permissive (shape, not every knob) so kit tuning never breaks Studio boot.
+function ConfigLoader:_validateCapitalBaddiesConfig(config)
+    if type(config) ~= "table" then
+        return false, "Capital-baddies config must be a table"
+    end
+    if type(config.kits) ~= "table" then
+        return false, "Capital-baddies config missing required 'kits' table"
+    end
+    if type(config.anchors_by_team) ~= "table" then
+        return false, "Capital-baddies config missing required 'anchors_by_team' table"
+    end
     return true
 end
 

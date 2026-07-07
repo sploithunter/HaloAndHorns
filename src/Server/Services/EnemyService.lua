@@ -4555,6 +4555,76 @@ function EnemyService:_teamSquads(player)
     return squads
 end
 
+-- CAPITAL ANCHORS (configs/capital_baddies.lua, Jason 2026-07-07): a SCARY band's anchors —
+-- lieutenants/bosses/arch-villains with POWERS (AoE kits, band healer), not just statlines.
+-- Composition comes from anchors_by_team[engaged]; each anchor's MODEL is a deterministic
+-- strongest-first roster slice; its kit (hp/dmg multipliers + splash/slam/pulse/heal) rides
+-- the def the generic ability loops already execute. Every number is config-tunable.
+function EnemyService:_capitalAnchors(roster, engaged, origin)
+    local okCfg, cap = pcall(function()
+        return self._configLoader:LoadConfig("capital_baddies")
+    end)
+    if not okCfg or type(cap) ~= "table" then
+        return {}
+    end
+    local comp = cap.anchors_by_team[math.clamp(engaged, 1, #cap.anchors_by_team)] or {}
+    local slices = cap.roster_slices or {}
+    local kits = cap.kits or {}
+    -- strongest-first view of the (weak->strong) roster
+    local strongest = {}
+    for i = #roster, 1, -1 do
+        strongest[#strongest + 1] = roster[i]
+    end
+    local out = {}
+    for tier, count in pairs(comp) do
+        local kit = kits[tier]
+        local slice = slices[tier] or { 1, 1 }
+        for k = 1, math.max(0, math.floor(tonumber(count) or 0)) do
+            -- walk the tier's slice; wrap if the comp asks for more anchors than the slice holds
+            local lo, hi = slice[1] or 1, slice[2] or slice[1] or 1
+            local idx = lo + ((k - 1) % math.max(1, hi - lo + 1))
+            local pick = strongest[math.min(idx, #strongest)]
+            if pick and kit then
+                local def = self:_petEnemyDef(pick.id, pick.def)
+                def.tier = tier
+                def.hp = math.max(1, math.floor(def.hp * (tonumber(kit.hp_mult) or 1)))
+                if def.attack and def.attack.damage and def.attack.damage > 0 then
+                    def.attack.damage =
+                        math.floor(def.attack.damage * (tonumber(kit.dmg_mult) or 1))
+                end
+                local abilities = {}
+                if kit.splash then
+                    abilities.splash = kit.splash
+                end
+                if kit.slam then
+                    abilities.slam = kit.slam
+                end
+                if kit.pulse then
+                    local p = table.clone(kit.pulse)
+                    p.element = p.element or origin -- pulse reads in the cave's element
+                    abilities.pulse = p
+                end
+                if next(abilities) then
+                    def.abilities = abilities
+                end
+                if kit.heal then
+                    def.auto_heal = {
+                        interval = tonumber(kit.heal.interval) or 3,
+                        amount = tonumber(kit.heal.amount)
+                            or math.max(
+                                1,
+                                math.floor(def.hp * (tonumber(kit.heal.fraction) or 0.05))
+                            ),
+                        range = tonumber(kit.heal.range) or 45,
+                    }
+                end
+                out[#out + 1] = { id = "petinv_" .. pick.id, def = def }
+            end
+        end
+    end
+    return out
+end
+
 function EnemyService:_pickPatrolBand(cfg, part)
     local origin = self:_caveOrigin(part)
     local allegiance = self:_caveAllegiance(part)
@@ -4596,9 +4666,12 @@ function EnemyService:_pickPatrolBand(cfg, part)
             )
             local scary = math.random() < scaryChance
             if scary then
-                local boss = roster[#roster] -- strongest opposing pet anchors the scary band
-                specs[#specs + 1] =
-                    { id = "petinv_" .. boss.id, def = self:_petEnemyDef(boss.id, boss.def) }
+                -- CAPITAL ANCHORS (configs/capital_baddies.lua — Jason: anchors have POWERS,
+                -- trash just does damage; authored, not random). Tiered anchors by engaged
+                -- team size, models from the roster's strongest slices, kits attached.
+                for _, spec in ipairs(self:_capitalAnchors(roster, engaged, origin)) do
+                    specs[#specs + 1] = spec
+                end
             end
             while #specs < size do
                 local pick = roster[math.random(1, #roster)]
