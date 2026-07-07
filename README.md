@@ -1,5 +1,7 @@
 # Pet Realm — *Halo & Horns*
 
+**▶ Play it now on Roblox:** <https://www.roblox.com/games/77766176054993/Halo-and-Horns>
+
 A config-as-code Roblox pet game built with Rojo. You mine biome ore, hatch and grow a squad of pets, fight alongside them with a City-of-Heroes–style power kit, and push outward through a ring of biomes toward a heaven/hell realm axis. Code owns the reusable game systems; Studio and world builders own map geometry, art, and invisible gameplay markers.
 
 The project started as a generic pet/clicker template and **is now the game itself** (the repo *is* Pet Realm) — the template baseline survives underneath as the foundation layer.

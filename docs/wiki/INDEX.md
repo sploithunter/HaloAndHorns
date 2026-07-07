@@ -2,6 +2,8 @@
 
 This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblox pet game. It follows the LLM Wiki pattern: raw/reference material is preserved, and agents maintain concise Markdown pages that compile current project knowledge.
 
+**▶ The published game:** <https://www.roblox.com/games/77766176054993/Halo-and-Horns> (universe 10307183003, group-owned 15872767).
+
 > **Repo lineage (2026-07-02):** this repo (`sploithunter/HaloAndHorns`) began as a fresh single-commit
 > import of the working tree — deliberately no history. The predecessor `sploithunter/RBX-Template`
 > holds all pre-import commit history AND the alpha GitHub-issue queue; look there for archaeology,
