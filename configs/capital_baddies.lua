@@ -17,12 +17,14 @@
 
 return {
     -- How many anchors a SCARY band fields, by engaged team size (index clamps to the table
-    -- length, so 5+ player teams read the last row).
+    -- length, so 5+ player teams read the last row). PATROLS CAP AT BOSS (Jason): villains /
+    -- arch-villains are reserved for MISSIONS (not built yet) — the archvillain kit below
+    -- stays defined for that future content, patrol composition never rolls it.
     anchors_by_team = {
         { lieutenant = 1 }, -- solo
         { boss = 1, lieutenant = 1 }, -- duo
         { boss = 1, lieutenant = 2 }, -- trio
-        { archvillain = 1, boss = 1, lieutenant = 2 }, -- full team
+        { boss = 2, lieutenant = 2 }, -- full team
     },
 
     -- Which roster ranks (strongest-first) each tier draws its MODEL from.
