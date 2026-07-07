@@ -1051,6 +1051,34 @@ function SquadHud.start()
             setSelected(petSlot(model))
             return
         end
+        -- ANY other player's pet is selectable too (Jason: "if you can select it you should
+        -- be able to affect it" — CoH drive-by support, no team required). Resolve the pet
+        -- model (the child of the owner's folder) and select it as the cast-through target.
+        local pp = Workspace:FindFirstChild("PlayerPets")
+        if model and pp and model:IsDescendantOf(pp) then
+            local pet = model
+            while pet.Parent and pet.Parent.Parent and pet.Parent.Parent ~= pp do
+                pet = pet.Parent
+            end
+            local ownerName = pet.Parent and pet.Parent.Name
+            if ownerName and ownerName ~= localPlayer.Name then
+                setSelected(nil) -- clears own-pet/TEAM pick + both attrs server-side
+                selectedMate = ownerName
+                selectedMateSlot = petSlot(pet)
+                pcall(function()
+                    Signals.Combat_SelectPetTarget:FireServer({
+                        slot = petSlot(pet),
+                        playerName = ownerName,
+                    })
+                end)
+                if refreshMateHighlights then
+                    refreshMateHighlights()
+                end
+                worldHighlight.Adornee = pet
+                worldHighlight.Enabled = not pet:GetAttribute("CombatDowned")
+                return
+            end
+        end
         local enemies = enemiesFolder()
         if model and enemies and model:IsDescendantOf(enemies) then
             local bid = model:FindFirstChild("BreakableID")

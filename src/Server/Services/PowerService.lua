@@ -729,16 +729,11 @@ function PowerService:_teamTargetPets(player, powerId)
     if not target then
         return nil
     end
-    local partySvc = _G.RBXTemplateServices
-        and select(
-            2,
-            pcall(function()
-                return _G.RBXTemplateServices:Get("PartyService")
-            end)
-        )
-    if not (partySvc and partySvc.SameTeam and partySvc:SameTeam(player, target)) then
-        return nil -- not teamed: never touch another player's pets
-    end
+    -- SELECTABLE = AFFECTABLE (Jason, CoH-style): an EXPLICITLY selected player's pets take
+    -- support casts teamed or NOT — drive-by heals/shields on strangers are the point. No
+    -- SameTeam gate here; the support_families check above is the safety (only friendly
+    -- effects ever cross player boundaries). Teaming's perk stays the roster conveniences:
+    -- the HUD cards and whole-team AoE buffs (_withTeamPets IS SameTeam-gated).
     local folder = Workspace:FindFirstChild("PlayerPets")
         and Workspace.PlayerPets:FindFirstChild(targetName)
     if not folder then
