@@ -56,6 +56,14 @@ function BaddieSpawnerService:_scan()
     end
 end
 
+-- Arm any newly present spawner parts NOW — mission instances stamp spawners
+-- mid-session and shouldn't wait out the slow 15s rescan timer.
+function BaddieSpawnerService:Rescan()
+    if self._config then
+        self:_scan()
+    end
+end
+
 -- The faction a spawner draws from, keyed off its name SUFFIX (after part_prefix). The map has
 -- BaddieSpawnerLava + BaddieSpawnerDesert; zone_faction maps "Lava" -> "lava", and everything else
 -- falls back to default_faction. So a lava-zone spawner only rolls lava packs, never Earth bears.

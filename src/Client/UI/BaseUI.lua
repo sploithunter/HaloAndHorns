@@ -2272,6 +2272,13 @@ function BaseUI:_bindQuestTracker()
         end
         self._prevQuestClaimables = claimables
 
+        -- MISSION OVERRIDE (Jason: reuse THIS tracker, no parallel banner):
+        -- while inside a mission the tracker shows the mission objective;
+        -- quest display resumes as soon as the attrs clear on exit.
+        if self._missionOverride and self._missionOverride() then
+            return
+        end
+
         local q = pick(res.quests, res.activeTrack)
         if not q then
             -- nothing claimable and no active focus -> nudge the player to pick a branch (or all
@@ -2310,6 +2317,51 @@ function BaseUI:_bindQuestTracker()
         if self._questFill then
             self._questFill.Size = UDim2.new(frac, 0, 1, 0)
         end
+    end
+
+    -- Mission override: MissionInstanceService publishes MissionObjective*
+    -- player attributes while a mission is live (Text = the instruction,
+    -- Count = "3/9", Fraction = fill 0..1). The tracker renders them verbatim
+    -- (pure attr render), hides the claim chip, and un-dismisses itself on
+    -- entry; a cleared Text hands the tracker straight back to quests.
+    do
+        local player = game:GetService("Players").LocalPlayer
+        self._missionOverride = function()
+            local text = player:GetAttribute("MissionObjectiveText")
+            if type(text) ~= "string" or text == "" then
+                return false
+            end
+            if self._questClaimBtn then
+                self._questClaimBtn.Visible = false
+            end
+            if self._questDesc then
+                self._questDesc.Text = text
+            end
+            if self._questText then
+                self._questText.Text = tostring(player:GetAttribute("MissionObjectiveCount") or "")
+            end
+            if self._questFill then
+                local frac = tonumber(player:GetAttribute("MissionObjectiveFraction")) or 0
+                self._questFill.Size = UDim2.new(math.clamp(frac, 0, 1), 0, 1, 0)
+            end
+            return true
+        end
+        for _, attr in ipairs({
+            "MissionObjectiveText",
+            "MissionObjectiveCount",
+            "MissionObjectiveFraction",
+        }) do
+            player:GetAttributeChangedSignal(attr):Connect(function()
+                if self._missionOverride() then
+                    pcall(function()
+                        require(script.Parent.Parent.Systems.QuestTrackerStyle).show()
+                    end)
+                else
+                    refresh() -- mission over -> restore the quest view now
+                end
+            end)
+        end
+        self._missionOverride()
     end
 
     -- tiny CLAIM chip riding the tracker's top-right corner; visible only when the

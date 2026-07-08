@@ -128,6 +128,28 @@ return {
                 AreaId = "string",
             },
         },
+        -- Mission worldgen (docs/MISSION_WORLDGEN.md §2.3):
+        -- MissionDoor = authored MAIN-world door part → MissionInstanceService
+        -- binds a ProximityPrompt that opens the mission for the toucher's team.
+        MissionDoor = {
+            required_attributes = {
+                MissionId = "string",
+            },
+            optional_attributes = {},
+            config = "missions.missions",
+            id_attribute = "MissionId",
+        },
+        -- MissionObjective = objective marker INSIDE generated tiles; authored
+        -- in the kit with $MISSION placeholder attrs, rewritten by the stamper.
+        MissionObjective = {
+            required_attributes = {
+                ObjectiveId = "string",
+            },
+            optional_attributes = {
+                ObjectiveKind = "string",
+                AreaId = "string",
+            },
+        },
     },
 
     contracted_names = {

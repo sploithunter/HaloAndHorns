@@ -992,12 +992,53 @@ function EnemyService:_despawnEnemy(targetId)
     if not entry then
         return
     end
+    -- TRIPWIRE: a persistent enemy (mission population) may only leave the
+    -- field via defeat (_onDefeated) or the mission-teardown bounds sweep.
+    -- Any other caller reaching here is a bug — name it with a traceback.
+    if entry.persistent and not self._missionTeardownSweep then
+        warn(
+            "[MissionPersistent] persistent enemy despawned OUTSIDE teardown: "
+                .. tostring(entry.enemyId)
+                .. "\n"
+                .. debug.traceback()
+        )
+    end
     self._enemies[targetId] = nil
     self:_clearEnemyFromPetThreat(targetId)
     self:_releasePets(targetId)
     if entry.model then
         entry.model:Destroy()
     end
+end
+
+-- Despawn every live enemy inside an axis-aligned world region, with the full
+-- cleanup path (threat tables, pet release, model). Mission-instance teardown
+-- uses this so waves born inside a mission die with it instead of loitering
+-- forever at the slot (docs/MISSION_WORLDGEN.md §5.2).
+function EnemyService:DespawnEnemiesInBounds(minV, maxV)
+    local removed = 0
+    self._missionTeardownSweep = true
+    for targetId, entry in pairs(self._enemies) do
+        local model = entry.model
+        local ok, pos = pcall(function()
+            return model and model:GetPivot().Position
+        end)
+        if
+            ok
+            and pos
+            and pos.X >= minV.X
+            and pos.X <= maxV.X
+            and pos.Y >= minV.Y
+            and pos.Y <= maxV.Y
+            and pos.Z >= minV.Z
+            and pos.Z <= maxV.Z
+        then
+            self:_despawnEnemy(targetId)
+            removed += 1
+        end
+    end
+    self._missionTeardownSweep = false
+    return removed
 end
 
 function EnemyService:_onDefeated(targetId)
@@ -5211,6 +5252,7 @@ function EnemyService:_combatTick(dt)
             elseif
                 idleDespawn > 0
                 and entry.everEngaged -- only retire enemies that ENGAGED then got abandoned;
+                and not entry.persistent -- mission mobs wait forever (clear-gate populations)
                 and (now - (entry.lastActiveAt or now)) > idleDespawn
             then
                 -- never-engaged loiterers persist as ambiance (the combat-onramp preview for
@@ -5371,6 +5413,7 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         pos = position,
         aggro = AggroTable.new(),
         lastActiveAt = os.clock(), -- engagement timer seed (idle-despawn clock; refreshed while aggro'd)
+        persistent = (opts and opts.persistent) == true, -- mission population: NEVER idle-despawns (defeat or teardown only)
         homeArea = self:_areaAt(position), -- territorial: only engages players in this area
         leashRegion = self:_leashRegionAt(position), -- movement pen (hard wall at its boundary)
         halfHeight = halfHeight, -- ground-snap pivot offset
@@ -5445,8 +5488,14 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     -- AggroOwner attribute is stamped too (else the enemy chases + attacks but never shows on the
     -- client EnemyHud). ONRAMP: a sub-threshold trigger (a low-level player walking a spawner) gets
     -- a wave that LOITERS instead — visible in the world, but it won't aggress until they hit L5+.
-    if self:_engagesCombat(player) and self:_inTerritory(self._enemies[targetId], player) then
-        self:_setAggroOwner(self._enemies[targetId], player.Name)
+    -- opts.dormant (mission populations): SKIP the birth aggro entirely — a mission fields its
+    -- enemies rooms away from the team; birth aggro marked them everEngaged, the "fight" was
+    -- instantly abandoned, and the 30s idle cleanup wiped the whole population (the clear-gate
+    -- false-complete bug). Dormant mobs engage territorially when the team actually arrives.
+    if not (opts and opts.dormant) then
+        if self:_engagesCombat(player) and self:_inTerritory(self._enemies[targetId], player) then
+            self:_setAggroOwner(self._enemies[targetId], player.Name)
+        end
     end
     if self._logger then
         self._logger:Info("Enemy spawned", { enemyId = enemyId, targetId = targetId, hp = def.hp })

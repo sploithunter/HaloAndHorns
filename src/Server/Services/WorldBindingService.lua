@@ -716,6 +716,19 @@ function WorldBindingService:_bindInstance(tagName, instance)
         return
     end
 
+    -- Generated mission-instance content is NOT authored map surface: its
+    -- hooks carry synthetic mission:* area ids that must never be validated
+    -- against areas.zones (docs/MISSION_WORLDGEN.md §5.3). MissionStamper
+    -- marks containers with WorldBindingIgnore; anything under one is the
+    -- mission systems' problem, not the map binder's.
+    local node = instance
+    while node and node ~= workspace do
+        if node:GetAttribute("WorldBindingIgnore") then
+            return
+        end
+        node = node.Parent
+    end
+
     for attributeName, expectedType in pairs(tagConfig.required_attributes or {}) do
         local ok, message = self:_validateAttribute(instance, attributeName, expectedType)
         if not ok then

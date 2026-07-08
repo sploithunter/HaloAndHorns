@@ -475,6 +475,17 @@ do
     end
 end
 
+-- MissionMap: CoH-style mission minimap — fog-of-war rooms + doorway ticks,
+-- draggable + minimizable; renders the server-published MissionMapData attr.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MissionMap).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MissionMap", { error = tostring(err) })
+    end
+end
+
 -- RealmHellFaces: floating demon faces in the Hell sky (clones the server-preloaded model).
 do
     local ok, err = pcall(function()

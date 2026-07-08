@@ -1,6 +1,28 @@
 # Mission Worldgen — Tile-Kit Contract & Generator Design
 
-**Status:** DESIGN (no code yet). SSOT for the procedural mission-map system.
+**Status:** M1 + M2 + M3 SHIPPED. Pure solver + CI seed sweep (M1); gray-box
+kit + TileKitBuilder + MissionStamper (M2); MissionInstanceService lifecycle +
+MissionDoor prompts + configs/missions.lua + schemas (M3 — full play-mode
+loop live-verified over MCP: door prompt → Open → party teleport → character
+walked to the beacon → exit prompt → teardown + return; re-entry minted a
+fresh per_attempt seed). M4+ pending. SSOT for the procedural mission-map
+system.
+
+**M3 field notes:**
+- Exit = a `MissionExitPrompt` on the entrance SpawnPad (CoH: leave through
+  the door you came in); it lives inside the container so teardown removes
+  it, and only the instance's own team can trigger it.
+- **`WorldBindingIgnore` container attribute** (set by MissionStamper,
+  honored by WorldBindingService `_bindInstance`): generated mission hooks
+  carry `mission:*` area ids and must NEVER be swept as authored map hooks —
+  without the gate, a persisted instance HARD-FAILS server boot ("AreaId
+  must reference an area zone"). This resolves gap §5.3 #2 at the binder
+  level; it was found live when the M2 demo instance leaked into a play
+  session's boot.
+- MCP verification note: the MCP Server VM is separate from the game VM (no
+  `_G.RBXTemplateServices`) — verify through real product surfaces
+  (CollectionService-tagged door + ProximityPrompt `InputHoldBegin/End` from
+  the Client VM), not service calls.
 **Scope:** CoH-style door missions: a door in the authored world leads to a
 procedurally generated, **deterministic** (seeded) mission map. The main world
 stays 100% human-authored — this system only builds disposable mission
@@ -20,7 +42,7 @@ mission door (authored, tagged MissionDoor)
         ▼
 MissionSeed        seed = hash(missionId, contextKey)         [pure]
         ▼
-LayoutSolver       (catalog, params, rng) → LayoutSpec        [pure, CI-tested]
+LayoutSolver       (catalog, params, layoutSeed) → LayoutSpec [pure, CI-tested]
         ▼
 MissionStamper     LayoutSpec → cloned tiles under slot       [server, Instances]
         ▼
@@ -147,9 +169,13 @@ streamSeed  = fnv1a32(tostring(seed) .. "|" .. phaseName)  -- "layout" | "decor"
     reproducible: the instance record stores the resolved seed, so any map a
     player saw can be regenerated exactly for debugging ("what seed was that
     broken room?" → stamp it in Studio).
-- **Stream isolation:** each phase gets its own `Random.new(streamSeed)`.
-  Adding a decoration draw can never shift the layout; layout changes only
-  when the layout stream's consumption changes.
+- **Stream isolation:** each phase gets its own rng stream. Adding a
+  decoration draw can never shift the layout; layout changes only when the
+  layout stream's consumption changes.
+- **PRNG is ours, not Roblox's:** `MissionSeed.mulberry32(streamSeed)` (same
+  injected `rng() → [0,1)` shape SpawnSlots uses), NOT `Random.new` — so the
+  map contract never depends on Roblox's RNG implementation and the exact
+  same maps generate on server, client, and the headless lune runner.
 - The seed is replicated to clients (instance container attribute) so any
   future client-side cosmetic generation is free.
 - One global knob `worldgen_version` (config) is folded into the hash so a
@@ -160,7 +186,14 @@ streamSeed  = fnv1a32(tostring(seed) .. "|" .. phaseName)  -- "layout" | "decor"
 
 ## 4. LayoutSolver (pure)
 
-**Signature:** `LayoutSolver.solve(catalog, params, rng) → LayoutSpec, report`
+**Signature:** `LayoutSolver.solve(catalog, params, layoutSeed) → LayoutSpec, report`
+(spec `nil` on failure; failed attempts restart internally on rng streams
+derived from `layoutSeed`, so the result is still a pure function of it).
+
+**No CFrames:** placements are `{ x, z, rot }` with `rot` ∈ 0..3 quarter
+turns (doors are axis-aligned, so every placement is a 90° yaw multiple —
+plain table math, exact AABBs, loadable headless). The M2 stamper converts:
+`slotOrigin * CFrame.new(x, 0, z) * CFrame.Angles(0, rot * math.pi/2, 0)`.
 
 `catalog` = pure data extracted once by TileCatalog (per tile: class, weight,
 caps, bounds box, door list as pivot-relative CFrame components — no
@@ -179,15 +212,24 @@ margin.
    door; compute the pivot via the mating rule; **AABB-test** the tile's
    bounds (+margin) against all placed bounds. First fit wins; bounded
    retries per door, then the door is deferred.
-3. **Objective guarantee:** once a frontier door's graph depth reaches
-   `targetDepth.min`, objective tiles become eligible; at
-   `targetDepth.max` they become forced. If budget exhausts with no
-   objective placed, pop the last `k` placements and retry with the next
-   draws; after `maxBacktracks`, restart the whole solve with
-   `rng = Random.new(streamSeed + attempt)` — attempt sequence is
-   deterministic, so the final map is still a pure function of the seed.
-4. Cap every remaining open door with a class-matching `cap` tile.
-5. Emit the spec + a validation report.
+3. **Objective guarantee (band is strict):** while the objective is
+   pending, only frontier doors with depth ≤ `target_depth.max` may grow
+   (deeper doors wait), objective tiles join the class weights from
+   `target_depth.min`, and a door AT `target_depth.max` forces an
+   objective — so a placed objective always lands within `[min, max]` of
+   the growth tree. An attempt that can't satisfy that (budget exhausted,
+   pool emptied, cap blocked) restarts the whole solve on the next
+   deterministically derived rng stream, up to `max_attempts`.
+4. **Facing-door rule:** two open doors left exactly coincident and
+   opposed MUST connect (their caps would occupy each other's tile
+   volume) — this is also how loops emerge. Recorded tile depth is
+   growth-tree depth, not shortest path, so loop shortcuts don't
+   retroactively shrink objective depth.
+5. Cap every remaining open door with a class-matching `cap` tile.
+   Author caps THINNER than `overlap_margin` (e.g. 0.4 deep vs margin
+   0.5) so a cap always fits even flush against neighbouring geometry.
+6. Emit the spec + a report (`attempts`, `growthTiles`, `caps`,
+   `loopMates`, `deferred`).
 
 **LayoutSpec** (pure table, CFrames relative to slot origin):
 
@@ -323,13 +365,19 @@ return {
 ## 7. File map (new code)
 
 ```
-src/Shared/Worldgen/MissionSeed.lua      pure: fnv1a32 + stream derivation
-src/Shared/Worldgen/TileCatalog.lua      kit folder + config → pure catalog (validates §2 contract, hard-errors on violations)
-src/Shared/Worldgen/LayoutSolver.lua     pure: frontier-growth solver (§4)
-src/Server/World/MissionStamper.lua      spec → Instances (§5.1)
-src/Server/Services/MissionInstanceService.lua   lifecycle (§5.2)
+src/Shared/Worldgen/MissionSeed.lua      ✅ pure: fnv1a32 + mulberry32 + stream derivation
+src/Shared/Worldgen/TileCatalog.lua      ✅ pure: kit def → catalog (validates §2 contract, hard-errors); M2 adds a Studio-side extractor emitting the same table shape from authored Models
+src/Shared/Worldgen/LayoutSolver.lua     ✅ pure: frontier-growth solver + validate() invariant checker (§4)
+src/Shared/Worldgen/GrayBoxKit.lua       ✅ pure: M2 gray-box kit — definition() (solver geometry) + parts() (primitive visual geometry) in ONE module so walls can never disagree with solver AABBs/doors
+src/Server/World/TileKitBuilder.lua      ✅ kit (definition+parts) → Folder of tile Models (pivot=TileRoot, tags, $MISSION attrs verbatim). Edit-mode note: build into a scratch parent, NOT ReplicatedStorage.Assets.Models (Rojo-owned rbxm subtree)
+src/Server/World/MissionStamper.lua      ✅ spec → Instances (§5.1)
+scripts/studio/stamp_mission_graybox.luau ✅ Edit-mode smoke: solve seed → stamp → camera frame
+src/Server/Services/MissionInstanceService.lua   ✅ lifecycle (§5.2): slots, caps, TTL sweep, door+exit prompts, party teleport; registered in init.server.lua
+configs/missions.lua                             ✅ worldgen_version, slots, limits, solver knobs, mission defs (+ _validateMissionsConfig in ConfigLoader, same commit)
+configs/markers.lua                              ✅ MissionDoor + MissionObjective tags added
 configs/mission_tiles.lua, configs/missions.lua  (+ ConfigLoader schemas)
-tests/worldgen/*.spec.lua                invariant + seed-sweep tests
+tests/headless/specs/mission_worldgen.spec.luau  ✅ invariant + 300-seed sweep (mise run test-headless); kit def sourced from GrayBoxKit (single SSOT)
+tests/headless/specs/gray_box_kit.spec.luau      ✅ kit geometry invariants (contract parts, bounds containment, no wall across an aperture)
 ```
 
 ---
@@ -355,8 +403,9 @@ tests/worldgen/*.spec.lua                invariant + seed-sweep tests
 
 | Phase | Deliverable | Verified by |
 |---|---|---|
-| **M1** | MissionSeed + TileCatalog + LayoutSolver + specs, gray-box catalog defined purely in test data | CI seed sweep (no Studio) |
-| **M2** | Gray-box tile kit (primitives) + MissionStamper + slot config; stamp seeds in Edit mode | MCP: stamp + pathfind + walk + screenshots |
-| **M3** | MissionInstanceService lifecycle + MissionDoor binding + party teleport | Live play-mode run, solo + duo |
-| **M4** | Dynamic hook registration (spawners/leash) → enemies + breakables + objective inside missions | Live mission clear end-to-end |
+| **M1** ✅ | MissionSeed + TileCatalog + LayoutSolver + specs, gray-box catalog defined purely in test data | CI seed sweep (no Studio) — DONE 2026-07-08, 17 tests incl. 300-seed sweep |
+| **M2** ✅ | Gray-box tile kit (primitives) + TileKitBuilder + MissionStamper; stamp seeds in Edit mode | DONE 2026-07-08 — MCP live: stamped at slot band X=24000, pivots/attrs verified, cross-env determinism (lune ≡ Studio byte-identical for seed 12345), PathfindingService entrance→objective Success 6/6 seeds, screenshots. Character walk needs Play mode → rolled into M3. Slot CONFIG also deferred to M3 (belongs with the service + ConfigLoader schema) |
+| **M3** ✅ | MissionInstanceService lifecycle + MissionDoor binding + party teleport + configs | DONE 2026-07-08 — live play-mode SOLO loop: door prompt → stamp at slot 1 → teleport → character_navigation walk to beacon → exit prompt → teardown verified + fresh seed on re-entry. Duo (two-account) run still owed — fold into M4's live pass |
+| **M4** ✅ | Enemies + objective auto-complete inside missions | DONE 2026-07-08 live: kit rooms/objective carry `BaddieSpawner` parts (name-prefix discovery — BaddieSpawnerService.Rescan() nudged at stamp, no registration API needed; `home` anchor = leash, static leash config untouched); 4-enemy wave (bear/dogs/crow) spawned in-mission; reach_beacon monitor auto-completed on approach; EnemyService.DespawnEnemiesInBounds at teardown → 0 leaked enemies. BREAKABLES deliberately deferred (BreakableSpawner is per-configured-world keyed on breakables.worlds[areaId]; missions are combat gauntlets — mining inside missions conflicts with pause_farm_in_combat anyway). Duo two-account pass still owed (Jason drives) |
+| **M4.5** (live-tuning, 2026-07-08) | Playtest-driven mechanics pass | 6x tile scale (Jason: v1 "vastly too small") + doorway-sized openings with header strips; **CoH clear-gate**: static seeded population at MissionSpawn anchors (MissionPopulation.roll on the "spawns" stream; NO proximity waves in missions — anchors deliberately not BaddieSpawner-prefixed) + glowy inert until all enemies defeated (also the anti-cheese: invulnerable pet-less players can walk but never clear); "Defeat all enemies — N/X" via player attr MissionObjectiveText → MissionObjectiveHUD chip (pure attr render); 48-stud walls + per-mission CameraMaxZoomDistance clamp (no zoom-scouting the glowy), restored on exit |
 | **M5** | First real themed kit (MCP-assisted art), reward wiring, polish | Live |

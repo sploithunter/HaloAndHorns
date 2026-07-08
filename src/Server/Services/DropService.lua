@@ -389,7 +389,12 @@ function DropService:TrySpawnEnhancementDrop(player, source, position)
     if not (drops and drops.enabled) then
         return false
     end
-    local chance = (source == "enemy" and drops.enemy_chance) or drops.breakable_chance or 0
+    -- "treasure" = mission chests: opening one is the gate, the payout is
+    -- guaranteed (docs/MISSION_WORLDGEN.md M5)
+    local chance = (source == "enemy" and drops.enemy_chance)
+        or (source == "treasure" and 1)
+        or drops.breakable_chance
+        or 0
     -- Windfall (drop_rate axis): an active drop-rate buff multiplies the loot chance.
     if (player:GetAttribute("DropRateBuffUntil") or 0) > os.time() then
         chance = chance * (1 + (tonumber(player:GetAttribute("DropRateBuff")) or 0))
@@ -698,6 +703,9 @@ function DropService:_step()
                 self:_collect(rec, true)
             elseif rootPos and not rec.settling then
                 local bonus = 0
+                -- (magnet stays ON in missions — Jason: the CHEST is the
+                -- anti-cheese gate; loot only exists once a cleared room's
+                -- chest is opened, so magnet can't steal anything early)
                 if (plr:GetAttribute("MagnetBuffUntil") or 0) > nowT then
                     bonus = tonumber(plr:GetAttribute("MagnetBuff")) or 0
                 end

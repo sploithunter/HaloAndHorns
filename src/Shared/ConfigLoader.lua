@@ -704,9 +704,38 @@ function ConfigLoader:ValidateConfig(configName, config)
         return self:_validateTeamingConfig(config)
     elseif configName == "capital_baddies" then
         return self:_validateCapitalBaddiesConfig(config)
+    elseif configName == "missions" then
+        return self:_validateMissionsConfig(config)
     end
 
     -- Default validation for other configs
+    return true
+end
+
+-- Missions (configs/missions.lua): door-mission worldgen — slots, limits,
+-- solver knobs, mission defs (docs/MISSION_WORLDGEN.md §6).
+-- Permissive (shape, not every knob) so mission tuning never breaks Studio boot.
+function ConfigLoader:_validateMissionsConfig(config)
+    if type(config) ~= "table" then
+        return false, "Missions config must be a table"
+    end
+    if type(config.worldgen_version) ~= "number" then
+        return false, "Missions config missing required 'worldgen_version' number"
+    end
+    if type(config.slots) ~= "table" or type(config.slots.origin_x) ~= "number" then
+        return false, "Missions config missing required 'slots' table with origin_x"
+    end
+    if type(config.limits) ~= "table" then
+        return false, "Missions config missing required 'limits' table"
+    end
+    if type(config.missions) ~= "table" then
+        return false, "Missions config missing required 'missions' table"
+    end
+    for missionId, def in pairs(config.missions) do
+        if type(def) ~= "table" or type(def.kit) ~= "string" then
+            return false, "Mission '" .. tostring(missionId) .. "' must define a 'kit' string"
+        end
+    end
     return true
 end
 
