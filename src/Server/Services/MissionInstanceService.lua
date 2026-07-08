@@ -576,6 +576,31 @@ end
 
 -- ---- dressing (M5a) --------------------------------------------------------------
 
+-- Synty prop prefabs by clutter kind (variant picked deterministically from
+-- the placement's own coordinates — same seed, same look)
+local PROP_PREFABS = {
+    crate = { "CrateWood", "CrateWoodB", "CrateOrnate" },
+    crate_small = { "CrateOrnate", "CrateWood" },
+    barrel = { "Barrel", "BarrelBroken" },
+}
+
+-- Ground a Model prefab so its bounding-box bottom sits on the floor at cf.
+local function groundModel(model, cf)
+    local boxCf, size = model:GetBoundingBox()
+    local pivotToBottom = model:GetPivot().Position.Y - (boxCf.Position.Y - size.Y / 2)
+    model:PivotTo(cf * CFrame.new(0, pivotToBottom, 0))
+end
+
+local function prefabFor(kind, pick)
+    local names = PROP_PREFABS[kind]
+    if not names then
+        return nil
+    end
+    local store = ReplicatedStorage:FindFirstChild("MissionProps")
+    local prefab = store and store:FindFirstChild(names[1 + pick % #names])
+    return prefab and prefab:Clone()
+end
+
 local PROP_BUILDERS = {
     crate = function(cf)
         local p = Instance.new("Part")
@@ -661,22 +686,31 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
         end
     end
 
-    -- clutter props
+    -- clutter props: harvested Synty prefabs when the place carries them
+    -- (ReplicatedStorage.MissionProps — free Roblox-published dungeon packs),
+    -- primitive builders otherwise so fresh checkouts/tests never break
     local folder = Instance.new("Folder")
     folder.Name = "Dressing"
     for _, prop in ipairs(props) do
-        local builder = PROP_BUILDERS[prop.kind]
-        if builder then
-            local cf = slotOrigin
-                * CFrame.new(prop.x, 0, prop.z)
-                * CFrame.Angles(0, prop.rot, 0)
-            for _, part in ipairs(builder(cf)) do
-                part.Name = "Prop_" .. prop.kind
-                part.Anchored = true
-                part.CanTouch = false
-                part.TopSurface = Enum.SurfaceType.Smooth
-                part.BottomSurface = Enum.SurfaceType.Smooth
-                part.Parent = folder
+        local cf = slotOrigin
+            * CFrame.new(prop.x, 0, prop.z)
+            * CFrame.Angles(0, prop.rot, 0)
+        local prefab = prefabFor(prop.kind, math.floor(math.abs(prop.x) * 10))
+        if prefab then
+            prefab.Name = "Prop_" .. prop.kind
+            groundModel(prefab, cf)
+            prefab.Parent = folder
+        else
+            local builder = PROP_BUILDERS[prop.kind]
+            if builder then
+                for _, part in ipairs(builder(cf)) do
+                    part.Name = "Prop_" .. prop.kind
+                    part.Anchored = true
+                    part.CanTouch = false
+                    part.TopSurface = Enum.SurfaceType.Smooth
+                    part.BottomSurface = Enum.SurfaceType.Smooth
+                    part.Parent = folder
+                end
             end
         end
     end
@@ -687,6 +721,24 @@ end
 -- ---- treasure ------------------------------------------------------------------
 
 local function buildChest(cf)
+    -- Synty chest prefab when harvested into the place (real treasure-chest
+    -- mesh, Jason ask); primitive fallback below keeps fresh checkouts alive
+    local store = ReplicatedStorage:FindFirstChild("MissionProps")
+    local prefab = store
+        and (store:FindFirstChild("TreasureChestOrnate") or store:FindFirstChild("TreasureChest"))
+    if prefab then
+        local chest = prefab:Clone()
+        chest.Name = "TreasureChest"
+        groundModel(chest, cf)
+        local glow = Instance.new("PointLight")
+        glow.Color = Color3.fromRGB(255, 200, 80)
+        glow.Brightness = 0.8
+        glow.Range = 12
+        glow.Parent = chest.PrimaryPart
+        local lid = chest:FindFirstChild("Lid") or chest.PrimaryPart
+        return chest, lid, glow
+    end
+
     local chest = Instance.new("Model")
     chest.Name = "TreasureChest"
     local function slab(name, size, offset, color, material)

@@ -103,7 +103,7 @@ return function()
             expect(#catalog.byClass.corridor).to.equal(2)
             expect(#catalog.byClass.room).to.equal(2)
             expect(#catalog.byClass.objective).to.equal(1)
-            expect(#catalog.byClass.cap).to.equal(1)
+            expect(#catalog.byClass.cap).to.equal(2) -- sealed-door + boarded variants
             expect(catalog.byId.corr_straight.bounds.hx).to.equal(24)
         end)
 

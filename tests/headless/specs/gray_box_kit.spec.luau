@@ -102,9 +102,13 @@ return function()
                         -- door marker parts are thin markers ON the boundary plane;
                         -- they may straddle it by half their 0.4 depth
                         local slack = spec.tags and spec.tags[1] == "TileConnector" and 0.2 or EPS
+                        -- cap dressing (sealed doors/boards) sits recessed in
+                        -- the HOST tile's aperture tunnel: -z only, and that
+                        -- space is guaranteed open air behind a mated doorway
+                        local negZSlack = tile.class == "cap" and 2.0 or slack
                         expect(a.minx >= cx - hx - slack).to.equal(true)
                         expect(a.maxx <= cx + hx + slack).to.equal(true)
-                        expect(a.minz >= cz - hz - slack).to.equal(true)
+                        expect(a.minz >= cz - hz - negZSlack).to.equal(true)
                         expect(a.maxz <= cz + hz + slack).to.equal(true)
                     end
                 end
@@ -133,12 +137,19 @@ return function()
             end
         end)
 
-        it("non-cap tiles have a floor; caps are a single plug", function()
+        it("non-cap tiles have a floor; caps read as SEALED doorways", function()
             for _, tile in ipairs(def.tiles) do
                 local specs = GrayBoxKit.parts(tile)
                 if tile.class == "cap" then
                     expect(findOne(specs, "Floor") == nil).to.equal(true)
-                    expect(findOne(specs, "Plug") ~= nil).to.equal(true)
+                    expect(findOne(specs, "Backing") ~= nil).to.equal(true)
+                    if tile.id == "cap_door" then
+                        expect(#findAll(specs, "Plank_")).to.equal(5)
+                        expect(findOne(specs, "Padlock") ~= nil).to.equal(true)
+                        expect(findOne(specs, "Knob") ~= nil).to.equal(true)
+                    elseif tile.id == "cap_boarded" then
+                        expect(#findAll(specs, "Board_")).to.equal(4)
+                    end
                 else
                     local floor = findOne(specs, "Floor")
                     expect(floor ~= nil).to.equal(true)

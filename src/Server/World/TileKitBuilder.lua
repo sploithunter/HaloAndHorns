@@ -44,6 +44,10 @@ local function buildPart(spec)
     else
         part.CFrame = CFrame.new(pos)
     end
+    if spec.tilt then
+        -- in-plane roll (boarded-up cap planks etc.)
+        part.CFrame = part.CFrame * CFrame.Angles(0, 0, math.rad(spec.tilt))
+    end
     part.Anchored = true
     part.CanCollide = spec.canCollide ~= false
     part.CanTouch = false

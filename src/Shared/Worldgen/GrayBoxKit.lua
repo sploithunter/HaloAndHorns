@@ -130,10 +130,24 @@ function GrayBoxKit.definition()
                 doors = { { name = "Door_1", x = 0, z = -72, dir = "nz" } },
             },
             {
-                -- thin plug: 0.4 deep < overlap_margin 0.5, so a cap always
-                -- fits even flush against neighbouring geometry (§4)
-                id = "cap_std",
+                -- SEALED doorway covers (Jason: caps must READ as "a door you
+                -- can't open" — deliberate visual language for the plugged
+                -- procgen openings; openable doors are intentionally NOT a
+                -- thing so "door" always means impassable). Thin bounds
+                -- (0.4 < overlap_margin) so caps always fit; the dressing
+                -- sits recessed in the HOST tile's aperture tunnel (local
+                -- z ∈ [-2, -0.2] = guaranteed open air behind a mated
+                -- doorway — see parts()).
+                id = "cap_door", -- locked plank door + padlock
                 class = "cap",
+                weight = 3,
+                bounds = { sx = DOOR_W + 2, sz = 0.4 },
+                doors = { { name = "Door_1", x = 0, z = -0.2, dir = "nz" } },
+            },
+            {
+                id = "cap_boarded", -- planks nailed across the opening
+                class = "cap",
+                weight = 2,
                 bounds = { sx = DOOR_W + 2, sz = 0.4 },
                 doors = { { name = "Door_1", x = 0, z = -0.2, dir = "nz" } },
             },
@@ -209,12 +223,79 @@ function GrayBoxKit.parts(tile)
 
     -- cap = a single plug slab, nothing else --------------------------------
     if tile.class == "cap" then
+        -- full-height backing slab seals the doorway (the old Plug)
         add({
-            name = "Plug",
+            name = "Backing",
             size = { b.sx, WALL_HEIGHT, b.sz },
             pos = { cx, WALL_HEIGHT / 2, cz },
-            color = CLASS_COLOR.cap,
+            color = { 30, 28, 32 },
         })
+        if tile.id == "cap_boarded" then
+            -- rough boards nailed across the recess at drunken angles
+            local boards = {
+                { y = 4.5, tilt = 9 },
+                { y = 8, tilt = -7 },
+                { y = 11.5, tilt = 12 },
+                { y = 14.5, tilt = -10 },
+            }
+            for i, board in ipairs(boards) do
+                add({
+                    name = "Board_" .. i,
+                    size = { 15, 2.2, 0.7 },
+                    pos = { 0, board.y, -0.9 },
+                    tilt = board.tilt,
+                    color = { 96, 70, 40 },
+                    material = "WoodPlanks",
+                })
+            end
+        else
+            -- locked plank door recessed into the frame: jittered planks,
+            -- cross braces, knob, padlock — reads "closed and locked"
+            local plankX = { -5.6, -2.8, 0, 2.8, 5.6 }
+            local plankZ = { -0.95, -1.1, -1.0, -1.15, -0.9 }
+            local plankShade = { 112, 104, 118, 98, 108 }
+            for i, x in ipairs(plankX) do
+                local shade = plankShade[i]
+                add({
+                    name = "Plank_" .. i,
+                    size = { 2.7, 15.2, 0.8 },
+                    pos = { x, 7.8, plankZ[i] },
+                    color = { shade, math.floor(shade * 0.72), math.floor(shade * 0.4) },
+                    material = "WoodPlanks",
+                })
+            end
+            for i, y in ipairs({ 4, 11.5 }) do
+                add({
+                    name = "Brace_" .. i,
+                    size = { 13.6, 1.8, 0.6 },
+                    pos = { 0, y, -0.55 },
+                    color = { 88, 60, 32 },
+                    material = "Wood",
+                })
+            end
+            add({
+                name = "Knob",
+                shape = "Ball",
+                size = { 1.3, 1.3, 1.3 },
+                pos = { 5, 7.8, -0.5 },
+                color = { 70, 66, 72 },
+                material = "Metal",
+            })
+            add({
+                name = "Padlock",
+                size = { 1.6, 2.1, 0.7 },
+                pos = { 5, 5.6, -0.45 },
+                color = { 58, 56, 62 },
+                material = "DiamondPlate",
+            })
+            add({
+                name = "Shackle",
+                size = { 1.1, 1, 0.5 },
+                pos = { 5, 6.9, -0.45 },
+                color = { 40, 40, 46 },
+                material = "Metal",
+            })
+        end
         return specs
     end
 
