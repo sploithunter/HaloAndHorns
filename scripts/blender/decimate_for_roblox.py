@@ -171,19 +171,66 @@ def find_texture_path(source_mesh: Path) -> Path | None:
         if candidate.exists():
             return candidate
 
-    for line in (folder / f"{stem}.mtl").read_text(encoding="utf-8", errors="ignore").splitlines():
-        if line.lower().startswith("map_kd"):
-            texture_name = line.split(maxsplit=1)[1].strip()
-            candidate = folder / texture_name
-            if candidate.exists():
-                return candidate
+    mtl = folder / f"{stem}.mtl"
+    if mtl.exists():  # OBJ sidecar only — GLB/FBX inputs have no .mtl
+        for line in mtl.read_text(encoding="utf-8", errors="ignore").splitlines():
+            if line.lower().startswith("map_kd"):
+                texture_name = line.split(maxsplit=1)[1].strip()
+                candidate = folder / texture_name
+                if candidate.exists():
+                    return candidate
+    return None
 
+
+def sweep_folder_for_texture(source_mesh: Path) -> Path | None:
+    """LAST resort: any image in the source folder. Only sane for a dedicated
+    per-model folder (Meshy zip extract) — in a shared folder like ~/Downloads
+    this happily grabs an unrelated image, so it ranks below embedded
+    extraction and the caller warns loudly."""
     images = sorted(
         p
-        for p in folder.iterdir()
+        for p in source_mesh.parent.iterdir()
         if p.is_file() and p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}
     )
     return images[0] if images else None
+
+
+def extract_embedded_texture(obj: bpy.types.Object, output_dir: Path, base_name: str) -> str | None:
+    """GLB/glTF embed textures instead of shipping loose files — unpack the
+    base-color image so the Roblox TextureID upload has a file to point at.
+    Prefers the image wired to Principled Base Color; falls back to the first
+    image texture node."""
+    base_color_img = None
+    first_img = None
+    for slot in obj.material_slots:
+        mat = slot.material
+        if not mat or not mat.use_nodes:
+            continue
+        for node in mat.node_tree.nodes:
+            if node.type != "TEX_IMAGE" or not node.image:
+                continue
+            first_img = first_img or node.image
+            for link in mat.node_tree.links:
+                if (
+                    link.from_node == node
+                    and link.to_node.type == "BSDF_PRINCIPLED"
+                    and link.to_socket.name == "Base Color"
+                ):
+                    base_color_img = base_color_img or node.image
+    img = base_color_img or first_img
+    if img is None:
+        return None
+
+    texture_copy_name = f"{base_name}.png"
+    out_path = output_dir / texture_copy_name
+    img_copy = img.copy()
+    try:
+        img_copy.filepath_raw = str(out_path)
+        img_copy.file_format = "PNG"
+        img_copy.save()
+    finally:
+        bpy.data.images.remove(img_copy)
+    return texture_copy_name
 
 
 def slugify(name: str) -> str:
@@ -250,7 +297,21 @@ def main() -> None:
         shutil.copy2(texture_path, output_dir / texture_copy_name)
         print(f"Copied texture: {texture_path.name} -> {texture_copy_name}")
     else:
-        print("Warning: no texture image found next to source mesh.")
+        # GLB/glTF ship textures EMBEDDED, not as sidecar files
+        texture_copy_name = extract_embedded_texture(base_obj, output_dir, base_name)
+        if texture_copy_name:
+            print(f"Unpacked embedded texture -> {texture_copy_name}")
+        else:
+            swept = sweep_folder_for_texture(source_mesh)
+            if swept:
+                texture_copy_name = f"{base_name}{swept.suffix.lower()}"
+                shutil.copy2(swept, output_dir / texture_copy_name)
+                print(
+                    f"WARNING: guessed texture by folder sweep: {swept.name} -> "
+                    f"{texture_copy_name} — VERIFY this is the right image!"
+                )
+            else:
+                print("Warning: no texture image found (loose, embedded, or in folder).")
 
     print(f"Source: {source_mesh}")
     print(f"Original triangle count: {original_tris}")
