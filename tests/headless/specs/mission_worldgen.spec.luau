@@ -421,15 +421,15 @@ return function()
                 expect(room.class == "corridor" or room.class == "entrance").to.equal(false)
                 expect(perRoom[ft.room]).to.equal(nil)
                 perRoom[ft.room] = true
-                -- centered on a wall: at the inner face on one axis, room
-                -- center on the other
+                -- at a wall's inner face on one axis; on the other axis it is
+                -- inside the room span (center preferred, off-center fallback)
                 local onX = math.abs(math.abs(ft.x - room.x) - (room.hx - 2.6)) < 1e-6
                 local onZ = math.abs(math.abs(ft.z - room.z) - (room.hz - 2.6)) < 1e-6
                 expect(onX or onZ).to.equal(true)
                 if onX then
-                    expect(ft.z).to.equal(room.z)
+                    expect(math.abs(ft.z - room.z) <= room.hz - 12 + 1e-6).to.equal(true)
                 else
-                    expect(ft.x).to.equal(room.x)
+                    expect(math.abs(ft.x - room.x) <= room.hx - 12 + 1e-6).to.equal(true)
                 end
                 -- clear of doorways on that wall by the wide feature margin
                 for _, door in ipairs(map.doors) do

@@ -170,15 +170,23 @@ function MissionDecor.roll(rooms, streamSeed, opts)
     local features = {}
     for i, room in ipairs(rooms) do
         if FEATURE_CLASS[room.class] and rng() < featureChance then
-            for _ = 1, 4 do -- bounded retries: find a doorless wall
+            -- first tries aim for a wall CENTER; later tries slide off-center
+            -- so rooms whose every wall has a door (cross junctions) still
+            -- get their showpiece beside a doorway (clearance still enforced)
+            for try = 1, 8 do
                 local edge = EDGE_ORDER[1 + math.floor(rng() * 4)]
                 local dir = EDGES[edge]
+                local alongHalf = (dir[1] ~= 0 and room.hz or room.hx) - 12
+                local t = 0
+                if try > 4 and alongHalf > 4 then
+                    t = (rng() * 2 - 1) * alongHalf
+                end
                 local x, z
                 if dir[1] ~= 0 then
                     x = room.x + dir[1] * (room.hx - WALL_INNER)
-                    z = room.z
+                    z = room.z + t
                 else
-                    x = room.x
+                    x = room.x + t
                     z = room.z + dir[2] * (room.hz - WALL_INNER)
                 end
                 local blocked = false
