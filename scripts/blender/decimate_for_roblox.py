@@ -108,6 +108,37 @@ def import_mesh(path: Path) -> bpy.types.Object:
     return bpy.context.active_object
 
 
+def weld_and_clean(obj: bpy.types.Object) -> None:
+    """Shatter-incident guard (docs: blender-roblox prop pipeline): Meshy
+    high-poly meshes ship with split vertices everywhere; naive collapse on
+    them produces island confetti + degenerate tris that Roblox's server-side
+    mesh processor mangles into shards. Weld BEFORE decimating."""
+    import bmesh
+
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0004)
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.validate()
+
+
+def dissolve_degenerate(obj: bpy.types.Object) -> None:
+    """Post-decimate cleanup: zero-area faces / zero-length edges out,
+    loose verts gone, then validate — the other half of the shatter guard."""
+    import bmesh
+
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=1e-5)
+    loose = [v for v in bm.verts if not v.link_faces]
+    if loose:
+        bmesh.ops.delete(bm, geom=loose, context="VERTS")
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.validate()
+
+
 def face_count(obj: bpy.types.Object) -> int:
     mesh = obj.data
     mesh.calc_loop_triangles()
@@ -130,6 +161,10 @@ def decimate_to_target(obj: bpy.types.Object, target_faces: int, tolerance: floa
         print(f"  already at {current} tris (target {target_faces}); skipping decimation")
         return current
 
+    weld_and_clean(obj)
+    current = face_count(obj)
+    print(f"  welded split verts -> {current} tris")
+
     ratio = target_faces / current
     allowed_error = max(25, int(target_faces * tolerance))
 
@@ -148,13 +183,15 @@ def decimate_to_target(obj: bpy.types.Object, target_faces: int, tolerance: floa
         print(f"  attempt {attempt + 1}: ratio={applied_ratio:.5f} -> {current} tris")
 
         if abs(delta) <= allowed_error:
-            return current
+            dissolve_degenerate(obj)
+            return face_count(obj)
         if current <= 0:
             raise RuntimeError("Decimation collapsed mesh to zero faces")
 
         ratio *= target_faces / current
 
-    return current
+    dissolve_degenerate(obj)
+    return face_count(obj)
 
 
 def find_texture_path(source_mesh: Path) -> Path | None:
