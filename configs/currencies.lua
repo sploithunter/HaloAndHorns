@@ -15,7 +15,9 @@ return {
         id = "gems",
         name = "Gems",
         description = "Premium currency purchased or earned through special rewards",
-        maxAmount = 999999,
+        -- 10B (Jason live-hit the old 999,999 wall 2026-07-08 — gems are now the shop+trade
+        -- economy's main currency and enhancement-selling alone outruns a 1M cap fast)
+        maxAmount = 10000000000,
         defaultAmount = 0,
         icon = "💎",
     },
