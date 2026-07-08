@@ -1030,9 +1030,11 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
     -- into MissionProps (WallBanner now; CrossedSwords/WallAxe when built) —
     -- missing prefabs skip silently so this never blocks a fresh checkout.
     local WALL_DECOR_PREFABS = {
-        hell = { "WallBanner", "CrossedSwords", "WallAxe" },
-        heaven = { "WallBanner", "CrossedSwords" },
-        earth = { "WallBanner" },
+        -- hell: bronze arms + grim shields + dirty shelves (Jason's set)
+        hell = { "WallBanner", "CrossedSwords", "WallAxe", "WallShield", "BookshelfDirty" },
+        -- heaven: gilded arms + ornate shields + clean shelves
+        heaven = { "WallBanner", "CrossedSwordsGold", "WallShieldOrnate", "BookshelfClean" },
+        earth = { "WallBanner", "WallShield" },
     }
     do
         local store = ReplicatedStorage:FindFirstChild("MissionProps")
@@ -1050,13 +1052,20 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
                 end
                 if prefab then
                     local clone = prefab:Clone()
+                    -- MountY = hang height (blades/banners) or half-height
+                    -- (floor-standers like bookshelves); StandOff pushes the
+                    -- piece off the wall plane by its own depth
                     local mountY = clone:GetAttribute("MountY") or 10
+                    local standOff = clone:GetAttribute("StandOff") or 0.4
                     local pos = Vector3.new(
                         slotPos2.X + wd.x,
                         slotPos2.Y + mountY,
                         slotPos2.Z + wd.z
                     )
-                    clone:PivotTo(CFrame.lookAt(pos, pos + Vector3.new(wd.ix, 0, wd.iz)))
+                    clone:PivotTo(
+                        CFrame.lookAt(pos, pos + Vector3.new(wd.ix, 0, wd.iz))
+                            * CFrame.new(0, 0, -standOff)
+                    )
                     clone.Parent = folder
                 end
             end
