@@ -743,6 +743,16 @@ function EggHatchingService:CreateRevealBadges(
             UDim2.new(0.5, 0, 0.02, 0),
             UDim2.new(0.72, 0, 0.16, 0)
         )
+        -- SPECIAL wears the VARIANT (Jason): basic keeps the rarity colour; a golden mythical+
+        -- reads a GOLD "SPECIAL", a rainbow one a RAINBOW-gradient "SPECIAL" — the same
+        -- treatment the pet NAME already gets, on every mythical-and-above box.
+        if nameCarriesVariant(eggData.variant) then
+            styleNameByVariant(specialBadge, eggData.variant)
+            local stroke = specialBadge:FindFirstChild("BadgeStroke")
+            if stroke and eggData.variant == "golden" then
+                stroke.Color = Color3.fromRGB(255, 215, 0) -- box outline matches the gold read
+            end
+        end
         badges.special = specialBadge
         frame:SetAttribute("SpecialBadgeText", specialText)
     end
