@@ -11,6 +11,7 @@ local TileCatalog = loadModule("src/Shared/Worldgen/TileCatalog.lua")
 local LayoutSolver = loadModule("src/Shared/Worldgen/LayoutSolver.lua")
 local GrayBoxKit = loadModule("src/Shared/Worldgen/GrayBoxKit.lua")
 local MissionPopulation = loadModule("src/Shared/Worldgen/MissionPopulation.lua")
+local MissionDecor = loadModule("src/Shared/Worldgen/MissionDecor.lua")
 
 local grayBoxDef = GrayBoxKit.definition
 
@@ -333,6 +334,43 @@ return function()
             local rolls = MissionPopulation.roll({}, 3, 42)
             expect(#rolls).to.equal(3)
             expect(#rolls[1]).to.equal(0)
+        end)
+    end)
+
+    describe("MissionDecor.roll", function()
+        local catalog = TileCatalog.build(grayBoxDef())
+
+        local function mapFor(seed)
+            local spec = LayoutSolver.solve(catalog, SOLVER_PARAMS, seed)
+            return LayoutSolver.mapData(catalog, spec)
+        end
+
+        it("is deterministic and stays inside rooms, clear of the center", function()
+            local map = mapFor(12345)
+            local tintsA, propsA = MissionDecor.roll(map.rooms, 999)
+            local tintsB, propsB = MissionDecor.roll(map.rooms, 999)
+            expect(#propsA).to.equal(#propsB)
+            for i, p in ipairs(propsA) do
+                expect(p.x).to.equal(propsB[i].x)
+                expect(p.kind).to.equal(propsB[i].kind)
+                local room = map.rooms[p.room]
+                -- inside the wall-inset band
+                expect(math.abs(p.x - room.x) <= room.hx - 8 + 1e-6).to.equal(true)
+                expect(math.abs(p.z - room.z) <= room.hz - 8 + 1e-6).to.equal(true)
+            end
+            for i in ipairs(map.rooms) do
+                expect(tintsA[i].wall).to.equal(tintsB[i].wall)
+                expect(math.abs(tintsA[i].wall - 1) <= 0.12 + 1e-6).to.equal(true)
+                expect(math.abs(tintsA[i].floor - 1) <= 0.12 + 1e-6).to.equal(true)
+            end
+        end)
+
+        it("never dresses corridors", function()
+            local map = mapFor(777)
+            local _, props = MissionDecor.roll(map.rooms, 42)
+            for _, p in ipairs(props) do
+                expect(map.rooms[p.room].class == "corridor").to.equal(false)
+            end
         end)
     end)
 

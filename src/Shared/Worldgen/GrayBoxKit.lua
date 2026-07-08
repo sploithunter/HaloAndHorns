@@ -246,14 +246,50 @@ function GrayBoxKit.parts(tile)
     }
     local wallIndex = 0
     local headerIndex = 0
+    local torchIndex = 0
     local headerH = WALL_HEIGHT - DOOR_H
     local headerY = DOOR_H + headerH / 2
+    -- M5a: a pair of torches flanks every doorway on the room side —
+    -- local lights carry the whole mood out at the dark slot band
+    local function addTorchPair(edge, center)
+        local offsets = { -(DOOR_W / 2 + 3), DOOR_W / 2 + 3 }
+        -- inward = opposite the edge's outward dir, pulled 1.6 off the wall
+        local inX = edge.dir == "px" and -1.6 or edge.dir == "nx" and 1.6 or 0
+        local inZ = edge.dir == "pz" and -1.6 or edge.dir == "nz" and 1.6 or 0
+        for _, along in ipairs(offsets) do
+            torchIndex += 1
+            local tx, tz
+            if edge.axis == "z" then
+                tx, tz = edge.at + inX, center + along
+            else
+                tx, tz = center + along, edge.at + inZ
+            end
+            add({
+                name = "TorchBracket_" .. torchIndex,
+                size = { 1.2, 3.5, 1.2 },
+                pos = { tx, 8.5, tz },
+                color = { 40, 38, 42 },
+                material = "Metal",
+                canCollide = false,
+            })
+            add({
+                name = "TorchFlame_" .. torchIndex,
+                size = { 2.4, 3.2, 2.4 },
+                pos = { tx, 11.6, tz },
+                color = { 255, 150, 50 },
+                material = "Neon",
+                canCollide = false,
+                light = { color = { 255, 160, 70 }, brightness = 2, range = 34 },
+            })
+        end
+    end
     for _, edge in ipairs(edges) do
         local gaps = {}
         for _, door in ipairs(tile.doors) do
             if door.dir == edge.dir then
                 local center = edge.axis == "z" and door.z or door.x
                 table.insert(gaps, { center - DOOR_W / 2, center + DOOR_W / 2 })
+                addTorchPair(edge, center)
                 -- header strip over the opening: makes it a DOORWAY, not a gap
                 headerIndex += 1
                 if edge.axis == "z" then
@@ -292,6 +328,23 @@ function GrayBoxKit.parts(tile)
                     color = wallColor,
                 })
             end
+        end
+    end
+
+    -- M5a: corner pillars break the empty-box silhouette in chamber-class
+    -- tiles (corridors stay clear — they're only 48 wide)
+    if tile.class ~= "corridor" then
+        local pin = 6 -- pillar center inset from the walls
+        local px2, pz2 = hx - pin, hz - pin
+        local corners = { { -px2, -pz2 }, { px2, -pz2 }, { -px2, pz2 }, { px2, pz2 } }
+        for i, corner in ipairs(corners) do
+            add({
+                name = "Pillar_" .. i,
+                size = { 3, WALL_HEIGHT, 3 },
+                pos = { cx + corner[1], WALL_HEIGHT / 2, cz + corner[2] },
+                color = dim(color, 0.5),
+                material = "Slate",
+            })
         end
     end
 

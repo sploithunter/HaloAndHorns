@@ -85,6 +85,12 @@ return {
             -- treasure chests (CoH glowie-lite): seeded placement in ~40% of
             -- room-class tiles (min 1); opening pays 1-2 guaranteed
             -- enhancement drops to the opener. Magnet is OFF in-mission.
+            -- M5a dressing: per-room tint jitter + seeded clutter density
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.12,
+            },
             treasure = {
                 room_fraction = 0.4,
                 min_chests = 1,

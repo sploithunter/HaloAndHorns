@@ -31,6 +31,7 @@ local CollectionService = game:GetService("CollectionService")
 
 local MissionSeed = require(ReplicatedStorage.Shared.Worldgen.MissionSeed)
 local MissionPopulation = require(ReplicatedStorage.Shared.Worldgen.MissionPopulation)
+local MissionDecor = require(ReplicatedStorage.Shared.Worldgen.MissionDecor)
 local TileCatalog = require(ReplicatedStorage.Shared.Worldgen.TileCatalog)
 local LayoutSolver = require(ReplicatedStorage.Shared.Worldgen.LayoutSolver)
 local GrayBoxKit = require(ReplicatedStorage.Shared.Worldgen.GrayBoxKit)
@@ -371,6 +372,12 @@ function MissionInstanceService:Open(player, missionId)
         end
     end
 
+    -- DRESSING (M5a): per-room tint jitter + seeded clutter on the own
+    -- "dressing" stream — no two rooms read identical, same seed = same look
+    if not mission.decor or mission.decor.enabled ~= false then
+        self:_applyDressing(mission.decor or {}, mapTable, spec, container, slotOrigin, seed)
+    end
+
     -- TREASURE (CoH glowie-lite, M5): seeded chests in a few rooms; opening
     -- one pays GUARANTEED enhancement drops to the opener (DropService
     -- source "treasure"). Placement rides the decor stream (deterministic);
@@ -552,6 +559,116 @@ function MissionInstanceService:_sweep()
             self:_close(instanceId, "ttl")
         end
     end
+end
+
+-- ---- dressing (M5a) --------------------------------------------------------------
+
+local PROP_BUILDERS = {
+    crate = function(cf)
+        local p = Instance.new("Part")
+        p.Size = Vector3.new(4, 4, 4)
+        p.Color = Color3.fromRGB(120, 85, 46)
+        p.Material = Enum.Material.WoodPlanks
+        p.CFrame = cf * CFrame.new(0, 2, 0)
+        return { p }
+    end,
+    crate_small = function(cf)
+        local p = Instance.new("Part")
+        p.Size = Vector3.new(2.5, 2.5, 2.5)
+        p.Color = Color3.fromRGB(134, 96, 54)
+        p.Material = Enum.Material.WoodPlanks
+        p.CFrame = cf * CFrame.new(0, 1.25, 0)
+        return { p }
+    end,
+    barrel = function(cf)
+        local p = Instance.new("Part")
+        p.Shape = Enum.PartType.Cylinder
+        p.Size = Vector3.new(4.5, 3.2, 3.2) -- cylinder axis = X; stood upright below
+        p.Color = Color3.fromRGB(96, 68, 40)
+        p.Material = Enum.Material.Wood
+        p.CFrame = cf * CFrame.new(0, 2.25, 0) * CFrame.Angles(0, 0, math.rad(90))
+        return { p }
+    end,
+    rubble = function(cf)
+        local parts = {}
+        for i = 1, 3 do
+            local p = Instance.new("Part")
+            local s = 1.4 + i * 0.5
+            p.Size = Vector3.new(s, s * 0.8, s)
+            p.Color = Color3.fromRGB(105, 102, 110)
+            p.Material = Enum.Material.Slate
+            p.CFrame = cf
+                * CFrame.new((i - 2) * 1.6, s * 0.4, (i % 2 == 0) and 1.2 or -0.8)
+                * CFrame.Angles(0, i * 0.9, 0)
+            table.insert(parts, p)
+        end
+        return parts
+    end,
+}
+
+-- Per-room tint jitter + seeded primitive clutter (pure rolls from
+-- MissionDecor; this just materializes them).
+function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, container, slotOrigin, seed)
+    local tints, props = MissionDecor.roll(
+        mapTable.rooms,
+        MissionSeed.stream(seed, "dressing"),
+        decorCfg
+    )
+
+    -- tint: walls/headers/pillars one factor, floor another — rooms stop
+    -- reading as copies of each other
+    for i, room in ipairs(mapTable.rooms) do
+        local t = tints[i]
+        local model = container:FindFirstChild(
+            spec.tiles[room.tile].tileId .. "_" .. room.tile
+        )
+        if t and model then
+            for _, part in ipairs(model:GetChildren()) do
+                if part:IsA("BasePart") then
+                    local f
+                    if part.Name == "Floor" then
+                        f = t.floor
+                    elseif
+                        part.Name:sub(1, 5) == "Wall_"
+                        or part.Name:sub(1, 7) == "Header_"
+                        or part.Name:sub(1, 7) == "Pillar_"
+                    then
+                        f = t.wall
+                    end
+                    if f then
+                        local c = part.Color
+                        part.Color = Color3.new(
+                            math.clamp(c.R * f, 0, 1),
+                            math.clamp(c.G * f, 0, 1),
+                            math.clamp(c.B * f, 0, 1)
+                        )
+                    end
+                end
+            end
+        end
+    end
+
+    -- clutter props
+    local folder = Instance.new("Folder")
+    folder.Name = "Dressing"
+    for _, prop in ipairs(props) do
+        local builder = PROP_BUILDERS[prop.kind]
+        if builder then
+            local cf = slotOrigin
+                * CFrame.new(prop.x, 0, prop.z)
+                * CFrame.Angles(0, prop.rot, 0)
+            for _, part in ipairs(builder(cf)) do
+                part.Name = "Prop_" .. prop.kind
+                part.Anchored = true
+                part.CanTouch = false
+                part.TopSurface = Enum.SurfaceType.Smooth
+                part.BottomSurface = Enum.SurfaceType.Smooth
+                part.Parent = folder
+            end
+        end
+    end
+    folder.Parent = container
+    self:_log("Info", "dressing applied", { props = #props })
 end
 
 -- ---- treasure ------------------------------------------------------------------

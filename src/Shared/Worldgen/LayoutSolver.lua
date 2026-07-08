@@ -464,6 +464,7 @@ function LayoutSolver.mapData(catalog, spec)
             local aabb = tileAABB(tile, t.x, t.z, t.rot)
             table.insert(rooms, {
                 class = tile.class,
+                tile = i, -- spec.tiles index (dressing pass maps room → stamped Model)
                 x = (aabb.minx + aabb.maxx) / 2,
                 z = (aabb.minz + aabb.maxz) / 2,
                 hx = (aabb.maxx - aabb.minx) / 2,

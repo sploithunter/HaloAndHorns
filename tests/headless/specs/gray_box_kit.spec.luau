@@ -162,6 +162,32 @@ return function()
             end
         end)
 
+        it("every doorway gets a flanking torch pair with a light (M5a)", function()
+            for _, tile in ipairs(def.tiles) do
+                if tile.class ~= "cap" then
+                    local specs = GrayBoxKit.parts(tile)
+                    local flames = findAll(specs, "TorchFlame_")
+                    expect(#flames).to.equal(#tile.doors * 2)
+                    for _, flame in ipairs(flames) do
+                        expect(flame.light ~= nil).to.equal(true)
+                    end
+                end
+            end
+        end)
+
+        it("chamber tiles get corner pillars; corridors stay clear (M5a)", function()
+            for _, tile in ipairs(def.tiles) do
+                if tile.class ~= "cap" then
+                    local pillars = findAll(GrayBoxKit.parts(tile), "Pillar_")
+                    if tile.class == "corridor" then
+                        expect(#pillars).to.equal(0)
+                    else
+                        expect(#pillars).to.equal(4)
+                    end
+                end
+            end
+        end)
+
         it("hook parts carry $MISSION placeholder attributes", function()
             local entry, objective
             for _, tile in ipairs(def.tiles) do
