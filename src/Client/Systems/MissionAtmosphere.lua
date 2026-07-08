@@ -35,14 +35,17 @@ local PRESETS = {
         cc = { Saturation = -0.2, Contrast = 0.08, TintColor = Color3.fromRGB(255, 224, 210) },
     },
     heaven = {
+        -- v2 (2026-07-08 playtest: v1 was a whiteout — "too bright to even
+        -- see"): bright needs CONTRAST, not exposure. Moderate ambient +
+        -- slightly toned surfaces (palette) so edges/shadows still exist.
         lighting = {
-            Brightness = 2.4,
-            Ambient = Color3.fromRGB(150, 148, 138),
-            OutdoorAmbient = Color3.fromRGB(255, 250, 235),
-            FogColor = Color3.fromRGB(255, 250, 240),
+            Brightness = 1.6,
+            Ambient = Color3.fromRGB(105, 103, 96),
+            OutdoorAmbient = Color3.fromRGB(196, 192, 180),
+            FogColor = Color3.fromRGB(235, 230, 220),
             FogEnd = 1400,
         },
-        cc = { Saturation = 0.05, Contrast = 0.03, TintColor = Color3.fromRGB(255, 252, 240) },
+        cc = { Saturation = 0.05, Contrast = 0.05, TintColor = Color3.fromRGB(255, 250, 240) },
     },
     earth = {
         lighting = {

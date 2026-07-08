@@ -691,12 +691,14 @@ local THEME_PALETTES = {
         torchLight = Color3.fromRGB(255, 120, 60),
     },
     heaven = {
-        wall = Color3.fromRGB(232, 226, 210),
-        floor = Color3.fromRGB(245, 241, 230),
-        pillar = Color3.fromRGB(216, 188, 122),
-        beacon = Color3.fromRGB(255, 216, 92),
-        torchFlame = Color3.fromRGB(255, 244, 200),
-        torchLight = Color3.fromRGB(255, 236, 185),
+        -- v2: toned down from near-white (whiteout playtest) — cream/gray
+        -- surfaces keep edge definition under the bright preset
+        wall = Color3.fromRGB(206, 198, 182),
+        floor = Color3.fromRGB(224, 217, 202),
+        pillar = Color3.fromRGB(206, 176, 110),
+        beacon = Color3.fromRGB(255, 210, 80),
+        torchFlame = Color3.fromRGB(255, 238, 185),
+        torchLight = Color3.fromRGB(255, 230, 170),
     },
 }
 
