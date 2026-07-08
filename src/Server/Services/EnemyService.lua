@@ -5507,3 +5507,4 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
 end
 
 return EnemyService
+

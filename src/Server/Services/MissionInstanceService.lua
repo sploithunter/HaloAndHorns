@@ -81,6 +81,19 @@ function MissionInstanceService:Start()
     if not self._config then
         return
     end
+    -- BOOT SWEEP: destroy any PERSISTED mission containers (Edit-mode demo
+    -- stamps saved/copied into the session). A fresh server has no open
+    -- missions by definition — a stale container squatting on a slot means
+    -- the next real mission stamps INTO it (two interleaved maps read as
+    -- "unsolvable", 2026-07-08 playtest).
+    local stale = workspace:FindFirstChild("MissionInstances")
+    if stale then
+        local n = #stale:GetChildren()
+        if n > 0 then
+            self:_log("Warn", "boot sweep destroyed stale mission containers", { count = n })
+        end
+        stale:Destroy()
+    end
     -- bind authored doors, now and as they appear
     for _, part in ipairs(CollectionService:GetTagged("MissionDoor")) do
         self:_bindDoor(part)

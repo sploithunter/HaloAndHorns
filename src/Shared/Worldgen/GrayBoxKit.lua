@@ -266,16 +266,17 @@ function GrayBoxKit.parts(tile)
             end
             add({
                 name = "TorchBracket_" .. torchIndex,
-                size = { 1.2, 3.5, 1.2 },
-                pos = { tx, 8.5, tz },
+                size = { 0.6, 3, 0.6 },
+                pos = { tx, 8.8, tz },
                 color = { 40, 38, 42 },
                 material = "Metal",
                 canCollide = false,
             })
             add({
                 name = "TorchFlame_" .. torchIndex,
-                size = { 2.4, 3.2, 2.4 },
-                pos = { tx, 11.6, tz },
+                shape = "Ball", -- de-blockified (2026-07-08 playtest feedback)
+                size = { 2, 2, 2 },
+                pos = { tx, 11, tz },
                 color = { 255, 150, 50 },
                 material = "Neon",
                 canCollide = false,

@@ -32,6 +32,11 @@ local DIR_LOOK = {
 local function buildPart(spec)
     local part = Instance.new("Part")
     part.Name = spec.name
+    if spec.shape == "Ball" then
+        part.Shape = Enum.PartType.Ball
+    elseif spec.shape == "Cylinder" then
+        part.Shape = Enum.PartType.Cylinder
+    end
     part.Size = Vector3.new(spec.size[1], spec.size[2], spec.size[3])
     local pos = Vector3.new(spec.pos[1], spec.pos[2], spec.pos[3])
     if spec.face then
