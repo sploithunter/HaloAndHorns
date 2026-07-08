@@ -754,6 +754,20 @@ function MissionInstanceService:_ensureMissionCrateVisual()
     end
     local fresh = crate:Clone()
     fresh.Name = "MissionCrate"
+    -- break SFX (Jason's crate-smash upload): the death handler plays a
+    -- Sound named bigBreakSound from the child container named after the
+    -- model — name the mesh accordingly so the sound is 3D-positional
+    local mesh = fresh:FindFirstChildWhichIsA("MeshPart")
+    if mesh then
+        mesh.Name = "MissionCrate"
+        local smash = Instance.new("Sound")
+        smash.Name = "bigBreakSound"
+        -- group-owned upload (scripts/audio_ids.json crate_smash)
+        smash.SoundId = "rbxassetid://119529368267127"
+        smash.Volume = 0.8
+        smash.RollOffMaxDistance = 80
+        smash.Parent = mesh
+    end
     local old = store:FindFirstChild("MissionCrate")
     if old then
         old:Destroy()
