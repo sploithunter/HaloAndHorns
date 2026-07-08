@@ -37,6 +37,19 @@ local Matter = Locations.getLibrary("Matter") -- Matter ECS framework (manual du
 local Reflex = Locations.getPackage("Reflex") -- Redux-like state management (via Wally)
 local ModuleLoader = require(Locations.SharedUtils.ModuleLoader)
 
+-- Audio buses are created SERVER-side at boot so every peer shares ONE set of
+-- SoundGroups. Otherwise the client lazily creates LOCAL groups at startup and
+-- a later server-side assign (mission crate smash) creates replicated
+-- DUPLICATES — the volume sliders then drive the client copies while
+-- server-assigned sounds sit on the untouched replicas (2026-07-08: master
+-- volume at zero couldn't silence crate breaks).
+pcall(function()
+    local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
+    SoundGroups.get("effects")
+    SoundGroups.get("music")
+    SoundGroups.get("ui")
+end)
+
 -- Console noise reduction: defer logging until Logger is initialized
 
 -- Create module loader
