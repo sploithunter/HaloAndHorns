@@ -461,6 +461,29 @@ function MissionInstanceService:Open(player, missionId)
                         lastDown = down
                         publish("Defeat all enemies!", ("%d/%d"):format(down, total), down / total)
                     end
+                    -- CoH straggler pings: with only a few enemies left, the
+                    -- map shows them (hunting the last crow in the dark is
+                    -- frustration, not gameplay — 2026-07-08 hell playtest)
+                    local pings = nil
+                    if alive > 0 and alive <= 3 then
+                        local list = {}
+                        for _, model in ipairs(record.enemies) do
+                            if model.Parent then
+                                local okP, pos = pcall(function()
+                                    return model:GetPivot().Position
+                                end)
+                                if okP and pos then
+                                    table.insert(list, { x = pos.X, z = pos.Z })
+                                end
+                            end
+                        end
+                        if #list > 0 then
+                            pings = game:GetService("HttpService"):JSONEncode(list)
+                        end
+                    end
+                    for _, member in ipairs(membersOf(teamKey)) do
+                        member:SetAttribute("MissionEnemyPings", pings)
+                    end
                     if alive == 0 then
                         cleared = true
                         for _, beacon in ipairs(beacons) do
@@ -541,6 +564,7 @@ function MissionInstanceService:_close(instanceId, reason)
         member:SetAttribute("MissionMapData", nil)
         member:SetAttribute("InMission", nil)
         member:SetAttribute("MissionTheme", nil)
+        member:SetAttribute("MissionEnemyPings", nil)
         local zoom = record.savedZoom and record.savedZoom[member.UserId]
         if zoom then
             member.CameraMaxZoomDistance = zoom

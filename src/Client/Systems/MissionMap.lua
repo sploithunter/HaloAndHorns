@@ -274,6 +274,48 @@ function MissionMap.start()
         end
     end
 
+    -- CoH straggler pings: with ≤3 enemies left the server publishes their
+    -- world positions (MissionEnemyPings JSON); draw pulsing red dots even in
+    -- unexplored territory — hunting the last crow in the dark isn't gameplay
+    local pingFrames = {}
+    local function updatePings()
+        for _, frame in ipairs(pingFrames) do
+            frame:Destroy()
+        end
+        pingFrames = {}
+        local raw = player:GetAttribute("MissionEnemyPings")
+        if not (data and type(raw) == "string" and raw ~= "") then
+            return
+        end
+        local ok, list = pcall(function()
+            return HttpService:JSONDecode(raw)
+        end)
+        if not ok or type(list) ~= "table" then
+            return
+        end
+        local toPx = projector()
+        for _, ping in ipairs(list) do
+            local px, pz = toPx(ping.x - data.ox, ping.z - data.oz)
+            local dot = Instance.new("Frame")
+            dot.Name = "EnemyPing"
+            dot.AnchorPoint = Vector2.new(0.5, 0.5)
+            dot.Position = UDim2.fromOffset(px, pz)
+            dot.Size = UDim2.fromOffset(9, 9)
+            dot.BackgroundColor3 = Color3.fromRGB(255, 70, 60)
+            dot.ZIndex = 6
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(1, 0)
+            corner.Parent = dot
+            local stroke = Instance.new("UIStroke")
+            stroke.Color = Color3.fromRGB(0, 0, 0)
+            stroke.Thickness = 1
+            stroke.Parent = dot
+            dot.Parent = mapRoot
+            table.insert(pingFrames, dot)
+        end
+    end
+    player:GetAttributeChangedSignal("MissionEnemyPings"):Connect(updatePings)
+
     player:GetAttributeChangedSignal("MissionMapData"):Connect(applyData)
     canvas:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
         if data then
