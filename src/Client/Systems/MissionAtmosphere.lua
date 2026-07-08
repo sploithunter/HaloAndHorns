@@ -25,12 +25,16 @@ local TWEEN = TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out
 
 local PRESETS = {
     hell = {
+        -- v2 (2026-07-08 playtest: "it is also just dark"): keep the torch-lit
+        -- DOORS mood but lift the readability floor — you should always be able
+        -- to READ the room; torches carry the drama. The real darkness answer
+        -- is the planned light-support pet, not brighter caves.
         lighting = {
-            Brightness = 1,
-            Ambient = Color3.fromRGB(32, 18, 20),
-            OutdoorAmbient = Color3.fromRGB(70, 38, 36),
-            FogColor = Color3.fromRGB(22, 10, 10),
-            FogEnd = 420,
+            Brightness = 1.1,
+            Ambient = Color3.fromRGB(48, 30, 32),
+            OutdoorAmbient = Color3.fromRGB(88, 52, 48),
+            FogColor = Color3.fromRGB(26, 13, 12),
+            FogEnd = 480,
         },
         cc = { Saturation = -0.2, Contrast = 0.08, TintColor = Color3.fromRGB(255, 224, 210) },
     },
