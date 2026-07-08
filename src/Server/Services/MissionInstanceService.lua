@@ -1292,6 +1292,12 @@ function MissionInstanceService:_bindDoor(part)
     if not part:IsA("BasePart") or part:FindFirstChild(PROMPT_NAME) then
         return
     end
+    -- StudioOnly doors (the spawn-plaza dev gates): boot-and-go shortcuts in
+    -- Studio; silent in production — the REAL entries live inside the realm
+    -- layers (Maps.Heaven_2 / Hell_2 mission gates).
+    if part:GetAttribute("StudioOnly") and not game:GetService("RunService"):IsStudio() then
+        return
+    end
     local missionId = part:GetAttribute("MissionId")
     local mission = missionId and self._config.missions[missionId]
     if not mission then
