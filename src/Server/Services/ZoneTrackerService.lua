@@ -180,6 +180,18 @@ function ZoneTrackerService:_worldFolderName(inst)
 end
 
 function ZoneTrackerService:_resolveFor(player)
+    -- MISSION OVERRIDE (docs/MISSION_WORLDGEN.md): inside a mission instance
+    -- the player's area is the theme pseudo-area ("mission_hell" etc.) —
+    -- this points AREA MUSIC at the theme track and AUTO-FARM at the
+    -- mission's breakable world. Cleared with the InMission attr on exit.
+    if player:GetAttribute("InMission") then
+        local themed = "mission_" .. (player:GetAttribute("MissionTheme") or "earth")
+        if player:GetAttribute(CURRENT_AREA_ATTR) ~= themed then
+            player:SetAttribute(CURRENT_AREA_ATTR, themed)
+        end
+        return
+    end
+
     local pos = rootPosition(player)
     if not pos then
         return -- character not spawned yet; leave the last known area in place

@@ -212,5 +212,11 @@ return {
         Desert = "desert_hunt", -- Desert Hunt (Jason: better than the old track)
         Ice = "arctic_hunt", -- harsh cold (Arctic Hunt)
         Lava = "epic_drum", -- intense endgame
+        -- MISSION pseudo-areas (ZoneTracker publishes mission_<theme> while
+        -- InMission; docs/MISSION_WORLDGEN.md). Defaults per Jason: hell =
+        -- the lava track until custom mission music lands; heaven = calm.
+        mission_hell = "epic_drum",
+        mission_heaven = "spa",
+        mission_earth = "awe",
     },
 }

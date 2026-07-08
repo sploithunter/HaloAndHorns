@@ -310,6 +310,7 @@ function MissionInstanceService:Open(player, missionId)
         hooks = hooks,
         returnCFrames = returnCFrames,
         savedZoom = savedZoom,
+        crates = {}, -- farmable mission debris (die with the mission)
         createdAt = os.clock(),
         boundsMin = Vector3.new(
             slotPos.X + spec.bbox.minx - 20,
@@ -396,7 +397,8 @@ function MissionInstanceService:Open(player, missionId)
             container,
             slotOrigin,
             seed,
-            mission.theme
+            mission.theme,
+            record
         )
     end
 
@@ -585,6 +587,14 @@ function MissionInstanceService:_close(instanceId, reason)
         end)
     end
 
+    -- farmable debris dies with the mission (direct Destroy: no award, and
+    -- the Dead-attr guard means no double-handling)
+    for _, crate in ipairs(record.crates or {}) do
+        if crate.Parent then
+            crate:Destroy()
+        end
+    end
+
     record.container:Destroy()
     self._slots[record.slotIndex] = nil
     self._byTeam[record.teamKey] = nil
@@ -721,9 +731,38 @@ local THEME_PALETTES = {
     },
 }
 
+-- One-time (lazy): swap the preloaded MissionCrate placeholder visual for
+-- the Synty crate prefab when the place carries it. Runtime store
+-- augmentation, AssetPreloadService pattern; retried until the store exists.
+function MissionInstanceService:_ensureMissionCrateVisual()
+    if self._crateVisualDone then
+        return
+    end
+    local store = ReplicatedStorage:FindFirstChild("Assets")
+    store = store and store:FindFirstChild("Models")
+    store = store and store:FindFirstChild("Breakables")
+    store = store and store:FindFirstChild("Crystals")
+    local props = ReplicatedStorage:FindFirstChild("MissionProps")
+    local crate = props and props:FindFirstChild("CrateWood")
+    if not store then
+        return -- preload not done yet; retry on the next spawn
+    end
+    self._crateVisualDone = true
+    if not crate then
+        return -- no prefab in this place: placeholder crystal visual stands
+    end
+    local fresh = crate:Clone()
+    fresh.Name = "MissionCrate"
+    local old = store:FindFirstChild("MissionCrate")
+    if old then
+        old:Destroy()
+    end
+    fresh.Parent = store
+end
+
 -- Per-room tint jitter + seeded primitive clutter (pure rolls from
 -- MissionDecor; this just materializes them).
-function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, container, slotOrigin, seed, theme)
+function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, container, slotOrigin, seed, theme, record)
     local tints, props = MissionDecor.roll(
         mapTable.rooms,
         MissionSeed.stream(seed, "dressing"),
@@ -868,16 +907,55 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
     -- primitive builders otherwise so fresh checkouts/tests never break
     local folder = Instance.new("Folder")
     folder.Name = "Dressing"
+    -- FARMABLE debris (Jason): crates/barrels spawn as REAL breakables via
+    -- BreakableSpawner mission pseudo-worlds — clickable, auto-farmable,
+    -- pet-cleared (doorway blockage becomes gameplay). Falls back to inert
+    -- prefab/primitive props when the spawner or config is unavailable.
+    local breakableSvc = nil
+    if decorCfg.farmable_props ~= false then
+        pcall(function()
+            local locator = _G.RBXTemplateServices
+            local svc = locator and locator:Get("BreakableSpawner")
+            if svc and svc.SpawnMissionBreakable then
+                breakableSvc = svc
+            end
+        end)
+    end
+    local FARMABLE_KIND = { crate = true, crate_small = true, barrel = true }
+    local pseudoWorld = "mission_" .. (theme or "earth")
     for _, prop in ipairs(props) do
         local cf = slotOrigin
             * CFrame.new(prop.x, 0, prop.z)
             * CFrame.Angles(0, prop.rot, 0)
-        local prefab = prefabFor(prop.kind, math.floor(math.abs(prop.x) * 10))
+        local spawned = nil
+        if breakableSvc and FARMABLE_KIND[prop.kind] then
+            self:_ensureMissionCrateVisual()
+            local okSpawn, model = pcall(function()
+                return breakableSvc:SpawnMissionBreakable(
+                    pseudoWorld,
+                    "MissionCrate",
+                    cf.Position + Vector3.new(0, 2, 0)
+                )
+            end)
+            if okSpawn and model then
+                spawned = model
+                if record and record.crates then
+                    table.insert(record.crates, model)
+                end
+            else
+                -- surface the real failure (a silent pcall here cost a debug
+                -- round on 2026-07-08 — don't repeat it)
+                self:_log("Warn", "mission crate spawn failed", {
+                    err = not okSpawn and tostring(model) or "returned nil",
+                })
+            end
+        end
+        local prefab = not spawned and prefabFor(prop.kind, math.floor(math.abs(prop.x) * 10))
         if prefab then
             prefab.Name = "Prop_" .. prop.kind
             groundModel(prefab, cf)
             prefab.Parent = folder
-        else
+        elseif not spawned then
             local builder = PROP_BUILDERS[prop.kind]
             if builder then
                 for _, part in ipairs(builder(cf)) do

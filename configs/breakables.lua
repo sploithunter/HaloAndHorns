@@ -134,6 +134,24 @@ local ORE_TIERS = {
 local M = {
     -- Breakable objects configuration (crystals, ores, etc.)
     crystals = {
+        -- MISSION DEBRIS (docs/MISSION_WORLDGEN.md M5, Jason: crates farmable
+        -- "like crystals" — clicks/auto-farm/pets clear doorway blockers).
+        -- asset_id is a PLACEHOLDER visual: MissionInstanceService swaps the
+        -- preloaded store model for the Synty crate prefab at runtime when
+        -- the place carries MissionProps. Spawned only via
+        -- BreakableSpawner:SpawnMissionBreakable (mission pseudo-worlds).
+        MissionCrate = {
+            display_name = "Supply Crate",
+            asset_id = "rbxassetid://112188519963572",
+            scale = 1,
+            health = 150,
+            value = 15,
+            currency = "coins",
+            placement = {
+                height_offset = 2,
+                sink_depth = 0,
+            },
+        },
         SmallBlueCrystal = {
             display_name = "Small Blue Crystal",
             asset_id = "rbxassetid://112188519963572",

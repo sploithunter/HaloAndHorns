@@ -309,7 +309,9 @@ local function randomPointInBalancedSpawnerCell(spawner, margin, cellSize, items
 end
 
 local function numberFromAttributeOrConfig(instance, attributeName, configValue, fallback)
-    local attributeValue = instance:GetAttribute(attributeName)
+    -- instance may be nil: explicit-position spawns (mission debris) have no
+    -- spawner part — config/fallback only
+    local attributeValue = instance and instance:GetAttribute(attributeName)
     if attributeValue ~= nil then
         return tonumber(attributeValue) or fallback
     end
@@ -777,6 +779,13 @@ function BreakableSpawner:_isWorldActive(worldName)
         return true
     end
 
+    -- Mission pseudo-worlds (mission_hell etc.): lifetime is owned by
+    -- MissionInstanceService (spawn at stamp, destroyed at teardown) — the
+    -- presence/unlock gates don't apply.
+    if worldName:sub(1, 8) == "mission_" then
+        return true
+    end
+
     -- Realm areas (Heaven_n* / Hell_n*) are far-off worlds (Home ±2000 Y). Pre-filling ALL of them
     -- for any player who'd merely UNLOCKED them spawned ~1600 idle crystals (~32k instances) the
     -- player never visits — the server-perf / memory leak. Gate realm areas on actual PRESENCE: a
@@ -1104,6 +1113,13 @@ end
 
 function BreakableSpawner:_fillWorld(worldFolder)
     if not self:_isWorldActive(worldFolder.Name) then
+        return
+    end
+
+    -- Mission pseudo-worlds are populated EXPLICITLY by MissionInstanceService
+    -- (SpawnMissionBreakable) — the top-up/fill machinery must never manage
+    -- them (they have no spawner parts; managing them = a warn every cycle).
+    if worldFolder.Name:sub(1, 8) == "mission_" then
         return
     end
 
@@ -1547,7 +1563,11 @@ function BreakableSpawner:_trySpawnOne(
     -- forced spawn may target a fixed-anchor kind (forcedSpawnOverrides.slot_kind). LEGACY PATH
     -- (flag off / no slots): the original per-spawn raycast + clearance search.
     local spawner, spawnPosition, claimedSlot
-    if self:_useSlots() then
+    -- EXPLICIT position (mission debris, docs/MISSION_WORLDGEN.md): the
+    -- caller owns placement — skip slot claiming and spawn-point search.
+    if type(forcedSpawnOverrides) == "table" and typeof(forcedSpawnOverrides.position) == "Vector3" then
+        spawnPosition = forcedSpawnOverrides.position
+    elseif self:_useSlots() then
         self:_ensureSpawnArea(worldFolder)
         local registry = self:_ensureSlots(worldFolder)
         -- total()==0 ⇒ generation found no valid points for this world; fall through to the legacy
@@ -2306,8 +2326,8 @@ function BreakableSpawner:_trySpawnOne(
         end
     end)
 
-    -- Tag with spawner for diagnostics
-    model:SetAttribute("Spawner", spawner.Name)
+    -- Tag with spawner for diagnostics (explicit-position spawns have none)
+    model:SetAttribute("Spawner", spawner and spawner.Name or "mission")
     -- Helpers for pet assignment
     local function removePetIdFromBreakables(petId)
         local breakablesRoot = workspace:FindFirstChild("Game")
@@ -2509,6 +2529,41 @@ function BreakableSpawner:SpawnBreakableForStudioSmoke(areaId, breakableId)
     end
 
     return model
+end
+
+-- Mission debris (docs/MISSION_WORLDGEN.md M5): field a configured breakable
+-- at an EXPLICIT position inside a mission's theme pseudo-world
+-- ("mission_hell" etc.). Rides the ENTIRE breakable stack — clicks,
+-- auto-target, pet assignment, contrib awards, drops — with no respawn (the
+-- top-up loop only walks configured worlds). The caller owns model lifetime;
+-- teardown destroys its own spawns.
+function BreakableSpawner:SpawnMissionBreakable(pseudoWorld, breakableId, position)
+    if not (breakablesConfig.crystals and breakablesConfig.crystals[breakableId]) then
+        return nil
+    end
+    local gameFolder = workspace:FindFirstChild("Game")
+    local root = gameFolder and gameFolder:FindFirstChild("Breakables")
+    local crystalsRoot = root and root:FindFirstChild("Crystals")
+    if not crystalsRoot then
+        return nil
+    end
+    local worldFolder = crystalsRoot:FindFirstChild(pseudoWorld)
+    if not worldFolder then
+        worldFolder = Instance.new("Folder")
+        worldFolder.Name = pseudoWorld
+        local items = Instance.new("Folder")
+        items.Name = "Items"
+        items.Parent = worldFolder
+        local current = Instance.new("IntValue")
+        current.Name = "CurrentItems"
+        current.Parent = worldFolder
+        local max = Instance.new("IntValue")
+        max.Name = "Max"
+        max.Value = 10000 -- never the limiter; mission stamps decide counts
+        max.Parent = worldFolder
+        worldFolder.Parent = crystalsRoot
+    end
+    return self:_trySpawnOne(worldFolder, breakableId, { position = position }, true)
 end
 
 return BreakableSpawner

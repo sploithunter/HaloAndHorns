@@ -354,6 +354,12 @@ local function zoneUnlockedFor(player, zoneId)
     if not player or type(zoneId) ~= "string" or zoneId == "" then
         return true
     end
+    -- Mission pseudo-worlds (mission_hell etc.): entering through the door IS
+    -- the entitlement — mission debris is mineable by whoever is inside
+    -- (docs/MISSION_WORLDGEN.md M5 farmable crates).
+    if zoneId:sub(1, 8) == "mission_" then
+        return true
+    end
     local json = player:GetAttribute("UnlockedAreasJson")
     if json == nil then
         return true -- not published yet (boot grace) — never brick Spawn mining
