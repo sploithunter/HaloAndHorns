@@ -112,6 +112,22 @@ function GrayBoxKit.definition()
                 },
             },
             {
+                -- MEZZANINE HALL (Jason): multi-level FEEL on a single-level
+                -- map — a tall room with an upper gallery + walk-up ramps.
+                -- The solver only sees XZ doors; all verticality is interior.
+                id = "mezzanine_hall",
+                class = "room",
+                weight = 1,
+                minDepth = 2, -- grand halls read better past the entrance
+                wallHeight = 64,
+                bounds = { sx = 144, sz = 144 },
+                doors = {
+                    { name = "Door_1", x = 0, z = -72, dir = "nz" },
+                    { name = "Door_2", x = 72, z = 0, dir = "px" },
+                    { name = "Door_3", x = -72, z = 0, dir = "nx" },
+                },
+            },
+            {
                 id = "junction_cross",
                 class = "junction",
                 weight = 1,
@@ -181,6 +197,8 @@ end
 -- Part specs for one tile definition (an entry of definition().tiles).
 function GrayBoxKit.parts(tile)
     local b = tile.bounds
+    -- per-tile wall height (mezzanine halls run taller than the kit default)
+    local wallH = tile.wallHeight or WALL_HEIGHT
     local hx, hz = b.sx / 2, b.sz / 2
     local cx, cz = b.ox or 0, b.oz or 0
     local color = CLASS_COLOR[tile.class] or CLASS_COLOR.corridor
@@ -203,8 +221,8 @@ function GrayBoxKit.parts(tile)
     })
     add({
         name = "Bounds",
-        size = { b.sx, WALL_HEIGHT, b.sz },
-        pos = { cx, WALL_HEIGHT / 2, cz },
+        size = { b.sx, wallH, b.sz },
+        pos = { cx, wallH / 2, cz },
         transparency = 1,
         canCollide = false,
     })
@@ -226,8 +244,8 @@ function GrayBoxKit.parts(tile)
         -- full-height backing slab seals the doorway (the old Plug)
         add({
             name = "Backing",
-            size = { b.sx, WALL_HEIGHT, b.sz },
-            pos = { cx, WALL_HEIGHT / 2, cz },
+            size = { b.sx, wallH, b.sz },
+            pos = { cx, wallH / 2, cz },
             color = { 30, 28, 32 },
         })
         if tile.id == "cap_boarded" then
@@ -328,7 +346,7 @@ function GrayBoxKit.parts(tile)
     local wallIndex = 0
     local headerIndex = 0
     local torchIndex = 0
-    local headerH = WALL_HEIGHT - DOOR_H
+    local headerH = wallH - DOOR_H
     local headerY = DOOR_H + headerH / 2
     -- M5a: a pair of torches flanks every doorway on the room side —
     -- local lights carry the whole mood out at the dark slot band
@@ -398,15 +416,15 @@ function GrayBoxKit.parts(tile)
             if edge.axis == "z" then
                 add({
                     name = "Wall_" .. wallIndex,
-                    size = { WALL_T, WALL_HEIGHT, len },
-                    pos = { edge.at, WALL_HEIGHT / 2, mid },
+                    size = { WALL_T, wallH, len },
+                    pos = { edge.at, wallH / 2, mid },
                     color = wallColor,
                 })
             else
                 add({
                     name = "Wall_" .. wallIndex,
-                    size = { len, WALL_HEIGHT, WALL_T },
-                    pos = { mid, WALL_HEIGHT / 2, edge.at },
+                    size = { len, wallH, WALL_T },
+                    pos = { mid, wallH / 2, edge.at },
                     color = wallColor,
                 })
             end
@@ -422,12 +440,107 @@ function GrayBoxKit.parts(tile)
         for i, corner in ipairs(corners) do
             add({
                 name = "Pillar_" .. i,
-                size = { 3, WALL_HEIGHT, 3 },
-                pos = { cx + corner[1], WALL_HEIGHT / 2, cz + corner[2] },
+                size = { 3, wallH, 3 },
+                pos = { cx + corner[1], wallH / 2, cz + corner[2] },
                 color = dim(color, 0.5),
                 material = "Slate",
             })
         end
+    end
+
+    -- MEZZANINE interior: an upper U-gallery hugging the px/nx/pz walls with
+    -- two walk-up ramps on the nz (entry-door) side. Deck top at y=18 clears
+    -- the 16-tall doorways below it; ramps are ~25° pitched slabs (walkable
+    -- by humanoid enemies AND the anchored client-driven pets, which just
+    -- lerp — no pathfinding dependency). All verticality is interior: the
+    -- solver still mates plain XZ doors, so zero solver changes.
+    if tile.id == "mezzanine_hall" then
+        local DECK_Y = 18 -- deck TOP height
+        local DECK_D = 16 -- deck depth off the wall
+        local inner = hx - WALL_T -- wall inner face (square tile: hz too)
+        local deckCol = dim(color, 0.75)
+        local railCol = dim(color, 0.45)
+        -- side decks (px/nx): from the ramp landing forward to the back wall
+        local landZ = -hz + 44 -- ramp tops out here (deck's nz end)
+        local sideLen = (inner - landZ)
+        local sideMidZ = (landZ + inner) / 2
+        for i, sx in ipairs({ 1, -1 }) do
+            add({
+                name = "Deck_Side_" .. i,
+                size = { DECK_D, 1, sideLen },
+                pos = { sx * (inner - DECK_D / 2), DECK_Y - 0.5, sideMidZ },
+                color = deckCol,
+                material = "WoodPlanks",
+            })
+            -- inner-edge railing ON the deck; stops short of the back deck
+            -- so the corner walk stays open, and the nz end stays open for
+            -- the ramp landing
+            add({
+                name = "Rail_Side_" .. i,
+                size = { 0.8, 3, (inner - DECK_D) - landZ },
+                pos = {
+                    sx * (inner - DECK_D + 0.4),
+                    DECK_Y + 1.5,
+                    (landZ + inner - DECK_D) / 2,
+                },
+                color = railCol,
+                material = "Metal",
+            })
+            -- ramp: floor (z=-inner+4) up to the deck end (z=landZ);
+            -- negative pitch lifts the +z end (verified convention)
+            local rise, run = DECK_Y, (landZ - (-inner + 4))
+            add({
+                name = "Ramp_" .. i,
+                size = { 8, 1, math.sqrt(rise * rise + run * run) + 2 },
+                pos = { sx * (inner - DECK_D / 2), rise / 2 - 0.4, (landZ + (-inner + 4)) / 2 },
+                pitch = -math.deg(math.atan(rise / run)),
+                color = deckCol,
+                material = "WoodPlanks",
+            })
+        end
+        -- back deck (pz wall) bridges the side decks into a U
+        add({
+            name = "Deck_Back",
+            size = { 2 * (inner - DECK_D), 1, DECK_D },
+            pos = { cx, DECK_Y - 0.5, inner - DECK_D / 2 },
+            color = deckCol,
+            material = "WoodPlanks",
+        })
+        add({
+            name = "Rail_Back",
+            size = { 2 * (inner - DECK_D) - 1.6, 3, 0.8 },
+            pos = { cx, DECK_Y + 1.5, inner - DECK_D + 0.4 },
+            color = railCol,
+            material = "Metal",
+        })
+        -- support posts ground the gallery visually
+        local posts = {
+            { inner - DECK_D + 0.75, -10 },
+            { inner - DECK_D + 0.75, sideMidZ },
+            { -(inner - DECK_D + 0.75), -10 },
+            { -(inner - DECK_D + 0.75), sideMidZ },
+            { 30, inner - DECK_D + 0.75 },
+            { -30, inner - DECK_D + 0.75 },
+        }
+        for i, post in ipairs(posts) do
+            local px3, pz3 = post[1], post[2]
+            add({
+                name = "DeckPost_" .. i,
+                size = { 1.5, DECK_Y - 1, 1.5 },
+                pos = { px3, (DECK_Y - 1) / 2, pz3 },
+                color = railCol,
+                material = "Metal",
+            })
+        end
+        -- an UPSTAIRS pack anchor on the back gallery — the fight worth
+        -- climbing for (service fields packs at every MissionSpawn part)
+        add({
+            name = "MissionSpawn",
+            size = { 1, 1, 1 },
+            pos = { 0, DECK_Y + 1, inner - DECK_D / 2 },
+            transparency = 1,
+            canCollide = false,
+        })
     end
 
     -- STATIC population anchors (CoH model): rooms and the objective chamber

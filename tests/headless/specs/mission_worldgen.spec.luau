@@ -101,7 +101,7 @@ return function()
             expect(catalog.kitId).to.equal("gray_box")
             expect(#catalog.byClass.entrance).to.equal(1)
             expect(#catalog.byClass.corridor).to.equal(2)
-            expect(#catalog.byClass.room).to.equal(2)
+            expect(#catalog.byClass.room).to.equal(3) -- small, big, mezzanine hall
             expect(#catalog.byClass.objective).to.equal(1)
             expect(#catalog.byClass.cap).to.equal(2) -- sealed-door + boarded variants
             expect(catalog.byId.corr_straight.bounds.hx).to.equal(24)

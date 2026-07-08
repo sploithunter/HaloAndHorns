@@ -48,6 +48,10 @@ local function buildPart(spec)
         -- in-plane roll (boarded-up cap planks etc.)
         part.CFrame = part.CFrame * CFrame.Angles(0, 0, math.rad(spec.tilt))
     end
+    if spec.pitch then
+        -- slope about X (mezzanine ramps)
+        part.CFrame = part.CFrame * CFrame.Angles(math.rad(spec.pitch), 0, 0)
+    end
     part.Anchored = true
     part.CanCollide = spec.canCollide ~= false
     part.CanTouch = false

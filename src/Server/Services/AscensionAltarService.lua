@@ -79,21 +79,25 @@ local function findNamed(name)
     return nil
 end
 
--- Find an existing tagged altar part; else bind to a named map object (invisible prompt host at
--- it); else spawn a placeholder pillar at the config position.
-function AscensionAltarService:_ensureAltarPart()
+-- Find ALL tagged altar parts (one station per realm world); else bind to a named map object
+-- (invisible prompt host at it); else spawn a placeholder pillar at the config position.
+-- Returns a LIST of parts — every one gets its own prompt + label.
+function AscensionAltarService:_ensureAltarParts()
+    local parts = {}
     local tagged = CollectionService:GetTagged(ALTAR_TAG)
     for _, inst in ipairs(tagged) do
         if inst:IsA("BasePart") and inst:IsDescendantOf(Workspace) then
-            return inst
-        end
-        -- a tagged Model: use its PrimaryPart or first BasePart
-        if inst:IsA("Model") then
+            table.insert(parts, inst)
+        elseif inst:IsA("Model") and inst:IsDescendantOf(Workspace) then
+            -- a tagged Model: use its PrimaryPart or first BasePart
             local part = inst.PrimaryPart or inst:FindFirstChildWhichIsA("BasePart")
             if part then
-                return part
+                table.insert(parts, part)
             end
         end
+    end
+    if #parts > 0 then
+        return parts
     end
 
     local cfg = self._altarConfig or {}
@@ -114,7 +118,7 @@ function AscensionAltarService:_ensureAltarPart()
         host:SetAttribute("LabelHeight", ext.Y + 4) -- float the label above the building's roof
         CollectionService:AddTag(host, ALTAR_TAG)
         host.Parent = Workspace
-        return host
+        return { host }
     end
 
     -- No tag, no named object — spawn a placeholder pillar (reskin later).
@@ -129,7 +133,7 @@ function AscensionAltarService:_ensureAltarPart()
     part.Transparency = 0.1
     CollectionService:AddTag(part, ALTAR_TAG)
     part.Parent = Workspace
-    return part
+    return { part }
 end
 
 function AscensionAltarService:_ensurePrompt(part)
@@ -209,17 +213,19 @@ function AscensionAltarService:Start()
     if self._altarConfig and self._altarConfig.enabled == false then
         return
     end
+    local placed = 0
     local ok, err = pcall(function()
-        local part = self:_ensureAltarPart()
-        if part then
+        local parts = self:_ensureAltarParts()
+        for _, part in ipairs(parts or {}) do
             self:_ensurePrompt(part)
             self:_ensureLabel(part)
+            placed += 1
         end
     end)
     if not ok and self._logger then
         self._logger:Warn("AscensionAltarService failed to place altar", { error = tostring(err) })
     elseif self._logger then
-        self._logger:Info("AscensionAltarService active (Ascension Altar placed)")
+        self._logger:Info("AscensionAltarService active", { stations = placed })
     end
 end
 
