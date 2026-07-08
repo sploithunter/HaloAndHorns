@@ -57,11 +57,15 @@ return {
     },
 
     missions = {
-        -- M3 test mission on the gray-box kit; real missions arrive with the
-        -- first themed kit (M5)
-        gray_trial = {
-            display = "Gray Trial",
+        -- REALM-SPLIT trials (Jason): hell = dark torch-lit (DOORS pole),
+        -- heaven = bright low-poly (Dungeon Quest pole). Same gray-box kit —
+        -- `theme` drives dressing palettes server-side and the client
+        -- MissionAtmosphere lighting preset. Enemy rosters stay earth packs
+        -- for now (realm-correct rosters come with allegiance work).
+        hell_trial = {
+            display = "Hell Trial",
             kit = "gray_box",
+            theme = "hell",
             seed_policy = "per_attempt",
             -- CoH clear-gate: the glowy stays inert until every mission enemy
             -- is defeated — which also makes pets mandatory (players are
@@ -97,6 +101,38 @@ return {
                 rolls_min = 1,
                 rolls_max = 2,
                 open_hold = 3, -- seconds standing at the chest to open it
+            },
+            solver_overrides = {},
+        },
+        heaven_trial = {
+            display = "Heaven Trial",
+            kit = "gray_box",
+            theme = "heaven",
+            seed_policy = "per_attempt",
+            objective = { kind = "clear_then_beacon" },
+            packs = {
+                { weight = 10, units = { { enemy = "rabid_dog", count = 2 } } },
+                { weight = 8, units = { { enemy = "raging_bear", count = 1 } } },
+                { weight = 6, units = { { enemy = "murder_crow", count = 2 } } },
+                {
+                    weight = 4,
+                    units = {
+                        { enemy = "rabid_bunny", count = 1 },
+                        { enemy = "rabid_dog", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.08, -- heaven reads cleaner with less drift
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
             },
             solver_overrides = {},
         },

@@ -288,6 +288,7 @@ function MissionInstanceService:Open(player, missionId)
             -- in-mission marker: DropService kills the magnet on it (walk to
             -- your loot); generally useful for any per-mission gating
             member:SetAttribute("InMission", instanceId)
+            member:SetAttribute("MissionTheme", mission.theme or "earth")
             -- camera clamp: tall walls + capped zoom = no craning over the
             -- maze to scout the glowy; restored on exit
             if cameraMaxZoom then
@@ -388,7 +389,15 @@ function MissionInstanceService:Open(player, missionId)
     -- DRESSING (M5a): per-room tint jitter + seeded clutter on the own
     -- "dressing" stream — no two rooms read identical, same seed = same look
     if not mission.decor or mission.decor.enabled ~= false then
-        self:_applyDressing(mission.decor or {}, mapTable, spec, container, slotOrigin, seed)
+        self:_applyDressing(
+            mission.decor or {},
+            mapTable,
+            spec,
+            container,
+            slotOrigin,
+            seed,
+            mission.theme
+        )
     end
 
     -- TREASURE (CoH glowie-lite, M5): seeded chests in a few rooms; opening
@@ -531,6 +540,7 @@ function MissionInstanceService:_close(instanceId, reason)
         member:SetAttribute("MissionObjectiveFraction", nil)
         member:SetAttribute("MissionMapData", nil)
         member:SetAttribute("InMission", nil)
+        member:SetAttribute("MissionTheme", nil)
         local zoom = record.savedZoom and record.savedZoom[member.UserId]
         if zoom then
             member.CameraMaxZoomDistance = zoom
@@ -644,14 +654,62 @@ local PROP_BUILDERS = {
     end,
 }
 
+-- Realm-split palettes (Jason): hell = dark ember-lit, heaven = bright
+-- marble + gold. Applied over the kit's base colors before the tint jitter;
+-- torches recolor too (flame part + its PointLight). nil theme = kit as-is.
+local THEME_PALETTES = {
+    hell = {
+        wall = Color3.fromRGB(52, 40, 44),
+        floor = Color3.fromRGB(72, 52, 50),
+        pillar = Color3.fromRGB(38, 30, 34),
+        beacon = Color3.fromRGB(255, 60, 30),
+        torchFlame = Color3.fromRGB(255, 110, 40),
+        torchLight = Color3.fromRGB(255, 120, 60),
+    },
+    heaven = {
+        wall = Color3.fromRGB(232, 226, 210),
+        floor = Color3.fromRGB(245, 241, 230),
+        pillar = Color3.fromRGB(216, 188, 122),
+        beacon = Color3.fromRGB(255, 216, 92),
+        torchFlame = Color3.fromRGB(255, 244, 200),
+        torchLight = Color3.fromRGB(255, 236, 185),
+    },
+}
+
 -- Per-room tint jitter + seeded primitive clutter (pure rolls from
 -- MissionDecor; this just materializes them).
-function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, container, slotOrigin, seed)
+function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, container, slotOrigin, seed, theme)
     local tints, props = MissionDecor.roll(
         mapTable.rooms,
         MissionSeed.stream(seed, "dressing"),
         decorCfg
     )
+    local palette = THEME_PALETTES[theme]
+
+    -- theme base coat first: walls/floors/pillars/torches across EVERY tile
+    -- (caps + corridors included), so the realm identity is total
+    if palette then
+        for _, inst in ipairs(container:GetDescendants()) do
+            if inst:IsA("BasePart") then
+                local n = inst.Name
+                if n == "Floor" then
+                    inst.Color = palette.floor
+                elseif n:sub(1, 5) == "Wall_" or n:sub(1, 7) == "Header_" or n == "Backing" then
+                    inst.Color = palette.wall
+                elseif n:sub(1, 7) == "Pillar_" then
+                    inst.Color = palette.pillar
+                elseif n == "ObjectiveBeacon" then
+                    inst.Color = palette.beacon
+                elseif n:sub(1, 11) == "TorchFlame_" then
+                    inst.Color = palette.torchFlame
+                    local light = inst:FindFirstChildOfClass("PointLight")
+                    if light then
+                        light.Color = palette.torchLight
+                    end
+                end
+            end
+        end
+    end
 
     -- tint: walls/headers/pillars one factor, floor another — rooms stop
     -- reading as copies of each other

@@ -475,6 +475,17 @@ do
     end
 end
 
+-- MissionAtmosphere: realm-split mission lighting (hell dark / heaven bright)
+-- + torch flicker — client-side, keyed on InMission/MissionTheme attributes.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MissionAtmosphere).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MissionAtmosphere", { error = tostring(err) })
+    end
+end
+
 -- MissionMap: CoH-style mission minimap — fog-of-war rooms + doorway ticks,
 -- draggable + minimizable; renders the server-published MissionMapData attr.
 do
