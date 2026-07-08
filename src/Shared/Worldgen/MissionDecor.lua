@@ -99,8 +99,18 @@ function MissionDecor.roll(rooms, streamSeed, opts)
     local wallDecor = {}
     local wallMin = opts.wall_decor_min or 0
     local wallMax = opts.wall_decor_max or 2
+    -- WALL decor goes everywhere walkable — corridors especially (2026-07-08
+    -- playtest: 48-wide halls with blank long walls read empty; floor CLUTTER
+    -- stays room-only so corridors keep a clear run)
+    local WALL_DECOR_CLASS = {
+        room = true,
+        junction = true,
+        objective = true,
+        entrance = true,
+        corridor = true,
+    }
     for i, room in ipairs(rooms) do
-        if DRESSED_CLASS[room.class] and room.class ~= "entrance" then
+        if WALL_DECOR_CLASS[room.class] then
             local n = wallMin + math.floor(rng() * (wallMax - wallMin + 1))
             for _ = 1, n do
                 for _ = 1, 6 do -- bounded retries per decoration
