@@ -311,6 +311,7 @@ function MissionInstanceService:Open(player, missionId)
         returnCFrames = returnCFrames,
         savedZoom = savedZoom,
         crates = {}, -- farmable mission debris (die with the mission)
+        openerLevel = player:GetAttribute("Level") or 1,
         createdAt = os.clock(),
         boundsMin = Vector3.new(
             slotPos.X + spec.bbox.minx - 20,
@@ -939,6 +940,10 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
             end)
             if okSpawn and model then
                 spawned = model
+                -- crates track the OPENER's level, not the pseudo-zone's
+                -- default 1 — else the over-leveled yield gate starves the
+                -- payout ("up the damage compared to my level", 2026-07-08)
+                model:SetAttribute("MiningLevel", record and record.openerLevel or 1)
                 if record and record.crates then
                     table.insert(record.crates, model)
                 end
