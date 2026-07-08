@@ -93,6 +93,7 @@ local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 -- Single source of truth for configured base power (huge-aware), shared with the
 -- server so the displayed power matches the power that mines/fights.
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
+local InventoryCategories = require(ReplicatedStorage.Shared.Game.InventoryCategories) -- pure tab visibility (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local PetBadge = require(script.Parent.Parent.PetBadge)
 -- Two-number card display (⛏ mining / ⚔ combat) — assembles the PetPower profile from config.
@@ -1418,6 +1419,24 @@ function InventoryPanel:_refreshCategoryTabs()
     -- Get configured categories with updated counts
     local categories = self:_getConfiguredCategories()
 
+    -- RECONCILE, don't just relabel (the 2026-07-08 tab regression): tabs are first built
+    -- BEFORE inventory data loads, so any category that counted 0 at build time never got a
+    -- tab — and this refresh used to only update counts on tabs that already existed, so
+    -- Enhancements/Items/Eggs/Tools could never appear. Create tabs that are now visible,
+    -- drop tabs that no longer are.
+    local wanted = {}
+    for i, category in ipairs(categories) do
+        wanted[category.name .. "Tab"] = true
+        if not categoryContainer:FindFirstChild(category.name .. "Tab") then
+            self:_createCategoryTab(category, categoryContainer, i)
+        end
+    end
+    for _, child in ipairs(categoryContainer:GetChildren()) do
+        if child:IsA("TextButton") and child.Name:match("Tab$") and not wanted[child.Name] then
+            child:Destroy()
+        end
+    end
+
     -- Update each category tab's count display
     for _, category in ipairs(categories) do
         local tab = categoryContainer:FindFirstChild(category.name .. "Tab")
@@ -2295,43 +2314,25 @@ function InventoryPanel:_getConfiguredCategories()
     -- Get category counts by folder mapping
     local folderCounts = self:_calculateFolderCounts()
 
-    -- Process each configured category
-    for _, categoryConfig in ipairs(self.inventoryConfig.display_categories) do
-        local totalCount = 0
-
-        -- Sum counts for all folders in this category
-        for _, folderName in ipairs(categoryConfig.folders) do
-            totalCount = totalCount + (folderCounts[folderName] or 0)
-        end
-
-        -- Check if category should be visible
-        local shouldShow = categoryConfig.always_visible or totalCount > 0
-        local hideEmptyCategories = self.inventoryConfig.category_settings
-            and self.inventoryConfig.category_settings.hide_empty_categories
-        if not hideEmptyCategories then
-            shouldShow = true -- Show all categories if hiding is disabled
-        end
-
-        self.logger:info("🔍 CATEGORY VISIBILITY", {
-            categoryName = categoryConfig.name,
-            totalCount = totalCount,
-            always_visible = categoryConfig.always_visible,
-            shouldShow = shouldShow,
+    -- Visibility is the PURE, headless-specced InventoryCategories core (2026-07-08 live
+    -- regression: this decision lived inline, was computed once from pre-load zero counts,
+    -- and a debug force-show had been masking it — the Enhancements/Items/Eggs/Tools tabs
+    -- vanished when the mask came off). _refreshCategoryTabs reconciles against the same core.
+    local visible = InventoryCategories.visible(
+        self.inventoryConfig.display_categories,
+        folderCounts,
+        self.inventoryConfig.category_settings
+    )
+    for _, entry in ipairs(visible) do
+        local categoryConfig = entry.config
+        table.insert(categories, {
+            name = categoryConfig.name,
+            icon = categoryConfig.icon,
+            description = categoryConfig.description,
             folders = categoryConfig.folders,
+            count = entry.count,
+            order = categoryConfig.display_order,
         })
-
-        if shouldShow then
-            local categoryData = {
-                name = categoryConfig.name,
-                icon = categoryConfig.icon,
-                description = categoryConfig.description,
-                folders = categoryConfig.folders,
-                count = totalCount,
-                order = categoryConfig.display_order,
-            }
-
-            table.insert(categories, categoryData)
-        end
     end
 
     -- Sort by display_order
