@@ -689,6 +689,13 @@ local THEME_PALETTES = {
         beacon = Color3.fromRGB(255, 60, 30),
         torchFlame = Color3.fromRGB(255, 110, 40),
         torchLight = Color3.fromRGB(255, 120, 60),
+        -- the altar's ember colorway (Maps.Home.AscensionAltar NativeFX)
+        fire = {
+            color = Color3.fromRGB(255, 60, 10),
+            secondary = Color3.fromRGB(120, 10, 5),
+            size = 4,
+            heat = 6,
+        },
     },
     heaven = {
         -- v3 (playtest: "it's the torches" — near-white NEON orbs bloomed the
@@ -703,6 +710,14 @@ local THEME_PALETTES = {
         torchMaterial = "Glass",
         torchBrightness = 0.35,
         torchRange = 12,
+        -- the altar's golden colorway, candle-small (Fire renders soft — no
+        -- neon bloom, unlike the v1 whiteout)
+        fire = {
+            color = Color3.fromRGB(255, 200, 100),
+            secondary = Color3.fromRGB(255, 240, 200),
+            size = 2.5,
+            heat = 5,
+        },
     },
 }
 
@@ -715,6 +730,50 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
         decorCfg
     )
     local palette = THEME_PALETTES[theme]
+
+    -- doorway FIXTURE variety (Jason: "not as a replacement but as variety"):
+    -- ~45% of doorway torch PAIRS become the theme's prefab fixture when the
+    -- place carries one (hell = BrazierFire, heaven = CandleStand); the rest
+    -- stay torches — which the palette pass below upgrades with the altar's
+    -- real Fire. Pair-coherent + deterministic (hash of tile name + pair
+    -- index), so the same seed always dresses the same doorways.
+    do
+        local fixtureName = (theme == "hell" and "BrazierFire")
+            or (theme == "heaven" and "CandleStand")
+            or nil
+        local store = ReplicatedStorage:FindFirstChild("MissionProps")
+        local fixture = fixtureName and store and store:FindFirstChild(fixtureName)
+        if fixture then
+            local slotY = slotOrigin.Position.Y
+            for _, tileModel in ipairs(container:GetChildren()) do
+                if tileModel:IsA("Model") then
+                    local nameHash = 0
+                    for i = 1, #tileModel.Name do
+                        nameHash = (nameHash * 31 + tileModel.Name:byte(i)) % 997
+                    end
+                    for _, ch in ipairs(tileModel:GetChildren()) do
+                        local idx = tonumber(ch.Name:match("^TorchBracket_(%d+)$"))
+                        if idx then
+                            local pairIdx = math.ceil(idx / 2)
+                            if (nameHash + pairIdx * 131) % 100 < 45 then
+                                local flame = tileModel:FindFirstChild("TorchFlame_" .. idx)
+                                local clone = fixture:Clone()
+                                groundModel(
+                                    clone,
+                                    CFrame.new(ch.Position.X, slotY, ch.Position.Z)
+                                )
+                                clone.Parent = tileModel
+                                if flame then
+                                    flame:Destroy()
+                                end
+                                ch:Destroy()
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 
     -- theme base coat first: walls/floors/pillars/torches across EVERY tile
     -- (caps + corridors included), so the realm identity is total
@@ -744,6 +803,16 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
                         if palette.torchRange then
                             light.Range = palette.torchRange
                         end
+                    end
+                    -- the altar's REAL fire on every remaining torch (soft
+                    -- render, themed colorway — kills the placeholder read)
+                    if palette.fire and not inst:FindFirstChildOfClass("Fire") then
+                        local fire = Instance.new("Fire")
+                        fire.Color = palette.fire.color
+                        fire.SecondaryColor = palette.fire.secondary
+                        fire.Size = palette.fire.size
+                        fire.Heat = palette.fire.heat
+                        fire.Parent = inst
                     end
                 end
             end
