@@ -100,8 +100,9 @@ return {
                 crate_health_per_level = 12,
                 crate_value_base = 15,
                 crate_value_per_level = 1,
-                wall_decor_min = 1, -- playtest: 0..2 read as "very sparse"
-                wall_decor_max = 3,
+                wall_decor_min = 2, -- playtest: 0..2 read as "very sparse"; pool is 8 names now
+                wall_decor_max = 4,
+                feature_chance = 0.6, -- chamber odds of a wall-backed showpiece (throne/fountain/...)
             },
             treasure = {
                 room_fraction = 0.4,
@@ -138,8 +139,9 @@ return {
                 crate_health_per_level = 12,
                 crate_value_base = 15,
                 crate_value_per_level = 1,
-                wall_decor_min = 1, -- playtest: 0..2 read as "very sparse"
-                wall_decor_max = 3,
+                wall_decor_min = 2, -- playtest: 0..2 read as "very sparse"; pool is 8 names now
+                wall_decor_max = 4,
+                feature_chance = 0.6, -- chamber odds of a wall-backed showpiece (throne/fountain/...)
             },
             treasure = {
                 room_fraction = 0.4,

@@ -405,6 +405,48 @@ return function()
                 end
             end
         end)
+        it("feature spots are deterministic, chamber-only, wall-centered, door-clear", function()
+            local map = mapFor(12345)
+            local opts = { doors = map.doors, feature_chance = 1 }
+            local _, _, _, featA = MissionDecor.roll(map.rooms, 4242, opts)
+            local _, _, _, featB = MissionDecor.roll(map.rooms, 4242, opts)
+            expect(#featA > 0).to.equal(true)
+            expect(#featA).to.equal(#featB)
+            local perRoom = {}
+            for i, ft in ipairs(featA) do
+                expect(ft.x).to.equal(featB[i].x)
+                expect(ft.z).to.equal(featB[i].z)
+                local room = map.rooms[ft.room]
+                -- chambers only, at most one each
+                expect(room.class == "corridor" or room.class == "entrance").to.equal(false)
+                expect(perRoom[ft.room]).to.equal(nil)
+                perRoom[ft.room] = true
+                -- centered on a wall: at the inner face on one axis, room
+                -- center on the other
+                local onX = math.abs(math.abs(ft.x - room.x) - (room.hx - 2.6)) < 1e-6
+                local onZ = math.abs(math.abs(ft.z - room.z) - (room.hz - 2.6)) < 1e-6
+                expect(onX or onZ).to.equal(true)
+                if onX then
+                    expect(ft.z).to.equal(room.z)
+                else
+                    expect(ft.x).to.equal(room.x)
+                end
+                -- clear of doorways on that wall by the wide feature margin
+                for _, door in ipairs(map.doors) do
+                    if door.a == ft.room or door.b == ft.room then
+                        local sameWallX = ft.ix ~= 0
+                            and math.abs(door.x - (room.x - ft.ix * room.hx)) < 2
+                        local sameWallZ = ft.iz ~= 0
+                            and math.abs(door.z - (room.z - ft.iz * room.hz)) < 2
+                        if sameWallX then
+                            expect(math.abs(door.z - ft.z) >= 18 - 1e-6).to.equal(true)
+                        elseif sameWallZ then
+                            expect(math.abs(door.x - ft.x) >= 18 - 1e-6).to.equal(true)
+                        end
+                    end
+                end
+            end
+        end)
     end)
 
     describe("LayoutSolver.validate", function()

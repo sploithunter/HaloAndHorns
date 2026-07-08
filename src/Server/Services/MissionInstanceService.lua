@@ -811,7 +811,7 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
         rollOpts[k] = v
     end
     rollOpts.doors = mapTable.doors -- wall decor avoids doorway apertures
-    local tints, props, wallDecor = MissionDecor.roll(
+    local tints, props, wallDecor, features = MissionDecor.roll(
         mapTable.rooms,
         MissionSeed.stream(seed, "dressing"),
         rollOpts
@@ -1099,8 +1099,72 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
         end
     end
 
+    -- FEATURE showpieces (Meshy batches): one themed floor piece per rolled
+    -- chamber spot — thrones/fountains/archives/gates give rooms an identity
+    -- beyond scatter clutter. Same silent-skip contract as wall decor: a
+    -- missing prefab (fresh checkout, unbuilt batch) never blocks dressing.
+    local FEATURE_PREFABS = {
+        hell = {
+            "hell_infernal_throne",
+            "hell_infernal_fountain",
+            "hell_infernal_archive",
+            "hell_gate_of_damned",
+            "hell_skull_lantern",
+        },
+        heaven = {
+            "heaven_marble_throne",
+            "heaven_ivory_throne",
+            "heaven_golden_throne",
+            "heaven_star_fountain",
+            "heaven_archive",
+            "heaven_gilded_bookcase",
+            "heaven_diamond_altar",
+            "heaven_golden_codex",
+            "heaven_golden_guardian",
+        },
+        earth = {},
+    }
+    do
+        local store = ReplicatedStorage:FindFirstChild("MissionProps")
+        local names = FEATURE_PREFABS[theme or "earth"]
+        local slotPos3 = slotOrigin.Position
+        if store and names and #names > 0 and features then
+            for _, ft in ipairs(features) do
+                local prefab
+                local base = math.floor(math.abs(ft.z) * 7)
+                for attempt = 0, #names - 1 do
+                    prefab = store:FindFirstChild(names[1 + (base + attempt) % #names])
+                    if prefab then
+                        break
+                    end
+                end
+                if prefab then
+                    local clone = prefab:Clone()
+                    -- floor-stander: MountY = half height (base on the floor),
+                    -- StandOff pushes the piece its own depth off the wall
+                    local mountY = clone:GetAttribute("MountY") or 5
+                    local standOff = clone:GetAttribute("StandOff") or 2
+                    local pos = Vector3.new(
+                        slotPos3.X + ft.x,
+                        slotPos3.Y + mountY,
+                        slotPos3.Z + ft.z
+                    )
+                    clone:PivotTo(
+                        CFrame.lookAt(pos, pos + Vector3.new(ft.ix, 0, ft.iz))
+                            * CFrame.new(0, 0, -standOff)
+                    )
+                    clone.Parent = folder
+                end
+            end
+        end
+    end
+
     folder.Parent = container
-    self:_log("Info", "dressing applied", { props = #props, wallDecor = wallDecor and #wallDecor or 0 })
+    self:_log("Info", "dressing applied", {
+        props = #props,
+        wallDecor = wallDecor and #wallDecor or 0,
+        features = features and #features or 0,
+    })
 end
 
 -- ---- treasure ------------------------------------------------------------------

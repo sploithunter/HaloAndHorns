@@ -13,6 +13,10 @@
         wallDecor: { { room, x, z, ix, iz }, ... }            (wall-mount spots:
                    position at the wall's inner face, (ix,iz) = inward normal;
                    avoids doorway apertures via opts.doors = mapData doors)
+        features:  { { room, x, z, ix, iz }, ... }            (floor SHOWPIECE
+                   spots — at most one per chamber, centered on a doorless
+                   wall span, facing the room; the service dresses them from
+                   the theme's showpiece pool: thrones/fountains/archives)
 ]]
 
 local MissionSeed = require(script.Parent.MissionSeed)
@@ -156,7 +160,54 @@ function MissionDecor.roll(rooms, streamSeed, opts)
         end
     end
 
-    return tints, props, wallDecor
+    -- FEATURE spots: one floor showpiece per chamber (chance-gated), centered
+    -- on a wall span that has NO doorway — thrones/fountains/gates read as
+    -- the room's identity piece, so they get the center of a clean wall and
+    -- face the room. Corridors/entrance never get one (walkways stay clear).
+    local FEATURE_CLASS = { room = true, junction = true, objective = true }
+    local featureChance = opts.feature_chance or 0.5
+    local FEATURE_DOOR_CLEAR = 18 -- showpieces are wide; keep well off doorways
+    local features = {}
+    for i, room in ipairs(rooms) do
+        if FEATURE_CLASS[room.class] and rng() < featureChance then
+            for _ = 1, 4 do -- bounded retries: find a doorless wall
+                local edge = EDGE_ORDER[1 + math.floor(rng() * 4)]
+                local dir = EDGES[edge]
+                local x, z
+                if dir[1] ~= 0 then
+                    x = room.x + dir[1] * (room.hx - WALL_INNER)
+                    z = room.z
+                else
+                    x = room.x
+                    z = room.z + dir[2] * (room.hz - WALL_INNER)
+                end
+                local blocked = false
+                for _, door in ipairs(doors) do
+                    if door.a == i or door.b == i then
+                        local d = (dir[1] ~= 0)
+                                and (math.abs(door.x - (room.x + dir[1] * room.hx)) < 2 and math.abs(door.z - z) < FEATURE_DOOR_CLEAR)
+                            or (math.abs(door.z - (room.z + dir[2] * room.hz)) < 2 and math.abs(door.x - x) < FEATURE_DOOR_CLEAR)
+                        if d then
+                            blocked = true
+                            break
+                        end
+                    end
+                end
+                if not blocked then
+                    table.insert(features, {
+                        room = i,
+                        x = x,
+                        z = z,
+                        ix = -dir[1],
+                        iz = -dir[2],
+                    })
+                    break
+                end
+            end
+        end
+    end
+
+    return tints, props, wallDecor, features
 end
 
 return MissionDecor
