@@ -39,6 +39,9 @@ local TileKitBuilder = require(ServerScriptService.Server.World.TileKitBuilder)
 local MissionStamper = require(ServerScriptService.Server.World.MissionStamper)
 
 local PROMPT_NAME = "MissionDoorPrompt"
+-- streaming-safe warp caps (see _safeWarp)
+local STREAM_WAIT = 8 -- pre-warp yield cap (seconds)
+local ANCHOR_CAP = 2 -- post-warp safety-anchor cap (seconds)
 local SWEEP_INTERVAL = 60
 
 -- Kits addressable by config `kit` id. Data-driven kits (authored Models +
@@ -281,10 +284,11 @@ function MissionInstanceService:Open(player, missionId)
         local root = character and character:FindFirstChild("HumanoidRootPart")
         if root and spawnPad then
             returnCFrames[member.UserId] = root.CFrame
-            pcall(function()
-                member:RequestStreamAroundAsync(slotOrigin.Position)
+            -- async: each member streams the interior in parallel and warps
+            -- when THEIR client has the floor (see _safeWarp)
+            task.spawn(function()
+                self:_safeWarp(member, CFrame.new(spawnPad.Position + Vector3.new(0, 4, 0)))
             end)
-            character:PivotTo(CFrame.new(spawnPad.Position + Vector3.new(0, 4, 0)))
             -- in-mission marker: DropService kills the magnet on it (walk to
             -- your loot); generally useful for any per-mission gating
             member:SetAttribute("InMission", instanceId)
@@ -555,11 +559,18 @@ function MissionInstanceService:_close(instanceId, reason)
 
     -- return surviving members to where they entered from; clear mission
     -- HUD state and restore their camera zoom
+    local warping = 0
     for _, member in ipairs(membersOf(record.teamKey)) do
         local back = record.returnCFrames[member.UserId]
         local character = member.Character
         if back and character and character:FindFirstChild("HumanoidRootPart") then
-            character:PivotTo(back)
+            -- the homeworld may have streamed OUT during a long mission —
+            -- same fall-through risk as entry, so same streaming-safe warp
+            warping += 1
+            task.spawn(function()
+                self:_safeWarp(member, back)
+                warping -= 1
+            end)
         end
         member:SetAttribute("MissionObjectiveText", nil)
         member:SetAttribute("MissionObjectiveCount", nil)
@@ -594,6 +605,12 @@ function MissionInstanceService:_close(instanceId, reason)
         if crate.Parent then
             crate:Destroy()
         end
+    end
+
+    -- don't yank the floor out from under anyone still mid-warp home
+    local deadline = os.clock() + STREAM_WAIT + ANCHOR_CAP + 1
+    while warping > 0 and os.clock() < deadline do
+        task.wait(0.1)
     end
 
     record.container:Destroy()
@@ -1287,6 +1304,39 @@ function MissionInstanceService:_placeTreasures(
 end
 
 -- ---- door binding --------------------------------------------------------------
+
+-- Streaming-safe warp (2026-07-08: fell through the heaven-trial floor).
+-- With StreamingEnabled the freshly-stamped interior hasn't reached the
+-- client when we pivot, and the CLIENT owns character physics — so it falls
+-- through geometry only the server has. Order of operations:
+--   1. yield until the destination region has been SENT to this client
+--      (the wait happens while they still stand on solid ground at the
+--      portal — reads as the portal charging, not a hang)
+--   2. pivot
+--   3. brief anchored tail as the safety net for any remaining content;
+--      the second stream request returns ~instantly when step 1 already
+--      delivered everything, so the anchor is usually imperceptible.
+function MissionInstanceService:_safeWarp(member, targetCF)
+    local character = member.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then
+        return
+    end
+    pcall(function()
+        member:RequestStreamAroundAsync(targetCF.Position, STREAM_WAIT)
+    end)
+    if not root.Parent then
+        return -- died/left while streaming
+    end
+    character:PivotTo(targetCF)
+    root.Anchored = true
+    pcall(function()
+        member:RequestStreamAroundAsync(targetCF.Position, ANCHOR_CAP)
+    end)
+    if root.Parent then
+        root.Anchored = false
+    end
+end
 
 function MissionInstanceService:_bindDoor(part)
     if not part:IsA("BasePart") or part:FindFirstChild(PROMPT_NAME) then
