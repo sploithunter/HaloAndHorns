@@ -767,7 +767,13 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
                         if fixture then
                             local flame = tileModel:FindFirstChild("TorchFlame_" .. idx)
                             local clone = fixture:Clone()
-                            groundModel(clone, CFrame.new(ch.Position.X, slotY, ch.Position.Z))
+                            -- MountY attr (prefab-authored): wall fixtures
+                            -- hang above the floor (ornate torches at 5)
+                            local mountY = clone:GetAttribute("MountY") or 0
+                            groundModel(
+                                clone,
+                                CFrame.new(ch.Position.X, slotY + mountY, ch.Position.Z)
+                            )
                             clone.Parent = tileModel
                             if flame then
                                 flame:Destroy()
