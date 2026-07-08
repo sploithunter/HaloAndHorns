@@ -691,14 +691,18 @@ local THEME_PALETTES = {
         torchLight = Color3.fromRGB(255, 120, 60),
     },
     heaven = {
-        -- v2: toned down from near-white (whiteout playtest) — cream/gray
-        -- surfaces keep edge definition under the bright preset
+        -- v3 (playtest: "it's the torches" — near-white NEON orbs bloomed the
+        -- whole scene): heaven torches are decorative gilded GLASS orbs with
+        -- a whisper of light; the bright ambient does the illuminating.
         wall = Color3.fromRGB(206, 198, 182),
         floor = Color3.fromRGB(224, 217, 202),
         pillar = Color3.fromRGB(206, 176, 110),
         beacon = Color3.fromRGB(255, 210, 80),
-        torchFlame = Color3.fromRGB(255, 238, 185),
+        torchFlame = Color3.fromRGB(240, 205, 120),
         torchLight = Color3.fromRGB(255, 230, 170),
+        torchMaterial = "Glass",
+        torchBrightness = 0.35,
+        torchRange = 12,
     },
 }
 
@@ -728,9 +732,18 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
                     inst.Color = palette.beacon
                 elseif n:sub(1, 11) == "TorchFlame_" then
                     inst.Color = palette.torchFlame
+                    if palette.torchMaterial then
+                        inst.Material = Enum.Material[palette.torchMaterial]
+                    end
                     local light = inst:FindFirstChildOfClass("PointLight")
                     if light then
                         light.Color = palette.torchLight
+                        if palette.torchBrightness then
+                            light.Brightness = palette.torchBrightness
+                        end
+                        if palette.torchRange then
+                            light.Range = palette.torchRange
+                        end
                     end
                 end
             end
