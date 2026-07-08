@@ -372,6 +372,39 @@ return function()
                 expect(map.rooms[p.room].class == "corridor").to.equal(false)
             end
         end)
+
+        it("wall decor hugs walls and stays clear of doorways", function()
+            local map = mapFor(12345)
+            local _, _, wallDecor = MissionDecor.roll(map.rooms, 99, {
+                doors = map.doors,
+                wall_decor_min = 1,
+                wall_decor_max = 2,
+            })
+            expect(#wallDecor > 0).to.equal(true)
+            for _, wd in ipairs(wallDecor) do
+                local room = map.rooms[wd.room]
+                -- on exactly one axis it sits at the wall inner face
+                local dxEdge = math.abs(math.abs(wd.x - room.x) - (room.hx - 2.6))
+                local dzEdge = math.abs(math.abs(wd.z - room.z) - (room.hz - 2.6))
+                expect(math.min(dxEdge, dzEdge) < 1e-6).to.equal(true)
+                -- inward normal points into the room
+                expect(wd.ix ~= 0 or wd.iz ~= 0).to.equal(true)
+                -- clear of every doorway on that room by the placement rule
+                for _, door in ipairs(map.doors) do
+                    if door.a == wd.room or door.b == wd.room then
+                        local sameWallX = wd.ix ~= 0
+                            and math.abs(door.x - (room.x - wd.ix * room.hx)) < 2
+                        local sameWallZ = wd.iz ~= 0
+                            and math.abs(door.z - (room.z - wd.iz * room.hz)) < 2
+                        if sameWallX then
+                            expect(math.abs(door.z - wd.z) >= 12 - 1e-6).to.equal(true)
+                        elseif sameWallZ then
+                            expect(math.abs(door.x - wd.x) >= 12 - 1e-6).to.equal(true)
+                        end
+                    end
+                end
+            end
+        end)
     end)
 
     describe("LayoutSolver.validate", function()

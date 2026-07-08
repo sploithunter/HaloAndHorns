@@ -694,9 +694,14 @@ local PROP_BUILDERS = {
 -- torches recolor too (flame part + its PointLight). nil theme = kit as-is.
 local THEME_PALETTES = {
     hell = {
+        -- rough NATURAL surfaces (Jason: walls too "finished" for a hell
+        -- dungeon) — Basalt/Slate breaks the smooth-plastic read for free
         wall = Color3.fromRGB(52, 40, 44),
+        wallMaterial = "Basalt",
         floor = Color3.fromRGB(72, 52, 50),
+        floorMaterial = "Slate",
         pillar = Color3.fromRGB(38, 30, 34),
+        pillarMaterial = "Basalt",
         beacon = Color3.fromRGB(255, 60, 30),
         torchFlame = Color3.fromRGB(255, 110, 40),
         torchLight = Color3.fromRGB(255, 120, 60),
@@ -713,8 +718,11 @@ local THEME_PALETTES = {
         -- whole scene): heaven torches are decorative gilded GLASS orbs with
         -- a whisper of light; the bright ambient does the illuminating.
         wall = Color3.fromRGB(206, 198, 182),
+        wallMaterial = "Marble", -- Jason: heaven = marble
         floor = Color3.fromRGB(224, 217, 202),
+        floorMaterial = "Marble",
         pillar = Color3.fromRGB(206, 176, 110),
+        pillarMaterial = "Marble",
         beacon = Color3.fromRGB(255, 210, 80),
         torchFlame = Color3.fromRGB(240, 205, 120),
         torchLight = Color3.fromRGB(255, 230, 170),
@@ -764,8 +772,11 @@ function MissionInstanceService:_ensureMissionCrateVisual()
         smash.Name = "bigBreakSound"
         -- group-owned upload (scripts/audio_ids.json crate_smash)
         smash.SoundId = "rbxassetid://119529368267127"
-        smash.Volume = 0.8
-        smash.RollOffMaxDistance = 80
+        smash.Volume = 0.4 -- playtest: raw 0.8 was blasting
+        smash.RollOffMaxDistance = 60
+        -- route through the effects bus or the Settings sliders can't touch it
+        local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
+        SoundGroups.assign(smash, "effects")
         smash.Parent = mesh
     end
     local old = store:FindFirstChild("MissionCrate")
@@ -778,10 +789,15 @@ end
 -- Per-room tint jitter + seeded primitive clutter (pure rolls from
 -- MissionDecor; this just materializes them).
 function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, container, slotOrigin, seed, theme, record)
-    local tints, props = MissionDecor.roll(
+    local rollOpts = {}
+    for k, v in pairs(decorCfg) do
+        rollOpts[k] = v
+    end
+    rollOpts.doors = mapTable.doors -- wall decor avoids doorway apertures
+    local tints, props, wallDecor = MissionDecor.roll(
         mapTable.rooms,
         MissionSeed.stream(seed, "dressing"),
-        decorCfg
+        rollOpts
     )
     local palette = THEME_PALETTES[theme]
 
@@ -848,10 +864,19 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
                 local n = inst.Name
                 if n == "Floor" then
                     inst.Color = palette.floor
+                    if palette.floorMaterial then
+                        inst.Material = Enum.Material[palette.floorMaterial]
+                    end
                 elseif n:sub(1, 5) == "Wall_" or n:sub(1, 7) == "Header_" or n == "Backing" then
                     inst.Color = palette.wall
+                    if palette.wallMaterial then
+                        inst.Material = Enum.Material[palette.wallMaterial]
+                    end
                 elseif n:sub(1, 7) == "Pillar_" then
                     inst.Color = palette.pillar
+                    if palette.pillarMaterial then
+                        inst.Material = Enum.Material[palette.pillarMaterial]
+                    end
                 elseif n == "ObjectiveBeacon" then
                     inst.Color = palette.beacon
                 elseif n:sub(1, 11) == "TorchFlame_" then
@@ -988,8 +1013,46 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
             end
         end
     end
+    -- WALL DECORATIONS (Jason): banners / bronze weapon mounts on room
+    -- walls, doorway-aware spots from MissionDecor. Prefabs are harvested
+    -- into MissionProps (WallBanner now; CrossedSwords/WallAxe when built) —
+    -- missing prefabs skip silently so this never blocks a fresh checkout.
+    local WALL_DECOR_PREFABS = {
+        hell = { "WallBanner", "CrossedSwords", "WallAxe" },
+        heaven = { "WallBanner", "CrossedSwords" },
+        earth = { "WallBanner" },
+    }
+    do
+        local store = ReplicatedStorage:FindFirstChild("MissionProps")
+        local names = WALL_DECOR_PREFABS[theme or "earth"]
+        local slotPos2 = slotOrigin.Position
+        if store and names and wallDecor then
+            for _, wd in ipairs(wallDecor or {}) do
+                local prefab
+                local base = math.floor(math.abs(wd.x) * 7)
+                for attempt = 0, #names - 1 do
+                    prefab = store:FindFirstChild(names[1 + (base + attempt) % #names])
+                    if prefab then
+                        break
+                    end
+                end
+                if prefab then
+                    local clone = prefab:Clone()
+                    local mountY = clone:GetAttribute("MountY") or 10
+                    local pos = Vector3.new(
+                        slotPos2.X + wd.x,
+                        slotPos2.Y + mountY,
+                        slotPos2.Z + wd.z
+                    )
+                    clone:PivotTo(CFrame.lookAt(pos, pos + Vector3.new(wd.ix, 0, wd.iz)))
+                    clone.Parent = folder
+                end
+            end
+        end
+    end
+
     folder.Parent = container
-    self:_log("Info", "dressing applied", { props = #props })
+    self:_log("Info", "dressing applied", { props = #props, wallDecor = wallDecor and #wallDecor or 0 })
 end
 
 -- ---- treasure ------------------------------------------------------------------

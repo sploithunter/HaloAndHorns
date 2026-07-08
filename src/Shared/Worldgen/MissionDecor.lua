@@ -8,8 +8,11 @@
     props as primitives; same seed = same dressing.
 
     roll(rooms, streamSeed, opts) →
-        tints: { [roomIndex] = { wall = f, floor = f } }   (f ≈ 0.85..1.15)
-        props: { { room, kind, x, z, rot }, ... }          (x/z slot-local)
+        tints:     { [roomIndex] = { wall = f, floor = f } }  (f ≈ 0.85..1.15)
+        props:     { { room, kind, x, z, rot }, ... }         (x/z slot-local)
+        wallDecor: { { room, x, z, ix, iz }, ... }            (wall-mount spots:
+                   position at the wall's inner face, (ix,iz) = inward normal;
+                   avoids doorway apertures via opts.doors = mapData doors)
 ]]
 
 local MissionSeed = require(script.Parent.MissionSeed)
@@ -85,7 +88,65 @@ function MissionDecor.roll(rooms, streamSeed, opts)
             end
         end
     end
-    return tints, props
+
+    -- wall-mount decoration spots: banners/weapon racks on room walls, clear
+    -- of doorway apertures. Edge convention: px = the wall at room.x + hx.
+    local EDGES = { px = { 1, 0 }, nx = { -1, 0 }, pz = { 0, 1 }, nz = { 0, -1 } }
+    local EDGE_ORDER = { "px", "nx", "pz", "nz" }
+    local WALL_INNER = 2.6 -- wall thickness 2 + a hair of clearance
+    local DOOR_CLEAR = 12
+    local doors = opts.doors or {}
+    local wallDecor = {}
+    local wallMin = opts.wall_decor_min or 0
+    local wallMax = opts.wall_decor_max or 2
+    for i, room in ipairs(rooms) do
+        if DRESSED_CLASS[room.class] and room.class ~= "entrance" then
+            local n = wallMin + math.floor(rng() * (wallMax - wallMin + 1))
+            for _ = 1, n do
+                for _ = 1, 6 do -- bounded retries per decoration
+                    local edge = EDGE_ORDER[1 + math.floor(rng() * 4)]
+                    local dir = EDGES[edge]
+                    local alongHalf = (dir[1] ~= 0 and room.hz or room.hx) - 8
+                    if alongHalf > 4 then
+                        local t = (rng() * 2 - 1) * alongHalf
+                        local x, z
+                        if dir[1] ~= 0 then
+                            x = room.x + dir[1] * (room.hx - WALL_INNER)
+                            z = room.z + t
+                        else
+                            x = room.x + t
+                            z = room.z + dir[2] * (room.hz - WALL_INNER)
+                        end
+                        -- reject spots near a doorway on this wall
+                        local blocked = false
+                        for _, door in ipairs(doors) do
+                            if door.a == i or door.b == i then
+                                local d = (dir[1] ~= 0)
+                                        and (math.abs(door.x - (room.x + dir[1] * room.hx)) < 2 and math.abs(door.z - z) < DOOR_CLEAR)
+                                    or (math.abs(door.z - (room.z + dir[2] * room.hz)) < 2 and math.abs(door.x - x) < DOOR_CLEAR)
+                                if d then
+                                    blocked = true
+                                    break
+                                end
+                            end
+                        end
+                        if not blocked then
+                            table.insert(wallDecor, {
+                                room = i,
+                                x = x,
+                                z = z,
+                                ix = -dir[1], -- inward normal (into the room)
+                                iz = -dir[2],
+                            })
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return tints, props, wallDecor
 end
 
 return MissionDecor
