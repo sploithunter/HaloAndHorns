@@ -1058,9 +1058,16 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
             "hell_skull_banner",
             "hell_infernal_crest",
             "hell_skull_sconce",
+            "hell_flamecrest_shield",
         },
         -- heaven: gilded arms + ornate shields + clean shelves
-        heaven = { "WallBanner", "CrossedSwordsGold", "WallShieldOrnate", "BookshelfClean" },
+        heaven = {
+            "WallBanner",
+            "CrossedSwordsGold",
+            "WallShieldOrnate",
+            "BookshelfClean",
+            "heaven_compass_banner",
+        },
         earth = { "WallBanner", "WallShield" },
     }
     do
