@@ -12,13 +12,10 @@
 ]]
 
 local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local PROMPT_NAME = "RealmPortalPrompt"
-local TOUCH_DEBOUNCE = 3 -- seconds between offers per player (walking the arch shouldn't spam)
-local OFFER_TTL = 20 -- a confirm must arrive within this many seconds of the offer
 
 local RealmPortalService = {}
 RealmPortalService.__index = RealmPortalService
@@ -28,8 +25,6 @@ function RealmPortalService.new()
     self._logger = nil
     self._configLoader = nil
     self._portalsConfig = nil
-    self._touchAt = {} -- [userId] = os.clock() of last offer (debounce)
-    self._pending = {} -- [userId] = { layer, expires } (the offer awaiting a confirm)
     return self
 end
 
@@ -167,16 +162,10 @@ function RealmPortalService:_onTriggered(player, destLayer)
     layers:UseLayer(player, target, { force = force })
 end
 
--- TOUCH system (replaces the press-E ProximityPrompt): a portal whose realm is BUILT is "open" —
--- touching any of its surfaces sends the player a yes/no travel offer. A portal whose realm has no
--- geometry yet keeps the "COMING SOON" badge and does nothing on touch.
-function RealmPortalService:_ensureTouch(part, def)
-    -- retire any legacy ProximityPrompt left on the part — touch is the trigger now.
-    local oldPrompt = part:FindFirstChild(PROMPT_NAME)
-    if oldPrompt then
-        oldPrompt:Destroy()
-    end
-
+-- PRESS-E system (2026-07-08, back by request — replaces touch→yes/no offer: brushing the arch
+-- fired accidental dialogs, and holding E IS the deliberate intent, so travel fires directly with
+-- no confirm step). A portal whose realm has no geometry keeps "COMING SOON" and gets no prompt.
+function RealmPortalService:_ensurePrompt(part, def)
     if not self:_layerHasGeometry(def.layer) then
         self:_addLockBadge(part) -- realm not built yet → "COMING SOON", no travel
         return
@@ -196,93 +185,46 @@ function RealmPortalService:_ensureTouch(part, def)
         or Color3.fromRGB(255, 235, 150)
     self:_addLockBadge(part, label, false, tint)
 
-    -- Bind Touched on every BasePart of the portal model so touching the surface anywhere offers
-    -- travel. Server-side touch = no client trust; the per-player debounce keeps it from spamming.
-    local model = part:FindFirstAncestorOfClass("Model")
-    local parts = {}
-    if model then
-        for _, d in ipairs(model:GetDescendants()) do
-            if d:IsA("BasePart") then
-                table.insert(parts, d)
-            end
-        end
-    else
-        parts = { part }
+    -- One prompt on the resolved host part (not every surface — duplicate prompts stack in the UI).
+    if part:FindFirstChild(PROMPT_NAME) then
+        return -- idempotent: rescans must not stack prompts
     end
-    for _, p in ipairs(parts) do
-        if not p:GetAttribute("RealmPortalTouchBound") then
-            p:SetAttribute("RealmPortalTouchBound", true)
-            p.CanTouch = true -- anchored decor sometimes ships with CanTouch off → Touched never fires
-            p.Touched:Connect(function(hit)
-                self:_onTouched(hit, def)
-            end)
-        end
-    end
+    local prompt = Instance.new("ProximityPrompt")
+    prompt.Name = PROMPT_NAME
+    prompt.ActionText = "Travel"
+    prompt.ObjectText = layerDisplayName(def.layer)
+    prompt.HoldDuration = 0.35
+    prompt.MaxActivationDistance = 14
+    prompt.RequiresLineOfSight = false
+    prompt.Parent = part
+    prompt.Triggered:Connect(function(player)
+        self:_onPromptTriggered(player, def)
+    end)
 end
 
--- A character part touched a portal surface → offer travel (debounced per player).
-function RealmPortalService:_onTouched(hit, def)
-    local char = hit and hit.Parent
-    local player = char and Players:GetPlayerFromCharacter(char)
-    if not player then
-        return
-    end
-    local now = os.clock()
-    local last = self._touchAt[player.UserId]
-    if last and (now - last) < TOUCH_DEBOUNCE then
-        return
-    end
-    self._touchAt[player.UserId] = now
-    self:_offerTravel(player, def)
-end
-
--- Send the client a yes/no travel offer. Records the pending offer so a spoofed confirm can't
--- teleport without a real touch. Mirrors _onTriggered's base<->realm toggle for the label.
-function RealmPortalService:_offerTravel(player, def)
+-- E held at an open portal. Too-low players get the locked toast naming the requirement (the
+-- prompt text can't be per-player); everyone else travels immediately — _onTriggered re-runs the
+-- full gate chain (lock, base toggle, geometry, level) server-side.
+function RealmPortalService:_onPromptTriggered(player, def)
     local layers = self:_layerService()
     if not layers then
         return
     end
     local current = layers:GetCurrentLayer(player)
     local target = (current == def.layer) and "base" or def.layer
-    if target ~= "base" and not self:_layerHasGeometry(target) then
-        return
-    end
-    -- LEVEL GATE: too-low players get a denial offer (no Travel button) naming the requirement, instead
-    -- of a Yes/No they'd be blocked on at confirm. (Stage 2 adds the same Lv on the portal face.)
     local lvlOk, requiredLevel = self:_levelGate(player, target)
-    local label
-    if target ~= "base" and not lvlOk then
-        label = ("🔒 Reach Level %d to enter %s"):format(
-            requiredLevel,
-            ((def.action and def.action:gsub("^Enter ", "")) or "this realm")
-        )
-        Signals.RealmTravelOffer:FireClient(
-            player,
-            { layer = def.layer, label = label, locked = true }
-        )
+    if not lvlOk then
+        Signals.RealmTravelOffer:FireClient(player, {
+            layer = def.layer,
+            label = ("🔒 Reach Level %d to enter %s"):format(
+                requiredLevel,
+                ((def.action and def.action:gsub("^Enter ", "")) or "this realm")
+            ),
+            locked = true,
+        })
         return
     end
-    if target == "base" then
-        label = "Return to Home?"
-    else
-        label = "Travel to "
-            .. ((def.action and def.action:gsub("^Enter ", "")) or "the realm")
-            .. "?"
-    end
-    self._pending[player.UserId] = { layer = def.layer, expires = os.clock() + OFFER_TTL }
-    Signals.RealmTravelOffer:FireClient(player, { layer = def.layer, label = label })
-end
-
--- Client chose Yes. Honor it only if it matches a live offer we sent (anti-spoof), then travel.
-function RealmPortalService:_onConfirm(player, payload)
-    local layer = type(payload) == "table" and payload.layer
-    local pend = self._pending[player.UserId]
-    if not (pend and layer == pend.layer and os.clock() <= pend.expires) then
-        return
-    end
-    self._pending[player.UserId] = nil
-    self:_onTriggered(player, layer)
+    self:_onTriggered(player, def.layer)
 end
 
 -- A big lock ON THE PORTAL FACE of a locked gate (programmatic — no 3D asset).
@@ -457,15 +399,6 @@ end
 function RealmPortalService:Start()
     self:_preloadHellFace()
 
-    -- Yes/No travel confirmations come back here (anti-spoof checked against the pending offer).
-    Signals.RealmTravelConfirm.OnServerEvent:Connect(function(player, payload)
-        self:_onConfirm(player, payload)
-    end)
-    Players.PlayerRemoving:Connect(function(player)
-        self._touchAt[player.UserId] = nil
-        self._pending[player.UserId] = nil
-    end)
-
     local portals = self._portalsConfig.portals or {}
     if #portals == 0 then
         return
@@ -489,7 +422,7 @@ function RealmPortalService:Start()
                     local part = resolvePart(inst)
                     if part and not part:GetAttribute("RealmPortalBound") then
                         part:SetAttribute("RealmPortalBound", true)
-                        self:_ensureTouch(part, def)
+                        self:_ensurePrompt(part, def)
                         boundThisPass += 1
                         totalBound += 1
                         if self._logger then

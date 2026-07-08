@@ -250,24 +250,32 @@ function LayerService:UseLayer(player, layerId, opts)
             pcall(function()
                 local hrp = char.PrimaryPart
 
-                -- StreamingEnabled gotcha: the destination geometry hasn't streamed in at the moment
-                -- we arrive, so an un-anchored character falls through empty space and lands back on
-                -- whatever is already loaded (the base realm). The fix that matters is the ANCHOR:
-                -- pin the root, move it, let the client stream the destination floor in around the
-                -- (now-relocated) character during the hold, then release onto solid ground. Verified
-                -- live: Home -> Heaven_1 lands and holds instead of dropping back to base.
-                hrp.Anchored = true
-                char:PivotTo(destCFrame)
-
-                -- Best-effort streaming hint to speed the load. Not present in every engine/runtime
-                -- (absent in the Studio MCP sandbox), so it gets its OWN pcall — its absence must
-                -- never abort the anchor+move above, which is what actually prevents the fall.
+                -- StreamingEnabled gotcha (2026-07-08 fall-through report): the client OWNS
+                -- character physics, so arriving before the destination streamed to that client
+                -- means falling through geometry only the server has. Order matters:
+                --   1. stream the destination BEFORE moving — the wait happens while they still
+                --      stand at the portal (reads as the portal charging, not a hang). NOTE the
+                --      API is RequestStreamAroundAsync; the old RequestStreamingAround call was
+                --      a nonexistent method whose error a pcall silently ate, which is why the
+                --      "hint" never worked.
                 pcall(function()
-                    player:RequestStreamingAround(destCFrame.Position)
+                    player:RequestStreamAroundAsync(
+                        destCFrame.Position,
+                        self._layersConfig.stream_wait_seconds or 8
+                    )
                 end)
 
+                --   2. move, with a short anchored tail as the safety net. The tail's second
+                --      stream request returns ~instantly when step 1 already delivered, so the
+                --      hold is usually imperceptible — dynamic, unlike the old FIXED settle
+                --      timer that both felt hung AND released early on slow streams.
+                hrp.Anchored = true
+                char:PivotTo(destCFrame)
                 local settle = self._layersConfig.teleport_settle_seconds or 2.5
-                task.delay(settle, function()
+                task.spawn(function()
+                    pcall(function()
+                        player:RequestStreamAroundAsync(destCFrame.Position, settle)
+                    end)
                     -- Guard: the character may have respawned/left during the hold.
                     if hrp and hrp.Parent and char.Parent and player.Character == char then
                         hrp.Anchored = false
