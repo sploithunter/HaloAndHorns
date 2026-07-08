@@ -1048,7 +1048,17 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
     -- missing prefabs skip silently so this never blocks a fresh checkout.
     local WALL_DECOR_PREFABS = {
         -- hell: bronze arms + grim shields + dirty shelves (Jason's set)
-        hell = { "WallBanner", "CrossedSwords", "WallAxe", "WallShield", "BookshelfDirty" },
+        -- + Meshy batch 2026-07-08 (skull banner/crest/sconce)
+        hell = {
+            "WallBanner",
+            "CrossedSwords",
+            "WallAxe",
+            "WallShield",
+            "BookshelfDirty",
+            "hell_skull_banner",
+            "hell_infernal_crest",
+            "hell_skull_sconce",
+        },
         -- heaven: gilded arms + ornate shields + clean shelves
         heaven = { "WallBanner", "CrossedSwordsGold", "WallShieldOrnate", "BookshelfClean" },
         earth = { "WallBanner", "WallShield" },
