@@ -731,43 +731,48 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
     )
     local palette = THEME_PALETTES[theme]
 
-    -- doorway FIXTURE variety (Jason: "not as a replacement but as variety"):
-    -- ~45% of doorway torch PAIRS become the theme's prefab fixture when the
-    -- place carries one (hell = BrazierFire, heaven = CandleStand); the rest
-    -- stay torches — which the palette pass below upgrades with the altar's
-    -- real Fire. Pair-coherent + deterministic (hash of tile name + pair
-    -- index), so the same seed always dresses the same doorways.
+    -- doorway FIXTURE variety v2 (playtest: primitive stick torches read
+    -- "dumb" even with fire — retire them entirely when prefabs exist):
+    --   hell   — ~45% of pairs BrazierFire (floor), the rest TorchOrnateFire
+    --   heaven — CandleStand everywhere (Jason: "the candelabras look great")
+    -- Pair-coherent + deterministic (hash of tile name + pair index); the
+    -- primitive torches remain only as the no-prefab fallback.
     do
-        local fixtureName = (theme == "hell" and "BrazierFire")
-            or (theme == "heaven" and "CandleStand")
-            or nil
         local store = ReplicatedStorage:FindFirstChild("MissionProps")
-        local fixture = fixtureName and store and store:FindFirstChild(fixtureName)
-        if fixture then
-            local slotY = slotOrigin.Position.Y
-            for _, tileModel in ipairs(container:GetChildren()) do
-                if tileModel:IsA("Model") then
-                    local nameHash = 0
-                    for i = 1, #tileModel.Name do
-                        nameHash = (nameHash * 31 + tileModel.Name:byte(i)) % 997
-                    end
-                    for _, ch in ipairs(tileModel:GetChildren()) do
-                        local idx = tonumber(ch.Name:match("^TorchBracket_(%d+)$"))
-                        if idx then
-                            local pairIdx = math.ceil(idx / 2)
-                            if (nameHash + pairIdx * 131) % 100 < 45 then
-                                local flame = tileModel:FindFirstChild("TorchFlame_" .. idx)
-                                local clone = fixture:Clone()
-                                groundModel(
-                                    clone,
-                                    CFrame.new(ch.Position.X, slotY, ch.Position.Z)
-                                )
-                                clone.Parent = tileModel
-                                if flame then
-                                    flame:Destroy()
-                                end
-                                ch:Destroy()
+        local function fixtureFor(hash)
+            if not store then
+                return nil
+            end
+            if theme == "hell" then
+                local primary = hash % 100 < 45 and "BrazierFire" or "TorchOrnateFire"
+                return store:FindFirstChild(primary)
+                    or store:FindFirstChild("BrazierFire")
+            elseif theme == "heaven" then
+                return store:FindFirstChild("CandleStand")
+            end
+            return nil
+        end
+        local slotY = slotOrigin.Position.Y
+        for _, tileModel in ipairs(container:GetChildren()) do
+            if tileModel:IsA("Model") then
+                local nameHash = 0
+                for i = 1, #tileModel.Name do
+                    nameHash = (nameHash * 31 + tileModel.Name:byte(i)) % 997
+                end
+                for _, ch in ipairs(tileModel:GetChildren()) do
+                    local idx = tonumber(ch.Name:match("^TorchBracket_(%d+)$"))
+                    if idx then
+                        local pairIdx = math.ceil(idx / 2)
+                        local fixture = fixtureFor(nameHash + pairIdx * 131)
+                        if fixture then
+                            local flame = tileModel:FindFirstChild("TorchFlame_" .. idx)
+                            local clone = fixture:Clone()
+                            groundModel(clone, CFrame.new(ch.Position.X, slotY, ch.Position.Z))
+                            clone.Parent = tileModel
+                            if flame then
+                                flame:Destroy()
                             end
+                            ch:Destroy()
                         end
                     end
                 end
