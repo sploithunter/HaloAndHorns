@@ -982,7 +982,19 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
                 -- crates track the OPENER's level, not the pseudo-zone's
                 -- default 1 — else the over-leveled yield gate starves the
                 -- payout ("up the damage compared to my level", 2026-07-08)
-                model:SetAttribute("MiningLevel", record and record.openerLevel or 1)
+                local lvl = (record and record.openerLevel) or 1
+                model:SetAttribute("MiningLevel", lvl)
+                -- LEVEL-SCALED durability + payout (playtest: flat 60 HP =
+                -- one-shot for an endgame squad). Knobs in mission decor cfg.
+                local hpScaled = (decorCfg.crate_health_base or 60)
+                    + lvl * (decorCfg.crate_health_per_level or 12)
+                model:SetAttribute("MaxHP", hpScaled)
+                model:SetAttribute("HP", hpScaled)
+                model:SetAttribute(
+                    "Value",
+                    (decorCfg.crate_value_base or 15)
+                        + math.floor(lvl * (decorCfg.crate_value_per_level or 1))
+                )
                 if record and record.crates then
                     table.insert(record.crates, model)
                 end

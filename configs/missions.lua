@@ -89,11 +89,17 @@ return {
             -- treasure chests (CoH glowie-lite): seeded placement in ~40% of
             -- room-class tiles (min 1); opening pays 1-2 guaranteed
             -- enhancement drops to the opener. Magnet is OFF in-mission.
-            -- M5a dressing: per-room tint jitter + seeded clutter density
+            -- M5a dressing: per-room tint jitter + seeded clutter density.
+            -- Farmable-crate scaling: HP = base + openerLevel*per_level
+            -- (flat HP was a one-shot for endgame squads, 2026-07-08).
             decor = {
                 props_min = 2,
                 props_max = 5,
                 color_jitter = 0.12,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
             },
             treasure = {
                 room_fraction = 0.4,
@@ -126,6 +132,10 @@ return {
                 props_min = 2,
                 props_max = 5,
                 color_jitter = 0.08, -- heaven reads cleaner with less drift
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
             },
             treasure = {
                 room_fraction = 0.4,
