@@ -476,8 +476,7 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
         or player:GetAttribute("Level")
     -- RANK QUALITY: lieutenants/bosses drop the desirable stuff — fewer
     -- naturals, more singles (drops.rank_quality by tier)
-    local quality = (type(opts) == "table" and opts.tier)
-            and (drops.rank_quality or {})[opts.tier]
+    local quality = (type(opts) == "table" and opts.tier) and (drops.rank_quality or {})[opts.tier]
         or nil
     local record = enh:RollDrop(nil, player:GetAttribute("CurrentArea"), {
         natural = not hasOrigin,

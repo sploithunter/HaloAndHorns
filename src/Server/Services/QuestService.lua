@@ -339,7 +339,10 @@ function QuestService:List(player)
         q.activationGated = grind or steersGate
         q.trackActive = trackActive
         -- a quest you could be working, but its track isn't the current focus
-        q.paused = (grind or steersGate) and not trackActive and not q.locked and q.claimedCount == 0
+        q.paused = (grind or steersGate)
+            and not trackActive
+            and not q.locked
+            and q.claimedCount == 0
         q.def = nil -- not for the wire
     end
     player:SetAttribute("QuestActiveTrack", activeTrack) -- login republish (SetActiveTrack only fires on change)

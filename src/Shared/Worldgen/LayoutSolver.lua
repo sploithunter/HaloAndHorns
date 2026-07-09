@@ -229,19 +229,11 @@ local function tryOnce(catalog, p, rng)
                             end
                         end
                         if clear then
-                            local index = place(
-                                tile,
-                                px,
-                                pz,
-                                rot,
-                                fd.depth,
-                                {
-                                    parent = fd.fromIndex,
-                                    parentDoor = fd.fromDoor,
-                                    door = door.name,
-                                },
-                                door.name
-                            )
+                            local index = place(tile, px, pz, rot, fd.depth, {
+                                parent = fd.fromIndex,
+                                parentDoor = fd.fromDoor,
+                                door = door.name,
+                            }, door.name)
                             table.insert(connections, {
                                 a = { tile = fd.fromIndex, door = fd.fromDoor },
                                 b = { tile = index, door = door.name },

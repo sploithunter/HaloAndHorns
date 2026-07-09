@@ -227,7 +227,8 @@ function MissionInstanceService:Open(player, missionId, opts)
         local bound
         pcall(function()
             local quests = _G.RBXTemplateServices:Get("QuestService")
-            bound = quests and quests.GetActiveMissionBinding
+            bound = quests
+                and quests.GetActiveMissionBinding
                 and quests:GetActiveMissionBinding(player)
         end)
         if bound and self._config.missions[bound] then
@@ -288,7 +289,12 @@ function MissionInstanceService:Open(player, missionId, opts)
         pcall(function()
             local dataSvc = _G.RBXTemplateServices:Get("DataService")
             local data = dataSvc and dataSvc:GetData(player)
-            played = (data and data.GameData and data.GameData.MissionSeq and tonumber(data.GameData.MissionSeq[missionId])) or 0
+            played = (
+                data
+                and data.GameData
+                and data.GameData.MissionSeq
+                and tonumber(data.GameData.MissionSeq[missionId])
+            ) or 0
         end)
         if n < 1 or n > played then
             return nil, ("you haven't reached trial #%d yet"):format(n)
@@ -467,13 +473,17 @@ function MissionInstanceService:Open(player, missionId, opts)
                 break
             end
         end
-        local comp =
-            MissionPopulation.roll(mission.packs or {}, #points, MissionSeed.stream(seed, "spawns"), {
+        local comp = MissionPopulation.roll(
+            mission.packs or {},
+            #points,
+            MissionSeed.stream(seed, "spawns"),
+            {
                 -- CoH rule (Jason's boss-less lava run): the OBJECTIVE room's
                 -- point always rolls a boss-marked pack — the boss guards the
                 -- glowy; weight-3 luck can no longer produce a boss-less map
                 bossPointIndex = objectivePointIndex,
-            })
+            }
+        )
         local posRng = MissionSeed.mulberry32(MissionSeed.stream(seed, "spawnpos"))
         local SCATTER = 14 -- studs around the anchor (rooms are 96+ wide at 6x scale)
         local enemySvc
@@ -534,7 +544,10 @@ function MissionInstanceService:Open(player, missionId, opts)
                                         -- RANK AXIS (Jason: a +0 LT must beat
                                         -- a +1 minion — rank scales its own
                                         -- way): scaling may inject splash
-                                        if type(mult.splash) == "table" and not synthDef.attack.splash then
+                                        if
+                                            type(mult.splash) == "table"
+                                            and not synthDef.attack.splash
+                                        then
                                             synthDef.attack.splash = mult.splash
                                         end
                                     end
@@ -614,7 +627,15 @@ function MissionInstanceService:Open(player, missionId, opts)
     -- source "treasure"). Placement rides the decor stream (deterministic);
     -- chest contents stay loot-random. Chests die with the container.
     if mission.treasure then
-        self:_placeTreasures(mission.treasure, mapTable, container, slotOrigin, seed, teamKey, record)
+        self:_placeTreasures(
+            mission.treasure,
+            mapTable,
+            container,
+            slotOrigin,
+            seed,
+            teamKey,
+            record
+        )
     end
 
     -- Objective monitor. Kinds:
@@ -873,7 +894,10 @@ function MissionInstanceService:_close(instanceId, reason)
                                 and inv:AddItem(opener, "eggs", {
                                     id = eggCfg.egg,
                                     name = eggCfg.name or eggCfg.egg,
-                                    source = "first_clear:" .. record.missionId .. "#" .. record.sequence,
+                                    source = "first_clear:"
+                                        .. record.missionId
+                                        .. "#"
+                                        .. record.sequence,
                                 })
                             if granted then
                                 fireGameEvent(opener, "exclusive_egg_pickup", {
@@ -1244,18 +1268,24 @@ end
 -- fixtures / caps) until they get bespoke sets: lava = hell's, ice = heaven's
 local THEME_POOL_ALIAS = { lava = "hell", ice = "heaven", grass = "heaven", desert = "hell" }
 
-function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, container, slotOrigin, seed, theme, record)
+function MissionInstanceService:_applyDressing(
+    decorCfg,
+    mapTable,
+    spec,
+    container,
+    slotOrigin,
+    seed,
+    theme,
+    record
+)
     local rollOpts = {}
     for k, v in pairs(decorCfg) do
         rollOpts[k] = v
     end
     local poolTheme = THEME_POOL_ALIAS[theme] or theme
     rollOpts.doors = mapTable.doors -- wall decor avoids doorway apertures
-    local tints, props, wallDecor, features = MissionDecor.roll(
-        mapTable.rooms,
-        MissionSeed.stream(seed, "dressing"),
-        rollOpts
-    )
+    local tints, props, wallDecor, features =
+        MissionDecor.roll(mapTable.rooms, MissionSeed.stream(seed, "dressing"), rollOpts)
     local palette = THEME_PALETTES[theme]
 
     -- doorway FIXTURE variety v2 (playtest: primitive stick torches read
@@ -1272,8 +1302,7 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
             end
             if poolTheme == "hell" then
                 local primary = hash % 100 < 45 and "BrazierFire" or "TorchOrnateFire"
-                return store:FindFirstChild(primary)
-                    or store:FindFirstChild("BrazierFire")
+                return store:FindFirstChild(primary) or store:FindFirstChild("BrazierFire")
             elseif poolTheme == "heaven" then
                 return store:FindFirstChild("CandleStand")
             end
@@ -1343,7 +1372,10 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
                     capHash = (capHash * 31 + tileModel.Name:byte(i)) % 997
                 end
                 local prefab = store
-                    and (store:FindFirstChild(shelves[1 + capHash % #shelves]) or store:FindFirstChild(shelves[1]))
+                    and (
+                        store:FindFirstChild(shelves[1 + capHash % #shelves])
+                        or store:FindFirstChild(shelves[1])
+                    )
                 if prefab then
                     local clone = prefab:Clone()
                     local mountY = clone:GetAttribute("MountY") or 4.5
@@ -1414,9 +1446,7 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
     -- reading as copies of each other
     for i, room in ipairs(mapTable.rooms) do
         local t = tints[i]
-        local model = container:FindFirstChild(
-            spec.tiles[room.tile].tileId .. "_" .. room.tile
-        )
+        local model = container:FindFirstChild(spec.tiles[room.tile].tileId .. "_" .. room.tile)
         if t and model then
             for _, part in ipairs(model:GetChildren()) do
                 if part:IsA("BasePart") then
@@ -1465,9 +1495,7 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
     local FARMABLE_KIND = { crate = true, crate_small = true, barrel = true }
     local pseudoWorld = "mission_" .. (theme or "earth")
     for _, prop in ipairs(props) do
-        local cf = slotOrigin
-            * CFrame.new(prop.x, 0, prop.z)
-            * CFrame.Angles(0, prop.rot, 0)
+        local cf = slotOrigin * CFrame.new(prop.x, 0, prop.z) * CFrame.Angles(0, prop.rot, 0)
         local spawned = nil
         if breakableSvc and FARMABLE_KIND[prop.kind] then
             self:_ensureMissionCrateVisual()
@@ -1576,11 +1604,8 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
                     -- piece off the wall plane by its own depth
                     local mountY = clone:GetAttribute("MountY") or 10
                     local standOff = clone:GetAttribute("StandOff") or 0.4
-                    local pos = Vector3.new(
-                        slotPos2.X + wd.x,
-                        slotPos2.Y + mountY,
-                        slotPos2.Z + wd.z
-                    )
+                    local pos =
+                        Vector3.new(slotPos2.X + wd.x, slotPos2.Y + mountY, slotPos2.Z + wd.z)
                     clone:PivotTo(
                         CFrame.lookAt(pos, pos + Vector3.new(wd.ix, 0, wd.iz))
                             * CFrame.new(0, 0, -standOff)
@@ -1633,11 +1658,8 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
                     -- StandOff pushes the piece its own depth off the wall
                     local mountY = clone:GetAttribute("MountY") or 5
                     local standOff = clone:GetAttribute("StandOff") or 2
-                    local pos = Vector3.new(
-                        slotPos3.X + ft.x,
-                        slotPos3.Y + mountY,
-                        slotPos3.Z + ft.z
-                    )
+                    local pos =
+                        Vector3.new(slotPos3.X + ft.x, slotPos3.Y + mountY, slotPos3.Z + ft.z)
                     clone:PivotTo(
                         CFrame.lookAt(pos, pos + Vector3.new(ft.ix, 0, ft.iz))
                             * CFrame.new(0, 0, -standOff)
@@ -1798,7 +1820,9 @@ function MissionInstanceService:_placeTreasures(
             state.opened = true
             prompt.Enabled = false
             pcall(function() -- treasure-hunter quest substrate
-                _G.RBXTemplateServices:Get("StatsService"):Increment(who, "mission_chests_opened", 1)
+                _G.RBXTemplateServices
+                    :Get("StatsService")
+                    :Increment(who, "mission_chests_opened", 1)
             end)
             -- pop the lid; payout rolls are loot-random (placement was the
             -- deterministic part)
@@ -1913,8 +1937,7 @@ function MissionInstanceService:_refreshGateLabel(player)
     local bound
     pcall(function()
         local quests = _G.RBXTemplateServices:Get("QuestService")
-        bound = quests and quests.GetActiveMissionBinding
-            and quests:GetActiveMissionBinding(player)
+        bound = quests and quests.GetActiveMissionBinding and quests:GetActiveMissionBinding(player)
     end)
     local def = bound and self._config.missions[bound]
     if def then
@@ -1922,8 +1945,12 @@ function MissionInstanceService:_refreshGateLabel(player)
         pcall(function()
             local dataSvc = _G.RBXTemplateServices:Get("DataService")
             local data = dataSvc:GetData(player)
-            played = (data and data.GameData and data.GameData.MissionSeq
-                and tonumber(data.GameData.MissionSeq[bound])) or 0
+            played = (
+                data
+                and data.GameData
+                and data.GameData.MissionSeq
+                and tonumber(data.GameData.MissionSeq[bound])
+            ) or 0
         end)
         label = (def.display or bound) .. " #" .. (played + 1)
     end

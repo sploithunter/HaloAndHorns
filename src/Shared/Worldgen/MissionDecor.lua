@@ -136,8 +136,13 @@ function MissionDecor.roll(rooms, streamSeed, opts)
                         for _, door in ipairs(doors) do
                             if door.a == i or door.b == i then
                                 local d = (dir[1] ~= 0)
-                                        and (math.abs(door.x - (room.x + dir[1] * room.hx)) < 2 and math.abs(door.z - z) < DOOR_CLEAR)
-                                    or (math.abs(door.z - (room.z + dir[2] * room.hz)) < 2 and math.abs(door.x - x) < DOOR_CLEAR)
+                                        and (math.abs(door.x - (room.x + dir[1] * room.hx)) < 2 and math.abs(
+                                            door.z - z
+                                        ) < DOOR_CLEAR)
+                                    or (
+                                        math.abs(door.z - (room.z + dir[2] * room.hz)) < 2
+                                        and math.abs(door.x - x) < DOOR_CLEAR
+                                    )
                                 if d then
                                     blocked = true
                                     break
@@ -193,8 +198,13 @@ function MissionDecor.roll(rooms, streamSeed, opts)
                 for _, door in ipairs(doors) do
                     if door.a == i or door.b == i then
                         local d = (dir[1] ~= 0)
-                                and (math.abs(door.x - (room.x + dir[1] * room.hx)) < 2 and math.abs(door.z - z) < FEATURE_DOOR_CLEAR)
-                            or (math.abs(door.z - (room.z + dir[2] * room.hz)) < 2 and math.abs(door.x - x) < FEATURE_DOOR_CLEAR)
+                                and (math.abs(door.x - (room.x + dir[1] * room.hx)) < 2 and math.abs(
+                                    door.z - z
+                                ) < FEATURE_DOOR_CLEAR)
+                            or (
+                                math.abs(door.z - (room.z + dir[2] * room.hz)) < 2
+                                and math.abs(door.x - x) < FEATURE_DOOR_CLEAR
+                            )
                         if d then
                             blocked = true
                             break

@@ -1155,7 +1155,12 @@ function EnemyService:_onDefeated(targetId)
                                 -- 3d") — magnet-immune; despawn force-collects
                                 local dropSvc = _G.RBXTemplateServices:Get("DropService")
                                 if dropSvc and dropSvc.TrySpawnEggDrop then
-                                    dropSvc:TrySpawnEggDrop(player, ex.egg, ex.name or ex.egg, dropPos)
+                                    dropSvc:TrySpawnEggDrop(
+                                        player,
+                                        ex.egg,
+                                        ex.name or ex.egg,
+                                        dropPos
+                                    )
                                     fireGameEvent(player, "exclusive_egg_drop", {
                                         egg = ex.egg,
                                         boss = entry.enemyId,
@@ -1563,7 +1568,8 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     local critScale = eng.rolls and eng.rolls.crit_level_scale
     if critScale then
         critChance = math.clamp(
-            critChance + (tonumber(critScale.per_level) or 0) * ((enemyLevel or 1) - (petLevel or 1)),
+            critChance
+                + (tonumber(critScale.per_level) or 0) * ((enemyLevel or 1) - (petLevel or 1)),
             tonumber(critScale.floor) or 0,
             tonumber(critScale.cap) or 1
         )
@@ -5644,4 +5650,3 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
 end
 
 return EnemyService
-

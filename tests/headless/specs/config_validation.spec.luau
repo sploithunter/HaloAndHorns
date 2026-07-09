@@ -79,9 +79,9 @@ return function()
 
         it("rejects id/key mismatch and missing parent", function()
             expect(ZoneSchema.validateZones({ x = { id = "y", kind = "area" } })).to.equal(false)
-            expect(
-                ZoneSchema.validateZones({ x = { id = "x", kind = "area", parent = "ghost" } })
-            ).to.equal(false)
+            expect(ZoneSchema.validateZones({ x = { id = "x", kind = "area", parent = "ghost" } })).to.equal(
+                false
+            )
         end)
     end)
 end

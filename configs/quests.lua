@@ -509,7 +509,11 @@ return {
             condition = {
                 type = "all_of",
                 of = {
-                    { type = "counter_at_least", counter = "hell_lava_trials_completed", value = 100 },
+                    {
+                        type = "counter_at_least",
+                        counter = "hell_lava_trials_completed",
+                        value = 100,
+                    },
                     { type = "level_at_least", value = 50 },
                 },
             },
@@ -581,7 +585,11 @@ return {
             condition = {
                 type = "all_of",
                 of = {
-                    { type = "counter_at_least", counter = "heaven_lava_trials_completed", value = 100 },
+                    {
+                        type = "counter_at_least",
+                        counter = "heaven_lava_trials_completed",
+                        value = 100,
+                    },
                     { type = "level_at_least", value = 50 },
                 },
             },
@@ -653,7 +661,11 @@ return {
             condition = {
                 type = "all_of",
                 of = {
-                    { type = "counter_at_least", counter = "hell_ice_trials_completed", value = 100 },
+                    {
+                        type = "counter_at_least",
+                        counter = "hell_ice_trials_completed",
+                        value = 100,
+                    },
                     { type = "level_at_least", value = 50 },
                 },
             },
@@ -725,7 +737,11 @@ return {
             condition = {
                 type = "all_of",
                 of = {
-                    { type = "counter_at_least", counter = "heaven_ice_trials_completed", value = 100 },
+                    {
+                        type = "counter_at_least",
+                        counter = "heaven_ice_trials_completed",
+                        value = 100,
+                    },
                     { type = "level_at_least", value = 50 },
                 },
             },
@@ -797,7 +813,11 @@ return {
             condition = {
                 type = "all_of",
                 of = {
-                    { type = "counter_at_least", counter = "hell_grass_trials_completed", value = 100 },
+                    {
+                        type = "counter_at_least",
+                        counter = "hell_grass_trials_completed",
+                        value = 100,
+                    },
                     { type = "level_at_least", value = 50 },
                 },
             },
@@ -869,7 +889,11 @@ return {
             condition = {
                 type = "all_of",
                 of = {
-                    { type = "counter_at_least", counter = "heaven_grass_trials_completed", value = 100 },
+                    {
+                        type = "counter_at_least",
+                        counter = "heaven_grass_trials_completed",
+                        value = 100,
+                    },
                     { type = "level_at_least", value = 50 },
                 },
             },
@@ -941,7 +965,11 @@ return {
             condition = {
                 type = "all_of",
                 of = {
-                    { type = "counter_at_least", counter = "hell_desert_trials_completed", value = 100 },
+                    {
+                        type = "counter_at_least",
+                        counter = "hell_desert_trials_completed",
+                        value = 100,
+                    },
                     { type = "level_at_least", value = 50 },
                 },
             },
@@ -1013,7 +1041,11 @@ return {
             condition = {
                 type = "all_of",
                 of = {
-                    { type = "counter_at_least", counter = "heaven_desert_trials_completed", value = 100 },
+                    {
+                        type = "counter_at_least",
+                        counter = "heaven_desert_trials_completed",
+                        value = 100,
+                    },
                     { type = "level_at_least", value = 50 },
                 },
             },

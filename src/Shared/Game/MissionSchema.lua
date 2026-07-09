@@ -35,34 +35,47 @@ function MissionSchema.validate(cfg, deps)
     for missionId, def in pairs(cfg.missions or {}) do
         local path = "missions." .. tostring(missionId)
         if def.seed_policy ~= nil and not SEED_POLICIES[def.seed_policy] then
-            return false, path .. ".seed_policy: unknown policy '" .. tostring(def.seed_policy) .. "'"
+            return false,
+                path .. ".seed_policy: unknown policy '" .. tostring(def.seed_policy) .. "'"
         end
         if def.area ~= nil then
             local zoneKey = "mission_" .. tostring(def.area)
             if zones[zoneKey] == nil then
                 return false,
-                    path .. ".area: no zones entry '" .. zoneKey .. "' (branding contract: biome RPS + origin drops need the pseudo-zone)"
+                    path
+                        .. ".area: no zones entry '"
+                        .. zoneKey
+                        .. "' (branding contract: biome RPS + origin drops need the pseudo-zone)"
             end
         end
         if def.boss_egg ~= nil then
             local eggs = (deps.pets and deps.pets.egg_sources) or {}
             local eggDef = eggs[def.boss_egg.egg]
             if eggDef == nil then
-                return false, path .. ".boss_egg.egg: unknown egg '" .. tostring(def.boss_egg.egg) .. "'"
+                return false,
+                    path .. ".boss_egg.egg: unknown egg '" .. tostring(def.boss_egg.egg) .. "'"
             end
             if eggDef.fixed_odds ~= true then
-                return false, path .. ".boss_egg.egg: '" .. tostring(def.boss_egg.egg) .. "' is not fixed_odds (inventory eggs must state exact odds)"
+                return false,
+                    path
+                        .. ".boss_egg.egg: '"
+                        .. tostring(def.boss_egg.egg)
+                        .. "' is not fixed_odds (inventory eggs must state exact odds)"
             end
         end
         if counters[missionId .. "s_completed"] == nil then
             return false,
-                path .. ": stats counter '" .. missionId .. "s_completed' not declared (per-trial achievements would silently never tick)"
+                path
+                    .. ": stats counter '"
+                    .. missionId
+                    .. "s_completed' not declared (per-trial achievements would silently never tick)"
         end
         for pi, pack in ipairs(def.packs or {}) do
             for ui, unit in ipairs(pack.units or {}) do
                 local upath = path .. ".packs[" .. pi .. "].units[" .. ui .. "]"
                 if unit.enemy ~= nil and enemies[unit.enemy] == nil then
-                    return false, upath .. ".enemy: unknown enemy id '" .. tostring(unit.enemy) .. "'"
+                    return false,
+                        upath .. ".enemy: unknown enemy id '" .. tostring(unit.enemy) .. "'"
                 end
                 if unit.pet ~= nil and pets[unit.pet] == nil then
                     return false, upath .. ".pet: unknown pet id '" .. tostring(unit.pet) .. "'"
@@ -71,7 +84,11 @@ function MissionSchema.validate(cfg, deps)
                     return false, upath .. ": needs enemy or pet"
                 end
                 if unit.rank ~= nil and ranks[unit.rank] == nil then
-                    return false, upath .. ".rank: unknown rank '" .. tostring(unit.rank) .. "' (missions.pet_ranks)"
+                    return false,
+                        upath
+                            .. ".rank: unknown rank '"
+                            .. tostring(unit.rank)
+                            .. "' (missions.pet_ranks)"
                 end
             end
         end
@@ -83,7 +100,12 @@ function MissionSchema.validate(cfg, deps)
         local eggs = (deps.pets and deps.pets.egg_sources) or {}
         for questId, qdef in pairs(deps.quests.defs or {}) do
             if qdef.mission ~= nil and (cfg.missions or {})[qdef.mission] == nil then
-                return false, "quests.defs." .. tostring(questId) .. ".mission: unknown mission '" .. tostring(qdef.mission) .. "'"
+                return false,
+                    "quests.defs."
+                        .. tostring(questId)
+                        .. ".mission: unknown mission '"
+                        .. tostring(qdef.mission)
+                        .. "'"
             end
             -- egg-bucket rewards must reference real fixed-odds eggs (the
             -- Platinum grant path — a typo would silently grant a dead item)
@@ -92,10 +114,18 @@ function MissionSchema.validate(cfg, deps)
                 if item.bucket == "eggs" then
                     local eggDef = eggs[item.id]
                     if eggDef == nil then
-                        return false, "quests.defs." .. tostring(questId) .. ".reward: unknown egg '" .. tostring(item.id) .. "'"
+                        return false,
+                            "quests.defs."
+                                .. tostring(questId)
+                                .. ".reward: unknown egg '"
+                                .. tostring(item.id)
+                                .. "'"
                     end
                     if eggDef.fixed_odds ~= true then
-                        return false, "quests.defs." .. tostring(questId) .. ".reward: egg '" .. tostring(item.id) .. "' is not fixed_odds"
+                        return false,
+                            "quests.defs." .. tostring(questId) .. ".reward: egg '" .. tostring(
+                                item.id
+                            ) .. "' is not fixed_odds"
                     end
                 end
             end

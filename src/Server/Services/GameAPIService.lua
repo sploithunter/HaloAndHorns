@@ -927,7 +927,12 @@ function GameAPIService:_registerCommands()
                     end
                 end
             end
-            return { ok = true, spawned = spawned, failed = failed, faction = args.faction or "lava" }
+            return {
+                ok = true,
+                spawned = spawned,
+                failed = failed,
+                faction = args.faction or "lava",
+            }
         end,
     })
 
@@ -1086,7 +1091,8 @@ function GameAPIService:_registerCommands()
             if not s or not s.Open then
                 return { ok = false, reason = "service_unavailable" }
             end
-            local instanceId, err = s:Open(context.player, args.mission, { sequence = args.sequence })
+            local instanceId, err =
+                s:Open(context.player, args.mission, { sequence = args.sequence })
             if not instanceId then
                 return { ok = false, reason = err or "open_failed" }
             end

@@ -1565,7 +1565,10 @@ function BreakableSpawner:_trySpawnOne(
     local spawner, spawnPosition, claimedSlot
     -- EXPLICIT position (mission debris, docs/MISSION_WORLDGEN.md): the
     -- caller owns placement — skip slot claiming and spawn-point search.
-    if type(forcedSpawnOverrides) == "table" and typeof(forcedSpawnOverrides.position) == "Vector3" then
+    if
+        type(forcedSpawnOverrides) == "table"
+        and typeof(forcedSpawnOverrides.position) == "Vector3"
+    then
         spawnPosition = forcedSpawnOverrides.position
     elseif self:_useSlots() then
         self:_ensureSpawnArea(worldFolder)

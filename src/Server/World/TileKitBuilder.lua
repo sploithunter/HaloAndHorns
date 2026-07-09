@@ -72,11 +72,7 @@ local function buildPart(spec)
     -- M5a dressing: specs may carry a light (doorway torches etc.)
     if spec.light then
         local light = Instance.new("PointLight")
-        light.Color = Color3.fromRGB(
-            spec.light.color[1],
-            spec.light.color[2],
-            spec.light.color[3]
-        )
+        light.Color = Color3.fromRGB(spec.light.color[1], spec.light.color[2], spec.light.color[3])
         light.Brightness = spec.light.brightness or 1
         light.Range = spec.light.range or 16
         light.Shadows = spec.light.shadows == true
