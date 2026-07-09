@@ -86,6 +86,12 @@ return {
             hp_mult = 2.75,
             dmg_mult = 1.6,
             splash = { radius = 6, frac = 0.2 }, -- the lieutenant's rank tell
+            -- WARCRY: the lieutenant RALLIES its band (+30% dmg, 5s, every
+            -- 10s, 30 studs) — kill-the-LT-first becomes doctrine, the way
+            -- healers already are. Generic band_buff executor (capital kit).
+            abilities = {
+                band_buff = { mult = 1.3, radius = 30, duration = 5, interval = 10 },
+            },
         },
     },
 
@@ -103,6 +109,9 @@ return {
             tier = "mid_tier",
             scale_mult = 1.25,
             splash = { radius = 6, frac = 0.2 }, -- rank tell (matches statics)
+            abilities = {
+                band_buff = { mult = 1.3, radius = 30, duration = 5, interval = 10 },
+            },
         },
         boss = {
             hp_mult = 10,

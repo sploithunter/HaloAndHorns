@@ -505,6 +505,14 @@ function MissionInstanceService:Open(player, missionId, opts)
                                             synthDef.attack.splash = mult.splash
                                         end
                                     end
+                                    if type(mult.abilities) == "table" then
+                                        synthDef.abilities = synthDef.abilities or {}
+                                        for k, v in pairs(mult.abilities) do
+                                            if synthDef.abilities[k] == nil then
+                                                synthDef.abilities[k] = v
+                                            end
+                                        end
+                                    end
                                 end
                             end
                         end
