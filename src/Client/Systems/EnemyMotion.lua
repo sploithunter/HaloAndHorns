@@ -56,10 +56,72 @@ function EnemyMotion.start()
     end
     local WHITE = Color3.fromRGB(245, 245, 245)
 
+    -- SEEN GATE (Jason: "I shouldn't be able to see healthbars through walls
+    -- ... until I have seen the enemy or my pet has engaged it"): billboards
+    -- are AlwaysOnTop, so unseen enemies leak intel through mission walls.
+    -- Per-VIEWER state (this is a client system): an enemy's overhead UI stays
+    -- hidden until (a) it's damaged/engaged, or (b) I get real line of sight.
+    -- Once seen it stays visible — through-wall bars on a fight you've met is
+    -- the CoH tracking feature, not a leak. Weak keys: despawns self-clean.
+    local seen = setmetatable({}, { __mode = "k" })
+    local losAt = setmetatable({}, { __mode = "k" }) -- last LOS probe time
+    local camera = Workspace.CurrentCamera
+    local losParams = RaycastParams.new()
+    losParams.FilterType = Enum.RaycastFilterType.Exclude
+    local SEEN_RANGE = 130
+    local LOS_INTERVAL = 0.25
+
+    local function setOverheadsEnabled(pp, on)
+        for _, name in ipairs({ "NameTag", "HealthBar", "HeldBadge" }) do
+            local bb = pp:FindFirstChild(name)
+            if bb and bb:IsA("BillboardGui") and bb.Enabled ~= on then
+                bb.Enabled = on
+            end
+        end
+    end
+
+    local function seenGate(model, pp, now)
+        if seen[model] then
+            setOverheadsEnabled(pp, true) -- late-created bars (HeldBadge) join in
+            return
+        end
+        -- engaged: anything that hurt it reveals it (my pets included)
+        local hp = model:GetAttribute("HP")
+        local maxHp = model:GetAttribute("MaxHP")
+        if hp and maxHp and hp < maxHp then
+            seen[model] = true
+            setOverheadsEnabled(pp, true)
+            return
+        end
+        -- LOS probe (throttled per enemy): camera → enemy, blocked by world
+        local last = losAt[model]
+        if not last or now - last >= LOS_INTERVAL then
+            losAt[model] = now
+            local cam = camera or Workspace.CurrentCamera
+            camera = cam
+            local char = localPlayer.Character
+            if cam and pp.Position then
+                local origin = cam.CFrame.Position
+                local delta = pp.Position - origin
+                if delta.Magnitude <= SEEN_RANGE and delta:Dot(cam.CFrame.LookVector) > 0 then
+                    losParams.FilterDescendantsInstances = { model, char }
+                    local hit = Workspace:Raycast(origin, delta, losParams)
+                    if not hit then
+                        seen[model] = true
+                        setOverheadsEnabled(pp, true)
+                        return
+                    end
+                end
+            end
+        end
+        setOverheadsEnabled(pp, false)
+    end
+
     -- Colour + label an enemy's name tag by its difficulty relative to MY level (so it's
     -- per-viewer): white = even, yellow/red/purple harder, blue/green/gray easier.
     local function updateLabel(model)
         local pp = model.PrimaryPart
+        seenGate(model, pp, os.clock())
         local tag = pp and pp:FindFirstChild("NameTag")
         local lbl = tag and tag:FindFirstChild("Name")
         if not lbl then
