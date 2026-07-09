@@ -74,7 +74,7 @@ return {
     -- endurance pools grow with level while enemy defs are static. Level-1
     -- content is untouched (curve starts at zero); an L50 minion bites ~3.5x
     -- its def value. Relative scale above stacks on top (rank/± difficulty).
-    enemy_damage_growth = { per_level = 0.05, max_mult = 5 },
+    enemy_damage_growth = { per_level = 0.06, max_mult = 5 }, -- 0.05 -> 0.06 (Jason live: "not bad... tiny bit squishy")
 
     -- Elite rank adds to an enemy's effective level vs its base (keyed by enemies.lua tier):
     -- a lieutenant reads one level higher, a boss one above that.
