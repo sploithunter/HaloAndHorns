@@ -156,13 +156,15 @@ def duplicate_object(obj: bpy.types.Object) -> bpy.types.Object:
 
 
 def decimate_to_target(obj: bpy.types.Object, target_faces: int, tolerance: float) -> int:
+    # ALWAYS weld+clean — passthrough meshes shatter too (2026-07-08: the
+    # un-decimated diamond altar mangled on Roblox's re-fetch; the processor
+    # chokes on split-vert/degenerate geometry regardless of tri count)
+    weld_and_clean(obj)
+    dissolve_degenerate(obj)
     current = face_count(obj)
     if current <= target_faces:
-        print(f"  already at {current} tris (target {target_faces}); skipping decimation")
+        print(f"  welded/cleaned -> {current} tris (target {target_faces}); no decimation needed")
         return current
-
-    weld_and_clean(obj)
-    current = face_count(obj)
     print(f"  welded split verts -> {current} tris")
 
     ratio = target_faces / current

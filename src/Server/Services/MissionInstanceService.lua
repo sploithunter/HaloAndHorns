@@ -916,6 +916,50 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
         end
     end
 
+    -- SEALED-CAP dressing v2 (Jason: "get rid of the planks and put like a
+    -- bookcase in front" — dark boards clash in heaven): heaven seals its
+    -- doorways with FURNITURE. Strip the plank/board/padlock dressing, retint
+    -- the backing slab to the marble palette, and park one of the nice
+    -- bookcases centered in the alcove. Hell keeps its boards — they belong.
+    if theme == "heaven" then
+        local store = ReplicatedStorage:FindFirstChild("MissionProps")
+        local shelves = { "heaven_gilded_bookcase", "heaven_archive" }
+        for _, tileModel in ipairs(container:GetChildren()) do
+            if tileModel:IsA("Model") and tileModel.Name:match("^cap_") then
+                for _, ch in ipairs(tileModel:GetChildren()) do
+                    if
+                        ch.Name:match("^Board_")
+                        or ch.Name:match("^Plank_")
+                        or ch.Name:match("^Brace_")
+                        or ch.Name == "Knob"
+                        or ch.Name == "Padlock"
+                        or ch.Name == "Shackle"
+                    then
+                        ch:Destroy()
+                    elseif ch.Name == "Backing" and ch:IsA("BasePart") and palette then
+                        ch.Color = palette.wall
+                        ch.Material = Enum.Material[palette.wallMaterial or "SmoothPlastic"]
+                    end
+                end
+                local capHash = 0
+                for i = 1, #tileModel.Name do
+                    capHash = (capHash * 31 + tileModel.Name:byte(i)) % 997
+                end
+                local prefab = store
+                    and (store:FindFirstChild(shelves[1 + capHash % #shelves]) or store:FindFirstChild(shelves[1]))
+                if prefab then
+                    local clone = prefab:Clone()
+                    local mountY = clone:GetAttribute("MountY") or 4.5
+                    local standOff = clone:GetAttribute("StandOff") or 1.2
+                    -- cap pivot sits ON the aperture plane with -Z facing the
+                    -- open room; the shelf fronts the room a shelf-depth out
+                    clone:PivotTo(tileModel:GetPivot() * CFrame.new(0, mountY, -standOff))
+                    clone.Parent = tileModel
+                end
+            end
+        end
+    end
+
     -- theme base coat first: walls/floors/pillars/torches across EVERY tile
     -- (caps + corridors included), so the realm identity is total
     if palette then
