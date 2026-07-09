@@ -777,7 +777,7 @@ function MissionInstanceService:SkipCurrent(player, missionId)
         data.GameData.MissionSeq = data.GameData.MissionSeq or {}
         local cur = tonumber(data.GameData.MissionSeq[missionId]) or 0
         data.GameData.MissionSeq[missionId] = cur + 1
-        dataSvc:RequestSave(player, "mission_skip", { critical = true })
+        dataSvc:RequestSave(player, "mission_skip") -- non-critical: see mission_sequence
         return cur + 2 -- the new head they'll face next
     end)
     if not okSkip then
@@ -822,7 +822,10 @@ function MissionInstanceService:_close(instanceId, reason)
                     local cur = tonumber(data.GameData.MissionSeq[record.missionId]) or 0
                     if record.sequence > cur then
                         data.GameData.MissionSeq[record.missionId] = record.sequence
-                        dataSvc:RequestSave(opener, "mission_sequence", { critical = true })
+                        -- NOT critical (DataStore budget, 2026-07-09 Studio
+                        -- throttle): worst-case crash loss = re-facing a trial
+                        -- you already beat. Coalesces on the 15s debounce.
+                        dataSvc:RequestSave(opener, "mission_sequence")
                     end
                 end
             end)
