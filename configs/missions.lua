@@ -98,6 +98,9 @@ return {
             -- bosses (Jason's Empyrean run) — bosses get boss proportions
             scale_mult = 6, -- pet 1.6 → ~9.6, Magma-Wyrm territory
             role = "tank", -- planted: a kiting blaster boss was trivially safe
+            -- THE HUGE RULE: all huges have AoE — basic attacks splash
+            -- like the static bosses (dire_bear pattern)
+            splash = { radius = 10, frac = 0.3 },
             -- the static bosses' defining threat — the telegraphed slam
             abilities = {
                 slam = { damage = 140, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },

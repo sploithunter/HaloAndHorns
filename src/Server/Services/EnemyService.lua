@@ -4716,6 +4716,12 @@ function EnemyService:SynthesizePetEnemy(petId, overrides)
         elseif overrides.scale_mult then
             def.model_scale = def.model_scale * tonumber(overrides.scale_mult)
         end
+        if type(overrides.splash) == "table" and def.attack then
+            -- THE HUGE RULE (Jason: "all huge pets have AoE — it's like a
+            -- rule"; player-side huges all carry one): huge-ranked enemies
+            -- splash their basic attacks like the static bosses do
+            def.attack.splash = overrides.splash
+        end
         if overrides.role then
             -- boss rank plants like a boss: role drives enemy AI (tanks
             -- stand their ground; a KITING boss was trivially safe to melee)
