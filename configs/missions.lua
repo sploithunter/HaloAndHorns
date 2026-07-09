@@ -76,9 +76,17 @@ return {
     -- first pass (+30/50%) was a rounding error against an L50 slotted
     -- squad. Minions should die in a few focused seconds EACH and hurt
     -- while alive; lieutenants should anchor.
+    -- RANK AXIS RULE (Jason): rank scales its OWN way — a +0 boss ≫ a +3
+    -- minion, a +0 lieutenant > a +1 minion. Level tuning must never be the
+    -- substitute for rank identity: minions = volume, lieutenants = anchor
+    -- + SPLASH, bosses = slam + splash + huge. (LT powers = future kit.)
     static_scaling = {
         trash_mob = { hp_mult = 2.0, dmg_mult = 1.5 },
-        mid_tier = { hp_mult = 2.75, dmg_mult = 1.6 },
+        mid_tier = {
+            hp_mult = 2.75,
+            dmg_mult = 1.6,
+            splash = { radius = 6, frac = 0.2 }, -- the lieutenant's rank tell
+        },
     },
 
     -- PET-MODEL enemy rank ladder (element trials: the realm's own pets as
@@ -94,6 +102,7 @@ return {
             armor = 60,
             tier = "mid_tier",
             scale_mult = 1.25,
+            splash = { radius = 6, frac = 0.2 }, -- rank tell (matches statics)
         },
         boss = {
             hp_mult = 10,

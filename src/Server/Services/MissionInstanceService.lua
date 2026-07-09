@@ -498,6 +498,12 @@ function MissionInstanceService:Open(player, missionId, opts)
                                             (base.attack.damage or 0)
                                                 * (tonumber(mult.dmg_mult) or 1)
                                         )
+                                        -- RANK AXIS (Jason: a +0 LT must beat
+                                        -- a +1 minion — rank scales its own
+                                        -- way): scaling may inject splash
+                                        if type(mult.splash) == "table" and not synthDef.attack.splash then
+                                            synthDef.attack.splash = mult.splash
+                                        end
                                     end
                                 end
                             end
