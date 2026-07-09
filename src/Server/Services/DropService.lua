@@ -454,8 +454,8 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     -- kill site (each recursive call spawns exactly one)
     for i = 2, count do
         local off = Vector3.new(math.cos(i * 2.1) * 2.5, 0, math.sin(i * 2.1) * 2.5)
-        local extraOpts = (type(opts) == "table" and opts.enemy_level)
-                and { enemy_level = opts.enemy_level }
+        local extraOpts = (type(opts) == "table" and (opts.enemy_level or opts.tier))
+                and { enemy_level = opts.enemy_level, tier = opts.tier }
             or nil
         task.defer(function()
             self:TrySpawnEnhancementDrop(player, "treasure", position + off, extraOpts)
@@ -474,9 +474,16 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     -- bank-it-for-next-level moment); everything else follows the player.
     local rollLevel = (type(opts) == "table" and tonumber(opts.enemy_level))
         or player:GetAttribute("Level")
+    -- RANK QUALITY: lieutenants/bosses drop the desirable stuff — fewer
+    -- naturals, more singles (drops.rank_quality by tier)
+    local quality = (type(opts) == "table" and opts.tier)
+            and (drops.rank_quality or {})[opts.tier]
+        or nil
     local record = enh:RollDrop(nil, player:GetAttribute("CurrentArea"), {
         natural = not hasOrigin,
         playerLevel = rollLevel,
+        natural_chance = quality and quality.natural_chance,
+        single_chance = quality and quality.single_chance,
     })
 
     -- model: authored Assets model (override) > the cogwheel mesh (per-color) > mystery orb

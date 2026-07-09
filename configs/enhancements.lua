@@ -260,6 +260,14 @@ return {
         -- x (enemyLevel - playerLevel), min, max) — a -3 gray boss pays 40%,
         -- a +3 red boss 160% (LevelDiffYield.payout shape).
         level_diff = { per_level = 0.2, min = 0.4, max = 1.6 },
+        -- RANK QUALITY (Jason): elites drop the DESIRABLE stuff — naturals
+        -- fade, pure singles surge, by tier. Trash keeps the defaults
+        -- (natural_chance 0.5 / single_chance 0.35).
+        rank_quality = {
+            mid_tier = { natural_chance = 0.3, single_chance = 0.45 },
+            boss = { natural_chance = 0.1, single_chance = 0.6 },
+            archvillain = { natural_chance = 0, single_chance = 0.75 },
+        },
         -- of those drops, this fraction are NATURAL (origin-less junk tier) — Jason:
         -- "allow generics to drop everywhere; that makes an actual junk economy."
         -- The rest are zone-branded origin drops (~25/75 single/dual structurally).

@@ -402,9 +402,16 @@ function EnhancementService:RollDrop(rng, areaId, opts)
 
     -- NATURAL drops: forced for pre-origin players (opts.natural), and otherwise a
     -- coin-flip share of ALL drops (drops.natural_chance) — the junk economy tier.
-    if (opts and opts.natural) or rng:NextNumber() < (tonumber(drops.natural_chance) or 0) then
+    -- RANK QUALITY (Jason 2026-07-09: "bosses and lieutenants should drop the
+    -- desirable stuff"): callers may override natural/single odds per kill
+    -- (DropService passes drops.rank_quality[tier] for lieutenants/bosses).
+    local naturalChance = (opts and tonumber(opts.natural_chance))
+        or tonumber(drops.natural_chance)
+        or 0
+    if (opts and opts.natural) or rng:NextNumber() < naturalChance then
         return { type = pick, origins = {}, level = level }
     end
+    local singleBoost = opts and tonumber(opts.single_chance)
 
     -- PRIMARY origin = the zone's own (the disc color brands the land — Jason); the
     -- RING is uniform random. Ring == primary -> a SINGLE-origin drop, so pure singles
@@ -415,6 +422,11 @@ function EnhancementService:RollDrop(rng, areaId, opts)
     local element = areaDef and areaDef.element
     local zoneOrigin = element and (drops.area_origins or {})[element]
     if zoneOrigin then
+        -- rank single-boost: a lieutenant/boss kill in a mapped zone rolls a
+        -- pure home-origin single at the boosted rate before the ring roll
+        if singleBoost and rng:NextNumber() < singleBoost then
+            return { type = pick, origins = { zoneOrigin }, level = level }
+        end
         local ring = origins[rng:NextInteger(1, #origins)]
         if ring == zoneOrigin then
             return { type = pick, origins = { zoneOrigin }, level = level }
@@ -424,7 +436,7 @@ function EnhancementService:RollDrop(rng, areaId, opts)
 
     -- legacy roll for unmapped areas (events/realms until they get a mapping)
     local a = origins[rng:NextInteger(1, #origins)]
-    if rng:NextNumber() < (tonumber(drops.single_chance) or 0.35) then
+    if rng:NextNumber() < (singleBoost or tonumber(drops.single_chance) or 0.35) then
         return { type = pick, origins = { a }, level = level }
     end
     local b = a
