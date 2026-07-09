@@ -1595,7 +1595,15 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     -- dealt no meaningful damage, 2026-07-09). Config: enemy_damage_growth.
     local growth = self._levelingConfig.enemy_damage_growth
     if growth then
-        local mult = 1 + (tonumber(growth.per_level) or 0) * math.max(0, (enemyLevel or 1) - 1)
+        -- per_level: number (flat) or table by tier (v3 — boss bases are
+        -- already endgame-calibrated; only starter-calibrated trash needs
+        -- the full curve)
+        local per = growth.per_level
+        if type(per) == "table" then
+            local tier = (enemyModel and enemyModel:GetAttribute("EnemyTier")) or "trash_mob"
+            per = tonumber(per[tier]) or tonumber(per.trash_mob) or 0
+        end
+        local mult = 1 + (tonumber(per) or 0) * math.max(0, (enemyLevel or 1) - 1)
         dmg = dmg * math.min(mult, tonumber(growth.max_mult) or math.huge)
     end
     -- CAPITAL WARCRY (configs/capital_baddies.lua): a band-buffed attacker deals more while

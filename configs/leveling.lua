@@ -74,7 +74,21 @@ return {
     -- endurance pools grow with level while enemy defs are static. Level-1
     -- content is untouched (curve starts at zero); an L50 minion bites ~3.5x
     -- its def value. Relative scale above stacks on top (rank/± difficulty).
-    enemy_damage_growth = { per_level = 0.06, max_mult = 5 }, -- 0.05 -> 0.06 (Jason live: "not bad... tiny bit squishy")
+    -- v3 TIER-AWARE (Jason spawned a Lv53 Magma Wyrm: "unbeatable...
+    -- ridiculous"): flat growth double-dipped on bosses — trash bases are
+    -- STARTER-calibrated (need the full curve) but boss bases were already
+    -- endgame-tuned (110 dmg was his "about right" AT L50), so 4x growth
+    -- made every static boss a wipe machine. per_level by enemies.lua tier;
+    -- number form still accepted (flat).
+    enemy_damage_growth = {
+        per_level = {
+            trash_mob = 0.06, -- starter bases: full curve
+            mid_tier = 0.04, -- LT bases are mid-calibrated
+            boss = 0.015, -- endgame bases: gentle drift (~1.75x at L50)
+            archvillain = 0.012,
+        },
+        max_mult = 5,
+    },
 
     -- Elite rank adds to an enemy's effective level vs its base (keyed by enemies.lua tier):
     -- a lieutenant reads one level higher, a boss one above that.
