@@ -497,6 +497,17 @@ do
     end
 end
 
+-- RealmPortalSideGate: back-to-back realm portals share one E-slot; enable
+-- only the face the player is actually in front of (side-of-plane, local).
+do
+    local ok, err = pcall(function()
+        require(script.Systems.RealmPortalSideGate).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start RealmPortalSideGate", { error = tostring(err) })
+    end
+end
+
 -- MissionMap: CoH-style mission minimap — fog-of-war rooms + doorway ticks,
 -- draggable + minimizable; renders the server-published MissionMapData attr.
 do
