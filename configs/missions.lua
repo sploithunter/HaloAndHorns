@@ -71,9 +71,14 @@ return {
     -- multiplies STATIC faction defs at mission spawn ONLY — homeworld
     -- spawner waves keep their own balance. Boss tier untouched (landing
     -- well). By enemies.lua tier key.
+    -- v2 (Jason live: "I run through eight of them in five seconds...
+    -- lieutenants and minions are just soft; bosses about right"): the
+    -- first pass (+30/50%) was a rounding error against an L50 slotted
+    -- squad. Minions should die in a few focused seconds EACH and hurt
+    -- while alive; lieutenants should anchor.
     static_scaling = {
-        trash_mob = { hp_mult = 1.3, dmg_mult = 1.25 },
-        mid_tier = { hp_mult = 1.5, dmg_mult = 1.3 },
+        trash_mob = { hp_mult = 2.0, dmg_mult = 1.5 },
+        mid_tier = { hp_mult = 2.75, dmg_mult = 1.6 },
     },
 
     -- PET-MODEL enemy rank ladder (element trials: the realm's own pets as
@@ -81,10 +86,11 @@ return {
     -- huges of them"). Baseline = EnemyService._petEnemyDef (hp = base_health
     -- x enemy_patrol.pet_enemy_hp_mult, dmg = base_power); these multiply it.
     pet_ranks = {
-        minion = { hp_mult = 0.25, dmg_mult = 0.4 },
+        -- v2 alongside static_scaling (same softness verdict)
+        minion = { hp_mult = 0.5, dmg_mult = 0.6 },
         lieutenant = {
-            hp_mult = 0.8,
-            dmg_mult = 0.8,
+            hp_mult = 1.4,
+            dmg_mult = 1.0,
             armor = 60,
             tier = "mid_tier",
             scale_mult = 1.25,

@@ -534,7 +534,9 @@ return {
             -- CRIT LEVEL SCALING (enemy_attack only): +1.5%/level above the
             -- pet, floor 5%, cap 25% — a +3 boss (rank-baked +2, so ~+5)
             -- crits ~17-18% of swings, and crits PIERCE shields (EnemyService)
-            crit_level_scale = { per_level = 0.015, floor = 0.05, cap = 0.25 },
+            -- v2 (Jason: +1 fights too easy): steeper ladder, higher cap —
+            -- a +1 lieutenant crits ~14%, a +3 boss ~20%, all shield-piercing
+            crit_level_scale = { per_level = 0.02, floor = 0.05, cap = 0.3 },
         },
     },
 
