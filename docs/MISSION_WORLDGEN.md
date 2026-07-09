@@ -409,3 +409,31 @@ tests/headless/specs/gray_box_kit.spec.luau      ✅ kit geometry invariants (co
 | **M4** ✅ | Enemies + objective auto-complete inside missions | DONE 2026-07-08 live: kit rooms/objective carry `BaddieSpawner` parts (name-prefix discovery — BaddieSpawnerService.Rescan() nudged at stamp, no registration API needed; `home` anchor = leash, static leash config untouched); 4-enemy wave (bear/dogs/crow) spawned in-mission; reach_beacon monitor auto-completed on approach; EnemyService.DespawnEnemiesInBounds at teardown → 0 leaked enemies. BREAKABLES deliberately deferred (BreakableSpawner is per-configured-world keyed on breakables.worlds[areaId]; missions are combat gauntlets — mining inside missions conflicts with pause_farm_in_combat anyway). Duo two-account pass still owed (Jason drives) |
 | **M4.5** (live-tuning, 2026-07-08) | Playtest-driven mechanics pass | 6x tile scale (Jason: v1 "vastly too small") + doorway-sized openings with header strips; **CoH clear-gate**: static seeded population at MissionSpawn anchors (MissionPopulation.roll on the "spawns" stream; NO proximity waves in missions — anchors deliberately not BaddieSpawner-prefixed) + glowy inert until all enemies defeated (also the anti-cheese: invulnerable pet-less players can walk but never clear); "Defeat all enemies — N/X" via player attr MissionObjectiveText → MissionObjectiveHUD chip (pure attr render); 48-stud walls + per-mission CameraMaxZoomDistance clamp (no zoom-scouting the glowy), restored on exit |
 | **M5** | First real themed kit (MCP-assisted art), reward wiring, polish | Live |
+
+## 10. Mission sources: doors, RANDOM trials, and the quest ladder (2026-07-08)
+
+A mission **config** (`missions.missions.<id>`) is decoupled from its **source** (what
+launched it). Two sources exist:
+
+- **Direct doors** — `MissionDoor`-tagged part, `MissionId = "<realId>"` (the realm
+  gates in `Maps.Heaven_2` / `Maps.Hell_2`, plus StudioOnly plaza dev gates).
+- **Random doors** — `MissionId = "random"`. `Open` rolls a real id from
+  `missions.random.pool` per entry (fresh seed via the per-attempt counter) and stamps
+  `record.source = "random"`. Gated by the profile flag
+  `GameData.Unlocks.random_missions`; locked players get a rejection, the door prompt
+  always shows. Future quest-tied missions are just another source pinning a config.
+
+**Quest ladder** (`configs/quests.lua` track `trials`, Lv 7): `tr_first_trial`
+(complete any mission) **unlocks random trials** via the generic `def.unlock` plumbing
+(QuestService:Claim writes `GameData.Unlocks.<flag>` + publishes `Unlock_<flag>`
+attribute; List republishes on rejoin). Then lifetime ladder: 10 / 100 / 1,000 /
+10,000 random trials + Treasure Hunter (25 chests). Substrate counters
+(configs/stats.lua, auto-backfilled): `missions_completed`,
+`random_missions_completed` (both incremented per team member in `_close` when
+`reason == "complete"`), `mission_chests_opened` (chest open handler).
+
+**Realm-correct rosters**: each realm's trial fights its own kind — hell_trial fields
+the lava natives; heaven_trial fields the CELESTIAL faction (zealous_cherub /
+lance_seraph_guard / radiant_sprite_guard / prism_warden — role-balanced mirrors of
+the lava set, meshes borrowed from the layer-2 heaven pets, drops pay grass_coins +
+light_tokens).
