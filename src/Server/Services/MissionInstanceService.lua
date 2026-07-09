@@ -473,6 +473,15 @@ function MissionInstanceService:Open(player, missionId, opts)
                                     ladder[entry.rank or "minion"]
                                 )
                             enemyId = "petinv_" .. entry.pet
+                            -- ALL trial bosses roll the mission's egg (Jason:
+                            -- pet-model bosses dropped nothing)
+                            if
+                                synthDef
+                                and mission.boss_egg
+                                and (synthDef.tier == "boss" or synthDef.tier == "archvillain")
+                            then
+                                synthDef.exclusive_egg = mission.boss_egg
+                            end
                         else
                             enemyId = entry
                             -- MISSION-scoped static scaling: clone the def
@@ -826,6 +835,27 @@ function MissionInstanceService:_close(instanceId, reason)
                         -- throttle): worst-case crash loss = re-facing a trial
                         -- you already beat. Coalesces on the 15s debounce.
                         dataSvc:RequestSave(opener, "mission_sequence")
+                        -- FIRST-TIME CLEAR egg roll (0.5%): tied to the
+                        -- advance moment, so replays/re-runs can't farm it
+                        local eggCfg = self._config.missions[record.missionId]
+                            and self._config.missions[record.missionId].boss_egg
+                        if eggCfg and math.random() < (tonumber(eggCfg.chance) or 0) then
+                            local inv = _G.RBXTemplateServices:Get("InventoryService")
+                            local granted = inv
+                                and inv:AddItem(opener, "eggs", {
+                                    id = eggCfg.egg,
+                                    name = eggCfg.name or eggCfg.egg,
+                                    source = "first_clear:" .. record.missionId .. "#" .. record.sequence,
+                                })
+                            if granted then
+                                fireGameEvent(opener, "exclusive_egg_pickup", {
+                                    egg = eggCfg.egg,
+                                    name = ("%s found in the beacon's light!"):format(
+                                        eggCfg.name or "A mysterious egg"
+                                    ),
+                                })
+                            end
+                        end
                     end
                 end
             end)
