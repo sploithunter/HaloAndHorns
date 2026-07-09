@@ -164,6 +164,29 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        -- PER-TRIAL counters (Jason: "complete 100 ice trials, 100 heaven
+        -- trials... achievements that are almost free"): key derives from
+        -- the missionId (<id>s_completed) in _close.
+        hell_trials_completed = {
+            display_name = "Hell Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        heaven_trials_completed = {
+            display_name = "Heaven Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        lava_trials_completed = {
+            display_name = "Lava Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        ice_trials_completed = {
+            display_name = "Ice Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
     },
 
     -- EVENT-FED COUNTERS (Jason: "it's free data — if there's an event, we can just

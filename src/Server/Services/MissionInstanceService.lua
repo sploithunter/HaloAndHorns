@@ -693,6 +693,11 @@ function MissionInstanceService:_close(instanceId, reason)
                 if record.source == "random" then
                     statsSvc:Increment(member, "random_missions_completed", 1)
                 end
+                -- per-trial counter (<missionId>s_completed) — the almost-
+                -- free achievement substrate; undeclared ids no-op safely
+                pcall(function()
+                    statsSvc:Increment(member, record.missionId .. "s_completed", 1)
+                end)
             end
         end)
     end
@@ -875,6 +880,45 @@ local THEME_PALETTES = {
             heat = 6,
         },
     },
+    lava = {
+        -- molten variant of hell: cracked-lava floors, ember-veined basalt
+        wall = Color3.fromRGB(58, 36, 32),
+        wallMaterial = "Basalt",
+        floor = Color3.fromRGB(96, 44, 30),
+        floorMaterial = "CrackedLava",
+        pillar = Color3.fromRGB(40, 26, 24),
+        pillarMaterial = "Basalt",
+        beacon = Color3.fromRGB(255, 90, 20),
+        torchFlame = Color3.fromRGB(255, 130, 30),
+        torchLight = Color3.fromRGB(255, 140, 60),
+        fire = {
+            color = Color3.fromRGB(255, 80, 10),
+            secondary = Color3.fromRGB(140, 20, 5),
+            size = 4,
+            heat = 7,
+        },
+    },
+    ice = {
+        -- glacial: pale blue ice walls, frosted light — cold mirror of lava
+        wall = Color3.fromRGB(168, 196, 214),
+        wallMaterial = "Ice",
+        floor = Color3.fromRGB(196, 218, 232),
+        floorMaterial = "Glacier",
+        pillar = Color3.fromRGB(140, 176, 200),
+        pillarMaterial = "Ice",
+        beacon = Color3.fromRGB(90, 200, 255),
+        torchFlame = Color3.fromRGB(150, 210, 255),
+        torchLight = Color3.fromRGB(170, 220, 255),
+        torchMaterial = "Glass",
+        torchBrightness = 0.8,
+        torchRange = 18,
+        fire = {
+            color = Color3.fromRGB(140, 200, 255),
+            secondary = Color3.fromRGB(60, 110, 180),
+            size = 3,
+            heat = 4,
+        },
+    },
     heaven = {
         -- v3 (playtest: "it's the torches" — near-white NEON orbs bloomed the
         -- whole scene): heaven torches are decorative gilded GLASS orbs with
@@ -950,11 +994,16 @@ end
 
 -- Per-room tint jitter + seeded primitive clutter (pure rolls from
 -- MissionDecor; this just materializes them).
+-- element themes borrow the realm prefab pools (wall decor / features /
+-- fixtures / caps) until they get bespoke sets: lava = hell's, ice = heaven's
+local THEME_POOL_ALIAS = { lava = "hell", ice = "heaven" }
+
 function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, container, slotOrigin, seed, theme, record)
     local rollOpts = {}
     for k, v in pairs(decorCfg) do
         rollOpts[k] = v
     end
+    local poolTheme = THEME_POOL_ALIAS[theme] or theme
     rollOpts.doors = mapTable.doors -- wall decor avoids doorway apertures
     local tints, props, wallDecor, features = MissionDecor.roll(
         mapTable.rooms,
@@ -975,11 +1024,11 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
             if not store then
                 return nil
             end
-            if theme == "hell" then
+            if poolTheme == "hell" then
                 local primary = hash % 100 < 45 and "BrazierFire" or "TorchOrnateFire"
                 return store:FindFirstChild(primary)
                     or store:FindFirstChild("BrazierFire")
-            elseif theme == "heaven" then
+            elseif poolTheme == "heaven" then
                 return store:FindFirstChild("CandleStand")
             end
             return nil
@@ -1023,7 +1072,7 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
     -- doorways with FURNITURE. Strip the plank/board/padlock dressing, retint
     -- the backing slab to the marble palette, and park one of the nice
     -- bookcases centered in the alcove. Hell keeps its boards — they belong.
-    if theme == "heaven" then
+    if poolTheme == "heaven" then
         local store = ReplicatedStorage:FindFirstChild("MissionProps")
         local shelves = { "heaven_gilded_bookcase", "heaven_archive" }
         for _, tileModel in ipairs(container:GetChildren()) do
@@ -1262,7 +1311,7 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
     }
     do
         local store = ReplicatedStorage:FindFirstChild("MissionProps")
-        local names = WALL_DECOR_PREFABS[theme or "earth"]
+        local names = WALL_DECOR_PREFABS[poolTheme or "earth"]
         local slotPos2 = slotOrigin.Position
         if store and names and wallDecor then
             for _, wd in ipairs(wallDecor or {}) do
@@ -1320,7 +1369,7 @@ function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, contain
     }
     do
         local store = ReplicatedStorage:FindFirstChild("MissionProps")
-        local names = FEATURE_PREFABS[theme or "earth"]
+        local names = FEATURE_PREFABS[poolTheme or "earth"]
         local slotPos3 = slotOrigin.Position
         if store and names and #names > 0 and features then
             for _, ft in ipairs(features) do

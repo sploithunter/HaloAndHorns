@@ -38,6 +38,28 @@ local PRESETS = {
         },
         cc = { Saturation = -0.2, Contrast = 0.08, TintColor = Color3.fromRGB(255, 224, 210) },
     },
+    lava = {
+        -- molten hell variant: hotter fog, deeper reds
+        lighting = {
+            Brightness = 1.1,
+            Ambient = Color3.fromRGB(54, 28, 24),
+            OutdoorAmbient = Color3.fromRGB(96, 46, 34),
+            FogColor = Color3.fromRGB(40, 14, 8),
+            FogEnd = 440,
+        },
+        cc = { Saturation = -0.1, Contrast = 0.1, TintColor = Color3.fromRGB(255, 214, 190) },
+    },
+    ice = {
+        -- glacial: bright, cold, blue-white — crisp visibility, no gloom
+        lighting = {
+            Brightness = 1.6,
+            Ambient = Color3.fromRGB(120, 140, 160),
+            OutdoorAmbient = Color3.fromRGB(150, 175, 200),
+            FogColor = Color3.fromRGB(190, 215, 235),
+            FogEnd = 600,
+        },
+        cc = { Saturation = -0.15, Contrast = 0.06, TintColor = Color3.fromRGB(210, 230, 255) },
+    },
     heaven = {
         -- v2 (2026-07-08 playtest: v1 was a whiteout — "too bright to even
         -- see"): bright needs CONTRAST, not exposure. Moderate ambient +

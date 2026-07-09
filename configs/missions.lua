@@ -235,7 +235,7 @@ return {
         lava_trial = {
             display = "Lava Trial",
             kit = "gray_box",
-            theme = "hell", -- dressing/atmosphere only
+            theme = "lava", -- bespoke palette + atmosphere (pools alias hell's)
             area = "lava", -- pseudo-zone: biome RPS + pyromancer-branded drops
             realm = "neutral",
             seed_policy = "shared_sequence",
@@ -292,7 +292,7 @@ return {
         ice_trial = {
             display = "Ice Trial",
             kit = "gray_box",
-            theme = "earth", -- neutral dim dressing until an ice palette lands
+            theme = "ice", -- bespoke palette + atmosphere (pools alias heaven's)
             area = "ice", -- pseudo-zone: biome RPS + cryomancer-branded drops
             realm = "neutral",
             seed_policy = "shared_sequence",
