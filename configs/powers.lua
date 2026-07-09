@@ -1135,10 +1135,11 @@ return {
             -- a 60-cost cast every ~15s. Signature MOMENT: dive a boss near-
             -- invulnerable for one veil; sustained use needs focus investment.
             focus_cost = 60,
-            -- 25 -> 45 (Jason, live boss test after the focus/pool pass:
-            -- "I can still leave it on an entire boss fight"): even a
-            -- perma-Hasten build now has real gaps between veils.
-            cooldown_seconds = 45,
+            -- 25 -> 45 -> 60 (Jason, live boss iterations: at 45 his
+            -- slotted build still held ~8s gaps and full health through a
+            -- boss — "let's take it to 60"): a max build now fights roughly
+            -- HALF of every fight unveiled.
+            cooldown_seconds = 60,
             effect = "mirage_veil",
             display_name = "Mirage Veil",
             subtitle = "Team Shield",
