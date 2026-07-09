@@ -372,7 +372,7 @@ end
 -- source = "breakable" | "enemy" (chance per configs/enhancements.lua drops). The model is
 -- semi-generic: authored Model (drops.model_name under ReplicatedStorage.Assets.Models) when
 -- set, else a placeholder gold neon orb with a "?" tag. Returns true when a drop spawned.
-function DropService:TrySpawnEnhancementDrop(player, source, position)
+function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     if not (player and typeof(position) == "Vector3") then
         return false
     end
@@ -395,6 +395,20 @@ function DropService:TrySpawnEnhancementDrop(player, source, position)
         or (source == "treasure" and 1)
         or drops.breakable_chance
         or 0
+    -- RANK PREMIUM (Jason, Magma Wyrm playtest: "that was really hard" —
+    -- bosses rolled the same flat odds as trash): kills pass the enemy's
+    -- tier; enemy_rank_mult scales the odds. chance may exceed 1: the whole
+    -- part is GUARANTEED drops, the fraction is one extra roll (a boss at
+    -- 0.16 x 6 = 0.96 ≈ a sure find; archvillain 1.92 = 1 + 92% of a 2nd).
+    if type(opts) == "table" then
+        local mult = tonumber(opts.chance_mult)
+        if not mult and opts.tier then
+            mult = tonumber((drops.enemy_rank_mult or {})[opts.tier])
+        end
+        if mult then
+            chance = chance * math.max(0, mult)
+        end
+    end
     -- Windfall (drop_rate axis): an active drop-rate buff multiplies the loot chance.
     if (player:GetAttribute("DropRateBuffUntil") or 0) > os.time() then
         chance = chance * (1 + (tonumber(player:GetAttribute("DropRateBuff")) or 0))
@@ -407,8 +421,28 @@ function DropService:TrySpawnEnhancementDrop(player, source, position)
             chance = chance * (1 + m)
         end
     end
-    if math.random() >= chance then
+    -- resolve the roll into a COUNT (premium odds can exceed 1). Chests
+    -- ("treasure") stay exactly one per call — that includes the recursive
+    -- premium extras below, so windfall can't compound them.
+    local count
+    if source == "treasure" then
+        count = 1
+    else
+        count = math.floor(chance)
+        if math.random() < (chance - count) then
+            count += 1
+        end
+    end
+    if count == 0 then
         return false
+    end
+    -- extras beyond the first spawn as guaranteed rolls ringed around the
+    -- kill site (each recursive call spawns exactly one)
+    for i = 2, count do
+        local off = Vector3.new(math.cos(i * 2.1) * 2.5, 0, math.sin(i * 2.1) * 2.5)
+        task.defer(function()
+            self:TrySpawnEnhancementDrop(player, "treasure", position + off)
+        end)
     end
     local enh = self._moduleLoader and self._moduleLoader:Get("EnhancementService")
     if not (enh and enh.RollDrop) then

@@ -252,6 +252,10 @@ return {
         -- yielded only two drops that fit any of his powers; roll back if it floods)
         breakable_chance = 0.04,
         enemy_chance = 0.16,
+        -- RANK PREMIUM on kills (Jason: bosses rolled trash odds — "that was
+        -- really hard" deserves loot): odds x this by enemy tier. boss = 0.96
+        -- ~ a guaranteed find; archvillain = one sure + 92% of a second.
+        enemy_rank_mult = { trash_mob = 1.0, mid_tier = 2.0, boss = 6.0, archvillain = 12.0 },
         -- of those drops, this fraction are NATURAL (origin-less junk tier) — Jason:
         -- "allow generics to drop everywhere; that makes an actual junk economy."
         -- The rest are zone-branded origin drops (~25/75 single/dual structurally).

@@ -1129,7 +1129,10 @@ function EnemyService:_onDefeated(targetId)
                     end)
                     if okSvc and drops and drops.TrySpawnEnhancementDrop then
                         pcall(function()
-                            drops:TrySpawnEnhancementDrop(player, "enemy", dropPos)
+                            -- rank premium: bosses roll better (enemy_rank_mult)
+                            drops:TrySpawnEnhancementDrop(player, "enemy", dropPos, {
+                                tier = model:GetAttribute("EnemyTier"),
+                            })
                         end)
                         -- POTION drop (same odds as enhancements; independent roll)
                         if drops.TrySpawnPotionDrop then
