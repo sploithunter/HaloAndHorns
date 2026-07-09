@@ -477,6 +477,30 @@ function MissionInstanceService:Open(player, missionId, opts)
                             enemyId = "petinv_" .. entry.pet
                         else
                             enemyId = entry
+                            -- MISSION-scoped static scaling: clone the def
+                            -- with tier multipliers (homeworld waves use the
+                            -- untouched config def)
+                            local scaling = self._config.static_scaling
+                            if scaling then
+                                local okDef, base = pcall(function()
+                                    return require(
+                                        ReplicatedStorage.Configs:WaitForChild("enemies")
+                                    ).enemies[enemyId]
+                                end)
+                                local mult = okDef and base and scaling[base.tier]
+                                if mult then
+                                    synthDef = table.clone(base)
+                                    synthDef.hp =
+                                        math.floor((base.hp or 1) * (tonumber(mult.hp_mult) or 1))
+                                    if base.attack then
+                                        synthDef.attack = table.clone(base.attack)
+                                        synthDef.attack.damage = math.floor(
+                                            (base.attack.damage or 0)
+                                                * (tonumber(mult.dmg_mult) or 1)
+                                        )
+                                    end
+                                end
+                            end
                         end
                         if type(entry) == "table" and not synthDef then
                             -- config gate (MissionSchema) makes this unreachable

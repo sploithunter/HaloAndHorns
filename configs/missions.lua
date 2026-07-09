@@ -66,6 +66,16 @@ return {
         unlock = "random_missions",
     },
 
+    -- MISSION static-enemy scaling (Jason 2026-07-09, heaven boss + 2 LT =
+    -- "good but not hard... lieutenants and minions need a little boost"):
+    -- multiplies STATIC faction defs at mission spawn ONLY — homeworld
+    -- spawner waves keep their own balance. Boss tier untouched (landing
+    -- well). By enemies.lua tier key.
+    static_scaling = {
+        trash_mob = { hp_mult = 1.3, dmg_mult = 1.25 },
+        mid_tier = { hp_mult = 1.5, dmg_mult = 1.3 },
+    },
+
     -- PET-MODEL enemy rank ladder (element trials: the realm's own pets as
     -- enemies — Jason: "use any of the models... boss versions by making
     -- huges of them"). Baseline = EnemyService._petEnemyDef (hp = base_health
