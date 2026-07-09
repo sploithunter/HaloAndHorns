@@ -21,6 +21,8 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local MeshAssembly = require(ReplicatedStorage.Shared.Assets.MeshAssembly)
 
+local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
+
 local DropService = {}
 DropService.__index = DropService
 
@@ -408,6 +410,18 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
         if mult then
             chance = chance * math.max(0, mult)
         end
+        -- LEVEL-DIFF SCALING (Jason 2026-07-09: "very difficult to get
+        -- high-end drops from a minus-three boss, much more likely from a
+        -- plus-three"): kill drops scale by the con-color gap — closes the
+        -- gray-boss farm hole the rank premium opened. Kills only (chests
+        -- pass no enemy_level).
+        if source == "enemy" and tonumber(opts.enemy_level) and drops.level_diff then
+            local myLevel = tonumber(player:GetAttribute("EffectiveLevel"))
+                or tonumber(player:GetAttribute("Level"))
+                or 1
+            chance = chance
+                * LevelDiffYield.payout(myLevel, tonumber(opts.enemy_level), drops.level_diff)
+        end
     end
     -- Windfall (drop_rate axis): an active drop-rate buff multiplies the loot chance.
     if (player:GetAttribute("DropRateBuffUntil") or 0) > os.time() then
@@ -440,8 +454,11 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     -- kill site (each recursive call spawns exactly one)
     for i = 2, count do
         local off = Vector3.new(math.cos(i * 2.1) * 2.5, 0, math.sin(i * 2.1) * 2.5)
+        local extraOpts = (type(opts) == "table" and opts.enemy_level)
+                and { enemy_level = opts.enemy_level }
+            or nil
         task.defer(function()
-            self:TrySpawnEnhancementDrop(player, "treasure", position + off)
+            self:TrySpawnEnhancementDrop(player, "treasure", position + off, extraOpts)
         end)
     end
     local enh = self._moduleLoader and self._moduleLoader:Get("EnhancementService")
@@ -452,9 +469,14 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     -- would be unslottable dead weight for them (Jason)
     local data = self._dataService and self._dataService:GetData(player)
     local hasOrigin = data and data.Archetype ~= nil
+    -- DROP LEVEL: kills roll gear from the ENEMY's level band ("punch up
+    -- for future-band gear" — the CoH placement gate makes +N drops a
+    -- bank-it-for-next-level moment); everything else follows the player.
+    local rollLevel = (type(opts) == "table" and tonumber(opts.enemy_level))
+        or player:GetAttribute("Level")
     local record = enh:RollDrop(nil, player:GetAttribute("CurrentArea"), {
         natural = not hasOrigin,
-        playerLevel = player:GetAttribute("Level"), -- band follows the player past the area top
+        playerLevel = rollLevel,
     })
 
     -- model: authored Assets model (override) > the cogwheel mesh (per-color) > mystery orb

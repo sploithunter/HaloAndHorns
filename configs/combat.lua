@@ -531,6 +531,10 @@ return {
             pet_attack = { hit_chance = 0.92, crit_chance = 0.15, crit_mult = 2.0 },
             enemy_attack = { hit_chance = 0.85, crit_chance = 0.1, crit_mult = 1.8 },
             taunt = { hit_chance = 0.9, crit_chance = 0.2, crit_mult = 1.5 },
+            -- CRIT LEVEL SCALING (enemy_attack only): +1.5%/level above the
+            -- pet, floor 5%, cap 25% — a +3 boss (rank-baked +2, so ~+5)
+            -- crits ~17-18% of swings, and crits PIERCE shields (EnemyService)
+            crit_level_scale = { per_level = 0.015, floor = 0.05, cap = 0.25 },
         },
     },
 

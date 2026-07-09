@@ -1132,6 +1132,7 @@ function EnemyService:_onDefeated(targetId)
                             -- rank premium: bosses roll better (enemy_rank_mult)
                             drops:TrySpawnEnhancementDrop(player, "enemy", dropPos, {
                                 tier = model:GetAttribute("EnemyTier"),
+                                enemy_level = model:GetAttribute("Level"),
                             })
                         end)
                         -- POTION drop (same odds as enhancements; independent roll)
@@ -1555,9 +1556,21 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
         local cut = math.clamp(tonumber(enemyModel:GetAttribute("BlindMagnitude")) or 0, 0, 0.95)
         hitChance = hitChance * (1 - cut)
     end
+    -- CRIT LEVEL SCALING (Jason 2026-07-09): a higher-level enemy crits
+    -- MORE (flat 10% before) — the con-color system reaches the crit axis.
+    -- rolls.crit_level_scale = { per_level, floor, cap }; enemy_attack only.
+    local critChance = (enemyAtkRoll and enemyAtkRoll.crit_chance) or 0
+    local critScale = eng.rolls and eng.rolls.crit_level_scale
+    if critScale then
+        critChance = math.clamp(
+            critChance + (tonumber(critScale.per_level) or 0) * ((enemyLevel or 1) - (petLevel or 1)),
+            tonumber(critScale.floor) or 0,
+            tonumber(critScale.cap) or 1
+        )
+    end
     local roll = CombatRoll.resolve({
         hit_chance = hitChance,
-        crit_chance = enemyAtkRoll and enemyAtkRoll.crit_chance,
+        crit_chance = critChance,
         crit_mult = enemyAtkRoll and enemyAtkRoll.crit_mult,
     }, math.random(), math.random())
     if roll.multiplier <= 0 then
@@ -1567,6 +1580,14 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
         return true, blinded == true -- missed, wasBlinded
     end
     dmg = dmg * roll.multiplier
+    -- CRIT PENETRATION substrate: the fraction of this hit that is CRIT
+    -- BONUS (multiplier 1.8 → 0.444...). Every later modifier is
+    -- MULTIPLICATIVE on the whole hit (LevelScale/buffs/mitigate/takenMult
+    -- are all proportional), so the fraction stays valid at the shield.
+    local critBonusFrac = 0
+    if roll.crit and roll.multiplier > 1 then
+        critBonusFrac = 1 - (1 / roll.multiplier)
+    end
     -- Level scaling: a higher-level enemy hits harder; out-level it and it softens.
     dmg = dmg * LevelScale.factor(enemyLevel or 1, petLevel or 1, self._levelingConfig.scale)
     -- CAPITAL WARCRY (configs/capital_baddies.lua): a band-buffed attacker deals more while
@@ -1635,9 +1656,15 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
         pet:SetAttribute("CombatShield", 0) -- stale pool from a lost timer → clear it
     end
     if shield > 0 and dmg > 0 then
-        local absorbed = math.min(shield, dmg)
+        -- CRIT PENETRATION (Jason: shields are BINARY immunity — "the shield
+        -- is the real problem"): the crit BONUS pierces the pool and lands on
+        -- the pet; only the base portion soaks. Normal hits: fully veiled.
+        -- Crits: sting through the mirage.
+        local pierce = dmg * critBonusFrac
+        local soakable = dmg - pierce
+        local absorbed = math.min(shield, soakable)
         pet:SetAttribute("CombatShield", shield - absorbed)
-        dmg = dmg - absorbed
+        dmg = (soakable - absorbed) + pierce
         -- On-hit VFX is config-driven: if the absorbing power declares combat_vfx.on_hit = "dodge_pop"
         -- (e.g. Mirage Step), bump a tick so the client pops a floating "Dodge!" over the pet. A real
         -- shield has no on_hit, so it just soaks silently.

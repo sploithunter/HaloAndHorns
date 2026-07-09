@@ -256,6 +256,10 @@ return {
         -- really hard" deserves loot): odds x this by enemy tier. boss = 0.96
         -- ~ a guaranteed find; archvillain = one sure + 92% of a second.
         enemy_rank_mult = { trash_mob = 1.0, mid_tier = 2.0, boss = 6.0, archvillain = 12.0 },
+        -- LEVEL-DIFF drop scaling (kills only): chance x clamp(1 + per_level
+        -- x (enemyLevel - playerLevel), min, max) — a -3 gray boss pays 40%,
+        -- a +3 red boss 160% (LevelDiffYield.payout shape).
+        level_diff = { per_level = 0.2, min = 0.4, max = 1.6 },
         -- of those drops, this fraction are NATURAL (origin-less junk tier) — Jason:
         -- "allow generics to drop everywhere; that makes an actual junk economy."
         -- The rest are zone-branded origin drops (~25/75 single/dual structurally).
