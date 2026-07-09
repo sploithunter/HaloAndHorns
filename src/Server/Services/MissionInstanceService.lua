@@ -465,7 +465,14 @@ function MissionInstanceService:Open(player, missionId, opts)
                             enemyId = entry
                         end
                         if type(entry) == "table" and not synthDef then
-                            return -- unknown pet id: skip silently (config typo)
+                            -- config gate (MissionSchema) makes this unreachable
+                            -- for typos; if it fires, something deeper broke —
+                            -- be LOUD, never silently under-populate a mission
+                            self:_log("Warn", "pet-model spawn FAILED to synthesize", {
+                                pet = entry.pet,
+                                mission = missionId,
+                            })
+                            return
                         end
                         local r = enemySvc:SpawnEnemy(player, enemyId, {
                             def = synthDef,
@@ -693,11 +700,19 @@ function MissionInstanceService:_close(instanceId, reason)
                 if record.source == "random" then
                     statsSvc:Increment(member, "random_missions_completed", 1)
                 end
-                -- per-trial counter (<missionId>s_completed) — the almost-
-                -- free achievement substrate; undeclared ids no-op safely
-                pcall(function()
+                -- per-trial counter (<missionId>s_completed): declared-ness
+                -- is enforced at config load (MissionSchema) — a failure here
+                -- is a real bug, so it WARNS instead of no-opping (Jason:
+                -- soft bugs are hard to track)
+                local okCount, cErr = pcall(function()
                     statsSvc:Increment(member, record.missionId .. "s_completed", 1)
                 end)
+                if not okCount then
+                    self:_log("Warn", "per-trial counter increment FAILED", {
+                        mission = record.missionId,
+                        err = tostring(cErr),
+                    })
+                end
             end
         end)
     end

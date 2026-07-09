@@ -736,6 +736,22 @@ function ConfigLoader:_validateMissionsConfig(config)
             return false, "Mission '" .. tostring(missionId) .. "' must define a 'kit' string"
         end
     end
+    -- CROSS-config contracts (Jason: "catch them rather than defaulting —
+    -- soft bugs are hard to track"): enemy/pet ids, ranks, pseudo-zones,
+    -- per-trial counters, random pool. Pure rules in MissionSchema (shared
+    -- with the CI validation spec).
+    do
+        local MissionSchema = require(script.Parent.Game.MissionSchema)
+        local ok, err = MissionSchema.validate(config, {
+            enemies = self:_rawConfig("enemies"),
+            pets = self:_rawConfig("pets"),
+            stats = self:_rawConfig("stats"),
+            areas = self:_rawConfig("areas"),
+        })
+        if not ok then
+            return false, "Missions config: " .. tostring(err)
+        end
+    end
     return true
 end
 

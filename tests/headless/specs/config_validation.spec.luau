@@ -13,8 +13,43 @@
 ]]
 
 local ZoneSchema = loadModule("src/Shared/Game/ZoneSchema.lua")
+local MissionSchema = loadModule("src/Shared/Game/MissionSchema.lua")
 
 return function()
+    describe("MissionSchema vs configs (cross-config contracts, in CI)", function()
+        it("every mission's enemies/pets/ranks/zones/counters resolve", function()
+            local ok, err = MissionSchema.validate(loadModule("configs/missions.lua"), {
+                enemies = loadModule("configs/enemies.lua"),
+                pets = loadModule("configs/pets.lua"),
+                stats = loadModule("configs/stats.lua"),
+                areas = loadModule("configs/areas.lua"),
+            })
+            if not ok then
+                error("boot would CRASH: " .. tostring(err))
+            end
+            expect(ok).to.equal(true)
+        end)
+
+        it("rejects a pack unit with an unknown pet id (the silent-skip soft bug)", function()
+            local ok = MissionSchema.validate({
+                pet_ranks = {},
+                missions = {
+                    x_trial = {
+                        kit = "gray_box",
+                        packs = { { weight = 1, units = { { pet = "ghost_pet", count = 1 } } } },
+                    },
+                },
+            }, { stats = { counters = { x_trials_completed = {} } } })
+            expect(ok).to.equal(false)
+        end)
+
+        it("rejects a mission without its per-trial counter", function()
+            local ok = MissionSchema.validate({
+                missions = { y_trial = { kit = "gray_box", packs = {} } },
+            }, { stats = { counters = {} } })
+            expect(ok).to.equal(false)
+        end)
+    end)
     describe("ZoneSchema vs configs/areas.lua (the real boot rules, in CI)", function()
         local areas = loadModule("configs/areas.lua")
 
