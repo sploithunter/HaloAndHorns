@@ -67,7 +67,7 @@ return {
     prospector = "+crystal yield for a duration.",
     windfall = "A burst of bonus crystals / doubled pickups.",
     fortune = "+luck: better egg-hatch odds for a while.",
-    huge_fortune = "Huge luck spike: big egg-hatch odds boost.",
+    huge_fortune = "Triples your HUGE jackpot attempts for a short window — time your hatches.",
     swift = "Toggle: +move speed for you and your pets.",
     hasten = "Toggle: powers recharge faster.",
     revive = "Instantly re-summons a downed pet, ignoring the clock.",

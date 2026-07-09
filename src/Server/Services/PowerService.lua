@@ -1624,6 +1624,10 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         self:_setAxisBuff(player, "CritBuff", mag, now, dur, powerId) -- +crit chance on pet hits (Critical Strike)
     elseif family == "luck" then
         self:_setAxisBuff(player, "LuckBuff", mag, now, dur, powerId)
+    elseif family == "huge_luck" then
+        -- Huge Fortune: multiplies HUGE jackpot attempts per hatch (EggService
+        -- reads HugeLuckBuff as a multiple, not an additive fraction)
+        self:_setAxisBuff(player, "HugeLuckBuff", mag, now, dur, powerId)
     elseif family == "move_speed" then
         if kind.toggle then -- Super Speed: permanent toggle
             self:_toggleAxisBuff(player, "MoveSpeedBuff", mag, powerId)

@@ -178,7 +178,11 @@ return {
         -- gems), NOT coins. drop_rate axis, consumed by DropService + BreakableSpawner.
         windfall = { family = "drop_rate", magnitude = 2.0, duration = 10 },
         luck = { family = "luck", magnitude = 0.5, duration = 60 }, -- Fortune
-        luck_huge = { family = "luck", magnitude = 2.0, duration = 30 }, -- Huge Fortune (marquee)
+        -- Huge Fortune (marquee): magnitude = HUGE jackpot ATTEMPTS multiplier
+        -- (EggService hugeLuckBoost reroll model: 1 = one attempt, 3 = three) —
+        -- NOT generic hatch luck (Jason: "increases your huge chances, not just
+        -- another luck"). 3x attempts for 30s on a 120s cd = time your hatches.
+        luck_huge = { family = "huge_luck", magnitude = 3.0, duration = 30 },
         -- PASSIVE (always-on by ownership): owning the power applies the buff permanently — no cast,
         -- no timer. Re-applied on pick + spawn/join (PowerService:_applyOwnedPassives). Only families
         -- with a SOLE-OCCUPANT axis are passive today; coin_yield (Prospector) + luck (Fortune) share
