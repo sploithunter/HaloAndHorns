@@ -272,7 +272,7 @@ return {
             needs_primary_part = true,
             gait = { style = "waddle", bob_height = 0.8, tilt_degrees = 12, stride_length = 6 },
             attack = { damage = 22, cadence = 1.8, sundering = 0 },
-            drop_table = { grass_coins = 35, shadow_tokens = 4, rare_drop_chance = 0.12 },
+            drop_table = { grass_coins = 35, shadow_tokens = 4 },
         },
 
         -- ============================ DESERT FACTION ============================
@@ -358,7 +358,7 @@ return {
             dust = true,
             gait = { style = "march", bob_height = 0.5, tilt_degrees = 4, stride_length = 5 },
             attack = { damage = 24, cadence = 2.0, sundering = 0 },
-            drop_table = { desert_coins = 35, shadow_tokens = 4, rare_drop_chance = 0.12 },
+            drop_table = { desert_coins = 35, shadow_tokens = 4 },
         },
         -- BOSS — the sand scorpion: armored pincers + a Sundering stinger. The Desert apex (mirror of
         -- dire_bear / magma_wyrm). Boss = deliberate encounter (admin/special spawn), NOT field waves.
@@ -375,7 +375,7 @@ return {
             dust = true,
             gait = { style = "march", bob_height = 0.8, tilt_degrees = 3, stride_length = 9 },
             attack = { damage = 65, cadence = 2.4, sundering = 30 },
-            drop_table = { desert_coins = 230, shadow_tokens = 28, rare_drop_chance = 0.5 },
+            drop_table = { desert_coins = 230, shadow_tokens = 28 },
         },
 
         -- ============================ ICE FACTION ============================
@@ -458,7 +458,7 @@ return {
             frost = true,
             gait = { style = "march", bob_height = 0.9, tilt_degrees = 4, stride_length = 7 },
             attack = { damage = 24, cadence = 2.0, sundering = 0 },
-            drop_table = { ice_coins = 35, shadow_tokens = 4, rare_drop_chance = 0.12 },
+            drop_table = { ice_coins = 35, shadow_tokens = 4 },
         },
         -- BOSS — the glacial leviathan: a crystal-plated ice titan, Sundering. The Ice apex (mirror of
         -- dire_bear / magma_wyrm / sand_scorpion). Boss = deliberate encounter, NOT field waves.
@@ -475,7 +475,7 @@ return {
             frost = true,
             gait = { style = "march", bob_height = 1.2, tilt_degrees = 3, stride_length = 10 },
             attack = { damage = 68, cadence = 2.4, sundering = 30 },
-            drop_table = { ice_coins = 250, shadow_tokens = 30, rare_drop_chance = 0.5 },
+            drop_table = { ice_coins = 250, shadow_tokens = 30 },
         },
 
         -- ============================ LAVA / HELL FACTION ============================
@@ -513,7 +513,7 @@ return {
             gait = { style = "march", bob_height = 0.9, tilt_degrees = 4, stride_length = 7 },
             -- A Sundering attacker: drains player Focus on hit (Feature 12).
             attack = { damage = 25, cadence = 2.0, sundering = 20 },
-            drop_table = { lava_coins = 30, shadow_tokens = 4, rare_drop_chance = 0.1 },
+            drop_table = { lava_coins = 30, shadow_tokens = 4 },
         },
         ember_acolyte = {
             role = "support",
@@ -637,7 +637,7 @@ return {
                 slam = { damage = 140, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },
                 pulse = { damage = 20, radius = 30, interval = 4, element = "ice" },
             },
-            drop_table = { grass_coins = 280, light_tokens = 32, rare_drop_chance = 0.5 },
+            drop_table = { grass_coins = 280, light_tokens = 32 },
         },
         -- TANK — the prism warden: the crystalline lion wall (mirror of ember_brute).
         prism_warden = {
@@ -652,7 +652,7 @@ return {
             model_scale = 5,
             gait = { style = "march", bob_height = 0.9, tilt_degrees = 4, stride_length = 7 },
             attack = { damage = 25, cadence = 2.0, sundering = 20 },
-            drop_table = { grass_coins = 30, light_tokens = 4, rare_drop_chance = 0.1 },
+            drop_table = { grass_coins = 30, light_tokens = 4 },
         },
         dire_bear = {
             role = "tank",
@@ -676,7 +676,7 @@ return {
                 slam = { damage = 150, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },
                 pulse = { damage = 22, radius = 30, interval = 4, element = "lava" },
             },
-            drop_table = { lava_coins = 280, shadow_tokens = 32, rare_drop_chance = 0.5 },
+            drop_table = { lava_coins = 280, shadow_tokens = 32 },
         },
         infernal_boss = {
             role = "tank",
@@ -749,7 +749,7 @@ return {
                 slam = { damage = 200, radius = 16, cooldown = 10, telegraph = 1.4, range = 40 },
                 pulse = { damage = 30, radius = 34, interval = 4, element = "lava" },
             },
-            drop_table = { lava_coins = 600, shadow_tokens = 80, rare_drop_chance = 1 },
+            drop_table = { lava_coins = 600, shadow_tokens = 80 },
         },
 
         -- [TEST] Tanky harmless dummy for measuring damage/AoE. Enormous HP, zero attack, stationary.
