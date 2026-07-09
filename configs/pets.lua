@@ -5780,7 +5780,7 @@ local petConfig = {
             huge = { chance = 0.05, any_pet = true },
             asset_id = "rbxassetid://70381184616429", -- 3D egg Model
             mesh_asset = "rbxassetid://97161362566193", -- world-drop visual (gem pattern)
-            texture_asset = "rbxassetid://77630876871116",
+            texture_asset = "rbxassetid://126932530566414", -- REAL UV atlas (concept art had shadowed it)
             image_id = "rbxassetid://97839482817366", -- inventory icon (RESOLVED image, not the Decal)
             unlock_requirement = nil,
             pet_weights = {
@@ -5820,7 +5820,7 @@ local petConfig = {
             huge = { chance = 0.05, any_pet = true },
             asset_id = "rbxassetid://75458974543354", -- 3D egg Model
             mesh_asset = "rbxassetid://76403285913824", -- world-drop visual (gem pattern)
-            texture_asset = "rbxassetid://129676076147696",
+            texture_asset = "rbxassetid://93310785554801", -- REAL UV atlas (concept art had shadowed it)
             image_id = "rbxassetid://90833713444650", -- inventory icon (RESOLVED image, not the Decal)
             unlock_requirement = nil,
             pet_weights = {

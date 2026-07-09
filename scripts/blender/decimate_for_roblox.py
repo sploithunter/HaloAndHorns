@@ -329,7 +329,12 @@ def main() -> None:
     original_tris = face_count(base_obj)
     base_name = slugify(source_mesh.stem)
 
-    texture_path = find_texture_path(source_mesh)
+    # GLB/glTF carry their own truth: prefer the EMBEDDED base-color atlas.
+    # (2026-07-09 egg incident: a concept-art PNG sharing the mesh's stem
+    # shadowed the real atlas and shipped as the texture — dark-blob renders.)
+    texture_path = None
+    if source_mesh.suffix.lower() not in {".glb", ".gltf"}:
+        texture_path = find_texture_path(source_mesh)
     texture_copy_name = None
     if texture_path:
         texture_copy_name = f"{base_name}{texture_path.suffix.lower()}"
@@ -340,6 +345,11 @@ def main() -> None:
         texture_copy_name = extract_embedded_texture(base_obj, output_dir, base_name)
         if texture_copy_name:
             print(f"Unpacked embedded texture -> {texture_copy_name}")
+        elif source_mesh.suffix.lower() in {".glb", ".gltf"} and find_texture_path(source_mesh):
+            texture_path = find_texture_path(source_mesh)
+            texture_copy_name = f"{base_name}{texture_path.suffix.lower()}"
+            shutil.copy2(texture_path, output_dir / texture_copy_name)
+            print(f"Copied loose texture (no embedded found): {texture_copy_name}")
         else:
             swept = sweep_folder_for_texture(source_mesh)
             if swept:
