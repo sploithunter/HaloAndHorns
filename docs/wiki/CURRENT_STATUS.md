@@ -2,6 +2,40 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Trials Endgame (landed 2026-07-08/09, all live-verified)
+
+CoH-style DOOR MISSIONS ("Trials") are the shipped endgame: deterministic procgen interiors,
+a 2-realm × 4-element trial matrix, quest-chain gate steering, and Platinum-egg century chases.
+SSOT = `docs/MISSION_WORLDGEN.md` (§13 = the shipped contract).
+
+- **Worldgen**: authored `MissionDoor` → instance slot → seeded tile-kit map (pure LayoutSolver,
+  CI seed sweeps, `worldgen_version` fold). Clear-gate objective, hold-E beacon completion with
+  fanfares, fog-of-war draggable minimap, room-clear-locked treasure, farmable mission crates,
+  per-theme dressing/atmosphere (hell/heaven/lava/ice/grass/desert palettes).
+- **Shared sequences**: everyone's trial #N is the SAME map (`shared_sequence` seeds); finish-or-
+  skip advancement (abandon re-deals the same number; skip = consumed without credit);
+  `mission.replay` by already-reached number. Map title: "MAP — <name> #N".
+- **The matrix**: 8 trials = hell/heaven × lava/ice/grass/desert, each composing three independent
+  fields (theme = dressing, area = element branding/RPS/drop origins, realm = resonance override).
+  Pet-model enemies via `SynthesizePetEnemy` + the `pet_ranks` ladder — minion volume, lieutenant
+  splash + warcry, boss = the middle, TITAN = archvillain apex ("Titan " prefix). Balance stack:
+  tier-aware `enemy_damage_growth`, crit ladder with shield penetration, drop level/quality
+  scaling (enemy-level rolls, cap 52, rank quality odds).
+- **Selection = quest activation**: realm gates are `MissionId="auto"` — the active quest track's
+  mission binding deals the trial; nothing active = random from the FOUR base trials only (matrix
+  counters move exclusively via activation). QuestPanel: "▶ Activate — realm gates will deal this
+  trial"; the green banner taps to DEACTIVATE. Chains = 5 layers per combo (10/25/50/90/100); the
+  Century = claim-once + level-50 claim gate → **Platinum egg** (same 5 exclusive pets as the
+  0.5% boss/first-clear eggs, stated 15% huge — fixed_odds policy binds odds per egg).
+- **Gate UX**: per-player `NextTrialLabel` stamped locally onto the door E-prompt ("Hell Lava
+  Trial #4" / "Random Trial"); back-to-back heaven/hell portals side-gated client-side
+  (`RealmPortalSideGate`); huge pets read ALL CAPS on the team rail.
+- **Ops**: `admin.setCounter` = the sanctioned counter override (`test.*` is unreachable from
+  network origin by design, even in Studio); `MissionSchema`/`ZoneSchema` pure validators run at
+  config load AND in CI (`config_validation.spec`) — loud failures, orange-Warn fall-throughs.
+- **Owed**: skip/replay UI buttons (map panel), lieutenant warcry live verdict, Platinum hatch
+  test, duo pass, MissionProps.rbxm export.
+
 ## Combat Endgame (landed 2026-07-02, all live-verified)
 
 The CoH-style combat game is now END-TO-END: one symmetric threat-table aggro model driving both

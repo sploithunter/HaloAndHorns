@@ -22,7 +22,7 @@ Pets are the stars: each has a two-number profile (⛏ mining vs ⚔ combat), an
 
 ## Current Checkpoint
 
-The game is built in two stacked tracks, both well past their core milestones, with an active polish/content lane on top. **Newest layer (2026-07-02): the combat endgame** — a symmetric threat-table aggro game (taunt / fear-as-negative-aggro / rage tipping points on both sides), a boss→arch-villain encounter ladder with config-driven AoE kits (splash / telegraphed slam / pulse), an honest fully-implemented power roster, post-50 **Veteran Levels**, and the Genie of the Dunes resurrection capstone with tunable res sickness. All live-verified; details in [`docs/wiki/CURRENT_STATUS.md`](docs/wiki/CURRENT_STATUS.md).
+The game is built in two stacked tracks, both well past their core milestones, with an active polish/content lane on top. **Newest layer (2026-07-08/09): the Trials endgame** — City-of-Heroes-style door missions with deterministic procgen interiors (everyone's trial #N is the same map), a 2-realm × 4-element trial matrix fought against pet-model enemies on a minion→lieutenant→boss→Titan rank ladder, quest chains that steer which trial the realm gates deal, and claim-once **Platinum egg** century chases (100 trials + level 50). Beneath it, **the combat endgame (2026-07-02)** — a symmetric threat-table aggro game (taunt / fear-as-negative-aggro / rage tipping points), a boss→arch-villain encounter ladder with config-driven AoE kits, an honest fully-implemented power roster, post-50 **Veteran Levels**, and the Genie of the Dunes resurrection capstone. All live-verified; details in [`docs/wiki/CURRENT_STATUS.md`](docs/wiki/CURRENT_STATUS.md) and [`docs/MISSION_WORLDGEN.md`](docs/MISSION_WORLDGEN.md).
 
 **Template baseline — Phases 0–11 complete** (the config-as-code foundation):
 - P0 data spine · P1 map integration contract · P2 economy depth · P3 stats/achievements/leaderboards · P4 progression & enchants · P5 auto-systems · …through P11 the SSOT pet-inventory model.
@@ -62,6 +62,12 @@ The game is built in two stacked tracks, both well past their core milestones, w
 - Slotted **enhancements** (origin-keyed cogs) that modify power stats, with drops, an inventory surface, a slotting UI, and an in-slot result preview.
 - Unified, programmatic **icon/badge system**: a colored origin disc + white effect symbol + targeting ring, generated from an asset manifest (no hand-typed ids), driving the hotbar, squad cards, and world VFX from one registry.
 - Additive **BuffStack** model (same-axis buffs add, never compound), config-driven combat VFX, and a shared-world FX broadcast so nearby players see your combat/mining numbers and power effects.
+
+**Trials (door missions) & endgame**
+- CoH-style door missions: walk to a realm gate, hold E, get warped into a seeded tile-kit interior — clear-gate objective, hold-E beacon completion, fog-of-war draggable minimap, locked treasure rooms, themed dressing/atmosphere per trial.
+- **Shared sequences**: trial #N is the same map for everyone; finish-or-skip progression; replay any number you've reached.
+- **The trial matrix**: hell/heaven × lava/ice/grass/desert, fought against pet-model enemies (minion / lieutenant with splash + warcry / boss / Titan). Activating a trial's quest branch points the realm gates at it — the E-prompt names the deal ("Hell Lava Trial #4"); nothing active means random base trials.
+- **Century chases**: 100 completions per combo through 5 quest layers, capped by a claim-once, level-50-gated Century paying a **Platinum egg** (stated 15% huge). Trial bosses and first-clears also roll 0.5% exclusive boss eggs — physical drops, magnet-friendly, hatched at any hatcher.
 
 **HUD & UX**
 - CoH-style **squad HUD** (right edge): one card per pet — element/role chip, health bar, status-buff badges, recharge/lockout timers, click-to-select assist targeting.

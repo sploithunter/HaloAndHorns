@@ -367,3 +367,36 @@ migration is needed for the abandoned "element splits stacks" spec.
   cross-service via `_G.RBXTemplateServices` at runtime — a nil-module fallback silently masked
   the revive bug AND ate the first vet rewards); trace hierarchy = `combat_trace` (now FALSE,
   player-quiet) gating `aggro_trace`/`glass_trace` per-second sub-floods.
+
+## 2026-07-08 — CoH door missions land (M1–M5): deterministic trials, clear-gate, minimap, treasure
+
+- **Mission worldgen shipped** (`docs/MISSION_WORLDGEN.md` = SSOT, 11f6433): authored
+  `MissionDoor` → same-server instance slot → seeded tile-kit graybox (pure LayoutSolver,
+  fnv1a32/mulberry32, CI seed sweeps). Clear-gate objective (glowy inert until the roster is
+  down), quest-tracker takeover HUD, CoH-style draggable fog-of-war minimap, room-clear-locked
+  treasure chests, farmable mission crates, per-realm dressing/atmosphere themes.
+- **Streaming warp fix**: realm travel fell through unloaded floors — `RequestStreamAroundAsync`
+  + anchored-settle `_safeWarp` pattern (the old call was a nonexistent method eaten by pcall).
+- **Shared sequences**: `seed_policy = "shared_sequence"` — everyone's trial #N is the SAME map
+  (Jason: "mission 28 was great" is now a shareable fact), `mission.replay` by number (only
+  numbers already reached), map title shows "MAP — <name> #N".
+
+## 2026-07-09 — THE TRIALS ENDGAME LATTICE ships: matrix trials, Platinum centuries, activation-steered gates
+
+- **8 matrix trials** (2 realms × 4 elements, 2a9af26): one config block each composing
+  theme/area/realm; pet-model enemies on the `pet_ranks` ladder (minion volume → lieutenant
+  splash+warcry → boss = the middle → TITAN = archvillain apex). Balance stack live-calibrated
+  with Jason (tier-aware `enemy_damage_growth`, crit ladder w/ shield penetration, drop
+  level/quality scaling capped at 52): "bosses are no longer trivial — I lost all sorts of pets."
+- **Quest chains bind the gates** (3ce5118 + 6004a62): realm gates are `MissionId="auto"` — the
+  ACTIVE quest track's mission binding deals the trial, no binding = random from the four base
+  trials. The activation fix made matrix branches actually selectable (the old panel heuristic
+  only offered Activate on grind branches); the green banner now taps to DEACTIVATE. Chains =
+  5 layers per combo (10/25/50/90/100); the Century = claim-once + level-50 gate → **Platinum
+  egg** (same 5 exclusive pets, stated 15% huge, real shells 85c6c95).
+- **Gate UX round** (a98b551, 0944503, 6eb39ad): E-prompt names the per-player deal ("Hell Lava
+  Trial #4" / "Random Trial") via `NextTrialLabel` + local stamp; back-to-back heaven/hell portal
+  faces side-gated client-side (closest-prompt-part bias made hell win on heaven's approach);
+  huge pets read ALL CAPS on the team rail. Spawn-plaza dev gates deleted — activation IS the
+  selector, even in dev. `admin.setCounter` = sanctioned counter override (`test.*` is
+  network-unreachable by design). All live-verified by Jason same-day; pushed 35d2700.

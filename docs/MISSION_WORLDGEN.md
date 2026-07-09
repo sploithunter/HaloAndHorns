@@ -481,3 +481,60 @@ missions/quest lines per origin.
 
 **Achievements**: per-trial counters (<missionId>s_completed, auto-derived in
 _close, declared in stats.lua) make "complete 100 ice trials" a config row.
+
+## 13. Trials endgame lattice — SHIPPED (2026-07-09, live-verified)
+
+The full matrix + quest + Platinum-egg endgame is live. This section records the
+shipped contract; the design sketches in §10–§12 stand as history.
+
+**Matrix trials (8)**: `<realm>_<element>_trial` for hell/heaven × lava/ice/
+grass/desert. Each is one `configs/missions.lua` block composing the three
+independent fields — `theme` (dressing/palette/atmosphere), `area` (element
+branding: `mission_<area>` pseudo-zone → biome RPS + `area_origins` drop
+branding), `realm` (CurrentRealm override → light/shadow resonance, restored
+via `LayerService:RefreshRealmAttributes` at close). All use
+`seed_policy = "shared_sequence"` (everyone's trial #N is the same map),
+declare `<id>s_completed` counters, and carry `boss_egg` (0.5% boss drop +
+0.5% first-clear roll at sequence advance).
+
+**Selection = quest activation (THE gate selector)**. Realm gates are
+`MissionId = "auto"`: the active quest track's head `def.mission` binds the
+trial; no binding → roll `random.pool` (the four base trials ONLY — matrix
+trials are NEVER dealt at random, so their counters only move via activation).
+QuestService puts `def.mission` on the wire; mission-bound quests count as
+`activationGated` and show ⏸ paused when unfocused. QuestPanel: gate-steering
+branches get "▶ Activate — realm gates will deal this trial"; the green active
+banner is a BUTTON — tap to deactivate (`SetActiveTrack(nil)`) and gates revert
+to random. Per-mission sequence heads keep your place across switches.
+
+**Quest chains**: 5 sequential layers per combo — 10/25/50/90/100 (gems
+30/60/120/250; the Century pays 500 + the Platinum egg). The Century condition
+is `all_of(counter ≥ 100, level ≥ 50)` — the claim-once ledger + the level-50
+CLAIM gate are the anti-alt teeth (sub-50 can play past 90 but can't claim).
+
+**Platinum eggs**: `platinum_obsidian_egg` / `platinum_celestial_egg` — same
+5 exclusive pets as the boss eggs, `fixed_odds` with stated 15% huge (policy:
+odds bind per EGG; a different egg may state different odds). Real shells
+wired (85c6c95). Granted via quest `reward.items` with `bucket = "eggs"`
+(RewardService pass-through), hatched at any hatcher via the generalized
+`egg_item.hatch` path.
+
+**Gate UX**: the door E-prompt names the deal — MissionInstanceService
+publishes per-player `NextTrialLabel` ("Hell Lava Trial #4" / "Random Trial";
+refreshed on focus change, skip, and sequence advance via the published
+`QuestActiveTrack` attribute), and the client `MissionGatePrompt` system stamps
+it onto auto/random door prompts LOCALLY (a shared ProximityPrompt can't show
+per-player text). Back-to-back realm portals are side-gated by
+`RealmPortalSideGate` (pairs co-located `RealmPortalPrompt`s, locally Enables
+only the face on the player's side — Roblox otherwise surfaces whichever
+prompt PART is closest, and the hell anchor sits ~9 studs lower than the
+heaven plane center).
+
+**Dev ergonomics**: the spawn-plaza StudioOnly gates are DELETED (activation
+covers trial selection in dev too); `admin.setCounter` (IsAdmin-gated bus
+command) is the sanctioned counter override — `test.*` is unreachable from
+network origin BY DESIGN, even in Studio. Validation: `MissionSchema` +
+`ZoneSchema` (pure, shared by ConfigLoader, services, and the CI
+`config_validation.spec`) catch unknown pet/enemy ids, missing counters,
+non-fixed-odds boss/reward eggs, and quest bindings to unknown missions at
+config load.
