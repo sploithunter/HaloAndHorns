@@ -114,21 +114,37 @@ return {
             },
         },
         boss = {
-            hp_mult = 10,
-            dmg_mult = 3,
+            -- THE MIDDLE (Jason: the titan 'is fighting at archvillain
+            -- level... put one in the middle') — what trial packs field by
+            -- default. Calibrated against the static bosses (Magma Wyrm =
+            -- the reference; dmg_mult stays low because apex species carry
+            -- big base_power already).
+            hp_mult = 8,
+            dmg_mult = 1.5,
             armor = 150,
             tier = "boss",
-            scale_mult = 6, -- pet 1.6 → ~9.6, Magma-Wyrm territory
-            role = "tank", -- planted: a kiting blaster boss was trivially safe
-            -- THE HUGE RULE (applies up the ladder): AoE basic attacks
-            splash = { radius = 10, frac = 0.3 },
-            -- the static bosses' defining threat — the telegraphed slam
+            scale_mult = 4, -- big, not doorway-filling
+            role = "tank",
+            splash = { radius = 10, frac = 0.3 }, -- THE HUGE RULE
             abilities = {
-                slam = { damage = 140, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },
+                slam = { damage = 120, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },
             },
-            -- TITAN, not Huge (Jason: "it's not a huge and it fights more
-            -- than a huge" — huge is the PLAYER-pet top size class; mission
-            -- bosses at this scale are their own rank above it)
+        },
+        titan = {
+            -- THE APEX (the thing that wiped Jason repeatedly, now honestly
+            -- labeled): archvillain TIER — +3 rank levels, 6x XP, 12x loot
+            -- premium, and the danger to match. NOT for regular trial packs;
+            -- this is named-mission / event material.
+            hp_mult = 14,
+            dmg_mult = 2.2,
+            armor = 200,
+            tier = "archvillain",
+            scale_mult = 6, -- the doorway-filler
+            role = "tank",
+            splash = { radius = 12, frac = 0.35 },
+            abilities = {
+                slam = { damage = 160, radius = 16, cooldown = 11, telegraph = 1.4, range = 40 },
+            },
             display_prefix = "Titan ",
         },
     },
