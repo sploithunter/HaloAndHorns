@@ -265,6 +265,22 @@ return {
         sound = "power_up_stronger",
     },
 
+    -- An EXCLUSIVE boss egg was picked up (server: DropService _collect,
+    -- kind "egg_item"). Jason: "it's a big deal" — full fireworks, gold
+    -- burst, the float carries "<Egg> acquired!" from ctx.
+    exclusive_egg_pickup = {
+        sound = "hatch_fireworks",
+        vfx = { kind = "burst", color = { 255, 215, 120 }, count = 40 },
+        float = { color = { 255, 220, 120 } },
+    },
+
+    -- The boss DROPPED the egg (server: EnemyService death hook). A loud
+    -- announce so the drop moment lands even mid-fight chaos.
+    exclusive_egg_drop = {
+        sound = "celebratory_jingle",
+        float = { color = { 255, 220, 120 } },
+    },
+
     -- A potion drop was picked up (server: DropService _collect). Float TEXT = the potion's name
     -- from ctx; config only styles it. Mirrors enhancement_pickup.
     potion_pickup = {
