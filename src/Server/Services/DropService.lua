@@ -749,7 +749,8 @@ function DropService:TrySpawnEggDrop(player, eggId, displayName, position)
             model = model,
             part = part,
             noPool = true,
-            magnetImmune = true,
+            -- magnet pulls eggs like any loot (Jason 2026-07-09: the world
+            -- drop just needs to be SEEABLE, not ceremonially walked to)
             collectOnDespawn = true, -- an exclusive egg is never lost
             owner = player.UserId,
             spawnAt = os.clock(),
