@@ -62,6 +62,12 @@ function MissionInstanceService.new()
     self._byTeam = {} -- [teamKey] = instanceId
     self._slots = {} -- [index] = instanceId or nil
     self._attempts = {} -- [teamKey .. "|" .. missionId] = count
+    -- SESSION SALT (2026-07-09: "why am I playing the exact same map?"): the
+    -- attempt counter resets with the server, so attempt #1 of every fresh
+    -- session seeded identically — the same map every boot. Salt the
+    -- per_attempt context per server; determinism WITHIN an instance is
+    -- untouched (the resolved seed is stamped on the container).
+    self._sessionSalt = math.random(1, 2 ^ 30)
     self._kitFolders = {} -- [kitId] = Folder (built once, cached)
     self._catalogs = {} -- [kitId] = TileCatalog
     self._nextInstance = 0
@@ -244,7 +250,7 @@ function MissionInstanceService:Open(player, missionId)
     else
         local counterKey = teamKey .. "|" .. missionId
         self._attempts[counterKey] = (self._attempts[counterKey] or 0) + 1
-        contextKey = teamKey .. "#" .. self._attempts[counterKey]
+        contextKey = teamKey .. "#" .. self._sessionSalt .. "#" .. self._attempts[counterKey]
     end
     local seed = MissionSeed.seed(missionId, contextKey, self._config.worldgen_version)
     local layoutSeed = MissionSeed.stream(seed, "layout")
