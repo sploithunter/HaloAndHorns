@@ -271,6 +271,9 @@ return {
         -- realms add their own band keyed by the player's CurrentArea attribute value.
         levels = {
             jitter = 2,
+            -- HARD CEILING (Jason): no drop above 52 (player cap 50 + slot
+            -- window 2) — the enemy-band roll from +N bosses respects it
+            max = 52,
             -- DELIBERATELY ONE BAND for the whole homeworld — do NOT texture per zone
             -- (Jason): everyone starts in Grass/earth, so per-zone bands would
             -- disadvantage earth-origin players (their homeworld singles would roll

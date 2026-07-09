@@ -264,6 +264,13 @@ function Enhancements.rollLevel(cfg, areaId, rng, playerLevel)
     if jitter > 0 then
         lvl += rng:NextInteger(-jitter, jitter)
     end
+    -- HARD CEILING (Jason 2026-07-09): drops can never exceed levels.max
+    -- (52 = player cap 50 + the slotting window) — a +3 red boss at the cap
+    -- must not drop forever-unslottable gear.
+    local cap = tonumber(levels.max)
+    if cap then
+        lvl = math.min(lvl, cap)
+    end
     return math.max(1, lvl)
 end
 
