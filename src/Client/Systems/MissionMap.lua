@@ -259,7 +259,9 @@ function MissionMap.start()
             data = nil
         end
         if data then
-            title.Text = "MAP — " .. tostring(data.name or "Mission")
+            local seq = player:GetAttribute("MissionSequence")
+            local seqTag = seq and (" #" .. seq) or ""
+            title.Text = "MAP — " .. tostring(data.name or "Mission") .. seqTag
             panel.Visible = true
             rebuild()
             -- entrance is known from the start

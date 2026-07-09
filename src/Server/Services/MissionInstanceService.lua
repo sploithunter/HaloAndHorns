@@ -361,6 +361,10 @@ function MissionInstanceService:Open(player, missionId, opts)
             -- your loot); generally useful for any per-mission gating
             member:SetAttribute("InMission", instanceId)
             member:SetAttribute("MissionTheme", mission.theme or "earth")
+            if sequenceN then
+                -- the shared-sequence number — map title + tracker show it
+                member:SetAttribute("MissionSequence", sequenceN)
+            end
             -- camera clamp: tall walls + capped zoom = no craning over the
             -- maze to scout the glowy; restored on exit
             if cameraMaxZoom then
@@ -678,6 +682,7 @@ function MissionInstanceService:_close(instanceId, reason)
         member:SetAttribute("MissionMapData", nil)
         member:SetAttribute("InMission", nil)
         member:SetAttribute("MissionTheme", nil)
+        member:SetAttribute("MissionSequence", nil)
         member:SetAttribute("MissionEnemyPings", nil)
         local zoom = record.savedZoom and record.savedZoom[member.UserId]
         if zoom then

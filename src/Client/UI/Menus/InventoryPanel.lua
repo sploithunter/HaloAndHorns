@@ -6151,9 +6151,11 @@ function InventoryPanel:_showHatchConfirmation(item)
         b.LayoutOrder = order
         b.ZIndex = 111
         b.Parent = buttons
+        -- PILL buttons (house spec): full-round + the area pill ring
         local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(0, 8)
+        c.CornerRadius = UDim.new(1, 0)
         c.Parent = b
+        PanelChrome.pillBorder(b, (PanelChrome.areaPill()), b.ZIndex + 1, 0, 0.18)
         return b
     end
     local noBtn = mkButton("No", Color3.fromRGB(70, 70, 80), 1)
