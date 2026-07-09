@@ -94,7 +94,14 @@ return {
             dmg_mult = 3,
             armor = 150,
             tier = "boss",
-            use_huge_scale = true, -- the pet's own huge_scale = the "huge of it"
+            -- huge-pet scale (~3) read as NORMAL next to scale-10 static
+            -- bosses (Jason's Empyrean run) — bosses get boss proportions
+            scale_mult = 6, -- pet 1.6 → ~9.6, Magma-Wyrm territory
+            role = "tank", -- planted: a kiting blaster boss was trivially safe
+            -- the static bosses' defining threat — the telegraphed slam
+            abilities = {
+                slam = { damage = 140, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },
+            },
             display_prefix = "Huge ",
         },
     },

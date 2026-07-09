@@ -4716,6 +4716,20 @@ function EnemyService:SynthesizePetEnemy(petId, overrides)
         elseif overrides.scale_mult then
             def.model_scale = def.model_scale * tonumber(overrides.scale_mult)
         end
+        if overrides.role then
+            -- boss rank plants like a boss: role drives enemy AI (tanks
+            -- stand their ground; a KITING boss was trivially safe to melee)
+            def.role = overrides.role
+            def.attack_range = nil -- clear the blaster standoff kit
+        end
+        if type(overrides.abilities) == "table" then
+            -- static bosses get their threat from abilities (telegraphed
+            -- slam etc.) — pet bosses inherit the same kit
+            def.abilities = def.abilities or {}
+            for k, v in pairs(overrides.abilities) do
+                def.abilities[k] = v
+            end
+        end
         if overrides.display_prefix then
             def.display_name = overrides.display_prefix .. (def.display_name or petId)
         end
