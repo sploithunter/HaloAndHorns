@@ -5,8 +5,8 @@ return {
         -- zone element: pet selection matters) AND enhancement drops roll
         -- the element's origin (area_origins). Realm trials (mission_hell /
         -- mission_heaven) stay deliberately UNMAPPED = neutral rate.
-        mission_lava = { kind = "mission", name = "Lava Trial", element = "lava" },
-        mission_ice = { kind = "mission", name = "Ice Trial", element = "ice" },
+        mission_lava = { id = "mission_lava", kind = "mission", name = "Lava Trial", element = "lava" },
+        mission_ice = { id = "mission_ice", kind = "mission", name = "Ice Trial", element = "ice" },
 
         spawn_world = {
             id = "spawn_world",
