@@ -456,3 +456,28 @@ boss = "<enemyId>" }` — population guarantees EXACTLY ONE of that enemy (objec
 chamber, screened by its pack); tracker shows "Defeat <Display Name>!"; completion
 watches that model, not the roster. Composes: boss-only / boss+clear / boss+beacon.
 CoH rule: named it, so there's ONE of it.
+
+## 12. Element trials & the trials endgame shape (2026-07-09)
+
+**Trial matrix** (each type activates a different pet-choice axis):
+- **Realm trials** (hell/heaven): light/shadow RESONANCE axis; random-origin drops
+  (deliberately neutral rate — variety by Jason's call).
+- **Element trials** (lava/ice, extensible to grass/desert): realm-NEUTRAL; the
+  BIOME RPS is their axis (mission.area → kind="mission" pseudo-zone with an
+  element); drops brand to the element's origin (area_origins). Bespoke
+  THEME_PALETTES + MissionAtmosphere presets; prefab pools alias the realms
+  (lava→hell, ice→heaven) until bespoke sets land.
+
+**Pet-model enemies**: packs accept `{ pet = id, rank = "minion|lieutenant|boss",
+count }` — EnemyService.SynthesizePetEnemy (public over the patrol-invader
+synthesizer) applies missions.pet_ranks; BOSS rank wears the pet's own
+huge_scale ("boss versions = huges of them"). Realm rosters give every element
+a full cast in both alignments.
+
+**Curated themed quests** (the wrap for Trials, per Jason): use mission.replay
+to HUNT the shared-sequence space at high numbers, vet maps per element/realm,
+record winners as curated entries (§11 fingerprint rules apply) → themed
+missions/quest lines per origin.
+
+**Achievements**: per-trial counters (<missionId>s_completed, auto-derived in
+_close, declared in stats.lua) make "complete 100 ice trials" a config row.
