@@ -613,6 +613,32 @@ return {
             auto_heal = { interval = 2.0, amount = 120, range = 45 },
             drop_table = { grass_coins = 12, light_tokens = 2 },
         },
+        -- BOSS — the Archon: heaven's apex (mirror of infernal_boss/Magma Wyrm
+        -- stats). Lance Seraph art at boss scale; ice-element pulse reads as
+        -- cold radiance until bespoke holy FX exist.
+        celestial_archon = {
+            role = "tank",
+            hp = 50000,
+            display_name = "Archon of the Host",
+            tier = "boss",
+            move_speed = 8,
+            armor = 200,
+            mesh_asset = "rbxassetid://110233728542561",
+            texture_asset = "rbxassetid://135315232548196",
+            model_scale = 10,
+            gait = { style = "march", bob_height = 1.2, tilt_degrees = 4, stride_length = 10 },
+            attack = {
+                damage = 100,
+                cadence = 2.6,
+                sundering = 30,
+                splash = { radius = 10, frac = 0.3 },
+            },
+            abilities = {
+                slam = { damage = 140, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },
+                pulse = { damage = 20, radius = 30, interval = 4, element = "ice" },
+            },
+            drop_table = { grass_coins = 280, light_tokens = 32, rare_drop_chance = 0.5 },
+        },
         -- TANK — the prism warden: the crystalline lion wall (mirror of ember_brute).
         prism_warden = {
             role = "tank",

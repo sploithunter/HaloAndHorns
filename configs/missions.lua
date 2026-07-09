@@ -85,15 +85,34 @@ return {
             objective = { kind = "clear_then_beacon" },
             -- static per-room packs (enemies.lua wave shape); one pack rolls
             -- per MissionSpawn point on the seeded "spawns" stream
+            -- CoH SPAWN TABLES (Jason, L50/10-pet playtest: "way too easy"):
+            -- minimum ~8 minions, or 2 lieutenants + 4 minions, or 1 boss +
+            -- 3 minions — role variety (melee/blaster/support/tank) in every
+            -- comp. Enemies tune to the team lead's level at spawn.
             packs = {
-                { weight = 10, units = { { enemy = "lava_imp", count = 2 } } },
-                { weight = 8, units = { { enemy = "ember_brute", count = 1 } } },
-                { weight = 6, units = { { enemy = "murder_crow", count = 2 } } },
-                {
-                    weight = 4,
+                { -- minion swarm (8): melee wave + blasters + a healer
+                    weight = 10,
                     units = {
+                        { enemy = "lava_imp", count = 4 },
+                        { enemy = "murder_crow", count = 2 },
+                        { enemy = "ember_acolyte", count = 2 },
+                    },
+                },
+                { -- lieutenant pack: 2 brutes walling for 4 minions
+                    weight = 7,
+                    units = {
+                        { enemy = "ember_brute", count = 2 },
+                        { enemy = "lava_imp", count = 2 },
+                        { enemy = "murder_crow", count = 1 },
                         { enemy = "ember_acolyte", count = 1 },
-                        { enemy = "lava_imp", count = 1 },
+                    },
+                },
+                { -- boss pack: the Magma Wyrm + a screen of 3
+                    weight = 3,
+                    units = {
+                        { enemy = "infernal_boss", count = 1 },
+                        { enemy = "lava_imp", count = 2 },
+                        { enemy = "ember_acolyte", count = 1 },
                     },
                 },
             },
@@ -130,15 +149,32 @@ return {
             theme = "heaven",
             seed_policy = "per_attempt",
             objective = { kind = "clear_then_beacon" },
+            -- CoH SPAWN TABLES (see hell_trial note): swarm / lieutenants /
+            -- boss comps with role variety; tuned to the team lead's level.
             packs = {
-                { weight = 10, units = { { enemy = "zealous_cherub", count = 2 } } },
-                { weight = 8, units = { { enemy = "prism_warden", count = 1 } } },
-                { weight = 6, units = { { enemy = "lance_seraph_guard", count = 2 } } },
-                {
-                    weight = 4,
+                { -- minion swarm (8): cherub wave + seraph blasters + healers
+                    weight = 10,
                     units = {
+                        { enemy = "zealous_cherub", count = 4 },
+                        { enemy = "lance_seraph_guard", count = 2 },
+                        { enemy = "radiant_sprite_guard", count = 2 },
+                    },
+                },
+                { -- lieutenant pack: 2 wardens walling for 4 minions
+                    weight = 7,
+                    units = {
+                        { enemy = "prism_warden", count = 2 },
+                        { enemy = "zealous_cherub", count = 2 },
+                        { enemy = "lance_seraph_guard", count = 1 },
                         { enemy = "radiant_sprite_guard", count = 1 },
-                        { enemy = "zealous_cherub", count = 1 },
+                    },
+                },
+                { -- boss pack: the Archon + a screen of 3
+                    weight = 3,
+                    units = {
+                        { enemy = "celestial_archon", count = 1 },
+                        { enemy = "zealous_cherub", count = 2 },
+                        { enemy = "radiant_sprite_guard", count = 1 },
                     },
                 },
             },
