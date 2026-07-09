@@ -76,6 +76,18 @@ return {
         -- ===== Layer 2 (Heaven 2 / Hell 2) — roles per PET_REALM_HEAVEN_HELL_ROSTER.md =====
         -- (blaster→"ranged", bruiser→"tank", per the established mapping above.)
         -- Heaven 2
+        -- Boss exclusive egg family (obsidian/celestial eggs) — full archetype
+        -- spread per egg; control = the rare chase (meerkat precedent)
+        wyrmling = "ranged",
+        obsidian_hound = "melee",
+        cinder_golemite = "tank",
+        ashwing = "support",
+        cerberus_pup = "control",
+        lumen_dove = "ranged",
+        archon_spark = "melee",
+        cloudling = "tank",
+        halo_fawn = "support",
+        seraph_kit = "control",
         coronal_cherub = "melee",
         prism_lion = "tank", -- bruiser
         lance_seraph = "ranged", -- blaster
@@ -233,6 +245,11 @@ return {
         -- mult 1.5 = +50% basic; the variant multipliers scale the fraction (golden
         -- +62.5%, rainbow +75%), so a raging bear claws back the tank role's 0.6
         -- haircut exactly while it's doing its job (0.6 × 1.5 = 0.9; rainbow 1.05).
+        -- Boss exclusive egg supports + controllers (2026-07-09)
+        ashwing = { kind = "offense", interval = 2.0, mult = 1.1667, duration = 6 }, -- hell buffer (War-Cry embers)
+        halo_fawn = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 }, -- heaven healer
+        cerberus_pup = { kind = "hold", interval = 30, duration = 10 }, -- "Drowse": the sleepy head yawns, the target naps
+        seraph_kit = { kind = "hold", interval = 30, duration = 10 }, -- "Dazzle": six wings flare, the target stands blinded
         bear = { kind = "rage", enrage_below = 0.5, mult = 1.5, interval = 2.0, duration = 6 },
         -- Colorado (meet-egg / wild): TWO buffs, not all — "all" was really meant for
         -- creator testing (Jason). Heal + luck: the creator's gift is lucky and kind,

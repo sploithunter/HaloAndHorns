@@ -1140,6 +1140,35 @@ function EnemyService:_onDefeated(targetId)
                                 drops:TrySpawnPotionDrop(player, "enemy", dropPos)
                             end)
                         end
+                        -- BOSS EXCLUSIVE EGG (docs MISSION_WORLDGEN §11): a boss
+                        -- def may carry exclusive_egg = { egg, name, chance } —
+                        -- each credited player rolls independently (team-friendly,
+                        -- like the completion counters). Grants straight into the
+                        -- eggs INVENTORY bucket; hatch via egg_item.hatch.
+                        pcall(function()
+                            local bossDef = self._enemiesConfig.enemies
+                                and self._enemiesConfig.enemies[entry.enemyId]
+                            local ex = bossDef and bossDef.exclusive_egg
+                            if ex and ex.egg and math.random() < (tonumber(ex.chance) or 0) then
+                                local inv = _G.RBXTemplateServices:Get("InventoryService")
+                                local granted = inv
+                                    and inv:AddItem(player, "eggs", {
+                                        id = ex.egg,
+                                        name = ex.name or ex.egg,
+                                        source = "boss:" .. tostring(entry.enemyId),
+                                    })
+                                if granted then
+                                    fireGameEvent(player, "exclusive_egg_drop", {
+                                        egg = ex.egg,
+                                        boss = entry.enemyId,
+                                        name = ("%s dropped a %s!"):format(
+                                            bossDef.display_name or "The boss",
+                                            ex.name or "mysterious egg"
+                                        ),
+                                    })
+                                end
+                            end
+                        end)
                     end
                 end
             end

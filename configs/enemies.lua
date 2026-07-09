@@ -638,6 +638,8 @@ return {
                 pulse = { damage = 20, radius = 30, interval = 4, element = "ice" },
             },
             drop_table = { grass_coins = 280, light_tokens = 32 },
+            -- BOSS EXCLUSIVE EGG — TEST ODDS 0.5, lock down after verify (see infernal_boss)
+            exclusive_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.5 },
         },
         -- TANK — the prism warden: the crystalline lion wall (mirror of ember_brute).
         prism_warden = {
@@ -709,6 +711,10 @@ return {
                 pulse = { damage = 20, radius = 30, interval = 4, element = "lava" },
             },
             drop_table = { lava_coins = 200, shadow_tokens = 25 },
+            -- BOSS EXCLUSIVE EGG (docs MISSION_WORLDGEN §11): rolls per credited
+            -- player at defeat. TEST ODDS 0.5 (Jason: "that way I'll get a couple,
+            -- we can test the mechanics") — LOCK DOWN to ~0.01-0.02 after verify.
+            exclusive_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.5 },
         },
 
         -- ARCH-VILLAIN (Jason 2026-07-02: "think of it as a super boss") — the tier ABOVE boss

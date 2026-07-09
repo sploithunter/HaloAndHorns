@@ -222,7 +222,18 @@ function MeetCreatorService:HatchEggItem(player, eggItemId)
         end
     end
     if not def then
-        return { ok = false, reason = "unknown_egg" }
+        -- GENERAL inventory eggs (boss exclusive eggs, 2026-07-09): any
+        -- fixed-odds, non-purchasable egg_sources entry is hatchable from the
+        -- eggs bucket through this same path — the creator lookup above is
+        -- just the legacy special case. fixed_odds is the safety gate: only
+        -- stated-odds eggs may live in inventory (Roblox paid-egg policy).
+        local okCfg, eggDef = pcall(function()
+            local petsConfig = require(ReplicatedStorage.Configs:WaitForChild("pets"))
+            return petsConfig.egg_sources and petsConfig.egg_sources[eggItemId]
+        end)
+        if not (okCfg and type(eggDef) == "table" and eggDef.fixed_odds == true) then
+            return { ok = false, reason = "unknown_egg" }
+        end
     end
     local invSvc = self:_svc("InventoryService")
     local rec = invSvc and invSvc:GetItem(player, "eggs", eggItemId)

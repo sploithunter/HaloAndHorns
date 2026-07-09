@@ -282,5 +282,21 @@
    "texture": "assets/exports/eggs/celestial_egg/celestial_egg.png"
   },
   "uploadedBy": "upload_eggs.js 2026-07-09"
+ },
+ "obsidian_egg": {
+  "icon_decal": "132799574995178",
+  "icon_image": "97839482817366",
+  "model_asset": "70381184616429",
+  "mesh_id": "rbxassetid://97161362566193",
+  "mesh_image": "rbxassetid://77630876871116",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "hell",
+  "origin": "creator",
+  "sources": {
+   "icon": "assets/source/eggs/obsidian_egg.png",
+   "fbx": "assets/exports/eggs/obsidian_egg/obsidian_egg_5k.fbx",
+   "texture": "assets/exports/eggs/obsidian_egg/obsidian_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-07-09"
  }
 }

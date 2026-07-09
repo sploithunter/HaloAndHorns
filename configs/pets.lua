@@ -391,6 +391,430 @@ local petConfig = {
     -- === PET DEFINITIONS ===
     pets = {
 
+        -- ==================== BOSS EXCLUSIVE EGG FAMILY (2026-07-09) ====================
+        -- Ten realm-aligned exclusives from the obsidian/celestial boss eggs
+        -- (docs/MISSION_WORLDGEN.md §11). One mesh per VARIANT (see golden note).
+        wyrmling = {
+            display_name = "Wyrmling",
+            category = "creator",
+            realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://105727775999667",
+                    texture_asset = "rbxassetid://76247607016792",
+                    display_name = "Wyrmling",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://75183700861646",
+                    texture_asset = "rbxassetid://118619569006935",
+                    display_name = "Golden Wyrmling",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://105727775999667",
+                    texture_asset = "rbxassetid://76247607016792",
+                    display_name = "Rainbow Wyrmling",
+                    abilities = {},
+                },
+            },
+        },
+        obsidian_hound = {
+            display_name = "Obsidian Hound",
+            category = "creator",
+            realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://111823971624151",
+                    texture_asset = "rbxassetid://94418281243184",
+                    display_name = "Obsidian Hound",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://116631243953526",
+                    texture_asset = "rbxassetid://71221980185741",
+                    display_name = "Golden Obsidian Hound",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://111823971624151",
+                    texture_asset = "rbxassetid://94418281243184",
+                    display_name = "Rainbow Obsidian Hound",
+                    abilities = {},
+                },
+            },
+        },
+        cinder_golemite = {
+            display_name = "Cinder Golemite",
+            category = "creator",
+            realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://83271366919008",
+                    texture_asset = "rbxassetid://117265727136114",
+                    display_name = "Cinder Golemite",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://103201395324726",
+                    texture_asset = "rbxassetid://85418760225132",
+                    display_name = "Golden Cinder Golemite",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://83271366919008",
+                    texture_asset = "rbxassetid://117265727136114",
+                    display_name = "Rainbow Cinder Golemite",
+                    abilities = {},
+                },
+            },
+        },
+        ashwing = {
+            display_name = "Ashwing",
+            category = "creator",
+            realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://111080176264724",
+                    texture_asset = "rbxassetid://115853068473987",
+                    display_name = "Ashwing",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://76737608008714",
+                    texture_asset = "rbxassetid://99947285722078",
+                    display_name = "Golden Ashwing",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://111080176264724",
+                    texture_asset = "rbxassetid://115853068473987",
+                    display_name = "Rainbow Ashwing",
+                    abilities = {},
+                },
+            },
+        },
+        cerberus_pup = {
+            display_name = "Cerberus Pup",
+            category = "creator",
+            realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://112534979758403",
+                    texture_asset = "rbxassetid://94382401393895",
+                    display_name = "Cerberus Pup",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://74589771574883",
+                    texture_asset = "rbxassetid://79612299746718",
+                    display_name = "Golden Cerberus Pup",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://112534979758403",
+                    texture_asset = "rbxassetid://94382401393895",
+                    display_name = "Rainbow Cerberus Pup",
+                    abilities = {},
+                },
+            },
+        },
+        lumen_dove = {
+            display_name = "Lumen Dove",
+            category = "creator",
+            realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://79184571863862",
+                    texture_asset = "rbxassetid://82909257143780",
+                    display_name = "Lumen Dove",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://126048392488808",
+                    texture_asset = "rbxassetid://95806483683768",
+                    display_name = "Golden Lumen Dove",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://79184571863862",
+                    texture_asset = "rbxassetid://82909257143780",
+                    display_name = "Rainbow Lumen Dove",
+                    abilities = {},
+                },
+            },
+        },
+        archon_spark = {
+            display_name = "Archon Spark",
+            category = "creator",
+            realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://93189741205956",
+                    texture_asset = "rbxassetid://137898062681591",
+                    display_name = "Archon Spark",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://99275533577851",
+                    texture_asset = "rbxassetid://70711387738345",
+                    display_name = "Golden Archon Spark",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://93189741205956",
+                    texture_asset = "rbxassetid://137898062681591",
+                    display_name = "Rainbow Archon Spark",
+                    abilities = {},
+                },
+            },
+        },
+        cloudling = {
+            display_name = "Cloudling",
+            category = "creator",
+            realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://134209207790632",
+                    texture_asset = "rbxassetid://105951905552756",
+                    display_name = "Cloudling",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://81019803621580",
+                    texture_asset = "rbxassetid://80462693334860",
+                    display_name = "Golden Cloudling",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://134209207790632",
+                    texture_asset = "rbxassetid://105951905552756",
+                    display_name = "Rainbow Cloudling",
+                    abilities = {},
+                },
+            },
+        },
+        halo_fawn = {
+            display_name = "Halo Fawn",
+            category = "creator",
+            realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://126871912174347",
+                    texture_asset = "rbxassetid://128075896029068",
+                    display_name = "Halo Fawn",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://94983371696933",
+                    texture_asset = "rbxassetid://132622647009636",
+                    display_name = "Golden Halo Fawn",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://126871912174347",
+                    texture_asset = "rbxassetid://128075896029068",
+                    display_name = "Rainbow Halo Fawn",
+                    abilities = {},
+                },
+            },
+        },
+        seraph_kit = {
+            display_name = "Seraph Kit",
+            category = "creator",
+            realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
+            origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
+            rarity = "exclusive",
+            -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
+            -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
+            -- curve already scales combat/mining/defense; don't double-tax).
+            base_power = 48,
+            base_health = 500,
+            viewport_zoom = 1.5,
+            asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
+            camera = {
+                distance = 3.5,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://73420498134615",
+                    texture_asset = "rbxassetid://90991863197497",
+                    display_name = "Seraph Kit",
+                    abilities = {},
+                },
+                golden = {
+                    -- OWN mesh (Meshy retexture re-unwraps UVs — texture-only reuse renders garbled)
+                    mesh_asset = "rbxassetid://123489412886241",
+                    texture_asset = "rbxassetid://115919038955433",
+                    display_name = "Golden Seraph Kit",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://73420498134615",
+                    texture_asset = "rbxassetid://90991863197497",
+                    display_name = "Rainbow Seraph Kit",
+                    abilities = {},
+                },
+            },
+        },
+
         -- ==================== LAYER 2 (Heaven 2 / Hell 2) ====================
 
         -- ===== heaven 2 · fire =====
@@ -5337,6 +5761,82 @@ local petConfig = {
             hatching_time = 3,
             guaranteed_shiny_chance = 0,
             bonus_xp = 0,
+        },
+
+        -- BOSS EXCLUSIVE egg (Obsidian Egg): dropped by realm bosses (enemies.lua
+        -- exclusive_egg), lands in the eggs INVENTORY bucket, hatched via
+        -- egg_item.hatch (MeetCreatorService.HatchEggItem general path).
+        obsidian_egg = {
+            name = "Obsidian Egg",
+            description = "Torn from the hoard of a hell boss. Something wicked stirs inside.",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            -- STATED odds are REAL odds (fixed_odds): no luck of any kind applies
+            -- to inventory-item eggs — Roblox paid-egg policy + one clean rule
+            fixed_odds = true,
+            -- stated 5%: whichever species rolled goes HUGE (any_pet) — immune to
+            -- Huge Fortune and every boost by the fixed_odds branch
+            huge = { chance = 0.05, any_pet = true },
+            asset_id = "rbxassetid://70381184616429", -- 3D egg Model
+            image_id = "rbxassetid://132799574995178", -- inventory icon (Jason's concept art)
+            unlock_requirement = nil,
+            pet_weights = {
+                wyrmling = 30,
+                obsidian_hound = 25,
+                cinder_golemite = 20,
+                ashwing = 15,
+                cerberus_pup = 10,
+            },
+            rarity_rates = {
+                golden_chance = 0.05, -- standard, stated
+                rainbow_chance = 0.005,
+            },
+            variant_rolls = {
+                enabled = true,
+                allow_basic = true,
+                allow_golden = true,
+                allow_rainbow = true,
+                cost_multiplier = 20,
+            },
+        },
+
+        -- BOSS EXCLUSIVE egg (Celestial Egg): dropped by realm bosses (enemies.lua
+        -- exclusive_egg), lands in the eggs INVENTORY bucket, hatched via
+        -- egg_item.hatch (MeetCreatorService.HatchEggItem general path).
+        celestial_egg = {
+            name = "Celestial Egg",
+            description = "A relic of the heavenly host. Something radiant stirs inside.",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            -- STATED odds are REAL odds (fixed_odds): no luck of any kind applies
+            -- to inventory-item eggs — Roblox paid-egg policy + one clean rule
+            fixed_odds = true,
+            -- stated 5%: whichever species rolled goes HUGE (any_pet) — immune to
+            -- Huge Fortune and every boost by the fixed_odds branch
+            huge = { chance = 0.05, any_pet = true },
+            asset_id = "rbxassetid://75458974543354", -- 3D egg Model
+            image_id = "rbxassetid://84773442512699", -- inventory icon (Jason's concept art)
+            unlock_requirement = nil,
+            pet_weights = {
+                lumen_dove = 30,
+                archon_spark = 25,
+                cloudling = 20,
+                halo_fawn = 15,
+                seraph_kit = 10,
+            },
+            rarity_rates = {
+                golden_chance = 0.05, -- standard, stated
+                rainbow_chance = 0.005,
+            },
+            variant_rolls = {
+                enabled = true,
+                allow_basic = true,
+                allow_golden = true,
+                allow_rainbow = true,
+                cost_multiplier = 20,
+            },
         },
 
         -- MEET-THE-CREATOR egg (Jason): not purchasable, not placed in the world —
