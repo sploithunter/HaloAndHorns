@@ -931,6 +931,34 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("admin.setCounter", {
+        description = "[admin] Set a stats counter to an exact value (balance/quest verification).",
+        validate = function(args)
+            return Validators.fields(args, {
+                counter = "string",
+                value = { type = "int", min = 0 },
+            })
+        end,
+        handler = function(context, args)
+            local isAdmin = context.isTest
+                or (context.player and context.player:GetAttribute("IsAdmin") == true)
+            if not isAdmin then
+                return { ok = false, reason = "not_admin" }
+            end
+            local stats = self:_service("StatsService")
+            if not stats or not stats.Set then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            local ok, err = pcall(function()
+                stats:Set(context.player, args.counter, args.value)
+            end)
+            if not ok then
+                return { ok = false, reason = tostring(err) } -- undeclared counter etc: LOUD
+            end
+            return { ok = true, counter = args.counter, value = args.value }
+        end,
+    })
+
     bus:register("admin.forceNextHuge", {
         description = '[admin] Toggle: force the next egg hatch to roll HUGE (dev/verify). Optional {variant="basic"|"golden"|"rainbow"}. {enabled=false} clears.',
         validate = function(args)
