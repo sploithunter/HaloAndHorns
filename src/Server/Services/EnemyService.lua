@@ -1590,6 +1590,14 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     end
     -- Level scaling: a higher-level enemy hits harder; out-level it and it softens.
     dmg = dmg * LevelScale.factor(enemyLevel or 1, petLevel or 1, self._levelingConfig.scale)
+    -- ABSOLUTE growth: enemy damage tracks the enemy's OWN level (pet pools
+    -- grow with level; static def bites were starter-calibrated — L50 packs
+    -- dealt no meaningful damage, 2026-07-09). Config: enemy_damage_growth.
+    local growth = self._levelingConfig.enemy_damage_growth
+    if growth then
+        local mult = 1 + (tonumber(growth.per_level) or 0) * math.max(0, (enemyLevel or 1) - 1)
+        dmg = dmg * math.min(mult, tonumber(growth.max_mult) or math.huge)
+    end
     -- CAPITAL WARCRY (configs/capital_baddies.lua): a band-buffed attacker deals more while
     -- its buff window is live. CAPITAL CURSE: an exposed pet takes more from EVERY enemy.
     -- Both are attribute channels stamped by anchor support kits (and badge-visible via the

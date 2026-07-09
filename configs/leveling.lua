@@ -68,6 +68,14 @@ return {
     -- Damage multiplier per level of (attacker - defender), clamped. +8% dmg per level up.
     scale = { per_level = 0.08, min = 0.3, max = 2.5 },
 
+    -- ABSOLUTE enemy damage growth (Jason 2026-07-09: 'right amount of time,
+    -- not the right amount of damage' — L50 packs dealt starter-meadow bites):
+    -- enemy damage grows +5%/level of the ENEMY's own level, because pet
+    -- endurance pools grow with level while enemy defs are static. Level-1
+    -- content is untouched (curve starts at zero); an L50 minion bites ~3.5x
+    -- its def value. Relative scale above stacks on top (rank/± difficulty).
+    enemy_damage_growth = { per_level = 0.05, max_mult = 5 },
+
     -- Elite rank adds to an enemy's effective level vs its base (keyed by enemies.lua tier):
     -- a lieutenant reads one level higher, a boss one above that.
     rank_offset = {
