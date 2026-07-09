@@ -191,6 +191,21 @@ function MissionInstanceService:Open(player, missionId)
     if not self._config then
         return nil, "missions unavailable"
     end
+    -- RANDOM MISSIONS (Jason's ladder): "random" is a mission SOURCE, not a
+    -- mission — roll a real config from the pool per entry. Gated behind the
+    -- quest-granted profile unlock; the attempt counter below already gives
+    -- every entry a fresh seed. record.source keeps the ladder counter honest.
+    local source = missionId
+    if missionId == "random" then
+        local rnd = self._config.random
+        if not (rnd and rnd.pool and #rnd.pool > 0) then
+            return nil, "random missions not configured"
+        end
+        if rnd.unlock and not self:_hasUnlock(player, rnd.unlock) then
+            return nil, "locked: complete the mission quest to unlock random trials"
+        end
+        missionId = rnd.pool[math.random(#rnd.pool)]
+    end
     local mission = self._config.missions[missionId]
     if not mission then
         return nil, "unknown mission " .. tostring(missionId)
@@ -307,6 +322,7 @@ function MissionInstanceService:Open(player, missionId)
     local record = {
         instanceId = instanceId,
         missionId = missionId,
+        source = source, -- "random" when opened via the random door (quest ladder)
         teamKey = teamKey,
         seed = seed,
         slotIndex = slotIndex,
@@ -538,6 +554,19 @@ function MissionInstanceService:Open(player, missionId)
     return instanceId
 end
 
+-- Quest-granted persistent unlocks (GameData.Unlocks.<id>, written by
+-- QuestService:Claim). Server-authoritative: reads the profile, never attrs.
+function MissionInstanceService:_hasUnlock(player, unlockId)
+    local ok, has = pcall(function()
+        local locator = _G.RBXTemplateServices
+        local dataSvc = locator and locator:Get("DataService")
+        local data = dataSvc and dataSvc:GetData(player)
+        local unlocks = data and data.GameData and data.GameData.Unlocks
+        return unlocks and unlocks[unlockId] == true
+    end)
+    return ok and has == true
+end
+
 function MissionInstanceService:Complete(instanceId)
     return self:_close(instanceId, "complete")
 end
@@ -555,6 +584,20 @@ function MissionInstanceService:_close(instanceId, reason)
     -- stop the objective monitor (unless we're being called FROM it)
     if record.monitor and record.monitor ~= coroutine.running() then
         pcall(task.cancel, record.monitor)
+    end
+
+    -- COMPLETION counters (quest ladder substrate): every team member's
+    -- career totals tick; random-sourced runs also tick the random ladder
+    if reason == "complete" then
+        pcall(function()
+            local statsSvc = _G.RBXTemplateServices:Get("StatsService")
+            for _, member in ipairs(membersOf(record.teamKey)) do
+                statsSvc:Increment(member, "missions_completed", 1)
+                if record.source == "random" then
+                    statsSvc:Increment(member, "random_missions_completed", 1)
+                end
+            end
+        end)
     end
 
     -- return surviving members to where they entered from; clear mission
@@ -1315,6 +1358,9 @@ function MissionInstanceService:_placeTreasures(
             end
             state.opened = true
             prompt.Enabled = false
+            pcall(function() -- treasure-hunter quest substrate
+                _G.RBXTemplateServices:Get("StatsService"):Increment(who, "mission_chests_opened", 1)
+            end)
             -- pop the lid; payout rolls are loot-random (placement was the
             -- deterministic part)
             lid.CFrame = lid.CFrame * CFrame.new(0, 0.6, -1.4) * CFrame.Angles(math.rad(-55), 0, 0)
@@ -1430,7 +1476,17 @@ function MissionInstanceService:_bindDoor(part)
         return
     end
     local missionId = part:GetAttribute("MissionId")
-    local mission = missionId and self._config.missions[missionId]
+    -- "random" is a mission SOURCE (rolls from config.random.pool at entry);
+    -- Open() handles the roll + the quest-unlock gate per trigger
+    local mission
+    if missionId == "random" then
+        mission = self._config.random
+        if not mission then
+            return
+        end
+    else
+        mission = missionId and self._config.missions[missionId]
+    end
     if not mission then
         self:_log("Warn", "MissionDoor with unknown MissionId", {
             part = part:GetFullName(),

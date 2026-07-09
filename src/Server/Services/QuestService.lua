@@ -262,6 +262,16 @@ function QuestService:List(player)
         return { ok = true, quests = {}, activeTrack = nil }
     end
     self:_reconcile(player) -- keep the single open window honest before reading
+    -- republish quest-granted unlock flags (idempotent; List runs on every
+    -- panel refresh so rejoining players get their Unlock_* attrs back)
+    local unlocks = data.GameData and data.GameData.Unlocks
+    if type(unlocks) == "table" then
+        for flag, on in pairs(unlocks) do
+            if on == true and player:GetAttribute("Unlock_" .. flag) ~= true then
+                player:SetAttribute("Unlock_" .. flag, true)
+            end
+        end
+    end
     local snapshot = self:_snapshot(player)
     -- LEVEL-GATED FOCUS (Jason): a quest is an ACTIVE task. Before reading, make sure the single focus
     -- is correct — auto-activate First Steps once the tutorial's done (so its since_start windows
@@ -365,6 +375,15 @@ function QuestService:Claim(player, questId)
         granted = rewards:Grant(player, def.reward, "quest:" .. questId)
     end
     ledger[questId] = (ledger[questId] or 0) + 1
+    -- PERSISTENT UNLOCK (def.unlock = "<flag>"): quests can gate game
+    -- features (first use: random_missions door). Profile is the SSOT;
+    -- the Unlock_<flag> attribute is a published mirror for client UI.
+    if type(def.unlock) == "string" and def.unlock ~= "" then
+        data.GameData = data.GameData or {}
+        data.GameData.Unlocks = data.GameData.Unlocks or {}
+        data.GameData.Unlocks[def.unlock] = true
+        player:SetAttribute("Unlock_" .. def.unlock, true)
+    end
     -- The claimed quest's window is done; close it. If its track is still the active focus, OPEN the
     -- next head's window NOW so the chain keeps counting without re-activating (and no kills/hatches
     -- between this claim and the next poll leak into a late baseline).

@@ -146,6 +146,24 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        -- DOOR MISSIONS (MissionInstanceService increments at Complete /
+        -- chest open). The random ladder quests read these LIFETIME — career
+        -- totals per Jason's "complete 10, 100, 1000, 10000" framing.
+        missions_completed = {
+            display_name = "Missions Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        random_missions_completed = {
+            display_name = "Random Missions Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        mission_chests_opened = {
+            display_name = "Mission Chests Opened",
+            scope = "lifetime",
+            default = 0,
+        },
     },
 
     -- EVENT-FED COUNTERS (Jason: "it's free data — if there's an event, we can just

@@ -56,12 +56,23 @@ return {
         max_half_extent = 1200,
     },
 
+    -- RANDOM MISSIONS (Jason: "always be on a random quest"): a MissionDoor
+    -- with MissionId="random" rolls one of pool per entry with a fresh seed.
+    -- Locked behind the quest unlock flag (GameData.Unlocks.random_missions,
+    -- granted by the mi_first_trial quest claim).
+    random = {
+        pool = { "hell_trial", "heaven_trial" },
+        display = "Random Trial",
+        unlock = "random_missions",
+    },
+
     missions = {
         -- REALM-SPLIT trials (Jason): hell = dark torch-lit (DOORS pole),
         -- heaven = bright low-poly (Dungeon Quest pole). Same gray-box kit —
         -- `theme` drives dressing palettes server-side and the client
-        -- MissionAtmosphere lighting preset. Enemy rosters stay earth packs
-        -- for now (realm-correct rosters come with allegiance work).
+        -- MissionAtmosphere lighting preset. Rosters are REALM-CORRECT
+        -- (2026-07-08): each realm's trial pits you against its own kind —
+        -- hell = the lava natives, heaven = the celestial host.
         hell_trial = {
             display = "Hell Trial",
             kit = "gray_box",
@@ -75,14 +86,14 @@ return {
             -- static per-room packs (enemies.lua wave shape); one pack rolls
             -- per MissionSpawn point on the seeded "spawns" stream
             packs = {
-                { weight = 10, units = { { enemy = "rabid_dog", count = 2 } } },
-                { weight = 8, units = { { enemy = "raging_bear", count = 1 } } },
+                { weight = 10, units = { { enemy = "lava_imp", count = 2 } } },
+                { weight = 8, units = { { enemy = "ember_brute", count = 1 } } },
                 { weight = 6, units = { { enemy = "murder_crow", count = 2 } } },
                 {
                     weight = 4,
                     units = {
-                        { enemy = "rabid_bunny", count = 1 },
-                        { enemy = "rabid_dog", count = 1 },
+                        { enemy = "ember_acolyte", count = 1 },
+                        { enemy = "lava_imp", count = 1 },
                     },
                 },
             },
@@ -120,14 +131,14 @@ return {
             seed_policy = "per_attempt",
             objective = { kind = "clear_then_beacon" },
             packs = {
-                { weight = 10, units = { { enemy = "rabid_dog", count = 2 } } },
-                { weight = 8, units = { { enemy = "raging_bear", count = 1 } } },
-                { weight = 6, units = { { enemy = "murder_crow", count = 2 } } },
+                { weight = 10, units = { { enemy = "zealous_cherub", count = 2 } } },
+                { weight = 8, units = { { enemy = "prism_warden", count = 1 } } },
+                { weight = 6, units = { { enemy = "lance_seraph_guard", count = 2 } } },
                 {
                     weight = 4,
                     units = {
-                        { enemy = "rabid_bunny", count = 1 },
-                        { enemy = "rabid_dog", count = 1 },
+                        { enemy = "radiant_sprite_guard", count = 1 },
+                        { enemy = "zealous_cherub", count = 1 },
                     },
                 },
             },

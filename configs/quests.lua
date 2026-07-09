@@ -29,6 +29,9 @@ return {
         warpath = { title = "The Warpath", order = 4, unlock_level = 5 },
         trailblazer = { title = "Trailblazer", order = 5, unlock_level = 8 },
         crossing = { title = "The Crossing", order = 6, unlock_level = 12 },
+        -- Door missions: the trials + Jason's random-mission ladder ("scale it
+        -- up to something ridiculous... always be on a random quest").
+        trials = { title = "The Trials", order = 7, unlock_level = 7 },
     },
 
     defs = {
@@ -353,6 +356,85 @@ return {
                 since_start = true,
             },
             reward = { currencies = { gems = 60 } },
+        },
+
+        -- ===================== THE TRIALS (door missions + the random ladder) =====================
+        -- Chain: first trial UNLOCKS the random-mission doors (def.unlock →
+        -- GameData.Unlocks.random_missions, checked by MissionInstanceService),
+        -- then the ladder counts LIFETIME random completions — career totals,
+        -- deliberately absurd at the top (10 → 100 → 1,000 → 10,000).
+        tr_first_trial = {
+            track = "trials",
+            order = 1,
+            name = "Answer the Call",
+            description = "Complete any Trial behind a mission door — and unlock RANDOM trials.",
+            condition = {
+                type = "counter_at_least",
+                counter = "missions_completed",
+                value = 1,
+            },
+            reward = { currencies = { gems = 25 } },
+            unlock = "random_missions",
+        },
+        tr_random_10 = {
+            track = "trials",
+            order = 2,
+            name = "Roll the Dice",
+            description = "Complete 10 random trials.",
+            condition = {
+                type = "counter_at_least",
+                counter = "random_missions_completed",
+                value = 10,
+            },
+            reward = { currencies = { gems = 50 } },
+        },
+        tr_treasure_25 = {
+            track = "trials",
+            order = 3,
+            name = "Treasure Hunter",
+            description = "Crack open 25 mission treasure chests.",
+            condition = {
+                type = "counter_at_least",
+                counter = "mission_chests_opened",
+                value = 25,
+            },
+            reward = { currencies = { gems = 75 } },
+        },
+        tr_random_100 = {
+            track = "trials",
+            order = 4,
+            name = "Veteran of a Hundred Doors",
+            description = "Complete 100 random trials.",
+            condition = {
+                type = "counter_at_least",
+                counter = "random_missions_completed",
+                value = 100,
+            },
+            reward = { currencies = { gems = 150 } },
+        },
+        tr_random_1000 = {
+            track = "trials",
+            order = 5,
+            name = "The Thousand-Door March",
+            description = "Complete 1,000 random trials.",
+            condition = {
+                type = "counter_at_least",
+                counter = "random_missions_completed",
+                value = 1000,
+            },
+            reward = { currencies = { gems = 500 } },
+        },
+        tr_random_10000 = {
+            track = "trials",
+            order = 6,
+            name = "Legend of the Infinite Halls",
+            description = "Complete 10,000 random trials. Yes, really.",
+            condition = {
+                type = "counter_at_least",
+                counter = "random_missions_completed",
+                value = 10000,
+            },
+            reward = { currencies = { gems = 2500 } },
         },
     },
 }

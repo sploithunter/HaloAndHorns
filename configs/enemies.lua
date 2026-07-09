@@ -542,6 +542,92 @@ return {
             auto_heal = { interval = 2.0, amount = 120, range = 45 },
             drop_table = { lava_coins = 12, shadow_tokens = 2 },
         },
+        -- ============================ CELESTIAL FACTION ============================
+        -- Heaven's own host — the HEAVEN TRIAL opposition (each realm's trial pits
+        -- you against that realm's kind, mirroring hell_trial's lava natives).
+        -- Role-balanced mirrors of the lava set; meshes reuse the uploaded heaven
+        -- pet art (configs/pets.lua layer-2 heaven ids) at enemy scale.
+        -- MELEE — the zealous cherub: a darting winged zealot (mirror of lava_imp).
+        zealous_cherub = {
+            role = "melee",
+            hp = 1200,
+            display_name = "Zealous Cherub",
+            tier = "trash_mob",
+            move_speed = 15,
+            armor = 0,
+            mesh_asset = "rbxassetid://79030931956866",
+            texture_asset = "rbxassetid://121269488238630",
+            model_scale = 3,
+            hover_height = 3, -- a cherub skims above the marble
+            gait = {
+                style = "flap",
+                bob_height = 0.8,
+                tilt_degrees = 10,
+                stride_length = 4,
+                hover = true,
+                idle_amp = 0.7,
+                flap_hz = 1.8,
+            },
+            attack = { damage = 10, cadence = 1.5, sundering = 0 },
+            drop_table = { grass_coins = 8, light_tokens = 1 },
+        },
+        -- RANGED — the lance seraph: holds range and hurls radiant bolts (mirror of murder_crow).
+        lance_seraph_guard = {
+            role = "ranged",
+            hp = 900,
+            display_name = "Lance Seraph",
+            tier = "trash_mob",
+            move_speed = 14,
+            armor = 0,
+            mesh_asset = "rbxassetid://110233728542561",
+            texture_asset = "rbxassetid://135315232548196",
+            model_scale = 3,
+            attack_range = 32,
+            bolt_kind = "plasma",
+            gait = { style = "waddle", bob_height = 0.6, tilt_degrees = 8, stride_length = 4 },
+            attack = { damage = 14, cadence = 1.6, sundering = 0 },
+            drop_table = { grass_coins = 10, light_tokens = 1 },
+        },
+        -- SUPPORT — the radiant sprite: heaven's healer (mirror of ember_acolyte).
+        radiant_sprite_guard = {
+            role = "support",
+            hp = 2000,
+            display_name = "Radiant Sprite",
+            tier = "trash_mob",
+            move_speed = 13,
+            armor = 0,
+            mesh_asset = "rbxassetid://125507964197992",
+            texture_asset = "rbxassetid://89212554084933",
+            model_scale = 2.5,
+            hover_height = 6,
+            gait = {
+                style = "flap",
+                bob_height = 1.1,
+                tilt_degrees = 6,
+                stride_length = 5,
+                hover = true,
+                idle_amp = 0.85,
+                flap_hz = 1.6,
+            },
+            attack = { damage = 8, cadence = 2.0, sundering = 0 },
+            auto_heal = { interval = 2.0, amount = 120, range = 45 },
+            drop_table = { grass_coins = 12, light_tokens = 2 },
+        },
+        -- TANK — the prism warden: the crystalline lion wall (mirror of ember_brute).
+        prism_warden = {
+            role = "tank",
+            hp = 4000,
+            display_name = "Prism Warden",
+            tier = "mid_tier",
+            move_speed = 10,
+            armor = 80,
+            mesh_asset = "rbxassetid://78217294385117",
+            texture_asset = "rbxassetid://92965017950964",
+            model_scale = 5,
+            gait = { style = "march", bob_height = 0.9, tilt_degrees = 4, stride_length = 7 },
+            attack = { damage = 25, cadence = 2.0, sundering = 20 },
+            drop_table = { grass_coins = 30, light_tokens = 4, rare_drop_chance = 0.1 },
+        },
         dire_bear = {
             role = "tank",
             hp = 65000,
