@@ -5779,7 +5779,7 @@ local petConfig = {
             -- Huge Fortune and every boost by the fixed_odds branch
             huge = { chance = 0.05, any_pet = true },
             asset_id = "rbxassetid://70381184616429", -- 3D egg Model
-            image_id = "rbxassetid://132799574995178", -- inventory icon (Jason's concept art)
+            image_id = "rbxassetid://97839482817366", -- inventory icon (RESOLVED image, not the Decal)
             unlock_requirement = nil,
             pet_weights = {
                 wyrmling = 30,
@@ -5817,7 +5817,7 @@ local petConfig = {
             -- Huge Fortune and every boost by the fixed_odds branch
             huge = { chance = 0.05, any_pet = true },
             asset_id = "rbxassetid://75458974543354", -- 3D egg Model
-            image_id = "rbxassetid://84773442512699", -- inventory icon (Jason's concept art)
+            image_id = "rbxassetid://90833713444650", -- inventory icon (RESOLVED image, not the Decal)
             unlock_requirement = nil,
             pet_weights = {
                 lumen_dove = 30,
