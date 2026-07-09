@@ -437,3 +437,22 @@ the lava natives; heaven_trial fields the CELESTIAL faction (zealous_cherub /
 lance_seraph_guard / radiant_sprite_guard / prism_warden — role-balanced mirrors of
 the lava set, meshes borrowed from the layer-2 heaven pets, drops pay grass_coins +
 light_tokens).
+
+## 11. Curated maps & named-boss objectives (design, 2026-07-09)
+
+**Balance baseline (Jason, live)**: CoH spawn tables land ~2 boss packs per large
+map — "about right." Weight-3 boss pack over ~8 spawn points; don't retune blindly.
+
+**Curated map library** (planned): a curated mission = `{ display, mission, seed }` —
+a map IS its seed, so vetting is play-testing randoms and saving winners by name.
+Constraints: pin `worldgen_version` per entry + store a layout FINGERPRINT (tile
+count / bbox / placement hash) + CI regen check so generator changes can't silently
+reshape vetted maps (they become a visible re-vet task instead). Dev capture: admin
+command printing the live instance's seed. Per-player layout history deliberately NOT
+persisted (anti-repeat = rolling in-memory last-N seeds if ever needed).
+
+**Named-boss objective** (planned): `objective = { kind = "defeat_named_boss",
+boss = "<enemyId>" }` — population guarantees EXACTLY ONE of that enemy (objective
+chamber, screened by its pack); tracker shows "Defeat <Display Name>!"; completion
+watches that model, not the roster. Composes: boss-only / boss+clear / boss+beacon.
+CoH rule: named it, so there's ONE of it.
