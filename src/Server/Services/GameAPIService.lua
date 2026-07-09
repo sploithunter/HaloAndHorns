@@ -966,6 +966,23 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("augment.move", {
+        description = "Move one enhancement slot between owned powers (a filled slot returns its enhancement to inventory first).",
+        validate = function(args)
+            return Validators.fields(args, {
+                from = "string",
+                to = "string",
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("AugmentationService")
+            if not s or not s.Move then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Move(context.player, args.from, args.to)
+        end,
+    })
+
     bus:register("levelup.getState", {
         description = "Claim state for the level-up sequence: claimed/earned/pending + next reward.",
         handler = function(context)

@@ -133,4 +133,85 @@ function AugmentationService:Place(player, powerId, _slotType, levelOverride)
     return { ok = true, slots = onPower, count = #onPower }
 end
 
+-- PARTIAL RESPEC (Jason: "get rid of one of the resonance slots and put it
+-- in huge fortune"): move ONE allocated slot between owned powers. Prefers
+-- an EMPTY donor slot; a FILLED donor returns its enhancement to the
+-- inventory FIRST (Grant = the fallible step before the pure removal — the
+-- audited transaction order). Inherent slots never move. The receiving side
+-- reuses Place, so the pool math and the 6-cap stay single-sourced.
+function AugmentationService:Move(player, fromPowerId, toPowerId)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    if fromPowerId == toPowerId then
+        return { ok = false, reason = "same_power" }
+    end
+    local slots = slotsMap(data)
+    local donor = slots[fromPowerId]
+    if type(donor) ~= "table" or #donor == 0 then
+        return { ok = false, reason = "no_slots_on_power" }
+    end
+    -- pick the donor slot: last empty non-inherent, else last non-inherent
+    local idx
+    for i = #donor, 1, -1 do
+        local s = donor[i]
+        if type(s) == "table" and not s.inherent and s.enh == nil then
+            idx = i
+            break
+        end
+    end
+    if not idx then
+        for i = #donor, 1, -1 do
+            local s = donor[i]
+            if type(s) == "table" and not s.inherent then
+                idx = i
+                break
+            end
+        end
+    end
+    if not idx then
+        return { ok = false, reason = "only_inherent_slots" }
+    end
+    local moving = donor[idx]
+    local returned = false
+    if type(moving) == "table" and moving.enh ~= nil then
+        local okGrant, granted = pcall(function()
+            local locator = _G.RBXTemplateServices
+            local enhSvc = locator and locator:Get("EnhancementService")
+            return enhSvc and enhSvc:Grant(player, moving.enh)
+        end)
+        if not (okGrant and type(granted) == "table" and granted.ok ~= false) then
+            return { ok = false, reason = "enhancement_return_failed" }
+        end
+        returned = true
+    end
+    table.remove(donor, idx)
+    local placed = self:Place(player, toPowerId)
+    if not placed.ok then
+        -- roll back the removal (a returned enhancement STAYS in inventory —
+        -- strictly player-favorable; they can re-slot it)
+        table.insert(donor, {})
+        self._dataService:RequestSave(player, "augment_move_rollback", { critical = true })
+        return { ok = false, reason = placed.reason }
+    end
+    self._dataService:RequestSave(player, "augment_move", { critical = true })
+    -- passives re-stamp: a filled donor slot changed that power's aggregates
+    pcall(function()
+        local locator = _G.RBXTemplateServices
+        local power = locator and locator:Get("PowerService")
+        if power and power._applyOwnedPassives then
+            power:_applyOwnedPassives(player)
+        end
+    end)
+    return {
+        ok = true,
+        from = fromPowerId,
+        to = toPowerId,
+        fromCount = #donor,
+        toCount = placed.count,
+        returnedEnhancement = returned,
+    }
+end
+
 return AugmentationService
