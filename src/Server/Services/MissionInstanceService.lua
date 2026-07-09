@@ -361,13 +361,20 @@ function MissionInstanceService:Open(player, missionId, opts)
             -- your loot); generally useful for any per-mission gating
             member:SetAttribute("InMission", instanceId)
             member:SetAttribute("MissionTheme", mission.theme or "earth")
+            -- pseudo-area key: element trials brand drops + biome RPS via
+            -- their own zone (mission.area, default = theme)
+            member:SetAttribute("MissionArea", mission.area or mission.theme or "earth")
             -- THE TRIAL COUNTS AS ITS REALM (Jason 2026-07-09: "alignment
             -- isn't working inside the trials"): resonance keys on
             -- CurrentRealm, which is layer-derived — plaza/base entries read
             -- neutral. Override with the mission THEME for the run; restored
             -- from the layer SSOT at close. (RealmAtmosphere keys on
             -- CurrentLayer, so mission lighting isn't disturbed.)
-            local themeRealm = (mission.theme == "hell" and "hell")
+            -- mission.realm overrides (element trials: theme = dressing
+            -- only, realm = "neutral" → biome RPS is their axis, not
+            -- light/shadow resonance)
+            local themeRealm = mission.realm
+                or (mission.theme == "hell" and "hell")
                 or (mission.theme == "heaven" and "heaven")
                 or "neutral"
             member:SetAttribute("CurrentRealm", themeRealm)
@@ -438,11 +445,30 @@ function MissionInstanceService:Open(player, missionId, opts)
         end)
         if enemySvc then
             for i, point in ipairs(points) do
-                for _, enemyId in ipairs(comp[i] or {}) do
+                for _, entry in ipairs(comp[i] or {}) do
                     local offset =
                         Vector3.new((posRng() * 2 - 1) * SCATTER, 3, (posRng() * 2 - 1) * SCATTER)
                     pcall(function()
+                        -- PET-MODEL units ({pet, rank}): synthesize the def
+                        -- with the rank ladder (missions.pet_ranks) — boss
+                        -- rank wears the pet's own HUGE scale
+                        local enemyId, synthDef
+                        if type(entry) == "table" and entry.pet then
+                            local ladder = self._config.pet_ranks or {}
+                            synthDef = enemySvc.SynthesizePetEnemy
+                                and enemySvc:SynthesizePetEnemy(
+                                    entry.pet,
+                                    ladder[entry.rank or "minion"]
+                                )
+                            enemyId = "petinv_" .. entry.pet
+                        else
+                            enemyId = entry
+                        end
+                        if type(entry) == "table" and not synthDef then
+                            return -- unknown pet id: skip silently (config typo)
+                        end
                         local r = enemySvc:SpawnEnemy(player, enemyId, {
+                            def = synthDef,
                             position = point.Position + offset,
                             home = point.Position,
                             dormant = true, -- no birth aggro: engage when the team arrives
@@ -692,6 +718,7 @@ function MissionInstanceService:_close(instanceId, reason)
         member:SetAttribute("MissionMapData", nil)
         member:SetAttribute("InMission", nil)
         member:SetAttribute("MissionTheme", nil)
+        member:SetAttribute("MissionArea", nil)
         member:SetAttribute("MissionSequence", nil)
         pcall(function() -- restore layer-derived CurrentRealm (theme override ends)
             _G.RBXTemplateServices:Get("LayerService"):RefreshRealmAttributes(member)

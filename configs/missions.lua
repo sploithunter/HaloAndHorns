@@ -61,9 +61,32 @@ return {
     -- Locked behind the quest unlock flag (GameData.Unlocks.random_missions,
     -- granted by the mi_first_trial quest claim).
     random = {
-        pool = { "hell_trial", "heaven_trial" },
+        pool = { "hell_trial", "heaven_trial", "lava_trial", "ice_trial" },
         display = "Random Trial",
         unlock = "random_missions",
+    },
+
+    -- PET-MODEL enemy rank ladder (element trials: the realm's own pets as
+    -- enemies — Jason: "use any of the models... boss versions by making
+    -- huges of them"). Baseline = EnemyService._petEnemyDef (hp = base_health
+    -- x enemy_patrol.pet_enemy_hp_mult, dmg = base_power); these multiply it.
+    pet_ranks = {
+        minion = { hp_mult = 0.25, dmg_mult = 0.4 },
+        lieutenant = {
+            hp_mult = 0.8,
+            dmg_mult = 0.8,
+            armor = 60,
+            tier = "mid_tier",
+            scale_mult = 1.25,
+        },
+        boss = {
+            hp_mult = 10,
+            dmg_mult = 3,
+            armor = 150,
+            tier = "boss",
+            use_huge_scale = true, -- the pet's own huge_scale = the "huge of it"
+            display_prefix = "Huge ",
+        },
     },
 
     missions = {
@@ -191,6 +214,128 @@ return {
                 wall_decor_min = 2, -- playtest: 0..2 read as "very sparse"; pool is 8 names now
                 wall_decor_max = 4,
                 feature_chance = 0.6, -- chamber odds of a wall-backed showpiece (throne/fountain/...)
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+
+        -- ELEMENT-THEMED trials (Jason: "a lava trial or an ice trial where
+        -- pet selection actually matters and enhancement drops change").
+        -- realm = NEUTRAL: their pet-choice axis is the biome RPS (zone
+        -- element via mission.area pseudo-zone), and drops brand to the
+        -- element's origin (area_origins). Realm trials stay the resonance +
+        -- random-origin variety. Enemies mix the static faction with PET-
+        -- model units — boss = a HUGE-scaled pet.
+        lava_trial = {
+            display = "Lava Trial",
+            kit = "gray_box",
+            theme = "hell", -- dressing/atmosphere only
+            area = "lava", -- pseudo-zone: biome RPS + pyromancer-branded drops
+            realm = "neutral",
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            packs = {
+                { -- swarm: whelps + heaven-lava cherubs + moth healers
+                    weight = 10,
+                    units = {
+                        { enemy = "lava_imp", count = 3 },
+                        { pet = "coronal_cherub", count = 2 },
+                        { enemy = "ember_acolyte", count = 2 },
+                        { enemy = "murder_crow", count = 1 },
+                    },
+                },
+                { -- lieutenants: brute wall + a lion captain
+                    weight = 7,
+                    units = {
+                        { enemy = "ember_brute", count = 1 },
+                        { pet = "rimemane_lion", rank = "lieutenant", count = 1 },
+                        { enemy = "lava_imp", count = 2 },
+                        { pet = "lumen_salamander", count = 2 },
+                    },
+                },
+                { -- boss: the HUGE Empyrean Dragon holds the deep room
+                    weight = 3,
+                    units = {
+                        { pet = "empyrean_dragon", rank = "boss", count = 1 },
+                        { enemy = "lava_imp", count = 2 },
+                        { enemy = "ember_acolyte", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.12,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+        ice_trial = {
+            display = "Ice Trial",
+            kit = "gray_box",
+            theme = "earth", -- neutral dim dressing until an ice palette lands
+            area = "ice", -- pseudo-zone: biome RPS + cryomancer-branded drops
+            realm = "neutral",
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            packs = {
+                { -- swarm: foxes + prism foxes + seal healers
+                    weight = 10,
+                    units = {
+                        { enemy = "frost_fox", count = 3 },
+                        { pet = "prism_fox", count = 2 },
+                        { enemy = "aurora_seal", count = 2 },
+                        { enemy = "snowy_owl", count = 1 },
+                    },
+                },
+                { -- lieutenants: mammoth wall + a doe captain
+                    weight = 7,
+                    units = {
+                        { enemy = "glacial_mammoth", count = 1 },
+                        { pet = "frostlight_doe", rank = "lieutenant", count = 1 },
+                        { enemy = "frost_fox", count = 2 },
+                        { pet = "starlight_owl", count = 2 },
+                    },
+                },
+                { -- boss: the HUGE Black Ice Leviathan
+                    weight = 3,
+                    units = {
+                        { pet = "black_ice_leviathan", rank = "boss", count = 1 },
+                        { enemy = "frost_fox", count = 2 },
+                        { enemy = "aurora_seal", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.08,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
             },
             treasure = {
                 room_fraction = 0.4,

@@ -41,7 +41,14 @@ function MissionPopulation.roll(packs, pointCount, streamSeed)
             chosen = chosen or packs[#packs]
             for _, unit in ipairs(chosen.units or {}) do
                 for _ = 1, unit.count or 1 do
-                    table.insert(out[i], unit.enemy)
+                    if unit.pet then
+                        -- PET-MODEL enemy (Jason: trials field the realm's own
+                        -- pets as enemies — huge-scaled for bosses); the
+                        -- service synthesizes the def at spawn (rank ladder)
+                        table.insert(out[i], { pet = unit.pet, rank = unit.rank })
+                    else
+                        table.insert(out[i], unit.enemy)
+                    end
                 end
             end
         end

@@ -4683,6 +4683,46 @@ function EnemyService:_petEnemyDef(petId, petDef)
     }
 end
 
+-- PUBLIC pet-model enemy synthesis with a RANK overlay (mission trials:
+-- "use the realm's own pets as enemies... boss versions by making huges of
+-- them" — Jason). overrides = missions.pet_ranks[rank]: hp_mult/dmg_mult/
+-- armor/tier/display_prefix + use_huge_scale (the pet's own huge_scale,
+-- the visual "huge of it").
+function EnemyService:SynthesizePetEnemy(petId, overrides)
+    local okCfg, petsConfig = pcall(function()
+        return require(ReplicatedStorage.Configs:WaitForChild("pets"))
+    end)
+    local petDef = okCfg and petsConfig.pets and petsConfig.pets[petId]
+    if not petDef then
+        return nil
+    end
+    local def = self:_petEnemyDef(petId, petDef)
+    if type(overrides) == "table" then
+        def.hp = math.max(1, math.floor(def.hp * (tonumber(overrides.hp_mult) or 1)))
+        if def.attack and def.attack.damage then
+            def.attack.damage =
+                math.max(0, math.floor(def.attack.damage * (tonumber(overrides.dmg_mult) or 1)))
+        end
+        if overrides.armor then
+            def.armor = tonumber(overrides.armor) or def.armor
+        end
+        if overrides.tier then
+            def.tier = overrides.tier
+        end
+        if overrides.use_huge_scale then
+            local at = petDef.asset_transform or {}
+            def.model_scale = tonumber(at.huge_scale)
+                or (def.model_scale * (tonumber(overrides.scale_mult) or 2))
+        elseif overrides.scale_mult then
+            def.model_scale = def.model_scale * tonumber(overrides.scale_mult)
+        end
+        if overrides.display_prefix then
+            def.display_name = overrides.display_prefix .. (def.display_name or petId)
+        end
+    end
+    return def
+end
+
 -- Roll a varied band for a sortie. Returns (specs, label, scary) — each spec is
 -- { id = <enemyId>, def = <synthesized pet-invader def or nil> }. Two modes:
 --   PET INVADERS (use_pet_invaders): the band IS opposing-realm PET models wearing the attack script

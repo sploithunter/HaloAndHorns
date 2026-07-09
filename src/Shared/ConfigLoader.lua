@@ -1280,7 +1280,12 @@ function ConfigLoader:_validateAreasConfig(config)
         end
         zoneIds[zone.id] = true
 
-        if zone.kind ~= "world" and zone.kind ~= "island" and zone.kind ~= "area" then
+        if
+            zone.kind ~= "world"
+            and zone.kind ~= "island"
+            and zone.kind ~= "area"
+            and zone.kind ~= "mission" -- pseudo-zones: element/origin branding for trial interiors
+        then
             return self:_configError(
                 "areas",
                 basePath .. ".kind",

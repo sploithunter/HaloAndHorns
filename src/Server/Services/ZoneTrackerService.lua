@@ -185,7 +185,8 @@ function ZoneTrackerService:_resolveFor(player)
     -- this points AREA MUSIC at the theme track and AUTO-FARM at the
     -- mission's breakable world. Cleared with the InMission attr on exit.
     if player:GetAttribute("InMission") then
-        local themed = "mission_" .. (player:GetAttribute("MissionTheme") or "earth")
+        local themed = "mission_"
+            .. (player:GetAttribute("MissionArea") or player:GetAttribute("MissionTheme") or "earth")
         if player:GetAttribute(CURRENT_AREA_ATTR) ~= themed then
             player:SetAttribute(CURRENT_AREA_ATTR, themed)
         end

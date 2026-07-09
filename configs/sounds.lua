@@ -218,5 +218,8 @@ return {
         mission_hell = "epic_drum",
         mission_heaven = "spa",
         mission_earth = "awe",
+        -- element-THEMED trials (mission.area pseudo-zones)
+        mission_lava = "epic_drum",
+        mission_ice = "arctic_hunt",
     },
 }
