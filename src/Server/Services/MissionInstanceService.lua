@@ -272,11 +272,12 @@ function MissionInstanceService:Open(player, missionId, opts)
     elseif mission.seed_policy == "shared_sequence" then
         -- SHARED SEQUENCE (Jason 2026-07-09): everyone plays the SAME mission
         -- #1, #2, #3... per mission id — a shared experience ("mission 28 was
-        -- great"). The opener's PERSISTED per-mission index advances AT OPEN,
-        -- which buys both requirements in one mechanism: a restart can't
-        -- replay (the index already moved on) and skipping a buggy mission is
-        -- just walking out and re-entering. Teams ride the opener's index.
-        -- contextKey deliberately has NO player/team component — global.
+        -- great"). MissionSeq stores the highest number FINISHED-OR-SKIPPED;
+        -- the head (stored+1) only advances at COMPLETE (or mission.skip) —
+        -- Jason: "we shouldn't progress unless we finish it or we skip it."
+        -- An abandoned/crashed run re-deals the SAME number (same seed =
+        -- same map) until you beat it or skip it. Teams ride the opener's
+        -- head. contextKey deliberately has NO player/team component.
         local okSeq, n = pcall(function()
             local locator = _G.RBXTemplateServices
             local dataSvc = locator and locator:Get("DataService")
@@ -284,12 +285,8 @@ function MissionInstanceService:Open(player, missionId, opts)
             if not data then
                 return nil
             end
-            data.GameData = data.GameData or {}
-            data.GameData.MissionSeq = data.GameData.MissionSeq or {}
-            local nextN = (tonumber(data.GameData.MissionSeq[missionId]) or 0) + 1
-            data.GameData.MissionSeq[missionId] = nextN
-            dataSvc:RequestSave(player, "mission_sequence", { critical = true })
-            return nextN
+            local seq = data.GameData and data.GameData.MissionSeq
+            return (seq and tonumber(seq[missionId]) or 0) + 1
         end)
         sequenceN = (okSeq and n) or 1
         contextKey = "seq#" .. sequenceN
@@ -400,6 +397,7 @@ function MissionInstanceService:Open(player, missionId, opts)
         missionId = missionId,
         source = source, -- "random" when opened via the random door (quest ladder)
         sequence = sequenceN, -- shared-sequence number ("Trial #28")
+        openerUserId = player.UserId, -- whose sequence head advances at COMPLETE
         teamKey = teamKey,
         seed = seed,
         slotIndex = slotIndex,
@@ -757,6 +755,38 @@ function MissionInstanceService:_hasUnlock(player, unlockId)
     return ok and has == true
 end
 
+-- SKIP the current head number (Jason: "if they find a bug... yeah I'm
+-- skipping this mission"): marks it consumed WITHOUT completion credit
+-- (no counters, no ladder). If the player's team is inside that mission,
+-- it's abandoned first.
+function MissionInstanceService:SkipCurrent(player, missionId)
+    if not (self._config and self._config.missions[missionId]) then
+        return { ok = false, reason = "unknown_mission" }
+    end
+    if self._config.missions[missionId].seed_policy ~= "shared_sequence" then
+        return { ok = false, reason = "not_sequenced" }
+    end
+    local active = self._byTeam[teamKeyFor(player)]
+    if active and self._instances[active] and self._instances[active].missionId == missionId then
+        self:Abandon(active)
+    end
+    local okSkip, newHead = pcall(function()
+        local dataSvc = _G.RBXTemplateServices:Get("DataService")
+        local data = dataSvc:GetData(player)
+        data.GameData = data.GameData or {}
+        data.GameData.MissionSeq = data.GameData.MissionSeq or {}
+        local cur = tonumber(data.GameData.MissionSeq[missionId]) or 0
+        data.GameData.MissionSeq[missionId] = cur + 1
+        dataSvc:RequestSave(player, "mission_skip", { critical = true })
+        return cur + 2 -- the new head they'll face next
+    end)
+    if not okSkip then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    self:_log("Warn", "trial number SKIPPED", { player = player.Name, mission = missionId })
+    return { ok = true, nextTrial = newHead }
+end
+
 function MissionInstanceService:Complete(instanceId)
     return self:_close(instanceId, "complete")
 end
@@ -779,6 +809,24 @@ function MissionInstanceService:_close(instanceId, reason)
     -- COMPLETION counters (quest ladder substrate): every team member's
     -- career totals tick; random-sourced runs also tick the random ladder
     if reason == "complete" then
+        -- SEQUENCE ADVANCE (finish-or-skip rule): the opener's head moves
+        -- past this number; never regresses (replays of old numbers)
+        if record.sequence and record.openerUserId then
+            pcall(function()
+                local dataSvc = _G.RBXTemplateServices:Get("DataService")
+                local opener = Players:GetPlayerByUserId(record.openerUserId)
+                local data = opener and dataSvc:GetData(opener)
+                if data then
+                    data.GameData = data.GameData or {}
+                    data.GameData.MissionSeq = data.GameData.MissionSeq or {}
+                    local cur = tonumber(data.GameData.MissionSeq[record.missionId]) or 0
+                    if record.sequence > cur then
+                        data.GameData.MissionSeq[record.missionId] = record.sequence
+                        dataSvc:RequestSave(opener, "mission_sequence", { critical = true })
+                    end
+                end
+            end)
+        end
         pcall(function()
             local statsSvc = _G.RBXTemplateServices:Get("StatsService")
             for _, member in ipairs(membersOf(record.teamKey)) do

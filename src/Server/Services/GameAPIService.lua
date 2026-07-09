@@ -1066,6 +1066,20 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("mission.skip", {
+        description = "Skip your current trial number for a mission (no completion credit); next entry deals the following number.",
+        validate = function(args)
+            return Validators.fields(args, { mission = "string" })
+        end,
+        handler = function(context, args)
+            local s = self:_service("MissionInstanceService")
+            if not s or not s.SkipCurrent then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:SkipCurrent(context.player, args.mission)
+        end,
+    })
+
     bus:register("augment.move", {
         description = "Move one enhancement slot between owned powers (a filled slot returns its enhancement to inventory first).",
         validate = function(args)
