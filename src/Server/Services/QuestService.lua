@@ -303,6 +303,7 @@ function QuestService:List(player)
                 order = tonumber(def.order) or math.huge,
                 name = def.name,
                 description = def.description,
+                mission = def.mission, -- gate-steering branch: activation deals this trial
                 reward = def.reward, -- so the panel can summarize the prize (read-only)
                 claimedCount = ledger[id] or 0,
                 repeatable = def.repeatable == true,
@@ -329,10 +330,14 @@ function QuestService:List(player)
             Condition.progress(def.condition, forwardAdjusted(def, q.id, snapshot, bases, bank))
         q.progress = progress
         q.claimable = not q.locked and ClaimLogic.canClaim(progress.met, q.claimedCount, def).ok
-        q.activationGated = grind -- needs an active track to make progress
+        -- needs an active track to make progress: grind windows only count while
+        -- focused, and MISSION-BOUND quests only progress via the gates their
+        -- activation steers (matrix trials aren't in the random pool)
+        local steersGate = def.mission ~= nil
+        q.activationGated = grind or steersGate
         q.trackActive = trackActive
-        -- a grind quest you could be working, but its track isn't the current focus
-        q.paused = grind and not trackActive and not q.locked and q.claimedCount == 0
+        -- a quest you could be working, but its track isn't the current focus
+        q.paused = (grind or steersGate) and not trackActive and not q.locked and q.claimedCount == 0
         q.def = nil -- not for the wire
     end
     return { ok = true, quests = out, activeTrack = activeTrack }

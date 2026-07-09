@@ -485,9 +485,22 @@ return {
             },
             reward = { currencies = { gems = 120 } },
         },
-        hell_lava_100 = {
+        hell_lava_90 = {
             track = "hell_lava",
             order = 4,
+            name = "Hell Lava: 90 Trials",
+            description = "Complete 90 Hell Lava Trials.",
+            mission = "hell_lava_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_lava_trials_completed",
+                value = 90,
+            },
+            reward = { currencies = { gems = 250 } },
+        },
+        hell_lava_100 = {
+            track = "hell_lava",
+            order = 5,
             name = "Hell Lava: The Century",
             description = "Complete 100 Hell Lava Trials. Requires Level 50. The Platinum egg awaits.",
             mission = "hell_lava_trial",
@@ -544,9 +557,22 @@ return {
             },
             reward = { currencies = { gems = 120 } },
         },
-        heaven_lava_100 = {
+        heaven_lava_90 = {
             track = "heaven_lava",
             order = 4,
+            name = "Heaven Lava: 90 Trials",
+            description = "Complete 90 Heaven Lava Trials.",
+            mission = "heaven_lava_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_lava_trials_completed",
+                value = 90,
+            },
+            reward = { currencies = { gems = 250 } },
+        },
+        heaven_lava_100 = {
+            track = "heaven_lava",
+            order = 5,
             name = "Heaven Lava: The Century",
             description = "Complete 100 Heaven Lava Trials. Requires Level 50. The Platinum egg awaits.",
             mission = "heaven_lava_trial",
@@ -603,9 +629,22 @@ return {
             },
             reward = { currencies = { gems = 120 } },
         },
-        hell_ice_100 = {
+        hell_ice_90 = {
             track = "hell_ice",
             order = 4,
+            name = "Hell Ice: 90 Trials",
+            description = "Complete 90 Hell Ice Trials.",
+            mission = "hell_ice_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_ice_trials_completed",
+                value = 90,
+            },
+            reward = { currencies = { gems = 250 } },
+        },
+        hell_ice_100 = {
+            track = "hell_ice",
+            order = 5,
             name = "Hell Ice: The Century",
             description = "Complete 100 Hell Ice Trials. Requires Level 50. The Platinum egg awaits.",
             mission = "hell_ice_trial",
@@ -662,9 +701,22 @@ return {
             },
             reward = { currencies = { gems = 120 } },
         },
-        heaven_ice_100 = {
+        heaven_ice_90 = {
             track = "heaven_ice",
             order = 4,
+            name = "Heaven Ice: 90 Trials",
+            description = "Complete 90 Heaven Ice Trials.",
+            mission = "heaven_ice_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_ice_trials_completed",
+                value = 90,
+            },
+            reward = { currencies = { gems = 250 } },
+        },
+        heaven_ice_100 = {
+            track = "heaven_ice",
+            order = 5,
             name = "Heaven Ice: The Century",
             description = "Complete 100 Heaven Ice Trials. Requires Level 50. The Platinum egg awaits.",
             mission = "heaven_ice_trial",
@@ -721,9 +773,22 @@ return {
             },
             reward = { currencies = { gems = 120 } },
         },
-        hell_grass_100 = {
+        hell_grass_90 = {
             track = "hell_grass",
             order = 4,
+            name = "Hell Grass: 90 Trials",
+            description = "Complete 90 Hell Grass Trials.",
+            mission = "hell_grass_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_grass_trials_completed",
+                value = 90,
+            },
+            reward = { currencies = { gems = 250 } },
+        },
+        hell_grass_100 = {
+            track = "hell_grass",
+            order = 5,
             name = "Hell Grass: The Century",
             description = "Complete 100 Hell Grass Trials. Requires Level 50. The Platinum egg awaits.",
             mission = "hell_grass_trial",
@@ -780,9 +845,22 @@ return {
             },
             reward = { currencies = { gems = 120 } },
         },
-        heaven_grass_100 = {
+        heaven_grass_90 = {
             track = "heaven_grass",
             order = 4,
+            name = "Heaven Grass: 90 Trials",
+            description = "Complete 90 Heaven Grass Trials.",
+            mission = "heaven_grass_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_grass_trials_completed",
+                value = 90,
+            },
+            reward = { currencies = { gems = 250 } },
+        },
+        heaven_grass_100 = {
+            track = "heaven_grass",
+            order = 5,
             name = "Heaven Grass: The Century",
             description = "Complete 100 Heaven Grass Trials. Requires Level 50. The Platinum egg awaits.",
             mission = "heaven_grass_trial",
@@ -839,9 +917,22 @@ return {
             },
             reward = { currencies = { gems = 120 } },
         },
-        hell_desert_100 = {
+        hell_desert_90 = {
             track = "hell_desert",
             order = 4,
+            name = "Hell Desert: 90 Trials",
+            description = "Complete 90 Hell Desert Trials.",
+            mission = "hell_desert_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_desert_trials_completed",
+                value = 90,
+            },
+            reward = { currencies = { gems = 250 } },
+        },
+        hell_desert_100 = {
+            track = "hell_desert",
+            order = 5,
             name = "Hell Desert: The Century",
             description = "Complete 100 Hell Desert Trials. Requires Level 50. The Platinum egg awaits.",
             mission = "hell_desert_trial",
@@ -898,9 +989,22 @@ return {
             },
             reward = { currencies = { gems = 120 } },
         },
-        heaven_desert_100 = {
+        heaven_desert_90 = {
             track = "heaven_desert",
             order = 4,
+            name = "Heaven Desert: 90 Trials",
+            description = "Complete 90 Heaven Desert Trials.",
+            mission = "heaven_desert_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_desert_trials_completed",
+                value = 90,
+            },
+            reward = { currencies = { gems = 250 } },
+        },
+        heaven_desert_100 = {
+            track = "heaven_desert",
+            order = 5,
             name = "Heaven Desert: The Century",
             description = "Complete 100 Heaven Desert Trials. Requires Level 50. The Platinum egg awaits.",
             mission = "heaven_desert_trial",

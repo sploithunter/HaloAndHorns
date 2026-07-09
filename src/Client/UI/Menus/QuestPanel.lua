@@ -340,14 +340,16 @@ function QuestPanel:_renderRows()
 
     -- On a single branch, lead with the activation banner (Activate / Active / Always tracked).
     if self.viewedTab ~= "all" then
-        local hasGrind = false
+        local needsActivation, steersGate = false, false
         for _, q in ipairs(filtered) do
             if q.activationGated then
-                hasGrind = true
-                break
+                needsActivation = true
+            end
+            if q.mission then
+                steersGate = true -- activating this branch points the realm gates at its trial
             end
         end
-        local banner = self:_activationControl(self.viewedTab, hasGrind)
+        local banner = self:_activationControl(self.viewedTab, needsActivation, steersGate)
         if banner then
             table.insert(self.rows, banner)
         end
@@ -359,10 +361,11 @@ function QuestPanel:_renderRows()
 end
 
 -- The per-branch activation control shown atop a single-branch view:
---   • this branch is the focus  -> a green "Active — counting" banner
---   • has grind quests, not focus -> a gold "▶ Activate this branch" button (switches focus here)
---   • only milestones           -> a subtle "Always tracked" note (no activation needed)
-function QuestPanel:_activationControl(track, hasGrind)
+--   • this branch is the focus  -> a green banner, TAP TO DEACTIVATE (back to random trials)
+--   • activation matters (grind quests OR a gate-steering trial), not focus
+--       -> a gold "▶ Activate" button (switches focus here; gates deal its trial)
+--   • only global milestones    -> a subtle "Always tracked" note (no activation needed)
+function QuestPanel:_activationControl(track, hasGrind, steersGate)
     local isFocus = self.focusTrack ~= nil and track == self.focusTrack
 
     -- Game pill ring on the banner too: emerald when this branch is the active/counting focus,
@@ -379,25 +382,30 @@ function QuestPanel:_activationControl(track, hasGrind)
     })
 
     if isFocus then
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, -24, 1, 0)
-        label.Position = UDim2.new(0, 12, 0, 0)
-        label.BackgroundTransparency = 1
-        label.Text = "▶ Active branch — quests are counting"
-        label.TextColor3 = COLORS.text
-        label.Font = Enum.Font.GothamBold
-        label.TextScaled = true
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.ZIndex = 103
-        label.Parent = row
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 1, 0)
+        btn.BackgroundTransparency = 1
+        btn.Text = steersGate and "▶ Active — realm gates deal this trial. Tap to deactivate."
+            or "▶ Active branch — quests are counting. Tap to deactivate."
+        btn.TextColor3 = COLORS.text
+        btn.Font = Enum.Font.GothamBold
+        btn.TextScaled = true
+        btn.AutoButtonColor = false
+        btn.ZIndex = 103
+        btn.Parent = row
         local c = Instance.new("UITextSizeConstraint")
         c.MaxTextSize = 18
-        c.Parent = label
+        c.Parent = btn
+        btn.Activated:Connect(function()
+            self:_callBus("quest.setActiveTrack", {}) -- no track = back to random trials
+            self:_refresh()
+        end)
     elseif hasGrind then
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, 0, 1, 0)
         btn.BackgroundTransparency = 1
-        btn.Text = "▶ Activate this branch (start its quests counting)"
+        btn.Text = steersGate and "▶ Activate — realm gates will deal this trial"
+            or "▶ Activate this branch (start its quests counting)"
         btn.TextColor3 = COLORS.focus
         btn.Font = Enum.Font.GothamBold
         btn.TextScaled = true
