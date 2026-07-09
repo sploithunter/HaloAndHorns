@@ -266,5 +266,21 @@
    "texture": "assets/exports/eggs/hell2_desert_egg/hell2_desert_egg.png"
   },
   "uploadedBy": "upload_eggs.js 2026-06-23"
+ },
+ "celestial_egg": {
+  "icon_decal": "84773442512699",
+  "icon_image": "90833713444650",
+  "model_asset": "75458974543354",
+  "mesh_id": "rbxassetid://76403285913824",
+  "mesh_image": "rbxassetid://129676076147696",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "heaven",
+  "origin": "creator",
+  "sources": {
+   "icon": "assets/source/eggs/celestial_egg.png",
+   "fbx": "assets/exports/eggs/celestial_egg/celestial_egg_5k.fbx",
+   "texture": "assets/exports/eggs/celestial_egg/celestial_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-07-09"
  }
 }
