@@ -5857,10 +5857,10 @@ local petConfig = {
             fixed_odds = true,
             -- THE point of platinum: 5% -> 15% stated huge (any_pet)
             huge = { chance = 0.15, any_pet = true },
-            asset_id = "rbxassetid://70381184616429", -- PLACEHOLDER (base shell)
-            image_id = "rbxassetid://97839482817366", -- PLACEHOLDER (base icon)
-            mesh_asset = "rbxassetid://97161362566193", -- PLACEHOLDER (world drop)
-            texture_asset = "rbxassetid://77630876871116",
+            asset_id = "rbxassetid://107952564182044", -- platinum shell (real)
+            image_id = "rbxassetid://105034548301397", -- platinum icon (resolved image)
+            mesh_asset = "rbxassetid://124254786804825", -- world-drop visual
+            texture_asset = "rbxassetid://107926522045206",
             unlock_requirement = nil,
             pet_weights = {
                 wyrmling = 30,
@@ -5896,10 +5896,10 @@ local petConfig = {
             fixed_odds = true,
             -- THE point of platinum: 5% -> 15% stated huge (any_pet)
             huge = { chance = 0.15, any_pet = true },
-            asset_id = "rbxassetid://75458974543354", -- PLACEHOLDER (base shell)
-            image_id = "rbxassetid://90833713444650", -- PLACEHOLDER (base icon)
-            mesh_asset = "rbxassetid://76403285913824", -- PLACEHOLDER (world drop)
-            texture_asset = "rbxassetid://129676076147696",
+            asset_id = "rbxassetid://113160392099933", -- platinum shell (real)
+            image_id = "rbxassetid://88703224285455", -- platinum icon (resolved image)
+            mesh_asset = "rbxassetid://70530671865800", -- world-drop visual
+            texture_asset = "rbxassetid://98555273984361",
             unlock_requirement = nil,
             pet_weights = {
                 lumen_dove = 30,

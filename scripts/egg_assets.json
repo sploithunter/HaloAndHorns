@@ -298,5 +298,37 @@
    "texture": "assets/exports/eggs/obsidian_egg/obsidian_egg.png"
   },
   "uploadedBy": "upload_eggs.js 2026-07-09"
+ },
+ "platinum_celestial_egg": {
+  "icon_decal": "84222977219255",
+  "icon_image": "88703224285455",
+  "model_asset": "113160392099933",
+  "mesh_id": "rbxassetid://70530671865800",
+  "mesh_image": "rbxassetid://98555273984361",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "neutral",
+  "origin": "creator",
+  "sources": {
+   "icon": "assets/source/eggs/platinum_celestial_egg.png",
+   "fbx": "assets/exports/eggs/platinum_celestial_egg/platinum_celestial_egg_5k.fbx",
+   "texture": "assets/exports/eggs/platinum_celestial_egg/platinum_celestial_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-07-09"
+ },
+ "platinum_obsidian_egg": {
+  "icon_decal": "99732803525383",
+  "icon_image": "105034548301397",
+  "model_asset": "107952564182044",
+  "mesh_id": "rbxassetid://124254786804825",
+  "mesh_image": "rbxassetid://107926522045206",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "neutral",
+  "origin": "creator",
+  "sources": {
+   "icon": "assets/source/eggs/platinum_obsidian_egg.png",
+   "fbx": "assets/exports/eggs/platinum_obsidian_egg/platinum_obsidian_egg_5k.fbx",
+   "texture": "assets/exports/eggs/platinum_obsidian_egg/platinum_obsidian_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-07-09"
  }
 }
