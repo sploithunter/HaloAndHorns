@@ -639,7 +639,7 @@ return {
             },
             drop_table = { grass_coins = 280, light_tokens = 32 },
             -- BOSS EXCLUSIVE EGG — production odds (see infernal_boss)
-            exclusive_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.02 },
+            exclusive_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.005 }, -- 0.5%
         },
         -- TANK — the prism warden: the crystalline lion wall (mirror of ember_brute).
         prism_warden = {
@@ -714,7 +714,7 @@ return {
             -- BOSS EXCLUSIVE EGG (docs MISSION_WORLDGEN §11): rolls per credited
             -- player at defeat. PRODUCTION odds (mechanics live-verified at the
             -- 0.5 test value 2026-07-09: drop, pickup fireworks, fixed-odds hatch).
-            exclusive_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.02 },
+            exclusive_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.005 }, -- 0.5% (Jason: slim, all trial bosses)
         },
 
         -- ARCH-VILLAIN (Jason 2026-07-02: "think of it as a super boss") — the tier ABOVE boss

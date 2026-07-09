@@ -44,6 +44,16 @@ function MissionSchema.validate(cfg, deps)
                     path .. ".area: no zones entry '" .. zoneKey .. "' (branding contract: biome RPS + origin drops need the pseudo-zone)"
             end
         end
+        if def.boss_egg ~= nil then
+            local eggs = (deps.pets and deps.pets.egg_sources) or {}
+            local eggDef = eggs[def.boss_egg.egg]
+            if eggDef == nil then
+                return false, path .. ".boss_egg.egg: unknown egg '" .. tostring(def.boss_egg.egg) .. "'"
+            end
+            if eggDef.fixed_odds ~= true then
+                return false, path .. ".boss_egg.egg: '" .. tostring(def.boss_egg.egg) .. "' is not fixed_odds (inventory eggs must state exact odds)"
+            end
+        end
         if counters[missionId .. "s_completed"] == nil then
             return false,
                 path .. ": stats counter '" .. missionId .. "s_completed' not declared (per-trial achievements would silently never tick)"

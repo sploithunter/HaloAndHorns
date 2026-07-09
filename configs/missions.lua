@@ -158,6 +158,11 @@ return {
         -- hell = the lava natives, heaven = the celestial host.
         hell_trial = {
             display = "Hell Trial",
+            -- BOSS EGG (0.5% per credited player, ANY boss-tier kill in this
+            -- trial — injected into pet-model boss defs at spawn) + the same
+            -- 0.5% on FIRST-TIME sequence completion (replays don't advance,
+            -- so short maps can't be re-run to farm eggs — Jason).
+            boss_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.005 },
             kit = "gray_box",
             theme = "hell",
             -- everyone plays the same mission #1, #2, #3... (Jason: shared experience)
@@ -230,6 +235,11 @@ return {
         },
         heaven_trial = {
             display = "Heaven Trial",
+            -- BOSS EGG (0.5% per credited player, ANY boss-tier kill in this
+            -- trial — injected into pet-model boss defs at spawn) + the same
+            -- 0.5% on FIRST-TIME sequence completion (replays don't advance,
+            -- so short maps can't be re-run to farm eggs — Jason).
+            boss_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.005 },
             kit = "gray_box",
             theme = "heaven",
             -- everyone plays the same mission #1, #2, #3... (Jason: shared experience)
@@ -296,6 +306,11 @@ return {
         -- model units — boss = a HUGE-scaled pet.
         lava_trial = {
             display = "Lava Trial",
+            -- BOSS EGG (0.5% per credited player, ANY boss-tier kill in this
+            -- trial — injected into pet-model boss defs at spawn) + the same
+            -- 0.5% on FIRST-TIME sequence completion (replays don't advance,
+            -- so short maps can't be re-run to farm eggs — Jason).
+            boss_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.005 },
             kit = "gray_box",
             theme = "lava", -- bespoke palette + atmosphere (pools alias hell's)
             area = "lava", -- pseudo-zone: biome RPS + pyromancer-branded drops
@@ -354,6 +369,11 @@ return {
         },
         ice_trial = {
             display = "Ice Trial",
+            -- BOSS EGG (0.5% per credited player, ANY boss-tier kill in this
+            -- trial — injected into pet-model boss defs at spawn) + the same
+            -- 0.5% on FIRST-TIME sequence completion (replays don't advance,
+            -- so short maps can't be re-run to farm eggs — Jason).
+            boss_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.005 },
             kit = "gray_box",
             theme = "ice", -- bespoke palette + atmosphere (pools alias heaven's)
             area = "ice", -- pseudo-zone: biome RPS + cryomancer-branded drops
