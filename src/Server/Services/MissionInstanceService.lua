@@ -105,6 +105,18 @@ function MissionInstanceService:Start()
         end
         stale:Destroy()
     end
+    -- gate-label attribute: initial publish + follow the quest focus
+    -- (QuestService republishes QuestActiveTrack on change and on list)
+    local function watchGateLabel(player)
+        player:GetAttributeChangedSignal("QuestActiveTrack"):Connect(function()
+            self:_refreshGateLabel(player)
+        end)
+        self:_refreshGateLabel(player)
+    end
+    Players.PlayerAdded:Connect(watchGateLabel)
+    for _, p in ipairs(Players:GetPlayers()) do
+        watchGateLabel(p)
+    end
     -- bind authored doors, now and as they appear
     for _, part in ipairs(CollectionService:GetTagged("MissionDoor")) do
         self:_bindDoor(part)
@@ -807,6 +819,7 @@ function MissionInstanceService:SkipCurrent(player, missionId)
         return { ok = false, reason = "data_not_loaded" }
     end
     self:_log("Warn", "trial number SKIPPED", { player = player.Name, mission = missionId })
+    self:_refreshGateLabel(player)
     return { ok = true, nextTrial = newHead }
 end
 
@@ -849,6 +862,7 @@ function MissionInstanceService:_close(instanceId, reason)
                         -- throttle): worst-case crash loss = re-facing a trial
                         -- you already beat. Coalesces on the 15s debounce.
                         dataSvc:RequestSave(opener, "mission_sequence")
+                        self:_refreshGateLabel(opener)
                         -- FIRST-TIME CLEAR egg roll (0.5%): tied to the
                         -- advance moment, so replays/re-runs can't farm it
                         local eggCfg = self._config.missions[record.missionId]
@@ -1888,6 +1902,32 @@ function MissionInstanceService:_safeWarp(member, targetCF)
     if root.Parent then
         root.Anchored = false
     end
+end
+
+-- The realm gates are quest-aware, so WHICH trial the E-prompt opens is
+-- per-player state (active binding + your own sequence head). Publish it as
+-- the NextTrialLabel attribute; MissionGatePrompt stamps it onto the door
+-- prompt locally (a shared ProximityPrompt can't show per-player text).
+function MissionInstanceService:_refreshGateLabel(player)
+    local label = "Random Trial"
+    local bound
+    pcall(function()
+        local quests = _G.RBXTemplateServices:Get("QuestService")
+        bound = quests and quests.GetActiveMissionBinding
+            and quests:GetActiveMissionBinding(player)
+    end)
+    local def = bound and self._config.missions[bound]
+    if def then
+        local played = 0
+        pcall(function()
+            local dataSvc = _G.RBXTemplateServices:Get("DataService")
+            local data = dataSvc:GetData(player)
+            played = (data and data.GameData and data.GameData.MissionSeq
+                and tonumber(data.GameData.MissionSeq[bound])) or 0
+        end)
+        label = (def.display or bound) .. " #" .. (played + 1)
+    end
+    player:SetAttribute("NextTrialLabel", label)
 end
 
 function MissionInstanceService:_bindDoor(part)

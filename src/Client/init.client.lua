@@ -486,6 +486,17 @@ do
     end
 end
 
+-- MissionGatePrompt: the quest-aware gates' E-prompt names the trial it will
+-- deal ("Hell Lava Trial #1" / "Random Trial") from the NextTrialLabel attr.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MissionGatePrompt).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MissionGatePrompt", { error = tostring(err) })
+    end
+end
+
 -- MissionMap: CoH-style mission minimap — fog-of-war rooms + doorway ticks,
 -- draggable + minimizable; renders the server-published MissionMapData attr.
 do

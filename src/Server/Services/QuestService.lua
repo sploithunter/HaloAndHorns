@@ -181,6 +181,8 @@ function QuestService:SetActiveTrack(player, trackId)
     local data = self._dataService:GetData(player)
     self:_reconcile(player, true) -- bank ALL open windows (the outgoing focus included)
     data.QuestActiveTrack = trackId
+    -- published so gate-facing systems can follow the focus (NextTrialLabel)
+    player:SetAttribute("QuestActiveTrack", trackId)
     if trackId then
         local headId = self:_trackHeads(player)[trackId]
         local def = headId and self._config.defs[headId]
@@ -340,6 +342,7 @@ function QuestService:List(player)
         q.paused = (grind or steersGate) and not trackActive and not q.locked and q.claimedCount == 0
         q.def = nil -- not for the wire
     end
+    player:SetAttribute("QuestActiveTrack", activeTrack) -- login republish (SetActiveTrack only fires on change)
     return { ok = true, quests = out, activeTrack = activeTrack }
 end
 
