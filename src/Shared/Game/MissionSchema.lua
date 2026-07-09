@@ -77,6 +77,16 @@ function MissionSchema.validate(cfg, deps)
         end
     end
 
+    -- quest MISSION BINDINGS (deps.quests): a quest def naming a mission
+    -- that doesn't exist would silently break quest-aware gates
+    if deps.quests then
+        for questId, qdef in pairs(deps.quests.defs or {}) do
+            if qdef.mission ~= nil and (cfg.missions or {})[qdef.mission] == nil then
+                return false, "quests.defs." .. tostring(questId) .. ".mission: unknown mission '" .. tostring(qdef.mission) .. "'"
+            end
+        end
+    end
+
     local rnd = cfg.random
     if rnd and rnd.pool then
         for _, id in ipairs(rnd.pool) do

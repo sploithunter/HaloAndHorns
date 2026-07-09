@@ -60,10 +60,12 @@ return {
     -- with MissionId="random" rolls one of pool per entry with a fresh seed.
     -- Locked behind the quest unlock flag (GameData.Unlocks.random_missions,
     -- granted by the mi_first_trial quest claim).
+    -- AUTO gates (MissionId="auto"): the active quest's mission binding
+    -- (quests.lua def.mission) decides the trial; no binding = a roll from
+    -- this pool. No unlock — the gate itself is the entry point.
     random = {
         pool = { "hell_trial", "heaven_trial", "lava_trial", "ice_trial" },
-        display = "Random Trial",
-        unlock = "random_missions",
+        display = "Trials",
     },
 
     -- MISSION static-enemy scaling (Jason 2026-07-09, heaven boss + 2 LT =

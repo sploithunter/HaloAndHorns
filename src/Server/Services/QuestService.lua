@@ -348,6 +348,25 @@ function QuestService:_isLocked(player, questId)
     return false
 end
 
+-- The ACTIVE track's head quest may BIND a mission (def.mission =
+-- "lava_trial"): quest-aware trial gates route through it (Jason: "random
+-- trials unless you activate a quest — then the gate just changes").
+-- Deactivating the track reverts gates to random; per-mission sequence
+-- heads keep everyone's place.
+function QuestService:GetActiveMissionBinding(player)
+    local data = self._dataService:GetData(player)
+    if type(data) ~= "table" then
+        return nil
+    end
+    local track = data.QuestActiveTrack
+    if not track then
+        return nil
+    end
+    local head = self:_trackHeads(player)[track]
+    local def = head and (self._config.defs or {})[head]
+    return def and def.mission or nil
+end
+
 function QuestService:Claim(player, questId)
     local def = (self._config.defs or {})[questId]
     if not def then

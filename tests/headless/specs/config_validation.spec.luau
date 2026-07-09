@@ -23,6 +23,7 @@ return function()
                 pets = loadModule("configs/pets.lua"),
                 stats = loadModule("configs/stats.lua"),
                 areas = loadModule("configs/areas.lua"),
+                quests = loadModule("configs/quests.lua"),
             })
             if not ok then
                 error("boot would CRASH: " .. tostring(err))

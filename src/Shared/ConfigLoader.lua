@@ -747,6 +747,7 @@ function ConfigLoader:_validateMissionsConfig(config)
             pets = self:_rawConfig("pets"),
             stats = self:_rawConfig("stats"),
             areas = self:_rawConfig("areas"),
+            quests = self:_rawConfig("quests"),
         })
         if not ok then
             return false, "Missions config: " .. tostring(err)

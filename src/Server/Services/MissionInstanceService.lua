@@ -208,13 +208,27 @@ function MissionInstanceService:Open(player, missionId, opts)
     -- quest-granted profile unlock; the attempt counter below already gives
     -- every entry a fresh seed. record.source keeps the ladder counter honest.
     local source = missionId
+    if missionId == "auto" then
+        -- QUEST-AWARE gate (Jason): the active quest's mission binding
+        -- decides the trial; no binding = random. Deactivate the quest and
+        -- the gate reverts — per-mission sequence heads keep your place.
+        local bound
+        pcall(function()
+            local quests = _G.RBXTemplateServices:Get("QuestService")
+            bound = quests and quests.GetActiveMissionBinding
+                and quests:GetActiveMissionBinding(player)
+        end)
+        if bound and self._config.missions[bound] then
+            missionId = bound
+            source = "quest"
+        else
+            missionId = "random"
+        end
+    end
     if missionId == "random" then
         local rnd = self._config.random
         if not (rnd and rnd.pool and #rnd.pool > 0) then
             return nil, "random missions not configured"
-        end
-        if rnd.unlock and not self:_hasUnlock(player, rnd.unlock) then
-            return nil, "locked: complete the mission quest to unlock random trials"
         end
         missionId = rnd.pool[math.random(#rnd.pool)]
     end
@@ -1854,7 +1868,7 @@ function MissionInstanceService:_bindDoor(part)
     -- "random" is a mission SOURCE (rolls from config.random.pool at entry);
     -- Open() handles the roll + the quest-unlock gate per trigger
     local mission
-    if missionId == "random" then
+    if missionId == "random" or missionId == "auto" then
         mission = self._config.random
         if not mission then
             return
