@@ -118,18 +118,18 @@ return {
             dmg_mult = 3,
             armor = 150,
             tier = "boss",
-            -- huge-pet scale (~3) read as NORMAL next to scale-10 static
-            -- bosses (Jason's Empyrean run) — bosses get boss proportions
             scale_mult = 6, -- pet 1.6 → ~9.6, Magma-Wyrm territory
             role = "tank", -- planted: a kiting blaster boss was trivially safe
-            -- THE HUGE RULE: all huges have AoE — basic attacks splash
-            -- like the static bosses (dire_bear pattern)
+            -- THE HUGE RULE (applies up the ladder): AoE basic attacks
             splash = { radius = 10, frac = 0.3 },
             -- the static bosses' defining threat — the telegraphed slam
             abilities = {
                 slam = { damage = 140, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },
             },
-            display_prefix = "Huge ",
+            -- TITAN, not Huge (Jason: "it's not a huge and it fights more
+            -- than a huge" — huge is the PLAYER-pet top size class; mission
+            -- bosses at this scale are their own rank above it)
+            display_prefix = "Titan ",
         },
     },
 
