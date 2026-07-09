@@ -361,6 +361,16 @@ function MissionInstanceService:Open(player, missionId, opts)
             -- your loot); generally useful for any per-mission gating
             member:SetAttribute("InMission", instanceId)
             member:SetAttribute("MissionTheme", mission.theme or "earth")
+            -- THE TRIAL COUNTS AS ITS REALM (Jason 2026-07-09: "alignment
+            -- isn't working inside the trials"): resonance keys on
+            -- CurrentRealm, which is layer-derived — plaza/base entries read
+            -- neutral. Override with the mission THEME for the run; restored
+            -- from the layer SSOT at close. (RealmAtmosphere keys on
+            -- CurrentLayer, so mission lighting isn't disturbed.)
+            local themeRealm = (mission.theme == "hell" and "hell")
+                or (mission.theme == "heaven" and "heaven")
+                or "neutral"
+            member:SetAttribute("CurrentRealm", themeRealm)
             if sequenceN then
                 -- the shared-sequence number — map title + tracker show it
                 member:SetAttribute("MissionSequence", sequenceN)
@@ -683,6 +693,9 @@ function MissionInstanceService:_close(instanceId, reason)
         member:SetAttribute("InMission", nil)
         member:SetAttribute("MissionTheme", nil)
         member:SetAttribute("MissionSequence", nil)
+        pcall(function() -- restore layer-derived CurrentRealm (theme override ends)
+            _G.RBXTemplateServices:Get("LayerService"):RefreshRealmAttributes(member)
+        end)
         member:SetAttribute("MissionEnemyPings", nil)
         local zoom = record.savedZoom and record.savedZoom[member.UserId]
         if zoom then

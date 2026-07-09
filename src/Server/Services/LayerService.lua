@@ -170,6 +170,13 @@ function LayerService:_publishLayer(player, layerId)
     player:SetAttribute("RealmHatchLuckBonus", self:GetHatchLuckBonus(player))
 end
 
+-- Re-publish the layer-derived realm attributes from the SSOT (used by
+-- MissionInstanceService to restore CurrentRealm after a mission overrode
+-- it with the mission THEME).
+function LayerService:RefreshRealmAttributes(player)
+    self:_publishLayer(player, self:GetCurrentLayer(player))
+end
+
 -- Attempt to move the player to a layer. Server re-validates cost from config.
 -- opts.force (test portals / dev) skips the soul/level/token gate AND the cost deduction —
 -- a pure teleport into the realm state, so the realm is reachable for testing before the
