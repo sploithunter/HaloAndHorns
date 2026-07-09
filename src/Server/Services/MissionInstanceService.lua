@@ -38,6 +38,8 @@ local GrayBoxKit = require(ReplicatedStorage.Shared.Worldgen.GrayBoxKit)
 local TileKitBuilder = require(ServerScriptService.Server.World.TileKitBuilder)
 local MissionStamper = require(ServerScriptService.Server.World.MissionStamper)
 
+local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+
 local PROMPT_NAME = "MissionDoorPrompt"
 -- streaming-safe warp caps (see _safeWarp)
 local STREAM_WAIT = 8 -- pre-warp yield cap (seconds)
@@ -434,8 +436,20 @@ function MissionInstanceService:Open(player, missionId, opts)
                 table.insert(points, desc)
             end
         end
+        local objectivePointIndex
+        for i, point in ipairs(points) do
+            if point:GetAttribute("ObjectiveRoom") then
+                objectivePointIndex = i
+                break
+            end
+        end
         local comp =
-            MissionPopulation.roll(mission.packs or {}, #points, MissionSeed.stream(seed, "spawns"))
+            MissionPopulation.roll(mission.packs or {}, #points, MissionSeed.stream(seed, "spawns"), {
+                -- CoH rule (Jason's boss-less lava run): the OBJECTIVE room's
+                -- point always rolls a boss-marked pack — the boss guards the
+                -- glowy; weight-3 luck can no longer produce a boss-less map
+                bossPointIndex = objectivePointIndex,
+            })
         local posRng = MissionSeed.mulberry32(MissionSeed.stream(seed, "spawnpos"))
         local SCATTER = 14 -- studs around the anchor (rooms are 96+ wide at 6x scale)
         local enemySvc
@@ -572,6 +586,40 @@ function MissionInstanceService:Open(player, missionId, opts)
             publish(seqTag .. "Reach the glowing beacon!", "★", 1)
         end
 
+        -- COMPLETE = press/hold E at the ACTIVE beacon (Jason: "instead of
+        -- just passing out... same E functionality — works on mobile"). The
+        -- prompt exists disabled; the monitor enables it at activation.
+        local beaconPrompts = {}
+        for _, beacon in ipairs(beacons) do
+            local bp = Instance.new("ProximityPrompt")
+            bp.Name = "MissionCompletePrompt"
+            bp.ActionText = "Complete Mission"
+            bp.ObjectText = mission.display or missionId
+            bp.HoldDuration = 0.5
+            bp.MaxActivationDistance = 12
+            bp.RequiresLineOfSight = false
+            bp.Enabled = not gated -- reach_beacon variant: live immediately
+            bp.Parent = beacon
+            table.insert(beaconPrompts, bp)
+            bp.Triggered:Connect(function(who)
+                if teamKeyFor(who) ~= teamKey then
+                    return
+                end
+                if gated and beacon:GetAttribute("ObjectiveActive") ~= true then
+                    return
+                end
+                -- completion fanfare (reward TBD — the hook is this event)
+                for _, member in ipairs(membersOf(teamKey)) do
+                    fireGameEvent(member, "mission_complete", {
+                        mission = missionId,
+                        sequence = record.sequence,
+                        name = ("%s complete!"):format(mission.display or missionId),
+                    })
+                end
+                self:Complete(instanceId)
+            end)
+        end
+
         record.monitor = task.spawn(function()
             local cleared = not gated or #record.enemies == 0
             local lastDown = -1
@@ -620,27 +668,27 @@ function MissionInstanceService:Open(player, missionId, opts)
                                 beacon.Transparency = 0
                             end
                         end
-                        publish("Objective active — reach the glowing beacon!", "★", 1)
+                        for _, bp in ipairs(beaconPrompts) do
+                            if bp.Parent then
+                                bp.Enabled = true
+                            end
+                        end
+                        publish("Objective active — activate the glowing beacon!", "★", 1)
+                        -- activation FANFARE (Jason: the moment the glowy
+                        -- lights is the celebration beat)
+                        for _, member in ipairs(membersOf(teamKey)) do
+                            fireGameEvent(member, "objective_active", {
+                                mission = missionId,
+                                name = "Objective clear — the beacon awakens!",
+                            })
+                        end
                         self:_log("Info", "objective activated — mission cleared", {
                             instanceId = instanceId,
                         })
                     end
                 else
-                    for _, member in ipairs(membersOf(teamKey)) do
-                        local mroot = member.Character
-                            and member.Character:FindFirstChild("HumanoidRootPart")
-                        if mroot then
-                            for _, beacon in ipairs(beacons) do
-                                if
-                                    beacon.Parent
-                                    and (mroot.Position - beacon.Position).Magnitude <= 12
-                                then
-                                    self:Complete(instanceId)
-                                    return
-                                end
-                            end
-                        end
-                    end
+                    -- completion is the beacon PROMPT's job now (press E);
+                    -- the monitor just idles until close
                 end
                 task.wait(0.5)
             end

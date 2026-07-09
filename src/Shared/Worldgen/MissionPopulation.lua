@@ -18,12 +18,17 @@ local MissionSeed = require(script.Parent.MissionSeed)
 
 local MissionPopulation = {}
 
-function MissionPopulation.roll(packs, pointCount, streamSeed)
+function MissionPopulation.roll(packs, pointCount, streamSeed, opts)
     local rng = MissionSeed.mulberry32(streamSeed)
     local total = 0
+    local bossPacks = {}
     for _, pack in ipairs(packs or {}) do
         total += tonumber(pack.weight) or 0
+        if pack.boss then
+            table.insert(bossPacks, pack)
+        end
     end
+    local bossPoint = opts and opts.bossPointIndex
 
     local out = {}
     for i = 1, pointCount do
@@ -39,6 +44,12 @@ function MissionPopulation.roll(packs, pointCount, streamSeed)
                 end
             end
             chosen = chosen or packs[#packs]
+            -- BOSS GUARDS THE GLOWY: the objective room's point always draws
+            -- a boss-marked pack (deterministic pick when several) — random
+            -- weights can't produce a boss-less map anymore
+            if i == bossPoint and #bossPacks > 0 then
+                chosen = bossPacks[1 + math.floor(rng() * #bossPacks)]
+            end
             for _, unit in ipairs(chosen.units or {}) do
                 for _ = 1, unit.count or 1 do
                     if unit.pet then

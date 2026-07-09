@@ -133,6 +133,7 @@ return {
                 },
                 { -- boss pack: the Magma Wyrm + a screen of 3
                     weight = 3,
+                    boss = true, -- population FORCES one of these at the objective room
                     units = {
                         { enemy = "infernal_boss", count = 1 },
                         { enemy = "lava_imp", count = 2 },
@@ -196,6 +197,7 @@ return {
                 },
                 { -- boss pack: the Archon + a screen of 3
                     weight = 3,
+                    boss = true, -- population FORCES one of these at the objective room
                     units = {
                         { enemy = "celestial_archon", count = 1 },
                         { enemy = "zealous_cherub", count = 2 },
@@ -261,6 +263,7 @@ return {
                 },
                 { -- boss: the HUGE Empyrean Dragon holds the deep room
                     weight = 3,
+                    boss = true, -- population FORCES one of these at the objective room
                     units = {
                         { pet = "empyrean_dragon", rank = "boss", count = 1 },
                         { enemy = "lava_imp", count = 2 },
@@ -318,6 +321,7 @@ return {
                 },
                 { -- boss: the HUGE Black Ice Leviathan
                     weight = 3,
+                    boss = true, -- population FORCES one of these at the objective room
                     units = {
                         { pet = "black_ice_leviathan", rank = "boss", count = 1 },
                         { enemy = "frost_fox", count = 2 },

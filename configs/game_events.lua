@@ -265,6 +265,22 @@ return {
         sound = "power_up_stronger",
     },
 
+    -- All mission enemies down — the glowy AWAKENS (server: the objective
+    -- monitor). The celebration beat (Jason: fanfare when it becomes active).
+    objective_active = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 90, 255, 160 } }, -- beacon green
+        float = { color = { 140, 255, 190 } },
+    },
+
+    -- Mission COMPLETE (server: the beacon's E-prompt). Reward TBD — this
+    -- event is the hook; for now the full fireworks treatment.
+    mission_complete = {
+        sound = "hatch_fireworks",
+        vfx = { kind = "burst", color = { 255, 230, 120 }, count = 40 },
+        float = { color = { 255, 235, 150 } },
+    },
+
     -- An EXCLUSIVE boss egg was picked up (server: DropService _collect,
     -- kind "egg_item"). Jason: "it's a big deal" — full fireworks, gold
     -- burst, the float carries "<Egg> acquired!" from ctx.

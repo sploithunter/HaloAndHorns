@@ -559,6 +559,9 @@ function GrayBoxKit.parts(tile)
             },
             transparency = 1,
             canCollide = false,
+            -- the objective room's pack point: population FORCES a boss-
+            -- marked pack here (the boss guards the glowy — CoH rule)
+            attrs = tile.class == "objective" and { ObjectiveRoom = true } or nil,
         })
     end
 
