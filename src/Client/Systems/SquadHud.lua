@@ -55,8 +55,9 @@ end
 
 -- Set the card name to `displayName`, coloured by variant (golden = solid gold, rainbow = gradient,
 -- basic = white). The rainbow gradient is a child the label keeps/drops as the variant changes.
-local function applyVariantName(label, displayName, variant)
-    label.Text = displayName
+-- A HUGE pet reads in ALL CAPS (Jason: mark hugeness without lengthening the name).
+local function applyVariantName(label, displayName, variant, huge)
+    label.Text = huge and string.upper(displayName) or displayName
     local grad = label:FindFirstChild("VariantGrad")
     if variant == "rainbow" then
         label.TextColor3 = WHITE_NAME -- gradient tints the white base
@@ -851,7 +852,8 @@ function SquadHud.start()
                         applyVariantName(
                             pc.name,
                             petDisplayName(tostring(pet:GetAttribute("PetType") or pet.Name)),
-                            tostring(pet:GetAttribute("Variant") or "basic")
+                            tostring(pet:GetAttribute("Variant") or "basic"),
+                            pet:GetAttribute("Huge") == true
                         )
                         pc.fill.Size = UDim2.fromScale(math.clamp(frac, 0, 1), 1)
                         pc.fill.BackgroundColor3 = healthColor(frac)
@@ -1185,7 +1187,12 @@ function SquadHud.start()
                         card = makeCard(s.slot)
                         cards[s.slot] = card
                     end
-                    applyVariantName(card.name, petDisplayName(s.name), s.variant)
+                    applyVariantName(
+                        card.name,
+                        petDisplayName(s.name),
+                        s.variant,
+                        pet:GetAttribute("Huge") == true
+                    )
                     -- Archetype/role badge: element DISC + tinted aura RING (the universal
                     -- PetBadge). Element from the pet's origin; role from PetRole/by_type. Falls
                     -- back to the coloured letter glyph when that (element, role) has no disc art.
