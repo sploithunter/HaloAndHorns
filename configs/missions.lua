@@ -77,7 +77,8 @@ return {
             display = "Hell Trial",
             kit = "gray_box",
             theme = "hell",
-            seed_policy = "per_attempt",
+            -- everyone plays the same mission #1, #2, #3... (Jason: shared experience)
+            seed_policy = "shared_sequence",
             -- CoH clear-gate: the glowy stays inert until every mission enemy
             -- is defeated — which also makes pets mandatory (players are
             -- invulnerable; only pets can clear). "reach_beacon" remains the
@@ -147,7 +148,8 @@ return {
             display = "Heaven Trial",
             kit = "gray_box",
             theme = "heaven",
-            seed_policy = "per_attempt",
+            -- everyone plays the same mission #1, #2, #3... (Jason: shared experience)
+            seed_policy = "shared_sequence",
             objective = { kind = "clear_then_beacon" },
             -- CoH SPAWN TABLES (see hell_trial note): swarm / lieutenants /
             -- boss comps with role variety; tuned to the team lead's level.

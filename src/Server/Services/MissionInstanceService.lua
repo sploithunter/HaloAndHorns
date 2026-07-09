@@ -245,8 +245,33 @@ function MissionInstanceService:Open(player, missionId)
 
     -- seed (docs §3)
     local contextKey
+    local sequenceN
     if mission.seed_policy == "team_stable" then
         contextKey = teamKey
+    elseif mission.seed_policy == "shared_sequence" then
+        -- SHARED SEQUENCE (Jason 2026-07-09): everyone plays the SAME mission
+        -- #1, #2, #3... per mission id — a shared experience ("mission 28 was
+        -- great"). The opener's PERSISTED per-mission index advances AT OPEN,
+        -- which buys both requirements in one mechanism: a restart can't
+        -- replay (the index already moved on) and skipping a buggy mission is
+        -- just walking out and re-entering. Teams ride the opener's index.
+        -- contextKey deliberately has NO player/team component — global.
+        local okSeq, n = pcall(function()
+            local locator = _G.RBXTemplateServices
+            local dataSvc = locator and locator:Get("DataService")
+            local data = dataSvc and dataSvc:GetData(player)
+            if not data then
+                return nil
+            end
+            data.GameData = data.GameData or {}
+            data.GameData.MissionSeq = data.GameData.MissionSeq or {}
+            local nextN = (tonumber(data.GameData.MissionSeq[missionId]) or 0) + 1
+            data.GameData.MissionSeq[missionId] = nextN
+            dataSvc:RequestSave(player, "mission_sequence", { critical = true })
+            return nextN
+        end)
+        sequenceN = (okSeq and n) or 1
+        contextKey = "seq#" .. sequenceN
     else
         local counterKey = teamKey .. "|" .. missionId
         self._attempts[counterKey] = (self._attempts[counterKey] or 0) + 1
@@ -276,6 +301,9 @@ function MissionInstanceService:Open(player, missionId)
     })
     container:SetAttribute("MissionId", missionId)
     container:SetAttribute("MissionSeed", seed)
+    if sequenceN then
+        container:SetAttribute("MissionSequence", sequenceN)
+    end
 
     -- teleport the party in, remembering where each member stood
     local spawnPad = hooks.PlayerSpawn and hooks.PlayerSpawn[1]
@@ -329,6 +357,7 @@ function MissionInstanceService:Open(player, missionId)
         instanceId = instanceId,
         missionId = missionId,
         source = source, -- "random" when opened via the random door (quest ladder)
+        sequence = sequenceN, -- shared-sequence number ("Trial #28")
         teamKey = teamKey,
         seed = seed,
         slotIndex = slotIndex,
@@ -468,10 +497,13 @@ function MissionInstanceService:Open(player, missionId)
                 member:SetAttribute("MissionObjectiveFraction", fraction)
             end
         end
+        -- the shared-sequence number IS the shared experience — put it in
+        -- the tracker so players can talk about "Trial #28"
+        local seqTag = record.sequence and ("Trial #" .. record.sequence .. " — ") or ""
         if gated and total > 0 then
-            publish("Defeat all enemies!", ("0/%d"):format(total), 0)
+            publish(seqTag .. "Defeat all enemies!", ("0/%d"):format(total), 0)
         else
-            publish("Reach the glowing beacon!", "★", 1)
+            publish(seqTag .. "Reach the glowing beacon!", "★", 1)
         end
 
         record.monitor = task.spawn(function()
