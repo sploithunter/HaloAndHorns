@@ -80,9 +80,24 @@ function MissionSchema.validate(cfg, deps)
     -- quest MISSION BINDINGS (deps.quests): a quest def naming a mission
     -- that doesn't exist would silently break quest-aware gates
     if deps.quests then
+        local eggs = (deps.pets and deps.pets.egg_sources) or {}
         for questId, qdef in pairs(deps.quests.defs or {}) do
             if qdef.mission ~= nil and (cfg.missions or {})[qdef.mission] == nil then
                 return false, "quests.defs." .. tostring(questId) .. ".mission: unknown mission '" .. tostring(qdef.mission) .. "'"
+            end
+            -- egg-bucket rewards must reference real fixed-odds eggs (the
+            -- Platinum grant path — a typo would silently grant a dead item)
+            local items = qdef.reward and qdef.reward.items
+            for _, item in ipairs(items or {}) do
+                if item.bucket == "eggs" then
+                    local eggDef = eggs[item.id]
+                    if eggDef == nil then
+                        return false, "quests.defs." .. tostring(questId) .. ".reward: unknown egg '" .. tostring(item.id) .. "'"
+                    end
+                    if eggDef.fixed_odds ~= true then
+                        return false, "quests.defs." .. tostring(questId) .. ".reward: egg '" .. tostring(item.id) .. "' is not fixed_odds"
+                    end
+                end
             end
         end
     end

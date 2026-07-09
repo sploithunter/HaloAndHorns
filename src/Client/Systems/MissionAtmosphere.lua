@@ -60,6 +60,26 @@ local PRESETS = {
         },
         cc = { Saturation = -0.15, Contrast = 0.06, TintColor = Color3.fromRGB(210, 230, 255) },
     },
+    grass = {
+        lighting = {
+            Brightness = 1.4,
+            Ambient = Color3.fromRGB(90, 110, 80),
+            OutdoorAmbient = Color3.fromRGB(120, 150, 110),
+            FogColor = Color3.fromRGB(120, 150, 110),
+            FogEnd = 520,
+        },
+        cc = { Saturation = 0.05, Contrast = 0.05, TintColor = Color3.fromRGB(225, 255, 220) },
+    },
+    desert = {
+        lighting = {
+            Brightness = 1.5,
+            Ambient = Color3.fromRGB(130, 110, 80),
+            OutdoorAmbient = Color3.fromRGB(170, 145, 105),
+            FogColor = Color3.fromRGB(205, 175, 125),
+            FogEnd = 560,
+        },
+        cc = { Saturation = -0.05, Contrast = 0.06, TintColor = Color3.fromRGB(255, 235, 200) },
+    },
     heaven = {
         -- v2 (2026-07-08 playtest: v1 was a whiteout — "too bright to even
         -- see"): bright needs CONTRAST, not exposure. Moderate ambient +

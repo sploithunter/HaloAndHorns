@@ -5843,6 +5843,84 @@ local petConfig = {
             },
         },
 
+        -- PLATINUM PLATINUM OBSIDIAN EGG (the 100-clear quest reward, docs §12 lattice):
+        -- SAME five pets, HIGHER stated huge chance — policy-clean because
+        -- fixed_odds binds PER EGG (a different egg states different odds).
+        -- PLACEHOLDER assets = the base egg's (Jason ships platinum reskins;
+        -- swap asset_id/image_id/mesh_asset/texture_asset then).
+        platinum_obsidian_egg = {
+            name = "Platinum Obsidian Egg",
+            description = "Forged from a hundred trials. The huge within stirs far more often.",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            fixed_odds = true,
+            -- THE point of platinum: 5% -> 15% stated huge (any_pet)
+            huge = { chance = 0.15, any_pet = true },
+            asset_id = "rbxassetid://70381184616429", -- PLACEHOLDER (base shell)
+            image_id = "rbxassetid://97839482817366", -- PLACEHOLDER (base icon)
+            mesh_asset = "rbxassetid://97161362566193", -- PLACEHOLDER (world drop)
+            texture_asset = "rbxassetid://77630876871116",
+            unlock_requirement = nil,
+            pet_weights = {
+                wyrmling = 30,
+                obsidian_hound = 25,
+                cinder_golemite = 20,
+                ashwing = 15,
+                cerberus_pup = 10,
+            },
+            rarity_rates = {
+                golden_chance = 0.05,
+                rainbow_chance = 0.005,
+            },
+            variant_rolls = {
+                enabled = true,
+                allow_basic = true,
+                allow_golden = true,
+                allow_rainbow = true,
+                cost_multiplier = 20,
+            },
+        },
+
+        -- PLATINUM PLATINUM CELESTIAL EGG (the 100-clear quest reward, docs §12 lattice):
+        -- SAME five pets, HIGHER stated huge chance — policy-clean because
+        -- fixed_odds binds PER EGG (a different egg states different odds).
+        -- PLACEHOLDER assets = the base egg's (Jason ships platinum reskins;
+        -- swap asset_id/image_id/mesh_asset/texture_asset then).
+        platinum_celestial_egg = {
+            name = "Platinum Celestial Egg",
+            description = "Forged from a hundred trials. The huge within stirs far more often.",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            fixed_odds = true,
+            -- THE point of platinum: 5% -> 15% stated huge (any_pet)
+            huge = { chance = 0.15, any_pet = true },
+            asset_id = "rbxassetid://75458974543354", -- PLACEHOLDER (base shell)
+            image_id = "rbxassetid://90833713444650", -- PLACEHOLDER (base icon)
+            mesh_asset = "rbxassetid://76403285913824", -- PLACEHOLDER (world drop)
+            texture_asset = "rbxassetid://129676076147696",
+            unlock_requirement = nil,
+            pet_weights = {
+                lumen_dove = 30,
+                archon_spark = 25,
+                cloudling = 20,
+                halo_fawn = 15,
+                seraph_kit = 10,
+            },
+            rarity_rates = {
+                golden_chance = 0.05,
+                rainbow_chance = 0.005,
+            },
+            variant_rolls = {
+                enabled = true,
+                allow_basic = true,
+                allow_golden = true,
+                allow_rainbow = true,
+                cost_multiplier = 20,
+            },
+        },
+
         -- MEET-THE-CREATOR egg (Jason): not purchasable, not placed in the world —
         -- hatched from the eggs INVENTORY bucket (MeetCreatorService.HatchEggItem).
         -- One species (the creator's), standard golden/rainbow channels (luck

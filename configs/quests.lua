@@ -32,6 +32,16 @@ return {
         -- Door missions: the trials + Jason's random-mission ladder ("scale it
         -- up to something ridiculous... always be on a random quest").
         trials = { title = "The Trials", order = 7, unlock_level = 7 },
+        -- THE MATRIX (2 realms x 4 elements): every quest in a track BINDS
+        -- the auto gates to its trial (def.mission); 100-clear = Platinum egg
+        hell_lava = { title = "Hell Lava Trials", order = 8, unlock_level = 7 },
+        heaven_lava = { title = "Heaven Lava Trials", order = 9, unlock_level = 7 },
+        hell_ice = { title = "Hell Ice Trials", order = 10, unlock_level = 7 },
+        heaven_ice = { title = "Heaven Ice Trials", order = 11, unlock_level = 7 },
+        hell_grass = { title = "Hell Grass Trials", order = 12, unlock_level = 7 },
+        heaven_grass = { title = "Heaven Grass Trials", order = 13, unlock_level = 7 },
+        hell_desert = { title = "Hell Desert Trials", order = 14, unlock_level = 7 },
+        heaven_desert = { title = "Heaven Desert Trials", order = 15, unlock_level = 7 },
     },
 
     defs = {
@@ -434,6 +444,479 @@ return {
                 value = 10000,
             },
             reward = { currencies = { gems = 2500 } },
+        },
+        -- ===================== THE MATRIX TRIALS (8 tracks, Platinum centuries) =====================
+        hell_lava_10 = {
+            track = "hell_lava",
+            order = 1,
+            name = "Hell Lava: 10 Trials",
+            description = "Complete 10 Hell Lava Trials.",
+            mission = "hell_lava_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_lava_trials_completed",
+                value = 10,
+            },
+            reward = { currencies = { gems = 30 } },
+        },
+        hell_lava_25 = {
+            track = "hell_lava",
+            order = 2,
+            name = "Hell Lava: 25 Trials",
+            description = "Complete 25 Hell Lava Trials.",
+            mission = "hell_lava_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_lava_trials_completed",
+                value = 25,
+            },
+            reward = { currencies = { gems = 60 } },
+        },
+        hell_lava_50 = {
+            track = "hell_lava",
+            order = 3,
+            name = "Hell Lava: 50 Trials",
+            description = "Complete 50 Hell Lava Trials.",
+            mission = "hell_lava_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_lava_trials_completed",
+                value = 50,
+            },
+            reward = { currencies = { gems = 120 } },
+        },
+        hell_lava_100 = {
+            track = "hell_lava",
+            order = 4,
+            name = "Hell Lava: The Century",
+            description = "Complete 100 Hell Lava Trials. Requires Level 50. The Platinum egg awaits.",
+            mission = "hell_lava_trial",
+            -- ANTI-ALT (Jason): the century itself demands a leveled account —
+            -- alts can grind 90 but can't CLAIM without hitting 50
+            condition = {
+                type = "all_of",
+                of = {
+                    { type = "counter_at_least", counter = "hell_lava_trials_completed", value = 100 },
+                    { type = "level_at_least", value = 50 },
+                },
+            },
+            reward = {
+                currencies = { gems = 500 },
+                items = { { id = "platinum_obsidian_egg", bucket = "eggs", qty = 1 } },
+            },
+        },
+        heaven_lava_10 = {
+            track = "heaven_lava",
+            order = 1,
+            name = "Heaven Lava: 10 Trials",
+            description = "Complete 10 Heaven Lava Trials.",
+            mission = "heaven_lava_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_lava_trials_completed",
+                value = 10,
+            },
+            reward = { currencies = { gems = 30 } },
+        },
+        heaven_lava_25 = {
+            track = "heaven_lava",
+            order = 2,
+            name = "Heaven Lava: 25 Trials",
+            description = "Complete 25 Heaven Lava Trials.",
+            mission = "heaven_lava_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_lava_trials_completed",
+                value = 25,
+            },
+            reward = { currencies = { gems = 60 } },
+        },
+        heaven_lava_50 = {
+            track = "heaven_lava",
+            order = 3,
+            name = "Heaven Lava: 50 Trials",
+            description = "Complete 50 Heaven Lava Trials.",
+            mission = "heaven_lava_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_lava_trials_completed",
+                value = 50,
+            },
+            reward = { currencies = { gems = 120 } },
+        },
+        heaven_lava_100 = {
+            track = "heaven_lava",
+            order = 4,
+            name = "Heaven Lava: The Century",
+            description = "Complete 100 Heaven Lava Trials. Requires Level 50. The Platinum egg awaits.",
+            mission = "heaven_lava_trial",
+            -- ANTI-ALT (Jason): the century itself demands a leveled account —
+            -- alts can grind 90 but can't CLAIM without hitting 50
+            condition = {
+                type = "all_of",
+                of = {
+                    { type = "counter_at_least", counter = "heaven_lava_trials_completed", value = 100 },
+                    { type = "level_at_least", value = 50 },
+                },
+            },
+            reward = {
+                currencies = { gems = 500 },
+                items = { { id = "platinum_celestial_egg", bucket = "eggs", qty = 1 } },
+            },
+        },
+        hell_ice_10 = {
+            track = "hell_ice",
+            order = 1,
+            name = "Hell Ice: 10 Trials",
+            description = "Complete 10 Hell Ice Trials.",
+            mission = "hell_ice_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_ice_trials_completed",
+                value = 10,
+            },
+            reward = { currencies = { gems = 30 } },
+        },
+        hell_ice_25 = {
+            track = "hell_ice",
+            order = 2,
+            name = "Hell Ice: 25 Trials",
+            description = "Complete 25 Hell Ice Trials.",
+            mission = "hell_ice_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_ice_trials_completed",
+                value = 25,
+            },
+            reward = { currencies = { gems = 60 } },
+        },
+        hell_ice_50 = {
+            track = "hell_ice",
+            order = 3,
+            name = "Hell Ice: 50 Trials",
+            description = "Complete 50 Hell Ice Trials.",
+            mission = "hell_ice_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_ice_trials_completed",
+                value = 50,
+            },
+            reward = { currencies = { gems = 120 } },
+        },
+        hell_ice_100 = {
+            track = "hell_ice",
+            order = 4,
+            name = "Hell Ice: The Century",
+            description = "Complete 100 Hell Ice Trials. Requires Level 50. The Platinum egg awaits.",
+            mission = "hell_ice_trial",
+            -- ANTI-ALT (Jason): the century itself demands a leveled account —
+            -- alts can grind 90 but can't CLAIM without hitting 50
+            condition = {
+                type = "all_of",
+                of = {
+                    { type = "counter_at_least", counter = "hell_ice_trials_completed", value = 100 },
+                    { type = "level_at_least", value = 50 },
+                },
+            },
+            reward = {
+                currencies = { gems = 500 },
+                items = { { id = "platinum_obsidian_egg", bucket = "eggs", qty = 1 } },
+            },
+        },
+        heaven_ice_10 = {
+            track = "heaven_ice",
+            order = 1,
+            name = "Heaven Ice: 10 Trials",
+            description = "Complete 10 Heaven Ice Trials.",
+            mission = "heaven_ice_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_ice_trials_completed",
+                value = 10,
+            },
+            reward = { currencies = { gems = 30 } },
+        },
+        heaven_ice_25 = {
+            track = "heaven_ice",
+            order = 2,
+            name = "Heaven Ice: 25 Trials",
+            description = "Complete 25 Heaven Ice Trials.",
+            mission = "heaven_ice_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_ice_trials_completed",
+                value = 25,
+            },
+            reward = { currencies = { gems = 60 } },
+        },
+        heaven_ice_50 = {
+            track = "heaven_ice",
+            order = 3,
+            name = "Heaven Ice: 50 Trials",
+            description = "Complete 50 Heaven Ice Trials.",
+            mission = "heaven_ice_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_ice_trials_completed",
+                value = 50,
+            },
+            reward = { currencies = { gems = 120 } },
+        },
+        heaven_ice_100 = {
+            track = "heaven_ice",
+            order = 4,
+            name = "Heaven Ice: The Century",
+            description = "Complete 100 Heaven Ice Trials. Requires Level 50. The Platinum egg awaits.",
+            mission = "heaven_ice_trial",
+            -- ANTI-ALT (Jason): the century itself demands a leveled account —
+            -- alts can grind 90 but can't CLAIM without hitting 50
+            condition = {
+                type = "all_of",
+                of = {
+                    { type = "counter_at_least", counter = "heaven_ice_trials_completed", value = 100 },
+                    { type = "level_at_least", value = 50 },
+                },
+            },
+            reward = {
+                currencies = { gems = 500 },
+                items = { { id = "platinum_celestial_egg", bucket = "eggs", qty = 1 } },
+            },
+        },
+        hell_grass_10 = {
+            track = "hell_grass",
+            order = 1,
+            name = "Hell Grass: 10 Trials",
+            description = "Complete 10 Hell Grass Trials.",
+            mission = "hell_grass_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_grass_trials_completed",
+                value = 10,
+            },
+            reward = { currencies = { gems = 30 } },
+        },
+        hell_grass_25 = {
+            track = "hell_grass",
+            order = 2,
+            name = "Hell Grass: 25 Trials",
+            description = "Complete 25 Hell Grass Trials.",
+            mission = "hell_grass_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_grass_trials_completed",
+                value = 25,
+            },
+            reward = { currencies = { gems = 60 } },
+        },
+        hell_grass_50 = {
+            track = "hell_grass",
+            order = 3,
+            name = "Hell Grass: 50 Trials",
+            description = "Complete 50 Hell Grass Trials.",
+            mission = "hell_grass_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_grass_trials_completed",
+                value = 50,
+            },
+            reward = { currencies = { gems = 120 } },
+        },
+        hell_grass_100 = {
+            track = "hell_grass",
+            order = 4,
+            name = "Hell Grass: The Century",
+            description = "Complete 100 Hell Grass Trials. Requires Level 50. The Platinum egg awaits.",
+            mission = "hell_grass_trial",
+            -- ANTI-ALT (Jason): the century itself demands a leveled account —
+            -- alts can grind 90 but can't CLAIM without hitting 50
+            condition = {
+                type = "all_of",
+                of = {
+                    { type = "counter_at_least", counter = "hell_grass_trials_completed", value = 100 },
+                    { type = "level_at_least", value = 50 },
+                },
+            },
+            reward = {
+                currencies = { gems = 500 },
+                items = { { id = "platinum_obsidian_egg", bucket = "eggs", qty = 1 } },
+            },
+        },
+        heaven_grass_10 = {
+            track = "heaven_grass",
+            order = 1,
+            name = "Heaven Grass: 10 Trials",
+            description = "Complete 10 Heaven Grass Trials.",
+            mission = "heaven_grass_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_grass_trials_completed",
+                value = 10,
+            },
+            reward = { currencies = { gems = 30 } },
+        },
+        heaven_grass_25 = {
+            track = "heaven_grass",
+            order = 2,
+            name = "Heaven Grass: 25 Trials",
+            description = "Complete 25 Heaven Grass Trials.",
+            mission = "heaven_grass_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_grass_trials_completed",
+                value = 25,
+            },
+            reward = { currencies = { gems = 60 } },
+        },
+        heaven_grass_50 = {
+            track = "heaven_grass",
+            order = 3,
+            name = "Heaven Grass: 50 Trials",
+            description = "Complete 50 Heaven Grass Trials.",
+            mission = "heaven_grass_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_grass_trials_completed",
+                value = 50,
+            },
+            reward = { currencies = { gems = 120 } },
+        },
+        heaven_grass_100 = {
+            track = "heaven_grass",
+            order = 4,
+            name = "Heaven Grass: The Century",
+            description = "Complete 100 Heaven Grass Trials. Requires Level 50. The Platinum egg awaits.",
+            mission = "heaven_grass_trial",
+            -- ANTI-ALT (Jason): the century itself demands a leveled account —
+            -- alts can grind 90 but can't CLAIM without hitting 50
+            condition = {
+                type = "all_of",
+                of = {
+                    { type = "counter_at_least", counter = "heaven_grass_trials_completed", value = 100 },
+                    { type = "level_at_least", value = 50 },
+                },
+            },
+            reward = {
+                currencies = { gems = 500 },
+                items = { { id = "platinum_celestial_egg", bucket = "eggs", qty = 1 } },
+            },
+        },
+        hell_desert_10 = {
+            track = "hell_desert",
+            order = 1,
+            name = "Hell Desert: 10 Trials",
+            description = "Complete 10 Hell Desert Trials.",
+            mission = "hell_desert_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_desert_trials_completed",
+                value = 10,
+            },
+            reward = { currencies = { gems = 30 } },
+        },
+        hell_desert_25 = {
+            track = "hell_desert",
+            order = 2,
+            name = "Hell Desert: 25 Trials",
+            description = "Complete 25 Hell Desert Trials.",
+            mission = "hell_desert_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_desert_trials_completed",
+                value = 25,
+            },
+            reward = { currencies = { gems = 60 } },
+        },
+        hell_desert_50 = {
+            track = "hell_desert",
+            order = 3,
+            name = "Hell Desert: 50 Trials",
+            description = "Complete 50 Hell Desert Trials.",
+            mission = "hell_desert_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "hell_desert_trials_completed",
+                value = 50,
+            },
+            reward = { currencies = { gems = 120 } },
+        },
+        hell_desert_100 = {
+            track = "hell_desert",
+            order = 4,
+            name = "Hell Desert: The Century",
+            description = "Complete 100 Hell Desert Trials. Requires Level 50. The Platinum egg awaits.",
+            mission = "hell_desert_trial",
+            -- ANTI-ALT (Jason): the century itself demands a leveled account —
+            -- alts can grind 90 but can't CLAIM without hitting 50
+            condition = {
+                type = "all_of",
+                of = {
+                    { type = "counter_at_least", counter = "hell_desert_trials_completed", value = 100 },
+                    { type = "level_at_least", value = 50 },
+                },
+            },
+            reward = {
+                currencies = { gems = 500 },
+                items = { { id = "platinum_obsidian_egg", bucket = "eggs", qty = 1 } },
+            },
+        },
+        heaven_desert_10 = {
+            track = "heaven_desert",
+            order = 1,
+            name = "Heaven Desert: 10 Trials",
+            description = "Complete 10 Heaven Desert Trials.",
+            mission = "heaven_desert_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_desert_trials_completed",
+                value = 10,
+            },
+            reward = { currencies = { gems = 30 } },
+        },
+        heaven_desert_25 = {
+            track = "heaven_desert",
+            order = 2,
+            name = "Heaven Desert: 25 Trials",
+            description = "Complete 25 Heaven Desert Trials.",
+            mission = "heaven_desert_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_desert_trials_completed",
+                value = 25,
+            },
+            reward = { currencies = { gems = 60 } },
+        },
+        heaven_desert_50 = {
+            track = "heaven_desert",
+            order = 3,
+            name = "Heaven Desert: 50 Trials",
+            description = "Complete 50 Heaven Desert Trials.",
+            mission = "heaven_desert_trial", -- binds the auto gates while this track is active
+            condition = {
+                type = "counter_at_least",
+                counter = "heaven_desert_trials_completed",
+                value = 50,
+            },
+            reward = { currencies = { gems = 120 } },
+        },
+        heaven_desert_100 = {
+            track = "heaven_desert",
+            order = 4,
+            name = "Heaven Desert: The Century",
+            description = "Complete 100 Heaven Desert Trials. Requires Level 50. The Platinum egg awaits.",
+            mission = "heaven_desert_trial",
+            -- ANTI-ALT (Jason): the century itself demands a leveled account —
+            -- alts can grind 90 but can't CLAIM without hitting 50
+            condition = {
+                type = "all_of",
+                of = {
+                    { type = "counter_at_least", counter = "heaven_desert_trials_completed", value = 100 },
+                    { type = "level_at_least", value = 50 },
+                },
+            },
+            reward = {
+                currencies = { gems = 500 },
+                items = { { id = "platinum_celestial_egg", bucket = "eggs", qty = 1 } },
+            },
         },
     },
 }

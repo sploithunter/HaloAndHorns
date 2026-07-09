@@ -1115,6 +1115,42 @@ local THEME_PALETTES = {
             heat = 4,
         },
     },
+    grass = {
+        -- overgrown ruin: mossy stone, leafy light
+        wall = Color3.fromRGB(96, 118, 82),
+        wallMaterial = "Slate",
+        floor = Color3.fromRGB(88, 124, 74),
+        floorMaterial = "Grass",
+        pillar = Color3.fromRGB(76, 96, 66),
+        pillarMaterial = "Slate",
+        beacon = Color3.fromRGB(120, 255, 120),
+        torchFlame = Color3.fromRGB(180, 255, 140),
+        torchLight = Color3.fromRGB(190, 255, 170),
+        fire = {
+            color = Color3.fromRGB(160, 255, 120),
+            secondary = Color3.fromRGB(60, 140, 60),
+            size = 3,
+            heat = 4,
+        },
+    },
+    desert = {
+        -- sun-baked sandstone: warm grit
+        wall = Color3.fromRGB(194, 156, 108),
+        wallMaterial = "Sandstone",
+        floor = Color3.fromRGB(210, 178, 128),
+        floorMaterial = "Sand",
+        pillar = Color3.fromRGB(168, 132, 88),
+        pillarMaterial = "Sandstone",
+        beacon = Color3.fromRGB(255, 190, 60),
+        torchFlame = Color3.fromRGB(255, 170, 60),
+        torchLight = Color3.fromRGB(255, 190, 110),
+        fire = {
+            color = Color3.fromRGB(255, 160, 40),
+            secondary = Color3.fromRGB(150, 80, 20),
+            size = 4,
+            heat = 6,
+        },
+    },
     heaven = {
         -- v3 (playtest: "it's the torches" — near-white NEON orbs bloomed the
         -- whole scene): heaven torches are decorative gilded GLASS orbs with
@@ -1192,7 +1228,7 @@ end
 -- MissionDecor; this just materializes them).
 -- element themes borrow the realm prefab pools (wall decor / features /
 -- fixtures / caps) until they get bespoke sets: lava = hell's, ice = heaven's
-local THEME_POOL_ALIAS = { lava = "hell", ice = "heaven" }
+local THEME_POOL_ALIAS = { lava = "hell", ice = "heaven", grass = "heaven", desert = "hell" }
 
 function MissionInstanceService:_applyDressing(decorCfg, mapTable, spec, container, slotOrigin, seed, theme, record)
     local rollOpts = {}

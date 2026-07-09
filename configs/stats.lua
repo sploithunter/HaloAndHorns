@@ -187,6 +187,48 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        -- MATRIX trial counters (2 realms x 4 elements — the 100-clear
+        -- Platinum quest lines read these)
+        hell_lava_trials_completed = {
+            display_name = "Hell Lava Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        heaven_lava_trials_completed = {
+            display_name = "Heaven Lava Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        hell_ice_trials_completed = {
+            display_name = "Hell Ice Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        heaven_ice_trials_completed = {
+            display_name = "Heaven Ice Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        hell_grass_trials_completed = {
+            display_name = "Hell Grass Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        heaven_grass_trials_completed = {
+            display_name = "Heaven Grass Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        hell_desert_trials_completed = {
+            display_name = "Hell Desert Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        heaven_desert_trials_completed = {
+            display_name = "Heaven Desert Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
     },
 
     -- EVENT-FED COUNTERS (Jason: "it's free data — if there's an event, we can just

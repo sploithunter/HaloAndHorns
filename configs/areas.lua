@@ -7,6 +7,8 @@ return {
         -- mission_heaven) stay deliberately UNMAPPED = neutral rate.
         mission_lava = { id = "mission_lava", kind = "mission", name = "Lava Trial", element = "lava" },
         mission_ice = { id = "mission_ice", kind = "mission", name = "Ice Trial", element = "ice" },
+        mission_grass = { id = "mission_grass", kind = "mission", name = "Grass Trial", element = "grass" },
+        mission_desert = { id = "mission_desert", kind = "mission", name = "Desert Trial", element = "desert" },
 
         spawn_world = {
             id = "spawn_world",

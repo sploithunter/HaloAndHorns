@@ -299,6 +299,483 @@ return {
             solver_overrides = {},
         },
 
+        -- ==================== THE MATRIX TRIALS (2 realms x 4 elements) ====================
+        -- Jason's endgame lattice (docs §12 + memory): each combo = its own
+        -- sequence line, counter, quest track, and 100-clear Platinum chase.
+        -- Gates deal these only via QUEST BINDINGS (not in random.pool yet).
+        hell_lava_trial = {
+            display = "Hell Lava Trial",
+            kit = "gray_box",
+            theme = "lava", -- element palette/atmosphere; pools alias realms
+            area = "lava", -- biome RPS + lava-origin drops
+            realm = "hell", -- light/shadow resonance axis
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            boss_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.005 },
+            packs = {
+                { -- swarm: statics + realm pets
+                    weight = 10,
+                    units = {
+                        { enemy = "lava_imp", count = 3 },
+                        { pet = "frostcinder_imp", count = 2 },
+                        { enemy = "ember_acolyte", count = 2 },
+                        { enemy = "murder_crow", count = 1 },
+                    },
+                },
+                { -- lieutenants: static wall + a pet captain
+                    weight = 7,
+                    units = {
+                        { enemy = "ember_brute", count = 1 },
+                        { pet = "rimemane_lion", rank = "lieutenant", count = 1 },
+                        { enemy = "lava_imp", count = 2 },
+                        { pet = "frostbrand_salamander", count = 2 },
+                    },
+                },
+                { -- boss: the realm-origin apex
+                    weight = 3,
+                    boss = true, -- population FORCES one at the objective room
+                    units = {
+                        { pet = "abyssal_wyrm", rank = "boss", count = 1 },
+                        { enemy = "lava_imp", count = 2 },
+                        { enemy = "ember_acolyte", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.1,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+        heaven_lava_trial = {
+            display = "Heaven Lava Trial",
+            kit = "gray_box",
+            theme = "lava", -- element palette/atmosphere; pools alias realms
+            area = "lava", -- biome RPS + lava-origin drops
+            realm = "heaven", -- light/shadow resonance axis
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            boss_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.005 },
+            packs = {
+                { -- swarm: statics + realm pets
+                    weight = 10,
+                    units = {
+                        { enemy = "lava_imp", count = 3 },
+                        { pet = "coronal_cherub", count = 2 },
+                        { enemy = "ember_acolyte", count = 2 },
+                        { enemy = "murder_crow", count = 1 },
+                    },
+                },
+                { -- lieutenants: static wall + a pet captain
+                    weight = 7,
+                    units = {
+                        { enemy = "ember_brute", count = 1 },
+                        { pet = "prism_lion", rank = "lieutenant", count = 1 },
+                        { enemy = "lava_imp", count = 2 },
+                        { pet = "lance_seraph", count = 2 },
+                    },
+                },
+                { -- boss: the realm-origin apex
+                    weight = 3,
+                    boss = true, -- population FORCES one at the objective room
+                    units = {
+                        { pet = "empyrean_dragon", rank = "boss", count = 1 },
+                        { enemy = "lava_imp", count = 2 },
+                        { enemy = "ember_acolyte", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.1,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+        hell_ice_trial = {
+            display = "Hell Ice Trial",
+            kit = "gray_box",
+            theme = "ice", -- element palette/atmosphere; pools alias realms
+            area = "ice", -- biome RPS + ice-origin drops
+            realm = "hell", -- light/shadow resonance axis
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            boss_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.005 },
+            packs = {
+                { -- swarm: statics + realm pets
+                    weight = 10,
+                    units = {
+                        { enemy = "frost_fox", count = 3 },
+                        { pet = "dread_fox", count = 2 },
+                        { enemy = "aurora_seal", count = 2 },
+                        { enemy = "snowy_owl", count = 1 },
+                    },
+                },
+                { -- lieutenants: static wall + a pet captain
+                    weight = 7,
+                    units = {
+                        { enemy = "glacial_mammoth", count = 1 },
+                        { pet = "rimewraith_fox", rank = "lieutenant", count = 1 },
+                        { enemy = "frost_fox", count = 2 },
+                        { pet = "dread_owl", count = 2 },
+                    },
+                },
+                { -- boss: the realm-origin apex
+                    weight = 3,
+                    boss = true, -- population FORCES one at the objective room
+                    units = {
+                        { pet = "black_ice_leviathan", rank = "boss", count = 1 },
+                        { enemy = "frost_fox", count = 2 },
+                        { enemy = "aurora_seal", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.1,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+        heaven_ice_trial = {
+            display = "Heaven Ice Trial",
+            kit = "gray_box",
+            theme = "ice", -- element palette/atmosphere; pools alias realms
+            area = "ice", -- biome RPS + ice-origin drops
+            realm = "heaven", -- light/shadow resonance axis
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            boss_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.005 },
+            packs = {
+                { -- swarm: statics + realm pets
+                    weight = 10,
+                    units = {
+                        { enemy = "frost_fox", count = 3 },
+                        { pet = "frostlight_doe", count = 2 },
+                        { enemy = "aurora_seal", count = 2 },
+                        { enemy = "snowy_owl", count = 1 },
+                    },
+                },
+                { -- lieutenants: static wall + a pet captain
+                    weight = 7,
+                    units = {
+                        { enemy = "glacial_mammoth", count = 1 },
+                        { pet = "prism_fox", rank = "lieutenant", count = 1 },
+                        { enemy = "frost_fox", count = 2 },
+                        { pet = "starlight_owl", count = 2 },
+                    },
+                },
+                { -- boss: the realm-origin apex
+                    weight = 3,
+                    boss = true, -- population FORCES one at the objective room
+                    units = {
+                        { pet = "aurora_leviathan", rank = "boss", count = 1 },
+                        { enemy = "frost_fox", count = 2 },
+                        { enemy = "aurora_seal", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.1,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+        hell_grass_trial = {
+            display = "Hell Grass Trial",
+            kit = "gray_box",
+            theme = "grass", -- element palette/atmosphere; pools alias realms
+            area = "grass", -- biome RPS + grass-origin drops
+            realm = "hell", -- light/shadow resonance axis
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            boss_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.005 },
+            packs = {
+                { -- swarm: statics + realm pets
+                    weight = 10,
+                    units = {
+                        { enemy = "rabid_dog", count = 3 },
+                        { pet = "dread_hare", count = 2 },
+                        { enemy = "rabid_bunny", count = 2 },
+                        { enemy = "murder_crow", count = 1 },
+                    },
+                },
+                { -- lieutenants: static wall + a pet captain
+                    weight = 7,
+                    units = {
+                        { enemy = "raging_bear", count = 1 },
+                        { pet = "icerot_stag", rank = "lieutenant", count = 1 },
+                        { enemy = "rabid_dog", count = 2 },
+                        { pet = "rimewither_sprite", count = 2 },
+                    },
+                },
+                { -- boss: the realm-origin apex
+                    weight = 3,
+                    boss = true, -- population FORCES one at the objective room
+                    units = {
+                        { pet = "wither_sprite", rank = "boss", count = 1 },
+                        { enemy = "rabid_dog", count = 2 },
+                        { enemy = "rabid_bunny", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.1,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+        heaven_grass_trial = {
+            display = "Heaven Grass Trial",
+            kit = "gray_box",
+            theme = "grass", -- element palette/atmosphere; pools alias realms
+            area = "grass", -- biome RPS + grass-origin drops
+            realm = "heaven", -- light/shadow resonance axis
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            boss_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.005 },
+            packs = {
+                { -- swarm: statics + realm pets
+                    weight = 10,
+                    units = {
+                        { enemy = "rabid_dog", count = 3 },
+                        { pet = "lightleaf_hare", count = 2 },
+                        { enemy = "rabid_bunny", count = 2 },
+                        { enemy = "murder_crow", count = 1 },
+                    },
+                },
+                { -- lieutenants: static wall + a pet captain
+                    weight = 7,
+                    units = {
+                        { enemy = "raging_bear", count = 1 },
+                        { pet = "crystalbark_stag", rank = "lieutenant", count = 1 },
+                        { enemy = "rabid_dog", count = 2 },
+                        { pet = "radiant_sprite", count = 2 },
+                    },
+                },
+                { -- boss: the realm-origin apex
+                    weight = 3,
+                    boss = true, -- population FORCES one at the objective room
+                    units = {
+                        { pet = "worldbloom_ent", rank = "boss", count = 1 },
+                        { enemy = "rabid_dog", count = 2 },
+                        { enemy = "rabid_bunny", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.1,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+        hell_desert_trial = {
+            display = "Hell Desert Trial",
+            kit = "gray_box",
+            theme = "desert", -- element palette/atmosphere; pools alias realms
+            area = "desert", -- biome RPS + desert-origin drops
+            realm = "hell", -- light/shadow resonance axis
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            boss_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.005 },
+            packs = {
+                { -- swarm: statics + realm pets
+                    weight = 10,
+                    units = {
+                        { enemy = "sand_jackal", count = 3 },
+                        { pet = "gloom_jackal", count = 2 },
+                        { enemy = "golden_scarab", count = 2 },
+                        { enemy = "carrion_vulture", count = 1 },
+                    },
+                },
+                { -- lieutenants: static wall + a pet captain
+                    weight = 7,
+                    units = {
+                        { enemy = "dune_tortoise", count = 1 },
+                        { pet = "wraith_dove", rank = "lieutenant", count = 1 },
+                        { enemy = "sand_jackal", count = 2 },
+                        { pet = "rime_scarab", count = 2 },
+                    },
+                },
+                { -- boss: the realm-origin apex
+                    weight = 3,
+                    boss = true, -- population FORCES one at the objective room
+                    units = {
+                        { pet = "dread_couatl", rank = "boss", count = 1 },
+                        { enemy = "sand_jackal", count = 2 },
+                        { enemy = "golden_scarab", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.1,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+        heaven_desert_trial = {
+            display = "Heaven Desert Trial",
+            kit = "gray_box",
+            theme = "desert", -- element palette/atmosphere; pools alias realms
+            area = "desert", -- biome RPS + desert-origin drops
+            realm = "heaven", -- light/shadow resonance axis
+            seed_policy = "shared_sequence",
+            objective = { kind = "clear_then_beacon" },
+            boss_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.005 },
+            packs = {
+                { -- swarm: statics + realm pets
+                    weight = 10,
+                    units = {
+                        { enemy = "sand_jackal", count = 3 },
+                        { pet = "aurora_dove", count = 2 },
+                        { enemy = "golden_scarab", count = 2 },
+                        { enemy = "carrion_vulture", count = 1 },
+                    },
+                },
+                { -- lieutenants: static wall + a pet captain
+                    weight = 7,
+                    units = {
+                        { enemy = "dune_tortoise", count = 1 },
+                        { pet = "prism_scarab", rank = "lieutenant", count = 1 },
+                        { enemy = "sand_jackal", count = 2 },
+                        { pet = "mirage_meerkat", count = 2 },
+                    },
+                },
+                { -- boss: the realm-origin apex
+                    weight = 3,
+                    boss = true, -- population FORCES one at the objective room
+                    units = {
+                        { pet = "empyreal_couatl", rank = "boss", count = 1 },
+                        { enemy = "sand_jackal", count = 2 },
+                        { enemy = "golden_scarab", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                color_jitter = 0.1,
+                crate_health_base = 60,
+                crate_health_per_level = 12,
+                crate_value_base = 15,
+                crate_value_per_level = 1,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            treasure = {
+                room_fraction = 0.4,
+                min_chests = 1,
+                rolls_min = 1,
+                rolls_max = 2,
+                open_hold = 3,
+            },
+            solver_overrides = {},
+        },
+
         -- ELEMENT-THEMED trials (Jason: "a lava trial or an ice trial where
         -- pet selection actually matters and enhancement drops change").
         -- realm = NEUTRAL: their pet-choice axis is the biome RPS (zone

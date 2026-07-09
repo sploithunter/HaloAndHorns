@@ -221,5 +221,7 @@ return {
         -- element-THEMED trials (mission.area pseudo-zones)
         mission_lava = "epic_drum",
         mission_ice = "arctic_hunt",
+        mission_grass = "spa",
+        mission_desert = "desert_hunt",
     },
 }
