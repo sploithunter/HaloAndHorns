@@ -16,6 +16,7 @@ local VALID_ZONE_KINDS = {
     world = true,
     island = true,
     area = true,
+    mission = true, -- trial-interior pseudo-zones (element/origin branding; no geometry)
 }
 
 local function toVector3(value, fallback)
