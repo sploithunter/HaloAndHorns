@@ -12,12 +12,9 @@ local Players = game:GetService("Players")
 local WorldBindingService = {}
 WorldBindingService.__index = WorldBindingService
 
-local VALID_ZONE_KINDS = {
-    world = true,
-    island = true,
-    area = true,
-    mission = true, -- trial-interior pseudo-zones (element/origin branding; no geometry)
-}
+-- zone kind allowlist lives in ZoneSchema (ONE source; the dual-allowlist
+-- drift hard-crashed boot 2026-07-09)
+local ZoneSchema = require(game:GetService("ReplicatedStorage").Shared.Game.ZoneSchema)
 
 local function toVector3(value, fallback)
     fallback = fallback or Vector3.zero
@@ -200,16 +197,9 @@ end
 function WorldBindingService:_validateZoneTree()
     local zones = self._areasConfig.zones or {}
 
-    for zoneId, zone in pairs(zones) do
-        if zone.id ~= zoneId then
-            error("areas.zones." .. tostring(zoneId) .. ".id must match table key")
-        end
-        if not VALID_ZONE_KINDS[zone.kind] then
-            error("areas.zones." .. tostring(zoneId) .. ".kind is invalid")
-        end
-        if zone.parent and not zones[zone.parent] then
-            error("areas.zones." .. tostring(zoneId) .. ".parent references missing zone")
-        end
+    local okZones, zonesErr = ZoneSchema.validateZones(zones)
+    if not okZones then
+        error("areas." .. tostring(zonesErr))
     end
 
     local visiting = {}
