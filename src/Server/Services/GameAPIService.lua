@@ -966,6 +966,27 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("mission.replay", {
+        description = "Replay a shared-sequence mission number you've already reached.",
+        validate = function(args)
+            return Validators.fields(args, {
+                mission = "string",
+                sequence = { type = "int", min = 1 },
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("MissionInstanceService")
+            if not s or not s.Open then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            local instanceId, err = s:Open(context.player, args.mission, { sequence = args.sequence })
+            if not instanceId then
+                return { ok = false, reason = err or "open_failed" }
+            end
+            return { ok = true, instance = instanceId, sequence = args.sequence }
+        end,
+    })
+
     bus:register("augment.move", {
         description = "Move one enhancement slot between owned powers (a filled slot returns its enhancement to inventory first).",
         validate = function(args)

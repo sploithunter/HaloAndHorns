@@ -651,6 +651,85 @@ local function ownerRoot(userId)
     return plr, hrp and hrp.Position
 end
 
+-- BOSS EXCLUSIVE EGG drop: a real 3D egg at the kill site (owner-only
+-- visible like enhancements), MAGNET-IMMUNE — Jason: seeing it in the world
+-- is the moment; you walk to it. Despawn is a forced collect (never lost).
+function DropService:TrySpawnEggDrop(player, eggId, displayName, position)
+    if not (player and eggId and typeof(position) == "Vector3") then
+        return false
+    end
+    task.spawn(function()
+        -- textured egg mesh via MeshAssembly (THE one mesh+texture combine);
+        -- the egg def carries mesh/texture (resolved image ids)
+        local part
+        pcall(function()
+            local petsConfig = require(ReplicatedStorage.Configs:WaitForChild("pets"))
+            local def = petsConfig.egg_sources and petsConfig.egg_sources[eggId]
+            if def and def.mesh_asset then
+                local MeshAssembly = require(ReplicatedStorage.Shared.Assets.MeshAssembly)
+                local built = MeshAssembly.build(def.mesh_asset, def.texture_asset, {
+                    modelName = "ExclusiveEggDrop",
+                })
+                local mesh = built and built.PrimaryPart
+                if mesh then
+                    mesh.Size = mesh.Size * (4 / math.max(mesh.Size.Y, 0.05)) -- ~4 studs tall
+                    mesh.Parent = nil
+                    built:Destroy()
+                    part = mesh
+                end
+            end
+        end)
+        if not part then
+            part = Instance.new("Part")
+            part.Shape = Enum.PartType.Ball
+            part.Size = Vector3.new(2.4, 3, 2.4)
+            part.Color = Color3.fromRGB(90, 70, 110)
+            part.Material = Enum.Material.Slate
+        end
+        part.Name = "ExclusiveEggDrop"
+        part.Anchored = true
+        part.CanCollide = false
+        part.CanQuery = false
+        local model = Instance.new("Model")
+        model.Name = "ExclusiveEggDrop"
+        part.Parent = model
+        model.PrimaryPart = part
+        local bb = Instance.new("BillboardGui")
+        bb.Size = UDim2.fromOffset(160, 28)
+        bb.StudsOffset = Vector3.new(0, 3, 0)
+        bb.AlwaysOnTop = true
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.fromScale(1, 1)
+        lbl.BackgroundTransparency = 1
+        lbl.Font = Enum.Font.GothamBlack
+        lbl.TextScaled = true
+        lbl.TextColor3 = Color3.fromRGB(255, 220, 120)
+        lbl.TextStrokeTransparency = 0.3
+        lbl.Text = displayName or "Mysterious Egg"
+        lbl.Parent = bb
+        bb.Parent = part
+        local groundY = self:_groundY(position.X, position.Z, position.Y, position.Y - 1)
+        part.CFrame = CFrame.new(position.X, groundY + part.Size.Y * 0.5 + 0.2, position.Z)
+        model:SetAttribute("DropOwner", player.UserId)
+        model.Parent = self._folder or Workspace
+        self._active[#self._active + 1] = {
+            kind = "egg_item",
+            eggId = eggId,
+            eggName = displayName,
+            source = "boss_drop",
+            model = model,
+            part = part,
+            noPool = true,
+            magnetImmune = true,
+            owner = player.UserId,
+            spawnAt = os.clock(),
+            despawnSeconds = 120,
+            settling = false,
+        }
+    end)
+    return true
+end
+
 function DropService:_collect(rec, _force)
     if not rec or rec._done then
         return
@@ -671,6 +750,29 @@ function DropService:_collect(rec, _force)
                     Signals.GameEvent:FireClient(plr, "enhancement_pickup", {
                         name = res.name,
                         origins = rec.record.origins,
+                    })
+                end)
+            end
+        end
+    elseif plr and rec.kind == "egg_item" then
+        -- BOSS EXCLUSIVE EGG: into the eggs inventory bucket (hatch from
+        -- inventory via egg_item.hatch — the Colorado path)
+        local inv = self._moduleLoader and self._moduleLoader:Get("InventoryService")
+        if inv and inv.AddItem then
+            local granted
+            pcall(function()
+                granted = inv:AddItem(plr, "eggs", {
+                    id = rec.eggId,
+                    name = rec.eggName or rec.eggId,
+                    source = rec.source or "boss_drop",
+                })
+            end)
+            if granted then
+                pcall(function()
+                    local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+                    Signals.GameEvent:FireClient(plr, "exclusive_egg_pickup", {
+                        name = (rec.eggName or "Mysterious Egg") .. " acquired!",
+                        egg = rec.eggId,
                     })
                 end)
             end
@@ -740,7 +842,9 @@ function DropService:_step()
                 -- (magnet stays ON in missions — Jason: the CHEST is the
                 -- anti-cheese gate; loot only exists once a cleared room's
                 -- chest is opened, so magnet can't steal anything early)
-                if (plr:GetAttribute("MagnetBuffUntil") or 0) > nowT then
+                -- magnetImmune (exclusive EGG drops): the find is the moment —
+                -- walk to it; base collect radius still applies up close
+                if not rec.magnetImmune and (plr:GetAttribute("MagnetBuffUntil") or 0) > nowT then
                     bonus = tonumber(plr:GetAttribute("MagnetBuff")) or 0
                 end
                 local dist = (rec.part.Position - rootPos).Magnitude

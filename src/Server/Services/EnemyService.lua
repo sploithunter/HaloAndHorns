@@ -1150,14 +1150,11 @@ function EnemyService:_onDefeated(targetId)
                                 and self._enemiesConfig.enemies[entry.enemyId]
                             local ex = bossDef and bossDef.exclusive_egg
                             if ex and ex.egg and math.random() < (tonumber(ex.chance) or 0) then
-                                local inv = _G.RBXTemplateServices:Get("InventoryService")
-                                local granted = inv
-                                    and inv:AddItem(player, "eggs", {
-                                        id = ex.egg,
-                                        name = ex.name or ex.egg,
-                                        source = "boss:" .. tostring(entry.enemyId),
-                                    })
-                                if granted then
+                                -- PHYSICAL drop (Jason: "see it in the world in
+                                -- 3d") — magnet-immune; despawn force-collects
+                                local dropSvc = _G.RBXTemplateServices:Get("DropService")
+                                if dropSvc and dropSvc.TrySpawnEggDrop then
+                                    dropSvc:TrySpawnEggDrop(player, ex.egg, ex.name or ex.egg, dropPos)
                                     fireGameEvent(player, "exclusive_egg_drop", {
                                         egg = ex.egg,
                                         boss = entry.enemyId,

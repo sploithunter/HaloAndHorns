@@ -6089,47 +6089,33 @@ function InventoryPanel:_showHatchConfirmation(item)
     gui.IgnoreGuiInset = true
     gui.Parent = playerGui
 
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 340, 0, 230)
-    frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    frame.Position = UDim2.new(0.5, 0, 0.5, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    frame.BorderSizePixel = 0
-    frame.Parent = gui
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 12)
-    corner.Parent = frame
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(255, 215, 0) -- creator gold (it's an exclusive egg)
-    stroke.Thickness = 2
-    stroke.Parent = frame
-
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -20, 0, 32)
-    title.Position = UDim2.new(0, 10, 0, 10)
-    title.BackgroundTransparency = 1
-    title.Text = "Hatch " .. tostring(item.name or "this egg") .. "?"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextSize = 19
-    title.Font = Enum.Font.GothamBold
-    title.ZIndex = 2
-    title.Parent = frame
+    -- PanelChrome shell (Jason: apply the house style — never hand-roll a
+    -- panel exterior): themed window, pill border, header, standard X.
+    local shell = PanelChrome.build(gui, {
+        name = "HatchConfirm",
+        title = "🥚 Hatch " .. tostring(item.name or "this egg") .. "?",
+        size = UDim2.new(0, 400, 0, 290),
+        onClose = function()
+            gui:Destroy()
+        end,
+    })
+    local frame = shell.frame
 
     -- the egg art, so it reads as THIS egg
     if item.image then
         local img = Instance.new("ImageLabel")
-        img.Size = UDim2.new(0, 64, 0, 64)
-        img.Position = UDim2.new(0, 14, 0, 50)
+        img.Size = UDim2.new(0, 72, 0, 72)
+        img.Position = UDim2.new(0, 16, 0, 56)
         img.BackgroundTransparency = 1
         img.ScaleType = Enum.ScaleType.Fit
         img.Image = item.image
-        img.ZIndex = 2
+        img.ZIndex = 110
         img.Parent = frame
     end
 
     local message = Instance.new("TextLabel")
-    message.Size = UDim2.new(1, -98, 0, 110)
-    message.Position = UDim2.new(0, 88, 0, 46)
+    message.Size = UDim2.new(1, -116, 0, 150)
+    message.Position = UDim2.new(0, 100, 0, 52)
     message.BackgroundTransparency = 1
     message.Text = table.concat(self:_eggOddsLines(item.egg_def), "\n")
     message.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -6138,14 +6124,14 @@ function InventoryPanel:_showHatchConfirmation(item)
     message.TextWrapped = true
     message.TextXAlignment = Enum.TextXAlignment.Left
     message.TextYAlignment = Enum.TextYAlignment.Top
-    message.ZIndex = 2
+    message.ZIndex = 110
     message.Parent = frame
 
     local buttons = Instance.new("Frame")
     buttons.Size = UDim2.new(1, -20, 0, 38)
     buttons.Position = UDim2.new(0, 10, 1, -48)
     buttons.BackgroundTransparency = 1
-    buttons.ZIndex = 2
+    buttons.ZIndex = 110
     buttons.Parent = frame
     local layout = Instance.new("UIListLayout")
     layout.FillDirection = Enum.FillDirection.Horizontal
@@ -6163,7 +6149,7 @@ function InventoryPanel:_showHatchConfirmation(item)
         b.TextSize = 16
         b.Font = Enum.Font.GothamBold
         b.LayoutOrder = order
-        b.ZIndex = 3
+        b.ZIndex = 111
         b.Parent = buttons
         local c = Instance.new("UICorner")
         c.CornerRadius = UDim.new(0, 8)

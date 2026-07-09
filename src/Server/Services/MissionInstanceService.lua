@@ -193,7 +193,11 @@ end
 -- ---- lifecycle ---------------------------------------------------------------
 
 -- Open a mission for the player's team. Returns instanceId or nil, err.
-function MissionInstanceService:Open(player, missionId)
+-- opts.sequence: REPLAY a shared-sequence mission number you've already
+-- reached (Jason: "mission 28 was great" — reshare it). Does NOT advance
+-- your index; completion counters tick normally (it's a real run).
+function MissionInstanceService:Open(player, missionId, opts)
+    opts = opts or {}
     if not self._config then
         return nil, "missions unavailable"
     end
@@ -248,6 +252,21 @@ function MissionInstanceService:Open(player, missionId)
     local sequenceN
     if mission.seed_policy == "team_stable" then
         contextKey = teamKey
+    elseif mission.seed_policy == "shared_sequence" and opts.sequence then
+        -- REPLAY: only numbers you've already reached (no peeking ahead at
+        -- maps the sequence hasn't dealt you)
+        local n = math.floor(tonumber(opts.sequence) or 0)
+        local played = 0
+        pcall(function()
+            local dataSvc = _G.RBXTemplateServices:Get("DataService")
+            local data = dataSvc and dataSvc:GetData(player)
+            played = (data and data.GameData and data.GameData.MissionSeq and tonumber(data.GameData.MissionSeq[missionId])) or 0
+        end)
+        if n < 1 or n > played then
+            return nil, ("you haven't reached trial #%d yet"):format(n)
+        end
+        sequenceN = n
+        contextKey = "seq#" .. n
     elseif mission.seed_policy == "shared_sequence" then
         -- SHARED SEQUENCE (Jason 2026-07-09): everyone plays the SAME mission
         -- #1, #2, #3... per mission id — a shared experience ("mission 28 was
