@@ -721,6 +721,7 @@ function DropService:TrySpawnEggDrop(player, eggId, displayName, position)
             part = part,
             noPool = true,
             magnetImmune = true,
+            collectOnDespawn = true, -- an exclusive egg is never lost
             owner = player.UserId,
             spawnAt = os.clock(),
             despawnSeconds = 120,
@@ -728,6 +729,20 @@ function DropService:TrySpawnEggDrop(player, eggId, displayName, position)
         }
     end)
     return true
+end
+
+-- Expire an unclaimed drop: no grant, just cleanup (mirror of _collect's
+-- bookkeeping so the _active sweep drops it the same way).
+function DropService:_discard(rec)
+    if not rec or rec._done then
+        return
+    end
+    rec._done = true
+    if rec.model and rec.model.Parent then
+        rec.model:Destroy()
+    elseif rec.part and rec.part.Parent then
+        rec.part:Destroy()
+    end
 end
 
 function DropService:_collect(rec, _force)
@@ -832,7 +847,15 @@ function DropService:_step()
                 self:_collect(rec, true)
             end
         elseif now - rec.spawnAt >= (rec.despawnSeconds or despawn) then
-            self:_collect(rec, true)
+            -- DESPAWN ≠ COLLECT (Jason 2026-07-09: "why would you need a
+            -- magnet? You could just AFK farm and get everything"): unclaimed
+            -- drops now EXPIRE. Only drops that opt in (exclusive eggs — too
+            -- rare to ever lose) force-collect at timeout.
+            if rec.collectOnDespawn then
+                self:_collect(rec, true)
+            else
+                self:_discard(rec)
+            end
         else
             local plr, rootPos = ownerRoot(rec.owner)
             if not plr then
