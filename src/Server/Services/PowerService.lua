@@ -1568,7 +1568,9 @@ function PowerService:_applyEffect(player, kind, now, powerId)
             -- id must already be present, else the look resolves wrong for a frame. (The on-hit
             -- "Dodge!" is also config-driven from combat_vfx.on_hit, read server-side in EnemyService.)
             pet:SetAttribute("CombatShieldPowerId", powerId)
-            pet:SetAttribute("CombatShield", (pet:GetAttribute("CombatShield") or 0) + mag)
+            -- keep-stronger, NEVER stack (2026-07-09: perma-recasting was
+            -- ACCUMULATING pools — compounding the immortality)
+            pet:SetAttribute("CombatShield", math.max(pet:GetAttribute("CombatShield") or 0, mag))
             self:_stampPowerBadge(pet, powerId, now + dur)
             if dur and dur > 0 then
                 pet:SetAttribute("CombatShieldUntil", now + dur)

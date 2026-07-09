@@ -31,7 +31,7 @@ return {
     expose = "Exposes a target: reveal + accuracy/crit boost vs it.",
     cripple = "Cripples a target: slow + weaken.",
     oasis = "Signature: heals the squad over time.",
-    mirage_veil = "Signature: veils the squad in protective mirage.",
+    mirage_veil = "Signature: veils the squad in protective mirage — every soak and every mend spends the veil's substance.",
     simoom = "Signature: a healing desert wind over the team.",
     genie_dunes = "Capstone: summons a djinn that revives + heals.",
 

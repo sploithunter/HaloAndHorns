@@ -1129,7 +1129,12 @@ return {
         },
         mirage_veil = {
             archetype = "sandwalker",
-            focus_cost = 20,
+            -- 20 -> 60 (Jason 2026-07-09): the perma limiter is the FOCUS
+            -- ECONOMY, not the cooldown — recharge slotting can still perma
+            -- the CD (the chase stays honored) but regen (2.5/s) can't fund
+            -- a 60-cost cast every ~15s. Signature MOMENT: dive a boss near-
+            -- invulnerable for one veil; sustained use needs focus investment.
+            focus_cost = 60,
             cooldown_seconds = 25,
             effect = "mirage_veil",
             display_name = "Mirage Veil",

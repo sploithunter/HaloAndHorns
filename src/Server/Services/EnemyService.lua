@@ -1652,9 +1652,14 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
         -- Mirage Veil (sandwalker signature): the veil heals a little each time it turns a blow
         -- aside (heal-on-evade) while MirageHealUntil is live — sustain that rewards being shielded.
         if absorbed > 0 and (pet:GetAttribute("MirageHealUntil") or 0) > nowT then
-            local heal = pet:GetAttribute("MirageHealAmt") or 0
+            -- ONE POOL, TWO DRAINS (Jason 2026-07-09 rebalance): the heal
+            -- SPENDS veil substance — soak or mend, one budget. Perma-Veil
+            -- stops being immortality; an evade-heavy fight burns it faster.
+            local remaining = pet:GetAttribute("CombatShield") or 0
+            local heal = math.min(pet:GetAttribute("MirageHealAmt") or 0, remaining)
             local takenNow = pet:GetAttribute("CombatDamageTaken") or 0
             if heal > 0 and takenNow > 0 then
+                pet:SetAttribute("CombatShield", remaining - heal)
                 -- res-sickness clamp: can't heal a fresh revive past its res floor
                 pet:SetAttribute(
                     "CombatDamageTaken",
