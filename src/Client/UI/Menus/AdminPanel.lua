@@ -255,6 +255,11 @@ local TEST_CATEGORIES = {
         title = "⚔️ Combat (test enemies)",
         tests = {
             -- Earth faction (real art): melee dog · ranged crow/cat · support bunny · tank bear.
+            -- BALANCE PACKS (Jason: "level balancing on a non-trash team" —
+            -- 3 lieutenants + 5 minions at your level, per faction)
+            { name = "⚔️ Balance Pack: LAVA (3LT+5M)", action = "spawn_pack_lava" },
+            { name = "⚔️ Balance Pack: CELESTIAL (3LT+5M)", action = "spawn_pack_celestial" },
+            { name = "⚔️ Balance Pack: EARTH (3LT+5M)", action = "spawn_pack_earth" },
             { name = "🐕 Spawn Rabid Dog (melee)", action = "spawn_enemy_rabid_dog" },
             { name = "🐦 Spawn Murder Crow (ranged)", action = "spawn_enemy_murder_crow" },
             { name = "🐈 Spawn Vicious Cat (ranged)", action = "spawn_enemy_vicious_cat" },
@@ -775,6 +780,25 @@ function AdminPanel:_executeTestAction(action, _testName)
             self:_showAdminResult(
                 ("Granted %s random area enhancements"):format(tostring(r and r.granted or "?")),
                 r and r.ok == true
+            )
+        end)
+    elseif action:find("^spawn_pack_") then
+        task.spawn(function()
+            local remote = game:GetService("ReplicatedStorage"):WaitForChild("GameAPICommand", 5)
+            if not remote then
+                self:_showAdminResult("GameAPICommand remote missing", false)
+                return
+            end
+            local faction = action:gsub("^spawn_pack_", "")
+            local res = remote:InvokeServer("combat.spawnPack", { faction = faction })
+            local r = type(res) == "table" and (res.result or res) or {}
+            self:_showAdminResult(
+                ("Spawned %s pack: %s up, %s failed"):format(
+                    faction,
+                    tostring(r.spawned or "?"),
+                    tostring(r.failed or "?")
+                ),
+                r.ok == true and (r.failed or 0) == 0
             )
         end)
     elseif action:find("^spawn_enemy_") then

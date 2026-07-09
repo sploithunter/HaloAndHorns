@@ -852,6 +852,85 @@ function GameAPIService:_registerCommands()
     -- ForceVariant so EggService:GetForcedHatchOutcome forces the egg's first pet as a huge basic.
     -- Toggle: pass {enabled=false} (or call again) to clear. Stays on until cleared, so hatch ONE
     -- egg then turn it off. Admin/Studio only.
+    bus:register("combat.spawnPack", {
+        description = "[admin] Spawn a BALANCE-TEST pack near you (default 3 lieutenants + 5 minions, at your level). args: { faction?, minions?, lieutenants?, bosses? }",
+        validate = function(args)
+            return Validators.fields(args, {
+                faction = { type = "string", optional = true },
+                minions = { type = "int", min = 0, optional = true },
+                lieutenants = { type = "int", min = 0, optional = true },
+                bosses = { type = "int", min = 0, optional = true },
+            })
+        end,
+        handler = function(context, args)
+            local isAdmin = context.isTest
+                or (context.player and context.player:GetAttribute("IsAdmin") == true)
+            if not isAdmin then
+                return { ok = false, reason = "not_admin" }
+            end
+            local enemySvc = self:_service("EnemyService")
+            if not enemySvc then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            -- role-appropriate rosters per faction (ids exist in enemies.lua;
+            -- SpawnEnemy is LOUD on unknown ids)
+            local ROSTERS = {
+                lava = {
+                    minion = { "lava_imp", "murder_crow", "ember_acolyte" },
+                    lieutenant = { "ember_brute" },
+                    boss = { "infernal_boss" },
+                },
+                celestial = {
+                    minion = { "zealous_cherub", "lance_seraph_guard", "radiant_sprite_guard" },
+                    lieutenant = { "prism_warden" },
+                    boss = { "celestial_archon" },
+                },
+                earth = {
+                    minion = { "rabid_dog", "murder_crow", "rabid_bunny" },
+                    lieutenant = { "raging_bear" },
+                    boss = { "dire_bear" },
+                },
+                ice = {
+                    minion = { "frost_fox", "snowy_owl", "aurora_seal" },
+                    lieutenant = { "glacial_mammoth" },
+                    boss = { "glacial_leviathan" },
+                },
+                desert = {
+                    minion = { "sand_jackal", "carrion_vulture", "golden_scarab" },
+                    lieutenant = { "dune_tortoise" },
+                    boss = { "sand_scorpion" },
+                },
+            }
+            local roster = ROSTERS[args.faction or "lava"]
+            if not roster then
+                return { ok = false, reason = "unknown_faction" }
+            end
+            local plan = {
+                { list = roster.lieutenant, n = args.lieutenants or 3 },
+                { list = roster.minion, n = args.minions or 5 },
+                { list = roster.boss, n = args.bosses or 0 },
+            }
+            local spawned, failed = 0, 0
+            local slot = 0
+            for _, group in ipairs(plan) do
+                for i = 1, group.n do
+                    slot += 1
+                    local id = group.list[1 + ((i - 1) % #group.list)]
+                    local r = enemySvc:SpawnEnemy(context.player, id, {
+                        forward = 22 + (slot % 3) * 6,
+                        right = ((slot % 5) - 2) * 8,
+                    })
+                    if r and r.ok then
+                        spawned += 1
+                    else
+                        failed += 1
+                    end
+                end
+            end
+            return { ok = true, spawned = spawned, failed = failed, faction = args.faction or "lava" }
+        end,
+    })
+
     bus:register("admin.forceNextHuge", {
         description = '[admin] Toggle: force the next egg hatch to roll HUGE (dev/verify). Optional {variant="basic"|"golden"|"rainbow"}. {enabled=false} clears.',
         validate = function(args)
