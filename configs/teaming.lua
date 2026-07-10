@@ -43,6 +43,16 @@ return {
         stop_distance = 7, -- studs: hang back this far instead of crowding the target
         refresh = 0.15, -- seconds between follow movement steps
         warp_cooldown = 5, -- client seconds between follow_warp requests (server holds 4 too)
+        -- HYBRID PATHFINDING (Jason: "I got stuck behind a wall"): straight-line
+        -- MoveTo is the default; when progress toward the target stalls (the
+        -- watchdog observes "no progress", not elapsed-time-as-readiness), the
+        -- client computes a real path and walks waypoints (honoring Jump labels)
+        -- until line-of-sight returns, then drops back to direct.
+        stuck_window = 1.2, -- seconds of no-progress before pathfinding kicks in
+        stuck_epsilon = 1, -- studs: gains smaller than this count as "no progress"
+        waypoint_reach = 4, -- studs: advance to the next waypoint inside this
+        repath_distance = 12, -- studs the target may drift from the path goal before recompute
+        path_fail_cooldown = 2, -- seconds to fall back to direct after a failed compute
     },
 
     -- Kill credit (TM5): teammates of any damage contributor SHARE the kill award when

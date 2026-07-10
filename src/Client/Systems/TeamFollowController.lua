@@ -18,9 +18,17 @@
     Follow drops when: the target leaves the team/game, we take manual control, or the toggle
     is hit again. It survives our own death/respawn only by being cancelled (a corpse-drag
     follow reads as a bug), and a warp that keeps failing (level gate) cancels too.
+
+    HYBRID PATHFINDING (Jason 2026-07-09: "I got stuck behind a wall"): the straight-line
+    MoveTo stays the default — correct 90% of the time in the open. A progress WATCHDOG
+    (closest-approach hasn't improved for stuck_window seconds — it observes "no progress",
+    never elapsed-time-as-readiness) flips to a computed path: walk the waypoints, fire
+    Humanoid.Jump on Jump labels (fences/crates), recompute if the target drifts from the
+    path goal, and drop back to direct the moment line-of-sight to the target returns.
 ]]
 
 local Players = game:GetService("Players")
+local PathfindingService = game:GetService("PathfindingService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
@@ -113,12 +121,74 @@ local function requestWarp(name)
     end)
 end
 
+-- Line-of-sight to the target: blocked by world geometry only (both characters and
+-- the pet folders are ignored — a pet crowd must not read as a wall).
+local function hasLineOfSight(hrp, tHrp)
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    local ignore = {}
+    if player.Character then
+        table.insert(ignore, player.Character)
+    end
+    if tHrp.Parent then
+        table.insert(ignore, tHrp.Parent)
+    end
+    local pets = workspace:FindFirstChild("PlayerPets")
+    if pets then
+        table.insert(ignore, pets)
+    end
+    params.FilterDescendantsInstances = ignore
+    local delta = tHrp.Position - hrp.Position
+    return workspace:Raycast(hrp.Position, delta, params) == nil
+end
+
 function TeamFollowController.start()
     task.spawn(function()
         local wasMoving = false
+        -- watchdog + path state (all reset when follow target changes/clears)
+        local watchName = nil
+        local bestDist = math.huge
+        local lastGainAt = os.clock()
+        local waypoints = nil -- non-nil = path mode
+        local waypointIndex = 1
+        local pathGoal = nil -- target position the current path was computed to
+        local noPathUntil = 0 -- direct-mode fallback window after a failed compute
+
+        local function resetNav()
+            bestDist = math.huge
+            lastGainAt = os.clock()
+            waypoints, pathGoal = nil, nil
+            waypointIndex = 1
+        end
+
+        local function computePath(hrp, tHrp)
+            local path = PathfindingService:CreatePath({
+                AgentRadius = 2.5,
+                AgentHeight = 6,
+                AgentCanJump = true,
+            })
+            local ok = pcall(function()
+                path:ComputeAsync(hrp.Position, tHrp.Position)
+            end)
+            if ok and path.Status == Enum.PathStatus.Success then
+                waypoints = path:GetWaypoints()
+                waypointIndex = 2 -- [1] is where we stand
+                pathGoal = tHrp.Position
+                lastGainAt = os.clock() -- fresh grace for the first leg
+            else
+                -- unreachable (gap/void): stay direct for a beat, don't spin computes
+                resetNav()
+                noPathUntil = os.clock() + (cfg.path_fail_cooldown or 2)
+            end
+        end
+
         while true do
             task.wait(cfg.refresh or 0.15)
             local name = followName
+            if name ~= watchName then
+                watchName = name
+                resetNav()
+            end
             if name then
                 local target = Players:FindFirstChild(name)
                 local char = player.Character
@@ -144,13 +214,65 @@ function TeamFollowController.start()
                     local delta = tHrp.Position - hrp.Position
                     local flat = Vector3.new(delta.X, 0, delta.Z)
                     local stop = cfg.stop_distance or 7
-                    if flat.Magnitude > stop then
+                    if flat.Magnitude <= stop then
+                        -- arrived: settle and clear any path/watchdog state
+                        resetNav()
+                        if wasMoving then
+                            hum:MoveTo(hrp.Position) -- cancel the stale MoveTo so we stop clean
+                            wasMoving = false
+                        end
+                    elseif waypoints then
+                        -- PATH MODE: leave it the moment the straight line is open again
+                        if hasLineOfSight(hrp, tHrp) then
+                            resetNav()
+                        else
+                            local wp = waypoints[waypointIndex]
+                            if
+                                not wp
+                                or (
+                                    pathGoal
+                                    and (tHrp.Position - pathGoal).Magnitude
+                                        > (cfg.repath_distance or 12)
+                                )
+                            then
+                                computePath(hrp, tHrp) -- walked it out / target drifted: recompute
+                            else
+                                local wflat = Vector3.new(
+                                    wp.Position.X - hrp.Position.X,
+                                    0,
+                                    wp.Position.Z - hrp.Position.Z
+                                )
+                                if wflat.Magnitude <= (cfg.waypoint_reach or 4) then
+                                    waypointIndex += 1
+                                    lastGainAt = os.clock() -- reaching a waypoint IS progress
+                                else
+                                    if wp.Action == Enum.PathWaypointAction.Jump then
+                                        hum.Jump = true
+                                    end
+                                    hum:MoveTo(wp.Position)
+                                    wasMoving = true
+                                    -- a stalled WAYPOINT (door closed, geometry changed) recomputes
+                                    if os.clock() - lastGainAt > (cfg.stuck_window or 1.2) * 2 then
+                                        computePath(hrp, tHrp)
+                                    end
+                                end
+                            end
+                        end
+                    else
+                        -- DIRECT MODE: straight line + the no-progress watchdog
                         -- aim a hair short of them so we settle beside, not inside
                         hum:MoveTo(tHrp.Position - flat.Unit * (stop * 0.7))
                         wasMoving = true
-                    elseif wasMoving then
-                        hum:MoveTo(hrp.Position) -- cancel the stale MoveTo so we stop clean
-                        wasMoving = false
+                        if flat.Magnitude < bestDist - (cfg.stuck_epsilon or 1) then
+                            bestDist = flat.Magnitude
+                            lastGainAt = os.clock()
+                        elseif
+                            os.clock() - lastGainAt > (cfg.stuck_window or 1.2)
+                            and os.clock() >= noPathUntil
+                            and not hasLineOfSight(hrp, tHrp)
+                        then
+                            computePath(hrp, tHrp) -- wedged behind geometry: walk a real path
+                        end
                     end
                 end
             elseif wasMoving then
