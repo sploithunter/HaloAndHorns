@@ -351,6 +351,26 @@ local function loadConfigsFromStorage()
         end
     end
 
+    -- BUILDER'S CUT overlay (configs/showcase.lua): when this PlaceId is a
+    -- registered showcase place, mutate the loaded tables into museum rules
+    -- (all zones open, realm ladder at level 1, enemies inert, eggs free).
+    -- The live game's PlaceId never matches, so it is untouched by
+    -- construction. LOUD on purpose — a misconfigured id must not hide.
+    local showcase = configs.showcase
+    if showcase and type(showcase.apply) == "function" then
+        local here = game.PlaceId
+        for _, id in ipairs(showcase.place_ids or {}) do
+            if tonumber(id) == here then
+                warn(("SHOWCASE MODE ACTIVE (Builder's Cut overlay, place %d): museum rules applied"):format(here))
+                local ok, err = pcall(showcase.apply, configs)
+                if not ok then
+                    warn("Showcase overlay FAILED: " .. tostring(err))
+                end
+                break
+            end
+        end
+    end
+
     configsLoaded = true
 end
 
