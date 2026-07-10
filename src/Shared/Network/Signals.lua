@@ -23,7 +23,6 @@ local legacySignals = {
     ConvertCurrency = Net:RemoteEvent("ConvertCurrency"), -- c->s exchange configured currencies
     CurrencyUpdate = Net:RemoteEvent("CurrencyUpdate"), -- s->c
     PurchaseUpgrade = Net:RemoteEvent("PurchaseUpgrade"), -- c->s
-    UpgradeResult = Net:RemoteEvent("UpgradeResult"), -- s->c
 
     -- Legacy-bridge replacements
     PurchaseSuccess = Net:RemoteEvent("PurchaseSuccess"), -- s->c UI toast
@@ -60,8 +59,6 @@ local legacySignals = {
     Power_AreaFx = Net:RemoteEvent("Power_AreaFx"), -- s->c play an area power's VFX {element, variant, center, radius, pit, hits=[{pos,amount}]}
     Hotbar_RequestState = Net:RemoteEvent("Hotbar_RequestState"), -- c->s ask for the player's hotbar
     Hotbar_State = Net:RemoteEvent("Hotbar_State"), -- s->c push hotbar bindings for the command bar UI
-    LevelUp_Claimed = Net:RemoteEvent("LevelUp_Claimed"), -- s->c a level was claimed {level, kind, powerPick, slots, milestone, eggHatchTotal, rewards, pendingLevels}
-    LevelUp_OpenChoice = Net:RemoteEvent("LevelUp_OpenChoice"), -- s->c open the level-up menu WITHOUT claiming (altar engaged; the level claims atomically on COMMIT)
     GameEvent = Net:RemoteEvent("GameEvent"), -- s->c fire a named gameplay event (name, ctx) -> client GameEvents reactions (configs/game_events)
     TutorialState = Net:RemoteEvent("TutorialState"), -- s->c current tutorial step view (TutorialFlow.stateFor)
     Admin_RequestHatchHistory = Net:RemoteEvent("Admin_RequestHatchHistory"), -- c->s recent hatch debug snapshot
@@ -107,8 +104,6 @@ local legacySignals = {
 
     -- Zones / progression
     UnlockZoneRequest = Net:RemoteEvent("UnlockZoneRequest"), -- c->s
-    ZoneUnlockResult = Net:RemoteEvent("ZoneUnlockResult"), -- s->c
-    ZoneTravelResult = Net:RemoteEvent("ZoneTravelResult"), -- s->c
     RealmTravelOffer = Net:RemoteEvent("RealmTravelOffer"), -- s->c (touched a realm portal -> yes/no offer)
     RealmTravelConfirm = Net:RemoteEvent("RealmTravelConfirm"), -- c->s (player chose Yes -> travel)
 

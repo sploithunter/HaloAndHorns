@@ -420,3 +420,15 @@ migration is needed for the abandoned "element splits stacks" spec.
   their wire names or one-table payloads. The architecture debt baseline dropped by three remote
   declarations and one unvalidated config; 95 legacy `Signals` declarations remain for later
   compatibility slices. `mise run ci` is green at 1,263/1,263 across 114 specs.
+
+## 2026-07-10 - Progression notifications join the network manifest (Phase 1 slice 2)
+
+- Migrated `UpgradeResult`, `LevelUp_Claimed`, `LevelUp_OpenChoice`, `ZoneUnlockResult`, and
+  `ZoneTravelResult` from the legacy constructor table into the validated packet manifest. Wire
+  names and tuple payloads are unchanged; bidirectional `TutorialState` and unused-listener
+  `PurchaseResult` remain legacy pending separate contract decisions.
+- Ratcheted `Signals.lua` manual remote construction from 95 to 90. Headless verification remains
+  green at 1,263/1,263 across 114 specs. Two separate-place Studio Play smokes passed through MCP:
+  the foundation boot reported 3 manifest packets, and the migrated boot reported 8 with all five
+  moved signals present on the live server. Output contained no network, duplicate declaration, or
+  script errors; existing profile, placeholder monetization, and legacy-effect warnings remain.
