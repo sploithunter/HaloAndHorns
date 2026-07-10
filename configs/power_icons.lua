@@ -107,6 +107,10 @@ local M = {
         -- creator (Colorado exclusive / creator-egg origin): the disc art is the flag-themed colorado
         -- role icon; the RING is WHITE (Jason) — so both tints are near-white.
         creator = { bright = { 255, 255, 255 }, dark = { 240, 240, 245 } },
+        -- exclusive (boss-egg pets, Jason: "probably purple — those pets don't
+        -- have an origin"): purple disc art (the set the generator files under
+        -- neutral) with a truly purple ring, distinct from neutral's gray.
+        exclusive = { bright = { 178, 96, 255 }, dark = { 64, 34, 92 } },
     },
 
     -- Canonical combat element (grass/lava/ice/desert, from CombatOrigin / combat_fx) -> the
@@ -119,6 +123,7 @@ local M = {
         earth = "earth",
         fire = "fire",
         creator = "creator", -- Colorado / creator-egg origin: flag disc + white ring (passes through)
+        exclusive = "exclusive", -- boss-egg exclusives: purple disc + purple ring
     },
 
     -- Archetype/role id (pet_roles / PetPowerView.roleInfo .id) -> the white SYMBOL to stamp on
@@ -305,6 +310,11 @@ function M.discFor(element, symbol)
     local e = M.discs[M.elementKey(element)]
     return e and symbol and e[symbol] or nil
 end
+
+-- EXCLUSIVE disc art = the purple set (the generator files it under neutral —
+-- purple IS neutral's color). The alias gives exclusives the same discs with
+-- their own PURPLE ring tint via elements.exclusive above.
+M.discs.exclusive = M.discs.neutral
 
 -- Auto-register every colored disc at a slight inset: they're full-bleed (no transparent border
 -- to crop), so the 1.25 border-zoom would overflow a clipping frame (status badges) and cut their

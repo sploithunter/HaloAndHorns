@@ -37,6 +37,19 @@ return {
         badge_element = {
             colorado = "creator",
             colorado_creator = "creator",
+            -- boss-egg exclusives (obsidian + celestial): no biome origin, so
+            -- their role badge wears the EXCLUSIVE purple disc (Jason). The
+            -- flag disc stays Colorado-only.
+            wyrmling = "exclusive",
+            obsidian_hound = "exclusive",
+            cinder_golemite = "exclusive",
+            ashwing = "exclusive",
+            cerberus_pup = "exclusive",
+            lumen_dove = "exclusive",
+            archon_spark = "exclusive",
+            cloudling = "exclusive",
+            halo_fawn = "exclusive",
+            seraph_kit = "exclusive",
         },
 
         -- Interim pet-element source: until the hatch biome is persisted onto the pet record,
