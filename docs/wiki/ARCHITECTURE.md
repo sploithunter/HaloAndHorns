@@ -21,7 +21,14 @@ The desired shape is a small set of authoritative services backed by validated c
 - Enhancement sales use `InventoryService:BulkRemove` with an economy commit callback. Inventory
   snapshots restore exact stacks and slot counts when credit is rejected, before replication/save.
 - Trade gem escrow debits, owner refunds, and recipient delivery credits use `EconomyService`.
-  Escrow descriptors are removed only after the corresponding grant reports success.
+  Escrow descriptors retain complete source records and keys. `PetTransferService` inserts existing
+  pet records without mint defaults or new UIDs, while `TradeDeliveryTransaction` stages inventory
+  grants before currency effects and reverses prior grants if either leg rejects or throws. Escrow
+  clears only after the whole delivery commits.
+- `DataService:RegisterBeforeProfileRelease` synchronously settles loaded-profile ownership before
+  ProfileStore release; trade uses it to atomically refund both owners on graceful disconnect.
+  Hard-process crash recovery remains the write-ahead-journal work documented in
+  `docs/TRADE_ESCROW_CRASH_SAFETY.md`.
 - Combat drop-table currencies and def-less realm coin fallbacks also terminate at
   `EconomyService`; combat math and area-coin selection remain service-owned upstream.
 - `ServerClockService` owns deterministic UTC day/seed behavior.
@@ -42,6 +49,9 @@ The desired shape is a small set of authoritative services backed by validated c
 - `PetSerialService` allocates global serial numbers for special pets through an atomic DataStore `UpdateAsync` counter keyed by serial family, pet id, and variant. Studio has a memory fallback only for local API-disabled testing.
 - `PetGrantService` is the single boundary for converting a selected pet outcome into durable inventory. Hatching, fusion, admin grants, creator rewards, scripts, and future trade receipts should call this service so huge metadata, serials, locks, saves, and inventory shape stay consistent. Fusion outputs are marked unique so their per-copy Chaotic element and theme cannot collapse into an ordinary stack.
 - `InventoryService` owns exact pet-record snapshots and restoration for transactional rollback. Fusion mints first through `PetGrantService`, consumes both inputs without intermediate saves, and restores the original key and complete record if consumption fails.
+- `InventoryService:InsertRecordSnapshot` and its opaque rollback receipt are the transfer-side
+  equivalent: unique records preserve their original key and complete metadata; compact stacks
+  merge quantity and restore the destination's exact prior record on rollback.
 - Pet minting stores stable pet and variant identities; asset construction remains downstream and config-driven. The six original pets use packaged model assets, while Meshy families use mesh-plus-texture assembly in `AssetPreloadService`; fusion does not merge those presentation paths.
 - Pet enchant capacity is config-driven by rarity in `configs/pets.lua` under `enchanting.max_enchantments_by_rarity`. Rarities with enchant slots are treated as unique pets going forward, because per-copy enchant state cannot live on compact stack records. Current defaults are Mythic `1`, Secret `2`, Exclusive `2`, and Huge `3`; future rarities can be added by config.
 - `EnchantService` owns rolling, storing, rerolling, and resolving pet enchants. `configs/enchants.lua` is the single source of truth for both enchant chance and enchant behavior: rarity roll profiles, roll counts, weighted entries, strength ranges, duplicate policy, reroll cost, and modifier mappings all live there. Saved unique pets store only rolled identity/strength/provenance; pet configs and pet records must not define what an enchant does.

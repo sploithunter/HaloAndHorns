@@ -620,3 +620,19 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,276/1,276 headless tests and 530 allowlisted architecture occurrences. An
   MCP Studio failure injection rejected a gem refund and verified the original escrow descriptor
   and offer amount remained unchanged; no live trade or balance was touched.
+
+## 2026-07-10 - Trade delivery preserves exact records and rolls back both legs
+
+- Added loader-owned `PetTransferService` and exact snapshot insertion receipts in
+  `InventoryService`. Special pets retain their original UID and complete progression, provenance,
+  serial, and nested enchant metadata; common pets and enhancements retain full source stack data.
+- Added pure `TradeDeliveryTransaction`: inventory grants run before currency effects, failures undo
+  prior grants in reverse, and escrow stays authoritative until both legs commit. Cancel/refund is
+  one two-owner transaction, and trade stats now count the original escrow instead of cleared tables.
+- Added a synchronous DataService pre-release hook so graceful disconnect refunds happen before
+  ProfileStore ends the session. Abrupt server-crash recovery still requires the separately designed
+  durable write-ahead escrow journal.
+- Full CI is green at 1,281/1,281 headless tests and 530 allowlisted architecture occurrences. An
+  MCP Studio failure injection preserved a special UID plus exact nested metadata, restored a merged
+  stack exactly, rejected the second grant, removed the first recipient grant, and retained both
+  source escrow entries; fake profiles only, with no live inventory or balance mutation.

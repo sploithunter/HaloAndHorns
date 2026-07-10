@@ -3,6 +3,10 @@
 Research-backed design notes for hardening `TradeService`'s escrow against a server crash
 mid-pending-trade. Feeds the flagged task "Persist trade escrow to DataStore (crash recovery)".
 
+> **Status (2026-07-10):** Same-server delivery now uses reversible receipts, exact-record
+> `PetTransferService` grants, and a synchronous pre-profile-release refund hook. This document's
+> durable WAL remains outstanding specifically for abrupt process/server crashes.
+
 ## Build it TEMPLATE-side (generic, reusable) — not a TradeService bolt-on
 This crash-safe, exactly-once pattern is generic infrastructure, so it belongs on the **template**
 side of the repo (reusable by any game built on it), with trading as the *first consumer*:

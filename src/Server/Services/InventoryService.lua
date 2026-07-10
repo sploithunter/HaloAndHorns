@@ -873,10 +873,13 @@ function InventoryService:BulkRemove(player, bucketName, entries, opts)
     pcall(function()
         self:_updateBucketFolders(player, bucketName)
     end)
-    self._dataService:RequestSave(player, (opts and opts.saveTag)
-        or ("inventory_bulk_remove_" .. tostring(bucketName)), {
-        critical = true,
-    })
+    self._dataService:RequestSave(
+        player,
+        (opts and opts.saveTag) or ("inventory_bulk_remove_" .. tostring(bucketName)),
+        {
+            critical = true,
+        }
+    )
     return true, removedMap, totalQty
 end
 
@@ -1426,6 +1429,88 @@ function InventoryService:RestorePetRecordSnapshot(player, uid, snapshot, opts)
     if not (opts and opts.deferFlush) then
         self:RebuildPetProjections(player)
         self._dataService:RequestSave(player, "inventory_restore_pets", { critical = true })
+    end
+    return true
+end
+
+-- Insert an already-owned record without mint defaults, timestamps, or provenance changes.
+-- Existing stack records absorb only the transferred quantity; unique-key collisions reject.
+-- The opaque receipt restores the destination exactly if a wider transaction later fails.
+function InventoryService:InsertRecordSnapshot(player, bucketName, recordKey, snapshot, opts)
+    local bucket = self:GetInventory(player, bucketName)
+    local bucketConfig = self._inventoryConfig.buckets[bucketName]
+    if
+        type(recordKey) ~= "string"
+        or recordKey == ""
+        or type(snapshot) ~= "table"
+        or type(snapshot.id) ~= "string"
+        or not bucket
+        or type(bucket.items) ~= "table"
+        or not bucketConfig
+    then
+        return nil, "Invalid record snapshot"
+    end
+
+    local before = bucket.items[recordKey] and deepCopy(bucket.items[recordKey]) or nil
+    local requiredSlots = self:_getRequiredSlotsForAdd(bucketName, snapshot, bucket, bucketConfig)
+    if
+        before == nil
+        and requiredSlots > 0
+        and not self:HasSpace(player, bucketName, requiredSlots)
+    then
+        return nil, "No space in " .. tostring(bucketConfig.display_name)
+    end
+
+    if before ~= nil then
+        local incomingQuantity = tonumber(snapshot.quantity)
+        local currentQuantity = tonumber(before.quantity)
+        if incomingQuantity == nil or currentQuantity == nil then
+            return nil, "Record key collision"
+        end
+        bucket.items[recordKey].quantity = currentQuantity + incomingQuantity
+    else
+        bucket.items[recordKey] = deepCopy(snapshot)
+        bucket.used_slots = (tonumber(bucket.used_slots) or 0) + requiredSlots
+    end
+
+    local receipt = {
+        player = player,
+        bucketName = bucketName,
+        recordKey = recordKey,
+        before = before,
+        usedSlotsBefore = (tonumber(bucket.used_slots) or 0)
+            - (before == nil and requiredSlots or 0),
+        snapshot = deepCopy(snapshot),
+    }
+    if not (opts and opts.deferFlush) then
+        self:FinalizeRecordInsert(receipt)
+        self:FlushBucket(player, bucketName, "inventory_insert_snapshot_" .. bucketName)
+    end
+    return receipt
+end
+
+function InventoryService:RollbackRecordInsert(receipt, opts)
+    if type(receipt) ~= "table" then
+        return false
+    end
+    local bucket = self:GetInventory(receipt.player, receipt.bucketName)
+    if not bucket or type(bucket.items) ~= "table" then
+        return false
+    end
+    bucket.items[receipt.recordKey] = receipt.before and deepCopy(receipt.before) or nil
+    bucket.used_slots = receipt.usedSlotsBefore
+    if not (opts and opts.deferFlush) then
+        self:FlushBucket(receipt.player, receipt.bucketName, "inventory_rollback_snapshot")
+    end
+    return true
+end
+
+function InventoryService:FinalizeRecordInsert(receipt)
+    if type(receipt) ~= "table" then
+        return false
+    end
+    if receipt.bucketName == "pets" then
+        self:_recordPetIndex(receipt.player, receipt.snapshot)
     end
     return true
 end

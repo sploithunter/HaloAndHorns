@@ -481,10 +481,18 @@ loader:RegisterModule(
 -- TradeService: Halo & Horns trading (Feature 19) — session offers, both-confirm
 -- gate, atomic swap, and the trade-history audit log.
 loader:RegisterModule(
-    "TradeService",
-    ServerScriptService.Server.Services.TradeService,
-    { "Logger", "ConfigLoader", "DataService", "EconomyService", "InventoryService" }
+    "PetTransferService",
+    ServerScriptService.Server.Services.PetTransferService,
+    { "InventoryService" }
 )
+loader:RegisterModule("TradeService", ServerScriptService.Server.Services.TradeService, {
+    "Logger",
+    "ConfigLoader",
+    "DataService",
+    "EconomyService",
+    "InventoryService",
+    "PetTransferService",
+})
 -- FusionService: Halo & Horns Chaotic fusion (Feature 20) — Light + Shadow -> Chaotic.
 loader:RegisterModule(
     "FusionService",
@@ -711,6 +719,7 @@ local requiredModules = {
     "InventoryService",
     "PetSerialService",
     "PetGrantService",
+    "PetTransferService",
     "SettingsService",
     "HatchEntitlementService",
     "DiagnosticsService",

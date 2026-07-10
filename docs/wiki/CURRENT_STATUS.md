@@ -108,6 +108,10 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Combat loot currencies, including def-less realm-enemy coin fallbacks, now flow through `EconomyService`.
 - Enhancement buys and sells use `EconomyService`; rejected sale credits restore exact enhancement stacks before commit.
 - Trade gem escrow, adjustment refunds, and recipient credits now use checked `EconomyService` calls.
+- Trade pet/enhancement delivery now preserves full source records and special-pet UIDs through
+  `PetTransferService`. Both trade legs roll back in reverse on failure, cancel only closes after an
+  atomic two-owner refund, and graceful disconnect refunds before ProfileStore releases the profile.
+  Durable hard-crash escrow recovery remains separately planned.
 - Studio Play boots successfully through the validated config loader; current remaining Output noise is warning-level placeholder/test data such as monetization ids and unknown legacy saved effects.
 - **Boot is event-driven and gated** (`docs/BOOT_ORCHESTRATION.md`): `BootReadiness` milestone latches + a `configs/boot.lua` dependency graph + a `BootOrchestrator` that validates the graph, logs `[BOOT] milestone ready`, and mirrors readiness to `ReplicatedStorage.BootStatus`. Producers signal (`world_structure`/`models_ready`/`crystals_ready`/`eggs_placed`/`icons_ready`); consumers (pets, crystals, eggs) `await` instead of polling/aborting/fire-once-waiting — the class of fast-boot races (pets not deploying, crystals only filling on the 30s safety-net) is closed. The loading screen renders those real milestones as informative phases.
 - Roblox Studio MCP is enabled and connected to Codex. Agents can now read Output, capture Studio screenshots, start/stop play, inspect the game tree, execute Luau, and read/edit Studio scripts through the official Studio MCP bridge.

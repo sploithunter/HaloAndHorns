@@ -532,6 +532,7 @@ function DataService:Init()
     self.SaveRequests = {}
     self.PersistenceWarningsIssued = {}
     self.AutoSaveLoopRunning = false
+    self.BeforeProfileReleaseHandlers = {}
 
     -- Connect to player events
     Players.PlayerAdded:Connect(function(player)
@@ -539,6 +540,15 @@ function DataService:Init()
     end)
 
     Players.PlayerRemoving:Connect(function(player)
+        for _, handler in ipairs(self.BeforeProfileReleaseHandlers) do
+            local ok, err = pcall(handler, player)
+            if not ok then
+                self._logger:Error("Before-profile-release handler failed", {
+                    player = player.Name,
+                    error = tostring(err),
+                })
+            end
+        end
         self:ReleaseProfile(player)
     end)
 
@@ -555,6 +565,13 @@ function DataService:Init()
         profileStoreAutoSaveSeconds = PROFILESTORE_AUTO_SAVE_PERIOD_SECONDS,
         periodicSaveSeconds = PERIODIC_SAVE_SECONDS,
     })
+end
+
+-- Synchronous lifecycle hook for ownership systems that must settle loaded profile data before
+-- ProfileStore ends the session. Handlers must not yield.
+function DataService:RegisterBeforeProfileRelease(handler)
+    assert(type(handler) == "function", "before-profile-release handler must be a function")
+    table.insert(self.BeforeProfileReleaseHandlers, handler)
 end
 
 function DataService:Start()
