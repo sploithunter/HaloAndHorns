@@ -1636,12 +1636,22 @@ function loadEquipped(Player)
             -- NOW parent everything to workspace (AFTER everything is built)
             PetModel.Parent = petModelsLocation
             box.Parent = petLocation
-            -- Anchor the pet's PrimaryPart; PetFollowService owns its position from here
-            -- (anchored server-side, moved on the client RenderStepped).
+            -- Anchor EVERY part, not just the primary; PetFollowService owns the
+            -- position from here (moved on the client via PivotTo, which carries
+            -- all parts rigidly — welds are decoration). Anchoring only the
+            -- primary left a MULTI-PART pet's other parts as live physics bodies
+            -- hanging off welds; the solver/replication could settle one at a
+            -- stale offset that PivotTo then preserved forever (Colorado's "C"
+            -- floating beside the pet, 2026-07-09 — Colorado is the only
+            -- multi-part pet, which is why only it drifted).
+            for _, d in ipairs(PetModel:GetDescendants()) do
+                if d:IsA("BasePart") then
+                    d.Anchored = true
+                end
+            end
             if PetModel.PrimaryPart then
                 pcall(function()
                     PetModel.PrimaryPart.Anchored = true
-                    PetModel.PrimaryPart:SetNetworkOwner(Player)
                 end)
             end
 
