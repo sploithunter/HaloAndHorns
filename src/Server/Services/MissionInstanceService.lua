@@ -1855,10 +1855,25 @@ function MissionInstanceService:_placeTreasures(
             end
             state.opened = true
             prompt.Enabled = false
+            -- SHARED LOOT (Jason: "if one player opens a chest, all the
+            -- teammates should get a roll") — same philosophy as kill credit
+            -- (TM5) and completion counters: everyone IN the mission rolls
+            -- their own payout and ticks the treasure-hunter counter. A team
+            -- has at most one open mission, so InMission = this one.
+            local sharers = {}
+            for _, member in ipairs(membersOf(teamKey)) do
+                if member:GetAttribute("InMission") then
+                    table.insert(sharers, member)
+                end
+            end
+            if #sharers == 0 then
+                sharers = { who }
+            end
             pcall(function() -- treasure-hunter quest substrate
-                _G.RBXTemplateServices
-                    :Get("StatsService")
-                    :Increment(who, "mission_chests_opened", 1)
+                local statsSvc = _G.RBXTemplateServices:Get("StatsService")
+                for _, member in ipairs(sharers) do
+                    statsSvc:Increment(member, "mission_chests_opened", 1)
+                end
             end)
             -- pop the lid; payout rolls are loot-random (placement was the
             -- deterministic part)
@@ -1869,21 +1884,23 @@ function MissionInstanceService:_placeTreasures(
                 dropSvc = locator and locator:Get("DropService")
             end)
             if dropSvc and dropSvc.TrySpawnEnhancementDrop then
-                local rolls = math.random(tCfg.rolls_min or 1, tCfg.rolls_max or 2)
                 local forward = chest.PrimaryPart.CFrame.LookVector
-                for r = 1, rolls do
-                    pcall(function()
-                        dropSvc:TrySpawnEnhancementDrop(
-                            who,
-                            "treasure",
-                            chest.PrimaryPart.Position
-                                + forward * 5
-                                + Vector3.new(0, 2, (r - 1.5) * 2)
-                        )
-                    end)
+                for m, member in ipairs(sharers) do
+                    local rolls = math.random(tCfg.rolls_min or 1, tCfg.rolls_max or 2)
+                    for r = 1, rolls do
+                        pcall(function()
+                            dropSvc:TrySpawnEnhancementDrop(
+                                member,
+                                "treasure",
+                                chest.PrimaryPart.Position
+                                    + forward * 5
+                                    + Vector3.new((m - 1) * 2.5, 2, (r - 1.5) * 2)
+                            )
+                        end)
+                    end
                 end
             end
-            self:_log("Info", "treasure opened", { by = who.Name })
+            self:_log("Info", "treasure opened", { by = who.Name, sharers = #sharers })
         end)
     end
 
