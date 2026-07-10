@@ -484,3 +484,12 @@ migration is needed for the abandoned "element splits stacks" spec.
   the live server reported 26 manifest packets, the two-argument game-event schema, and both moved
   signals. Output contained no network, duplicate declaration, or script errors; existing
   test-place warnings remain.
+
+## 2026-07-10 - Gameplay event publication boundary becomes exclusive
+
+- Routed enhancement, exclusive-egg, and potion pickup events in `DropService` through
+  `FireGameEvent` instead of sending `Signals.GameEvent` directly. Event names and client payloads
+  are unchanged; server taps and configured world sound now observe the same successful pickups.
+- Removed all three `DropService` exceptions from the architecture allowlist. The only remaining
+  direct `GameEvent` send is the intentional terminal inside `FireGameEvent` itself. A Studio Play
+  smoke loaded the exact updated `DropService` module and completed boot without script errors.

@@ -22,6 +22,7 @@ local Workspace = game:GetService("Workspace")
 local MeshAssembly = require(ReplicatedStorage.Shared.Assets.MeshAssembly)
 
 local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
+local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 
 local DropService = {}
 DropService.__index = DropService
@@ -790,8 +791,7 @@ function DropService:_collect(rec, _force)
             end)
             if res and res.ok then
                 pcall(function()
-                    local Signals = require(ReplicatedStorage.Shared.Network.Signals)
-                    Signals.GameEvent:FireClient(plr, "enhancement_pickup", {
+                    fireGameEvent(plr, "enhancement_pickup", {
                         name = res.name,
                         origins = rec.record.origins,
                     })
@@ -813,8 +813,7 @@ function DropService:_collect(rec, _force)
             end)
             if granted then
                 pcall(function()
-                    local Signals = require(ReplicatedStorage.Shared.Network.Signals)
-                    Signals.GameEvent:FireClient(plr, "exclusive_egg_pickup", {
+                    fireGameEvent(plr, "exclusive_egg_pickup", {
                         name = (rec.eggName or "Mysterious Egg") .. " acquired!",
                         egg = rec.eggId,
                     })
@@ -831,10 +830,9 @@ function DropService:_collect(rec, _force)
             end)
             if res and res.ok then
                 pcall(function()
-                    local Signals = require(ReplicatedStorage.Shared.Network.Signals)
                     local cfg = self._potionConfig
                     local pc = cfg and cfg.potions and cfg.potions[rec.potionId]
-                    Signals.GameEvent:FireClient(
+                    fireGameEvent(
                         plr,
                         "potion_pickup",
                         { name = (pc and pc.display_name) or "Potion" }

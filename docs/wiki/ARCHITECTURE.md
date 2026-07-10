@@ -70,6 +70,8 @@ Boot is **event-driven milestones**, not polling (design: [BOOT_ORCHESTRATION.md
 
 The initial rules cover remote construction, direct gameplay-event publication, pet-record mutation, direct currency persistence calls, `_G.RBXTemplateServices`, runtime `task.wait`/`task.delay`, and configs without explicit `ConfigLoader` validation. Focused local modes are `--network`, `--mutations`, `--timing`, `--configs`, and `--services`. Debt removal is tracked in GitHub issue #3.
 
+`FireGameEvent` is the exclusive gameplay-event publication boundary. It notifies server taps, resolves configured world sound, and then sends the client packet; direct service sends are no longer allowlisted.
+
 ## Links
 
 - [Implementation Plan](../IMPLEMENTATION_PLAN.md)

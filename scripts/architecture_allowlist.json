@@ -97,7 +97,6 @@
     "game-event-publication": {
       "disposition": "migration-debt",
       "files": {
-        "src/Server/Services/DropService.lua": 3,
         "src/Shared/Network/FireGameEvent.lua": 1
       },
       "owner": "gameplay events",
