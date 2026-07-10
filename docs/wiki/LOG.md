@@ -510,3 +510,14 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green, including a Rojo build and 1,271/1,271 headless tests. An MCP Studio Play smoke
   completed boot and verified mint-first ordering plus both packaged and Meshy identities through
   `PetGrantService:BuildPetData`; the smoke did not mutate player inventory.
+
+## 2026-07-10 - Reward currencies join the economy boundary
+
+- Routed `RewardService` currency grants through its injected `EconomyService` dependency instead
+  of calling the profile persistence primitive. Reward sources and bundle result shapes remain
+  unchanged, while economy history, lifetime counters, service signals, and client balance updates
+  now observe quest, daily, shop, achievement, and level reward currencies.
+- Removed the `RewardService` direct currency-persistence exception from the architecture baseline.
+- Full CI is green at 1,271/1,271 headless tests and 551 allowlisted architecture occurrences. An
+  MCP Studio Play smoke completed boot and used a mock economy boundary to verify `area_coins`
+  resolution, source propagation, and the unchanged grant result without touching live balances.

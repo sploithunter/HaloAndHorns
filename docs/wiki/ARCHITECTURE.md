@@ -12,7 +12,9 @@ The desired shape is a small set of authoritative services backed by validated c
 - `DataService` owns ProfileStore data, schema versioning, migrations, durable state, stat counter storage, pet index state, achievement completion state, and currency source/sink ledger aggregates.
 - `StatsService` owns declared tracked counters and emits counter change signals.
 - `ModifierService` plus shared `ModifierPipeline` resolve derived values from pets, enchants, upgrades, boosts, events, rebirths, and gamepasses. Breakable rewards now route through this path, with active global events registered as a provider.
-- `EconomyService` owns currency mutation and passes source reasons into the ledger.
+- `EconomyService` owns currency mutation and passes source reasons into the ledger. Reward bundle
+  currencies route through it so ledger history, lifetime counters, service signals, and client
+  balance notifications observe the same grant.
 - `ServerClockService` owns deterministic UTC day/seed behavior.
 - `WorldBindingService` discovers, validates, and serves Studio map hooks. In `auto`/`synthetic` map modes it fabricates missing baseplate hooks from `configs/areas.lua` and `configs/markers.lua`.
 - `ZoneService` owns area unlocks and server-authoritative `TeleportPad`/`Portal` travel. It uses `WorldBindingService` for hook/spawn lookup and persists area unlock state through `DataService.GameData.UnlockedAreas`.

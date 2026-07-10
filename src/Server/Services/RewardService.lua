@@ -3,7 +3,7 @@
 
     The single place a reward bundle becomes real. Quests, daily streaks, shop
     purchases, and achievements all call Grant(player, bundle, source); RewardService
-    fans the bundle out to the live systems (currencies → DataService, items →
+    fans the bundle out to the live systems (currencies → EconomyService, items →
     InventoryService, pets → PetGrantService, timed effects → PlayerEffectsService,
     capacity → Upgrades) and writes a source-keyed grant-history audit entry (capped,
     mirroring the trade/fusion logs).
@@ -23,6 +23,7 @@ function RewardService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._economyService = self._modules and self._modules.EconomyService
     self._config = self._configLoader:LoadConfig("rewards")
     self._grantLog = {} -- append-only, capped at config.grant_log_limit
 end
@@ -77,8 +78,8 @@ function RewardService:Grant(player, bundle, source)
         if currency == "area_coins" then
             resolved = self:_resolveAreaCoin(player)
         end
-        if self._dataService then
-            self._dataService:AddCurrency(player, resolved, amount, source or "reward_grant")
+        if self._economyService then
+            self._economyService:AddCurrency(player, resolved, amount, source or "reward_grant")
         end
         granted.currencies[resolved] = (granted.currencies[resolved] or 0) + amount
     end

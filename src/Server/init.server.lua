@@ -488,7 +488,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "RewardService",
     ServerScriptService.Server.Services.RewardService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "EconomyService" }
 )
 loader:RegisterModule(
     "QuestService",
