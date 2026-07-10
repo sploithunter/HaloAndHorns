@@ -93,8 +93,13 @@ no pinch-points under ~14 studs (portal prompt range).
 
 ## 3. Hard technical rules (non-negotiable)
 
-1. **Everything anchored, zero scripts.** The map ships as geometry + markers only. No
-   Scripts, LocalScripts, ModuleScripts, no unanchored parts, no constraints doing work.
+1. **Everything anchored, no gameplay scripts.** The map ships as geometry + markers;
+   game logic is ours. EXCEPTION (Jason): a model MAY carry a small self-contained
+   animation script (a spinning windmill, a swaying sign) provided it: touches nothing
+   outside its own model, uses no remotes/network, reads/writes no global state, and
+   prefers TweenService over per-frame loops (bounded work — hundreds of these will
+   coexist). Anything that affects gameplay, other instances, or players is rejected
+   in acceptance.
 2. **StreamingEnabled is ON** (with `PauseOutsideLoadedArea` integrity). Build for it:
    modular chunks, no single mega-mesh for a whole spoke, LODs where offered.
 3. **Reserved coordinate bands — leave them EMPTY:**
