@@ -179,16 +179,7 @@ function PetIndexService:_grantReward(player, reward, source)
         )
     end
 
-    if self._dataService and self._dataService.AddCurrency then
-        return self._dataService:AddCurrency(
-            player,
-            reward.currency,
-            amount,
-            source or "pet_index_reward"
-        )
-    end
-
-    return false, "No reward grant service available"
+    return false, "EconomyService unavailable"
 end
 
 function PetIndexService:_evaluateMilestones(player, index)

@@ -95,7 +95,8 @@ function AchievementsService:_grantReward(player, reward, source)
         end
     end
 
-    -- Fallback: legacy currency-only path if RewardService is unavailable.
+    -- Currency-only fallback remains inside the authoritative economy boundary when
+    -- RewardService is unavailable.
     if reward.type == "currency" then
         local amount = tonumber(reward.amount) or 0
         if amount <= 0 then
@@ -109,17 +110,9 @@ function AchievementsService:_grantReward(player, reward, source)
                 source or "achievement_reward"
             )
         end
-        if self._dataService and self._dataService.AddCurrency then
-            return self._dataService:AddCurrency(
-                player,
-                reward.currency,
-                amount,
-                source or "achievement_reward"
-            )
-        end
     end
 
-    return false, "No reward grant service available"
+    return false, "No authoritative reward grant service available"
 end
 
 function AchievementsService:_grantTier(player, achievement, tier, value)

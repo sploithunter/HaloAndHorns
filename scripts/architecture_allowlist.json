@@ -72,7 +72,6 @@
     "currency-persistence-call": {
       "disposition": "migration-debt",
       "files": {
-        "src/Server/Services/AchievementsService.lua": 1,
         "src/Server/Services/AdminToolsService.lua": 1,
         "src/Server/Services/AutomationService.lua": 1,
         "src/Server/Services/CombatService.lua": 2,
@@ -81,7 +80,6 @@
         "src/Server/Services/EnchantService.lua": 1,
         "src/Server/Services/EnhancementShopService.lua": 4,
         "src/Server/Services/GameAPIService.lua": 1,
-        "src/Server/Services/PetIndexService.lua": 1,
         "src/Server/Services/ShopService.lua": 2,
         "src/Server/Services/StudioSmokeTestService.lua": 14,
         "src/Server/Services/TradeService.lua": 4,

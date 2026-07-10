@@ -531,3 +531,13 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,271/1,271 headless tests and 549 allowlisted architecture occurrences. An
   MCP Studio Play smoke verified a successful mock token deposit and a rejected 100-token traversal
   that conserved `CurrentLayer`; no live profile or balance was changed.
+
+## 2026-07-10 - Legacy reward persistence fallbacks removed
+
+- Removed the direct `DataService:AddCurrency` fallbacks from `PetIndexService` and
+  `AchievementsService`. Both already receive `EconomyService`; achievements still prefer the full
+  `RewardService` bundle path, with only its currency-only fallback going directly to economy.
+- Removed both matching direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,271/1,271 headless tests and 547 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified both helpers against a mock economy boundary and confirmed their
+  loaded sources contain no direct currency persistence call; live balances were untouched.
