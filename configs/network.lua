@@ -107,6 +107,58 @@ return {
                 arguments = { { name = "result", type = "table" } },
             },
         },
+        CurrencyUpdate = {
+            name = "CurrencyUpdate",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "economy.currency_updated",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "update", type = "table" } },
+            },
+        },
+        PurchaseSuccess = {
+            name = "PurchaseSuccess",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "economy.purchase_succeeded",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "result", type = "table" } },
+            },
+        },
+        SellSuccess = {
+            name = "SellSuccess",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "economy.sale_succeeded",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "result", type = "table" } },
+            },
+        },
+        EconomyError = {
+            name = "EconomyError",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "economy.error",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "error", type = "table" } },
+            },
+        },
     },
 
     bridges = {

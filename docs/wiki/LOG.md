@@ -432,3 +432,14 @@ migration is needed for the abandoned "element splits stacks" spec.
   the foundation boot reported 3 manifest packets, and the migrated boot reported 8 with all five
   moved signals present on the live server. Output contained no network, duplicate declaration, or
   script errors; existing profile, placeholder monetization, and legacy-effect warnings remain.
+
+## 2026-07-10 - Economy notifications join the network manifest (Phase 1 slice 3)
+
+- Migrated `CurrencyUpdate`, `PurchaseSuccess`, `SellSuccess`, and `EconomyError` from the legacy
+  constructor table into the validated packet manifest. Existing senders and listeners still use
+  the same wire names and one-table payloads. Bidirectional `ShopItems` and `ActiveEffects`, plus
+  notifications without active client listeners, remain legacy pending separate contract work.
+- Ratcheted `Signals.lua` manual remote construction from 90 to 86. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 12 manifest packets and all four moved economy signals. Output contained
+  no network, duplicate declaration, or script errors; existing test-place warnings remain.

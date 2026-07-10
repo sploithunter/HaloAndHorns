@@ -21,16 +21,12 @@ local legacySignals = {
     PurchaseResult = Net:RemoteEvent("PurchaseResult"), -- s->c (success/fail text)
     AdjustCurrency = Net:RemoteEvent("AdjustCurrency"), -- c->s
     ConvertCurrency = Net:RemoteEvent("ConvertCurrency"), -- c->s exchange configured currencies
-    CurrencyUpdate = Net:RemoteEvent("CurrencyUpdate"), -- s->c
     PurchaseUpgrade = Net:RemoteEvent("PurchaseUpgrade"), -- c->s
 
     -- Legacy-bridge replacements
-    PurchaseSuccess = Net:RemoteEvent("PurchaseSuccess"), -- s->c UI toast
-    SellSuccess = Net:RemoteEvent("SellSuccess"), -- s->c
     ShopItems = Net:RemoteEvent("ShopItems"), -- s->c
     PlayerDebugInfo = Net:RemoteEvent("PlayerDebugInfo"), -- s->c
     GiveItemSuccess = Net:RemoteEvent("GiveItemSuccess"), -- s->c
-    EconomyError = Net:RemoteEvent("EconomyError"), -- s->c error message
     Admin_GetPlayerSnapshot = Net:RemoteEvent("Admin_GetPlayerSnapshot"), -- c->s admin player state request
     Admin_ForceSave = Net:RemoteEvent("Admin_ForceSave"), -- c->s admin force save
     Admin_GrantPet = Net:RemoteEvent("Admin_GrantPet"), -- c->s admin grant configured pet
