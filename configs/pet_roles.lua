@@ -254,7 +254,7 @@ return {
         -- clobbering it. Deliberately WELL under the Genie's +5/s: the dove is
         -- the trickle, the Genie is the firehose. Variant law rides the weight
         -- (golden 1.25 / rainbow 1.5). Endurance-check trials key on this kind.
-        lumen_dove = { kind = "focus", amount = 2, interval = 2.0, duration = 6 },
+        lumen_dove = { kind = "focus", amount = 0.75, interval = 2.0, duration = 6 }, -- +30% of base 2.5/s (Jason-tuned: 2 was a regen-doubler)
         cerberus_pup = { kind = "hold", interval = 30, duration = 10 }, -- "Drowse": the sleepy head yawns, the target naps
         seraph_kit = { kind = "hold", interval = 30, duration = 10 }, -- "Dazzle": six wings flare, the target stands blinded
         bear = { kind = "rage", enrage_below = 0.5, mult = 1.5, interval = 2.0, duration = 6 },

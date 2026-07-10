@@ -58,6 +58,17 @@ local BUFFS = {
             return Color3.fromRGB(c[1], c[2], c[3])
         end)(),
     },
+    -- INNER LIGHT (Lumen Dove focus aura): +focus/s while the dove is deployed.
+    -- Constant-on pet aura -> steady badge, "PET" source label (Jason: "if it's
+    -- constant on, that badge should be in the player's HUD"). Purple exclusive
+    -- disc + the capacitor (energy cell) glyph.
+    {
+        attr = "FocusRegenAura",
+        label = "FOCUS",
+        fixed = { element = "exclusive", symbol = "capacitor" },
+        steady = true,
+        petSource = true,
+    },
     -- toggleable: always-on powers the player turns on/off (drain focus_upkeep). The badge persists
     -- while OWNED (greyed "OFF" when off / crashed) and clicking it toggles the power — the player's
     -- on/off control, no hotbar slot needed.
