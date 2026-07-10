@@ -2647,11 +2647,18 @@ function PowerService:Cast(player, powerId, opts)
     if (enhAxes.recharge or 0) > 0 then
         cd = cd / (1 + enhAxes.recharge)
     end
-    -- Hasten (recharge axis): the player's recharge buff shortens every power's cooldown by its
-    -- fraction (clamped so a cooldown never hits zero).
+    -- Hasten (recharge axis) + EMBER TEMPO (Ashwing support aura): the power
+    -- buff and the pet aura are separate additive channels (aura-vs-power
+    -- stacking law), summed under one 0.9 clamp so a cooldown never hits zero.
+    local recharge = 0
     if (player:GetAttribute("RechargeBuffUntil") or 0) > now then
-        local r = math.clamp(player:GetAttribute("RechargeBuff") or 0, 0, 0.9)
-        cd = cd * (1 - r)
+        recharge += math.max(player:GetAttribute("RechargeBuff") or 0, 0)
+    end
+    if (player:GetAttribute("RechargeAuraUntil") or 0) > now then
+        recharge += math.max(player:GetAttribute("RechargeAura") or 0, 0)
+    end
+    if recharge > 0 then
+        cd = cd * (1 - math.clamp(recharge, 0, 0.9))
     end
     cds[powerId] = now + cd
     Signals.Power_Cooldown:FireClient(

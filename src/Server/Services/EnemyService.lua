@@ -3728,6 +3728,19 @@ function EnemyService:_supportPass(now)
                 elseif kind == "yield" then
                     self:_auraPlayerBuff(folder, "CoinYieldBuff", aura, count, weight)
                     self:_stampAuraFx(folder, "YieldFxUntil", aura, count)
+                elseif kind == "recharge" then
+                    -- EMBER TEMPO (Ashwing): power-cooldown shave for the OWNER on
+                    -- its own additive seam (RechargeAura) — stacks with Hasten's
+                    -- RechargeBuff under PowerService's shared 0.9 clamp. `weight`
+                    -- carries the variant law + multi-ashwing stacking.
+                    local owner = Players:FindFirstChild(folder.Name)
+                    if owner then
+                        owner:SetAttribute("RechargeAura", (tonumber(aura.fraction) or 0) * weight)
+                        owner:SetAttribute(
+                            "RechargeAuraUntil",
+                            os.time() + (tonumber(aura.duration) or 6)
+                        )
+                    end
                 elseif kind == "focus" then
                     -- INNER LIGHT (Lumen Dove): flat +focus/s for the OWNER on its
                     -- own additive seam (FocusRegenAura) so it STACKS with the

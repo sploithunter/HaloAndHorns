@@ -201,8 +201,10 @@ local M = {
         empower = "chevrons_up", -- single-target damage buffer: SAME damage-up glyph as offense; the
         -- single-target ring (SUPPORT_META.ring = "single") is what reads it apart from team offense
         haste = "history", -- team attack-speed aura (efficiency-as-aura); reuse the clock/recharge glyph
-        focus = "focus", -- Lumen Dove focus-regen aura: the DROPLET (same glyph as the focus
-        -- enhancement axis). NEVER capacitor — capacitor is the hold/mez art, hold-only.
+        recharge = "history", -- Ashwing Ember Tempo (power-cooldown shave): the clock glyph
+        focus = "focus_regen", -- Lumen Dove focus-regen aura: the BOLT (the focus bar's own
+        -- symbol; "focus" the droplet = the focus-cost-REDUCTION enhancement glyph, distinct
+        -- axis). NEVER capacitor — capacitor is the hold/mez art, hold-only.
     },
     power_glyph_symbol = {
         debuff = "contagion",

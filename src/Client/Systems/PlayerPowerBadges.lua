@@ -61,13 +61,22 @@ local BUFFS = {
     -- INNER LIGHT (Lumen Dove focus aura): +focus/s while the dove is deployed.
     -- Constant-on pet aura -> steady badge, "PET" source label (Jason: "if it's
     -- constant on, that badge should be in the player's HUD"). Purple exclusive
-    -- disc + the FOCUS DROPLET — the same glyph the focus enhancement axis
-    -- wears (Jason). NEVER capacitor: capacitor is THE hold/mez art (the
+    -- disc + the LIGHTNING BOLT (focus_regen glyph — the focus bar IS the
+    -- bolt; the droplet is the focus-cost-REDUCTION enhancement glyph). NEVER capacitor: capacitor is THE hold/mez art (the
     -- wrapped-up figure), it means control and nothing else.
     {
         attr = "FocusRegenAura",
         label = "FOCUS",
-        fixed = { element = "exclusive", symbol = "focus" },
+        fixed = { element = "exclusive", symbol = "focus_regen" },
+        steady = true,
+        petSource = true,
+    },
+    -- EMBER TEMPO (Ashwing recharge aura): cooldown shave while deployed.
+    -- Purple exclusive disc + the history/clock glyph (recharge vocabulary).
+    {
+        attr = "RechargeAura",
+        label = "RCH",
+        fixed = { element = "exclusive", symbol = "history" },
         steady = true,
         petSource = true,
     },

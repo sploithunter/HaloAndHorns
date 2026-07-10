@@ -247,7 +247,13 @@ return {
         -- +62.5%, rainbow +75%), so a raging bear claws back the tank role's 0.6
         -- haircut exactly while it's doing its job (0.6 × 1.5 = 0.9; rainbow 1.05).
         -- Boss exclusive egg supports + controllers (2026-07-09)
-        ashwing = { kind = "offense", interval = 2.0, mult = 1.1667, duration = 6 }, -- hell buffer (War-Cry embers)
+        -- EMBER TEMPO (Ashwing — the obsidian egg's support, the dove's hell
+        -- mirror; Jason: "something just as cool in hell... recharge"): shaves
+        -- every power cooldown by `fraction` for the OWNER. Heaven feeds the
+        -- BAR (dove focus), hell feeds the CLOCK. Variant law rides weight
+        -- (golden 1.25 / rainbow 1.5); stacks additively with Hasten's
+        -- RechargeBuff under the same 0.9 clamp.
+        ashwing = { kind = "recharge", fraction = 0.1, interval = 2.0, duration = 6 },
         halo_fawn = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 }, -- heaven healer
         -- INNER LIGHT (Lumen Dove): +focus/s for the OWNER on its own additive
         -- seam (FocusRegenAura) — stacks with the Genie's wish window instead of

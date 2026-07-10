@@ -256,6 +256,7 @@ return {
             fist_impact = id(88153886625802),
             flag = id(124601374495298),
             focus = id(119851238158731),
+            focus_regen = id(88171919999972),
             gift_up = id(75344416693561),
             hand_stop = id(80309278009356),
             heart = id(110098540359790),

@@ -522,6 +522,9 @@ local petConfig = {
         },
         ashwing = {
             display_name = "Ashwing",
+            -- EMBER GLOW: hell's lantern — dimmer and redder than the Lumen
+            -- Dove's inner light BY DESIGN (the dove stays the premium light).
+            body_light = { brightness = 1.6, range = 26, color = { 255, 120, 60 } },
             category = "creator",
             realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
