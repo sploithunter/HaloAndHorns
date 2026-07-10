@@ -4507,9 +4507,18 @@ function EnemyService:_caveAllegiance(part)
     return nil
 end
 
--- The realm a player currently stands in ("heaven"/"hell"/"neutral"), derived from CurrentLayer so it
--- matches _caveAllegiance (folder-name based) rather than relying on a separately-set attribute.
+-- The realm a player currently stands in ("heaven"/"hell"/"neutral"). SSOT = the published
+-- CurrentRealm attribute (LayerService owns it; MissionInstanceService OVERRIDES it inside a
+-- trial — "the trial counts as its realm"). Deriving from CurrentLayer here bypassed that
+-- override: a teammate warped into a hell trial from a different layer kept THEIR realm, so the
+-- trial's neutral-allegiance enemies could resolve heaven-vs-heaven toward their squad and
+-- NOBODY initiated (2026-07-09 live duo: "the pets just hang out with the enemies"). Layer
+-- derivation stays as the fallback for the pre-publish window.
 function EnemyService:_currentRealm(player)
+    local realm = player and player:GetAttribute("CurrentRealm")
+    if type(realm) == "string" and realm ~= "" then
+        return Allegiance.normalize(realm)
+    end
     local layer = player and player:GetAttribute("CurrentLayer")
     if type(layer) == "string" then
         if layer:match("^heaven") then
