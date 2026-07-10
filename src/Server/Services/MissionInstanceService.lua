@@ -86,6 +86,11 @@ function MissionInstanceService:Init()
     if not self._config then
         self:_log("Warn", "missions config unavailable — mission doors disabled")
     end
+    -- enemy defs: team scaling reads static units' tier (boss/AV stay singular)
+    local okE, enemies = pcall(function()
+        return configLoader:LoadConfig("enemies")
+    end)
+    self._enemiesConfig = (okE and type(enemies) == "table") and enemies or nil
 end
 
 function MissionInstanceService:Start()
@@ -473,6 +478,16 @@ function MissionInstanceService:Open(player, missionId, opts)
                 break
             end
         end
+        -- TEAM SCALING (Jason, first duo run: "pretty easy teamed up"): each
+        -- extra warped member multiplies non-boss unit counts (missions.
+        -- team_scaling). Post-roll, so trial #N's layout/packs match solo.
+        local ts = self._config.team_scaling or {}
+        local teamSize = #membersOf(teamKey)
+        local countMult = math.min(
+            (tonumber(ts.max_mult) or math.huge),
+            1 + (tonumber(ts.count_per_extra_member) or 0) * math.max(0, teamSize - 1)
+        )
+        local enemyDefs = (self._enemiesConfig and self._enemiesConfig.enemies) or {}
         local comp = MissionPopulation.roll(
             mission.packs or {},
             #points,
@@ -482,6 +497,17 @@ function MissionInstanceService:Open(player, missionId, opts)
                 -- point always rolls a boss-marked pack — the boss guards the
                 -- glowy; weight-3 luck can no longer produce a boss-less map
                 bossPointIndex = objectivePointIndex,
+                countMult = countMult,
+                scalesUnit = function(unit)
+                    if unit.rank == "boss" or unit.rank == "titan" then
+                        return false -- pet-model anchors stay singular
+                    end
+                    local def = unit.enemy and enemyDefs[unit.enemy]
+                    if def and (def.tier == "boss" or def.tier == "archvillain") then
+                        return false -- static anchors too
+                    end
+                    return true
+                end,
             }
         )
         local posRng = MissionSeed.mulberry32(MissionSeed.stream(seed, "spawnpos"))

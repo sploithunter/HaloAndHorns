@@ -7,11 +7,17 @@
     rolls, so the same mission seed always fields the same enemies in the
     same rooms (and adding decoration draws can never change the packs).
 
-    roll(packs, pointCount, streamSeed) → { [pointIndex] = { enemyId, ... } }
+    roll(packs, pointCount, streamSeed, opts) → { [pointIndex] = { enemyId, ... } }
 
     `packs` follows the enemies.lua wave shape:
         { { weight = 10, units = { { enemy = "rabid_dog", count = 2 } } }, ... }
     One pack is rolled per spawn point; units expand to a flat enemy list.
+
+    TEAM SCALING (opts.countMult ≥ 1, opts.scalesUnit(unit) → bool): unit
+    counts multiply AFTER the seeded pack/boss rolls and draw no rng, so a
+    bigger team faces the SAME layout and pack picks as trial #N solo — just
+    denser (CoH team-size rule). scalesUnit excludes bosses/titans so anchors
+    stay singular; when omitted every unit scales.
 ]]
 
 local MissionSeed = require(script.Parent.MissionSeed)
@@ -29,6 +35,8 @@ function MissionPopulation.roll(packs, pointCount, streamSeed, opts)
         end
     end
     local bossPoint = opts and opts.bossPointIndex
+    local countMult = math.max(1, (opts and tonumber(opts.countMult)) or 1)
+    local scalesUnit = opts and opts.scalesUnit
 
     local out = {}
     for i = 1, pointCount do
@@ -51,7 +59,11 @@ function MissionPopulation.roll(packs, pointCount, streamSeed, opts)
                 chosen = bossPacks[1 + math.floor(rng() * #bossPacks)]
             end
             for _, unit in ipairs(chosen.units or {}) do
-                for _ = 1, unit.count or 1 do
+                local n = unit.count or 1
+                if countMult > 1 and (scalesUnit == nil or scalesUnit(unit)) then
+                    n = math.max(n, math.floor(n * countMult + 0.5))
+                end
+                for _ = 1, n do
                     if unit.pet then
                         -- PET-MODEL enemy (Jason: trials field the realm's own
                         -- pets as enemies — huge-scaled for bosses); the

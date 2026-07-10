@@ -82,6 +82,16 @@ return {
     -- minion, a +0 lieutenant > a +1 minion. Level tuning must never be the
     -- substitute for rank identity: minions = volume, lieutenants = anchor
     -- + SPLASH, bosses = slam + splash + huge. (LT powers = future kit.)
+    -- TEAM SCALING (Jason 2026-07-09, first duo run: "they seem pretty easy
+    -- teamed up"): each extra team member multiplies non-boss unit COUNTS.
+    -- Duo = 1 + 0.75 = 1.75x rank-and-file; bosses/titans stay singular.
+    -- Applied after the seeded rolls, so trial #N keeps the same layout and
+    -- pack picks at any team size — just denser.
+    team_scaling = {
+        count_per_extra_member = 0.75,
+        max_mult = 2.5,
+    },
+
     static_scaling = {
         trash_mob = { hp_mult = 2.0, dmg_mult = 1.5 },
         mid_tier = {

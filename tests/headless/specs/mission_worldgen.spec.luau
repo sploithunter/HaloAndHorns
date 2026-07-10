@@ -318,6 +318,50 @@ return function()
             expect(diff).to.equal(true)
         end)
 
+        it("countMult densifies non-boss units without changing pack picks", function()
+            local packs = {
+                {
+                    weight = 10,
+                    boss = true,
+                    units = {
+                        { pet = "abyssal_wyrm", rank = "boss", count = 1 },
+                        { pet = "cinder_whelp", rank = "minion", count = 4 },
+                    },
+                },
+            }
+            local noScaleBoss = function(unit)
+                return unit.rank ~= "boss" and unit.rank ~= "titan"
+            end
+            local solo = MissionPopulation.roll(packs, 3, 424242)
+            local duo = MissionPopulation.roll(
+                packs,
+                3,
+                424242,
+                { countMult = 1.75, scalesUnit = noScaleBoss }
+            )
+            for i = 1, 3 do
+                local soloBoss, soloMinions, duoBoss, duoMinions = 0, 0, 0, 0
+                for _, u in ipairs(solo[i]) do
+                    if u.rank == "boss" then
+                        soloBoss += 1
+                    else
+                        soloMinions += 1
+                    end
+                end
+                for _, u in ipairs(duo[i]) do
+                    if u.rank == "boss" then
+                        duoBoss += 1
+                    else
+                        duoMinions += 1
+                    end
+                end
+                expect(soloBoss).to.equal(1)
+                expect(duoBoss).to.equal(1) -- anchors never multiply
+                expect(soloMinions).to.equal(4)
+                expect(duoMinions).to.equal(7) -- 4 * 1.75 = 7
+            end
+        end)
+
         it("expands unit counts and never rolls zero-weight packs", function()
             for seed = 1, 40 do
                 local rolls = MissionPopulation.roll(PACKS, 4, seed)
