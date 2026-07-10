@@ -595,3 +595,17 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,276/1,276 headless tests and 538 allowlisted architecture occurrences. An
   MCP Studio Play smoke verified the def-less realm coin fallback against a mock economy boundary;
   no live loot or balance was changed.
+
+## 2026-07-10 - Enhancement shop gains exact sale rollback
+
+- Routed enhancement buy debits/refunds and single/bulk sale credits through injected
+  `EconomyService`. `InventoryService:BulkRemove` now accepts a pre-save commit callback and restores
+  exact item snapshots plus slot count when the callback rejects or throws.
+- Isolated economy post-credit observers so a listener/notification error cannot make a committed
+  credit appear failed and trigger item restoration. Failed credits return
+  `credit_failed_items_restored`; failed buy refunds return `rollback_failed`.
+- Removed all four `EnhancementShopService` direct currency-persistence exceptions from the
+  architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 534 allowlisted architecture occurrences. An
+  MCP Studio failure injection staged a three-item sale, rejected its credit, and verified exact
+  quantity, nested metadata, and slot-count restoration before any projection rebuild or save.

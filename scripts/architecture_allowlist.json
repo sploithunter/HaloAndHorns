@@ -75,7 +75,6 @@
         "src/Server/Services/AdminToolsService.lua": 1,
         "src/Server/Services/AutomationService.lua": 1,
         "src/Server/Services/EconomyService.lua": 4,
-        "src/Server/Services/EnhancementShopService.lua": 4,
         "src/Server/Services/GameAPIService.lua": 1,
         "src/Server/Services/StudioSmokeTestService.lua": 14,
         "src/Server/Services/TradeService.lua": 4,

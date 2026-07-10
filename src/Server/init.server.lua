@@ -438,7 +438,14 @@ loader:RegisterModule(
 loader:RegisterModule(
     "EnhancementShopService",
     ServerScriptService.Server.Services.EnhancementShopService,
-    { "Logger", "ConfigLoader", "DataService", "InventoryService", "EnhancementService" }
+    {
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "InventoryService",
+        "EnhancementService",
+        "EconomyService",
+    }
 )
 -- PotionService: "brew charge" potions (drink->sip->drain) feeding BuffStack axis attributes.
 loader:RegisterModule(

@@ -256,27 +256,30 @@ function EconomyService:AddCurrency(player, currencyType, amount, reason)
             end)
         end
 
-        -- Log transaction
-        self:_logTransaction(player, {
-            type = "currency_add",
-            currency = currencyType,
-            amount = amount,
-            reason = reason or "unknown",
-            timestamp = os.time(),
-        })
-
-        -- Fire events
-        self.CurrencyChanged:Fire(player, currencyType, newAmount, oldAmount)
-
-        -- Sync to client
-        require(game:GetService("ReplicatedStorage").Shared.Network.Signals).CurrencyUpdate:FireClient(
-            player,
-            {
+        pcall(function()
+            self:_logTransaction(player, {
+                type = "currency_add",
                 currency = currencyType,
-                amount = newAmount,
-                change = amount,
-            }
-        )
+                amount = amount,
+                reason = reason or "unknown",
+                timestamp = os.time(),
+            })
+        end)
+
+        pcall(function()
+            self.CurrencyChanged:Fire(player, currencyType, newAmount, oldAmount)
+        end)
+
+        pcall(function()
+            require(game:GetService("ReplicatedStorage").Shared.Network.Signals).CurrencyUpdate:FireClient(
+                player,
+                {
+                    currency = currencyType,
+                    amount = newAmount,
+                    change = amount,
+                }
+            )
+        end)
 
         self._logger:Debug("Currency added", {
             player = player.Name,

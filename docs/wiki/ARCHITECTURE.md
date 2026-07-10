@@ -15,6 +15,11 @@ The desired shape is a small set of authoritative services backed by validated c
 - `EconomyService` owns currency mutation and passes source reasons into the ledger. Reward bundle
   currencies route through it so ledger history, lifetime counters, service signals, and client
   balance notifications observe the same grant.
+- Successful economy data mutations are terminal even if a downstream listener or client
+  notification fails; post-commit observers are isolated so callers never compensate a credit that
+  already landed.
+- Enhancement sales use `InventoryService:BulkRemove` with an economy commit callback. Inventory
+  snapshots restore exact stacks and slot counts when credit is rejected, before replication/save.
 - Combat drop-table currencies and def-less realm coin fallbacks also terminate at
   `EconomyService`; combat math and area-coin selection remain service-owned upstream.
 - `ServerClockService` owns deterministic UTC day/seed behavior.

@@ -797,7 +797,7 @@ end
 -- with SNAPSHOT ROLLBACK — if anything throws mid-batch every touched stack is restored —
 -- then rebuilds the bucket folders and requests the save ONCE.
 -- Returns ok, removedMap (uid -> qty actually removed), totalQty.
-function InventoryService:BulkRemove(player, bucketName, entries)
+function InventoryService:BulkRemove(player, bucketName, entries, opts)
     if bucketName == "pets" then
         return false, nil, 0 -- pets have projection/equip side effects; use RemoveItem
     end
@@ -818,11 +818,7 @@ function InventoryService:BulkRemove(player, bucketName, entries)
             local item = bucket.items[uid]
             if item then
                 if not snapshots[uid] then
-                    local copy = {}
-                    for k, v in pairs(item) do
-                        copy[k] = v
-                    end
-                    snapshots[uid] = copy
+                    snapshots[uid] = deepCopy(item)
                 end
                 if bucketConfig.storage_type == "stackable" then
                     local qty = math.max(1, math.floor(tonumber(entry.quantity) or 1))
@@ -846,7 +842,7 @@ function InventoryService:BulkRemove(player, bucketName, entries)
         end
     end)
 
-    if not okAll then
+    local function rollback(reason, err)
         -- ROLLBACK: restore every touched stack exactly as it was — a failed sweep must
         -- never end with the player owning fewer items than they started with.
         for uid, copy in pairs(snapshots) do
@@ -858,7 +854,18 @@ function InventoryService:BulkRemove(player, bucketName, entries)
             bucket = bucketName,
             error = tostring(err),
         })
-        return false, nil, 0
+        return false, nil, 0, reason
+    end
+
+    if not okAll then
+        return rollback("remove_failed", err)
+    end
+
+    if opts and opts.commit then
+        local commitCalled, committed = pcall(opts.commit, removedMap, totalQty)
+        if not commitCalled or committed ~= true then
+            return rollback("commit_failed", commitCalled and "commit rejected" or committed)
+        end
     end
 
     -- The batch is committed in DATA at this point; replication is cosmetic — a folder
@@ -866,7 +873,8 @@ function InventoryService:BulkRemove(player, bucketName, entries)
     pcall(function()
         self:_updateBucketFolders(player, bucketName)
     end)
-    self._dataService:RequestSave(player, "inventory_bulk_remove_" .. tostring(bucketName), {
+    self._dataService:RequestSave(player, (opts and opts.saveTag)
+        or ("inventory_bulk_remove_" .. tostring(bucketName)), {
         critical = true,
     })
     return true, removedMap, totalQty
