@@ -20,6 +20,7 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Remote Dev Pipeline](REMOTE_DEV_PIPELINE.md) — develop → test → build → release from a CLI/AI agent; the layered testing methodology and hard-limit gap analysis.
 - [Automation API Design](AUTOMATION_API_DESIGN.md) — the CommandBus boundary, GameAPIService, and AutomationService that let tests drive the game below the GUI.
 - [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md) — how Rojo systems bind to Studio-authored worlds.
+- [Map Builder's Kit](../MAP_BUILDERS_KIT.md) — the production-world commissioning spec: hub-and-spoke layout, the 11-layer heaven/hell ladder (one layout, eleven skins), the full marker/binding contract, per-layer art briefs, phased delivery + acceptance checks.
 - [Mission Worldgen](../MISSION_WORLDGEN.md) — the Trials endgame SSOT: CoH door missions, deterministic tile-kit procgen, shared sequences, the 8-trial matrix, quest-steered gates, Platinum centuries (§13 = shipped contract).
 - [Area Bounds & Movement Leash](AREA_BOUNDS_LEASH.md) — the pure union clamp (`EnemyLeash`) that walls enemies inside their spawn area (sourced from live map parts; GrassSpawn = Grass ∪ SpawnCircle), plus the recorded possibility of reusing it to confine the player (flying-power containment).
 - [Egg System Plan](EGG_SYSTEM_PLAN.md) — planned hatch modes, auto hatch, multi hatch, animation, and egg config architecture.
