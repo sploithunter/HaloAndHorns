@@ -211,6 +211,58 @@ return {
                 arguments = { { name = "result", type = "table" } },
             },
         },
+        Combat_PetHit = {
+            name = "Combat_PetHit",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "combat.pet_hit",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "hit", type = "table" } },
+            },
+        },
+        Combat_Heal = {
+            name = "Combat_Heal",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "broadcast",
+            topic = "combat.heal",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "heal", type = "table" } },
+            },
+        },
+        Combat_EnemyHit = {
+            name = "Combat_EnemyHit",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "broadcast",
+            topic = "combat.enemy_hit",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "hit", type = "table" } },
+            },
+        },
+        Power_AreaFx = {
+            name = "Power_AreaFx",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "broadcast",
+            topic = "powers.area_fx",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "effect", type = "table" } },
+            },
+        },
     },
 
     bridges = {

@@ -453,3 +453,13 @@ migration is needed for the abandoned "element splits stacks" spec.
   green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
   the live server reported 16 manifest packets and all four moved signals. Output contained no
   network, duplicate declaration, or script errors; existing test-place warnings remain.
+
+## 2026-07-10 - Combat presentation notifications join the network manifest (Phase 1 slice 5)
+
+- Migrated `Combat_PetHit`, `Combat_Heal`, `Combat_EnemyHit`, and `Power_AreaFx` from the legacy
+  constructor table into the validated packet manifest. Existing senders and listeners still use
+  the same wire names and one-table payloads, including targeted and broadcast area effects.
+- Ratcheted `Signals.lua` manual remote construction from 82 to 78. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 20 manifest packets and all four moved combat signals. Output contained
+  no network, duplicate declaration, or script errors; existing test-place warnings remain.

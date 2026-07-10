@@ -46,13 +46,9 @@ local legacySignals = {
     Power_ToggleActive = Net:RemoteEvent("Power_ToggleActive"), -- c->s (player HUD toggle badge) turn an OWNED always-on power on/off { powerId, on } — drains focus_upkeep while on
     Combat_SetAssist = Net:RemoteEvent("Combat_SetAssist"), -- c->s direct the squad to focus an enemy (assist target; 0 clears)
     Combat_SelectPetTarget = Net:RemoteEvent("Combat_SelectPetTarget"), -- c->s the selected squad pet (PositionNumber) for single-target buffs; 0 clears
-    Combat_PetHit = Net:RemoteEvent("Combat_PetHit"), -- s->c (owner) a pet landed a swing {pet,target,crit} -> client plays the matching FX
-    Combat_Heal = Net:RemoteEvent("Combat_Heal"), -- s->c a heal landed {target,amount} -> client floats a green number
-    Combat_EnemyHit = Net:RemoteEvent("Combat_EnemyHit"), -- s->c (all) an enemy swung {enemy,target,ranged,kind,crit} -> client plays the attack FX via CombatHitFX (ranged=bolt, melee=impact); damage already applied server-side
     Hotbar_Activate = Net:RemoteEvent("Hotbar_Activate"), -- c->s fire the bind on a hotbar slot (1-20)
     Hotbar_Rebind = Net:RemoteEvent("Hotbar_Rebind"), -- c->s assign/clear a hotbar slot's bind
     Power_Cooldown = Net:RemoteEvent("Power_Cooldown"), -- s->c a cast power's cooldown {power, untilTime, cooldown}
-    Power_AreaFx = Net:RemoteEvent("Power_AreaFx"), -- s->c play an area power's VFX {element, variant, center, radius, pit, hits=[{pos,amount}]}
     Hotbar_RequestState = Net:RemoteEvent("Hotbar_RequestState"), -- c->s ask for the player's hotbar
     Hotbar_State = Net:RemoteEvent("Hotbar_State"), -- s->c push hotbar bindings for the command bar UI
     GameEvent = Net:RemoteEvent("GameEvent"), -- s->c fire a named gameplay event (name, ctx) -> client GameEvents reactions (configs/game_events)
