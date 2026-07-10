@@ -22,7 +22,7 @@
 return {
     -- The Builder's Cut place id(s). EMPTY = overlay never applies anywhere.
     place_ids = {
-        -- e.g. 1234567890,
+        10481085586, -- "Pet Realm — Builder Showcase" (published 2026-07-09)
     },
 
     -- Mutates the fully-loaded config tables (called once, before validation).
