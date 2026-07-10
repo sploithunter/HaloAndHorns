@@ -15,6 +15,8 @@ The desired shape is a small set of authoritative services backed by validated c
 - `EconomyService` owns currency mutation and passes source reasons into the ledger. Reward bundle
   currencies route through it so ledger history, lifetime counters, service signals, and client
   balance notifications observe the same grant.
+- Combat drop-table currencies and def-less realm coin fallbacks also terminate at
+  `EconomyService`; combat math and area-coin selection remain service-owned upstream.
 - `ServerClockService` owns deterministic UTC day/seed behavior.
 - `WorldBindingService` discovers, validates, and serves Studio map hooks. In `auto`/`synthetic` map modes it fabricates missing baseplate hooks from `configs/areas.lua` and `configs/markers.lua`.
 - `ZoneService` owns area unlocks and server-authoritative `TeleportPad`/`Portal` travel. It uses

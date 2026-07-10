@@ -39,6 +39,7 @@ function CombatService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._economyService = self._modules and self._modules.EconomyService
     self._combatConfig = self._configLoader:LoadConfig("combat")
     self._enemiesConfig = self._configLoader:LoadConfig("enemies")
     self._focusConfig = self._configLoader:LoadConfig("focus")
@@ -167,7 +168,7 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
     local tier = def.tier or enemyTier or "trash_mob"
     local loot = CombatMath.resolveLoot(def.drop_table or {})
     for currency, amount in pairs(loot) do
-        self._dataService:AddCurrency(player, currency, amount, "combat_loot") -- coins unchanged
+        self._economyService:AddCurrency(player, currency, amount, "combat_loot") -- coins unchanged
     end
     -- COIN FALLBACK for def-less kills (Jason: "you should drill coins also"). A pet-invader
     -- (petinv_*, the realm population) has no drop_table, so the loop above paid nothing. Pay a
@@ -189,7 +190,7 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
                 and rewardService._resolveAreaCoin
                 and rewardService:_resolveAreaCoin(player)
             ) or "grass_coins"
-            self._dataService:AddCurrency(player, currency, coins, "combat_loot_realm")
+            self._economyService:AddCurrency(player, currency, coins, "combat_loot_realm")
             loot[currency] = (loot[currency] or 0) + coins
         end
     end

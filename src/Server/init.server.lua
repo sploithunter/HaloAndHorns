@@ -517,7 +517,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "CombatService",
     ServerScriptService.Server.Services.CombatService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "EconomyService" }
 )
 -- PetFollowService: service-owned pet follow/work loop (issue #4). Inert unless
 -- configs/pet_follow.lua service_owned=true; resolves CombatService at runtime.

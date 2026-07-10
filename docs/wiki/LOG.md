@@ -585,3 +585,13 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,276/1,276 headless tests and 540 allowlisted architecture occurrences. An
   MCP Studio Play smoke verified affordability, charge, and partial-refund calls against a mock
   economy boundary; no hatch or live balance was changed.
+
+## 2026-07-10 - Combat loot joins the economy boundary
+
+- Injected `EconomyService` into `CombatService` and routed both configured drop-table currencies
+  and the def-less realm-enemy coin fallback through it. Loot math, area-coin resolution, XP, and
+  source tags remain unchanged.
+- Removed both `CombatService` direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 538 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified the def-less realm coin fallback against a mock economy boundary;
+  no live loot or balance was changed.
