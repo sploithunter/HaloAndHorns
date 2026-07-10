@@ -463,3 +463,13 @@ migration is needed for the abandoned "element splits stacks" spec.
   green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
   the live server reported 20 manifest packets and all four moved combat signals. Output contained
   no network, duplicate declaration, or script errors; existing test-place warnings remain.
+
+## 2026-07-10 - Player status notifications join the network manifest (Phase 1 slice 6)
+
+- Migrated `Hotbar_State`, `Power_Cooldown`, `AutoTarget_Status`, and `PetPositionsRelay` from the
+  legacy constructor table into the validated packet manifest. Existing senders and listeners
+  still use the same wire names and one-table payloads.
+- Ratcheted `Signals.lua` manual remote construction from 78 to 74. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 24 manifest packets and all four moved status signals. Output contained
+  no network, duplicate declaration, or script errors; existing test-place warnings remain.

@@ -48,9 +48,7 @@ local legacySignals = {
     Combat_SelectPetTarget = Net:RemoteEvent("Combat_SelectPetTarget"), -- c->s the selected squad pet (PositionNumber) for single-target buffs; 0 clears
     Hotbar_Activate = Net:RemoteEvent("Hotbar_Activate"), -- c->s fire the bind on a hotbar slot (1-20)
     Hotbar_Rebind = Net:RemoteEvent("Hotbar_Rebind"), -- c->s assign/clear a hotbar slot's bind
-    Power_Cooldown = Net:RemoteEvent("Power_Cooldown"), -- s->c a cast power's cooldown {power, untilTime, cooldown}
     Hotbar_RequestState = Net:RemoteEvent("Hotbar_RequestState"), -- c->s ask for the player's hotbar
-    Hotbar_State = Net:RemoteEvent("Hotbar_State"), -- s->c push hotbar bindings for the command bar UI
     GameEvent = Net:RemoteEvent("GameEvent"), -- s->c fire a named gameplay event (name, ctx) -> client GameEvents reactions (configs/game_events)
     TutorialState = Net:RemoteEvent("TutorialState"), -- s->c current tutorial step view (TutorialFlow.stateFor)
     Admin_RequestHatchHistory = Net:RemoteEvent("Admin_RequestHatchHistory"), -- c->s recent hatch debug snapshot
@@ -114,8 +112,6 @@ local legacySignals = {
     Settings_SetInventoryCardScale = Net:RemoteEvent("Settings_SetInventoryCardScale"), -- c->s persist inventory pet-card grid size (small/medium/large)
     Settings_SetEnemyLevelOffset = Net:RemoteEvent("Settings_SetEnemyLevelOffset"), -- c->s persist enemy spawn-level offset vs player (-3..+3 difficulty knob)
     PetReportPositions = Net:RemoteEvent("PetReportPositions"), -- c->s throttled local pet positions (mining gate + multiplayer)
-    PetPositionsRelay = Net:RemoteEvent("PetPositionsRelay"), -- s->c relay OTHER players' pet positions (owner renders its own locally)
-    AutoTarget_Status = Net:RemoteEvent("AutoTarget_Status"), -- s->c push current auto-target status
 }
 
 for name, remote in pairs(legacySignals) do

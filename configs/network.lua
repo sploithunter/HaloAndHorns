@@ -263,6 +263,58 @@ return {
                 arguments = { { name = "effect", type = "table" } },
             },
         },
+        Hotbar_State = {
+            name = "Hotbar_State",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "hotbar.state",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "state", type = "table" } },
+            },
+        },
+        Power_Cooldown = {
+            name = "Power_Cooldown",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "powers.cooldown",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "cooldown", type = "table" } },
+            },
+        },
+        AutoTarget_Status = {
+            name = "AutoTarget_Status",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "auto_target.status",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "status", type = "table" } },
+            },
+        },
+        PetPositionsRelay = {
+            name = "PetPositionsRelay",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "pets.positions_relayed",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "positions", type = "table" } },
+            },
+        },
     },
 
     bridges = {
