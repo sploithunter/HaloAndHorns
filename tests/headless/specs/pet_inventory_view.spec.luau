@@ -161,6 +161,12 @@ return function()
     end)
 
     describe("PetInventoryView capability gating", function()
+        it("treats an explicitly unique fused pet as a per-instance record", function()
+            expect(View.isSpecial({ id = "bear", variant = "basic", unique = true }, CAP)).to.equal(
+                true
+            )
+        end)
+
         it("huge / special-rarity levelable+enchantable; plain commons not", function()
             expect(View.isLevelable({ id = "bear", variant = "basic", huge = true }, CAP)).to.equal(
                 true

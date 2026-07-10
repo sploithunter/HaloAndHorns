@@ -118,6 +118,8 @@ function PetGrantService:_normalizeGrant(request)
         nickname = request.nickname,
         source = request.source or "pet_grant",
         element = request.element and tostring(request.element):lower() or nil,
+        theme = request.theme,
+        unique = request.unique == true,
     }
 end
 
@@ -142,6 +144,8 @@ function PetGrantService:BuildPetData(request, player)
         -- couldn't") — only an explicit lock applies otherwise
         locked = grant.creator or grant.locked == true,
         grant_source = grant.source,
+        theme = grant.theme,
+        unique = grant.unique or nil,
     }
 
     -- Element at hatch (Feature 5): from the layer the hatch happens on
@@ -257,6 +261,10 @@ function PetGrantService:_announceWorldFirst(player, petType, variant)
     end
 end
 
+function PetGrantService:_addPetRecord(player, petData, options)
+    return self._inventoryService:AddItem(player, "pets", petData, options)
+end
+
 function PetGrantService:GrantPet(player, request)
     if not player or not player.Parent then
         return {
@@ -277,8 +285,7 @@ function PetGrantService:GrantPet(player, request)
     -- pure data and flushes replication + the save ONCE after the loop (FlushBucket) —
     -- previously EVERY hatched pet paid a full pets-folder rebuild + two critical saves.
     local deferFlush = request ~= nil and request.deferFlush == true
-    local uid, addError =
-        self._inventoryService:AddItem(player, "pets", petData, { deferFlush = deferFlush })
+    local uid, addError = self:_addPetRecord(player, petData, { deferFlush = deferFlush })
     if not uid then
         return {
             ok = false,

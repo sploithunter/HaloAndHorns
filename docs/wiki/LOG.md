@@ -493,3 +493,20 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Removed all three `DropService` exceptions from the architecture allowlist. The only remaining
   direct `GameEvent` send is the intentional terminal inside `FireGameEvent` itself. A Studio Play
   smoke loaded the exact updated `DropService` module and completed boot without script errors.
+
+## 2026-07-10 - Fusion joins the authoritative pet mint boundary
+
+- Routed fusion output through `PetGrantService` and injected its service dependencies instead of
+  resolving the global locator. Chaotic output is explicitly unique, preserving its per-copy
+  element and theme while retaining the source pet id and variant.
+- Added a mint-first transaction with exact-record snapshots and rollback. A failed mint consumes
+  nothing; failed input consumption un-mints the output and restores any consumed stack or unique
+  pet at its original inventory key.
+- Pinned both supported art families in headless coverage: the original six pets continue to use
+  packaged model assets, while Meshy pets continue through mesh-plus-texture assembly. The focused
+  suite is green at 1,271/1,271 across 116 specs.
+- Removed two direct pet-mutation exceptions and one global service-locator exception from the
+  architecture baseline.
+- Full CI is green, including a Rojo build and 1,271/1,271 headless tests. An MCP Studio Play smoke
+  completed boot and verified mint-first ordering plus both packaged and Meshy identities through
+  `PetGrantService:BuildPetData`; the smoke did not mutate player inventory.

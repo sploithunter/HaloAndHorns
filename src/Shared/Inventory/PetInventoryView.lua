@@ -84,6 +84,9 @@ function PetInventoryView.isSpecial(record, capability)
     if record.huge == true then
         return true
     end
+    if record.unique == true then
+        return true
+    end
     local rarity = record.rarity_id or record.variant
     local special = capability.specialRarities
     return special ~= nil and rarity ~= nil and special[rarity] == true

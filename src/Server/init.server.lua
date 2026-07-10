@@ -482,7 +482,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "FusionService",
     ServerScriptService.Server.Services.FusionService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "InventoryService", "PetGrantService" }
 )
 -- Reward spine (Phase 7): RewardService grants bundles; Quest/Daily/Shop gate them.
 loader:RegisterModule(

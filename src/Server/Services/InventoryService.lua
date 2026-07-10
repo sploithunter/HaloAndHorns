@@ -37,6 +37,22 @@ local function print(...)
     end
 end
 
+local function deepCopy(value, seen)
+    if type(value) ~= "table" then
+        return value
+    end
+    seen = seen or {}
+    if seen[value] then
+        return seen[value]
+    end
+    local copy = {}
+    seen[value] = copy
+    for key, child in pairs(value) do
+        copy[deepCopy(key, seen)] = deepCopy(child, seen)
+    end
+    return copy
+end
+
 -- Helper to safely require configs
 local function tryLoadConfig(configLoader, name)
     local ok, result = pcall(function()
@@ -1371,6 +1387,39 @@ function InventoryService:GetItem(player, bucketName, uid)
     end
 
     return bucket.items[uid]
+end
+
+function InventoryService:GetPetRecordSnapshot(player, uid)
+    local bucket = self:GetInventory(player, "pets")
+    local record = bucket and bucket.items and bucket.items[uid]
+    if type(record) ~= "table" then
+        return nil
+    end
+    return deepCopy(record)
+end
+
+-- Restore an exact pre-transaction ownership record. Fusion uses this only after
+-- removing its newly minted output, so both stack quantities and unique metadata
+-- return to their original key and value in one non-yielding mutation.
+function InventoryService:RestorePetRecordSnapshot(player, uid, snapshot, opts)
+    local bucket = self:GetInventory(player, "pets")
+    if
+        type(uid) ~= "string"
+        or uid == ""
+        or type(snapshot) ~= "table"
+        or type(snapshot.id) ~= "string"
+        or not bucket
+        or type(bucket.items) ~= "table"
+    then
+        return false, "Invalid pet snapshot"
+    end
+
+    bucket.items[uid] = deepCopy(snapshot)
+    if not (opts and opts.deferFlush) then
+        self:RebuildPetProjections(player)
+        self._dataService:RequestSave(player, "inventory_restore_pets", { critical = true })
+    end
+    return true
 end
 
 function InventoryService:HasSpace(player, bucketName, amount)
