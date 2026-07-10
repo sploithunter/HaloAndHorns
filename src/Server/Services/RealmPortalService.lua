@@ -121,7 +121,14 @@ function RealmPortalService:_levelGate(player, target)
     if not required or required <= 1 then
         return true, 0
     end
-    local level = tonumber(player:GetAttribute("Level")) or 1
+    -- SIDEKICK GUEST PASS (Jason: "if we're temporarily level 49, we should
+    -- get level 49 privileges for travel"): while teamed, EffectiveLevel is
+    -- the published sidekicked level — the same value PartyService's
+    -- follow_warp gates on. Without it a boosted teammate could ENTER a
+    -- realm by following but couldn't take a portal on their own to leave.
+    local level = tonumber(player:GetAttribute("EffectiveLevel"))
+        or tonumber(player:GetAttribute("Level"))
+        or 1
     return level >= required, required
 end
 
