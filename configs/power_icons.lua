@@ -201,6 +201,8 @@ local M = {
         empower = "chevrons_up", -- single-target damage buffer: SAME damage-up glyph as offense; the
         -- single-target ring (SUPPORT_META.ring = "single") is what reads it apart from team offense
         haste = "history", -- team attack-speed aura (efficiency-as-aura); reuse the clock/recharge glyph
+        focus = "focus", -- Lumen Dove focus-regen aura: the DROPLET (same glyph as the focus
+        -- enhancement axis). NEVER capacitor — capacitor is the hold/mez art, hold-only.
     },
     power_glyph_symbol = {
         debuff = "contagion",
