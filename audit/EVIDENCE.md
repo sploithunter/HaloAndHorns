@@ -122,20 +122,27 @@ Large files are not automatically poor architecture, but these concentrate multi
 
 ## CI baseline
 
-Command attempted:
+Final validation command on the committed audit branch:
 
 ```text
 mise run ci
 ```
 
-Observed result at the audit snapshot:
+Final result at commit `dddc380`:
 
+- Overall gate: passed with exit code `0`.
 - Selene: `0 errors`, `573 warnings`, `0 parse errors`.
-- Numerous warnings were for `_G` usage, unused variables, empty blocks, and shadowing in the exact high-risk areas identified by the audit.
-- The gate then failed at `stylua --check` because several existing files were not formatted.
-- Because the task list is sequential, the Rojo build and headless suite did not run in that attempt.
+- StyLua check on pipeline-owned paths: passed.
+- Rojo build: passed.
+- Headless suite: `1,258 passed`, `0 failed`, across `113` specs.
 
-The audit did not reformat or otherwise repair those unrelated existing files.
+Numerous Selene warnings were for `_G` usage, unused variables, empty blocks, and
+shadowing in the exact high-risk areas identified by the audit. Those warnings do
+not currently fail the gate.
+
+An earlier exploratory run from the shared checkout stopped at StyLua after
+detecting local formatting differences. The final result above comes from the
+clean, isolated audit worktree and is the authoritative validation result.
 
 ## Count caveats
 
