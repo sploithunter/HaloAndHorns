@@ -696,17 +696,20 @@ function EggService:GetAreaHatchLock(player)
 end
 
 function EggService:HasEnoughCurrency(player, currency, cost)
-    if self._dataService then
-        return self._dataService:CanAfford(player, currency, cost),
-            self._dataService:GetCurrency(player, currency)
+    if self._economyService then
+        return self._economyService:CanAfford(player, currency, cost),
+            self._economyService:GetCurrency(player, currency)
     else
-        -- Fallback to attributes if DataService not available
+        -- Isolated/manual fallback when EconomyService is not available.
         local currentAmount = player:GetAttribute(currency) or 0
         return currentAmount >= cost, currentAmount
     end
 end
 
 function EggService:GetCurrencyBalance(player, currency)
+    if self._economyService then
+        return self._economyService:GetCurrency(player, currency)
+    end
     if self._dataService then
         return self._dataService:GetCurrency(player, currency)
     end
@@ -714,10 +717,10 @@ function EggService:GetCurrencyBalance(player, currency)
 end
 
 function EggService:DeductCurrency(player, currency, cost)
-    if self._dataService then
-        return self._dataService:RemoveCurrency(player, currency, cost, "egg_hatch")
+    if self._economyService then
+        return self._economyService:RemoveCurrency(player, currency, cost, "egg_hatch")
     else
-        -- Fallback to attributes if DataService not available
+        -- Isolated/manual fallback when EconomyService is not available.
         local currentAmount = player:GetAttribute(currency) or 0
         if currentAmount >= cost then
             player:SetAttribute(currency, currentAmount - cost)
@@ -732,8 +735,13 @@ function EggService:AddCurrency(player, currency, amount, source)
         return true
     end
 
-    if self._dataService then
-        return self._dataService:AddCurrency(player, currency, amount, source or "egg_hatch_refund")
+    if self._economyService then
+        return self._economyService:AddCurrency(
+            player,
+            currency,
+            amount,
+            source or "egg_hatch_refund"
+        )
     end
 
     local currentAmount = player:GetAttribute(currency) or 0
@@ -1590,6 +1598,7 @@ function EggService:Initialize(moduleLoader)
     if moduleLoader then
         self._inventoryService = moduleLoader:Get("InventoryService")
         self._dataService = moduleLoader:Get("DataService")
+        self._economyService = moduleLoader:Get("EconomyService")
         self._eventService = moduleLoader:Get("EventService")
         self._statsService = moduleLoader:Get("StatsService")
         self._petGrantService = moduleLoader:Get("PetGrantService")
@@ -1608,6 +1617,12 @@ function EggService:Initialize(moduleLoader)
             Logger:Info("EggService: DataService connection established")
         else
             Logger:Warn("EggService: DataService not available in module loader")
+        end
+
+        if self._economyService then
+            Logger:Info("EggService: EconomyService connection established")
+        else
+            Logger:Warn("EggService: EconomyService not available in module loader")
         end
 
         if self._eventService then

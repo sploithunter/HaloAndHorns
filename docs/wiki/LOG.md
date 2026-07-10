@@ -574,3 +574,14 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,276/1,276 headless tests and 542 allowlisted architecture occurrences. An
   MCP Studio Play smoke verified the rejected-debit failure contract with a mock economy boundary;
   no pet record or live balance was changed.
+
+## 2026-07-10 - Egg hatch charges and refunds join the economy boundary
+
+- Connected the legacy-initialized `EggService` to `EconomyService` through its existing loader
+  handoff. Production affordability, hatch charges, partial refunds, and full refunds now share the
+  economy ledger, counters, signals, and client balance notifications; source tags are unchanged.
+- Retained the attribute-only fallback for isolated/manual contexts with no loader, and removed both
+  direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 540 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified affordability, charge, and partial-refund calls against a mock
+  economy boundary; no hatch or live balance was changed.
