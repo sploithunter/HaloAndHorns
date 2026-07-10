@@ -541,3 +541,16 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,271/1,271 headless tests and 547 allowlisted architecture occurrences. An
   MCP Studio Play smoke verified both helpers against a mock economy boundary and confirmed their
   loaded sources contain no direct currency persistence call; live balances were untouched.
+
+## 2026-07-10 - Shop purchases gain an economy transaction boundary
+
+- Injected `EconomyService` and `RewardService` into `ShopService`, removing its runtime global
+  locator and direct profile currency calls. Purchase result and config shapes remain unchanged.
+- Added a pure spend/grant/refund transaction: currencies debit in deterministic order, a failed
+  later debit or reward grant refunds prior debits in reverse order, failed refunds surface as
+  `rollback_failed`, and purchase counts advance only after success.
+- Removed two direct currency-persistence exceptions and one global service-locator exception from
+  the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests across 117 specs and 544 allowlisted architecture
+  occurrences. An MCP Studio Play smoke verified the injected boundaries and deterministic
+  grant-failure rollback without executing a real purchase or changing live balances.

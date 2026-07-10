@@ -3,7 +3,7 @@
 
     A shop offer is a Claim whose gate is a *cost* (an inverse reward bundle) plus an
     optional purchase limit. ShopLogic decides affordability/limit; on success the
-    cost is spent (DataService:RemoveCurrency) and the reward bundle is granted via
+    cost is spent through EconomyService and the reward bundle is granted via
     RewardService. Purchase counts live in profile.ShopPurchases (offerId -> count)
     so limited offers don't repeat.
 ]]
@@ -11,6 +11,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ShopLogic = require(ReplicatedStorage.Shared.Game.ShopLogic)
+local ShopPurchaseTransaction = require(ReplicatedStorage.Shared.Game.ShopPurchaseTransaction)
 
 local ShopService = {}
 ShopService.__index = ShopService
@@ -19,18 +20,9 @@ function ShopService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._economyService = self._modules and self._modules.EconomyService
+    self._rewardService = self._modules and self._modules.RewardService
     self._config = self._configLoader:LoadConfig("shop")
-end
-
-function ShopService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 function ShopService:_balances(player)
@@ -91,27 +83,30 @@ function ShopService:Purchase(player, offerId)
     -- currency then ran an un-pcalled Grant — and even reported ok=true with NO reward when
     -- RewardService wasn't resolvable — leaving the buyer currency-poor with nothing. Same
     -- contract as EnhancementShopService:Buy now: the grant must land or the spend comes back.)
-    local rewards = self:_service("RewardService")
-    if not rewards then
+    local economy = self._economyService
+    local rewards = self._rewardService
+    if not economy or not rewards then
         return { ok = false, reason = "service_unavailable" }
     end
-    local spent = {}
-    for currency, amount in pairs((offer.cost and offer.cost.currencies) or {}) do
-        self._dataService:RemoveCurrency(player, currency, amount, "shop:" .. offerId)
-        spent[currency] = amount
-    end
-    local okGrant, granted = pcall(function()
-        return rewards:Grant(player, offer.reward, "shop:" .. offerId)
-    end)
-    if not okGrant or not granted then
-        for currency, amount in pairs(spent) do
-            self._dataService:AddCurrency(player, currency, amount, "shop:" .. offerId .. ":refund")
-        end
-        return { ok = false, reason = "grant_failed" }
+    local source = "shop:" .. offerId
+    local transaction = ShopPurchaseTransaction.execute({
+        costs = offer.cost and offer.cost.currencies,
+        debit = function(currency, amount)
+            return economy:RemoveCurrency(player, currency, amount, source)
+        end,
+        grant = function()
+            return rewards:Grant(player, offer.reward, source)
+        end,
+        refund = function(currency, amount)
+            return economy:AddCurrency(player, currency, amount, source .. ":refund")
+        end,
+    })
+    if not transaction.ok then
+        return transaction
     end
     counts[offerId] = (counts[offerId] or 0) + 1
     self._dataService:RequestSave(player, "shop_purchase", { critical = true })
-    return { ok = true, offer = offerId, reward = granted.granted }
+    return { ok = true, offer = offerId, reward = transaction.granted.granted }
 end
 
 return ShopService

@@ -503,7 +503,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "ShopService",
     ServerScriptService.Server.Services.ShopService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "EconomyService", "RewardService" }
 )
 -- FocusService: Halo & Horns player Focus pool + invulnerability (Feature 12).
 loader:RegisterModule(
