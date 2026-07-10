@@ -247,7 +247,15 @@ function MissionInstanceService:Open(player, missionId, opts)
         if not (rnd and rnd.pool and #rnd.pool > 0) then
             return nil, "random missions not configured"
         end
-        missionId = rnd.pool[math.random(#rnd.pool)]
+        -- REALM-AFFINE gate: a gate inside a realm deals randoms from ITS
+        -- side (random.realm_pools); outside any realm = the full pool
+        local pool = (
+            opts
+            and opts.doorRealm
+            and rnd.realm_pools
+            and rnd.realm_pools[opts.doorRealm]
+        ) or rnd.pool
+        missionId = pool[math.random(#pool)]
     end
     local mission = self._config.missions[missionId]
     if not mission then
@@ -891,51 +899,54 @@ function MissionInstanceService:_close(instanceId, reason)
     -- COMPLETION counters (quest ladder substrate): every team member's
     -- career totals tick; random-sourced runs also tick the random ladder
     if reason == "complete" then
-        -- SEQUENCE ADVANCE (finish-or-skip rule): the opener's head moves
-        -- past this number; never regresses (replays of old numbers)
-        if record.sequence and record.openerUserId then
-            pcall(function()
-                local dataSvc = _G.RBXTemplateServices:Get("DataService")
-                local opener = Players:GetPlayerByUserId(record.openerUserId)
-                local data = opener and dataSvc:GetData(opener)
-                if data then
-                    data.GameData = data.GameData or {}
-                    data.GameData.MissionSeq = data.GameData.MissionSeq or {}
-                    local cur = tonumber(data.GameData.MissionSeq[record.missionId]) or 0
-                    if record.sequence > cur then
-                        data.GameData.MissionSeq[record.missionId] = record.sequence
-                        -- NOT critical (DataStore budget, 2026-07-09 Studio
-                        -- throttle): worst-case crash loss = re-facing a trial
-                        -- you already beat. Coalesces on the 15s debounce.
-                        dataSvc:RequestSave(opener, "mission_sequence")
-                        self:_refreshGateLabel(opener)
-                        -- FIRST-TIME CLEAR egg roll (0.5%): tied to the
-                        -- advance moment, so replays/re-runs can't farm it
-                        local eggCfg = self._config.missions[record.missionId]
-                            and self._config.missions[record.missionId].boss_egg
-                        if eggCfg and math.random() < (tonumber(eggCfg.chance) or 0) then
-                            local inv = _G.RBXTemplateServices:Get("InventoryService")
-                            local granted = inv
-                                and inv:AddItem(opener, "eggs", {
-                                    id = eggCfg.egg,
-                                    name = eggCfg.name or eggCfg.egg,
-                                    source = "first_clear:"
-                                        .. record.missionId
-                                        .. "#"
-                                        .. record.sequence,
-                                })
-                            if granted then
-                                fireGameEvent(opener, "exclusive_egg_pickup", {
-                                    egg = eggCfg.egg,
-                                    name = ("%s found in the beacon's light!"):format(
-                                        eggCfg.name or "A mysterious egg"
-                                    ),
-                                })
+        -- SEQUENCE ADVANCE (finish-or-skip rule): EVERY team member's head
+        -- moves past this number — the whole team finished trial #N together
+        -- (Jason, duo: opener-only credit re-dealt #1 to the other account
+        -- every session). Never regresses (replays of old numbers).
+        if record.sequence then
+            for _, member in ipairs(membersOf(record.teamKey)) do
+                pcall(function()
+                    local dataSvc = _G.RBXTemplateServices:Get("DataService")
+                    local data = dataSvc:GetData(member)
+                    if data then
+                        data.GameData = data.GameData or {}
+                        data.GameData.MissionSeq = data.GameData.MissionSeq or {}
+                        local cur = tonumber(data.GameData.MissionSeq[record.missionId]) or 0
+                        if record.sequence > cur then
+                            data.GameData.MissionSeq[record.missionId] = record.sequence
+                            -- NOT critical (DataStore budget, 2026-07-09 Studio
+                            -- throttle): worst-case crash loss = re-facing a trial
+                            -- you already beat. Coalesces on the 15s debounce.
+                            dataSvc:RequestSave(member, "mission_sequence")
+                            self:_refreshGateLabel(member)
+                            -- FIRST-TIME CLEAR egg roll (0.5%): per member, tied
+                            -- to THEIR advance moment — replays can't farm it
+                            local eggCfg = self._config.missions[record.missionId]
+                                and self._config.missions[record.missionId].boss_egg
+                            if eggCfg and math.random() < (tonumber(eggCfg.chance) or 0) then
+                                local inv = _G.RBXTemplateServices:Get("InventoryService")
+                                local granted = inv
+                                    and inv:AddItem(member, "eggs", {
+                                        id = eggCfg.egg,
+                                        name = eggCfg.name or eggCfg.egg,
+                                        source = "first_clear:"
+                                            .. record.missionId
+                                            .. "#"
+                                            .. record.sequence,
+                                    })
+                                if granted then
+                                    fireGameEvent(member, "exclusive_egg_pickup", {
+                                        egg = eggCfg.egg,
+                                        name = ("%s found in the beacon's light!"):format(
+                                            eggCfg.name or "A mysterious egg"
+                                        ),
+                                    })
+                                end
                             end
                         end
                     end
-                end
-            end)
+                end)
+            end
         end
         pcall(function()
             local statsSvc = _G.RBXTemplateServices:Get("StatsService")
@@ -2020,8 +2031,25 @@ function MissionInstanceService:_bindDoor(part)
     prompt.RequiresLineOfSight = false
     prompt.Parent = part
 
+    -- which realm this door stands in ("hell"/"heaven"/nil): Maps.<Realm>_n
+    -- ancestry — realm gates deal their own side's randoms when unbound
+    local doorRealm
+    do
+        local node = part
+        while node and node ~= workspace do
+            if node.Name:match("^Hell_%d+$") then
+                doorRealm = "hell"
+                break
+            elseif node.Name:match("^Heaven_%d+$") then
+                doorRealm = "heaven"
+                break
+            end
+            node = node.Parent
+        end
+    end
+
     prompt.Triggered:Connect(function(player)
-        local instanceId, err = self:Open(player, missionId)
+        local instanceId, err = self:Open(player, missionId, { doorRealm = doorRealm })
         if not instanceId then
             self:_log("Info", "door open rejected", { player = player.Name, err = err })
         end

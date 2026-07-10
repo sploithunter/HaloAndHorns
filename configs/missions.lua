@@ -65,6 +65,15 @@ return {
     -- this pool. No unlock — the gate itself is the entry point.
     random = {
         pool = { "hell_trial", "heaven_trial", "lava_trial", "ice_trial" },
+        -- REALM-AFFINE gates (Jason: "why when I go through the heaven gate
+        -- on random trials do I get hell trials?"): an unbound gate inside a
+        -- realm deals randoms from ITS side (element trials by dressing
+        -- alignment: lava→hell, ice→heaven). Gates outside any realm — and
+        -- unknown realms — fall back to the full pool.
+        realm_pools = {
+            hell = { "hell_trial", "lava_trial" },
+            heaven = { "heaven_trial", "ice_trial" },
+        },
         display = "Trials",
     },
 

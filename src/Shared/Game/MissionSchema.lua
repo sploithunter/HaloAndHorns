@@ -140,6 +140,24 @@ function MissionSchema.validate(cfg, deps)
             end
         end
     end
+    -- realm-affine gate pools: sides must be heaven/hell, missions must exist
+    if rnd and rnd.realm_pools then
+        for side, pool in pairs(rnd.realm_pools) do
+            if side ~= "heaven" and side ~= "hell" then
+                return false, "random.realm_pools: unknown side '" .. tostring(side) .. "'"
+            end
+            for _, id in ipairs(pool) do
+                if (cfg.missions or {})[id] == nil then
+                    return false,
+                        "random.realm_pools."
+                            .. side
+                            .. ": unknown mission '"
+                            .. tostring(id)
+                            .. "'"
+                end
+            end
+        end
+    end
 
     return true
 end
