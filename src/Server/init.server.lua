@@ -320,7 +320,7 @@ registerFeatureModule(
     ServerScriptService.Server.Services.EnchantService,
     appendIfEnabled(
         appendIfEnabled(
-            { "Logger", "ConfigLoader", "DataService", "InventoryService" },
+            { "Logger", "ConfigLoader", "DataService", "InventoryService", "EconomyService" },
             "modifiers",
             "ModifierService"
         ),

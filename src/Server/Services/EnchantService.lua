@@ -38,6 +38,7 @@ function EnchantService.new()
     self._logger = nil
     self._configLoader = nil
     self._dataService = nil
+    self._economyService = nil
     self._inventoryService = nil
     self._modifierService = nil
     self._worldBindingService = nil
@@ -56,6 +57,7 @@ function EnchantService:Init()
     self._logger = self._modules.Logger
     self._configLoader = self._modules.ConfigLoader
     self._dataService = self._modules.DataService
+    self._economyService = self._modules.EconomyService
     self._inventoryService = self._modules.InventoryService
     self._modifierService = self._modules.ModifierService
     self._worldBindingService = self._modules.WorldBindingService
@@ -564,7 +566,7 @@ function EnchantService:_chargeRerollCost(player)
     if type(currency) ~= "string" or currency == "" then
         return false, "invalid_reroll_cost"
     end
-    if not self._dataService:CanAfford(player, currency, amount) then
+    if not self._economyService:CanAfford(player, currency, amount) then
         return false,
             "insufficient_currency",
             {
@@ -572,7 +574,14 @@ function EnchantService:_chargeRerollCost(player)
                 cost = amount,
             }
     end
-    self._dataService:RemoveCurrency(player, currency, amount, "pet_enchant_reroll")
+    if not self._economyService:RemoveCurrency(player, currency, amount, "pet_enchant_reroll") then
+        return false,
+            "currency_debit_failed",
+            {
+                currency = currency,
+                cost = amount,
+            }
+    end
     return true, nil, {
         currency = currency,
         cost = amount,

@@ -564,3 +564,13 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,276/1,276 headless tests and 543 allowlisted architecture occurrences. An
   MCP Studio Play smoke simulated a rejected debit and verified both the in-memory unlock set and
   persisted unlock array remained unchanged; no live unlock or balance was touched.
+
+## 2026-07-10 - Enchant rerolls join the economy boundary
+
+- Injected `EconomyService` into `EnchantService` for reroll affordability and payment. A rejected
+  authoritative debit returns `currency_debit_failed` before the roll or pet-record mutation, so
+  the existing enchant is conserved.
+- Removed the `EnchantService` direct currency-persistence exception from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 542 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified the rejected-debit failure contract with a mock economy boundary;
+  no pet record or live balance was changed.
