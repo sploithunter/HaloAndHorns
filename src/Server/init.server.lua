@@ -391,7 +391,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "LayerService",
     ServerScriptService.Server.Services.LayerService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "EconomyService" }
 )
 -- Phase 3 party core (Halo & Horns): active squad, spirit form, stack pool.
 loader:RegisterModule(

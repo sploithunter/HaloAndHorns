@@ -18,6 +18,8 @@ The desired shape is a small set of authoritative services backed by validated c
 - `ServerClockService` owns deterministic UTC day/seed behavior.
 - `WorldBindingService` discovers, validates, and serves Studio map hooks. In `auto`/`synthetic` map modes it fabricates missing baseplate hooks from `configs/areas.lua` and `configs/markers.lua`.
 - `ZoneService` owns area unlocks and server-authoritative `TeleportPad`/`Portal` travel. It uses `WorldBindingService` for hook/spawn lookup and persists area unlock state through `DataService.GameData.UnlockedAreas`.
+- `LayerService` resolves realm token earnings and traversal costs from layer config, then commits
+  both through `EconomyService`. A failed traversal debit leaves the player's layer unchanged.
 - `AdminToolsService` exposes developer-only test affordances through validated server actions. Zone lock/unlock controls call `ZoneService:SetZoneLocked` rather than mutating profile fields directly.
 - `HatchEntitlementService` is the server source of truth for egg shop/unlock stubs. It resolves effective hatch permissions from `configs/egg_system.lua` plus player override attributes, including boolean modes, max hatch count, hatch-luck bonus, and secret-luck bonus. Egg hatching, admin tools, and future shop code should call this service rather than rebuilding entitlement defaults.
 - `AssetPreloadService` owns imported model normalization for pets. Pet configs can declare `asset_transform.scale`, `asset_transform.huge_scale`, and degree-based `asset_transform.orientation`; normal scale/orientation are baked into `ReplicatedStorage.Assets`, while huge scale is applied only to owned pets marked with the `huge` trait.

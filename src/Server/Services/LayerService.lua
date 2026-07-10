@@ -3,7 +3,7 @@
 
     Server-authoritative ascend/descend: validates Soul magnitude + token cost
     from config (never trusting the client), deducts the token cost via
-    DataService, and sets profile.CurrentLayer (lazy-init, persists). The actual
+    EconomyService, and sets profile.CurrentLayer (lazy-init, persists). The actual
     teleport to the layer's Y-offset geometry is deferred until the stacked
     layers are authored in the world; this service owns the logical layer + cost.
 
@@ -25,6 +25,7 @@ function LayerService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._economyService = self._modules and self._modules.EconomyService
     self._layersConfig = self._configLoader:LoadConfig("layers")
 end
 
@@ -131,11 +132,11 @@ end
 -- hell -> shadow_tokens). These are no-ops at base, so callers can fire them unconditionally.
 
 function LayerService:_depositGrant(player, grant, reason)
-    if not grant or not player or not self._dataService then
+    if not grant or not player or not self._economyService then
         return nil
     end
-    self._dataService:AddCurrency(player, grant.currency, grant.amount, reason)
-    return grant
+    local deposited = self._economyService:AddCurrency(player, grant.currency, grant.amount, reason)
+    return deposited and grant or nil
 end
 
 -- A cut of biome-coin income becomes the realm token (call from the mining/combat payout).
@@ -213,7 +214,16 @@ function LayerService:UseLayer(player, layerId, opts)
         cost, currency = decision.cost, decision.currency
         -- Deduct the server-resolved cost (from config, not the client).
         if cost and cost > 0 and currency then
-            self._dataService:RemoveCurrency(player, currency, cost, "layer_use_" .. layerId)
+            local debited =
+                self._economyService:RemoveCurrency(player, currency, cost, "layer_use_" .. layerId)
+            if not debited then
+                return {
+                    ok = false,
+                    reason = "currency_debit_failed",
+                    cost = cost,
+                    currency = currency,
+                }
+            end
         end
     end
 

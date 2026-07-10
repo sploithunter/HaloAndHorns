@@ -521,3 +521,13 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,271/1,271 headless tests and 551 allowlisted architecture occurrences. An
   MCP Studio Play smoke completed boot and used a mock economy boundary to verify `area_coins`
   resolution, source propagation, and the unchanged grant result without touching live balances.
+
+## 2026-07-10 - Realm layer currencies join the economy boundary
+
+- Routed realm token earnings and configured layer traversal costs through injected
+  `EconomyService`. Token helpers now report a grant only after a successful deposit, and a failed
+  paid traversal debit returns `currency_debit_failed` before changing layer state.
+- Removed both `LayerService` direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,271/1,271 headless tests and 549 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified a successful mock token deposit and a rejected 100-token traversal
+  that conserved `CurrentLayer`; no live profile or balance was changed.
