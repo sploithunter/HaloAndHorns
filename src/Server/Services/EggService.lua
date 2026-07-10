@@ -948,6 +948,33 @@ function EggService:BuildPlayerHatchData(player, eggType, eggData, hatchOptions)
         local auraMult = tonumber(player:GetAttribute("HatchLuckBuff")) or 1
         playerData.luckBoost = (tonumber(playerData.luckBoost) or 0) + math.max(0, auraMult - 1)
     end
+    -- SHARED ECONOMY AURAS (Jason, farming pass): a TEAMMATE's luck buffer
+    -- blesses your hatches too (consumer-side fold — two owners' bunnies never
+    -- clobber one attribute; gated by teaming.mining.economy_auras_shared).
+    pcall(function()
+        -- direct config require: ConfigLoader isn't among EggService's declared
+        -- deps (the loader injects only declared modules), so read the module
+        local teaming = require(
+            game:GetService("ReplicatedStorage"):WaitForChild("Configs"):WaitForChild("teaming")
+        )
+        if not (teaming and teaming.mining and teaming.mining.economy_auras_shared) then
+            return
+        end
+        local members = player:GetAttribute("TeamMembers")
+        if type(members) ~= "string" or members == "" then
+            return
+        end
+        for name in members:gmatch("[^,]+") do
+            if name ~= player.Name then
+                local mate = Players:FindFirstChild(name)
+                if mate and (mate:GetAttribute("HatchLuckBuffUntil") or 0) > os.time() then
+                    local mateMult = tonumber(mate:GetAttribute("HatchLuckBuff")) or 1
+                    playerData.luckBoost = (tonumber(playerData.luckBoost) or 0)
+                        + math.max(0, mateMult - 1)
+                end
+            end
+        end
+    end)
 
     -- LUCKY SERVER (configs/creators.lua server_luck): a registered creator is in the server, so
     -- everyone EXCEPT creators hatches luckier (MeetCreatorService stamps ServerLuckBuff). DEVLUCK is

@@ -2173,6 +2173,33 @@ function BreakableSpawner:_trySpawnOne(
                         expiry = player:GetAttribute("CoinYieldPowerUntil") or 0,
                     },
                 }
+                -- SHARED ECONOMY AURAS (Jason, farming pass): a TEAMMATE's yield
+                -- buffer benefits the whole team — fold their fresh aura as an
+                -- extra source (consumer-side, so two owners' auras never
+                -- clobber one attribute). Same axis -> BuffStack adds + caps.
+                pcall(function()
+                    local teaming = self._modules
+                        and self._modules.ConfigLoader
+                        and self._modules.ConfigLoader:LoadConfig("teaming")
+                    if not (teaming and teaming.mining and teaming.mining.economy_auras_shared) then
+                        return
+                    end
+                    local members = player:GetAttribute("TeamMembers")
+                    if type(members) ~= "string" or members == "" then
+                        return
+                    end
+                    for name in members:gmatch("[^,]+") do
+                        if name ~= player.Name then
+                            local mate = Players:FindFirstChild(name)
+                            if mate then
+                                sources[#sources + 1] = {
+                                    fraction = (mate:GetAttribute("CoinYieldBuff") or 1) - 1,
+                                    expiry = mate:GetAttribute("CoinYieldBuffUntil") or 0,
+                                }
+                            end
+                        end
+                    end
+                end)
                 local mult = BuffStack.multiplier(
                     sources,
                     nowT,
@@ -2200,6 +2227,31 @@ function BreakableSpawner:_trySpawnOne(
                     total += v.Value
                 end
             end
+            -- TEAM MINING BONUS (Jason: "teaming should be encouraged"): map each
+            -- contributor to their TeamId; a contributor whose TEAMMATE also
+            -- contributed gets their share multiplied (configs/teaming.lua mining).
+            local teamMult = 1
+            local contributorTeams = {} -- teamId -> count of contributors on it
+            local teamOf = {} -- userId -> teamId
+            pcall(function()
+                local teaming = self._modules
+                    and self._modules.ConfigLoader
+                    and self._modules.ConfigLoader:LoadConfig("teaming")
+                teamMult = tonumber(teaming and teaming.mining and teaming.mining.team_payout_mult)
+                    or 1
+            end)
+            if teamMult > 1 then
+                for _, v in ipairs(contribFolder:GetChildren()) do
+                    if v:IsA("NumberValue") and v.Value > 0 then
+                        local plr = Players:GetPlayerByUserId(tonumber(v.Name))
+                        local teamId = plr and plr:GetAttribute("TeamId")
+                        if teamId ~= nil and teamId ~= "" then
+                            teamOf[v.Name] = teamId
+                            contributorTeams[teamId] = (contributorTeams[teamId] or 0) + 1
+                        end
+                    end
+                end
+            end
             if total > 0 then
                 local remainder = valueAmount
                 local topUserId, topAmount = nil, -math.huge
@@ -2207,6 +2259,11 @@ function BreakableSpawner:_trySpawnOne(
                     if v:IsA("NumberValue") and v.Value > 0 then
                         local share = math.floor(valueAmount * (v.Value / total))
                         remainder -= share
+                        -- teamed with another contributor on THIS node -> the bonus
+                        local tid = teamOf[v.Name]
+                        if tid and (contributorTeams[tid] or 0) >= 2 then
+                            share = math.floor(share * teamMult)
+                        end
                         local plr = Players:GetPlayerByUserId(tonumber(v.Name))
                         if plr and share > 0 then
                             local resolvedShare = resolvePlayerAward(plr, share)

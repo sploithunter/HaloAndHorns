@@ -55,6 +55,18 @@ return {
         path_fail_cooldown = 2, -- seconds to fall back to direct after a failed compute
     },
 
+    -- FARMING PASS (Jason: "teaming should be encouraged" — the two paths of
+    -- success both reward teams). Mining kept its proportional-contribution
+    -- split; when a TEAMMATE also contributed to the same node, each teamed
+    -- contributor's share is multiplied (duo even-split 50% x 1.2 = 60% each —
+    -- more coins/min than solo since two squads clear nodes ~2x faster).
+    -- Zero-contribution bystanders still earn NOTHING (no combat danger to
+    -- gate leeching, so contribution IS the anti-leech).
+    mining = {
+        team_payout_mult = 1.2, -- applied to a contributor's share when a teammate also contributed
+        economy_auras_shared = true, -- yield/luck pet auras also benefit FRESH teammates (consumer-side fold)
+    },
+
     -- Kill credit (TM5): teammates of any damage contributor SHARE the kill award when
     -- within `radius` studs of the down site — the healer/buffer gets paid without landing
     -- a hit. Contributors themselves are always paid regardless of distance.
