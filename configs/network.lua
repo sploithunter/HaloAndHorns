@@ -159,6 +159,58 @@ return {
                 arguments = { { name = "error", type = "table" } },
             },
         },
+        RealmTravelOffer = {
+            name = "RealmTravelOffer",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "realms.travel_offered",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "offer", type = "table" } },
+            },
+        },
+        EnchantPetResult = {
+            name = "EnchantPetResult",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "enchants.pet_result",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "result", type = "table" } },
+            },
+        },
+        EnchantStationOpened = {
+            name = "EnchantStationOpened",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "enchants.station_opened",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "station", type = "table" } },
+            },
+        },
+        AdminToolResult = {
+            name = "AdminToolResult",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "admin.tool_result",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "result", type = "table" } },
+            },
+        },
     },
 
     bridges = {

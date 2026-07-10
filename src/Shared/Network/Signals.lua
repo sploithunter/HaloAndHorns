@@ -60,7 +60,6 @@ local legacySignals = {
     Admin_RequestHatchHistory = Net:RemoteEvent("Admin_RequestHatchHistory"), -- c->s recent hatch debug snapshot
     Admin_RequestHatchSimulation = Net:RemoteEvent("Admin_RequestHatchSimulation"), -- c->s no-mutation hatch odds/cost preview
     Admin_EventCommand = Net:RemoteEvent("Admin_EventCommand"), -- c->s admin global event command
-    AdminToolResult = Net:RemoteEvent("AdminToolResult"), -- s->c admin action result
 
     -- Effects
     ActiveEffects = Net:RemoteEvent("ActiveEffects"), -- s->c unified list
@@ -88,8 +87,6 @@ local legacySignals = {
     SetEquippedPets = Net:RemoteEvent("SetEquippedPets"), -- c->s commit a draft squad (clear + set Equipped.pets)
     ToggleToolEquipped = Net:RemoteEvent("ToggleToolEquipped"), -- c->s equip/unequip tool
     EnchantPetRequest = Net:RemoteEvent("EnchantPetRequest"), -- c->s reroll/apply pet enchant
-    EnchantPetResult = Net:RemoteEvent("EnchantPetResult"), -- s->c enchant action result
-    EnchantStationOpened = Net:RemoteEvent("EnchantStationOpened"), -- s->c player activated map enchanter
 
     -- User Display Preferences
     SaveDisplayPreferences = Net:RemoteEvent("SaveDisplayPreferences"),
@@ -100,7 +97,6 @@ local legacySignals = {
 
     -- Zones / progression
     UnlockZoneRequest = Net:RemoteEvent("UnlockZoneRequest"), -- c->s
-    RealmTravelOffer = Net:RemoteEvent("RealmTravelOffer"), -- s->c (touched a realm portal -> yes/no offer)
     RealmTravelConfirm = Net:RemoteEvent("RealmTravelConfirm"), -- c->s (player chose Yes -> travel)
 
     -- Phase 3 stats-derived features

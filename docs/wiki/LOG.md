@@ -443,3 +443,13 @@ migration is needed for the abandoned "element splits stacks" spec.
   green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
   the live server reported 12 manifest packets and all four moved economy signals. Output contained
   no network, duplicate declaration, or script errors; existing test-place warnings remain.
+
+## 2026-07-10 - Interaction notifications join the network manifest (Phase 1 slice 4)
+
+- Migrated `RealmTravelOffer`, `EnchantPetResult`, `EnchantStationOpened`, and `AdminToolResult`
+  from the legacy constructor table into the validated packet manifest. Existing senders and
+  listeners still use the same wire names and one-table payloads.
+- Ratcheted `Signals.lua` manual remote construction from 86 to 82. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 16 manifest packets and all four moved signals. Output contained no
+  network, duplicate declaration, or script errors; existing test-place warnings remain.
