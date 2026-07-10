@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate the per-origin realm ZONES (configs/areas.lua) + CRYSTAL blocks (configs/breakables.lua)
 for Heaven_1 / Hell_1. Each realm splits into 4 independent origin zones (Lava/Ice/Desert/Grass),
-each unlock-gated at 100k of its origin coin (any order, all gated behind homeworld Desert), each
+each unlock-gated at 50k of its origin coin (any order, all gated behind homeworld Desert), each
 spawning the homeworld biome's ore on its own floor. Emits /tmp/gen_zones.lua + /tmp/gen_breakables.lua."""
 
 # floor part name -> (center x,z, size x,z, currency, ore family, element, display-suffix)
@@ -18,7 +18,7 @@ REALMS = [
     ("Hell_1",   -1999,  "Infernal", 10),
 ]
 
-UNLOCK_COST = 100000
+UNLOCK_COST = 50000
 
 
 def ore_table(family):
@@ -32,7 +32,7 @@ def ore_table(family):
 
 zones, breaks = [], []
 for world, fy, prefix, ob in REALMS:
-    zones.append(f"        -- {world}: four independent per-origin zones (unlock any order, 100k each).")
+    zones.append(f"        -- {world}: four independent per-origin zones (unlock any order, 50k each).")
     for oi, (floor, cx, cz, sx, sz, currency, ore, element, suffix) in enumerate(ORIGINS):
         zid = f"{world}_{floor}"  # suffix = floor part name so ZoneTrackerService resolves it
         display = f"{prefix} {suffix}"
