@@ -2239,6 +2239,11 @@ function BreakableSpawner:_trySpawnOne(
                     and self._modules.ConfigLoader:LoadConfig("teaming")
                 teamMult = tonumber(teaming and teaming.mining and teaming.mining.team_payout_mult)
                     or 1
+                -- Team Tuesday: the shared-node bonus fattens for the day
+                local ev = self._moduleLoader and self._moduleLoader:Get("EventService")
+                if ev then
+                    teamMult = teamMult + (tonumber(ev:GetModifier("team_mining_bonus", 0)) or 0)
+                end
             end)
             if teamMult > 1 then
                 for _, v in ipairs(contribFolder:GetChildren()) do

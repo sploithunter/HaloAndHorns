@@ -923,7 +923,18 @@ function MissionInstanceService:_close(instanceId, reason)
                             -- to THEIR advance moment — replays can't farm it
                             local eggCfg = self._config.missions[record.missionId]
                                 and self._config.missions[record.missionId].boss_egg
-                            if eggCfg and math.random() < (tonumber(eggCfg.chance) or 0) then
+                            -- Wyrm Weekend (exclusive_egg_chance event axis):
+                            -- doubles the ROLL, never the stated hatch odds
+                            local fcChance = tonumber(eggCfg and eggCfg.chance) or 0
+                            pcall(function()
+                                local ev = _G.RBXTemplateServices:Get("EventService")
+                                fcChance = fcChance
+                                    * (
+                                        1
+                                        + (tonumber(ev:GetModifier("exclusive_egg_chance", 0)) or 0)
+                                    )
+                            end)
+                            if eggCfg and math.random() < fcChance then
                                 local inv = _G.RBXTemplateServices:Get("InventoryService")
                                 local granted = inv
                                     and inv:AddItem(member, "eggs", {

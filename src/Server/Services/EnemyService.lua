@@ -1074,6 +1074,10 @@ function EnemyService:_onDefeated(targetId)
         -- kill so parked alts don't leech across the map.
         local credited = {} -- Player -> true
         local creditR = tonumber((self:_teamingConfig().kill_credit or {}).radius) or 150
+        pcall(function() -- Team Tuesday: kill credit reaches further
+            local ev = _G.RBXTemplateServices:Get("EventService")
+            creditR = creditR + (tonumber(ev:GetModifier("kill_credit_radius_bonus", 0)) or 0)
+        end)
         for _, nv in ipairs(contrib:GetChildren()) do
             local userId = tonumber(nv.Name)
             local contributor = userId and Players:GetPlayerByUserId(userId)
@@ -1150,7 +1154,18 @@ function EnemyService:_onDefeated(targetId)
                             local bossDef = self._enemiesConfig.enemies
                                 and self._enemiesConfig.enemies[entry.enemyId]
                             local ex = bossDef and bossDef.exclusive_egg
-                            if ex and ex.egg and math.random() < (tonumber(ex.chance) or 0) then
+                            -- Wyrm Weekend (exclusive_egg_chance event axis):
+                            -- doubles the ROLL, never the stated hatch odds
+                            local exChance = tonumber(ex and ex.chance) or 0
+                            pcall(function()
+                                local ev = _G.RBXTemplateServices:Get("EventService")
+                                exChance = exChance
+                                    * (
+                                        1
+                                        + (tonumber(ev:GetModifier("exclusive_egg_chance", 0)) or 0)
+                                    )
+                            end)
+                            if ex and ex.egg and math.random() < exChance then
                                 -- PHYSICAL drop (Jason: "see it in the world in
                                 -- 3d") — magnet-immune; despawn force-collects
                                 local dropSvc = _G.RBXTemplateServices:Get("DropService")

@@ -361,7 +361,11 @@ local function loadConfigsFromStorage()
         local here = game.PlaceId
         for _, id in ipairs(showcase.place_ids or {}) do
             if tonumber(id) == here then
-                warn(("SHOWCASE MODE ACTIVE (Builder's Cut overlay, place %d): museum rules applied"):format(here))
+                warn(
+                    ("SHOWCASE MODE ACTIVE (Builder's Cut overlay, place %d): museum rules applied"):format(
+                        here
+                    )
+                )
                 local ok, err = pcall(showcase.apply, configs)
                 if not ok then
                     warn("Showcase overlay FAILED: " .. tostring(err))

@@ -434,6 +434,14 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
         if m > 0 then
             chance = chance * (1 + m)
         end
+        -- Warpath Thursday (enemy_drop_rate): ENEMY kills only — the fight
+        -- day's loot lever, distinct from Saturday's everything-drops
+        if source == "enemy" then
+            local em = tonumber(eventService:GetModifier("enemy_drop_rate", 0)) or 0
+            if em > 0 then
+                chance = chance * (1 + em)
+            end
+        end
     end
     -- resolve the roll into a COUNT (premium odds can exceed 1). Chests
     -- ("treasure") stay exactly one per call — that includes the recursive

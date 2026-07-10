@@ -37,6 +37,25 @@ return {
             display_name = "Drop Rate",
             base = 0,
         },
+        -- COMBAT CALENDAR axes (Jason 2026-07-09: the weekday rewards predate
+        -- combat — "none of them have anything to do with combat content").
+        -- All additive fractions (base 0): consumers apply (1 + value).
+        exclusive_egg_chance = {
+            display_name = "Boss Egg Chance",
+            base = 0,
+        },
+        enemy_drop_rate = {
+            display_name = "Enemy Drop Rate",
+            base = 0,
+        },
+        team_mining_bonus = {
+            display_name = "Team Mining Bonus",
+            base = 0,
+        },
+        kill_credit_radius_bonus = {
+            display_name = "Kill Credit Radius Bonus",
+            base = 0,
+        },
     },
 
     global_events = {
@@ -132,13 +151,17 @@ return {
         },
 
         thriving_thursday = {
-            display_name = "Thriving Thursday",
-            description = "Double XP from mining and combat — level up twice as fast.",
+            -- WARPATH THURSDAY (Jason): Thursday is the day you FIGHT — the XP
+            -- day gains double enhancement drops from ENEMIES specifically
+            -- (distinct from Saturday's everything-drops day).
+            display_name = "Warpath Thursday",
+            description = "Double XP everywhere — and enemies drop enhancements twice as often.",
             duration_seconds = -1,
             stacking = "reset",
             icon = "XP",
             modifiers = {
                 xp_multiplier = 1, -- 2x
+                enemy_drop_rate = 1, -- 2x enhancement/potion odds from enemy kills
             },
         },
 
@@ -161,6 +184,36 @@ return {
             icon = "DROP",
             modifiers = {
                 drop_rate = 1, -- 2x drop chance
+            },
+        },
+
+        -- WYRM WEEKEND (layered on Sat+Sun): the boss-egg chase weekend — trial
+        -- bosses and first-clears roll their exclusive eggs at DOUBLE chance
+        -- (0.5% -> 1%). Drop-rate lever, NOT stated egg odds: fixed_odds
+        -- inventory eggs keep their exact stated hatch odds.
+        wyrm_weekend = {
+            display_name = "Wyrm Weekend",
+            description = "Trial bosses and first-clears drop their exclusive eggs at double chance!",
+            duration_seconds = -1,
+            stacking = "reset",
+            icon = "EGG",
+            modifiers = {
+                exclusive_egg_chance = 1, -- 2x boss/first-clear egg rolls
+            },
+        },
+
+        -- TEAM TUESDAY (layered on Tycoon Tuesday): bring-a-friend day — the
+        -- farming-pass team bonus fattens (1.2x -> 1.4x shared-node shares)
+        -- and kill credit reaches further.
+        team_tuesday = {
+            display_name = "Team Tuesday",
+            description = "Team up! Bigger shared-mining bonus and wider kill credit, all day.",
+            duration_seconds = -1,
+            stacking = "reset",
+            icon = "TEAM",
+            modifiers = {
+                team_mining_bonus = 0.2, -- mining team_payout_mult 1.2 -> 1.4
+                kill_credit_radius_bonus = 50, -- studs added to teaming kill_credit.radius
             },
         },
 
@@ -209,6 +262,18 @@ return {
             event_id = "secret_luck_day",
             weekdays = { 1 },
             reason = "Secret Sunday",
+        },
+        -- LAYERED combat calendar (fold = base + Σ over active events, so
+        -- these stack with the day's economy event by design)
+        wyrm_weekend = {
+            event_id = "wyrm_weekend",
+            weekdays = { 7, 1 }, -- Saturday + Sunday
+            reason = "Wyrm Weekend",
+        },
+        team_tuesday = {
+            event_id = "team_tuesday",
+            weekdays = { 3 },
+            reason = "Team Tuesday",
         },
     },
 }
