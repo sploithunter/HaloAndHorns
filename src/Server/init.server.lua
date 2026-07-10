@@ -187,7 +187,7 @@ registerFeatureModule(
     "map_binding",
     "ZoneService",
     ServerScriptService.Server.Services.ZoneService,
-    { "Logger", "ConfigLoader", "DataService", "WorldBindingService" }
+    { "Logger", "ConfigLoader", "DataService", "EconomyService", "WorldBindingService" }
 )
 registerFeatureModule(
     "global_events",

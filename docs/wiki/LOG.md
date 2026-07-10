@@ -554,3 +554,13 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,276/1,276 headless tests across 117 specs and 544 allowlisted architecture
   occurrences. An MCP Studio Play smoke verified the injected boundaries and deterministic
   grant-failure rollback without executing a real purchase or changing live balances.
+
+## 2026-07-10 - Zone unlocks join the economy boundary
+
+- Injected `EconomyService` into `ZoneService` for configured unlock affordability and debit.
+  A rejected debit now returns `currency_debit_failed` before writing the unlock ledger, publishing
+  attributes, saving, or firing area-unlocked events; admin requirement bypasses remain unchanged.
+- Removed the `ZoneService` direct currency-persistence exception from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 543 allowlisted architecture occurrences. An
+  MCP Studio Play smoke simulated a rejected debit and verified both the in-memory unlock set and
+  persisted unlock array remained unchanged; no live unlock or balance was touched.

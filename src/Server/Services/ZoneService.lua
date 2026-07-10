@@ -70,6 +70,7 @@ function ZoneService:Init()
     self._logger = self._modules.Logger
     self._configLoader = self._modules.ConfigLoader
     self._dataService = self._modules.DataService
+    self._economyService = self._modules.EconomyService
     self._worldBindingService = self._modules.WorldBindingService
     self._areasConfig = self._configLoader:LoadConfig("areas")
     self._touchDebounce = {}
@@ -410,7 +411,7 @@ function ZoneService:UnlockZone(player, zoneId, options)
         local currency = unlock.currency
         local cost = tonumber(unlock.cost) or 0
         if currency and cost > 0 then
-            if not self._dataService:CanAfford(player, currency, cost) then
+            if not self._economyService:CanAfford(player, currency, cost) then
                 return {
                     ok = false,
                     reason = "insufficient_currency",
@@ -421,7 +422,16 @@ function ZoneService:UnlockZone(player, zoneId, options)
                     unlock = self:GetUnlockRequirement(player, zoneId),
                 }
             end
-            self._dataService:RemoveCurrency(player, currency, cost, "zone_unlock")
+            if not self._economyService:RemoveCurrency(player, currency, cost, "zone_unlock") then
+                return {
+                    ok = false,
+                    reason = "currency_debit_failed",
+                    zoneId = zoneId,
+                    areaId = areaId,
+                    currency = currency,
+                    cost = cost,
+                }
+            end
         end
     end
 

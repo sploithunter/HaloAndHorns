@@ -82,8 +82,7 @@
         "src/Server/Services/GameAPIService.lua": 1,
         "src/Server/Services/StudioSmokeTestService.lua": 14,
         "src/Server/Services/TradeService.lua": 4,
-        "src/Server/Services/UpgradeService.lua": 1,
-        "src/Server/Services/ZoneService.lua": 1
+        "src/Server/Services/UpgradeService.lua": 1
       },
       "owner": "economy and persistence",
       "pattern": "_dataService|dataService|dataSvc:AddCurrency|RemoveCurrency|SetCurrency",

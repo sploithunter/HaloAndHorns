@@ -17,7 +17,9 @@ The desired shape is a small set of authoritative services backed by validated c
   balance notifications observe the same grant.
 - `ServerClockService` owns deterministic UTC day/seed behavior.
 - `WorldBindingService` discovers, validates, and serves Studio map hooks. In `auto`/`synthetic` map modes it fabricates missing baseplate hooks from `configs/areas.lua` and `configs/markers.lua`.
-- `ZoneService` owns area unlocks and server-authoritative `TeleportPad`/`Portal` travel. It uses `WorldBindingService` for hook/spawn lookup and persists area unlock state through `DataService.GameData.UnlockedAreas`.
+- `ZoneService` owns area unlocks and server-authoritative `TeleportPad`/`Portal` travel. It uses
+  `WorldBindingService` for hook/spawn lookup, commits configured unlock costs through
+  `EconomyService`, and persists area unlock state only after a successful debit.
 - `LayerService` resolves realm token earnings and traversal costs from layer config, then commits
   both through `EconomyService`. A failed traversal debit leaves the player's layer unchanged.
 - `ShopService` uses injected economy and reward boundaries. Its pure purchase transaction debits
