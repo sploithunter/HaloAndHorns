@@ -34,7 +34,6 @@
         "configs/level_track.lua": 1,
         "configs/leveling.lua": 1,
         "configs/logging.lua": 1,
-        "configs/network.lua": 1,
         "configs/party.lua": 1,
         "configs/pet_follow.lua": 1,
         "configs/pet_power.lua": 1,
@@ -127,10 +126,10 @@
         "src/Server/Services/TradeService.lua": 1,
         "src/Shared/Libraries/Matter/debugger/debugger.luau": 1,
         "src/Shared/Network/NetworkBridge.lua": 1,
-        "src/Shared/Network/Signals.lua": 98
+        "src/Shared/Network/Signals.lua": 95
       },
       "owner": "networking",
-      "pattern": "Instance.new(\"RemoteEvent|RemoteFunction\") or Net:RemoteEvent|RemoteFunction",
+      "pattern": "Instance.new(\"RemoteEvent|RemoteFunction\") or transport:RemoteEvent|RemoteFunction",
       "reason": "Existing code-declared and service-owned remotes must migrate to the network manifest."
     },
     "runtime-wait": {

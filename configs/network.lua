@@ -1,6 +1,52 @@
 -- Network Bridge Configuration
 -- Single source of truth for all client-server communication
 return {
+    version = 1,
+
+    -- Manifest-driven packets. Signals builds these through SignalRegistry; the
+    -- legacy bridge table below remains during the incremental migration.
+    packets = {
+        PetIndexUpdated = {
+            name = "PetIndexUpdated",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "pet_index.updated",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "snapshot", type = "table" } },
+            },
+        },
+        AchievementCompleted = {
+            name = "AchievementCompleted",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "achievements.completed",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "payload", type = "table" } },
+            },
+        },
+        LeaderboardUpdated = {
+            name = "LeaderboardUpdated",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "broadcast",
+            topic = "leaderboards.updated",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "snapshot", type = "table" } },
+            },
+        },
+    },
+
     bridges = {
         Economy = {
             description = "Economy system for purchases, sales, and shop operations",

@@ -158,7 +158,7 @@ Testing methodology (the pyramid): **pure logic → server-side command-bus inte
 
 ## Verification Baseline
 
-- `mise run ci` (fast gate): green — architecture guard clean, selene 0 errors, StyLua clean on owned paths, `rojo build` passes, **headless 1,258/1,258 across 113 specs**. GitHub Actions runs the same gate on every push.
+- `mise run ci` (fast gate): green — architecture guard clean, selene 0 errors, StyLua clean on owned paths, `rojo build` passes, **headless 1,263/1,263 across 114 specs**. GitHub Actions runs the same gate on every push.
 - Live in *Halo & Horns* (Rojo connected): the server-side `AutomationSuite` covers the alignment chain, pets/power/element resonance, layer access, party core (Spirit Form / stack pool / squad), combat & focus, and the Phase-5 build-depth systems. Studio `Phase*Smoke` + game smoke runners cover the egg system, progression, and zone/economy paths.
 - Game-layer features (combat, HUD, powers, enhancements, tutorial) are iterated live in Studio play sessions and verified through the MCP + in-session play.
 

@@ -32,7 +32,12 @@ class ArchitectureGuardTest(unittest.TestCase):
             (root / "src" / "Shared").mkdir(parents=True)
             (root / "configs").mkdir()
             (root / "src" / "Shared" / "Network.lua").write_text(
-                '-- Net:RemoteEvent("Ignored")\nNet:RemoteEvent("Found")\n', encoding="utf-8"
+                '-- Transport:RemoteEvent("Ignored")\nTransport:RemoteEvent("Found")\n',
+                encoding="utf-8",
+            )
+            (root / "src" / "Shared" / "Network").mkdir()
+            (root / "src" / "Shared" / "Network" / "SignalRegistry.lua").write_text(
+                'Transport:RemoteEvent("Canonical")\n', encoding="utf-8"
             )
             (root / "src" / "Shared" / "ConfigLoader.lua").write_text(
                 'if configName == "registered" then return true end\n', encoding="utf-8"
@@ -46,6 +51,9 @@ class ArchitectureGuardTest(unittest.TestCase):
             remote = findings["remote-construction"]["src/Shared/Network.lua"]
             self.assertEqual(1, remote.count)
             self.assertEqual((2,), remote.lines)
+            self.assertNotIn(
+                "src/Shared/Network/SignalRegistry.lua", findings["remote-construction"]
+            )
             self.assertEqual(
                 {"configs/missing.lua"}, set(findings["config-without-schema"])
             )
@@ -79,6 +87,10 @@ class ArchitectureGuardTest(unittest.TestCase):
         errors = architecture_guard.compare_findings(moved, allowlist)
         self.assertTrue(any("NEW DEBT" in error for error in errors))
         self.assertTrue(any("STALE ALLOWLIST" in error for error in errors))
+
+        allowlist["rules"]["runtime-wait"]["pattern"] = "stale pattern"
+        errors = architecture_guard.compare_findings(findings, allowlist)
+        self.assertTrue(any("pattern must match" in error for error in errors))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,92 @@
+-- Network manifest validation and registry construction stay pure for CI.
+
+local NetworkManifest = loadModule("src/Shared/Network/NetworkManifest.lua")
+local SignalRegistry = loadModule("src/Shared/Network/SignalRegistry.lua")
+local networkConfig = loadModule("configs/network.lua")
+
+local function validClientPacket()
+    return {
+        name = "RequestSnapshot",
+        transport = "reliable_event",
+        direction = "client_to_server",
+        authorization = "player",
+        environments = { production = true, studio = true, test = true },
+        delivery = "request",
+        rate_limit = 10,
+        handler = "LeaderboardService.GetSnapshot",
+        schema = { kind = "tuple", arguments = {} },
+    }
+end
+
+return function()
+    describe("NetworkManifest", function()
+        it("validates the live migrated packet declarations", function()
+            local ok, err = NetworkManifest.validate(networkConfig)
+            if not ok then
+                error("network config invalid: " .. tostring(err))
+            end
+            expect(ok).to.equal(true)
+            expect(networkConfig.packets.PetIndexUpdated.name).to.equal("PetIndexUpdated")
+            expect(networkConfig.packets.AchievementCompleted.name).to.equal("AchievementCompleted")
+            expect(networkConfig.packets.LeaderboardUpdated.name).to.equal("LeaderboardUpdated")
+        end)
+
+        it("builds the exact wire names through one registry", function()
+            local created = {}
+            local transport = {
+                RemoteEvent = function(_, name)
+                    table.insert(created, "event:" .. name)
+                    return { name = name, kind = "event" }
+                end,
+                RemoteFunction = function(_, name)
+                    table.insert(created, "function:" .. name)
+                    return { name = name, kind = "function" }
+                end,
+            }
+            local signals = SignalRegistry.build(networkConfig, transport)
+            expect(signals.PetIndexUpdated.name).to.equal("PetIndexUpdated")
+            expect(signals.AchievementCompleted.name).to.equal("AchievementCompleted")
+            expect(signals.LeaderboardUpdated.name).to.equal("LeaderboardUpdated")
+            expect(#created).to.equal(3)
+        end)
+
+        it("requires rate limits and handlers on client-origin packets", function()
+            local packet = validClientPacket()
+            packet.rate_limit = nil
+            local ok =
+                NetworkManifest.validate({ version = 1, packets = { RequestSnapshot = packet } })
+            expect(ok).to.equal(false)
+
+            packet.rate_limit = 10
+            packet.handler = nil
+            ok = NetworkManifest.validate({ version = 1, packets = { RequestSnapshot = packet } })
+            expect(ok).to.equal(false)
+        end)
+
+        it("rejects key/name drift and unknown schema types", function()
+            local packet = validClientPacket()
+            packet.name = "DifferentName"
+            local ok =
+                NetworkManifest.validate({ version = 1, packets = { RequestSnapshot = packet } })
+            expect(ok).to.equal(false)
+
+            packet.name = "RequestSnapshot"
+            packet.schema.arguments = { { name = "boardId", type = "mystery" } }
+            ok = NetworkManifest.validate({ version = 1, packets = { RequestSnapshot = packet } })
+            expect(ok).to.equal(false)
+        end)
+
+        it("keeps direction, authorization, and delivery internally consistent", function()
+            local packet = validClientPacket()
+            packet.authorization = "server"
+            local ok =
+                NetworkManifest.validate({ version = 1, packets = { RequestSnapshot = packet } })
+            expect(ok).to.equal(false)
+
+            packet.authorization = "player"
+            packet.delivery = "broadcast"
+            ok = NetworkManifest.validate({ version = 1, packets = { RequestSnapshot = packet } })
+            expect(ok).to.equal(false)
+        end)
+    end)
+end

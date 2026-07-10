@@ -29,6 +29,7 @@ class RuleSpec:
     reason: str
     disposition: str = "migration-debt"
     expressions: tuple[str, ...] = ()
+    exempt_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -41,13 +42,14 @@ RULES = (
     RuleSpec(
         key="remote-construction",
         title="remote construction outside the future generated registry",
-        pattern='Instance.new("RemoteEvent|RemoteFunction") or Net:RemoteEvent|RemoteFunction',
+        pattern='Instance.new("RemoteEvent|RemoteFunction") or transport:RemoteEvent|RemoteFunction',
         owner="networking",
         reason="Existing code-declared and service-owned remotes must migrate to the network manifest.",
         expressions=(
             r"Instance\s*\.\s*new\s*\(\s*[\"']Remote(?:Event|Function)[\"']\s*\)",
-            r"\bNet\s*:\s*Remote(?:Event|Function)\s*\(",
+            r"\b[A-Za-z_][A-Za-z0-9_]*\s*:\s*Remote(?:Event|Function)\s*\(",
         ),
+        exempt_paths=("src/Shared/Network/SignalRegistry.lua",),
     ),
     RuleSpec(
         key="game-event-publication",
@@ -171,6 +173,9 @@ def collect_regex_rule(root: Path, rule: RuleSpec) -> dict[str, Finding]:
     expressions = tuple(re.compile(pattern) for pattern in rule.expressions)
     findings: dict[str, Finding] = {}
     for path in runtime_files(root):
+        relative = path.relative_to(root).as_posix()
+        if relative in rule.exempt_paths:
+            continue
         text = strip_lua_comments(path.read_text(encoding="utf-8", errors="ignore"))
         lines: list[int] = []
         for expression in expressions:
@@ -180,7 +185,6 @@ def collect_regex_rule(root: Path, rule: RuleSpec) -> dict[str, Finding]:
                     continue
                 lines.append(line_number(text, match.start()))
         if lines:
-            relative = path.relative_to(root).as_posix()
             findings[relative] = Finding(count=len(lines), lines=tuple(sorted(lines)))
     return findings
 
@@ -253,9 +257,19 @@ def compare_findings(
             errors.append(f"NEW RULE DEBT [{rule_key}] no allowlist section")
             allowed_files: dict[str, object] = {}
         else:
-            for field in ("pattern", "owner", "reason", "disposition", "files"):
-                if not allowed.get(field):
-                    errors.append(f"INVALID ALLOWLIST [{rule_key}] missing {field}")
+            expected_metadata = {
+                "pattern": rule.pattern,
+                "owner": rule.owner,
+                "reason": rule.reason,
+                "disposition": rule.disposition,
+            }
+            for field, expected in expected_metadata.items():
+                if allowed.get(field) != expected:
+                    errors.append(
+                        f"INVALID ALLOWLIST [{rule_key}] {field} must match the rule definition"
+                    )
+            if not isinstance(allowed.get("files"), dict):
+                errors.append(f"INVALID ALLOWLIST [{rule_key}] files must be an object")
             raw_files = allowed.get("files", {})
             allowed_files = raw_files if isinstance(raw_files, dict) else {}
 

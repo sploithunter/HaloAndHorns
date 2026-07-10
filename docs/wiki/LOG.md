@@ -410,3 +410,13 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Added focused guard modes plus Python unit coverage, wired the guard first in `mise run ci`, and
   recorded the removal program in GitHub issue #3. Baseline verification is green: 1,258/1,258
   headless tests across 113 specs.
+
+## 2026-07-10 - Network manifest foundation (Phase 1 slice 1)
+
+- Added the validated `configs/network.lua.packets` manifest plus pure `NetworkManifest` schema
+  rules and the single `SignalRegistry` constructor. Boot and headless CI now reject malformed
+  direction, authorization, environment, delivery, schema, and client rate/handler metadata.
+- Migrated `PetIndexUpdated`, `AchievementCompleted`, and `LeaderboardUpdated` without changing
+  their wire names or one-table payloads. The architecture debt baseline dropped by three remote
+  declarations and one unvalidated config; 95 legacy `Signals` declarations remain for later
+  compatibility slices. `mise run ci` is green at 1,263/1,263 across 114 specs.
