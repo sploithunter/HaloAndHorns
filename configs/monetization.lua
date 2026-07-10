@@ -1,83 +1,102 @@
--- Monetization Configuration
--- Define all Robux purchases, game passes, and premium benefits
+-- Monetization Configuration — THE RATING-SAFE CATALOG
+--
+-- THE ONE RULE (Jason 2026-07-09, after the paid-item-trading declaration cost
+-- the game a 16+ label): everything sold for Robux must be DETERMINISTIC,
+-- UNTRADEABLE, and NEVER a currency that can reach eggs or the trade window.
+-- The two rating traps are CHAINS, not items:
+--   Robux -> any currency -> egg          = Paid Random Items (odds disclosure)
+--   Robux -> anything tradeable            = Paid Item Trading (the 16+ hammer)
+-- Removed accordingly (2026-07-09): gem packs (gems are TRADEABLE), the
+-- starter pack (granted gems + coins; coins reach eggs), and every daily
+-- CURRENCY grant on passes/premium. Earning-rate MULTIPLIERS on earned
+-- currency are the industry-standard safe substitute (you earn faster; you
+-- never buy the currency itself) — same reasoning as the egg luck passes.
+--
+-- Questionnaire posture this catalog supports: Paid Random Items = No,
+-- Paid Item Trading = No. Revisit BOTH answers before wiring any SKU that
+-- breaks the rule above.
 
 return {
     -- Product ID Mapping (ConfigID -> Roblox Product ID)
-    -- IMPORTANT: Users MUST update these with actual Roblox IDs
+    -- IMPORTANT: create these on the platform (group-owned) and replace ids.
     product_id_mapping = {
-        -- Developer Products
-        small_gems = 1234567890, -- REPLACE: Create "100 Gems" product in Roblox
-        medium_gems = 1234567891, -- REPLACE: Create "500 Gems" product in Roblox
-        starter_pack = 1234567892, -- REPLACE: Create "Starter Pack" product in Roblox
+        -- Developer Products (deterministic consumables)
+        xp_hour = 0, -- REPLACE: "2x XP (1 Hour)" product
+        frenzy_burst = 0, -- REPLACE: "Personal Frenzy (30 min)" product
+        supporter_pet = 0, -- REPLACE: "Supporter Pet" product
 
         -- Game Passes
-        vip_pass = 123456789, -- REPLACE: Create "VIP Pass" game pass in Roblox
-        auto_collect = 123456790, -- REPLACE: Create "Auto Collect" game pass in Roblox
-        speed_boost = 123456791, -- REPLACE: Create "Speed Boost" game pass in Roblox
+        vip_pass = 123456789, -- REPLACE: "VIP Pass"
+        auto_collect = 123456790, -- REPLACE: "Auto Collect"
+        speed_boost = 123456791, -- REPLACE: "Speed Boost"
+        luck_pass = 0, -- REPLACE: "Lucky!" (egg species luck)
+        golden_luck_pass = 0, -- REPLACE: "Golden Touch" (golden variant luck)
+        rainbow_luck_pass = 0, -- REPLACE: "Rainbow Radiance" (rainbow variant luck)
+        pet_slot_pass = 0, -- REPLACE: "+1 Pet Slot"
+        storage_pass = 0, -- REPLACE: "+250 Storage"
     },
 
-    -- Developer Products (consumable Robux purchases)
+    -- Developer Products (consumable Robux purchases).
+    -- DETERMINISTIC ONLY: the buyer knows exactly what they get, nothing here
+    -- is tradeable, and no product grants currency of any kind.
     products = {
         {
-            id = "small_gems",
-            name = "💎 100 Gems",
-            description = "Get 100 Gems instantly!",
+            id = "xp_hour",
+            name = "⚡ 2x XP (1 Hour)",
+            description = "Double XP from everything for one hour!",
             price_robux = 99,
             rewards = {
-                gems = 100,
+                -- TODO(handler): EconomyService grants currencies/items today;
+                -- timed-boost grants need a small handler before wiring.
+                boost = { axis = "xp", mult = 2.0, duration_minutes = 60 },
             },
-            category = "currency",
-            popular = false,
-            analytics_category = "currency_small",
-            test_mode_enabled = true, -- Allow free purchase in Studio
+            category = "boosts",
+            analytics_category = "boost_xp",
+            test_mode_enabled = true,
         },
         {
-            id = "medium_gems",
-            name = "💎 500 Gems (+50 Bonus)",
-            description = "Best value! Get 550 Gems total!",
+            id = "frenzy_burst",
+            name = "🔥 Personal Frenzy (30 min)",
+            description = "Your own Frenzy window — double drops for 30 minutes!",
+            price_robux = 149,
+            rewards = {
+                -- TODO(handler): same timed-boost handler as xp_hour.
+                boost = { axis = "drops", mult = 2.0, duration_minutes = 30 },
+            },
+            category = "boosts",
+            popular = true,
+            analytics_category = "boost_frenzy",
+            test_mode_enabled = true,
+        },
+        {
+            id = "supporter_pet",
+            name = "💜 Supporter Pet",
+            description = "A one-of-a-kind companion that says: I keep the lights on.",
             price_robux = 399,
             rewards = {
-                gems = 550, -- 500 + 50 bonus
+                -- TODO(content + handler): mint a SPECIFIC pet id (deterministic,
+                -- creator-style origin, UNTRADEABLE flag required) via
+                -- PetGrantService. No roll, no variants-for-sale: the buyer
+                -- knows the exact pet. Colorado's commercial cousin.
+                pet = { id = "supporter_pet_tbd", untradeable = true },
             },
-            category = "currency",
-            popular = true,
-            badge = "best_value",
-            bonus_percent = 10,
-            analytics_category = "currency_medium",
-            test_mode_enabled = true,
-        },
-        {
-            id = "starter_pack",
-            name = "🎁 Starter Pack",
-            description = "Perfect for new players! Gems, Crystals, and exclusive items!",
-            price_robux = 199,
-            rewards = {
-                gems = 150,
-                coins = 25000,
-                items = { "wooden_sword", "health_potion" },
-            },
-            category = "bundle",
-            popular = true,
+            category = "supporter",
             one_time_only = true,
-            level_requirement = { max = 10 },
-            analytics_category = "bundle",
+            analytics_category = "supporter",
             test_mode_enabled = true,
-            first_time_buyer_only = true,
         },
     },
 
-    -- Game Passes (permanent benefits)
+    -- Game Passes (permanent, personal, deterministic benefits)
     passes = {
         {
             id = "vip_pass",
             name = "👑 VIP Pass",
-            description = "Daily rewards, 2x XP, exclusive areas!",
+            description = "2x XP, faster earnings, +speed, +luck, VIP tag!",
             price_robux = 499,
             benefits = {
-                daily_rewards = {
-                    gems = 50,
-                    coins = 10000,
-                },
+                -- NO currency dailies (rating rule) — RATE multipliers only:
+                -- VIPs EARN faster; they never receive currency for Robux.
                 multipliers = {
                     xp = 2.0,
                     coins = 1.5,
@@ -131,15 +150,63 @@ return {
             icon = "rbxassetid://0", -- Replace with actual asset ID
             test_mode_enabled = true,
         },
+        -- EGG LUCK LADDER: boosts the odds of eggs bought with EARNED coins.
+        -- The industry-standard No on Paid Random Items: the pass modifies
+        -- probabilities of a free-currency purchase; the item is never bought
+        -- with Robux. pets.lua modifier_support gates which eggs honor these
+        -- (fixed_odds exclusives NEVER do — stated odds are exact).
+        {
+            id = "luck_pass",
+            name = "🍀 Lucky!",
+            description = "Permanently better odds for rare pets from coin eggs!",
+            price_robux = 249,
+            benefits = { features = { egg_species_luck = true } },
+            icon = "rbxassetid://0",
+            test_mode_enabled = true,
+        },
+        {
+            id = "golden_luck_pass",
+            name = "✨ Golden Touch",
+            description = "Golden pets hatch more often from coin eggs!",
+            price_robux = 349,
+            benefits = { features = { egg_golden_luck = true } },
+            icon = "rbxassetid://0",
+            test_mode_enabled = true,
+        },
+        {
+            id = "rainbow_luck_pass",
+            name = "🌈 Rainbow Radiance",
+            description = "Rainbow pets hatch more often from coin eggs!",
+            price_robux = 449,
+            benefits = { features = { egg_rainbow_luck = true } },
+            icon = "rbxassetid://0",
+            test_mode_enabled = true,
+        },
+        {
+            id = "pet_slot_pass",
+            name = "🐾 +1 Pet Slot",
+            description = "Deploy an eleventh pet!",
+            price_robux = 399,
+            benefits = { features = { extra_equip_slots = 1 } },
+            icon = "rbxassetid://0",
+            test_mode_enabled = true,
+        },
+        {
+            id = "storage_pass",
+            name = "📦 +250 Storage",
+            description = "Room for every hatch!",
+            price_robux = 149,
+            benefits = { features = { extra_storage = 250 } },
+            icon = "rbxassetid://0",
+            test_mode_enabled = true,
+        },
     },
 
-    -- Premium (Roblox Premium) Benefits
+    -- Premium (Roblox Premium) Benefits — engagement payouts are the zero-
+    -- compliance revenue stream; keep Premium players happy. RATE multipliers
+    -- and perks only (no currency dailies — same rating rule as VIP).
     premium_benefits = {
         enabled = true,
-        daily_rewards = {
-            gems = 25,
-            coins = 5000,
-        },
         multipliers = {
             xp = 1.5,
             coins = 1.25,
@@ -159,29 +226,19 @@ return {
         },
     },
 
-    -- First Purchase Bonus
+    -- First Purchase Bonus — a TITLE, not currency (rating rule).
     first_purchase_bonus = {
         enabled = true,
         rewards = {
-            gems = 100,
-            coins = 50000,
-            items = { "wooden_sword" }, -- Starter item
             title = "Supporter",
         },
     },
 
     -- Purchase Validation Rules
     validation_rules = {
-        -- Prevent duplicate one-time purchases
         check_one_time_purchases = true,
-
-        -- Level requirements
         enforce_level_requirements = true,
-
-        -- First time buyer restrictions
         enforce_first_time_buyer = true,
-
-        -- Test mode settings
         test_mode = {
             enabled = true, -- Allow free purchases in Studio
             bypass_robux = true,
@@ -214,15 +271,13 @@ return {
 
     -- Purchase UI Configuration
     shop_config = {
-        featured_products = { "starter_pack", "medium_gems", "vip_pass" },
+        featured_products = { "frenzy_burst", "vip_pass", "luck_pass" },
         categories = {
             { id = "featured", name = "🌟 Featured", icon = "⭐" },
-            { id = "currency", name = "💰 Currency", icon = "💎" },
-            { id = "bundles", name = "🎁 Bundles", icon = "🎁" },
+            { id = "boosts", name = "⚡ Boosts", icon = "⚡" },
             { id = "passes", name = "🎫 Game Passes", icon = "🎫" },
+            { id = "supporter", name = "💜 Supporter", icon = "💜" },
         },
-
-        -- Visual indicators
         badges = {
             popular = { text = "POPULAR", color = Color3.fromRGB(255, 170, 0) },
             best_value = { text = "BEST VALUE", color = Color3.fromRGB(0, 255, 127) },
