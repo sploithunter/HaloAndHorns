@@ -315,6 +315,35 @@ return {
                 arguments = { { name = "positions", type = "table" } },
             },
         },
+        GameEvent = {
+            name = "GameEvent",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "game_events.fired",
+            schema = {
+                kind = "tuple",
+                arguments = {
+                    { name = "name", type = "string" },
+                    { name = "context", type = "table" },
+                },
+            },
+        },
+        PlayerDebugInfo = {
+            name = "PlayerDebugInfo",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "debug.player_info",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "snapshot", type = "table" } },
+            },
+        },
     },
 
     bridges = {

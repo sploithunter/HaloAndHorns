@@ -473,3 +473,14 @@ migration is needed for the abandoned "element splits stacks" spec.
   green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
   the live server reported 24 manifest packets and all four moved status signals. Output contained
   no network, duplicate declaration, or script errors; existing test-place warnings remain.
+
+## 2026-07-10 - Gameplay event and debug notifications join the network manifest (Phase 1 slice 7)
+
+- Migrated `GameEvent` and `PlayerDebugInfo` from the legacy constructor table into the validated
+  packet manifest. `GameEvent` preserves its existing `(name, ctx)` tuple, while player debug info
+  preserves its one-table payload and active client listener.
+- Ratcheted `Signals.lua` manual remote construction from 74 to 72. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 26 manifest packets, the two-argument game-event schema, and both moved
+  signals. Output contained no network, duplicate declaration, or script errors; existing
+  test-place warnings remain.

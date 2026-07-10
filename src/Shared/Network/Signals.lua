@@ -25,7 +25,6 @@ local legacySignals = {
 
     -- Legacy-bridge replacements
     ShopItems = Net:RemoteEvent("ShopItems"), -- s->c
-    PlayerDebugInfo = Net:RemoteEvent("PlayerDebugInfo"), -- s->c
     GiveItemSuccess = Net:RemoteEvent("GiveItemSuccess"), -- s->c
     Admin_GetPlayerSnapshot = Net:RemoteEvent("Admin_GetPlayerSnapshot"), -- c->s admin player state request
     Admin_ForceSave = Net:RemoteEvent("Admin_ForceSave"), -- c->s admin force save
@@ -49,7 +48,6 @@ local legacySignals = {
     Hotbar_Activate = Net:RemoteEvent("Hotbar_Activate"), -- c->s fire the bind on a hotbar slot (1-20)
     Hotbar_Rebind = Net:RemoteEvent("Hotbar_Rebind"), -- c->s assign/clear a hotbar slot's bind
     Hotbar_RequestState = Net:RemoteEvent("Hotbar_RequestState"), -- c->s ask for the player's hotbar
-    GameEvent = Net:RemoteEvent("GameEvent"), -- s->c fire a named gameplay event (name, ctx) -> client GameEvents reactions (configs/game_events)
     TutorialState = Net:RemoteEvent("TutorialState"), -- s->c current tutorial step view (TutorialFlow.stateFor)
     Admin_RequestHatchHistory = Net:RemoteEvent("Admin_RequestHatchHistory"), -- c->s recent hatch debug snapshot
     Admin_RequestHatchSimulation = Net:RemoteEvent("Admin_RequestHatchSimulation"), -- c->s no-mutation hatch odds/cost preview
