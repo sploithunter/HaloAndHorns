@@ -20,6 +20,8 @@ The desired shape is a small set of authoritative services backed by validated c
   already landed.
 - Enhancement sales use `InventoryService:BulkRemove` with an economy commit callback. Inventory
   snapshots restore exact stacks and slot counts when credit is rejected, before replication/save.
+- Trade gem escrow debits, owner refunds, and recipient delivery credits use `EconomyService`.
+  Escrow descriptors are removed only after the corresponding grant reports success.
 - Combat drop-table currencies and def-less realm coin fallbacks also terminate at
   `EconomyService`; combat math and area-coin selection remain service-owned upstream.
 - `ServerClockService` owns deterministic UTC day/seed behavior.

@@ -483,7 +483,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "TradeService",
     ServerScriptService.Server.Services.TradeService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "EconomyService", "InventoryService" }
 )
 -- FusionService: Halo & Horns Chaotic fusion (Feature 20) — Light + Shadow -> Chaotic.
 loader:RegisterModule(

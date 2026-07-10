@@ -609,3 +609,14 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Full CI is green at 1,276/1,276 headless tests and 534 allowlisted architecture occurrences. An
   MCP Studio failure injection staged a three-item sale, rejected its credit, and verified exact
   quantity, nested metadata, and slot-count restoration before any projection rebuild or save.
+
+## 2026-07-10 - Trade gems join the economy boundary
+
+- Injected `EconomyService` and `InventoryService` into `TradeService`. Gem escrow debits,
+  adjustment refunds, cancel/remove refunds, and recipient delivery credits now use checked economy
+  calls; escrow state changes only after the relevant debit/refund succeeds.
+- Grant helpers now return success instead of treating a non-throwing failure as delivery. Removed
+  all four `TradeService` direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 530 allowlisted architecture occurrences. An
+  MCP Studio failure injection rejected a gem refund and verified the original escrow descriptor
+  and offer amount remained unchanged; no live trade or balance was touched.
