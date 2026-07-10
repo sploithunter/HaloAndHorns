@@ -272,22 +272,12 @@ function LayerService:UseLayer(player, layerId, opts)
                     )
                 end)
 
-                --   2. move, with a short anchored tail as the safety net. The tail's second
-                --      stream request returns ~instantly when step 1 already delivered, so the
-                --      hold is usually imperceptible — dynamic, unlike the old FIXED settle
-                --      timer that both felt hung AND released early on slow streams.
-                hrp.Anchored = true
+                --   2. move. Correctness is EVENT-BASED (Jason: "no timeout
+                --      shenanigans"): the place property StreamingIntegrityMode =
+                --      PauseOutsideLoadedArea freezes the client's physics in an
+                --      unstreamed region and releases it the instant the geometry
+                --      arrives — the old anchored tail (a timeout in a hat) is gone.
                 char:PivotTo(destCFrame)
-                local settle = self._layersConfig.teleport_settle_seconds or 2.5
-                task.spawn(function()
-                    pcall(function()
-                        player:RequestStreamAroundAsync(destCFrame.Position, settle)
-                    end)
-                    -- Guard: the character may have respawned/left during the hold.
-                    if hrp and hrp.Parent and char.Parent and player.Character == char then
-                        hrp.Anchored = false
-                    end
-                end)
             end)
         end
     end

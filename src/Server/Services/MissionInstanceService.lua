@@ -43,7 +43,6 @@ local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local PROMPT_NAME = "MissionDoorPrompt"
 -- streaming-safe warp caps (see _safeWarp)
 local STREAM_WAIT = 8 -- pre-warp yield cap (seconds)
-local ANCHOR_CAP = 2 -- post-warp safety-anchor cap (seconds)
 local SWEEP_INTERVAL = 60
 
 -- Kits addressable by config `kit` id. Data-driven kits (authored Models +
@@ -1018,7 +1017,7 @@ function MissionInstanceService:_close(instanceId, reason)
     end
 
     -- don't yank the floor out from under anyone still mid-warp home
-    local deadline = os.clock() + STREAM_WAIT + ANCHOR_CAP + 1
+    local deadline = os.clock() + STREAM_WAIT + 1
     while warping > 0 and os.clock() < deadline do
         task.wait(0.1)
     end
@@ -1938,6 +1937,12 @@ function MissionInstanceService:_safeWarp(member, targetCF)
     if not root then
         return
     end
+    -- PREFETCH ONLY, never a readiness gate (Jason: "no timeout shenanigans —
+    -- this is an event-based game"): correctness is the PLACE property
+    -- Workspace.StreamingIntegrityMode = PauseOutsideLoadedArea — the
+    -- client's physics freezes in an unstreamed region and resumes the
+    -- instant the floor arrives. This request just warms the destination so
+    -- the pause is usually invisible.
     pcall(function()
         member:RequestStreamAroundAsync(targetCF.Position, STREAM_WAIT)
     end)
@@ -1945,13 +1950,6 @@ function MissionInstanceService:_safeWarp(member, targetCF)
         return -- died/left while streaming
     end
     character:PivotTo(targetCF)
-    root.Anchored = true
-    pcall(function()
-        member:RequestStreamAroundAsync(targetCF.Position, ANCHOR_CAP)
-    end)
-    if root.Parent then
-        root.Anchored = false
-    end
 end
 
 -- The realm gates are quest-aware, so WHICH trial the E-prompt opens is

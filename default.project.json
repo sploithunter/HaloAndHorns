@@ -9,7 +9,8 @@
     "Workspace": {
       "$ignoreUnknownInstances": true,
       "$properties": {
-        "FallenPartsDestroyHeight": -50000
+        "FallenPartsDestroyHeight": -50000,
+        "StreamingIntegrityMode": "PauseOutsideLoadedArea"
       }
     },
     "ServerScriptService": {

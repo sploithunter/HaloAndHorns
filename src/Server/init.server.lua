@@ -25,6 +25,15 @@ pcall(function()
     Workspace.FallenPartsDestroyHeight = -50000
 end)
 
+-- EVENT-BASED warp integrity (Jason: "no timeout shenanigans — the event
+-- happens or it doesn't"): Workspace.StreamingIntegrityMode MUST be
+-- PauseOutsideLoadedArea (a PLACE property — NotScriptable, set via the
+-- Studio Properties panel; also in default.project.json $properties for
+-- fresh builds). A client whose character is outside the streamed area gets
+-- its physics PAUSED until the geometry arrives, so falling through an
+-- unstreamed floor is structurally impossible. This replaces every
+-- timeout-capped anchor tail in the warp paths (missions + realm portals).
+
 -- Wait for packages to be available
 local Packages = ReplicatedStorage:WaitForChild("Packages", 10)
 if not Packages then
