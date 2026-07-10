@@ -5117,7 +5117,7 @@ local petConfig = {
                 prism_fox = 26,
                 starlight_owl = 6,
                 glacial_bear = 1.5,
-                aurora_dragon = 0.04,
+                aurora_dragon = 0.02, -- HALVED (global x2 coins => x2 hatch rate; wall-clock secret rate preserved)
             },
             rarity_rates = { golden_chance = 0.05, rainbow_chance = 0.005 },
             variant_rolls = {
@@ -5285,7 +5285,7 @@ local petConfig = {
                 dread_fox = 26,
                 gravefrost_owl = 6,
                 rimeguard_bear = 1.5,
-                rimewraith_dragon = 0.04,
+                rimewraith_dragon = 0.02, -- HALVED (global x2 coins => x2 hatch rate; wall-clock secret rate preserved)
             },
             rarity_rates = { golden_chance = 0.05, rainbow_chance = 0.005 },
             variant_rolls = {
@@ -5422,7 +5422,7 @@ local petConfig = {
                 solar_phoenix = 6,
                 -- SECRET chase. 0.05 of a ~99 pool ≈ 1 in 2000 — matched to the earth/basic dragon
                 -- secret (was 1 of 100 = a 1% roll, way too common; two dragons in a row proved it).
-                empyrean_dragon = 0.05,
+                empyrean_dragon = 0.025, -- HALVED (global x2 coins => x2 hatch rate; wall-clock secret rate preserved)
             },
             rarity_rates = {
                 golden_chance = 0.05,
@@ -5608,7 +5608,7 @@ local petConfig = {
                 brimstone_salamander = 28,
                 ashmane_lion = 16,
                 ashfeather_phoenix = 6,
-                abyssal_wyrm = 0.05,
+                abyssal_wyrm = 0.025, -- HALVED (global x2 coins => x2 hatch rate; wall-clock secret rate preserved)
             },
             rarity_rates = {
                 golden_chance = 0.05,
@@ -6005,7 +6005,7 @@ local petConfig = {
                 bunny = 24990,
                 doggy = 24990,
                 kitty = 500, -- ~0.66% (~1 in 150): the learnable "rare exists" moment
-                dragon = 38, -- ~0.05% (~1 in 2,000): SECRET — hidden from all odds displays; farmable with luck
+                dragon = 19, -- ~0.05% (~1 in 2,000): SECRET — hidden from all odds displays; farmable with luck -- HALVED (global x2 coins => x2 hatch rate; wall-clock secret rate preserved)
             },
 
             -- Stage 2: Rarity Calculation (basic/golden/rainbow)
@@ -6227,7 +6227,7 @@ local petConfig = {
                 bunny = 24990,
                 doggy = 24990,
                 kitty = 500, -- ~0.66% — matched to basic_egg (was a 10/1 test placeholder)
-                dragon = 38, -- ~0.05% SECRET — hidden from all odds displays
+                dragon = 19, -- ~0.05% SECRET — hidden from all odds displays -- HALVED (global x2 coins => x2 hatch rate; wall-clock secret rate preserved)
             },
             -- Stage 2: variant rarity (basic mostly; small golden/rainbow chance).
             rarity_rates = {
