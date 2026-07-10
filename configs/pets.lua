@@ -610,6 +610,10 @@ local petConfig = {
             realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
+            -- INNER LIGHT: the dove IS a light source (dark-mission utility; the
+            -- PointLight rides the client-pivoted model). Pairs with its focus
+            -- aura (pet_roles.support_auras) — one pet, two lights.
+            body_light = { brightness = 2.5, range = 40, color = { 255, 244, 214 } },
             -- BOSS-EGG family (docs MISSION_WORLDGEN §11): flat 48/500 across all
             -- ten — the ROLE table does the in-fight shaping (Jason: the archetype
             -- curve already scales combat/mining/defense; don't double-tax).

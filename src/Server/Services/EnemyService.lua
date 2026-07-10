@@ -3728,6 +3728,20 @@ function EnemyService:_supportPass(now)
                 elseif kind == "yield" then
                     self:_auraPlayerBuff(folder, "CoinYieldBuff", aura, count, weight)
                     self:_stampAuraFx(folder, "YieldFxUntil", aura, count)
+                elseif kind == "focus" then
+                    -- INNER LIGHT (Lumen Dove): flat +focus/s for the OWNER on its
+                    -- own additive seam (FocusRegenAura) so it STACKS with the
+                    -- Genie's wish (FocusRegenBonus) instead of clobbering it.
+                    -- `weight` carries the variant law + multi-dove stacking;
+                    -- FocusService sums both channels under the focus_max clamp.
+                    local owner = Players:FindFirstChild(folder.Name)
+                    if owner then
+                        owner:SetAttribute("FocusRegenAura", (tonumber(aura.amount) or 0) * weight)
+                        owner:SetAttribute(
+                            "FocusRegenAuraUntil",
+                            os.time() + (tonumber(aura.duration) or 6)
+                        )
+                    end
                 elseif kind == "buff" then
                     -- GENERIC aura (Jason: "keep it configurable and flexible") — the
                     -- config declares the attribute and WHO it targets:

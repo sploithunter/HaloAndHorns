@@ -146,8 +146,20 @@ function FocusService:RegenTick(player, elapsed)
     -- GUARDIAN WISH AURA (Genie of the Dunes — "the genie grants wishes"): a summon stamps
     -- FocusRegenBonus (+per-second) while FocusRegenBonusUntil is live — EXTRA regen on top of
     -- the base curve, same focus_max clamp. Generic seam: any future power can grant it.
-    local bonus = tonumber(player:GetAttribute("FocusRegenBonus")) or 0
-    if bonus > 0 and (tonumber(player:GetAttribute("FocusRegenBonusUntil")) or 0) > os.time() then
+    local now = os.time()
+    local bonus = 0
+    local wish = tonumber(player:GetAttribute("FocusRegenBonus")) or 0
+    if wish > 0 and (tonumber(player:GetAttribute("FocusRegenBonusUntil")) or 0) > now then
+        bonus += wish
+    end
+    -- INNER LIGHT (Lumen Dove support aura): its own additive channel, so the
+    -- dove's trickle stacks with the Genie's wish window instead of fighting
+    -- over one attribute. Same clamp; both refresh event-style (Until attrs).
+    local auraRegen = tonumber(player:GetAttribute("FocusRegenAura")) or 0
+    if auraRegen > 0 and (tonumber(player:GetAttribute("FocusRegenAuraUntil")) or 0) > now then
+        bonus += auraRegen
+    end
+    if bonus > 0 then
         local maxFocus = tonumber(self._config and self._config.focus_max) or 100
         self._focus[player] =
             math.min(maxFocus, (self._focus[player] or 0) + bonus * (tonumber(elapsed) or 0))

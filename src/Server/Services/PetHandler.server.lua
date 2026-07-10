@@ -1369,6 +1369,26 @@ function loadEquipped(Player)
                                     effectiveVariantName
                                 )
                                 PetVariantVisuals.ApplyStaticVisuals(PetModel)
+                                -- BODY LIGHT (pets.lua `body_light`): the pet IS a
+                                -- light source (Lumen Dove's inner light — dark-
+                                -- mission utility; rides the client-pivoted model)
+                                local rawDef = petsConfig
+                                    and petsConfig.pets
+                                    and petsConfig.pets[effectiveIdName]
+                                local lightCfg = rawDef and rawDef.body_light
+                                if lightCfg and PetModel.PrimaryPart then
+                                    local light = Instance.new("PointLight")
+                                    light.Name = "BodyLight"
+                                    light.Brightness = tonumber(lightCfg.brightness) or 2
+                                    light.Range = tonumber(lightCfg.range) or 30
+                                    local c = lightCfg.color
+                                    if type(c) == "table" then
+                                        light.Color =
+                                            Color3.fromRGB(c[1] or 255, c[2] or 255, c[3] or 255)
+                                    end
+                                    light.Shadows = false
+                                    light.Parent = PetModel.PrimaryPart
+                                end
                                 local isHuge = isHugePetFolder(petFolder)
                                 if isHuge then
                                     applyHugePetScale(PetModel)
