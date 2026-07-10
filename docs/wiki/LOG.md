@@ -400,3 +400,13 @@ migration is needed for the abandoned "element splits stacks" spec.
   huge pets read ALL CAPS on the team rail. Spawn-plaza dev gates deleted — activation IS the
   selector, even in dev. `admin.setCounter` = sanctioned counter override (`test.*` is
   network-unreachable by design). All live-verified by Jason same-day; pushed 35d2700.
+
+## 2026-07-10 - Architecture fitness gate (Phase 0)
+
+- Added `scripts/architecture_guard.py` and a reviewed, per-file debt baseline. CI now rejects new
+  or increased manual remotes, direct game-event sends, pet/currency mutation bypasses, global
+  service-locator use, runtime waits, and configs without explicit schema dispatch. Decreases must
+  remove the matching budget in the same PR, making architecture cleanup a deliberate ratchet.
+- Added focused guard modes plus Python unit coverage, wired the guard first in `mise run ci`, and
+  recorded the removal program in GitHub issue #3. Baseline verification is green: 1,258/1,258
+  headless tests across 113 specs.

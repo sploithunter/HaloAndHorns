@@ -63,6 +63,12 @@ Feature flags exist in `configs/game.lua`, `ConfigLoader:IsFeatureEnabled`, and 
 
 Boot is **event-driven milestones**, not polling (design: [BOOT_ORCHESTRATION.md](../BOOT_ORCHESTRATION.md)). `BootReadiness` is a latch — a milestone fires once and stays up, so late awaiters resolve immediately. `configs/boot.lua` declares the producer→consumer dependency graph; `BootOrchestrator` mirrors milestone state to `ReplicatedStorage.BootStatus` for the config-driven client loading screen. **The invariant for any boot-path code: await a milestone.** Never `:Wait()` on a fire-once event (you may have missed it), never `FindFirstChild`-and-abort, never poll-loop. Producers: AssetPreloadService, GameStructureService; migrated consumers: PetHandler, BreakableSpawner, EggStandPlacement. Live-verified: every published-game boot since 2026-07 runs this path — the loading screen gates on real milestones and play starts with data loaded.
 
+## Architecture Fitness Gate
+
+`scripts/architecture_guard.py` runs first in `mise run ci`. Its reviewed baseline in `scripts/architecture_allowlist.json` records existing architecture debt by rule, exact path, and occurrence count. A new path or count increase fails CI. A count decrease also fails until the allowlist is reduced in the same cleanup change, so the baseline can only ratchet downward deliberately.
+
+The initial rules cover remote construction, direct gameplay-event publication, pet-record mutation, direct currency persistence calls, `_G.RBXTemplateServices`, runtime `task.wait`/`task.delay`, and configs without explicit `ConfigLoader` validation. Focused local modes are `--network`, `--mutations`, `--timing`, `--configs`, and `--services`. Debt removal is tracked in GitHub issue #3.
+
 ## Links
 
 - [Implementation Plan](../IMPLEMENTATION_PLAN.md)
