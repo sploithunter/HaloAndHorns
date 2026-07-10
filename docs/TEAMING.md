@@ -119,3 +119,25 @@ All slices landed plus everything the verify shook out:
   requires_level vs EffectiveLevel) then LayerService:UseLayer, landing at the realm entry as
   if the follower touched the portal. Never a same-layer teleport, so the teleport POWER idea
   above keeps its value; knobs in configs/teaming.lua `follow{}`.
+
+## The Farming Pass (2026-07-09)
+
+Jason: "the game was meant to have two paths of success" — combat teaming multiplied
+rewards (kill credit) while mining SPLIT them. Closed:
+
+- **Team mining bonus** (`teaming.mining.team_payout_mult`, 1.2): the proportional
+  contribution split stays; a contributor whose TEAMMATE also contributed to the same
+  node gets their share multiplied. Duo even-split = 60% each; with two squads clearing
+  ~2x faster that's ~120% coins/min per player vs solo. Zero-contribution bystanders
+  earn nothing — farming has no combat danger to gate leeching, so contribution IS the
+  anti-leech.
+- **Shared economy auras** (`teaming.mining.economy_auras_shared`): a teammate's yield
+  (CoinYieldBuff) and hatch-luck (HatchLuckBuff) buffers benefit the whole team, folded
+  CONSUMER-side (BreakableSpawner / EggService) as extra BuffStack/luck sources — two
+  owners' auras never clobber one attribute, same axis caps apply.
+- Sidekick guest pass: realm portals now gate on EffectiveLevel (same as follow_warp and
+  LayerService) — a boosted teammate travels at their sidekicked level.
+- Hybrid follow: straight-line MoveTo + no-progress watchdog -> client pathfinding with
+  jump labels; drops back to direct on line-of-sight (TeamFollowController).
+- Parked: team nodes ("boss crystals" — farming's raid moment, waiting on the map pass);
+  mining payout level-scale reads EffectiveLevel when that seam activates.
