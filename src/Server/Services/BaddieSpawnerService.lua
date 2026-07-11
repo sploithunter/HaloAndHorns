@@ -296,6 +296,15 @@ function BaddieSpawnerService:Start()
     local cdMin = (type(cd) == "table" and tonumber(cd.min)) or tonumber(cd) or 60
     local cdMax = (type(cd) == "table" and tonumber(cd.max)) or cdMin
     local cap = tonumber(self._config.max_alive) or 6
+    -- onramp threshold (combat.engagement.min_engage_level): sub-threshold
+    -- players get the FIRST-FIGHT cadence — no 30-120s ambient roll
+    local minEngage = 5
+    pcall(function()
+        local combat = require(
+            game:GetService("ReplicatedStorage"):WaitForChild("Configs"):WaitForChild("combat")
+        )
+        minEngage = tonumber(combat.engagement and combat.engagement.min_engage_level) or 5
+    end)
     local rng = Random.new()
     task.spawn(function()
         local rescanAt = 0
@@ -325,7 +334,13 @@ function BaddieSpawnerService:Start()
                         local hrp = player.Character
                             and player.Character:FindFirstChild("HumanoidRootPart")
                         if hrp and (hrp.Position - part.Position).Magnitude <= radius then
-                            state.cooldownUntil = now + rng:NextNumber(cdMin, cdMax)
+                            -- FIRST FIGHT cadence (Jason: "spawn the neutered
+                            -- enemies ENDLESSLY until I defeat one"): a
+                            -- sub-onramp player near the cave restocks on a
+                            -- 3s beat — the ambient 30-120s roll is for the
+                            -- real world, not the tutorial gate
+                            local sub = (tonumber(player:GetAttribute("Level")) or 1) < minEngage
+                            state.cooldownUntil = now + (sub and 3 or rng:NextNumber(cdMin, cdMax))
                             self:_trigger(part, player, rng)
                             break
                         end
