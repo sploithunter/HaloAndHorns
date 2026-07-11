@@ -47,24 +47,12 @@ local legacySignals = {
     -- Effects
     ActiveEffects = Net:RemoteEvent("ActiveEffects"), -- s->c unified list
 
-    -- Monetization
-    InitiatePurchase = Net:RemoteEvent("InitiatePurchase"), -- c->s
-    GetOwnedPasses = Net:RemoteEvent("GetOwnedPasses"), -- c->s
-    GetProductInfo = Net:RemoteEvent("GetProductInfo"), -- c->s
-    PurchaseError = Net:RemoteEvent("PurchaseError"), -- s->c
-    OwnedPasses = Net:RemoteEvent("OwnedPasses"), -- s->c
-    ProductInfo = Net:RemoteEvent("ProductInfo"), -- s->c
-    FirstPurchaseBonus = Net:RemoteEvent("FirstPurchaseBonus"), -- s->c
-
     -- Diagnostics
     RunDiagnostics = Net:RemoteEvent("RunDiagnostics"), -- c->s request & s->c reply
 
     -- Inventory Management
     InventoryUpdate = Net:RemoteEvent("InventoryUpdate"), -- s->c inventory changed
     ConsumeItem = Net:RemoteEvent("ConsumeItem"), -- c->s consume consumable
-
-    -- Breakables
-    Breakables_Attack = Net:RemoteEvent("Breakables_Attack"), -- c->s attack a crystal by BreakableID
 
     -- Zones / progression
     RealmTravelConfirm = Net:RemoteEvent("RealmTravelConfirm"), -- c->s (player chose Yes -> travel)

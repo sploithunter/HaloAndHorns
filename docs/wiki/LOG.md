@@ -683,3 +683,11 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Ratcheted `Signals.lua` manual remote construction from 57 to 41.
   Orphaned realm-confirm and leaderboard-request wires remain legacy pending
   implementation or removal.
+
+## 2026-07-10 - Manifest-driven monetization and breakable wires
+
+- Migrated three monetization requests, four exact-compatible monetization
+  notifications, and the breakable attack request into the network manifest.
+- Ratcheted `Signals.lua` manual remote construction from 41 to 33.
+  Bidirectional `ActiveEffects` remains legacy pending an explicit request and
+  notification split.
