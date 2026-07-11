@@ -442,13 +442,21 @@ loader:RegisterModule(
 loader:RegisterModule(
     "AugmentationService",
     ServerScriptService.Server.Services.AugmentationService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService", "EnhancementService", "PowerService" },
+        "player_progression",
+        "PlayerProgressionService"
+    )
 )
 -- EnhancementService: CoH-style enhancements (inventory + slotting into power slots).
 loader:RegisterModule(
     "EnhancementService",
     ServerScriptService.Server.Services.EnhancementService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService", "InventoryService", "PowerService" },
+        "stats",
+        "StatsService"
+    )
 )
 -- EnhancementShopService: buy/sell enhancements for gems (configs/enhancements.lua shop).
 loader:RegisterModule(
@@ -570,7 +578,20 @@ loader:RegisterModule(
 loader:RegisterModule(
     "CombatService",
     ServerScriptService.Server.Services.CombatService,
-    { "Logger", "ConfigLoader", "DataService", "EconomyService" }
+    appendIfEnabled(
+        appendIfEnabled({
+            "Logger",
+            "ConfigLoader",
+            "DataService",
+            "EconomyService",
+            "RewardService",
+            "LayerService",
+            "FocusService",
+            "SpiritFormService",
+        }, "player_progression", "PlayerProgressionService"),
+        "modifiers",
+        "ModifierService"
+    )
 )
 -- PetFollowService: service-owned pet follow/work loop (issue #4). Inert unless
 -- configs/pet_follow.lua service_owned=true; resolves CombatService at runtime.
@@ -728,6 +749,22 @@ local loadSuccess, loadOrderOrError = pcall(function()
         if isFeatureEnabled("pet_progression") and isFeatureEnabled("enchants") then
             modules:Get("PetProgressionService"):SetEnchantService(modules:Get("EnchantService"))
         end
+        modules:Get("PetFollowService"):BindPeerServices({
+            CombatService = modules:Get("CombatService"),
+            EnemyService = modules:Get("EnemyService"),
+        })
+        modules:Get("PowerService"):BindPeerServices({
+            FocusService = modules:Get("FocusService"),
+            PetFollowService = modules:Get("PetFollowService"),
+            SummonService = modules:Get("SummonService"),
+            EnemyService = modules:Get("EnemyService"),
+            PartyService = modules:Get("PartyService"),
+            StatsService = isFeatureEnabled("stats") and modules:Get("StatsService") or nil,
+            PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(
+                "PlayerProgressionService"
+            ) or nil,
+            HotbarService = modules:Get("HotbarService"),
+        })
     end)
 end)
 

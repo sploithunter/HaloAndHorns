@@ -200,15 +200,10 @@
       "disposition": "migration-debt",
       "files": {
         "src/Server/Services/AdminToolsService.lua": 12,
-        "src/Server/Services/AugmentationService.lua": 3,
-        "src/Server/Services/CombatService.lua": 1,
         "src/Server/Services/EnemyService.lua": 6,
-        "src/Server/Services/EnhancementService.lua": 5,
         "src/Server/Services/GameAPIService.lua": 1,
         "src/Server/Services/MissionInstanceService.lua": 16,
-        "src/Server/Services/PetFollowService.lua": 2,
         "src/Server/Services/PetHandler.server.lua": 1,
-        "src/Server/Services/PowerService.lua": 6,
         "src/Server/init.server.lua": 1
       },
       "owner": "service lifecycle",

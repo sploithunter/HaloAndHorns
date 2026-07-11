@@ -27,6 +27,9 @@ function EnhancementService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._inventoryServiceInstance = self._modules and self._modules.InventoryService
+    self._statsService = self._modules and self._modules.StatsService
+    self._powerService = self._modules and self._modules.PowerService
     self._config = self._configLoader:LoadConfig("enhancements")
     self._powersConfig = self._configLoader:LoadConfig("powers")
     -- areas: drop origins key by the zone's BIOME (element), resolved from the area
@@ -143,11 +146,7 @@ function EnhancementService:Start()
 end
 
 function EnhancementService:_inventoryService()
-    local locator = _G.RBXTemplateServices
-    local ok, svc = pcall(function()
-        return locator and locator:Get("InventoryService")
-    end)
-    return ok and svc or nil
+    return self._inventoryServiceInstance
 end
 
 -- One-time migration: records granted into the old private store (data.EnhancementInv) move
@@ -268,9 +267,11 @@ function EnhancementService:Grant(player, record, opts)
     if not uid then
         return { ok = false, reason = err or "inventory_full" }
     end
-    pcall(function() -- mission counter (quest chain "Find an enhancement")
-        _G.RBXTemplateServices:Get("StatsService"):Increment(player, "enhancements_found", 1)
-    end)
+    if self._statsService then
+        pcall(function() -- mission counter (quest chain "Find an enhancement")
+            self._statsService:Increment(player, "enhancements_found", 1)
+        end)
+    end
     -- ENHANCEMENT INDEX (Jason, PetIndex pattern): every enhancement identity ever
     -- obtained gets a permanent discovery record — count + first-obtained timestamp.
     -- Future "very special" enhancements are valuable precisely because this exists.
@@ -345,9 +346,11 @@ function EnhancementService:Slot(player, powerId, slotIndex, uid)
     end
     slot.enh = { type = rec.type, origins = rec.origins, level = rec.level }
     self._dataService:RequestSave(player, "enhancement_slot", { critical = true })
-    pcall(function() -- mission counter (Origin Story "Slot an Enhancement")
-        _G.RBXTemplateServices:Get("StatsService"):Increment(player, "enhancements_slotted", 1)
-    end)
+    if self._statsService then
+        pcall(function() -- mission counter (Origin Story "Slot an Enhancement")
+            self._statsService:Increment(player, "enhancements_slotted", 1)
+        end)
+    end
     -- config-reactive event (sounds/VFX are a configs/game_events.lua row away — Jason)
     pcall(function()
         local fireGameEvent =
@@ -362,7 +365,7 @@ function EnhancementService:Slot(player, powerId, slotIndex, uid)
     -- potency slotted into Swift/Magnet/XP Surge stays dormant until respawn (Jason:
     -- "it did not change my speed").
     pcall(function()
-        local power = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("PowerService")
+        local power = self._powerService
         if power and power.ReapplyPassives then
             power:ReapplyPassives(player)
         end

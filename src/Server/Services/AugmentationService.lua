@@ -18,6 +18,9 @@ function AugmentationService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
+    self._enhancementService = self._modules and self._modules.EnhancementService
+    self._powerService = self._modules and self._modules.PowerService
     self._config = self._configLoader:LoadConfig("augmentation")
     self._powersConfig = self._configLoader:LoadConfig("powers") -- innate-power check (slottable w/o being in data.Powers)
 end
@@ -26,11 +29,8 @@ function AugmentationService:_level(player, override)
     if override then
         return math.max(1, math.floor(override))
     end
-    local locator = _G.RBXTemplateServices
-    local ok, progression = pcall(function()
-        return locator and locator:Get("PlayerProgressionService")
-    end)
-    if ok and progression and progression.GetLevel then
+    local progression = self._playerProgressionService
+    if progression and progression.GetLevel then
         return progression:GetLevel(player)
     end
     return 1
@@ -177,9 +177,7 @@ function AugmentationService:Move(player, fromPowerId, toPowerId)
     local returned = false
     if type(moving) == "table" and moving.enh ~= nil then
         local okGrant, granted = pcall(function()
-            local locator = _G.RBXTemplateServices
-            local enhSvc = locator and locator:Get("EnhancementService")
-            return enhSvc and enhSvc:Grant(player, moving.enh)
+            return self._enhancementService and self._enhancementService:Grant(player, moving.enh)
         end)
         if not (okGrant and type(granted) == "table" and granted.ok ~= false) then
             return { ok = false, reason = "enhancement_return_failed" }
@@ -198,8 +196,7 @@ function AugmentationService:Move(player, fromPowerId, toPowerId)
     self._dataService:RequestSave(player, "augment_move", { critical = true })
     -- passives re-stamp: a filled donor slot changed that power's aggregates
     pcall(function()
-        local locator = _G.RBXTemplateServices
-        local power = locator and locator:Get("PowerService")
+        local power = self._powerService
         if power and power._applyOwnedPassives then
             power:_applyOwnedPassives(player)
         end
