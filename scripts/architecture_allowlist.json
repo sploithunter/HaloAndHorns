@@ -183,7 +183,7 @@
         "src/Shared/Effects/CombatFX.lua": 4,
         "src/Shared/Effects/EggHatchFX.lua": 3,
         "src/Shared/Libraries/Matter/debugger/EventBridge.luau": 1,
-        "src/Shared/Services/EggHatchingService.lua": 26,
+        "src/Shared/Services/EggHatchingService.lua": 1,
         "src/Shared/Services/EggInteractionService.lua": 5,
         "src/Shared/Services/EggWorldQuery.lua": 3,
         "src/Shared/Services/UserDisplayPreferences.lua": 2
