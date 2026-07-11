@@ -229,21 +229,12 @@ end
 -- the equipped state lives on the record itself, so RemoveItem (which deletes the record)
 -- plus RebuildPetProjections clears the equipped slot + folder automatically — no slot
 -- string or ephemeral equip_<...> folder to hand-clean. We only drop roster references
--- here; _reloadEquipped() then despawns any orphaned world model.
+-- here; the authoritative projection rebuild then despawns any orphaned world model.
 function TradeService:_detachPet(player, uid, _rec)
     local rosters = self._rosterService
     if rosters and rosters.RemovePetReference then
         pcall(function()
             rosters:RemovePetReference(player, uid)
-        end)
-    end
-end
-
--- Force a clean respawn of equipped pets (despawns orphaned follow models).
-function TradeService:_reloadEquipped(player)
-    if type(_G.RBXReloadEquippedPets) == "function" then
-        pcall(function()
-            _G.RBXReloadEquippedPets(player)
         end)
     end
 end
@@ -314,7 +305,6 @@ function TradeService:Add(player, uid)
         end
     end
 
-    self:_reloadEquipped(player)
     session.escrow[player.UserId][descriptor.uid] = descriptor
     table.insert(offer.items, descriptor)
 
@@ -399,7 +389,6 @@ function TradeService:AddMany(player, uid, count)
         table.insert(offer.items, descriptor)
     end
 
-    self:_reloadEquipped(player)
     session.offers[session.a].confirmed = false
     session.offers[session.b].confirmed = false
     self:_push(session, "updated")

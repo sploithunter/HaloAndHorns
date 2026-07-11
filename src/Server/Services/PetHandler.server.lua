@@ -16,6 +16,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Players = game:GetService("Players")
 local PetVariantVisuals = require(ReplicatedStorage.Shared.Services.PetVariantVisuals)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local PetRuntimeBridge = require(ReplicatedStorage.Shared.Services.PetRuntimeBridge)
 local RuntimeServiceBindings = require(ServerScriptService.Server.Services.RuntimeServiceBindings)
 print("✅ PetHandler: Loaded and waiting for bridge registration")
 
@@ -1734,21 +1735,8 @@ function loadEquipped(Player)
     end
 end
 
--- Expose a direct rebuild trigger so other services (e.g. TradeService, after a pet
--- leaves the inventory) can force a clean respawn of equipped pets / despawn orphans.
-_G.RBXReloadEquippedPets = loadEquipped
-
--- Register with the bridge (wait for it to be available)
-local function registerWithBridge()
-    if _G.SetPetLoadEquippedFunction then
-        _G.SetPetLoadEquippedFunction(loadEquipped)
-        print("✅ PetHandler: Registered with PetEquipmentBridge (native handler)")
-    else
-        task.wait(0.1)
-        registerWithBridge()
-    end
-end
-registerWithBridge()
+PetRuntimeBridge.RegisterHandler(loadEquipped)
+print("✅ PetHandler: Registered with PetEquipmentBridge (native handler)")
 
 -- Handle player joining
 Players.PlayerAdded:Connect(function(player)

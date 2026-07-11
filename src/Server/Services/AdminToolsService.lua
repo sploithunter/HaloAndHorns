@@ -511,11 +511,6 @@ function AdminToolsService:_handleResetPets(adminPlayer, data)
     if self._inventoryService and self._inventoryService.RebuildPetProjections then
         self._inventoryService:RebuildPetProjections(targetPlayer)
     end
-    if type(_G.RBXReloadEquippedPets) == "function" then
-        pcall(function()
-            _G.RBXReloadEquippedPets(targetPlayer)
-        end)
-    end
 
     self._dataService:RequestSave(targetPlayer, "admin_reset_pets", {
         critical = true,
@@ -729,11 +724,6 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- 6) Re-replicate pet projections (drops stale equips + despawns removed follow models) + save.
     if self._inventoryService and self._inventoryService.RebuildPetProjections then
         self._inventoryService:RebuildPetProjections(targetPlayer)
-    end
-    if type(_G.RBXReloadEquippedPets) == "function" then
-        pcall(function()
-            _G.RBXReloadEquippedPets(targetPlayer)
-        end)
     end
     self._dataService:RequestSave(
         targetPlayer,

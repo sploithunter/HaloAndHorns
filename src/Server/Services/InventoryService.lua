@@ -23,6 +23,7 @@ local RunService = game:GetService("RunService")
 
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local Signal = require(ReplicatedStorage.Shared.Libraries.Signal)
 
 local InventoryService = {}
 InventoryService.__index = InventoryService
@@ -89,6 +90,8 @@ function InventoryService:Init()
     self._playerInventoryFolders = {}
     self._playerEquippedFolders = {}
     self._playerLevelConnections = {}
+    self._playerDataLoadedConnections = {}
+    self.EquipmentChanged = Signal.new()
 
     self._logger:Info("📦 InventoryService initializing", {
         enabledBuckets = self._inventoryConfig.enabled_buckets,
@@ -115,11 +118,7 @@ function InventoryService:Start()
 
     -- Create folders for any players already in game
     for _, player in pairs(Players:GetPlayers()) do
-        if self._dataService:IsDataLoaded(player) then
-            print("📂 Creating folders for existing player:", player.Name)
-            self:_createInventoryFolders(player)
-            self:_connectPlayerLevelRewards(player)
-        end
+        self:_onPlayerAdded(player)
     end
 
     self._logger:Info("🚀 InventoryService started")
@@ -928,47 +927,66 @@ end
 -- 📂 FOLDER-BASED REPLICATION SYSTEM
 -- ═══════════════════════════════════════════════════════════════════════════════════
 
-function InventoryService:_onPlayerAdded(player)
-    -- Wait for DataService to load player profile
-    task.spawn(function()
-        local maxWait = 10 -- seconds
-        local waited = 0
+function InventoryService:_initializePlayerProjection(player)
+    if self._playerInventoryFolders[player] then
+        return
+    end
 
-        while not self._dataService:IsDataLoaded(player) and waited < maxWait do
-            task.wait(0.1)
-            waited = waited + 0.1
-        end
-
-        if self._dataService:IsDataLoaded(player) then
-            -- RETROFIT (Jason): unique pets minted before provenance existed (the
-            -- huges) get player_class = 1. hatched_by stays unset for legacy records
-            -- (unknowable after trades) — only new mints carry it.
-            do
-                local data = self._dataService:GetData(player)
-                local pets = data and data.Inventory and data.Inventory.pets
-                local changed = false
-                for _, rec in pairs((pets and pets.items) or {}) do
-                    if rec.uid and rec.player_class == nil then
-                        rec.player_class = 1
-                        changed = true
-                    end
-                end
-                if changed then
-                    self._dataService:RequestSave(player, "pet_player_class_backfill")
-                end
+    -- RETROFIT (Jason): unique pets minted before provenance existed (the
+    -- huges) get player_class = 1. hatched_by stays unset for legacy records
+    -- (unknowable after trades) — only new mints carry it.
+    do
+        local data = self._dataService:GetData(player)
+        local pets = data and data.Inventory and data.Inventory.pets
+        local changed = false
+        for _, rec in pairs((pets and pets.items) or {}) do
+            if rec.uid and rec.player_class == nil then
+                rec.player_class = 1
+                changed = true
             end
-            self:_createInventoryFolders(player)
-            self:_connectPlayerLevelRewards(player)
-        else
-            self._logger:Warn("⚠️ REPLICATION - Player data not loaded in time", {
-                player = player.Name,
-                waitedSeconds = waited,
-            })
         end
+        if changed then
+            self._dataService:RequestSave(player, "pet_player_class_backfill")
+        end
+    end
+    self:_createInventoryFolders(player)
+    self:_connectPlayerLevelRewards(player)
+end
+
+function InventoryService:_onPlayerAdded(player)
+    if self._dataService:IsDataLoaded(player) then
+        self:_initializePlayerProjection(player)
+        return
+    end
+
+    if self._playerDataLoadedConnections[player] then
+        return
+    end
+
+    local connection
+    connection = player:GetAttributeChangedSignal("DataLoaded"):Connect(function()
+        if not self._dataService:IsDataLoaded(player) then
+            return
+        end
+        connection:Disconnect()
+        self._playerDataLoadedConnections[player] = nil
+        self:_initializePlayerProjection(player)
     end)
+    self._playerDataLoadedConnections[player] = connection
+
+    if self._dataService:IsDataLoaded(player) then
+        connection:Disconnect()
+        self._playerDataLoadedConnections[player] = nil
+        self:_initializePlayerProjection(player)
+    end
 end
 
 function InventoryService:_onPlayerRemoving(player)
+    local dataLoadedConnection = self._playerDataLoadedConnections[player]
+    if dataLoadedConnection then
+        dataLoadedConnection:Disconnect()
+        self._playerDataLoadedConnections[player] = nil
+    end
     local levelConnection = self._playerLevelConnections[player]
     if levelConnection then
         levelConnection:Disconnect()
@@ -2420,6 +2438,7 @@ function InventoryService:RebuildPetProjections(player)
     self:_validateEquippedTable(player)
     self:_updateBucketFolders(player, "pets")
     self:_updateEquippedFolders(player, "pets")
+    self.EquipmentChanged:Fire(player)
 end
 
 -- LIGHT refresh — use on ownership-only changes that CANNOT invalidate equip (add/hatch,

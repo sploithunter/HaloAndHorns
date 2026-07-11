@@ -740,6 +740,11 @@ loader:RegisterModule(
     eggServiceDependencies
 )
 loader:RegisterModule("EggSpawner", ReplicatedStorage.Shared.Services.EggSpawner, { "Logger" })
+loader:RegisterModule(
+    "PetEquipmentBridge",
+    ServerScriptService.Server.Services.PetEquipmentBridge,
+    { "Logger", "InventoryService" }
+)
 
 -- Register lazy services (loaded when needed)
 -- loader:RegisterLazyModule("TradeService", ServerScriptService.Server.Services.TradeService, {"EconomyService", "DataService", "NetworkBridge"}) -- TODO: Create TradeService
