@@ -1397,6 +1397,26 @@ function loadEquipped(Player)
                                         and rawEntry.huge_attack_targeting
                                     if hugeTargeting then
                                         PetModel:SetAttribute("AttackTargeting", hugeTargeting)
+                                    else
+                                        -- THE HUGE RULE, made STRUCTURAL (Jason: "all huge
+                                        -- pets have some kind of AoE — it's like a rule";
+                                        -- caught again on a single-target huge Cinder
+                                        -- Golemite): a huge with no explicit huge scope and
+                                        -- no AoE of its own defaults to targeted_aoe (50%
+                                        -- splash to 5 nearby, combat.pet_aoe knobs). Pets
+                                        -- with their own aura/aoe keep it; per-pet
+                                        -- huge_attack_targeting still overrides everything.
+                                        local baseScope = rawEntry and rawEntry.attack_targeting
+                                        if
+                                            baseScope ~= "aura"
+                                            and baseScope ~= "aoe"
+                                            and baseScope ~= "targeted_aoe"
+                                        then
+                                            PetModel:SetAttribute(
+                                                "AttackTargeting",
+                                                "targeted_aoe"
+                                            )
+                                        end
                                     end
                                 end
                                 -- Rigged (skeletal) pets: RigClass tells every client's PetAnimator
