@@ -6,10 +6,10 @@
     sessions / CI have a value; the publish tasks re-stamp it fresh.
 ]]
 return {
-    version = "0.2.0",
-    commit = "5b38a35",
+    version = "0.3.0",
+    commit = "e034710",
     branch = "main",
-    commit_date = "2026-07-11 08:08 AM MDT", -- when the running code was committed
-    built_at = "2026-07-11 08:10 AM MDT", -- when this build was stamped (publish time)
-    dirty = false, -- uncommitted changes present at stamp time
+    commit_date = "2026-07-11 08:30 AM MDT", -- when the running code was committed
+    built_at = "2026-07-11 08:46 AM MDT", -- when this build was stamped (publish time)
+    dirty = true, -- uncommitted changes present at stamp time
 }
