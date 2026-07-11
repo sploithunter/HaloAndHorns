@@ -137,10 +137,23 @@ function TutorialService:_applyStepGrant(player, data)
         local potions = self._potionService
         if potions and potions.Grant then
             for _, g in ipairs(grant.potions) do
-                pcall(function()
-                    potions:Grant(player, g.id, g.count or 1)
+                local ok, res = pcall(function()
+                    return potions:Grant(player, g.id, g.count or 1)
                 end)
+                if not ok or (type(res) == "table" and res.ok == false) then
+                    self._logger:Warn("tutorial potion grant FAILED", {
+                        player = player.Name,
+                        potion = tostring(g.id),
+                        err = not ok and tostring(res) or tostring(res.reason),
+                    })
+                end
             end
+        else
+            -- LOUD (Jason's rule): a missing peer must announce itself, not
+            -- silently skip — this exact silence cost a debugging session
+            self._logger:Warn("tutorial potion grant SKIPPED — PotionService not injected", {
+                step = tostring((self._config.steps[data.Tutorial.step] or {}).id),
+            })
         end
     end
 
