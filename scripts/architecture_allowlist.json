@@ -200,7 +200,6 @@
       "disposition": "migration-debt",
       "files": {
         "src/Server/Services/AdminToolsService.lua": 12,
-        "src/Server/Services/EnemyService.lua": 6,
         "src/Server/Services/GameAPIService.lua": 1,
         "src/Server/Services/MissionInstanceService.lua": 16,
         "src/Server/Services/PetHandler.server.lua": 1,

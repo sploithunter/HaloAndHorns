@@ -753,6 +753,14 @@ local loadSuccess, loadOrderOrError = pcall(function()
             CombatService = modules:Get("CombatService"),
             EnemyService = modules:Get("EnemyService"),
         })
+        modules:Get("EnemyService"):BindPeerServices({
+            CombatService = modules:Get("CombatService"),
+            PetFollowService = modules:Get("PetFollowService"),
+            StatsService = isFeatureEnabled("stats") and modules:Get("StatsService") or nil,
+            DropService = modules:Get("DropService"),
+            DataService = modules:Get("DataService"),
+            PowerService = modules:Get("PowerService"),
+        })
         modules:Get("PowerService"):BindPeerServices({
             FocusService = modules:Get("FocusService"),
             PetFollowService = modules:Get("PetFollowService"),
