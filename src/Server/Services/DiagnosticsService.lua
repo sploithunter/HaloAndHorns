@@ -27,7 +27,7 @@ function DiagnosticsService:Init()
     self._dataService = self._modules.DataService
 
     -- Bind Net handler once services are ready
-    Signals.RunDiagnostics.OnServerEvent:Connect(function(player)
+    Signals.RunDiagnosticsRequest.OnServerEvent:Connect(function(player)
         self:_runDiagnostics(player)
     end)
 

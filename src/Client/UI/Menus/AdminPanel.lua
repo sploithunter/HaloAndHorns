@@ -1052,7 +1052,7 @@ end
 
 function AdminPanel:_runDiagnostics()
     self.logger:info("Running diagnostics...")
-    Signals.RunDiagnostics:FireServer()
+    Signals.RunDiagnosticsRequest:FireServer()
 end
 
 function AdminPanel:_networkTest()

@@ -126,6 +126,10 @@ function EconomyService:_setupNetSignals()
     local Signals = require(ReplicatedStorage.Shared.Network.Signals)
     self._signals = Signals
 
+    Signals.ShopItemsRequest.OnServerEvent:Connect(function(player)
+        self:GetShopItems(player)
+    end)
+
     -- Purchase item from client
     Signals.PurchaseItem.OnServerEvent:Connect(function(player, data)
         local ok, msg = self:PurchaseItem(player, data)

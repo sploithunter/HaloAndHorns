@@ -901,7 +901,7 @@ local function onInputBegan(input, gameProcessed)
         Logger:Debug("Main menu toggle requested")
     elseif input.KeyCode == Enum.KeyCode.B then
         -- Open shop
-        Signals.ShopItems:FireServer({ request = true })
+        Signals.ShopItemsRequest:FireServer()
         Logger:Debug("Shop requested")
     end
 end

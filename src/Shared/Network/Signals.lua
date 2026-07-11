@@ -15,15 +15,6 @@ local Signals = SignalRegistry.build(networkConfig, Net)
 
 -- Legacy declarations migrate into configs/network.lua in small compatibility slices.
 local legacySignals = {
-    -- Legacy-bridge replacements
-    ShopItems = Net:RemoteEvent("ShopItems"), -- s->c
-    TutorialState = Net:RemoteEvent("TutorialState"), -- s->c current tutorial step view (TutorialFlow.stateFor)
-    -- Effects
-    ActiveEffects = Net:RemoteEvent("ActiveEffects"), -- s->c unified list
-
-    -- Diagnostics
-    RunDiagnostics = Net:RemoteEvent("RunDiagnostics"), -- c->s request & s->c reply
-
     -- Inventory Management
     InventoryUpdate = Net:RemoteEvent("InventoryUpdate"), -- s->c inventory changed
     ConsumeItem = Net:RemoteEvent("ConsumeItem"), -- c->s consume consumable

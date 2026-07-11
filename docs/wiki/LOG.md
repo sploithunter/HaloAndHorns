@@ -707,3 +707,11 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Ratcheted `Signals.lua` manual remote construction from 25 to 8. Every
   remaining legacy entry now requires a behavioral split, implementation, or
   removal rather than a compatibility-only manifest migration.
+
+## 2026-07-10 - Directional network request splits
+
+- Split shop, tutorial, active-effects, and diagnostics pulls into dedicated
+  client-to-server request wires while retaining their existing response names.
+- Connected the previously unhandled shop-items request to
+  `EconomyService:GetShopItems`.
+- Ratcheted `Signals.lua` manual remote construction from 8 to 4.
