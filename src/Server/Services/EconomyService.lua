@@ -18,6 +18,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local CurrencyTransaction = require(ReplicatedStorage.Shared.Game.CurrencyTransaction)
 local MarketplaceService = game:GetService("MarketplaceService")
 
 local Libraries = ReplicatedStorage.Shared.Libraries
@@ -35,7 +36,7 @@ function EconomyService:Init()
     self._playerEffectsService = self._modules.PlayerEffectsService
     self._globalEffectsService = self._modules.GlobalEffectsService
     self._adminService = self._modules.AdminService
-    self._inventoryService = self._modules.InventoryService
+    self._inventoryService = nil
     self._statsService = self._modules.StatsService
     self._modifierService = self._modules.ModifierService
     self._economyConfig = self:_loadEconomyConfig()
@@ -72,16 +73,6 @@ function EconomyService:Init()
         self._logger:Info("EconomyService: RateLimitService dependency loaded successfully")
     end
 
-    -- Validate InventoryService dependency
-    if not self._inventoryService then
-        self._logger:Error("CRITICAL: InventoryService dependency missing")
-        error(
-            "EconomyService: InventoryService dependency missing - check ModuleLoader configuration"
-        )
-    else
-        self._logger:Info("EconomyService: InventoryService dependency loaded successfully")
-    end
-
     -- Create signals for economy events
     self.CurrencyChanged = Signal.new()
     self.ItemPurchased = Signal.new()
@@ -99,6 +90,10 @@ function EconomyService:Init()
     self:_setupMonetization()
 
     self._logger:Info("EconomyService initialized")
+end
+
+function EconomyService:SetInventoryService(inventoryService)
+    self._inventoryService = inventoryService
 end
 
 function EconomyService:ResolveRewardAmount(baseAmount, context)
@@ -237,6 +232,78 @@ end
 -- Currency Management
 function EconomyService:GetCurrency(player, currencyType)
     return self._dataService:GetCurrency(player, currencyType)
+end
+
+function EconomyService:SetCurrency(player, currencyType, amount, reason)
+    if not self._dataService:IsDataLoaded(player) then
+        return false
+    end
+    local oldAmount = self:GetCurrency(player, currencyType)
+    local success =
+        self._dataService:SetCurrency(player, currencyType, amount, reason or "economy_set")
+    if not success then
+        return false
+    end
+    local newAmount = self:GetCurrency(player, currencyType)
+    pcall(function()
+        self:_logTransaction(player, {
+            type = "currency_set",
+            currency = currencyType,
+            amount = newAmount,
+            reason = reason or "economy_set",
+            timestamp = os.time(),
+        })
+    end)
+    pcall(function()
+        self.CurrencyChanged:Fire(player, currencyType, newAmount, oldAmount)
+    end)
+    pcall(function()
+        require(game:GetService("ReplicatedStorage").Shared.Network.Signals).CurrencyUpdate:FireClient(
+            player,
+            { currency = currencyType, amount = newAmount, change = newAmount - oldAmount }
+        )
+    end)
+    return true
+end
+
+function EconomyService:Transact(player, options)
+    options = options or {}
+    local reason = options.reason or "economy_transaction"
+    local result = CurrencyTransaction.execute({
+        debits = options.debits,
+        credits = options.credits,
+        canDebit = function(currency, amount)
+            return self:CanAfford(player, currency, amount)
+        end,
+        debit = function(currency, amount)
+            return self:RemoveCurrency(player, currency, amount, reason .. "_debit")
+        end,
+        credit = function(currency, amount)
+            return self:AddCurrency(player, currency, amount, reason .. "_credit")
+        end,
+        reverseDebit = function(currency, amount)
+            return self:AddCurrency(player, currency, amount, reason .. "_refund")
+        end,
+        reverseCredit = function(currency, amount)
+            return self:RemoveCurrency(player, currency, amount, reason .. "_revoke")
+        end,
+        commit = options.commit,
+    })
+    if result.ok then
+        pcall(function()
+            self:_logTransaction(player, {
+                type = "currency_transaction",
+                debits = options.debits or {},
+                credits = options.credits or {},
+                reason = reason,
+                timestamp = os.time(),
+            })
+        end)
+        pcall(function()
+            self.TransactionCompleted:Fire(player, result, reason)
+        end)
+    end
+    return result
 end
 
 function EconomyService:AddCurrency(player, currencyType, amount, reason)
@@ -1298,8 +1365,7 @@ function EconomyService:SetCurrency(player, data)
         isMultiPlayer = targetPlayer ~= nil,
     })
 
-    -- Use DataService directly to set absolute value
-    local success = self._dataService:SetCurrency(target, data.currency, data.amount, "admin_set")
+    local success = self:SetCurrency(target, data.currency, data.amount, "admin_set")
 
     if success then
         local newAmount = self:GetCurrency(target, data.currency)
@@ -1313,19 +1379,6 @@ function EconomyService:SetCurrency(player, data)
             adminUser = player.Name,
             timestamp = os.time(),
         })
-
-        -- Fire events
-        self.CurrencyChanged:Fire(target, data.currency, newAmount, 0)
-
-        -- Sync to client
-        require(game:GetService("ReplicatedStorage").Shared.Network.Signals).CurrencyUpdate:FireClient(
-            target,
-            {
-                currency = data.currency,
-                amount = newAmount,
-                change = data.amount,
-            }
-        )
 
         self._logger:Info("🧪 Admin: Currency set successfully", {
             admin = player.Name,
@@ -1387,17 +1440,7 @@ function EconomyService:ResetCurrencies(player, data)
 
     for _, currency in ipairs(currenciesConfig) do
         local defaultAmount = currency.defaultAmount or 0
-        self._dataService:SetCurrency(player, currency.id, defaultAmount, "test_setup")
-
-        -- Sync to client
-        require(game:GetService("ReplicatedStorage").Shared.Network.Signals).CurrencyUpdate:FireClient(
-            player,
-            {
-                currency = currency.id,
-                amount = defaultAmount,
-                change = 0,
-            }
-        )
+        self:SetCurrency(player, currency.id, defaultAmount, "test_setup")
     end
 
     self._logger:Info("🔧 Admin: All currencies reset to defaults", { player = player.Name })

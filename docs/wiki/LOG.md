@@ -636,3 +636,20 @@ migration is needed for the abandoned "element splits stacks" spec.
   MCP Studio failure injection preserved a special UID plus exact nested metadata, restored a merged
   stack exactly, rejected the second grant, removed the first recipient grant, and retained both
   source escrow entries; fake profiles only, with no live inventory or balance mutation.
+
+## 2026-07-10 - Currency persistence becomes an exclusive economy boundary
+
+- Added pure `CurrencyTransaction` orchestration and `EconomyService:Transact`: stable preflight,
+  debit/credit order, optional domain commit, reverse compensation, transaction audit, and explicit
+  rollback-failure reporting. Added `EconomyService:SetCurrency` for authoritative absolute changes.
+- Migrated Upgrade purchases plus AdminTools, Automation, GameAPI, and all Studio smoke setup/restore
+  calls off direct DataService currency writes. Upgrade level mutation is the transaction commit, so
+  insufficient funds or commit rejection conserves both level and balance.
+- Removed Economy's loader dependency on Inventory and inject its legacy shop inventory reference at
+  the composition root, breaking the Economy -> Inventory -> Upgrade -> Economy cycle while keeping
+  existing purchase behavior.
+- Full CI is green at 1,285/1,285 headless tests. Currency persistence debt fell from 22 calls across
+  six services to zero feature-service bypasses; the guard explicitly exempts and unit-tests the
+  authoritative `EconomyService` terminal. Total architecture debt fell from 530 to 508. An MCP
+  Studio mock verified rejected-commit refund, denied-upgrade conservation,
+  one-level successful purchase/debit/save, and a clean real boot without live balance mutation.

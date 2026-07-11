@@ -81,6 +81,7 @@ RULES = (
             r"\b(?:_dataService|dataService|dataSvc)\s*:\s*"
             r"(?:AddCurrency|RemoveCurrency|SetCurrency)\s*\(",
         ),
+        exempt_paths=("src/Server/Services/EconomyService.lua",),
     ),
     RuleSpec(
         key="service-global-locator",

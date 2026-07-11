@@ -15,6 +15,10 @@ The desired shape is a small set of authoritative services backed by validated c
 - `EconomyService` owns currency mutation and passes source reasons into the ledger. Reward bundle
   currencies route through it so ledger history, lifetime counters, service signals, and client
   balance notifications observe the same grant.
+- `EconomyService:SetCurrency` owns absolute balance changes for admin and test setup.
+  `EconomyService:Transact` preflights multi-currency debits, applies debits and credits in stable
+  order, runs an optional domain commit, and compensates every applied mutation in reverse on
+  failure. Its pure `CurrencyTransaction` core failure-injects each stage headlessly.
 - Successful economy data mutations are terminal even if a downstream listener or client
   notification fails; post-commit observers are isolated so callers never compensate a credit that
   already landed.
@@ -71,6 +75,10 @@ The desired shape is a small set of authoritative services backed by validated c
 - Inventory pet tooltips are config-filtered. Pet records may replicate primitive metadata, but `configs/inventory.lua` `tooltip_fields` controls labels, ordering, and hidden audit/internal fields so new pet metadata does not require client code edits just to show or hide it.
 - Inventory pet cards use two config-driven visual channels. `configs/inventory.lua` `card_visuals.rarity_rings` controls border color, thickness, and optional animated `UIGradient` rotation by rarity id; `card_visuals.variant_backgrounds` controls card fill by variant. Rarity display names/colors come from `configs/pets.lua` `rarities`, so developers can rename tiers or add future tiers such as `colossal` without changing UI display code.
 - `UpgradeService` owns config-driven permanent upgrade purchases. Levels persist under `DataService.Upgrades`; equip/storage effects feed inventory limits, and modifier effects register as `permanent_upgrades` providers.
+- Upgrade purchases commit their level through `EconomyService:Transact`; failed affordability or
+  commit leaves both balance and level unchanged. Economy's legacy item-shop inventory reference is
+  installed by the composition root after loader construction, avoiding the former
+  Economy-to-Inventory-to-Upgrade dependency cycle.
 - `PetIndexService` owns first-time pet/variant discovery. It writes compact `PetIndex.Discovered` records, syncs the K1 `distinct_pets` counter, and grants `configs/pet_index.lua` milestones once.
 - Pet-index milestones grant currency only through injected `EconomyService`; there is no direct
   persistence fallback.

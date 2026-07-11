@@ -71,14 +71,7 @@
     },
     "currency-persistence-call": {
       "disposition": "migration-debt",
-      "files": {
-        "src/Server/Services/AdminToolsService.lua": 1,
-        "src/Server/Services/AutomationService.lua": 1,
-        "src/Server/Services/EconomyService.lua": 4,
-        "src/Server/Services/GameAPIService.lua": 1,
-        "src/Server/Services/StudioSmokeTestService.lua": 14,
-        "src/Server/Services/UpgradeService.lua": 1
-      },
+      "files": {},
       "owner": "economy and persistence",
       "pattern": "_dataService|dataService|dataSvc:AddCurrency|RemoveCurrency|SetCurrency",
       "reason": "Existing direct persistence calls must migrate to the economy transaction boundary."

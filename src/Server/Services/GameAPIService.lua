@@ -51,6 +51,7 @@ local REMOTE_NAME = "GameAPICommand"
 
 function GameAPIService:Init()
     self._logger = self._modules and self._modules.Logger
+    self._economyService = self._modules and self._modules.EconomyService
     self._bus = CommandBus.new({
         onError = function(err, name)
             if self._logger then
@@ -837,12 +838,12 @@ function GameAPIService:_registerCommands()
             if not isAdmin then
                 return { ok = false, reason = "not_admin" }
             end
-            local data = self:_service("DataService")
-            if not data then
+            local economy = self._economyService
+            if not economy then
                 return { ok = false, reason = "service_unavailable" }
             end
             local amt = math.floor(tonumber(args.amount) or 0)
-            data:AddCurrency(context.player, args.currency, amt, "admin_grant")
+            economy:AddCurrency(context.player, args.currency, amt, "admin_grant")
             return { ok = true, currency = args.currency, amount = amt }
         end,
     })
@@ -1268,7 +1269,7 @@ function GameAPIService:_registerCommands()
             local state = s:GrantAlmostLevel(context.player)
             -- Also drop 100k of EVERY area coin so any gate is affordable without grinding it
             -- (overshoot is fine for coins — dev QoL). Premium/tokens (gems, light/shadow) excluded.
-            local dataSvc = self:_service("DataService")
+            local economy = self._economyService
             local AREA_COINS = {
                 "coins",
                 "crystals",
@@ -1278,9 +1279,9 @@ function GameAPIService:_registerCommands()
                 "desert_coins",
                 "beach_coins",
             }
-            if dataSvc and dataSvc.AddCurrency then
+            if economy then
                 for _, c in ipairs(AREA_COINS) do
-                    dataSvc:AddCurrency(context.player, c, 100000, "admin_fast_forward")
+                    economy:AddCurrency(context.player, c, 100000, "admin_fast_forward")
                 end
             end
             return { ok = true, state = state }
@@ -1908,11 +1909,11 @@ function GameAPIService:_registerTestCommands()
             return true
         end,
         handler = function(context, args)
-            local data = self:_service("DataService")
-            if not data then
+            local economy = self._economyService
+            if not economy then
                 return { ok = false, reason = "service_unavailable" }
             end
-            data:AddCurrency(context.player, args.currency, args.amount, "automation_test_grant")
+            economy:AddCurrency(context.player, args.currency, args.amount, "automation_test_grant")
             return { ok = true, currency = args.currency, amount = args.amount }
         end,
     })

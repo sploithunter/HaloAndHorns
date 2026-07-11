@@ -42,11 +42,19 @@ class ArchitectureGuardTest(unittest.TestCase):
             (root / "src" / "Shared" / "ConfigLoader.lua").write_text(
                 'if configName == "registered" then return true end\n', encoding="utf-8"
             )
+            (root / "src" / "Server" / "Services").mkdir(parents=True)
+            (root / "src" / "Server" / "Services" / "EconomyService.lua").write_text(
+                'self._dataService:AddCurrency(player, "coins", 1)\n', encoding="utf-8"
+            )
+            (root / "src" / "Server" / "Services" / "FeatureService.lua").write_text(
+                'self._dataService:AddCurrency(player, "coins", 1)\n', encoding="utf-8"
+            )
             (root / "configs" / "registered.lua").write_text("return {}\n", encoding="utf-8")
             (root / "configs" / "missing.lua").write_text("return {}\n", encoding="utf-8")
 
             findings = architecture_guard.collect_findings(
-                root, ("remote-construction", "config-without-schema")
+                root,
+                ("remote-construction", "config-without-schema", "currency-persistence-call"),
             )
             remote = findings["remote-construction"]["src/Shared/Network.lua"]
             self.assertEqual(1, remote.count)
@@ -56,6 +64,10 @@ class ArchitectureGuardTest(unittest.TestCase):
             )
             self.assertEqual(
                 {"configs/missing.lua"}, set(findings["config-without-schema"])
+            )
+            self.assertEqual(
+                {"src/Server/Services/FeatureService.lua"},
+                set(findings["currency-persistence-call"]),
             )
 
     def test_exact_baseline_passes_and_ratchet_changes_fail(self) -> None:

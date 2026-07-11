@@ -1166,7 +1166,7 @@ function StudioSmokeTestService:_beginEggProximity(player, payload)
     local requiredCurrency = payload.setupCurrencyAmount
         or ((eggCost * setupHatchCount) + math.max(25, math.floor(eggCost * 0.1)))
 
-    dataService:SetCurrency(player, eggData.currency, requiredCurrency, "egg_smoke_setup")
+    economyService:SetCurrency(player, eggData.currency, requiredCurrency, "egg_smoke_setup")
     if payload.setupPetInventoryEmpty == true then
         data.Inventory.pets = {
             items = {},
@@ -1463,7 +1463,12 @@ function StudioSmokeTestService:_restoreEggProximity(player)
         }
     end
 
-    dataService:SetCurrency(player, session.currency, session.originalCurrency, "egg_smoke_restore")
+    economyService:SetCurrency(
+        player,
+        session.currency,
+        session.originalCurrency,
+        "egg_smoke_restore"
+    )
 
     local data = dataService:GetData(player)
     if data and data.Inventory then
@@ -1761,8 +1766,8 @@ function StudioSmokeTestService:_runPhase2ProgressionSmoke(player, payload)
     }
 
     local function restore()
-        dataService:SetCurrency(player, "coins", original.coins, "phase2_smoke_restore")
-        dataService:SetCurrency(player, "crystals", original.crystals, "phase2_smoke_restore")
+        economyService:SetCurrency(player, "coins", original.coins, "phase2_smoke_restore")
+        economyService:SetCurrency(player, "crystals", original.crystals, "phase2_smoke_restore")
 
         data.Upgrades = deepCopy(original.upgrades)
         data.GameData = data.GameData or {}
@@ -1788,7 +1793,7 @@ function StudioSmokeTestService:_runPhase2ProgressionSmoke(player, payload)
         data.GameData.UnlockedAreas = removeArrayValue(data.GameData.UnlockedAreas, targetAreaId)
         zoneService:GetUnlockedZones(player)
 
-        dataService:SetCurrency(player, unlockCurrency, 0, "phase2_smoke_setup")
+        economyService:SetCurrency(player, unlockCurrency, 0, "phase2_smoke_setup")
         local lockedUnlock = zoneService:UnlockZone(player, targetZoneId)
         if lockedUnlock.ok or lockedUnlock.reason ~= "insufficient_currency" then
             error("Expected insufficient currency before zone unlock")
@@ -1797,14 +1802,19 @@ function StudioSmokeTestService:_runPhase2ProgressionSmoke(player, payload)
             error("Expected locked zone response to include unlock requirement")
         end
 
-        dataService:SetCurrency(player, unlockCurrency, unlockCost, "phase2_smoke_setup")
+        economyService:SetCurrency(player, unlockCurrency, unlockCost, "phase2_smoke_setup")
         local paidUnlock = zoneService:UnlockZone(player, targetZoneId)
         if not paidUnlock.ok then
             error("Expected paid zone unlock to succeed: " .. tostring(paidUnlock.reason))
         end
 
         local equipCost = upgradeService:GetUpgradeCost(player, "pet_equip_slots")
-        dataService:SetCurrency(player, equipCost.currency, equipCost.amount, "phase2_smoke_setup")
+        economyService:SetCurrency(
+            player,
+            equipCost.currency,
+            equipCost.amount,
+            "phase2_smoke_setup"
+        )
         local equipPurchase = upgradeService:PurchaseUpgrade(player, "pet_equip_slots")
         if not equipPurchase.ok then
             error(
@@ -1820,7 +1830,7 @@ function StudioSmokeTestService:_runPhase2ProgressionSmoke(player, payload)
 
         local storageCost = upgradeService:GetUpgradeCost(player, "pet_storage")
         local beforeStorageSlots = data.Inventory.pets.total_slots
-        dataService:SetCurrency(
+        economyService:SetCurrency(
             player,
             storageCost.currency,
             storageCost.amount,
@@ -1840,7 +1850,7 @@ function StudioSmokeTestService:_runPhase2ProgressionSmoke(player, payload)
         end
 
         local crystalValueCost = upgradeService:GetUpgradeCost(player, "crystal_value")
-        dataService:SetCurrency(
+        economyService:SetCurrency(
             player,
             crystalValueCost.currency,
             crystalValueCost.amount,
@@ -1947,8 +1957,13 @@ function StudioSmokeTestService:_runMeadowBreakableSmoke(player, payload)
             task.wait(0.1)
         end
 
-        dataService:SetCurrency(player, "coins", original.coins, "meadow_breakable_smoke_restore")
-        dataService:SetCurrency(
+        economyService:SetCurrency(
+            player,
+            "coins",
+            original.coins,
+            "meadow_breakable_smoke_restore"
+        )
+        economyService:SetCurrency(
             player,
             "crystals",
             original.crystals,
@@ -2394,9 +2409,9 @@ function StudioSmokeTestService:_runPhase3StatsSmoke(player, payload)
     }
 
     local function restore()
-        dataService:SetCurrency(player, "coins", original.coins, "phase3_smoke_restore")
-        dataService:SetCurrency(player, "gems", original.gems, "phase3_smoke_restore")
-        dataService:SetCurrency(player, "crystals", original.crystals, "phase3_smoke_restore")
+        economyService:SetCurrency(player, "coins", original.coins, "phase3_smoke_restore")
+        economyService:SetCurrency(player, "gems", original.gems, "phase3_smoke_restore")
+        economyService:SetCurrency(player, "crystals", original.crystals, "phase3_smoke_restore")
 
         data.Inventory = data.Inventory or {}
         if original.petsBucket then

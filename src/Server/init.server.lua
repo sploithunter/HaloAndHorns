@@ -154,7 +154,11 @@ registerFeatureModule(
     "upgrades",
     "UpgradeService",
     ServerScriptService.Server.Services.UpgradeService,
-    appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "modifiers", "ModifierService")
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService", "EconomyService" },
+        "modifiers",
+        "ModifierService"
+    )
 )
 registerFeatureModule(
     "player_progression",
@@ -258,7 +262,6 @@ loader:RegisterModule(
             "PlayerEffectsService",
             "GlobalEffectsService",
             "AdminService",
-            "InventoryService",
         }, "stats", "StatsService"),
         "modifiers",
         "ModifierService"
@@ -374,6 +377,7 @@ registerFeatureModule(
             "ConfigLoader",
             "PetGrantService",
             "HatchEntitlementService",
+            "EconomyService",
         }, "global_events", "EventService"),
         "map_binding",
         "ZoneService"
@@ -604,11 +608,11 @@ loader:RegisterModule(
 )
 -- GameAPIService: the unified command-bus boundary (see
 -- docs/wiki/AUTOMATION_API_DESIGN.md). Handlers resolve target services from the
--- _G.RBXTemplateServices locator at runtime, so it only needs Logger to boot.
+-- _G.RBXTemplateServices locator at runtime; currency commands use injected EconomyService.
 loader:RegisterModule(
     "GameAPIService",
     ServerScriptService.Server.Services.GameAPIService,
-    { "Logger" }
+    { "Logger", "EconomyService" }
 )
 if RunService:IsStudio() then
     -- AutomationService: Studio-only test driver. Depends on GameAPIService so it
@@ -616,7 +620,7 @@ if RunService:IsStudio() then
     loader:RegisterModule(
         "AutomationService",
         ServerScriptService.Server.Services.AutomationService,
-        { "Logger", "DataService", "GameAPIService" }
+        { "Logger", "DataService", "EconomyService", "GameAPIService" }
     )
 
     local studioSmokeDeps = {
@@ -792,6 +796,7 @@ local DataService = loader:Get("DataService")
 local PlayerEffectsService = loader:Get("PlayerEffectsService")
 local MonetizationService = loader:Get("MonetizationService")
 local InventoryService = loader:Get("InventoryService")
+local EconomyService = loader:Get("EconomyService")
 
 _G.RBXTemplateServices = {
     Get = function(_, moduleName)
@@ -801,6 +806,7 @@ _G.RBXTemplateServices = {
 
 -- Set up cross-references to avoid circular dependencies
 DataService:SetPlayerEffectsService(PlayerEffectsService)
+EconomyService:SetInventoryService(InventoryService)
 
 -- Legacy network handler connection removed - using Signals directly
 

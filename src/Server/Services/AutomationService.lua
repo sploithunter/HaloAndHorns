@@ -66,6 +66,7 @@ end
 function AutomationService:Init()
     self._logger = self._modules and self._modules.Logger
     self._dataService = self._modules and self._modules.DataService
+    self._economyService = self._modules and self._modules.EconomyService
     self._gameApi = self._modules and self._modules.GameAPIService
     self._snapshots = {}
     self._nextSnapshotId = 0
@@ -327,7 +328,7 @@ function AutomationService:RestoreState(player, snapshotId)
     end
 
     for currencyType, amount in pairs(snapshot.currencies) do
-        self._dataService:SetCurrency(player, currencyType, amount, "automation_restore")
+        self._economyService:SetCurrency(player, currencyType, amount, "automation_restore")
     end
     data.Inventory = deepCopy(snapshot.inventory)
     self._dataService:RequestSave(player, "automation_restore", { critical = true })

@@ -28,6 +28,7 @@ function AdminToolsService:Init()
     self._logger = self._modules.Logger
     self._adminService = self._modules.AdminService
     self._dataService = self._modules.DataService
+    self._economyService = self._modules.EconomyService
     self._inventoryService = self._modules.InventoryService
     self._configLoader = self._modules.ConfigLoader
     self._eventService = self._modules.EventService
@@ -611,7 +612,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     if okCur and type(currencies) == "table" then
         for _, c in ipairs(currencies) do
             local amt = (c.id == "grass_coins") and 100 or 0
-            self._dataService:SetCurrency(targetPlayer, c.id, amt, "admin_reset_to_beginning")
+            self._economyService:SetCurrency(targetPlayer, c.id, amt, "admin_reset_to_beginning")
         end
     end
 
