@@ -22,24 +22,16 @@ function QuestService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._statsService = self._modules and self._modules.StatsService
+    self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
+    self._rewardService = self._modules and self._modules.RewardService
     self._config = self._configLoader:LoadConfig("quests")
-end
-
-function QuestService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 -- Build the Condition snapshot from the live player state.
 function QuestService:_snapshot(player)
-    local stats = self:_service("StatsService")
-    local progression = self:_service("PlayerProgressionService")
+    local stats = self._statsService
+    local progression = self._playerProgressionService
     local counters = (stats and stats:GetAll(player)) or {}
     local level = (progression and progression:GetLevel(player)) or 1
     local currencies = {}
@@ -399,7 +391,7 @@ function QuestService:Claim(player, questId)
         return { ok = false, reason = "locked" } -- chain order is server-authoritative
     end
 
-    local rewards = self:_service("RewardService")
+    local rewards = self._rewardService
     local granted
     if rewards then
         granted = rewards:Grant(player, def.reward, "quest:" .. questId)

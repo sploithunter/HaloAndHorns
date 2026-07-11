@@ -24,19 +24,16 @@ function RewardService:Init()
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
     self._economyService = self._modules and self._modules.EconomyService
+    self._inventoryService = self._modules and self._modules.InventoryService
+    self._petGrantService = self._modules and self._modules.PetGrantService
+    self._playerEffectsService = self._modules and self._modules.PlayerEffectsService
+    self._playerProgressionService = nil
     self._config = self._configLoader:LoadConfig("rewards")
     self._grantLog = {} -- append-only, capped at config.grant_log_limit
 end
 
-function RewardService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
+function RewardService:SetPlayerProgressionService(service)
+    self._playerProgressionService = service
 end
 
 -- Per-player override for the "area_coins" token, consumed for the duration of a
@@ -85,7 +82,7 @@ function RewardService:Grant(player, bundle, source)
     end
 
     -- Items (consumables/resources/tools)
-    local inventory = self:_service("InventoryService")
+    local inventory = self._inventoryService
     for _, item in ipairs(b.items) do
         local bucket = item.bucket or self._config.default_item_bucket or "consumables"
         if inventory then
@@ -101,7 +98,7 @@ function RewardService:Grant(player, bundle, source)
     end
 
     -- Pets
-    local petGrant = self:_service("PetGrantService")
+    local petGrant = self._petGrantService
     for _, pet in ipairs(b.pets) do
         if petGrant then
             local res = petGrant:GrantPet(player, {
@@ -117,7 +114,7 @@ function RewardService:Grant(player, bundle, source)
     end
 
     -- Timed effects
-    local effects = self:_service("PlayerEffectsService")
+    local effects = self._playerEffectsService
     for _, effect in ipairs(b.effects) do
         if effects then
             pcall(function()
@@ -132,7 +129,7 @@ function RewardService:Grant(player, bundle, source)
 
     -- Experience (drives the derived player level via PlayerProgressionService).
     if (b.experience or 0) > 0 then
-        local progression = self:_service("PlayerProgressionService")
+        local progression = self._playerProgressionService
         if progression and progression.AddExperience then
             progression:AddExperience(player, b.experience)
         end

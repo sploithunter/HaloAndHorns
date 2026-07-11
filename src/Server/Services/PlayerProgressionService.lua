@@ -33,6 +33,10 @@ function PlayerProgressionService:Init()
     self._configLoader = self._modules.ConfigLoader
     self._dataService = self._modules.DataService
     self._modifierService = self._modules.ModifierService
+    self._statsService = self._modules.StatsService
+    self._inventoryService = nil
+    self._rewardService = nil
+    self._enhancementService = nil
     self._config = self._configLoader:LoadConfig("player_progression")
     self._xpConfig = self._config.xp or { mode = "linear", per_level = 100 }
     local okTrack, track = pcall(function()
@@ -59,6 +63,12 @@ function PlayerProgressionService:Init()
         enabled = self:IsEnabled(),
         teamPowerStage = stage,
     })
+end
+
+function PlayerProgressionService:BindPeerServices(services)
+    self._inventoryService = services.InventoryService
+    self._rewardService = services.RewardService
+    self._enhancementService = services.EnhancementService
 end
 
 function PlayerProgressionService:IsEnabled()
@@ -90,7 +100,7 @@ function PlayerProgressionService:Start()
                 -- the counter only counted claims made AFTER it shipped, walling every
                 -- pre-existing profile). claimed-1 = levels gained beyond L1.
                 pcall(function()
-                    local stats = _G.RBXTemplateServices:Get("StatsService")
+                    local stats = self._statsService
                     local floor = math.max(0, self:GetClaimedLevel(player) - 1)
                     if (tonumber(stats:Get(player, "levels_gained")) or 0) < floor then
                         stats:Set(player, "levels_gained", floor)
@@ -298,12 +308,7 @@ function PlayerProgressionService:_veteranPass(player, vetLevel)
         return
     end
     local cfg = self._veteranConfig
-    -- RUNTIME locator, NOT self._modules (the loader only injects DECLARED deps — an undeclared
-    -- self._modules.EnhancementService is nil and the vet rewards would silently grant nothing).
-    local enh
-    pcall(function()
-        enh = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("EnhancementService")
-    end)
+    local enh = self._enhancementService
     -- No granter, no payout, NO ledger advance — a vet level must never be marked paid while the
     -- reward silently no-ops (that burned the first back-pay; the level stays owed until it pays).
     if not (enh and enh.RollDrop and enh.Grant) then
@@ -332,7 +337,7 @@ function PlayerProgressionService:_veteranPass(player, vetLevel)
     end
     data.VeteranPaid = vetLevel
     if grantedAny then -- the one flush pairing the deferFlush grants above (#274)
-        local inventory = self:_service("InventoryService")
+        local inventory = self._inventoryService
         if inventory and inventory.FlushBucket then
             inventory:FlushBucket(player, "enhancements", "veteran_backpay")
         end
@@ -423,23 +428,10 @@ function PlayerProgressionService:GrantAlmostLevel(player)
     return self:GetClaimState(player)
 end
 
--- Runtime-resolve a peer service via the global locator (avoids an Init dependency cycle —
--- RewardService already depends on this service for AddExperience).
-function PlayerProgressionService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, svc = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and svc or nil
-end
-
 -- Pay out a claimed level's reward bundle (per-level + milestone) via RewardService, so the
 -- audit ledger + fan-out (currencies/items/pets) are shared with every other reward source.
 function PlayerProgressionService:_grantLevelRewards(player, entry)
-    local rewardService = self:_service("RewardService")
+    local rewardService = self._rewardService
     if not rewardService or not rewardService.Grant then
         return
     end
@@ -522,7 +514,7 @@ function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent, sk
     -- Re-run the projection so a milestone slot appears LIVE — without this it only refreshed on the
     -- next relog (Jason: "ascended to 8, no new pet slot until I logged out and back in").
     if not skipProjection then -- catch-up loops pass true and rebuild ONCE after (#274)
-        local inventory = self:_service("InventoryService")
+        local inventory = self._inventoryService
         if inventory and inventory.RebuildPetProjections then
             pcall(function()
                 inventory:RebuildPetProjections(player)
@@ -583,7 +575,7 @@ function PlayerProgressionService:_advanceAuto(player)
         applied += 1
     end
     if applied > 0 then -- the ONE projection rebuild for every level just applied
-        local inventory = self:_service("InventoryService")
+        local inventory = self._inventoryService
         if inventory and inventory.RebuildPetProjections then
             pcall(function()
                 inventory:RebuildPetProjections(player)
@@ -625,9 +617,11 @@ function PlayerProgressionService:ClaimLevel(player, expectedLevel, silent)
     -- bus source (no default reactions — the client LevelUpController owns the level_up juice;
     -- this is the SERVER-truth signal consumers like the tutorial need)
     fireGameEvent(player, "level_claimed", { level = self:GetClaimedLevel(player) })
-    pcall(function() -- mission counter (Origin Story "Reach Level N")
-        _G.RBXTemplateServices:Get("StatsService"):Increment(player, "levels_gained", 1)
-    end)
+    if self._statsService then -- mission counter (Origin Story "Reach Level N")
+        pcall(function()
+            self._statsService:Increment(player, "levels_gained", 1)
+        end)
+    end
 
     return {
         ok = true,

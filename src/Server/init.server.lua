@@ -164,7 +164,11 @@ registerFeatureModule(
     "player_progression",
     "PlayerProgressionService",
     ServerScriptService.Server.Services.PlayerProgressionService,
-    appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "modifiers", "ModifierService")
+    appendIfEnabled(
+        appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "modifiers", "ModifierService"),
+        "stats",
+        "StatsService"
+    )
 )
 loader:RegisterModule(
     "AdminService",
@@ -302,9 +306,17 @@ loader:RegisterModule(
     "InventoryService",
     ServerScriptService.Server.Services.InventoryService,
     appendIfEnabled(
-        appendIfEnabled({ "Logger", "DataService", "ConfigLoader" }, "upgrades", "UpgradeService"),
-        "player_progression",
-        "PlayerProgressionService"
+        appendIfEnabled(
+            appendIfEnabled(
+                { "Logger", "DataService", "ConfigLoader" },
+                "upgrades",
+                "UpgradeService"
+            ),
+            "player_progression",
+            "PlayerProgressionService"
+        ),
+        "stats",
+        "StatsService"
     )
 )
 registerFeatureModule(
@@ -504,15 +516,27 @@ loader:RegisterModule(
     { "Logger", "ConfigLoader", "InventoryService", "PetGrantService" }
 )
 -- Reward spine (Phase 7): RewardService grants bundles; Quest/Daily/Shop gate them.
-loader:RegisterModule(
-    "RewardService",
-    ServerScriptService.Server.Services.RewardService,
-    { "Logger", "ConfigLoader", "DataService", "EconomyService" }
-)
+loader:RegisterModule("RewardService", ServerScriptService.Server.Services.RewardService, {
+    "Logger",
+    "ConfigLoader",
+    "DataService",
+    "EconomyService",
+    "InventoryService",
+    "PetGrantService",
+    "PlayerEffectsService",
+})
 loader:RegisterModule(
     "QuestService",
     ServerScriptService.Server.Services.QuestService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled(
+        appendIfEnabled(
+            { "Logger", "ConfigLoader", "DataService", "RewardService" },
+            "player_progression",
+            "PlayerProgressionService"
+        ),
+        "stats",
+        "StatsService"
+    )
 )
 loader:RegisterModule(
     "DailyService",
@@ -551,11 +575,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "AscensionAltarService",
     ServerScriptService.Server.Services.AscensionAltarService,
-    appendIfEnabled(
-        { "Logger", "ConfigLoader" },
-        "player_progression",
-        "PlayerProgressionService"
-    )
+    appendIfEnabled({ "Logger", "ConfigLoader" }, "player_progression", "PlayerProgressionService")
 )
 -- DailyRewardZoneService: the in-world Daily Reward pad — auto-claims the daily streak
 -- when a player walks into the authored "Daily Reward" model (no prompt/menu), paying the
@@ -677,7 +697,18 @@ registerFeatureModule(
 -- Load all modules with error handling
 -- Loading will be reported via Logger after initialization
 local loadSuccess, loadOrderOrError = pcall(function()
-    return loader:LoadAll()
+    return loader:LoadAll(function(modules)
+        if isFeatureEnabled("player_progression") then
+            local progression = modules:Get("PlayerProgressionService")
+            local reward = modules:Get("RewardService")
+            progression:BindPeerServices({
+                InventoryService = modules:Get("InventoryService"),
+                RewardService = reward,
+                EnhancementService = modules:Get("EnhancementService"),
+            })
+            reward:SetPlayerProgressionService(progression)
+        end
+    end)
 end)
 
 if not loadSuccess then

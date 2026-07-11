@@ -73,6 +73,7 @@ function InventoryService:Init()
     self._configLoader = self._modules.ConfigLoader
     self._upgradeService = self._modules.UpgradeService
     self._playerProgressionService = self._modules.PlayerProgressionService
+    self._statsService = self._modules.StatsService
     self._petIndexService = nil
 
     print("📦 InventoryService dependencies injected")
@@ -2242,9 +2243,11 @@ function InventoryService:_handleTogglePetEquipped(player, data)
         fireGameEvent(player, "pet_equipped", { action = result.action })
         if result.action == "equipped" then
             -- mission counter (quest chain "Equip a pet"); equips only, not unequips
-            pcall(function()
-                _G.RBXTemplateServices:Get("StatsService"):Increment(player, "pets_equipped", 1)
-            end)
+            if self._statsService then
+                pcall(function()
+                    self._statsService:Increment(player, "pets_equipped", 1)
+                end)
+            end
         end
         self._logger:Info("✅ Pet equip toggled", {
             player = player.Name,
