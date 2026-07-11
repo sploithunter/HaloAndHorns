@@ -699,3 +699,11 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Ratcheted `Signals.lua` manual remote construction from 33 to 25.
   Bidirectional `TutorialState` remains legacy pending an explicit pull/push
   split.
+
+## 2026-07-10 - Manifest-driven admin request wires
+
+- Migrated all 17 live admin request wires into the validated network manifest
+  with explicit admin authorization and exact payload arity.
+- Ratcheted `Signals.lua` manual remote construction from 25 to 8. Every
+  remaining legacy entry now requires a behavioral split, implementation, or
+  removal rather than a compatibility-only manifest migration.
