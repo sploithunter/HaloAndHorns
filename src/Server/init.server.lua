@@ -272,7 +272,7 @@ registerFeatureModule(
     "PetIndexService",
     ServerScriptService.Server.Services.PetIndexService,
     appendIfEnabled(
-        { "Logger", "ConfigLoader", "DataService", "EconomyService" },
+        { "Logger", "ConfigLoader", "DataService", "EconomyService", "PetSerialService" },
         "stats",
         "StatsService"
     )
@@ -282,7 +282,7 @@ registerFeatureModule(
     "AchievementsService",
     ServerScriptService.Server.Services.AchievementsService,
     appendIfEnabled(
-        { "Logger", "ConfigLoader", "DataService", "EconomyService" },
+        { "Logger", "ConfigLoader", "DataService", "EconomyService", "RewardService" },
         "stats",
         "StatsService"
     )
@@ -455,7 +455,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "PotionService",
     ServerScriptService.Server.Services.PotionService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "InventoryService" }
 )
 -- TutorialService: event-driven new-player tutorial (taps the GameEvents bus; configs/tutorial).
 loader:RegisterModule(
@@ -480,7 +480,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "PartyService",
     ServerScriptService.Server.Services.PartyService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "LayerService" }
 )
 -- TradeService: Halo & Horns trading (Feature 19) — session offers, both-confirm
 -- gate, atomic swap, and the trade-history audit log.
@@ -517,7 +517,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "DailyService",
     ServerScriptService.Server.Services.DailyService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "RewardService" }
 )
 loader:RegisterModule(
     "ShopService",
@@ -551,7 +551,11 @@ loader:RegisterModule(
 loader:RegisterModule(
     "AscensionAltarService",
     ServerScriptService.Server.Services.AscensionAltarService,
-    { "Logger", "ConfigLoader" }
+    appendIfEnabled(
+        { "Logger", "ConfigLoader" },
+        "player_progression",
+        "PlayerProgressionService"
+    )
 )
 -- DailyRewardZoneService: the in-world Daily Reward pad — auto-claims the daily streak
 -- when a player walks into the authored "Daily Reward" model (no prompt/menu), paying the
@@ -567,14 +571,14 @@ loader:RegisterModule(
 loader:RegisterModule(
     "BaddieSpawnerService",
     ServerScriptService.Server.Services.BaddieSpawnerService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "EnemyService" }
 )
 -- MeetCreatorService: first-time-in-a-server-with-a-creator -> their egg, once ever
 -- (configs/creators.lua). Resolves Data/Inventory/PetGrant services at runtime.
 loader:RegisterModule(
     "MeetCreatorService",
     ServerScriptService.Server.Services.MeetCreatorService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "DataService", "InventoryService", "PetGrantService" }
 )
 -- RealmPortalService: binds named workspace portals (Portal_Halo1/Portal_Horn1) to a
 -- ProximityPrompt that toggles the player into a heaven/hell realm via LayerService (World S3

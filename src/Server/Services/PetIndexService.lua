@@ -52,6 +52,7 @@ function PetIndexService:Init()
     self._dataService = self._modules.DataService
     self._statsService = self._modules.StatsService
     self._economyService = self._modules.EconomyService
+    self._petSerialService = self._modules.PetSerialService
 
     self._config = self._configLoader:LoadConfig("pet_index")
     self._petsConfig = self._configLoader:LoadConfig("pets")
@@ -90,11 +91,8 @@ end
 -- mint anywhere enter the obtainable index. Throttled GetAsyncs; lazy denominator
 -- recount after. Combos discovered later (other servers) arrive via PetWorldFirst.
 function PetIndexService:_runHugeCensus()
-    local locator = _G.RBXTemplateServices
-    local ok, serials = pcall(function()
-        return locator and locator:Get("PetSerialService")
-    end)
-    if not (ok and serials and serials.PeekSerial) then
+    local serials = self._petSerialService
+    if not (serials and serials.PeekSerial) then
         return
     end
     local grew = false
