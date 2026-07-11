@@ -18,6 +18,7 @@ local RunService = game:GetService("RunService")
 -- Dependencies
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local Logger = require(ReplicatedStorage.Shared.Utils.Logger)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 -- Logger wrapper for this service
 local LoggerWrapper
@@ -192,9 +193,11 @@ end
 -- Set up preference loading for a player (waits for data to be ready)
 function UserDisplayPreferences:SetupPlayerPreferences(player)
     task.spawn(function()
-        -- Wait for player data to be loaded
-        while not player:GetAttribute("DataLoaded") do
-            task.wait(0.1)
+        if not Readiness.awaitAttribute(player, "DataLoaded", true, 30) then
+            logger:warn("Display preferences timed out waiting for player data", {
+                player = player.Name,
+            })
+            return
         end
 
         -- Load user preferences

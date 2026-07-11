@@ -18,6 +18,7 @@ PartyService.__index = PartyService
 function PartyService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
+    self._layerService = self._modules and self._modules.LayerService
     self._config = self._configLoader:LoadConfig("party")
     local combat = self._configLoader:LoadConfig("combat")
     self._perExtra = (combat and combat.group_scaling and combat.group_scaling.per_extra_player)
@@ -202,11 +203,8 @@ function PartyService:FollowWarp(player, targetName)
     if os.clock() - last < FOLLOW_WARP_COOLDOWN then
         return { ok = false, reason = "cooldown" }
     end
-    local okLoc, layers = pcall(function()
-        local locator = _G.RBXTemplateServices
-        return locator and locator:Get("LayerService")
-    end)
-    if not okLoc or not layers then
+    local layers = self._layerService
+    if not layers then
         return { ok = false, reason = "service_unavailable" }
     end
     local myLayer = layers:GetCurrentLayer(player) or "base"

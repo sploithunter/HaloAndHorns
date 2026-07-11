@@ -22,18 +22,8 @@ function DailyService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._rewardService = self._modules and self._modules.RewardService
     self._config = self._configLoader:LoadConfig("daily")
-end
-
-function DailyService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 function DailyService:_today()
@@ -87,7 +77,7 @@ function DailyService:Claim(player, today)
     end
 
     local bundle = (self._config.calendar or {})[r.claimDay]
-    local rewards = self:_service("RewardService")
+    local rewards = self._rewardService
     local granted
     if rewards and bundle then
         granted = rewards:Grant(player, bundle, "daily:" .. r.claimDay)

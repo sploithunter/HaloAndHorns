@@ -92,6 +92,14 @@ function PowerService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._focusService = nil
+    self._petFollowService = nil
+    self._summonService = nil
+    self._enemyService = nil
+    self._partyService = nil
+    self._statsService = nil
+    self._playerProgressionService = nil
+    self._hotbarService = nil
     self._powersConfig = self._configLoader:LoadConfig("powers")
     self._archetypesConfig = self._configLoader:LoadConfig("archetypes")
     self._combatConfig = self._configLoader:LoadConfig("combat") -- accuracy curve for P4 to-hit
@@ -138,6 +146,17 @@ function PowerService:Init()
     end)
 
     self:_startUpkeepLoop()
+end
+
+function PowerService:BindPeerServices(services)
+    self._focusService = services.FocusService
+    self._petFollowService = services.PetFollowService
+    self._summonService = services.SummonService
+    self._enemyService = services.EnemyService
+    self._partyService = services.PartyService
+    self._statsService = services.StatsService
+    self._playerProgressionService = services.PlayerProgressionService
+    self._hotbarService = services.HotbarService
 end
 
 -- Families whose `passive = true` powers apply permanently by OWNERSHIP. Each maps to its single
@@ -391,7 +410,7 @@ function PowerService:_startUpkeepLoop()
     task.spawn(function()
         while true do
             task.wait(TICK)
-            local focusSvc = self._moduleLoader and self._moduleLoader:Get("FocusService")
+            local focusSvc = self._focusService
             if focusSvc then
                 for player, active in pairs(self._activeToggles) do
                     if player.Parent and next(active) ~= nil then
@@ -696,13 +715,7 @@ function PowerService:_withTeamPets(player, powerId, live)
     if type(members) ~= "string" or members == "" then
         return live
     end
-    local partySvc = _G.RBXTemplateServices
-        and select(
-            2,
-            pcall(function()
-                return _G.RBXTemplateServices:Get("PartyService")
-            end)
-        )
+    local partySvc = self._partyService
     if not (partySvc and partySvc.SameTeam) then
         return live
     end
@@ -1117,7 +1130,7 @@ function PowerService:_healZone(player, kind, perTick, totalSeconds, powerId)
     })
 
     task.spawn(function()
-        local pfs = self._moduleLoader and self._moduleLoader:Get("PetFollowService")
+        local pfs = self._petFollowService
         local elapsed = 0
         while elapsed < totalSeconds do
             task.wait(tickSeconds)
@@ -1213,7 +1226,7 @@ end
 -- which spawns the guardian model, applies its standing squad buffs / revive+heal, trails the
 -- player and despawns. Resolved at runtime so PowerService doesn't hard-depend on it.
 function PowerService:_summonGuardian(player, kind, now, powerId)
-    local summon = self._moduleLoader and self._moduleLoader:Get("SummonService")
+    local summon = self._summonService
     if summon and summon.Summon then
         summon:Summon(player, kind, now, powerId)
     end
@@ -1688,7 +1701,7 @@ function PowerService:_applyEffect(player, kind, now, powerId)
             if target then
                 -- ResurrectPet releases the #179 lockout ledger BEFORE reviving — PetRevive alone
                 -- gets held right back down by the lockout enforcement ("up for a split second").
-                local enemyService = self._moduleLoader and self._moduleLoader:Get("EnemyService")
+                local enemyService = self._enemyService
                 if enemyService and enemyService.ResurrectPet then
                     enemyService:ResurrectPet(target, player)
                 else
@@ -1767,8 +1780,8 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         -- to that pet for the duration (a hard lock over the threat table) via EnemyService:ApplyTaunt.
         -- The no-holder case is refused in Cast before focus is charged; guard here too.
         local holders = self:_tauntHolders(player)
-        local enemyService = self._moduleLoader and self._moduleLoader:Get("EnemyService")
-        local pfs = self._moduleLoader and self._moduleLoader:Get("PetFollowService")
+        local enemyService = self._enemyService
+        local pfs = self._petFollowService
         local radius = tonumber(kind.radius) or 18
         local r2 = radius * radius
         local candidates = enemiesAlive() -- caster-bounded (this player's fight / near the caster)
@@ -1863,7 +1876,7 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         local holders = self:_tauntHolders(player)
         local base = tonumber(kind.base) or 0
         local below = tonumber(kind.enrage_below) or 0.5
-        local pfs = self._moduleLoader and self._moduleLoader:Get("PetFollowService")
+        local pfs = self._petFollowService
         for _, h in ipairs(holders) do
             local pet = h.pet
             pet:SetAttribute("RagePowerUntil", now + dur)
@@ -1907,7 +1920,7 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         -- (EnemyService:ApplyFear → configs/aggro.lua fear.magnitude), so the focus rule's "attack
         -- top-of-table" inverts into a FLEE from the most-feared pet for the duration, then it
         -- recovers (negatives snap to 0 on lapse). Per-target accuracy — terror can miss.
-        local enemyService = self._moduleLoader and self._moduleLoader:Get("EnemyService")
+        local enemyService = self._enemyService
         local applied, missed = 0, 0
         if enemyService and enemyService.ApplyFear then
             for _, enemy in ipairs(enemiesAlive()) do
@@ -2000,7 +2013,7 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         -- (fall-over animations are future polish). `knockback` = shove studs (EnemyService moves
         -- the real server position, grounded + leashed), `duration` = the root, `magnitude` = the
         -- squad +Defense. Rolls to-hit like every other control (was the one auto-lander).
-        local enemyService = self._moduleLoader and self._moduleLoader:Get("EnemyService")
+        local enemyService = self._enemyService
         local knocked, missed = 0, 0
         for _, enemy in ipairs(enemiesAlive()) do
             if self:_accuracyHit(player, enemy, kind) then
@@ -2573,7 +2586,7 @@ function PowerService:Cast(player, powerId, opts)
         focusCost = FocusUpkeep.effectiveRate(focusCost, enhAxes.focus)
     end
     if focusCost > 0 then
-        local focusSvc = self._moduleLoader and self._moduleLoader:Get("FocusService")
+        local focusSvc = self._focusService
         if focusSvc and focusSvc.Cast then
             local fres = focusSvc:Cast(player, focusCost)
             if not (fres and fres.ok) then
@@ -2672,9 +2685,11 @@ function PowerService:Cast(player, powerId, opts)
         )
     end
     fireGameEvent(player, "power_cast", { power = powerId }) -- bus source (tutorial etc.)
-    pcall(function() -- mission counter (quest chain "Cast 5 powers")
-        _G.RBXTemplateServices:Get("StatsService"):Increment(player, "powers_cast", 1)
-    end)
+    if self._statsService then
+        pcall(function() -- mission counter (quest chain "Cast 5 powers")
+            self._statsService:Increment(player, "powers_cast", 1)
+        end)
+    end
     return { ok = true, power = powerId, cooldown = cd }
 end
 
@@ -2682,11 +2697,8 @@ function PowerService:_level(player, override)
     if override then
         return math.max(1, math.floor(override))
     end
-    local locator = _G.RBXTemplateServices
-    local ok, progression = pcall(function()
-        return locator and locator:Get("PlayerProgressionService")
-    end)
-    if ok and progression and progression.GetLevel then
+    local progression = self._playerProgressionService
+    if progression and progression.GetLevel then
         return progression:GetLevel(player)
     end
     return 1
@@ -2821,8 +2833,7 @@ function PowerService:Select(player, powerId, levelOverride)
         local kind = self._powersConfig.effect_kinds[self._powersConfig.powers[powerId].effect]
         local isPassive = kind and (kind.passive == true or kind.toggle == true)
         if not isPassive then
-            local locator = _G.RBXTemplateServices
-            local hotbar = locator and locator:Get("HotbarService")
+            local hotbar = self._hotbarService
             if hotbar and hotbar.GetState and hotbar.Rebind then
                 local state = hotbar:GetState(player)
                 local binds = (state and state.hotbar) or {}
@@ -2848,8 +2859,7 @@ function PowerService:Select(player, powerId, levelOverride)
     -- Edit picker immediately (it was only pushed on join/rebind, so new picks were missing
     -- until rejoin).
     pcall(function()
-        local locator = _G.RBXTemplateServices
-        local hotbar = locator and locator:Get("HotbarService")
+        local hotbar = self._hotbarService
         if hotbar and hotbar._pushState then
             hotbar:_pushState(player)
         end

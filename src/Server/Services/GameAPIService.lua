@@ -15,24 +15,13 @@
 
     Adapter pattern
     ---------------
-    Handlers are thin adapters that delegate to existing services resolved from
-    the `_G.RBXTemplateServices` locator. We do NOT rewrite services — their
+    Handlers are thin adapters that delegate to an explicit service map bound by
+    the composition root. We do NOT rewrite services — their
     public methods (e.g. UpgradeService:PurchaseUpgrade) already return
     { ok = ..., reason = ... } domain envelopes, which become the bus result.
 
-    STATUS: scaffold. This service is intentionally NOT yet registered in
-    src/Server/init.server.lua. Wiring it into the boot loader + migrating the
-    GUI/Signals to dispatch through it is the next step, done once we can verify
-    against a clean Studio instance. To register (later), add alongside the other
-    services:
-
-        loader:RegisterModule(
-            "GameAPIService",
-            ServerScriptService.Server.Services.GameAPIService,
-            { "Logger" }
-        )
-
-    and Start() it with the rest.
+    The service is registered in src/Server/init.server.lua. Its fixed adapter
+    map is bound after every service initializes and before any service starts.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -47,10 +36,9 @@ local PowerFormula = require(ReplicatedStorage.Shared.Game.PowerFormula)
 local GameAPIService = {}
 GameAPIService.__index = GameAPIService
 
-local REMOTE_NAME = "GameAPICommand"
-
 function GameAPIService:Init()
     self._logger = self._modules and self._modules.Logger
+    self._economyService = self._modules and self._modules.EconomyService
     self._bus = CommandBus.new({
         onError = function(err, name)
             if self._logger then
@@ -70,8 +58,7 @@ function GameAPIService:Start()
 
     -- AutomationService (Studio-only) registers its automation.* commands into
     -- this bus from its own Start(), via its injected GameAPIService dependency.
-    -- We don't pull it here because the _G locator isn't populated until after
-    -- the loader's LoadAll() completes.
+    -- It receives GameAPIService as a declared dependency and registers after this Start.
 
     if self._logger then
         self._logger:Info("GameAPIService ready", {
@@ -81,19 +68,12 @@ function GameAPIService:Start()
     end
 end
 
--- Resolve a loader-registered service from the global locator established in
--- init.server.lua (_G.RBXTemplateServices:Get(name)). The locator's Get() RAISES
--- for unregistered names, so we pcall and return nil — handlers then report
--- service_unavailable instead of crashing.
+function GameAPIService:BindServices(services)
+    self._services = services
+end
+
 function GameAPIService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
+    return self._services and self._services[name] or nil
 end
 
 -- EggService is required directly at boot (not registered in the loader), so it
@@ -149,14 +129,7 @@ function GameAPIService:Execute(player, name, args, opts)
 end
 
 function GameAPIService:_setupNetworkTransport()
-    -- Replace any stale remote (e.g. after a Rojo hot-sync in Studio).
-    local existing = ReplicatedStorage:FindFirstChild(REMOTE_NAME)
-    if existing then
-        existing:Destroy()
-    end
-
-    local remote = Instance.new("RemoteFunction")
-    remote.Name = REMOTE_NAME
+    local remote = require(ReplicatedStorage.Shared.Network.Signals).GameAPICommand
     remote.OnServerInvoke = function(player, name, args)
         -- Client-originated: never trusted, never a test.
         return self._bus:execute({
@@ -165,7 +138,6 @@ function GameAPIService:_setupNetworkTransport()
             isTest = false,
         }, name, type(args) == "table" and args or {})
     end
-    remote.Parent = ReplicatedStorage
 end
 
 --[[
@@ -837,12 +809,12 @@ function GameAPIService:_registerCommands()
             if not isAdmin then
                 return { ok = false, reason = "not_admin" }
             end
-            local data = self:_service("DataService")
-            if not data then
+            local economy = self._economyService
+            if not economy then
                 return { ok = false, reason = "service_unavailable" }
             end
             local amt = math.floor(tonumber(args.amount) or 0)
-            data:AddCurrency(context.player, args.currency, amt, "admin_grant")
+            economy:AddCurrency(context.player, args.currency, amt, "admin_grant")
             return { ok = true, currency = args.currency, amount = amt }
         end,
     })
@@ -1268,7 +1240,7 @@ function GameAPIService:_registerCommands()
             local state = s:GrantAlmostLevel(context.player)
             -- Also drop 100k of EVERY area coin so any gate is affordable without grinding it
             -- (overshoot is fine for coins — dev QoL). Premium/tokens (gems, light/shadow) excluded.
-            local dataSvc = self:_service("DataService")
+            local economy = self._economyService
             local AREA_COINS = {
                 "coins",
                 "crystals",
@@ -1278,9 +1250,9 @@ function GameAPIService:_registerCommands()
                 "desert_coins",
                 "beach_coins",
             }
-            if dataSvc and dataSvc.AddCurrency then
+            if economy then
                 for _, c in ipairs(AREA_COINS) do
-                    dataSvc:AddCurrency(context.player, c, 100000, "admin_fast_forward")
+                    economy:AddCurrency(context.player, c, 100000, "admin_fast_forward")
                 end
             end
             return { ok = true, state = state }
@@ -1908,11 +1880,11 @@ function GameAPIService:_registerTestCommands()
             return true
         end,
         handler = function(context, args)
-            local data = self:_service("DataService")
-            if not data then
+            local economy = self._economyService
+            if not economy then
                 return { ok = false, reason = "service_unavailable" }
             end
-            data:AddCurrency(context.player, args.currency, args.amount, "automation_test_grant")
+            economy:AddCurrency(context.player, args.currency, args.amount, "automation_test_grant")
             return { ok = true, currency = args.currency, amount = args.amount }
         end,
     })

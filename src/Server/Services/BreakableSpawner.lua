@@ -688,6 +688,10 @@ function BreakableSpawner:Init()
     })
 end
 
+function BreakableSpawner:SetZoneService(service)
+    self._zoneServiceInstance = service
+end
+
 function BreakableSpawner:Start()
     if worldBindingService and worldBindingService.AreaEntered then
         worldBindingService.AreaEntered:Connect(function(_, areaId)
@@ -761,16 +765,8 @@ function BreakableSpawner:Start()
     end)
 end
 
--- Resolve ZoneService lazily via the locator (ZoneService may load after BreakableSpawner).
 function BreakableSpawner:_zoneService()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, svc = pcall(function()
-        return locator:Get("ZoneService")
-    end)
-    return ok and svc or nil
+    return self._zoneServiceInstance
 end
 
 function BreakableSpawner:_isWorldActive(worldName)
@@ -1505,11 +1501,6 @@ function BreakableSpawner:_trySpawnOne(
         crystalsAssets = breakablesRoot and breakablesRoot:FindFirstChild("Crystals")
         if crystalsAssets then
             self._crystalsAssets = crystalsAssets
-            -- Wait until children exist
-            local start = tick()
-            while #crystalsAssets:GetChildren() == 0 and tick() - start < 30 do
-                task.wait(0.5)
-            end
         else
             return
         end

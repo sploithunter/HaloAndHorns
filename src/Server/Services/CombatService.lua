@@ -39,6 +39,13 @@ function CombatService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._economyService = self._modules and self._modules.EconomyService
+    self._rewardService = self._modules and self._modules.RewardService
+    self._layerService = self._modules and self._modules.LayerService
+    self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
+    self._focusService = self._modules and self._modules.FocusService
+    self._spiritFormService = self._modules and self._modules.SpiritFormService
+    self._modifierService = self._modules and self._modules.ModifierService
     self._combatConfig = self._configLoader:LoadConfig("combat")
     self._enemiesConfig = self._configLoader:LoadConfig("enemies")
     self._focusConfig = self._configLoader:LoadConfig("focus")
@@ -52,18 +59,6 @@ function CombatService:Init()
     self._combatXp = (okLvl and type(lvlCfg) == "table" and lvlCfg.combat_xp) or {}
     self._combatCoins = (okLvl and type(lvlCfg) == "table" and lvlCfg.combat_coins) or {}
     self._deps = { Targeting = Targeting, CombatMath = CombatMath, FocusMath = FocusMath }
-end
-
--- Runtime locators (these services may not be registered in every build).
-function CombatService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 function CombatService:_enemyDef(enemyId)
@@ -167,7 +162,7 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
     local tier = def.tier or enemyTier or "trash_mob"
     local loot = CombatMath.resolveLoot(def.drop_table or {})
     for currency, amount in pairs(loot) do
-        self._dataService:AddCurrency(player, currency, amount, "combat_loot") -- coins unchanged
+        self._economyService:AddCurrency(player, currency, amount, "combat_loot") -- coins unchanged
     end
     -- COIN FALLBACK for def-less kills (Jason: "you should drill coins also"). A pet-invader
     -- (petinv_*, the realm population) has no drop_table, so the loop above paid nothing. Pay a
@@ -183,13 +178,13 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
             local coins = math.max(1, math.floor(coinLevel * perLevel * coinRank))
             -- Which coin? The player's current-area mining coin (the SSOT RewardService uses for
             -- "area_coins"). Falls back to grass_coins if the area is unknown.
-            local rewardService = self:_service("RewardService")
+            local rewardService = self._rewardService
             local currency = (
                 rewardService
                 and rewardService._resolveAreaCoin
                 and rewardService:_resolveAreaCoin(player)
             ) or "grass_coins"
-            self._dataService:AddCurrency(player, currency, coins, "combat_loot_realm")
+            self._economyService:AddCurrency(player, currency, coins, "combat_loot_realm")
             loot[currency] = (loot[currency] or 0) + coins
         end
     end
@@ -206,7 +201,7 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
     -- gate as mining). enemyLevel = the model's Level attribute (rank already baked).
     -- REALM RESCALE: the player's realm depth lifts the target level (layers.level_offsets) so
     -- realms keep paying XP instead of flooring a high-level player on arrival — parity with mining.
-    local layerService = self:_service("LayerService")
+    local layerService = self._layerService
     local realmLevelOffset = (
         layerService
         and layerService.GetLevelOffset
@@ -238,7 +233,7 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
         )
     end
     if xp > 0 then
-        local progression = self:_service("PlayerProgressionService")
+        local progression = self._playerProgressionService
         if progression and progression.AddExperience then
             progression:AddExperience(player, xp)
         end
@@ -253,7 +248,7 @@ function CombatService:SunderPlayer(player, enemyId)
         return { ok = false, reason = "unknown_enemy" }
     end
     local amount = CombatMath.sunderAmount(def.attack)
-    local focusService = self:_service("FocusService")
+    local focusService = self._focusService
     if not focusService then
         return { ok = false, reason = "service_unavailable" }
     end
@@ -270,7 +265,7 @@ function CombatService:DownPetInCombat(player, uid, enemyId)
     if not def then
         return { ok = false, reason = "unknown_enemy" }
     end
-    local spirit = self:_service("SpiritFormService")
+    local spirit = self._spiritFormService
     if not spirit then
         return { ok = false, reason = "service_unavailable" }
     end
@@ -290,7 +285,7 @@ function CombatService:ResolvePetDamage(player, ctx)
     ctx = ctx or {}
     local power = ctx.power or 1
     local resolved = power
-    local modifier = self:_service("ModifierService")
+    local modifier = self._modifierService
     if modifier and modifier.Resolve then
         local ok, value = pcall(function()
             return modifier:Resolve(power, {
@@ -314,7 +309,7 @@ end
 function CombatService:ResolvePetAttackInterval(player, ctx)
     ctx = ctx or {}
     local efficiency = 1
-    local modifier = self:_service("ModifierService")
+    local modifier = self._modifierService
     if modifier and modifier.Resolve then
         local ok, value = pcall(function()
             return modifier:Resolve(1, {

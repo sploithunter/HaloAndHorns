@@ -27,6 +27,7 @@ function EnhancementShopService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._economyService = self._modules and self._modules.EconomyService
     self._inventoryService = self._modules and self._modules.InventoryService
     self._enhancementService = self._modules and self._modules.EnhancementService
     self._config = self._configLoader and self._configLoader:LoadConfig("enhancements")
@@ -70,7 +71,7 @@ function EnhancementShopService:Catalog(player)
     return {
         ok = true,
         currency = currency,
-        balance = self._dataService:GetCurrency(player, currency),
+        balance = self._economyService:GetCurrency(player, currency),
         band = cat.band,
         offers = cat.offers,
     }
@@ -125,12 +126,12 @@ function EnhancementShopService:Buy(player, args)
     if price <= 0 then
         return { ok = false, reason = "no_price" }
     end
-    if self._dataService:GetCurrency(player, currency) < price then
+    if not self._economyService:CanAfford(player, currency, price) then
         return { ok = false, reason = "insufficient_funds", needed = price }
     end
 
     local src = ("enh_buy:%s_L%d"):format(etype, level)
-    if not self._dataService:RemoveCurrency(player, currency, price, src) then
+    if not self._economyService:RemoveCurrency(player, currency, price, src) then
         return { ok = false, reason = "spend_failed" }
     end
 
@@ -141,7 +142,9 @@ function EnhancementShopService:Buy(player, args)
     })
     if not (granted and granted.ok) then
         -- refund — the grant did not land
-        self._dataService:AddCurrency(player, currency, price, src .. ":refund")
+        if not self._economyService:AddCurrency(player, currency, price, src .. ":refund") then
+            return { ok = false, reason = "rollback_failed", cause = "grant_failed" }
+        end
         return { ok = false, reason = (granted and granted.reason) or "grant_failed" }
     end
 
@@ -154,7 +157,7 @@ function EnhancementShopService:Buy(player, args)
         price = price,
         uid = granted.uid,
         name = granted.name,
-        balance = self._dataService:GetCurrency(player, currency),
+        balance = self._economyService:GetCurrency(player, currency),
     }
 end
 
@@ -197,15 +200,26 @@ function EnhancementShopService:Sell(player, args)
     -- same atomic shape as SellJunk: BulkRemove is pure data mutation with rollback and a
     -- POST-commit folder rebuild, so nothing fallible sits between the take and the pay
     -- (RemoveItem rebuilt replication folders BETWEEN mutation and credit — the loss window)
-    local ok, removedMap =
-        self._inventoryService:BulkRemove(player, BUCKET, { { uid = uid, quantity = qty } })
+    local src = ("enh_sell:%s"):format(uid)
+    local ok, removedMap, _, failureReason = self._inventoryService:BulkRemove(
+        player,
+        BUCKET,
+        { { uid = uid, quantity = qty } },
+        {
+            commit = function()
+                return self._economyService:AddCurrency(player, currency, total, src)
+            end,
+            saveTag = "enh_shop_sell",
+        }
+    )
     if not (ok and removedMap and removedMap[uid]) then
-        return { ok = false, reason = "remove_failed" }
+        return {
+            ok = false,
+            reason = failureReason == "commit_failed" and "credit_failed_items_restored"
+                or "remove_failed",
+        }
     end
 
-    local src = ("enh_sell:%s"):format(uid)
-    self._dataService:AddCurrency(player, currency, total, src)
-    self._dataService:RequestSave(player, "enh_shop_sell", { critical = true })
     return {
         ok = true,
         uid = uid,
@@ -215,7 +229,7 @@ function EnhancementShopService:Sell(player, args)
         unit = unit,
         gems = total,
         remaining = have - qty,
-        balance = self._dataService:GetCurrency(player, currency),
+        balance = self._economyService:GetCurrency(player, currency),
     }
 end
 
@@ -281,7 +295,7 @@ function EnhancementShopService:ListOwned(player)
     return {
         ok = true,
         currency = currency,
-        balance = self._dataService:GetCurrency(player, currency),
+        balance = self._economyService:GetCurrency(player, currency),
         items = items,
     }
 end
@@ -349,19 +363,39 @@ function EnhancementShopService:SellJunk(player, args)
         entries[#entries + 1] = { uid = it.uid, quantity = it.quantity }
         gemsByUid[it.uid] = it.gems
     end
-    local okAll, removedMap, soldQty = self._inventoryService:BulkRemove(player, BUCKET, entries)
+    local okAll, removedMap, soldQty, failureReason = self._inventoryService:BulkRemove(
+        player,
+        BUCKET,
+        entries,
+        {
+            commit = function(removed)
+                local committedGems = 0
+                for uid in pairs(removed) do
+                    committedGems += gemsByUid[uid] or 0
+                end
+                return committedGems <= 0
+                    or self._economyService:AddCurrency(
+                        player,
+                        currency,
+                        committedGems,
+                        "enh_sell_junk"
+                    )
+            end,
+            saveTag = "enh_shop_sell_junk",
+        }
+    )
     if not okAll then
         -- rolled back inside BulkRemove: the player still owns everything, nothing was paid
-        return { ok = false, reason = "sweep_failed_nothing_taken" }
+        return {
+            ok = false,
+            reason = failureReason == "commit_failed" and "credit_failed_items_restored"
+                or "sweep_failed_nothing_taken",
+        }
     end
     local gems, soldStacks = 0, 0
     for uid in pairs(removedMap) do
         gems += gemsByUid[uid] or 0
         soldStacks += 1
-    end
-    if gems > 0 then
-        self._dataService:AddCurrency(player, currency, gems, "enh_sell_junk")
-        self._dataService:RequestSave(player, "enh_shop_sell_junk", { critical = true })
     end
     return {
         ok = true,
@@ -369,7 +403,7 @@ function EnhancementShopService:SellJunk(player, args)
         stacks = soldStacks,
         gems = gems,
         includedDuals = includeDuals,
-        balance = self._dataService:GetCurrency(player, currency),
+        balance = self._economyService:GetCurrency(player, currency),
     }
 end
 

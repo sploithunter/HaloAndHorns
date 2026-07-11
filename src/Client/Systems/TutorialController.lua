@@ -522,7 +522,7 @@ function TutorialController.start()
     buildCapsule(pg)
     Signals.TutorialState.OnClientEvent:Connect(apply)
     -- pull current state — the server's join-time push may predate this connection
-    Signals.TutorialState:FireServer()
+    Signals.TutorialStateRequest:FireServer()
 end
 
 return TutorialController

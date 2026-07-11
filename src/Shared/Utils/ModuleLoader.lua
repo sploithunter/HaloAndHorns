@@ -201,7 +201,7 @@ function ModuleLoader:_loadModule(name)
     return instance
 end
 
-function ModuleLoader:LoadAll()
+function ModuleLoader:LoadAll(configure)
     -- Validate all dependencies
     self:_validateDependencies()
 
@@ -214,6 +214,12 @@ function ModuleLoader:LoadAll()
     -- Load modules in order
     for _, name in ipairs(loadOrder) do
         self:_loadModule(name)
+    end
+
+    -- The composition root may wire intentional cycles after every Init has run but before any
+    -- Start callback can observe a partially configured service graph.
+    if configure then
+        configure(self)
     end
 
     -- Call Start on all loaded modules

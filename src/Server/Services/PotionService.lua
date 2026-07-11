@@ -26,33 +26,18 @@ local PotionService = {}
 PotionService.__index = PotionService
 
 local BUCKET = "potions" -- InventoryService bucket (trade-ready, like enhancements)
-local UPDATE_REMOTE = "PotionUpdate"
 local SIP_LOCK = 0.4 -- anti-spam seconds between drinks of the SAME potion (not the duration)
 
 function PotionService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._inventoryService = self._modules and self._modules.InventoryService
     self._config = self._configLoader:LoadConfig("potions")
     self._meters = {} -- [userId][meterId] = charge (0..1), transient
     self._lastDrink = {} -- [userId][potionId] = os.clock()
 
-    local existing = ReplicatedStorage:FindFirstChild(UPDATE_REMOTE)
-    if existing then
-        existing:Destroy()
-    end
-    local remote = Instance.new("RemoteEvent")
-    remote.Name = UPDATE_REMOTE
-    remote.Parent = ReplicatedStorage
-    self._remote = remote
-end
-
-function PotionService:_inventoryService()
-    local locator = _G.RBXTemplateServices
-    local ok, svc = pcall(function()
-        return locator and locator:Get("InventoryService")
-    end)
-    return ok and svc or nil
+    self._remote = require(ReplicatedStorage.Shared.Network.Signals).PotionUpdate
 end
 
 function PotionService:Start()
@@ -82,7 +67,7 @@ end
 
 -- Total owned count of a potion id (sum stacked quantities in the bucket).
 function PotionService:_count(player, potionId)
-    local inv = self:_inventoryService()
+    local inv = self._inventoryService
     local bucket = inv and inv:GetInventory(player, BUCKET)
     local n = 0
     for _, rec in pairs((bucket and bucket.items) or {}) do
@@ -129,7 +114,7 @@ function PotionService:Grant(player, potionId, count)
     if not self:_potionCfg(potionId) then
         return { ok = false, reason = "unknown_potion" }
     end
-    local inv = self:_inventoryService()
+    local inv = self._inventoryService
     if not inv then
         return { ok = false, reason = "service_unavailable" }
     end
@@ -203,7 +188,7 @@ function PotionService:Drink(player, potionId)
         return { ok = false, reason = "meter_full" } -- a sip would be wasted; don't consume
     end
 
-    local inv = self:_inventoryService()
+    local inv = self._inventoryService
     if not inv then
         return { ok = false, reason = "service_unavailable" }
     end
@@ -256,7 +241,7 @@ end
 
 -- Client state for the hotbar potion strip: potions owned (counts) + live meters.
 function PotionService:GetState(player)
-    local inv = self:_inventoryService()
+    local inv = self._inventoryService
     local bucket = inv and inv:GetInventory(player, BUCKET)
     local counts = {}
     for _, rec in pairs((bucket and bucket.items) or {}) do

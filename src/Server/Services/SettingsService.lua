@@ -19,6 +19,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Get shared modules
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local SettingsService = {}
 SettingsService.__index = SettingsService
@@ -79,19 +80,12 @@ function SettingsService:_onPlayerAdded(player)
     -- Wait for DataService to load player profile
     task.spawn(function()
         local maxWait = 10 -- seconds
-        local waited = 0
-
-        while not self._dataService:IsDataLoaded(player) and waited < maxWait do
-            task.wait(0.1)
-            waited = waited + 0.1
-        end
-
-        if self._dataService:IsDataLoaded(player) then
+        if Readiness.awaitAttribute(player, "DataLoaded", true, maxWait) then
             self:_createSettingsFolders(player)
         else
             self._logger:Warn("⚠️ SETTINGS - Player data not loaded in time", {
                 player = player.Name,
-                waitedSeconds = waited,
+                waitedSeconds = maxWait,
             })
         end
     end)

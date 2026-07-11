@@ -1052,7 +1052,7 @@ end
 
 function AdminPanel:_runDiagnostics()
     self.logger:info("Running diagnostics...")
-    Signals.RunDiagnostics:FireServer()
+    Signals.RunDiagnosticsRequest:FireServer()
 end
 
 function AdminPanel:_networkTest()
@@ -1156,33 +1156,28 @@ function AdminPanel:_executeCustomAction(action, inputValue)
 end
 
 function AdminPanel:_initializeNetworking()
-    task.spawn(function()
-        task.wait(2) -- Wait for Signals to initialize
+    -- Signals is required at module load, so its registry is already complete here.
+    self.economyBridge = {
+        Fire = function(_, _action, data)
+            if Signals.PurchaseItem then
+                Signals.PurchaseItem:FireServer(data)
+            end
+        end,
+    }
 
-        -- Use new Signals system instead of old NetworkBridge
-        self.economyBridge = {
-            Fire = function(_, _action, data)
-                if Signals.PurchaseItem then
-                    Signals.PurchaseItem:FireServer(data)
-                end
-            end,
-        }
+    if Signals.RunDiagnostics then
+        Signals.RunDiagnostics.OnClientEvent:Connect(function(report)
+            self:_showDiagnosticsPopup(report)
+        end)
+    end
 
-        -- Listen for diagnostics result once
-        if Signals.RunDiagnostics then
-            Signals.RunDiagnostics.OnClientEvent:Connect(function(report)
-                self:_showDiagnosticsPopup(report)
-            end)
-        end
+    if Signals.AdminToolResult then
+        Signals.AdminToolResult.OnClientEvent:Connect(function(result)
+            self:_handleAdminToolResult(result)
+        end)
+    end
 
-        if Signals.AdminToolResult then
-            Signals.AdminToolResult.OnClientEvent:Connect(function(result)
-                self:_handleAdminToolResult(result)
-            end)
-        end
-
-        self.logger:info("Economy bridge connected via Signals")
-    end)
+    self.logger:info("Economy bridge connected via Signals")
 end
 
 -- Public interface methods

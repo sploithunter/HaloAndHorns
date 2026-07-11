@@ -35,21 +35,11 @@ end
 function AscensionAltarService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
+    self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
     local okTrack, track = pcall(function()
         return self._configLoader:LoadConfig("level_track")
     end)
     self._altarConfig = (okTrack and type(track) == "table" and track.altar) or {}
-end
-
-function AscensionAltarService:_progression()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, svc = pcall(function()
-        return locator:Get("PlayerProgressionService")
-    end)
-    return ok and svc or nil
 end
 
 local function vec(t, fallback)
@@ -194,7 +184,7 @@ end
 
 -- Claim the next TRAINING level for the player (the prompt is already distance-validated).
 function AscensionAltarService:_onTriggered(player)
-    local prog = self:_progression()
+    local prog = self._playerProgressionService
     if not prog or not prog.GetClaimState then
         return
     end

@@ -21,12 +21,15 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
 
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local EggHatchFX = require(ReplicatedStorage.Shared.Effects.EggHatchFX)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
 local HatchTiming = require(ReplicatedStorage.Shared.Game.HatchTiming)
+local CompletionGroup = require(ReplicatedStorage.Shared.Utils.CompletionGroup)
 
 local eggSystemConfig = Locations.getConfig("egg_system")
 local petConfig = Locations.getConfig("pets")
@@ -119,6 +122,18 @@ end
 
 local EggHatchingService = {}
 EggHatchingService.__index = EggHatchingService
+
+local function awaitDuration(seconds)
+    seconds = math.max(0, tonumber(seconds) or 0)
+    if seconds == 0 then
+        return
+    end
+    local driver = Instance.new("NumberValue")
+    local tween = TweenService:Create(driver, TweenInfo.new(seconds), { Value = 1 })
+    tween:Play()
+    tween.Completed:Wait()
+    driver:Destroy()
+end
 
 -- Hatch re-entry lock. A hatch holds this from the moment its animation starts until teardown
 -- completes; HandleEggPurchase / auto-hatch consult IsHatchReady() before starting another.
@@ -901,43 +916,20 @@ function EggHatchingService:AnimateShake(eggComponents, duration)
     duration = duration or 2.0
     local eggImage = eggComponents.egg
 
-    -- DEBUG: Log detailed size information during shake
-
     eggComponents.state = ANIMATION_STATE.SHAKE
 
-    -- Create wobble animation
-    local shakeInfo = TweenInfo.new(
-        0.1, -- Short duration for each shake
-        Enum.EasingStyle.Quad,
-        Enum.EasingDirection.InOut,
-        -1, -- Infinite repeats (until stopped)
-        true -- Reverse
-    )
-
-    local leftShake = TweenService:Create(eggImage, shakeInfo, {
-        Rotation = -5,
-    })
-
-    local rightShake = TweenService:Create(eggImage, shakeInfo, {
-        Rotation = 5,
-    })
-
-    -- Start shaking
-    leftShake:Play()
-
-    -- EXTENDED DEBUG: Check size every 10 seconds during shake
-    local startTime = tick()
-    task.spawn(function()
-        while tick() - startTime < duration do
-            task.wait(10)
-            local elapsed = tick() - startTime
+    local driver = Instance.new("NumberValue")
+    local connection = driver.Changed:Connect(function(progress)
+        if eggImage and eggImage.Parent then
+            eggImage.Rotation = math.sin(progress * duration * math.pi * 10) * 5
         end
     end)
-
-    -- Stop after duration and proceed to flash
-    task.wait(duration)
-    leftShake:Cancel()
-    rightShake:Cancel()
+    local tween =
+        TweenService:Create(driver, TweenInfo.new(duration, Enum.EasingStyle.Linear), { Value = 1 })
+    tween:Play()
+    tween.Completed:Wait()
+    connection:Disconnect()
+    driver:Destroy()
 
     -- Reset rotation
     eggImage.Rotation = 0
@@ -1006,13 +998,11 @@ function EggHatchingService:AnimateFlash(eggComponents, duration)
                     s.RollOffMaxDistance = 100
                     SoundGroups.assign(s, "effects")
                     s.Parent = SoundService
+                    s.Ended:Once(function()
+                        s:Destroy()
+                    end)
                     s:Play()
                     played = true
-                    task.delay(duration + 0.5, function()
-                        if s and s.Parent then
-                            s:Destroy()
-                        end
-                    end)
                 end
             end
         end
@@ -1024,12 +1014,10 @@ function EggHatchingService:AnimateFlash(eggComponents, duration)
             s.RollOffMaxDistance = 100
             SoundGroups.assign(s, "effects")
             s.Parent = SoundService
-            s:Play()
-            task.delay(duration + 0.5, function()
-                if s and s.Parent then
-                    s:Destroy()
-                end
+            s.Ended:Once(function()
+                s:Destroy()
             end)
+            s:Play()
         end
     end
 
@@ -1063,7 +1051,7 @@ function EggHatchingService:AnimateFlash(eggComponents, duration)
         self:CreateStarburstEffect(flashContainer, config)
     end
 
-    task.wait(duration)
+    awaitDuration(duration)
 
     return true
 end
@@ -1090,7 +1078,8 @@ function EggHatchingService:CreateShockwaveEffect(container, config)
         child:Destroy()
     end
     local function createRing(delay)
-        task.delay(delay or 0, function()
+        task.spawn(function()
+            awaitDuration(delay or 0)
             local ring = Instance.new("Frame")
             ring.Name = "Shockwave"
             ring.Size = UDim2.new(0, config.start_radius * 2, 0, config.start_radius * 2)
@@ -1110,13 +1099,11 @@ function EggHatchingService:CreateShockwaveEffect(container, config)
 
             ring.Parent = container
 
-            TweenService:Create(
+            local duration = config.duration or 0.7
+            local fadeDuration = config.fade_out_time or 0.25
+            local expand = TweenService:Create(
                 ring,
-                TweenInfo.new(
-                    config.duration or 0.7,
-                    Enum.EasingStyle.Quad,
-                    Enum.EasingDirection.Out
-                ),
+                TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
                 {
                     Size = UDim2.new(
                         0,
@@ -1131,16 +1118,26 @@ function EggHatchingService:CreateShockwaveEffect(container, config)
                         -(config.end_radius or 400)
                     ),
                 }
-            ):Play()
-            TweenService
-                :Create(stroke, TweenInfo.new(config.fade_out_time or 0.25), { Transparency = 1 })
-                :Play()
-
-            task.delay((config.duration or 0.7) + (config.fade_out_time or 0.25), function()
+            )
+            local fade = TweenService:Create(
+                stroke,
+                TweenInfo.new(
+                    fadeDuration,
+                    Enum.EasingStyle.Linear,
+                    Enum.EasingDirection.Out,
+                    0,
+                    false,
+                    math.max(0, duration - fadeDuration)
+                ),
+                { Transparency = 1 }
+            )
+            expand.Completed:Once(function()
                 if ring and ring.Parent then
                     ring:Destroy()
                 end
             end)
+            expand:Play()
+            fade:Play()
         end)
     end
 
@@ -1194,12 +1191,12 @@ function EggHatchingService:CreateConfettiEffect(container, config)
                     BackgroundTransparency = 0.15,
                 }
             )
-            tw:Play()
-            task.delay(config.duration or 1.0, function()
+            tw.Completed:Once(function()
                 if piece and piece.Parent then
                     piece:Destroy()
                 end
             end)
+            tw:Play()
         end)
     end
 end
@@ -1250,30 +1247,30 @@ function EggHatchingService:CreateSparkleEffect(container, config)
                     BackgroundTransparency = alphaMin,
                 }
             )
-            move:Play()
 
+            local pulseConnection
             if pulsate then
-                task.spawn(function()
-                    local t0 = tick()
-                    while tick() - t0 < dur do
-                        -- oscillate between size and alpha bounds
-                        local phase = ((tick() - t0) / rate) % 2
-                        local forward = phase < 1
-                        local factor = forward and phase or (2 - phase) -- 0..1..0
-                        local scale = scaleMin + (scaleMax - scaleMin) * factor
-                        local alpha = alphaMax - (alphaMax - alphaMin) * factor
-                        spark.Size = UDim2.new(0, math.floor(sz * scale), 0, math.floor(sz * scale))
-                        spark.BackgroundTransparency = alpha
-                        task.wait(0.03)
-                    end
+                local startedAt = os.clock()
+                pulseConnection = RunService.RenderStepped:Connect(function()
+                    local phase = ((os.clock() - startedAt) / rate) % 2
+                    local forward = phase < 1
+                    local factor = forward and phase or (2 - phase)
+                    local scale = scaleMin + (scaleMax - scaleMin) * factor
+                    local alpha = alphaMax - (alphaMax - alphaMin) * factor
+                    spark.Size = UDim2.new(0, math.floor(sz * scale), 0, math.floor(sz * scale))
+                    spark.BackgroundTransparency = alpha
                 end)
             end
 
-            task.delay(dur, function()
+            move.Completed:Once(function()
+                if pulseConnection then
+                    pulseConnection:Disconnect()
+                end
                 if spark and spark.Parent then
                     spark:Destroy()
                 end
             end)
+            move:Play()
         end)
     end
 end
@@ -1353,15 +1350,25 @@ function EggHatchingService:AnimateStar(star, config, index)
     -- Execute animation sequence
     fadeIn:Play()
 
-    fadeIn.Completed:Connect(function()
+    fadeIn.Completed:Once(function()
         expandTween:Play()
-
-        -- Start fade out near the end
-        task.wait(config.duration - config.fade_out_time - config.fade_in_time)
+        local fadeDelay = math.max(0, config.duration - config.fade_out_time - config.fade_in_time)
+        fadeOut = TweenService:Create(
+            starShape,
+            TweenInfo.new(
+                config.fade_out_time,
+                Enum.EasingStyle.Linear,
+                Enum.EasingDirection.Out,
+                0,
+                false,
+                fadeDelay
+            ),
+            { BackgroundTransparency = 1 }
+        )
         fadeOut:Play()
 
         -- Clean up when done
-        fadeOut.Completed:Connect(function()
+        fadeOut.Completed:Once(function()
             if star and star.Parent then
                 star:Destroy()
             end
@@ -1422,9 +1429,9 @@ function EggHatchingService:AnimateReveal(eggComponents, petImageId, petData, du
         petReveal.Image = petImageId or "rbxasset://textures/face.png"
     end
 
-    -- Give ViewportFrame a moment to render before starting animation
+    -- Wait for the first render opportunity rather than guessing a render duration.
     if petReveal.ClassName == "ViewportFrame" then
-        task.wait(0.05) -- Very short wait for render
+        RunService.RenderStepped:Wait()
     end
 
     -- Ensure transparency is set correctly regardless of element type
@@ -1466,7 +1473,7 @@ function EggHatchingService:AnimateReveal(eggComponents, petImageId, petData, du
     revealTween:Play()
     self:ShowRevealBadges(eggComponents)
 
-    task.wait(duration)
+    revealTween.Completed:Wait()
 
     eggComponents.state = ANIMATION_STATE.COMPLETE
     return true
@@ -1543,6 +1550,12 @@ end
 
 function EggHatchingService:StartHatchingAnimation(eggsData)
     local eggCount = #eggsData
+
+    for _, group in ipairs(self._activeCompletionGroups or {}) do
+        group:Cancel("superseded")
+    end
+    local completionGroups = {}
+    self._activeCompletionGroups = completionGroups
 
     -- Each hatch claims a generation token. The shared persistent GUI is reused across hatches,
     -- so a previous hatch's DELAYED cleanup must not tear down a newer hatch that started during
@@ -1622,11 +1635,11 @@ function EggHatchingService:StartHatchingAnimation(eggsData)
         local frame, components = self:CreateEggFrame(position, eggData)
         frame.Parent = container
 
-        -- Debug after parenting
-        task.wait() -- Let positioning take effect
-
         table.insert(eggFrames, frame)
         table.insert(eggComponents, components)
+    end
+    if #eggFrames > 0 then
+        RunService.RenderStepped:Wait()
     end
 
     -- Start rolling snare as eggs appear (from config), stop on first pop
@@ -1684,19 +1697,24 @@ function EggHatchingService:StartHatchingAnimation(eggsData)
     )
 
     task.spawn(function()
-        self:ExecuteHatchingSequence(
+        local sequenceComplete = self:ExecuteHatchingSequence(
             eggComponents,
             eggsData,
             eggFrames,
             gridInfo,
             rollSound,
-            timingDebug
+            timingDebug,
+            completionGroups
         )
+        if not sequenceComplete then
+            cleanupResult.isComplete = true
+            return
+        end
 
         -- PHASE 4: After animations complete, wait a moment then restore screen
         local resultEnjoymentTime =
             hatchingConfig.helpers.get_adjusted_timing("result_enjoyment_time")
-        task.wait(resultEnjoymentTime) -- Let player enjoy the result
+        awaitDuration(resultEnjoymentTime)
 
         -- If a newer hatch started during the wait, it now owns the shared GUI/frames — bail so
         -- we don't restore the screen or clear the new hatch's pets out from under it.
@@ -1709,7 +1727,7 @@ function EggHatchingService:StartHatchingAnimation(eggsData)
 
         -- PHASE 5: Auto cleanup after a short delay - just disable the GUI
         local cleanupPauseTime = hatchingConfig.helpers.get_adjusted_timing("cleanup_pause_time")
-        task.wait(cleanupPauseTime) -- Brief pause to see the restoration
+        awaitDuration(cleanupPauseTime)
 
         -- Same guard before the destructive cleanup (disable GUI + clear frames).
         if self._hatchGeneration ~= hatchGen then
@@ -1720,6 +1738,9 @@ function EggHatchingService:StartHatchingAnimation(eggsData)
         self._persistentGui.Enabled = false
         self:ClearEggFrames() -- Clean up egg frames for next use
         cleanupResult.isComplete = true
+        if self._activeCompletionGroups == completionGroups then
+            self._activeCompletionGroups = nil
+        end
 
         -- Teardown finished for the current hatch: release the lock so the next hatch may start.
         -- (The earlier generation-mismatch bails above intentionally do NOT release — a newer
@@ -1736,33 +1757,38 @@ function EggHatchingService:ExecuteHatchingSequence(
     eggFrames,
     gridInfo,
     rollSound,
-    timingDebug
+    timingDebug,
+    completionGroups
 )
     local eggCount = #eggComponents
     local hatchOptions = eggsData[1] and eggsData[1].hatchOptions or {}
     timingDebug = timingDebug or resolveAnimationTiming(hatchOptions)
     local silentHatch = timingDebug.silentHatch == true
     local shakeDuration = timingDebug.shakeDuration
-    local shakeWaitDuration = timingDebug.shakeWaitDuration
     local flashDuration = timingDebug.flashDuration
     local revealDuration = timingDebug.revealDuration
     local staggerDelay = timingDebug.staggerDelay
     local doStagger = timingDebug.doStagger == true
-    local completionWait = timingDebug.completionWait
-
     -- PHASE 1: All eggs shake simultaneously
-
-    for _, components in ipairs(eggComponents) do
-        local co = coroutine.create(function()
-            self:AnimateShake(components, shakeDuration)
+    local shakeCompletion = CompletionGroup.new(eggCount)
+    table.insert(completionGroups, shakeCompletion)
+    for index, components in ipairs(eggComponents) do
+        task.spawn(function()
+            local ok, err = pcall(self.AnimateShake, self, components, shakeDuration)
+            if not ok then
+                warn("[EggHatchingService] shake failed: " .. tostring(err))
+            end
+            shakeCompletion:Resolve(index)
         end)
-        coroutine.resume(co)
+    end
+    local shakeComplete = shakeCompletion:Await()
+    if not shakeComplete then
+        return false
     end
 
-    -- Wait for all shaking to complete
-    task.wait(shakeWaitDuration)
-
     -- PHASE 2: Staggered flash and reveal
+    local revealCompletion = CompletionGroup.new(eggCount)
+    table.insert(completionGroups, revealCompletion)
 
     for i, components in ipairs(eggComponents) do
         local eggData = eggsData[i]
@@ -1780,13 +1806,14 @@ function EggHatchingService:ExecuteHatchingSequence(
 
         -- Optional stagger between eggs
         if doStagger and i > 1 then
-            task.wait(staggerDelay)
+            awaitDuration(staggerDelay)
         end
 
+        local revealIndex = i
         task.spawn(function()
             -- annotate batch info for sound throttling
             components._batchCount = eggCount
-            components._indexInBatch = i
+            components._indexInBatch = revealIndex
             -- Flash (non-yielding) and play sound immediately
             if silentHatch then
                 -- Silent hatch suppresses hatch sounds. Skip Hatch bypasses this
@@ -1800,21 +1827,14 @@ function EggHatchingService:ExecuteHatchingSequence(
                 local fade = adv.egg_roll_fade_out or 0.15
                 local s = rollSound
                 rollSound = nil
-                task.spawn(function()
-                    local startVol = s.Volume
-                    local t0 = tick()
-                    while tick() - t0 < fade and s.Parent do
-                        local alpha = (tick() - t0) / fade
-                        s.Volume = startVol * math.max(0, 1 - alpha)
-                        task.wait()
-                    end
+                local fadeTween = TweenService:Create(s, TweenInfo.new(fade), { Volume = 0 })
+                fadeTween.Completed:Once(function()
                     if s.Parent then
                         s:Stop()
-                    end
-                    if s.Parent then
                         s:Destroy()
                     end
                 end)
+                fadeTween:Play()
             end
             -- Optional: 3D world effect if the egg has a world part reference or is special rarity
             local shouldPlayWorldFX = false
@@ -1842,12 +1862,7 @@ function EggHatchingService:ExecuteHatchingSequence(
                         anchor.Parent = workspace
                         worldPart = anchor
                         shouldPlayWorldFX = true
-                        -- Cleanup
-                        task.delay(8, function()
-                            if anchor and anchor.Parent then
-                                anchor:Destroy()
-                            end
-                        end)
+                        Debris:AddItem(anchor, 8)
                     end
                 end
             end
@@ -1860,17 +1875,31 @@ function EggHatchingService:ExecuteHatchingSequence(
                 end)
             end
             -- Reveal (pass the full eggData for pet info)
-            self:AnimateReveal(components, eggData.petImageId, eggData, entryRevealDuration)
+            local ok, err = pcall(
+                self.AnimateReveal,
+                self,
+                components,
+                eggData.petImageId,
+                eggData,
+                entryRevealDuration
+            )
+            if not ok then
+                warn("[EggHatchingService] reveal failed: " .. tostring(err))
+            end
+            revealCompletion:Resolve(revealIndex)
         end)
     end
 
-    -- Wait for all reveals to complete
-    task.wait(completionWait)
+    local revealComplete = revealCompletion:Await()
+    if not revealComplete then
+        return false
+    end
 
     -- PHASE 3.5: Stack identical results (group by petType+variant)
     pcall(function()
         self:AnimateStackedResults(eggFrames, eggComponents, eggsData, gridInfo)
     end)
+    return true
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════════
@@ -1964,6 +1993,7 @@ function EggHatchingService:AnimateStackedResults(eggFrames, _eggComponents, egg
     end
 
     -- Tween non-representatives to the representative position and fade out
+    local moveTweens = {}
     for key, group in pairs(groups) do
         local indices = group.indices
         if #indices > 1 then
@@ -1990,7 +2020,7 @@ function EggHatchingService:AnimateStackedResults(eggFrames, _eggComponents, egg
                             ),
                         }
                     )
-                    tween:Play()
+                    table.insert(moveTweens, tween)
                     -- Also fade the image for visual clarity
                     if guiObj and guiObj:IsA("ImageLabel") then
                         TweenService:Create(
@@ -2004,7 +2034,14 @@ function EggHatchingService:AnimateStackedResults(eggFrames, _eggComponents, egg
         end
     end
 
-    task.wait(0.4)
+    local moveCompletion = CompletionGroup.new(#moveTweens)
+    for index, tween in ipairs(moveTweens) do
+        tween.Completed:Once(function()
+            moveCompletion:Resolve(index)
+        end)
+        tween:Play()
+    end
+    moveCompletion:Await()
 
     -- Hide non-representatives; keep representatives and labels on screen briefly
     for _, group in pairs(groups) do
@@ -2030,13 +2067,15 @@ function EggHatchingService:AnimateStackedResults(eggFrames, _eggComponents, egg
     if groupCount > 0 then
         local newGrid = self:CalculateGridLayout(groupCount, containerSize.X, containerSize.Y)
         local newPositions = self:GenerateEggPositions(groupCount, newGrid)
+        local recenterTweens = {}
         for index, key in ipairs(groupKeys) do
             local repIndex = groups[key].indices[1]
             local repFrame = eggFrames[repIndex]
             local pos = newPositions[index]
             if repFrame and pos then
-                TweenService
-                    :Create(
+                table.insert(
+                    recenterTweens,
+                    TweenService:Create(
                         repFrame,
                         TweenInfo.new(
                             stackPolicy.recenterTweenSeconds,
@@ -2048,7 +2087,7 @@ function EggHatchingService:AnimateStackedResults(eggFrames, _eggComponents, egg
                             Size = UDim2.new(0, pos.size, 0, pos.size),
                         }
                     )
-                    :Play()
+                )
                 -- Resize count label relative to new size
                 local labels = createdLabels[key]
                 if labels then
@@ -2074,10 +2113,18 @@ function EggHatchingService:AnimateStackedResults(eggFrames, _eggComponents, egg
                 end
             end
         end
+        local recenterCompletion = CompletionGroup.new(#recenterTweens)
+        for index, tween in ipairs(recenterTweens) do
+            tween.Completed:Once(function()
+                recenterCompletion:Resolve(index)
+            end)
+            tween:Play()
+        end
+        recenterCompletion:Await()
     end
 
     -- Hold briefly to let players read counts
-    task.wait(stackPolicy.holdSeconds)
+    awaitDuration(stackPolicy.holdSeconds)
 
     -- Clean up labels
     for _, pair in pairs(createdLabels) do
@@ -2489,7 +2536,7 @@ function EggHatchingService:TestVisibility()
 
     -- Auto-cleanup after 5 seconds
     task.spawn(function()
-        task.wait(5)
+        awaitDuration(5)
         testFrame:Destroy()
         self._persistentGui.Enabled = false
     end)
@@ -2655,8 +2702,7 @@ function EggHatchingService:DebugEggViewports()
     return self:CreateEggViewportDebugger()
 end
 
-task.spawn(function()
-    task.wait(1) -- Wait a moment for PlayerGui to be ready
+task.defer(function()
     local service = EggHatchingService
     if Players.LocalPlayer then
         service:InitializePersistentGui()

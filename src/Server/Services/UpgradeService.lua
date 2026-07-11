@@ -6,6 +6,8 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local UpgradeService = {}
 UpgradeService.__index = UpgradeService
@@ -16,6 +18,7 @@ function UpgradeService:Init()
     self._logger = self._modules.Logger
     self._configLoader = self._modules.ConfigLoader
     self._dataService = self._modules.DataService
+    self._economyService = self._modules.EconomyService
     self._modifierService = self._modules.ModifierService
     self._upgradesConfig = self._configLoader:LoadConfig("upgrades")
     self._inventoryConfig = self._configLoader:LoadConfig("inventory")
@@ -62,13 +65,7 @@ end
 
 function UpgradeService:_applyInventoryEffectsWhenReady(player)
     task.spawn(function()
-        local waited = 0
-        while not self._dataService:IsDataLoaded(player) and waited < DATA_READY_TIMEOUT_SECONDS do
-            task.wait(0.1)
-            waited += 0.1
-        end
-
-        if self._dataService:IsDataLoaded(player) then
+        if Readiness.awaitAttribute(player, "DataLoaded", true, DATA_READY_TIMEOUT_SECONDS) then
             self:ApplyInventoryEffects(player)
         end
     end)
@@ -181,10 +178,23 @@ function UpgradeService:PurchaseUpgrade(player, upgradeId)
         }
     end
 
-    if cost.amount > 0 and not self._dataService:CanAfford(player, cost.currency, cost.amount) then
+    local newLevel = currentLevel + 1
+    local transaction = self._economyService:Transact(player, {
+        debits = cost.amount > 0 and { [cost.currency] = cost.amount } or {},
+        reason = "upgrade_purchase",
+        commit = function()
+            if (tonumber(data.Upgrades[upgradeId]) or 0) ~= currentLevel then
+                return false
+            end
+            data.Upgrades[upgradeId] = newLevel
+            return true
+        end,
+    })
+    if not transaction.ok then
         return {
             ok = false,
-            reason = "insufficient_currency",
+            reason = transaction.reason == "precondition_failed" and "insufficient_currency"
+                or transaction.reason,
             upgradeId = upgradeId,
             currency = cost.currency,
             cost = cost.amount,
@@ -192,12 +202,6 @@ function UpgradeService:PurchaseUpgrade(player, upgradeId)
         }
     end
 
-    if cost.amount > 0 then
-        self._dataService:RemoveCurrency(player, cost.currency, cost.amount, "upgrade_purchase")
-    end
-
-    local newLevel = currentLevel + 1
-    data.Upgrades[upgradeId] = newLevel
     self:ApplyInventoryEffects(player)
     self._dataService:RequestSave(player, "upgrade_purchase_" .. tostring(upgradeId), {
         critical = true,

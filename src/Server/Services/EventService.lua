@@ -230,10 +230,8 @@ function EventService:_syncScheduledEvents()
 end
 
 function EventService:_setupNetworking()
-    Signals.ActiveEffects.OnServerEvent:Connect(function(player, data)
-        if type(data) == "table" and data.request == true then
-            self:SendUpdate(player)
-        end
+    Signals.ActiveEffectsRequest.OnServerEvent:Connect(function(player)
+        self:SendUpdate(player)
     end)
 end
 

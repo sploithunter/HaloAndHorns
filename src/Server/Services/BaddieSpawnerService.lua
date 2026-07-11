@@ -26,22 +26,14 @@ function BaddieSpawnerService.new()
 end
 
 function BaddieSpawnerService:Init()
-    local loader = self._moduleLoader
-    self._logger = loader:Get("Logger")
-    local configLoader = loader:Get("ConfigLoader")
+    self._logger = self._modules.Logger
+    self._enemyService = self._modules.EnemyService
+    local configLoader = self._modules.ConfigLoader
     local ok, cfg = pcall(function()
         return configLoader:LoadConfig("enemies")
     end)
     self._config = (ok and cfg and cfg.spawners) or nil
     self._spawners = {} -- part -> { cooldownUntil }
-end
-
-function BaddieSpawnerService:_enemyService()
-    local locator = _G.RBXTemplateServices
-    local ok, svc = pcall(function()
-        return locator and locator:Get("EnemyService")
-    end)
-    return ok and svc or nil
 end
 
 function BaddieSpawnerService:_scan()
@@ -142,7 +134,7 @@ function BaddieSpawnerService:_trigger(part, player, rng)
     if not wave then
         return
     end
-    local enemySvc = self:_enemyService()
+    local enemySvc = self._enemyService
     if not enemySvc then
         return
     end

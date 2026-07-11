@@ -40,6 +40,7 @@ function PetProgressionService:Init()
     self._dataService = self._modules.DataService
     self._inventoryService = self._modules.InventoryService
     self._modifierService = self._modules.ModifierService
+    self._enchantService = nil
     self._config = self._configLoader:LoadConfig("pet_progression")
     self._petsConfig = self._configLoader:LoadConfig("pets")
 
@@ -47,6 +48,10 @@ function PetProgressionService:Init()
         context = "PetProgressionService",
         enabled = self:IsEnabled(),
     })
+end
+
+function PetProgressionService:SetEnchantService(service)
+    self._enchantService = service
 end
 
 function PetProgressionService:IsEnabled()
@@ -209,12 +214,7 @@ function PetProgressionService:AddPetExperience(player, petUid, amount, reason)
     -- unlocked — the level-up IS the enchant reveal (Jason: "some kind of
     -- celebration... and then it is unchangeable"). Locked by existing: the
     -- station refuses these pets, so the roll is final the moment it lands.
-    local enchantService = self._modules and self._modules.EnchantService
-    if not enchantService and _G.RBXTemplateServices then
-        pcall(function()
-            enchantService = _G.RBXTemplateServices:Get("EnchantService")
-        end)
-    end
+    local enchantService = self._enchantService
     if enchantService and enchantService.FillPermanentSlots then
         local added
         pcall(function()

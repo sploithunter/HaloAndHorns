@@ -400,3 +400,365 @@ migration is needed for the abandoned "element splits stacks" spec.
   huge pets read ALL CAPS on the team rail. Spawn-plaza dev gates deleted — activation IS the
   selector, even in dev. `admin.setCounter` = sanctioned counter override (`test.*` is
   network-unreachable by design). All live-verified by Jason same-day; pushed 35d2700.
+
+## 2026-07-10 - Architecture fitness gate (Phase 0)
+
+- Added `scripts/architecture_guard.py` and a reviewed, per-file debt baseline. CI now rejects new
+  or increased manual remotes, direct game-event sends, pet/currency mutation bypasses, global
+  service-locator use, runtime waits, and configs without explicit schema dispatch. Decreases must
+  remove the matching budget in the same PR, making architecture cleanup a deliberate ratchet.
+- Added focused guard modes plus Python unit coverage, wired the guard first in `mise run ci`, and
+  recorded the removal program in GitHub issue #3. Baseline verification is green: 1,258/1,258
+  headless tests across 113 specs.
+
+## 2026-07-10 - Network manifest foundation (Phase 1 slice 1)
+
+- Added the validated `configs/network.lua.packets` manifest plus pure `NetworkManifest` schema
+  rules and the single `SignalRegistry` constructor. Boot and headless CI now reject malformed
+  direction, authorization, environment, delivery, schema, and client rate/handler metadata.
+- Migrated `PetIndexUpdated`, `AchievementCompleted`, and `LeaderboardUpdated` without changing
+  their wire names or one-table payloads. The architecture debt baseline dropped by three remote
+  declarations and one unvalidated config; 95 legacy `Signals` declarations remain for later
+  compatibility slices. `mise run ci` is green at 1,263/1,263 across 114 specs.
+
+## 2026-07-10 - Progression notifications join the network manifest (Phase 1 slice 2)
+
+- Migrated `UpgradeResult`, `LevelUp_Claimed`, `LevelUp_OpenChoice`, `ZoneUnlockResult`, and
+  `ZoneTravelResult` from the legacy constructor table into the validated packet manifest. Wire
+  names and tuple payloads are unchanged; bidirectional `TutorialState` and unused-listener
+  `PurchaseResult` remain legacy pending separate contract decisions.
+- Ratcheted `Signals.lua` manual remote construction from 95 to 90. Headless verification remains
+  green at 1,263/1,263 across 114 specs. Two separate-place Studio Play smokes passed through MCP:
+  the foundation boot reported 3 manifest packets, and the migrated boot reported 8 with all five
+  moved signals present on the live server. Output contained no network, duplicate declaration, or
+  script errors; existing profile, placeholder monetization, and legacy-effect warnings remain.
+
+## 2026-07-10 - Economy notifications join the network manifest (Phase 1 slice 3)
+
+- Migrated `CurrencyUpdate`, `PurchaseSuccess`, `SellSuccess`, and `EconomyError` from the legacy
+  constructor table into the validated packet manifest. Existing senders and listeners still use
+  the same wire names and one-table payloads. Bidirectional `ShopItems` and `ActiveEffects`, plus
+  notifications without active client listeners, remain legacy pending separate contract work.
+- Ratcheted `Signals.lua` manual remote construction from 90 to 86. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 12 manifest packets and all four moved economy signals. Output contained
+  no network, duplicate declaration, or script errors; existing test-place warnings remain.
+
+## 2026-07-10 - Interaction notifications join the network manifest (Phase 1 slice 4)
+
+- Migrated `RealmTravelOffer`, `EnchantPetResult`, `EnchantStationOpened`, and `AdminToolResult`
+  from the legacy constructor table into the validated packet manifest. Existing senders and
+  listeners still use the same wire names and one-table payloads.
+- Ratcheted `Signals.lua` manual remote construction from 86 to 82. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 16 manifest packets and all four moved signals. Output contained no
+  network, duplicate declaration, or script errors; existing test-place warnings remain.
+
+## 2026-07-10 - Combat presentation notifications join the network manifest (Phase 1 slice 5)
+
+- Migrated `Combat_PetHit`, `Combat_Heal`, `Combat_EnemyHit`, and `Power_AreaFx` from the legacy
+  constructor table into the validated packet manifest. Existing senders and listeners still use
+  the same wire names and one-table payloads, including targeted and broadcast area effects.
+- Ratcheted `Signals.lua` manual remote construction from 82 to 78. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 20 manifest packets and all four moved combat signals. Output contained
+  no network, duplicate declaration, or script errors; existing test-place warnings remain.
+
+## 2026-07-10 - Player status notifications join the network manifest (Phase 1 slice 6)
+
+- Migrated `Hotbar_State`, `Power_Cooldown`, `AutoTarget_Status`, and `PetPositionsRelay` from the
+  legacy constructor table into the validated packet manifest. Existing senders and listeners
+  still use the same wire names and one-table payloads.
+- Ratcheted `Signals.lua` manual remote construction from 78 to 74. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 24 manifest packets and all four moved status signals. Output contained
+  no network, duplicate declaration, or script errors; existing test-place warnings remain.
+
+## 2026-07-10 - Gameplay event and debug notifications join the network manifest (Phase 1 slice 7)
+
+- Migrated `GameEvent` and `PlayerDebugInfo` from the legacy constructor table into the validated
+  packet manifest. `GameEvent` preserves its existing `(name, ctx)` tuple, while player debug info
+  preserves its one-table payload and active client listener.
+- Ratcheted `Signals.lua` manual remote construction from 74 to 72. Headless verification remains
+  green at 1,263/1,263 across 114 specs. A separate-place Studio Play smoke passed through MCP:
+  the live server reported 26 manifest packets, the two-argument game-event schema, and both moved
+  signals. Output contained no network, duplicate declaration, or script errors; existing
+  test-place warnings remain.
+
+## 2026-07-10 - Gameplay event publication boundary becomes exclusive
+
+- Routed enhancement, exclusive-egg, and potion pickup events in `DropService` through
+  `FireGameEvent` instead of sending `Signals.GameEvent` directly. Event names and client payloads
+  are unchanged; server taps and configured world sound now observe the same successful pickups.
+- Removed all three `DropService` exceptions from the architecture allowlist. The only remaining
+  direct `GameEvent` send is the intentional terminal inside `FireGameEvent` itself. A Studio Play
+  smoke loaded the exact updated `DropService` module and completed boot without script errors.
+
+## 2026-07-10 - Fusion joins the authoritative pet mint boundary
+
+- Routed fusion output through `PetGrantService` and injected its service dependencies instead of
+  resolving the global locator. Chaotic output is explicitly unique, preserving its per-copy
+  element and theme while retaining the source pet id and variant.
+- Added a mint-first transaction with exact-record snapshots and rollback. A failed mint consumes
+  nothing; failed input consumption un-mints the output and restores any consumed stack or unique
+  pet at its original inventory key.
+- Pinned both supported art families in headless coverage: the original six pets continue to use
+  packaged model assets, while Meshy pets continue through mesh-plus-texture assembly. The focused
+  suite is green at 1,271/1,271 across 116 specs.
+- Removed two direct pet-mutation exceptions and one global service-locator exception from the
+  architecture baseline.
+- Full CI is green, including a Rojo build and 1,271/1,271 headless tests. An MCP Studio Play smoke
+  completed boot and verified mint-first ordering plus both packaged and Meshy identities through
+  `PetGrantService:BuildPetData`; the smoke did not mutate player inventory.
+
+## 2026-07-10 - Reward currencies join the economy boundary
+
+- Routed `RewardService` currency grants through its injected `EconomyService` dependency instead
+  of calling the profile persistence primitive. Reward sources and bundle result shapes remain
+  unchanged, while economy history, lifetime counters, service signals, and client balance updates
+  now observe quest, daily, shop, achievement, and level reward currencies.
+- Removed the `RewardService` direct currency-persistence exception from the architecture baseline.
+- Full CI is green at 1,271/1,271 headless tests and 551 allowlisted architecture occurrences. An
+  MCP Studio Play smoke completed boot and used a mock economy boundary to verify `area_coins`
+  resolution, source propagation, and the unchanged grant result without touching live balances.
+
+## 2026-07-10 - Realm layer currencies join the economy boundary
+
+- Routed realm token earnings and configured layer traversal costs through injected
+  `EconomyService`. Token helpers now report a grant only after a successful deposit, and a failed
+  paid traversal debit returns `currency_debit_failed` before changing layer state.
+- Removed both `LayerService` direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,271/1,271 headless tests and 549 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified a successful mock token deposit and a rejected 100-token traversal
+  that conserved `CurrentLayer`; no live profile or balance was changed.
+
+## 2026-07-10 - Legacy reward persistence fallbacks removed
+
+- Removed the direct `DataService:AddCurrency` fallbacks from `PetIndexService` and
+  `AchievementsService`. Both already receive `EconomyService`; achievements still prefer the full
+  `RewardService` bundle path, with only its currency-only fallback going directly to economy.
+- Removed both matching direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,271/1,271 headless tests and 547 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified both helpers against a mock economy boundary and confirmed their
+  loaded sources contain no direct currency persistence call; live balances were untouched.
+
+## 2026-07-10 - Shop purchases gain an economy transaction boundary
+
+- Injected `EconomyService` and `RewardService` into `ShopService`, removing its runtime global
+  locator and direct profile currency calls. Purchase result and config shapes remain unchanged.
+- Added a pure spend/grant/refund transaction: currencies debit in deterministic order, a failed
+  later debit or reward grant refunds prior debits in reverse order, failed refunds surface as
+  `rollback_failed`, and purchase counts advance only after success.
+- Removed two direct currency-persistence exceptions and one global service-locator exception from
+  the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests across 117 specs and 544 allowlisted architecture
+  occurrences. An MCP Studio Play smoke verified the injected boundaries and deterministic
+  grant-failure rollback without executing a real purchase or changing live balances.
+
+## 2026-07-10 - Zone unlocks join the economy boundary
+
+- Injected `EconomyService` into `ZoneService` for configured unlock affordability and debit.
+  A rejected debit now returns `currency_debit_failed` before writing the unlock ledger, publishing
+  attributes, saving, or firing area-unlocked events; admin requirement bypasses remain unchanged.
+- Removed the `ZoneService` direct currency-persistence exception from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 543 allowlisted architecture occurrences. An
+  MCP Studio Play smoke simulated a rejected debit and verified both the in-memory unlock set and
+  persisted unlock array remained unchanged; no live unlock or balance was touched.
+
+## 2026-07-10 - Enchant rerolls join the economy boundary
+
+- Injected `EconomyService` into `EnchantService` for reroll affordability and payment. A rejected
+  authoritative debit returns `currency_debit_failed` before the roll or pet-record mutation, so
+  the existing enchant is conserved.
+- Removed the `EnchantService` direct currency-persistence exception from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 542 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified the rejected-debit failure contract with a mock economy boundary;
+  no pet record or live balance was changed.
+
+## 2026-07-10 - Egg hatch charges and refunds join the economy boundary
+
+- Connected the legacy-initialized `EggService` to `EconomyService` through its existing loader
+  handoff. Production affordability, hatch charges, partial refunds, and full refunds now share the
+  economy ledger, counters, signals, and client balance notifications; source tags are unchanged.
+- Retained the attribute-only fallback for isolated/manual contexts with no loader, and removed both
+  direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 540 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified affordability, charge, and partial-refund calls against a mock
+  economy boundary; no hatch or live balance was changed.
+
+## 2026-07-10 - Combat loot joins the economy boundary
+
+- Injected `EconomyService` into `CombatService` and routed both configured drop-table currencies
+  and the def-less realm-enemy coin fallback through it. Loot math, area-coin resolution, XP, and
+  source tags remain unchanged.
+- Removed both `CombatService` direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 538 allowlisted architecture occurrences. An
+  MCP Studio Play smoke verified the def-less realm coin fallback against a mock economy boundary;
+  no live loot or balance was changed.
+
+## 2026-07-10 - Enhancement shop gains exact sale rollback
+
+- Routed enhancement buy debits/refunds and single/bulk sale credits through injected
+  `EconomyService`. `InventoryService:BulkRemove` now accepts a pre-save commit callback and restores
+  exact item snapshots plus slot count when the callback rejects or throws.
+- Isolated economy post-credit observers so a listener/notification error cannot make a committed
+  credit appear failed and trigger item restoration. Failed credits return
+  `credit_failed_items_restored`; failed buy refunds return `rollback_failed`.
+- Removed all four `EnhancementShopService` direct currency-persistence exceptions from the
+  architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 534 allowlisted architecture occurrences. An
+  MCP Studio failure injection staged a three-item sale, rejected its credit, and verified exact
+  quantity, nested metadata, and slot-count restoration before any projection rebuild or save.
+
+## 2026-07-10 - Trade gems join the economy boundary
+
+- Injected `EconomyService` and `InventoryService` into `TradeService`. Gem escrow debits,
+  adjustment refunds, cancel/remove refunds, and recipient delivery credits now use checked economy
+  calls; escrow state changes only after the relevant debit/refund succeeds.
+- Grant helpers now return success instead of treating a non-throwing failure as delivery. Removed
+  all four `TradeService` direct currency-persistence exceptions from the architecture baseline.
+- Full CI is green at 1,276/1,276 headless tests and 530 allowlisted architecture occurrences. An
+  MCP Studio failure injection rejected a gem refund and verified the original escrow descriptor
+  and offer amount remained unchanged; no live trade or balance was touched.
+
+## 2026-07-10 - Trade delivery preserves exact records and rolls back both legs
+
+- Added loader-owned `PetTransferService` and exact snapshot insertion receipts in
+  `InventoryService`. Special pets retain their original UID and complete progression, provenance,
+  serial, and nested enchant metadata; common pets and enhancements retain full source stack data.
+- Added pure `TradeDeliveryTransaction`: inventory grants run before currency effects, failures undo
+  prior grants in reverse, and escrow stays authoritative until both legs commit. Cancel/refund is
+  one two-owner transaction, and trade stats now count the original escrow instead of cleared tables.
+- Added a synchronous DataService pre-release hook so graceful disconnect refunds happen before
+  ProfileStore ends the session. Abrupt server-crash recovery still requires the separately designed
+  durable write-ahead escrow journal.
+- Full CI is green at 1,281/1,281 headless tests and 530 allowlisted architecture occurrences. An
+  MCP Studio failure injection preserved a special UID plus exact nested metadata, restored a merged
+  stack exactly, rejected the second grant, removed the first recipient grant, and retained both
+  source escrow entries; fake profiles only, with no live inventory or balance mutation.
+
+## 2026-07-10 - Currency persistence becomes an exclusive economy boundary
+
+- Added pure `CurrencyTransaction` orchestration and `EconomyService:Transact`: stable preflight,
+  debit/credit order, optional domain commit, reverse compensation, transaction audit, and explicit
+  rollback-failure reporting. Added `EconomyService:SetCurrency` for authoritative absolute changes.
+- Migrated Upgrade purchases plus AdminTools, Automation, GameAPI, and all Studio smoke setup/restore
+  calls off direct DataService currency writes. Upgrade level mutation is the transaction commit, so
+  insufficient funds or commit rejection conserves both level and balance.
+- Removed Economy's loader dependency on Inventory and inject its legacy shop inventory reference at
+  the composition root, breaking the Economy -> Inventory -> Upgrade -> Economy cycle while keeping
+  existing purchase behavior.
+- Full CI is green at 1,285/1,285 headless tests. Currency persistence debt fell from 22 calls across
+  six services to zero feature-service bypasses; the guard explicitly exempts and unit-tests the
+  authoritative `EconomyService` terminal. Total architecture debt fell from 530 to 508. An MCP
+  Studio mock verified rejected-commit refund, denied-upgrade conservation,
+  one-level successful purchase/debit/save, and a clean real boot without live balance mutation.
+## 2026-07-10 - Manifest-driven economy request wires
+
+- Migrated `PurchaseItem`, `SellItem`, `AdjustCurrency`, `ConvertCurrency`, and
+  `PurchaseUpgrade` into the validated network manifest with caller policy,
+  rate-limit, handler, and tuple-schema metadata.
+- Migrated the exact-compatible `PurchaseResult` and `GiveItemSuccess`
+  server notifications without changing their wire names or payload shape.
+- Ratcheted `Signals.lua` manual remote construction from 72 to 65. The
+  bidirectional legacy `ShopItems` wire remains pending an explicit split.
+
+## 2026-07-10 - Manifest-driven inventory request wires
+
+- Migrated live inventory deletion, admin cleanup, category repair, orphaned
+  bucket cleanup, pet/tool equip, atomic squad commit, and enchant request
+  wires into the validated network manifest.
+- Recorded player versus admin caller policies and retained every exact wire
+  name and one-table payload shape.
+- Ratcheted `Signals.lua` manual remote construction from 65 to 57.
+  `ConsumeItem` and `InventoryUpdate` remain legacy until their missing
+  handler/publication paths are resolved.
+
+## 2026-07-10 - Manifest-driven settings and targeting request wires
+
+- Migrated 16 live settings, targeting, zone unlock, asset regeneration, and
+  pet-position request wires into the validated network manifest.
+- Preserved zero-argument toggles, scalar hatch settings, table payloads, and
+  the high-frequency pet-position telemetry budget.
+- Ratcheted `Signals.lua` manual remote construction from 57 to 41.
+  Orphaned realm-confirm and leaderboard-request wires remain legacy pending
+  implementation or removal.
+
+## 2026-07-10 - Manifest-driven monetization and breakable wires
+
+- Migrated three monetization requests, four exact-compatible monetization
+  notifications, and the breakable attack request into the network manifest.
+- Ratcheted `Signals.lua` manual remote construction from 41 to 33.
+  Bidirectional `ActiveEffects` remains legacy pending an explicit request and
+  notification split.
+
+## 2026-07-10 - Manifest-driven combat control wires
+
+- Migrated squad recall/summon, active-power toggle, combat targeting, and
+  hotbar activation/rebind/state requests into the validated network manifest.
+- Ratcheted `Signals.lua` manual remote construction from 33 to 25.
+  Bidirectional `TutorialState` remains legacy pending an explicit pull/push
+  split.
+
+## 2026-07-10 - Manifest-driven admin request wires
+
+- Migrated all 17 live admin request wires into the validated network manifest
+  with explicit admin authorization and exact payload arity.
+- Ratcheted `Signals.lua` manual remote construction from 25 to 8. Every
+  remaining legacy entry now requires a behavioral split, implementation, or
+  removal rather than a compatibility-only manifest migration.
+
+## 2026-07-10 - Directional network request splits
+
+- Split shop, tutorial, active-effects, and diagnostics pulls into dedicated
+  client-to-server request wires while retaining their existing response names.
+- Connected the previously unhandled shop-items request to
+  `EconomyService:GetShopItems`.
+- Ratcheted `Signals.lua` manual remote construction from 8 to 4.
+
+## 2026-07-10 - Generated Signals registry closure
+
+- Routed the live consumables request to `EconomyService:UseItem` and declared
+  it in the manifest.
+- Removed unused inventory-update and leaderboard-request wires, plus the
+  obsolete realm confirmation from the newer hold-E direct-travel flow.
+- Removed the legacy declaration/merge block. `Signals.lua` now returns only
+  the generated manifest registry, reducing manual construction from 4 to 0.
+
+## 2026-07-10 - Manifest-driven potion and trade streams
+
+- Replaced service-owned `PotionUpdate` and `TradeUpdate` RemoteEvents with
+  generated manifest entries and migrated their client listeners to `Signals`.
+- Reduced repository remote-construction debt from 10 to 8 occurrences.
+
+## 2026-07-10 - Manifest-driven service RemoteFunctions
+
+- Added environment-aware registry generation and a generated runtime transport
+  that preserves root-level and nested RemoteFunction topology.
+- Migrated Automation, egg purchase/selection, GameAPI, and Studio smoke remotes
+  into the manifest without changing existing client paths.
+- Studio-only automation and smoke packets are omitted from production
+  registries. Game-owned remote-construction debt fell from 8 to 2 occurrences.
+
+## 2026-07-10 - Remote-construction audit closure
+
+- Removed the unused legacy `NetworkBridge` implementation and its obsolete
+  self-test; runtime code already uses the generated `Signals` registry.
+- Classified Matter's vendored debugger remote alongside the generated registry
+  factories as scanner-exempt third-party infrastructure.
+- Reduced tracked remote-construction migration debt from 82 occurrences to 0.
+
+## 2026-07-10 - Architecture audit closure
+
+- Replaced readiness polling across server services, admin/UI boot, inventory replication, pet equipment, and hatching with milestone latches, attribute subscriptions, completion callbacks, and instance events. Profile release now joins `OnAfterSave` with a bounded promise deadline.
+- Preserved the original-pet compatibility route alongside modern `Stacks` and `Special` records; production pet writes remain behind `PetGrantService`, while direct smoke-fixture writes are explicitly scanner-exempt test infrastructure.
+- Added revisioned required-shape schemas for all 61 formerly permissive configs. Unknown configs fail closed, schema path/type errors are covered headlessly, and every real config passed Studio boot validation.
+- Classified all 164 remaining purposeful clocks by approved timing purpose. Readiness is not an approved category, classifications are exact-count and stale-sensitive, and the architecture guard now reports zero allowlisted migration occurrences across all seven rules.
+- Verification: 1,298/1,298 headless tests, full CI, and repeated Rojo-backed Studio boots with `DataLoaded`, both pet storage paths, rendered UI, and zero new client errors.
+
+## 2026-07-11 - Architecture audit single-unit integration
+
+- Squash-applied the completed audit tip onto current `origin/main` (`fbba377`) in a fresh integration worktree. The only textual conflict was Wyrm Weekend's mission egg modifier; the resolution preserves the event behavior through an explicit `EventService` peer binding and keeps inventory grants on the audited boundary.
+- The integrated architecture guard caught two concurrent-main global lookups in `EnemyService` and the new `showcase` config's missing schema. Event modifiers now use the bound service, and the Builder's Cut overlay has a required-shape schema covered against the real config in headless CI.
+- Live Studio boot found a main-side catalog contract mismatch that static/headless checks missed: intentional zero IDs for unconfigured rating-safe SKUs were treated as fatal. Zero now produces an unavailable-SKU warning, negative IDs remain fatal, and a focused ConfigLoader spec locks the distinction.
+- Final verification on the integrated tree: architecture debt zero, full `mise run ci`, 1,300/1,300 Lune tests across 122 specs, and a fresh Rojo-backed Studio boot with zero server/client errors, persistence active, `icons_ready`/`crystals_ready`, `DataLoaded`, both pet storage paths, and 650 visible UI objects.

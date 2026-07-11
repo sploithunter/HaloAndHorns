@@ -901,7 +901,7 @@ local function onInputBegan(input, gameProcessed)
         Logger:Debug("Main menu toggle requested")
     elseif input.KeyCode == Enum.KeyCode.B then
         -- Open shop
-        Signals.ShopItems:FireServer({ request = true })
+        Signals.ShopItemsRequest:FireServer()
         Logger:Debug("Shop requested")
     end
 end
@@ -1091,18 +1091,35 @@ local function waitForPetThumbnailsReady(timeoutSeconds)
         return assets
     end
 
-    local completed = false
-    local connection = assets:GetAttributeChangedSignal("PetThumbnailsReady"):Connect(function()
-        completed = assets:GetAttribute("PetThumbnailsReady") == true
-    end)
-
-    local startedAt = os.clock()
-    while not completed and os.clock() - startedAt < (timeoutSeconds or 10) do
-        task.wait(0.1)
+    local waitingThread = coroutine.running()
+    local settled = false
+    local outcome = nil
+    local connection
+    local function finish(reason)
+        if settled then
+            return
+        end
+        settled = true
+        outcome = reason
+        if connection then
+            connection:Disconnect()
+        end
+        task.spawn(waitingThread)
     end
-    connection:Disconnect()
+    connection = assets:GetAttributeChangedSignal("PetThumbnailsReady"):Connect(function()
+        if assets:GetAttribute("PetThumbnailsReady") == true then
+            finish("ready")
+        end
+    end)
+    task.delay(timeoutSeconds or 10, function()
+        finish("deadline")
+    end)
+    if assets:GetAttribute("PetThumbnailsReady") == true then
+        finish("ready")
+    end
+    coroutine.yield()
 
-    if completed or assets:GetAttribute("PetThumbnailsReady") == true then
+    if outcome == "ready" then
         return assets
     end
 
@@ -1236,9 +1253,6 @@ do
         -- OLD: require(script.UI.SimpleEffectsGUI) -- REMOVED: Replaced by EffectsPanel in MenuManager
         -- OLD: require(script.UI.GlobalEffectsGUI) -- REMOVED: Replaced by EffectsPanel in MenuManager
 
-        -- Load proper game UI system
-        task.wait(1) -- Wait a moment for other UIs to load
-
         -- Initialize MenuManager
         local MenuManager = require(script.UI.MenuManager)
         local menuManager = MenuManager.new()
@@ -1351,10 +1365,8 @@ do
     end)
 end
 
--- Initialize EggCurrentTargetService (proximity detection and UI positioning)
+-- Initialize the egg interaction stack in dependency order.
 task.spawn(function()
-    task.wait(0.5) -- Small delay to ensure everything is loaded
-
     local success, eggCurrentTargetService = pcall(function()
         return require(ReplicatedStorage.Shared.Services.EggCurrentTargetService)
     end)
@@ -1367,18 +1379,14 @@ task.spawn(function()
             "Failed to initialize EggCurrentTargetService",
             { error = tostring(eggCurrentTargetService) }
         )
+        return
     end
-end)
 
--- Initialize EggInteractionService (E key handling)
-task.spawn(function()
-    task.wait(0.7) -- Small delay after CurrentTargetService
-
-    local success, eggInteractionService = pcall(function()
+    local interactionSuccess, eggInteractionService = pcall(function()
         return require(ReplicatedStorage.Shared.Services.EggInteractionService)
     end)
 
-    if success then
+    if interactionSuccess then
         eggInteractionService:Initialize()
         Logger:Info("EggInteractionService initialized")
     else

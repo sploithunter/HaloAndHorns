@@ -22,6 +22,7 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local AdminPowerPalette = require(ReplicatedStorage.Shared.Game.AdminPowerPalette)
 local powersConfig = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("powers"))
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local localPlayer = Players.LocalPlayer
 
@@ -56,10 +57,7 @@ end
 function AdminPowerBar.start()
     -- Wait for the IsAdmin attribute to replicate (data loads after boot); bail for non-admins.
     if not isAdmin() then
-        local deadline = os.clock() + 12
-        while os.clock() < deadline and localPlayer:GetAttribute("IsAdmin") == nil do
-            task.wait(0.5)
-        end
+        Readiness.awaitAttributePresent(localPlayer, "IsAdmin", 12)
         if not isAdmin() then
             return
         end

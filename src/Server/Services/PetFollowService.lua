@@ -47,6 +47,8 @@ PetFollowService.__index = PetFollowService
 function PetFollowService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
+    self._combatServiceInstance = nil
+    self._enemyServiceInstance = nil
     self._config = self._configLoader:LoadConfig("pet_follow")
     self._combatConfig = self._configLoader:LoadConfig("combat")
     self._petRoles = self._configLoader:LoadConfig("pet_roles")
@@ -65,6 +67,11 @@ function PetFollowService:Init()
     -- Preload any model-based ranged FX (rock throw, future cactus) so the client can use them
     -- (InsertService is server-only). Sanitized templates land in ReplicatedStorage.RangedFXAssets.
     self:_preloadFxAssets()
+end
+
+function PetFollowService:BindPeerServices(services)
+    self._combatServiceInstance = services.CombatService
+    self._enemyServiceInstance = services.EnemyService
 end
 
 -- Load model_asset ids referenced by ranged_bolt (rock + projectile themes) and stash a
@@ -174,25 +181,11 @@ function PetFollowService:GetReportedPosition(pet)
 end
 
 function PetFollowService:_combatService()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get("CombatService")
-    end)
-    return ok and service or nil
+    return self._combatServiceInstance
 end
 
 function PetFollowService:_enemyService()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get("EnemyService")
-    end)
-    return ok and service or nil
+    return self._enemyServiceInstance
 end
 
 function PetFollowService:Start()

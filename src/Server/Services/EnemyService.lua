@@ -150,6 +150,12 @@ end
 function EnemyService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
+    self._combatServiceInstance = nil
+    self._petFollowServiceInstance = nil
+    self._statsService = nil
+    self._dropService = nil
+    self._dataServiceInstance = nil
+    self._powerService = nil
     self._enemiesConfig = self._configLoader:LoadConfig("enemies")
     self._petFollowConfig = self._configLoader:LoadConfig("pet_follow")
     self._combatConfig = self._configLoader:LoadConfig("combat")
@@ -225,26 +231,36 @@ function EnemyService:Init()
     end)
 end
 
-function EnemyService:_combatService()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
+function EnemyService:BindPeerServices(services)
+    self._combatServiceInstance = services.CombatService
+    self._petFollowServiceInstance = services.PetFollowService
+    self._statsService = services.StatsService
+    self._dropService = services.DropService
+    self._dataServiceInstance = services.DataService
+    self._powerService = services.PowerService
+    self._eventService = services.EventService
+end
+
+function EnemyService:_eventModifier(name, fallback)
+    local eventService = self._eventService
+    if not eventService then
+        return fallback
     end
-    local ok, service = pcall(function()
-        return locator:Get("CombatService")
+    local ok, value = pcall(function()
+        return eventService:GetModifier(name, fallback)
     end)
-    return ok and service or nil
+    if ok then
+        return tonumber(value) or fallback
+    end
+    return fallback
+end
+
+function EnemyService:_combatService()
+    return self._combatServiceInstance
 end
 
 function EnemyService:_petFollowService()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get("PetFollowService")
-    end)
-    return ok and service or nil
+    return self._petFollowServiceInstance
 end
 
 function EnemyService:_enemiesFolder()
@@ -1074,10 +1090,8 @@ function EnemyService:_onDefeated(targetId)
         -- kill so parked alts don't leech across the map.
         local credited = {} -- Player -> true
         local creditR = tonumber((self:_teamingConfig().kill_credit or {}).radius) or 150
-        pcall(function() -- Team Tuesday: kill credit reaches further
-            local ev = _G.RBXTemplateServices:Get("EventService")
-            creditR = creditR + (tonumber(ev:GetModifier("kill_credit_radius_bonus", 0)) or 0)
-        end)
+        -- Team Tuesday: kill credit reaches further.
+        creditR += self:_eventModifier("kill_credit_radius_bonus", 0)
         for _, nv in ipairs(contrib:GetChildren()) do
             local userId = tonumber(nv.Name)
             local contributor = userId and Players:GetPlayerByUserId(userId)
@@ -1114,11 +1128,11 @@ function EnemyService:_onDefeated(targetId)
                     )
                 end)
                 fireGameEvent(player, "enemy_defeated", { enemy = entry.enemyId })
-                pcall(function() -- mission counter (Origin Story combat beats)
-                    _G.RBXTemplateServices
-                        :Get("StatsService")
-                        :Increment(player, "enemies_defeated", 1)
-                end)
+                if self._statsService then
+                    pcall(function() -- mission counter (Origin Story combat beats)
+                        self._statsService:Increment(player, "enemies_defeated", 1)
+                    end)
+                end
                 -- rare ENHANCEMENT drop at the DOWN site (identity revealed at pickup). Use entry.pos,
                 -- NOT model.PrimaryPart.Position: the server never re-pivots the anchored enemy model
                 -- (only the client interpolates it toward MoveTarget), so the model sits at its SPAWN
@@ -1127,11 +1141,8 @@ function EnemyService:_onDefeated(targetId)
                 local pp = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
                 local dropPos = entry.pos or (pp and pp.Position)
                 if dropPos then
-                    local locator = _G.RBXTemplateServices
-                    local okSvc, drops = pcall(function()
-                        return locator and locator:Get("DropService")
-                    end)
-                    if okSvc and drops and drops.TrySpawnEnhancementDrop then
+                    local drops = self._dropService
+                    if drops and drops.TrySpawnEnhancementDrop then
                         pcall(function()
                             -- rank premium: bosses roll better (enemy_rank_mult)
                             drops:TrySpawnEnhancementDrop(player, "enemy", dropPos, {
@@ -1157,18 +1168,11 @@ function EnemyService:_onDefeated(targetId)
                             -- Wyrm Weekend (exclusive_egg_chance event axis):
                             -- doubles the ROLL, never the stated hatch odds
                             local exChance = tonumber(ex and ex.chance) or 0
-                            pcall(function()
-                                local ev = _G.RBXTemplateServices:Get("EventService")
-                                exChance = exChance
-                                    * (
-                                        1
-                                        + (tonumber(ev:GetModifier("exclusive_egg_chance", 0)) or 0)
-                                    )
-                            end)
+                            exChance *= 1 + self:_eventModifier("exclusive_egg_chance", 0)
                             if ex and ex.egg and math.random() < exChance then
                                 -- PHYSICAL drop (Jason: "see it in the world in
                                 -- 3d") — magnet-immune; despawn force-collects
-                                local dropSvc = _G.RBXTemplateServices:Get("DropService")
+                                local dropSvc = self._dropService
                                 if dropSvc and dropSvc.TrySpawnEggDrop then
                                     dropSvc:TrySpawnEggDrop(
                                         player,
@@ -1350,14 +1354,7 @@ end
 -- ===== #179 Down-lockout integration (pure logic in Shared/Game/PetLockout) =====
 
 function EnemyService:_dataService()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, svc = pcall(function()
-        return locator:Get("DataService")
-    end)
-    return ok and svc or nil
+    return self._dataServiceInstance
 end
 
 function EnemyService:_lockoutCfg()
@@ -1918,7 +1915,7 @@ function EnemyService:ApplyKnockback(enemyModel, player, distance)
             if not ePos then
                 return false
             end
-            local pfs = self._moduleLoader and self._moduleLoader:Get("PetFollowService")
+            local pfs = self._petFollowServiceInstance
             local fromPos
             local tp = entry.targetPet
             if tp and tp.Parent then
@@ -2758,7 +2755,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
                 local center = self:_petPosition(slamTarget, pfs)
                 local radius = tonumber(slam.radius) or 14
                 local telegraph = tonumber(slam.telegraph) or 1.2
-                local ps = self._moduleLoader and self._moduleLoader:Get("PowerService")
+                local ps = self._powerService
                 if ps and ps.SpawnGroundRune then
                     ps:SpawnGroundRune(center, radius, Color3.fromRGB(235, 60, 40), {
                         name = "SlamRune",
