@@ -13,6 +13,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local FusionLogic = require(ReplicatedStorage.Shared.Game.FusionLogic)
+local FusionTransaction = require(ReplicatedStorage.Shared.Game.FusionTransaction)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 
 local FusionService = {}
@@ -22,18 +23,9 @@ function FusionService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._config = self._configLoader:LoadConfig("fusion")
+    self._inventoryService = self._modules and self._modules.InventoryService
+    self._petGrantService = self._modules and self._modules.PetGrantService
     self._fusionLog = {} -- append-only, capped at config.fusion_log_limit
-end
-
-function FusionService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 -- Rule check exposed to the UI/bus (fusion.canFuse).
@@ -42,20 +34,20 @@ function FusionService:CanFuse(elemA, elemB)
 end
 
 -- Execute a fusion of two unique pets the player owns (by inventory uid).
--- Atomic: validate ownership + elements first, then consume → produce; the audit
--- record is written only on success.
+-- Atomic: validate ownership + elements first, mint the output, then consume the
+-- inputs. Failed consumption un-mints the output and restores exact input state.
+-- The audit record is written only on success.
 function FusionService:Fuse(player, uidA, uidB)
-    local inventory = self:_service("InventoryService")
-    if not inventory then
+    local inventory = self._inventoryService
+    local petGrant = self._petGrantService
+    if not inventory or not petGrant then
         return { ok = false, reason = "service_unavailable" }
     end
     if uidA == uidB then
         return { ok = false, reason = "same_pet", message = "Fusion requires two different pets" }
     end
-    local bucket = inventory:GetInventory(player, "pets")
-    local items = bucket and bucket.items
-    local recA = items and items[uidA]
-    local recB = items and items[uidB]
+    local recA = inventory:GetPetRecordSnapshot(player, uidA)
+    local recB = inventory:GetPetRecordSnapshot(player, uidB)
     if not recA or not recB then
         return { ok = false, reason = "pet_not_found" }
     end
@@ -70,42 +62,53 @@ function FusionService:Fuse(player, uidA, uidB)
     local outputTheme = FusionLogic.resolveTheme(recA.theme, recB.theme, self._config)
     local outputElement = FusionLogic.outputElement(self._config)
 
-    -- MINT-FIRST ordering (2026-07-07 transaction audit: this was the SellJunk loss class —
-    -- both inputs consumed, then an UNCHECKED AddItem; a full bucket or a folder-rebuild throw
-    -- ate two pets with no output and no rollback). Produce the Chaotic output FIRST: if the
-    -- mint fails nothing was taken; if an input removal then fails, revert the mint (and put
-    -- back the first input if it already went). Every failure point leaves the player whole —
-    -- or momentarily one pet ahead, never behind.
-    local outputData = {
-        id = recA.id,
-        variant = recA.variant or "basic",
-        element = outputElement,
-        theme = outputTheme,
-    }
-    local okMint, outUid = pcall(function()
-        return inventory:AddItem(player, "pets", outputData)
-    end)
-    if not okMint or not outUid then
-        return { ok = false, reason = "no_space", message = "No room for the fused pet" }
-    end
-    local removedA = inventory:RemoveItem(player, "pets", uidA, 1)
-    local removedB = removedA and inventory:RemoveItem(player, "pets", uidB, 1)
-    if not (removedA and removedB) then
-        pcall(function()
-            inventory:RemoveItem(player, "pets", outUid, 1) -- un-mint
-        end)
-        if removedA then -- put the consumed first input back
-            pcall(function()
-                inventory:AddItem(player, "pets", {
-                    id = recA.id,
-                    variant = recA.variant or "basic",
-                    element = elemA,
-                    theme = recA.theme,
-                })
-            end)
+    local transaction = FusionTransaction.execute({
+        uidA = uidA,
+        uidB = uidB,
+        snapshotA = recA,
+        mint = function()
+            local result = petGrant:GrantPet(player, {
+                petType = recA.id,
+                variant = recA.variant or "basic",
+                element = outputElement,
+                theme = outputTheme,
+                unique = true,
+                source = "fusion",
+                deferFlush = true,
+            })
+            if not result.ok then
+                return {
+                    ok = false,
+                    reason = "no_space",
+                    message = result.error or "No room for the fused pet",
+                }
+            end
+            return result
+        end,
+        remove = function(uid)
+            return inventory:RemoveItem(player, "pets", uid, 1, { deferFlush = true })
+        end,
+        restore = function(uid, snapshot)
+            return inventory:RestorePetRecordSnapshot(player, uid, snapshot, { deferFlush = true })
+        end,
+        flush = function(saveTag)
+            inventory:FlushBucket(player, "pets", saveTag)
+            return true
+        end,
+    })
+    if not transaction.ok then
+        if transaction.reason == "rollback_failed" and self._logger then
+            self._logger:Error("Fusion rollback failed", {
+                player = player.Name,
+                uidA = uidA,
+                uidB = uidB,
+            })
         end
-        return { ok = false, reason = "consume_failed" }
+        return transaction
     end
+
+    local outputData = transaction.output
+    local outUid = transaction.outputUid
 
     local rec = FusionLogic.fusionRecord(player.UserId, uidA, uidB, outUid, os.time())
     self:_appendLog(rec)

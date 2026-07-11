@@ -33,12 +33,17 @@ function PetGrantService:Init()
     self._petSerialService = self._modules.PetSerialService
     self._petProgressionService = self._modules.PetProgressionService
     self._enchantService = self._modules.EnchantService
+    self._petIndexService = nil
     self._petsConfig = self._configLoader:LoadConfig("pets")
     self._layersConfig = self._configLoader:LoadConfig("layers")
 
     self._logger:Info("PetGrantService initialized", {
         context = "PetGrantService",
     })
+end
+
+function PetGrantService:SetPetIndexService(service)
+    self._petIndexService = service
 end
 
 function PetGrantService:_getMaxEnchantmentsForRarity(rarityId)
@@ -118,6 +123,8 @@ function PetGrantService:_normalizeGrant(request)
         nickname = request.nickname,
         source = request.source or "pet_grant",
         element = request.element and tostring(request.element):lower() or nil,
+        theme = request.theme,
+        unique = request.unique == true,
     }
 end
 
@@ -142,6 +149,8 @@ function PetGrantService:BuildPetData(request, player)
         -- couldn't") — only an explicit lock applies otherwise
         locked = grant.creator or grant.locked == true,
         grant_source = grant.source,
+        theme = grant.theme,
+        unique = grant.unique or nil,
     }
 
     -- Element at hatch (Feature 5): from the layer the hatch happens on
@@ -248,13 +257,14 @@ function PetGrantService:_announceWorldFirst(player, petType, variant)
     if ok then
         return
     end
-    local locator = _G.RBXTemplateServices
-    local okIdx, indexService = pcall(function()
-        return locator and locator:Get("PetIndexService")
-    end)
-    if okIdx and indexService and indexService.NotifyWorldFirst then
+    local indexService = self._petIndexService
+    if indexService and indexService.NotifyWorldFirst then
         indexService:NotifyWorldFirst(petType, variant, payload.p, true)
     end
+end
+
+function PetGrantService:_addPetRecord(player, petData, options)
+    return self._inventoryService:AddItem(player, "pets", petData, options)
 end
 
 function PetGrantService:GrantPet(player, request)
@@ -277,8 +287,7 @@ function PetGrantService:GrantPet(player, request)
     -- pure data and flushes replication + the save ONCE after the loop (FlushBucket) —
     -- previously EVERY hatched pet paid a full pets-folder rebuild + two critical saves.
     local deferFlush = request ~= nil and request.deferFlush == true
-    local uid, addError =
-        self._inventoryService:AddItem(player, "pets", petData, { deferFlush = deferFlush })
+    local uid, addError = self:_addPetRecord(player, petData, { deferFlush = deferFlush })
     if not uid then
         return {
             ok = false,

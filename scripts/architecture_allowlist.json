@@ -1,0 +1,55 @@
+{
+  "rules": {
+    "config-without-schema": {
+      "disposition": "migration-debt",
+      "files": {},
+      "owner": "configuration",
+      "pattern": "configs/*.lua absent from ConfigLoader:ValidateConfig dispatch",
+      "reason": "Existing permissive configs must gain explicit schemas and version policy."
+    },
+    "currency-persistence-call": {
+      "disposition": "migration-debt",
+      "files": {},
+      "owner": "economy and persistence",
+      "pattern": "_dataService|dataService|dataSvc:AddCurrency|RemoveCurrency|SetCurrency",
+      "reason": "Existing direct persistence calls must migrate to the economy transaction boundary."
+    },
+    "game-event-publication": {
+      "disposition": "migration-debt",
+      "files": {},
+      "owner": "gameplay events",
+      "pattern": "Signals.GameEvent:FireClient|FireAllClients",
+      "reason": "Existing direct sends must migrate behind the authoritative gameplay-event publisher."
+    },
+    "pet-record-mutation": {
+      "disposition": "migration-debt",
+      "files": {},
+      "owner": "pet inventory",
+      "pattern": "AddItem(..., \"pets\", ...) or direct Inventory.pets.items assignment",
+      "reason": "Existing pet creation bypasses must migrate to pet mint or transfer transactions."
+    },
+    "remote-construction": {
+      "disposition": "migration-debt",
+      "files": {},
+      "owner": "networking",
+      "pattern": "Instance.new(\"RemoteEvent|RemoteFunction\") or transport:RemoteEvent|RemoteFunction",
+      "reason": "Existing code-declared and service-owned remotes must migrate to the network manifest."
+    },
+    "runtime-wait": {
+      "disposition": "migration-debt",
+      "files": {},
+      "owner": "path owners in CODEOWNERS",
+      "pattern": "task.wait(...) or task.delay(...) under src/",
+      "reason": "Existing timers require classification and synchronization waits must migrate to completion contracts."
+    },
+    "service-global-locator": {
+      "disposition": "migration-debt",
+      "files": {},
+      "owner": "service lifecycle",
+      "pattern": "_G.RBXTemplateServices",
+      "reason": "Existing global lookups must migrate to declared dependencies or event subscriptions."
+    }
+  },
+  "tracking": "https://github.com/sploithunter/HaloAndHorns/issues/3",
+  "version": 1
+}

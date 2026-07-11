@@ -1596,6 +1596,27 @@ return function()
                 expect(string.find(status.errors[1], "Invalid Roblox ID", 1, true)).to.be.ok()
             end)
 
+            it("should treat zero as an unconfigured catalog warning", function()
+                configLoader._monetizationCache = {
+                    product_id_mapping = {
+                        future_product = 0,
+                    },
+                    products = {},
+                    passes = {},
+                    premium_benefits = {},
+                    validation_rules = {
+                        test_mode = { enabled = false },
+                    },
+                }
+
+                local status = configLoader:ValidateMonetizationSetup()
+
+                expect(status.isValid).to.equal(true)
+                expect(#status.errors).to.equal(0)
+                expect(#status.warnings).to.equal(1)
+                expect(string.find(status.warnings[1], "not configured", 1, true)).to.be.ok()
+            end)
+
             it("should get monetization status", function()
                 configLoader._monetizationCache = {
                     product_id_mapping = {},

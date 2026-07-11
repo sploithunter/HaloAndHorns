@@ -28,18 +28,13 @@ end
 function MeetCreatorService:Init()
     self._logger = self._modules.Logger
     self._configLoader = self._modules.ConfigLoader
+    self._dataService = self._modules.DataService
+    self._inventoryService = self._modules.InventoryService
+    self._petGrantService = self._modules.PetGrantService
     local ok, cfg = pcall(function()
         return self._configLoader:LoadConfig("creators")
     end)
     self._config = (ok and cfg) or { creators = {}, meet = { enabled = false } }
-end
-
-function MeetCreatorService:_svc(name)
-    local locator = _G.RBXTemplateServices
-    local ok, svc = pcall(function()
-        return locator and locator:Get(name)
-    end)
-    return ok and svc or nil
 end
 
 function MeetCreatorService:_creatorFor(userId)
@@ -50,7 +45,7 @@ end
 function MeetCreatorService:_tryMeet(player, creatorUserId, creatorDef)
     -- creators DO meet themselves (being in a server with the creator includes
     -- being the creator) — Jason's call, and it makes the mechanic solo-testable
-    local dataService = self:_svc("DataService")
+    local dataService = self._dataService
     if not (dataService and dataService:IsDataLoaded(player)) then
         return
     end
@@ -61,7 +56,7 @@ function MeetCreatorService:_tryMeet(player, creatorUserId, creatorDef)
     end
     data.MetCreators[tostring(creatorUserId)] = os.time()
 
-    local invSvc = self:_svc("InventoryService")
+    local invSvc = self._inventoryService
     local granted = invSvc
         and invSvc:AddItem(player, "eggs", {
             id = creatorDef.egg_id,
@@ -193,7 +188,7 @@ end
 -- Admin/test: forget every met-creator stamp so the once-ever meet can fire again
 -- (the egg is a one-of-one — this is how you re-run the flow after testing spends it).
 function MeetCreatorService:ResetMeets(player)
-    local dataService = self:_svc("DataService")
+    local dataService = self._dataService
     local data = dataService and dataService:GetData(player)
     if not data then
         return { ok = false, reason = "no_data" }
@@ -235,7 +230,7 @@ function MeetCreatorService:HatchEggItem(player, eggItemId)
             return { ok = false, reason = "unknown_egg" }
         end
     end
-    local invSvc = self:_svc("InventoryService")
+    local invSvc = self._inventoryService
     local rec = invSvc and invSvc:GetItem(player, "eggs", eggItemId)
     if not rec or (tonumber(rec.quantity) or 0) < 1 then
         return { ok = false, reason = "no_egg" }
@@ -243,7 +238,7 @@ function MeetCreatorService:HatchEggItem(player, eggItemId)
     -- NORMAL hatch mechanics (Jason): the creator egg is a REAL egg definition in
     -- configs/pets.lua — simulateHatch runs the standard pipeline (species, the
     -- golden/rainbow channels WITH the player's luck, and the slim huge chance).
-    local dataService = self:_svc("DataService")
+    local dataService = self._dataService
     local playerData = dataService and dataService:GetData(player)
     local petsConfig = require(ReplicatedStorage.Configs:WaitForChild("pets"))
     local okSim, hatch = pcall(function()
@@ -252,7 +247,7 @@ function MeetCreatorService:HatchEggItem(player, eggItemId)
     if not okSim or type(hatch) ~= "table" or not hatch.pet then
         return { ok = false, reason = "hatch_failed" }
     end
-    local grantSvc = self:_svc("PetGrantService")
+    local grantSvc = self._petGrantService
     if not grantSvc then
         return { ok = false, reason = "service_unavailable" }
     end

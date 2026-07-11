@@ -23,6 +23,7 @@ local RunService = game:GetService("RunService")
 
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local Signal = require(ReplicatedStorage.Shared.Libraries.Signal)
 
 local InventoryService = {}
 InventoryService.__index = InventoryService
@@ -35,6 +36,22 @@ local function print(...)
     if __PRINT_ENABLED then
         __RAW_PRINT(...)
     end
+end
+
+local function deepCopy(value, seen)
+    if type(value) ~= "table" then
+        return value
+    end
+    seen = seen or {}
+    if seen[value] then
+        return seen[value]
+    end
+    local copy = {}
+    seen[value] = copy
+    for key, child in pairs(value) do
+        copy[deepCopy(key, seen)] = deepCopy(child, seen)
+    end
+    return copy
 end
 
 -- Helper to safely require configs
@@ -57,6 +74,7 @@ function InventoryService:Init()
     self._configLoader = self._modules.ConfigLoader
     self._upgradeService = self._modules.UpgradeService
     self._playerProgressionService = self._modules.PlayerProgressionService
+    self._statsService = self._modules.StatsService
     self._petIndexService = nil
 
     print("📦 InventoryService dependencies injected")
@@ -72,6 +90,8 @@ function InventoryService:Init()
     self._playerInventoryFolders = {}
     self._playerEquippedFolders = {}
     self._playerLevelConnections = {}
+    self._playerDataLoadedConnections = {}
+    self.EquipmentChanged = Signal.new()
 
     self._logger:Info("📦 InventoryService initializing", {
         enabledBuckets = self._inventoryConfig.enabled_buckets,
@@ -98,11 +118,7 @@ function InventoryService:Start()
 
     -- Create folders for any players already in game
     for _, player in pairs(Players:GetPlayers()) do
-        if self._dataService:IsDataLoaded(player) then
-            print("📂 Creating folders for existing player:", player.Name)
-            self:_createInventoryFolders(player)
-            self:_connectPlayerLevelRewards(player)
-        end
+        self:_onPlayerAdded(player)
     end
 
     self._logger:Info("🚀 InventoryService started")
@@ -781,7 +797,7 @@ end
 -- with SNAPSHOT ROLLBACK — if anything throws mid-batch every touched stack is restored —
 -- then rebuilds the bucket folders and requests the save ONCE.
 -- Returns ok, removedMap (uid -> qty actually removed), totalQty.
-function InventoryService:BulkRemove(player, bucketName, entries)
+function InventoryService:BulkRemove(player, bucketName, entries, opts)
     if bucketName == "pets" then
         return false, nil, 0 -- pets have projection/equip side effects; use RemoveItem
     end
@@ -802,11 +818,7 @@ function InventoryService:BulkRemove(player, bucketName, entries)
             local item = bucket.items[uid]
             if item then
                 if not snapshots[uid] then
-                    local copy = {}
-                    for k, v in pairs(item) do
-                        copy[k] = v
-                    end
-                    snapshots[uid] = copy
+                    snapshots[uid] = deepCopy(item)
                 end
                 if bucketConfig.storage_type == "stackable" then
                     local qty = math.max(1, math.floor(tonumber(entry.quantity) or 1))
@@ -830,7 +842,7 @@ function InventoryService:BulkRemove(player, bucketName, entries)
         end
     end)
 
-    if not okAll then
+    local function rollback(reason, err)
         -- ROLLBACK: restore every touched stack exactly as it was — a failed sweep must
         -- never end with the player owning fewer items than they started with.
         for uid, copy in pairs(snapshots) do
@@ -842,7 +854,18 @@ function InventoryService:BulkRemove(player, bucketName, entries)
             bucket = bucketName,
             error = tostring(err),
         })
-        return false, nil, 0
+        return false, nil, 0, reason
+    end
+
+    if not okAll then
+        return rollback("remove_failed", err)
+    end
+
+    if opts and opts.commit then
+        local commitCalled, committed = pcall(opts.commit, removedMap, totalQty)
+        if not commitCalled or committed ~= true then
+            return rollback("commit_failed", commitCalled and "commit rejected" or committed)
+        end
     end
 
     -- The batch is committed in DATA at this point; replication is cosmetic — a folder
@@ -850,9 +873,13 @@ function InventoryService:BulkRemove(player, bucketName, entries)
     pcall(function()
         self:_updateBucketFolders(player, bucketName)
     end)
-    self._dataService:RequestSave(player, "inventory_bulk_remove_" .. tostring(bucketName), {
-        critical = true,
-    })
+    self._dataService:RequestSave(
+        player,
+        (opts and opts.saveTag) or ("inventory_bulk_remove_" .. tostring(bucketName)),
+        {
+            critical = true,
+        }
+    )
     return true, removedMap, totalQty
 end
 
@@ -900,47 +927,66 @@ end
 -- 📂 FOLDER-BASED REPLICATION SYSTEM
 -- ═══════════════════════════════════════════════════════════════════════════════════
 
-function InventoryService:_onPlayerAdded(player)
-    -- Wait for DataService to load player profile
-    task.spawn(function()
-        local maxWait = 10 -- seconds
-        local waited = 0
+function InventoryService:_initializePlayerProjection(player)
+    if self._playerInventoryFolders[player] then
+        return
+    end
 
-        while not self._dataService:IsDataLoaded(player) and waited < maxWait do
-            task.wait(0.1)
-            waited = waited + 0.1
-        end
-
-        if self._dataService:IsDataLoaded(player) then
-            -- RETROFIT (Jason): unique pets minted before provenance existed (the
-            -- huges) get player_class = 1. hatched_by stays unset for legacy records
-            -- (unknowable after trades) — only new mints carry it.
-            do
-                local data = self._dataService:GetData(player)
-                local pets = data and data.Inventory and data.Inventory.pets
-                local changed = false
-                for _, rec in pairs((pets and pets.items) or {}) do
-                    if rec.uid and rec.player_class == nil then
-                        rec.player_class = 1
-                        changed = true
-                    end
-                end
-                if changed then
-                    self._dataService:RequestSave(player, "pet_player_class_backfill")
-                end
+    -- RETROFIT (Jason): unique pets minted before provenance existed (the
+    -- huges) get player_class = 1. hatched_by stays unset for legacy records
+    -- (unknowable after trades) — only new mints carry it.
+    do
+        local data = self._dataService:GetData(player)
+        local pets = data and data.Inventory and data.Inventory.pets
+        local changed = false
+        for _, rec in pairs((pets and pets.items) or {}) do
+            if rec.uid and rec.player_class == nil then
+                rec.player_class = 1
+                changed = true
             end
-            self:_createInventoryFolders(player)
-            self:_connectPlayerLevelRewards(player)
-        else
-            self._logger:Warn("⚠️ REPLICATION - Player data not loaded in time", {
-                player = player.Name,
-                waitedSeconds = waited,
-            })
         end
+        if changed then
+            self._dataService:RequestSave(player, "pet_player_class_backfill")
+        end
+    end
+    self:_createInventoryFolders(player)
+    self:_connectPlayerLevelRewards(player)
+end
+
+function InventoryService:_onPlayerAdded(player)
+    if self._dataService:IsDataLoaded(player) then
+        self:_initializePlayerProjection(player)
+        return
+    end
+
+    if self._playerDataLoadedConnections[player] then
+        return
+    end
+
+    local connection
+    connection = player:GetAttributeChangedSignal("DataLoaded"):Connect(function()
+        if not self._dataService:IsDataLoaded(player) then
+            return
+        end
+        connection:Disconnect()
+        self._playerDataLoadedConnections[player] = nil
+        self:_initializePlayerProjection(player)
     end)
+    self._playerDataLoadedConnections[player] = connection
+
+    if self._dataService:IsDataLoaded(player) then
+        connection:Disconnect()
+        self._playerDataLoadedConnections[player] = nil
+        self:_initializePlayerProjection(player)
+    end
 end
 
 function InventoryService:_onPlayerRemoving(player)
+    local dataLoadedConnection = self._playerDataLoadedConnections[player]
+    if dataLoadedConnection then
+        dataLoadedConnection:Disconnect()
+        self._playerDataLoadedConnections[player] = nil
+    end
     local levelConnection = self._playerLevelConnections[player]
     if levelConnection then
         levelConnection:Disconnect()
@@ -1371,6 +1417,121 @@ function InventoryService:GetItem(player, bucketName, uid)
     end
 
     return bucket.items[uid]
+end
+
+function InventoryService:GetPetRecordSnapshot(player, uid)
+    local bucket = self:GetInventory(player, "pets")
+    local record = bucket and bucket.items and bucket.items[uid]
+    if type(record) ~= "table" then
+        return nil
+    end
+    return deepCopy(record)
+end
+
+-- Restore an exact pre-transaction ownership record. Fusion uses this only after
+-- removing its newly minted output, so both stack quantities and unique metadata
+-- return to their original key and value in one non-yielding mutation.
+function InventoryService:RestorePetRecordSnapshot(player, uid, snapshot, opts)
+    local bucket = self:GetInventory(player, "pets")
+    if
+        type(uid) ~= "string"
+        or uid == ""
+        or type(snapshot) ~= "table"
+        or type(snapshot.id) ~= "string"
+        or not bucket
+        or type(bucket.items) ~= "table"
+    then
+        return false, "Invalid pet snapshot"
+    end
+
+    bucket.items[uid] = deepCopy(snapshot)
+    if not (opts and opts.deferFlush) then
+        self:RebuildPetProjections(player)
+        self._dataService:RequestSave(player, "inventory_restore_pets", { critical = true })
+    end
+    return true
+end
+
+-- Insert an already-owned record without mint defaults, timestamps, or provenance changes.
+-- Existing stack records absorb only the transferred quantity; unique-key collisions reject.
+-- The opaque receipt restores the destination exactly if a wider transaction later fails.
+function InventoryService:InsertRecordSnapshot(player, bucketName, recordKey, snapshot, opts)
+    local bucket = self:GetInventory(player, bucketName)
+    local bucketConfig = self._inventoryConfig.buckets[bucketName]
+    if
+        type(recordKey) ~= "string"
+        or recordKey == ""
+        or type(snapshot) ~= "table"
+        or type(snapshot.id) ~= "string"
+        or not bucket
+        or type(bucket.items) ~= "table"
+        or not bucketConfig
+    then
+        return nil, "Invalid record snapshot"
+    end
+
+    local before = bucket.items[recordKey] and deepCopy(bucket.items[recordKey]) or nil
+    local requiredSlots = self:_getRequiredSlotsForAdd(bucketName, snapshot, bucket, bucketConfig)
+    if
+        before == nil
+        and requiredSlots > 0
+        and not self:HasSpace(player, bucketName, requiredSlots)
+    then
+        return nil, "No space in " .. tostring(bucketConfig.display_name)
+    end
+
+    if before ~= nil then
+        local incomingQuantity = tonumber(snapshot.quantity)
+        local currentQuantity = tonumber(before.quantity)
+        if incomingQuantity == nil or currentQuantity == nil then
+            return nil, "Record key collision"
+        end
+        bucket.items[recordKey].quantity = currentQuantity + incomingQuantity
+    else
+        bucket.items[recordKey] = deepCopy(snapshot)
+        bucket.used_slots = (tonumber(bucket.used_slots) or 0) + requiredSlots
+    end
+
+    local receipt = {
+        player = player,
+        bucketName = bucketName,
+        recordKey = recordKey,
+        before = before,
+        usedSlotsBefore = (tonumber(bucket.used_slots) or 0)
+            - (before == nil and requiredSlots or 0),
+        snapshot = deepCopy(snapshot),
+    }
+    if not (opts and opts.deferFlush) then
+        self:FinalizeRecordInsert(receipt)
+        self:FlushBucket(player, bucketName, "inventory_insert_snapshot_" .. bucketName)
+    end
+    return receipt
+end
+
+function InventoryService:RollbackRecordInsert(receipt, opts)
+    if type(receipt) ~= "table" then
+        return false
+    end
+    local bucket = self:GetInventory(receipt.player, receipt.bucketName)
+    if not bucket or type(bucket.items) ~= "table" then
+        return false
+    end
+    bucket.items[receipt.recordKey] = receipt.before and deepCopy(receipt.before) or nil
+    bucket.used_slots = receipt.usedSlotsBefore
+    if not (opts and opts.deferFlush) then
+        self:FlushBucket(receipt.player, receipt.bucketName, "inventory_rollback_snapshot")
+    end
+    return true
+end
+
+function InventoryService:FinalizeRecordInsert(receipt)
+    if type(receipt) ~= "table" then
+        return false
+    end
+    if receipt.bucketName == "pets" then
+        self:_recordPetIndex(receipt.player, receipt.snapshot)
+    end
+    return true
 end
 
 function InventoryService:HasSpace(player, bucketName, amount)
@@ -2100,9 +2261,11 @@ function InventoryService:_handleTogglePetEquipped(player, data)
         fireGameEvent(player, "pet_equipped", { action = result.action })
         if result.action == "equipped" then
             -- mission counter (quest chain "Equip a pet"); equips only, not unequips
-            pcall(function()
-                _G.RBXTemplateServices:Get("StatsService"):Increment(player, "pets_equipped", 1)
-            end)
+            if self._statsService then
+                pcall(function()
+                    self._statsService:Increment(player, "pets_equipped", 1)
+                end)
+            end
         end
         self._logger:Info("✅ Pet equip toggled", {
             player = player.Name,
@@ -2275,6 +2438,7 @@ function InventoryService:RebuildPetProjections(player)
     self:_validateEquippedTable(player)
     self:_updateBucketFolders(player, "pets")
     self:_updateEquippedFolders(player, "pets")
+    self.EquipmentChanged:Fire(player)
 end
 
 -- LIGHT refresh — use on ownership-only changes that CANNOT invalidate equip (add/hatch,

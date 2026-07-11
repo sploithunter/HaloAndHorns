@@ -4,7 +4,7 @@
     pipeline (see docs/wiki/REMOTE_DEV_PIPELINE.md).
 
     HOW TO RUN (via the Roblox Studio MCP, with the game in Play and the server
-    running so _G.RBXTemplateServices exists):
+    running so the server composition root is configured):
 
         local suite = require(game.ReplicatedStorage.Tests.studio.AutomationSuite)
         return suite.run()
@@ -19,16 +19,17 @@
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 
 local TestReport = require(ReplicatedStorage.Shared.API.TestReport)
+local RuntimeServiceBindings = require(ServerScriptService.Server.Services.RuntimeServiceBindings)
 
 local AutomationSuite = {}
 
 local function getApi()
-    local locator = _G.RBXTemplateServices
-    return locator and locator:Get("GameAPIService")
+    return RuntimeServiceBindings.getGameAPIService()
 end
 
 local function listHasCommand(listResult, name)
@@ -57,7 +58,7 @@ function AutomationSuite.run(opts)
         report:record(
             "locate GameAPIService",
             false,
-            "_G.RBXTemplateServices:Get('GameAPIService') is nil — start Play so the server is running"
+            "GameAPIService binding is nil — start Play so the server is running"
         )
         return HttpService:JSONEncode(report:summary())
     end
@@ -508,7 +509,7 @@ function AutomationSuite.run(opts)
     -- issue #4: PetFollowService owns the pet work loop (service-owned movement).
     report:expect(
         "PetFollowService is registered",
-        _G.RBXTemplateServices:Get("PetFollowService") ~= nil,
+        RuntimeServiceBindings.getPetFollowService() ~= nil,
         "PetFollowService not in the locator"
     )
     report:expectEqual("PetFollowService owns movement (flag set)", _G.PetFollowServiceOwned, true)

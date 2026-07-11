@@ -18,6 +18,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PowerFXProbe = require(script.Parent:WaitForChild("PowerFXProbe"))
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local AdminController = {}
 local started = false
@@ -51,10 +52,7 @@ function AdminController.start()
 
     -- Wait for IsAdmin to replicate (data loads after boot) before deciding to show the chip.
     if not isAdmin(player) then
-        local deadline = os.clock() + 15
-        while os.clock() < deadline and player:GetAttribute("IsAdmin") == nil do
-            task.wait(0.5)
-        end
+        Readiness.awaitAttributePresent(player, "IsAdmin", 15)
         if not isAdmin(player) then
             return -- not an admin: never build the chip, overlays stay as they were
         end

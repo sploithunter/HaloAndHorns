@@ -325,9 +325,9 @@ function EggService:RecordHatchSuccess(player, request, response)
     local count = tonumber(response.hatchCount) or 0
     if xpPer > 0 and count > 0 then
         pcall(function()
-            _G.RBXTemplateServices
-                :Get("PlayerProgressionService")
-                :AddExperience(player, xpPer * count)
+            if self._playerProgressionService then
+                self._playerProgressionService:AddExperience(player, xpPer * count)
+            end
         end)
     end
     if specialCount > 0 then
@@ -696,17 +696,20 @@ function EggService:GetAreaHatchLock(player)
 end
 
 function EggService:HasEnoughCurrency(player, currency, cost)
-    if self._dataService then
-        return self._dataService:CanAfford(player, currency, cost),
-            self._dataService:GetCurrency(player, currency)
+    if self._economyService then
+        return self._economyService:CanAfford(player, currency, cost),
+            self._economyService:GetCurrency(player, currency)
     else
-        -- Fallback to attributes if DataService not available
+        -- Isolated/manual fallback when EconomyService is not available.
         local currentAmount = player:GetAttribute(currency) or 0
         return currentAmount >= cost, currentAmount
     end
 end
 
 function EggService:GetCurrencyBalance(player, currency)
+    if self._economyService then
+        return self._economyService:GetCurrency(player, currency)
+    end
     if self._dataService then
         return self._dataService:GetCurrency(player, currency)
     end
@@ -714,10 +717,10 @@ function EggService:GetCurrencyBalance(player, currency)
 end
 
 function EggService:DeductCurrency(player, currency, cost)
-    if self._dataService then
-        return self._dataService:RemoveCurrency(player, currency, cost, "egg_hatch")
+    if self._economyService then
+        return self._economyService:RemoveCurrency(player, currency, cost, "egg_hatch")
     else
-        -- Fallback to attributes if DataService not available
+        -- Isolated/manual fallback when EconomyService is not available.
         local currentAmount = player:GetAttribute(currency) or 0
         if currentAmount >= cost then
             player:SetAttribute(currency, currentAmount - cost)
@@ -732,8 +735,13 @@ function EggService:AddCurrency(player, currency, amount, source)
         return true
     end
 
-    if self._dataService then
-        return self._dataService:AddCurrency(player, currency, amount, source or "egg_hatch_refund")
+    if self._economyService then
+        return self._economyService:AddCurrency(
+            player,
+            currency,
+            amount,
+            source or "egg_hatch_refund"
+        )
     end
 
     local currentAmount = player:GetAttribute(currency) or 0
@@ -1611,19 +1619,38 @@ end
 -- === INITIALIZATION ===
 
 function EggService:Initialize(moduleLoader)
+    if self._initialized then
+        return
+    end
+    self._initialized = true
+
     Logger:Info("EggService initializing...")
 
-    -- Get services from the module loader
+    local function getModule(name)
+        if self._modules and self._modules[name] ~= nil then
+            return self._modules[name]
+        end
+        if moduleLoader then
+            local ok, result = pcall(moduleLoader.Get, moduleLoader, name)
+            if ok then
+                return result
+            end
+        end
+        return nil
+    end
+
     if moduleLoader then
-        self._inventoryService = moduleLoader:Get("InventoryService")
-        self._dataService = moduleLoader:Get("DataService")
-        self._eventService = moduleLoader:Get("EventService")
-        self._statsService = moduleLoader:Get("StatsService")
-        self._petGrantService = moduleLoader:Get("PetGrantService")
-        self._modifierService = moduleLoader:Get("ModifierService")
-        self._autoTargetService = moduleLoader:Get("AutoTargetService")
-        self._hatchEntitlementService = moduleLoader:Get("HatchEntitlementService")
-        self._petIndexService = moduleLoader:Get("PetIndexService")
+        self._inventoryService = getModule("InventoryService")
+        self._dataService = getModule("DataService")
+        self._economyService = getModule("EconomyService")
+        self._eventService = getModule("EventService")
+        self._statsService = getModule("StatsService")
+        self._petGrantService = getModule("PetGrantService")
+        self._modifierService = getModule("ModifierService")
+        self._autoTargetService = getModule("AutoTargetService")
+        self._hatchEntitlementService = getModule("HatchEntitlementService")
+        self._petIndexService = getModule("PetIndexService")
+        self._playerProgressionService = getModule("PlayerProgressionService")
 
         if self._inventoryService then
             Logger:Info("EggService: InventoryService connection established")
@@ -1635,6 +1662,12 @@ function EggService:Initialize(moduleLoader)
             Logger:Info("EggService: DataService connection established")
         else
             Logger:Warn("EggService: DataService not available in module loader")
+        end
+
+        if self._economyService then
+            Logger:Info("EggService: EconomyService connection established")
+        else
+            Logger:Warn("EggService: EconomyService not available in module loader")
         end
 
         if self._eventService then
@@ -1676,15 +1709,9 @@ function EggService:Initialize(moduleLoader)
         Logger:Warn("EggService: No module loader provided")
     end
 
-    -- Create RemoteFunction (like working game)
-    eggRemoteFunction = Instance.new("RemoteFunction")
-    eggRemoteFunction.Name = "EggOpened"
-    eggRemoteFunction.Parent = ReplicatedStorage
-
-    -- Create setLastEgg RemoteFunction (like working game)
-    local setLastEggRemote = Instance.new("RemoteFunction")
-    setLastEggRemote.Name = "setLastEgg"
-    setLastEggRemote.Parent = eggRemoteFunction
+    local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+    eggRemoteFunction = Signals.EggOpened
+    local setLastEggRemote = Signals.setLastEgg
 
     -- Set up the handlers
     eggRemoteFunction.OnServerInvoke = function(player, eggType, purchaseType)
@@ -1703,6 +1730,10 @@ function EggService:Initialize(moduleLoader)
     end)
 
     Logger:Info("EggService initialized with RemoteFunction and setLastEgg tracking")
+end
+
+function EggService:Init()
+    self:Initialize(self._moduleLoader)
 end
 
 return EggService

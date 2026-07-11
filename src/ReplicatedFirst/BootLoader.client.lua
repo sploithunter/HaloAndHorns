@@ -170,34 +170,126 @@ local function phaseReady(phase)
     return true
 end
 
+local function awaitDuration(seconds)
+    seconds = math.max(0, tonumber(seconds) or 0)
+    if seconds == 0 then
+        return
+    end
+    local driver = Instance.new("NumberValue")
+    local tween = TweenService:Create(driver, TweenInfo.new(seconds), { Value = 1 })
+    tween:Play()
+    tween.Completed:Wait()
+    driver:Destroy()
+end
+
+local function awaitPhase(phase, timeoutSeconds)
+    if phaseReady(phase) then
+        return true
+    end
+
+    local waitingThread = coroutine.running()
+    local settled = false
+    local wasReady = false
+    local connections = {}
+    local function disconnect()
+        for _, connection in ipairs(connections) do
+            connection:Disconnect()
+        end
+        table.clear(connections)
+    end
+    local function finish(ready)
+        if settled then
+            return
+        end
+        settled = true
+        wasReady = ready == true
+        disconnect()
+        task.spawn(waitingThread)
+    end
+    local function observeBootStatus(folder)
+        table.insert(
+            connections,
+            folder:GetAttributeChangedSignal(phase.key):Connect(function()
+                if phaseReady(phase) then
+                    finish(true)
+                end
+            end)
+        )
+    end
+
+    if phase.source == "engine" then
+        table.insert(
+            connections,
+            game.Loaded:Connect(function()
+                finish(true)
+            end)
+        )
+    elseif phase.source == "server" then
+        local statusFolder = ReplicatedStorage:FindFirstChild("BootStatus")
+        if statusFolder then
+            observeBootStatus(statusFolder)
+        else
+            table.insert(
+                connections,
+                ReplicatedStorage.ChildAdded:Connect(function(child)
+                    if child.Name == "BootStatus" then
+                        observeBootStatus(child)
+                        if phaseReady(phase) then
+                            finish(true)
+                        end
+                    end
+                end)
+            )
+        end
+    elseif phase.source == "player" then
+        local gate = PLAYER_GATES[phase.key]
+        local attribute = (gate and gate.attribute) or phase.key
+        table.insert(
+            connections,
+            localPlayer:GetAttributeChangedSignal(attribute):Connect(function()
+                if phaseReady(phase) then
+                    finish(true)
+                end
+            end)
+        )
+    else
+        finish(true)
+    end
+
+    task.delay(math.max(0, timeoutSeconds), function()
+        finish(false)
+    end)
+    if phaseReady(phase) then
+        finish(true)
+    end
+    coroutine.yield()
+    return wasReady
+end
+
 task.spawn(function()
     local start = os.clock()
     setControls(false)
-    -- keep re-asserting the control lock until the reveal (PlayerModule loads after us, and
-    -- a respawn mid-load would re-enable default controls)
-    local revealed = false
-    task.spawn(function()
-        while not revealed do
-            setControls(false)
-            task.wait(0.2)
-        end
-    end)
+    local controlConnections = {}
+    table.insert(
+        controlConnections,
+        localPlayer.DescendantAdded:Connect(function(descendant)
+            if descendant.Name == "PlayerModule" then
+                task.defer(setControls, false)
+            end
+        end)
+    )
+    table.insert(
+        controlConnections,
+        localPlayer.CharacterAdded:Connect(function()
+            task.defer(setControls, false)
+        end)
+    )
 
     for i, phase in ipairs(PHASES) do
         status.Text = phase.text .. "…"
         local blocking = phase.blocking ~= false
-        -- Background phases (e.g. icon baking) are shown but never hold play hostage: wait only a
-        -- brief beat so the label is visible, then advance regardless.
-        local phaseStart = os.clock()
-        while not phaseReady(phase) do
-            if os.clock() - start > HARD_TIMEOUT then
-                break
-            end
-            if not blocking and os.clock() - phaseStart > 0.8 then
-                break
-            end
-            task.wait(0.1)
-        end
+        local remaining = math.max(0, HARD_TIMEOUT - (os.clock() - start))
+        awaitPhase(phase, blocking and remaining or math.min(0.8, remaining))
         TweenService:Create(fill, TweenInfo.new(0.25), { Size = UDim2.fromScale(i / #PHASES, 1) })
             :Play()
     end
@@ -206,17 +298,19 @@ task.spawn(function()
     -- appear — give them a beat so the reveal shows the FINISHED hud, and never blink the
     -- screen past MIN_DISPLAY even on instant local loads.
     status.Text = "Ready!"
-    task.wait(math.max(SETTLE, MIN_DISPLAY - (os.clock() - start)))
-    revealed = true
-    task.wait(0.25) -- let the lock loop observe `revealed` before re-enabling
+    awaitDuration(math.max(SETTLE, MIN_DISPLAY - (os.clock() - start)))
+    for _, connection in ipairs(controlConnections) do
+        connection:Disconnect()
+    end
     setControls(true)
 
     local t = TweenInfo.new(0.4)
-    TweenService:Create(bg, t, { BackgroundTransparency = 1 }):Play()
+    local fade = TweenService:Create(bg, t, { BackgroundTransparency = 1 })
+    fade:Play()
     TweenService:Create(title, t, { TextTransparency = 1 }):Play()
     TweenService:Create(status, t, { TextTransparency = 1 }):Play()
     TweenService:Create(track, t, { BackgroundTransparency = 1 }):Play()
     TweenService:Create(fill, t, { BackgroundTransparency = 1 }):Play()
-    task.wait(0.45)
+    fade.Completed:Wait()
     gui:Destroy()
 end)

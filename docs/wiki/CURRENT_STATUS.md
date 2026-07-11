@@ -91,12 +91,30 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Breakable crystal spawners are present and visually tuned on the baseplate.
 - Coin generator exists so testing can fund egg hatching.
 - Eggs can hatch pets from configured asset ids.
+- Fusion mints unique Chaotic pets through `PetGrantService` and rolls failed consumption back to exact inventory records. The six original packaged pets and newer Meshy pets retain their separate asset-loading paths.
 - Original reference bear asset was restored for style consistency.
 - Rainbow pet visual effect exists and applies to models such as Rainbow Bear.
 - Admin control panel opens and includes event/effects testing commands.
 - Global event support has started, including scheduled event concepts and a UTC event clock.
-- `ConfigLoader` now validates all loaded configs at startup and has focused validators for core gameplay configs.
+- `ConfigLoader` validates every loaded config at startup. Complex gameplay configs retain focused cross-reference validators; the remaining configs use the revisioned `ConfigSchemas` registry for required top-level key types. Unknown configs fail closed, and the architecture guard rejects configs without an explicit schema.
 - Phase 0 foundation services are in place for profile schema versioning, stat counters, modifier resolution, currency ledger aggregation, deterministic UTC day/seed behavior, and feature flags.
+- Reward bundle currencies now flow through `EconomyService` rather than writing profile balances directly.
+- Realm token earnings and paid layer traversal also flow through `EconomyService`; failed debits no longer move the player.
+- Pet-index and achievement currency rewards no longer retain direct profile-mutation fallbacks.
+- Shop purchases spend and refund through `EconomyService`, with tested multi-currency rollback before purchase counts advance.
+- Paid zone unlocks debit through `EconomyService` and remain locked when the debit fails.
+- Enchant rerolls debit through `EconomyService` and retain the existing enchant when payment fails.
+- Egg hatch charges and partial/full refunds now flow through `EconomyService` with their existing source tags.
+- Combat loot currencies, including def-less realm-enemy coin fallbacks, now flow through `EconomyService`.
+- Enhancement buys and sells use `EconomyService`; rejected sale credits restore exact enhancement stacks before commit.
+- Trade gem escrow, adjustment refunds, and recipient credits now use checked `EconomyService` calls.
+- Trade pet/enhancement delivery now preserves full source records and special-pet UIDs through
+  `PetTransferService`. Both trade legs roll back in reverse on failure, cancel only closes after an
+  atomic two-owner refund, and graceful disconnect refunds before ProfileStore releases the profile.
+  Durable hard-crash escrow recovery remains separately planned.
+- `EconomyService` is now the only server service allowed to call currency persistence primitives.
+  Admin, automation, Game API, Studio smoke setup, and Upgrade purchases use its set/add/transaction
+  APIs; Upgrade purchase commits are rollback-safe and the loader dependency cycle is removed.
 - Studio Play boots successfully through the validated config loader; current remaining Output noise is warning-level placeholder/test data such as monetization ids and unknown legacy saved effects.
 - **Boot is event-driven and gated** (`docs/BOOT_ORCHESTRATION.md`): `BootReadiness` milestone latches + a `configs/boot.lua` dependency graph + a `BootOrchestrator` that validates the graph, logs `[BOOT] milestone ready`, and mirrors readiness to `ReplicatedStorage.BootStatus`. Producers signal (`world_structure`/`models_ready`/`crystals_ready`/`eggs_placed`/`icons_ready`); consumers (pets, crystals, eggs) `await` instead of polling/aborting/fire-once-waiting — the class of fast-boot races (pets not deploying, crystals only filling on the 30s safety-net) is closed. The loading screen renders those real milestones as informative phases.
 - Roblox Studio MCP is enabled and connected to Codex. Agents can now read Output, capture Studio screenshots, start/stop play, inspect the game tree, execute Luau, and read/edit Studio scripts through the official Studio MCP bridge.
@@ -109,6 +127,10 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - `configs/upgrades.lua` and `UpgradeService` now provide permanent upgrades for pet equip slots, pet storage, and crystal reward value. Upgrade levels persist under `DataService.Upgrades`; inventory slot limits read the upgrade effects server-side.
 - `Meadow` now has a paid unlock cost of `100 crystals`, and its breakable table includes stronger medium/big crystals. This is the first area-gated Phase 2 progression step.
 - Phase 2 network bridges exist for UI/admin work: `PurchaseUpgrade`/`UpgradeResult`, `UnlockZoneRequest`/`ZoneUnlockResult`, and `ZoneTravelResult`. Locked-zone results include the configured unlock requirement payload.
+- All runtime remotes now come from the validated network manifest and generated registry; manual remote-construction debt is zero.
+- Gameplay events publish exclusively through `FireGameEvent`. Its terminal send is the sanctioned publisher boundary rather than migration debt.
+- Runtime readiness uses milestones, attributes, completion callbacks, and replicated instance events. The remaining clocks are reviewed in `scripts/runtime_wait_classifications.json` as animation, cooldown, deadline, debounce, frame-budget, periodic, retry, simulation, test, or watchdog timing; readiness is intentionally not an approved purpose.
+- Pet ownership writes are restricted to `PetGrantService` and transfer transaction boundaries. Studio smoke fixtures explicitly exercise both the original-pet compatibility path and the modern stack/special paths without making those fixtures production mutation APIs.
 - Pet inventory storage is already mixed: normal pets stack under `Inventory.pets.items["petId:variant"]` with a quantity, while special pets are individual records. Equipping a stacked pet creates an ephemeral equipped id and temporarily decrements the stack quantity.
 - Clicking an inventory stack card now equips another copy from that stack when quantity remains. Clicking the equipped ghost card unequips that specific equipped instance.
 - Phase 3 configs are live: `configs/pet_index.lua`, `configs/achievements.lua`, and `configs/leaderboards.lua`.

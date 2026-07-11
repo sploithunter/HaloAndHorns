@@ -122,7 +122,7 @@ Prerequisites: Roblox Studio · Rojo 7.6.1+ · `mise` for tool versions.
 
 ```bash
 mise exec -- rojo serve            # sync to Studio (Rojo plugin → localhost)
-mise run ci                        # fast gate: selene + StyLua (owned paths) + rojo build + headless tests
+mise run ci                        # fast gate: architecture + selene + StyLua + rojo build + headless tests
 mise run test-headless             # pure-logic specs only (lune)
 mise run stamp                     # stamp build_info.lua (git + Mountain Time) before publishing
 python3 scripts/wiki_status.py     # wiki health check
@@ -150,7 +150,7 @@ The game can be developed, tested, and released from a CLI/AI agent without GUI 
 
 - **Command boundary** (`src/Shared/API/CommandBus.lua`) — a pure dispatcher every gameplay action flows through; the GUI, network layer, and tests are different callers of the same commands. `GameAPIService` owns the bus behind one `GameAPICommand` RemoteFunction (untrusted clients can never reach test-only commands).
 - **Headless tests** — `mise run test-headless` runs pure-logic specs (lune) with no Studio.
-- **Fast gate / CI** — `mise run ci` (selene + StyLua on owned paths + `rojo build` + headless) runs locally and in GitHub Actions on every push.
+- **Fast gate / CI** — `mise run ci` (architecture guard + selene + StyLua on owned paths + `rojo build` + headless) runs locally and in GitHub Actions on every push.
 - **Studio integration** — `AutomationService` (Studio-only) drives pathfinding movement, state snapshot/restore, and assertions; `RunAutomationSuite` runs the server-side suite via the MCP.
 - **Release** — `mise run release` publishes via Open Cloud `rojo upload`; secrets read from env only (`DRY_RUN=1` validates).
 
@@ -158,7 +158,7 @@ Testing methodology (the pyramid): **pure logic → server-side command-bus inte
 
 ## Verification Baseline
 
-- `mise run ci` (fast gate): green — selene 0 errors, StyLua clean on owned paths, `rojo build` passes, **headless 837/837 across 76 specs**. GitHub Actions runs the same gate on every push.
+- `mise run ci` (fast gate): green — architecture guard clean, selene 0 errors, StyLua clean on owned paths, `rojo build` passes, **headless 1,263/1,263 across 114 specs**. GitHub Actions runs the same gate on every push.
 - Live in *Halo & Horns* (Rojo connected): the server-side `AutomationSuite` covers the alignment chain, pets/power/element resonance, layer access, party core (Spirit Form / stack pool / squad), combat & focus, and the Phase-5 build-depth systems. Studio `Phase*Smoke` + game smoke runners cover the egg system, progression, and zone/economy paths.
 - Game-layer features (combat, HUD, powers, enhancements, tutorial) are iterated live in Studio play sessions and verified through the MCP + in-session play.
 

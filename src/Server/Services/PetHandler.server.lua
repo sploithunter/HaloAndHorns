@@ -12,9 +12,12 @@
 --]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local Players = game:GetService("Players")
 local PetVariantVisuals = require(ReplicatedStorage.Shared.Services.PetVariantVisuals)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local PetRuntimeBridge = require(ReplicatedStorage.Shared.Services.PetRuntimeBridge)
+local RuntimeServiceBindings = require(ServerScriptService.Server.Services.RuntimeServiceBindings)
 print("✅ PetHandler: Loaded and waiting for bridge registration")
 
 -- Suppress verbose debug prints in this script unless explicitly enabled
@@ -42,21 +45,6 @@ local petRolesConfig = nil
 pcall(function()
     petRolesConfig = require(ReplicatedStorage.Configs.pet_roles)
 end)
-
-local function getLoadedService(serviceName)
-    local registry = _G.RBXTemplateServices
-    if type(registry) ~= "table" or type(registry.Get) ~= "function" then
-        return nil
-    end
-
-    local ok, service = pcall(function()
-        return registry:Get(serviceName)
-    end)
-    if ok then
-        return service
-    end
-    return nil
-end
 
 -- Prevent concurrent loadEquipped runs per-player (which can destroy freshly spawned models)
 local activeLoads: { [Player]: boolean } = {}
@@ -706,7 +694,7 @@ local function resolveTeamModifiedPetPower(
     effectivePower,
     teamContext
 )
-    local modifierService = getLoadedService("ModifierService")
+    local modifierService = RuntimeServiceBindings.getModifierService()
     if not (modifierService and modifierService.Resolve) then
         return effectivePower
     end
@@ -1409,6 +1397,26 @@ function loadEquipped(Player)
                                         and rawEntry.huge_attack_targeting
                                     if hugeTargeting then
                                         PetModel:SetAttribute("AttackTargeting", hugeTargeting)
+                                    else
+                                        -- THE HUGE RULE, made STRUCTURAL (Jason: "all huge
+                                        -- pets have some kind of AoE — it's like a rule";
+                                        -- caught again on a single-target huge Cinder
+                                        -- Golemite): a huge with no explicit huge scope and
+                                        -- no AoE of its own defaults to targeted_aoe (50%
+                                        -- splash to 5 nearby, combat.pet_aoe knobs). Pets
+                                        -- with their own aura/aoe keep it; per-pet
+                                        -- huge_attack_targeting still overrides everything.
+                                        local baseScope = rawEntry and rawEntry.attack_targeting
+                                        if
+                                            baseScope ~= "aura"
+                                            and baseScope ~= "aoe"
+                                            and baseScope ~= "targeted_aoe"
+                                        then
+                                            PetModel:SetAttribute(
+                                                "AttackTargeting",
+                                                "targeted_aoe"
+                                            )
+                                        end
                                     end
                                 end
                                 -- Rigged (skeletal) pets: RigClass tells every client's PetAnimator
@@ -1755,21 +1763,8 @@ function loadEquipped(Player)
     end
 end
 
--- Expose a direct rebuild trigger so other services (e.g. TradeService, after a pet
--- leaves the inventory) can force a clean respawn of equipped pets / despawn orphans.
-_G.RBXReloadEquippedPets = loadEquipped
-
--- Register with the bridge (wait for it to be available)
-local function registerWithBridge()
-    if _G.SetPetLoadEquippedFunction then
-        _G.SetPetLoadEquippedFunction(loadEquipped)
-        print("✅ PetHandler: Registered with PetEquipmentBridge (native handler)")
-    else
-        task.wait(0.1)
-        registerWithBridge()
-    end
-end
-registerWithBridge()
+PetRuntimeBridge.RegisterHandler(loadEquipped)
+print("✅ PetHandler: Registered with PetEquipmentBridge (native handler)")
 
 -- Handle player joining
 Players.PlayerAdded:Connect(function(player)

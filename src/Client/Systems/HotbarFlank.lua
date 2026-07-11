@@ -12,6 +12,8 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local HotbarFlank = {}
 local started = false
@@ -51,10 +53,7 @@ function HotbarFlank.start()
                     return
                 end
                 -- let MenuTrayStyle pill it first (the adopt would hide it from that pass)
-                local deadline = os.clock() + 8
-                while not btn:GetAttribute("Pillified") and os.clock() < deadline do
-                    task.wait(0.25)
-                end
+                Readiness.awaitAttribute(btn, "Pillified", true, 8)
                 btn.AnchorPoint = side == "left" and Vector2.new(1, 0.5) or Vector2.new(0, 0.5)
                 btn.Position = side == "left" and UDim2.new(0, -GAP, 0.5, 0)
                     or UDim2.new(1, GAP, 0.5, 0)

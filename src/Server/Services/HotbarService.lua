@@ -20,6 +20,9 @@ function HotbarService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._potionService = self._modules and self._modules.PotionService
+    self._enemyService = self._modules and self._modules.EnemyService
+    self._powerService = self._modules and self._modules.PowerService
     self._config = self._configLoader:LoadConfig("hotbar")
     self._archetypesConfig = self._configLoader:LoadConfig("archetypes")
     self._powersConfig = self._configLoader:LoadConfig("powers") -- innate powers are bindable but not in data.Powers
@@ -144,7 +147,7 @@ function HotbarService:_assignablePalette(player)
     -- Potions the player OWNS (drinkable consumables you can bind to a slot like a power).
     -- PotionService is the SSOT for owned counts; an empty list if it's not up yet.
     local potions = {}
-    local potionSvc = self:_service("PotionService")
+    local potionSvc = self._potionService
     if potionSvc and potionSvc.GetState then
         local ok, st = pcall(function()
             return potionSvc:GetState(player)
@@ -172,18 +175,6 @@ function HotbarService:_pushState(player)
         slot_count = state.slot_count,
         available = self:_assignablePalette(player),
     })
-end
-
--- Resolve another service at runtime (avoids boot-order cycles).
-function HotbarService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 local function isEmptyMap(t)
@@ -271,7 +262,7 @@ function HotbarService:Activate(player, payload)
     end
 
     if bind.type == "tactical" then
-        local enemy = self:_service("EnemyService")
+        local enemy = self._enemyService
         if enemy and enemy.ExecuteTactical then
             enemy:ExecuteTactical(player, bind.target)
             return { ok = true, type = "tactical", command = bind.target }
@@ -279,14 +270,14 @@ function HotbarService:Activate(player, payload)
         return { ok = false, reason = "tactical_unavailable" }
     elseif bind.type == "pet" then
         -- Summon/redeploy the bound pet slot (re-uses the squad summon path).
-        local enemy = self:_service("EnemyService")
+        local enemy = self._enemyService
         if enemy and enemy.SummonPet then
             enemy:SummonPet(player, { slot = tonumber(bind.target) })
             return { ok = true, type = "pet", target = bind.target }
         end
         return { ok = false, reason = "summon_unavailable" }
     elseif bind.type == "power" then
-        local power = self:_service("PowerService")
+        local power = self._powerService
         if power and power.Cast then
             return power:Cast(player, bind.target)
         end
@@ -294,7 +285,7 @@ function HotbarService:Activate(player, payload)
     elseif bind.type == "potion" then
         -- Drink one from the bound potion (consumes from inventory + sips the meter). A slot can
         -- stay bound to a potion you've run out of — Drink just no-ops with reason "none_left".
-        local potionSvc = self:_service("PotionService")
+        local potionSvc = self._potionService
         if potionSvc and potionSvc.Drink then
             local result = potionSvc:Drink(player, bind.target)
             -- echo so the slot's count badge updates immediately (Drink already pushed PotionUpdate)

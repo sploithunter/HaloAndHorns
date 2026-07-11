@@ -123,10 +123,8 @@ function RateLimitService:Init()
     do
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local Signals = require(ReplicatedStorage.Shared.Network.Signals)
-        Signals.ActiveEffects.OnServerEvent:Connect(function(p, data)
-            if data and data.request then
-                self:_handleActiveEffectsRequest(p)
-            end
+        Signals.ActiveEffectsRequest.OnServerEvent:Connect(function(p)
+            self:_handleActiveEffectsRequest(p)
         end)
     end
 

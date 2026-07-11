@@ -21,12 +21,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local TradeLogic = require(ReplicatedStorage.Shared.Game.TradeLogic)
+local TradeDeliveryTransaction = require(ReplicatedStorage.Shared.Game.TradeDeliveryTransaction)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 
 local TradeService = {}
 TradeService.__index = TradeService
 
-local UPDATE_REMOTE = "TradeUpdate"
 local PETS_BUCKET = "pets"
 local ENH_BUCKET = "enhancements" -- matches EnhancementService's InventoryService bucket
 local GEM_CURRENCY = "gems" -- the only tradeable currency (configs/trade.lua tradeable_currencies)
@@ -35,6 +35,12 @@ function TradeService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._economyService = self._modules and self._modules.EconomyService
+    self._inventoryService = self._modules and self._modules.InventoryService
+    self._petTransferService = self._modules and self._modules.PetTransferService
+    self._rosterService = self._modules and self._modules.RosterService
+    self._statsService = self._modules and self._modules.StatsService
+    self._enhancementService = self._modules and self._modules.EnhancementService
     self._config = self._configLoader:LoadConfig("trade")
     self._sessions = {} -- sessionId -> session
     self._playerSession = {} -- userId -> sessionId
@@ -42,32 +48,13 @@ function TradeService:Init()
     self._nextId = 0
     self._auditLog = {} -- append-only, capped
 
-    -- Server -> client push channel (recreated to survive Studio hot-sync).
-    local existing = ReplicatedStorage:FindFirstChild(UPDATE_REMOTE)
-    if existing then
-        existing:Destroy()
-    end
-    local remote = Instance.new("RemoteEvent")
-    remote.Name = UPDATE_REMOTE
-    remote.Parent = ReplicatedStorage
-    self._remote = remote
+    self._remote = require(ReplicatedStorage.Shared.Network.Signals).TradeUpdate
 end
 
 function TradeService:Start()
-    Players.PlayerRemoving:Connect(function(player)
+    self._dataService:RegisterBeforeProfileRelease(function(player)
         self:_onLeave(player)
     end)
-end
-
-function TradeService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 -- Pure rule check (kept for the original Feature 19 bus command / tests).
@@ -221,21 +208,14 @@ end
 local function descriptorFromRecord(uid, rec)
     local copy = deepCopy(rec)
     copy.uid = uid
-    copy.category = "pets"
     copy.equipped_slot = nil
-    return copy
-end
-
--- Re-add an escrowed pet to a player, minting a fresh uid but preserving every other field.
--- For a common the descriptor is a single copy (quantity 1) which AddItem folds back into the
--- recipient's stack; for a special it is the full record.
-local function grantDescriptor(inventory, player, descriptor)
-    local petData = deepCopy(descriptor)
-    petData.uid = nil
-    petData.equipped_slot = nil
-    petData.equipped_slots = nil
-    petData.quantity = 1
-    inventory:AddItem(player, PETS_BUCKET, petData)
+    copy.equipped_slots = nil
+    local descriptor = deepCopy(copy)
+    descriptor.category = "pets"
+    descriptor.variant = descriptor.variant or "basic"
+    descriptor.recordKey = uid
+    descriptor.record = copy
+    return descriptor
 end
 
 -- Synthetic, unique escrow key for an offered COMMON copy (commons have no uid).
@@ -249,21 +229,12 @@ end
 -- the equipped state lives on the record itself, so RemoveItem (which deletes the record)
 -- plus RebuildPetProjections clears the equipped slot + folder automatically — no slot
 -- string or ephemeral equip_<...> folder to hand-clean. We only drop roster references
--- here; _reloadEquipped() then despawns any orphaned world model.
+-- here; the authoritative projection rebuild then despawns any orphaned world model.
 function TradeService:_detachPet(player, uid, _rec)
-    local rosters = self:_service("RosterService")
+    local rosters = self._rosterService
     if rosters and rosters.RemovePetReference then
         pcall(function()
             rosters:RemovePetReference(player, uid)
-        end)
-    end
-end
-
--- Force a clean respawn of equipped pets (despawns orphaned follow models).
-function TradeService:_reloadEquipped(player)
-    if type(_G.RBXReloadEquippedPets) == "function" then
-        pcall(function()
-            _G.RBXReloadEquippedPets(player)
         end)
     end
 end
@@ -274,7 +245,7 @@ function TradeService:Add(player, uid)
     if not session then
         return { ok = false, reason = "no_trade" }
     end
-    local inventory = self:_service("InventoryService")
+    local inventory = self._inventoryService
     if not inventory then
         return { ok = false, reason = "service_unavailable" }
     end
@@ -318,19 +289,22 @@ function TradeService:Add(player, uid)
         end
         -- Move ONE copy out of the stack into escrow (single-copy descriptor).
         inventory:RemoveItem(player, PETS_BUCKET, target.stackKey, 1)
+        local record = deepCopy(stack)
+        record.quantity = 1
         descriptor = {
             uid = nextOfferId(),
             category = "pets",
             id = stack.id,
             variant = stack.variant or "basic",
             quantity = 1,
+            recordKey = target.stackKey,
+            record = record,
         }
         if stack.element ~= nil then
             descriptor.element = stack.element
         end
     end
 
-    self:_reloadEquipped(player)
     session.escrow[player.UserId][descriptor.uid] = descriptor
     table.insert(offer.items, descriptor)
 
@@ -357,7 +331,7 @@ function TradeService:AddMany(player, uid, count)
     if not session then
         return { ok = false, reason = "no_trade" }
     end
-    local inventory = self:_service("InventoryService")
+    local inventory = self._inventoryService
     if not inventory then
         return { ok = false, reason = "service_unavailable" }
     end
@@ -397,12 +371,16 @@ function TradeService:AddMany(player, uid, count)
     -- Move N copies out of the stack at once, then escrow N single-copy descriptors.
     inventory:RemoveItem(player, PETS_BUCKET, target.stackKey, toAdd)
     for _ = 1, toAdd do
+        local record = deepCopy(stack)
+        record.quantity = 1
         local descriptor = {
             uid = nextOfferId(),
             category = "pets",
             id = stack.id,
             variant = stack.variant or "basic",
             quantity = 1,
+            recordKey = target.stackKey,
+            record = record,
         }
         if stack.element ~= nil then
             descriptor.element = stack.element
@@ -411,7 +389,6 @@ function TradeService:AddMany(player, uid, count)
         table.insert(offer.items, descriptor)
     end
 
-    self:_reloadEquipped(player)
     session.offers[session.a].confirmed = false
     session.offers[session.b].confirmed = false
     self:_push(session, "updated")
@@ -434,17 +411,19 @@ function TradeService:AddGems(player, amount)
     if not verdict.ok then
         return verdict
     end
-    if not self._dataService then
+    if not self._economyService then
         return { ok = false, reason = "service_unavailable" }
     end
     local offer = session.offers[player.UserId]
     if #offer.items >= (self._config.max_offer_items or 10) then
         return { ok = false, reason = "offer_full" }
     end
-    if (tonumber(self._dataService:GetCurrency(player, GEM_CURRENCY)) or 0) < amount then
+    if not self._economyService:CanAfford(player, GEM_CURRENCY, amount) then
         return { ok = false, reason = "insufficient_gems" }
     end
-    if self._dataService:RemoveCurrency(player, GEM_CURRENCY, amount, "trade_escrow") == false then
+    if
+        self._economyService:RemoveCurrency(player, GEM_CURRENCY, amount, "trade_escrow") == false
+    then
         return { ok = false, reason = "insufficient_gems" }
     end
 
@@ -467,7 +446,7 @@ function TradeService:SetGems(player, amount)
     if not session then
         return { ok = false, reason = "no_trade" }
     end
-    if not self._dataService then
+    if not self._economyService then
         return { ok = false, reason = "service_unavailable" }
     end
     local verdict = TradeLogic.canAddItem("currencies", { id = GEM_CURRENCY }, self._config)
@@ -490,12 +469,23 @@ function TradeService:SetGems(player, amount)
 
     if amount > current then
         local diff = amount - current
-        if (tonumber(self._dataService:GetCurrency(player, GEM_CURRENCY)) or 0) < diff then
+        if not self._economyService:CanAfford(player, GEM_CURRENCY, diff) then
             return { ok = false, reason = "insufficient_gems" }
         end
-        self._dataService:RemoveCurrency(player, GEM_CURRENCY, diff, "trade_escrow")
+        if not self._economyService:RemoveCurrency(player, GEM_CURRENCY, diff, "trade_escrow") then
+            return { ok = false, reason = "escrow_debit_failed" }
+        end
     else
-        self._dataService:AddCurrency(player, GEM_CURRENCY, current - amount, "trade_refund")
+        if
+            not self._economyService:AddCurrency(
+                player,
+                GEM_CURRENCY,
+                current - amount,
+                "trade_refund"
+            )
+        then
+            return { ok = false, reason = "escrow_refund_failed" }
+        end
     end
 
     local offer = session.offers[player.UserId]
@@ -535,7 +525,7 @@ function TradeService:AddEnhancement(player, uid)
     if not session then
         return { ok = false, reason = "no_trade" }
     end
-    local inventory = self:_service("InventoryService")
+    local inventory = self._inventoryService
     if not inventory then
         return { ok = false, reason = "service_unavailable" }
     end
@@ -558,15 +548,12 @@ function TradeService:AddEnhancement(player, uid)
         uid = nextOfferId(),
         category = "enhancements",
         id = rec.id,
-        enh = {
-            id = rec.id,
-            type = rec.type,
-            origins = deepCopy(rec.origins),
-            origins_csv = rec.origins_csv,
-            level = rec.level,
-            name = rec.name,
-        },
+        recordKey = uid,
+        record = deepCopy(rec),
+        enh = deepCopy(rec),
     }
+    descriptor.record.quantity = 1
+    descriptor.enh.quantity = 1
     session.escrow[player.UserId][descriptor.uid] = descriptor
     table.insert(offer.items, descriptor)
     session.offers[session.a].confirmed = false
@@ -585,7 +572,11 @@ function TradeService:Remove(player, uid)
     if not descriptor then
         return { ok = false, reason = "not_offered" }
     end
-    self:_grantDescriptor(player, descriptor) -- back to owner (pet / gems / enhancement)
+    local receipt = self:_grantDescriptor(player, descriptor)
+    if not receipt then
+        return { ok = false, reason = "escrow_refund_failed" }
+    end
+    self:_commitReceipts({ receipt })
     session.escrow[player.UserId][uid] = nil
     local offer = session.offers[player.UserId]
     for i = #offer.items, 1, -1 do
@@ -617,63 +608,143 @@ function TradeService:Confirm(player)
     return { ok = true, waiting = true }
 end
 
--- Grant ONE escrowed descriptor to a player, dispatched by category. Pets fold into the pets
--- bucket (fresh uid); gems credit the gem currency; enhancements re-enter the enhancements bucket.
--- This is the single seam that makes _deliver / _refund / Remove bucket-agnostic.
+-- Grant one descriptor and return a reversible receipt. Inventory projection/save is deferred
+-- until the whole delivery commits; currency uses the economy boundary and is compensatable.
 function TradeService:_grantDescriptor(player, descriptor)
     if not (player and descriptor) then
-        return
+        return false
     end
     local category = descriptor.category or "pets"
     if category == "currencies" then
         local amount = math.floor(tonumber(descriptor.amount) or 0)
-        if amount > 0 and self._dataService then
-            self._dataService:AddCurrency(player, descriptor.id or GEM_CURRENCY, amount, "trade")
+        if amount > 0 and self._economyService then
+            local added = self._economyService:AddCurrency(
+                player,
+                descriptor.id or GEM_CURRENCY,
+                amount,
+                "trade"
+            )
+            return added
+                and {
+                    category = "currencies",
+                    player = player,
+                    currency = descriptor.id or GEM_CURRENCY,
+                    amount = amount,
+                }
         end
-        return
+        return amount <= 0 and { category = "noop" } or nil
     end
-    local inventory = self:_service("InventoryService")
+    local inventory = self._inventoryService
     if not inventory then
-        return
+        return false
     end
     if category == "enhancements" then
-        if descriptor.enh then
-            inventory:AddItem(player, ENH_BUCKET, deepCopy(descriptor.enh))
+        if descriptor.record and descriptor.recordKey then
+            local inventoryReceipt = inventory:InsertRecordSnapshot(
+                player,
+                ENH_BUCKET,
+                descriptor.recordKey,
+                descriptor.record,
+                { deferFlush = true }
+            )
+            return inventoryReceipt
+                and {
+                    category = "inventory",
+                    inventoryReceipt = inventoryReceipt,
+                }
         end
-        return
+        return nil
     end
-    grantDescriptor(inventory, player, descriptor) -- pets (default)
+    if not (self._petTransferService and descriptor.record and descriptor.recordKey) then
+        return nil
+    end
+    local inventoryReceipt = self._petTransferService:GrantRecord(
+        player,
+        descriptor.recordKey,
+        descriptor.record,
+        { deferFlush = true }
+    )
+    return inventoryReceipt and { category = "pets", inventoryReceipt = inventoryReceipt }
 end
 
-function TradeService:_giveAll(player, escrowForOwner)
-    for _, descriptor in pairs(escrowForOwner or {}) do
-        self:_grantDescriptor(player, descriptor)
+function TradeService:_revokeReceipt(receipt)
+    if receipt.category == "currencies" then
+        return self._economyService:RemoveCurrency(
+            receipt.player,
+            receipt.currency,
+            receipt.amount,
+            "trade_delivery_rollback"
+        )
+    elseif receipt.category == "pets" then
+        return self._petTransferService:RevokeGrant(receipt.inventoryReceipt, { deferFlush = true })
+    elseif receipt.category == "inventory" then
+        return self._inventoryService:RollbackRecordInsert(
+            receipt.inventoryReceipt,
+            { deferFlush = true }
+        )
+    end
+    return true
+end
+
+function TradeService:_commitReceipts(receipts)
+    local flushes = {}
+    for _, receipt in ipairs(receipts or {}) do
+        local inventoryReceipt = receipt.inventoryReceipt
+        if inventoryReceipt then
+            self._inventoryService:FinalizeRecordInsert(inventoryReceipt)
+            local key = tostring(inventoryReceipt.player.UserId)
+                .. ":"
+                .. inventoryReceipt.bucketName
+            flushes[key] = inventoryReceipt
+        end
+    end
+    for _, inventoryReceipt in pairs(flushes) do
+        self._inventoryService:FlushBucket(
+            inventoryReceipt.player,
+            inventoryReceipt.bucketName,
+            "trade_record_transfer"
+        )
     end
 end
 
--- Both confirmed: deliver A's escrow to B and B's escrow to A. The items are already
--- escrowed, so neither side can be left holding both/none. DETACH-THEN-GIVE (2026-07-07
--- transaction audit): the escrow tables are detached from the session BEFORE granting, so a
--- grant that throws mid-delivery can no longer be double-paid by a second Confirm re-entering
--- _deliver, nor by the disconnect refund — the session's escrow is already empty.
+-- Both confirmed: grant both legs against reversible receipts. Escrow remains authoritative until
+-- every grant succeeds, so a rejection or throw restores recipients and leaves the trade retryable.
 function TradeService:_deliver(session)
     local pa, pb = playerById(session.a), playerById(session.b)
-    local escrowA, escrowB = session.escrow[session.a], session.escrow[session.b]
-    session.escrow[session.a], session.escrow[session.b] = {}, {}
-    local okA = pcall(function()
-        self:_giveAll(pb, escrowA)
-    end)
-    local okB = pcall(function()
-        self:_giveAll(pa, escrowB)
-    end)
-    if not (okA and okB) and self._logger then
-        self._logger:Warn("Trade delivery grant threw mid-way (escrow detached, no re-entry)", {
-            a = session.a,
-            b = session.b,
-            okA = okA,
-            okB = okB,
-        })
+    if not (pa and pb) then
+        return { ok = false, reason = "player_not_found" }
     end
+    local escrowA, escrowB = session.escrow[session.a], session.escrow[session.b]
+    local delivery = TradeDeliveryTransaction.execute({
+        legs = {
+            { recipient = pb, escrow = escrowA },
+            { recipient = pa, escrow = escrowB },
+        },
+        grant = function(recipient, descriptor)
+            return self:_grantDescriptor(recipient, descriptor)
+        end,
+        revoke = function(receipt)
+            return self:_revokeReceipt(receipt)
+        end,
+    })
+    if not delivery.ok then
+        if self._logger then
+            self._logger:Warn("Trade delivery rolled back", {
+                a = session.a,
+                b = session.b,
+                reason = delivery.reason,
+                cause = delivery.cause,
+            })
+        end
+        self:_push(session, "delivery_failed")
+        return {
+            ok = false,
+            reason = delivery.reason,
+            retryable = delivery.reason ~= "rollback_failed",
+        }
+    end
+    self:_commitReceipts(delivery.receipts)
+    session.escrow[session.a], session.escrow[session.b] = {}, {}
 
     local rec = TradeLogic.auditRecord(
         session.a,
@@ -696,8 +767,8 @@ function TradeService:_deliver(session)
         end
         return n
     end
-    local gaveA, gaveB = countPets(session.escrow[session.a]), countPets(session.escrow[session.b])
-    local stats = self:_service("StatsService")
+    local gaveA, gaveB = countPets(escrowA), countPets(escrowB)
+    local stats = self._statsService
     if stats then
         if pa then
             stats:Increment(pa, "pets_traded_away", gaveA)
@@ -727,11 +798,36 @@ function TradeService:_deliver(session)
 end
 
 -- Return every escrowed pet to its owner (cancel / decline / disconnect).
-function TradeService:_refund(session)
-    for _, userId in ipairs({ session.a, session.b }) do
-        self:_giveAll(playerById(userId), session.escrow[userId])
-        session.escrow[userId] = {}
+function TradeService:_refund(session, leavingPlayer)
+    local function resolvePlayer(userId)
+        if leavingPlayer and leavingPlayer.UserId == userId then
+            return leavingPlayer
+        end
+        return playerById(userId)
     end
+
+    local playerA, playerB = resolvePlayer(session.a), resolvePlayer(session.b)
+    if not (playerA and playerB) then
+        return false
+    end
+    local result = TradeDeliveryTransaction.execute({
+        legs = {
+            { recipient = playerA, escrow = session.escrow[session.a] },
+            { recipient = playerB, escrow = session.escrow[session.b] },
+        },
+        grant = function(recipient, descriptor)
+            return self:_grantDescriptor(recipient, descriptor)
+        end,
+        revoke = function(receipt)
+            return self:_revokeReceipt(receipt)
+        end,
+    })
+    if not result.ok then
+        return false
+    end
+    self:_commitReceipts(result.receipts)
+    session.escrow[session.a], session.escrow[session.b] = {}, {}
+    return true
 end
 
 function TradeService:Cancel(player)
@@ -739,7 +835,9 @@ function TradeService:Cancel(player)
     if not session then
         return { ok = true }
     end
-    self:_refund(session)
+    if not self:_refund(session) then
+        return { ok = false, reason = "escrow_refund_failed" }
+    end
     self:_push(session, "cancelled")
     self:_close(session.id)
     return { ok = true }
@@ -755,9 +853,15 @@ function TradeService:_onLeave(player)
     end
     local session = self:_sessionOf(player.UserId)
     if session then
-        self:_refund(session) -- refunds the leaver too (their save flushes on remove)
-        self:_push(session, "cancelled")
-        self:_close(session.id)
+        if self:_refund(session, player) then
+            self:_push(session, "cancelled")
+            self:_close(session.id)
+        elseif self._logger then
+            self._logger:Error("Trade escrow refund failed before profile release", {
+                sessionId = session.id,
+                leavingUserId = player.UserId,
+            })
+        end
     end
 end
 
@@ -774,7 +878,7 @@ end
 -- The player's tradeable pets (for the offer picker). Pets already escrowed in an
 -- active trade are gone from inventory, so they naturally don't appear here.
 function TradeService:ListMyPets(player)
-    local inventory = self:_service("InventoryService")
+    local inventory = self._inventoryService
     if not inventory then
         return { ok = false, reason = "service_unavailable" }
     end
@@ -802,7 +906,7 @@ end
 -- The player's tradeable enhancements (source list for the trade picker). Each entry is tagged
 -- category="enhancements" so the offer columns render it through the simple-card path.
 function TradeService:ListMyEnhancements(player)
-    local enh = self:_service("EnhancementService")
+    local enh = self._enhancementService
     if not (enh and enh.GetState) then
         return { ok = false, reason = "service_unavailable" }
     end

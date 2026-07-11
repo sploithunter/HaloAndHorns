@@ -54,18 +54,7 @@ function PetCompatibilityService:CreatePlayerDataStructure(player)
 end
 
 function PetCompatibilityService:OnPlayerAdded(player)
-    -- Wait for character to load first
-    player.CharacterAdded:Connect(function()
-        -- Small delay to ensure other services have set up player folders
-        task.wait(1)
-        self:CreatePlayerDataStructure(player)
-    end)
-
-    -- Also create immediately if character already exists
-    if player.Character then
-        task.wait(1)
-        self:CreatePlayerDataStructure(player)
-    end
+    self:CreatePlayerDataStructure(player)
 end
 
 function PetCompatibilityService:Initialize()

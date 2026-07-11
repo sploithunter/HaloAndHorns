@@ -3227,12 +3227,28 @@ function BaseUI:_setupCurrencyUpdates()
         end
     end)
 
-    -- Initial population after a short delay (seeds previousValues without animating)
-    task.spawn(function()
-        task.wait(1) -- Wait for data to load
+    local function seedCurrencies()
         updateAllCurrencies()
         initialized = true
-    end)
+    end
+
+    if self.player:GetAttribute("DataLoaded") == true then
+        seedCurrencies()
+    else
+        local dataLoadedConnection
+        dataLoadedConnection = self.player
+            :GetAttributeChangedSignal("DataLoaded")
+            :Connect(function()
+                if self.player:GetAttribute("DataLoaded") == true then
+                    dataLoadedConnection:Disconnect()
+                    seedCurrencies()
+                end
+            end)
+        if self.player:GetAttribute("DataLoaded") == true then
+            dataLoadedConnection:Disconnect()
+            seedCurrencies()
+        end
+    end
 
     self.logger:info("Currency update system initialized with animations")
 end

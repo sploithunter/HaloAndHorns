@@ -219,7 +219,7 @@ function EffectsPanel:_loadEffectsData()
     }
 
     local signals = require(ReplicatedStorage.Shared.Network.Signals)
-    signals.ActiveEffects:FireServer({ request = true })
+    signals.ActiveEffectsRequest:FireServer()
     self:_updateEffectsDisplay()
 end
 

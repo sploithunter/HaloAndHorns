@@ -13,6 +13,7 @@ function AchievementsService:Init()
     self._dataService = self._modules.DataService
     self._statsService = self._modules.StatsService
     self._economyService = self._modules.EconomyService
+    self._rewardService = self._modules.RewardService
 
     self._config = self._configLoader:LoadConfig("achievements")
     self.Completed = Signal.new()
@@ -47,18 +48,6 @@ function AchievementsService:_ensureAchievements(data)
     return data.Achievements
 end
 
--- Runtime locator (RewardService is registered in boot; no boot-time dep cycle).
-function AchievementsService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
-end
-
 -- Translate an achievement tier reward into a RewardBundle. Supports the legacy
 -- currency shape ({ type="currency", currency, amount }) and a forward-looking full
 -- bundle ({ bundle = { currencies/pets/items/effects/slots } }) so achievements can
@@ -87,7 +76,7 @@ function AchievementsService:_grantReward(player, reward, source)
 
     -- Prefer the unified reward spine: one audited grant terminal that also handles
     -- items/pets/effects/slots, not just currency.
-    local rewardService = self:_service("RewardService")
+    local rewardService = self._rewardService
     if rewardService then
         local res = rewardService:Grant(player, bundle, source or "achievement_reward")
         if res and res.ok then
@@ -95,7 +84,8 @@ function AchievementsService:_grantReward(player, reward, source)
         end
     end
 
-    -- Fallback: legacy currency-only path if RewardService is unavailable.
+    -- Currency-only fallback remains inside the authoritative economy boundary when
+    -- RewardService is unavailable.
     if reward.type == "currency" then
         local amount = tonumber(reward.amount) or 0
         if amount <= 0 then
@@ -109,17 +99,9 @@ function AchievementsService:_grantReward(player, reward, source)
                 source or "achievement_reward"
             )
         end
-        if self._dataService and self._dataService.AddCurrency then
-            return self._dataService:AddCurrency(
-                player,
-                reward.currency,
-                amount,
-                source or "achievement_reward"
-            )
-        end
     end
 
-    return false, "No reward grant service available"
+    return false, "No authoritative reward grant service available"
 end
 
 function AchievementsService:_grantTier(player, achievement, tier, value)

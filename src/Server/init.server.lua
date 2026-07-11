@@ -45,6 +45,7 @@ local Locations = require(ReplicatedStorage.Shared.Locations)
 local Matter = Locations.getLibrary("Matter") -- Matter ECS framework (manual due to Wally/Rojo sync issues)
 local Reflex = Locations.getPackage("Reflex") -- Redux-like state management (via Wally)
 local ModuleLoader = require(Locations.SharedUtils.ModuleLoader)
+local RuntimeServiceBindings = require(ServerScriptService.Server.Services.RuntimeServiceBindings)
 
 -- Audio buses are created SERVER-side at boot so every peer shares ONE set of
 -- SoundGroups. Otherwise the client lazily creates LOCAL groups at startup and
@@ -154,13 +155,21 @@ registerFeatureModule(
     "upgrades",
     "UpgradeService",
     ServerScriptService.Server.Services.UpgradeService,
-    appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "modifiers", "ModifierService")
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService", "EconomyService" },
+        "modifiers",
+        "ModifierService"
+    )
 )
 registerFeatureModule(
     "player_progression",
     "PlayerProgressionService",
     ServerScriptService.Server.Services.PlayerProgressionService,
-    appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "modifiers", "ModifierService")
+    appendIfEnabled(
+        appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "modifiers", "ModifierService"),
+        "stats",
+        "StatsService"
+    )
 )
 loader:RegisterModule(
     "AdminService",
@@ -187,7 +196,7 @@ registerFeatureModule(
     "map_binding",
     "ZoneService",
     ServerScriptService.Server.Services.ZoneService,
-    { "Logger", "ConfigLoader", "DataService", "WorldBindingService" }
+    { "Logger", "ConfigLoader", "DataService", "EconomyService", "WorldBindingService" }
 )
 registerFeatureModule(
     "global_events",
@@ -230,7 +239,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "SummonService",
     ServerScriptService.Server.Services.SummonService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "EnemyService" }
 )
 loader:RegisterModule(
     "PlayerEffectsService",
@@ -258,7 +267,6 @@ loader:RegisterModule(
             "PlayerEffectsService",
             "GlobalEffectsService",
             "AdminService",
-            "InventoryService",
         }, "stats", "StatsService"),
         "modifiers",
         "ModifierService"
@@ -269,7 +277,7 @@ registerFeatureModule(
     "PetIndexService",
     ServerScriptService.Server.Services.PetIndexService,
     appendIfEnabled(
-        { "Logger", "ConfigLoader", "DataService", "EconomyService" },
+        { "Logger", "ConfigLoader", "DataService", "EconomyService", "PetSerialService" },
         "stats",
         "StatsService"
     )
@@ -279,7 +287,7 @@ registerFeatureModule(
     "AchievementsService",
     ServerScriptService.Server.Services.AchievementsService,
     appendIfEnabled(
-        { "Logger", "ConfigLoader", "DataService", "EconomyService" },
+        { "Logger", "ConfigLoader", "DataService", "EconomyService", "RewardService" },
         "stats",
         "StatsService"
     )
@@ -299,9 +307,17 @@ loader:RegisterModule(
     "InventoryService",
     ServerScriptService.Server.Services.InventoryService,
     appendIfEnabled(
-        appendIfEnabled({ "Logger", "DataService", "ConfigLoader" }, "upgrades", "UpgradeService"),
-        "player_progression",
-        "PlayerProgressionService"
+        appendIfEnabled(
+            appendIfEnabled(
+                { "Logger", "DataService", "ConfigLoader" },
+                "upgrades",
+                "UpgradeService"
+            ),
+            "player_progression",
+            "PlayerProgressionService"
+        ),
+        "stats",
+        "StatsService"
     )
 )
 registerFeatureModule(
@@ -320,7 +336,7 @@ registerFeatureModule(
     ServerScriptService.Server.Services.EnchantService,
     appendIfEnabled(
         appendIfEnabled(
-            { "Logger", "ConfigLoader", "DataService", "InventoryService" },
+            { "Logger", "ConfigLoader", "DataService", "InventoryService", "EconomyService" },
             "modifiers",
             "ModifierService"
         ),
@@ -374,6 +390,7 @@ registerFeatureModule(
             "ConfigLoader",
             "PetGrantService",
             "HatchEntitlementService",
+            "EconomyService",
         }, "global_events", "EventService"),
         "map_binding",
         "ZoneService"
@@ -391,7 +408,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "LayerService",
     ServerScriptService.Server.Services.LayerService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "EconomyService" }
 )
 -- Phase 3 party core (Halo & Horns): active squad, spirit form, stack pool.
 loader:RegisterModule(
@@ -426,84 +443,129 @@ loader:RegisterModule(
 loader:RegisterModule(
     "AugmentationService",
     ServerScriptService.Server.Services.AugmentationService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService", "EnhancementService", "PowerService" },
+        "player_progression",
+        "PlayerProgressionService"
+    )
 )
 -- EnhancementService: CoH-style enhancements (inventory + slotting into power slots).
 loader:RegisterModule(
     "EnhancementService",
     ServerScriptService.Server.Services.EnhancementService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService", "InventoryService", "PowerService" },
+        "stats",
+        "StatsService"
+    )
 )
 -- EnhancementShopService: buy/sell enhancements for gems (configs/enhancements.lua shop).
 loader:RegisterModule(
     "EnhancementShopService",
     ServerScriptService.Server.Services.EnhancementShopService,
-    { "Logger", "ConfigLoader", "DataService", "InventoryService", "EnhancementService" }
+    {
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "InventoryService",
+        "EnhancementService",
+        "EconomyService",
+    }
 )
 -- PotionService: "brew charge" potions (drink->sip->drain) feeding BuffStack axis attributes.
 loader:RegisterModule(
     "PotionService",
     ServerScriptService.Server.Services.PotionService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "InventoryService" }
 )
 -- TutorialService: event-driven new-player tutorial (taps the GameEvents bus; configs/tutorial).
 loader:RegisterModule(
     "TutorialService",
     ServerScriptService.Server.Services.TutorialService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService", "EnhancementService" },
+        "player_progression",
+        "PlayerProgressionService"
+    )
 )
 -- HotbarService: Halo & Horns hotbar / command bar (Feature 16).
 loader:RegisterModule(
     "HotbarService",
     ServerScriptService.Server.Services.HotbarService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "PotionService", "EnemyService", "PowerService" }
 )
 -- RosterService: Halo & Horns named rosters + injury-rule deploy (Feature 17).
 -- Resolves SpiritFormService at runtime for pet readiness.
 loader:RegisterModule(
     "RosterService",
     ServerScriptService.Server.Services.RosterService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "SpiritFormService" }
 )
 -- PartyService: Halo & Horns group play (Feature 18) — membership + group math.
 loader:RegisterModule(
     "PartyService",
     ServerScriptService.Server.Services.PartyService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "LayerService" }
 )
 -- TradeService: Halo & Horns trading (Feature 19) — session offers, both-confirm
 -- gate, atomic swap, and the trade-history audit log.
 loader:RegisterModule(
+    "PetTransferService",
+    ServerScriptService.Server.Services.PetTransferService,
+    { "InventoryService" }
+)
+loader:RegisterModule(
     "TradeService",
     ServerScriptService.Server.Services.TradeService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled({
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "EconomyService",
+        "InventoryService",
+        "PetTransferService",
+        "RosterService",
+        "EnhancementService",
+    }, "stats", "StatsService")
 )
 -- FusionService: Halo & Horns Chaotic fusion (Feature 20) — Light + Shadow -> Chaotic.
 loader:RegisterModule(
     "FusionService",
     ServerScriptService.Server.Services.FusionService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "InventoryService", "PetGrantService" }
 )
 -- Reward spine (Phase 7): RewardService grants bundles; Quest/Daily/Shop gate them.
-loader:RegisterModule(
-    "RewardService",
-    ServerScriptService.Server.Services.RewardService,
-    { "Logger", "ConfigLoader", "DataService" }
-)
+loader:RegisterModule("RewardService", ServerScriptService.Server.Services.RewardService, {
+    "Logger",
+    "ConfigLoader",
+    "DataService",
+    "EconomyService",
+    "InventoryService",
+    "PetGrantService",
+    "PlayerEffectsService",
+})
 loader:RegisterModule(
     "QuestService",
     ServerScriptService.Server.Services.QuestService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled(
+        appendIfEnabled(
+            { "Logger", "ConfigLoader", "DataService", "RewardService" },
+            "player_progression",
+            "PlayerProgressionService"
+        ),
+        "stats",
+        "StatsService"
+    )
 )
 loader:RegisterModule(
     "DailyService",
     ServerScriptService.Server.Services.DailyService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "RewardService" }
 )
 loader:RegisterModule(
     "ShopService",
     ServerScriptService.Server.Services.ShopService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "EconomyService", "RewardService" }
 )
 -- FocusService: Halo & Horns player Focus pool + invulnerability (Feature 12).
 loader:RegisterModule(
@@ -517,7 +579,20 @@ loader:RegisterModule(
 loader:RegisterModule(
     "CombatService",
     ServerScriptService.Server.Services.CombatService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled(
+        appendIfEnabled({
+            "Logger",
+            "ConfigLoader",
+            "DataService",
+            "EconomyService",
+            "RewardService",
+            "LayerService",
+            "FocusService",
+            "SpiritFormService",
+        }, "player_progression", "PlayerProgressionService"),
+        "modifiers",
+        "ModifierService"
+    )
 )
 -- PetFollowService: service-owned pet follow/work loop (issue #4). Inert unless
 -- configs/pet_follow.lua service_owned=true; resolves CombatService at runtime.
@@ -532,7 +607,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "AscensionAltarService",
     ServerScriptService.Server.Services.AscensionAltarService,
-    { "Logger", "ConfigLoader" }
+    appendIfEnabled({ "Logger", "ConfigLoader" }, "player_progression", "PlayerProgressionService")
 )
 -- DailyRewardZoneService: the in-world Daily Reward pad — auto-claims the daily streak
 -- when a player walks into the authored "Daily Reward" model (no prompt/menu), paying the
@@ -541,21 +616,21 @@ loader:RegisterModule(
 loader:RegisterModule(
     "DailyRewardZoneService",
     ServerScriptService.Server.Services.DailyRewardZoneService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "DailyService", "RewardService" }
 )
 -- BaddieSpawnerService: proximity enemy waves at map-authored BaddieSpawner* parts
 -- (combat taste before the Heaven/Hell choice — Jason). Resolves EnemyService at runtime.
 loader:RegisterModule(
     "BaddieSpawnerService",
     ServerScriptService.Server.Services.BaddieSpawnerService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "EnemyService" }
 )
 -- MeetCreatorService: first-time-in-a-server-with-a-creator -> their egg, once ever
 -- (configs/creators.lua). Resolves Data/Inventory/PetGrant services at runtime.
 loader:RegisterModule(
     "MeetCreatorService",
     ServerScriptService.Server.Services.MeetCreatorService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "DataService", "InventoryService", "PetGrantService" }
 )
 -- RealmPortalService: binds named workspace portals (Portal_Halo1/Portal_Horn1) to a
 -- ProximityPrompt that toggles the player into a heaven/hell realm via LayerService (World S3
@@ -563,7 +638,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "RealmPortalService",
     ServerScriptService.Server.Services.RealmPortalService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "LayerService", "AdminService" }
 )
 -- MissionInstanceService: CoH-style door missions — MissionDoor prompts open a
 -- deterministic procedural instance (seeded tile-kit map) at a far-X slot and
@@ -588,12 +663,11 @@ loader:RegisterModule(
     { "Logger", "ConfigLoader" }
 )
 -- GameAPIService: the unified command-bus boundary (see
--- docs/wiki/AUTOMATION_API_DESIGN.md). Handlers resolve target services from the
--- _G.RBXTemplateServices locator at runtime, so it only needs Logger to boot.
+-- docs/wiki/AUTOMATION_API_DESIGN.md). Its fixed adapter map is bound before Start.
 loader:RegisterModule(
     "GameAPIService",
     ServerScriptService.Server.Services.GameAPIService,
-    { "Logger" }
+    { "Logger", "EconomyService" }
 )
 if RunService:IsStudio() then
     -- AutomationService: Studio-only test driver. Depends on GameAPIService so it
@@ -601,7 +675,7 @@ if RunService:IsStudio() then
     loader:RegisterModule(
         "AutomationService",
         ServerScriptService.Server.Services.AutomationService,
-        { "Logger", "DataService", "GameAPIService" }
+        { "Logger", "DataService", "EconomyService", "GameAPIService" }
     )
 
     local studioSmokeDeps = {
@@ -646,6 +720,32 @@ registerFeatureModule(
     }
 )
 
+local eggServiceDependencies = {
+    "Logger",
+    "DataService",
+    "InventoryService",
+    "EconomyService",
+    "EventService",
+    "PetGrantService",
+    "HatchEntitlementService",
+}
+appendIfEnabled(eggServiceDependencies, "stats", "StatsService")
+appendIfEnabled(eggServiceDependencies, "modifiers", "ModifierService")
+appendIfEnabled(eggServiceDependencies, "auto_target", "AutoTargetService")
+appendIfEnabled(eggServiceDependencies, "pet_index", "PetIndexService")
+appendIfEnabled(eggServiceDependencies, "player_progression", "PlayerProgressionService")
+loader:RegisterModule(
+    "EggService",
+    ServerScriptService.Server.Services.EggService,
+    eggServiceDependencies
+)
+loader:RegisterModule("EggSpawner", ReplicatedStorage.Shared.Services.EggSpawner, { "Logger" })
+loader:RegisterModule(
+    "PetEquipmentBridge",
+    ServerScriptService.Server.Services.PetEquipmentBridge,
+    { "Logger", "InventoryService" }
+)
+
 -- Register lazy services (loaded when needed)
 -- loader:RegisterLazyModule("TradeService", ServerScriptService.Server.Services.TradeService, {"EconomyService", "DataService", "NetworkBridge"}) -- TODO: Create TradeService
 -- loader:RegisterLazyModule("CombatService", ServerScriptService.Server.Services.CombatService, {"DataService", "NetworkBridge", "ConfigLoader"}) -- TODO: Create CombatService
@@ -654,7 +754,123 @@ registerFeatureModule(
 -- Load all modules with error handling
 -- Loading will be reported via Logger after initialization
 local loadSuccess, loadOrderOrError = pcall(function()
-    return loader:LoadAll()
+    return loader:LoadAll(function(modules)
+        if isFeatureEnabled("player_progression") then
+            local progression = modules:Get("PlayerProgressionService")
+            local reward = modules:Get("RewardService")
+            progression:BindPeerServices({
+                InventoryService = modules:Get("InventoryService"),
+                RewardService = reward,
+                EnhancementService = modules:Get("EnhancementService"),
+            })
+            reward:SetPlayerProgressionService(progression)
+        end
+        modules:Get("ActiveSquadService"):SetSpiritFormService(modules:Get("SpiritFormService"))
+        if isFeatureEnabled("map_binding") then
+            modules:Get("BreakableSpawner"):SetZoneService(modules:Get("ZoneService"))
+        end
+        if isFeatureEnabled("pet_index") then
+            modules:Get("PetGrantService"):SetPetIndexService(modules:Get("PetIndexService"))
+        end
+        if isFeatureEnabled("pet_progression") and isFeatureEnabled("enchants") then
+            modules:Get("PetProgressionService"):SetEnchantService(modules:Get("EnchantService"))
+        end
+        modules:Get("PetFollowService"):BindPeerServices({
+            CombatService = modules:Get("CombatService"),
+            EnemyService = modules:Get("EnemyService"),
+        })
+        modules:Get("EnemyService"):BindPeerServices({
+            CombatService = modules:Get("CombatService"),
+            PetFollowService = modules:Get("PetFollowService"),
+            StatsService = isFeatureEnabled("stats") and modules:Get("StatsService") or nil,
+            DropService = modules:Get("DropService"),
+            DataService = modules:Get("DataService"),
+            PowerService = modules:Get("PowerService"),
+            EventService = isFeatureEnabled("global_events") and modules:Get("EventService") or nil,
+        })
+        modules:Get("MissionInstanceService"):BindPeerServices({
+            QuestService = modules:Get("QuestService"),
+            DataService = modules:Get("DataService"),
+            EnemyService = modules:Get("EnemyService"),
+            InventoryService = modules:Get("InventoryService"),
+            StatsService = isFeatureEnabled("stats") and modules:Get("StatsService") or nil,
+            LayerService = modules:Get("LayerService"),
+            BreakableSpawner = modules:Get("BreakableSpawner"),
+            DropService = modules:Get("DropService"),
+            EventService = isFeatureEnabled("global_events") and modules:Get("EventService") or nil,
+        })
+        if isFeatureEnabled("admin_tools") then
+            modules:Get("AdminToolsService"):BindPeerServices({
+                EnemyService = modules:Get("EnemyService"),
+                PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(
+                    "PlayerProgressionService"
+                ) or nil,
+                ArchetypeService = modules:Get("ArchetypeService"),
+                PowerService = modules:Get("PowerService"),
+                TutorialService = modules:Get("TutorialService"),
+                EnhancementService = modules:Get("EnhancementService"),
+            })
+        end
+        modules:Get("PowerService"):BindPeerServices({
+            FocusService = modules:Get("FocusService"),
+            PetFollowService = modules:Get("PetFollowService"),
+            SummonService = modules:Get("SummonService"),
+            EnemyService = modules:Get("EnemyService"),
+            PartyService = modules:Get("PartyService"),
+            StatsService = isFeatureEnabled("stats") and modules:Get("StatsService") or nil,
+            PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(
+                "PlayerProgressionService"
+            ) or nil,
+            HotbarService = modules:Get("HotbarService"),
+        })
+        modules:Get("GameAPIService"):BindServices({
+            AchievementsService = isFeatureEnabled("achievements") and modules:Get(
+                "AchievementsService"
+            ) or nil,
+            ActiveSquadService = modules:Get("ActiveSquadService"),
+            AdminService = modules:Get("AdminService"),
+            AlignmentService = modules:Get("AlignmentService"),
+            ArchetypeService = modules:Get("ArchetypeService"),
+            AugmentationService = modules:Get("AugmentationService"),
+            CombatService = modules:Get("CombatService"),
+            DailyService = modules:Get("DailyService"),
+            DataService = modules:Get("DataService"),
+            EnemyService = modules:Get("EnemyService"),
+            EnhancementService = modules:Get("EnhancementService"),
+            EnhancementShopService = modules:Get("EnhancementShopService"),
+            FocusService = modules:Get("FocusService"),
+            FusionService = modules:Get("FusionService"),
+            HotbarService = modules:Get("HotbarService"),
+            InventoryService = modules:Get("InventoryService"),
+            LayerService = modules:Get("LayerService"),
+            MeetCreatorService = modules:Get("MeetCreatorService"),
+            MissionInstanceService = modules:Get("MissionInstanceService"),
+            PartyService = modules:Get("PartyService"),
+            PetGrantService = modules:Get("PetGrantService"),
+            PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(
+                "PlayerProgressionService"
+            ) or nil,
+            PotionService = modules:Get("PotionService"),
+            PowerService = modules:Get("PowerService"),
+            QuestService = modules:Get("QuestService"),
+            RewardService = modules:Get("RewardService"),
+            RosterService = modules:Get("RosterService"),
+            ShopService = modules:Get("ShopService"),
+            SpiritFormService = modules:Get("SpiritFormService"),
+            StackPoolService = modules:Get("StackPoolService"),
+            StatsService = isFeatureEnabled("stats") and modules:Get("StatsService") or nil,
+            TradeService = modules:Get("TradeService"),
+            TutorialService = modules:Get("TutorialService"),
+            UpgradeService = isFeatureEnabled("upgrades") and modules:Get("UpgradeService") or nil,
+            ZoneService = isFeatureEnabled("map_binding") and modules:Get("ZoneService") or nil,
+        })
+        RuntimeServiceBindings.configure({
+            GameAPIService = modules:Get("GameAPIService"),
+            ModifierService = isFeatureEnabled("modifiers") and modules:Get("ModifierService")
+                or nil,
+            PetFollowService = modules:Get("PetFollowService"),
+        })
+    end)
 end)
 
 if not loadSuccess then
@@ -704,6 +920,7 @@ local requiredModules = {
     "InventoryService",
     "PetSerialService",
     "PetGrantService",
+    "PetTransferService",
     "SettingsService",
     "HatchEntitlementService",
     "DiagnosticsService",
@@ -776,15 +993,11 @@ local DataService = loader:Get("DataService")
 local PlayerEffectsService = loader:Get("PlayerEffectsService")
 local MonetizationService = loader:Get("MonetizationService")
 local InventoryService = loader:Get("InventoryService")
-
-_G.RBXTemplateServices = {
-    Get = function(_, moduleName)
-        return loader:Get(moduleName)
-    end,
-}
+local EconomyService = loader:Get("EconomyService")
 
 -- Set up cross-references to avoid circular dependencies
 DataService:SetPlayerEffectsService(PlayerEffectsService)
+EconomyService:SetInventoryService(InventoryService)
 
 -- Legacy network handler connection removed - using Signals directly
 
@@ -933,64 +1146,7 @@ end
 
 Logger:Info("Matter ECS loop started", { systemCount = #systemsList })
 
--- Initialize EggSpawner system
-task.spawn(function()
-    -- Small delay to ensure all dependencies are ready
-    task.wait(1)
-
-    Logger:Info("Starting EggSpawner initialization...")
-
-    local success, eggSpawnerOrError = pcall(function()
-        local Locations = require(ReplicatedStorage.Shared.Locations)
-        return require(ReplicatedStorage.Shared.Services.EggSpawner)
-    end)
-
-    if success then
-        Logger:Info("EggSpawner service loaded successfully")
-        local EggSpawner = eggSpawnerOrError
-        local initSuccess, initError = pcall(function()
-            EggSpawner:Initialize()
-        end)
-
-        if initSuccess then
-            Logger:Info("EggSpawner initialized successfully")
-        else
-            Logger:Error("Failed to initialize EggSpawner", { error = tostring(initError) })
-        end
-    else
-        Logger:Error("Failed to load EggSpawner service", { error = tostring(eggSpawnerOrError) })
-    end
-end)
-
 -- UserDisplayPreferences is now handled by SettingsService via ModuleLoader
-
--- Initialize EggService (following working game pattern)
-task.spawn(function()
-    task.wait(0.1) -- Small delay after UserDisplayPreferences
-
-    Logger:Info("Starting EggService initialization...")
-
-    local success, eggServiceOrError = pcall(function()
-        local Locations = require(ReplicatedStorage.Shared.Locations)
-        return require(script.Services.EggService)
-    end)
-
-    if success then
-        Logger:Info("EggService loaded successfully")
-        local EggService = eggServiceOrError
-        local initSuccess, initError = pcall(function()
-            EggService:Initialize(loader) -- Pass loader so EggService can access other services
-        end)
-
-        if initSuccess then
-            Logger:Info("EggService initialized successfully")
-        else
-            Logger:Error("Failed to initialize EggService", { error = tostring(initError) })
-        end
-    else
-        Logger:Error("Failed to load EggService", { error = tostring(eggServiceOrError) })
-    end
-end)
 
 -- Player management
 Players.PlayerAdded:Connect(function(player)

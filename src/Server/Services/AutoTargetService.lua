@@ -13,6 +13,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local AutoTargetService = {}
 AutoTargetService.__index = AutoTargetService
@@ -201,10 +202,8 @@ function AutoTargetService:Init()
     Players.PlayerAdded:Connect(function(player)
         ensurePlayerFlags(player)
         task.spawn(function()
-            local waited = 0
-            while dataService and not dataService:IsDataLoaded(player) and waited < 10 do
-                task.wait(0.1)
-                waited += 0.1
+            if dataService then
+                Readiness.awaitAttribute(player, "DataLoaded", true, 10)
             end
             self:_ensureSettings(player)
             self:_syncCompatibilityFlags(player)

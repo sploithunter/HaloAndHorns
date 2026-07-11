@@ -19,8 +19,13 @@ function ActiveSquadService:Init()
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
     self._inventoryService = self._modules and self._modules.InventoryService
+    self._spiritFormService = nil
     self._config = self._configLoader:LoadConfig("squad")
     self._lastSwap = {} -- userId -> last swap os.time() (session-only)
+end
+
+function ActiveSquadService:SetSpiritFormService(service)
+    self._spiritFormService = service
 end
 
 local function squadOf(data)
@@ -39,19 +44,6 @@ local function indexOf(squad, ref)
     return nil
 end
 
--- Runtime lookup of SpiritFormService (locator, not a boot dep — SpiritFormService
--- depends on this service for auto-return, so we avoid a registration cycle).
-local function spiritFormService()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get("SpiritFormService")
-    end)
-    return ok and service or nil
-end
-
 function ActiveSquadService:Get(player)
     local data = self._dataService:GetData(player)
     return data and squadOf(data) or {}
@@ -66,7 +58,7 @@ function ActiveSquadService:Deploy(player, ref)
         return { ok = false, reason = "pet_not_owned" }
     end
     -- A unique pet in Spirit Form cannot be deployed during cooldown (Feature 7).
-    local spirit = spiritFormService()
+    local spirit = self._spiritFormService
     if spirit then
         local status = spirit:Status(player, ref)
         if status.ok and status.deployable == false then

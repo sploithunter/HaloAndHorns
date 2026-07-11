@@ -1,11 +1,9 @@
 --[[
-    RealmTravelPrompt — client yes/no confirmation for realm portals.
+    RealmTravelPrompt — client informational notice for locked realm portals.
 
-    When you TOUCH a realm portal whose realm is built, the server (RealmPortalService) sends a
-    Signals.RealmTravelOffer { layer, label }. This shows a centre-screen confirm with the label
-    (e.g. "Travel to Heaven 1?" / "Return to Home?") and Yes/No buttons. Yes fires
-    Signals.RealmTravelConfirm { layer } back; the server validates it against the offer it sent and
-    teleports via LayerService. No (or touching away / a new offer) just dismisses.
+    Travel itself is a server-authoritative hold-E action. When a player is below the
+    realm's level gate, RealmPortalService sends RealmTravelOffer with a locked label;
+    this surface displays that reason and lets the player dismiss it.
 
     Styled to match ZoneUnlockPrompt (the in-world prompt look Jason has accepted) — dark rounded
     panel, gold stroke, Gotham. Single live offer at a time.
@@ -91,36 +89,22 @@ function RealmTravelPrompt.start()
         c.Parent = b
         return b
     end
-    -- Yes on the left, No on the right (each fills its half).
-    local yesBtn = makeButton("Yes", "Travel", 0.27, Color3.fromRGB(70, 170, 90))
-    local noBtn = makeButton("No", "Cancel", 0.74, Color3.fromRGB(90, 90, 100))
+    local closeBtn = makeButton("Okay", "Okay", 0.5, Color3.fromRGB(90, 90, 100))
+    closeBtn.Size = UDim2.new(1, -24, 0, 40)
 
-    local activeLayer = nil
     local function close()
         gui.Enabled = false
-        activeLayer = nil
     end
 
     Signals.RealmTravelOffer.OnClientEvent:Connect(function(payload)
         if type(payload) ~= "table" or type(payload.layer) ~= "string" then
             return
         end
-        activeLayer = payload.layer
         body.Text = tostring(payload.label or "Travel here?")
-        -- A `locked` offer (level too low) is informational — hide the Travel button so it's a
-        -- dismiss-only "Reach Level N" notice, not a Yes/No the server would just reject.
-        yesBtn.Visible = payload.locked ~= true
         gui.Enabled = true
     end)
 
-    yesBtn.Activated:Connect(function()
-        if not activeLayer then
-            return
-        end
-        Signals.RealmTravelConfirm:FireServer({ layer = activeLayer })
-        close()
-    end)
-    noBtn.Activated:Connect(close)
+    closeBtn.Activated:Connect(close)
 
     -- Dismiss if the character respawns (e.g. just after travelling) so a stale prompt doesn't linger.
     player.CharacterAdded:Connect(close)

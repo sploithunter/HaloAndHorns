@@ -70,9 +70,31 @@ return {
         -- realm deals randoms from ITS side (element trials by dressing
         -- alignment: lava→hell, ice→heaven). Gates outside any realm — and
         -- unknown realms — fall back to the full pool.
+        -- FULL-VARIETY realm pools (Jason: "I did want random enemies — a
+        -- random hell trial should sometimes be a Hell Ice map or a Hell Sand
+        -- map, not just the generic baddies"): the matrix trials ARE the
+        -- enemy variety (pet-model rosters per element), so the random roll
+        -- covers all five per side, uniform. NOTE the design shift: matrix
+        -- counters now ALSO tick from random rolls — harmless by the
+        -- retroactive-credit model (claims stay sequential, Century keeps
+        -- claim-once + level 50); activation remains the way to CHOOSE.
         realm_pools = {
-            hell = { "hell_trial", "lava_trial" },
-            heaven = { "heaven_trial", "ice_trial" },
+            hell = {
+                "hell_trial",
+                "lava_trial",
+                "hell_lava_trial",
+                "hell_ice_trial",
+                "hell_grass_trial",
+                "hell_desert_trial",
+            },
+            heaven = {
+                "heaven_trial",
+                "ice_trial",
+                "heaven_lava_trial",
+                "heaven_ice_trial",
+                "heaven_grass_trial",
+                "heaven_desert_trial",
+            },
         },
         display = "Trials",
     },

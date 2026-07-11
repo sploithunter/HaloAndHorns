@@ -121,7 +121,7 @@ function EventLiveLabel.start()
                 render()
             end)
             pcall(function()
-                Signals.ActiveEffects:FireServer({ request = true })
+                Signals.ActiveEffectsRequest:FireServer()
             end)
         end
 

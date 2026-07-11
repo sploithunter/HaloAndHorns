@@ -15,6 +15,7 @@
 ]]
 
 local RunService = game:GetService("RunService")
+local ConfigSchemas = require(script.Parent.ConfigSchemas)
 
 local ConfigLoader = {}
 ConfigLoader.__index = ConfigLoader
@@ -735,10 +736,16 @@ function ConfigLoader:ValidateConfig(configName, config)
         return self:_validateCapitalBaddiesConfig(config)
     elseif configName == "missions" then
         return self:_validateMissionsConfig(config)
+    elseif configName == "network" then
+        return self:_validateNetworkConfig(config)
     end
 
-    -- Default validation for other configs
-    return true
+    return ConfigSchemas.validate(configName, config)
+end
+
+function ConfigLoader:_validateNetworkConfig(config)
+    local NetworkManifest = require(script.Parent.Network.NetworkManifest)
+    return NetworkManifest.validate(config)
 end
 
 -- Missions (configs/missions.lua): door-mission worldgen — slots, limits,

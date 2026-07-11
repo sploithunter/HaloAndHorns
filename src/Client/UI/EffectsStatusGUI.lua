@@ -217,7 +217,7 @@ end
 
 function EffectsStatusGUI:RequestEffectsUpdate()
     -- Request effect data from server using the new packet
-    Signals.ActiveEffects:FireServer({ request = true })
+    Signals.ActiveEffectsRequest:FireServer()
 end
 
 function EffectsStatusGUI:UpdateFromServer(packetData)

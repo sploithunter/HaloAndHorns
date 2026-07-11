@@ -92,6 +92,18 @@ function MissionInstanceService:Init()
     self._enemiesConfig = (okE and type(enemies) == "table") and enemies or nil
 end
 
+function MissionInstanceService:BindPeerServices(services)
+    self._questService = services.QuestService
+    self._dataService = services.DataService
+    self._enemyService = services.EnemyService
+    self._inventoryService = services.InventoryService
+    self._statsService = services.StatsService
+    self._layerService = services.LayerService
+    self._breakableSpawner = services.BreakableSpawner
+    self._dropService = services.DropService
+    self._eventService = services.EventService
+end
+
 function MissionInstanceService:Start()
     if not self._config then
         return
@@ -230,7 +242,7 @@ function MissionInstanceService:Open(player, missionId, opts)
         -- the gate reverts — per-mission sequence heads keep your place.
         local bound
         pcall(function()
-            local quests = _G.RBXTemplateServices:Get("QuestService")
+            local quests = self._questService
             bound = quests
                 and quests.GetActiveMissionBinding
                 and quests:GetActiveMissionBinding(player)
@@ -255,7 +267,11 @@ function MissionInstanceService:Open(player, missionId, opts)
             and rnd.realm_pools
             and rnd.realm_pools[opts.doorRealm]
         ) or rnd.pool
-        missionId = pool[math.random(#pool)]
+        -- dedicated RNG instance (Jason: "it's not very random" — every
+        -- fresh-server FIRST roll sampled the newly-seeded global VM state;
+        -- Random.new() auto-seeds with independent high-quality entropy)
+        self._doorRng = self._doorRng or Random.new()
+        missionId = pool[self._doorRng:NextInteger(1, #pool)]
     end
     local mission = self._config.missions[missionId]
     if not mission then
@@ -299,7 +315,7 @@ function MissionInstanceService:Open(player, missionId, opts)
         local n = math.floor(tonumber(opts.sequence) or 0)
         local played = 0
         pcall(function()
-            local dataSvc = _G.RBXTemplateServices:Get("DataService")
+            local dataSvc = self._dataService
             local data = dataSvc and dataSvc:GetData(player)
             played = (
                 data
@@ -323,8 +339,7 @@ function MissionInstanceService:Open(player, missionId, opts)
         -- same map) until you beat it or skip it. Teams ride the opener's
         -- head. contextKey deliberately has NO player/team component.
         local okSeq, n = pcall(function()
-            local locator = _G.RBXTemplateServices
-            local dataSvc = locator and locator:Get("DataService")
+            local dataSvc = self._dataService
             local data = dataSvc and dataSvc:GetData(player)
             if not data then
                 return nil
@@ -521,8 +536,7 @@ function MissionInstanceService:Open(player, missionId, opts)
         local SCATTER = 14 -- studs around the anchor (rooms are 96+ wide at 6x scale)
         local enemySvc
         pcall(function()
-            local locator = _G.RBXTemplateServices
-            enemySvc = locator and locator:Get("EnemyService")
+            enemySvc = self._enemyService
         end)
         if enemySvc then
             for i, point in ipairs(points) do
@@ -835,8 +849,7 @@ end
 -- QuestService:Claim). Server-authoritative: reads the profile, never attrs.
 function MissionInstanceService:_hasUnlock(player, unlockId)
     local ok, has = pcall(function()
-        local locator = _G.RBXTemplateServices
-        local dataSvc = locator and locator:Get("DataService")
+        local dataSvc = self._dataService
         local data = dataSvc and dataSvc:GetData(player)
         local unlocks = data and data.GameData and data.GameData.Unlocks
         return unlocks and unlocks[unlockId] == true
@@ -860,7 +873,7 @@ function MissionInstanceService:SkipCurrent(player, missionId)
         self:Abandon(active)
     end
     local okSkip, newHead = pcall(function()
-        local dataSvc = _G.RBXTemplateServices:Get("DataService")
+        local dataSvc = self._dataService
         local data = dataSvc:GetData(player)
         data.GameData = data.GameData or {}
         data.GameData.MissionSeq = data.GameData.MissionSeq or {}
@@ -906,7 +919,7 @@ function MissionInstanceService:_close(instanceId, reason)
         if record.sequence then
             for _, member in ipairs(membersOf(record.teamKey)) do
                 pcall(function()
-                    local dataSvc = _G.RBXTemplateServices:Get("DataService")
+                    local dataSvc = self._dataService
                     local data = dataSvc:GetData(member)
                     if data then
                         data.GameData = data.GameData or {}
@@ -926,16 +939,17 @@ function MissionInstanceService:_close(instanceId, reason)
                             -- Wyrm Weekend (exclusive_egg_chance event axis):
                             -- doubles the ROLL, never the stated hatch odds
                             local fcChance = tonumber(eggCfg and eggCfg.chance) or 0
-                            pcall(function()
-                                local ev = _G.RBXTemplateServices:Get("EventService")
-                                fcChance = fcChance
-                                    * (
-                                        1
-                                        + (tonumber(ev:GetModifier("exclusive_egg_chance", 0)) or 0)
-                                    )
-                            end)
+                            local eventService = self._eventService
+                            if eventService then
+                                local okModifier, modifier = pcall(function()
+                                    return eventService:GetModifier("exclusive_egg_chance", 0)
+                                end)
+                                if okModifier then
+                                    fcChance = fcChance * (1 + (tonumber(modifier) or 0))
+                                end
+                            end
                             if eggCfg and math.random() < fcChance then
-                                local inv = _G.RBXTemplateServices:Get("InventoryService")
+                                local inv = self._inventoryService
                                 local granted = inv
                                     and inv:AddItem(member, "eggs", {
                                         id = eggCfg.egg,
@@ -960,7 +974,7 @@ function MissionInstanceService:_close(instanceId, reason)
             end
         end
         pcall(function()
-            local statsSvc = _G.RBXTemplateServices:Get("StatsService")
+            local statsSvc = self._statsService
             for _, member in ipairs(membersOf(record.teamKey)) do
                 statsSvc:Increment(member, "missions_completed", 1)
                 if record.source == "random" then
@@ -1007,7 +1021,7 @@ function MissionInstanceService:_close(instanceId, reason)
         member:SetAttribute("MissionArea", nil)
         member:SetAttribute("MissionSequence", nil)
         pcall(function() -- restore layer-derived CurrentRealm (theme override ends)
-            _G.RBXTemplateServices:Get("LayerService"):RefreshRealmAttributes(member)
+            self._layerService:RefreshRealmAttributes(member)
         end)
         member:SetAttribute("MissionEnemyPings", nil)
         local zoom = record.savedZoom and record.savedZoom[member.UserId]
@@ -1019,8 +1033,7 @@ function MissionInstanceService:_close(instanceId, reason)
     -- enemies born inside the mission die with it — never loiter at the slot
     if record.boundsMin then
         pcall(function()
-            local locator = _G.RBXTemplateServices
-            local enemySvc = locator and locator:Get("EnemyService")
+            local enemySvc = self._enemyService
             if enemySvc and enemySvc.DespawnEnemiesInBounds then
                 local removed = enemySvc:DespawnEnemiesInBounds(record.boundsMin, record.boundsMax)
                 if removed > 0 then
@@ -1532,8 +1545,7 @@ function MissionInstanceService:_applyDressing(
     local breakableSvc = nil
     if decorCfg.farmable_props ~= false then
         pcall(function()
-            local locator = _G.RBXTemplateServices
-            local svc = locator and locator:Get("BreakableSpawner")
+            local svc = self._breakableSpawner
             if svc and svc.SpawnMissionBreakable then
                 breakableSvc = svc
             end
@@ -1881,7 +1893,7 @@ function MissionInstanceService:_placeTreasures(
                 sharers = { who }
             end
             pcall(function() -- treasure-hunter quest substrate
-                local statsSvc = _G.RBXTemplateServices:Get("StatsService")
+                local statsSvc = self._statsService
                 for _, member in ipairs(sharers) do
                     statsSvc:Increment(member, "mission_chests_opened", 1)
                 end
@@ -1891,8 +1903,7 @@ function MissionInstanceService:_placeTreasures(
             lid.CFrame = lid.CFrame * CFrame.new(0, 0.6, -1.4) * CFrame.Angles(math.rad(-55), 0, 0)
             local dropSvc
             pcall(function()
-                local locator = _G.RBXTemplateServices
-                dropSvc = locator and locator:Get("DropService")
+                dropSvc = self._dropService
             end)
             if dropSvc and dropSvc.TrySpawnEnhancementDrop then
                 local forward = chest.PrimaryPart.CFrame.LookVector
@@ -1999,14 +2010,14 @@ function MissionInstanceService:_refreshGateLabel(player)
     local label = "Random Trial"
     local bound
     pcall(function()
-        local quests = _G.RBXTemplateServices:Get("QuestService")
+        local quests = self._questService
         bound = quests and quests.GetActiveMissionBinding and quests:GetActiveMissionBinding(player)
     end)
     local def = bound and self._config.missions[bound]
     if def then
         local played = 0
         pcall(function()
-            local dataSvc = _G.RBXTemplateServices:Get("DataService")
+            local dataSvc = self._dataService
             local data = dataSvc:GetData(player)
             played = (
                 data

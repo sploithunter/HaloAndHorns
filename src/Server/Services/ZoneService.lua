@@ -12,6 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local WorldContext = require(ReplicatedStorage.Shared.Game.WorldContext)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local ZoneService = {}
 ZoneService.__index = ZoneService
@@ -70,6 +71,7 @@ function ZoneService:Init()
     self._logger = self._modules.Logger
     self._configLoader = self._modules.ConfigLoader
     self._dataService = self._modules.DataService
+    self._economyService = self._modules.EconomyService
     self._worldBindingService = self._modules.WorldBindingService
     self._areasConfig = self._configLoader:LoadConfig("areas")
     self._touchDebounce = {}
@@ -410,7 +412,7 @@ function ZoneService:UnlockZone(player, zoneId, options)
         local currency = unlock.currency
         local cost = tonumber(unlock.cost) or 0
         if currency and cost > 0 then
-            if not self._dataService:CanAfford(player, currency, cost) then
+            if not self._economyService:CanAfford(player, currency, cost) then
                 return {
                     ok = false,
                     reason = "insufficient_currency",
@@ -421,7 +423,16 @@ function ZoneService:UnlockZone(player, zoneId, options)
                     unlock = self:GetUnlockRequirement(player, zoneId),
                 }
             end
-            self._dataService:RemoveCurrency(player, currency, cost, "zone_unlock")
+            if not self._economyService:RemoveCurrency(player, currency, cost, "zone_unlock") then
+                return {
+                    ok = false,
+                    reason = "currency_debit_failed",
+                    zoneId = zoneId,
+                    areaId = areaId,
+                    currency = currency,
+                    cost = cost,
+                }
+            end
         end
     end
 
@@ -496,15 +507,7 @@ end
 
 function ZoneService:_syncUnlocksWhenDataLoads(player)
     task.spawn(function()
-        local startedAt = os.clock()
-        while player.Parent and player:GetAttribute("DataLoaded") ~= true do
-            if os.clock() - startedAt > 30 then
-                return
-            end
-            task.wait(0.25)
-        end
-
-        if player.Parent then
+        if Readiness.awaitAttribute(player, "DataLoaded", true, 30) and player.Parent then
             self:GetUnlockedZones(player)
         end
     end)

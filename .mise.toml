@@ -97,6 +97,13 @@ run = "echo 'Run tests/TestBootstrap.lua in Roblox Studio'"
 description = "Run headless pure-logic unit tests with lune (no Studio required)"
 run = "lune run tests/headless/run.luau"
 
+[tasks.architecture-check]
+description = "Reject new architecture debt and stale allowlist budgets"
+run = [
+    "python3 -m unittest discover -s tests -p 'test_architecture_guard.py'",
+    "python3 scripts/architecture_guard.py",
+]
+
 [tasks.fmt-check]
 description = "StyLua --check on pipeline-owned paths (whole-repo stylua is a separate cleanup lane)"
 run = "mise exec -- stylua --check src/Shared/API src/Shared/Game src/Shared/Inventory src/Server/Services/GameAPIService.lua src/Server/Services/AutomationService.lua src/Server/Services/AlignmentService.lua src/Server/Services/LayerService.lua src/Server/Services/ActiveSquadService.lua src/Server/Services/SpiritFormService.lua src/Server/Services/StackPoolService.lua src/Server/Services/FocusService.lua src/Server/Services/CombatService.lua src/Server/Services/ArchetypeService.lua src/Server/Services/PowerService.lua src/Server/Services/AugmentationService.lua src/Server/Services/HotbarService.lua src/Server/Services/RosterService.lua src/Server/Services/PartyService.lua src/Server/Services/TradeService.lua src/Server/Services/FusionService.lua src/Server/Services/RewardService.lua src/Server/Services/QuestService.lua src/Server/Services/DailyService.lua src/Server/Services/ShopService.lua src/Server/Services/PetFollowService.lua src/Server/Services/EnemyService.lua src/Server/Services/ZoneTrackerService.lua src/Server/Services/DailyRewardZoneService.lua tests/headless"
@@ -105,8 +112,9 @@ run = "mise exec -- stylua --check src/Shared/API src/Shared/Game src/Shared/Inv
 # shells and on CI runners (a bare tool name can hit a PATH/permission quirk
 # inside `mise run` on hosted runners).
 [tasks.ci]
-description = "Fast gate (no Studio): selene errors + format (owned paths) + rojo build + headless tests"
+description = "Fast gate (no Studio): architecture + selene + format + rojo build + headless tests"
 run = [
+    "mise run architecture-check",
     "mise exec -- selene --allow-warnings src configs tests",
     "mise exec -- stylua --check src/Shared/API src/Shared/Game src/Shared/Inventory src/Server/Services/GameAPIService.lua src/Server/Services/AutomationService.lua src/Server/Services/AlignmentService.lua src/Server/Services/LayerService.lua src/Server/Services/ActiveSquadService.lua src/Server/Services/SpiritFormService.lua src/Server/Services/StackPoolService.lua src/Server/Services/FocusService.lua src/Server/Services/CombatService.lua src/Server/Services/ArchetypeService.lua src/Server/Services/PowerService.lua src/Server/Services/AugmentationService.lua src/Server/Services/HotbarService.lua src/Server/Services/RosterService.lua src/Server/Services/PartyService.lua src/Server/Services/TradeService.lua src/Server/Services/FusionService.lua src/Server/Services/RewardService.lua src/Server/Services/QuestService.lua src/Server/Services/DailyService.lua src/Server/Services/ShopService.lua src/Server/Services/PetFollowService.lua src/Server/Services/EnemyService.lua src/Server/Services/ZoneTrackerService.lua src/Server/Services/DailyRewardZoneService.lua tests/headless",
     "mise exec -- rojo build --output game.rbxl",

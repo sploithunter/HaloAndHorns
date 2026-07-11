@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local TutorialService = {}
 TutorialService.__index = TutorialService
@@ -25,6 +26,8 @@ function TutorialService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
+    self._enhancementService = self._modules and self._modules.EnhancementService
     self._config = self._configLoader:LoadConfig("tutorial")
 
     fireGameEvent.tap(function(player, name, ctx)
@@ -35,7 +38,7 @@ end
 function TutorialService:Start()
     -- client PULL: TutorialController fires this when it's ready to render — closes the
     -- join race where the one-shot push lands before the client connected the signal
-    Signals.TutorialState.OnServerEvent:Connect(function(player)
+    Signals.TutorialStateRequest.OnServerEvent:Connect(function(player)
         if self._dataService:IsDataLoaded(player) then
             self:_ensureProgress(player)
             self:_push(player)
@@ -54,11 +57,7 @@ function TutorialService:Start()
 end
 
 function TutorialService:_waitForDataAndPush(player)
-    local deadline = os.clock() + 20
-    while player.Parent and not self._dataService:IsDataLoaded(player) and os.clock() < deadline do
-        task.wait(0.2)
-    end
-    if player.Parent and self._dataService:IsDataLoaded(player) then
+    if Readiness.awaitAttribute(player, "DataLoaded", true, 20) and player.Parent then
         self:_ensureProgress(player)
         self:_push(player)
     end
@@ -72,8 +71,7 @@ function TutorialService:_ensureProgress(player)
     end
     local claimed = 0
     pcall(function()
-        local locator = _G.RBXTemplateServices
-        local prog = locator and locator:Get("PlayerProgressionService")
+        local prog = self._playerProgressionService
         claimed = prog and prog:GetClaimedLevel(player) or 0
     end)
     local hasProgress = type(data.Powers) == "table" and #data.Powers > 0
@@ -134,9 +132,8 @@ function TutorialService:_applyStepGrant(player, data)
     end
     data.Tutorial.granted[id] = true
 
-    local locator = _G.RBXTemplateServices
-    if type(grant.enhancements) == "table" and locator then
-        local enh = locator:Get("EnhancementService")
+    if type(grant.enhancements) == "table" then
+        local enh = self._enhancementService
         if enh and enh.Grant then
             for _, e in ipairs(grant.enhancements) do
                 for _ = 1, math.max(1, math.floor(tonumber(e.count) or 1)) do

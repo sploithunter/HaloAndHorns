@@ -532,6 +532,7 @@ function DataService:Init()
     self.SaveRequests = {}
     self.PersistenceWarningsIssued = {}
     self.AutoSaveLoopRunning = false
+    self.BeforeProfileReleaseHandlers = {}
 
     -- Connect to player events
     Players.PlayerAdded:Connect(function(player)
@@ -539,6 +540,15 @@ function DataService:Init()
     end)
 
     Players.PlayerRemoving:Connect(function(player)
+        for _, handler in ipairs(self.BeforeProfileReleaseHandlers) do
+            local ok, err = pcall(handler, player)
+            if not ok then
+                self._logger:Error("Before-profile-release handler failed", {
+                    player = player.Name,
+                    error = tostring(err),
+                })
+            end
+        end
         self:ReleaseProfile(player)
     end)
 
@@ -555,6 +565,13 @@ function DataService:Init()
         profileStoreAutoSaveSeconds = PROFILESTORE_AUTO_SAVE_PERIOD_SECONDS,
         periodicSaveSeconds = PERIODIC_SAVE_SECONDS,
     })
+end
+
+-- Synchronous lifecycle hook for ownership systems that must settle loaded profile data before
+-- ProfileStore ends the session. Handlers must not yield.
+function DataService:RegisterBeforeProfileRelease(handler)
+    assert(type(handler) == "function", "before-profile-release handler must be a function")
+    table.insert(self.BeforeProfileReleaseHandlers, handler)
 end
 
 function DataService:Start()
@@ -1003,27 +1020,25 @@ function DataService:ReleaseProfile(player)
             inventoryCounts = countInventoryItems(data.Inventory),
         })
 
-        local saveCompleted = false
-        local afterSaveConnection = profile.OnAfterSave:Connect(function()
-            saveCompleted = true
-        end)
+        local state = ProfileStore.DataStoreState or "Unknown"
+        local saveConfirmation
+        if state == "Access" then
+            saveConfirmation = Promise.race({
+                Promise.fromEvent(profile.OnAfterSave):andThenReturn(true),
+                Promise.delay(10):andThenReturn(false),
+            })
+        end
 
         -- End the session (this triggers the save)
         profile:EndSession()
 
-        local state = ProfileStore.DataStoreState or "Unknown"
         if state == "Access" then
-            local waited = 0
-            while not saveCompleted and waited < 10 do
-                task.wait(0.1)
-                waited += 0.1
-            end
-
-            if not saveCompleted then
+            local awaited, saveCompleted = saveConfirmation:await()
+            if not awaited or not saveCompleted then
                 self._logger:Warn("Profile save did not confirm before timeout", {
                     context = "DataService",
                     player = player.Name,
-                    waitedSeconds = waited,
+                    waitedSeconds = 10,
                 })
             end
         else
@@ -1036,8 +1051,6 @@ function DataService:ReleaseProfile(player)
                 }
             )
         end
-
-        afterSaveConnection:Disconnect()
 
         self._logger:Info("🪙 COIN TRACE - Profile save triggered via EndSession", {
             player = player.Name,
@@ -1162,8 +1175,7 @@ function DataService:SetCurrency(player, currencyType, amount, source)
         }
     )
 
-    -- Verify the change took effect
-    task.wait(0.1)
+    -- Verify the synchronous profile and attribute writes.
     local verifyAmount = self:GetCurrency(player, currencyType)
     local verifyAttribute = player:GetAttribute(attributeName)
     self._logger:Info(currencyIcon .. " CURRENCY TRACE - Post-change verification", {
@@ -2685,8 +2697,6 @@ game:BindToClose(function()
 
     if DataService.Profiles then
         DataService:SaveAllProfiles()
-    else
-        task.wait(2)
     end
 end)
 

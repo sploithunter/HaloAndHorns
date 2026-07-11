@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local ArchetypeLogic = require(ReplicatedStorage.Shared.Game.ArchetypeLogic)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local ArchetypeService = {}
 ArchetypeService.__index = ArchetypeService
@@ -49,13 +50,12 @@ function ArchetypeService:Start()
     -- Re-stamp the origin theme attributes from saved data on join (returning players).
     local function stampSoon(player)
         task.spawn(function()
-            for _ = 1, 100 do
-                local data = self._dataService:GetData(player)
-                if data then
-                    self:_applyThemeAttrs(player, data.Archetype)
-                    return
-                end
-                task.wait(0.2)
+            if not Readiness.awaitAttribute(player, "DataLoaded", true, 20) then
+                return
+            end
+            local data = self._dataService:GetData(player)
+            if data then
+                self:_applyThemeAttrs(player, data.Archetype)
             end
         end)
     end

@@ -11,15 +11,15 @@ and the Roblox Studio MCP, not by clicking the screen.
 ## Stages
 
 ```
-  edit ─► static checks ─► headless tests ─► Studio integration ─► build ─► release
-  (src)   selene/stylua    lune (pure)       MCP + CommandBus       rojo     rojo upload
-          /rojo build                        /AutomationService     build    (Open Cloud)
+  edit ─► static checks       ─► headless tests ─► Studio integration ─► build ─► release
+  (src)   architecture guard    lune (pure)       MCP + CommandBus       rojo     rojo upload
+          selene/stylua/build                     /AutomationService     build    (Open Cloud)
   └────────── fully automatable, no Studio ──────────┘ └─ needs open Studio ─┘ └ automatable* ┘
 ```
 
 | Stage | Tool | Automatable unattended? | Notes |
 |-------|------|--------------------------|-------|
-| Static checks | `selene`, `stylua --check`, `rojo build` | ✅ yes | Pure CLI. Runs in GitHub Actions. |
+| Static checks | architecture guard, `selene`, `stylua --check`, `rojo build` | ✅ yes | Pure CLI. Runs in GitHub Actions. The guard rejects new debt and stale allowlist budgets. |
 | Headless tests | `lune` (`mise run test-headless`) | ✅ yes | Pure-logic only (no Roblox runtime). Runs in CI. |
 | Studio integration | Roblox Studio MCP + CommandBus | ⚠️ partial | Needs an **open Studio** + Rojo connected (one-time human bring-up). Test *execution* is automated via `execute_luau`. |
 | Build artifact | `rojo build --output game.rbxl` | ✅ yes | Place/model file. Runs in CI. |
@@ -219,13 +219,14 @@ control-disable path needs one live Studio confirmation. Not a hard limit.
 
 ```bash
 # Fast gate — fully automatable, also runs in GitHub Actions
-mise run ci                 # selene + stylua --check + rojo build + test-headless
+mise run ci                 # architecture guard + selene + stylua + rojo build + headless
 
 # Individual stages
 mise run lint               # selene
 mise run format             # stylua (write)
 mise run test-headless      # lune pure-logic tests
 mise run build              # rojo build --output game.rbxl
+mise run architecture-check # architecture guard unit tests + repository scan
 
 # Studio integration (needs open Studio + Rojo connected; driven via MCP)
 #   The agent calls GameAPIService:Execute(...) through execute_luau and runs
