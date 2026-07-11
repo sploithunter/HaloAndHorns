@@ -63,36 +63,14 @@ local legacySignals = {
     InventoryUpdate = Net:RemoteEvent("InventoryUpdate"), -- s->c inventory changed
     ConsumeItem = Net:RemoteEvent("ConsumeItem"), -- c->s consume consumable
 
-    -- User Display Preferences
-    SaveDisplayPreferences = Net:RemoteEvent("SaveDisplayPreferences"),
-    ForceRegenerateAssets = Net:RemoteEvent("ForceRegenerateAssets"), -- c->s admin force asset regeneration
-
     -- Breakables
     Breakables_Attack = Net:RemoteEvent("Breakables_Attack"), -- c->s attack a crystal by BreakableID
 
     -- Zones / progression
-    UnlockZoneRequest = Net:RemoteEvent("UnlockZoneRequest"), -- c->s
     RealmTravelConfirm = Net:RemoteEvent("RealmTravelConfirm"), -- c->s (player chose Yes -> travel)
 
     -- Phase 3 stats-derived features
     LeaderboardSnapshotRequest = Net:RemoteEvent("LeaderboardSnapshotRequest"), -- c->s
-
-    -- Auto-target toggles
-    -- Server validates and flips Player BoolValues (FreeTarget/PaidTarget).
-    -- Client UI reflects state via AutoTarget_Status and Player value listeners.
-    AutoTarget_ToggleFree = Net:RemoteEvent("AutoTarget_ToggleFree"), -- c->s request toggle free (low) targeting
-    AutoTarget_TogglePaid = Net:RemoteEvent("AutoTarget_TogglePaid"), -- c->s request toggle paid (high) targeting
-    AutoTarget_SetMode = Net:RemoteEvent("AutoTarget_SetMode"), -- c->s persist selected target mode
-    AutoTarget_RequestAttack = Net:RemoteEvent("AutoTarget_RequestAttack"), -- c->s ask server to select/attack
-    AutoDelete_SetFilters = Net:RemoteEvent("AutoDelete_SetFilters"), -- c->s persist hatch auto-delete filters
-    HatchSettings_SetCount = Net:RemoteEvent("HatchSettings_SetCount"), -- c->s persist selected egg hatch count
-    HatchSettings_SetActionMode = Net:RemoteEvent("HatchSettings_SetActionMode"), -- c->s persist what E does near eggs
-    HatchSettings_SetModes = Net:RemoteEvent("HatchSettings_SetModes"), -- c->s persist selected egg hatch modes
-    Settings_SetPetFormation = Net:RemoteEvent("Settings_SetPetFormation"), -- c->s persist equipped-pet formation layout
-    Settings_SetPetAttackStyle = Net:RemoteEvent("Settings_SetPetAttackStyle"), -- c->s persist pet attack/mining formation
-    Settings_SetInventoryCardScale = Net:RemoteEvent("Settings_SetInventoryCardScale"), -- c->s persist inventory pet-card grid size (small/medium/large)
-    Settings_SetEnemyLevelOffset = Net:RemoteEvent("Settings_SetEnemyLevelOffset"), -- c->s persist enemy spawn-level offset vs player (-3..+3 difficulty knob)
-    PetReportPositions = Net:RemoteEvent("PetReportPositions"), -- c->s throttled local pet positions (mining gate + multiplayer)
 }
 
 for name, remote in pairs(legacySignals) do

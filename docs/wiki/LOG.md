@@ -673,3 +673,13 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Ratcheted `Signals.lua` manual remote construction from 65 to 57.
   `ConsumeItem` and `InventoryUpdate` remain legacy until their missing
   handler/publication paths are resolved.
+
+## 2026-07-10 - Manifest-driven settings and targeting request wires
+
+- Migrated 16 live settings, targeting, zone unlock, asset regeneration, and
+  pet-position request wires into the validated network manifest.
+- Preserved zero-argument toggles, scalar hatch settings, table payloads, and
+  the high-frequency pet-position telemetry budget.
+- Ratcheted `Signals.lua` manual remote construction from 57 to 41.
+  Orphaned realm-confirm and leaderboard-request wires remain legacy pending
+  implementation or removal.

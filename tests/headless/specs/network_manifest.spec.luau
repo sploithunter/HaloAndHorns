@@ -57,6 +57,21 @@ return function()
             expect(networkConfig.packets.EnchantPetRequest.handler).to.equal(
                 "EnchantService.RerollPetEnchant"
             )
+            expect(networkConfig.packets.SaveDisplayPreferences.authorization).to.equal("player")
+            expect(networkConfig.packets.ForceRegenerateAssets.authorization).to.equal("admin")
+            expect(networkConfig.packets.UnlockZoneRequest.handler).to.equal(
+                "ZoneService.UnlockZone"
+            )
+            expect(#networkConfig.packets.AutoTarget_ToggleFree.schema.arguments).to.equal(0)
+            expect(networkConfig.packets.AutoTarget_RequestAttack.rate_limit).to.equal(120)
+            expect(networkConfig.packets.HatchSettings_SetCount.schema.arguments[1].type).to.equal(
+                "number"
+            )
+            expect(networkConfig.packets.HatchSettings_SetActionMode.schema.arguments[1].type).to.equal(
+                "string"
+            )
+            expect(networkConfig.packets.Settings_SetPetFormation.delivery).to.equal("request")
+            expect(networkConfig.packets.PetReportPositions.rate_limit).to.equal(900)
             expect(networkConfig.packets.CurrencyUpdate.name).to.equal("CurrencyUpdate")
             expect(networkConfig.packets.PurchaseSuccess.name).to.equal("PurchaseSuccess")
             expect(networkConfig.packets.SellSuccess.name).to.equal("SellSuccess")
@@ -114,6 +129,26 @@ return function()
             expect(signals.SetEquippedPets.name).to.equal("SetEquippedPets")
             expect(signals.ToggleToolEquipped.name).to.equal("ToggleToolEquipped")
             expect(signals.EnchantPetRequest.name).to.equal("EnchantPetRequest")
+            expect(signals.SaveDisplayPreferences.name).to.equal("SaveDisplayPreferences")
+            expect(signals.ForceRegenerateAssets.name).to.equal("ForceRegenerateAssets")
+            expect(signals.UnlockZoneRequest.name).to.equal("UnlockZoneRequest")
+            expect(signals.AutoTarget_ToggleFree.name).to.equal("AutoTarget_ToggleFree")
+            expect(signals.AutoTarget_TogglePaid.name).to.equal("AutoTarget_TogglePaid")
+            expect(signals.AutoTarget_SetMode.name).to.equal("AutoTarget_SetMode")
+            expect(signals.AutoTarget_RequestAttack.name).to.equal("AutoTarget_RequestAttack")
+            expect(signals.AutoDelete_SetFilters.name).to.equal("AutoDelete_SetFilters")
+            expect(signals.HatchSettings_SetCount.name).to.equal("HatchSettings_SetCount")
+            expect(signals.HatchSettings_SetActionMode.name).to.equal("HatchSettings_SetActionMode")
+            expect(signals.HatchSettings_SetModes.name).to.equal("HatchSettings_SetModes")
+            expect(signals.Settings_SetPetFormation.name).to.equal("Settings_SetPetFormation")
+            expect(signals.Settings_SetPetAttackStyle.name).to.equal("Settings_SetPetAttackStyle")
+            expect(signals.Settings_SetInventoryCardScale.name).to.equal(
+                "Settings_SetInventoryCardScale"
+            )
+            expect(signals.Settings_SetEnemyLevelOffset.name).to.equal(
+                "Settings_SetEnemyLevelOffset"
+            )
+            expect(signals.PetReportPositions.name).to.equal("PetReportPositions")
             expect(signals.CurrencyUpdate.name).to.equal("CurrencyUpdate")
             expect(signals.PurchaseSuccess.name).to.equal("PurchaseSuccess")
             expect(signals.SellSuccess.name).to.equal("SellSuccess")
@@ -132,7 +167,7 @@ return function()
             expect(signals.PetPositionsRelay.name).to.equal("PetPositionsRelay")
             expect(signals.GameEvent.name).to.equal("GameEvent")
             expect(signals.PlayerDebugInfo.name).to.equal("PlayerDebugInfo")
-            expect(#created).to.equal(41)
+            expect(#created).to.equal(57)
         end)
 
         it("requires rate limits and handlers on client-origin packets", function()
