@@ -761,6 +761,28 @@ local loadSuccess, loadOrderOrError = pcall(function()
             DataService = modules:Get("DataService"),
             PowerService = modules:Get("PowerService"),
         })
+        modules:Get("MissionInstanceService"):BindPeerServices({
+            QuestService = modules:Get("QuestService"),
+            DataService = modules:Get("DataService"),
+            EnemyService = modules:Get("EnemyService"),
+            InventoryService = modules:Get("InventoryService"),
+            StatsService = isFeatureEnabled("stats") and modules:Get("StatsService") or nil,
+            LayerService = modules:Get("LayerService"),
+            BreakableSpawner = modules:Get("BreakableSpawner"),
+            DropService = modules:Get("DropService"),
+        })
+        if isFeatureEnabled("admin_tools") then
+            modules:Get("AdminToolsService"):BindPeerServices({
+                EnemyService = modules:Get("EnemyService"),
+                PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(
+                    "PlayerProgressionService"
+                ) or nil,
+                ArchetypeService = modules:Get("ArchetypeService"),
+                PowerService = modules:Get("PowerService"),
+                TutorialService = modules:Get("TutorialService"),
+                EnhancementService = modules:Get("EnhancementService"),
+            })
+        end
         modules:Get("PowerService"):BindPeerServices({
             FocusService = modules:Get("FocusService"),
             PetFollowService = modules:Get("PetFollowService"),
@@ -772,6 +794,47 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 "PlayerProgressionService"
             ) or nil,
             HotbarService = modules:Get("HotbarService"),
+        })
+        modules:Get("GameAPIService"):BindServices({
+            AchievementsService = isFeatureEnabled("achievements") and modules:Get(
+                "AchievementsService"
+            ) or nil,
+            ActiveSquadService = modules:Get("ActiveSquadService"),
+            AdminService = modules:Get("AdminService"),
+            AlignmentService = modules:Get("AlignmentService"),
+            ArchetypeService = modules:Get("ArchetypeService"),
+            AugmentationService = modules:Get("AugmentationService"),
+            CombatService = modules:Get("CombatService"),
+            DailyService = modules:Get("DailyService"),
+            DataService = modules:Get("DataService"),
+            EnemyService = modules:Get("EnemyService"),
+            EnhancementService = modules:Get("EnhancementService"),
+            EnhancementShopService = modules:Get("EnhancementShopService"),
+            FocusService = modules:Get("FocusService"),
+            FusionService = modules:Get("FusionService"),
+            HotbarService = modules:Get("HotbarService"),
+            InventoryService = modules:Get("InventoryService"),
+            LayerService = modules:Get("LayerService"),
+            MeetCreatorService = modules:Get("MeetCreatorService"),
+            MissionInstanceService = modules:Get("MissionInstanceService"),
+            PartyService = modules:Get("PartyService"),
+            PetGrantService = modules:Get("PetGrantService"),
+            PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(
+                "PlayerProgressionService"
+            ) or nil,
+            PotionService = modules:Get("PotionService"),
+            PowerService = modules:Get("PowerService"),
+            QuestService = modules:Get("QuestService"),
+            RewardService = modules:Get("RewardService"),
+            RosterService = modules:Get("RosterService"),
+            ShopService = modules:Get("ShopService"),
+            SpiritFormService = modules:Get("SpiritFormService"),
+            StackPoolService = modules:Get("StackPoolService"),
+            StatsService = isFeatureEnabled("stats") and modules:Get("StatsService") or nil,
+            TradeService = modules:Get("TradeService"),
+            TutorialService = modules:Get("TutorialService"),
+            UpgradeService = isFeatureEnabled("upgrades") and modules:Get("UpgradeService") or nil,
+            ZoneService = isFeatureEnabled("map_binding") and modules:Get("ZoneService") or nil,
         })
     end)
 end)

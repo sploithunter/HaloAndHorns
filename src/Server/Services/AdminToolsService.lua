@@ -90,6 +90,15 @@ function AdminToolsService:Init()
     self._logger:Info("AdminToolsService initialized")
 end
 
+function AdminToolsService:BindPeerServices(services)
+    self._enemyService = services.EnemyService
+    self._playerProgressionService = services.PlayerProgressionService
+    self._archetypeService = services.ArchetypeService
+    self._powerService = services.PowerService
+    self._tutorialService = services.TutorialService
+    self._enhancementService = services.EnhancementService
+end
+
 function AdminToolsService:_handleSpawnEnemy(adminPlayer, data)
     data = type(data) == "table" and data or {}
     local targetPlayer, errorMessage = self:_resolveTarget(adminPlayer, "globalEffects", data)
@@ -101,7 +110,7 @@ function AdminToolsService:_handleSpawnEnemy(adminPlayer, data)
         return
     end
 
-    local enemyService = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("EnemyService")
+    local enemyService = self._enemyService
     if not enemyService then
         self:_sendResult(
             adminPlayer,
@@ -628,7 +637,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
 
     -- 4) Progression: Level 1 / XP 0 (Level is derived from data.Stats.Experience). SetLevel
     --    writes the level-1 threshold XP and republishes the Level/XP/XPForNext attributes.
-    local prog = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("PlayerProgressionService")
+    local prog = self._playerProgressionService
     if prog and prog.SetLevel then
         pcall(function()
             prog:SetLevel(targetPlayer, 1)
@@ -652,7 +661,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
 
     -- 5b) Powers + enhancement slots + ORIGIN: full respec to a true new-player state (origin is
     --     re-chosen at L5). Clears Powers/Slots/Hotbar/Archetype so the bar starts empty.
-    local arche = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("ArchetypeService")
+    local arche = self._archetypeService
     if arche and arche.Respec then
         pcall(function()
             arche:Respec(targetPlayer, nil)
@@ -661,7 +670,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- 5c) Clear the always-on PASSIVE buff attributes (Magnet/Swift/Hasten/XP) — respec wipes the
     --     owned powers but those buffs live on player ATTRIBUTES; ReapplyPassives clears + re-stamps
     --     from the now-empty owned set, so a reset player truly has none.
-    local pwr = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("PowerService")
+    local pwr = self._powerService
     if pwr and pwr.ReapplyPassives then
         pcall(function()
             pwr:ReapplyPassives(targetPlayer)
@@ -704,13 +713,13 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- 5d) Tutorial restarts + enhancements wiped — "reset to beginning" means the NEW-PLAYER
     --     experience (Jason hit this: his tutorial stayed done=true through this reset because
     --     only levelup.resetRun knew about it).
-    local tut = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("TutorialService")
+    local tut = self._tutorialService
     if tut and tut.Reset then
         pcall(function()
             tut:Reset(targetPlayer)
         end)
     end
-    local enh = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("EnhancementService")
+    local enh = self._enhancementService
     if enh and enh.WipeAll then
         pcall(function()
             enh:WipeAll(targetPlayer)

@@ -15,24 +15,13 @@
 
     Adapter pattern
     ---------------
-    Handlers are thin adapters that delegate to existing services resolved from
-    the `_G.RBXTemplateServices` locator. We do NOT rewrite services — their
+    Handlers are thin adapters that delegate to an explicit service map bound by
+    the composition root. We do NOT rewrite services — their
     public methods (e.g. UpgradeService:PurchaseUpgrade) already return
     { ok = ..., reason = ... } domain envelopes, which become the bus result.
 
-    STATUS: scaffold. This service is intentionally NOT yet registered in
-    src/Server/init.server.lua. Wiring it into the boot loader + migrating the
-    GUI/Signals to dispatch through it is the next step, done once we can verify
-    against a clean Studio instance. To register (later), add alongside the other
-    services:
-
-        loader:RegisterModule(
-            "GameAPIService",
-            ServerScriptService.Server.Services.GameAPIService,
-            { "Logger" }
-        )
-
-    and Start() it with the rest.
+    The service is registered in src/Server/init.server.lua. Its fixed adapter
+    map is bound after every service initializes and before any service starts.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -69,8 +58,7 @@ function GameAPIService:Start()
 
     -- AutomationService (Studio-only) registers its automation.* commands into
     -- this bus from its own Start(), via its injected GameAPIService dependency.
-    -- We don't pull it here because the _G locator isn't populated until after
-    -- the loader's LoadAll() completes.
+    -- It receives GameAPIService as a declared dependency and registers after this Start.
 
     if self._logger then
         self._logger:Info("GameAPIService ready", {
@@ -80,19 +68,12 @@ function GameAPIService:Start()
     end
 end
 
--- Resolve a loader-registered service from the global locator established in
--- init.server.lua (_G.RBXTemplateServices:Get(name)). The locator's Get() RAISES
--- for unregistered names, so we pcall and return nil — handlers then report
--- service_unavailable instead of crashing.
+function GameAPIService:BindServices(services)
+    self._services = services
+end
+
 function GameAPIService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
+    return self._services and self._services[name] or nil
 end
 
 -- EggService is required directly at boot (not registered in the loader), so it
