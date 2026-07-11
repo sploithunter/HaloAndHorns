@@ -235,6 +235,17 @@ local function nearestSmallCrystal()
     return best
 end
 
+-- Named world-part finder (target.kind == "part"): resolves a BasePart by
+-- name anywhere under Workspace.Maps (the First Fight cave spawner). Streaming
+-- note: the beacon/trail machinery re-runs its finder, so a part that streams
+-- in as the player approaches picks up automatically.
+local function namedPartFinder(name)
+    return function()
+        local maps = Workspace:FindFirstChild("Maps")
+        return maps and maps:FindFirstChild(name, true)
+    end
+end
+
 local function showEggBeacon(token, finder, label)
     finder = finder or nearestEgg
     beacon = Instance.new("BillboardGui")
@@ -499,6 +510,10 @@ local function apply(state)
     elseif target.kind == "crystal" then
         showEggBeacon(stepToken, nearestSmallCrystal, "⬇ MINE")
         showEggPath(stepToken, nearestSmallCrystal)
+    elseif target.kind == "part" and type(target.name) == "string" then
+        local finder = namedPartFinder(target.name)
+        showEggBeacon(stepToken, finder, target.label or "⬇ GO")
+        showEggPath(stepToken, finder)
     elseif target.kind == "ui" and type(target.name) == "string" then
         showUiPulse(stepToken, target.name, true) -- primary ui target → arrow
     end

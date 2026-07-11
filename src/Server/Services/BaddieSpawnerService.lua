@@ -146,8 +146,36 @@ function BaddieSpawnerService:_trigger(part, player, rng)
     local engaged = self:_engagedTeamCount(player, part.Position)
     local teamingCfg = self:_teamingConfig()
     local cap = PackScale.count(tonumber(self._config.max_alive) or 6, engaged, nil, teamingCfg)
+    -- COMBAT ONRAMP CAVE (Jason: "open up combat immediately at the caves...
+    -- only ONE enemy ever spawns from that cave at level one — the odds of
+    -- being defeated are pretty low"): a sub-onramp player triggers a SOLO
+    -- wave — one unit of the wave's first entry, spawned UNGATED so it may
+    -- engage its sub-threshold triggerer (enemy level already follows the
+    -- spawning player's combat level, so a level-1 player meets a level-1
+    -- creature). Ambient rules everywhere else are unchanged.
+    local onramp = false
+    do
+        local okCfg, combat = pcall(function()
+            return require(
+                game:GetService("ReplicatedStorage"):WaitForChild("Configs"):WaitForChild("combat")
+            )
+        end)
+        local minEngage = (
+            okCfg
+            and combat.engagement
+            and tonumber(combat.engagement.min_engage_level)
+        ) or 5
+        onramp = (tonumber(player:GetAttribute("Level")) or 1) < minEngage
+    end
+    if onramp then
+        wave = { units = { { enemy = (wave.units and wave.units[1] and wave.units[1].enemy) } } }
+        cap = 1
+        if not wave.units[1].enemy then
+            return
+        end
+    end
     for _, unit in ipairs(wave.units or {}) do
-        for _ = 1, PackScale.count(unit.count, engaged, nil, teamingCfg) do
+        for _ = 1, (onramp and 1 or PackScale.count(unit.count, engaged, nil, teamingCfg)) do
             if #state.alive >= cap then
                 break -- never bury the player / stockpile for the next one
             end
@@ -160,6 +188,7 @@ function BaddieSpawnerService:_trigger(part, player, rng)
                 local r = enemySvc:SpawnEnemy(player, unit.enemy, {
                     position = part.Position + offset,
                     home = part.Position, -- loiter anchor
+                    ungated = onramp, -- the First Fight may engage a sub-threshold player
                 })
                 if r and r.ok and r.model then
                     table.insert(state.alive, r.model)

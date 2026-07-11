@@ -60,6 +60,19 @@ return {
             target = { kind = "egg", prefer = "Grass" },
             complete_on = { event = "egg_hatch" },
         },
+        -- THE FIRST FIGHT (Jason: "introduce combat in the first five minutes —
+        -- we can't out-cute the other pet sims, we out-GAME them"): right after
+        -- the second hatch, the trail leads to the Earth cave. A sub-onramp
+        -- player triggers a SOLO level-1 creature there (BaddieSpawnerService
+        -- onramp wave, spawned ungated) and their pets defend them — the
+        -- differentiator on screen inside the first five minutes.
+        {
+            id = "first_fight",
+            title = "Your first fight",
+            body = "Something stirs in the Earth cave! Walk over — your pets fight for you. Defeat it and take its coins!",
+            target = { kind = "part", name = "BaddieSpawnerEarth", label = "⬇ FIGHT" },
+            complete_on = { event = "enemy_defeated" },
+        },
         -- POWERS come AFTER the familiar pet-game rhythm (Jason: hook them with what they know first,
         -- THEN introduce what makes this game different). Every player is born with Resonance (innate);
         -- these two steps teach the bind flow (reused for every future power) + the cast.

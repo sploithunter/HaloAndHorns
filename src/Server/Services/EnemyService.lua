@@ -2201,7 +2201,11 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
             -- ONRAMP: a sub-threshold player is invisible to perception (enemy keeps loitering).
             -- TERRITORIAL: so is a player in a DIFFERENT area (across a wall) — no pulling through it.
             if
-                player and (not self:_engagesCombat(player) or not self:_inTerritory(entry, player))
+                player
+                and (
+                    (not entry.ungated and not self:_engagesCombat(player))
+                    or not self:_inTerritory(entry, player)
+                )
             then
                 player = nil
             end
@@ -3891,8 +3895,22 @@ function EnemyService:_assignPetTargets(eng)
         local player = Players:FindFirstChild(folder.Name)
         -- ONRAMP: a sub-threshold player's pets never auto-pick an enemy — they stay on mining /
         -- AutoTarget, so early levels are peaceful even with enemies loitering nearby.
-        if not self:_engagesCombat(player) then
-            continue
+        -- EXCEPTION (Jason, the First Fight): an UNGATED cave creature actively engaging
+        -- THIS player may be fought back — pets defend their owner at any level.
+        local onrampDefenseOnly = not self:_engagesCombat(player)
+        if onrampDefenseOnly then
+            local defending = false
+            if player then
+                for _, entry in pairs(live) do
+                    if entry.ungated and entry.aggroPlayerName == player.Name then
+                        defending = true
+                        break
+                    end
+                end
+            end
+            if not defending then
+                continue
+            end
         end
         -- RALLY: during the window the pets ignore combat and return to formation (clear targets);
         -- enemies keep their aggro and chase the returning pets, pulling the fight back to the player.
@@ -3958,6 +3976,18 @@ function EnemyService:_assignPetTargets(eng)
                     local petPos = self:_petPosition(pet, pfs)
                     local candidates = {}
                     for etid, entry in pairs(live) do
+                        -- onramp defense: sub-threshold squads only fight the
+                        -- ungated creature that is engaging their owner
+                        if
+                            onrampDefenseOnly
+                            and not (
+                                entry.ungated
+                                and player
+                                and entry.aggroPlayerName == player.Name
+                            )
+                        then
+                            continue
+                        end
                         -- A kiting pet shoots, so it picks targets by HORIZONTAL distance — it can
                         -- engage a flyer perched above (the vertical gap shouldn't hide it). A chaser
                         -- uses true 3D distance (it has to physically reach + the jump-assist climbs).
@@ -5608,6 +5638,10 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         aggro = AggroTable.new(),
         lastActiveAt = os.clock(), -- engagement timer seed (idle-despawn clock; refreshed while aggro'd)
         persistent = (opts and opts.persistent) == true, -- mission population: NEVER idle-despawns (defeat or teardown only)
+        -- ONRAMP CAVE (Jason: "open up combat immediately at the caves"): an
+        -- ungated enemy may engage players BELOW min_engage_level (the first
+        -- fight); ambient enemies elsewhere keep the peaceful-miner gate
+        ungated = (opts and opts.ungated) == true,
         homeArea = self:_areaAt(position), -- territorial: only engages players in this area
         leashRegion = self:_leashRegionAt(position), -- movement pen (hard wall at its boundary)
         halfHeight = halfHeight, -- ground-snap pivot offset
