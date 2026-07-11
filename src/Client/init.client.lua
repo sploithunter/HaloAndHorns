@@ -1236,9 +1236,6 @@ do
         -- OLD: require(script.UI.SimpleEffectsGUI) -- REMOVED: Replaced by EffectsPanel in MenuManager
         -- OLD: require(script.UI.GlobalEffectsGUI) -- REMOVED: Replaced by EffectsPanel in MenuManager
 
-        -- Load proper game UI system
-        task.wait(1) -- Wait a moment for other UIs to load
-
         -- Initialize MenuManager
         local MenuManager = require(script.UI.MenuManager)
         local menuManager = MenuManager.new()
@@ -1351,10 +1348,8 @@ do
     end)
 end
 
--- Initialize EggCurrentTargetService (proximity detection and UI positioning)
+-- Initialize the egg interaction stack in dependency order.
 task.spawn(function()
-    task.wait(0.5) -- Small delay to ensure everything is loaded
-
     local success, eggCurrentTargetService = pcall(function()
         return require(ReplicatedStorage.Shared.Services.EggCurrentTargetService)
     end)
@@ -1367,18 +1362,14 @@ task.spawn(function()
             "Failed to initialize EggCurrentTargetService",
             { error = tostring(eggCurrentTargetService) }
         )
+        return
     end
-end)
 
--- Initialize EggInteractionService (E key handling)
-task.spawn(function()
-    task.wait(0.7) -- Small delay after CurrentTargetService
-
-    local success, eggInteractionService = pcall(function()
+    local interactionSuccess, eggInteractionService = pcall(function()
         return require(ReplicatedStorage.Shared.Services.EggInteractionService)
     end)
 
-    if success then
+    if interactionSuccess then
         eggInteractionService:Initialize()
         Logger:Info("EggInteractionService initialized")
     else

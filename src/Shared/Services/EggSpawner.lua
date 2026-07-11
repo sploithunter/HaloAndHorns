@@ -18,6 +18,7 @@ local InsertService = game:GetService("InsertService")
 local CollectionService = game:GetService("CollectionService")
 
 local AssetFetch = require(ReplicatedStorage.Shared.Utils.AssetFetch)
+local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
 
 -- Dependencies
 local Locations = require(ReplicatedStorage.Shared.Locations)
@@ -296,17 +297,15 @@ end
 
 -- Initialize the system
 function EggSpawner:Initialize()
+    if self._initialized then
+        return
+    end
+    self._initialized = true
+
     Logger:Info("Initializing", { context = "EggSpawner" })
 
-    -- Check workspace first
     Logger:Debug("Searching for spawn points...", { context = "EggSpawner" })
     local spawnPoints = self:GetSpawnPoints()
-    local waited = 0
-    while #spawnPoints == 0 and waited < 5 do
-        task.wait(0.5)
-        waited += 0.5
-        spawnPoints = self:GetSpawnPoints()
-    end
     Logger:Debug("Found spawn points", { context = "EggSpawner", count = #spawnPoints })
 
     if #spawnPoints == 0 then
@@ -323,6 +322,14 @@ function EggSpawner:Initialize()
     self:PopulateSpawnPoints()
 
     Logger:Info("Initialized", { context = "EggSpawner", spawnPointCount = #spawnPoints })
+end
+
+function EggSpawner:Start()
+    task.spawn(function()
+        BootReadiness.await("world_structure")
+        BootReadiness.await("models_ready")
+        self:Initialize()
+    end)
 end
 
 return EggSpawner

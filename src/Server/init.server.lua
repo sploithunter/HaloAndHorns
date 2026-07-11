@@ -720,6 +720,27 @@ registerFeatureModule(
     }
 )
 
+local eggServiceDependencies = {
+    "Logger",
+    "DataService",
+    "InventoryService",
+    "EconomyService",
+    "EventService",
+    "PetGrantService",
+    "HatchEntitlementService",
+}
+appendIfEnabled(eggServiceDependencies, "stats", "StatsService")
+appendIfEnabled(eggServiceDependencies, "modifiers", "ModifierService")
+appendIfEnabled(eggServiceDependencies, "auto_target", "AutoTargetService")
+appendIfEnabled(eggServiceDependencies, "pet_index", "PetIndexService")
+appendIfEnabled(eggServiceDependencies, "player_progression", "PlayerProgressionService")
+loader:RegisterModule(
+    "EggService",
+    ServerScriptService.Server.Services.EggService,
+    eggServiceDependencies
+)
+loader:RegisterModule("EggSpawner", ReplicatedStorage.Shared.Services.EggSpawner, { "Logger" })
+
 -- Register lazy services (loaded when needed)
 -- loader:RegisterLazyModule("TradeService", ServerScriptService.Server.Services.TradeService, {"EconomyService", "DataService", "NetworkBridge"}) -- TODO: Create TradeService
 -- loader:RegisterLazyModule("CombatService", ServerScriptService.Server.Services.CombatService, {"DataService", "NetworkBridge", "ConfigLoader"}) -- TODO: Create CombatService
@@ -1118,64 +1139,7 @@ end
 
 Logger:Info("Matter ECS loop started", { systemCount = #systemsList })
 
--- Initialize EggSpawner system
-task.spawn(function()
-    -- Small delay to ensure all dependencies are ready
-    task.wait(1)
-
-    Logger:Info("Starting EggSpawner initialization...")
-
-    local success, eggSpawnerOrError = pcall(function()
-        local Locations = require(ReplicatedStorage.Shared.Locations)
-        return require(ReplicatedStorage.Shared.Services.EggSpawner)
-    end)
-
-    if success then
-        Logger:Info("EggSpawner service loaded successfully")
-        local EggSpawner = eggSpawnerOrError
-        local initSuccess, initError = pcall(function()
-            EggSpawner:Initialize()
-        end)
-
-        if initSuccess then
-            Logger:Info("EggSpawner initialized successfully")
-        else
-            Logger:Error("Failed to initialize EggSpawner", { error = tostring(initError) })
-        end
-    else
-        Logger:Error("Failed to load EggSpawner service", { error = tostring(eggSpawnerOrError) })
-    end
-end)
-
 -- UserDisplayPreferences is now handled by SettingsService via ModuleLoader
-
--- Initialize EggService (following working game pattern)
-task.spawn(function()
-    task.wait(0.1) -- Small delay after UserDisplayPreferences
-
-    Logger:Info("Starting EggService initialization...")
-
-    local success, eggServiceOrError = pcall(function()
-        local Locations = require(ReplicatedStorage.Shared.Locations)
-        return require(script.Services.EggService)
-    end)
-
-    if success then
-        Logger:Info("EggService loaded successfully")
-        local EggService = eggServiceOrError
-        local initSuccess, initError = pcall(function()
-            EggService:Initialize(loader) -- Pass loader so EggService can access other services
-        end)
-
-        if initSuccess then
-            Logger:Info("EggService initialized successfully")
-        else
-            Logger:Error("Failed to initialize EggService", { error = tostring(initError) })
-        end
-    else
-        Logger:Error("Failed to load EggService", { error = tostring(eggServiceOrError) })
-    end
-end)
 
 -- Player management
 Players.PlayerAdded:Connect(function(player)

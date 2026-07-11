@@ -1592,24 +1592,38 @@ end
 -- === INITIALIZATION ===
 
 function EggService:Initialize(moduleLoader)
+    if self._initialized then
+        return
+    end
+    self._initialized = true
+
     Logger:Info("EggService initializing...")
 
-    -- Get services from the module loader
+    local function getModule(name)
+        if self._modules and self._modules[name] ~= nil then
+            return self._modules[name]
+        end
+        if moduleLoader then
+            local ok, result = pcall(moduleLoader.Get, moduleLoader, name)
+            if ok then
+                return result
+            end
+        end
+        return nil
+    end
+
     if moduleLoader then
-        self._inventoryService = moduleLoader:Get("InventoryService")
-        self._dataService = moduleLoader:Get("DataService")
-        self._economyService = moduleLoader:Get("EconomyService")
-        self._eventService = moduleLoader:Get("EventService")
-        self._statsService = moduleLoader:Get("StatsService")
-        self._petGrantService = moduleLoader:Get("PetGrantService")
-        self._modifierService = moduleLoader:Get("ModifierService")
-        self._autoTargetService = moduleLoader:Get("AutoTargetService")
-        self._hatchEntitlementService = moduleLoader:Get("HatchEntitlementService")
-        self._petIndexService = moduleLoader:Get("PetIndexService")
-        local okProgression, progression = pcall(function()
-            return moduleLoader:Get("PlayerProgressionService")
-        end)
-        self._playerProgressionService = okProgression and progression or nil
+        self._inventoryService = getModule("InventoryService")
+        self._dataService = getModule("DataService")
+        self._economyService = getModule("EconomyService")
+        self._eventService = getModule("EventService")
+        self._statsService = getModule("StatsService")
+        self._petGrantService = getModule("PetGrantService")
+        self._modifierService = getModule("ModifierService")
+        self._autoTargetService = getModule("AutoTargetService")
+        self._hatchEntitlementService = getModule("HatchEntitlementService")
+        self._petIndexService = getModule("PetIndexService")
+        self._playerProgressionService = getModule("PlayerProgressionService")
 
         if self._inventoryService then
             Logger:Info("EggService: InventoryService connection established")
@@ -1689,6 +1703,10 @@ function EggService:Initialize(moduleLoader)
     end)
 
     Logger:Info("EggService initialized with RemoteFunction and setLastEgg tracking")
+end
+
+function EggService:Init()
+    self:Initialize(self._moduleLoader)
 end
 
 return EggService
