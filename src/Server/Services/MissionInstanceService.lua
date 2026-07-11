@@ -267,7 +267,11 @@ function MissionInstanceService:Open(player, missionId, opts)
             and rnd.realm_pools
             and rnd.realm_pools[opts.doorRealm]
         ) or rnd.pool
-        missionId = pool[math.random(#pool)]
+        -- dedicated RNG instance (Jason: "it's not very random" — every
+        -- fresh-server FIRST roll sampled the newly-seeded global VM state;
+        -- Random.new() auto-seeds with independent high-quality entropy)
+        self._doorRng = self._doorRng or Random.new()
+        missionId = pool[self._doorRng:NextInteger(1, #pool)]
     end
     local mission = self._config.missions[missionId]
     if not mission then
