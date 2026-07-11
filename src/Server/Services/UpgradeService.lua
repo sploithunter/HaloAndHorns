@@ -6,6 +6,8 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local UpgradeService = {}
 UpgradeService.__index = UpgradeService
@@ -63,13 +65,7 @@ end
 
 function UpgradeService:_applyInventoryEffectsWhenReady(player)
     task.spawn(function()
-        local waited = 0
-        while not self._dataService:IsDataLoaded(player) and waited < DATA_READY_TIMEOUT_SECONDS do
-            task.wait(0.1)
-            waited += 0.1
-        end
-
-        if self._dataService:IsDataLoaded(player) then
+        if Readiness.awaitAttribute(player, "DataLoaded", true, DATA_READY_TIMEOUT_SECONDS) then
             self:ApplyInventoryEffects(player)
         end
     end)

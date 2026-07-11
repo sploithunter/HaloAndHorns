@@ -14,6 +14,7 @@ local LevelCurve = require(ReplicatedStorage.Shared.Game.LevelCurve)
 local LevelTrack = require(ReplicatedStorage.Shared.Game.LevelTrack)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local VeteranTrack = require(ReplicatedStorage.Shared.Game.VeteranTrack)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local PlayerProgressionService = {}
 PlayerProgressionService.__index = PlayerProgressionService
@@ -80,15 +81,8 @@ end
 function PlayerProgressionService:Start()
     local function publishLater(player)
         task.spawn(function()
-            local deadline = os.clock() + 15
-            while
-                player.Parent
-                and self._dataService
-                and self._dataService.IsDataLoaded
-                and not self._dataService:IsDataLoaded(player)
-                and os.clock() < deadline
-            do
-                task.wait(0.2)
+            if self._dataService and self._dataService.IsDataLoaded then
+                Readiness.awaitAttribute(player, "DataLoaded", true, 15)
             end
             if player.Parent then
                 self:_publish(player)

@@ -747,3 +747,11 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Classified Matter's vendored debugger remote alongside the generated registry
   factories as scanner-exempt third-party infrastructure.
 - Reduced tracked remote-construction migration debt from 82 occurrences to 0.
+
+## 2026-07-10 - Architecture audit closure
+
+- Replaced readiness polling across server services, admin/UI boot, inventory replication, pet equipment, and hatching with milestone latches, attribute subscriptions, completion callbacks, and instance events. Profile release now joins `OnAfterSave` with a bounded promise deadline.
+- Preserved the original-pet compatibility route alongside modern `Stacks` and `Special` records; production pet writes remain behind `PetGrantService`, while direct smoke-fixture writes are explicitly scanner-exempt test infrastructure.
+- Added revisioned required-shape schemas for all 61 formerly permissive configs. Unknown configs fail closed, schema path/type errors are covered headlessly, and every real config passed Studio boot validation.
+- Classified all 164 remaining purposeful clocks by approved timing purpose. Readiness is not an approved category, classifications are exact-count and stale-sensitive, and the architecture guard now reports zero allowlisted migration occurrences across all seven rules.
+- Verification: 1,298/1,298 headless tests, full CI, and repeated Rojo-backed Studio boots with `DataLoaded`, both pet storage paths, rendered UI, and zero new client errors.

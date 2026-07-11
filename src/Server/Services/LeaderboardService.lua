@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local LeaderboardService = {}
 LeaderboardService.__index = LeaderboardService
@@ -59,12 +60,7 @@ function LeaderboardService:Start()
 end
 
 function LeaderboardService:_waitForDataAndRefresh(player)
-    local deadline = os.clock() + 15
-    while player.Parent and not self._dataService:IsDataLoaded(player) and os.clock() < deadline do
-        task.wait(0.2)
-    end
-
-    if player.Parent and self._dataService:IsDataLoaded(player) then
+    if Readiness.awaitAttribute(player, "DataLoaded", true, 15) and player.Parent then
         self:RefreshPlayer(player)
     end
 end

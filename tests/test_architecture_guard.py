@@ -39,8 +39,15 @@ class ArchitectureGuardTest(unittest.TestCase):
             (root / "src" / "Shared" / "Network" / "SignalRegistry.lua").write_text(
                 'Transport:RemoteEvent("Canonical")\n', encoding="utf-8"
             )
+            (root / "src" / "Shared" / "Network" / "FireGameEvent.lua").write_text(
+                "Signals.GameEvent:FireClient(player, name, ctx)\n", encoding="utf-8"
+            )
             (root / "src" / "Shared" / "ConfigLoader.lua").write_text(
                 'if configName == "registered" then return true end\n', encoding="utf-8"
+            )
+            (root / "src" / "Shared" / "ConfigSchemas.lua").write_text(
+                'local schemas = {\n    registry_config = schema({ required = true }),\n}\n',
+                encoding="utf-8",
             )
             (root / "src" / "Server" / "Services").mkdir(parents=True)
             (root / "src" / "Server" / "Services" / "EconomyService.lua").write_text(
@@ -49,12 +56,24 @@ class ArchitectureGuardTest(unittest.TestCase):
             (root / "src" / "Server" / "Services" / "FeatureService.lua").write_text(
                 'self._dataService:AddCurrency(player, "coins", 1)\n', encoding="utf-8"
             )
+            (root / "src" / "Server" / "Services" / "PetGrantService.lua").write_text(
+                'inventoryService:AddItem(player, "pets", pet)\n', encoding="utf-8"
+            )
             (root / "configs" / "registered.lua").write_text("return {}\n", encoding="utf-8")
+            (root / "configs" / "registry_config.lua").write_text(
+                "return {}\n", encoding="utf-8"
+            )
             (root / "configs" / "missing.lua").write_text("return {}\n", encoding="utf-8")
 
             findings = architecture_guard.collect_findings(
                 root,
-                ("remote-construction", "config-without-schema", "currency-persistence-call"),
+                (
+                    "remote-construction",
+                    "game-event-publication",
+                    "pet-record-mutation",
+                    "config-without-schema",
+                    "currency-persistence-call",
+                ),
             )
             remote = findings["remote-construction"]["src/Shared/Network.lua"]
             self.assertEqual(1, remote.count)
@@ -68,6 +87,12 @@ class ArchitectureGuardTest(unittest.TestCase):
             self.assertNotIn(
                 "src/Shared/Libraries/Matter/debugger/debugger.luau",
                 findings["remote-construction"],
+            )
+            self.assertNotIn(
+                "src/Shared/Network/FireGameEvent.lua", findings["game-event-publication"]
+            )
+            self.assertNotIn(
+                "src/Server/Services/PetGrantService.lua", findings["pet-record-mutation"]
             )
             self.assertEqual(
                 {"configs/missing.lua"}, set(findings["config-without-schema"])
@@ -110,6 +135,34 @@ class ArchitectureGuardTest(unittest.TestCase):
         allowlist["rules"]["runtime-wait"]["pattern"] = "stale pattern"
         errors = architecture_guard.compare_findings(findings, allowlist)
         self.assertTrue(any("pattern must match" in error for error in errors))
+
+    def test_runtime_waits_require_an_exact_approved_purpose_count(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            (root / "scripts").mkdir()
+            (root / "src" / "Clock.lua").write_text(
+                "task.wait(1)\ntask.delay(2, callback)\n", encoding="utf-8"
+            )
+            (root / "scripts" / "runtime_wait_classifications.json").write_text(
+                '{"version": 1, "approved_purposes": '
+                + str(sorted(architecture_guard.APPROVED_RUNTIME_WAIT_PURPOSES)).replace("'", '"')
+                + ', '
+                '"files": {"src/Clock.lua": {"periodic": 2}}}',
+                encoding="utf-8",
+            )
+            rule = architecture_guard.RULE_BY_KEY["runtime-wait"]
+            self.assertEqual({}, architecture_guard.collect_runtime_waits(root, rule))
+
+            (root / "src" / "Clock.lua").write_text(
+                "task.wait(1)\ntask.delay(2, callback)\ntask.wait(3)\n", encoding="utf-8"
+            )
+            findings = architecture_guard.collect_runtime_waits(root, rule)
+            self.assertEqual(3, findings["src/Clock.lua"].count)
+
+            (root / "src" / "Clock.lua").write_text("return {}\n", encoding="utf-8")
+            findings = architecture_guard.collect_runtime_waits(root, rule)
+            self.assertEqual(1, findings["src/Clock.lua"].count)
 
 
 if __name__ == "__main__":

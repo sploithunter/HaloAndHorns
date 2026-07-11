@@ -19,6 +19,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Enhancements = require(ReplicatedStorage.Shared.Game.Enhancements)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local EnhancementService = {}
 EnhancementService.__index = EnhancementService
@@ -48,15 +49,7 @@ local BUCKET = "enhancements" -- InventoryService bucket: visible in the Invento
 -- record, then rebuild the bucket folder so the mirror picks it up.
 function EnhancementService:Start()
     local function backfill(player)
-        local deadline = os.clock() + 20
-        while
-            player.Parent
-            and not self._dataService:IsDataLoaded(player)
-            and os.clock() < deadline
-        do
-            task.wait(0.2)
-        end
-        if not (player.Parent and self._dataService:IsDataLoaded(player)) then
+        if not Readiness.awaitAttribute(player, "DataLoaded", true, 20) or not player.Parent then
             return
         end
         local invSvc = self:_inventoryService()

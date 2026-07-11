@@ -96,7 +96,7 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Rainbow pet visual effect exists and applies to models such as Rainbow Bear.
 - Admin control panel opens and includes event/effects testing commands.
 - Global event support has started, including scheduled event concepts and a UTC event clock.
-- `ConfigLoader` now validates all loaded configs at startup and has focused validators for core gameplay configs.
+- `ConfigLoader` validates every loaded config at startup. Complex gameplay configs retain focused cross-reference validators; the remaining configs use the revisioned `ConfigSchemas` registry for required top-level key types. Unknown configs fail closed, and the architecture guard rejects configs without an explicit schema.
 - Phase 0 foundation services are in place for profile schema versioning, stat counters, modifier resolution, currency ledger aggregation, deterministic UTC day/seed behavior, and feature flags.
 - Reward bundle currencies now flow through `EconomyService` rather than writing profile balances directly.
 - Realm token earnings and paid layer traversal also flow through `EconomyService`; failed debits no longer move the player.
@@ -127,8 +127,10 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - `configs/upgrades.lua` and `UpgradeService` now provide permanent upgrades for pet equip slots, pet storage, and crystal reward value. Upgrade levels persist under `DataService.Upgrades`; inventory slot limits read the upgrade effects server-side.
 - `Meadow` now has a paid unlock cost of `100 crystals`, and its breakable table includes stronger medium/big crystals. This is the first area-gated Phase 2 progression step.
 - Phase 2 network bridges exist for UI/admin work: `PurchaseUpgrade`/`UpgradeResult`, `UnlockZoneRequest`/`ZoneUnlockResult`, and `ZoneTravelResult`. Locked-zone results include the configured unlock requirement payload.
-- Twenty-six server notification packets now come from the validated network manifest. Progression, economy, interaction, combat-presentation, player-status, gameplay-event, and debug slices preserve existing wire names and payload tuples; 72 legacy constructors remain under the architecture ratchet.
-- Gameplay events now publish exclusively through `FireGameEvent`. `DropService` pickup events no longer bypass server taps or configured world-sound behavior, leaving only the publisher's own terminal send under the architecture ratchet.
+- All runtime remotes now come from the validated network manifest and generated registry; manual remote-construction debt is zero.
+- Gameplay events publish exclusively through `FireGameEvent`. Its terminal send is the sanctioned publisher boundary rather than migration debt.
+- Runtime readiness uses milestones, attributes, completion callbacks, and replicated instance events. The remaining clocks are reviewed in `scripts/runtime_wait_classifications.json` as animation, cooldown, deadline, debounce, frame-budget, periodic, retry, simulation, test, or watchdog timing; readiness is intentionally not an approved purpose.
+- Pet ownership writes are restricted to `PetGrantService` and transfer transaction boundaries. Studio smoke fixtures explicitly exercise both the original-pet compatibility path and the modern stack/special paths without making those fixtures production mutation APIs.
 - Pet inventory storage is already mixed: normal pets stack under `Inventory.pets.items["petId:variant"]` with a quantity, while special pets are individual records. Equipping a stacked pet creates an ephemeral equipped id and temporarily decrements the stack quantity.
 - Clicking an inventory stack card now equips another copy from that stack when quantity remains. Clicking the equipped ghost card unequips that specific equipped instance.
 - Phase 3 configs are live: `configs/pet_index.lua`, `configs/achievements.lua`, and `configs/leaderboards.lua`.

@@ -3499,39 +3499,6 @@ function InventoryPanel:_createPetImageIcon(parent, item)
         fallbackIcon.ZIndex = 104
         fallbackIcon.Parent = parent
 
-        task.spawn(function()
-            for _ = 1, 20 do
-                task.wait(0.25)
-                if not parent.Parent then
-                    return
-                end
-                if parent:FindFirstChild("PetImage") then
-                    return
-                end
-
-                local retryViewport = self:_getPetImageFromAssets(item.petType, item.variant, true)
-                if retryViewport then
-                    if fallbackIcon.Parent then
-                        fallbackIcon:Destroy()
-                    end
-
-                    retryViewport.Name = "PetImage"
-                    retryViewport.Size = UDim2.new(1, 0, 1, 0)
-                    retryViewport.Position = UDim2.new(0, 0, 0, 0)
-                    retryViewport.BackgroundTransparency = 1
-                    retryViewport.ZIndex = 104
-                    retryViewport.Parent = parent
-
-                    self.logger:info("✅ PET IMAGE LOADED AFTER RETRY", {
-                        itemId = item.id,
-                        petType = item.petType,
-                        variant = item.variant,
-                    })
-                    return
-                end
-            end
-        end)
-
         return fallbackIcon
     end
 end
@@ -6650,8 +6617,6 @@ function InventoryPanel:_performBulkDelete(entries)
     end
     self.logger:info("🗑️ BULK DELETE", { requested = #entries, fired = #batch })
     self:_setDeleteMode(false)
-    task.wait(0.1)
-    self:RefreshFromRealData()
 end
 
 function InventoryPanel:_showDeleteConfirmation(item)
@@ -7438,10 +7403,6 @@ function InventoryPanel:_deleteItemQuantity(item, quantity)
     else
         self.logger:warn("❌ Cannot delete item - missing source or UID")
     end
-
-    -- Immediate UI feedback
-    task.wait(0.1)
-    self:RefreshFromRealData()
 end
 
 function InventoryPanel:_setupContextMenuAutoClose(contextMenu)
@@ -7615,10 +7576,6 @@ function InventoryPanel:_deleteItem(item)
             hasNewUid = item.uid ~= nil,
         })
     end
-
-    -- Immediate UI feedback - remove from display
-    task.wait(0.1)
-    self:RefreshFromRealData()
 end
 
 function InventoryPanel:_showItemInfo(item)
@@ -7658,41 +7615,46 @@ function InventoryPanel:SetupRealTimeUpdates()
             local special = petsFolder:FindFirstChild("Special")
 
             if stacks then
-                stacks.ChildAdded:Connect(function(stackFolder)
-                    if stackFolder:IsA("Folder") then
-                        task.wait(0.05)
-                        self:RefreshFromRealData()
+                local function attachStack(stackFolder)
+                    if not stackFolder:IsA("Folder") then
+                        return
                     end
+
+                    local function attachQuantity(quantity)
+                        if quantity and quantity:IsA("ValueBase") then
+                            quantity:GetPropertyChangedSignal("Value"):Connect(function()
+                                self:_schedulePetRefresh()
+                            end)
+                        end
+                    end
+
+                    attachQuantity(stackFolder:FindFirstChild("Quantity"))
+                    stackFolder.ChildAdded:Connect(function(child)
+                        if child.Name == "Quantity" then
+                            attachQuantity(child)
+                            self:_schedulePetRefresh()
+                        end
+                    end)
+                end
+
+                stacks.ChildAdded:Connect(function(stackFolder)
+                    attachStack(stackFolder)
+                    self:_schedulePetRefresh()
                 end)
                 stacks.ChildRemoved:Connect(function()
-                    self:RefreshFromRealData()
+                    self:_schedulePetRefresh()
                 end)
-                -- Quantity change listener per existing stack
-                for _, sf in ipairs(stacks:GetChildren()) do
-                    local qty = sf:FindFirstChild("Quantity")
-                    if qty then
-                        qty:GetPropertyChangedSignal("Value"):Connect(function()
-                            self:RefreshFromRealData()
-                        end)
-                    end
+                for _, stackFolder in ipairs(stacks:GetChildren()) do
+                    attachStack(stackFolder)
                 end
-                stacks.ChildAdded:Connect(function(sf)
-                    local qty = sf:FindFirstChild("Quantity")
-                    if qty then
-                        qty:GetPropertyChangedSignal("Value"):Connect(function()
-                            self:RefreshFromRealData()
-                        end)
-                    end
-                end)
             end
 
             if special then
                 special.ChildAdded:Connect(function()
-                    task.wait(0.05)
-                    self:RefreshFromRealData()
+                    self:_schedulePetRefresh()
                 end)
                 special.ChildRemoved:Connect(function()
-                    self:RefreshFromRealData()
+                    self:_schedulePetRefresh()
                 end)
             end
 
@@ -7700,8 +7662,7 @@ function InventoryPanel:SetupRealTimeUpdates()
             petsFolder.ChildAdded:Connect(function(child)
                 if child:IsA("Folder") and child.Name ~= "Info" and not stacks and not special then
                     self.logger:info("New pet detected in inventory", { petFolder = child.Name })
-                    task.wait(0.1)
-                    self:RefreshFromRealData()
+                    self:_schedulePetRefresh()
                 end
             end)
 
@@ -7709,11 +7670,24 @@ function InventoryPanel:SetupRealTimeUpdates()
             petsFolder.ChildRemoved:Connect(function(child)
                 if child:IsA("Folder") and child.Name ~= "Info" and not stacks and not special then
                     self.logger:info("Pet removed from inventory", { petFolder = child.Name })
-                    self:RefreshFromRealData()
+                    self:_schedulePetRefresh()
                 end
             end)
         end
     end
+end
+
+function InventoryPanel:_schedulePetRefresh()
+    if self._petRefreshPending then
+        return
+    end
+    self._petRefreshPending = true
+    task.defer(function()
+        self._petRefreshPending = false
+        if self.isVisible then
+            self:RefreshFromRealData()
+        end
+    end)
 end
 
 -- Live-update the OPEN bucket(s): the non-pet buckets (enhancements / consumables /

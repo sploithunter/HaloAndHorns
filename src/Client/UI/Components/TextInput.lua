@@ -324,8 +324,6 @@ function TextInput:_onFocus()
     self:_updateAppearance()
 
     if self.config.selectAllOnFocus and #self.textBox.Text > 0 then
-        self.textBox:CaptureFocus()
-        task.wait(0.1) -- Small delay to ensure focus is captured
         self.textBox.SelectionStart = 1
         self.textBox.CursorPosition = #self.textBox.Text + 1
     end

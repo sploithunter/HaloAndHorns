@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LayerAccess = require(ReplicatedStorage.Shared.Game.LayerAccess)
 local RealmTokens = require(ReplicatedStorage.Shared.Game.RealmTokens)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local LayerService = {}
 LayerService.__index = LayerService
@@ -38,11 +39,7 @@ function LayerService:_settleOnJoin(player)
     if not (player and player.Parent and self._dataService) then
         return
     end
-    local deadline = os.clock() + 30
-    while player.Parent and not self._dataService:IsDataLoaded(player) and os.clock() < deadline do
-        task.wait(0.2)
-    end
-    if not (player.Parent and self._dataService:IsDataLoaded(player)) then
+    if not Readiness.awaitAttribute(player, "DataLoaded", true, 30) or not player.Parent then
         return
     end
     local data = self._dataService:GetData(player)

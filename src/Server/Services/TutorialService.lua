@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local TutorialService = {}
 TutorialService.__index = TutorialService
@@ -56,11 +57,7 @@ function TutorialService:Start()
 end
 
 function TutorialService:_waitForDataAndPush(player)
-    local deadline = os.clock() + 20
-    while player.Parent and not self._dataService:IsDataLoaded(player) and os.clock() < deadline do
-        task.wait(0.2)
-    end
-    if player.Parent and self._dataService:IsDataLoaded(player) then
+    if Readiness.awaitAttribute(player, "DataLoaded", true, 20) and player.Parent then
         self:_ensureProgress(player)
         self:_push(player)
     end

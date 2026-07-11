@@ -18,6 +18,19 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ALLOWLIST = ROOT / "scripts" / "architecture_allowlist.json"
+RUNTIME_WAIT_CLASSIFICATIONS = Path("scripts/runtime_wait_classifications.json")
+APPROVED_RUNTIME_WAIT_PURPOSES = {
+    "animation",
+    "cooldown",
+    "deadline",
+    "debounce",
+    "frame_budget",
+    "periodic",
+    "retry_backoff",
+    "simulation",
+    "test",
+    "watchdog",
+}
 
 
 @dataclass(frozen=True)
@@ -62,6 +75,7 @@ RULES = (
         owner="gameplay events",
         reason="Existing direct sends must migrate behind the authoritative gameplay-event publisher.",
         expressions=(r"\bSignals\s*\.\s*GameEvent\s*:\s*(?:FireClient|FireAllClients)\s*\(",),
+        exempt_paths=("src/Shared/Network/FireGameEvent.lua",),
     ),
     RuleSpec(
         key="pet-record-mutation",
@@ -73,6 +87,10 @@ RULES = (
             r"\bAddItem\s*\([\s\S]{0,500}?[\"']pets[\"']",
             r"\bInventory\s*(?:\.\s*pets|\[\s*[\"']pets[\"']\s*\])\s*"
             r"(?:\.\s*items|\[\s*[\"']items[\"']\s*\])\s*(?:\[[^\]]+\])?\s*=",
+        ),
+        exempt_paths=(
+            "src/Server/Services/PetGrantService.lua",
+            "src/Server/Services/StudioSmokeTestService.lua",
         ),
     ),
     RuleSpec(
@@ -102,6 +120,7 @@ RULES = (
         owner="path owners in CODEOWNERS",
         reason="Existing timers require classification and synchronization waits must migrate to completion contracts.",
         expressions=(r"\btask\s*\.\s*(?:wait|delay)\s*\(",),
+        exempt_paths=("src/Shared/Utils/Readiness.lua",),
     ),
     RuleSpec(
         key="config-without-schema",
@@ -194,10 +213,60 @@ def collect_regex_rule(root: Path, rule: RuleSpec) -> dict[str, Finding]:
     return findings
 
 
+def collect_runtime_waits(root: Path, rule: RuleSpec) -> dict[str, Finding]:
+    findings = collect_regex_rule(root, rule)
+    classification_path = root / RUNTIME_WAIT_CLASSIFICATIONS
+    if not classification_path.exists():
+        return findings
+
+    try:
+        document = json.loads(classification_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        findings["scripts/runtime_wait_classifications.json"] = Finding(1, (1,))
+        return findings
+    if document.get("version") != 1:
+        findings["scripts/runtime_wait_classifications.json"] = Finding(1, (1,))
+        return findings
+
+    approved = document.get("approved_purposes")
+    classified_files = document.get("files")
+    if not isinstance(approved, list) or not isinstance(classified_files, dict):
+        findings["scripts/runtime_wait_classifications.json"] = Finding(1, (1,))
+        return findings
+    approved_set = {purpose for purpose in approved if isinstance(purpose, str)}
+    if approved_set != APPROVED_RUNTIME_WAIT_PURPOSES:
+        findings["scripts/runtime_wait_classifications.json"] = Finding(1, (1,))
+        return findings
+
+    for path, purposes in classified_files.items():
+        finding = findings.get(path)
+        if not isinstance(path, str) or not isinstance(purposes, dict):
+            continue
+        if finding is None:
+            findings[path] = Finding(1, (1,))
+            continue
+        valid = all(
+            purpose in approved_set and isinstance(count, int) and count > 0
+            for purpose, count in purposes.items()
+        )
+        classified_count = sum(purposes.values()) if valid else -1
+        if classified_count == finding.count:
+            del findings[path]
+    return findings
+
+
 def collect_unregistered_configs(root: Path) -> dict[str, Finding]:
     loader_path = root / "src" / "Shared" / "ConfigLoader.lua"
     loader = strip_lua_comments(loader_path.read_text(encoding="utf-8", errors="ignore"))
     registered = set(re.findall(r"\bconfigName\s*==\s*[\"']([^\"']+)[\"']", loader))
+    schema_path = root / "src" / "Shared" / "ConfigSchemas.lua"
+    if schema_path.exists():
+        schema_source = strip_lua_comments(
+            schema_path.read_text(encoding="utf-8", errors="ignore")
+        )
+        registered.update(
+            re.findall(r"^\s{4}([a-z][a-z0-9_]*)\s*=\s*schema\s*\(", schema_source, re.MULTILINE)
+        )
     findings: dict[str, Finding] = {}
     for path in sorted((root / "configs").glob("*.lua")):
         if path.stem not in registered:
@@ -213,6 +282,8 @@ def collect_findings(root: Path, selected: Iterable[str] | None = None) -> dict[
             continue
         if rule.key == "config-without-schema":
             result[rule.key] = collect_unregistered_configs(root)
+        elif rule.key == "runtime-wait":
+            result[rule.key] = collect_runtime_waits(root, rule)
         else:
             result[rule.key] = collect_regex_rule(root, rule)
     return result

@@ -1501,11 +1501,6 @@ function BreakableSpawner:_trySpawnOne(
         crystalsAssets = breakablesRoot and breakablesRoot:FindFirstChild("Crystals")
         if crystalsAssets then
             self._crystalsAssets = crystalsAssets
-            -- Wait until children exist
-            local start = tick()
-            while #crystalsAssets:GetChildren() == 0 and tick() - start < 30 do
-                task.wait(0.5)
-            end
         else
             return
         end

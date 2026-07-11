@@ -12,6 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local WorldContext = require(ReplicatedStorage.Shared.Game.WorldContext)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local ZoneService = {}
 ZoneService.__index = ZoneService
@@ -506,15 +507,7 @@ end
 
 function ZoneService:_syncUnlocksWhenDataLoads(player)
     task.spawn(function()
-        local startedAt = os.clock()
-        while player.Parent and player:GetAttribute("DataLoaded") ~= true do
-            if os.clock() - startedAt > 30 then
-                return
-            end
-            task.wait(0.25)
-        end
-
-        if player.Parent then
+        if Readiness.awaitAttribute(player, "DataLoaded", true, 30) and player.Parent then
             self:GetUnlockedZones(player)
         end
     end)

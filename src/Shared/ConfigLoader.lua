@@ -15,6 +15,7 @@
 ]]
 
 local RunService = game:GetService("RunService")
+local ConfigSchemas = require(script.Parent.ConfigSchemas)
 
 local ConfigLoader = {}
 ConfigLoader.__index = ConfigLoader
@@ -710,8 +711,7 @@ function ConfigLoader:ValidateConfig(configName, config)
         return self:_validateNetworkConfig(config)
     end
 
-    -- Default validation for other configs
-    return true
+    return ConfigSchemas.validate(configName, config)
 end
 
 function ConfigLoader:_validateNetworkConfig(config)
