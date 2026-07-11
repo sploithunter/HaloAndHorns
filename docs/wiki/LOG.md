@@ -691,3 +691,11 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Ratcheted `Signals.lua` manual remote construction from 41 to 33.
   Bidirectional `ActiveEffects` remains legacy pending an explicit request and
   notification split.
+
+## 2026-07-10 - Manifest-driven combat control wires
+
+- Migrated squad recall/summon, active-power toggle, combat targeting, and
+  hotbar activation/rebind/state requests into the validated network manifest.
+- Ratcheted `Signals.lua` manual remote construction from 33 to 25.
+  Bidirectional `TutorialState` remains legacy pending an explicit pull/push
+  split.
