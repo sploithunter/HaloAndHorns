@@ -1654,6 +1654,14 @@ function loadEquipped(Player)
             end
 
             -- NOW parent everything to workspace (AFTER everything is built)
+            -- ATOMIC STREAMING (the Colorado floating-"C" root cause): with
+            -- StreamingEnabled, PARTS stream in/out individually — a streamed-
+            -- out part rejoins at its stale SERVER position while the rest of
+            -- the model was client-pivoted away, and the next PivotTo drags the
+            -- wrong offset around forever. Atomic streams the model as ONE unit,
+            -- so parts can never rejoin out of sync. (Welds and anchoring never
+            -- could fix this — the corruption was replication, not physics.)
+            PetModel.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
             PetModel.Parent = petModelsLocation
             box.Parent = petLocation
             -- Anchor EVERY part, not just the primary; PetFollowService owns the

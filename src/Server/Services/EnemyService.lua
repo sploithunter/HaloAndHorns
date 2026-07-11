@@ -5584,6 +5584,9 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     self._nextId += 1
     local targetId = self._nextId
     local model = self:_buildModel(enemyId, def, position, targetId)
+    -- Atomic streaming: multi-part enemy models (pet-model trials bosses!)
+    -- have the same part-level stream-rejoin corruption risk as pets
+    model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
     model.Parent = self:_enemiesFolder()
     -- entry.pos = authoritative position (server never re-pivots the model after this
     -- initial placement). Seed MoveTarget so the gate + client render have a value
