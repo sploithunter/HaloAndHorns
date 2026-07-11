@@ -662,3 +662,14 @@ migration is needed for the abandoned "element splits stacks" spec.
   server notifications without changing their wire names or payload shape.
 - Ratcheted `Signals.lua` manual remote construction from 72 to 65. The
   bidirectional legacy `ShopItems` wire remains pending an explicit split.
+
+## 2026-07-10 - Manifest-driven inventory request wires
+
+- Migrated live inventory deletion, admin cleanup, category repair, orphaned
+  bucket cleanup, pet/tool equip, atomic squad commit, and enchant request
+  wires into the validated network manifest.
+- Recorded player versus admin caller policies and retained every exact wire
+  name and one-table payload shape.
+- Ratcheted `Signals.lua` manual remote construction from 65 to 57.
+  `ConsumeItem` and `InventoryUpdate` remain legacy until their missing
+  handler/publication paths are resolved.
