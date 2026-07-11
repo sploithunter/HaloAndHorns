@@ -97,10 +97,7 @@
     },
     "remote-construction": {
       "disposition": "migration-debt",
-      "files": {
-        "src/Shared/Libraries/Matter/debugger/debugger.luau": 1,
-        "src/Shared/Network/NetworkBridge.lua": 1
-      },
+      "files": {},
       "owner": "networking",
       "pattern": "Instance.new(\"RemoteEvent|RemoteFunction\") or transport:RemoteEvent|RemoteFunction",
       "reason": "Existing code-declared and service-owned remotes must migrate to the network manifest."
@@ -189,7 +186,6 @@
         "src/Shared/Effects/CombatFX.lua": 4,
         "src/Shared/Effects/EggHatchFX.lua": 3,
         "src/Shared/Libraries/Matter/debugger/EventBridge.luau": 1,
-        "src/Shared/Network/NetworkBridge.lua": 1,
         "src/Shared/Services/EggHatchingService.lua": 26,
         "src/Shared/Services/EggInteractionService.lua": 5,
         "src/Shared/Services/EggSpawner.lua": 1,

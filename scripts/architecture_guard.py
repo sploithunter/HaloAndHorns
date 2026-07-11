@@ -52,6 +52,7 @@ RULES = (
         exempt_paths=(
             "src/Shared/Network/SignalRegistry.lua",
             "src/Shared/Network/RuntimeTransport.lua",
+            "src/Shared/Libraries/Matter/debugger/debugger.luau",
         ),
     ),
     RuleSpec(

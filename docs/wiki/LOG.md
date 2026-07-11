@@ -739,3 +739,11 @@ migration is needed for the abandoned "element splits stacks" spec.
   into the manifest without changing existing client paths.
 - Studio-only automation and smoke packets are omitted from production
   registries. Game-owned remote-construction debt fell from 8 to 2 occurrences.
+
+## 2026-07-10 - Remote-construction audit closure
+
+- Removed the unused legacy `NetworkBridge` implementation and its obsolete
+  self-test; runtime code already uses the generated `Signals` registry.
+- Classified Matter's vendored debugger remote alongside the generated registry
+  factories as scanner-exempt third-party infrastructure.
+- Reduced tracked remote-construction migration debt from 82 occurrences to 0.

@@ -8,6 +8,11 @@ The desired shape is a small set of authoritative services backed by validated c
 
 ## Foundation Services
 
+All game-owned remotes are declared in `configs/network.lua` and constructed by
+the generated `Signals` registry. Service modules bind handlers to those
+objects; they do not create or replace remotes. Studio-only declarations are
+filtered out of production registries.
+
 - `ConfigLoader` validates config shape and cross-references at boot. Current focused validators cover currencies, game, breakables, pets/egg sources, events, economy exchange, egg system, inventory, upgrades, areas, markers, pet index, achievements, leaderboards, UI, context menus, items, and monetization.
 - `DataService` owns ProfileStore data, schema versioning, migrations, durable state, stat counter storage, pet index state, achievement completion state, and currency source/sink ledger aggregates.
 - `StatsService` owns declared tracked counters and emits counter change signals.
