@@ -62,6 +62,9 @@ class ArchitectureGuardTest(unittest.TestCase):
             self.assertNotIn(
                 "src/Shared/Network/SignalRegistry.lua", findings["remote-construction"]
             )
+            self.assertNotIn(
+                "src/Shared/Network/RuntimeTransport.lua", findings["remote-construction"]
+            )
             self.assertEqual(
                 {"configs/missing.lua"}, set(findings["config-without-schema"])
             )

@@ -730,3 +730,12 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Replaced service-owned `PotionUpdate` and `TradeUpdate` RemoteEvents with
   generated manifest entries and migrated their client listeners to `Signals`.
 - Reduced repository remote-construction debt from 10 to 8 occurrences.
+
+## 2026-07-10 - Manifest-driven service RemoteFunctions
+
+- Added environment-aware registry generation and a generated runtime transport
+  that preserves root-level and nested RemoteFunction topology.
+- Migrated Automation, egg purchase/selection, GameAPI, and Studio smoke remotes
+  into the manifest without changing existing client paths.
+- Studio-only automation and smoke packets are omitted from production
+  registries. Game-owned remote-construction debt fell from 8 to 2 occurrences.

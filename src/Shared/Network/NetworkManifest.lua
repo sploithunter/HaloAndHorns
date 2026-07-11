@@ -35,6 +35,11 @@ local ENVIRONMENTS = {
     test = true,
 }
 
+local LOCATIONS = {
+    net = true,
+    replicated_storage = true,
+}
+
 local VALUE_TYPES = {
     any = true,
     boolean = true,
@@ -120,6 +125,23 @@ function NetworkManifest.validate(config)
         end
         if not DELIVERIES[packet.delivery] then
             return false, path .. ".delivery: unknown delivery"
+        end
+        local location = packet.location or "net"
+        if not LOCATIONS[location] then
+            return false, path .. ".location: unknown location"
+        end
+        if packet.parent ~= nil then
+            if location ~= "replicated_storage" or not nonEmptyString(packet.parent) then
+                return false, path .. ".parent: requires a replicated_storage parent name"
+            end
+            local parent = config.packets[packet.parent]
+            if
+                type(parent) ~= "table"
+                or parent.location ~= "replicated_storage"
+                or parent.transport ~= "remote_function"
+            then
+                return false, path .. ".parent: expected a root RemoteFunction packet"
+            end
         end
 
         if type(packet.environments) ~= "table" then

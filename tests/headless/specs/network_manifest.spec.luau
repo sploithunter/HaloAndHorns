@@ -115,6 +115,12 @@ return function()
             expect(networkConfig.packets.ConsumeItem.handler).to.equal("EconomyService.UseItem")
             expect(networkConfig.packets.PotionUpdate.topic).to.equal("potions.updated")
             expect(networkConfig.packets.TradeUpdate.topic).to.equal("trade.updated")
+            expect(networkConfig.packets.AutomationControl.location).to.equal("replicated_storage")
+            expect(networkConfig.packets.RunAutomationSuite.authorization).to.equal("studio")
+            expect(networkConfig.packets.EggOpened.transport).to.equal("remote_function")
+            expect(networkConfig.packets.setLastEgg.parent).to.equal("EggOpened")
+            expect(networkConfig.packets.GameAPICommand.location).to.equal("replicated_storage")
+            expect(networkConfig.packets.StudioSmokeTest.environments.production).to.equal(nil)
             expect(networkConfig.packets.CurrencyUpdate.name).to.equal("CurrencyUpdate")
             expect(networkConfig.packets.PurchaseSuccess.name).to.equal("PurchaseSuccess")
             expect(networkConfig.packets.SellSuccess.name).to.equal("SellSuccess")
@@ -238,6 +244,12 @@ return function()
             expect(signals.ConsumeItem.name).to.equal("ConsumeItem")
             expect(signals.PotionUpdate.name).to.equal("PotionUpdate")
             expect(signals.TradeUpdate.name).to.equal("TradeUpdate")
+            expect(signals.AutomationControl.name).to.equal("AutomationControl")
+            expect(signals.RunAutomationSuite.name).to.equal("RunAutomationSuite")
+            expect(signals.EggOpened.name).to.equal("EggOpened")
+            expect(signals.setLastEgg.name).to.equal("setLastEgg")
+            expect(signals.GameAPICommand.name).to.equal("GameAPICommand")
+            expect(signals.StudioSmokeTest.name).to.equal("StudioSmokeTest")
             expect(signals.CurrencyUpdate.name).to.equal("CurrencyUpdate")
             expect(signals.PurchaseSuccess.name).to.equal("PurchaseSuccess")
             expect(signals.SellSuccess.name).to.equal("SellSuccess")
@@ -256,7 +268,30 @@ return function()
             expect(signals.PetPositionsRelay.name).to.equal("PetPositionsRelay")
             expect(signals.GameEvent.name).to.equal("GameEvent")
             expect(signals.PlayerDebugInfo.name).to.equal("PlayerDebugInfo")
-            expect(#created).to.equal(101)
+            expect(#created).to.equal(107)
+        end)
+
+        it("omits Studio-only packets from a production registry", function()
+            local created = {}
+            local transport = {
+                RemoteEvent = function(_, name)
+                    created[name] = true
+                    return { name = name }
+                end,
+                RemoteFunction = function(_, name)
+                    created[name] = true
+                    return { name = name }
+                end,
+            }
+
+            local signals =
+                SignalRegistry.build(networkConfig, transport, { environment = "production" })
+            expect(signals.GameAPICommand.name).to.equal("GameAPICommand")
+            expect(signals.EggOpened.name).to.equal("EggOpened")
+            expect(signals.AutomationControl).to.equal(nil)
+            expect(signals.RunAutomationSuite).to.equal(nil)
+            expect(signals.StudioSmokeTest).to.equal(nil)
+            expect(created.AutomationControl).to.equal(nil)
         end)
 
         it("requires rate limits and handlers on client-origin packets", function()
@@ -295,6 +330,30 @@ return function()
             packet.authorization = "player"
             packet.delivery = "broadcast"
             ok = NetworkManifest.validate({ version = 1, packets = { RequestSnapshot = packet } })
+            expect(ok).to.equal(false)
+        end)
+
+        it("validates root placement and nested RemoteFunction parents", function()
+            local packet = validClientPacket()
+            packet.transport = "remote_function"
+            packet.location = "replicated_storage"
+            local child = validClientPacket()
+            child.name = "Child"
+            child.transport = "remote_function"
+            child.location = "replicated_storage"
+            child.parent = "RequestSnapshot"
+
+            local ok = NetworkManifest.validate({
+                version = 1,
+                packets = { RequestSnapshot = packet, Child = child },
+            })
+            expect(ok).to.equal(true)
+
+            child.parent = "Missing"
+            ok = NetworkManifest.validate({
+                version = 1,
+                packets = { RequestSnapshot = packet, Child = child },
+            })
             expect(ok).to.equal(false)
         end)
     end)

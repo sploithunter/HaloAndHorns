@@ -16,7 +16,6 @@ local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Workspace = game:GetService("Workspace")
 
-local REMOTE_NAME = "StudioSmokeTest"
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
 
@@ -167,17 +166,10 @@ function StudioSmokeTestService:Start()
         return
     end
 
-    local existing = ReplicatedStorage:FindFirstChild(REMOTE_NAME)
-    if existing then
-        existing:Destroy()
-    end
-
-    local remote = Instance.new("RemoteFunction")
-    remote.Name = REMOTE_NAME
+    local remote = require(ReplicatedStorage.Shared.Network.Signals).StudioSmokeTest
     remote.OnServerInvoke = function(player, action, payload)
         return self:_handleRequest(player, action, payload or {})
     end
-    remote.Parent = ReplicatedStorage
 
     Players.PlayerRemoving:Connect(function(player)
         sessions[player.UserId] = nil
@@ -186,7 +178,7 @@ function StudioSmokeTestService:Start()
 
     logger:Info("Studio smoke test bridge ready", {
         context = "StudioSmokeTestService",
-        remote = REMOTE_NAME,
+        remote = remote.Name,
     })
 end
 

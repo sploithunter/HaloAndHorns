@@ -49,7 +49,10 @@ RULES = (
             r"Instance\s*\.\s*new\s*\(\s*[\"']Remote(?:Event|Function)[\"']\s*\)",
             r"\b[A-Za-z_][A-Za-z0-9_]*\s*:\s*Remote(?:Event|Function)\s*\(",
         ),
-        exempt_paths=("src/Shared/Network/SignalRegistry.lua",),
+        exempt_paths=(
+            "src/Shared/Network/SignalRegistry.lua",
+            "src/Shared/Network/RuntimeTransport.lua",
+        ),
     ),
     RuleSpec(
         key="game-event-publication",

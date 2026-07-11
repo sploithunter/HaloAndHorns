@@ -1664,15 +1664,9 @@ function EggService:Initialize(moduleLoader)
         Logger:Warn("EggService: No module loader provided")
     end
 
-    -- Create RemoteFunction (like working game)
-    eggRemoteFunction = Instance.new("RemoteFunction")
-    eggRemoteFunction.Name = "EggOpened"
-    eggRemoteFunction.Parent = ReplicatedStorage
-
-    -- Create setLastEgg RemoteFunction (like working game)
-    local setLastEggRemote = Instance.new("RemoteFunction")
-    setLastEggRemote.Name = "setLastEgg"
-    setLastEggRemote.Parent = eggRemoteFunction
+    local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+    eggRemoteFunction = Signals.EggOpened
+    local setLastEggRemote = Signals.setLastEgg
 
     -- Set up the handlers
     eggRemoteFunction.OnServerInvoke = function(player, eggType, purchaseType)

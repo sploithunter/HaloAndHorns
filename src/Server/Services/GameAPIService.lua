@@ -47,8 +47,6 @@ local PowerFormula = require(ReplicatedStorage.Shared.Game.PowerFormula)
 local GameAPIService = {}
 GameAPIService.__index = GameAPIService
 
-local REMOTE_NAME = "GameAPICommand"
-
 function GameAPIService:Init()
     self._logger = self._modules and self._modules.Logger
     self._economyService = self._modules and self._modules.EconomyService
@@ -150,14 +148,7 @@ function GameAPIService:Execute(player, name, args, opts)
 end
 
 function GameAPIService:_setupNetworkTransport()
-    -- Replace any stale remote (e.g. after a Rojo hot-sync in Studio).
-    local existing = ReplicatedStorage:FindFirstChild(REMOTE_NAME)
-    if existing then
-        existing:Destroy()
-    end
-
-    local remote = Instance.new("RemoteFunction")
-    remote.Name = REMOTE_NAME
+    local remote = require(ReplicatedStorage.Shared.Network.Signals).GameAPICommand
     remote.OnServerInvoke = function(player, name, args)
         -- Client-originated: never trusted, never a test.
         return self._bus:execute({
@@ -166,7 +157,6 @@ function GameAPIService:_setupNetworkTransport()
             isTest = false,
         }, name, type(args) == "table" and args or {})
     end
-    remote.Parent = ReplicatedStorage
 end
 
 --[[

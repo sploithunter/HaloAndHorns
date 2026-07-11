@@ -40,7 +40,6 @@ AutomationService.__index = AutomationService
 local DEFAULT_ARRIVE_THRESHOLD = 4 -- studs
 local DEFAULT_TIMEOUT = 15 -- seconds
 local STUCK_EPSILON = 0.15 -- studs of progress per re-check to count as moving
-local CONTROL_REMOTE_NAME = "AutomationControl" -- paired with the client bridge
 
 local function deepCopy(value)
     if type(value) ~= "table" then
@@ -79,24 +78,14 @@ function AutomationService:Start()
 
     -- Control bridge: a RemoteEvent the client AutomationControlBridge listens to,
     -- so NavigateTo can disable the player's controls during automated movement.
-    local existing = ReplicatedStorage:FindFirstChild(CONTROL_REMOTE_NAME)
-    if existing then
-        existing:Destroy()
-    end
-    local controlRemote = Instance.new("RemoteEvent")
-    controlRemote.Name = CONTROL_REMOTE_NAME
-    controlRemote.Parent = ReplicatedStorage
+    local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+    local controlRemote = Signals.AutomationControl
     self._controlRemote = controlRemote
 
     -- Studio-only: let an MCP-driven client trigger a SERVER-side run of the
     -- integration suite, where test-only commands are permitted. The remote only
     -- exists in Studio, so there is no production exposure.
-    local existingSuite = ReplicatedStorage:FindFirstChild("RunAutomationSuite")
-    if existingSuite then
-        existingSuite:Destroy()
-    end
-    local suiteRemote = Instance.new("RemoteFunction")
-    suiteRemote.Name = "RunAutomationSuite"
+    local suiteRemote = Signals.RunAutomationSuite
     suiteRemote.OnServerInvoke = function(invokingPlayer)
         local ok, suiteOrErr = pcall(function()
             return require(ReplicatedStorage.Tests.studio.AutomationSuite)
@@ -109,7 +98,6 @@ function AutomationService:Start()
         end
         return suiteOrErr.run({ player = invokingPlayer })
     end
-    suiteRemote.Parent = ReplicatedStorage
     self._suiteRemote = suiteRemote
 
     -- Expose automation.* commands through the GameAPI bus (injected dependency,
