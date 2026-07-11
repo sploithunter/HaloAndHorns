@@ -627,7 +627,12 @@ function ConfigLoader:ValidateMonetizationSetup()
 
     -- Check for placeholder product IDs
     for configId, robloxId in pairs(monetization.product_id_mapping) do
-        if robloxId == 1234567890 or robloxId == 1234567891 or robloxId == 1234567892 then
+        if robloxId == 0 then
+            table.insert(
+                warnings,
+                "Product or pass '" .. configId .. "' is not configured and cannot be purchased"
+            )
+        elseif robloxId == 1234567890 or robloxId == 1234567891 or robloxId == 1234567892 then
             table.insert(
                 warnings,
                 "Product '" .. configId .. "' still uses placeholder ID " .. robloxId
@@ -639,7 +644,7 @@ function ConfigLoader:ValidateMonetizationSetup()
             )
         end
 
-        if robloxId <= 0 then
+        if robloxId < 0 then
             table.insert(errors, "Invalid Roblox ID for '" .. configId .. "': " .. robloxId)
         end
     end
