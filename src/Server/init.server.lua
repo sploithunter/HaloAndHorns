@@ -45,6 +45,7 @@ local Locations = require(ReplicatedStorage.Shared.Locations)
 local Matter = Locations.getLibrary("Matter") -- Matter ECS framework (manual due to Wally/Rojo sync issues)
 local Reflex = Locations.getPackage("Reflex") -- Redux-like state management (via Wally)
 local ModuleLoader = require(Locations.SharedUtils.ModuleLoader)
+local RuntimeServiceBindings = require(ServerScriptService.Server.Services.RuntimeServiceBindings)
 
 -- Audio buses are created SERVER-side at boot so every peer shares ONE set of
 -- SoundGroups. Otherwise the client lazily creates LOCAL groups at startup and
@@ -662,8 +663,7 @@ loader:RegisterModule(
     { "Logger", "ConfigLoader" }
 )
 -- GameAPIService: the unified command-bus boundary (see
--- docs/wiki/AUTOMATION_API_DESIGN.md). Handlers resolve target services from the
--- _G.RBXTemplateServices locator at runtime; currency commands use injected EconomyService.
+-- docs/wiki/AUTOMATION_API_DESIGN.md). Its fixed adapter map is bound before Start.
 loader:RegisterModule(
     "GameAPIService",
     ServerScriptService.Server.Services.GameAPIService,
@@ -836,6 +836,12 @@ local loadSuccess, loadOrderOrError = pcall(function()
             UpgradeService = isFeatureEnabled("upgrades") and modules:Get("UpgradeService") or nil,
             ZoneService = isFeatureEnabled("map_binding") and modules:Get("ZoneService") or nil,
         })
+        RuntimeServiceBindings.configure({
+            GameAPIService = modules:Get("GameAPIService"),
+            ModifierService = isFeatureEnabled("modifiers") and modules:Get("ModifierService")
+                or nil,
+            PetFollowService = modules:Get("PetFollowService"),
+        })
     end)
 end)
 
@@ -960,12 +966,6 @@ local PlayerEffectsService = loader:Get("PlayerEffectsService")
 local MonetizationService = loader:Get("MonetizationService")
 local InventoryService = loader:Get("InventoryService")
 local EconomyService = loader:Get("EconomyService")
-
-_G.RBXTemplateServices = {
-    Get = function(_, moduleName)
-        return loader:Get(moduleName)
-    end,
-}
 
 -- Set up cross-references to avoid circular dependencies
 DataService:SetPlayerEffectsService(PlayerEffectsService)

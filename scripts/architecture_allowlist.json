@@ -198,10 +198,7 @@
     },
     "service-global-locator": {
       "disposition": "migration-debt",
-      "files": {
-        "src/Server/Services/PetHandler.server.lua": 1,
-        "src/Server/init.server.lua": 1
-      },
+      "files": {},
       "owner": "service lifecycle",
       "pattern": "_G.RBXTemplateServices",
       "reason": "Existing global lookups must migrate to declared dependencies or event subscriptions."

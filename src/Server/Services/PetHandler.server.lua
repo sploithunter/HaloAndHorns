@@ -12,9 +12,11 @@
 --]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local Players = game:GetService("Players")
 local PetVariantVisuals = require(ReplicatedStorage.Shared.Services.PetVariantVisuals)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local RuntimeServiceBindings = require(ServerScriptService.Server.Services.RuntimeServiceBindings)
 print("✅ PetHandler: Loaded and waiting for bridge registration")
 
 -- Suppress verbose debug prints in this script unless explicitly enabled
@@ -42,21 +44,6 @@ local petRolesConfig = nil
 pcall(function()
     petRolesConfig = require(ReplicatedStorage.Configs.pet_roles)
 end)
-
-local function getLoadedService(serviceName)
-    local registry = _G.RBXTemplateServices
-    if type(registry) ~= "table" or type(registry.Get) ~= "function" then
-        return nil
-    end
-
-    local ok, service = pcall(function()
-        return registry:Get(serviceName)
-    end)
-    if ok then
-        return service
-    end
-    return nil
-end
 
 -- Prevent concurrent loadEquipped runs per-player (which can destroy freshly spawned models)
 local activeLoads: { [Player]: boolean } = {}
@@ -706,7 +693,7 @@ local function resolveTeamModifiedPetPower(
     effectivePower,
     teamContext
 )
-    local modifierService = getLoadedService("ModifierService")
+    local modifierService = RuntimeServiceBindings.getModifierService()
     if not (modifierService and modifierService.Resolve) then
         return effectivePower
     end
