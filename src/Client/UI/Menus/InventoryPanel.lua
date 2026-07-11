@@ -7445,14 +7445,60 @@ function InventoryPanel:_deleteItemQuantity(item, quantity)
 end
 
 function InventoryPanel:_setupContextMenuAutoClose(contextMenu)
-    -- SIMPLE SOLUTION: Just auto-close after 5 seconds, no click detection
-    -- Let the button events handle themselves without interference
-    task.spawn(function()
-        task.wait(5)
-        if contextMenu.Parent then
-            print("🕒 AUTO-CLOSING CONTEXT MENU AFTER 5 SECONDS")
+    local userInputService = game:GetService("UserInputService")
+    local armed = false
+    local inputConnection
+    local ancestryConnection
+
+    local function disconnect()
+        if inputConnection then
+            inputConnection:Disconnect()
+            inputConnection = nil
+        end
+        if ancestryConnection then
+            ancestryConnection:Disconnect()
+            ancestryConnection = nil
+        end
+    end
+
+    ancestryConnection = contextMenu.AncestryChanged:Connect(function(_, parent)
+        if parent == nil then
+            disconnect()
+        end
+    end)
+
+    inputConnection = userInputService.InputBegan:Connect(function(input)
+        if not armed then
+            return
+        end
+        if
+            input.UserInputType ~= Enum.UserInputType.MouseButton1
+            and input.UserInputType ~= Enum.UserInputType.Touch
+        then
+            return
+        end
+
+        local menu = contextMenu:IsA("GuiObject") and contextMenu
+            or contextMenu:FindFirstChild("AdvancedContextMenu", true)
+            or contextMenu:FindFirstChildWhichIsA("GuiObject", true)
+        if not menu then
+            return
+        end
+        local point = Vector2.new(input.Position.X, input.Position.Y)
+        local topLeft = menu.AbsolutePosition
+        local bottomRight = topLeft + menu.AbsoluteSize
+        local inside = point.X >= topLeft.X
+            and point.X <= bottomRight.X
+            and point.Y >= topLeft.Y
+            and point.Y <= bottomRight.Y
+        if not inside then
+            disconnect()
             contextMenu:Destroy()
         end
+    end)
+
+    task.defer(function()
+        armed = contextMenu.Parent ~= nil
     end)
 end
 
@@ -7521,26 +7567,7 @@ function InventoryPanel:_showItemContextMenu(item, x, y)
         self:_showItemInfo(item)
     end)
 
-    -- Auto-close after 3 seconds or on click outside
-    local closeConnection
-    local closeTimer = task.wait(3)
-
-    closeConnection = game:GetService("UserInputService").InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            contextMenu:Destroy()
-            closeConnection:Disconnect()
-        end
-    end)
-
-    task.spawn(function()
-        task.wait(3)
-        if contextMenu.Parent then
-            contextMenu:Destroy()
-        end
-        if closeConnection then
-            closeConnection:Disconnect()
-        end
-    end)
+    self:_setupContextMenuAutoClose(contextMenu)
 end
 
 function InventoryPanel:_deleteItem(item)

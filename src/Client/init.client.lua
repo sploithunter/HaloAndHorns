@@ -1091,18 +1091,35 @@ local function waitForPetThumbnailsReady(timeoutSeconds)
         return assets
     end
 
-    local completed = false
-    local connection = assets:GetAttributeChangedSignal("PetThumbnailsReady"):Connect(function()
-        completed = assets:GetAttribute("PetThumbnailsReady") == true
-    end)
-
-    local startedAt = os.clock()
-    while not completed and os.clock() - startedAt < (timeoutSeconds or 10) do
-        task.wait(0.1)
+    local waitingThread = coroutine.running()
+    local settled = false
+    local outcome = nil
+    local connection
+    local function finish(reason)
+        if settled then
+            return
+        end
+        settled = true
+        outcome = reason
+        if connection then
+            connection:Disconnect()
+        end
+        task.spawn(waitingThread)
     end
-    connection:Disconnect()
+    connection = assets:GetAttributeChangedSignal("PetThumbnailsReady"):Connect(function()
+        if assets:GetAttribute("PetThumbnailsReady") == true then
+            finish("ready")
+        end
+    end)
+    task.delay(timeoutSeconds or 10, function()
+        finish("deadline")
+    end)
+    if assets:GetAttribute("PetThumbnailsReady") == true then
+        finish("ready")
+    end
+    coroutine.yield()
 
-    if completed or assets:GetAttribute("PetThumbnailsReady") == true then
+    if outcome == "ready" then
         return assets
     end
 
