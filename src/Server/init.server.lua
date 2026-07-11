@@ -790,6 +790,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
         })
         modules:Get("MissionInstanceService"):BindPeerServices({
             QuestService = modules:Get("QuestService"),
+            EnhancementService = modules:Get("EnhancementService"),
             DataService = modules:Get("DataService"),
             EnemyService = modules:Get("EnemyService"),
             InventoryService = modules:Get("InventoryService"),

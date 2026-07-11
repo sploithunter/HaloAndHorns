@@ -487,6 +487,10 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     -- naturals, more singles (drops.rank_quality by tier)
     local quality = (type(opts) == "table" and opts.tier) and (drops.rank_quality or {})[opts.tier]
         or nil
+    -- chests are rare: never junk (drops.treasure_quality — Jason)
+    if source == "treasure" then
+        quality = quality or drops.treasure_quality
+    end
     local record = enh:RollDrop(nil, player:GetAttribute("CurrentArea"), {
         natural = not hasOrigin,
         playerLevel = rollLevel,

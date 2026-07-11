@@ -375,6 +375,40 @@ end
 -- (drops.area_origins — the disc color matches the land), ring = uniform random (ring ==
 -- primary -> single-origin). Unmapped areas use the legacy uniform + single_chance roll.
 -- `rng` = Random instance (injectable for tests/determinism).
+-- COMPLETION SPOILS (Jason 2026-07-11: "you should get a random single origin
+-- of your origin and level at mission completion"): one guaranteed
+-- SINGLE-origin cog of the PLAYER's own archetype origin, at the player's
+-- level (clamped to the drop band). Pre-origin players get nothing (origined
+-- gear is unslottable for them; their spoils moment arrives with the choice).
+function EnhancementService:GrantOriginSingle(player)
+    local data = self._dataService and self._dataService:GetData(player)
+    local origin = data and data.Archetype
+    if not origin then
+        return { ok = false, reason = "no_origin" }
+    end
+    local rng = Random.new()
+    local weights = (self._config.drops or {}).type_weights or {}
+    local total = 0
+    for t in pairs(self._config.types) do
+        total += tonumber(weights[t]) or 1
+    end
+    local pick, acc = nil, rng:NextNumber() * total
+    for t in pairs(self._config.types) do
+        acc -= tonumber(weights[t]) or 1
+        if acc <= 0 then
+            pick = t
+            break
+        end
+    end
+    local levels = (self._config.drops or {}).levels or {}
+    local lv = math.clamp(
+        math.floor(tonumber(player:GetAttribute("Level")) or 1),
+        tonumber(levels.min) or 1,
+        tonumber(levels.max) or 52
+    )
+    return self:Grant(player, { type = pick, origins = { origin }, level = lv })
+end
+
 function EnhancementService:RollDrop(rng, areaId, opts)
     rng = rng or Random.new()
     -- opts.natural: origin-less generic drop (rolled for PRE-ORIGIN players — they

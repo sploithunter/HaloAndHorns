@@ -102,6 +102,7 @@ function MissionInstanceService:BindPeerServices(services)
     self._breakableSpawner = services.BreakableSpawner
     self._dropService = services.DropService
     self._eventService = services.EventService
+    self._enhancementService = services.EnhancementService
 end
 
 function MissionInstanceService:Start()
@@ -976,6 +977,14 @@ function MissionInstanceService:_close(instanceId, reason)
         pcall(function()
             local statsSvc = self._statsService
             for _, member in ipairs(membersOf(record.teamKey)) do
+                -- COMPLETION SPOILS (Jason): one guaranteed SINGLE of the
+                -- member's OWN origin at their level — the always-slottable
+                -- payday; chests/kills stay the gamble
+                if self._enhancementService and self._enhancementService.GrantOriginSingle then
+                    pcall(function()
+                        self._enhancementService:GrantOriginSingle(member)
+                    end)
+                end
                 statsSvc:Increment(member, "missions_completed", 1)
                 if record.source == "random" then
                     statsSvc:Increment(member, "random_missions_completed", 1)

@@ -270,6 +270,11 @@ return {
         },
         -- of those drops, this fraction are NATURAL (origin-less junk tier) — Jason:
         -- "allow generics to drop everywhere; that makes an actual junk economy."
+        -- CHESTS never drop junk (Jason 2026-07-11: "chests, since they're
+        -- fairly rare, should drop only dual or single origins, never
+        -- naturals"). Pre-origin players still get forced naturals (origined
+        -- gear is unslottable dead weight for them).
+        treasure_quality = { natural_chance = 0 },
         -- The rest are zone-branded origin drops (~25/75 single/dual structurally).
         natural_chance = 0.5,
         -- grade split for a drop: single is the rarer, better find

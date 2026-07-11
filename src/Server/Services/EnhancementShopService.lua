@@ -363,11 +363,8 @@ function EnhancementShopService:SellJunk(player, args)
         entries[#entries + 1] = { uid = it.uid, quantity = it.quantity }
         gemsByUid[it.uid] = it.gems
     end
-    local okAll, removedMap, soldQty, failureReason = self._inventoryService:BulkRemove(
-        player,
-        BUCKET,
-        entries,
-        {
+    local okAll, removedMap, soldQty, failureReason =
+        self._inventoryService:BulkRemove(player, BUCKET, entries, {
             commit = function(removed)
                 local committedGems = 0
                 for uid in pairs(removed) do
@@ -382,8 +379,7 @@ function EnhancementShopService:SellJunk(player, args)
                     )
             end,
             saveTag = "enh_shop_sell_junk",
-        }
-    )
+        })
     if not okAll then
         -- rolled back inside BulkRemove: the player still owns everything, nothing was paid
         return {

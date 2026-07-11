@@ -1412,10 +1412,7 @@ function loadEquipped(Player)
                                             and baseScope ~= "aoe"
                                             and baseScope ~= "targeted_aoe"
                                         then
-                                            PetModel:SetAttribute(
-                                                "AttackTargeting",
-                                                "targeted_aoe"
-                                            )
+                                            PetModel:SetAttribute("AttackTargeting", "targeted_aoe")
                                         end
                                     end
                                 end
