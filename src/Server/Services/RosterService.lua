@@ -18,20 +18,10 @@ function RosterService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._spiritFormService = self._modules and self._modules.SpiritFormService
     self._config = self._configLoader:LoadConfig("rosters")
     local squad = self._configLoader:LoadConfig("squad")
     self._capacity = (squad and squad.limits and squad.limits.active_squad) or 5
-end
-
-function RosterService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 local function rostersMap(data)
@@ -83,7 +73,7 @@ end
 
 -- Build pet readiness states from Spirit Form (ready + recovery for sorting).
 function RosterService:_petStates(player, orderedPets)
-    local spirit = self:_service("SpiritFormService")
+    local spirit = self._spiritFormService
     local states = {}
     if not spirit then
         return states -- all treated as ready

@@ -33,12 +33,17 @@ function PetGrantService:Init()
     self._petSerialService = self._modules.PetSerialService
     self._petProgressionService = self._modules.PetProgressionService
     self._enchantService = self._modules.EnchantService
+    self._petIndexService = nil
     self._petsConfig = self._configLoader:LoadConfig("pets")
     self._layersConfig = self._configLoader:LoadConfig("layers")
 
     self._logger:Info("PetGrantService initialized", {
         context = "PetGrantService",
     })
+end
+
+function PetGrantService:SetPetIndexService(service)
+    self._petIndexService = service
 end
 
 function PetGrantService:_getMaxEnchantmentsForRarity(rarityId)
@@ -252,11 +257,8 @@ function PetGrantService:_announceWorldFirst(player, petType, variant)
     if ok then
         return
     end
-    local locator = _G.RBXTemplateServices
-    local okIdx, indexService = pcall(function()
-        return locator and locator:Get("PetIndexService")
-    end)
-    if okIdx and indexService and indexService.NotifyWorldFirst then
+    local indexService = self._petIndexService
+    if indexService and indexService.NotifyWorldFirst then
         indexService:NotifyWorldFirst(petType, variant, payload.p, true)
     end
 end

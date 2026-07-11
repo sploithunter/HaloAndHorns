@@ -61,6 +61,8 @@ function DailyRewardZoneService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._dailyService = self._modules and self._modules.DailyService
+    self._rewardService = self._modules and self._modules.RewardService
 
     local function load(name)
         local ok, cfg = pcall(function()
@@ -80,17 +82,6 @@ function DailyRewardZoneService:Init()
         end
     end
     self._currencyNames.grass_coins = "Earth Coins"
-end
-
-function DailyRewardZoneService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 -- Find the authored model by name anywhere under Workspace; fall back to a model/part
@@ -173,7 +164,7 @@ end
 -- Auto-claim the daily for a player who just entered the volume. Only fires when the
 -- streak is actually claimable today; debounced by the caller so it runs once per entry.
 function DailyRewardZoneService:_claim(player)
-    local daily = self:_service("DailyService")
+    local daily = self._dailyService
     if not daily then
         return
     end
@@ -184,7 +175,7 @@ function DailyRewardZoneService:_claim(player)
 
     -- Tie the calendar's area_coins to the player's ORIGIN coin for this claim only.
     local originCoin = self:_originCoin(player)
-    local rewards = self:_service("RewardService")
+    local rewards = self._rewardService
     if rewards and rewards.SetAreaCoinOverride then
         rewards:SetAreaCoinOverride(player, originCoin)
     end

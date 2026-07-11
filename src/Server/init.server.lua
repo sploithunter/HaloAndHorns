@@ -238,7 +238,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "SummonService",
     ServerScriptService.Server.Services.SummonService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "EnemyService" }
 )
 loader:RegisterModule(
     "PlayerEffectsService",
@@ -473,20 +473,24 @@ loader:RegisterModule(
 loader:RegisterModule(
     "TutorialService",
     ServerScriptService.Server.Services.TutorialService,
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService", "EnhancementService" },
+        "player_progression",
+        "PlayerProgressionService"
+    )
 )
 -- HotbarService: Halo & Horns hotbar / command bar (Feature 16).
 loader:RegisterModule(
     "HotbarService",
     ServerScriptService.Server.Services.HotbarService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "PotionService", "EnemyService", "PowerService" }
 )
 -- RosterService: Halo & Horns named rosters + injury-rule deploy (Feature 17).
 -- Resolves SpiritFormService at runtime for pet readiness.
 loader:RegisterModule(
     "RosterService",
     ServerScriptService.Server.Services.RosterService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "SpiritFormService" }
 )
 -- PartyService: Halo & Horns group play (Feature 18) — membership + group math.
 loader:RegisterModule(
@@ -501,14 +505,20 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.PetTransferService,
     { "InventoryService" }
 )
-loader:RegisterModule("TradeService", ServerScriptService.Server.Services.TradeService, {
-    "Logger",
-    "ConfigLoader",
-    "DataService",
-    "EconomyService",
-    "InventoryService",
-    "PetTransferService",
-})
+loader:RegisterModule(
+    "TradeService",
+    ServerScriptService.Server.Services.TradeService,
+    appendIfEnabled({
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "EconomyService",
+        "InventoryService",
+        "PetTransferService",
+        "RosterService",
+        "EnhancementService",
+    }, "stats", "StatsService")
+)
 -- FusionService: Halo & Horns Chaotic fusion (Feature 20) — Light + Shadow -> Chaotic.
 loader:RegisterModule(
     "FusionService",
@@ -584,7 +594,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "DailyRewardZoneService",
     ServerScriptService.Server.Services.DailyRewardZoneService,
-    { "Logger", "ConfigLoader", "DataService" }
+    { "Logger", "ConfigLoader", "DataService", "DailyService", "RewardService" }
 )
 -- BaddieSpawnerService: proximity enemy waves at map-authored BaddieSpawner* parts
 -- (combat taste before the Heaven/Hell choice — Jason). Resolves EnemyService at runtime.
@@ -606,7 +616,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "RealmPortalService",
     ServerScriptService.Server.Services.RealmPortalService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "LayerService", "AdminService" }
 )
 -- MissionInstanceService: CoH-style door missions — MissionDoor prompts open a
 -- deterministic procedural instance (seeded tile-kit map) at a far-X slot and
@@ -707,6 +717,16 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 EnhancementService = modules:Get("EnhancementService"),
             })
             reward:SetPlayerProgressionService(progression)
+        end
+        modules:Get("ActiveSquadService"):SetSpiritFormService(modules:Get("SpiritFormService"))
+        if isFeatureEnabled("map_binding") then
+            modules:Get("BreakableSpawner"):SetZoneService(modules:Get("ZoneService"))
+        end
+        if isFeatureEnabled("pet_index") then
+            modules:Get("PetGrantService"):SetPetIndexService(modules:Get("PetIndexService"))
+        end
+        if isFeatureEnabled("pet_progression") and isFeatureEnabled("enchants") then
+            modules:Get("PetProgressionService"):SetEnchantService(modules:Get("EnchantService"))
         end
     end)
 end)

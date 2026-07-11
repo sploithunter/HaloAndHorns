@@ -25,6 +25,8 @@ function TutorialService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
+    self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
+    self._enhancementService = self._modules and self._modules.EnhancementService
     self._config = self._configLoader:LoadConfig("tutorial")
 
     fireGameEvent.tap(function(player, name, ctx)
@@ -72,8 +74,7 @@ function TutorialService:_ensureProgress(player)
     end
     local claimed = 0
     pcall(function()
-        local locator = _G.RBXTemplateServices
-        local prog = locator and locator:Get("PlayerProgressionService")
+        local prog = self._playerProgressionService
         claimed = prog and prog:GetClaimedLevel(player) or 0
     end)
     local hasProgress = type(data.Powers) == "table" and #data.Powers > 0
@@ -134,9 +135,8 @@ function TutorialService:_applyStepGrant(player, data)
     end
     data.Tutorial.granted[id] = true
 
-    local locator = _G.RBXTemplateServices
-    if type(grant.enhancements) == "table" and locator then
-        local enh = locator:Get("EnhancementService")
+    if type(grant.enhancements) == "table" then
+        local enh = self._enhancementService
         if enh and enh.Grant then
             for _, e in ipairs(grant.enhancements) do
                 for _ = 1, math.max(1, math.floor(tonumber(e.count) or 1)) do

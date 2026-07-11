@@ -31,6 +31,8 @@ end
 function RealmPortalService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
+    self._layerService = self._modules and self._modules.LayerService
+    self._adminService = self._modules and self._modules.AdminService
     local ok, layers = pcall(function()
         return self._configLoader:LoadConfig("layers")
     end)
@@ -38,30 +40,8 @@ function RealmPortalService:Init()
     self._portalsConfig = self._layersConfig.realm_portals or {}
 end
 
-function RealmPortalService:_layerService()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, svc = pcall(function()
-        return locator:Get("LayerService")
-    end)
-    return ok and svc or nil
-end
-
-function RealmPortalService:_adminService()
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, svc = pcall(function()
-        return locator:Get("AdminService")
-    end)
-    return ok and svc or nil
-end
-
 function RealmPortalService:_isAdmin(player)
-    local admin = self:_adminService()
+    local admin = self._adminService
     return (admin and admin:IsAuthorized(player)) and true or false
 end
 
@@ -134,7 +114,7 @@ function RealmPortalService:_onTriggered(player, destLayer)
             return
         end
     end
-    local layers = self:_layerService()
+    local layers = self._layerService
     if not layers then
         return
     end
@@ -206,7 +186,7 @@ end
 -- prompt text can't be per-player); everyone else travels immediately — _onTriggered re-runs the
 -- full gate chain (lock, base toggle, geometry, level) server-side.
 function RealmPortalService:_onPromptTriggered(player, def)
-    local layers = self:_layerService()
+    local layers = self._layerService
     if not layers then
         return
     end

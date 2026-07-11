@@ -325,9 +325,9 @@ function EggService:RecordHatchSuccess(player, request, response)
     local count = tonumber(response.hatchCount) or 0
     if xpPer > 0 and count > 0 then
         pcall(function()
-            _G.RBXTemplateServices
-                :Get("PlayerProgressionService")
-                :AddExperience(player, xpPer * count)
+            if self._playerProgressionService then
+                self._playerProgressionService:AddExperience(player, xpPer * count)
+            end
         end)
     end
     if specialCount > 0 then
@@ -1606,6 +1606,10 @@ function EggService:Initialize(moduleLoader)
         self._autoTargetService = moduleLoader:Get("AutoTargetService")
         self._hatchEntitlementService = moduleLoader:Get("HatchEntitlementService")
         self._petIndexService = moduleLoader:Get("PetIndexService")
+        local okProgression, progression = pcall(function()
+            return moduleLoader:Get("PlayerProgressionService")
+        end)
+        self._playerProgressionService = okProgression and progression or nil
 
         if self._inventoryService then
             Logger:Info("EggService: InventoryService connection established")

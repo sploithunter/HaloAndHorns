@@ -38,6 +38,9 @@ function TradeService:Init()
     self._economyService = self._modules and self._modules.EconomyService
     self._inventoryService = self._modules and self._modules.InventoryService
     self._petTransferService = self._modules and self._modules.PetTransferService
+    self._rosterService = self._modules and self._modules.RosterService
+    self._statsService = self._modules and self._modules.StatsService
+    self._enhancementService = self._modules and self._modules.EnhancementService
     self._config = self._configLoader:LoadConfig("trade")
     self._sessions = {} -- sessionId -> session
     self._playerSession = {} -- userId -> sessionId
@@ -52,17 +55,6 @@ function TradeService:Start()
     self._dataService:RegisterBeforeProfileRelease(function(player)
         self:_onLeave(player)
     end)
-end
-
-function TradeService:_service(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, service = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and service or nil
 end
 
 -- Pure rule check (kept for the original Feature 19 bus command / tests).
@@ -239,7 +231,7 @@ end
 -- string or ephemeral equip_<...> folder to hand-clean. We only drop roster references
 -- here; _reloadEquipped() then despawns any orphaned world model.
 function TradeService:_detachPet(player, uid, _rec)
-    local rosters = self:_service("RosterService")
+    local rosters = self._rosterService
     if rosters and rosters.RemovePetReference then
         pcall(function()
             rosters:RemovePetReference(player, uid)
@@ -787,7 +779,7 @@ function TradeService:_deliver(session)
         return n
     end
     local gaveA, gaveB = countPets(escrowA), countPets(escrowB)
-    local stats = self:_service("StatsService")
+    local stats = self._statsService
     if stats then
         if pa then
             stats:Increment(pa, "pets_traded_away", gaveA)
@@ -925,7 +917,7 @@ end
 -- The player's tradeable enhancements (source list for the trade picker). Each entry is tagged
 -- category="enhancements" so the offer columns render it through the simple-card path.
 function TradeService:ListMyEnhancements(player)
-    local enh = self:_service("EnhancementService")
+    local enh = self._enhancementService
     if not (enh and enh.GetState) then
         return { ok = false, reason = "service_unavailable" }
     end

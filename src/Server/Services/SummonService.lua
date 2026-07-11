@@ -48,6 +48,7 @@ end
 function SummonService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
+    self._enemyService = self._modules and self._modules.EnemyService
     self._config = (self._configLoader and self._configLoader:LoadConfig("guardians"))
         or require(game:GetService("ReplicatedStorage").Configs:WaitForChild("guardians"))
     self._active = {} -- { model, owner=userId, gkind, expireAt, healEvery, lastHeal, healAmt }
@@ -108,21 +109,6 @@ local function teamSquadFolders(player)
         end
     end
     return folders
-end
-
--- Resolve a loader-registered service at RUNTIME via the global locator (init.server.lua).
--- NOT self._modules: the loader only injects DECLARED deps there — self._modules.EnemyService
--- was nil, so the resurrect path silently fell back to plain PetRevive and the lockout ledger
--- never released (the split-second-revive bug survived its own fix, live-caught 2026-07-02).
-local function locateService(name)
-    local locator = _G.RBXTemplateServices
-    if not locator then
-        return nil
-    end
-    local ok, svc = pcall(function()
-        return locator:Get(name)
-    end)
-    return ok and svc or nil
 end
 
 -- Build the guardian model: the real asset if configured, else a scaled+tinted clone of a squad pet,
@@ -262,7 +248,7 @@ function SummonService:Summon(player, kind, now, powerId)
     -- Powered revives must go through EnemyService:ResurrectPet — it releases the #179 lockout
     -- ledger FIRST. PetRevive alone stands the pet up and the lockout enforcement holds it right
     -- back down ("back for a split second and then dead again" — Jason, live 2026-07-02).
-    local enemyService = locateService("EnemyService")
+    local enemyService = self._enemyService
     local function resurrect(pet)
         if enemyService and enemyService.ResurrectPet then
             enemyService:ResurrectPet(pet, player)
@@ -441,7 +427,7 @@ function SummonService:_step()
                         then
                             -- via ResurrectPet: releases the lockout ledger first, else the
                             -- enforcement re-downs it next pass (the split-second-revive bug)
-                            local enemyService = locateService("EnemyService")
+                            local enemyService = self._enemyService
                             pcall(function()
                                 if enemyService and enemyService.ResurrectPet then
                                     enemyService:ResurrectPet(pet, plr)
