@@ -105,8 +105,7 @@
         "src/Server/Services/StudioSmokeTestService.lua": 1,
         "src/Server/Services/TradeService.lua": 1,
         "src/Shared/Libraries/Matter/debugger/debugger.luau": 1,
-        "src/Shared/Network/NetworkBridge.lua": 1,
-        "src/Shared/Network/Signals.lua": 4
+        "src/Shared/Network/NetworkBridge.lua": 1
       },
       "owner": "networking",
       "pattern": "Instance.new(\"RemoteEvent|RemoteFunction\") or transport:RemoteEvent|RemoteFunction",

@@ -1027,6 +1027,20 @@ return {
                 arguments = { { name = "report", type = "table" } },
             },
         },
+        ConsumeItem = {
+            name = "ConsumeItem",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 30,
+            handler = "EconomyService.UseItem",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
+            },
+        },
         CurrencyUpdate = {
             name = "CurrencyUpdate",
             transport = "reliable_event",

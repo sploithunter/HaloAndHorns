@@ -715,3 +715,12 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Connected the previously unhandled shop-items request to
   `EconomyService:GetShopItems`.
 - Ratcheted `Signals.lua` manual remote construction from 8 to 4.
+
+## 2026-07-10 - Generated Signals registry closure
+
+- Routed the live consumables request to `EconomyService:UseItem` and declared
+  it in the manifest.
+- Removed unused inventory-update and leaderboard-request wires, plus the
+  obsolete realm confirmation from the newer hold-E direct-travel flow.
+- Removed the legacy declaration/merge block. `Signals.lua` now returns only
+  the generated manifest registry, reducing manual construction from 4 to 0.

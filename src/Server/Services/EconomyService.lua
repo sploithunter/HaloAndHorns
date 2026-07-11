@@ -130,6 +130,12 @@ function EconomyService:_setupNetSignals()
         self:GetShopItems(player)
     end)
 
+    Signals.ConsumeItem.OnServerEvent:Connect(function(player, data)
+        if type(data) == "table" and data.bucket == "consumables" then
+            self:UseItem(player, data)
+        end
+    end)
+
     -- Purchase item from client
     Signals.PurchaseItem.OnServerEvent:Connect(function(player, data)
         local ok, msg = self:PurchaseItem(player, data)
