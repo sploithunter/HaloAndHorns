@@ -15,17 +15,8 @@ local Signals = SignalRegistry.build(networkConfig, Net)
 
 -- Legacy declarations migrate into configs/network.lua in small compatibility slices.
 local legacySignals = {
-    -- Economy core
-    PurchaseItem = Net:RemoteEvent("PurchaseItem"), -- c->s
-    SellItem = Net:RemoteEvent("SellItem"), -- c->s
-    PurchaseResult = Net:RemoteEvent("PurchaseResult"), -- s->c (success/fail text)
-    AdjustCurrency = Net:RemoteEvent("AdjustCurrency"), -- c->s
-    ConvertCurrency = Net:RemoteEvent("ConvertCurrency"), -- c->s exchange configured currencies
-    PurchaseUpgrade = Net:RemoteEvent("PurchaseUpgrade"), -- c->s
-
     -- Legacy-bridge replacements
     ShopItems = Net:RemoteEvent("ShopItems"), -- s->c
-    GiveItemSuccess = Net:RemoteEvent("GiveItemSuccess"), -- s->c
     Admin_GetPlayerSnapshot = Net:RemoteEvent("Admin_GetPlayerSnapshot"), -- c->s admin player state request
     Admin_ForceSave = Net:RemoteEvent("Admin_ForceSave"), -- c->s admin force save
     Admin_GrantPet = Net:RemoteEvent("Admin_GrantPet"), -- c->s admin grant configured pet

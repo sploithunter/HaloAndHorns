@@ -653,3 +653,12 @@ migration is needed for the abandoned "element splits stacks" spec.
   authoritative `EconomyService` terminal. Total architecture debt fell from 530 to 508. An MCP
   Studio mock verified rejected-commit refund, denied-upgrade conservation,
   one-level successful purchase/debit/save, and a clean real boot without live balance mutation.
+## 2026-07-10 - Manifest-driven economy request wires
+
+- Migrated `PurchaseItem`, `SellItem`, `AdjustCurrency`, `ConvertCurrency`, and
+  `PurchaseUpgrade` into the validated network manifest with caller policy,
+  rate-limit, handler, and tuple-schema metadata.
+- Migrated the exact-compatible `PurchaseResult` and `GiveItemSuccess`
+  server notifications without changing their wire names or payload shape.
+- Ratcheted `Signals.lua` manual remote construction from 72 to 65. The
+  bidirectional legacy `ShopItems` wire remains pending an explicit split.
