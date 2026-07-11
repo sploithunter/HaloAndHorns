@@ -917,6 +917,9 @@ function MissionInstanceService:_close(instanceId, reason)
         -- moves past this number — the whole team finished trial #N together
         -- (Jason, duo: opener-only credit re-dealt #1 to the other account
         -- every session). Never regresses (replays of old numbers).
+        -- EITHER-OR completion rewards (Jason: the first-clear egg must not
+        -- stack with the completion spoils — jackpot REPLACES paycheck)
+        local eggWinners = {}
         if record.sequence then
             for _, member in ipairs(membersOf(record.teamKey)) do
                 pcall(function()
@@ -961,6 +964,7 @@ function MissionInstanceService:_close(instanceId, reason)
                                             .. record.sequence,
                                     })
                                 if granted then
+                                    eggWinners[member] = true -- either-or: egg replaces the spoils single
                                     fireGameEvent(member, "exclusive_egg_pickup", {
                                         egg = eggCfg.egg,
                                         name = ("%s found in the beacon's light!"):format(
@@ -979,8 +983,13 @@ function MissionInstanceService:_close(instanceId, reason)
             for _, member in ipairs(membersOf(record.teamKey)) do
                 -- COMPLETION SPOILS (Jason): one guaranteed SINGLE of the
                 -- member's OWN origin at their level — the always-slottable
-                -- payday; chests/kills stay the gamble
-                if self._enhancementService and self._enhancementService.GrantOriginSingle then
+                -- payday; chests/kills stay the gamble. EITHER-OR with the
+                -- first-clear egg: a jackpot winner skips the paycheck.
+                if
+                    not eggWinners[member]
+                    and self._enhancementService
+                    and self._enhancementService.GrantOriginSingle
+                then
                     pcall(function()
                         self._enhancementService:GrantOriginSingle(member)
                     end)
