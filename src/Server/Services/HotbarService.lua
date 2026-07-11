@@ -244,6 +244,34 @@ function HotbarService:Rebind(player, index, bind)
     return { ok = true, hotbar = hotbar }
 end
 
+-- POTIONS FILL FROM THE TOP RIGHT (Jason: "powers fill from the bottom left,
+-- potions fill from the top right — they could use them immediately"): when a
+-- potion is first acquired it auto-binds to the highest free TOP-ROW slot
+-- (20 -> 11), so it is usable the moment it drops — no Edit flow needed — and
+-- the number keys stay reserved for powers. An already-bound potion just
+-- stacks its count; a full top row skips silently (the Edit flow remains).
+function HotbarService:AutoBindPotion(player, potionId)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return
+    end
+    local hotbar = self:_ensureDefaults(data)
+    local slotCount = (self._config and self._config.slot_count) or 20
+    for i = 1, slotCount do
+        local b = hotbar[tostring(i)]
+        if type(b) == "table" and b.type == "potion" and b.target == potionId then
+            return -- already on the bar
+        end
+    end
+    local rowFloor = math.floor(slotCount / 2) + 1 -- top row only (11..20)
+    for i = slotCount, rowFloor, -1 do
+        if hotbar[tostring(i)] == nil then
+            self:Rebind(player, i, { type = "potion", target = potionId })
+            return
+        end
+    end
+end
+
 -- Fire the bind on a hotbar slot. `payload` is the slot index (1-20) or { slot = n }.
 -- Authoritative: we read the player's own binding and dispatch by type. Tactical
 -- commands run on the squad now; power/roster/pet effects land when those systems do.

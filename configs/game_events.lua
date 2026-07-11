@@ -299,6 +299,12 @@ return {
 
     -- A potion drop was picked up (server: DropService _collect). Float TEXT = the potion's name
     -- from ctx; config only styles it. Mirrors enhancement_pickup.
+    -- A potion was DRUNK (server: PotionService.Drink). Tutorial's battle_brew
+    -- completes on this; styling is config-only like every bus event.
+    potion_used = {
+        float = { color = { 190, 130, 240 } },
+    },
+
     potion_pickup = {
         float = { color = { 190, 130, 240 } },
         sound = "power_up_stronger",

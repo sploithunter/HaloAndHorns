@@ -483,7 +483,7 @@ loader:RegisterModule(
     "TutorialService",
     ServerScriptService.Server.Services.TutorialService,
     appendIfEnabled(
-        { "Logger", "ConfigLoader", "DataService", "EnhancementService" },
+        { "Logger", "ConfigLoader", "DataService", "EnhancementService", "PotionService" },
         "player_progression",
         "PlayerProgressionService"
     )
@@ -822,6 +822,9 @@ local loadSuccess, loadOrderOrError = pcall(function()
             PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(
                 "PlayerProgressionService"
             ) or nil,
+            HotbarService = modules:Get("HotbarService"),
+        })
+        modules:Get("PotionService"):BindPeerServices({
             HotbarService = modules:Get("HotbarService"),
         })
         modules:Get("GameAPIService"):BindServices({

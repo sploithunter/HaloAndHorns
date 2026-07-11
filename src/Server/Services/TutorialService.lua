@@ -28,6 +28,7 @@ function TutorialService:Init()
     self._dataService = self._modules and self._modules.DataService
     self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
     self._enhancementService = self._modules and self._modules.EnhancementService
+    self._potionService = self._modules and self._modules.PotionService
     self._config = self._configLoader:LoadConfig("tutorial")
 
     fireGameEvent.tap(function(player, name, ctx)
@@ -131,6 +132,17 @@ function TutorialService:_applyStepGrant(player, data)
         return -- already rewarded this step (rejoin / repeated event)
     end
     data.Tutorial.granted[id] = true
+
+    if type(grant.potions) == "table" then
+        local potions = self._potionService
+        if potions and potions.Grant then
+            for _, g in ipairs(grant.potions) do
+                pcall(function()
+                    potions:Grant(player, g.id, g.count or 1)
+                end)
+            end
+        end
+    end
 
     if type(grant.enhancements) == "table" then
         local enh = self._enhancementService

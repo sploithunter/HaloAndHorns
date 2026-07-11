@@ -73,6 +73,19 @@ return {
             target = { kind = "part", name = "BaddieSpawnerEarth", label = "⬇ FIGHT" },
             complete_on = { event = "enemy_defeated" },
         },
+        -- POTIONS fill from the TOP RIGHT (Jason: powers bottom-left, potions
+        -- top-right, usable immediately). The grant lands two battle brews on
+        -- slot 20 automatically (PotionService -> HotbarService.AutoBindPotion)
+        -- and the step teaches the drink — mid-battle-flavored, right after the
+        -- first fight while the cave still feels dangerous.
+        {
+            id = "battle_brew",
+            title = "Drink for battle",
+            grant = { potions = { { id = "berserk_brew", count = 2 } } },
+            body = "You found two Berserk Brews! Potions fill your bar from the TOP RIGHT (powers fill from the bottom left). Drink one — your pets hit harder while the brew lasts!",
+            target = { kind = "ui", name = "Slot_20" },
+            complete_on = { event = "potion_used" },
+        },
         -- POWERS come AFTER the familiar pet-game rhythm (Jason: hook them with what they know first,
         -- THEN introduce what makes this game different). Every player is born with Resonance (innate);
         -- these two steps teach the bind flow (reused for every future power) + the cast.

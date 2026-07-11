@@ -17,6 +17,7 @@
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local fireGameEvent = require(game:GetService("ReplicatedStorage").Shared.Network.FireGameEvent)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -38,6 +39,11 @@ function PotionService:Init()
     self._lastDrink = {} -- [userId][potionId] = os.clock()
 
     self._remote = require(ReplicatedStorage.Shared.Network.Signals).PotionUpdate
+end
+
+-- Explicit peer binding (audit architecture — no global locator).
+function PotionService:BindPeerServices(services)
+    self._hotbarService = services.HotbarService
 end
 
 function PotionService:Start()
@@ -120,6 +126,12 @@ function PotionService:Grant(player, potionId, count)
     end
     for _ = 1, count do
         inv:AddItem(player, BUCKET, { id = potionId, category = "potions" })
+    end
+    -- potions fill from the TOP RIGHT of the hotbar (Jason) — usable immediately
+    if self._hotbarService and self._hotbarService.AutoBindPotion then
+        pcall(function()
+            self._hotbarService:AutoBindPotion(player, potionId)
+        end)
     end
     self:_push(player)
     return { ok = true, count = self:_count(player, potionId) }
@@ -212,6 +224,8 @@ function PotionService:Drink(player, potionId)
     self._meters[uid][meterId] = charge
     self:_applyMeter(player, meterId, charge)
     self:_push(player)
+    -- bus source: the tutorial's potion step completes on this; FX config-only
+    fireGameEvent(player, "potion_used", { potion = potionId })
     return { ok = true, charge = charge, count = self:_count(player, potionId) }
 end
 

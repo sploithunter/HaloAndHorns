@@ -18,7 +18,9 @@ return function()
                 bands = {},
             })
             expect(ok).to.equal(false)
-            expect(string.find(err, "configs/soul.lua:delta_per_conquest", 1, true) ~= nil).to.equal(true)
+            expect(string.find(err, "configs/soul.lua:delta_per_conquest", 1, true) ~= nil).to.equal(
+                true
+            )
             expect(string.find(err, "expected number, got string", 1, true) ~= nil).to.equal(true)
         end)
 
