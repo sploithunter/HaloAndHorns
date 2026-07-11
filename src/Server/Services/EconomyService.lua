@@ -1343,68 +1343,11 @@ function EconomyService:AdjustCurrency(player, data)
     end
 end
 
-function EconomyService:SetCurrency(player, data)
-    -- SECURITY: Validate admin authorization (supports target players)
-    if not self._adminService then
-        self._logger:Error("🚨 SECURITY: AdminService not available for authorization check")
-        return
-    end
-
-    local authorized, reason, targetPlayer =
-        self._adminService:ValidateAdminAction(player, "setCurrency", data, "client")
-    if not authorized then
-        self._logger:Warn("🚨 UNAUTHORIZED SetCurrency attempt blocked", {
-            admin = player.Name,
-            adminId = player.UserId,
-            reason = reason,
-            requestedCurrency = data.currency,
-            requestedAmount = data.amount,
-            targetUserId = data.targetPlayerId,
-        })
-        return
-    end
-
-    -- Determine target player (self if no target specified)
-    local target = targetPlayer or player
-
-    self._logger:Info("🧪 Admin: SetCurrency called", {
-        admin = player.Name,
-        target = target.Name,
-        currency = data.currency,
-        amount = data.amount,
-        isMultiPlayer = targetPlayer ~= nil,
-    })
-
-    local success = self:SetCurrency(target, data.currency, data.amount, "admin_set")
-
-    if success then
-        local newAmount = self:GetCurrency(target, data.currency)
-
-        -- Log transaction
-        self:_logTransaction(target, {
-            type = "admin_set_currency",
-            currency = data.currency,
-            amount = data.amount,
-            reason = "admin_panel",
-            adminUser = player.Name,
-            timestamp = os.time(),
-        })
-
-        self._logger:Info("🧪 Admin: Currency set successfully", {
-            admin = player.Name,
-            target = target.Name,
-            currency = data.currency,
-            amount = data.amount,
-            actualValue = newAmount,
-        })
-    else
-        self._logger:Error("🧪 Admin: Currency set failed", {
-            player = player.Name,
-            currency = data.currency,
-            amount = data.amount,
-        })
-    end
-end
+-- (Removed 2026-07-11: a legacy MonetizationNetworkBridge admin handler named
+-- SetCurrency(player, data) lived here and SHADOWED the real
+-- SetCurrency(player, currencyType, amount, reason) API above — the bridge is
+-- gone (audit network migration) but the shadow crashed every internal caller,
+-- caught by admin reset-to-beginning during the tutorial gauntlet.)
 
 function EconomyService:AdminPurchaseItem(player, data)
     self._logger:Info("🔧 Admin: AdminPurchaseItem called", {
