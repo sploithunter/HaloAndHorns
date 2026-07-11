@@ -33,6 +33,7 @@ function BaddieSpawnerService:Init()
         return configLoader:LoadConfig("enemies")
     end)
     self._config = (ok and cfg and cfg.spawners) or nil
+    self._enemyDefs = (ok and cfg and cfg.enemies) or {} -- onramp melee pick reads defs
     self._spawners = {} -- part -> { cooldownUntil }
 end
 
@@ -168,11 +169,39 @@ function BaddieSpawnerService:_trigger(part, player, rng)
         onramp = (tonumber(player:GetAttribute("Level")) or 1) < minEngage
     end
     if onramp then
-        wave = { units = { { enemy = (wave.units and wave.units[1] and wave.units[1].enemy) } } }
-        cap = 1
-        if not wave.units[1].enemy then
+        -- CATCHABLE PUSHOVER ONLY (Jason's fresh-save walkthrough: a kiting
+        -- blaster spawned and the starter bunny+dog "could not catch up to
+        -- it" — both died). The First Fight unit must be MELEE trash: scan
+        -- this faction's waves for the first unit whose def has no
+        -- attack_range (melee closes to bite range) and trash_mob tier.
+        local pick = nil
+        local faction = self:_factionFor(part)
+        for _, w in ipairs(self._config.waves or {}) do
+            if (w.faction or "earth") == faction then
+                for _, unit in ipairs(w.units or {}) do
+                    local def = self._enemyDefs[unit.enemy]
+                    if def and def.attack_range == nil and def.tier == "trash_mob" then
+                        pick = unit.enemy
+                        break
+                    end
+                end
+            end
+            if pick then
+                break
+            end
+        end
+        if not pick then
+            pick = wave.units and wave.units[1] and wave.units[1].enemy
+            self._logger:Warn("onramp cave: no melee trash unit in faction — falling back", {
+                faction = faction,
+                fallback = tostring(pick),
+            })
+        end
+        if not pick then
             return
         end
+        wave = { units = { { enemy = pick } } }
+        cap = 1
     end
     for _, unit in ipairs(wave.units or {}) do
         for _ = 1, (onramp and 1 or PackScale.count(unit.count, engaged, nil, teamingCfg)) do
