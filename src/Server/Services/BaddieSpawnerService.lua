@@ -174,20 +174,23 @@ function BaddieSpawnerService:_trigger(part, player, rng)
         -- it" — both died). The First Fight unit must be MELEE trash: scan
         -- this faction's waves for the first unit whose def has no
         -- attack_range (melee closes to bite range) and trash_mob tier.
-        local pick = nil
+        local pick, pickDef = nil, nil
         local faction = self:_factionFor(part)
         for _, w in ipairs(self._config.waves or {}) do
             if (w.faction or "earth") == faction then
                 for _, unit in ipairs(w.units or {}) do
                     local def = self._enemyDefs[unit.enemy]
                     if def and def.attack_range == nil and def.tier == "trash_mob" then
-                        pick = unit.enemy
-                        break
+                        -- weakest melee trash wins (lowest hp)
+                        if
+                            not pickDef
+                            or (tonumber(def.hp) or math.huge)
+                                < (tonumber(pickDef.hp) or math.huge)
+                        then
+                            pick, pickDef = unit.enemy, def
+                        end
                     end
                 end
-            end
-            if pick then
-                break
             end
         end
         if not pick then
@@ -214,10 +217,47 @@ function BaddieSpawnerService:_trigger(part, player, rng)
                 (rng:NextNumber() * 2 - 1) * scatter
             )
             pcall(function()
+                -- FIRST FIGHT NERF: the onramp creature spawns from a scaled
+                -- def clone (combat.engagement.onramp hp/dmg mults) — dies
+                -- fast, barely scratches (Jason: a stock trash mob wiped the
+                -- starter squad; "no possible way a bunny can beat this")
+                local defOverride = nil
+                if onramp then
+                    local base = self._enemyDefs[unit.enemy]
+                    if base then
+                        local okCfg2, combat2 = pcall(function()
+                            return require(
+                                game:GetService("ReplicatedStorage")
+                                    :WaitForChild("Configs")
+                                    :WaitForChild("combat")
+                            )
+                        end)
+                        local knobs = (okCfg2 and combat2.engagement and combat2.engagement.onramp)
+                            or {}
+                        defOverride = table.clone(base)
+                        defOverride.hp = math.max(
+                            50,
+                            math.floor(
+                                (tonumber(base.hp) or 500) * (tonumber(knobs.hp_mult) or 0.25)
+                            )
+                        )
+                        if type(base.attack) == "table" then
+                            defOverride.attack = table.clone(base.attack)
+                            defOverride.attack.damage = math.max(
+                                1,
+                                math.floor(
+                                    (tonumber(base.attack.damage) or 5)
+                                        * (tonumber(knobs.dmg_mult) or 0.2)
+                                )
+                            )
+                        end
+                    end
+                end
                 local r = enemySvc:SpawnEnemy(player, unit.enemy, {
                     position = part.Position + offset,
                     home = part.Position, -- loiter anchor
                     ungated = onramp, -- the First Fight may engage a sub-threshold player
+                    def = defOverride, -- nil outside the onramp = stock def
                 })
                 if r and r.ok and r.model then
                     table.insert(state.alive, r.model)

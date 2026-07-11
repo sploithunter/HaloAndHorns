@@ -365,6 +365,15 @@ return {
         -- (L6) + the heaven/hell choice, so the taste of combat comes before picking a direction.
         -- 0/1 disables the gate (everyone fights).
         min_engage_level = 5,
+        -- FIRST FIGHT nerf (Jason: "there's no possible way a bunny can beat
+        -- this thing" — a stock trash mob wiped the starter squad): the
+        -- onramp cave's solo creature spawns with its def scaled by these.
+        -- A quarter-strength Jackalope dies fast and barely scratches —
+        -- "the odds of being defeated are pretty low" by construction.
+        onramp = {
+            hp_mult = 0.25,
+            dmg_mult = 0.2,
+        },
         -- FILL LIGHT (Jason): an internal PointLight on each spawned creature so its baked texture
         -- doesn't read gray/washed-out in the low-ambient biomes (it lifts the mesh out of the murk;
         -- the light sits at the body centre, just inside the mesh, so nothing is visible). Range
