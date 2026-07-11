@@ -27,7 +27,6 @@ local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local TradeService = {}
 TradeService.__index = TradeService
 
-local UPDATE_REMOTE = "TradeUpdate"
 local PETS_BUCKET = "pets"
 local ENH_BUCKET = "enhancements" -- matches EnhancementService's InventoryService bucket
 local GEM_CURRENCY = "gems" -- the only tradeable currency (configs/trade.lua tradeable_currencies)
@@ -46,15 +45,7 @@ function TradeService:Init()
     self._nextId = 0
     self._auditLog = {} -- append-only, capped
 
-    -- Server -> client push channel (recreated to survive Studio hot-sync).
-    local existing = ReplicatedStorage:FindFirstChild(UPDATE_REMOTE)
-    if existing then
-        existing:Destroy()
-    end
-    local remote = Instance.new("RemoteEvent")
-    remote.Name = UPDATE_REMOTE
-    remote.Parent = ReplicatedStorage
-    self._remote = remote
+    self._remote = require(ReplicatedStorage.Shared.Network.Signals).TradeUpdate
 end
 
 function TradeService:Start()

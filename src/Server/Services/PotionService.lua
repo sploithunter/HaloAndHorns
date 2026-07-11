@@ -26,7 +26,6 @@ local PotionService = {}
 PotionService.__index = PotionService
 
 local BUCKET = "potions" -- InventoryService bucket (trade-ready, like enhancements)
-local UPDATE_REMOTE = "PotionUpdate"
 local SIP_LOCK = 0.4 -- anti-spam seconds between drinks of the SAME potion (not the duration)
 
 function PotionService:Init()
@@ -37,14 +36,7 @@ function PotionService:Init()
     self._meters = {} -- [userId][meterId] = charge (0..1), transient
     self._lastDrink = {} -- [userId][potionId] = os.clock()
 
-    local existing = ReplicatedStorage:FindFirstChild(UPDATE_REMOTE)
-    if existing then
-        existing:Destroy()
-    end
-    local remote = Instance.new("RemoteEvent")
-    remote.Name = UPDATE_REMOTE
-    remote.Parent = ReplicatedStorage
-    self._remote = remote
+    self._remote = require(ReplicatedStorage.Shared.Network.Signals).PotionUpdate
 end
 
 function PotionService:_inventoryService()

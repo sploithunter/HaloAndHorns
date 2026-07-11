@@ -101,9 +101,7 @@
         "src/Server/Services/AutomationService.lua": 2,
         "src/Server/Services/EggService.lua": 2,
         "src/Server/Services/GameAPIService.lua": 1,
-        "src/Server/Services/PotionService.lua": 1,
         "src/Server/Services/StudioSmokeTestService.lua": 1,
-        "src/Server/Services/TradeService.lua": 1,
         "src/Shared/Libraries/Matter/debugger/debugger.luau": 1,
         "src/Shared/Network/NetworkBridge.lua": 1
       },

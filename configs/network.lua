@@ -1041,6 +1041,32 @@ return {
                 arguments = { { name = "request", type = "table" } },
             },
         },
+        PotionUpdate = {
+            name = "PotionUpdate",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "potions.updated",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "state", type = "table" } },
+            },
+        },
+        TradeUpdate = {
+            name = "TradeUpdate",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "trade.updated",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "state", type = "table" } },
+            },
+        },
         CurrencyUpdate = {
             name = "CurrencyUpdate",
             transport = "reliable_event",

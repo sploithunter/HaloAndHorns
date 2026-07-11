@@ -22,7 +22,7 @@ local Pill = require(script.Parent.Parent.Pill)
 local QuantitySelector = require(script.Parent.Parent.Components.QuantitySelector)
 
 local REMOTE_NAME = "GameAPICommand"
-local UPDATE_REMOTE = "TradeUpdate"
+local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local COLORS = {
     panel = Color3.fromRGB(20, 20, 25),
@@ -61,7 +61,7 @@ function TradePanel.new()
     self.state = nil
     -- Listen for server pushes regardless of whether the menu is open.
     task.spawn(function()
-        local remote = ReplicatedStorage:WaitForChild(UPDATE_REMOTE, 30)
+        local remote = Signals.TradeUpdate
         if remote then
             remote.OnClientEvent:Connect(function(payload)
                 self:_onEvent(payload)

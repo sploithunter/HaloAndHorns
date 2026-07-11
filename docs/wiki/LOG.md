@@ -724,3 +724,9 @@ migration is needed for the abandoned "element splits stacks" spec.
   obsolete realm confirmation from the newer hold-E direct-travel flow.
 - Removed the legacy declaration/merge block. `Signals.lua` now returns only
   the generated manifest registry, reducing manual construction from 4 to 0.
+
+## 2026-07-10 - Manifest-driven potion and trade streams
+
+- Replaced service-owned `PotionUpdate` and `TradeUpdate` RemoteEvents with
+  generated manifest entries and migrated their client listeners to `Signals`.
+- Reduced repository remote-construction debt from 10 to 8 occurrences.

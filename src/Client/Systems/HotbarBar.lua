@@ -808,7 +808,7 @@ function HotbarBar.start()
         end
     end)
     task.spawn(function()
-        local remote = ReplicatedStorage:WaitForChild("PotionUpdate", 30)
+        local remote = Signals.PotionUpdate
         if remote then
             remote.OnClientEvent:Connect(onPotionState)
         end
