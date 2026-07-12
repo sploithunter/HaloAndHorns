@@ -104,12 +104,16 @@ return {
         fs_welcome = {
             track = "first_steps",
             order = 5,
-            name = "Welcome to the Realm",
-            description = "Smash 50 more crystals to graduate — then claim your reward.",
+            -- WAS "smash 50 more crystals" — Work the Vein again with a bigger
+            -- number (Jason: "if that's the case, get rid of it"). The capstone
+            -- now graduates through COMBAT — the thing this game does that pet
+            -- sims don't, taught at the cave the tutorial just introduced.
+            name = "Answer the Cave",
+            description = "The Earth cave keeps stirring — defeat 5 creatures there. Your pets fight for you!",
             condition = {
                 type = "counter_at_least",
-                counter = "breakables_broken",
-                value = 50,
+                counter = "enemies_defeated",
+                value = 5,
                 since_start = true,
             },
             -- Onramp capstone: a guaranteed jump to Level 2 (700 XP = the full L2 bar) + a head start on
