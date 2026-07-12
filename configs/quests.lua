@@ -101,7 +101,10 @@ return {
             },
             reward = { currencies = { gems = 10 } },
         },
-        fs_welcome = {
+        -- id CHANGED fs_welcome -> fs_cave with the combat retune: since_start
+        -- baselines persist BY QUEST ID, so the old id carried a breakables
+        -- baseline that froze the new enemies counter at 0/5 (Jason hit it live)
+        fs_cave = {
             track = "first_steps",
             order = 5,
             -- WAS "smash 50 more crystals" — Work the Vein again with a bigger

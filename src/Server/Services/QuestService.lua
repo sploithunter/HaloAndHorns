@@ -275,6 +275,20 @@ function QuestService:List(player)
     local level = tonumber(player:GetAttribute("Level")) or 1
     self:_ensureFocus(player, data, level)
     self:_announceUnlocks(player, data, level)
+    -- SELF-HEALING since_start baseline: the ACTIVE track's head must always
+    -- have an OPEN window — a def rename/retune mid-save leaves a nil
+    -- baseline, which QuestActivation.forward treats as "window closed" and
+    -- progress freezes at 0 (Jason: "defeated three Jackalopes and Answer
+    -- the Cave has not progressed"). Capture it here from the live counter.
+    do
+        local track = data.QuestActiveTrack
+        local headId = track and self:_trackHeads(player)[track]
+        local hdef = headId and self._config.defs[headId]
+        if hdef and isGrind(hdef) and baselines(data)[headId] == nil then
+            local snap = self:_snapshot(player)
+            baselines(data)[headId] = (snap.counters and snap.counters[hdef.condition.counter]) or 0
+        end
+    end
     local ledger = claims(data)
     local bases = baselines(data)
     local bank = banked(data)
