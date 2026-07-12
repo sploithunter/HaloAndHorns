@@ -136,6 +136,13 @@ function QuestTrackerStyle.start()
             ptext.ZIndex = 4
             outline(ptext)
         end
+        -- the FillBar's FILL kept its pre-restyle ZIndex (14) and painted OVER
+        -- the count (Jason: "once the bar goes over you can't see how many you
+        -- have to do anymore") — drop it under the ptext layer
+        local fill = pbg and pbg:FindFirstChild("Fill")
+        if fill then
+            fill.ZIndex = 3
+        end
 
         -- Dismiss X — top-left gutter (clear of the top-right CLAIM chip). Hides the tracker until
         -- the Quest menu is opened or a quest becomes claimable.
