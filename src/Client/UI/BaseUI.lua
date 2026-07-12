@@ -2311,11 +2311,57 @@ function BaseUI:_bindQuestTracker()
         if self._questDesc then
             self._questDesc.Text = tostring(q.name or "Quest")
         end
+        self._trackedQuestBody = tostring(q.description or "") -- hover tooltip copy
         if self._questText then
             self._questText.Text = q.claimable and "✓ Claim!" or (cur .. "/" .. tgt)
         end
         if self._questFill then
             self._questFill.Size = UDim2.new(frac, 0, 1, 0)
+        end
+    end
+
+    -- HOVER TOOLTIP (Jason: "hover over Welcome to the Realm and other quests
+    -- to tell people exactly what to do"): hovering the tracker capsule shows
+    -- the quest's full description below it. Desktop hover; mobile keeps the
+    -- Quests menu as its detail surface.
+    do
+        local pane = self._questDesc and self._questDesc.Parent
+        if pane and not pane:FindFirstChild("QuestHoverTip") then
+            local tip = Instance.new("TextLabel")
+            tip.Name = "QuestHoverTip"
+            tip.AnchorPoint = Vector2.new(0.5, 0)
+            tip.Position = UDim2.new(0.5, 0, 1, 6)
+            tip.Size = UDim2.new(1, 20, 0, 34)
+            tip.BackgroundColor3 = Color3.fromRGB(24, 26, 34)
+            tip.BackgroundTransparency = 0.05
+            tip.Text = ""
+            tip.TextColor3 = Color3.fromRGB(235, 238, 245)
+            tip.TextWrapped = true
+            tip.TextScaled = true
+            tip.Font = Enum.Font.Gotham
+            tip.Visible = false
+            tip.ZIndex = 30
+            tip.Parent = pane
+            local c = Instance.new("UICorner")
+            c.CornerRadius = UDim.new(0, 8)
+            c.Parent = tip
+            local st = Instance.new("UIStroke")
+            st.Color = Color3.fromRGB(70, 110, 180)
+            st.Thickness = 1.5
+            st.Parent = tip
+            local sz = Instance.new("UITextSizeConstraint")
+            sz.MaxTextSize = 14
+            sz.Parent = tip
+            pane.MouseEnter:Connect(function()
+                local body = self._trackedQuestBody
+                if type(body) == "string" and body ~= "" then
+                    tip.Text = body
+                    tip.Visible = true
+                end
+            end)
+            pane.MouseLeave:Connect(function()
+                tip.Visible = false
+            end)
         end
     end
 
