@@ -801,3 +801,9 @@ migration is needed for the abandoned "element splits stacks" spec.
 
 - The generic Trials quest ladder and all eight matrix Trials tracks now unlock at level 14 instead of level 7, matching the configured access requirement for their first real mission doors in Heaven 2 / Hell 2. Level 7 no longer announces or exposes inaccessible Trials quests.
 - A headless config-integrity check ties every Trials track to both layer-2 access gates so quest copy, visibility, and world reachability cannot drift independently again.
+
+## 2026-07-13 - Canonical Heaven landmark recovery
+
+- Diagnosed the recurring shredded Heaven landmark incident as authored/import state, not runtime physics or startup code: Edit and Play contained the same four-part meshes, all eight private mesh assets were created in one direct Studio import on July 8, and both imported roots retained protected `RBX_ReimportId` links.
+- Recovered the original Golden Halo Cathedral and Winged Portal of Light GLBs from Downloads and moved them into repo-owned source control. The cleanup pipeline welds split vertices, removes degenerates, allocates 40k triangles across each scene, then spatially partitions every face into four independently valid 9,999–10,000-triangle MeshParts; the 10k limit is per part, never per scene.
+- Uploaded the two four-part assemblies as group-owned Models, added Studio-only `src/Shared/Assets/LandmarkAssets.lua` configuration, and applied the single `scripts/studio/repair_landmarks.luau` path to both Heaven cathedrals and the Heaven 2 mission gate. Authored bounds, PBR maps, native beam/light effects, ascension hosts, and the mission door were preserved; imported roots were replaced with plain canonical Models so protected reimport links cannot reintroduce the unsafe meshes.

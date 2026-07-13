@@ -130,6 +130,29 @@ The review UI can be static for read-only inspection, but anything that writes f
 
 Eggs placed in the world should clone the preloaded models from `ReplicatedStorage.Assets.Models.Eggs`. Direct `InsertService` loading is only a fallback if preload did not finish or the preloaded model is missing.
 
+## Authored Landmark Repair
+
+Large Meshy landmarks follow the same source-first rule even though their placement remains
+Studio-owned. Never import a raw high-poly landmark directly from Downloads and leave its
+`RBX_ReimportId` as the only recovery path. Split vertices and degenerate faces can survive the
+first import but later shatter when Roblox reprocesses the private mesh assets.
+
+The Heaven cathedral and mission portal are the reference implementation:
+
+1. Canonical GLBs live in `assets/source/landmarks/`.
+2. `scripts/decimate_mesh.sh --scene-parts 4 --targets 10000` welds/cleans the whole scene,
+   budgets 40k triangles globally, and spatially partitions every face into four <=10k MeshParts.
+   The FBX assembly and texture live under `assets/exports/landmarks/`.
+3. The group-owned Model/PBR-map IDs and target Workspace paths live in
+   `src/Shared/Assets/LandmarkAssets.lua`. It intentionally stays outside the runtime ConfigLoader;
+   it is Edit-tool configuration, not gameplay configuration.
+4. `scripts/studio/repair_landmarks.luau` is the single application/audit path. It loads the
+   configured Model asset, preserves authored placement, effects, doors, and interaction hosts,
+   and swaps the imported root for a plain Model so the protected reimport link cannot recur.
+
+The repair script is idempotent. A second run reports healthy four-part landmarks and changes
+nothing.
+
 ## Status Values
 
 - `concept`: A reference/prompt is tracked for developer asset generation, but it is not wired into runtime config.

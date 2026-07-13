@@ -43,6 +43,15 @@ def parse_args() -> argparse.Namespace:
         default=0.03,
         help="Allowed relative face-count error after decimation (default: 0.03).",
     )
+    parser.add_argument(
+        "--scene-parts",
+        type=int,
+        default=1,
+        help=(
+            "Export the scene as this many spatial MeshParts, applying each triangle target per "
+            "part. Use 4 for a four-part landmark (4 x 10k, not one 10k scene)."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -153,6 +162,65 @@ def duplicate_object(obj: bpy.types.Object) -> bpy.types.Object:
     dup = bpy.context.active_object
     dup.name = f"{obj.name}_decimated"
     return dup
+
+
+def split_spatial_parts(obj: bpy.types.Object, part_count: int) -> list[bpy.types.Object]:
+    """Partition a decimated scene into balanced spatial chunks without dropping faces.
+
+    Meshy often exports an architectural scene as one material/primitive even though Roblox must
+    store it as several MeshParts. We first decimate the WHOLE scene to `parts * target` so detail
+    is allocated globally, then split every triangle into one spatially coherent <=target chunk.
+    """
+    import bmesh
+
+    if part_count <= 1:
+        return [obj]
+
+    # Make polygon count equal triangle count before balancing the chunks.
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.triangulate(bm, faces=list(bm.faces))
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
+
+    polygons = list(obj.data.polygons)
+    if len(polygons) < part_count:
+        raise RuntimeError(f"Cannot split {len(polygons)} faces into {part_count} scene parts")
+
+    coords = [vertex.co for vertex in obj.data.vertices]
+    extents = [
+        max(co[axis] for co in coords) - min(co[axis] for co in coords)
+        for axis in range(3)
+    ]
+    axis_order = sorted(range(3), key=lambda axis: extents[axis], reverse=True)
+    polygon_order = sorted(
+        range(len(polygons)),
+        key=lambda index: tuple(polygons[index].center[axis] for axis in axis_order),
+    )
+
+    parts = []
+    for part_index in range(part_count):
+        start = part_index * len(polygon_order) // part_count
+        finish = (part_index + 1) * len(polygon_order) // part_count
+        keep = set(polygon_order[start:finish])
+
+        part = duplicate_object(obj)
+        part.name = f"{obj.name.rsplit('_part_', 1)[0]}_part_{part_index:02d}"
+        part_bm = bmesh.new()
+        part_bm.from_mesh(part.data)
+        part_bm.faces.ensure_lookup_table()
+        remove = [face for index, face in enumerate(part_bm.faces) if index not in keep]
+        bmesh.ops.delete(part_bm, geom=remove, context="FACES")
+        loose = [vertex for vertex in part_bm.verts if not vertex.link_faces]
+        if loose:
+            bmesh.ops.delete(part_bm, geom=loose, context="VERTS")
+        part_bm.to_mesh(part.data)
+        part_bm.free()
+        part.data.validate()
+        parts.append(part)
+
+    return parts
 
 
 def decimate_to_target(obj: bpy.types.Object, target_faces: int, tolerance: float) -> int:
@@ -277,10 +345,13 @@ def slugify(name: str) -> str:
     return slug or "mesh"
 
 
-def export_fbx(obj: bpy.types.Object, output_path: Path) -> None:
+def export_fbx(objects: bpy.types.Object | list[bpy.types.Object], output_path: Path) -> None:
+    if not isinstance(objects, list):
+        objects = [objects]
     bpy.ops.object.select_all(action="DESELECT")
-    obj.select_set(True)
-    bpy.context.view_layer.objects.active = obj
+    for obj in objects:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = objects[0]
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.export_scene.fbx(
@@ -300,7 +371,7 @@ def export_fbx(obj: bpy.types.Object, output_path: Path) -> None:
 def write_manifest(
     output_dir: Path,
     source_mesh: Path,
-    entries: list[dict[str, int | str]],
+    entries: list[dict[str, int | str | list[int]]],
 ) -> None:
     lines = [
         f"source: {source_mesh}",
@@ -308,8 +379,12 @@ def write_manifest(
         "",
     ]
     for entry in entries:
+        part_suffix = ""
+        if entry.get("part_tris"):
+            part_suffix = "; per-part " + ",".join(str(value) for value in entry["part_tris"])
         lines.append(
-            f"{entry['label']}: {entry['path']} ({entry['tris']} tris, target {entry['target']})"
+            f"{entry['label']}: {entry['path']} ({entry['tris']} tris total, "
+            f"target {entry['target']} per part{part_suffix})"
         )
     (output_dir / "manifest.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -366,16 +441,30 @@ def main() -> None:
     print(f"Original triangle count: {original_tris}")
     print(f"Output directory: {output_dir}")
 
-    manifest_entries: list[dict[str, int | str]] = []
+    if args.scene_parts < 1:
+        raise ValueError("--scene-parts must be at least 1")
+
+    manifest_entries: list[dict[str, int | str | list[int]]] = []
     for target in targets:
         label = f"{target // 1000}k" if target % 1000 == 0 else f"{target}tris"
-        export_name = f"{base_name}_{label}.fbx"
+        if args.scene_parts > 1:
+            export_name = f"{base_name}_{args.scene_parts}x{label}.fbx"
+        else:
+            export_name = f"{base_name}_{label}.fbx"
         export_path = output_dir / export_name
 
-        print(f"\nBuilding {export_name} (target {target} tris)...")
-        work_obj = duplicate_object(base_obj)
-        final_tris = decimate_to_target(work_obj, target, args.tolerance)
-        export_fbx(work_obj, export_path)
+        print(f"\nBuilding {export_name} (target {target} tris per part)...")
+        scene = duplicate_object(base_obj)
+        scene.name = base_name
+        decimate_to_target(scene, target * args.scene_parts, args.tolerance)
+        work_parts = split_spatial_parts(scene, args.scene_parts)
+        if work_parts[0] is not scene:
+            bpy.data.objects.remove(scene, do_unlink=True)
+        part_tris = [face_count(part) for part in work_parts]
+        if any(count > target for count in part_tris):
+            raise RuntimeError(f"Scene split exceeded {target} tris in a part: {part_tris}")
+        final_tris = sum(part_tris)
+        export_fbx(work_parts, export_path)
 
         manifest_entries.append(
             {
@@ -384,11 +473,13 @@ def main() -> None:
                 "target": target,
                 "tris": final_tris,
                 "original_tris": original_tris,
+                "part_tris": part_tris,
             }
         )
-        print(f"  exported {export_path.name}: {final_tris} tris")
+        print(f"  exported {export_path.name}: {final_tris} tris ({part_tris})")
 
-        bpy.data.objects.remove(work_obj, do_unlink=True)
+        for work_part in work_parts:
+            bpy.data.objects.remove(work_part, do_unlink=True)
 
     write_manifest(output_dir, source_mesh, manifest_entries)
     print("\nDone.")

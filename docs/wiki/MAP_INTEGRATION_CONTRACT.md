@@ -25,6 +25,23 @@ Studio owns:
 
 An AI-assisted deployment pass may normalize the Studio-owned map before Rojo sync: quarantine old scripts, regroup art, rename ambiguous imported objects, add invisible helper parts, and stamp tags/attributes. That is considered part of map integration, not a burden on the builder, as long as original art is preserved and the resulting hook contract is documented.
 
+### Imported landmark visuals
+
+Studio owns landmark placement and non-code effects, but the mesh source and asset identity are
+repo-owned configuration. Do not rely on a Studio `RBX_ReimportId` as source control. For durable
+landmarks, retain the source under `assets/source/`, generate a welded/cleaned Roblox-budget export,
+record its group-owned IDs and target paths in config, then apply it through one repeatable Studio
+script. The current contract is `src/Shared/Assets/LandmarkAssets.lua` plus
+`scripts/studio/repair_landmarks.luau`.
+
+The repair path replaces only MeshPart visuals. It preserves authored children such as
+`NativeFX`, `AscensionAltarHost`, `LightEmit`, and `HeavenMissionDoor`, as well as the original
+visual bounds. Because Roblox protects `RBX_ReimportId` from ordinary writes, the script moves
+those preserved children into a plain canonical Model rather than attempting to clear the imported
+root in place. Multi-part scenes keep a configured per-MeshPart budget (currently four parts at
+10k each); the limit must never be applied once to the entire scene. This prevents a future Studio
+reimport from silently restoring unsafe source meshes without throwing away landmark detail.
+
 ## Canonical Hooks
 
 - `Zone`
