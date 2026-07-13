@@ -1626,6 +1626,11 @@ end
 
 -- One enemy hit on a pet (accumulate damage; down it if it crosses the ceiling).
 function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyModel)
+    -- Recovery timing is ALWAYS monotonic server uptime. Callers also pass `now` for combat buff
+    -- windows, but one delayed Trial slam once passed os.time() here; persisting that epoch value as
+    -- lastHit made canRegen(os.clock(), lastHit, delay) negative forever. Capture the clock at the
+    -- actual landed hit so no attack family can poison ordinary pet regeneration again.
+    local hitClock = os.clock()
     local power = self:_petPower(pet)
     local factor = self._combatConfig.pet_down_threshold_factor or 1
     local dmg = (def.attack and def.attack.damage) or 0
@@ -1818,7 +1823,7 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
         pc = {}
         self._petCombat[pet] = pc
     end
-    pc.lastHit = now
+    pc.lastHit = hitClock
     self:_updateEnduranceBar(pet, taken, power, factor)
     local downedNow = PetEndurance.isDowned(taken, power, factor)
     -- [GlassTrace] (Jason: watch pets' endurance fall + who goes down). One line per LANDED hit:
@@ -2927,10 +2932,11 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
                                 local pl = (owner and owner:GetAttribute("EffectiveLevel"))
                                     or pet:GetAttribute("Level")
                                     or 1
+                                local impactNow = os.clock()
                                 local sMissed = self:_hitPet(
                                     pet,
                                     slamDef,
-                                    os.time(),
+                                    impactNow,
                                     eng,
                                     slamEnemyLevel,
                                     pl,

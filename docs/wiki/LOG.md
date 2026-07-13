@@ -825,3 +825,8 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Weakness charge lives and drains on the selected enemy. It writes the `potion_weaken` additive `VulnMark` channel plus the unified debuff badge attributes, so one fresh vial gives its configured +25% damage-taken mark without clobbering power vulnerability. Live Studio verified one vial consumed (1,035 → 1,034), target charge 0.5, the expected mark, and server-side drain.
 - Generic chase-stuck cleanup no longer deletes persistent mission objectives. Ambient patrols remain replaceable/despawnable; persistent Trial enemies clear the failed engagement and reset to their immutable authored spawn, and still leave only through defeat or mission teardown.
 - Shared primitive FX now carries the authoritative caster to every client; remote viewers no longer render another player's source effect from themselves. Headless tests: 1,323/1,323; lint: zero errors.
+
+## 2026-07-13 - Trial slam no longer blocks ordinary pet regeneration
+
+- Live diagnosis of an injured Ember Owl found `CombatDamageTaken` frozen while the squad was out of combat. Capital/Trial slam used epoch `os.time()` for `_hitPet`, but natural regeneration compares the recorded last hit against monotonic `os.clock()`; the mixed domains made the five-second recovery delay negative forever.
+- Slam now timestamps its delayed impact with `os.clock()`, and `_hitPet` independently captures the monotonic landed-hit time before writing its recovery gate. This protects every current and future attack caller from poisoning normal pet regeneration with the wrong clock domain.
