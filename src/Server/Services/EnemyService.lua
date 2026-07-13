@@ -5725,8 +5725,13 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     -- instantly abandoned, and the 30s idle cleanup wiped the whole population (the clear-gate
     -- false-complete bug). Dormant mobs engage territorially when the team actually arrives.
     if not (opts and opts.dormant) then
-        if self:_engagesCombat(player) and self:_inTerritory(self._enemies[targetId], player) then
-            self:_setAggroOwner(self._enemies[targetId], player.Name)
+        -- UNGATED spawns (the First Fight cave creature) birth-aggro their
+        -- trigger at ANY level — Jason: "if one of them is being attacked and
+        -- damaged, the fight is on." The loiter-until-L5 rule stays for
+        -- ambient spawns only.
+        local entry = self._enemies[targetId]
+        if (entry.ungated or self:_engagesCombat(player)) and self:_inTerritory(entry, player) then
+            self:_setAggroOwner(entry, player.Name)
         end
     end
     if self._logger then
