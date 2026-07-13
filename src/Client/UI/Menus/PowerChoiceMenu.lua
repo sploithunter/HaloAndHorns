@@ -141,6 +141,7 @@ function PowerChoiceMenu.new()
     -- live (server-backed) state
     self.live = false -- true once the bus loads real state; false = local preview fallback
     self.archetype = nil -- the player's real origin (live mode locks the ORIGIN column to it)
+    self.pendingOrigin = nil -- reversible client preview; server write happens only on LOCK IN
     self.pendingLevels = 0 -- earned - claimed (claimable level-ups waiting), from the server
     self.atMax = false
     self.notice = nil -- transient error/notice text (e.g. a rejected bus call)
@@ -227,6 +228,11 @@ end
 
 -- COMMIT is allowed once the beat's grant is fully allocated (picks always; slots unless none fit)
 function PowerChoiceMenu:_canCommit()
+    -- Level 5 cannot be committed until the separate permanent-origin review has been locked in.
+    -- Staging a card is deliberately insufficient: no footer action may bypass the warning.
+    if self.live and not self.archetype and self.level >= ORIGIN_CHOICE_LEVEL then
+        return false
+    end
     if self.pendingPower == 0 and self.pendingSlots == 0 then
         return false -- nothing granted this beat
     end
@@ -258,6 +264,9 @@ function PowerChoiceMenu:_loadLive()
     self.enhSlots = (enhState and enhState.slots) or {}
     local st = lvl.state
     self.archetype = arche.archetype
+    if self.archetype then
+        self.pendingOrigin = nil
+    end
     self.claimedLevel = st.claimedLevel or 1
     self.pendingLevels = math.max(0, st.pendingLevels or 0)
     self.atMax = st.atMax == true or self.claimedLevel >= MAX_LEVEL
@@ -307,6 +316,7 @@ function PowerChoiceMenu:_reset()
     if self.live then
         -- live: RESET = discard staged + resync from the server (NOT a destructive wipe).
         self.staged = {}
+        self.pendingOrigin = nil
         self.notice = nil
         self:_loadLive()
         return
@@ -315,6 +325,7 @@ function PowerChoiceMenu:_reset()
     self.owned = {}
     self.pendingPower = 0
     self.pendingSlots = 0
+    self.pendingOrigin = nil
     self.staged = {}
     self.log = {}
     -- L1 grants nothing; the first LEVEL UP (to L2) hands the first power pick.
@@ -1335,6 +1346,15 @@ function PowerChoiceMenu:_statusText()
     if self.notice then
         return self.notice, Color3.fromRGB(255, 180, 120)
     end
+    if self.live and not self.archetype and self.level >= ORIGIN_CHOICE_LEVEL then
+        if self.pendingOrigin then
+            local def = archetypesCfg.archetypes and archetypesCfg.archetypes[self.pendingOrigin]
+            local name = def and def.display_name or self.pendingOrigin
+            return "REVIEW " .. string.upper(name) .. " — lock it in or go back", COMMIT_COLOR
+        end
+        return "CHOOSE YOUR ORIGIN — hover for its role, click to review",
+            Color3.fromRGB(235, 230, 250)
+    end
     if self.pendingPower > 0 then
         if self:_remainingPicks() > 0 then
             return "PICK A POWER  —  choose 1", Color3.fromRGB(150, 230, 150)
@@ -1422,6 +1442,7 @@ function PowerChoiceMenu:_showEnhTooltip(anchor, rec)
     local single = Enhancements.isSingle(rec)
     local grade = natural and "Natural" or (single and "Single origin" or "Dual origin")
     local value = Enhancements.value(enhCfg, rec)
+    tip.Title.TextColor3 = Color3.fromRGB(255, 205, 70)
     tip.Title.Text = Enhancements.displayName(enhCfg, rec)
     tip.Summary.Text = ("Boosts %s by %d%%  ·  %s"):format(
         tostring(rec.type or "?"):gsub("^%l", string.upper),
@@ -1456,6 +1477,7 @@ function PowerChoiceMenu:_showTooltip(row, powerId)
     end
     local def = powersCfg.powers[powerId] or {}
     local tip = self:_ensureTooltip()
+    tip.Title.TextColor3 = Color3.fromRGB(255, 205, 70)
     tip.Title.Text = def.display_name or powerId
     tip.Summary.Text = d.summary
     local statLines = table.clone(d.lines)
@@ -1475,6 +1497,37 @@ function PowerChoiceMenu:_showTooltip(row, powerId)
     local rightOfRow = ra.X + rs.X - fa.X + 8
     local x = (rightOfRow + 240 <= fs.X) and rightOfRow or (ra.X - fa.X - 248)
     tip.Position = UDim2.fromOffset(x, math.clamp(ra.Y - fa.Y, 0, math.max(0, fs.Y - 120)))
+    tip.Visible = true
+end
+
+-- Origin hover/focus preview. The explanation is config-owned alongside the power pool so adding
+-- or retuning an origin never requires a second hardcoded UI copy table. Clicking proceeds to the
+-- larger review card; hover is only the first, reversible layer of disclosure.
+function PowerChoiceMenu:_showOriginTooltip(card, origin)
+    local def = archetypesCfg.archetypes and archetypesCfg.archetypes[origin]
+    local choice = def and def.choice
+    if not (choice and self.frame) then
+        return
+    end
+    local tip = self:_ensureTooltip()
+    tip.Title.TextColor3 = ORIGIN_COLOR[origin] or Color3.fromRGB(255, 205, 70)
+    tip.Title.Text = (def.display_name or origin) .. "  ·  " .. tostring(choice.role or "Origin")
+    tip.Summary.Text = choice.description or choice.tagline or ""
+    local details = {}
+    for _, strength in ipairs(choice.strengths or {}) do
+        details[#details + 1] = strength
+    end
+    if choice.tradeoff then
+        details[#details + 1] = "TRADEOFF: " .. choice.tradeoff
+    end
+    tip.Stats.Text = table.concat(details, "   ·   ")
+    tip.Stats.Visible = #details > 0
+
+    local fa, fs = self.frame.AbsolutePosition, self.frame.AbsoluteSize
+    local ca, cs = card.AbsolutePosition, card.AbsoluteSize
+    local rightOfCard = ca.X + cs.X - fa.X + 8
+    local x = (rightOfCard + 240 <= fs.X) and rightOfCard or (ca.X - fa.X - 248)
+    tip.Position = UDim2.fromOffset(x, math.clamp(ca.Y - fa.Y, 0, math.max(0, fs.Y - 220)))
     tip.Visible = true
 end
 
@@ -1588,25 +1641,222 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
     end
 end
 
--- Choose an origin (live mode, no origin yet). One-time server pick; unlocks the origin powers.
-function PowerChoiceMenu:_chooseOrigin(origin)
-    if not self.live then
-        return
-    end
-    local res = callBus("archetype.select", { archetype = origin })
-    self.notice = (res and res.ok == false) and ("Origin pick failed: " .. tostring(res.reason))
-        or nil
-    self:_loadLive()
-    self:_render()
-end
-
--- Render the ORIGIN column as a CHOOSER (4 origin cards) — or a locked note before L5.
-function PowerChoiceMenu:_fillOriginChooser(holder)
+local function clearOriginColumn(holder)
     for _, child in ipairs(holder:GetChildren()) do
         if child:IsA("GuiObject") then
             child:Destroy()
         end
     end
+end
+
+-- First click is deliberately reversible: it stages a local review and performs no server write.
+function PowerChoiceMenu:_stageOrigin(origin)
+    if
+        not self.live
+        or self.archetype
+        or not (archetypesCfg.archetypes and archetypesCfg.archetypes[origin])
+    then
+        return
+    end
+    self.pendingOrigin = origin
+    self.notice = nil
+    self:_render()
+end
+
+function PowerChoiceMenu:_cancelOriginReview()
+    self.pendingOrigin = nil
+    self.notice = nil
+    self:_render()
+end
+
+-- The only UI path that writes the permanent origin. It exists behind the full review card rather
+-- than the initial chooser button, so a browse/tap can never accidentally make the decision.
+function PowerChoiceMenu:_commitOrigin()
+    local origin = self.pendingOrigin
+    if not (self.live and not self.archetype and origin) then
+        return
+    end
+    local res = callBus("archetype.select", { archetype = origin })
+    if not res then
+        self.notice = "Origin choice unavailable — nothing was changed"
+        self:_render()
+        return
+    elseif res.ok == false then
+        self.notice = "Origin pick failed: " .. tostring(res.reason)
+        self:_render()
+        return
+    end
+    self.pendingOrigin = nil
+    self.notice = nil
+    self:_loadLive()
+    self:_render()
+end
+
+local function originReviewLabel(parent, name, text, textSize, color, font)
+    local label = Instance.new("TextLabel")
+    label.Name = name
+    label.Size = UDim2.new(1, 0, 0, 0)
+    label.AutomaticSize = Enum.AutomaticSize.Y
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = color
+    label.TextSize = textSize
+    label.TextWrapped = true
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Font = font or Enum.Font.Gotham
+    label.Parent = parent
+    return label
+end
+
+function PowerChoiceMenu:_fillOriginReview(holder, origin)
+    clearOriginColumn(holder)
+    local def = archetypesCfg.archetypes and archetypesCfg.archetypes[origin]
+    local choice = def and def.choice
+    if not (def and choice) then
+        self.pendingOrigin = nil
+        return
+    end
+
+    local color = ORIGIN_COLOR[origin] or Color3.fromRGB(235, 230, 250)
+    local review = Instance.new("Frame")
+    review.Name = "OriginReview_" .. origin
+    review.LayoutOrder = 1
+    review.Size = UDim2.new(0.95, 0, 0, 0)
+    review.AutomaticSize = Enum.AutomaticSize.Y
+    review.BackgroundColor3 = Color3.fromRGB(35, 33, 45)
+    review.BorderSizePixel = 0
+    review.Parent = holder
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 14)
+    corner.Parent = review
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = color
+    stroke.Thickness = 2
+    stroke.Transparency = 0.1
+    stroke.Parent = review
+    local pad = Instance.new("UIPadding")
+    pad.PaddingTop = UDim.new(0, 14)
+    pad.PaddingBottom = UDim.new(0, 14)
+    pad.PaddingLeft = UDim.new(0, 16)
+    pad.PaddingRight = UDim.new(0, 16)
+    pad.Parent = review
+    local list = Instance.new("UIListLayout")
+    list.Padding = UDim.new(0, 8)
+    list.SortOrder = Enum.SortOrder.LayoutOrder
+    list.Parent = review
+
+    local role = originReviewLabel(
+        review,
+        "Role",
+        string.upper(tostring(choice.role or "Origin")) .. " ORIGIN",
+        15,
+        color,
+        Enum.Font.GothamBold
+    )
+    role.LayoutOrder = 1
+    local title = originReviewLabel(
+        review,
+        "Title",
+        string.upper(def.display_name or origin),
+        27,
+        Color3.fromRGB(245, 242, 250),
+        Enum.Font.GothamBold
+    )
+    title.LayoutOrder = 2
+    local tagline = originReviewLabel(
+        review,
+        "Tagline",
+        choice.tagline or "",
+        15,
+        color,
+        Enum.Font.GothamMedium
+    )
+    tagline.LayoutOrder = 3
+    local description = originReviewLabel(
+        review,
+        "Description",
+        choice.description or "",
+        13,
+        Color3.fromRGB(225, 225, 235)
+    )
+    description.LayoutOrder = 4
+
+    local strengths = {}
+    for _, strength in ipairs(choice.strengths or {}) do
+        strengths[#strengths + 1] = "- " .. strength
+    end
+    local builtFor = originReviewLabel(
+        review,
+        "Strengths",
+        "BUILT FOR\n" .. table.concat(strengths, "\n"),
+        13,
+        Color3.fromRGB(190, 225, 195),
+        Enum.Font.GothamMedium
+    )
+    builtFor.LayoutOrder = 5
+    local tradeoff = originReviewLabel(
+        review,
+        "Tradeoff",
+        "TRADEOFF\n" .. tostring(choice.tradeoff or ""),
+        12,
+        Color3.fromRGB(235, 190, 150)
+    )
+    tradeoff.LayoutOrder = 6
+    local warning = originReviewLabel(
+        review,
+        "PermanentWarning",
+        "PERMANENT CHOICE\nYou cannot undo your Origin after locking it in.",
+        13,
+        Color3.fromRGB(255, 150, 125),
+        Enum.Font.GothamBold
+    )
+    warning.LayoutOrder = 7
+
+    local actions = Instance.new("Frame")
+    actions.Name = "Actions"
+    actions.LayoutOrder = 8
+    actions.Size = UDim2.new(1, 0, 0, 48)
+    actions.BackgroundTransparency = 1
+    actions.Parent = review
+    local back = Instance.new("TextButton")
+    back.Name = "Back"
+    back.Size = UDim2.fromScale(0.32, 1)
+    back.BackgroundColor3 = Color3.fromRGB(80, 78, 92)
+    back.Text = "BACK"
+    back.TextColor3 = Color3.fromRGB(235, 235, 245)
+    back.TextSize = 14
+    back.Font = Enum.Font.GothamBold
+    back.Parent = actions
+    local backCorner = Instance.new("UICorner")
+    backCorner.CornerRadius = UDim.new(0, 12)
+    backCorner.Parent = back
+    back.Activated:Connect(function()
+        self:_cancelOriginReview()
+    end)
+
+    local lock = Instance.new("TextButton")
+    lock.Name = "LockIn"
+    lock.AnchorPoint = Vector2.new(1, 0)
+    lock.Position = UDim2.fromScale(1, 0)
+    lock.Size = UDim2.fromScale(0.64, 1)
+    lock.BackgroundColor3 = color
+    lock.Text = "LOCK IN " .. string.upper(def.display_name or origin)
+    lock.TextColor3 = Color3.fromRGB(24, 22, 30)
+    lock.TextSize = 14
+    lock.TextWrapped = true
+    lock.Font = Enum.Font.GothamBold
+    lock.Parent = actions
+    local lockCorner = Instance.new("UICorner")
+    lockCorner.CornerRadius = UDim.new(0, 12)
+    lockCorner.Parent = lock
+    lock.Activated:Connect(function()
+        self:_commitOrigin()
+    end)
+end
+
+-- Render the ORIGIN column as a CHOOSER (4 origin cards) — or a locked note before L5.
+function PowerChoiceMenu:_fillOriginChooser(holder)
+    clearOriginColumn(holder)
     if self.level < ORIGIN_CHOICE_LEVEL then
         local lbl = Instance.new("TextLabel")
         lbl.Size = UDim2.fromScale(0.95, 0.12)
@@ -1619,33 +1869,66 @@ function PowerChoiceMenu:_fillOriginChooser(holder)
         lbl.Parent = holder
         return
     end
+    if self.pendingOrigin then
+        self:_fillOriginReview(holder, self.pendingOrigin)
+        return
+    end
     for i, origin in ipairs(ORIGINS) do
         local def = archetypesCfg.archetypes and archetypesCfg.archetypes[origin]
+        local choice = def and def.choice or {}
         local card = Instance.new("TextButton")
         card.Name = "Origin_" .. origin
         card.LayoutOrder = i
-        card.Size = UDim2.fromScale(0.95, 0.14)
+        card.Size = UDim2.new(0.95, 0, 0, 88)
         card.BackgroundColor3 = Color3.fromRGB(40, 38, 52)
         card.AutoButtonColor = true
-        card.Text = (def and def.display_name or origin):upper()
-        card.TextColor3 = ORIGIN_COLOR[origin] or Color3.new(1, 1, 1)
-        card.TextScaled = true
-        card.Font = Enum.Font.GothamBold
+        card.Selectable = true
+        card.Text = ""
         card.Parent = holder
-        local pad = Instance.new("UIPadding")
-        pad.PaddingTop = UDim.new(0.03, 0)
-        pad.PaddingBottom = UDim.new(0.03, 0)
-        pad.Parent = card
         local cc = Instance.new("UICorner")
-        cc.CornerRadius = UDim.new(0.25, 0)
+        cc.CornerRadius = UDim.new(0, 14)
         cc.Parent = card
         local cs = Instance.new("UIStroke")
         cs.Color = ORIGIN_COLOR[origin] or Color3.new(1, 1, 1)
         cs.Thickness = 2
         cs.Transparency = 0.25
         cs.Parent = card
+
+        local name = Instance.new("TextLabel")
+        name.Name = "OriginName"
+        name.Size = UDim2.fromScale(0.94, 0.62)
+        name.Position = UDim2.fromScale(0.03, 0.05)
+        name.BackgroundTransparency = 1
+        name.Text = string.upper(def and def.display_name or origin)
+        name.TextColor3 = ORIGIN_COLOR[origin] or Color3.new(1, 1, 1)
+        name.TextScaled = true
+        name.Font = Enum.Font.GothamBold
+        name.Parent = card
+        local role = Instance.new("TextLabel")
+        role.Name = "Role"
+        role.Size = UDim2.fromScale(0.94, 0.24)
+        role.Position = UDim2.fromScale(0.03, 0.7)
+        role.BackgroundTransparency = 1
+        role.Text = string.upper(tostring(choice.role or "Origin")) .. "  |  CLICK TO REVIEW"
+        role.TextColor3 = Color3.fromRGB(205, 202, 218)
+        role.TextScaled = true
+        role.Font = Enum.Font.GothamMedium
+        role.Parent = card
+
+        card.MouseEnter:Connect(function()
+            self:_showOriginTooltip(card, origin)
+        end)
+        card.MouseLeave:Connect(function()
+            self:_hideTooltip()
+        end)
+        card.SelectionGained:Connect(function()
+            self:_showOriginTooltip(card, origin)
+        end)
+        card.SelectionLost:Connect(function()
+            self:_hideTooltip()
+        end)
         card.Activated:Connect(function()
-            self:_chooseOrigin(origin)
+            self:_stageOrigin(origin)
         end)
     end
 end
@@ -1655,10 +1938,19 @@ function PowerChoiceMenu:_refreshOrigin()
         -- no origin yet: the ORIGIN column is a chooser (at L5+) or a locked note (before L5)
         if self.originHeader then
             local ready = self.level >= ORIGIN_CHOICE_LEVEL
-            self.originHeader.Text = ready and "CHOOSE ORIGIN"
-                or ("ORIGIN — L" .. ORIGIN_CHOICE_LEVEL)
-            self.originHeader.TextColor3 = ready and Color3.fromRGB(235, 230, 250)
-                or Color3.fromRGB(170, 170, 185)
+            if ready and self.pendingOrigin then
+                local def = archetypesCfg.archetypes
+                    and archetypesCfg.archetypes[self.pendingOrigin]
+                self.originHeader.Text = "REVIEW "
+                    .. string.upper((def and def.display_name) or self.pendingOrigin)
+                self.originHeader.TextColor3 = ORIGIN_COLOR[self.pendingOrigin]
+                    or Color3.fromRGB(235, 230, 250)
+            else
+                self.originHeader.Text = ready and "CHOOSE ORIGIN"
+                    or ("ORIGIN — L" .. ORIGIN_CHOICE_LEVEL)
+                self.originHeader.TextColor3 = ready and Color3.fromRGB(235, 230, 250)
+                    or Color3.fromRGB(170, 170, 185)
+            end
         end
         if self.originCol then
             self:_fillOriginChooser(self.originCol)
@@ -1955,6 +2247,7 @@ function PowerChoiceMenu:Hide()
         self._hostGui = nil
     end
     self.enhanceFor = nil
+    self.pendingOrigin = nil
     if self.enhStrip then
         self.enhStrip:Destroy()
         self.enhStrip = nil
