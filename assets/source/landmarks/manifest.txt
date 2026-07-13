@@ -1,0 +1,5 @@
+# Canonical landmark source assets. These originals are intentionally retained so repairs never
+# depend on Downloads, a Studio reimport link, or mutable Roblox mesh processing.
+
+golden_halo_cathedral.glb	Meshy_AI_Golden_Halo_Cathedral_0708202050_texture.glb	1725040 source tris	sha256 1dfc461b45b7a1e7461a06b5572cb589b65046f020c824c912fe4bb88302e290
+winged_portal_of_light.glb	Meshy_AI_Winged_Portal_of_Ligh_0708210734_texture.glb	998032 source tris	sha256 989145619673aa6cbba839acacc0035f22015fd0b159b4ae8517bfd62a87ca92

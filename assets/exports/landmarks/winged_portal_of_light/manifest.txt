@@ -1,0 +1,6 @@
+source: assets/source/landmarks/winged_portal_of_light.glb
+original_tris: 998032
+
+10k: winged_portal_of_light_10k.fbx (9998 tris, target 10000)
+fbx_sha256: a2bc00fbc2f1dd1e32b154cf677a62ffe98cbe567362117bc86fc36d48df4b00
+texture_sha256: 7ebcbe82a9f583bdfa243bb5e32528a65d77fdeb80ec495c307b6259a27e3eb5
