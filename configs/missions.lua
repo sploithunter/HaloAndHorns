@@ -59,7 +59,7 @@ return {
     player_tuning = {
         group_scale = {
             default = 1.0,
-            min = 0.5,
+            min = 0.25,
             max = 2.0,
             step = 0.05,
         },

@@ -322,6 +322,7 @@ function SettingsPanel:_createSliderSetting(
     sliderBG.Position = UDim2.new(0.45, 0, 0.5, -4)
     sliderBG.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     sliderBG.BorderSizePixel = 0
+    sliderBG.Active = true -- Frames only receive pointer/touch input when active.
     sliderBG.Parent = settingFrame
 
     local sliderCorner = Instance.new("UICorner")

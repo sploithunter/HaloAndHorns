@@ -79,11 +79,11 @@ return function()
         end)
 
         it("clamps and snaps player-selected density from raw or network values", function()
-            local rules = { min = 0.5, max = 2, default = 1, step = 0.05 }
+            local rules = { min = 0.25, max = 2, default = 1, step = 0.05 }
             expect(PackScale.sanitizeMultiplier(nil, rules)).to.equal(1)
             expect(PackScale.sanitizeMultiplier({ scale = 0.73 }, rules)).to.equal(0.75)
             expect(PackScale.sanitizeMultiplier(99, rules)).to.equal(2)
-            expect(PackScale.sanitizeMultiplier(-1, rules)).to.equal(0.5)
+            expect(PackScale.sanitizeMultiplier(-1, rules)).to.equal(0.25)
         end)
 
         it("shares one team multiplier formula across teaming and mission config shapes", function()
