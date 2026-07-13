@@ -330,12 +330,12 @@ function HotbarService:Activate(player, payload)
         end
         return { ok = false, reason = "power_unavailable" }
     elseif bind.type == "potion" then
-        -- Drink one from the bound potion (consumes from inventory + sips the meter). A slot can
-        -- stay bound to a potion you've run out of — Drink just no-ops with reason "none_left".
+        -- One config-driven potion activation path: player meters drink; enemy meters throw at the
+        -- squad's shared focus target. Empty bound slots safely no-op with reason "none_left".
         local potionSvc = self._potionService
-        if potionSvc and potionSvc.Drink then
-            local result = potionSvc:Drink(player, bind.target)
-            -- echo so the slot's count badge updates immediately (Drink already pushed PotionUpdate)
+        if potionSvc and potionSvc.Use then
+            local result = potionSvc:Use(player, bind.target)
+            -- echo so the slot's count badge updates immediately (Use already pushed PotionUpdate)
             self:_pushState(player)
             return result
         end

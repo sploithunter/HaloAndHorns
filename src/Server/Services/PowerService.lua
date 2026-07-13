@@ -532,48 +532,8 @@ end
 -- Priority: the player's assist target (their directed pick) → else the enemy the MOST pets are
 -- attacking. nil if the squad isn't engaged with any enemy.
 function PowerService:_engagedEnemy(player)
-    local function modelForId(id)
-        if not id or id == 0 then
-            return nil
-        end
-        for _, e in ipairs(enemiesAlive()) do
-            local bid = e:FindFirstChild("BreakableID")
-            if bid and bid.Value == id then
-                return e
-            end
-        end
-        return nil
-    end
-
-    -- 1) player-directed assist target always wins (the one they selected)
-    local assisted = modelForId(player:GetAttribute("CombatAssistTarget"))
-    if assisted then
-        return assisted
-    end
-
-    -- 2) else the enemy the most pets are currently attacking
-    local pets = Workspace:FindFirstChild("PlayerPets")
-        and Workspace.PlayerPets:FindFirstChild(player.Name)
-    if not pets then
-        return nil
-    end
-    local counts = {}
-    for _, pet in ipairs(pets:GetChildren()) do
-        if pet:IsA("Model") and not pet:GetAttribute("CombatDowned") then
-            local tid = pet:FindFirstChild("TargetID")
-            local tt = pet:FindFirstChild("TargetType")
-            if tid and tid.Value ~= 0 and tt and tostring(tt.Value) == "Enemy" then
-                counts[tid.Value] = (counts[tid.Value] or 0) + 1
-            end
-        end
-    end
-    local bestId, bestN
-    for id, n in pairs(counts) do
-        if not bestN or n > bestN then
-            bestId, bestN = id, n
-        end
-    end
-    return modelForId(bestId)
+    local enemyService = self._enemyService
+    return enemyService and enemyService.GetFocusEnemy and enemyService:GetFocusEnemy(player) or nil
 end
 
 -- Crystals the squad is engaged with (#174). Mirrors _hasEngagedEnemy's primary signal: a pet whose
@@ -2637,6 +2597,7 @@ function PowerService:Cast(player, powerId, opts)
             primId = sourcePrim,
             element = element,
             kind = "source",
+            caster = player.Character,
         })
         if not generic and self._powersConfig.enemy_targeted_families[family] then
             local targetPrim = (def.fx and def.fx.target)
@@ -2659,6 +2620,7 @@ function PowerService:Cast(player, powerId, opts)
                         primId = targetPrim,
                         element = element,
                         kind = "target",
+                        caster = player.Character,
                         target = foe,
                     })
                 end

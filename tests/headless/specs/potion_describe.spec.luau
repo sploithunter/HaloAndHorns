@@ -35,6 +35,15 @@ return function()
             )
         end)
 
+        it("configures enemy-target throws without a bespoke code branch", function()
+            local vial = potions.potions.weakening_vial
+            expect(type(vial.throw)).to.equal("table")
+            expect(vial.throw.range).to.equal(100)
+            expect(vial.throw.primitive).to.equal("ranged_bolt")
+            expect(vial.throw.element).to.equal("lava")
+            expect(potions.meters[vial.meter].target).to.equal("enemy")
+        end)
+
         it("returns nil for an unknown or incomplete definition", function()
             expect(PotionDescribe.describe(potions, "missing")).to.equal(nil)
             expect(PotionDescribe.describe({ potions = { broken = { meter = "none" } } }, "broken")).to.equal(

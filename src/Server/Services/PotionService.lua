@@ -12,8 +12,9 @@
     inventory potions persist (they're real items — tradeable later). State is pushed to the
     client via the PotionUpdate RemoteEvent for the hotbar potion strip (SSOT render).
 
-    Enemy-target debuff meters (target = "enemy") are recognized but applied at throw time — that's
-    S2b; this slice ships the self-buffs (damage / luck / speed).
+    Enemy-target debuff meters keep their charge on the target and use EnemyService's shared squad
+    focus resolver. Their vulnerability rides VulnMark's additive source channels, so a potion never
+    clobbers a power mark. Throw range and presentation are potion configuration.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -22,6 +23,8 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local BrewMeter = require(ReplicatedStorage.Shared.Game.BrewMeter)
+local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark)
+local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local PotionService = {}
 PotionService.__index = PotionService
@@ -36,14 +39,16 @@ function PotionService:Init()
     self._inventoryService = self._modules and self._modules.InventoryService
     self._config = self._configLoader:LoadConfig("potions")
     self._meters = {} -- [userId][meterId] = charge (0..1), transient
+    self._enemyMeters = setmetatable({}, { __mode = "k" }) -- [enemy Model][meterId] = charge
     self._lastDrink = {} -- [userId][potionId] = os.clock()
 
-    self._remote = require(ReplicatedStorage.Shared.Network.Signals).PotionUpdate
+    self._remote = Signals.PotionUpdate
 end
 
 -- Explicit peer binding (audit architecture — no global locator).
 function PotionService:BindPeerServices(services)
     self._hotbarService = services.HotbarService
+    self._enemyService = services.EnemyService
 end
 
 function PotionService:Start()
@@ -57,11 +62,44 @@ function PotionService:Start()
         local step = accum
         accum = 0
         self:_drainAll(step)
+        self:_drainEnemyMeters(step)
     end)
     Players.PlayerRemoving:Connect(function(player)
         self._meters[player.UserId] = nil
         self._lastDrink[player.UserId] = nil
     end)
+end
+
+function PotionService:_canUse(player, potionId)
+    local uid = player.UserId
+    self._lastDrink[uid] = self._lastDrink[uid] or {}
+    if (os.clock() - (self._lastDrink[uid][potionId] or 0)) < SIP_LOCK then
+        return false, "too_fast"
+    end
+    return true
+end
+
+-- Consume exactly one matching stack entry. InventoryService owns stack mutation + persistence;
+-- this service only resolves which entry backs the configured potion id.
+function PotionService:_consumeOne(player, potionId)
+    local inv = self._inventoryService
+    if not inv then
+        return false, "service_unavailable"
+    end
+    local bucket = inv:GetInventory(player, BUCKET)
+    for uid, rec in pairs((bucket and bucket.items) or {}) do
+        if rec.id == potionId and (tonumber(rec.quantity) or 1) > 0 then
+            local ok = inv:RemoveItem(player, BUCKET, uid, 1)
+            return ok == true, ok == true and nil or "consume_failed"
+        end
+    end
+    return false, "none_left"
+end
+
+function PotionService:_finishUse(player, potionId)
+    self._lastDrink[player.UserId][potionId] = os.clock()
+    self:_push(player)
+    fireGameEvent(player, "potion_used", { potion = potionId })
 end
 
 function PotionService:_potionCfg(potionId)
@@ -173,6 +211,41 @@ function PotionService:_applyMeter(player, meterId, charge)
     end
 end
 
+-- Apply one enemy meter through the canonical additive vulnerability writer. Charge belongs to the
+-- enemy, not the thrower: several vials top up the same target and the meter drains on that target.
+function PotionService:_applyEnemyMeter(target, meterId, charge)
+    local m = self:_meterCfg(meterId)
+    if not (m and m.target == "enemy" and target and target.Parent) then
+        return
+    end
+    local powerId = "potion_" .. meterId
+    if charge and charge > 0 then
+        local untilTime = os.time() + BrewMeter.remainingSeconds(charge, m.drain_seconds)
+        VulnMark.apply(target, powerId, 1 + BrewMeter.magnitude(charge, m.cap), untilTime)
+        target:SetAttribute("DebuffPowerId", powerId)
+        target:SetAttribute("DebuffUntil", untilTime)
+        target:SetAttribute("Brew_" .. meterId, charge)
+    else
+        VulnMark.apply(target, powerId, 1, 0)
+        target:SetAttribute("Brew_" .. meterId, nil)
+        if target:GetAttribute("DebuffPowerId") == powerId then
+            target:SetAttribute("DebuffPowerId", nil)
+            target:SetAttribute("DebuffUntil", 0)
+        end
+    end
+end
+
+-- Single public activation path for every potion. Callers do not need to know whether the item is
+-- drunk or thrown; that adaptation is entirely described by its meter configuration.
+function PotionService:Use(player, potionId)
+    local pcfg = self:_potionCfg(potionId)
+    local meter = pcfg and self:_meterCfg(pcfg.meter)
+    if meter and meter.target == "enemy" then
+        return self:Throw(player, potionId)
+    end
+    return self:Drink(player, potionId)
+end
+
 -- Drink one potion: consume from inventory, sip the meter (diminishing), write the buff.
 function PotionService:Drink(player, potionId)
     local pcfg = self:_potionCfg(potionId)
@@ -185,48 +258,97 @@ function PotionService:Drink(player, potionId)
         return { ok = false, reason = "no_meter" }
     end
     if m.target == "enemy" then
-        return { ok = false, reason = "throwable_not_supported" } -- S2b
+        return { ok = false, reason = "enemy_target_requires_throw" }
+    end
+
+    local canUse, useReason = self:_canUse(player, potionId)
+    if not canUse then
+        return { ok = false, reason = useReason }
     end
 
     local uid = player.UserId
-    self._lastDrink[uid] = self._lastDrink[uid] or {}
-    if (os.clock() - (self._lastDrink[uid][potionId] or 0)) < SIP_LOCK then
-        return { ok = false, reason = "too_fast" }
-    end
-
     self._meters[uid] = self._meters[uid] or {}
     local charge = self._meters[uid][meterId] or 0
     if BrewMeter.isFull(charge, m.full_threshold) then
         return { ok = false, reason = "meter_full" } -- a sip would be wasted; don't consume
     end
 
-    local inv = self._inventoryService
-    if not inv then
-        return { ok = false, reason = "service_unavailable" }
+    local consumed, consumeReason = self:_consumeOne(player, potionId)
+    if not consumed then
+        return { ok = false, reason = consumeReason }
     end
-    local bucket = inv:GetInventory(player, BUCKET)
-    local targetUid
-    for u, rec in pairs((bucket and bucket.items) or {}) do
-        if rec.id == potionId and (tonumber(rec.quantity) or 1) > 0 then
-            targetUid = u
-            break
-        end
-    end
-    if not targetUid then
-        return { ok = false, reason = "none_left" }
-    end
-    inv:RemoveItem(player, BUCKET, targetUid, 1)
 
-    self._lastDrink[uid][potionId] = os.clock()
     -- sip_fraction lives on the POTION (pcfg), not the meter — m.sip_fraction was nil, so the sip
     -- returned 0 and the buff was written at zero magnitude (drink consumed, nothing happened).
     charge = BrewMeter.sip(charge, pcfg.sip_fraction)
     self._meters[uid][meterId] = charge
     self:_applyMeter(player, meterId, charge)
-    self:_push(player)
-    -- bus source: the tutorial's potion step completes on this; FX config-only
-    fireGameEvent(player, "potion_used", { potion = potionId })
+    self:_finishUse(player, potionId)
     return { ok = true, charge = charge, count = self:_count(player, potionId) }
+end
+
+-- Throw one enemy-target potion at the squad's shared focus target. Explicit HUD focus wins, then
+-- the target most pets are attacking, then the nearest enemy already aggro'd on the squad.
+function PotionService:Throw(player, potionId)
+    local pcfg = self:_potionCfg(potionId)
+    if not pcfg then
+        return { ok = false, reason = "unknown_potion" }
+    end
+    local meterId = pcfg.meter
+    local m = self:_meterCfg(meterId)
+    if not (m and m.target == "enemy") then
+        return { ok = false, reason = "not_throwable" }
+    end
+    local throwCfg = type(pcfg.throw) == "table" and pcfg.throw or {}
+    local enemyService = self._enemyService
+    local target = enemyService
+        and enemyService.GetFocusEnemy
+        and enemyService:GetFocusEnemy(player)
+    if not target then
+        return { ok = false, reason = "no_enemy_target" }
+    end
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local targetPart = target.PrimaryPart or target:FindFirstChildWhichIsA("BasePart")
+    if not (root and targetPart) then
+        return { ok = false, reason = "target_unavailable" }
+    end
+    local range = math.max(1, tonumber(throwCfg.range) or 100)
+    if (targetPart.Position - root.Position).Magnitude > range then
+        return { ok = false, reason = "target_out_of_range" }
+    end
+    local canUse, useReason = self:_canUse(player, potionId)
+    if not canUse then
+        return { ok = false, reason = useReason }
+    end
+
+    self._enemyMeters[target] = self._enemyMeters[target] or {}
+    local charge = self._enemyMeters[target][meterId] or 0
+    if BrewMeter.isFull(charge, m.full_threshold) then
+        return { ok = false, reason = "meter_full" }
+    end
+    local consumed, consumeReason = self:_consumeOne(player, potionId)
+    if not consumed then
+        return { ok = false, reason = consumeReason }
+    end
+
+    charge = BrewMeter.sip(charge, pcfg.sip_fraction)
+    self._enemyMeters[target][meterId] = charge
+    self:_applyEnemyMeter(target, meterId, charge)
+    Signals.Power_AreaFx:FireAllClients({
+        primId = throwCfg.primitive or "ranged_bolt",
+        element = throwCfg.element or "lava",
+        kind = "target",
+        caster = character,
+        target = target,
+    })
+    self:_finishUse(player, potionId)
+    return {
+        ok = true,
+        charge = charge,
+        count = self:_count(player, potionId),
+        target = target.Name,
+    }
 end
 
 function PotionService:_drainAll(dt)
@@ -248,6 +370,27 @@ function PotionService:_drainAll(dt)
             end
             if changed then
                 self:_push(player)
+            end
+        end
+    end
+end
+
+function PotionService:_drainEnemyMeters(dt)
+    for target, meters in pairs(self._enemyMeters) do
+        if not target.Parent or (tonumber(target:GetAttribute("HP")) or 0) <= 0 then
+            self._enemyMeters[target] = nil
+        else
+            for meterId, charge in pairs(meters) do
+                local m = self:_meterCfg(meterId)
+                local nextCharge = BrewMeter.drain(charge, dt, m and m.drain_seconds)
+                meters[meterId] = nextCharge
+                self:_applyEnemyMeter(target, meterId, nextCharge)
+                if BrewMeter.isEmpty(nextCharge) then
+                    meters[meterId] = nil
+                end
+            end
+            if next(meters) == nil then
+                self._enemyMeters[target] = nil
             end
         end
     end

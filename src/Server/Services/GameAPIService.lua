@@ -1592,7 +1592,7 @@ function GameAPIService:_registerCommands()
 
     -- POTIONS (brew-charge consumables; one meter per axis) ----------------
     bus:register("potion.drink", {
-        description = "Drink one potion: consume it, sip its brew meter (diminishing).",
+        description = "Use one potion: drink a player buff or throw an enemy debuff.",
         validate = function(args)
             return Validators.fields(args, { potionId = "string" })
         end,
@@ -1601,7 +1601,7 @@ function GameAPIService:_registerCommands()
             if not s then
                 return { ok = false, reason = "service_unavailable" }
             end
-            return s:Drink(context.player, args.potionId)
+            return s:Use(context.player, args.potionId)
         end,
     })
     bus:register("potion.state", {
