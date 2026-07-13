@@ -60,6 +60,7 @@ local OverheadBar = require(ReplicatedStorage.Shared.UI.OverheadBar) -- shared e
 local PetLockout = require(ReplicatedStorage.Shared.Game.PetLockout)
 local ZoneResolver = require(ReplicatedStorage.Shared.Game.ZoneResolver)
 local EnemyLeash = require(ReplicatedStorage.Shared.Game.EnemyLeash)
+local MissionRankScale = require(ReplicatedStorage.Shared.Game.MissionRankScale)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local EnemyService = {}
@@ -5136,8 +5137,9 @@ end
 -- "use the realm's own pets as enemies... boss versions by making huges of
 -- them" — Jason). overrides = missions.pet_ranks[rank]: hp_mult/dmg_mult/
 -- armor/tier/display_prefix + use_huge_scale (the pet's own huge_scale,
--- the visual "huge of it").
-function EnemyService:SynthesizePetEnemy(petId, overrides)
+-- the visual "huge of it"). contentLevel resolves any config-owned rank
+-- curve before the overlay is applied; nil preserves the max-level tuning.
+function EnemyService:SynthesizePetEnemy(petId, overrides, contentLevel)
     local okCfg, petsConfig = pcall(function()
         return require(ReplicatedStorage.Configs:WaitForChild("pets"))
     end)
@@ -5146,6 +5148,7 @@ function EnemyService:SynthesizePetEnemy(petId, overrides)
         return nil
     end
     local def = self:_petEnemyDef(petId, petDef)
+    overrides = MissionRankScale.resolve(overrides, contentLevel)
     if type(overrides) == "table" then
         def.hp = math.max(1, math.floor(def.hp * (tonumber(overrides.hp_mult) or 1)))
         if def.attack and def.attack.damage then

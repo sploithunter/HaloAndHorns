@@ -18,6 +18,10 @@
     player setting and team size preserve trial #N's layout and pack picks.
     Every authored role keeps at least one unit; scalesUnit excludes bosses/
     titans so anchors stay singular. When omitted every unit scales.
+
+    BOSS PLACEMENT (opts.bossOnlyAtObjective): boss-marked packs are excluded
+    from every ordinary point. bossPointIndex still guarantees one at the
+    objective point. The behavior is configured by missions.population.
 ]]
 
 local MissionSeed = require(script.Parent.MissionSeed)
@@ -27,38 +31,58 @@ local MissionPopulation = {}
 function MissionPopulation.roll(packs, pointCount, streamSeed, opts)
     local rng = MissionSeed.mulberry32(streamSeed)
     local total = 0
+    local regularTotal = 0
+    local regularPacks = {}
     local bossPacks = {}
     for _, pack in ipairs(packs or {}) do
         total += tonumber(pack.weight) or 0
         if pack.boss then
             table.insert(bossPacks, pack)
+        else
+            regularTotal += tonumber(pack.weight) or 0
+            table.insert(regularPacks, pack)
         end
     end
     local bossPoint = opts and opts.bossPointIndex
+    local bossOnlyAtObjective = opts and opts.bossOnlyAtObjective == true
     local countMult = math.max(0, (opts and tonumber(opts.countMult)) or 1)
     local scalesUnit = opts and opts.scalesUnit
+
+    local function choosePack(candidates, weightTotal, rollUnit)
+        if weightTotal <= 0 then
+            return nil
+        end
+        local roll = rollUnit * weightTotal
+        local acc, chosen = 0, nil
+        for _, pack in ipairs(candidates) do
+            acc += tonumber(pack.weight) or 0
+            if roll < acc then
+                chosen = pack
+                break
+            end
+        end
+        return chosen or candidates[#candidates]
+    end
 
     local out = {}
     for i = 1, pointCount do
         out[i] = {}
         if total > 0 then
-            local roll = rng() * total
-            local acc, chosen = 0, nil
-            for _, pack in ipairs(packs) do
-                acc += tonumber(pack.weight) or 0
-                if roll < acc then
-                    chosen = pack
-                    break
-                end
+            -- Preserve one seeded base draw per point whether boss filtering is enabled or not.
+            local rollUnit = rng()
+            local chosen
+            if bossOnlyAtObjective and i ~= bossPoint then
+                chosen = choosePack(regularPacks, regularTotal, rollUnit)
+            else
+                chosen = choosePack(packs, total, rollUnit)
             end
-            chosen = chosen or packs[#packs]
             -- BOSS GUARDS THE GLOWY: the objective room's point always draws
             -- a boss-marked pack (deterministic pick when several) — random
             -- weights can't produce a boss-less map anymore
             if i == bossPoint and #bossPacks > 0 then
                 chosen = bossPacks[1 + math.floor(rng() * #bossPacks)]
             end
-            for _, unit in ipairs(chosen.units or {}) do
+            for _, unit in ipairs((chosen and chosen.units) or {}) do
                 local n = unit.count or 1
                 if countMult ~= 1 and (scalesUnit == nil or scalesUnit(unit)) then
                     -- Keep every authored role represented; callers exclude boss/titan anchors.

@@ -331,6 +331,35 @@ return function()
             expect(diff).to.equal(true)
         end)
 
+        it("fields exactly one boss at the objective when boss packs are objective-only", function()
+            local packs = {
+                {
+                    weight = 10,
+                    units = { { pet = "cinder_whelp", rank = "minion", count = 2 } },
+                },
+                {
+                    weight = 100,
+                    boss = true,
+                    units = { { pet = "worldbloom_ent", rank = "boss", count = 1 } },
+                },
+            }
+            local objective = 5
+            local rolls = MissionPopulation.roll(packs, 12, 777, {
+                bossPointIndex = objective,
+                bossOnlyAtObjective = true,
+            })
+            local bosses = 0
+            for pointIndex, units in ipairs(rolls) do
+                for _, unit in ipairs(units) do
+                    if unit.rank == "boss" then
+                        bosses += 1
+                        expect(pointIndex).to.equal(objective)
+                    end
+                end
+            end
+            expect(bosses).to.equal(1)
+        end)
+
         it("countMult densifies non-boss units without changing pack picks", function()
             local packs = {
                 {

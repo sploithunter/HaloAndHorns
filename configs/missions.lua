@@ -60,6 +60,13 @@ return {
         room_inset = 2,
     },
 
+    -- Boss packs are objective anchors, not ordinary random room packs. The objective
+    -- MissionSpawn is still selected by the generated layout and always receives one boss
+    -- pack; every other MissionSpawn rolls only the mission's non-boss packs.
+    population = {
+        boss_only_at_objective = true,
+    },
+
     -- PLAYER TRIAL DENSITY: a persistent, player-facing Settings slider. The opener's
     -- value owns the generated instance for the whole party; the server clamps it here
     -- before composing it with automatic team-size scaling. Keep the range deliberately
@@ -201,6 +208,20 @@ return {
             splash = { radius = 10, frac = 0.3 }, -- THE HUGE RULE
             abilities = {
                 slam = { damage = 120, radius = 14, cooldown = 12, telegraph = 1.4, range = 40 },
+            },
+            -- Level 50 keeps the rank values above. At the first Trial level, interpolate
+            -- from this survivable baseline; MissionRankScale owns the single curve path
+            -- for health, damage, armor, and ability damage.
+            level_scaling = {
+                min_level = 14,
+                max_level = 50,
+                curve = "linear",
+                at_min = {
+                    hp_mult = 2,
+                    dmg_mult = 0.75,
+                    armor = 25,
+                    ability_damage_mult = 0.5,
+                },
             },
         },
         titan = {

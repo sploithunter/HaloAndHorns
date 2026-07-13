@@ -846,3 +846,9 @@ migration is needed for the abandoned "element splits stacks" spec.
 
 - Live Edit inspection confirmed the canonical repair had set all four visual parts of each Golden Halo Cathedral and the Winged Portal of Light to non-collidable; the mission gate was 0/5 collidable including its interaction host, and players fell through its platform.
 - Landmark asset configuration now explicitly requires collidable `PreciseConvexDecomposition` geometry. The one repair/audit script applies and verifies that policy on both newly imported and already-canonical scenes, preserving walkable stairs/platforms and true arch openings without a broad-box collision proxy.
+
+## 2026-07-13 - Trial bosses become one level-scaled objective anchor
+
+- Diagnosed the level-15 Worldbloom Ent wall as two compounding population bugs: boss-marked packs remained eligible at every ordinary room, producing four bosses in one run, and the pet-boss rank always used level-50 stats (23,200 HP plus 150 armor) at the first level-14 Trial tier.
+- Added config-owned objective-only boss placement. The seeded population path now filters boss packs from ordinary rooms and guarantees exactly one boss pack at the objective room.
+- Added the pure `MissionRankScale` path. Pet-boss HP, basic damage, armor, and ability damage interpolate from a level-14 baseline to the unchanged level-50 rank values using the opener's captured level. At level 15, Worldbloom resolves to about 6,283 HP, 28 armor, and a 62-damage slam.
