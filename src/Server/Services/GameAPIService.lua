@@ -1226,7 +1226,7 @@ function GameAPIService:_registerCommands()
     })
 
     bus:register("levelup.grantXp", {
-        description = "[admin] Fast-forward: XP to ~98% of next level + the next gate's coins. Admin/Studio only.",
+        description = "[admin] Fast-forward: bank the next earned level + the next gate's coins. Admin/Studio only.",
         handler = function(context)
             local isAdmin = context.isTest
                 or (context.player and context.player:GetAttribute("IsAdmin") == true)
@@ -1234,10 +1234,10 @@ function GameAPIService:_registerCommands()
                 return { ok = false, reason = "not_admin" }
             end
             local s = self:_service("PlayerProgressionService")
-            if not s or not s.GrantAlmostLevel then
+            if not s or not s.GrantNextLevel then
                 return { ok = false, reason = "service_unavailable" }
             end
-            local state = s:GrantAlmostLevel(context.player)
+            local state = s:GrantNextLevel(context.player)
             -- Also drop 100k of EVERY area coin so any gate is affordable without grinding it
             -- (overshoot is fine for coins — dev QoL). Premium/tokens (gems, light/shadow) excluded.
             local economy = self._economyService

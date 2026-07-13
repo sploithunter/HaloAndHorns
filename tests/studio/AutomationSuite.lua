@@ -24,7 +24,9 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 
 local TestReport = require(ReplicatedStorage.Shared.API.TestReport)
+local LevelCurve = require(ReplicatedStorage.Shared.Game.LevelCurve)
 local RuntimeServiceBindings = require(ServerScriptService.Server.Services.RuntimeServiceBindings)
+local playerProgressionConfig = require(ReplicatedStorage.Configs:WaitForChild("player_progression"))
 
 local AutomationSuite = {}
 
@@ -985,6 +987,25 @@ function AutomationSuite.run(opts)
         "granting XP raises the derived level (9 + 900xp -> 10)",
         domainOk(api:Execute(player, "quest.claim", { questId = "seasoned" })),
         "XP grant did not advance the level past 10"
+    )
+
+    -- The admin XP + GATE shortcut crosses (rather than approaches) the next XP threshold,
+    -- but leaves the newly earned level pending so the normal irreversible choice flow runs.
+    api:Execute(player, "test.setLevel", { level = 3 })
+    local adminAdvance = api:Execute(player, "levelup.grantXp", {})
+    local level4Xp = LevelCurve.xpForLevel(4, playerProgressionConfig.xp)
+    report:expect(
+        "XP + GATE banks the next earned level",
+        domainOk(adminAdvance)
+            and adminAdvance.result.state.earnedLevel == 4
+            and adminAdvance.result.state.claimedLevel == 3
+            and adminAdvance.result.state.pendingLevels == 1,
+        "admin XP shortcut did not leave exactly one earned level pending"
+    )
+    report:expectEqual(
+        "XP + GATE lands one XP beyond the next threshold",
+        player:GetAttribute("XPTotal"),
+        level4Xp + 1
     )
 
     -- Phase 10: escrow trade command surface + guards (the full two-player swap

@@ -33,6 +33,12 @@ return function()
             local xp = LevelCurve.xpForLevel(5, xpCfg) - 1
             expect(LevelCurve.levelForXp(xp, xpCfg)).to.equal(4)
         end)
+        it("XP just beyond a threshold earns the level with one XP carried forward", function()
+            local xp = LevelCurve.xpForLevel(5, xpCfg) + 1
+            local progress = LevelCurve.progress(xp, xpCfg)
+            expect(progress.level).to.equal(5)
+            expect(progress.xpIntoLevel).to.equal(1)
+        end)
         it("0 XP is level 1", function()
             expect(LevelCurve.levelForXp(0, xpCfg)).to.equal(1)
         end)

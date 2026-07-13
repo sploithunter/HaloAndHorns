@@ -274,7 +274,7 @@ function AdminController.start()
         end
     end)
 
-    -- Fast-forward: XP to ~98% of the next level + the next gate's coins (skip farming when testing).
+    -- Fast-forward: bank the next earned level + the next gate's coins (skip farming when testing).
     local xpBtn = probeButton("GrantXp", "➕ XP + GATE", -250, function()
         local remote = game:GetService("ReplicatedStorage"):FindFirstChild("GameAPICommand")
         if remote then
