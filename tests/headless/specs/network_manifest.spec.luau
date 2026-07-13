@@ -197,6 +197,7 @@ return function()
             expect(signals.Settings_SetEnemyLevelOffset.name).to.equal(
                 "Settings_SetEnemyLevelOffset"
             )
+            expect(signals.Settings_SetTrialGroupScale.name).to.equal("Settings_SetTrialGroupScale")
             expect(signals.PetReportPositions.name).to.equal("PetReportPositions")
             expect(signals.InitiatePurchase.name).to.equal("InitiatePurchase")
             expect(signals.GetOwnedPasses.name).to.equal("GetOwnedPasses")
@@ -268,7 +269,7 @@ return function()
             expect(signals.PetPositionsRelay.name).to.equal("PetPositionsRelay")
             expect(signals.GameEvent.name).to.equal("GameEvent")
             expect(signals.PlayerDebugInfo.name).to.equal("PlayerDebugInfo")
-            expect(#created).to.equal(107)
+            expect(#created).to.equal(108)
         end)
 
         it("omits Studio-only packets from a production registry", function()

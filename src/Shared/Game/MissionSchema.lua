@@ -13,6 +13,7 @@
         per-trial achievement counter silently never ticks)
       - random.pool naming a mission that doesn't exist
       - an unknown seed_policy (was: silently treated as per_attempt)
+      - missing or invalid player Trial group-size bounds
 
     validate(missionsCfg, deps) -> ok, err
       deps = { enemies = <enemies cfg>, pets = <pets cfg>,
@@ -32,6 +33,29 @@ function MissionSchema.validate(cfg, deps)
     local counters = (deps.stats and deps.stats.counters) or {}
     local zones = (deps.areas and deps.areas.zones) or {}
     local ranks = cfg.pet_ranks or {}
+
+    local playerTuning = cfg.player_tuning
+    if type(playerTuning) ~= "table" then
+        return false, "player_tuning: expected table"
+    end
+    local groupScale = playerTuning.group_scale
+    if type(groupScale) ~= "table" then
+        return false, "player_tuning.group_scale: expected table"
+    end
+    for _, key in ipairs({ "min", "max", "default", "step" }) do
+        if type(groupScale[key]) ~= "number" then
+            return false, "player_tuning.group_scale." .. key .. ": expected number"
+        end
+    end
+    if groupScale.min <= 0 or groupScale.max < groupScale.min then
+        return false, "player_tuning.group_scale: expected 0 < min <= max"
+    end
+    if groupScale.default < groupScale.min or groupScale.default > groupScale.max then
+        return false, "player_tuning.group_scale.default: expected value within min/max"
+    end
+    if groupScale.step <= 0 or groupScale.step > (groupScale.max - groupScale.min) then
+        return false, "player_tuning.group_scale.step: expected positive value within range"
+    end
 
     if cfg.combat ~= nil and type(cfg.combat) ~= "table" then
         return false, "combat: expected table"

@@ -31,6 +31,7 @@ local CollectionService = game:GetService("CollectionService")
 
 local MissionSeed = require(ReplicatedStorage.Shared.Worldgen.MissionSeed)
 local MissionPopulation = require(ReplicatedStorage.Shared.Worldgen.MissionPopulation)
+local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 local MissionDecor = require(ReplicatedStorage.Shared.Worldgen.MissionDecor)
 local TileCatalog = require(ReplicatedStorage.Shared.Worldgen.TileCatalog)
 local LayoutSolver = require(ReplicatedStorage.Shared.Worldgen.LayoutSolver)
@@ -507,15 +508,20 @@ function MissionInstanceService:Open(player, missionId, opts)
                 break
             end
         end
-        -- TEAM SCALING (Jason, first duo run: "pretty easy teamed up"): each
-        -- extra warped member multiplies non-boss unit counts (missions.
-        -- team_scaling). Post-roll, so trial #N's layout/packs match solo.
+        -- PLAYER + TEAM GROUP SCALING: the opener's persistent Settings value owns this
+        -- party run, then automatic team scaling composes on top. Both are config-clamped
+        -- through the shared PackScale path; pack/layout rolls remain unchanged.
         local ts = self._config.team_scaling or {}
         local teamSize = #membersOf(teamKey)
-        local countMult = math.min(
-            (tonumber(ts.max_mult) or math.huge),
-            1 + (tonumber(ts.count_per_extra_member) or 0) * math.max(0, teamSize - 1)
-        )
+        local groupCfg = (self._config.player_tuning or {}).group_scale or {}
+        local groupScale =
+            PackScale.sanitizeMultiplier(player:GetAttribute("TrialGroupScale"), groupCfg)
+        local teamMult = PackScale.teamMultiplier(teamSize, ts)
+        local countMult = groupScale * teamMult
+        container:SetAttribute("TrialGroupScale", groupScale)
+        container:SetAttribute("TrialTeamScale", teamMult)
+        record.groupScale = groupScale
+        record.teamScale = teamMult
         local enemyDefs = (self._enemiesConfig and self._enemiesConfig.enemies) or {}
         local comp = MissionPopulation.roll(
             mission.packs or {},

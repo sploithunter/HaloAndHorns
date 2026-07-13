@@ -117,6 +117,7 @@ local function generateProfileTemplate(configLoader)
             MusicEnabled = true,
             SFXEnabled = true,
             GraphicsQuality = "Auto",
+            TrialGroupScale = 1.0,
             -- Display preferences for UI elements
             DisplayPreferences = {
                 inventory = "images",

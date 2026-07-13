@@ -20,6 +20,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- Get shared modules
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
+local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local AudioPrefs = require(script.Parent.Parent.Parent.Systems.AudioPrefs)
 -- THE shared panel exterior + pill helpers (window shell, area theming, entry pills).
@@ -157,6 +159,8 @@ else
     }
 end
 
+local missionsConfig = ConfigLoader:LoadConfig("missions") or {}
+
 local SettingsPanel = {}
 SettingsPanel.__index = SettingsPanel
 
@@ -287,7 +291,8 @@ function SettingsPanel:_createSliderSetting(
     minValue,
     maxValue,
     layoutOrder,
-    callback
+    callback,
+    step
 )
     local theme = uiConfig.helpers.get_theme(uiConfig)
 
@@ -317,6 +322,7 @@ function SettingsPanel:_createSliderSetting(
     sliderBG.Position = UDim2.new(0.45, 0, 0.5, -4)
     sliderBG.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     sliderBG.BorderSizePixel = 0
+    sliderBG.Active = true -- Frames only receive pointer/touch input when active.
     sliderBG.Parent = settingFrame
 
     local sliderCorner = Instance.new("UICorner")
@@ -356,6 +362,12 @@ function SettingsPanel:_createSliderSetting(
             1
         )
         local newValue = minValue + (maxValue - minValue) * percent
+        if tonumber(step) and step > 0 then
+            newValue = math.floor(newValue / step + 0.5) * step
+            newValue = math.floor(newValue * 1000000 + 0.5) / 1000000
+            newValue = math.clamp(newValue, minValue, maxValue)
+            percent = (newValue - minValue) / (maxValue - minValue)
+        end
 
         sliderFill.Size = UDim2.new(percent, 0, 1, 0)
         valueLabel.Text = tostring(math.floor(newValue * 100)) .. "%"
@@ -366,7 +378,10 @@ function SettingsPanel:_createSliderSetting(
     end
 
     sliderBG.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if
+            input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch
+        then
             updateSlider(input)
         end
     end)
@@ -904,6 +919,11 @@ function SettingsPanel:_getEnemyLevelOffset()
     return tostring(offset)
 end
 
+function SettingsPanel:_getTrialGroupScale()
+    local rules = PackScale.rules((missionsConfig.player_tuning or {}).group_scale)
+    return PackScale.sanitizeMultiplier(Players.LocalPlayer:GetAttribute("TrialGroupScale"), rules)
+end
+
 function SettingsPanel:_createCombatSettings()
     self:_createSectionHeader("⚔️ Combat", 29)
 
@@ -923,6 +943,19 @@ function SettingsPanel:_createCombatSettings()
         function(value)
             Signals.Settings_SetEnemyLevelOffset:FireServer({ offset = tonumber(value) or 0 })
         end
+    )
+
+    local groupRules = PackScale.rules((missionsConfig.player_tuning or {}).group_scale)
+    self:_createSliderSetting(
+        "Trial Enemy Group Size",
+        self:_getTrialGroupScale(),
+        groupRules.min,
+        groupRules.max,
+        31,
+        function(value)
+            Signals.Settings_SetTrialGroupScale:FireServer({ scale = value })
+        end,
+        groupRules.step
     )
 end
 

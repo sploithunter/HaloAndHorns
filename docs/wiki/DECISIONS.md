@@ -398,3 +398,14 @@ Hover or gamepad focus gives a concise explanation. A click/tap only stages a fu
 role, playstyle, strengths, tradeoff, and an explicit permanent-choice warning; it never writes the
 selection. Only `LOCK IN <ORIGIN>` calls `archetype.select`, and the ordinary level-up commit remains
 disabled until that decision is confirmed.
+
+## Trial Group Size Is A Persistent Player Setting (2026-07-13)
+
+Trial enemy density is an accessibility/difficulty preference, not an admin-only tuning command.
+Settings exposes one percentage whose default, limits, and step are owned by
+`configs/missions.lua`; the server clamps and persists it, and the mission opener's value controls
+the whole party instance. It is independent of the enemy-level setting and composes with automatic
+team-size scaling through the shared `PackScale` path. Pack selection stays seeded, every scalable
+authored role keeps at least one representative, and objective bosses/titans remain singular and
+mandatory. The initial 25%–200% range is intentionally a playtest range: establish the baseline
+from live level-14 runs, then narrow the config limits without adding a second UI or service path.

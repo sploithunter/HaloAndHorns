@@ -536,6 +536,20 @@ prompt PART is closest, and the hell anchor sits ~9 studs lower than the
 heaven plane center). The generic and matrix Trials quest tracks unlock at
 level 14, matching the first reachable doors in Heaven 2 / Hell 2.
 
+**Player group-size tuning**: Settings exposes `Trial Enemy Group Size` as a
+persistent percentage. Its default/min/max/step live only in
+`missions.player_tuning.group_scale` (initial tuning range 25%–200% in 5%
+steps), and the server clamps every request through `PackScale`. The player who
+opens the mission controls the generated density for the entire party. That
+value composes with the automatic `team_scaling` multiplier after seeded pack
+selection, so changing it never changes Trial #N's map or pack roll. Scalable
+roles retain at least one representative; boss/titan anchors stay singular and
+the objective room still guarantees its boss pack. The resolved player and team
+multipliers are stamped on the mission instance as `TrialGroupScale` and
+`TrialTeamScale` for live diagnosis. Enemy XP/loot remains per defeated enemy;
+the tuning range, baseline, and any future fixed-completion reward treatment
+should be revisited from playtest evidence rather than encoded in UI logic.
+
 **Dev ergonomics**: the spawn-plaza StudioOnly gates are DELETED (activation
 covers trial selection in dev too); `admin.setCounter` (IsAdmin-gated bus
 command) is the sanctioned counter override — `test.*` is unreachable from

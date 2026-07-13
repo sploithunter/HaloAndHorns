@@ -811,3 +811,10 @@ migration is needed for the abandoned "element splits stacks" spec.
 ## 2026-07-13 - Trials override realm non-aggression
 
 - Preserved normal realm behavior (Heaven/base squads may farm peacefully in Heaven; Hell remains universally aggressive) while making Trials explicitly universal-combat through `missions.combat.default_aggression_policy`. Mission entry publishes the policy and mission close clears it; the same pure `Allegiance.hostile` path now governs both enemy and pet initiation. Realm resonance remains independent at own-realm 0.8x, opposite-realm 1.5x, and base 1.0x.
+
+## 2026-07-13 - Player-configurable Trial group size
+
+- Added a persistent `Trial Enemy Group Size` Settings slider, initially config-clamped to 25%–200% in 5% steps. The opener's saved choice controls the party instance and composes with automatic team scaling through the shared `PackScale` formula.
+- Seeded pack picks and maps remain stable; scalable roles retain at least one unit while boss/titan anchors remain singular and mandatory. The resolved player/team multipliers are stamped on each mission instance for live balance diagnosis.
+- Live Heaven Lava Trial #1 at 50% produced five-enemy packs: its authored 3/2/2/1 swarm scales to 2/1/1/1 because every role stays represented. Jason assessed it as potentially doable with healing, then requested a lower level-14 option; the playtest floor is now 25%, which scales that swarm to four while preserving all roles.
+- Art-direction follow-up: Heaven Lava currently inherits the generic lava cave palette closely enough to read as Hell Lava. Preserve the lava element, but a future dressing/lighting pass should establish a distinct celestial-lava identity.

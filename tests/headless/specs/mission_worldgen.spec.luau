@@ -362,6 +362,57 @@ return function()
             end
         end)
 
+        it("countMult thins a swarm while keeping every configured role represented", function()
+            local packs = {
+                {
+                    weight = 1,
+                    units = {
+                        { enemy = "melee", count = 4 },
+                        { enemy = "blaster", count = 2 },
+                        { enemy = "healer", count = 2 },
+                    },
+                },
+            }
+            local scaled = MissionPopulation.roll(packs, 1, 123, { countMult = 0.5 })[1]
+            local counts = {}
+            for _, enemy in ipairs(scaled) do
+                counts[enemy] = (counts[enemy] or 0) + 1
+            end
+            expect(#scaled).to.equal(4)
+            expect(counts.melee).to.equal(2)
+            expect(counts.blaster).to.equal(1)
+            expect(counts.healer).to.equal(1)
+        end)
+
+        it("never removes or multiplies excluded boss anchors", function()
+            local packs = {
+                {
+                    weight = 1,
+                    boss = true,
+                    units = {
+                        { pet = "boss", rank = "boss", count = 1 },
+                        { pet = "minion", rank = "minion", count = 4 },
+                    },
+                },
+            }
+            local scaled = MissionPopulation.roll(packs, 1, 456, {
+                countMult = 0.5,
+                scalesUnit = function(unit)
+                    return unit.rank ~= "boss"
+                end,
+            })[1]
+            local bosses, minions = 0, 0
+            for _, unit in ipairs(scaled) do
+                if unit.rank == "boss" then
+                    bosses += 1
+                else
+                    minions += 1
+                end
+            end
+            expect(bosses).to.equal(1)
+            expect(minions).to.equal(2)
+        end)
+
         it("expands unit counts and never rolls zero-weight packs", function()
             for seed = 1, 40 do
                 local rolls = MissionPopulation.roll(PACKS, 4, seed)

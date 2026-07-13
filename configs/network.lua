@@ -516,6 +516,20 @@ return {
                 arguments = { { name = "request", type = "table" } },
             },
         },
+        Settings_SetTrialGroupScale = {
+            name = "Settings_SetTrialGroupScale",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 20,
+            handler = "SettingsService.SetTrialGroupScale",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
+            },
+        },
         PetReportPositions = {
             name = "PetReportPositions",
             transport = "reliable_event",

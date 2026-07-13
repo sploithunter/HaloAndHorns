@@ -20,6 +20,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- Get shared modules
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
+local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 
 local SettingsService = {}
 SettingsService.__index = SettingsService
@@ -31,6 +32,7 @@ function SettingsService:Init()
     self._logger = self._modules.Logger
     self._dataService = self._modules.DataService
     self._configLoader = self._modules.ConfigLoader
+    self._missionsConfig = self._configLoader:LoadConfig("missions") or {}
 
     -- Dependencies injected
 
@@ -125,6 +127,10 @@ function SettingsService:_createSettingsFolders(player)
             PetAttackStyle = self:_defaultPetAttackStyle(),
             InventoryCardScale = "small",
             EnemyLevelOffset = 0,
+            TrialGroupScale = PackScale.sanitizeMultiplier(
+                nil,
+                (self._missionsConfig.player_tuning or {}).group_scale
+            ),
         }
     end
 
@@ -166,6 +172,7 @@ function SettingsService:_createSettingsFolders(player)
     self:_applyPetAttackStyle(player)
     self:_applyInventoryCardScale(player)
     self:_applyEnemyLevelOffset(player)
+    self:_applyTrialGroupScale(player)
 
     self._logger:Info("✅ SETTINGS - Settings folders created successfully", {
         player = player.Name,
@@ -683,6 +690,46 @@ function SettingsService:_setEnemyLevelOffset(player, value)
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════════
+-- TRIAL GROUP SCALE (persistent player difficulty/accessibility preference). The
+-- mission opener's saved value controls the generated group sizes for that party run.
+-- ═══════════════════════════════════════════════════════════════════════════════════
+
+function SettingsService:_trialGroupScaleConfig()
+    return ((self._missionsConfig or {}).player_tuning or {}).group_scale or {}
+end
+
+function SettingsService:_sanitizeTrialGroupScale(value)
+    return PackScale.sanitizeMultiplier(value, self:_trialGroupScaleConfig())
+end
+
+function SettingsService:_applyTrialGroupScale(player)
+    local data = self._dataService:GetData(player)
+    local value = data and data.Settings and data.Settings.TrialGroupScale
+    local scale = self:_sanitizeTrialGroupScale(value)
+    if data then
+        data.Settings = data.Settings or {}
+        data.Settings.TrialGroupScale = scale
+    end
+    player:SetAttribute("TrialGroupScale", scale)
+    return scale
+end
+
+function SettingsService:_setTrialGroupScale(player, value)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+
+    data.Settings = data.Settings or {}
+    local scale = self:_sanitizeTrialGroupScale(value)
+    data.Settings.TrialGroupScale = scale
+    player:SetAttribute("TrialGroupScale", scale)
+
+    self._logger:Info("Updated Trial group scale", { player = player.Name, scale = scale })
+    return true
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════════
 -- NETWORK SIGNALS (following InventoryService pattern)
 -- ═══════════════════════════════════════════════════════════════════════════════════
 
@@ -734,6 +781,10 @@ function SettingsService:_setupNetworkSignals()
 
     Signals.Settings_SetEnemyLevelOffset.OnServerEvent:Connect(function(player, payload)
         self:_setEnemyLevelOffset(player, payload)
+    end)
+
+    Signals.Settings_SetTrialGroupScale.OnServerEvent:Connect(function(player, payload)
+        self:_setTrialGroupScale(player, payload)
     end)
 
     self._logger:Info("📡 Settings network signals configured")
@@ -797,6 +848,14 @@ end
 
 function SettingsService:GetEnemyLevelOffset(player)
     return self:_applyEnemyLevelOffset(player)
+end
+
+function SettingsService:SetTrialGroupScale(player, value)
+    return self:_setTrialGroupScale(player, value)
+end
+
+function SettingsService:GetTrialGroupScale(player)
+    return self:_applyTrialGroupScale(player)
 end
 
 return SettingsService
