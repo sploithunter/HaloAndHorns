@@ -51,6 +51,20 @@ return {
         default_aggression_policy = "universal",
     },
 
+    -- PLAYER TRIAL DENSITY: a persistent, player-facing Settings slider. The opener's
+    -- value owns the generated instance for the whole party; the server clamps it here
+    -- before composing it with automatic team-size scaling. Keep the range deliberately
+    -- broad while the level-14 baseline is playtested, then tighten these config values
+    -- without another UI/service change. Boss and titan anchors never scale in count.
+    player_tuning = {
+        group_scale = {
+            default = 1.0,
+            min = 0.5,
+            max = 2.0,
+            step = 0.05,
+        },
+    },
+
     solver_defaults = {
         tile_budget = 30,
         target_depth = { min = 4, max = 8 },

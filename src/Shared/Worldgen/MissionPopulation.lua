@@ -13,11 +13,11 @@
         { { weight = 10, units = { { enemy = "rabid_dog", count = 2 } } }, ... }
     One pack is rolled per spawn point; units expand to a flat enemy list.
 
-    TEAM SCALING (opts.countMult ≥ 1, opts.scalesUnit(unit) → bool): unit
-    counts multiply AFTER the seeded pack/boss rolls and draw no rng, so a
-    bigger team faces the SAME layout and pack picks as trial #N solo — just
-    denser (CoH team-size rule). scalesUnit excludes bosses/titans so anchors
-    stay singular; when omitted every unit scales.
+    GROUP SCALING (opts.countMult ≥ 0, opts.scalesUnit(unit) → bool): unit
+    counts multiply AFTER the seeded pack/boss rolls and draw no rng, so the
+    player setting and team size preserve trial #N's layout and pack picks.
+    Every authored role keeps at least one unit; scalesUnit excludes bosses/
+    titans so anchors stay singular. When omitted every unit scales.
 ]]
 
 local MissionSeed = require(script.Parent.MissionSeed)
@@ -35,7 +35,7 @@ function MissionPopulation.roll(packs, pointCount, streamSeed, opts)
         end
     end
     local bossPoint = opts and opts.bossPointIndex
-    local countMult = math.max(1, (opts and tonumber(opts.countMult)) or 1)
+    local countMult = math.max(0, (opts and tonumber(opts.countMult)) or 1)
     local scalesUnit = opts and opts.scalesUnit
 
     local out = {}
@@ -60,8 +60,9 @@ function MissionPopulation.roll(packs, pointCount, streamSeed, opts)
             end
             for _, unit in ipairs(chosen.units or {}) do
                 local n = unit.count or 1
-                if countMult > 1 and (scalesUnit == nil or scalesUnit(unit)) then
-                    n = math.max(n, math.floor(n * countMult + 0.5))
+                if countMult ~= 1 and (scalesUnit == nil or scalesUnit(unit)) then
+                    -- Keep every authored role represented; callers exclude boss/titan anchors.
+                    n = math.max(1, math.floor(n * countMult + 0.5))
                 end
                 for _ = 1, n do
                     if unit.pet then
