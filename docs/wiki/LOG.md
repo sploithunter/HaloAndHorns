@@ -830,3 +830,8 @@ migration is needed for the abandoned "element splits stacks" spec.
 
 - Live diagnosis of an injured Ember Owl found `CombatDamageTaken` frozen while the squad was out of combat. Capital/Trial slam used epoch `os.time()` for `_hitPet`, but natural regeneration compares the recorded last hit against monotonic `os.clock()`; the mixed domains made the five-second recovery delay negative forever.
 - Slam now timestamps its delayed impact with `os.clock()`, and `_hitPet` independently captures the monotonic landed-hit time before writing its recovery gate. This protects every current and future attack caller from poisoning normal pet regeneration with the wrong clock domain.
+
+## 2026-07-13 - Multi-level Trial enemy navigation
+
+- Live Heaven Grass Trial inspection localized the apparent enemy close-gap freeze to the same mezzanine landing in repeated rooms. Ground movement cast down from 80 studs overhead, hit the landing above the enemy instead of the supporting floor below it, interpreted that surface as an unclimbable rise, and stopped publishing new chase positions.
+- Ground enemies now probe locally beneath their current pivot, so roofs/mezzanines are never support-floor candidates; the owner-relative high probe remains exclusive to engaged flyers. Chase routing now follows one configured state path: clear scene ray -> direct shared chase step; blocked wall/pillar -> Roblox path waypoints followed by that same step; no usable path -> clear both sides' threat/targets and deaggro. The nav agent is intentionally small because enemies are collideless and imported art bounds must not determine traversability.
