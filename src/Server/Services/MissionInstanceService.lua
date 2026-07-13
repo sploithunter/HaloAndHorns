@@ -538,6 +538,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                 -- point always rolls a boss-marked pack — the boss guards the
                 -- glowy; weight-3 luck can no longer produce a boss-less map
                 bossPointIndex = objectivePointIndex,
+                bossOnlyAtObjective = (self._config.population or {}).boss_only_at_objective,
                 countMult = countMult,
                 scalesUnit = function(unit)
                     if unit.rank == "boss" or unit.rank == "titan" then
@@ -605,7 +606,8 @@ function MissionInstanceService:Open(player, missionId, opts)
                             synthDef = enemySvc.SynthesizePetEnemy
                                 and enemySvc:SynthesizePetEnemy(
                                     entry.pet,
-                                    ladder[entry.rank or "minion"]
+                                    ladder[entry.rank or "minion"],
+                                    record.openerLevel
                                 )
                             enemyId = "petinv_" .. entry.pet
                             -- ALL trial bosses roll the mission's egg (Jason:

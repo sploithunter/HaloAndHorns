@@ -424,3 +424,18 @@ that room boundary. The combat event loop also treats an authoritative position 
 an invariant failure: it clears the failed engagement and recovers the enemy to its immutable safe
 `MissionSpawn` anchor. Persistent population otherwise leaves only through defeat or mission
 teardown.
+
+## Trial Bosses Are One Objective Anchor With A Level Curve (2026-07-13)
+
+Boss-marked Trial packs belong only at the generated objective room. Ordinary MissionSpawn anchors
+exclude them through the explicit `missions.population.boss_only_at_objective` policy, while the
+objective anchor guarantees exactly one. This replaces accidental weighted boss density: a live
+Heaven Grass run produced four Worldbloom Ents even though the intended interaction was one boss
+guarding the objective.
+
+Pet-model boss stats resolve through the pure `MissionRankScale` path using the opener's level,
+captured once when the instance is created. The rank's ordinary values remain the level-50 endpoint;
+its config-owned `level_scaling.at_min` block defines the level-14 endpoint for HP, basic damage,
+armor, and ability damage, with a clamped linear interpolation between them. This keeps current
+level-50 tuning intact while making the first reachable Trial tier independently balanceable without
+service-code constants or a second boss-synthesis path.

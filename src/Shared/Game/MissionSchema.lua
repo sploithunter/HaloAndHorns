@@ -15,6 +15,8 @@
       - an unknown seed_policy (was: silently treated as per_attempt)
       - missing or invalid player Trial group-size bounds
       - missing or invalid generated-room movement inset
+      - missing boss-only objective population policy
+      - invalid pet-rank level curves
 
     validate(missionsCfg, deps) -> ok, err
       deps = { enemies = <enemies cfg>, pets = <pets cfg>,
@@ -76,6 +78,59 @@ function MissionSchema.validate(cfg, deps)
         return false, "navigation.room_inset: expected non-negative number"
     end
 
+    if type(cfg.population) ~= "table" then
+        return false, "population: expected table"
+    end
+    if type(cfg.population.boss_only_at_objective) ~= "boolean" then
+        return false, "population.boss_only_at_objective: expected boolean"
+    end
+
+    for rankId, rank in pairs(ranks) do
+        if type(rank) ~= "table" then
+            return false, "pet_ranks." .. tostring(rankId) .. ": expected table"
+        end
+        local scaling = rank.level_scaling
+        if scaling ~= nil then
+            local path = "pet_ranks." .. tostring(rankId) .. ".level_scaling"
+            if type(scaling) ~= "table" then
+                return false, path .. ": expected table"
+            end
+            if type(scaling.min_level) ~= "number" or scaling.min_level < 1 then
+                return false, path .. ".min_level: expected positive number"
+            end
+            if type(scaling.max_level) ~= "number" or scaling.max_level <= scaling.min_level then
+                return false, path .. ".max_level: expected number greater than min_level"
+            end
+            if scaling.curve ~= "linear" then
+                return false, path .. ".curve: expected 'linear'"
+            end
+            if type(scaling.at_min) ~= "table" then
+                return false, path .. ".at_min: expected table"
+            end
+            local foundField = false
+            for _, field in ipairs({ "hp_mult", "dmg_mult", "armor" }) do
+                local low = scaling.at_min[field]
+                if low ~= nil then
+                    foundField = true
+                    if type(low) ~= "number" or low < 0 or type(rank[field]) ~= "number" then
+                        return false, path .. ".at_min." .. field .. ": invalid rank endpoint"
+                    end
+                end
+            end
+            local abilityMult = scaling.at_min.ability_damage_mult
+            if abilityMult ~= nil then
+                foundField = true
+                if type(abilityMult) ~= "number" or abilityMult < 0 then
+                    return false,
+                        path .. ".at_min.ability_damage_mult: expected non-negative number"
+                end
+            end
+            if not foundField then
+                return false, path .. ".at_min: expected at least one scaling field"
+            end
+        end
+    end
+
     for missionId, def in pairs(cfg.missions or {}) do
         local path = "missions." .. tostring(missionId)
         if def.seed_policy ~= nil and not SEED_POLICIES[def.seed_policy] then
@@ -121,7 +176,11 @@ function MissionSchema.validate(cfg, deps)
                     .. missionId
                     .. "s_completed' not declared (per-trial achievements would silently never tick)"
         end
+        local hasRegularPack = false
         for pi, pack in ipairs(def.packs or {}) do
+            if not pack.boss and (tonumber(pack.weight) or 0) > 0 then
+                hasRegularPack = true
+            end
             for ui, unit in ipairs(pack.units or {}) do
                 local upath = path .. ".packs[" .. pi .. "].units[" .. ui .. "]"
                 if unit.enemy ~= nil and enemies[unit.enemy] == nil then
@@ -142,6 +201,9 @@ function MissionSchema.validate(cfg, deps)
                             .. "' (missions.pet_ranks)"
                 end
             end
+        end
+        if cfg.population.boss_only_at_objective and not hasRegularPack then
+            return false, path .. ".packs: boss-only objective policy needs a weighted regular pack"
         end
     end
 

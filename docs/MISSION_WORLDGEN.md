@@ -441,8 +441,11 @@ light_tokens).
 
 ## 11. Curated maps & named-boss objectives (design, 2026-07-09)
 
-**Balance baseline (Jason, live)**: CoH spawn tables land ~2 boss packs per large
-map — "about right." Weight-3 boss pack over ~8 spawn points; don't retune blindly.
+**Boss population contract (revised from live evidence, 2026-07-13)**: boss-marked
+packs are objective anchors. `missions.population.boss_only_at_objective` excludes
+them from ordinary room rolls, while the objective MissionSpawn receives exactly
+one. This replaced the earlier incidental ~2-per-map weighted behavior after a
+Heaven Grass run fielded four Worldbloom Ents.
 
 **Curated map library** (planned): a curated mission = `{ display, mission, seed }` —
 a map IS its seed, so vetting is play-testing randoms and saving winners by name.
@@ -477,8 +480,11 @@ opposite realm 1.5x, base pets 1.0x). Normal Heaven overworld non-aggression is 
 **Pet-model enemies**: packs accept `{ pet = id, rank = "minion|lieutenant|boss",
 count }` — EnemyService.SynthesizePetEnemy (public over the patrol-invader
 synthesizer) applies missions.pet_ranks; BOSS rank wears the pet's own
-huge_scale ("boss versions = huges of them"). Realm rosters give every element
-a full cast in both alignments.
+huge_scale ("boss versions = huges of them"). Boss rank also uses the pure
+`MissionRankScale` path: its config owns a linear level-14 baseline through the
+existing level-50 rank values, including HP, basic damage, armor, and ability
+damage. The opener's level is captured once for the run. Realm rosters give every
+element a full cast in both alignments.
 
 **Curated themed quests** (the wrap for Trials, per Jason): use mission.replay
 to HUNT the shared-sequence space at high numbers, vet maps per element/realm,
