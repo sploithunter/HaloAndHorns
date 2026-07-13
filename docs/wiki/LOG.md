@@ -841,3 +841,8 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Live inspection confirmed an Empyrean Dragon boss had been knocked through a Trial wall: its authoritative position was outside all 30 generated rooms, then disengagement adopted that invalid position as its loiter home.
 - Mission population now binds every enemy to the containing room rectangle derived from the same pure layout payload used by the minimap. Chase, flee, loiter, and knockback pass through one generic movement leash; room inset is configuration-owned under `missions.navigation.room_inset`, independent of collideless model art bounds.
 - The combat event loop detects any authoritative position outside the assigned room and recovers the persistent objective to its authored clear `MissionSpawn` anchor while clearing both sides of the failed engagement. Authored mission homes are no longer erased or redefined when combat starts.
+
+## 2026-07-13 - Repaired Heaven landmarks remain playable architecture
+
+- Live Edit inspection confirmed the canonical repair had set all four visual parts of each Golden Halo Cathedral and the Winged Portal of Light to non-collidable; the mission gate was 0/5 collidable including its interaction host, and players fell through its platform.
+- Landmark asset configuration now explicitly requires collidable `PreciseConvexDecomposition` geometry. The one repair/audit script applies and verifies that policy on both newly imported and already-canonical scenes, preserving walkable stairs/platforms and true arch openings without a broad-box collision proxy.
