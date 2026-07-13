@@ -791,3 +791,8 @@ migration is needed for the abandoned "element splits stacks" spec.
 
 - Potion slots now reuse the existing delayed power-tooltip surface. Pure `PotionDescribe` derives the name, target/type, configured description, maximum charge effect, drain duration, sip refill, and LOCK auto-maintain threshold from `configs/potions.lua`.
 - Headless coverage describes all shipped potions and locks the team/player/thrown labels. Live Studio QA verified Fortune Flask and Berserk Brew wrapping/placement, mouse-leave dismissal, and an unchanged Mirage Step power tooltip with no new client errors.
+
+## 2026-07-13 - XP + GATE crosses the next level threshold
+
+- The admin `XP + GATE` shortcut now sets lifetime XP to one point beyond the next earned-level threshold instead of stopping at roughly 98%. The newly earned level remains unclaimed, so the normal permanent power-choice flow still runs while its farming prerequisite is skipped.
+- Headless curve coverage locks the one-XP carry-forward boundary, and the Studio automation suite verifies one pending level plus the exact total-XP target.
