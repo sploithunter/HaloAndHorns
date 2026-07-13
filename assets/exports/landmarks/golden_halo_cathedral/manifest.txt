@@ -1,6 +1,6 @@
 source: assets/source/landmarks/golden_halo_cathedral.glb
 original_tris: 1725040
 
-10k: golden_halo_cathedral_10k.fbx (9997 tris, target 10000)
-fbx_sha256: ac5535a50197458c4652f4de98390b6436d998bd0377fd874228dd1b4827a0fa
+10k: golden_halo_cathedral_4x10k.fbx (39997 tris total, target 10000 per part; per-part 9999,9999,9999,10000)
+fbx_sha256: 3fa3aa2b9b7cd5c4769d1fdb80742bb4b19557ea889cd001c198b3fc5c8b4281
 texture_sha256: 0136e465bf5159d3fdc002d429f42318dda0242f3ff2abb76cd43561af42d8ad

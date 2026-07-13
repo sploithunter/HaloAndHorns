@@ -31,14 +31,16 @@ Studio owns landmark placement and non-code effects, but the mesh source and ass
 repo-owned configuration. Do not rely on a Studio `RBX_ReimportId` as source control. For durable
 landmarks, retain the source under `assets/source/`, generate a welded/cleaned Roblox-budget export,
 record its group-owned IDs and target paths in config, then apply it through one repeatable Studio
-script. The current contract is `configs/landmarks.lua` plus
+script. The current contract is `src/Shared/Assets/LandmarkAssets.lua` plus
 `scripts/studio/repair_landmarks.luau`.
 
 The repair path replaces only MeshPart visuals. It preserves authored children such as
 `NativeFX`, `AscensionAltarHost`, `LightEmit`, and `HeavenMissionDoor`, as well as the original
 visual bounds. Because Roblox protects `RBX_ReimportId` from ordinary writes, the script moves
 those preserved children into a plain canonical Model rather than attempting to clear the imported
-root in place. This prevents a future Studio reimport from silently restoring unsafe source meshes.
+root in place. Multi-part scenes keep a configured per-MeshPart budget (currently four parts at
+10k each); the limit must never be applied once to the entire scene. This prevents a future Studio
+reimport from silently restoring unsafe source meshes without throwing away landmark detail.
 
 ## Canonical Hooks
 

@@ -140,14 +140,17 @@ first import but later shatter when Roblox reprocesses the private mesh assets.
 The Heaven cathedral and mission portal are the reference implementation:
 
 1. Canonical GLBs live in `assets/source/landmarks/`.
-2. `scripts/decimate_mesh.sh` welds/cleans them and emits one <=10k-triangle FBX plus texture under
-   `assets/exports/landmarks/`.
-3. The group-owned Model/texture IDs and target Workspace paths live in `configs/landmarks.lua`.
+2. `scripts/decimate_mesh.sh --scene-parts 4 --targets 10000` welds/cleans the whole scene,
+   budgets 40k triangles globally, and spatially partitions every face into four <=10k MeshParts.
+   The FBX assembly and texture live under `assets/exports/landmarks/`.
+3. The group-owned Model/PBR-map IDs and target Workspace paths live in
+   `src/Shared/Assets/LandmarkAssets.lua`. It intentionally stays outside the runtime ConfigLoader;
+   it is Edit-tool configuration, not gameplay configuration.
 4. `scripts/studio/repair_landmarks.luau` is the single application/audit path. It loads the
    configured Model asset, preserves authored placement, effects, doors, and interaction hosts,
    and swaps the imported root for a plain Model so the protected reimport link cannot recur.
 
-The repair script is idempotent. A second run reports healthy one-mesh landmarks and changes
+The repair script is idempotent. A second run reports healthy four-part landmarks and changes
 nothing.
 
 ## Status Values

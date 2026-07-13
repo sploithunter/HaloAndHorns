@@ -17,6 +17,8 @@ Options:
   --output <dir>       Output directory (default: <input_dir>/roblox_decimated)
   --targets <list>     Comma-separated triangle targets (default: ${DEFAULT_TARGETS})
   --tolerance <float>  Relative face-count tolerance (default: 0.03)
+  --scene-parts <count>
+                       Export N spatial MeshParts; each gets the target budget (scene landmarks)
   --help               Show this help
 
 Examples:
@@ -44,6 +46,7 @@ fi
 OUTPUT=""
 TARGETS="${DEFAULT_TARGETS}"
 TOLERANCE="0.03"
+SCENE_PARTS="1"
 INPUTS=()
 
 while [[ $# -gt 0 ]]; do
@@ -58,6 +61,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --tolerance)
       TOLERANCE="${2:-}"
+      shift 2
+      ;;
+    --scene-parts)
+      SCENE_PARTS="${2:-}"
       shift 2
       ;;
     --help|-h)
@@ -126,11 +133,15 @@ for input_path in "${INPUTS[@]}"; do
   echo "==> Decimating ${input_path}"
   echo "    Output: ${out_dir}"
 
-  "${BLENDER}" --background --python "${SCRIPT}" -- \
-    --input "${input_path}" \
-    --output "${out_dir}" \
-    --targets "${TARGETS}" \
+  blender_args=(
+    --input "${input_path}"
+    --output "${out_dir}"
+    --targets "${TARGETS}"
     --tolerance "${TOLERANCE}"
+    --scene-parts "${SCENE_PARTS}"
+  )
+
+  "${BLENDER}" --background --python "${SCRIPT}" -- "${blender_args[@]}"
 done
 
 echo "All decimation jobs finished."
