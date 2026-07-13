@@ -406,6 +406,11 @@ through it.
 
 ## Part F — Build order from here
 
+> **Support-badge contract (shipped 2026-07-13):** `power_icons.support_badge` owns the label and
+> symbol for every `pet_roles.support_auras` kind. Inventory derives colour from the pet through
+> `PetBadge.elementForPetType` and uses `PetBadge.create`, so a new aura cannot silently gain a
+> separate rendering path or lose its badge without failing headless coverage.
+
 1. **Upload + wire the 14 pending symbols** (esp. `coins_up`, `plus`, `clover_lucky`, `gift_up`,
    `capacitor`, `history`, `arrow_right`) across the 5 colors → `power_icons.lua discs`.
 2. **Pet support display unification** — per-pet aura markers + status badges (Part C/D).

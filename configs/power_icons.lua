@@ -189,22 +189,26 @@ local M = {
         fire_nova = { symbol = "nuke", target = "self" }, -- player_field burn AoE
     },
 
-    -- Support PET aura kind (configs/pet_roles.lua support_auras) -> the white SYMBOL for its badge.
-    -- The disc COLOUR is the pet's biome element; this picks the symbol (heal=plus, yield=coins_up…).
-    support_symbol = {
-        heal = "plus",
-        defense = "armor_chest",
-        offense = "chevrons_up",
-        yield = "coins_up",
-        luck = "clover_lucky", -- bunny (Grass) — lucky-rabbit hatch-luck aura
-        hold = "capacitor", -- controller HOLD glyph (capacitor IS the hold art; see discs map above)
-        empower = "chevrons_up", -- single-target damage buffer: SAME damage-up glyph as offense; the
-        -- single-target ring (SUPPORT_META.ring = "single") is what reads it apart from team offense
-        haste = "history", -- team attack-speed aura (efficiency-as-aura); reuse the clock/recharge glyph
-        recharge = "history", -- Ashwing Ember Tempo (power-cooldown shave): the clock glyph
-        focus = "focus_regen", -- Lumen Dove focus-regen aura: the BOLT (the focus bar's own
-        -- symbol; "focus" the droplet = the focus-cost-REDUCTION enhancement glyph, distinct
-        -- axis). NEVER capacitor — capacitor is the hold/mez art, hold-only.
+    -- Support PET aura kind (configs/pet_roles.lua support_auras) -> its complete inventory-badge
+    -- presentation. Keeping label + symbol together makes a newly authored aura fail one coverage
+    -- test instead of silently losing its badge because a client-only lookup was not updated.
+    -- Disc colour comes from the PET through PetBadge.elementForPetType; it is never hard-coded by
+    -- aura kind (exclusive pets such as Ashwing/Lumen Dove therefore stay purple).
+    support_badge = {
+        heal = { symbol = "plus", label = "Heal" },
+        defense = { symbol = "armor_chest", label = "Defense" },
+        offense = { symbol = "chevrons_up", label = "War-Cry" },
+        yield = { symbol = "coins_up", label = "Crystal Yield" },
+        luck = { symbol = "clover_lucky", label = "Luck" },
+        hold = { symbol = "capacitor", label = "Hold" },
+        empower = { symbol = "chevrons_up", label = "Empower" },
+        haste = { symbol = "history", label = "Haste" },
+        recharge = { symbol = "history", label = "Recharge" }, -- Ashwing Ember Tempo
+        focus = { symbol = "focus_regen", label = "Focus Regen" }, -- Lumen Dove Inner Light
+        drain = { symbol = "plus", label = "Drain Heal" },
+        shred = { symbol = "shield_broken", label = "Armor Shred" },
+        curse = { symbol = "fist_broken", label = "Weaken" },
+        rage = { symbol = "rage", label = "Rage" },
     },
     power_glyph_symbol = {
         debuff = "contagion",

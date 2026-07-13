@@ -852,3 +852,8 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Diagnosed the level-15 Worldbloom Ent wall as two compounding population bugs: boss-marked packs remained eligible at every ordinary room, producing four bosses in one run, and the pet-boss rank always used level-50 stats (23,200 HP plus 150 armor) at the first level-14 Trial tier.
 - Added config-owned objective-only boss placement. The seeded population path now filters boss packs from ordinary rooms and guarantees exactly one boss pack at the objective room.
 - Added the pure `MissionRankScale` path. Pet-boss HP, basic damage, armor, and ability damage interpolate from a level-14 baseline to the unchanged level-50 rank values using the opener's captured level. At level 15, Worldbloom resolves to about 6,283 HP, 28 armor, and a 62-damage slam.
+
+## 2026-07-13 - Support powers always receive inventory badges
+
+- Fixed Ashwing's Ember Tempo and Lumen Dove's Inner Light missing their inventory support-power badges. Aura label/symbol presentation now lives in `power_icons.support_badge`, badge colour comes from the pet's configured origin, and inventory uses the shared `PetBadge.create` renderer rather than assembling a second icon path.
+- Headless coverage now requires every authored support-aura kind to provide a label, symbol, and renderable disc, preventing future working powers from silently shipping without their badge.
