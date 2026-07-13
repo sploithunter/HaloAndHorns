@@ -118,7 +118,13 @@ return {
             meter = "weaken",
             sip_fraction = 0.5,
             tradeable = true,
-            throw = true,
+            -- Enemy-target consumables are server-authoritative. Range + presentation live here so
+            -- another thrown potion can reuse the same path without adding a bespoke cast branch.
+            throw = {
+                range = 100,
+                primitive = "ranged_bolt",
+                element = "lava",
+            },
             icon = "🩸",
         },
     },

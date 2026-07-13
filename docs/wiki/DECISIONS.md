@@ -374,6 +374,13 @@ structurally prevents 1000× magnitude or 1000× duration. Potions write their o
 source so they stack additively with powers; `LOCK` = auto-maintain (auto-drink below a threshold). Pure
 core `Shared/Game/BrewMeter`.
 
+Enemy-target meters use the same model on the target rather than inventing a second consumable
+system. Every caller invokes `PotionService:Use`; `meters[*].target` selects drink versus throw,
+while each potion's config owns throw range and FX. Throws resolve the squad's canonical focus
+through `EnemyService:GetFocusEnemy` (explicit assist → most pets attacking → nearest engaged) and
+write through the additive `VulnMark` source path. The target owns and drains the charge, so a vial
+cannot overwrite power vulnerability and powers/potions cannot disagree about which enemy is meant.
+
 ## Event Scheduling Is Mountain Time (2026-06-21)
 
 Live-ops events schedule in Mountain time (America/Denver, DST-aware) via the pure
@@ -409,3 +416,8 @@ team-size scaling through the shared `PackScale` path. Pack selection stays seed
 authored role keeps at least one representative, and objective bosses/titans remain singular and
 mandatory. The initial 25%–200% range is intentionally a playtest range: establish the baseline
 from live level-14 runs, then narrow the config limits without adding a second UI or service path.
+
+Persistent Trial enemies are objective population, not replaceable patrols. Generic chase-stuck
+recovery may retire an ambient patrol because its spawner replaces it, but a persistent mission
+enemy must remain tracked: it clears the failed engagement and resets to its immutable authored
+spawn point. Persistent population otherwise leaves only through defeat or mission teardown.

@@ -348,10 +348,15 @@ function PetFollowController.start()
         -- Family-mapped power FX (PowerService:Cast): a registry primitive rendered on the local
         -- caster (source) or at an enemy (target), with (effect/sound TBD) placeholders.
         if data.primId then
-            local opts = { primId = data.primId, element = data.element, kind = data.kind }
+            local opts = {
+                primId = data.primId,
+                element = data.element,
+                kind = data.kind,
+                caster = data.caster,
+            }
             if data.kind == "target" then
                 opts.target = data.target
-            else
+            elseif not opts.caster then
                 local char = Players.LocalPlayer.Character
                 opts.caster = char and char:FindFirstChild("HumanoidRootPart")
             end

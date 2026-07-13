@@ -966,8 +966,10 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
   (flag-gated, ships dark).
 - **Mountain-time weekday event calendar** — seven daily events via `Shared/Game/MountainTime`,
   surfaced on a live HUD label + Effects panel cards.
-- **Potions (BrewMeter)** — runtime per-axis draining meters (anti-runaway), drink from an assignable
-  power-bar slot, LOCK=auto-maintain, stack additively with powers; first-class inventory tab. Potion
+- **Potions (BrewMeter)** — runtime per-axis draining meters (anti-runaway), use from an assignable
+  power-bar slot, LOCK=auto-maintain, stack additively with powers; first-class inventory tab. Player
+  meters drink; enemy meters throw at the squad's shared focus, keep charge on the target, and use
+  additive `VulnMark` channels. Throw range/projectile are config-owned. Potion
   slots reuse the power hover tooltip, with name, target/type, description, charge cap, drain, sip,
   and LOCK threshold derived from `configs/potions.lua` through pure `PotionDescribe`.
 - **Multi-bucket trade escrow** — pets + gems + enhancements (potions pending) through a

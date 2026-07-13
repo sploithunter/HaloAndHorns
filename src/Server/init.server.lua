@@ -826,6 +826,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
         })
         modules:Get("PotionService"):BindPeerServices({
             HotbarService = modules:Get("HotbarService"),
+            EnemyService = modules:Get("EnemyService"),
         })
         modules:Get("GameAPIService"):BindServices({
             AchievementsService = isFeatureEnabled("achievements") and modules:Get(

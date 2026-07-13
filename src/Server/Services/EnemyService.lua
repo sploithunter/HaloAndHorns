@@ -2728,8 +2728,8 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     -- beyond its leash boundary chases forever without ever closing — frozen at the wall, holding
     -- aggro, which latches the player InCombat and PAUSES farming (the stray-despawn skips aggro'd
     -- foes, so nothing clears it). If it can neither reach attack range nor close the gap for
-    -- stuck_disengage_seconds, DESPAWN it outright — just disengaging sends it back to patrol where it
-    -- flees and re-aggros into the same loop (Jason). A fresh patrol fills in shortly anyway.
+    -- stuck_disengage_seconds, retire replaceable patrols outright. Persistent mission population
+    -- cannot be replaced, so it recovers to its authored spawn and cleanly drops this engagement.
     local distToTarget = (Vector3.new(targetPos.X, ePos.Y, targetPos.Z) - ePos).Magnitude
     local closing = (entry.lastTargetDist == nil) or (distToTarget < entry.lastTargetDist - 0.5)
     if distToTarget <= (atk + 1) or closing then
@@ -2764,6 +2764,30 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
             end
         end
         if entry.stuckTime >= (eng.stuck_disengage_seconds or 8) then
+            if entry.persistent then
+                trace(
+                    entry,
+                    "RECOVER",
+                    string.format(
+                        "persistent mission enemy stuck %.1fs — reset to authored spawn instead of deleting objective population",
+                        entry.stuckTime
+                    )
+                )
+                self:_clearEnemyFromPetThreat(targetId)
+                self:_releasePets(targetId)
+                self:_setAggroOwner(entry, nil)
+                entry.aggro = AggroTable.new()
+                entry.targetPet = nil
+                entry.meander = nil
+                entry.stuckTime = 0
+                entry.lastTargetDist = nil
+                local recovery = entry.spawnPosition or entry.home or entry.pos
+                entry.home = recovery
+                entry.pos = recovery
+                model:SetAttribute("MoveTarget", recovery)
+                model:SetAttribute("MoveFace", recovery + Vector3.new(0, 0, -1))
+                return
+            end
             trace(
                 entry,
                 "DESPAWN",
@@ -3566,6 +3590,12 @@ function EnemyService:_focusEnemy(player)
     end
 
     return model
+end
+
+-- Public shared focus seam for powers, potions, and future enemy-target actions. Keeping resolution
+-- here prevents each feature from drifting into a different idea of which enemy the squad means.
+function EnemyService:GetFocusEnemy(player)
+    return self:_focusEnemy(player)
 end
 
 -- Hell COMBAT-debuff aura: stamp a debuff on the squad's focus enemy.
@@ -5796,6 +5826,7 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         enemyId = enemyId,
         def = def, -- the resolved def (config OR a synthesized pet-invader def); combat reads this
         pos = position,
+        spawnPosition = position, -- immutable authored recovery point (mission stuck recovery)
         aggro = AggroTable.new(),
         lastActiveAt = os.clock(), -- engagement timer seed (idle-despawn clock; refreshed while aggro'd)
         persistent = (opts and opts.persistent) == true, -- mission population: NEVER idle-despawns (defeat or teardown only)
