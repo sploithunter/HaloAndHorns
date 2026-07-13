@@ -406,6 +406,9 @@ function MissionInstanceService:Open(player, missionId, opts)
     end
     local returnCFrames = {}
     local savedZoom = {}
+    local missionAggressionPolicy = mission.aggression_policy
+        or (self._config.combat and self._config.combat.default_aggression_policy)
+        or "realm"
     for _, member in ipairs(membersOf(teamKey)) do
         local character = member.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -423,6 +426,9 @@ function MissionInstanceService:Open(player, missionId, opts)
             -- pseudo-area key: element trials brand drops + biome RPS via
             -- their own zone (mission.area, default = theme)
             member:SetAttribute("MissionArea", mission.area or mission.theme or "earth")
+            -- Target acquisition reads this independently from CurrentRealm. Trials opt into
+            -- universal initiation while CurrentRealm continues to drive resonance multipliers.
+            member:SetAttribute("MissionAggressionPolicy", missionAggressionPolicy)
             -- THE TRIAL COUNTS AS ITS REALM (Jason 2026-07-09: "alignment
             -- isn't working inside the trials"): resonance keys on
             -- CurrentRealm, which is layer-derived — plaza/base entries read
@@ -1037,6 +1043,7 @@ function MissionInstanceService:_close(instanceId, reason)
         member:SetAttribute("InMission", nil)
         member:SetAttribute("MissionTheme", nil)
         member:SetAttribute("MissionArea", nil)
+        member:SetAttribute("MissionAggressionPolicy", nil)
         member:SetAttribute("MissionSequence", nil)
         pcall(function() -- restore layer-derived CurrentRealm (theme override ends)
             self._layerService:RefreshRealmAttributes(member)

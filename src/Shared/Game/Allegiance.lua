@@ -9,6 +9,10 @@
       • Off-realm (the neutral homeworld) the mechanic doesn't apply — everyone attacks
         all, exactly as combat worked before realms.
 
+    Mission combat may pass policy="universal" to bypass realm non-aggression without bypassing
+    the separate realm resonance calculation. This keeps normal Heaven peaceful while ensuring
+    Trials always start with any valid squad.
+
     NOTE: this pure PROACTIVE gate answers "would X initiate on Y". Neutral home/creator
     pets (Colorado) are additionally REACTIVE — they don't initiate here, but JOIN a fight
     already engaged with the squad; that runtime override lives in EnemyService
@@ -43,12 +47,16 @@ function Allegiance.effective(rawSide, currentRealm)
     return side
 end
 
--- Does an attacker attack a target, in `currentRealm`?
+-- Does an attacker attack a target, in `currentRealm`, under `aggressionPolicy`?
+--   universal                 → true (Trials: everyone may initiate)
 --   off-realm (neutral realm) → true (mechanic inactive; attack all, legacy behavior)
 --   hell attacker            → true (attacks everything)
 --   heaven attacker          → only a hell target
 --   neutral resolves to the realm side first, then the above.
-function Allegiance.hostile(attackerSide, targetSide, currentRealm)
+function Allegiance.hostile(attackerSide, targetSide, currentRealm, aggressionPolicy)
+    if aggressionPolicy == "universal" then
+        return true
+    end
     local realm = Allegiance.normalize(currentRealm)
     if realm == "neutral" then
         return true -- homeworld / no realm: allegiance gating is off

@@ -44,6 +44,13 @@ return {
         max_zoom = 45,
     },
 
+    -- Trials are combat instances, not peaceful realm overworlds. Every pet/enemy pairing may
+    -- initiate here; CurrentRealm still independently applies the configured 0.8x/1.5x resonance.
+    -- Individual future mission types can override this with aggression_policy = "realm".
+    combat = {
+        default_aggression_policy = "universal",
+    },
+
     solver_defaults = {
         tile_budget = 30,
         target_depth = { min = 4, max = 8 },

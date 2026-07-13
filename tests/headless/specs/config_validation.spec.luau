@@ -50,6 +50,14 @@ return function()
             }, { stats = { counters = {} } })
             expect(ok).to.equal(false)
         end)
+
+        it("rejects an unknown mission aggression policy", function()
+            local ok = MissionSchema.validate({
+                combat = { default_aggression_policy = "sometimes" },
+                missions = {},
+            })
+            expect(ok).to.equal(false)
+        end)
     end)
     describe("ZoneSchema vs configs/areas.lua (the real boot rules, in CI)", function()
         local areas = loadModule("configs/areas.lua")

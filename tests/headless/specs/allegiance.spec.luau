@@ -79,4 +79,25 @@ return function()
             expect(Allegiance.hostile("neutral", "neutral", "neutral")).to.equal(true)
         end)
     end)
+
+    describe("Allegiance.hostile — UNIVERSAL mission policy", function()
+        it("lets a base-world squad initiate against Heaven Trial enemies", function()
+            expect(Allegiance.hostile("neutral", "heaven", "heaven", "universal")).to.equal(true)
+        end)
+        it("lets Heaven Trial enemies initiate against a base-world squad", function()
+            expect(Allegiance.hostile("heaven", "neutral", "heaven", "universal")).to.equal(true)
+        end)
+        it("allows every realm pairing without changing their resonance inputs", function()
+            local sides = { "neutral", "heaven", "hell" }
+            for _, realm in ipairs({ "heaven", "hell" }) do
+                for _, attacker in ipairs(sides) do
+                    for _, target in ipairs(sides) do
+                        expect(Allegiance.hostile(attacker, target, realm, "universal")).to.equal(
+                            true
+                        )
+                    end
+                end
+            end
+        end)
+    end)
 end
