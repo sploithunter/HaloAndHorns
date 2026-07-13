@@ -51,6 +51,7 @@ local breakablesConfig
 local xpRewardsConfig = {} -- configs/leveling.lua xp_rewards (mining grants XP — see _onBreak)
 local xpLevelScaleCfg -- configs/leveling.lua xp_level_scale (diminishing XP vs out-leveled crystals)
 local payoutLevelScaleCfg -- configs/leveling.lua payout_level_scale (NEUTRAL x1 seam today)
+local onrampCfg -- configs/leveling.lua onramp (sub-5 XP/crystal boost — Jason's early-game tune)
 local zonesConfig = {} -- configs/areas.lua zones (zone_level -> crystal MiningLevel)
 -- Legacy "ring mining": the invisible Star align-ring (unanchored physics boxes + AlignPosition/
 -- Orientation constraints per mined node) that made pets ORBIT a node while mining. The current
@@ -667,6 +668,7 @@ function BreakableSpawner:Init()
     xpRewardsConfig = (okLvl and type(lvlCfg) == "table" and lvlCfg.xp_rewards) or {}
     xpLevelScaleCfg = okLvl and type(lvlCfg) == "table" and lvlCfg.xp_level_scale or nil
     payoutLevelScaleCfg = okLvl and type(lvlCfg) == "table" and lvlCfg.payout_level_scale or nil
+    onrampCfg = okLvl and type(lvlCfg) == "table" and lvlCfg.onramp or nil
     local okAreas, areasCfg = pcall(function()
         return configLoader:LoadConfig("areas")
     end)
@@ -2145,6 +2147,19 @@ function BreakableSpawner:_trySpawnOne(
                     1
                 ) or 1
                 amount = math.max(0, math.floor(baseAmount * rewardMultiplier * currencyMultiplier))
+                -- EARLY-GAME ONRAMP (leveling.onramp): sub-5 players earn
+                -- boosted CRYSTALS (Jason, Mineral-Monday live-tune) — events
+                -- stack on top by design
+                if
+                    currencyType == "crystals"
+                    and player
+                    and (tonumber(player:GetAttribute("Level")) or 1)
+                        < ((onrampCfg and onrampCfg.below_level) or 5)
+                then
+                    amount = math.floor(
+                        amount * ((onrampCfg and tonumber(onrampCfg.crystal_mult)) or 1) + 0.5
+                    )
+                end
             end
             -- Desert buffer's team YIELD aura (meerkat): a short-lived coin multiplier on the
             -- player (set by EnemyService:_supportPass on a channel separate from event

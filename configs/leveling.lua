@@ -17,6 +17,14 @@ return {
     -- shares that floor to 0 still tick the bar (the "integer" floor — intentional). Tune
     -- freely; raise per_value to level faster, or raise player_progression.xp.per_level to
     -- make each level cost more (slows leveling without touching the per-action grant).
+    -- EARLY-GAME ONRAMP (Jason 2026-07-13, live-tuned on Mineral Monday: "the
+    -- XP is a little slow... just the bottom end of the curve needs up... up
+    -- the crystals by 150% so we split the difference on non-Mineral-Mondays"):
+    -- BELOW level 5 (the combat-onramp threshold) XP and crystal awards run at
+    -- 1.5x. Scoped to the 1-to-5 climb only — at 5 the world opens and rates
+    -- normalize. Event multipliers stack on top (Mineral Monday: 1.5 x 2 = 3x).
+    onramp = { below_level = 5, xp_mult = 1.5, crystal_mult = 1.5 },
+
     xp_rewards = {
         mining = { per_value = 0.05, min = 1 }, -- ~5% of the ore's coin share (split per contributor)
         combat = { per_value = 0.1, min = 1 }, -- LEGACY (superseded by combat_xp below); kept for ref

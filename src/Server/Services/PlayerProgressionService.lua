@@ -362,6 +362,21 @@ function PlayerProgressionService:AddExperience(player, amount)
             amount = math.floor(amount * (1 + m) + 0.5)
         end
     end
+    -- EARLY-GAME ONRAMP (leveling.onramp): the 1-to-5 climb earns boosted XP
+    -- (Jason: "just the bottom end of the curve needs up") — same single
+    -- choke point as every other XP multiplier.
+    do
+        if self._onrampCfg == nil then
+            local ok, lvl = pcall(function()
+                return self._configLoader:LoadConfig("leveling")
+            end)
+            self._onrampCfg = (ok and type(lvl) == "table" and lvl.onramp) or false
+        end
+        local onramp = self._onrampCfg
+        if onramp and (tonumber(player:GetAttribute("Level")) or 1) < (onramp.below_level or 5) then
+            amount = math.floor(amount * (tonumber(onramp.xp_mult) or 1) + 0.5)
+        end
+    end
     local newXp = self:GetExperience(player) + amount
     self._dataService:SetStat(player, "Experience", newXp)
     self:_publish(player)
