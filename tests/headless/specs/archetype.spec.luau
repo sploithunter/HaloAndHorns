@@ -51,4 +51,32 @@ return function()
             expect(#ArchetypeLogic.list(config)).to.equal(4)
         end)
     end)
+
+    describe("origin choice explanations", function()
+        it(
+            "defines a concrete role, strengths, and tradeoff for every irreversible choice",
+            function()
+                local expectedRoles = {
+                    geomancer = "Tank",
+                    sandwalker = "Support",
+                    cryomancer = "Control",
+                    pyromancer = "Damage",
+                }
+                for id, role in pairs(expectedRoles) do
+                    local choice = config.archetypes[id].choice
+                    expect(choice.role).to.equal(role)
+                    expect(type(choice.tagline) == "string" and choice.tagline ~= "").to.equal(true)
+                    expect(type(choice.description) == "string" and choice.description ~= "").to.equal(
+                        true
+                    )
+                    expect(type(choice.strengths) == "table" and #choice.strengths >= 3).to.equal(
+                        true
+                    )
+                    expect(type(choice.tradeoff) == "string" and choice.tradeoff ~= "").to.equal(
+                        true
+                    )
+                end
+            end
+        )
+    end)
 end

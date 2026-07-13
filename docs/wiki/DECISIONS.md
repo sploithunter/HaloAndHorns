@@ -381,3 +381,15 @@ the Windfall/XP-Surge powers already use (`weekdays_utc` kept as a fallback).
 Exclusive eggs (e.g. Colorado) use the matchup-neutral `creator` origin so an exclusive pet doesn't bias
 the Heaven/Hell realm matchup. (A pet's area/origin SSOT remains its egg pool, not the static
 `pets.lua` origin field; CI `pet_origin_integrity` enforces it.)
+
+## Origin Choice Uses Config-Owned Progressive Disclosure (2026-07-13)
+
+The four permanent origin choices name their combat role at first glance: Geomancer = Tank,
+Sandwalker = Support, Cryomancer = Control, and Pyromancer = Damage. Their player-facing tagline,
+description, strengths, and tradeoff live beside the origin definitions in `configs/archetypes.lua`,
+not in a second UI-owned copy table.
+
+Hover or gamepad focus gives a concise explanation. A click/tap only stages a full review with the
+role, playstyle, strengths, tradeoff, and an explicit permanent-choice warning; it never writes the
+selection. Only `LOCK IN <ORIGIN>` calls `archetype.select`, and the ordinary level-up commit remains
+disabled until that decision is confirmed.

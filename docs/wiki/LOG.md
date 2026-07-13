@@ -774,3 +774,9 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Live level-3 pacing exposed the integer cliff behind the prior 1.5x tune: an on-level small ore still paid only 2 XP against a 2,100-XP level step. The global level curve remains unchanged.
 - Added config-owned below-level-5 XP multipliers by activity while retaining `PlayerProgressionService:AddExperience` as the single award path. Mining now resolves at 5x and combat at 2.5x; eggs, reward bundles, and unknown sources retain the 1.5x fallback.
 - Locked the no-buff level-3 targets in headless tests: Small/Medium/Large ore pays 5/25/100 XP and an even-level trash minion pays 15 XP. Normal rates resume at level 5.
+
+## 2026-07-13 - Explained and safeguarded the permanent origin choice
+
+- The chooser now labels Geomancer/Sandwalker/Cryomancer/Pyromancer as Tank/Support/Control/Damage and exposes config-owned hover/focus explanations derived from their real power sets.
+- The first click is now a reversible full review with strengths, tradeoff, and an irreversible-choice warning. Only the explicit `LOCK IN` action writes through `archetype.select`; the ordinary level-up commit cannot bypass it.
+- Live Studio QA confirmed the Geomancer tank copy, review layout, Back path, and that previewing left the player's origin unset.
