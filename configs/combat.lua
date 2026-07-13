@@ -381,6 +381,13 @@ return {
         -- escapes upward) and in endgame control-counter play, not in being
         -- unhittable by a new player's starter squad.
         flyer_combat_hover = 3,
+        -- Probe the aggro OWNER'S support floor from only this far above their
+        -- HumanoidRootPart while a flyer is engaged. The normal ground ray starts
+        -- 80 studs above the enemy so it can recover from caves, but that also
+        -- mistakes tall decorative geometry (the Lava spikes are 73 studs tall)
+        -- for the combat floor. Owner-relative probing finds the surface the
+        -- player/squad is actually standing on and keeps the flyer melee-reachable.
+        flyer_combat_floor_probe_above_owner = 4,
         -- FILL LIGHT (Jason): an internal PointLight on each spawned creature so its baked texture
         -- doesn't read gray/washed-out in the low-ambient biomes (it lifts the mesh out of the murk;
         -- the light sits at the body centre, just inside the mesh, so nothing is visible). Range

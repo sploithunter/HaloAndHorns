@@ -762,3 +762,9 @@ migration is needed for the abandoned "element splits stacks" spec.
 - The integrated architecture guard caught two concurrent-main global lookups in `EnemyService` and the new `showcase` config's missing schema. Event modifiers now use the bound service, and the Builder's Cut overlay has a required-shape schema covered against the real config in headless CI.
 - Live Studio boot found a main-side catalog contract mismatch that static/headless checks missed: intentional zero IDs for unconfigured rating-safe SKUs were treated as fatal. Zero now produces an unavailable-SKU warning, negative IDs remain fatal, and a focused ConfigLoader spec locks the distinction.
 - Final verification on the integrated tree: architecture debt zero, full `mise run ci`, 1,300/1,300 Lune tests across 122 specs, and a fresh Rojo-backed Studio boot with zero server/client errors, persistence active, `icons_ready`/`crystals_ready`, `DataLoaded`, both pet storage paths, and 650 visible UI objects.
+
+## 2026-07-13 - Live flyer-stalemate and squad close-to-target fix
+
+- MCP inspection of a level-3 Lava fight found that all three Snow Foxes held the live Ember Moth target, but the moth remained at Y=42: the flyer ground ray treated the top of a 73-stud decorative spike as the floor. Engaged flyers now probe the aggro owner's support floor and retain a config-defined combat hover.
+- A second live probe found that the hollow LavaLair MeshPart's broad bounding box marked every melee formation slot blocked, pushing two foxes about 17 studs away despite their 9-stud reach. Combat slot checks now use exact collision-geometry `Blockcast`; each collisionless pet directly closes on its own aggro-selected target.
+- Fresh-boot verification recorded 18 real server hit events in 7.66 seconds across fox slots 1/2/3 (7/5/6 hits), all three at 6.35–6.96 studs from the target, followed by encounter completion.
