@@ -478,7 +478,11 @@ function EnemyService:_acquireFromAttacker(entry, key)
         return
     end
     local owner = Players:FindFirstChild(key.Parent.Name)
-    if owner and self:_engagesCombat(owner) and self:_inTerritory(entry, owner) then
+    -- NO onramp gate here (Jason, level-3 vs an Ember Moth: "my pets are just
+    -- sitting there"): a pet hitting an enemy is the OWNER's deliberate act —
+    -- damage acquires the fight at ANY level. The onramp only governs whether
+    -- enemies/pets START fights on their own; intent always works.
+    if owner and self:_inTerritory(entry, owner) then
         self:_setAggroOwner(entry, owner.Name)
         entry.meander = nil
         entry.home = nil -- re-home wherever this fight leaves it
@@ -3893,22 +3897,37 @@ function EnemyService:_assignPetTargets(eng)
     local aggroRange = eng.aggro_range or 45
     for _, folder in ipairs(playerPets:GetChildren()) do
         local player = Players:FindFirstChild(folder.Name)
-        -- ONRAMP: a sub-threshold player's pets never auto-pick an enemy — they stay on mining /
-        -- AutoTarget, so early levels are peaceful even with enemies loitering nearby.
-        -- EXCEPTION (Jason, the First Fight): an UNGATED cave creature actively engaging
-        -- THIS player may be fought back — pets defend their owner at any level.
+        local assist = player and player:GetAttribute("CombatAssistTarget")
+        -- TRANSIENT focus: a directed assist target lapses after assist_seconds so the squad is never
+        -- stranded on an unreachable/stale focus — it reverts to normal auto-targeting (re-click to
+        -- refresh). This is what stops "focus a far enemy -> pets do nothing forever".
+        if assist and assist ~= 0 then
+            local until_ = player:GetAttribute("CombatAssistUntil")
+            if until_ and os.clock() >= until_ then
+                player:SetAttribute("CombatAssistTarget", 0)
+                player:SetAttribute("CombatAssistUntil", nil)
+                assist = 0
+            end
+        end
+        -- ONRAMP: a sub-threshold player's pets never AUTO-pick a fight — early
+        -- levels stay peaceful with enemies loitering nearby. But INTENT always
+        -- works (Jason, level-3 foxes ignoring the Ember Moth he was fighting):
+        --   • an ASSIST click = the player declared the fight -> engage it
+        --   • ANYTHING with aggro on this player gets fought back (ungated cave
+        --     creatures, or an ambient enemy woken by deliberate pet damage)
         local onrampDefenseOnly = not self:_engagesCombat(player)
         if onrampDefenseOnly then
+            local intent = (assist and assist ~= 0 and live[assist]) ~= nil
             local defending = false
             if player then
                 for _, entry in pairs(live) do
-                    if entry.ungated and entry.aggroPlayerName == player.Name then
+                    if entry.aggroPlayerName == player.Name then
                         defending = true
                         break
                     end
                 end
             end
-            if not defending then
+            if not (defending or intent) then
                 continue
             end
         end
@@ -3924,18 +3943,6 @@ function EnemyService:_assignPetTargets(eng)
                 end
             end
             continue
-        end
-        local assist = player and player:GetAttribute("CombatAssistTarget")
-        -- TRANSIENT focus: a directed assist target lapses after assist_seconds so the squad is never
-        -- stranded on an unreachable/stale focus — it reverts to normal auto-targeting (re-click to
-        -- refresh). This is what stops "focus a far enemy -> pets do nothing forever".
-        if assist and assist ~= 0 then
-            local until_ = player:GetAttribute("CombatAssistUntil")
-            if until_ and os.clock() >= until_ then
-                player:SetAttribute("CombatAssistTarget", 0)
-                player:SetAttribute("CombatAssistUntil", nil)
-                assist = 0
-            end
         end
         for _, pet in ipairs(folder:GetChildren()) do
             local tid = pet:FindFirstChild("TargetID")
@@ -3976,15 +3983,12 @@ function EnemyService:_assignPetTargets(eng)
                     local petPos = self:_petPosition(pet, pfs)
                     local candidates = {}
                     for etid, entry in pairs(live) do
-                        -- onramp defense: sub-threshold squads only fight the
-                        -- ungated creature that is engaging their owner
+                        -- onramp defense: sub-threshold squads fight what is
+                        -- attacking their owner (or the owner's assist click,
+                        -- handled above) — never ambient bystanders
                         if
                             onrampDefenseOnly
-                            and not (
-                                entry.ungated
-                                and player
-                                and entry.aggroPlayerName == player.Name
-                            )
+                            and not (player and entry.aggroPlayerName == player.Name)
                         then
                             continue
                         end
