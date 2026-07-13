@@ -20,10 +20,21 @@ return {
     -- EARLY-GAME ONRAMP (Jason 2026-07-13, live-tuned on Mineral Monday: "the
     -- XP is a little slow... just the bottom end of the curve needs up... up
     -- the crystals by 150% so we split the difference on non-Mineral-Mondays"):
-    -- BELOW level 5 (the combat-onramp threshold) XP and crystal awards run at
-    -- 1.5x. Scoped to the 1-to-5 climb only — at 5 the world opens and rates
-    -- normalize. Event multipliers stack on top (Mineral Monday: 1.5 x 2 = 3x).
-    onramp = { below_level = 5, xp_mult = 1.5, crystal_mult = 1.5 },
+    -- BELOW level 5 (the combat-onramp threshold), XP can be tuned by activity while every
+    -- award still flows through PlayerProgressionService:AddExperience. Mining needs the largest
+    -- lift because integer conversion made a 20-coin small node worth only 1 raw XP; combat keeps
+    -- a smaller risk premium. xp_mult remains the fallback for eggs/rewards/unknown sources.
+    -- At level 3 with no other buffs: S/M/L ore = 5/25/100 XP, even-level trash = 15 XP.
+    -- Scoped to the 1-to-5 climb only — at 5 the world opens and normal rates resume.
+    onramp = {
+        below_level = 5,
+        xp_mult = 1.5,
+        xp_mult_by_source = {
+            mining = 5.0,
+            combat = 2.5,
+        },
+        crystal_mult = 1.5,
+    },
 
     xp_rewards = {
         mining = { per_value = 0.05, min = 1 }, -- ~5% of the ore's coin share (split per contributor)

@@ -235,7 +235,7 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
     if xp > 0 then
         local progression = self._playerProgressionService
         if progression and progression.AddExperience then
-            progression:AddExperience(player, xp)
+            progression:AddExperience(player, xp, "combat")
         end
     end
     return { ok = true, loot = loot, xp = xp }

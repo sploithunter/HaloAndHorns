@@ -8,6 +8,7 @@
 
       XpReward.fromValue(value, { per_value = number, min = number }) -> integer XP (>= 0)
       XpReward.fromEnemyLevel(effLevel, xpPerLevel, rankMult) -> integer XP (>= 1)  [combat]
+      XpReward.applyOnramp(amount, playerLevel, cfg, source) -> integer XP (>= 0)
 ]]
 
 local XpReward = {}
@@ -32,6 +33,29 @@ function XpReward.fromEnemyLevel(effLevel, xpPerLevel, rankMult)
     xpPerLevel = tonumber(xpPerLevel) or 0
     rankMult = tonumber(rankMult) or 1
     return math.max(1, math.floor(xpPerLevel * effLevel * rankMult))
+end
+
+-- Apply the below-threshold XP tune at the ONE progression choke point. Activity sources may
+-- override the fallback multiplier without teaching mining/combat services about balance values.
+-- Unknown or omitted sources intentionally retain cfg.xp_mult for backwards compatibility.
+function XpReward.applyOnramp(amount, playerLevel, cfg, source)
+    amount = math.max(0, math.floor(tonumber(amount) or 0))
+    if amount == 0 or type(cfg) ~= "table" then
+        return amount
+    end
+
+    local belowLevel = tonumber(cfg.below_level) or 5
+    if (tonumber(playerLevel) or 1) >= belowLevel then
+        return amount
+    end
+
+    local multiplier = tonumber(cfg.xp_mult) or 1
+    local bySource = cfg.xp_mult_by_source
+    if type(source) == "string" and type(bySource) == "table" then
+        multiplier = tonumber(bySource[source]) or multiplier
+    end
+
+    return math.max(0, math.floor(amount * multiplier + 0.5))
 end
 
 return XpReward

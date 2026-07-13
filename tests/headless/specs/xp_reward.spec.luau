@@ -4,6 +4,7 @@
 ]]
 
 local XpReward = loadModule("src/Shared/Game/XpReward.lua")
+local leveling = loadModule("configs/leveling.lua")
 
 return function()
     describe("XpReward.fromValue", function()
@@ -47,6 +48,32 @@ return function()
 
         it("defaults safely with missing args", function()
             expect(XpReward.fromEnemyLevel(nil, nil, nil)).to.equal(1) -- 1 × 0 × 1 -> floor 0 -> min 1
+        end)
+    end)
+
+    describe("XpReward.applyOnramp", function()
+        it("uses configured source multipliers for the shipped level-3 targets", function()
+            local smallOre = XpReward.fromValue(20, leveling.xp_rewards.mining)
+            local mediumOre = XpReward.fromValue(100, leveling.xp_rewards.mining)
+            local largeOre = XpReward.fromValue(400, leveling.xp_rewards.mining)
+            local evenMinion = XpReward.fromEnemyLevel(3, leveling.combat_xp.xp_per_level, 1)
+
+            expect(XpReward.applyOnramp(smallOre, 3, leveling.onramp, "mining")).to.equal(5)
+            expect(XpReward.applyOnramp(mediumOre, 3, leveling.onramp, "mining")).to.equal(25)
+            expect(XpReward.applyOnramp(largeOre, 3, leveling.onramp, "mining")).to.equal(100)
+            expect(XpReward.applyOnramp(evenMinion, 3, leveling.onramp, "combat")).to.equal(15)
+        end)
+
+        it("uses the fallback for other sources and stops boosting at level 5", function()
+            expect(XpReward.applyOnramp(10, 3, leveling.onramp, "egg")).to.equal(15)
+            expect(XpReward.applyOnramp(10, 5, leveling.onramp, "mining")).to.equal(10)
+            expect(XpReward.applyOnramp(10, 50, leveling.onramp, "combat")).to.equal(10)
+        end)
+
+        it("handles missing config and non-positive amounts safely", function()
+            expect(XpReward.applyOnramp(10, 3, nil, "mining")).to.equal(10)
+            expect(XpReward.applyOnramp(0, 3, leveling.onramp, "mining")).to.equal(0)
+            expect(XpReward.applyOnramp(-10, 3, leveling.onramp, "mining")).to.equal(0)
         end)
     end)
 end

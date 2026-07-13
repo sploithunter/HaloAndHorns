@@ -66,6 +66,8 @@ Pet XP and levels are unique-pet progression state. Stack records do not gain XP
 
 Player level must affect gameplay. It should not be cosmetic-only. Player-level team power and level milestone rewards live in `configs/player_progression.lua`; the service feeds the shared modifier path and inventory equip-limit path rather than special-case consumers. The first reward pattern is additional equipped-pet slots every configured number of levels.
 
+Early-player XP pacing is source-tuned without changing the global level curve. Every award still mutates XP through `PlayerProgressionService:AddExperience`; callers may attach a stable activity key, and `configs/leveling.lua onramp.xp_mult_by_source` selects the below-threshold multiplier with `onramp.xp_mult` as the compatibility fallback. The level 1–4 targets are 5/25/100 XP for an on-level Small/Medium/Large ore and 2.5 XP per enemy level for an even-level trash minion; level 5 resumes normal rates. This keeps mining/combat balance configurable and avoids making the whole 1–50 curve easier to repair one slow onboarding band.
+
 ## Auto Systems
 
 Auto-target choice and hatch auto-delete filters are profile settings, but valid modes, default choices, protected rarities, and filter dimensions live in `configs/auto_systems.lua`. Auto-target selection should be server-authoritative: the client can request work, but the server chooses the breakable. Hatch auto-delete happens before `PetGrantService` so filtered pets never enter inventory, and protected special rarities are not deleted by default.

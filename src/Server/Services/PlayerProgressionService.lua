@@ -12,6 +12,7 @@ local Players = game:GetService("Players")
 
 local LevelCurve = require(ReplicatedStorage.Shared.Game.LevelCurve)
 local LevelTrack = require(ReplicatedStorage.Shared.Game.LevelTrack)
+local XpReward = require(ReplicatedStorage.Shared.Game.XpReward)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local VeteranTrack = require(ReplicatedStorage.Shared.Game.VeteranTrack)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
@@ -339,8 +340,10 @@ function PlayerProgressionService:_veteranPass(player, vetLevel)
     self._dataService:RequestSave(player, "veteran_level")
 end
 
--- Grant XP (the spine awards XP via RewardService -> here). Returns the new progress.
-function PlayerProgressionService:AddExperience(player, amount)
+-- Grant XP (the spine awards XP via RewardService -> here). `source` is an optional configured
+-- activity key such as "mining" or "combat"; every source still resolves and mutates XP here.
+-- Returns the new progress.
+function PlayerProgressionService:AddExperience(player, amount, source)
     amount = math.floor(tonumber(amount) or 0)
     if not player or amount <= 0 or not self._dataService then
         return self:GetProgress(player)
@@ -372,10 +375,12 @@ function PlayerProgressionService:AddExperience(player, amount)
             end)
             self._onrampCfg = (ok and type(lvl) == "table" and lvl.onramp) or false
         end
-        local onramp = self._onrampCfg
-        if onramp and (tonumber(player:GetAttribute("Level")) or 1) < (onramp.below_level or 5) then
-            amount = math.floor(amount * (tonumber(onramp.xp_mult) or 1) + 0.5)
-        end
+        amount = XpReward.applyOnramp(
+            amount,
+            tonumber(player:GetAttribute("Level")) or 1,
+            self._onrampCfg,
+            source
+        )
     end
     local newXp = self:GetExperience(player) + amount
     self._dataService:SetStat(player, "Experience", newXp)
