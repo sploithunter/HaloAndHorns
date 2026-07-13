@@ -423,7 +423,7 @@ launched it). Two sources exist:
   `GameData.Unlocks.random_missions`; locked players get a rejection, the door prompt
   always shows. Future quest-tied missions are just another source pinning a config.
 
-**Quest ladder** (`configs/quests.lua` track `trials`, Lv 7): `tr_first_trial`
+**Quest ladder** (`configs/quests.lua` track `trials`, Lv 14): `tr_first_trial`
 (complete any mission) **unlocks random trials** via the generic `def.unlock` plumbing
 (QuestService:Claim writes `GameData.Unlocks.<flag>` + publishes `Unlock_<flag>`
 attribute; List republishes on rejoin). Then lifetime ladder: 10 / 100 / 1,000 /
@@ -528,7 +528,8 @@ per-player text). Back-to-back realm portals are side-gated by
 `RealmPortalSideGate` (pairs co-located `RealmPortalPrompt`s, locally Enables
 only the face on the player's side — Roblox otherwise surfaces whichever
 prompt PART is closest, and the hell anchor sits ~9 studs lower than the
-heaven plane center).
+heaven plane center). The generic and matrix Trials quest tracks unlock at
+level 14, matching the first reachable doors in Heaven 2 / Hell 2.
 
 **Dev ergonomics**: the spawn-plaza StudioOnly gates are DELETED (activation
 covers trial selection in dev too); `admin.setCounter` (IsAdmin-gated bus

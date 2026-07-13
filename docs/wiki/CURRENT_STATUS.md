@@ -27,7 +27,8 @@ SSOT = `docs/MISSION_WORLDGEN.md` (§13 = the shipped contract).
   trial"; the green banner taps to DEACTIVATE. Chains = 5 layers per combo (10/25/50/90/100); the
   Century = claim-once + level-50 claim gate → **Platinum egg** (same 5 exclusive pets as the
   0.5% boss/first-clear eggs, stated 15% huge — fixed_odds policy binds odds per egg).
-- **Gate UX**: per-player `NextTrialLabel` stamped locally onto the door E-prompt ("Hell Lava
+- **Gate UX**: Trials tracks unlock at level 14 with the first reachable mission doors in Heaven 2 /
+  Hell 2. Per-player `NextTrialLabel` is stamped locally onto the door E-prompt ("Hell Lava
   Trial #4" / "Random Trial"); back-to-back heaven/hell portals side-gated client-side
   (`RealmPortalSideGate`); huge pets read ALL CAPS on the team rail.
 - **Ops**: `admin.setCounter` = the sanctioned counter override (`test.*` is unreachable from

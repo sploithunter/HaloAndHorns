@@ -18,6 +18,10 @@
     Goals are MODEST + re-doable (a session's worth), NOT lifetime grinds — those are achievements.
 ]]
 
+-- Trial doors are authored in Heaven 2 / Hell 2. Keep the whole quest family on the same first
+-- reachable level so tracks never announce or appear before a player can use their mission gates.
+local TRIALS_UNLOCK_LEVEL = 14
+
 return {
     -- Track metadata: id -> { title, order, unlock_level }. order = display priority; unlock_level =
     -- the earned Level at which the track appears (hidden below it). first_steps auto-activates.
@@ -31,17 +35,33 @@ return {
         crossing = { title = "The Crossing", order = 6, unlock_level = 12 },
         -- Door missions: the trials + Jason's random-mission ladder ("scale it
         -- up to something ridiculous... always be on a random quest").
-        trials = { title = "The Trials", order = 7, unlock_level = 7 },
+        trials = { title = "The Trials", order = 7, unlock_level = TRIALS_UNLOCK_LEVEL },
         -- THE MATRIX (2 realms x 4 elements): every quest in a track BINDS
         -- the auto gates to its trial (def.mission); 100-clear = Platinum egg
-        hell_lava = { title = "Hell Lava Trials", order = 8, unlock_level = 7 },
-        heaven_lava = { title = "Heaven Lava Trials", order = 9, unlock_level = 7 },
-        hell_ice = { title = "Hell Ice Trials", order = 10, unlock_level = 7 },
-        heaven_ice = { title = "Heaven Ice Trials", order = 11, unlock_level = 7 },
-        hell_grass = { title = "Hell Grass Trials", order = 12, unlock_level = 7 },
-        heaven_grass = { title = "Heaven Grass Trials", order = 13, unlock_level = 7 },
-        hell_desert = { title = "Hell Desert Trials", order = 14, unlock_level = 7 },
-        heaven_desert = { title = "Heaven Desert Trials", order = 15, unlock_level = 7 },
+        hell_lava = { title = "Hell Lava Trials", order = 8, unlock_level = TRIALS_UNLOCK_LEVEL },
+        heaven_lava = {
+            title = "Heaven Lava Trials",
+            order = 9,
+            unlock_level = TRIALS_UNLOCK_LEVEL,
+        },
+        hell_ice = { title = "Hell Ice Trials", order = 10, unlock_level = TRIALS_UNLOCK_LEVEL },
+        heaven_ice = { title = "Heaven Ice Trials", order = 11, unlock_level = TRIALS_UNLOCK_LEVEL },
+        hell_grass = { title = "Hell Grass Trials", order = 12, unlock_level = TRIALS_UNLOCK_LEVEL },
+        heaven_grass = {
+            title = "Heaven Grass Trials",
+            order = 13,
+            unlock_level = TRIALS_UNLOCK_LEVEL,
+        },
+        hell_desert = {
+            title = "Hell Desert Trials",
+            order = 14,
+            unlock_level = TRIALS_UNLOCK_LEVEL,
+        },
+        heaven_desert = {
+            title = "Heaven Desert Trials",
+            order = 15,
+            unlock_level = TRIALS_UNLOCK_LEVEL,
+        },
     },
 
     defs = {
