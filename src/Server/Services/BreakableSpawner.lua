@@ -2368,7 +2368,7 @@ function BreakableSpawner:_trySpawnOne(
                                             )
                                     )
                                     if xp > 0 then
-                                        progression:AddExperience(plr, xp)
+                                        progression:AddExperience(plr, xp, "mining")
                                     end
                                 end
                                 if

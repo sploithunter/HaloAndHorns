@@ -768,3 +768,9 @@ migration is needed for the abandoned "element splits stacks" spec.
 - MCP inspection of a level-3 Lava fight found that all three Snow Foxes held the live Ember Moth target, but the moth remained at Y=42: the flyer ground ray treated the top of a 73-stud decorative spike as the floor. Engaged flyers now probe the aggro owner's support floor and retain a config-defined combat hover.
 - A second live probe found that the hollow LavaLair MeshPart's broad bounding box marked every melee formation slot blocked, pushing two foxes about 17 studs away despite their 9-stud reach. Combat slot checks now use exact collision-geometry `Blockcast`; each collisionless pet directly closes on its own aggro-selected target.
 - Fresh-boot verification recorded 18 real server hit events in 7.66 seconds across fox slots 1/2/3 (7/5/6 hits), all three at 6.35–6.96 studs from the target, followed by encounter completion.
+
+## 2026-07-13 - Source-specific early XP onramp
+
+- Live level-3 pacing exposed the integer cliff behind the prior 1.5x tune: an on-level small ore still paid only 2 XP against a 2,100-XP level step. The global level curve remains unchanged.
+- Added config-owned below-level-5 XP multipliers by activity while retaining `PlayerProgressionService:AddExperience` as the single award path. Mining now resolves at 5x and combat at 2.5x; eggs, reward bundles, and unknown sources retain the 1.5x fallback.
+- Locked the no-buff level-3 targets in headless tests: Small/Medium/Large ore pays 5/25/100 XP and an even-level trash minion pays 15 XP. Normal rates resume at level 5.
