@@ -86,6 +86,17 @@ return {
             target = { kind = "ui", name = "Slot_20" },
             complete_on = { event = "potion_used" },
         },
+        -- THE RALLY FLAG (Jason: "teach the player even in tutorial about the
+        -- rally flag" — the panic button lives at the TOP-LEFT of the bar,
+        -- seeded on every bar at slot 11). Taught right after the cave fights
+        -- while "a fight going wrong" is a fresh memory.
+        {
+            id = "rally_call",
+            title = "Call them back",
+            body = "See the FLAG at the top-left of your power bar? That's Rally — press it and your pets instantly return to your side. Your escape button when a fight goes wrong!",
+            target = { kind = "ui", name = "Slot_11" },
+            complete_on = { event = "rally_used" },
+        },
         -- POWERS come AFTER the familiar pet-game rhythm (Jason: hook them with what they know first,
         -- THEN introduce what makes this game different). Every player is born with Resonance (innate);
         -- these two steps teach the bind flow (reused for every future power) + the cast.

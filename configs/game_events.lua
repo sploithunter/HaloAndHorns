@@ -299,6 +299,12 @@ return {
 
     -- A potion drop was picked up (server: DropService _collect). Float TEXT = the potion's name
     -- from ctx; config only styles it. Mirrors enhancement_pickup.
+    -- The squad was RALLIED (EnemyService tactical). Tutorial's rally step
+    -- completes on this; styling config-only.
+    rally_used = {
+        float = { color = { 120, 200, 255 } },
+    },
+
     -- A potion was DRUNK (server: PotionService.Drink). Tutorial's battle_brew
     -- completes on this; styling is config-only like every bus event.
     potion_used = {

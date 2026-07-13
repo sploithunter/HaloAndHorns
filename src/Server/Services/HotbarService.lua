@@ -207,6 +207,25 @@ function HotbarService:_ensureDefaults(data)
     end
     data.HotbarInitialized = true -- defaults are a one-time seed; never auto-repopulate again
 
+    -- RALLY ON THE BAR (Jason: "teach the player about the rally flag... expose
+    -- it in the upper-left power bar position — you can call your pets to you").
+    -- One-time seed at slot 11 (top row, leftmost) for EVERY save that doesn't
+    -- already carry rally somewhere; skips if the player has claimed slot 11
+    -- themselves. Backfill-flagged so clearing it later is respected forever.
+    if not data.RallyBarSeeded then
+        data.RallyBarSeeded = true
+        local hasRally = false
+        for _, b in pairs(data.Hotbar) do
+            if type(b) == "table" and b.type == "tactical" and b.target == "rally" then
+                hasRally = true
+                break
+            end
+        end
+        if not hasRally and data.Hotbar["11"] == nil then
+            data.Hotbar["11"] = { type = "tactical", target = "rally" }
+        end
+    end
+
     -- NOTE: Resonance (innate) is intentionally NOT auto-bound. The tutorial teaches the player to bind
     -- it themselves (the hotbar Edit → pick → slot flow — a skill they'll reuse for every power), and a
     -- player's binding choice is then theirs to keep. Owned innate powers are always castable from the

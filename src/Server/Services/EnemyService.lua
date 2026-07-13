@@ -3214,6 +3214,7 @@ function EnemyService:ExecuteTactical(player, command)
         -- so they keep chasing the pets home with no special aggro commit needed.
         local engCfg = self._combatConfig.engagement or {}
         player:SetAttribute("RallyUntil", os.clock() + (engCfg.rally_seconds or 3.5))
+        fireGameEvent(player, "rally_used", {}) -- bus source: the tutorial's rally step
         for _, pet in ipairs(petsFolder:GetChildren()) do
             if pet:IsA("Model") then
                 local tid = pet:FindFirstChild("TargetID")

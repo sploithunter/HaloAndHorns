@@ -67,6 +67,7 @@ return function()
                 "egg_hatch", -- hatch_another
                 "enemy_defeated", -- first_fight (the Earth-cave onramp creature)
                 "potion_used", -- battle_brew (drink from the top-right slot)
+                "rally_used", -- rally_call (the flag at the top-left, slot 11)
                 "power_bound", -- bind_power (Resonance onto the bar)
                 "power_cast", -- cast_power
                 "enhancement_slotted", -- slot_power → done
