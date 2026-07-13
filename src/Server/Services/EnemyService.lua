@@ -3939,6 +3939,21 @@ function EnemyService:_assignPetTargets(eng)
                 end
             end
             if not (defending or intent) then
+                -- CLEAR stale targets on the way out (Jason's frozen-fox
+                -- stalemate: pets kept a DEAD enemy's TargetID through this
+                -- gate — the client resolved nil forever and filed them as
+                -- followers while a live moth chewed on them). Mirrors the
+                -- RALLY branch: gating a squad out of combat must always
+                -- zero its combat targets.
+                for _, pet in ipairs(folder:GetChildren()) do
+                    if pet:IsA("Model") then
+                        local tid = pet:FindFirstChild("TargetID")
+                        local tt = pet:FindFirstChild("TargetType")
+                        if tid and tid.Value ~= 0 and tt and tt.Value == "Enemy" then
+                            tid.Value = 0
+                        end
+                    end
+                end
                 continue
             end
         end
