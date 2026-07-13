@@ -18,6 +18,7 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PathfindingService = game:GetService("PathfindingService")
 
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local PetRevive = require(script.Parent.Parent.PetRevive)
@@ -477,10 +478,18 @@ function EnemyService:_leashRegionAt(pos)
     return nil
 end
 
--- LEASH a chase step into the enemy's spawn region (a hard wall at the region boundary). The
--- region is a UNION of shapes (e.g. Grass mesh ∪ Spawn circle), so the enemy roams the whole pen
--- but can't leave it. Y untouched. An enemy with no resolved region is returned unchanged.
+-- LEASH every movement candidate through the enemy's authored movement regions. Mission rooms use
+-- a per-spawn box supplied by MissionInstanceService; overworld enemies then use their resolved
+-- home-area union (e.g. Grass mesh ∪ Spawn circle). Y is untouched. This one path is shared by
+-- chase, flee, loiter, and knockback, so a new movement mode cannot quietly bypass room bounds.
 function EnemyService:_leashToHomeArea(entry, pos)
+    local movement = entry and entry.movementLeash
+    local movementShapes = movement and movement.shapes
+    if movementShapes and #movementShapes > 0 then
+        local x, z = EnemyLeash.clamp(pos.X, pos.Z, movementShapes, tonumber(movement.inset) or 0)
+        pos = Vector3.new(x, pos.Y, z)
+    end
+
     local region = entry and entry.leashRegion
     local shapes = region and self._leashRegions[region]
     if not shapes then
@@ -511,6 +520,48 @@ function EnemyService:_leashToHomeArea(entry, pos)
         return Vector3.new(x, pos.Y, z)
     end
     return pos
+end
+
+function EnemyService:_outsideMovementLeash(entry)
+    local movement = entry and entry.movementLeash
+    local shapes = movement and movement.shapes
+    local pos = entry and entry.pos
+    return shapes and #shapes > 0 and pos and not EnemyLeash.inside(pos.X, pos.Z, shapes, 0)
+end
+
+-- Recover an objective enemy without deleting it. This is the defensive backstop for any current
+-- or future displacement source that mutates position without using the ordinary movement path:
+-- once the event loop observes the enemy outside its authored room, it clears both sides of the
+-- engagement and publishes a move to the room's configured safe anchor.
+function EnemyService:_recoverPersistentEnemy(entry, targetId, reason)
+    local movement = entry and entry.movementLeash
+    local recovery = (movement and movement.recovery)
+        or entry.spawnPosition
+        or entry.authoredHome
+        or entry.home
+        or entry.pos
+    if not recovery then
+        return false
+    end
+
+    trace(entry, "RECOVER", tostring(reason))
+    self:_clearEnemyFromPetThreat(targetId)
+    self:_releasePets(targetId)
+    self:_setAggroOwner(entry, nil)
+    entry.aggro = AggroTable.new()
+    entry.targetPet = nil
+    entry.meander = nil
+    entry.stuckTime = 0
+    entry.lastTargetDist = nil
+    self:_clearChasePath(entry)
+
+    local recoveredY = self:_groundedY(entry, recovery.X, recovery.Z, recovery.Y)
+    recovery = Vector3.new(recovery.X, recoveredY, recovery.Z)
+    entry.home = entry.authoredHome or recovery
+    entry.pos = recovery
+    entry.model:SetAttribute("MoveTarget", recovery)
+    entry.model:SetAttribute("MoveFace", recovery + Vector3.new(0, 0, -1))
+    return true
 end
 
 -- TERRITORIAL gate (Jason): an enemy only engages a player who is in ITS area — so a foe across a
@@ -1995,11 +2046,20 @@ function EnemyService:ApplyKnockback(enemyModel, player, distance)
     if dist <= 0 then
         return false
     end
-    for _, entry in pairs(self._enemies) do
+    for targetId, entry in pairs(self._enemies) do
         if entry.model == enemyModel then
             local ePos = entry.pos
             if not ePos then
                 return false
+            end
+            -- A prior/unknown displacement already escaped the room: do not clamp from the wrong
+            -- side of a wall. Recover to the authored room anchor immediately.
+            if self:_outsideMovementLeash(entry) then
+                return self:_recoverPersistentEnemy(
+                    entry,
+                    targetId,
+                    "knockback found enemy outside authored movement room"
+                )
             end
             local pfs = self._petFollowServiceInstance
             local fromPos
@@ -2168,7 +2228,11 @@ function EnemyService:_groundedY(entry, x, z, fallbackY)
 
     local hover = entry.hoverHeight or 0
     local rayX, rayZ = x, z
-    local originY = (fallbackY or 0) + 80
+    -- Ground enemies probe from just above their CURRENT pivot, not from the sky. A high
+    -- downcast inside a multi-level room hits the mezzanine/roof ABOVE the enemy and mistakes
+    -- it for a giant step-up, freezing direct chase beneath every landing. The local probe still
+    -- sees ordinary slopes/steps because the body half-height contributes additional clearance.
+    local originY = (fallbackY or 0) + (tonumber(eng and eng.ground_probe_above) or 2)
 
     -- ENGAGED FLYERS DESCEND to the squad's actual combat floor, not the highest
     -- map surface below the flyer. The old 80-stud-above downcast hit the top of
@@ -2191,20 +2255,119 @@ function EnemyService:_groundedY(entry, x, z, fallbackY)
         end
     end
 
-    -- Start well above the enemy's current/target Y so a creature stuck high in a cave still
-    -- casts down to the floor below it; 1000 studs of reach covers any biome drop.
+    -- Cast far enough down to recover from a ledge/void transition. Ground creatures start
+    -- locally (so overhead floors are invisible); engaged flyers use the owner-floor probe above.
     local origin = Vector3.new(rayX, originY, rayZ)
     local hit = Workspace:Raycast(origin, Vector3.new(0, -1000, 0), params)
     -- If the owner is over a void or a transient unsupported position, retain the
     -- existing enemy-local recovery ray rather than freezing the flyer at fallbackY.
     if not hit and (rayX ~= x or rayZ ~= z) then
-        origin = Vector3.new(x, (fallbackY or 0) + 80, z)
+        origin =
+            Vector3.new(x, (fallbackY or 0) + (tonumber(eng and eng.ground_probe_above) or 2), z)
         hit = Workspace:Raycast(origin, Vector3.new(0, -1000, 0), params)
     end
     if hit then
         return hit.Position.Y + (entry.halfHeight or 3) + hover
     end
     return fallbackY
+end
+
+-- Direct scene visibility for chase routing. Dynamic gameplay objects are already excluded by
+-- _refreshGroundExclude, so this ray sees authored walls/pillars while ignoring the collideless
+-- target, other pets/enemies, drops, and characters. A clear ray uses the cheap direct step;
+-- a blocked ray switches to Roblox pathfinding.
+function EnemyService:_directChaseBlocked(fromPos, toPos)
+    -- Horizontal body-level ray: vertical separation is resolved by the ground/path step. A 3D
+    -- ray toward a slightly higher flying pet can graze the underside of a harmless mezzanine.
+    local delta = Vector3.new(toPos.X - fromPos.X, 0, toPos.Z - fromPos.Z)
+    if delta.Magnitude <= 1e-3 then
+        return false
+    end
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = self._groundExclude or {}
+    params.IgnoreWater = true
+    return Workspace:Raycast(fromPos, delta, params) ~= nil
+end
+
+function EnemyService:_clearChasePath(entry)
+    entry.chasePath = nil
+    entry.chasePathIndex = nil
+    entry.chasePathGoal = nil
+end
+
+-- Compute/follow a Roblox navmesh route for an anchored, collideless enemy. Pathfinding chooses
+-- the way around authored scene geometry; the normal EnemyAI chase step still owns actual motion,
+-- grounding, facing, leash, and client publication. Replan only when the moving target changes the
+-- route goal materially, or the current route is exhausted — no parallel timer/state machine.
+-- Returns (nextWaypointPosition, reason). A nil waypoint means Roblox found no usable route.
+function EnemyService:_chasePathWaypoint(entry, fromPos, goalPos, eng)
+    local cfg = eng.pathfinding or {}
+    if cfg.enabled == false then
+        return nil, "disabled"
+    end
+
+    local replanDistance = tonumber(cfg.replan_target_distance) or 8
+    local reachedDistance = tonumber(cfg.waypoint_reached_distance) or 3
+    local mustReplan = not entry.chasePath
+        or not entry.chasePathGoal
+        or (entry.chasePathGoal - goalPos).Magnitude >= replanDistance
+
+    if mustReplan then
+        local path = PathfindingService:CreatePath({
+            -- Enemies are collideless. A deliberately small nav agent routes around the SCENE
+            -- instead of rejecting a corridor because the imported model has a broad art box.
+            AgentRadius = tonumber(cfg.agent_radius) or 1,
+            AgentHeight = tonumber(cfg.agent_height) or 2,
+            AgentCanJump = cfg.can_jump ~= false,
+            AgentCanClimb = cfg.can_climb == true,
+            WaypointSpacing = tonumber(cfg.waypoint_spacing) or 4,
+        })
+        local computed = pcall(function()
+            path:ComputeAsync(fromPos, goalPos)
+        end)
+        if not computed or path.Status ~= Enum.PathStatus.Success then
+            trace(entry, "PATH-FAIL", computed and tostring(path.Status) or "ComputeAsync raised")
+            self:_clearChasePath(entry)
+            return nil, computed and tostring(path.Status) or "compute_error"
+        end
+        local points = path:GetWaypoints()
+        if #points == 0 then
+            trace(entry, "PATH-FAIL", "empty path")
+            self:_clearChasePath(entry)
+            return nil, "empty_path"
+        end
+        trace(entry, "PATH", string.format("computed %d waypoints", #points))
+        entry.chasePath = points
+        entry.chasePathIndex = 1
+        entry.chasePathGoal = goalPos
+    end
+
+    local points = entry.chasePath
+    local index = entry.chasePathIndex or 1
+    while index <= #points and (points[index].Position - fromPos).Magnitude <= reachedDistance do
+        index += 1
+    end
+    if index > #points then
+        self:_clearChasePath(entry)
+        return nil, "path_exhausted"
+    end
+    entry.chasePathIndex = index
+    return points[index].Position, "path"
+end
+
+-- One clean exit for a target the scene/navmesh says is unreachable. Clearing both sides prevents
+-- a stale pet target or threat entry from keeping the combat latch alive after enemy deaggro.
+function EnemyService:_dropUnreachableEngagement(entry, targetId, reason)
+    trace(entry, "DEAGGRO", "unreachable: " .. tostring(reason))
+    self:_clearEnemyFromPetThreat(targetId)
+    self:_releasePets(targetId)
+    self:_setAggroOwner(entry, nil)
+    entry.aggro = AggroTable.new()
+    entry.targetPet = nil
+    entry.stuckTime = 0
+    entry.lastTargetDist = nil
+    self:_clearChasePath(entry)
 end
 
 function EnemyService:_loiter(entry, model, ePos, dt)
@@ -2333,7 +2496,11 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
             then
                 self:_setAggroOwner(entry, player.Name)
                 entry.meander = nil
-                entry.home = nil -- re-home wherever the fight leaves it
+                -- Ordinary overworld enemies may re-home where a fight ends. Authored mission
+                -- population keeps its MissionSpawn anchor; combat can never redefine the room.
+                if not entry.authoredHome then
+                    entry.home = nil
+                end
             end
         end
         if not entry.aggroPlayerName then
@@ -2680,6 +2847,18 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         eng.surround_gap or 6
     )
     local chaseTo = Vector3.new(slot.x, targetPos.Y, slot.z)
+    local route = "direct"
+    if self:_directChaseBlocked(ePos, targetPos) then
+        local waypoint, reason = self:_chasePathWaypoint(entry, ePos, chaseTo, eng)
+        if not waypoint then
+            self:_dropUnreachableEngagement(entry, targetId, reason)
+            return
+        end
+        chaseTo = waypoint
+        route = "path"
+    else
+        self:_clearChasePath(entry)
+    end
     local np = EnemyAI.chaseStep(
         { x = ePos.X, y = ePos.Y, z = ePos.Z },
         { x = chaseTo.X, y = chaseTo.Y, z = chaseTo.Z },
@@ -2752,11 +2931,12 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
                     entry,
                     "CHASE-STUCK",
                     string.format(
-                        "distToTarget=%.0f atk=%.0f move=%.0f moved=%s wallAhead=%s rise=%.1f (climb=%d jump=%d) flyer=%s leash=%s stuck=%.1f",
+                        "distToTarget=%.0f atk=%.0f move=%.0f moved=%s route=%s wallAhead=%s rise=%.1f (climb=%d jump=%d) flyer=%s leash=%s stuck=%.1f",
                         distToTarget,
                         atk,
                         moveSpeed,
                         tostring(moved),
+                        route,
                         tostring(wallAhead),
                         rise,
                         eng.ground_climb_max or 10,
@@ -2770,27 +2950,14 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         end
         if entry.stuckTime >= (eng.stuck_disengage_seconds or 8) then
             if entry.persistent then
-                trace(
+                self:_recoverPersistentEnemy(
                     entry,
-                    "RECOVER",
+                    targetId,
                     string.format(
-                        "persistent mission enemy stuck %.1fs — reset to authored spawn instead of deleting objective population",
+                        "persistent mission enemy stuck %.1fs — reset to authored room anchor instead of deleting objective population",
                         entry.stuckTime
                     )
                 )
-                self:_clearEnemyFromPetThreat(targetId)
-                self:_releasePets(targetId)
-                self:_setAggroOwner(entry, nil)
-                entry.aggro = AggroTable.new()
-                entry.targetPet = nil
-                entry.meander = nil
-                entry.stuckTime = 0
-                entry.lastTargetDist = nil
-                local recovery = entry.spawnPosition or entry.home or entry.pos
-                entry.home = recovery
-                entry.pos = recovery
-                model:SetAttribute("MoveTarget", recovery)
-                model:SetAttribute("MoveFace", recovery + Vector3.new(0, 0, -1))
                 return
             end
             trace(
@@ -5672,7 +5839,18 @@ function EnemyService:_combatTick(dt)
                 self:_despawnEnemy(targetId)
             end
             if self._enemies[targetId] then -- still alive (not just despawned)
-                self:_engageEnemy(entry, targetId, now, eng, dt)
+                -- Event-loop invariant: an authored mission enemy must always belong to its bound
+                -- room. This catches displacement sources that do not use ordinary movement and
+                -- recovers on the next combat event instead of leaving an objective outside the map.
+                if self:_outsideMovementLeash(entry) then
+                    self:_recoverPersistentEnemy(
+                        entry,
+                        targetId,
+                        "authoritative position left authored mission room"
+                    )
+                else
+                    self:_engageEnemy(entry, targetId, now, eng, dt)
+                end
                 self:_updateHeldBadge(model, nowTime) -- world icon disc above a pinned (held) enemy
             end
         end
@@ -5733,15 +5911,22 @@ function EnemyService:Start()
     local interval = self._petFollowConfig.update_interval or 0.15
     local accum = 0
     RunService.Heartbeat:Connect(function(dt)
+        -- PathfindingService:ComputeAsync yields. Prevent the next Heartbeat from entering a
+        -- second combat tick against the same mutable enemy tables while a route is computing.
+        if self._combatTickBusy then
+            return
+        end
         accum += dt
         if accum < interval then
             return
         end
         local step = accum
         accum = 0
+        self._combatTickBusy = true
         pcall(function()
             self:_combatTick(step)
         end)
+        self._combatTickBusy = false
     end)
     if self._logger then
         self._logger:Info("EnemyService combat loop active (inverse mining)")
@@ -5833,6 +6018,12 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         def = def, -- the resolved def (config OR a synthesized pet-invader def); combat reads this
         pos = position,
         spawnPosition = position, -- immutable authored recovery point (mission stuck recovery)
+        authoredHome = (opts and typeof(opts.home) == "Vector3") and opts.home or nil,
+        home = (opts and typeof(opts.home) == "Vector3") and opts.home or nil,
+        -- Generic movement contract supplied by the spawning system. Trials bind this to the
+        -- generated room rectangle; the movement code remains unaware of mission/map specifics.
+        movementLeash = (opts and type(opts.movementLeash) == "table") and opts.movementLeash
+            or nil,
         aggro = AggroTable.new(),
         lastActiveAt = os.clock(), -- engagement timer seed (idle-despawn clock; refreshed while aggro'd)
         persistent = (opts and opts.persistent) == true, -- mission population: NEVER idle-despawns (defeat or teardown only)
@@ -5849,6 +6040,20 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     model:SetAttribute("LeashRegion", leashRegion or "")
     model:SetAttribute("MoveTarget", position)
     model:SetAttribute("MoveFace", Vector3.new(hrp.Position.X, position.Y, hrp.Position.Z))
+    local movement = self._enemies[targetId].movementLeash
+    local movementShape = movement and movement.shapes and movement.shapes[1]
+    if movementShape and movementShape.kind == "box" then
+        model:SetAttribute(
+            "MovementLeashCenter",
+            Vector3.new(movementShape.cx, position.Y, movementShape.cz)
+        )
+        model:SetAttribute(
+            "MovementLeashHalfExtents",
+            Vector3.new(movementShape.halfX, 0, movementShape.halfZ)
+        )
+        model:SetAttribute("MovementLeashInset", tonumber(movement.inset) or 0)
+        model:SetAttribute("MissionRoomIndex", movement.roomIndex)
+    end
 
     -- Effective level = base (config `level`, else the spawning player's COMBAT level so a
     -- standard mob reads "even"/white) + the elite rank offset (lieutenant/boss read

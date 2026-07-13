@@ -492,6 +492,28 @@ function LayoutSolver.mapData(catalog, spec)
     return { rooms = rooms, doors = doors, bbox = spec.bbox }
 end
 
+-- Pure room lookup for server-side systems that need to bind a stamped hook back to the SAME
+-- authored room represented by the minimap payload. Coordinates passed here are world-space;
+-- ox/oz are the stamped mission slot origin. If rectangles touch/overlap at a boundary, prefer
+-- the smallest one so a room anchor cannot accidentally inherit a larger corridor/junction box.
+function LayoutSolver.roomAt(map, worldX, worldZ, ox, oz)
+    local localX = worldX - (ox or 0)
+    local localZ = worldZ - (oz or 0)
+    local best, bestIndex, bestArea
+    for i, room in ipairs((map and map.rooms) or {}) do
+        if
+            math.abs(localX - room.x) <= room.hx + 1e-6
+            and math.abs(localZ - room.z) <= room.hz + 1e-6
+        then
+            local area = room.hx * room.hz
+            if not bestArea or area < bestArea then
+                best, bestIndex, bestArea = room, i, area
+            end
+        end
+    end
+    return best, bestIndex
+end
+
 -- Recompute-and-check every invariant from the spec alone (never trusts the
 -- solver's bookkeeping). Returns ok, problems (array of strings).
 function LayoutSolver.validate(catalog, spec, params)

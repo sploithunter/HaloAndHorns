@@ -398,6 +398,9 @@ return {
         -- height because nothing pulled their Y to the terrain. Each move step now raycasts down to
         -- the floor and sits the body on it (+ per-enemy hover_height for flyers). false = off.
         ground_snap = true,
+        -- Ground support probes start just above the enemy pivot. Starting 80 studs overhead made
+        -- multi-level Trial rooms select a mezzanine/roof as the "floor" and freeze chase below it.
+        ground_probe_above = 2,
         -- Max studs an enemy may snap UP in one move step. Slopes rise a little per step and pass;
         -- a vertical wall makes the downcast jump to the wall top (a big rise) -> the step is
         -- rejected, so enemies don't climb onto walls/ledges. Steps DOWN are always allowed.
@@ -406,6 +409,19 @@ return {
         -- climbable because their slopes rise gradually; an abrupt wall/ledge produces one large
         -- downcast jump and is rejected instead of becoming a 28-stud jump-assist landing.
         ground_jump_max = 10,
+        -- Chase routing: direct scene ray first; only a blocked wall/pillar pays for a Roblox path.
+        -- The nav agent is intentionally small because enemies are collideless and imported art can
+        -- have broad bounding boxes. The normal shared chase step follows each returned waypoint.
+        pathfinding = {
+            enabled = true,
+            agent_radius = 1,
+            agent_height = 2,
+            can_jump = true,
+            can_climb = false,
+            waypoint_spacing = 4,
+            waypoint_reached_distance = 3,
+            replan_target_distance = 8,
+        },
         -- RALLY (tactical command): for this many seconds the player's pets ignore combat and
         -- return to formation around the player; the enemies keep their aggro on the pets and
         -- chase them home, so the fight comes back to the player instead of drifting off.

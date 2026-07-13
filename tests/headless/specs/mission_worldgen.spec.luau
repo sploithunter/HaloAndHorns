@@ -291,6 +291,19 @@ return function()
                 end
             end
         end)
+
+        it("resolves a stamped world point to its authored room", function()
+            local map = {
+                rooms = {
+                    { class = "corridor", x = 0, z = 0, hx = 30, hz = 30 },
+                    { class = "objective", x = 5, z = 5, hx = 10, hz = 10 },
+                },
+            }
+            local room, index = LayoutSolver.roomAt(map, 24006, -94, 24000, -100)
+            expect(index).to.equal(2) -- overlap prefers the more specific/smaller room
+            expect(room.class).to.equal("objective")
+            expect(LayoutSolver.roomAt(map, 24100, -100, 24000, -100)).to.equal(nil)
+        end)
     end)
 
     describe("MissionPopulation.roll", function()

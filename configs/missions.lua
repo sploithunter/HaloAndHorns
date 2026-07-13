@@ -51,6 +51,15 @@ return {
         default_aggression_policy = "universal",
     },
 
+    -- Every static Trial enemy is bound to the authored room containing its MissionSpawn anchor.
+    -- All ordinary movement is clamped just inside that rectangle; if another displacement path
+    -- ever leaves it outside, the combat event loop recovers it to its safe room anchor. This is room
+    -- geometry, not imported model bounds (bosses and every other enemy are intentionally
+    -- collideless). Tune the inset here without changing movement code.
+    navigation = {
+        room_inset = 2,
+    },
+
     -- PLAYER TRIAL DENSITY: a persistent, player-facing Settings slider. The opener's
     -- value owns the generated instance for the whole party; the server clamps it here
     -- before composing it with automatic team-size scaling. Keep the range deliberately

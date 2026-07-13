@@ -68,6 +68,17 @@ return function()
             })
             expect(ok).to.equal(false)
         end)
+
+        it("rejects a negative mission-room movement inset", function()
+            local ok = MissionSchema.validate({
+                player_tuning = {
+                    group_scale = { min = 0.5, max = 2, default = 1, step = 0.05 },
+                },
+                navigation = { room_inset = -1 },
+                missions = {},
+            })
+            expect(ok).to.equal(false)
+        end)
     end)
     describe("ZoneSchema vs configs/areas.lua (the real boot rules, in CI)", function()
         local areas = loadModule("configs/areas.lua")

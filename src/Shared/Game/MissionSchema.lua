@@ -14,6 +14,7 @@
       - random.pool naming a mission that doesn't exist
       - an unknown seed_policy (was: silently treated as per_attempt)
       - missing or invalid player Trial group-size bounds
+      - missing or invalid generated-room movement inset
 
     validate(missionsCfg, deps) -> ok, err
       deps = { enemies = <enemies cfg>, pets = <pets cfg>,
@@ -66,6 +67,13 @@ function MissionSchema.validate(cfg, deps)
             "combat.default_aggression_policy: unknown policy '"
                 .. tostring(defaultAggression)
                 .. "'"
+    end
+
+    if type(cfg.navigation) ~= "table" then
+        return false, "navigation: expected table"
+    end
+    if type(cfg.navigation.room_inset) ~= "number" or cfg.navigation.room_inset < 0 then
+        return false, "navigation.room_inset: expected non-negative number"
     end
 
     for missionId, def in pairs(cfg.missions or {}) do

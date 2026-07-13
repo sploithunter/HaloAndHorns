@@ -490,6 +490,12 @@ function MissionInstanceService:Open(player, missionId, opts)
     self._slots[slotIndex] = instanceId
     self._byTeam[teamKey] = instanceId
 
+    -- Build the shared pure room payload BEFORE population. MissionSpawn anchors, enemy movement
+    -- bounds, minimap, dressing, and treasure must all resolve against this one layout result.
+    local mapTable = LayoutSolver.mapData(catalog, spec)
+    mapTable.ox = slotOrigin.Position.X
+    mapTable.oz = slotOrigin.Position.Z
+
     -- STATIC population (CoH model): field a seeded, fixed pack at every
     -- MissionSpawn anchor, once. No proximity waves, no respawn — the
     -- homeworld BaddieSpawner system never runs inside missions.
@@ -553,6 +559,39 @@ function MissionInstanceService:Open(player, missionId, opts)
         end)
         if enemySvc then
             for i, point in ipairs(points) do
+                local room, roomIndex = LayoutSolver.roomAt(
+                    mapTable,
+                    point.Position.X,
+                    point.Position.Z,
+                    mapTable.ox,
+                    mapTable.oz
+                )
+                local movementLeash
+                if room then
+                    local centerX, centerZ = mapTable.ox + room.x, mapTable.oz + room.z
+                    movementLeash = {
+                        shapes = {
+                            {
+                                kind = "box",
+                                cx = centerX,
+                                cz = centerZ,
+                                halfX = room.hx,
+                                halfZ = room.hz,
+                            },
+                        },
+                        inset = tonumber((self._config.navigation or {}).room_inset) or 0,
+                        -- MissionSpawn is the authored clear point (the objective beacon occupies
+                        -- geometric center in boss rooms). Recover there, three studs above its
+                        -- floor, and let EnemyService ground-snap for the enemy's own body.
+                        recovery = point.Position + Vector3.new(0, 3, 0),
+                        roomIndex = roomIndex,
+                    }
+                else
+                    self:_log("Warn", "MissionSpawn is outside every generated room", {
+                        mission = missionId,
+                        point = point:GetFullName(),
+                    })
+                end
                 for _, entry in ipairs(comp[i] or {}) do
                     local offset =
                         Vector3.new((posRng() * 2 - 1) * SCATTER, 3, (posRng() * 2 - 1) * SCATTER)
@@ -636,6 +675,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                             def = synthDef,
                             position = point.Position + offset,
                             home = point.Position,
+                            movementLeash = movementLeash,
                             dormant = true, -- no birth aggro: engage when the team arrives
                             persistent = true, -- never idle-despawn: defeat or teardown only
                         })
@@ -652,12 +692,9 @@ function MissionInstanceService:Open(player, missionId, opts)
     -- SAME spec that stamped the map; the client fog-of-war reveals rooms as
     -- the team walks them. Slot origin included so clients map world→map.
     -- (mapTable is reused below for treasure placement.)
-    local mapTable = LayoutSolver.mapData(catalog, spec)
     do
         local okEncode, encoded = pcall(function()
             mapTable.name = mission.display or missionId
-            mapTable.ox = slotOrigin.Position.X
-            mapTable.oz = slotOrigin.Position.Z
             return game:GetService("HttpService"):JSONEncode(mapTable)
         end)
         if okEncode then
