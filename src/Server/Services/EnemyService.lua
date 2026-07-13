@@ -2268,14 +2268,17 @@ function EnemyService:_chasePathWaypoint(entry, fromPos, goalPos, eng)
             path:ComputeAsync(fromPos, goalPos)
         end)
         if not computed or path.Status ~= Enum.PathStatus.Success then
+            trace(entry, "PATH-FAIL", computed and tostring(path.Status) or "ComputeAsync raised")
             self:_clearChasePath(entry)
             return nil, computed and tostring(path.Status) or "compute_error"
         end
         local points = path:GetWaypoints()
         if #points == 0 then
+            trace(entry, "PATH-FAIL", "empty path")
             self:_clearChasePath(entry)
             return nil, "empty_path"
         end
+        trace(entry, "PATH", string.format("computed %d waypoints", #points))
         entry.chasePath = points
         entry.chasePathIndex = 1
         entry.chasePathGoal = goalPos
@@ -5847,15 +5850,22 @@ function EnemyService:Start()
     local interval = self._petFollowConfig.update_interval or 0.15
     local accum = 0
     RunService.Heartbeat:Connect(function(dt)
+        -- PathfindingService:ComputeAsync yields. Prevent the next Heartbeat from entering a
+        -- second combat tick against the same mutable enemy tables while a route is computing.
+        if self._combatTickBusy then
+            return
+        end
         accum += dt
         if accum < interval then
             return
         end
         local step = accum
         accum = 0
+        self._combatTickBusy = true
         pcall(function()
             self:_combatTick(step)
         end)
+        self._combatTickBusy = false
     end)
     if self._logger then
         self._logger:Info("EnemyService combat loop active (inverse mining)")
