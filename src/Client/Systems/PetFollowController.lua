@@ -77,29 +77,42 @@ local function attackRangeOf(pet)
 end
 
 -- Map-collision clamp for pet attack slots (Jason: a kiting/standoff pet marched off the map —
--- pets are non-colliding). Mirrors the crystal spawner's blocker rule: a slot is BLOCKED if a
--- solid (CanCollide + opaque + queryable) part sits in an ELEVATED box at it. The band is above
--- the floor, so flat sidewalks/baseplate never count — only WALLS/ROCKS reach into it. The map
--- floor extends past the walls, so "is there floor?" can't bound it; the wall does (the pet hits
--- the wall before it could reach the floor on the far side). `exclude` drops everything dynamic
--- (Workspace.Game = crystals/enemies/drops, PlayerPets, characters) so only authored map blocks.
+-- pets are non-colliding). A slot is BLOCKED if a solid (CanCollide + opaque + queryable) map
+-- surface intersects an ELEVATED swept box at it. The sweep is above the floor, so flat
+-- sidewalks/baseplates never count — only WALLS/ROCKS reach into it. `exclude` drops everything
+-- dynamic (Workspace.Game = crystals/enemies/drops, PlayerPets, characters) so only authored map
+-- blocks. Use Blockcast's actual collision geometry, NOT GetPartBoundsInBox's broad AABBs: the
+-- LavaLair is one large hollow MeshPart whose bounding box covers the entire cave interior. The
+-- old AABB test marked every fox's valid melee slot blocked and pushed two of three outside attack
+-- range even though each had an aggro-table target.
 local CLEAR_BOX_W = 4 -- pet body footprint (studs) sampled for an obstacle
 local CLEAR_BOX_H = 6 -- vertical band height — skips flat ground, catches walls/rocks
 local CLEAR_BOX_Y = 2 -- box centre, this far above the slot (keeps the band off the floor)
 local function slotBlocked(pos, exclude)
-    local params = OverlapParams.new()
+    local params = RaycastParams.new()
     params.FilterType = Enum.RaycastFilterType.Exclude
-    params.FilterDescendantsInstances = exclude
-    params.MaxParts = 8
-    local parts = Workspace:GetPartBoundsInBox(
-        CFrame.new(pos + Vector3.new(0, CLEAR_BOX_Y, 0)),
-        Vector3.new(CLEAR_BOX_W, CLEAR_BOX_H, CLEAR_BOX_W),
-        params
-    )
-    for _, part in ipairs(parts) do
-        if part.CanCollide and part.CanQuery and part.Transparency < 0.95 then
-            return true -- a wall/rock occupies the slot
+    params.RespectCanCollide = true
+    params.IgnoreWater = true
+
+    local ignored = table.clone(exclude)
+    local sliceHeight = 0.2
+    local castStart = pos + Vector3.new(0, CLEAR_BOX_Y - CLEAR_BOX_H / 2, 0)
+    local castSize = Vector3.new(CLEAR_BOX_W, sliceHeight, CLEAR_BOX_W)
+    local castVector = Vector3.new(0, CLEAR_BOX_H - sliceHeight, 0)
+
+    -- Transparent collision helpers were ignored by the previous rule. Skip up
+    -- to the old MaxParts budget so an opaque wall behind one still wins.
+    for _ = 1, 8 do
+        params.FilterDescendantsInstances = ignored
+        local hit = Workspace:Blockcast(CFrame.new(castStart), castSize, castVector, params)
+        if not hit then
+            return false
         end
+        local part = hit.Instance
+        if part.Transparency < 0.95 then
+            return true -- a real wall/rock occupies the slot
+        end
+        ignored[#ignored + 1] = part
     end
     return false
 end

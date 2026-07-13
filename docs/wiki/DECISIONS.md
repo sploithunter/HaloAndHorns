@@ -215,11 +215,21 @@ Pet *attack positioning* is a deliberate combat layer, not just visuals:
   with multiple tanks is intentional friction (a full tank team is too chaotic to centre,
   so composition is a real choice). See EMERGENT_BEHAVIORS.md. Open: split the pole by
   role (tanks peel-away, dps draw-toward).
-- **Map clamp + corner-pinning.** Anchored, non-colliding pets are clamped out of walls/
-  rocks (reusing the crystal-spawner blocker rule: a solid part in an elevated box; flat
-  ground ignored, dynamic stuff excluded). Pets hold at the wall instead of marching off
-  the map — and can pin an enemy against geometry. Enemies are NOT given the same self-
-  clamp (they must traverse to reach you; a hard stop would strand them).
+- **Direct close-to-target + exact scene clamp.** Every pet independently closes on the
+  target selected by its own aggro table; grouping pets by target only computes formation
+  slots and never suppresses an individual pursuit. Pets are anchored/non-colliding, so
+  combat uses direct movement rather than navmesh pathfinding. The only veto is an elevated
+  exact-collision `Blockcast` against authored scene geometry. Broad bounding-box overlap is
+  forbidden here: one hollow LavaLair MeshPart enclosed the whole cave in its AABB and falsely
+  pushed two of three foxes outside melee range. Pets hold only at a real wall/rock surface.
+  Enemies are NOT given the same self-clamp (they must traverse to reach you; a hard stop would
+  strand them).
+- **Engaged-flyer combat floor.** Patrol/flee keeps each flyer's authored hover, but an
+  aggroed flyer resolves combat altitude from the aggro owner's actual support floor: a short
+  downward ray begins at `HumanoidRootPart.Y + engagement.flyer_combat_floor_probe_above_owner`
+  at the owner's X/Z, then adds body half-height plus `flyer_combat_hover`. Never use the
+  highest surface under the flyer for this lane; tall spikes/roofs otherwise become a false
+  "floor" and create a vertical melee stalemate.
 - **Enemy fan** (`RingSeparate`): co-attackers on one target spread tangentially on a
   fixed-radius ring instead of stacking — positional only (proximity/threat/damage
   unchanged).

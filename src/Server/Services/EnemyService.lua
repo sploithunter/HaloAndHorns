@@ -2083,21 +2083,43 @@ function EnemyService:_groundedY(entry, x, z, fallbackY)
     params.FilterType = Enum.RaycastFilterType.Exclude
     params.FilterDescendantsInstances = self._groundExclude or {}
     params.IgnoreWater = true
+
+    local hover = entry.hoverHeight or 0
+    local rayX, rayZ = x, z
+    local originY = (fallbackY or 0) + 80
+
+    -- ENGAGED FLYERS DESCEND to the squad's actual combat floor, not the highest
+    -- map surface below the flyer. The old 80-stud-above downcast hit the top of
+    -- tall decorative geometry (live stalemate: Lava's 73-stud Spikes at Y=38),
+    -- so the moth's "clamped" combat hover was still Y=42 and melee foxes could
+    -- never close. Probe just above the aggro owner's root at the OWNER'S X/Z;
+    -- that selects the support surface the squad is standing on even while the
+    -- flyer is perched over a roof, spike, arch, or cave shell.
+    if hover > 0 and entry.aggroPlayerName then
+        local combatHover = tonumber(eng and eng.flyer_combat_hover) or 3
+        hover = math.min(hover, combatHover)
+
+        local owner = Players:FindFirstChild(entry.aggroPlayerName)
+        local character = owner and owner.Character
+        local ownerRoot = character and character:FindFirstChild("HumanoidRootPart")
+        if ownerRoot then
+            rayX, rayZ = ownerRoot.Position.X, ownerRoot.Position.Z
+            local probeAbove = tonumber(eng and eng.flyer_combat_floor_probe_above_owner) or 4
+            originY = ownerRoot.Position.Y + math.max(0.5, probeAbove)
+        end
+    end
+
     -- Start well above the enemy's current/target Y so a creature stuck high in a cave still
     -- casts down to the floor below it; 1000 studs of reach covers any biome drop.
-    local origin = Vector3.new(x, (fallbackY or 0) + 80, z)
+    local origin = Vector3.new(rayX, originY, rayZ)
     local hit = Workspace:Raycast(origin, Vector3.new(0, -1000, 0), params)
+    -- If the owner is over a void or a transient unsupported position, retain the
+    -- existing enemy-local recovery ray rather than freezing the flyer at fallbackY.
+    if not hit and (rayX ~= x or rayZ ~= z) then
+        origin = Vector3.new(x, (fallbackY or 0) + 80, z)
+        hit = Workspace:Raycast(origin, Vector3.new(0, -1000, 0), params)
+    end
     if hit then
-        -- ENGAGED FLYERS DESCEND: an aggro'd flyer clamps its hover to
-        -- combat height so ground melee can reach it (patrol/flee altitude
-        -- unchanged) — combat.engagement.flyer_combat_hover
-        local hover = entry.hoverHeight or 0
-        if hover > 0 and entry.aggroPlayerName then
-            local combatHover = tonumber(eng and eng.flyer_combat_hover) or 3
-            if hover > combatHover then
-                hover = combatHover
-            end
-        end
         return hit.Position.Y + (entry.halfHeight or 3) + hover
     end
     return fallbackY
