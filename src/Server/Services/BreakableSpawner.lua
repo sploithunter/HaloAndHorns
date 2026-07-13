@@ -1397,7 +1397,19 @@ function BreakableSpawner:_ensureSlots(worldFolder)
     local oversample = math.max(1, tonumber(breakablesConfig.slot_oversample) or 3)
     local spacing = math.max(2, minDist / math.sqrt(oversample))
     local commonPos = {}
-    local processed = 0
+    -- TIME-BUDGET breathing (Jason: "crystals take ~35s to show up after
+    -- booting in"): the old fixed-count yields (every 24 candidates / every
+    -- 32 slots) forced hundreds of frames per world regardless of actual
+    -- cost — across all worlds that summed to the ~28s crystals_ready stage.
+    -- Yield only when this frame's scan work exceeds ~6ms, same policy as
+    -- the fill loop.
+    local frameStart = os.clock()
+    local function breathe()
+        if os.clock() - frameStart > 0.006 then
+            task.wait()
+            frameStart = os.clock()
+        end
+    end
 
     for _, spawner in ipairs(spawners) do
         local sampleSurface = shouldSampleSpawnerSurface(spawner, placeCfg)
@@ -1424,31 +1436,52 @@ function BreakableSpawner:_ensureSlots(worldFolder)
             if candidate and hasSpawnClearance(spawner, candidate, placeCfg) then
                 commonPos[#commonPos + 1] = candidate
             end
-            processed += 1
-            if processed % 24 == 0 then
-                task.wait() -- spread the one-time scan across frames
-            end
+            breathe()
         end
     end
 
     -- Precompute each common slot's neighbours (other commons within min_distance) so the claim can
-    -- avoid placing two crystals close enough to overlap. One-time O(n²), amortised with task.wait.
+    -- avoid placing two crystals close enough to overlap. SPATIAL HASH, O(n):
+    -- bucket candidates by minDist-sized cells and compare only the 3x3
+    -- neighbourhood — the old all-pairs O(n²) pass was the bulk of the boot
+    -- scan on big surfaces (thousands of candidates = millions of checks).
     local slots = {}
     local minDistSq = minDist * minDist
+    local cell = minDist
+    local buckets = {}
+    local function bucketKey(x, z)
+        return math.floor(x / cell) * 73856093 + math.floor(z / cell) * 19349663
+    end
+    for i, p in ipairs(commonPos) do
+        local k = bucketKey(p.X, p.Z)
+        local b = buckets[k]
+        if not b then
+            b = {}
+            buckets[k] = b
+        end
+        b[#b + 1] = i
+    end
     for i, p in ipairs(commonPos) do
         local neighbors = {}
-        for j, q in ipairs(commonPos) do
-            if i ~= j then
-                local dx, dz = p.X - q.X, p.Z - q.Z
-                if dx * dx + dz * dz < minDistSq then
-                    neighbors[#neighbors + 1] = j -- ids are the array index (auto-numbered in .new)
+        local cx, cz = math.floor(p.X / cell), math.floor(p.Z / cell)
+        for ox = -1, 1 do
+            for oz = -1, 1 do
+                local b = buckets[(cx + ox) * 73856093 + (cz + oz) * 19349663]
+                if b then
+                    for _, j in ipairs(b) do
+                        if i ~= j then
+                            local q = commonPos[j]
+                            local dx, dz = p.X - q.X, p.Z - q.Z
+                            if dx * dx + dz * dz < minDistSq then
+                                neighbors[#neighbors + 1] = j -- ids are the array index (auto-numbered in .new)
+                            end
+                        end
+                    end
                 end
             end
         end
         slots[#slots + 1] = { id = i, kind = nil, pos = p, neighbors = neighbors }
-        if i % 32 == 0 then
-            task.wait()
-        end
+        breathe()
     end
 
     -- Fixed/special anchors authored in the map (no neighbours: typed slots aren't claimed by
