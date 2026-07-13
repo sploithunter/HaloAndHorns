@@ -23,9 +23,11 @@ return {
         silent = {
             pattern = "none",
             color = "origin",
-            sound = nil,
-            -- NOTE: no `mute` — the "(sound TBD)" placeholder SHOULD still show until a real Resonance
-            -- cast sound is authored (it's the reminder). Only the effect-TBD is suppressed.
+            -- Resonance's cast sound (Jason 2026-07-13): the cute camera-shutter
+            -- MECH-click (ElevenLabs; group upload). Per-primitive `sound` wins
+            -- over the phase/element registry — the old "(sound TBD)" reminder
+            -- retired with it.
+            sound = { id = "rbxassetid://128086415992280", seconds = 3.0 }, -- resonance_cast (shutter click)
         },
 
         -- caster-anchored burst CENTRED on the player: dome + rising motes / ember poof, but NO

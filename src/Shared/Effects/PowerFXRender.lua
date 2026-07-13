@@ -90,8 +90,15 @@ function PowerFXRender.play(opts)
     -- sound (independent of the effect): an explicit soundPhase wins (buff/shield), else cast/impact.
     -- The "(sound TBD)" placeholder is INTENTIONAL — it reminds us an effect has no audio yet, even if
     -- its visual is done. Don't suppress it.
-    local phase = (prim and prim.soundPhase) or (opts.kind == "target" and "impact") or "cast"
-    local played = PowerSound.play(phase, element, pos)
+    -- a primitive's AUTHORED clip wins over the phase/element registry (the
+    -- config always carried `sound` slots; Resonance's shutter is the first)
+    local played
+    if prim and type(prim.sound) == "table" then
+        played = PowerSound.playEntry(prim.sound, pos)
+    else
+        local phase = (prim and prim.soundPhase) or (opts.kind == "target" and "impact") or "cast"
+        played = PowerSound.play(phase, element, pos)
+    end
     if not played then
         tbd(pos, "(sound TBD)")
     end

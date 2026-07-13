@@ -62,11 +62,25 @@ function PowerSound.entryFor(phase, element)
     return list[math.random(1, #list)]
 end
 
+-- Play an explicit registry-shaped entry ({ id, seconds }) at a position —
+-- the per-primitive `sound` override path (a primitive's authored clip wins
+-- over the phase/element registry).
+function PowerSound.playEntry(entry, position, volumeScale)
+    if not entry or not entry.id then
+        return nil
+    end
+    return PowerSound._emit(entry, position, volumeScale)
+end
+
 function PowerSound.play(phase, element, position, volumeScale)
     local entry = PowerSound.entryFor(phase, element)
     if not entry or not entry.id then
         return nil
     end
+    return PowerSound._emit(entry, position, volumeScale)
+end
+
+function PowerSound._emit(entry, position, volumeScale)
     local part = Instance.new("Part")
     part.Name = "PowerSoundAnchor"
     part.Anchored = true
