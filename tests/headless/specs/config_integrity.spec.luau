@@ -38,6 +38,26 @@ return function()
     describe("quest MISSION CHAIN integrity (ordered, counters exist)", function()
         local quests = loadModule("configs/quests.lua")
         local stats = loadModule("configs/stats.lua")
+        local layers = loadModule("configs/layers.lua")
+
+        it("unlocks every Trials track with the first reachable realm mission gates", function()
+            local heavenLevel = layers.access.heaven_2.requires_level
+            local hellLevel = layers.access.hell_2.requires_level
+            expect(heavenLevel).to.equal(hellLevel)
+            for _, trackId in ipairs({
+                "trials",
+                "hell_lava",
+                "heaven_lava",
+                "hell_ice",
+                "heaven_ice",
+                "hell_grass",
+                "heaven_grass",
+                "hell_desert",
+                "heaven_desert",
+            }) do
+                expect(quests.tracks[trackId].unlock_level).to.equal(heavenLevel)
+            end
+        end)
 
         it("every def names a track that the tracks table declares", function()
             for id, def in pairs(quests.defs) do

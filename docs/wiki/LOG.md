@@ -796,3 +796,8 @@ migration is needed for the abandoned "element splits stacks" spec.
 
 - The admin `XP + GATE` shortcut now sets lifetime XP to one point beyond the next earned-level threshold instead of stopping at roughly 98%. The newly earned level remains unclaimed, so the normal permanent power-choice flow still runs while its farming prerequisite is skipped.
 - Headless curve coverage locks the one-XP carry-forward boundary, and the Studio automation suite verifies one pending level plus the exact total-XP target.
+
+## 2026-07-13 - Trials unlock with their reachable gates
+
+- The generic Trials quest ladder and all eight matrix Trials tracks now unlock at level 14 instead of level 7, matching the configured access requirement for their first real mission doors in Heaven 2 / Hell 2. Level 7 no longer announces or exposes inaccessible Trials quests.
+- A headless config-integrity check ties every Trials track to both layer-2 access gates so quest copy, visibility, and world reachability cannot drift independently again.
