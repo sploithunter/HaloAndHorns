@@ -468,6 +468,11 @@ CoH rule: named it, so there's ONE of it.
   THEME_PALETTES + MissionAtmosphere presets; prefab pools alias the realms
   (lava→hell, ice→heaven) until bespoke sets land.
 
+**Aggression contract**: Trials are combat instances and use the config-driven `universal` aggression
+policy. Any live pet can initiate against any mission enemy, and mission enemies can initiate against any
+live squad. This overrides only target initiation; realm resonance remains independent (own realm 0.8x,
+opposite realm 1.5x, base pets 1.0x). Normal Heaven overworld non-aggression is unchanged.
+
 **Pet-model enemies**: packs accept `{ pet = id, rank = "minion|lieutenant|boss",
 count }` — EnemyService.SynthesizePetEnemy (public over the patrol-invader
 synthesizer) applies missions.pet_ranks; BOSS rank wears the pet's own

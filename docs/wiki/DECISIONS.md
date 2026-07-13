@@ -293,6 +293,11 @@ inversion**: a `drain` aura is mechanically a team heal, and `shred` (`Vulnerabl
 `curse` (`WeakenMult`, enemy deals less) weaken the foe instead of buffing the squad. Heaven supports use
 the direct buff kinds.
 
+**Trials are the explicit exception.** A mission publishes the config-selected `universal` aggression
+policy for its duration, so every valid pet/enemy pairing can initiate. The mission's realm still drives
+resonance independently: own-realm pets fight at 0.8x, opposite-realm pets at 1.5x, and base pets at 1.0x.
+Leaving the mission restores the ordinary Heaven/Hell overworld aggression contract.
+
 ## Enchant Strength: Hard +5 Cap, Per-Effect Odds, Read-Time Magnitude (2026-06-18)
 
 Enchant level is hard-capped at +5 (no opaque value clamps). The strength roll lives on each EFFECT

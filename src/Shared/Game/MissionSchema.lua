@@ -23,6 +23,7 @@
 local MissionSchema = {}
 
 local SEED_POLICIES = { team_stable = true, per_attempt = true, shared_sequence = true }
+local AGGRESSION_POLICIES = { realm = true, universal = true }
 
 function MissionSchema.validate(cfg, deps)
     deps = deps or {}
@@ -32,11 +33,29 @@ function MissionSchema.validate(cfg, deps)
     local zones = (deps.areas and deps.areas.zones) or {}
     local ranks = cfg.pet_ranks or {}
 
+    if cfg.combat ~= nil and type(cfg.combat) ~= "table" then
+        return false, "combat: expected table"
+    end
+    local defaultAggression = cfg.combat and cfg.combat.default_aggression_policy
+    if defaultAggression ~= nil and not AGGRESSION_POLICIES[defaultAggression] then
+        return false,
+            "combat.default_aggression_policy: unknown policy '"
+                .. tostring(defaultAggression)
+                .. "'"
+    end
+
     for missionId, def in pairs(cfg.missions or {}) do
         local path = "missions." .. tostring(missionId)
         if def.seed_policy ~= nil and not SEED_POLICIES[def.seed_policy] then
             return false,
                 path .. ".seed_policy: unknown policy '" .. tostring(def.seed_policy) .. "'"
+        end
+        if def.aggression_policy ~= nil and not AGGRESSION_POLICIES[def.aggression_policy] then
+            return false,
+                path
+                    .. ".aggression_policy: unknown policy '"
+                    .. tostring(def.aggression_policy)
+                    .. "'"
         end
         if def.area ~= nil then
             local zoneKey = "mission_" .. tostring(def.area)

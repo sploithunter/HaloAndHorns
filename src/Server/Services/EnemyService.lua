@@ -4728,6 +4728,13 @@ function EnemyService:_currentRealm(player)
     return "neutral"
 end
 
+-- MissionInstanceService publishes this only for the duration of a run. The default preserves the
+-- normal realm contract: Heaven can stay peaceful with Heaven/base pets; Hell attacks everyone.
+function EnemyService:_aggressionPolicy(player)
+    local policy = player and player:GetAttribute("MissionAggressionPolicy")
+    return type(policy) == "string" and policy or "realm"
+end
+
 -- A pet species' side ("heaven"/"hell"/"neutral") from its pets.lua `realm`. Cached by PetType.
 function EnemyService:_petRealmOf(petType)
     if type(petType) ~= "string" then
@@ -4752,7 +4759,8 @@ function EnemyService:_enemyHostileToPet(entry, pet, player)
     return Allegiance.hostile(
         entry.allegiance,
         self:_petRealmOf(pet:GetAttribute("PetType")),
-        self:_currentRealm(player)
+        self:_currentRealm(player),
+        self:_aggressionPolicy(player)
     )
 end
 
@@ -4763,12 +4771,21 @@ end
 -- neutral pets follow the pure allegiance gate (proactive).
 function EnemyService:_petHostileToEnemy(pet, entry, player)
     local petRealm = self:_petRealmOf(pet:GetAttribute("PetType"))
+    local proactive = Allegiance.hostile(
+        petRealm,
+        entry.allegiance,
+        self:_currentRealm(player),
+        self:_aggressionPolicy(player)
+    )
+    if proactive then
+        return true
+    end
     if petRealm == "neutral" then
         -- TEAM BATTLE: a fight engaged with any TEAMMATE counts as "already on" for the
         -- reactive-join rule, so both squads pile into the same pack.
         return self:_onTeamName(player, entry.aggroPlayerName)
     end
-    return Allegiance.hostile(petRealm, entry.allegiance, self:_currentRealm(player))
+    return false
 end
 
 -- The crystal folder id for a cave's zone. Realm caves are BaddieSpawner<Origin> parts living in the
