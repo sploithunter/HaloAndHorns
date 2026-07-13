@@ -66,11 +66,11 @@ return {
             track = "first_steps",
             order = 2,
             name = "Work the Vein",
-            description = "Smash 30 crystals — coins fund everything you'll do here.",
+            description = "Smash 20 crystals — coins fund everything you'll do here.",
             condition = {
                 type = "counter_at_least",
                 counter = "breakables_broken",
-                value = 30,
+                value = 20, -- was 30 (Jason 2026-07-13: tighten the onramp pacing)
                 since_start = true,
             },
             reward = { currencies = { gems = 10 } },
