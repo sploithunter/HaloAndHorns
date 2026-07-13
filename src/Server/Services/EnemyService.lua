@@ -2088,7 +2088,17 @@ function EnemyService:_groundedY(entry, x, z, fallbackY)
     local origin = Vector3.new(x, (fallbackY or 0) + 80, z)
     local hit = Workspace:Raycast(origin, Vector3.new(0, -1000, 0), params)
     if hit then
-        return hit.Position.Y + (entry.halfHeight or 3) + (entry.hoverHeight or 0)
+        -- ENGAGED FLYERS DESCEND: an aggro'd flyer clamps its hover to
+        -- combat height so ground melee can reach it (patrol/flee altitude
+        -- unchanged) — combat.engagement.flyer_combat_hover
+        local hover = entry.hoverHeight or 0
+        if hover > 0 and entry.aggroPlayerName then
+            local combatHover = tonumber(eng and eng.flyer_combat_hover) or 3
+            if hover > combatHover then
+                hover = combatHover
+            end
+        end
+        return hit.Position.Y + (entry.halfHeight or 3) + hover
     end
     return fallbackY
 end

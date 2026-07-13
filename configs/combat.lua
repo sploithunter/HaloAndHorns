@@ -374,6 +374,13 @@ return {
             hp_mult = 0.25,
             dmg_mult = 0.2,
         },
+        -- ENGAGED FLYERS DESCEND (Jason, level-3 foxes vs a ceiling-height
+        -- Ember Moth: "they're not even trying to get to the moth... this is
+        -- a locked game"): while a flyer has aggro it clamps to this hover so
+        -- ground melee can trade — flyer identity lives in the DISENGAGE (it
+        -- escapes upward) and in endgame control-counter play, not in being
+        -- unhittable by a new player's starter squad.
+        flyer_combat_hover = 3,
         -- FILL LIGHT (Jason): an internal PointLight on each spawned creature so its baked texture
         -- doesn't read gray/washed-out in the low-ambient biomes (it lifts the mesh out of the murk;
         -- the light sits at the body centre, just inside the mesh, so nothing is visible). Range
