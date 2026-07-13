@@ -25,6 +25,30 @@ return {
         polarbear = "tank",
         doggy = "melee",
         dog = "melee",
+        -- ===== Base-egg species sweep (2026-07-13): 19 species had NO mapping and
+        -- fell to default=melee SILENTLY — Jason's live probe caught snowfox with
+        -- role=nil while two of three foxes idled. Explicit rows for every species;
+        -- the pet_role_coverage spec now fails CI when a new species ships unmapped.
+        snowfox = "melee",
+        emberfox = "melee",
+        aurora_fox = "melee",
+        fennec = "melee",
+        emberling = "melee",
+        desertiguana = "melee",
+        scorpion = "melee",
+        snowleopard = "melee",
+        halo_hare = "melee",
+        frostlight_hare = "melee",
+        emberowl = "ranged",
+        snowflakeowl = "ranged",
+        seraph_owl = "ranged",
+        verdant_sprite = "ranged",
+        emberlion = "tank",
+        camel = "tank",
+        goldleaf_stag = "tank",
+        glacial_seraph = "tank",
+        bloomlamb = "tank", -- lamb body reads bruiser here; support lambs elsewhere carry AURAS — a
+        -- support role without an aura is just a damage nerf, so base lamb tanks instead
         bunny = "support", -- Grass buffer (LUCK — lucky rabbit/clover) — see support_auras
         cat = "ranged",
         kitty = "ranged", -- the actual pet id ("cat" above was the intended mapping)
