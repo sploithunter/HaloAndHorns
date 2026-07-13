@@ -966,7 +966,9 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
 - **Mountain-time weekday event calendar** — seven daily events via `Shared/Game/MountainTime`,
   surfaced on a live HUD label + Effects panel cards.
 - **Potions (BrewMeter)** — runtime per-axis draining meters (anti-runaway), drink from an assignable
-  power-bar slot, LOCK=auto-maintain, stack additively with powers; first-class inventory tab.
+  power-bar slot, LOCK=auto-maintain, stack additively with powers; first-class inventory tab. Potion
+  slots reuse the power hover tooltip, with name, target/type, description, charge cap, drain, sip,
+  and LOCK threshold derived from `configs/potions.lua` through pure `PotionDescribe`.
 - **Multi-bucket trade escrow** — pets + gems + enhancements (potions pending) through a
   category-dispatched escrow; three-column Trade UI.
 - **Enhancement store** — buy/sell for gems; static rarity-scaled pricing (`EnhancementPricing` SSOT),

@@ -24,11 +24,13 @@ local POWER_ICONS = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChi
 local PILL = require(ReplicatedStorage.Configs:WaitForChild("pill_ui"))
 local POWERS = require(ReplicatedStorage.Configs:WaitForChild("powers"))
 local POWER_DESC = require(ReplicatedStorage.Configs:WaitForChild("power_descriptions"))
+local POTIONS = require(ReplicatedStorage.Configs:WaitForChild("potions"))
 -- Derived-description SSOT (the same source the powers menu uses). The hotbar tooltip used to read
 -- the hardcoded POWER_DESC table, which only covered some powers — new ones (Taunt etc.) fell to
 -- "(no description)" even though the menu showed a full one. PowerDescribe builds from the live
 -- config so every power reads.
 local PowerDescribe = require(ReplicatedStorage.Shared.Game.PowerDescribe)
+local PotionDescribe = require(ReplicatedStorage.Shared.Game.PotionDescribe)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local UITheme = require(script.Parent.Parent.UI.UITheme)
 local CloseButton = require(script.Parent.Parent.UI.Components.CloseButton)
@@ -392,12 +394,12 @@ function HotbarBar.start()
         end
     end
 
-    -- Hover tooltip: after a short hover on a power slot, a popup shows the power's NAME + what it
-    -- DOES (configs/power_descriptions). Anchored bottom-left at the slot's top edge, so it pops up
-    -- and to the right of the slot (origin = lower-left, per Jason).
+    -- Hover tooltip shared by power and potion slots. Both descriptions are derived from their live
+    -- configs, so the hotbar never owns a second copy of player-facing effect text. Anchored
+    -- bottom-left at the slot's top edge, so it pops up and to the right of the slot.
     local HOVER_DELAY = 0.6 -- seconds hovering before it appears (bump toward 3 if you want it slower)
     local tip = Instance.new("Frame")
-    tip.Name = "PowerTooltip"
+    tip.Name = "HotbarTooltip"
     tip.AnchorPoint = Vector2.new(0, 1)
     tip.Size = UDim2.fromOffset(236, 10)
     tip.AutomaticSize = Enum.AutomaticSize.Y
@@ -466,29 +468,46 @@ function HotbarBar.start()
     local hoverToken = 0 -- bumped on enter/leave so a stale delayed show is ignored
     local function showTip(card)
         local bind = card and card.bindObj
-        if not (bind and bind.type == "power") then
-            return -- only powers have descriptions; empty/tactical/roster slots show nothing
+        if not bind then
+            return
         end
         local id = tostring(bind.target)
-        local def = POWERS.powers and POWERS.powers[id]
-        tipName.Text = (def and def.display_name) or (id:gsub("_", " "))
-        local badge = PetBadge.forPower(id)
-        tipName.TextColor3 = (badge and POWER_ICONS.elementColor3(badge.element, "bright"))
-            or Color3.fromRGB(245, 245, 255)
-        -- Description from the DERIVED SSOT (PowerDescribe) — the exact source the powers menu
-        -- uses, so the hotbar can never disagree or fall to "(no description)" for a newer power.
-        -- POWER_DESC is kept only for an optional `type` override on the type line.
-        local entry = POWER_DESC[id]
-        local typeOverride = (type(entry) == "table") and entry.type or nil
-        local descText
-        local d = PowerDescribe.describe(POWERS, id)
-        if d then
+        local name, typeText, descText, badge
+        if bind.type == "power" then
+            local def = POWERS.powers and POWERS.powers[id]
+            name = (def and def.display_name) or (id:gsub("_", " "))
+            badge = PetBadge.forPower(id)
+            -- Description from the DERIVED SSOT (PowerDescribe) — the exact source the powers menu
+            -- uses. POWER_DESC remains only for an optional `type` override.
+            local entry = POWER_DESC[id]
+            local d = PowerDescribe.describe(POWERS, id)
+            typeText = ((type(entry) == "table") and entry.type) or deriveType(id)
+            if d then
+                descText = d.summary
+                if d.lines and #d.lines > 0 then
+                    descText = descText .. "\n" .. table.concat(d.lines, "  ·  ")
+                end
+            end
+        elseif bind.type == "potion" then
+            local d = PotionDescribe.describe(POTIONS, id)
+            if not d then
+                return
+            end
+            name = d.name
+            typeText = d.type
             descText = d.summary
             if d.lines and #d.lines > 0 then
                 descText = descText .. "\n" .. table.concat(d.lines, "  ·  ")
             end
+            badge = PetBadge.forPower("potion_" .. tostring(d.meter))
+        else
+            return -- empty/tactical/roster slots have no description contract yet
         end
-        tipType.Text = typeOverride or deriveType(id)
+
+        tipName.Text = name
+        tipName.TextColor3 = (badge and POWER_ICONS.elementColor3(badge.element, "bright"))
+            or Color3.fromRGB(245, 245, 255)
+        tipType.Text = typeText or ""
         tipType.Visible = tipType.Text ~= ""
         tipDesc.Text = descText or "(no description)"
         local ap = card.frame.AbsolutePosition
