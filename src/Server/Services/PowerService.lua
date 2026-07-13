@@ -2619,8 +2619,16 @@ function PowerService:Cast(player, powerId, opts)
         --   3. friendly family source (heal_nova / aura / shield_bubble) — those read by family, not AoE
         --   4. hostile default by AoE-ness: AoE powers get the `cast_burst` RING (reads as AoE);
         --      single-target ones get the small `cast_emit` body emission ("emits from the player").
-        local isAoe = def.target == "targeted_aoe" or def.target == "team_aoe"
+        -- NOTE the powers/effect_kinds SPLIT: display fields live on def
+        -- (powers[id]) but mechanics + fx live on the KIND (effect_kinds).
+        -- This chain read only def.fx, so a kind-level override (Resonance's
+        -- fx.source = "silent") never resolved — innate/no-archetype powers
+        -- fell to "tbd" and cast the "(effect TBD)" float + generic sound
+        -- forever (Jason: "why is there TBD still floating?").
+        local kindTarget = def.target or (kind and kind.target)
+        local isAoe = kindTarget == "targeted_aoe" or kindTarget == "team_aoe"
         local sourcePrim = (def.fx and def.fx.source)
+            or (kind and kind.fx and kind.fx.source)
             or (generic and "tbd")
             or (fx and fx.source)
             or (isAoe and "cast_burst")
@@ -2631,7 +2639,10 @@ function PowerService:Cast(player, powerId, opts)
             kind = "source",
         })
         if not generic and self._powersConfig.enemy_targeted_families[family] then
-            local targetPrim = (def.fx and def.fx.target) or (fx and fx.target) or "eruption"
+            local targetPrim = (def.fx and def.fx.target)
+                or (kind and kind.fx and kind.fx.target)
+                or (fx and fx.target)
+                or "eruption"
             -- AoE powers land the impact on EVERY enemy; single-target ones land ONLY on the enemy
             -- the squad is fighting (so it doesn't read as an AoE). For Wildfire the seed burns there
             -- and the spread shows via the per-enemy fire as it catches.
