@@ -105,6 +105,42 @@ local function hasExpectedMeshes(parts, asset)
     return true
 end
 
+local COLLISION_FIDELITY = {
+    Default = Enum.CollisionFidelity.Default,
+    Hull = Enum.CollisionFidelity.Hull,
+    Box = Enum.CollisionFidelity.Box,
+    PreciseConvexDecomposition = Enum.CollisionFidelity.PreciseConvexDecomposition,
+}
+
+local function applyCollision(part, collision)
+    collision = collision or {}
+    local fidelity = COLLISION_FIDELITY[collision.fidelity or "Default"]
+    assert(fidelity, "Unknown landmark collision fidelity " .. tostring(collision.fidelity))
+    part.CanCollide = collision.can_collide == true
+    part.CanTouch = false
+    part.CanQuery = true
+    part.CollisionFidelity = fidelity
+end
+
+local function hasExpectedCollision(parts, asset)
+    local collision = asset.collision or {}
+    local fidelity = COLLISION_FIDELITY[collision.fidelity or "Default"]
+    if not fidelity then
+        return false
+    end
+    for _, part in ipairs(parts) do
+        if
+            part.CanCollide ~= (collision.can_collide == true)
+            or part.CanTouch ~= false
+            or part.CanQuery ~= true
+            or part.CollisionFidelity ~= fidelity
+        then
+            return false
+        end
+    end
+    return true
+end
+
 local function removeVisuals(root, parts)
     local wrappers = {}
     for _, part in ipairs(parts) do
@@ -170,9 +206,7 @@ local function loadScene(asset, targetCFrame, targetSize)
     for _, part in ipairs(parts) do
         part.CFrame = transform * part.CFrame
         part.Anchored = true
-        part.CanCollide = false
-        part.CanTouch = false
-        part.CanQuery = true
+        applyCollision(part, asset.collision)
         part.CastShadow = true
         applySurface(part, asset.surface)
     end
@@ -212,8 +246,22 @@ local function repairOne(assetKey, asset, targetPath, fallbackCenter, fallbackSi
     local oldParts = meshPartsOf(root)
 
     if hasExpectedMeshes(oldParts, asset) and root:GetAttribute("RBX_ReimportId") == nil then
-        print(string.format("LANDMARK OK  %s (%s, %d parts)", targetPath, assetKey, #oldParts))
-        return false
+        if hasExpectedCollision(oldParts, asset) then
+            print(string.format("LANDMARK OK  %s (%s, %d parts)", targetPath, assetKey, #oldParts))
+            return false
+        end
+        for _, part in ipairs(oldParts) do
+            applyCollision(part, asset.collision)
+        end
+        print(
+            string.format(
+                "LANDMARK COLLISION FIX %s (%s, %d parts)",
+                targetPath,
+                assetKey,
+                #oldParts
+            )
+        )
+        return true
     end
 
     local localBounds, targetSize

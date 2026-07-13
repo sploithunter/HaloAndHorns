@@ -8,6 +8,10 @@
 
     Each landmark is a four-part SCENE. `triangle_budget_per_part` applies independently to every
     MeshPart (roughly 40k triangles total), never to the whole scene.
+
+    Collision is explicit because these landmarks are playable architecture, not background art.
+    PreciseConvexDecomposition preserves stairs, platforms, arches, and openings without reducing
+    the whole scene to one broad box.
 ]]
 
 return {
@@ -18,6 +22,10 @@ return {
             export = "assets/exports/landmarks/golden_halo_cathedral/golden_halo_cathedral_4x10k.fbx",
             scene_parts = 4,
             triangle_budget_per_part = 10000,
+            collision = {
+                can_collide = true,
+                fidelity = "PreciseConvexDecomposition",
+            },
             model_asset_id = "129820085989007",
             mesh_ids = {
                 "rbxassetid://127053095895949",
@@ -42,6 +50,10 @@ return {
             export = "assets/exports/landmarks/winged_portal_of_light/winged_portal_of_light_4x10k.fbx",
             scene_parts = 4,
             triangle_budget_per_part = 10000,
+            collision = {
+                can_collide = true,
+                fidelity = "PreciseConvexDecomposition",
+            },
             model_asset_id = "76383615823518",
             mesh_ids = {
                 "rbxassetid://80755936707598",
