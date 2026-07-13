@@ -786,3 +786,8 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Live MCP diagnosis found that the authored Grass, Ice, Lava, and Desert MeshPart bounding boxes overlap, and unordered broad-box resolution could stamp an Earth enemy with another biome's leash. Home regions now use config-owned exact-surface raycasts with deterministic seam order, while cave spawners explicitly bind and validate their intended area/region.
 - Routed chase, fear, knockback, and idle loiter through the same hard movement gate and stamped `HomeArea`/`LeashRegion` attributes for live diagnosis. Mountains remain traversable through gradual rises, but chase no longer jump-assists ground enemies 28 studs onto abrupt wall tops.
 - Live seam verification put a Grass-bound raging bear at the last supported point (`x=-326.7`); outward samples from `x=-330` onward had no Grass support and were rejected.
+
+## 2026-07-13 - Config-derived potion hotbar tooltips
+
+- Potion slots now reuse the existing delayed power-tooltip surface. Pure `PotionDescribe` derives the name, target/type, configured description, maximum charge effect, drain duration, sip refill, and LOCK auto-maintain threshold from `configs/potions.lua`.
+- Headless coverage describes all shipped potions and locks the team/player/thrown labels. Live Studio QA verified Fortune Flask and Berserk Brew wrapping/placement, mouse-leave dismissal, and an unchanged Mirage Step power tooltip with no new client errors.
