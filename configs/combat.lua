@@ -402,11 +402,10 @@ return {
         -- a vertical wall makes the downcast jump to the wall top (a big rise) -> the step is
         -- rejected, so enemies don't climb onto walls/ledges. Steps DOWN are always allowed.
         ground_climb_max = 10,
-        -- Jump-assist ceiling: while CHASING, an enemy will hop UP to this height to pursue its
-        -- target (climb out of the spawn cave, over a lip/ledge). A rise taller than this is a true
-        -- wall and blocks. Loiter is NOT given this -- ground dwellers never wander up walls; flyers
-        -- ignore both gates entirely. (climb_max < jump_max: small step-ups walk, bigger ones hop.)
-        ground_jump_max = 28,
+        -- Chase uses the same per-step rise ceiling as ordinary movement. Authored mountains remain
+        -- climbable because their slopes rise gradually; an abrupt wall/ledge produces one large
+        -- downcast jump and is rejected instead of becoming a 28-stud jump-assist landing.
+        ground_jump_max = 10,
         -- RALLY (tactical command): for this many seconds the player's pets ignore combat and
         -- return to formation around the player; the enemies keep their aggro on the pets and
         -- chase them home, so the fight comes back to the player instead of drifting off.

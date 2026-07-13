@@ -5,7 +5,7 @@ Status: current (enemy leash implemented) + one recorded **possibility** (player
 How movement is confined to authored areas. The core is a pure, reusable union-of-shapes clamp;
 today it leashes enemies, and it is designed to extend to the player.
 
-## Core: `EnemyLeash` (pure union clamp)
+## Core: analytic and exact-surface regions
 
 `src/Shared/Game/EnemyLeash.lua` — point-in-region containment + clamp over a **union** of simple
 X/Z footprint shapes (no Roblox APIs, headlessly tested in `tests/headless/specs/enemy_leash`):
@@ -16,7 +16,10 @@ X/Z footprint shapes (no Roblox APIs, headlessly tested in `tests/headless/specs
 - `EnemyLeash.clamp(x, z, shapes, margin)` → x, z (inside any shape = unchanged; else snap to the
   nearest shape's boundary). `margin` insets every edge so a mover stops just inside.
 
-A **region is a union of shapes**, so one pen can span differently-shaped, adjacent parts.
+A **region is a union of shapes**, so one pen can span differently-shaped, adjacent parts. Home
+biomes now use `surface` shapes: `EnemyService` filters a downward raycast to the configured authored
+floor part and accepts a movement destination only when that exact part supports the X/Z point. The
+pure box/circle helper remains available for intentionally analytic pens.
 
 ## Implemented: enemy leash (hard wall per spawn area)
 
@@ -27,16 +30,22 @@ never trails the player across the map.
   coincidentally match the geometry (Desert/Ice/Lava), there is **no Grass zone**, and the config
   `Spawn` box does not match the real `SpawnCircle` part. So the leash reads the actual floor parts
   under `Workspace.Maps.Home` via `configs/enemy_leash.lua`. See [enemy-leash-geometry] in memory.
-- **Regions** (`configs/enemy_leash.lua`): `Desert`/`Ice`/`Lava` = the biome floor mesh box;
-  **`GrassSpawn` = Grass mesh box ∪ SpawnCircle disc** (the starter pen spans both).
-- **Wiring** (`EnemyService`): `_buildLeashRegions` resolves the parts at boot; `_leashRegionAt`
-  stamps `entry.leashRegion` at spawn; `_leashToHomeArea` clamps each chase step via
-  `EnemyLeash.clamp` (inset from config). Enemies are server-anchored (moved via `MoveTarget`), so
-  clamping the computed step is exact — no rubber-banding.
+- **Regions** (`configs/enemy_leash.lua`): `Desert`/`Ice`/`Lava` use their exact biome floor meshes;
+  **`GrassSpawn` = exact Grass surface ∪ exact SpawnCircle surface** (the starter pen spans both).
+  Broad MeshPart bounding boxes are not authoritative because the four boxes overlap.
+- **Deterministic ownership:** `region_order` handles true authored seams; Home cave suffixes bind to
+  their area/region through `spawner_bindings`, and `EnemyService` validates that an explicitly bound
+  spawn is actually supported by that surface. Realm/mission spawners cannot inherit Home territory.
+- **One movement gate:** `_leashToHomeArea` is used by chase, fear, knockback, and idle loiter. An
+  irregular-surface move that would leave the configured union holds the last supported point.
+  Enemies are server-anchored and moved through `MoveTarget`, so this is exact without rubber-banding.
+- **Elevation:** the leash is an X/Z territory rule, so enemies may climb authored mountains inside
+  their biome. Ground movement permits gradual per-step rises (`ground_climb_max`); chase no longer
+  has the old 28-stud jump-assist, so abrupt wall/ledge tops are rejected.
+- **Diagnostics:** spawned enemy models expose `HomeArea` and `LeashRegion` attributes.
 - **Not covered:** Meadow / bare-Spawn (no enemies there). Add a region + part to extend.
-- **Caveat:** boxes are axis-aligned bounding rectangles (square corners vs. a mesh's rounded edge);
-  the SpawnCircle is an oval treated as a circle of radius ≈ half its larger dim (generous). Tune in
-  config if it overshoots.
+- **Legacy caveat:** box/circle regions are still axis-aligned/analytic. Prefer `surface` for irregular
+  authored MeshParts.
 
 ## Possibility (not implemented): confine the PLAYER to an area
 

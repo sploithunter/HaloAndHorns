@@ -346,8 +346,9 @@ function EnemyService:_areaAt(pos)
 end
 
 -- Resolve configs/enemy_leash into { regionName -> { shapes } } by reading the live map parts.
--- box    -> the part's X/Z footprint (axis-aligned half-extents).
--- circle -> a disc at the part's position, radius = half its largest horizontal dimension.
+-- surface -> exact scene containment via downward raycast; the stored box is recovery/debug geometry.
+-- box     -> the part's X/Z footprint (axis-aligned half-extents).
+-- circle  -> a disc at the part's position, radius = half its largest horizontal dimension.
 -- A part that can't be found is skipped (logged), so a renamed map asset degrades gracefully.
 function EnemyService:_buildLeashRegions(cfg)
     local regions = {}
@@ -382,6 +383,8 @@ function EnemyService:_buildLeashRegions(cfg)
                 else
                     shapes[#shapes + 1] = {
                         kind = "box",
+                        containment = def.shape == "surface" and "surface" or "bounds",
+                        sourcePart = def.shape == "surface" and part or nil,
                         cx = p.X,
                         cz = p.Z,
                         cy = p.Y,
@@ -400,6 +403,40 @@ function EnemyService:_buildLeashRegions(cfg)
     return regions
 end
 
+-- Exact footprint test for an authored surface shape. Filtering the ray to the configured floor
+-- part bypasses decorative hills/caves while respecting the MeshPart's real collision geometry.
+function EnemyService:_surfaceSupports(shape, pos)
+    local part = shape and shape.sourcePart
+    if not (part and part.Parent and pos) then
+        return false
+    end
+    local probe = (self._leashConfig and self._leashConfig.surface_probe) or {}
+    local above = math.max(1, tonumber(probe.above) or 100)
+    local depth = math.max(above, tonumber(probe.depth) or 1000)
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Include
+    params.FilterDescendantsInstances = { part }
+    params.IgnoreWater = true
+    -- Start relative to the mover's world layer. Using the Home part's Y here would let a stacked
+    -- Heaven/Hell position probe Home's floor at the same X/Z and falsely inherit its territory.
+    local originY = pos.Y + above
+    return Workspace:Raycast(Vector3.new(pos.X, originY, pos.Z), Vector3.new(0, -depth, 0), params)
+        ~= nil
+end
+
+function EnemyService:_insideLeashRegion(shapes, pos, margin)
+    for _, shape in ipairs(shapes or {}) do
+        if shape.containment == "surface" then
+            if self:_surfaceSupports(shape, pos) then
+                return true
+            end
+        elseif EnemyLeash.inside(pos.X, pos.Z, { shape }, margin) then
+            return true
+        end
+    end
+    return false
+end
+
 -- The leash region (name) whose shape-union contains a spawn position, or nil if none. Stamped on
 -- the enemy at spawn so the chase step can be clamped to the SAME pen it spawned in. Y-GATED: the
 -- regions are Home-world parts, and worlds stack on the same X/Z, so a match only counts when the
@@ -410,11 +447,29 @@ function EnemyService:_leashRegionAt(pos)
     if not pos then
         return nil
     end
-    for name, shapes in pairs(self._leashRegions) do
+    local ordered, seen = {}, {}
+    for _, name in ipairs((self._leashConfig and self._leashConfig.region_order) or {}) do
+        if self._leashRegions[name] then
+            ordered[#ordered + 1] = name
+            seen[name] = true
+        end
+    end
+    local extras = {}
+    for name in pairs(self._leashRegions) do
+        if not seen[name] then
+            extras[#extras + 1] = name
+        end
+    end
+    table.sort(extras)
+    for _, name in ipairs(extras) do
+        ordered[#ordered + 1] = name
+    end
+    for _, name in ipairs(ordered) do
+        local shapes = self._leashRegions[name]
         local regionY = shapes[1] and shapes[1].cy
         if
             (regionY == nil or math.abs(pos.Y - regionY) <= LEASH_Y_BAND)
-            and EnemyLeash.inside(pos.X, pos.Z, shapes)
+            and self:_insideLeashRegion(shapes, pos, 0)
         then
             return name
         end
@@ -432,8 +487,30 @@ function EnemyService:_leashToHomeArea(entry, pos)
         return pos
     end
     local inset = (self._leashConfig and self._leashConfig.inset) or 0
-    local x, z = EnemyLeash.clamp(pos.X, pos.Z, shapes, inset)
-    return Vector3.new(x, pos.Y, z)
+    if self:_insideLeashRegion(shapes, pos, inset) then
+        return pos
+    end
+
+    -- Exact surfaces are irregular, so their broad box cannot supply a truthful nearest edge.
+    -- A movement tick always starts from entry.pos; holding that last supported point creates the
+    -- hard wall without rubber-banding or permitting a step onto another biome's overlapping box.
+    local analytic = {}
+    local hasSurface = false
+    for _, shape in ipairs(shapes) do
+        if shape.containment == "surface" then
+            hasSurface = true
+        else
+            analytic[#analytic + 1] = shape
+        end
+    end
+    if hasSurface and entry.pos and self:_insideLeashRegion(shapes, entry.pos, 0) then
+        return entry.pos
+    end
+    if #analytic > 0 then
+        local x, z = EnemyLeash.clamp(pos.X, pos.Z, analytic, inset)
+        return Vector3.new(x, pos.Y, z)
+    end
+    return pos
 end
 
 -- TERRITORIAL gate (Jason): an enemy only engages a player who is in ITS area — so a foe across a
@@ -2154,7 +2231,7 @@ function EnemyService:_loiter(entry, model, ePos, dt)
         entry.meander = PetMeander.newState(cfg, math.random)
         return
     end
-    local np = Vector3.new(gx, gy, gz)
+    local np = self:_leashToHomeArea(entry, Vector3.new(gx, gy, gz))
     local moveVec = Vector3.new(np.X - ePos.X, 0, np.Z - ePos.Z)
     entry.pos = np
     model:SetAttribute("MoveTarget", np)
@@ -5681,6 +5758,21 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
             halfHeight = math.max(ext.Y * 0.5, 0.5)
         end
     end
+    local requestedLeash = opts and opts.leashRegion
+    local requestedShapes = requestedLeash and self._leashRegions[requestedLeash]
+    -- An explicit spawner binding is accepted only when the spawn is actually supported by that
+    -- region. This prevents a realm/mission spawner with the same suffix inheriting Home territory.
+    if requestedShapes then
+        local regionY = requestedShapes[1] and requestedShapes[1].cy
+        if
+            (regionY and math.abs(position.Y - regionY) > LEASH_Y_BAND)
+            or not self:_insideLeashRegion(requestedShapes, position, 0)
+        then
+            requestedLeash = nil
+        end
+    end
+    local homeArea = (opts and opts.homeArea) or self:_areaAt(position)
+    local leashRegion = requestedLeash or self:_leashRegionAt(position)
     self._enemies[targetId] = {
         model = model,
         targetId = targetId, -- own id back-ref (combat/trace identify the enemy without a reverse lookup)
@@ -5694,11 +5786,13 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         -- ungated enemy may engage players BELOW min_engage_level (the first
         -- fight); ambient enemies elsewhere keep the peaceful-miner gate
         ungated = (opts and opts.ungated) == true,
-        homeArea = self:_areaAt(position), -- territorial: only engages players in this area
-        leashRegion = self:_leashRegionAt(position), -- movement pen (hard wall at its boundary)
+        homeArea = homeArea, -- territorial: only engages players in this area
+        leashRegion = leashRegion, -- movement pen (hard wall at its boundary)
         halfHeight = halfHeight, -- ground-snap pivot offset
         hoverHeight = tonumber(def.hover_height) or 0, -- flyers float this far above the ground
     }
+    model:SetAttribute("HomeArea", homeArea or "")
+    model:SetAttribute("LeashRegion", leashRegion or "")
     model:SetAttribute("MoveTarget", position)
     model:SetAttribute("MoveFace", Vector3.new(hrp.Position.X, position.Y, hrp.Position.Z))
 
