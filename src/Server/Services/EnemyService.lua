@@ -478,10 +478,18 @@ function EnemyService:_leashRegionAt(pos)
     return nil
 end
 
--- LEASH a chase step into the enemy's spawn region (a hard wall at the region boundary). The
--- region is a UNION of shapes (e.g. Grass mesh ∪ Spawn circle), so the enemy roams the whole pen
--- but can't leave it. Y untouched. An enemy with no resolved region is returned unchanged.
+-- LEASH every movement candidate through the enemy's authored movement regions. Mission rooms use
+-- a per-spawn box supplied by MissionInstanceService; overworld enemies then use their resolved
+-- home-area union (e.g. Grass mesh ∪ Spawn circle). Y is untouched. This one path is shared by
+-- chase, flee, loiter, and knockback, so a new movement mode cannot quietly bypass room bounds.
 function EnemyService:_leashToHomeArea(entry, pos)
+    local movement = entry and entry.movementLeash
+    local movementShapes = movement and movement.shapes
+    if movementShapes and #movementShapes > 0 then
+        local x, z = EnemyLeash.clamp(pos.X, pos.Z, movementShapes, tonumber(movement.inset) or 0)
+        pos = Vector3.new(x, pos.Y, z)
+    end
+
     local region = entry and entry.leashRegion
     local shapes = region and self._leashRegions[region]
     if not shapes then
@@ -512,6 +520,48 @@ function EnemyService:_leashToHomeArea(entry, pos)
         return Vector3.new(x, pos.Y, z)
     end
     return pos
+end
+
+function EnemyService:_outsideMovementLeash(entry)
+    local movement = entry and entry.movementLeash
+    local shapes = movement and movement.shapes
+    local pos = entry and entry.pos
+    return shapes and #shapes > 0 and pos and not EnemyLeash.inside(pos.X, pos.Z, shapes, 0)
+end
+
+-- Recover an objective enemy without deleting it. This is the defensive backstop for any current
+-- or future displacement source that mutates position without using the ordinary movement path:
+-- once the event loop observes the enemy outside its authored room, it clears both sides of the
+-- engagement and publishes a move to the room's configured safe anchor.
+function EnemyService:_recoverPersistentEnemy(entry, targetId, reason)
+    local movement = entry and entry.movementLeash
+    local recovery = (movement and movement.recovery)
+        or entry.spawnPosition
+        or entry.authoredHome
+        or entry.home
+        or entry.pos
+    if not recovery then
+        return false
+    end
+
+    trace(entry, "RECOVER", tostring(reason))
+    self:_clearEnemyFromPetThreat(targetId)
+    self:_releasePets(targetId)
+    self:_setAggroOwner(entry, nil)
+    entry.aggro = AggroTable.new()
+    entry.targetPet = nil
+    entry.meander = nil
+    entry.stuckTime = 0
+    entry.lastTargetDist = nil
+    self:_clearChasePath(entry)
+
+    local recoveredY = self:_groundedY(entry, recovery.X, recovery.Z, recovery.Y)
+    recovery = Vector3.new(recovery.X, recoveredY, recovery.Z)
+    entry.home = entry.authoredHome or recovery
+    entry.pos = recovery
+    entry.model:SetAttribute("MoveTarget", recovery)
+    entry.model:SetAttribute("MoveFace", recovery + Vector3.new(0, 0, -1))
+    return true
 end
 
 -- TERRITORIAL gate (Jason): an enemy only engages a player who is in ITS area — so a foe across a
@@ -1996,11 +2046,20 @@ function EnemyService:ApplyKnockback(enemyModel, player, distance)
     if dist <= 0 then
         return false
     end
-    for _, entry in pairs(self._enemies) do
+    for targetId, entry in pairs(self._enemies) do
         if entry.model == enemyModel then
             local ePos = entry.pos
             if not ePos then
                 return false
+            end
+            -- A prior/unknown displacement already escaped the room: do not clamp from the wrong
+            -- side of a wall. Recover to the authored room anchor immediately.
+            if self:_outsideMovementLeash(entry) then
+                return self:_recoverPersistentEnemy(
+                    entry,
+                    targetId,
+                    "knockback found enemy outside authored movement room"
+                )
             end
             local pfs = self._petFollowServiceInstance
             local fromPos
@@ -2437,7 +2496,11 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
             then
                 self:_setAggroOwner(entry, player.Name)
                 entry.meander = nil
-                entry.home = nil -- re-home wherever the fight leaves it
+                -- Ordinary overworld enemies may re-home where a fight ends. Authored mission
+                -- population keeps its MissionSpawn anchor; combat can never redefine the room.
+                if not entry.authoredHome then
+                    entry.home = nil
+                end
             end
         end
         if not entry.aggroPlayerName then
@@ -2887,27 +2950,14 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         end
         if entry.stuckTime >= (eng.stuck_disengage_seconds or 8) then
             if entry.persistent then
-                trace(
+                self:_recoverPersistentEnemy(
                     entry,
-                    "RECOVER",
+                    targetId,
                     string.format(
-                        "persistent mission enemy stuck %.1fs — reset to authored spawn instead of deleting objective population",
+                        "persistent mission enemy stuck %.1fs — reset to authored room anchor instead of deleting objective population",
                         entry.stuckTime
                     )
                 )
-                self:_clearEnemyFromPetThreat(targetId)
-                self:_releasePets(targetId)
-                self:_setAggroOwner(entry, nil)
-                entry.aggro = AggroTable.new()
-                entry.targetPet = nil
-                entry.meander = nil
-                entry.stuckTime = 0
-                entry.lastTargetDist = nil
-                local recovery = entry.spawnPosition or entry.home or entry.pos
-                entry.home = recovery
-                entry.pos = recovery
-                model:SetAttribute("MoveTarget", recovery)
-                model:SetAttribute("MoveFace", recovery + Vector3.new(0, 0, -1))
                 return
             end
             trace(
@@ -5789,7 +5839,18 @@ function EnemyService:_combatTick(dt)
                 self:_despawnEnemy(targetId)
             end
             if self._enemies[targetId] then -- still alive (not just despawned)
-                self:_engageEnemy(entry, targetId, now, eng, dt)
+                -- Event-loop invariant: an authored mission enemy must always belong to its bound
+                -- room. This catches displacement sources that do not use ordinary movement and
+                -- recovers on the next combat event instead of leaving an objective outside the map.
+                if self:_outsideMovementLeash(entry) then
+                    self:_recoverPersistentEnemy(
+                        entry,
+                        targetId,
+                        "authoritative position left authored mission room"
+                    )
+                else
+                    self:_engageEnemy(entry, targetId, now, eng, dt)
+                end
                 self:_updateHeldBadge(model, nowTime) -- world icon disc above a pinned (held) enemy
             end
         end
@@ -5957,6 +6018,12 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         def = def, -- the resolved def (config OR a synthesized pet-invader def); combat reads this
         pos = position,
         spawnPosition = position, -- immutable authored recovery point (mission stuck recovery)
+        authoredHome = (opts and typeof(opts.home) == "Vector3") and opts.home or nil,
+        home = (opts and typeof(opts.home) == "Vector3") and opts.home or nil,
+        -- Generic movement contract supplied by the spawning system. Trials bind this to the
+        -- generated room rectangle; the movement code remains unaware of mission/map specifics.
+        movementLeash = (opts and type(opts.movementLeash) == "table") and opts.movementLeash
+            or nil,
         aggro = AggroTable.new(),
         lastActiveAt = os.clock(), -- engagement timer seed (idle-despawn clock; refreshed while aggro'd)
         persistent = (opts and opts.persistent) == true, -- mission population: NEVER idle-despawns (defeat or teardown only)
@@ -5973,6 +6040,20 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     model:SetAttribute("LeashRegion", leashRegion or "")
     model:SetAttribute("MoveTarget", position)
     model:SetAttribute("MoveFace", Vector3.new(hrp.Position.X, position.Y, hrp.Position.Z))
+    local movement = self._enemies[targetId].movementLeash
+    local movementShape = movement and movement.shapes and movement.shapes[1]
+    if movementShape and movementShape.kind == "box" then
+        model:SetAttribute(
+            "MovementLeashCenter",
+            Vector3.new(movementShape.cx, position.Y, movementShape.cz)
+        )
+        model:SetAttribute(
+            "MovementLeashHalfExtents",
+            Vector3.new(movementShape.halfX, 0, movementShape.halfZ)
+        )
+        model:SetAttribute("MovementLeashInset", tonumber(movement.inset) or 0)
+        model:SetAttribute("MissionRoomIndex", movement.roomIndex)
+    end
 
     -- Effective level = base (config `level`, else the spawning player's COMBAT level so a
     -- standard mob reads "even"/white) + the elite rank offset (lieutenant/boss read

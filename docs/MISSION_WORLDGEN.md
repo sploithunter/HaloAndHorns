@@ -297,15 +297,16 @@ Slot pool + lifecycle owner.
 
 ### 5.3 Known integration gaps (owned by this feature, not the solver)
 
-1. **Dynamic hook registration.** BaddieSpawnerService scans Workspace by
-   name-prefix at boot; BreakableSpawner activates per configured world.
-   Each needs a `RegisterContainer(container)` / `UnregisterContainer`
-   entry point (or a rescan call) so hooks born mid-session inside
-   `MissionInstances` are honored. Same for leashes: `configs/enemy_leash.lua`
-   is static dotted paths — add a runtime
-   `EnemyLeash.registerRegion(areaId, parts)` used by the stamper (each
-   room's floor = its leash region; room-scoped leashing falls out
-   naturally).
+1. **Dynamic hook registration.** BreakableSpawner still activates per
+   configured world and needs a `RegisterContainer(container)` /
+   `UnregisterContainer` entry point if mission mining hooks are added.
+   Mission combat population no longer relies on boot-scanned
+   BaddieSpawners: MissionInstanceService fields every `MissionSpawn`
+   directly. Each spawned enemy receives the containing room rectangle
+   from the same pure `LayoutSolver.mapData` used by the minimap. All movement
+   is clamped through the shared `EnemyLeash` path; an invariant check in the
+   combat event loop recovers any externally displaced enemy to its authored
+   clear spawn anchor without deleting objective population.
 2. **Synthetic AreaId.** `mission:<instanceId>` must be accepted by
    services that key off AreaId (zone checks, reward attribution). Audit
    ZoneService/WorldContext for hard assumptions that every AreaId exists

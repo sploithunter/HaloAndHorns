@@ -835,3 +835,9 @@ migration is needed for the abandoned "element splits stacks" spec.
 
 - Live Heaven Grass Trial inspection localized the apparent enemy close-gap freeze to the same mezzanine landing in repeated rooms. Ground movement cast down from 80 studs overhead, hit the landing above the enemy instead of the supporting floor below it, interpreted that surface as an unclimbable rise, and stopped publishing new chase positions.
 - Ground enemies now probe locally beneath their current pivot, so roofs/mezzanines are never support-floor candidates; the owner-relative high probe remains exclusive to engaged flyers. Chase routing now follows one configured state path: clear scene ray -> direct shared chase step; blocked wall/pillar -> Roblox path waypoints followed by that same step; no usable path -> clear both sides' threat/targets and deaggro. The nav agent is intentionally small because enemies are collideless and imported art bounds must not determine traversability.
+
+## 2026-07-13 - Trial enemies remain in their authored rooms
+
+- Live inspection confirmed an Empyrean Dragon boss had been knocked through a Trial wall: its authoritative position was outside all 30 generated rooms, then disengagement adopted that invalid position as its loiter home.
+- Mission population now binds every enemy to the containing room rectangle derived from the same pure layout payload used by the minimap. Chase, flee, loiter, and knockback pass through one generic movement leash; room inset is configuration-owned under `missions.navigation.room_inset`, independent of collideless model art bounds.
+- The combat event loop detects any authoritative position outside the assigned room and recovers the persistent objective to its authored clear `MissionSpawn` anchor while clearing both sides of the failed engagement. Authored mission homes are no longer erased or redefined when combat starts.

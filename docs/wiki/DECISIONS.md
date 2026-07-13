@@ -417,7 +417,10 @@ authored role keeps at least one representative, and objective bosses/titans rem
 mandatory. The initial 25%–200% range is intentionally a playtest range: establish the baseline
 from live level-14 runs, then narrow the config limits without adding a second UI or service path.
 
-Persistent Trial enemies are objective population, not replaceable patrols. Generic chase-stuck
-recovery may retire an ambient patrol because its spawner replaces it, but a persistent mission
-enemy must remain tracked: it clears the failed engagement and resets to its immutable authored
-spawn point. Persistent population otherwise leaves only through defeat or mission teardown.
+Persistent Trial enemies are objective population, not replaceable patrols. Every static spawn is
+bound to the containing generated room rectangle from the same `LayoutSolver.mapData` consumed by
+the minimap. Chase, flee, loiter, and knockback use the shared movement-leash path and cannot cross
+that room boundary. The combat event loop also treats an authoritative position outside the room as
+an invariant failure: it clears the failed engagement and recovers the enemy to its immutable safe
+`MissionSpawn` anchor. Persistent population otherwise leaves only through defeat or mission
+teardown.
