@@ -34,6 +34,10 @@ function BaddieSpawnerService:Init()
     end)
     self._config = (ok and cfg and cfg.spawners) or nil
     self._enemyDefs = (ok and cfg and cfg.enemies) or {} -- onramp melee pick reads defs
+    local okLeash, leashCfg = pcall(function()
+        return configLoader:LoadConfig("enemy_leash")
+    end)
+    self._leashConfig = (okLeash and leashCfg) or {}
     self._spawners = {} -- part -> { cooldownUntil }
 end
 
@@ -65,6 +69,27 @@ function BaddieSpawnerService:_factionFor(part)
     local suffix = part.Name:sub(#prefix + 1)
     local map = self._config.zone_faction or {}
     return map[suffix] or self._config.default_faction or "earth"
+end
+
+local function resolveWorkspacePath(path)
+    local node = Workspace
+    for segment in string.gmatch(path or "", "[^%.]+") do
+        node = node and node:FindFirstChild(segment)
+    end
+    return node
+end
+
+-- Config-owned home territory for a Home cave. Realm/mission spawners may share the same suffixes,
+-- so the configured root is part of the binding contract rather than suffix alone.
+function BaddieSpawnerService:_homeBindingFor(part)
+    local cfg = self._leashConfig or {}
+    local root = resolveWorkspacePath(cfg.spawner_root)
+    if not (root and part:IsDescendantOf(root)) then
+        return nil
+    end
+    local prefix = self._config.part_prefix or "BaddieSpawner"
+    local suffix = part.Name:sub(#prefix + 1)
+    return cfg.spawner_bindings and cfg.spawner_bindings[suffix] or nil
 end
 
 -- Weighted pick among the waves of the given faction. A wave with no `faction` counts as the
@@ -140,6 +165,7 @@ function BaddieSpawnerService:_trigger(part, player, rng)
         return
     end
     local scatter = tonumber(self._config.scatter) or 8
+    local homeBinding = self:_homeBindingFor(part)
     local state = self._spawners[part]
     -- PACK SCALING (docs/TEAMING.md): waves grow with the ENGAGED team — the triggering
     -- player's teammates within pack.engaged_radius of the spawner. Unit counts AND the
@@ -256,6 +282,8 @@ function BaddieSpawnerService:_trigger(part, player, rng)
                 local r = enemySvc:SpawnEnemy(player, unit.enemy, {
                     position = part.Position + offset,
                     home = part.Position, -- loiter anchor
+                    homeArea = homeBinding and homeBinding.area,
+                    leashRegion = homeBinding and homeBinding.region,
                     ungated = onramp, -- the First Fight may engage a sub-threshold player
                     def = defOverride, -- nil outside the onramp = stock def
                 })

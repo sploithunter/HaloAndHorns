@@ -4,6 +4,8 @@
 ]]
 
 local EnemyLeash = loadModule("src/Shared/Game/EnemyLeash.lua")
+local leashConfig = loadModule("configs/enemy_leash.lua")
+local combatConfig = loadModule("configs/combat.lua")
 
 -- A grass box (centered -150,265, 356x266) ∪ a spawn circle (91,241, r200) — the starter pen.
 local GRASS = { kind = "box", cx = -150, cz = 265, halfX = 178, halfZ = 133 }
@@ -11,6 +13,30 @@ local SPAWN = { kind = "circle", cx = 91, cz = 241, r = 200 }
 local PEN = { GRASS, SPAWN }
 
 return function()
+    describe("shipped home-area contract", function()
+        it("uses exact authored surfaces instead of overlapping mesh bounds", function()
+            for _, region in ipairs(leashConfig.region_order) do
+                for _, shape in ipairs(leashConfig.regions[region]) do
+                    expect(shape.shape).to.equal("surface")
+                end
+            end
+        end)
+
+        it("binds every home cave suffix to its intended area and region", function()
+            expect(leashConfig.spawner_bindings.Earth.region).to.equal("GrassSpawn")
+            expect(leashConfig.spawner_bindings.Earth.area).to.equal("Spawn")
+            for _, name in ipairs({ "Ice", "Lava", "Desert" }) do
+                expect(leashConfig.spawner_bindings[name].region).to.equal(name)
+                expect(leashConfig.spawner_bindings[name].area).to.equal(name)
+            end
+        end)
+
+        it("allows gradual terrain climbs without jump-assisting onto walls", function()
+            local engagement = combatConfig.engagement
+            expect(engagement.ground_jump_max <= engagement.ground_climb_max).to.equal(true)
+        end)
+    end)
+
     describe("EnemyLeash.inside (union)", function()
         it("is inside when within the box", function()
             expect(EnemyLeash.inside(-150, 265, PEN)).to.equal(true)
