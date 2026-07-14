@@ -144,7 +144,7 @@ return {
         {
             id = "vip_pass",
             name = "👑 VIP Pass",
-            description = "2x XP, faster earnings, +speed, +luck, VIP tag!",
+            description = "2x XP, faster earnings, +speed, VIP tag!",
             price_robux = 499,
             benefits = {
                 -- NO currency dailies (rating rule) — RATE multipliers only:
@@ -157,8 +157,11 @@ return {
                     id = "vip_effect",
                     permanent = true,
                     stats = {
+                        -- luckBoost CUT (2026-07-14, same verdict as the
+                        -- Lucky! pass: species luck is crowded AND capped at
+                        -- max_luck=100 — a paid boost there can silently buy
+                        -- nothing). VIP sells rates + speed + status only.
                         speedMultiplier = 0.25, -- +25% speed
-                        luckBoost = 0.1, -- +10% luck
                     },
                 },
                 perks = {
