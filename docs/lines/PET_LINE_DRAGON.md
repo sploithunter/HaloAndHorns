@@ -72,6 +72,7 @@ dragon line tells the other five docs where their apex expression lives.
 
 - Empyrean/Abyssal exist but their AoE was **reverted to single-target** (test mule); they currently
   read as plain ranged, not splash-blaster dragons.
-- Aurora/Rimewraith (L2) exist as pets but are **single-target** — authoring their **melee freeze-AoE
-  is the highest-value anti-reskin task in the roster** (makes the current chase play like a dragon).
+- Aurora/Rimewraith (L2) ship as `targeted_aoe` melee controllers: the primary and every enemy in
+  the configured splash cluster take damage and a short root. Their burst and damage geometry use
+  the target enemy's server-published movement position, never its stale anchored model pivot.
 - L3-5 dragons are design-only; build them with their signature designated power from the start.

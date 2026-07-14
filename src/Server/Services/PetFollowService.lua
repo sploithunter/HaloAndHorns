@@ -37,6 +37,7 @@ local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- cast-R
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance) -- live pet HP fraction for Rage
 local DamageOverTime = require(ReplicatedStorage.Shared.Game.DamageOverTime)
 local OnHitEffects = require(ReplicatedStorage.Shared.Game.OnHitEffects)
+local MovingTargetPosition = require(ReplicatedStorage.Shared.Game.MovingTargetPosition)
 local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark) -- additive vulnerability marks (SSOT)
 local SquadDiversity = require(ReplicatedStorage.Shared.Game.SquadDiversity)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -178,6 +179,24 @@ end
 function PetFollowService:GetReportedPosition(pet)
     local rec = self._petPos[pet]
     return rec and rec.cf or nil
+end
+
+-- One authoritative position path for anything a pet works on. Moving enemies publish the
+-- server-owned EnemyService entry.pos through MoveTarget because their anchored model pivot stays
+-- at spawn while clients render motion. Static crystals have no MoveTarget and use their model.
+-- Never substitute the pet's client-reported position here: clients may present pet movement, but
+-- they do not get to choose damage geometry.
+local function targetPosition(target)
+    local published = target:GetAttribute("MoveTarget")
+    if typeof(published) ~= "Vector3" then
+        published = nil
+    end
+    local primary = target.PrimaryPart or target:FindFirstChildWhichIsA("BasePart")
+    local primaryPosition = primary and primary.Position
+    local pivotPosition = if not published and not primaryPosition
+        then target:GetPivot().Position
+        else nil
+    return MovingTargetPosition.resolve(published, primaryPosition, pivotPosition)
 end
 
 function PetFollowService:_combatService()
@@ -563,10 +582,7 @@ function PetFollowService:_mine(player, pet, breakable)
         or 0.5
     local dist
     if rec and (now - rec.t) <= staleSeconds then
-        -- Enemies publish their authoritative position as a MoveTarget attribute (the
-        -- server no longer pivots the model — the client owns the render CFrame for
-        -- smooth motion). Breakables have no such attribute, so fall back to the pivot.
-        local targetPos = breakable:GetAttribute("MoveTarget") or breakable:GetPivot().Position
+        local targetPos = targetPosition(breakable)
         -- RANGED vs a flyer: a kiting pet shoots, so its reach is HORIZONTAL — it can hit an enemy
         -- perched up on a wall/ledge above it without the vertical gap pushing it out of range. Melee
         -- (and all crystal mining) use true 3D distance: they must physically reach the target.
@@ -875,8 +891,7 @@ function PetFollowService:_mine(player, pet, breakable)
             math.floor(pTargets > 0 and pTargets or (tonumber(aoeCfg.max_targets) or 5))
         local splash = math.floor(dmg * frac + 0.5)
         local container = breakable.Parent
-        local origin = (breakable.PrimaryPart and breakable.PrimaryPart.Position)
-            or breakable:GetPivot().Position
+        local origin = targetPosition(breakable)
         -- AoE ATTACK VISUAL: an element-themed eruption at the cluster — reuses the power AreaFX
         -- channel (Power_AreaFx → AreaFX.Play + CombatFX.groundField burst). Pass the PET'S element so
         -- a grass/ice/desert AoE pet shows ITS burst (earth = green sphere, no orange explosion, no
@@ -912,8 +927,8 @@ function PetFollowService:_mine(player, pet, breakable)
                     and other:IsA("Model")
                     and (other:GetAttribute("HP") or 0) > 0
                 then
-                    local op = other.PrimaryPart or other:FindFirstChildWhichIsA("BasePart")
-                    if op and (op.Position - origin).Magnitude <= radius then
+                    local otherPos = targetPosition(other)
+                    if (otherPos - origin).Magnitude <= radius then
                         local ap = PetCombat.applyDamage(other:GetAttribute("HP") or 0, splash)
                         other:SetAttribute("HP", ap.hp)
                         local sc = other:FindFirstChild("Contrib")
@@ -960,7 +975,7 @@ function PetFollowService:_mine(player, pet, breakable)
                             splash = true,
                         }
                         Signals.Combat_PetHit:FireClient(player, splashHit)
-                        local shp = (op and op.Position) or origin
+                        local shp = otherPos
                         for _, sp in ipairs(Players:GetPlayers()) do
                             if sp ~= player then
                                 local shrp = sp.Character
@@ -991,13 +1006,12 @@ function PetFollowService:_mine(player, pet, breakable)
         local splash = math.floor(dmg * frac + 0.5)
         local enemiesFolder = Workspace:FindFirstChild("Game")
             and Workspace.Game:FindFirstChild("Enemies")
-        local tp = (breakable.PrimaryPart and breakable.PrimaryPart.Position)
-            or breakable:GetPivot().Position
+        local tp = targetPosition(breakable)
         if splash > 0 and enemiesFolder then
             for _, e in ipairs(enemiesFolder:GetChildren()) do
                 if e ~= breakable and e:IsA("Model") and (e:GetAttribute("HP") or 0) > 0 then
-                    local ep = e.PrimaryPart or e:FindFirstChildWhichIsA("BasePart")
-                    if ep and (ep.Position - tp).Magnitude <= radius then
+                    local enemyPos = targetPosition(e)
+                    if (enemyPos - tp).Magnitude <= radius then
                         local appliedSplash =
                             PetCombat.applyDamage(e:GetAttribute("HP") or 0, splash)
                         e:SetAttribute("HP", appliedSplash.hp)
@@ -1056,8 +1070,7 @@ function PetFollowService:_mine(player, pet, breakable)
         self._combatConfig.pet_hit_broadcast_range
             or (self._combatConfig.engagement and self._combatConfig.engagement.perception_range)
     ) or 80
-    local tp = (breakable.PrimaryPart and breakable.PrimaryPart.Position)
-        or breakable:GetPivot().Position
+    local tp = targetPosition(breakable)
     hit.foreign = true
     for _, other in ipairs(Players:GetPlayers()) do
         if other ~= player then

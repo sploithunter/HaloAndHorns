@@ -857,3 +857,8 @@ migration is needed for the abandoned "element splits stacks" spec.
 
 - Fixed Ashwing's Ember Tempo and Lumen Dove's Inner Light missing their inventory support-power badges. Aura label/symbol presentation now lives in `power_icons.support_badge`, badge colour comes from the pet's configured origin, and inventory uses the shared `PetBadge.create` renderer rather than assembling a second icon path.
 - Headless coverage now requires every authored support-aura kind to provide a label, symbol, and renderable disc, preventing future working powers from silently shipping without their badge.
+
+## 2026-07-14 - Moving-target AoEs use server authority
+
+- Live monitoring of 98 Rimewraith Dragon attacks found its 14-stud freeze AoE averaging 20.2 studs away from the visible primary target and reaching 35.7 studs off. The primary still took its direct hit/root, but splash selection and `Power_AreaFx` shared the stale center, so this was mechanical rather than cosmetic.
+- Enemy movement authority already lived in `EnemyService.entry.pos` and replicated as `MoveTarget`; anchored enemy pivots intentionally remain at spawn for client-side smoothing. Pet work now resolves one target position everywhere: server-published `MoveTarget` first, then the static model primary/pivot fallback. Client-reported pet motion remains presentation/range-gate input and never selects AoE geometry.
