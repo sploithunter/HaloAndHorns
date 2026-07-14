@@ -866,3 +866,9 @@ migration is needed for the abandoned "element splits stacks" spec.
 ## 2026-07-14 - Trial group-size playtest calibration
 
 - At player level 21, even-level Trial enemies with `Trial Enemy Group Size` set to 25% felt correctly balanced. Preserve this as a known-good calibration point when fitting the eventual level/density curve; it complements the level-14 finding where 25% was only barely winnable and 50% was too high.
+
+## 2026-07-14 - Level-22 Archon scaling audit
+
+- The Archon of the Host required three pet respawns plus player buffs/debuffs at level 22. Runtime config inspection confirmed that this is not a duplicated pet-role multiplier: the Archon is a static boss and spawns with its uncurved level-50-era values of 50,000 HP and 200 armor. With the shared armor curve (`k = 100`), it takes one-third pet damage and therefore presents 150,000 effective HP.
+- Static Trial scaling intentionally has no `boss` entry, while `MissionRankScale` currently applies only to synthesized pet-model bosses. At level 22 that pet-boss curve resolves to 3.333x HP and 52.8 armor, so the generic Archon and Magma Wyrm do not participate in the low-level boss curve added after the earlier level-15 wall.
+- Pet-model boss composition separately preserves the source pet's role overlay before adding boss rank. A tank source receives the configured 2.2x role HP and a ranged/blaster source 0.7x, a 3.14x same-base-health spread before the shared boss multiplier and armor. That composition matches the current orthogonal role/rank config, but explains why tank-derived bosses are materially harder than blaster-derived bosses. No balance change was made pending a decision on whether static bosses should join the level curve and whether this role spread is desirable.
