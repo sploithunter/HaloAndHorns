@@ -34,6 +34,7 @@ return {
         rainbow_luck_pass = 0, -- REPLACE: "Rainbow Radiance" (rainbow variant luck)
         pet_slot_pass = 0, -- REPLACE: "+1 Pet Slot"
         storage_pass = 0, -- REPLACE: "+250 Storage"
+        second_wind = 0, -- REPLACE: "Second Wind" (3x out-of-combat recovery)
     },
 
     -- Developer Products (consumable Robux purchases).
@@ -188,6 +189,24 @@ return {
             description = "Deploy an eleventh pet!",
             price_robux = 399,
             benefits = { features = { extra_equip_slots = 1 } },
+            icon = "rbxassetid://0",
+            test_mode_enabled = true,
+        },
+        {
+            id = "second_wind",
+            name = "\u{1FA79} Second Wind",
+            description = "Pets recover 3x faster when you're out of combat!",
+            price_robux = 279,
+            benefits = {
+                -- PAY FOR CONVENIENCE, never power (Jason 2026-07-14: "it
+                -- doesn't change the fight, it minimizes waiting between
+                -- battles"): 3x spirit-form/lockout recovery whenever the
+                -- player is NOT InCombat (the same server attribute the
+                -- combat music keys off). Does NOTHING mid-fight by design.
+                -- TODO(handler): recovery-rate consumer in the spirit-form
+                -- lockout tick; feature flag below is stored today.
+                features = { fast_recovery_mult = 3 },
+            },
             icon = "rbxassetid://0",
             test_mode_enabled = true,
         },
