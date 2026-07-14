@@ -31,9 +31,9 @@ return {
         vip_pass = 123456789, -- REPLACE: "VIP Pass"
         auto_collect = 123456790, -- REPLACE: "Auto Collect"
         speed_boost = 123456791, -- REPLACE: "Speed Boost"
-        luck_pass = 0, -- REPLACE: "Lucky!" (egg species luck)
         golden_luck_pass = 0, -- REPLACE: "Golden Touch" (golden variant luck)
         rainbow_luck_pass = 0, -- REPLACE: "Rainbow Radiance" (rainbow variant luck)
+        huge_luck_pass = 0, -- REPLACE: "Huge Hunter" (huge tier luck)
         pet_slot_pass = 0, -- REPLACE: "+1 Pet Slot"
         second_wind = 0, -- REPLACE: "Second Wind" (3x out-of-combat recovery)
     },
@@ -48,8 +48,11 @@ return {
             description = "Double XP from everything for one hour!",
             price_robux = 99,
             rewards = {
-                -- TODO(handler): EconomyService grants currencies/items today;
-                -- timed-boost grants need a small handler before wiring.
+                -- TODO(handler): timed-boost handler contract (Jason
+                -- 2026-07-14): boosts live in INVENTORY, remaining seconds
+                -- PERSIST in the profile, and the clock ticks ONLY while
+                -- in-session — logging out pauses it, logging in resumes.
+                -- Never wall-clock: a bedtime logout must not eat the hour.
                 boost = { axis = "xp", mult = 2.0, duration_minutes = 60 },
             },
             category = "boosts",
@@ -59,11 +62,11 @@ return {
         {
             id = "frenzy_burst",
             name = "🔥 Personal Frenzy (30 min)",
-            description = "Your own Frenzy window — double drops for 30 minutes!",
+            description = "Your own Frenzy window — double drops for a full hour!",
             price_robux = 149,
             rewards = {
-                -- TODO(handler): same timed-boost handler as xp_hour.
-                boost = { axis = "drops", mult = 2.0, duration_minutes = 30 },
+                -- TODO(handler): xp_hour handler + persistence contract.
+                boost = { axis = "drops", mult = 2.0, duration_minutes = 60 }, -- Jason: "for 149 I would give at least an hour"
             },
             category = "boosts",
             popular = true,
@@ -189,20 +192,16 @@ return {
             icon = "rbxassetid://0", -- Replace with actual asset ID
             test_mode_enabled = true,
         },
-        -- EGG LUCK LADDER: boosts the odds of eggs bought with EARNED coins.
+        -- EGG LUCK LADDER (reworked 2026-07-14): species luck CUT — that axis
+        -- is crowded (luck_aura pets, VIP luckBoost, luck powers) and HARD
+        -- CAPPED at max_luck=100, so a pass there can silently buy nothing.
+        -- These three sell odds on axes with at most ONE other source:
+        -- golden/rainbow variant luck (none) and huge luck (huge_fortune
+        -- power's short window only). Boost odds of eggs bought with EARNED coins.
         -- The industry-standard No on Paid Random Items: the pass modifies
         -- probabilities of a free-currency purchase; the item is never bought
         -- with Robux. pets.lua modifier_support gates which eggs honor these
         -- (fixed_odds exclusives NEVER do — stated odds are exact).
-        {
-            id = "luck_pass",
-            name = "🍀 Lucky!",
-            description = "Permanently better odds for rare pets from coin eggs!",
-            price_robux = 249,
-            benefits = { features = { egg_species_luck = true } },
-            icon = "rbxassetid://0",
-            test_mode_enabled = true,
-        },
         {
             id = "golden_luck_pass",
             name = "✨ Golden Touch",
@@ -218,6 +217,15 @@ return {
             description = "Rainbow pets hatch more often from coin eggs!",
             price_robux = 449,
             benefits = { features = { egg_rainbow_luck = true } },
+            icon = "rbxassetid://0",
+            test_mode_enabled = true,
+        },
+        {
+            id = "huge_luck_pass",
+            name = "\u{1F409} Huge Hunter",
+            description = "HUGE pets hatch more often from coin eggs!",
+            price_robux = 549,
+            benefits = { features = { egg_huge_luck = true } },
             icon = "rbxassetid://0",
             test_mode_enabled = true,
         },
