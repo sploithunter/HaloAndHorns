@@ -611,17 +611,21 @@ function InventoryPanel:Show(parent)
     self:_updateItemsDisplay() -- Update items display with real data
     self:_refreshCategoryTabs() -- Update category tabs with real counts (after data is loaded)
 
-    -- BIOME RPS: crossing a zone border re-prices every pet card (the zone event we
-    -- already capture — Jason: "recalculate the pets in the inventory"). The power
-    -- sort re-runs with the new numbers, so the grid reorders to this zone's truth.
+    -- CONTEXTUAL POWER: crossing a biome or realm boundary re-prices every pet card. Both
+    -- attributes can change during one portal/mission transition, so route them through the same
+    -- deferred refresh and rebuild/re-sort the grid once with the settled context.
     if not self._zoneListener then
         self._zoneListener = Players.LocalPlayer
             :GetAttributeChangedSignal("CurrentArea")
             :Connect(function()
-                if self.isVisible then
-                    self:_loadRealInventoryData()
-                    self:_updateItemsDisplay()
-                end
+                self:_schedulePetRefresh()
+            end)
+    end
+    if not self._realmListener then
+        self._realmListener = Players.LocalPlayer
+            :GetAttributeChangedSignal("CurrentRealm")
+            :Connect(function()
+                self:_schedulePetRefresh()
             end)
     end
     self:_setupEquippedFolderListeners() -- Listen for equipped changes
