@@ -1249,21 +1249,11 @@ function InventoryService:_updateBucketFolders(player, bucketName)
         end
     end
 
-    -- Remove old item folders (preserve Info). For pets, also preserve any `equip_*`
-    -- folders that PetEquipmentBridge owns for spawning equipped-common follow models —
-    -- wiping them would desync the world pets. The bridge manages their lifecycle.
-    for _, child in pairs(bucketFolder:GetChildren()) do
-        local isInfo = child.Name == "Info"
-        local isBridgeEquip = bucketName == "pets" and string.sub(child.Name, 1, 6) == "equip_"
-        if not isInfo and not isBridgeEquip then
-            child:Destroy()
-        end
-    end
-
     local bucketConfig = self._inventoryConfig.buckets[bucketName]
     if bucketName == "pets" then
         -- Equipped.pets is already validated (RebuildPetProjections ran _validateEquippedTable);
-        -- compute the per-kind equipped overlay so common Quantity = unequipped count.
+        -- compute the per-kind equipped overlay so common Quantity = unequipped count. Reconcile
+        -- the existing tree instead of destroying every card folder on any one-record change.
         local configuredSlots = self._inventoryConfig.equipped
             and self._inventoryConfig.equipped.pets
             and self._inventoryConfig.equipped.pets.slots
@@ -1275,6 +1265,12 @@ function InventoryService:_updateBucketFolders(player, bucketName)
         )
         self:_buildPetBucketFolders(bucketFolder, bucket.items or {}, equippedByKey)
     else
+        -- Legacy non-pet buckets still rebuild as a unit.
+        for _, child in pairs(bucketFolder:GetChildren()) do
+            if child.Name ~= "Info" then
+                child:Destroy()
+            end
+        end
         for uid, itemData in pairs(bucket.items or {}) do
             self:_createItemFolder(bucketFolder, uid, itemData, bucketConfig)
         end
@@ -1288,94 +1284,134 @@ function InventoryService:_updateBucketFolders(player, bucketName)
             itemCount = self:_countItems(bucket.items or {}),
         })
     end
+
+    if bucketName == "pets" then
+        self:_publishPetProjection(player)
+    end
 end
 
--- Project uid records into the legacy-shaped Stacks/Special folders the client reads.
--- Commons group by id:variant (Quantity = UNEQUIPPED count; equipped commons surface via
--- the equipped mirror as ghost cards). Each special is its own Special/<uid> folder. This
--- is the ONLY place the pets bucket folder is built, derived purely from PetInventoryView.
-function InventoryService:_buildPetBucketFolders(bucketFolder, items, equippedByKey)
-    local stacksFolder = Instance.new("Folder")
-    stacksFolder.Name = "Stacks"
-    stacksFolder.Parent = bucketFolder
+-- One event token per completed pet projection transaction. Clients observe this instead of
+-- inferring a change from the old destroy/recreate storm. The Value itself is the event payload.
+function InventoryService:_publishPetProjection(player)
+    local inventoryFolder = self._playerInventoryFolders[player]
+    local bucketFolder = inventoryFolder and inventoryFolder:FindFirstChild("pets")
+    local infoFolder = bucketFolder and bucketFolder:FindFirstChild("Info")
+    if not infoFolder then
+        return
+    end
+    local version = infoFolder:FindFirstChild("ProjectionVersion")
+    if not version or not version:IsA("IntValue") then
+        if version then
+            version:Destroy()
+        end
+        version = Instance.new("IntValue")
+        version.Name = "ProjectionVersion"
+        version.Parent = infoFolder
+    end
+    version.Value += 1
+end
 
-    local specialFolder = Instance.new("Folder")
-    specialFolder.Name = "Special"
-    specialFolder.Parent = bucketFolder
+function InventoryService:_ensureFolder(parent, name)
+    local folder = parent:FindFirstChild(name)
+    if folder and not folder:IsA("Folder") then
+        folder:Destroy()
+        folder = nil
+    end
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = name
+        folder.Parent = parent
+    end
+    return folder
+end
 
-    local config = self:_petViewConfig()
-    local capability = self:_petCapability()
-    for _, group in ipairs(PetInventoryView.groups(items, config, capability, equippedByKey)) do
-        if group.isSpecial then
-            for _, uid in ipairs(group.uids) do
-                self:_createPetSpecialFolder(specialFolder, uid, items[uid])
-            end
-        else
-            local sample = group.sampleRecord
-            self:_createPetStackFolder(stacksFolder, group.key, {
-                id = sample.id,
-                variant = sample.variant,
-                quantity = group.unequippedCount,
-                enchant = sample.enchant, -- Storage v2: the stack's identity enchant
-            })
+function InventoryService:_valueObjectClass(value)
+    local valueType = type(value)
+    if valueType == "string" then
+        return "StringValue"
+    elseif valueType == "number" then
+        return math.floor(value) == value and "IntValue" or "NumberValue"
+    elseif valueType == "boolean" then
+        return "BoolValue"
+    elseif valueType == "table" then
+        return "Folder"
+    end
+    return nil
+end
+
+-- Reconcile one replicated value recursively. Stable Instances matter here: destroying and
+-- recreating the entire pet tree invalidates every client observer and was the equip/mining hitch.
+function InventoryService:_syncValueObject(parent, name, value, classOverride)
+    name = tostring(name)
+    local className = classOverride or self:_valueObjectClass(value)
+    local current = parent:FindFirstChild(name)
+    if not className then
+        if current then
+            current:Destroy()
+        end
+        return nil
+    end
+
+    if current and not current:IsA(className) then
+        current:Destroy()
+        current = nil
+    end
+    if not current then
+        current = Instance.new(className)
+        current.Name = name
+        current.Parent = parent
+    end
+
+    if className == "Folder" then
+        self:_syncFolderValues(current, value)
+    elseif current.Value ~= value then
+        current.Value = value
+    end
+    return current
+end
+
+function InventoryService:_syncFolderValues(folder, values, classOverrides)
+    local desired = {}
+    for key, value in pairs(values or {}) do
+        local name = tostring(key)
+        if self:_valueObjectClass(value) then
+            desired[name] = true
+            self:_syncValueObject(folder, name, value, classOverrides and classOverrides[name])
+        end
+    end
+    for _, child in ipairs(folder:GetChildren()) do
+        if not desired[child.Name] then
+            child:Destroy()
         end
     end
 end
 
--- Create a stack folder for a normal pet
-function InventoryService:_createPetStackFolder(parentFolder, stackKey, itemData)
-    local stackFolder = Instance.new("Folder")
-    stackFolder.Name = stackKey
-    stackFolder.Parent = parentFolder
-
-    local itemId = Instance.new("StringValue")
-    itemId.Name = "ItemId"
-    itemId.Value = itemData.id or "unknown"
-    itemId.Parent = stackFolder
-
-    local variant = Instance.new("StringValue")
-    variant.Name = "Variant"
-    variant.Value = itemData.variant or "basic"
-    variant.Parent = stackFolder
-
-    local qty = Instance.new("IntValue")
-    qty.Name = "Quantity"
-    qty.Value = itemData.quantity or 1
-    qty.Parent = stackFolder
-
-    -- Storage v2: enchant-keyed stacks surface their effect for the card badge
+function InventoryService:_syncPetStackFolder(parentFolder, stackKey, itemData)
+    local folder = self:_ensureFolder(parentFolder, stackKey)
+    local desired = {
+        ItemId = itemData.id or "unknown",
+        Variant = itemData.variant or "basic",
+        Quantity = itemData.quantity or 1,
+    }
     if itemData.enchant ~= nil then
-        local enchant = Instance.new("StringValue")
-        enchant.Name = "Enchant"
-        enchant.Value = tostring(itemData.enchant)
-        enchant.Parent = stackFolder
+        desired.Enchant = tostring(itemData.enchant)
     end
+    self:_syncFolderValues(folder, desired, {
+        ItemId = "StringValue",
+        Variant = "StringValue",
+        Quantity = "IntValue",
+        Enchant = "StringValue",
+    })
+    return folder
 end
 
--- Create a folder for a special pet (unique)
-function InventoryService:_createPetSpecialFolder(parentFolder, uid, itemData)
-    local itemFolder = Instance.new("Folder")
-    itemFolder.Name = uid
-    itemFolder.Parent = parentFolder
-
-    local itemId = Instance.new("StringValue")
-    itemId.Name = "ItemId"
-    itemId.Value = itemData.id or "unknown"
-    itemId.Parent = itemFolder
-
-    local obtainedAt = Instance.new("NumberValue")
-    obtainedAt.Name = "ObtainedAt"
-    obtainedAt.Value = itemData.obtained_at or 0
-    obtainedAt.Parent = itemFolder
-
-    -- Legacy special folders carried Quantity=1; keep it so client counts are unchanged.
-    local qty = Instance.new("IntValue")
-    qty.Name = "Quantity"
-    qty.Value = 1
-    qty.Parent = itemFolder
-
-    -- Copy remaining fields. Exclude internal SSOT fields (uid/equipped_slot/_kind/quantity)
-    -- — equip state is read from the equipped mirror, not the item folder.
+function InventoryService:_syncPetSpecialFolder(parentFolder, uid, itemData)
+    local folder = self:_ensureFolder(parentFolder, uid)
+    local desired = {
+        ItemId = itemData.id or "unknown",
+        ObtainedAt = itemData.obtained_at or 0,
+        Quantity = 1,
+    }
     for key, value in pairs(itemData) do
         if
             key ~= "id"
@@ -1385,12 +1421,68 @@ function InventoryService:_createPetSpecialFolder(parentFolder, uid, itemData)
             and key ~= "equipped_slot"
             and key ~= "quantity"
         then
-            local valueObj = self:_createValueObject(key, value)
-            if valueObj then
-                valueObj.Parent = itemFolder
-            end
+            desired[key] = value
         end
     end
+    self:_syncFolderValues(folder, desired, {
+        ItemId = "StringValue",
+        ObtainedAt = "NumberValue",
+        Quantity = "IntValue",
+    })
+    return folder
+end
+
+-- Project uid records into the legacy-shaped Stacks/Special folders the client reads.
+-- Commons group by id:variant (Quantity = UNEQUIPPED count; equipped commons surface via
+-- the equipped mirror as ghost cards). Each special is its own Special/<uid> folder. This
+-- is the ONLY full reconciliation path, derived purely from PetInventoryView. Existing card
+-- folders and values survive when unchanged.
+function InventoryService:_buildPetBucketFolders(bucketFolder, items, equippedByKey)
+    local stacksFolder = self:_ensureFolder(bucketFolder, "Stacks")
+    local specialFolder = self:_ensureFolder(bucketFolder, "Special")
+    local desiredStacks = {}
+    local desiredSpecial = {}
+
+    local config = self:_petViewConfig()
+    local capability = self:_petCapability()
+    for _, group in ipairs(PetInventoryView.groups(items, config, capability, equippedByKey)) do
+        if group.isSpecial then
+            for _, uid in ipairs(group.uids) do
+                desiredSpecial[uid] = true
+                self:_syncPetSpecialFolder(specialFolder, uid, items[uid])
+            end
+        else
+            local sample = group.sampleRecord
+            desiredStacks[group.key] = true
+            self:_syncPetStackFolder(stacksFolder, group.key, {
+                id = sample.id,
+                variant = sample.variant,
+                quantity = group.unequippedCount,
+                enchant = sample.enchant, -- Storage v2: the stack's identity enchant
+            })
+        end
+    end
+
+    for _, child in ipairs(stacksFolder:GetChildren()) do
+        if not desiredStacks[child.Name] then
+            child:Destroy()
+        end
+    end
+    for _, child in ipairs(specialFolder:GetChildren()) do
+        if not desiredSpecial[child.Name] then
+            child:Destroy()
+        end
+    end
+end
+
+-- Create a stack folder for a normal pet
+function InventoryService:_createPetStackFolder(parentFolder, stackKey, itemData)
+    return self:_syncPetStackFolder(parentFolder, stackKey, itemData)
+end
+
+-- Create a folder for a special pet (unique)
+function InventoryService:_createPetSpecialFolder(parentFolder, uid, itemData)
+    return self:_syncPetSpecialFolder(parentFolder, uid, itemData)
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════════
@@ -2448,12 +2540,11 @@ function InventoryService:_toggleToolEquipment(player, toolUid, tool, playerData
     end
 end
 
--- FULL rebuild — use ONLY on paths that can invalidate equip (remove / delete / trade /
+-- FULL reconcile — use ONLY on paths that can invalidate equip (remove / delete / trade /
 -- equip-toggle / load). Re-validates the equip layer against inventory ("re-equip from
 -- truth": rewrites Equipped.pets to the valid Equipped ∩ inventory set, dropping dangling/
--- over-cap refs) then rebuilds both the inventory and equipped folders. This is also the
--- reboot self-heal: on load the equipped state is reconstructed from saved inventory, never
--- trusted blindly.
+-- over-cap refs) then incrementally reconciles both mirrors. This is also the reboot self-heal:
+-- on load the equipped state is reconstructed from saved inventory, never trusted blindly.
 function InventoryService:RebuildPetProjections(player)
     self:_recomputePetUsedSlots(player)
     self:_validateEquippedTable(player)
@@ -2468,6 +2559,80 @@ end
 function InventoryService:RefreshPetInventory(player)
     self:_recomputePetUsedSlots(player)
     self:_updateBucketFolders(player, "pets")
+end
+
+-- TARGETED refresh — progression/enchant mutations already know the exact unique record keys
+-- they changed. Update only those replicated card folders; do not scan ownership, re-validate
+-- equip, rebuild stacks, or replace unaffected Instances. One call may carry the entire squad.
+function InventoryService:RefreshPetRecords(player, recordKeys)
+    local inventoryFolder = self._playerInventoryFolders[player]
+    local bucketFolder = inventoryFolder and inventoryFolder:FindFirstChild("pets")
+    if not bucketFolder then
+        self._logger:Warn("⚠️ REPLICATION - No pet folder found for targeted update", {
+            player = player.Name,
+        })
+        return
+    end
+
+    local data = self._dataService:GetData(player)
+    local bucket = data and data.Inventory and data.Inventory.pets
+    if not bucket or type(bucket.items) ~= "table" then
+        return
+    end
+
+    local stacksFolder = self:_ensureFolder(bucketFolder, "Stacks")
+    local specialFolder = self:_ensureFolder(bucketFolder, "Special")
+    local equippedByKey
+
+    for _, recordKey in ipairs(recordKeys or {}) do
+        local record = bucket.items[recordKey]
+        if record and PetInventoryView.isStackEntry(record, recordKey) then
+            if not equippedByKey then
+                local configuredSlots = self._inventoryConfig.equipped
+                    and self._inventoryConfig.equipped.pets
+                    and self._inventoryConfig.equipped.pets.slots
+                local maxSlots = self:_getMaxEquippedSlots(player, "pets", configuredSlots)
+                equippedByKey = select(
+                    2,
+                    PetInventoryView.resolveEquipped(
+                        bucket.items,
+                        (data.Equipped and data.Equipped.pets) or {},
+                        maxSlots
+                    )
+                )
+            end
+            self:_syncPetStackFolder(stacksFolder, recordKey, {
+                id = record.id,
+                variant = record.variant,
+                quantity = math.max(
+                    0,
+                    (tonumber(record.quantity) or 0) - (equippedByKey[recordKey] or 0)
+                ),
+                enchant = record.enchant,
+            })
+            local staleSpecial = specialFolder:FindFirstChild(recordKey)
+            if staleSpecial then
+                staleSpecial:Destroy()
+            end
+        elseif record then
+            self:_syncPetSpecialFolder(specialFolder, recordKey, record)
+            local staleStack = stacksFolder:FindFirstChild(recordKey)
+            if staleStack then
+                staleStack:Destroy()
+            end
+        else
+            local staleStack = stacksFolder:FindFirstChild(recordKey)
+            local staleSpecial = specialFolder:FindFirstChild(recordKey)
+            if staleStack then
+                staleStack:Destroy()
+            end
+            if staleSpecial then
+                staleSpecial:Destroy()
+            end
+        end
+    end
+
+    self:_publishPetProjection(player)
 end
 
 -- The "re-equip from truth" pass: live equipped = Equipped ∩ inventory. Rewrites Equipped.pets
