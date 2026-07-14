@@ -215,6 +215,9 @@ return {
         grass_meadow_b = { id = "rbxassetid://81662834219225", volume = 0.45 },
         lava_homeworld = { id = "rbxassetid://98758407703765", volume = 0.45 },
         lava_homeworld_b = { id = "rbxassetid://83378441893244", volume = 0.45 },
+        -- Batch 1 closer (2026-07-14, "Lava Heaven" — Jason: "pretty good,
+        -- I'm happy with it"): the final owed slot, holy light over magma.
+        heaven_lava_choir = { id = "rbxassetid://85744161788059", volume = 0.45 },
     },
 
     -- COMBAT MUSIC: while the local player is InCombat (server-set Player attribute), AreaMusicController
@@ -254,8 +257,8 @@ return {
         -- REALM ZONES (Jason: "we need different music for every one of
         -- them" — 4 origins x 2 layers x 2 realms). Placement verdicts
         -- 2026-07-14: grass meadows too bright for hell -> heaven; lava
-        -- homeworld tracks dark enough for hell layers 1+2. HELL = 8/8
-        -- distinct; HEAVEN = 7/8 (H2 Lava reuses H1's cathedral — owed).
+        -- homeworld tracks dark enough for hell layers 1+2. Both realms 8/8 distinct
+        -- (batch-1 closer 'Lava Heaven' filled the last heaven slot).
         Heaven_1_Grass = "weightless_hymn",
         Heaven_1_Ice = "weightless_hymn_b",
         Heaven_1_Desert = "golden_horizon",
@@ -263,7 +266,7 @@ return {
         Heaven_2_Grass = "grass_meadow", -- bright pastoral suits the grove
         Heaven_2_Ice = "weightless_cathedral_b", -- vast + glacial
         Heaven_2_Desert = "grass_meadow_b", -- golden warmth
-        Heaven_2_Lava = "weightless_cathedral", -- (reuse of H1 Lava — owed)
+        Heaven_2_Lava = "heaven_lava_choir", -- Lava Heaven (batch-1 closer)
         Hell_1_Lava = "lava_homeworld", -- smoldering, dark (Jason: hell L1)
         Hell_1_Ice = "ember_menace_b",
         Hell_1_Desert = "ember_menace_c",
