@@ -2,6 +2,40 @@
 
 Status: current
 
+## 2026-07-13 — Mission decor: gen-1 mesh rot + the overdue transplant
+
+- ROOT CAUSE of "the Meshy decor all looked good and is now all broken": the
+  place's `MissionProps` prefabs (and the `_PropReview` shelf) still pointed at
+  the FIRST-generation uploads — raw type-4 Mesh assets named "mesh" from the
+  original interactive session, ids recorded in NO registry. That generation
+  had un-cleaned split-vert/degenerate geometry, and Roblox re-encodes mesh
+  assets server-side after upload: they render fine at first, then their
+  vertex/UV order scrambles on re-fetch (the exact failure 1ab12d1 diagnosed
+  on the diamond altar — "shatters regardless of tri count"). The whole batch
+  rotted the same way; geometry silhouettes survive, UVs turn to kaleidoscope.
+- 1ab12d1's weld-cleaned re-uploads (the id registries in
+  scripts/mission_decor_*.json) were the fix, but its "prefab mesh transplant
+  queued for the next Edit window" NEVER RAN — the place never switched over.
+- TRANSPLANT EXECUTED (MCP Edit session, 38 swaps): every registry prop's
+  MeshPart in `ReplicatedStorage.MissionProps` + `_PropReview.MeshyDecor`
+  replaced with the registry Model's MeshPart (size/CFrame/attributes/children
+  preserved, weld constraints re-pointed), textures resolved Decal→Image id
+  (registry texture ids are type-13 Decals; `TextureID` needs the wrapped
+  image id — same trap as the pet pipeline).
+- Verified good after transplant: skull banner/lantern/sconce, infernal
+  archive/crest, gate_of_damned, and the heaven set (marble/ivory/golden
+  thrones, guardian, archive, altar, codex, fountain, bookcase, banner,
+  shield).
+- STILL OWED — Blender re-bake: `hell_infernal_throne` + `hell_infernal_fountain`
+  (the 440-740k-tri DECIMATED batch; 1ab12d1 only re-uploaded the 15
+  passthrough meshes). Their atlases were baked against pre-decimation UVs and
+  can never match. Stopgapped in-place: TextureID stripped, dark brimstone
+  Color + Slate material (clean silhouettes, shippable). Proper fix: re-bake
+  atlas onto the decimated mesh's UVs (decimate FIRST, bake SECOND), re-upload
+  group-owned, swap TextureIDs.
+- REMINDER: the transplant lives in the PLACE — Jason must Save/Publish the
+  edit session (and republish the Builder Showcase place) or it evaporates.
+
 ## 2026-05-26
 
 - Created the project wiki using the LLM Wiki pattern: source docs stay as source material, while `docs/wiki/*.md` stores compact synthesized project memory.
