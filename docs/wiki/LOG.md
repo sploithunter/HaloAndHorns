@@ -1,6 +1,7 @@
 # Wiki Log
 
 Status: current
+- **2026-07-14 — Batched squad pet-XP projection.** Per-breakable pet XP now preserves the per-contributor mining/modifier calculation but batches each player's equipped unique squad into one targeted projection update and one debounced save request. Pet projection reconciliation retains unchanged Instances, and progression/enchant paths can update exact record keys instead of tearing down every inventory card.
 
 ## 2026-07-13 — Mission decor: gen-1 mesh rot + the overdue transplant
 

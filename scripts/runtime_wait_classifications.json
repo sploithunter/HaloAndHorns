@@ -165,6 +165,9 @@
   "src/Server/Services/DropService.lua": {
    "animation": 1
   },
+  "src/Server/Services/EffectiveStatsService.lua": {
+   "deadline": 1
+  },
   "src/Server/Services/EnchantService.lua": {
    "animation": 2,
    "periodic": 1
@@ -253,9 +256,6 @@
   },
   "src/Shared/Services/UserDisplayPreferences.lua": {
    "debounce": 1
-  },
-  "src/Server/Services/EffectiveStatsService.lua": {
-   "deadline": 1
   }
  },
  "version": 1
