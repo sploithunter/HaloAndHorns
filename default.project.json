@@ -39,6 +39,9 @@
       },
       "PlaceAssets": {
         "$path": "assets/place/PlaceAssets"
+      },
+      "MissionProps": {
+        "$path": "assets/place/MissionProps.rbxm"
       }
     },
     "StarterPlayer": {

@@ -3,7 +3,7 @@
 
 [tools]
 # Rojo for file sync between IDE and Roblox Studio
-"github:rojo-rbx/rojo" = { version = "7.6.1", exe = "rojo" }
+"github:rojo-rbx/rojo" = { version = "7.7.0", exe = "rojo" }
 
 # Wally for package management
 "github:UpliftGames/wally" = { version = "0.3.2", exe = "wally" }
