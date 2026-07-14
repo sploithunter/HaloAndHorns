@@ -218,6 +218,11 @@ return {
         -- Batch 1 closer (2026-07-14, "Lava Heaven" — Jason: "pretty good,
         -- I'm happy with it"): the final owed slot, holy light over magma.
         heaven_lava_choir = { id = "rbxassetid://85744161788059", volume = 0.45 },
+        -- Egyptian heaven sands (2026-07-14 audition: "both really good...
+        -- I would definitely go with the new ones" — one per layer; they
+        -- displace golden_horizon + grass_meadow_b to the spare shelf):
+        heaven_sands_a = { id = "rbxassetid://116298138591304", volume = 0.45 },
+        heaven_sands_b = { id = "rbxassetid://98035120998310", volume = 0.45 },
     },
 
     -- COMBAT MUSIC: while the local player is InCombat (server-set Player attribute), AreaMusicController
@@ -264,11 +269,11 @@ return {
         -- (batch-1 closer 'Lava Heaven' filled the last heaven slot).
         Heaven_1_Grass = "weightless_hymn",
         Heaven_1_Ice = "weightless_hymn_b",
-        Heaven_1_Desert = "golden_horizon",
+        Heaven_1_Desert = "heaven_sands_a", -- Egyptian choir-over-sand
         Heaven_1_Lava = "weightless_cathedral",
         Heaven_2_Grass = "grass_meadow", -- bright pastoral suits the grove
         Heaven_2_Ice = "weightless_cathedral_b", -- vast + glacial
-        Heaven_2_Desert = "grass_meadow_b", -- golden warmth
+        Heaven_2_Desert = "heaven_sands_b", -- the deeper sand twin
         Heaven_2_Lava = "heaven_lava_choir", -- Lava Heaven (batch-1 closer)
         Hell_1_Lava = "lava_homeworld", -- smoldering, dark (Jason: hell L1)
         Hell_1_Ice = "ember_menace_b",
