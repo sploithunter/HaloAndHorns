@@ -243,42 +243,45 @@ return {
     -- so far, so some areas share; add more tracks + remap for fully distinct per-area music.
     area_music = {
         default = "awe",
-        Spawn = "spa", -- calm hub (gentle spa loop, Spawn-only again)
-        Grass = "grass_meadow", -- pastoral starter biome (Suno batch 1)
+        -- HOMEWORLD (Jason: "we have distinct music for all the homeworlds
+        -- already" — batch 1 goes to the REALMS instead):
+        Spawn = "spa", -- calm hub (gentle spa loop)
+        Grass = "spa", -- gentle starter biome (shared with Spawn by design)
         Desert = "desert_hunt", -- Desert Hunt (Jason: better than the old track)
         Ice = "arctic_hunt", -- harsh cold (Arctic Hunt)
-        Lava = "lava_homeworld", -- smoldering volcanic (Suno batch 1)
+        Lava = "epic_drum", -- intense endgame
 
         -- REALM ZONES (Jason: "we need different music for every one of
-        -- them" — 4 origins x 2 layers x 2 realms). Batch 1 covers 11 of 16
-        -- distinct; (reuse) marks slots owed a bespoke track next Suno pass.
+        -- them" — 4 origins x 2 layers x 2 realms). Placement verdicts
+        -- 2026-07-14: grass meadows too bright for hell -> heaven; lava
+        -- homeworld tracks dark enough for hell layers 1+2. HELL = 8/8
+        -- distinct; HEAVEN = 7/8 (H2 Lava reuses H1's cathedral — owed).
         Heaven_1_Grass = "weightless_hymn",
         Heaven_1_Ice = "weightless_hymn_b",
         Heaven_1_Desert = "golden_horizon",
         Heaven_1_Lava = "weightless_cathedral",
-        Heaven_2_Grass = "weightless_cathedral_b",
-        Heaven_2_Ice = "weightless_hymn", -- (reuse of H1 Grass)
-        Heaven_2_Desert = "golden_horizon", -- (reuse of H1 Desert)
-        Heaven_2_Lava = "weightless_cathedral", -- (reuse of H1 Lava)
-        Hell_1_Lava = "ember_menace_a",
+        Heaven_2_Grass = "grass_meadow", -- bright pastoral suits the grove
+        Heaven_2_Ice = "weightless_cathedral_b", -- vast + glacial
+        Heaven_2_Desert = "grass_meadow_b", -- golden warmth
+        Heaven_2_Lava = "weightless_cathedral", -- (reuse of H1 Lava — owed)
+        Hell_1_Lava = "lava_homeworld", -- smoldering, dark (Jason: hell L1)
         Hell_1_Ice = "ember_menace_b",
         Hell_1_Desert = "ember_menace_c",
         Hell_1_Grass = "ember_menace_d",
         Hell_2_Lava = "iron_gates_a",
         Hell_2_Ice = "iron_gates_b",
-        Hell_2_Desert = "ember_menace_c", -- (reuse of H1 Desert)
-        Hell_2_Grass = "ember_menace_d", -- (reuse of H1 Grass)
+        Hell_2_Desert = "ember_menace_a",
+        Hell_2_Grass = "lava_homeworld_b", -- (Jason: hell L2)
 
         -- MISSION pseudo-areas (ZoneTracker publishes mission_<theme> while
-        -- InMission; docs/MISSION_WORLDGEN.md). Custom mission music landed
-        -- (batch 1): hell trials = iron gates, heaven trials = cathedral.
+        -- InMission). Door trials keep bespoke identities; element trials
+        -- serve BOTH realms, so they stay on the neutral homeworld tracks.
         mission_hell = "iron_gates_a",
         mission_heaven = "weightless_cathedral_b",
         mission_earth = "awe",
-        -- element-THEMED trials (mission.area pseudo-zones)
-        mission_lava = "lava_homeworld_b",
+        mission_lava = "epic_drum",
         mission_ice = "arctic_hunt",
-        mission_grass = "grass_meadow_b",
+        mission_grass = "spa",
         mission_desert = "desert_hunt",
     },
 }
