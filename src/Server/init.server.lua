@@ -301,7 +301,15 @@ registerFeatureModule(
 loader:RegisterModule(
     "MonetizationService",
     ServerScriptService.Server.Services.MonetizationService,
-    { "Logger", "DataService", "EconomyService", "ProductIdMapper", "PlayerEffectsService" }
+    -- InventoryService: capacity refresh after async pass benefits (paid slot)
+    {
+        "Logger",
+        "DataService",
+        "EconomyService",
+        "ProductIdMapper",
+        "PlayerEffectsService",
+        "InventoryService",
+    }
 )
 loader:RegisterModule(
     "InventoryService",

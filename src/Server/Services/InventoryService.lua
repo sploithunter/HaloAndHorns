@@ -1707,6 +1707,17 @@ function InventoryService:_pruneEquippedSlots(player, category, maxSlots)
 end
 
 -- Determine maximum equipped slots for a category.
+-- Public recompute for capacity CONSUMERS outside the equip flow (pass
+-- benefits land asynchronously after join — MonetizationService calls this
+-- so PetEquipSlots / the ring count reflect a paid slot without waiting for
+-- the next equip action).
+function InventoryService:RefreshEquipCapacity(player)
+    local configured = self._inventoryConfig.equipped and self._inventoryConfig.equipped.pets
+    local configuredSlots = (configured and type(configured.slots) == "number") and configured.slots
+        or 1
+    return self:_getMaxEquippedSlots(player, "pets", configuredSlots)
+end
+
 function InventoryService:_getMaxEquippedSlots(player, category, configuredSlots)
     local baseSlots = configuredSlots or 1
 

@@ -37,6 +37,7 @@ function MonetizationService:Init()
     self._economyService = self._modules.EconomyService
     self._productIdMapper = self._modules.ProductIdMapper
     self._playerEffectsService = self._modules.PlayerEffectsService
+    self._inventoryService = self._modules.InventoryService -- capacity refresh after async pass apply
     -- NetworkConfig removed - using Signals instead
 
     -- Validate dependencies
@@ -326,6 +327,15 @@ function MonetizationService:CheckPlayerPasses(player)
 
     -- Store owned passes
     self._dataService:SetOwnedPasses(player, ownedPasses)
+
+    -- Pass benefits land AFTER the join-time equip restore (ownership checks
+    -- are async) — recompute equip capacity so a paid slot is visible the
+    -- moment benefits apply, not on the player's next equip action.
+    if self._inventoryService and self._inventoryService.RefreshEquipCapacity then
+        pcall(function()
+            self._inventoryService:RefreshEquipCapacity(player)
+        end)
+    end
 
     self._logger:Info("Game passes checked", {
         player = player.Name,
