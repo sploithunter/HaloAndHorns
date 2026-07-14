@@ -33,6 +33,7 @@ local CollectionService = game:GetService("CollectionService")
 local XpReward = require(ReplicatedStorage.Shared.Game.XpReward)
 local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
 local BuffStack = require(ReplicatedStorage.Shared.Game.BuffStack)
+local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
 local SpawnSlots = require(ReplicatedStorage.Shared.Game.SpawnSlots)
@@ -2202,16 +2203,12 @@ function BreakableSpawner:_trySpawnOne(
             -- (never compound), clamped to the axis cap.
             if player and (tonumber(amount) or 0) > 0 then
                 local nowT = os.time()
-                local sources = {
-                    {
-                        fraction = (player:GetAttribute("CoinYieldBuff") or 1) - 1, -- aura (mult)
-                        expiry = player:GetAttribute("CoinYieldBuffUntil") or 0,
-                    },
-                    {
-                        fraction = player:GetAttribute("CoinYieldPower") or 0, -- power (fraction)
-                        expiry = player:GetAttribute("CoinYieldPowerUntil") or 0,
-                    },
-                }
+                -- PLAYER-LEVEL sources come from THE registry (EffectiveStats
+                -- — SSOT doctrine 2026-07-14): this fold and the published
+                -- Eff_Coin read the same list, so they can never drift.
+                local sources = EffectiveStats.AXES.coin_yield.sources(function(name)
+                    return player:GetAttribute(name)
+                end)
                 -- SHARED ECONOMY AURAS (Jason, farming pass): a TEAMMATE's yield
                 -- buffer benefits the whole team — fold their fresh aura as an
                 -- extra source (consumer-side, so two owners' auras never

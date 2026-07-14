@@ -9,6 +9,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local RecordMutationBatch = require(ReplicatedStorage.Shared.Inventory.RecordMutationBatch)
 
 local PetProgressionService = {}
 PetProgressionService.__index = PetProgressionService
@@ -159,7 +160,7 @@ function PetProgressionService:ApplyProgression(petData, petConfig)
     return petData
 end
 
-function PetProgressionService:AddPetExperience(player, petUid, amount, reason)
+function PetProgressionService:AddPetExperience(player, petUid, amount, reason, opts)
     if not self:IsEnabled() then
         return false, "pet_progression_disabled"
     end
@@ -234,19 +235,25 @@ function PetProgressionService:AddPetExperience(player, petUid, amount, reason)
         end
     end
 
-    -- XP only changes a special's level/exp display, never equip — light refresh (called
-    -- per-equipped-pet on every breakable destroyed, so avoid the equip re-validate).
-    if self._inventoryService and self._inventoryService.RefreshPetInventory then
-        self._inventoryService:RefreshPetInventory(player)
-    elseif self._inventoryService and self._inventoryService._updateBucketFolders then
-        self._inventoryService:_updateBucketFolders(player, "pets")
+    opts = opts or {}
+
+    -- XP only changes this special's record, never ownership or equip. The mining squad
+    -- path defers this so every changed pet is projected in one batch below.
+    if not opts.deferProjection then
+        if self._inventoryService and self._inventoryService.RefreshPetRecords then
+            self._inventoryService:RefreshPetRecords(player, { petUid })
+        elseif self._inventoryService and self._inventoryService.RefreshPetInventory then
+            self._inventoryService:RefreshPetInventory(player)
+        elseif self._inventoryService and self._inventoryService._updateBucketFolders then
+            self._inventoryService:_updateBucketFolders(player, "pets")
+        end
     end
-    -- Pet XP is awarded per-equipped-pet on EVERY breakable destroyed (the hottest
-    -- mutation in the game), so a `critical` save here pins the datastore at ~1 write/sec
-    -- per farming player. XP is not must-not-lose data -- losing <=15s on a crash is
-    -- invisible -- so use the default debounce, which coalesces a farming burst into one
-    -- save per window (the periodic autosave + logout flush still guarantee durability).
-    self._dataService:RequestSave(player, "pet_progression_" .. tostring(reason or "xp"))
+    -- Pet XP is one of the hottest mutations in the game. XP is not must-not-lose data --
+    -- losing <=15s on a crash is invisible -- so use the default debounce. The squad award
+    -- defers this request and emits one below; direct single-pet callers still save here.
+    if not opts.deferSave then
+        self._dataService:RequestSave(player, "pet_progression_" .. tostring(reason or "xp"))
+    end
 
     self._logger:Info("Pet XP applied", {
         context = "PetProgressionService",
@@ -350,15 +357,27 @@ function PetProgressionService:AwardBreakableDestroyed(player, context)
         }
     end
 
-    local awarded = 0
-    local results = {}
-    for _, uid in ipairs(self:GetEquippedUniquePetUids(player)) do
-        local ok, result = self:AddPetExperience(player, uid, xp, "breakable_destroy")
-        if ok then
-            awarded += 1
-            results[uid] = result
+    -- One contributor is one batch. Mining payout and pet-XP amount were already resolved
+    -- for THIS player above; never combine contributors, because their contribution shares
+    -- and pet_xp modifiers can differ. Within the player's squad, mutate every record first,
+    -- then publish one targeted projection update and request one debounced save.
+    local awarded, results = RecordMutationBatch.run(
+        self:GetEquippedUniquePetUids(player),
+        function(uid)
+            return self:AddPetExperience(player, uid, xp, "breakable_destroy", {
+                deferProjection = true,
+                deferSave = true,
+            })
+        end,
+        function(changedUids)
+            if self._inventoryService and self._inventoryService.RefreshPetRecords then
+                self._inventoryService:RefreshPetRecords(player, changedUids)
+            elseif self._inventoryService and self._inventoryService.RefreshPetInventory then
+                self._inventoryService:RefreshPetInventory(player)
+            end
+            self._dataService:RequestSave(player, "pet_progression_breakable_destroy")
         end
-    end
+    )
 
     return {
         ok = true,

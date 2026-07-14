@@ -80,12 +80,19 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
 
 ### Rebuild tiers (do NOT re-validate equip on every mutation)
 
-- `RebuildPetProjections(player)` — **FULL**: re-validate equip (`Equipped ∩ inventory`, drop
-  dangling/over-cap) + rebuild both folders. Use ONLY where equip can change: remove / delete /
-  trade / equip-toggle / **load** (the reboot self-heal).
+- `RebuildPetProjections(player)` — **FULL reconcile**: re-validate equip (`Equipped ∩ inventory`,
+  drop dangling/over-cap) + incrementally reconcile both folders. Use ONLY where equip can change:
+  remove / delete / trade / equip-toggle / **load** (the reboot self-heal). Stable folder/value
+  instances are retained when unchanged; a full reconcile is no longer a tree teardown.
 - `RefreshPetInventory(player)` — **LIGHT**: inventory folder + slot count only. Use on
   ownership-only changes that can't invalidate equip: add/hatch, XP, enchant. Keeps mass hatching
   and per-breakable XP cheap.
+- `RefreshPetRecords(player, keys)` — **TARGETED**: update only the listed pet card records. Use for
+  progression/enchant mutations that cannot change ownership or equip. Squad pet XP mutates every
+  eligible pet first, then emits one targeted projection call and one debounced save request per
+  contributing player; different miners still resolve and commit independent award amounts. Every
+  completed projection transaction increments `Inventory/pets/Info/ProjectionVersion` once; clients
+  observe that explicit event instead of relying on folder teardown/recreation side effects.
 
 ## Invariants to preserve when extending
 

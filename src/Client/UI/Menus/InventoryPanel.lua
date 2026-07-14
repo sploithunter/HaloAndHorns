@@ -7582,6 +7582,21 @@ function InventoryPanel:SetupRealTimeUpdates()
     if inventoryFolder then
         local petsFolder = inventoryFolder:FindFirstChild("pets")
         if petsFolder then
+            -- InventoryService retains stable pet record folders. One version increment is the
+            -- explicit completion event for a full or targeted projection transaction.
+            local info = petsFolder:FindFirstChild("Info")
+            if info then
+                local function attachProjectionVersion(value)
+                    if value and value:IsA("IntValue") and value.Name == "ProjectionVersion" then
+                        value:GetPropertyChangedSignal("Value"):Connect(function()
+                            self:_schedulePetRefresh()
+                        end)
+                    end
+                end
+                attachProjectionVersion(info:FindFirstChild("ProjectionVersion"))
+                info.ChildAdded:Connect(attachProjectionVersion)
+            end
+
             -- Listen for new pets being added
             -- Mixed structure incremental listeners
             local stacks = petsFolder:FindFirstChild("Stacks")

@@ -16,6 +16,7 @@ local XpReward = require(ReplicatedStorage.Shared.Game.XpReward)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local VeteranTrack = require(ReplicatedStorage.Shared.Game.VeteranTrack)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
+local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 
 local PlayerProgressionService = {}
 PlayerProgressionService.__index = PlayerProgressionService
@@ -28,6 +29,17 @@ function PlayerProgressionService.new()
     self._modifierService = nil
     self._config = nil
     return self
+end
+
+-- buffs.axes.xp (cap) for the registry fold above; lazy + cached.
+function PlayerProgressionService:_xpAxisCfg()
+    if not self._xpAxis then
+        local ok, buffs = pcall(function()
+            return self._modules.ConfigLoader:LoadConfig("buffs")
+        end)
+        self._xpAxis = (ok and buffs and buffs.axes and buffs.axes.xp) or { cap = 3.0 }
+    end
+    return self._xpAxis
 end
 
 function PlayerProgressionService:Init()
@@ -350,8 +362,13 @@ function PlayerProgressionService:AddExperience(player, amount, source)
     end
     -- XP Surge (xp axis): the player's xp buff boosts EVERY xp source (mining/combat/rewards) by
     -- its fraction. Single choke point so the multiplier applies everywhere.
-    if (player:GetAttribute("XpBuffUntil") or 0) > os.time() then
-        amount = math.floor(amount * (1 + (player:GetAttribute("XpBuff") or 0)) + 0.5)
+    -- XP buff fold via THE registry (EffectiveStats — SSOT doctrine): same
+    -- list as the published Eff_XP; BuffStack applies the axis cap (3.0).
+    local xpMult = EffectiveStats.multiplier("xp", function(name)
+        return player:GetAttribute(name)
+    end, os.time(), self:_xpAxisCfg())
+    if xpMult ~= 1 then
+        amount = math.floor(amount * xpMult + 0.5)
     end
     -- Thriving Thursday (xp_multiplier global event): same choke point, additive fraction.
     local eventService = self._eventService

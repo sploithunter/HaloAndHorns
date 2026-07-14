@@ -29,6 +29,7 @@ local ResSickness = require(ReplicatedStorage.Shared.Game.ResSickness) -- post-r
 local AdminPowerPalette = require(ReplicatedStorage.Shared.Game.AdminPowerPalette)
 local FocusUpkeep = require(ReplicatedStorage.Shared.Game.FocusUpkeep)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local RunService = game:GetService("RunService")
 
@@ -2636,15 +2637,14 @@ function PowerService:Cast(player, powerId, opts)
     -- Hasten (recharge axis) + EMBER TEMPO (Ashwing support aura): the power
     -- buff and the pet aura are separate additive channels (aura-vs-power
     -- stacking law), summed under one 0.9 clamp so a cooldown never hits zero.
-    local recharge = 0
-    if (player:GetAttribute("RechargeBuffUntil") or 0) > now then
-        recharge += math.max(player:GetAttribute("RechargeBuff") or 0, 0)
-    end
-    if (player:GetAttribute("RechargeAuraUntil") or 0) > now then
-        recharge += math.max(player:GetAttribute("RechargeAura") or 0, 0)
-    end
+    -- fold via THE registry (EffectiveStats.rechargeFraction — SSOT doctrine
+    -- 2026-07-14): same dual-channel sum + 0.9 clamp, same number the HUD
+    -- shows (Eff_Recharge). One formula, all consumers.
+    local recharge = EffectiveStats.rechargeFraction(function(name)
+        return player:GetAttribute(name)
+    end, now)
     if recharge > 0 then
-        cd = cd * (1 - math.clamp(recharge, 0, 0.9))
+        cd = cd * (1 - recharge)
     end
     cds[powerId] = now + cd
     Signals.Power_Cooldown:FireClient(
