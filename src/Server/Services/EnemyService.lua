@@ -22,6 +22,7 @@ local PathfindingService = game:GetService("PathfindingService")
 
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local PetRevive = require(script.Parent.Parent.PetRevive)
+local PetEnduranceBar = require(script.Parent.Parent.PetEnduranceBar)
 local ServerStorage = game:GetService("ServerStorage")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
@@ -1398,38 +1399,12 @@ function EnemyService:_assignPetToEnemy(pet, targetId)
 end
 
 -- Lazy endurance bar over the pet (green->red as it takes damage).
-function EnemyService:_updateEnduranceBar(pet, taken, power, factor)
-    local pp = pet.PrimaryPart
-    if not pp then
-        return
-    end
-    -- Pet endurance bar: the SAME shared OverheadBar widget as the enemy HP bar (green->red fill).
-    if not pp:FindFirstChild("EnduranceBar") then
-        OverheadBar.create({
-            adornee = pp,
-            name = "EnduranceBar",
-            studsOffset = Vector3.new(0, 3.5, 0),
-            bgColor = Color3.fromRGB(25, 25, 25),
-            fillColor = Color3.fromRGB(70, 200, 90), -- pet = green (re-ramped by fraction below)
-        })
-    end
-    local frac = PetEndurance.healthFraction(taken, power, factor)
-    OverheadBar.setFraction(
-        OverheadBar.fillOf(pp, "EnduranceBar"),
-        frac,
-        Color3.fromRGB(math.floor(215 * (1 - frac)) + 40, math.floor(195 * frac) + 30, 45)
-    )
+function EnemyService:_updateEnduranceBar(pet, _taken, _power, factor)
+    PetEnduranceBar.sync(pet, factor)
 end
 
 function EnemyService:_clearEnduranceBar(pet)
-    local pp = pet.PrimaryPart
-    if not pp then
-        return
-    end
-    local bb = pp:FindFirstChild("EnduranceBar")
-    if bb then
-        bb:Destroy()
-    end
+    PetEnduranceBar.clear(pet)
 end
 
 -- Take a pet out of the fight. `reason` "down" (forced, long slot cooldown) or
@@ -5911,6 +5886,10 @@ function EnemyService:Start()
     if not (self._petFollowConfig and self._petFollowConfig.service_owned) then
         return
     end
+    -- One event-driven presentation path for every damage/heal writer. PowerService, support
+    -- auras, summons, revives, and natural regeneration only update CombatDamageTaken; this
+    -- observer derives the replicated world bar and cannot miss the final full-health event.
+    PetEnduranceBar.watchWorkspace(Workspace, self._combatConfig.pet_down_threshold_factor or 1)
     local interval = self._petFollowConfig.update_interval or 0.15
     local accum = 0
     RunService.Heartbeat:Connect(function(dt)
