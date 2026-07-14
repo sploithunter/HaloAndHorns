@@ -231,8 +231,11 @@ return {
     -- picked by WHERE you are — Heaven_* zones + heaven missions draw from
     -- `heaven`, Hell_* + hell missions from `hell`, everywhere else falls
     -- back to combat_music above. Grow the arrays freely.
+    -- (heaven pool auditioned 2026-07-14 and CUT — Jason: "I don't like
+    -- the heaven combat, set it back to default." Heaven fights use the
+    -- default combat_music trio; heaven_combat_a stays uploaded if ever
+    -- wanted back.)
     combat_music_by_realm = {
-        heaven = { "heaven_combat_a", "combat_2", "combat_3" },
         hell = { "hell_combat_a", "hell_combat_b", "combat_1" },
     },
 
