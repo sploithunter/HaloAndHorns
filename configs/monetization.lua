@@ -176,9 +176,16 @@ return {
             description = "Automatically collect resources near you!",
             price_robux = 299,
             benefits = {
+                -- CONTRACT (Jason 2026-07-14): base range MATCHES the magnet
+                -- power's magnitude (30) and they ADD — pass + magnet power
+                -- = 60-stud automation bubble. The power keeps paying for
+                -- everyone: reach alone for non-buyers, double bubble for
+                -- buyers; slot focus-cost reductions and the magnet runs
+                -- near-free AND big. Verbs stay distinct: power = reach,
+                -- pass = never click again.
                 features = {
                     auto_collect_enabled = true,
-                    auto_collect_range = 20,
+                    auto_collect_range = 30, -- = powers.magnet magnitude; stacks additively
                     auto_collect_rate = 1.0,
                 },
             },
@@ -188,6 +195,11 @@ return {
         {
             id = "speed_boost",
             name = "⚡ Speed Boost",
+            -- CONTRACT (Jason 2026-07-14): speed reaches PET SPEED too — pets
+            -- mine faster when faster — so this is farming throughput, not
+            -- just travel. Stacks ADDITIVELY with VIP (+25%) and the speed
+            -- power picks, hard-capped at +100% total (2x): past 2x, enemy
+            -- chase/leash logic and mission pacing break.
             description = "Move 50% faster forever!",
             price_robux = 199,
             benefits = {
