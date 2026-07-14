@@ -79,15 +79,25 @@ return {
             description = "A one-of-a-kind companion that says: I keep the lights on.",
             price_robux = 399,
             rewards = {
-                -- DESIGN SETTLED (Jason 2026-07-14): an INTANGIBLE cosmetic
-                -- companion — follows like a pet but takes NO team slot, has
-                -- no stats, can't be targeted or downed (never enters combat
-                -- or the threat table). Pure visible supporter status: unique
-                -- model + gentle heart-spark trail + the Supporter title.
-                -- Zero balance surface, zero rating surface, works forever.
+                -- DESIGN v2 (Jason 2026-07-14: "I thought by support it
+                -- could support the PLAYER"): an INTANGIBLE companion — no
+                -- team slot, no stats, untargetable, never downed, never in
+                -- the threat table — that carries ONE gentle player aura:
+                -- focus +0.25/s, a third of the Lumen Dove's +0.75/s. Focus
+                -- is the one axis with NO player-level source (speed/magnet
+                -- already have passes/auras); the dove stays the real focus
+                -- engine that costs a slot, the companion is the slot-free
+                -- trickle. Stacks under Focus Surge's x2 regen naturally.
+                -- Unique model + heart-spark trail + Supporter title.
                 -- TODO(content + handler): companion model + follow rig via
-                -- the pet pipeline; mint UNTRADEABLE via PetGrantService.
-                pet = { id = "supporter_companion", untradeable = true, cosmetic = true },
+                -- the pet pipeline; mint UNTRADEABLE via PetGrantService;
+                -- focus trickle rides the same aura path as lumen_dove.
+                pet = {
+                    id = "supporter_companion",
+                    untradeable = true,
+                    cosmetic = true,
+                    aura = { kind = "focus", amount = 0.25 },
+                },
             },
             category = "supporter",
             one_time_only = true,
