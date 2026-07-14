@@ -862,3 +862,7 @@ migration is needed for the abandoned "element splits stacks" spec.
 
 - Live monitoring of 98 Rimewraith Dragon attacks found its 14-stud freeze AoE averaging 20.2 studs away from the visible primary target and reaching 35.7 studs off. The primary still took its direct hit/root, but splash selection and `Power_AreaFx` shared the stale center, so this was mechanical rather than cosmetic.
 - Enemy movement authority already lived in `EnemyService.entry.pos` and replicated as `MoveTarget`; anchored enemy pivots intentionally remain at spawn for client-side smoothing. Pet work now resolves one target position everywhere: server-published `MoveTarget` first, then the static model primary/pivot fallback. Client-reported pet motion remains presentation/range-gate input and never selects AoE geometry.
+
+## 2026-07-14 - Trial group-size playtest calibration
+
+- At player level 21, even-level Trial enemies with `Trial Enemy Group Size` set to 25% felt correctly balanced. Preserve this as a known-good calibration point when fitting the eventual level/density curve; it complements the level-14 finding where 25% was only barely winnable and 50% was too high.
