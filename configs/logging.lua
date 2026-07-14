@@ -61,7 +61,7 @@ return {
 
         -- === ASSET & MODEL SYSTEMS ===
         AssetPreloadService = "info", -- Show model loading progress (important)
-        EggPetPreviewService = "info", -- Keep egg UI previews visible
+        EggPetPreviewService = "warn", -- Mature UI path: only surface actionable issues
 
         -- === UI SYSTEMS (Very noisy - keep quiet) ===
         BaseUI = "error", -- Only show serious UI errors
@@ -72,12 +72,12 @@ return {
         SettingsPanel = "error", -- Settings are usually stable
         InventoryPanel = "error", -- Keep inventory UI silent
 
-        -- === GAME SYSTEMS (Prioritize egg-related output) ===
-        EggSpawner = "info", -- Show egg spawning (important for testing)
-        EggCurrentTargetService = "info", -- Keep targeting info visible
-        EggInteractionService = "info", -- Keep interaction info visible
-        EggService = "info", -- Show egg system status
-        EggHatchingService = "info", -- Future-proof if service switches to Logger
+        -- === GAME SYSTEMS ===
+        EggSpawner = "warn", -- Mature egg paths stay quiet unless action is needed
+        EggCurrentTargetService = "warn",
+        EggInteractionService = "warn",
+        EggService = "warn",
+        EggHatchingService = "warn",
         InventoryService = "warn", -- Suppress inventory chatter
 
         -- === EXTERNAL PACKAGES (Very quiet) ===
