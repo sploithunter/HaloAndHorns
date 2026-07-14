@@ -93,6 +93,10 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   contributing player; different miners still resolve and commit independent award amounts. Every
   completed projection transaction increments `Inventory/pets/Info/ProjectionVersion` once; clients
   observe that explicit event instead of relying on folder teardown/recreation side effects.
+- Pet cards are sorted by their displayed effective power, which depends on live biome and realm
+  context. `CurrentArea` and `CurrentRealm` changes therefore coalesce into one full client inventory
+  refresh/re-sort after the transition; this contextual rebuild is intentional even when no pet
+  ownership record changed.
 
 ## Invariants to preserve when extending
 
