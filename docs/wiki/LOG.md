@@ -1,6 +1,34 @@
 # Wiki Log
 
 Status: current
+
+## 2026-07-14 — THE SHATTER ROOT CAUSE: Open Cloud collapses per-corner UVs
+
+- Months of "corrupted/shattered prop" incidents (diamond altar 2026-07-08,
+  batch rot 2026-07-13, batch-17 "processing roulette") were ONE bug and it
+  was never geometry: **Roblox Open Cloud's FBX converter keeps one UV per
+  position-vertex**. Our rebake pipeline WELDS meshes (remove_doubles), so
+  UV-seam vertices are shared between islands; the collapse smears islands
+  into each other. Grey mesh perfect everywhere (create.roblox.com preview,
+  TextureID stripped in Studio), textured render = kaleidoscope.
+- Jason spotted the decisive asymmetry: every "broken" mesh looked great
+  untextured, and his Studio 3D-Import of the same FBX rendered perfectly
+  (Studio's importer honors per-corner UVs). Raw Meshy uploads (gems, pets)
+  never broke because Meshy pre-splits seam verts. Ascension altars/mission
+  gates never broke because they entered via Studio import.
+- A/B proof, identical mesh+atlas: welded upload 133639172611896 =
+  kaleidoscope; seam-split upload 83409245331595 = correct (verified
+  in-game).
+- FIX in `rebake_for_roblox.py`: `split_uv_seams()` re-splits UV island
+  border edges after decimate+UV+bake, and `embed_textures=True` ships the
+  atlas inside the FBX — uploads arrive PRE-TEXTURED (no TextureID pairing
+  step, no Decal→Image resolution). All 20 mission-decor props rebaked +
+  re-uploaded (registry updated; old gens in the superseded ledger).
+  Prefab transplant owed next Edit window.
+- Full public writeup: `docs/ROBLOX_MESH_TEXTURE_KALEIDOSCOPE.md`.
+- Corollary that survives review: the 2026-07-13 "rot on re-fetch" story
+  below is superseded — the re-fetched assets were WELDED generations; the
+  gen-1 raw meshes were pre-split and fine.
 - **2026-07-14 — Batched squad pet-XP projection.** Per-breakable pet XP now preserves the per-contributor mining/modifier calculation but batches each player's equipped unique squad into one targeted projection update and one debounced save request. Pet projection reconciliation retains unchanged Instances, and progression/enchant paths can update exact record keys instead of tearing down every inventory card.
 
 ## 2026-07-13 — Mission decor: gen-1 mesh rot + the overdue transplant
