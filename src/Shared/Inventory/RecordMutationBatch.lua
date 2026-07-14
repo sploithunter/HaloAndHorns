@@ -20,7 +20,7 @@ function RecordMutationBatch.run(recordKeys, mutateOne, commit)
     end
 
     if #changed > 0 then
-        commit(changed)
+        commit(changed, results)
     end
 
     return #changed, results

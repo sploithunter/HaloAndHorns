@@ -23,6 +23,7 @@ local RunService = game:GetService("RunService")
 
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local PetProjectionPolicy = require(ReplicatedStorage.Shared.Inventory.PetProjectionPolicy)
 local Signal = require(ReplicatedStorage.Shared.Libraries.Signal)
 
 local InventoryService = {}
@@ -1290,9 +1291,10 @@ function InventoryService:_updateBucketFolders(player, bucketName)
     end
 end
 
--- One event token per completed pet projection transaction. Clients observe this instead of
--- inferring a change from the old destroy/recreate storm. The Value itself is the event payload.
-function InventoryService:_publishPetProjection(player)
+-- ProjectionVersion records every completed transaction for diagnostics/other consumers.
+-- RenderVersion advances only when visible card/order state may have changed. XP-only record
+-- updates still replicate their stable Values, but do not ask the client to destroy the grid.
+function InventoryService:_publishPetProjection(player, impact)
     local inventoryFolder = self._playerInventoryFolders[player]
     local bucketFolder = inventoryFolder and inventoryFolder:FindFirstChild("pets")
     local infoFolder = bucketFolder and bucketFolder:FindFirstChild("Info")
@@ -1309,6 +1311,19 @@ function InventoryService:_publishPetProjection(player)
         version.Parent = infoFolder
     end
     version.Value += 1
+
+    local renderVersion = infoFolder:FindFirstChild("RenderVersion")
+    if not renderVersion or not renderVersion:IsA("IntValue") then
+        if renderVersion then
+            renderVersion:Destroy()
+        end
+        renderVersion = Instance.new("IntValue")
+        renderVersion.Name = "RenderVersion"
+        renderVersion.Parent = infoFolder
+    end
+    if impact ~= PetProjectionPolicy.DATA_ONLY then
+        renderVersion.Value += 1
+    end
 end
 
 function InventoryService:_ensureFolder(parent, name)
@@ -2564,7 +2579,7 @@ end
 -- TARGETED refresh — progression/enchant mutations already know the exact unique record keys
 -- they changed. Update only those replicated card folders; do not scan ownership, re-validate
 -- equip, rebuild stacks, or replace unaffected Instances. One call may carry the entire squad.
-function InventoryService:RefreshPetRecords(player, recordKeys)
+function InventoryService:RefreshPetRecords(player, recordKeys, impact)
     local inventoryFolder = self._playerInventoryFolders[player]
     local bucketFolder = inventoryFolder and inventoryFolder:FindFirstChild("pets")
     if not bucketFolder then
@@ -2632,7 +2647,7 @@ function InventoryService:RefreshPetRecords(player, recordKeys)
         end
     end
 
-    self:_publishPetProjection(player)
+    self:_publishPetProjection(player, impact)
 end
 
 -- The "re-equip from truth" pass: live equipped = Equipped ∩ inventory. Rewrites Equipped.pets

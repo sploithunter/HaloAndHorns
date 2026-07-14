@@ -93,6 +93,11 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   contributing player; different miners still resolve and commit independent award amounts. Every
   completed projection transaction increments `Inventory/pets/Info/ProjectionVersion` once; clients
   observe that explicit event instead of relying on folder teardown/recreation side effects.
+- `Inventory/pets/Info/RenderVersion` is the narrower client-render event. It advances only when a
+  transaction may change visible card state or ordering. Ordinary XP progress updates the stable
+  replicated special records and `ProjectionVersion`, but not `RenderVersion`; pet tooltips read the
+  current record on hover. Level/power changes and enchant changes still advance `RenderVersion` and
+  trigger one refresh/re-sort.
 - Pet cards are sorted by their displayed effective power, which depends on live biome and realm
   context. `CurrentArea` and `CurrentRealm` changes therefore coalesce into one full client inventory
   refresh/re-sort after the transition; this contextual rebuild is intentional even when no pet
