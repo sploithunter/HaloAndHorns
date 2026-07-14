@@ -8,6 +8,9 @@
 
 local DataStoreService = game:GetService("DataStoreService")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Retry = require(ReplicatedStorage.Shared.Utils.Retry)
 
 local PetSerialService = {}
 PetSerialService.__index = PetSerialService
@@ -21,6 +24,8 @@ function PetSerialService.new()
     self._store = nil
     self._storeName = DEFAULT_STORE_NAME
     self._memoryCounters = {}
+    self._serialConfig = {}
+    self._studioMemoryOnly = false
     return self
 end
 
@@ -36,7 +41,20 @@ function PetSerialService:Init()
         and type(petsConfig.serials) == "table"
         and type(petsConfig.serials.store_name) == "string"
     then
+        self._serialConfig = petsConfig.serials
         self._storeName = petsConfig.serials.store_name
+    end
+
+    -- Studio sessions are isolated from the production-wide serial namespace by default. This is
+    -- a real operating mode, not an error fallback: it prevents boot-time census reads and test
+    -- hatches from consuming budget or mutating live counters when Studio API access is enabled.
+    if RunService:IsStudio() and self._serialConfig.live_datastore_in_studio ~= true then
+        self._studioMemoryOnly = true
+        self._logger:Info("PetSerialService using isolated Studio serial counters", {
+            context = "PetSerialService",
+            storeName = self._storeName,
+        })
+        return
     end
 
     -- GetDataStore THROWS when API access is unavailable (unpublished place / AutoRecovery copy /
@@ -52,12 +70,34 @@ function PetSerialService:Init()
             storeName = self._storeName,
         })
     else
-        self._logger:Warn("PetSerialService: DataStore unavailable; serials use Studio fallback", {
-            context = "PetSerialService",
-            storeName = self._storeName,
-            error = tostring(storeOrErr),
-        })
+        self._logger:Warn(
+            "PetSerialService DataStore unavailable; global serial allocation disabled",
+            {
+                context = "PetSerialService",
+                storeName = self._storeName,
+                error = tostring(storeOrErr),
+                studioFallback = RunService:IsStudio(),
+            }
+        )
     end
+end
+
+function PetSerialService:UsesGlobalStore()
+    return self._store ~= nil and not self._studioMemoryOnly
+end
+
+function PetSerialService:ShouldRunCensus()
+    return self:UsesGlobalStore() and self._serialConfig.census_enabled ~= false
+end
+
+function PetSerialService:_nextMemorySerial(key)
+    self._memoryCounters[key] = (self._memoryCounters[key] or 0) + 1
+    return self._memoryCounters[key],
+        {
+            key = key,
+            source = "studio_memory",
+            store = self._storeName,
+        }
 end
 
 function PetSerialService:_serialKey(serialType, petType, variant)
@@ -69,6 +109,9 @@ end
 
 function PetSerialService:NextSerial(serialType, petType, variant)
     local key = self:_serialKey(serialType, petType, variant)
+    if self._studioMemoryOnly then
+        return self:_nextMemorySerial(key)
+    end
     local success, result = pcall(function()
         return self._store:UpdateAsync(key, function(current)
             current = tonumber(current) or 0
@@ -86,20 +129,16 @@ function PetSerialService:NextSerial(serialType, petType, variant)
     end
 
     if RunService:IsStudio() then
-        self._memoryCounters[key] = (self._memoryCounters[key] or 0) + 1
+        local serial, info = self:_nextMemorySerial(key)
         self._logger:Warn("Pet serial DataStore allocation failed; using Studio-only fallback", {
             context = "PetSerialService",
             key = key,
             error = tostring(result),
-            fallbackSerial = self._memoryCounters[key],
+            fallbackSerial = serial,
         })
-        return self._memoryCounters[key],
-            {
-                key = key,
-                source = "studio_fallback",
-                store = self._storeName,
-                error = tostring(result),
-            }
+        info.source = "studio_fallback"
+        info.error = tostring(result)
+        return serial, info
     end
 
     return nil,
@@ -118,20 +157,42 @@ end
 -- PEEK a serial counter WITHOUT minting (Jason: "can we peek to see if there is any in
 -- existence without triggering the counter?"). GetAsync reads the count and never
 -- increments; the counter is EVER-MINTED (deleted huges stay counted), which is exactly
--- the index semantics — "has one ever existed in the realm". 0 = never minted (or the
--- store is unreachable — callers treat unknown as not-yet-discovered, never the reverse).
+-- the index semantics — "has one ever existed in the realm". 0 = confirmed never minted;
+-- nil = the global store remained unavailable after bounded retry. Those states must not collapse.
 function PetSerialService:PeekSerial(serialType, petType, variant)
     local key = self:_serialKey(serialType, petType, variant)
-    if self._store then
-        local ok, value = pcall(function()
-            return self._store:GetAsync(key)
-        end)
-        if ok and tonumber(value) then
-            return tonumber(value), key
-        end
+    if self._studioMemoryOnly then
+        return self._memoryCounters[key] or 0, key, { source = "studio_memory", attempts = 0 }
     end
-    -- Studio fallback mirrors NextSerial's memory counters (so census tests work offline)
-    return self._memoryCounters[key] or 0, key
+    if self._store then
+        local retry = self._serialConfig.read_retry or {}
+        local ok, value, attempts = Retry.run(function()
+            return pcall(function()
+                return self._store:GetAsync(key)
+            end)
+        end, {
+            attempts = retry.attempts or 3,
+            backoff_seconds = retry.backoff_seconds or { 0.5, 1.5 },
+            wait = task.wait,
+        })
+        if ok then
+            return tonumber(value) or 0, key, { source = "datastore", attempts = attempts }
+        end
+        return nil,
+            key,
+            {
+                source = "unavailable",
+                attempts = attempts,
+                error = tostring(value),
+            }
+    end
+    return nil,
+        key,
+        {
+            source = "unavailable",
+            attempts = 0,
+            error = "serial datastore unavailable",
+        }
 end
 
 return PetSerialService

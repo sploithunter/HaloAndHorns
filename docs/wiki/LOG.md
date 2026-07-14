@@ -911,3 +911,9 @@ migration is needed for the abandoned "element splits stacks" spec.
 
 - Live mission-return inspection found all six pets at authoritative `CombatDamageTaken = 0` on both server and client while their replicated overhead fills remained at 74%–95%; the squad HUD was correct because it reads the attribute directly. Several heal/revive systems wrote the shared damage attribute without calling EnemyService's private GUI updater.
 - `PetEnduranceBar` is now the one event-driven presenter for world endurance bars. It observes every live pet's `CombatDamageTaken`, `CombatDowned`, power, and primary-part changes, then creates, updates, or removes the shared `OverheadBar`. Damage, powers, support auras, summons, revives, and natural regeneration remain data writers only, so a new healing path cannot leave a second health representation stale.
+
+## 2026-07-14 - Studio boot is isolated from global pet serial state
+
+- Traced the sporadic Studio boot `PetSerials_v1:GetAsync` error to the eager Huge-pet census, not serial minting. The read was protected by `pcall`, but Roblox still emitted its transient DataStore error and both logging listeners repeated it.
+- Studio now uses a config-owned, isolated in-memory serial namespace by default. It performs neither the global Huge census nor the `PetWorldFirst` MessagingService subscription, and Studio hatches cannot consume or mutate production-wide serial counters merely because API access is enabled.
+- Live servers still run the required global census, now from the service `Start` lifecycle instead of a five-second synchronization delay. Census reads use bounded config-owned retry, and exhausted reads remain explicitly `unavailable` rather than being misreported as a confirmed never-minted zero. No log suppression was added.

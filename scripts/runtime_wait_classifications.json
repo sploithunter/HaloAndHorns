@@ -201,8 +201,7 @@
       "retry_backoff": 3
     },
     "src/Server/Services/PetIndexService.lua": {
-      "frame_budget": 1,
-      "watchdog": 1
+      "frame_budget": 1
     },
     "src/Server/Services/PowerService.lua": {
       "animation": 4,

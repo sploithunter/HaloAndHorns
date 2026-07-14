@@ -1888,6 +1888,58 @@ function ConfigLoader:_validatePetsConfig(config)
         then
             return self:_configError("pets", "serials.store_name", "expected non-empty string")
         end
+        for _, key in ipairs({ "live_datastore_in_studio", "census_enabled" }) do
+            if config.serials[key] ~= nil and type(config.serials[key]) ~= "boolean" then
+                return self:_configError("pets", "serials." .. key, "expected boolean")
+            end
+        end
+        if
+            config.serials.census_yield_seconds ~= nil
+            and (
+                type(config.serials.census_yield_seconds) ~= "number"
+                or config.serials.census_yield_seconds < 0
+            )
+        then
+            return self:_configError(
+                "pets",
+                "serials.census_yield_seconds",
+                "expected non-negative number"
+            )
+        end
+        local retry = config.serials.read_retry
+        if retry ~= nil then
+            if type(retry) ~= "table" then
+                return self:_configError("pets", "serials.read_retry", "expected table")
+            end
+            if
+                type(retry.attempts) ~= "number"
+                or retry.attempts % 1 ~= 0
+                or retry.attempts < 1
+                or retry.attempts > 10
+            then
+                return self:_configError(
+                    "pets",
+                    "serials.read_retry.attempts",
+                    "expected integer in [1, 10]"
+                )
+            end
+            if type(retry.backoff_seconds) ~= "table" then
+                return self:_configError(
+                    "pets",
+                    "serials.read_retry.backoff_seconds",
+                    "expected array"
+                )
+            end
+            for i, seconds in ipairs(retry.backoff_seconds) do
+                if type(seconds) ~= "number" or seconds < 0 then
+                    return self:_configError(
+                        "pets",
+                        "serials.read_retry.backoff_seconds[" .. tostring(i) .. "]",
+                        "expected non-negative number"
+                    )
+                end
+            end
+        end
     end
 
     for rarityId, rarity in pairs(config.rarities) do
