@@ -489,21 +489,28 @@ return {
             objective = { kind = "clear_then_beacon" },
             boss_egg = { egg = "celestial_egg", name = "Celestial Egg", chance = 0.005 },
             packs = {
+                -- REALM-CORRECT statics (Jason 2026-07-14, "why is there a
+                -- murder crow in heaven lava? This seems like a hell map just
+                -- retitled"): lava has NO neutral wildlife — its statics ARE
+                -- the hell faction — so heaven_lava fields heaven's authored
+                -- role mirrors instead (imp->cherub, crow->seraph guard,
+                -- acolyte->sprite guard, brute->warden). The LAVA identity
+                -- stays in theme/area (palette, atmosphere, biome RPS, drops).
                 { -- swarm: statics + realm pets
                     weight = 10,
                     units = {
-                        { enemy = "lava_imp", count = 3 },
+                        { enemy = "zealous_cherub", count = 3 },
                         { pet = "coronal_cherub", count = 2 },
-                        { enemy = "ember_acolyte", count = 2 },
-                        { enemy = "murder_crow", count = 1 },
+                        { enemy = "radiant_sprite_guard", count = 2 },
+                        { enemy = "lance_seraph_guard", count = 1 },
                     },
                 },
                 { -- lieutenants: static wall + a pet captain
                     weight = 7,
                     units = {
-                        { enemy = "ember_brute", count = 1 },
+                        { enemy = "prism_warden", count = 1 },
                         { pet = "prism_lion", rank = "lieutenant", count = 1 },
-                        { enemy = "lava_imp", count = 2 },
+                        { enemy = "zealous_cherub", count = 2 },
                         { pet = "lance_seraph", count = 2 },
                     },
                 },
@@ -512,8 +519,8 @@ return {
                     boss = true, -- population FORCES one at the objective room
                     units = {
                         { pet = "empyrean_dragon", rank = "boss", count = 1 },
-                        { enemy = "lava_imp", count = 2 },
-                        { enemy = "ember_acolyte", count = 1 },
+                        { enemy = "zealous_cherub", count = 2 },
+                        { enemy = "radiant_sprite_guard", count = 1 },
                     },
                 },
             },
@@ -731,7 +738,9 @@ return {
                         { enemy = "rabid_dog", count = 3 },
                         { pet = "lightleaf_hare", count = 2 },
                         { enemy = "rabid_bunny", count = 2 },
-                        { enemy = "murder_crow", count = 1 },
+                        -- ranged slot: lance seraph, not murder crow (crows
+                        -- are hell's birds — realm-correct statics rule)
+                        { enemy = "lance_seraph_guard", count = 1 },
                     },
                 },
                 { -- lieutenants: static wall + a pet captain

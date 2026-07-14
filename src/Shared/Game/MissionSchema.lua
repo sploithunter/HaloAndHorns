@@ -164,6 +164,10 @@ function MissionSchema.validate(cfg, deps)
             return false,
                 path .. ".seed_policy: unknown policy '" .. tostring(def.seed_policy) .. "'"
         end
+        -- realm drives decor-pool allegiance + resonance; only two sides exist
+        if def.realm ~= nil and def.realm ~= "heaven" and def.realm ~= "hell" then
+            return false, path .. ".realm: expected 'heaven' or 'hell'"
+        end
         if def.aggression_policy ~= nil and not AGGRESSION_POLICIES[def.aggression_policy] then
             return false,
                 path

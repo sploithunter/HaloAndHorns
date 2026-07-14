@@ -796,7 +796,8 @@ function MissionInstanceService:Open(player, missionId, opts)
             slotOrigin,
             seed,
             mission.theme,
-            record
+            record,
+            mission.realm
         )
     end
 
@@ -1525,13 +1526,20 @@ function MissionInstanceService:_applyDressing(
     slotOrigin,
     seed,
     theme,
-    record
+    record,
+    realm
 )
     local rollOpts = {}
     for k, v in pairs(decorCfg) do
         rollOpts[k] = v
     end
-    local poolTheme = THEME_POOL_ALIAS[theme] or theme
+    -- ICONOGRAPHY FOLLOWS ALLEGIANCE (Jason 2026-07-14: demon skull banners
+    -- hung in Heaven Lava — "seems inappropriate, don't you think?"): decor
+    -- POOLS key off the mission's REALM when it has one (banners, crests,
+    -- features, doorway fixtures are faction art), while THEME keeps owning
+    -- the palette/tints/atmosphere (lava still glows ember in heaven). The
+    -- element alias remains only as the fallback for realm-less missions.
+    local poolTheme = realm or THEME_POOL_ALIAS[theme] or theme
     rollOpts.doors = mapTable.doors -- wall decor avoids doorway apertures
     local tints, props, wallDecor, features =
         MissionDecor.roll(mapTable.rooms, MissionSeed.stream(seed, "dressing"), rollOpts)
