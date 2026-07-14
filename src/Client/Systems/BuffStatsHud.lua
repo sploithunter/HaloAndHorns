@@ -374,6 +374,25 @@ end
 -- ---- data ---------------------------------------------------------------
 
 function BuffStatsHud:_connect()
+    -- SIGNAL-DRIVEN VALUES (SSOT doctrine): stat numbers change exactly when
+    -- the server republishes an Eff_* attribute — subscribe, don't poll. The
+    -- heartbeat tick below survives ONLY for countdown text + blink cadence.
+    for _, attrName in ipairs({
+        "Eff_Attack",
+        "Eff_Coin",
+        "Eff_Mining",
+        "Eff_Luck",
+        "Eff_Speed",
+        "Eff_Recharge",
+        "Eff_XP",
+        "CollectRadius",
+    }) do
+        self.player:GetAttributeChangedSignal(attrName):Connect(function()
+            if self.gui and self.gui.Enabled then
+                self:_refresh()
+            end
+        end)
+    end
     self._accum = 0
     RunService.Heartbeat:Connect(function(dt)
         self._accum += dt
@@ -430,21 +449,9 @@ function BuffStatsHud:_refresh()
     local now = os.time()
     local p = self.player
 
-    -- ⚔ Attack (pet_damage axis): two multipliers add as fractions.
-    local atk = BuffStack.multiplier({
-        {
-            fraction = (p:GetAttribute("PetDamageBuff") or 1) - 1,
-            expiry = p:GetAttribute("PetDamageBuffUntil") or 0,
-        },
-        {
-            fraction = (p:GetAttribute("PetTeamDamageBuff") or 1) - 1,
-            expiry = p:GetAttribute("PetTeamDamageBuffUntil") or 0,
-        },
-        {
-            fraction = p:GetAttribute("PetDamageBuffPotion") or 0, -- Berserk potion (raw fraction)
-            expiry = p:GetAttribute("PetDamageBuffPotionUntil") or 0,
-        },
-    }, now, axis("pet_damage"))
+    -- ⚔ Attack: SERVER-PUBLISHED (Eff_Attack, EffectiveStatsService) —
+    -- display verbatim, no formula here (SSOT doctrine 2026-07-14).
+    local atk = tonumber(p:GetAttribute("Eff_Attack")) or 1
     -- Timer counts down the TIMED sources (PetDamageBuff / the potion); the offense AURA
     -- (PetTeamDamageBuff) is permanent while the pet is deployed -> no countdown (shows ∞).
     self:_setMult(
@@ -458,23 +465,9 @@ function BuffStatsHud:_refresh()
     local defFlat, defRem = self:_defenseFlat(now)
     self:_setDefense("defense", defFlat, defRem)
 
-    -- 💰 Coin (coin_yield axis): aura multiplier + power fraction add.
-    local coin = BuffStack.multiplier({
-        {
-            fraction = (p:GetAttribute("CoinYieldBuff") or 1) - 1,
-            expiry = p:GetAttribute("CoinYieldBuffUntil") or 0,
-        },
-        {
-            fraction = p:GetAttribute("CoinYieldPower") or 0,
-            expiry = p:GetAttribute("CoinYieldPowerUntil") or 0,
-        },
-        {
-            -- ENCHANT contribution (Jason: one honest coin number): EnchantService
-            -- stamps the equipped pets' coin_finder total as EnchantCoinBonus
-            fraction = p:GetAttribute("EnchantCoinBonus") or 0,
-            expiry = math.huge, -- permanent while the enchanted pets stay equipped
-        },
-    }, now, axis("coin_yield"))
+    -- 💰 Coin: SERVER-PUBLISHED (Eff_Coin = buff axis x the breakable_reward
+    -- pipeline incl. enchant coin_finder) — display verbatim.
+    local coin = tonumber(p:GetAttribute("Eff_Coin")) or 1
     -- Timer counts down only the TIMED power (CoinYieldPower); the yield AURA (CoinYieldBuff) is
     -- permanent while the buffer pet is deployed -> no countdown (shows ∞).
     self:_setMult(
@@ -484,13 +477,8 @@ function BuffStatsHud:_refresh()
         soonestRemaining(p, { "CoinYieldPowerUntil" }, now)
     )
 
-    -- ⛏ Mining (single fraction).
-    local mining = BuffStack.multiplier({
-        {
-            fraction = p:GetAttribute("MiningBuff") or 0,
-            expiry = p:GetAttribute("MiningBuffUntil") or 0,
-        },
-    }, now, axis("mining"))
+    -- ⛏ Mining: SERVER-PUBLISHED (Eff_Mining) — display verbatim.
+    local mining = tonumber(p:GetAttribute("Eff_Mining")) or 1
     self:_setMult(
         "mining",
         mining,
@@ -500,20 +488,7 @@ function BuffStatsHud:_refresh()
 
     -- 🍀 Luck: the Fortune POWER + the bunny support AURA (HatchLuckBuff is a
     -- multiplier attribute; contribute its fraction) stack additively like everything.
-    local luck = BuffStack.multiplier({
-        {
-            fraction = p:GetAttribute("LuckBuff") or 0,
-            expiry = p:GetAttribute("LuckBuffUntil") or 0,
-        },
-        {
-            fraction = p:GetAttribute("LuckBuffPotion") or 0, -- Fortune potion (raw fraction)
-            expiry = p:GetAttribute("LuckBuffPotionUntil") or 0,
-        },
-        {
-            fraction = math.max(0, (p:GetAttribute("HatchLuckBuff") or 1) - 1),
-            expiry = p:GetAttribute("HatchLuckBuffUntil") or 0,
-        },
-    }, now, axis("luck"))
+    local luck = tonumber(p:GetAttribute("Eff_Luck")) or 1 -- SERVER-PUBLISHED (Eff_Luck)
     self:_setMult(
         "luck",
         luck,
@@ -543,17 +518,9 @@ function BuffStatsHud:_refresh()
         end
     end
 
-    -- 🐾 Speed (power + potion ADD on the axis).
-    local speed = BuffStack.multiplier({
-        {
-            fraction = p:GetAttribute("MoveSpeedBuff") or 0,
-            expiry = p:GetAttribute("MoveSpeedBuffUntil") or 0,
-        },
-        {
-            fraction = p:GetAttribute("MoveSpeedBuffPotion") or 0,
-            expiry = p:GetAttribute("MoveSpeedBuffPotionUntil") or 0,
-        },
-    }, now, axis("move_speed"))
+    -- 🐾 Speed: SERVER-PUBLISHED (Eff_Speed) — display verbatim; the same
+    -- attribute drives the actual WalkSpeed applier in init.client.
+    local speed = tonumber(p:GetAttribute("Eff_Speed")) or 1
     self:_setMult(
         "speed",
         speed,
@@ -561,17 +528,17 @@ function BuffStatsHud:_refresh()
         soonestRemaining(p, { "MoveSpeedBuffUntil", "MoveSpeedBuffPotionUntil" }, now)
     )
 
-    -- ⚡ Recharge (cooldown reduction, clamped — shown as -N% CD).
-    local rFrac = 0
-    if (p:GetAttribute("RechargeBuffUntil") or 0) > now then
-        rFrac = math.clamp(p:GetAttribute("RechargeBuff") or 0, 0, RECHARGE_CLAMP)
-    end
-    self:_setRecharge("recharge", rFrac, soonestRemaining(p, { "RechargeBuffUntil" }, now))
+    -- ⚡ Recharge: SERVER-PUBLISHED (Eff_Recharge — includes the Ashwing
+    -- Ember Tempo aura channel the old client mirror MISSED). Verbatim.
+    local rFrac = tonumber(p:GetAttribute("Eff_Recharge")) or 0
+    self:_setRecharge(
+        "recharge",
+        rFrac,
+        soonestRemaining(p, { "RechargeBuffUntil", "RechargeAuraUntil" }, now)
+    )
 
-    -- ✨ XP.
-    local xp = BuffStack.multiplier({
-        { fraction = p:GetAttribute("XpBuff") or 0, expiry = p:GetAttribute("XpBuffUntil") or 0 },
-    }, now, axis("xp"))
+    -- ✨ XP: SERVER-PUBLISHED (Eff_XP) — display verbatim.
+    local xp = tonumber(p:GetAttribute("Eff_XP")) or 1
     self:_setMult("xp", xp, axis("xp").cap, soonestRemaining(p, { "XpBuffUntil" }, now))
 
     -- 🧲 Magnet collect radius: DISPLAY ONLY — the server publishes the ONE

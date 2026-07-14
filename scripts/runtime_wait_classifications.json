@@ -1,259 +1,262 @@
 {
-  "approved_purposes": [
-    "animation",
-    "cooldown",
-    "deadline",
-    "debounce",
-    "frame_budget",
-    "periodic",
-    "retry_backoff",
-    "simulation",
-    "test",
-    "watchdog"
-  ],
-  "files": {
-    "src/Client/Systems/AdminController.lua": {
-      "retry_backoff": 1
-    },
-    "src/Client/Systems/AreaMusicController.lua": {
-      "cooldown": 1,
-      "deadline": 1
-    },
-    "src/Client/Systems/AudioPrefs.lua": {
-      "deadline": 1,
-      "retry_backoff": 1
-    },
-    "src/Client/Systems/AutoTarget.lua": {
-      "debounce": 2
-    },
-    "src/Client/Systems/CombatAuraController.lua": {
-      "cooldown": 6
-    },
-    "src/Client/Systems/CurrencyStyle.lua": {
-      "retry_backoff": 1
-    },
-    "src/Client/Systems/EventLiveLabel.lua": {
-      "periodic": 1
-    },
-    "src/Client/Systems/GameEvents.lua": {
-      "animation": 7,
-      "watchdog": 1
-    },
-    "src/Client/Systems/HotbarBar.lua": {
-      "deadline": 2,
-      "debounce": 3,
-      "periodic": 2
-    },
-    "src/Client/Systems/LevelUpController.lua": {
-      "animation": 4,
-      "debounce": 1
-    },
-    "src/Client/Systems/MenuTrayStyle.lua": {
-      "retry_backoff": 1
-    },
-    "src/Client/Systems/MissionAtmosphere.lua": {
-      "animation": 3
-    },
-    "src/Client/Systems/MissionMap.lua": {
-      "periodic": 1
-    },
-    "src/Client/Systems/PlayerBar.lua": {
-      "retry_backoff": 1
-    },
-    "src/Client/Systems/PowerFXProbe.lua": {
-      "simulation": 1
-    },
-    "src/Client/Systems/QuestTrackerStyle.lua": {
-      "retry_backoff": 1
-    },
-    "src/Client/Systems/RealmAtmosphere.lua": {
-      "animation": 1
-    },
-    "src/Client/Systems/RealmHellFaces.lua": {
-      "animation": 3,
-      "periodic": 1
-    },
-    "src/Client/Systems/RealmPortalLock.lua": {
-      "periodic": 1
-    },
-    "src/Client/Systems/RealmPortalSideGate.lua": {
-      "periodic": 1
-    },
-    "src/Client/Systems/SquadHud.lua": {
-      "debounce": 1,
-      "periodic": 1
-    },
-    "src/Client/Systems/TeamFollowController.lua": {
-      "periodic": 1
-    },
-    "src/Client/Systems/TutorialController.lua": {
-      "deadline": 1,
-      "debounce": 1,
-      "periodic": 1
-    },
-    "src/Client/Systems/ZoneUnlockPrompt.lua": {
-      "deadline": 1
-    },
-    "src/Client/UI/BaseUI.lua": {
-      "debounce": 1,
-      "periodic": 1
-    },
-    "src/Client/UI/Components/TextLabel.lua": {
-      "animation": 1
-    },
-    "src/Client/UI/MenuManager.lua": {
-      "periodic": 1
-    },
-    "src/Client/UI/Menus/AdminPanel.lua": {
-      "simulation": 2
-    },
-    "src/Client/UI/Menus/EnchantPanel.lua": {
-      "deadline": 1
-    },
-    "src/Client/UI/Menus/EnhancementSellPanel.lua": {
-      "deadline": 1
-    },
-    "src/Client/UI/Menus/InventoryPanel.lua": {
-      "animation": 1,
-      "deadline": 2,
-      "periodic": 1
-    },
-    "src/Client/UI/Menus/TradePanel.lua": {
-      "deadline": 1
-    },
-    "src/Client/init.client.lua": {
-      "deadline": 2,
-      "periodic": 1,
-      "watchdog": 1
-    },
-    "src/ReplicatedFirst/BootLoader.client.lua": {
-      "deadline": 1
-    },
-    "src/Server/Diagnostics/HeapTrace.lua": {
-      "periodic": 1
-    },
-    "src/Server/OpsAlert.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/AssetPreloadService.lua": {
-      "frame_budget": 1
-    },
-    "src/Server/Services/AutoTargetService.lua": {
-      "debounce": 1
-    },
-    "src/Server/Services/AutomationService.lua": {
-      "simulation": 1
-    },
-    "src/Server/Services/BaddieSpawnerService.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/BreakableSpawner.lua": {
-      "animation": 1,
-      "cooldown": 1,
-      "frame_budget": 3,
-      "periodic": 2
-    },
-    "src/Server/Services/DailyRewardZoneService.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/DataService.lua": {
-      "debounce": 1,
-      "periodic": 1,
-      "retry_backoff": 1,
-      "watchdog": 1
-    },
-    "src/Server/Services/DropService.lua": {
-      "animation": 1
-    },
-    "src/Server/Services/EnchantService.lua": {
-      "animation": 2,
-      "periodic": 1
-    },
-    "src/Server/Services/EnemyService.lua": {
-      "animation": 1
-    },
-    "src/Server/Services/EventService.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/FocusService.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/GameStructureService.server.lua": {
-      "retry_backoff": 1
-    },
-    "src/Server/Services/LeaderboardService.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/MeetCreatorService.lua": {
-      "debounce": 1,
-      "retry_backoff": 1
-    },
-    "src/Server/Services/MissionInstanceService.lua": {
-      "periodic": 1,
-      "simulation": 3
-    },
-    "src/Server/Services/PetCharacterAttachments.server.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/PetHandler.server.lua": {
-      "frame_budget": 1,
-      "periodic": 2,
-      "retry_backoff": 3
-    },
-    "src/Server/Services/PetIndexService.lua": {
-      "frame_budget": 1
-    },
-    "src/Server/Services/PowerService.lua": {
-      "animation": 4,
-      "periodic": 6
-    },
-    "src/Server/Services/RateLimitService.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/RealmPortalService.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/StudioSmokeTestService.lua": {
-      "test": 3
-    },
-    "src/Server/Services/ZoneService.lua": {
-      "periodic": 1
-    },
-    "src/Server/Services/ZoneTrackerService.lua": {
-      "simulation": 1
-    },
-    "src/Server/World/MissionStamper.lua": {
-      "frame_budget": 1
-    },
-    "src/Server/init.server.lua": {
-      "periodic": 2
-    },
-    "src/Shared/Effects/AreaFX.lua": {
-      "animation": 8
-    },
-    "src/Shared/Effects/CombatFX.lua": {
-      "animation": 4
-    },
-    "src/Shared/Effects/EggHatchFX.lua": {
-      "animation": 3
-    },
-    "src/Shared/Libraries/Matter/debugger/EventBridge.luau": {
-      "debounce": 1
-    },
-    "src/Shared/Services/EggHatchingService.lua": {
-      "watchdog": 1
-    },
-    "src/Shared/Services/EggInteractionService.lua": {
-      "cooldown": 3,
-      "debounce": 1,
-      "periodic": 1
-    },
-    "src/Shared/Services/EggWorldQuery.lua": {
-      "periodic": 3
-    },
-    "src/Shared/Services/UserDisplayPreferences.lua": {
-      "debounce": 1
-    }
+ "approved_purposes": [
+  "animation",
+  "cooldown",
+  "deadline",
+  "debounce",
+  "frame_budget",
+  "periodic",
+  "retry_backoff",
+  "simulation",
+  "test",
+  "watchdog"
+ ],
+ "files": {
+  "src/Client/Systems/AdminController.lua": {
+   "retry_backoff": 1
   },
-  "version": 1
+  "src/Client/Systems/AreaMusicController.lua": {
+   "cooldown": 1,
+   "deadline": 1
+  },
+  "src/Client/Systems/AudioPrefs.lua": {
+   "deadline": 1,
+   "retry_backoff": 1
+  },
+  "src/Client/Systems/AutoTarget.lua": {
+   "debounce": 2
+  },
+  "src/Client/Systems/CombatAuraController.lua": {
+   "cooldown": 6
+  },
+  "src/Client/Systems/CurrencyStyle.lua": {
+   "retry_backoff": 1
+  },
+  "src/Client/Systems/EventLiveLabel.lua": {
+   "periodic": 1
+  },
+  "src/Client/Systems/GameEvents.lua": {
+   "animation": 7,
+   "watchdog": 1
+  },
+  "src/Client/Systems/HotbarBar.lua": {
+   "deadline": 2,
+   "debounce": 3,
+   "periodic": 2
+  },
+  "src/Client/Systems/LevelUpController.lua": {
+   "animation": 4,
+   "debounce": 1
+  },
+  "src/Client/Systems/MenuTrayStyle.lua": {
+   "retry_backoff": 1
+  },
+  "src/Client/Systems/MissionAtmosphere.lua": {
+   "animation": 3
+  },
+  "src/Client/Systems/MissionMap.lua": {
+   "periodic": 1
+  },
+  "src/Client/Systems/PlayerBar.lua": {
+   "retry_backoff": 1
+  },
+  "src/Client/Systems/PowerFXProbe.lua": {
+   "simulation": 1
+  },
+  "src/Client/Systems/QuestTrackerStyle.lua": {
+   "retry_backoff": 1
+  },
+  "src/Client/Systems/RealmAtmosphere.lua": {
+   "animation": 1
+  },
+  "src/Client/Systems/RealmHellFaces.lua": {
+   "animation": 3,
+   "periodic": 1
+  },
+  "src/Client/Systems/RealmPortalLock.lua": {
+   "periodic": 1
+  },
+  "src/Client/Systems/RealmPortalSideGate.lua": {
+   "periodic": 1
+  },
+  "src/Client/Systems/SquadHud.lua": {
+   "debounce": 1,
+   "periodic": 1
+  },
+  "src/Client/Systems/TeamFollowController.lua": {
+   "periodic": 1
+  },
+  "src/Client/Systems/TutorialController.lua": {
+   "deadline": 1,
+   "debounce": 1,
+   "periodic": 1
+  },
+  "src/Client/Systems/ZoneUnlockPrompt.lua": {
+   "deadline": 1
+  },
+  "src/Client/UI/BaseUI.lua": {
+   "debounce": 1,
+   "periodic": 1
+  },
+  "src/Client/UI/Components/TextLabel.lua": {
+   "animation": 1
+  },
+  "src/Client/UI/MenuManager.lua": {
+   "periodic": 1
+  },
+  "src/Client/UI/Menus/AdminPanel.lua": {
+   "simulation": 2
+  },
+  "src/Client/UI/Menus/EnchantPanel.lua": {
+   "deadline": 1
+  },
+  "src/Client/UI/Menus/EnhancementSellPanel.lua": {
+   "deadline": 1
+  },
+  "src/Client/UI/Menus/InventoryPanel.lua": {
+   "animation": 1,
+   "deadline": 2,
+   "periodic": 1
+  },
+  "src/Client/UI/Menus/TradePanel.lua": {
+   "deadline": 1
+  },
+  "src/Client/init.client.lua": {
+   "deadline": 2,
+   "periodic": 1,
+   "watchdog": 1
+  },
+  "src/ReplicatedFirst/BootLoader.client.lua": {
+   "deadline": 1
+  },
+  "src/Server/Diagnostics/HeapTrace.lua": {
+   "periodic": 1
+  },
+  "src/Server/OpsAlert.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/AssetPreloadService.lua": {
+   "frame_budget": 1
+  },
+  "src/Server/Services/AutoTargetService.lua": {
+   "debounce": 1
+  },
+  "src/Server/Services/AutomationService.lua": {
+   "simulation": 1
+  },
+  "src/Server/Services/BaddieSpawnerService.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/BreakableSpawner.lua": {
+   "animation": 1,
+   "cooldown": 1,
+   "frame_budget": 3,
+   "periodic": 2
+  },
+  "src/Server/Services/DailyRewardZoneService.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/DataService.lua": {
+   "debounce": 1,
+   "periodic": 1,
+   "retry_backoff": 1,
+   "watchdog": 1
+  },
+  "src/Server/Services/DropService.lua": {
+   "animation": 1
+  },
+  "src/Server/Services/EnchantService.lua": {
+   "animation": 2,
+   "periodic": 1
+  },
+  "src/Server/Services/EnemyService.lua": {
+   "animation": 1
+  },
+  "src/Server/Services/EventService.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/FocusService.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/GameStructureService.server.lua": {
+   "retry_backoff": 1
+  },
+  "src/Server/Services/LeaderboardService.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/MeetCreatorService.lua": {
+   "debounce": 1,
+   "retry_backoff": 1
+  },
+  "src/Server/Services/MissionInstanceService.lua": {
+   "periodic": 1,
+   "simulation": 3
+  },
+  "src/Server/Services/PetCharacterAttachments.server.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/PetHandler.server.lua": {
+   "frame_budget": 1,
+   "periodic": 2,
+   "retry_backoff": 3
+  },
+  "src/Server/Services/PetIndexService.lua": {
+   "frame_budget": 1
+  },
+  "src/Server/Services/PowerService.lua": {
+   "animation": 4,
+   "periodic": 6
+  },
+  "src/Server/Services/RateLimitService.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/RealmPortalService.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/StudioSmokeTestService.lua": {
+   "test": 3
+  },
+  "src/Server/Services/ZoneService.lua": {
+   "periodic": 1
+  },
+  "src/Server/Services/ZoneTrackerService.lua": {
+   "simulation": 1
+  },
+  "src/Server/World/MissionStamper.lua": {
+   "frame_budget": 1
+  },
+  "src/Server/init.server.lua": {
+   "periodic": 2
+  },
+  "src/Shared/Effects/AreaFX.lua": {
+   "animation": 8
+  },
+  "src/Shared/Effects/CombatFX.lua": {
+   "animation": 4
+  },
+  "src/Shared/Effects/EggHatchFX.lua": {
+   "animation": 3
+  },
+  "src/Shared/Libraries/Matter/debugger/EventBridge.luau": {
+   "debounce": 1
+  },
+  "src/Shared/Services/EggHatchingService.lua": {
+   "watchdog": 1
+  },
+  "src/Shared/Services/EggInteractionService.lua": {
+   "cooldown": 3,
+   "debounce": 1,
+   "periodic": 1
+  },
+  "src/Shared/Services/EggWorldQuery.lua": {
+   "periodic": 3
+  },
+  "src/Shared/Services/UserDisplayPreferences.lua": {
+   "debounce": 1
+  },
+  "src/Server/Services/EffectiveStatsService.lua": {
+   "deadline": 1
+  }
+ },
+ "version": 1
 }

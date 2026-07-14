@@ -908,28 +908,19 @@ end
 
 UserInputService.InputBegan:Connect(onInputBegan)
 
--- Player move-speed buff (Swift / Super Speed): WalkSpeed = base * (1 + MoveSpeedBuff) while the
--- buff is live. Pets already read MoveSpeedBuff (PetFollowController); this applies it to the PLAYER
--- too, so Swift speeds self AND squad.
-local function activeMoveBuff()
-    -- move_speed axis = power (MoveSpeedBuff) + potion (MoveSpeedBuffPotion), each gated by its own
-    -- Until and ADDED (a Swift potion stacks with the Swift power instead of clobbering it).
-    local now = os.time()
-    local total = 0
-    if (localPlayer:GetAttribute("MoveSpeedBuffUntil") or 0) > now then
-        total += localPlayer:GetAttribute("MoveSpeedBuff") or 0
-    end
-    if (localPlayer:GetAttribute("MoveSpeedBuffPotionUntil") or 0) > now then
-        total += localPlayer:GetAttribute("MoveSpeedBuffPotion") or 0
-    end
-    return total
-end
-
+-- Player move-speed buff (Swift / Super Speed): WalkSpeed = base * Eff_Speed
+-- (server-published). Pets still read the raw MoveSpeedBuff attrs
+-- (PetFollowController) — same inputs, same registry-fed publisher.
 local function applyWalkSpeed()
+    -- SERVER-PUBLISHED multiplier (Eff_Speed, EffectiveStatsService): the
+    -- axis fold lives in ONE place (Shared EffectiveStats registry) and the
+    -- publisher handles buff expiry republishes — this applier just applies
+    -- (SSOT doctrine 2026-07-14).
     local char = localPlayer.Character
     local humanoid = char and char:FindFirstChildOfClass("Humanoid")
     if humanoid then
-        humanoid.WalkSpeed = gameConfig.WorldSettings.WalkSpeed * (1 + activeMoveBuff())
+        local mult = tonumber(localPlayer:GetAttribute("Eff_Speed")) or 1
+        humanoid.WalkSpeed = gameConfig.WorldSettings.WalkSpeed * mult
     end
 end
 
@@ -944,8 +935,10 @@ local function onCharacterAdded(character)
     local humanoid = character:WaitForChild("Humanoid")
     local rootPart = character:WaitForChild("HumanoidRootPart")
 
-    -- Apply game configuration to character (WalkSpeed includes any live move-speed buff)
-    humanoid.WalkSpeed = gameConfig.WorldSettings.WalkSpeed * (1 + activeMoveBuff())
+    -- Apply game configuration to character (WalkSpeed includes any live
+    -- move-speed buff via the server-published Eff_Speed multiplier)
+    humanoid.WalkSpeed = gameConfig.WorldSettings.WalkSpeed
+        * (tonumber(localPlayer:GetAttribute("Eff_Speed")) or 1)
     humanoid.JumpPower = gameConfig.WorldSettings.JumpPower
 
     -- Set up character-specific systems
@@ -961,12 +954,10 @@ if localPlayer.Character then
 end
 localPlayer.CharacterAdded:Connect(onCharacterAdded)
 
--- Re-apply WalkSpeed whenever the move-speed buff changes (Swift toggled/granted, or a timed cast
--- expires) so player speed tracks the buff live, not just on spawn.
-localPlayer:GetAttributeChangedSignal("MoveSpeedBuff"):Connect(applyWalkSpeed)
-localPlayer:GetAttributeChangedSignal("MoveSpeedBuffUntil"):Connect(applyWalkSpeed)
-localPlayer:GetAttributeChangedSignal("MoveSpeedBuffPotion"):Connect(applyWalkSpeed)
-localPlayer:GetAttributeChangedSignal("MoveSpeedBuffPotionUntil"):Connect(applyWalkSpeed)
+-- Re-apply WalkSpeed when the server republishes the effective multiplier
+-- (Eff_Speed covers grant/toggle AND expiry — the publisher schedules the
+-- expiry republish, so no client-side deadline math).
+localPlayer:GetAttributeChangedSignal("Eff_Speed"):Connect(applyWalkSpeed)
 
 -- Wait for data to load
 local function waitForDataLoaded()

@@ -299,6 +299,13 @@ registerFeatureModule(
     appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "stats", "StatsService")
 )
 loader:RegisterModule(
+    "EffectiveStatsService",
+    ServerScriptService.Server.Services.EffectiveStatsService,
+    -- SSOT stat publisher (Jason 2026-07-14): computes every derived player
+    -- stat from the Shared EffectiveStats registry and publishes Eff_* attrs
+    { "Logger", "ConfigLoader", "ModifierService" }
+)
+loader:RegisterModule(
     "MonetizationService",
     ServerScriptService.Server.Services.MonetizationService,
     -- InventoryService: capacity refresh after async pass benefits (paid slot)
