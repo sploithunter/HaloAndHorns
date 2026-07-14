@@ -869,6 +869,25 @@ function DropService:_collect(rec, _force)
     self:_recycle(rec)
 end
 
+-- THE collect radius — ONE source of truth (Jason 2026-07-14: "we should
+-- have one source of truth... and only ever reference that variable"). This
+-- is the ONLY place the formula lives: base + the Magnet power's timed buff
+-- + the Auto Collector pass's permanent extension. The result is PUBLISHED
+-- as the CollectRadius attribute; the Active Buffs HUD (and anything else)
+-- displays that attribute VERBATIM — no client-side re-derivation, so the
+-- display can never drift from what the server actually collects with.
+function DropService:_effectiveCollectRadius(plr, baseR, nowT)
+    local r = baseR
+    if (plr:GetAttribute("MagnetBuffUntil") or 0) > nowT then
+        r += tonumber(plr:GetAttribute("MagnetBuff")) or 0
+    end
+    r += tonumber(plr:GetAttribute("AutoCollectRange")) or 0
+    if plr:GetAttribute("CollectRadius") ~= r then
+        plr:SetAttribute("CollectRadius", r)
+    end
+    return r
+end
+
 function DropService:_step()
     local now = os.clock()
     local cfg = self._config
@@ -900,25 +919,17 @@ function DropService:_step()
             if not plr then
                 self:_collect(rec, true)
             elseif rootPos and not rec.settling then
-                local bonus = 0
                 -- (magnet stays ON in missions — Jason: the CHEST is the
                 -- anti-cheese gate; loot only exists once a cleared room's
                 -- chest is opened, so magnet can't steal anything early)
                 -- magnetImmune (exclusive EGG drops): the find is the moment —
                 -- walk to it; base collect radius still applies up close
-                if not rec.magnetImmune and (plr:GetAttribute("MagnetBuffUntil") or 0) > nowT then
-                    bonus = tonumber(plr:GetAttribute("MagnetBuff")) or 0
-                end
-                -- AUTO COLLECTOR pass: a PERMANENT magnet extension set by
-                -- MonetizationService (AutoCollectRange, 30) — adds to the
-                -- power's timed MagnetBuff for the full 60-stud bubble.
-                if not rec.magnetImmune then
-                    bonus += tonumber(plr:GetAttribute("AutoCollectRange")) or 0
-                end
+                local radius = rec.magnetImmune and baseR
+                    or self:_effectiveCollectRadius(plr, baseR, nowT)
                 local dist = (rec.part.Position - rootPos).Magnitude
                 if dist <= pullR then
                     self:_collect(rec)
-                elseif dist <= (baseR + bonus) then
+                elseif dist <= radius then
                     local dir = (rootPos - rec.part.Position)
                     local stepLen = math.min(pullSpeed / 60, dir.Magnitude)
                     rec.part.CFrame = rec.part.CFrame * CFrame.Angles(0, spin, 0)

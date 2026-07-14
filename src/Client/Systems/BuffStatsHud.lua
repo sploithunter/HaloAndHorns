@@ -574,16 +574,18 @@ function BuffStatsHud:_refresh()
     }, now, axis("xp"))
     self:_setMult("xp", xp, axis("xp").cap, soonestRemaining(p, { "XpBuffUntil" }, now))
 
-    -- 🧲 Magnet collect radius (base + the Magnet power's bonus + the Auto
-    -- Collector pass's permanent extension, in studs — mirrors DropService's
-    -- actual collect math exactly).
+    -- 🧲 Magnet collect radius: DISPLAY ONLY — the server publishes the ONE
+    -- authoritative number (CollectRadius, computed + used by DropService's
+    -- collect loop). No formula here, so this row can never drift from what
+    -- the server actually collects with (Jason's SSOT rule, 2026-07-14).
     local magBase = tonumber(DropsConfig.collect_radius) or 11
-    local magBonus = 0
-    if (p:GetAttribute("MagnetBuffUntil") or 0) > now then
-        magBonus = p:GetAttribute("MagnetBuff") or 0
-    end
-    magBonus += tonumber(p:GetAttribute("AutoCollectRange")) or 0
-    self:_setRange("magnet", magBase, magBonus, soonestRemaining(p, { "MagnetBuffUntil" }, now))
+    local magTotal = tonumber(p:GetAttribute("CollectRadius")) or magBase
+    self:_setRange(
+        "magnet",
+        magBase,
+        magTotal - magBase,
+        soonestRemaining(p, { "MagnetBuffUntil" }, now)
+    )
 
     -- 👥/🌍 Team power in three layers (Jason: "team power in area and team power with
     -- buffs in area as well"): intrinsic Σ (zone-neutral — a buffer's 0.35 aptitude
