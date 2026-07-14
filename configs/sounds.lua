@@ -188,6 +188,33 @@ return {
         combat_1 = { id = "rbxassetid://94019382405359", volume = 0.5 },
         combat_2 = { id = "rbxassetid://80895188313881", volume = 0.5 },
         combat_3 = { id = "rbxassetid://84419590288422", volume = 0.5 },
+
+        -- SUNO BATCH 1 (Jason, 2026-07-14): per-origin realm music + realm
+        -- combat + overworld upgrades. Group-owned; sources in
+        -- assets/audio/music, ids in scripts/audio_ids.json.
+        -- Heaven beds (5 tracks over 8 zones — reuse marked in area_music):
+        weightless_hymn = { id = "rbxassetid://118688691362106", volume = 0.45 },
+        weightless_hymn_b = { id = "rbxassetid://81205928806024", volume = 0.45 },
+        weightless_cathedral = { id = "rbxassetid://75109769631505", volume = 0.45 },
+        weightless_cathedral_b = { id = "rbxassetid://88149956989980", volume = 0.45 },
+        golden_horizon = { id = "rbxassetid://127208188484337", volume = 0.45 },
+        -- Hell beds (6 tracks over 8 zones):
+        ember_menace_a = { id = "rbxassetid://99754348564589", volume = 0.45 },
+        ember_menace_b = { id = "rbxassetid://132106343488603", volume = 0.45 },
+        ember_menace_c = { id = "rbxassetid://140308622440055", volume = 0.45 },
+        ember_menace_d = { id = "rbxassetid://107886863616166", volume = 0.45 },
+        iron_gates_a = { id = "rbxassetid://91517043316329", volume = 0.45 },
+        iron_gates_b = { id = "rbxassetid://93100824732439", volume = 0.45 },
+        -- Realm combat (join combat_music_by_realm pools below):
+        hell_combat_a = { id = "rbxassetid://105132281703189", volume = 0.5 },
+        hell_combat_b = { id = "rbxassetid://112291597299425", volume = 0.5 },
+        heaven_combat_a = { id = "rbxassetid://83644271705531", volume = 0.5 },
+        -- Overworld upgrades (Grass and Lava get their OWN tracks; spa is
+        -- Spawn-only again, epic_drum freed):
+        grass_meadow = { id = "rbxassetid://94616693136617", volume = 0.45 },
+        grass_meadow_b = { id = "rbxassetid://81662834219225", volume = 0.45 },
+        lava_homeworld = { id = "rbxassetid://98758407703765", volume = 0.45 },
+        lava_homeworld_b = { id = "rbxassetid://83378441893244", volume = 0.45 },
     },
 
     -- COMBAT MUSIC: while the local player is InCombat (server-set Player attribute), AreaMusicController
@@ -196,6 +223,15 @@ return {
     -- the music doesn't restart). Grow this array freely — selection is uniform-random over its length.
     combat_music = { "combat_1", "combat_2", "combat_3" },
     combat_music_exit_delay = 3.0,
+
+    -- REALM-FLAVORED COMBAT (Jason 2026-07-14): while fighting, the pool is
+    -- picked by WHERE you are — Heaven_* zones + heaven missions draw from
+    -- `heaven`, Hell_* + hell missions from `hell`, everywhere else falls
+    -- back to combat_music above. Grow the arrays freely.
+    combat_music_by_realm = {
+        heaven = { "heaven_combat_a", "combat_2", "combat_3" },
+        hell = { "hell_combat_a", "hell_combat_b", "combat_1" },
+    },
 
     -- SAFETY NET: if an area track's ASSET fails to load (still moderating at publish time, or taken
     -- down by Roblox after approval), AreaMusicController swaps to this track so the area is never
@@ -207,21 +243,42 @@ return {
     -- so far, so some areas share; add more tracks + remap for fully distinct per-area music.
     area_music = {
         default = "awe",
-        Spawn = "spa", -- calm hub (gentle spa loop)
-        Grass = "spa", -- gentle starter biome (gentle spa loop)
+        Spawn = "spa", -- calm hub (gentle spa loop, Spawn-only again)
+        Grass = "grass_meadow", -- pastoral starter biome (Suno batch 1)
         Desert = "desert_hunt", -- Desert Hunt (Jason: better than the old track)
         Ice = "arctic_hunt", -- harsh cold (Arctic Hunt)
-        Lava = "epic_drum", -- intense endgame
+        Lava = "lava_homeworld", -- smoldering volcanic (Suno batch 1)
+
+        -- REALM ZONES (Jason: "we need different music for every one of
+        -- them" — 4 origins x 2 layers x 2 realms). Batch 1 covers 11 of 16
+        -- distinct; (reuse) marks slots owed a bespoke track next Suno pass.
+        Heaven_1_Grass = "weightless_hymn",
+        Heaven_1_Ice = "weightless_hymn_b",
+        Heaven_1_Desert = "golden_horizon",
+        Heaven_1_Lava = "weightless_cathedral",
+        Heaven_2_Grass = "weightless_cathedral_b",
+        Heaven_2_Ice = "weightless_hymn", -- (reuse of H1 Grass)
+        Heaven_2_Desert = "golden_horizon", -- (reuse of H1 Desert)
+        Heaven_2_Lava = "weightless_cathedral", -- (reuse of H1 Lava)
+        Hell_1_Lava = "ember_menace_a",
+        Hell_1_Ice = "ember_menace_b",
+        Hell_1_Desert = "ember_menace_c",
+        Hell_1_Grass = "ember_menace_d",
+        Hell_2_Lava = "iron_gates_a",
+        Hell_2_Ice = "iron_gates_b",
+        Hell_2_Desert = "ember_menace_c", -- (reuse of H1 Desert)
+        Hell_2_Grass = "ember_menace_d", -- (reuse of H1 Grass)
+
         -- MISSION pseudo-areas (ZoneTracker publishes mission_<theme> while
-        -- InMission; docs/MISSION_WORLDGEN.md). Defaults per Jason: hell =
-        -- the lava track until custom mission music lands; heaven = calm.
-        mission_hell = "epic_drum",
-        mission_heaven = "spa",
+        -- InMission; docs/MISSION_WORLDGEN.md). Custom mission music landed
+        -- (batch 1): hell trials = iron gates, heaven trials = cathedral.
+        mission_hell = "iron_gates_a",
+        mission_heaven = "weightless_cathedral_b",
         mission_earth = "awe",
         -- element-THEMED trials (mission.area pseudo-zones)
-        mission_lava = "epic_drum",
+        mission_lava = "lava_homeworld_b",
         mission_ice = "arctic_hunt",
-        mission_grass = "spa",
+        mission_grass = "grass_meadow_b",
         mission_desert = "desert_hunt",
     },
 }

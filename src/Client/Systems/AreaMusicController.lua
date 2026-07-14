@@ -9,9 +9,11 @@
     against rapid area changes so only the latest swap wins.
 
     COMBAT: while the server-set Player attribute `InCombat` is true, the desired track becomes a
-    RANDOM key from `combat_music` (config) instead of the area track — chosen ONCE on entry and held
+    RANDOM key from the combat pool instead of the area track — chosen ONCE on entry and held
     for the whole fight. When InCombat clears we wait `combat_music_exit_delay` seconds before fading
     back to the area track, so brief aggro flicker (enemy drops + re-acquires) doesn't restart music.
+    The pool is REALM-FLAVORED (`combat_music_by_realm`): fights in Heaven_* zones / heaven missions
+    draw the heaven pool, Hell_* / hell missions the hell pool; everywhere else uses `combat_music`.
 
     SAFETY NET: every track swap is watched — if the chosen asset never loads (still moderating at
     publish, or taken down post-approval), within FALLBACK_LOAD_TIMEOUT we swap to `music_fallback`
@@ -39,8 +41,25 @@ function AreaMusicController.start()
     local music = sounds.music or {}
     local areaMap = sounds.area_music or {}
     local combatList = sounds.combat_music or {}
+    local combatByRealm = sounds.combat_music_by_realm or {}
     local combatExitDelay = sounds.combat_music_exit_delay or 3.0
     local rng = Random.new()
+
+    -- The combat pool for wherever the player is standing RIGHT NOW: realm
+    -- zones are "Heaven_<layer>_<origin>" / "Hell_...", missions publish
+    -- "mission_heaven" / "mission_hell". Anywhere else = the default pool.
+    local function combatPool()
+        local area = tostring(
+            localPlayer:GetAttribute("CurrentArea") or localPlayer:GetAttribute("HomeArea") or ""
+        )
+        if (area:sub(1, 7) == "Heaven_" or area == "mission_heaven") and combatByRealm.heaven then
+            return combatByRealm.heaven
+        end
+        if (area:sub(1, 5) == "Hell_" or area == "mission_hell") and combatByRealm.hell then
+            return combatByRealm.hell
+        end
+        return combatList
+    end
 
     local sound = Instance.new("Sound")
     sound.Name = "AreaMusic"
@@ -133,8 +152,9 @@ function AreaMusicController.start()
             exitToken += 1 -- cancel any pending return-to-area fade
             if not inCombat then
                 inCombat = true
-                if #combatList > 0 then
-                    combatKey = combatList[rng:NextInteger(1, #combatList)]
+                local pool = combatPool()
+                if #pool > 0 then
+                    combatKey = pool[rng:NextInteger(1, #pool)]
                 end
                 apply()
             end
