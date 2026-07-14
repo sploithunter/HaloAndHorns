@@ -17,6 +17,49 @@ return {
     -- Effect-based rate modifiers
     -- These can be applied by potions, passes, or special items
     effectModifiers = {
+        -- PERMANENT GAME-PASS EFFECTS (2026-07-14): the restore path re-applies
+        -- saved effects BY ID with no inline config — unregistered ids warned
+        -- "Unknown effect" and silently dropped the pass benefits every join.
+        -- Keys use the stored "permanent_" prefix. maxUses -1 = never consumed.
+        permanent_speed_pass = {
+            actions = {},
+            duration = 999999999,
+            maxUses = -1,
+            description = "Speed Boost pass: +50% speed, forever",
+            displayName = "⚡ Speed Boost (Pass)",
+            icon = "⚡",
+            stacking = "overwrite",
+            statModifiers = {
+                speedMultiplier = 0.5,
+            },
+        },
+        permanent_vip_effect = {
+            actions = {},
+            duration = 999999999,
+            maxUses = -1,
+            description = "VIP pass: +25% speed, forever",
+            displayName = "👑 VIP (Pass)",
+            icon = "👑",
+            stacking = "overwrite",
+            statModifiers = {
+                -- luckBoost deliberately absent (capped-axis rule, 2026-07-14)
+                speedMultiplier = 0.25,
+            },
+        },
+        permanent_premium_effect = {
+            actions = {},
+            duration = 999999999,
+            maxUses = -1,
+            description = "Roblox Premium: +10% speed, +5% luck",
+            displayName = "💎 Premium",
+            icon = "💎",
+            stacking = "overwrite",
+            statModifiers = {
+                speedMultiplier = 0.1,
+                luckBoost = 0.05,
+            },
+        },
+
         -- Speed-based effects
         speed_boost = {
             actions = { "CollectResource", "DealDamage" },

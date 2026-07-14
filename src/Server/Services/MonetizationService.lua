@@ -22,6 +22,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Libraries = ReplicatedStorage.Shared.Libraries
 local Signal = require(Libraries.Signal)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local MonetizationService = {}
 MonetizationService.__index = MonetizationService
@@ -79,16 +80,35 @@ function MonetizationService:Init()
     })
 end
 
+-- Pass benefits write PROFILE state (features, multipliers, owned passes) —
+-- checking before the profile loads silently no-ops all of them (live find
+-- 2026-07-14: coloradoplays owned +1 Pet Slot, feature never stored; only
+-- the attribute-based Auto Collector benefit survived). Await DataLoaded
+-- (completion-driven readiness, house rule) before applying.
+function MonetizationService:_checkPassesWhenReady(player, includePremium)
+    task.spawn(function()
+        if not Readiness.awaitAttribute(player, "DataLoaded", true, 30) then
+            self._logger:Warn("Pass check skipped — profile never loaded", {
+                player = player.Name,
+            })
+            return
+        end
+        self:CheckPlayerPasses(player)
+        if includePremium then
+            self:CheckPremiumStatus(player)
+        end
+    end)
+end
+
 function MonetizationService:Start()
     -- Check game passes for all current players
     for _, player in ipairs(Players:GetPlayers()) do
-        self:CheckPlayerPasses(player)
+        self:_checkPassesWhenReady(player, true)
     end
 
     -- Set up player connections
     Players.PlayerAdded:Connect(function(player)
-        self:CheckPlayerPasses(player)
-        self:CheckPremiumStatus(player)
+        self:_checkPassesWhenReady(player, true)
     end)
 
     self._logger:Info("MonetizationService started")
