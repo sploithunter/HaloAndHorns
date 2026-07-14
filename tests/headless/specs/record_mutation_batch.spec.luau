@@ -6,6 +6,7 @@ return function()
             local mutations = 0
             local commits = 0
             local committedKeys
+            local committedResults
 
             local awarded, results = RecordMutationBatch.run(
                 { "pet_a", "pet_b", "pet_c" },
@@ -13,9 +14,10 @@ return function()
                     mutations += 1
                     return true, { uid = uid, xp = 7 }
                 end,
-                function(changed)
+                function(changed, resultsAtCommit)
                     commits += 1
                     committedKeys = changed
+                    committedResults = resultsAtCommit
                 end
             )
 
@@ -24,6 +26,7 @@ return function()
             expect(awarded).to.equal(3)
             expect(#committedKeys).to.equal(3)
             expect(results.pet_b.xp).to.equal(7)
+            expect(committedResults.pet_b.xp).to.equal(7)
         end)
 
         it("does not project or save when no record changed", function()

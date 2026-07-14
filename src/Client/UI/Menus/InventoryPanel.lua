@@ -7586,19 +7586,20 @@ function InventoryPanel:SetupRealTimeUpdates()
     if inventoryFolder then
         local petsFolder = inventoryFolder:FindFirstChild("pets")
         if petsFolder then
-            -- InventoryService retains stable pet record folders. One version increment is the
-            -- explicit completion event for a full or targeted projection transaction.
+            -- InventoryService retains stable pet record folders. RenderVersion advances only when
+            -- visible card/order state may have changed. ProjectionVersion also advances for XP-only
+            -- data transactions, which tooltips read directly and must NOT rebuild the open grid.
             local info = petsFolder:FindFirstChild("Info")
             if info then
-                local function attachProjectionVersion(value)
-                    if value and value:IsA("IntValue") and value.Name == "ProjectionVersion" then
+                local function attachRenderVersion(value)
+                    if value and value:IsA("IntValue") and value.Name == "RenderVersion" then
                         value:GetPropertyChangedSignal("Value"):Connect(function()
                             self:_schedulePetRefresh()
                         end)
                     end
                 end
-                attachProjectionVersion(info:FindFirstChild("ProjectionVersion"))
-                info.ChildAdded:Connect(attachProjectionVersion)
+                attachRenderVersion(info:FindFirstChild("RenderVersion"))
+                info.ChildAdded:Connect(attachRenderVersion)
             end
 
             -- Listen for new pets being added

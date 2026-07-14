@@ -9,6 +9,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local PetProjectionPolicy = require(ReplicatedStorage.Shared.Inventory.PetProjectionPolicy)
 local RecordMutationBatch = require(ReplicatedStorage.Shared.Inventory.RecordMutationBatch)
 
 local PetProgressionService = {}
@@ -192,6 +193,7 @@ function PetProgressionService:AddPetExperience(player, petUid, amount, reason, 
     local rarityId = petData.rarity_id or petConfig.rarity_id
     local maxLevel = self:GetMaxLevel(rarityId)
     local level = math.clamp(math.floor(tonumber(petData.level) or 1), 1, maxLevel)
+    local previousLevel = level
     local exp = math.max(0, math.floor(tonumber(petData.exp) or 0)) + amount
 
     while level < maxLevel do
@@ -216,12 +218,14 @@ function PetProgressionService:AddPetExperience(player, petUid, amount, reason, 
     -- celebration... and then it is unchangeable"). Locked by existing: the
     -- station refuses these pets, so the roll is final the moment it lands.
     local enchantService = self._enchantService
+    local enchantChanged = false
     if enchantService and enchantService.FillPermanentSlots then
         local added
         pcall(function()
             added = enchantService:FillPermanentSlots(player, petData)
         end)
         if added then
+            enchantChanged = #added > 0
             for _, enchant in ipairs(added) do
                 fireGameEvent(player, "enchant_awakened", {
                     pet = petData.id,
@@ -236,12 +240,14 @@ function PetProgressionService:AddPetExperience(player, petUid, amount, reason, 
     end
 
     opts = opts or {}
+    local projectionImpact =
+        PetProjectionPolicy.forProgression(level ~= previousLevel, enchantChanged)
 
     -- XP only changes this special's record, never ownership or equip. The mining squad
     -- path defers this so every changed pet is projected in one batch below.
     if not opts.deferProjection then
         if self._inventoryService and self._inventoryService.RefreshPetRecords then
-            self._inventoryService:RefreshPetRecords(player, { petUid })
+            self._inventoryService:RefreshPetRecords(player, { petUid }, projectionImpact)
         elseif self._inventoryService and self._inventoryService.RefreshPetInventory then
             self._inventoryService:RefreshPetInventory(player)
         elseif self._inventoryService and self._inventoryService._updateBucketFolders then
@@ -272,6 +278,7 @@ function PetProgressionService:AddPetExperience(player, petUid, amount, reason, 
             maxLevel = petData.max_level,
             unlockedEnchantSlots = petData.unlocked_enchant_slots or 0,
             maxEnchantments = petData.max_enchantments or 0,
+            visualChanged = projectionImpact == PetProjectionPolicy.VISUAL,
         }
 end
 
@@ -369,9 +376,13 @@ function PetProgressionService:AwardBreakableDestroyed(player, context)
                 deferSave = true,
             })
         end,
-        function(changedUids)
+        function(changedUids, mutationResults)
             if self._inventoryService and self._inventoryService.RefreshPetRecords then
-                self._inventoryService:RefreshPetRecords(player, changedUids)
+                self._inventoryService:RefreshPetRecords(
+                    player,
+                    changedUids,
+                    PetProjectionPolicy.forMutationResults(mutationResults)
+                )
             elseif self._inventoryService and self._inventoryService.RefreshPetInventory then
                 self._inventoryService:RefreshPetInventory(player)
             end
