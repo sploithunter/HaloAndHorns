@@ -24,6 +24,8 @@ return {
         xp_hour = 0, -- REPLACE: "2x XP (1 Hour)" product
         frenzy_burst = 0, -- REPLACE: "Personal Frenzy (30 min)" product
         supporter_pet = 0, -- REPLACE: "Supporter Pet" product
+        focus_surge = 0, -- REPLACE: "Focus Surge (30 min)" product
+        endurance_surge = 0, -- REPLACE: "Endurance Surge (30 min)" product
 
         -- Game Passes
         vip_pass = 123456789, -- REPLACE: "VIP Pass"
@@ -33,7 +35,6 @@ return {
         golden_luck_pass = 0, -- REPLACE: "Golden Touch" (golden variant luck)
         rainbow_luck_pass = 0, -- REPLACE: "Rainbow Radiance" (rainbow variant luck)
         pet_slot_pass = 0, -- REPLACE: "+1 Pet Slot"
-        storage_pass = 0, -- REPLACE: "+250 Storage"
         second_wind = 0, -- REPLACE: "Second Wind" (3x out-of-combat recovery)
     },
 
@@ -75,15 +76,52 @@ return {
             description = "A one-of-a-kind companion that says: I keep the lights on.",
             price_robux = 399,
             rewards = {
-                -- TODO(content + handler): mint a SPECIFIC pet id (deterministic,
-                -- creator-style origin, UNTRADEABLE flag required) via
-                -- PetGrantService. No roll, no variants-for-sale: the buyer
-                -- knows the exact pet. Colorado's commercial cousin.
-                pet = { id = "supporter_pet_tbd", untradeable = true },
+                -- DESIGN SETTLED (Jason 2026-07-14): an INTANGIBLE cosmetic
+                -- companion — follows like a pet but takes NO team slot, has
+                -- no stats, can't be targeted or downed (never enters combat
+                -- or the threat table). Pure visible supporter status: unique
+                -- model + gentle heart-spark trail + the Supporter title.
+                -- Zero balance surface, zero rating surface, works forever.
+                -- TODO(content + handler): companion model + follow rig via
+                -- the pet pipeline; mint UNTRADEABLE via PetGrantService.
+                pet = { id = "supporter_companion", untradeable = true, cosmetic = true },
             },
             category = "supporter",
             one_time_only = true,
             analytics_category = "supporter",
+            test_mode_enabled = true,
+        },
+        -- RECURRING ITEMS (Jason 2026-07-14): cheap consumable boosts on axes
+        -- we DELIBERATELY kept out of the earnable game because they're
+        -- powerful (focus + pet endurance/recovery). Non-tradable by the
+        -- rating rule; timed, deterministic, repurchasable. Game passes are
+        -- PERMANENT by platform contract — anything timed lives here.
+        {
+            id = "focus_surge",
+            name = "\u{1F4A7} Focus Surge (30 min)",
+            description = "Focus regenerates twice as fast for 30 minutes!",
+            price_robux = 59,
+            rewards = {
+                -- TODO(handler): same timed-boost handler as xp_hour.
+                boost = { axis = "focus_regen", mult = 2.0, duration_minutes = 30 },
+            },
+            category = "boosts",
+            analytics_category = "boost_focus",
+            test_mode_enabled = true,
+        },
+        {
+            id = "endurance_surge",
+            name = "\u{1F49E} Endurance Surge (30 min)",
+            description = "Your pets shrug off exhaustion — recovery timers melt for 30 minutes!",
+            price_robux = 79,
+            rewards = {
+                -- TODO(handler): timed-boost handler; stacks multiplicatively
+                -- with the Second Wind pass by design (pass = always-on 3x
+                -- out of combat; this = everywhere, briefly).
+                boost = { axis = "pet_recovery", mult = 3.0, duration_minutes = 30 },
+            },
+            category = "boosts",
+            analytics_category = "boost_endurance",
             test_mode_enabled = true,
         },
     },
@@ -207,15 +245,6 @@ return {
                 -- lockout tick; feature flag below is stored today.
                 features = { fast_recovery_mult = 3 },
             },
-            icon = "rbxassetid://0",
-            test_mode_enabled = true,
-        },
-        {
-            id = "storage_pass",
-            name = "📦 +250 Storage",
-            description = "Room for every hatch!",
-            price_robux = 149,
-            benefits = { features = { extra_storage = 250 } },
             icon = "rbxassetid://0",
             test_mode_enabled = true,
         },
