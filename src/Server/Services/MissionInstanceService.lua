@@ -1538,8 +1538,10 @@ function MissionInstanceService:_applyDressing(
     -- POOLS key off the mission's REALM when it has one (banners, crests,
     -- features, doorway fixtures are faction art), while THEME keeps owning
     -- the palette/tints/atmosphere (lava still glows ember in heaven). The
-    -- element alias remains only as the fallback for realm-less missions.
-    local poolTheme = realm or THEME_POOL_ALIAS[theme] or theme
+    -- element alias remains the fallback for realm-less AND neutral missions
+    -- (neutral element trials have no faction — their decor reads the biome).
+    local poolRealm = (realm == "heaven" or realm == "hell") and realm or nil
+    local poolTheme = poolRealm or THEME_POOL_ALIAS[theme] or theme
     rollOpts.doors = mapTable.doors -- wall decor avoids doorway apertures
     local tints, props, wallDecor, features =
         MissionDecor.roll(mapTable.rooms, MissionSeed.stream(seed, "dressing"), rollOpts)

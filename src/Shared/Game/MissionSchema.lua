@@ -164,9 +164,16 @@ function MissionSchema.validate(cfg, deps)
             return false,
                 path .. ".seed_policy: unknown policy '" .. tostring(def.seed_policy) .. "'"
         end
-        -- realm drives decor-pool allegiance + resonance; only two sides exist
-        if def.realm ~= nil and def.realm ~= "heaven" and def.realm ~= "hell" then
-            return false, path .. ".realm: expected 'heaven' or 'hell'"
+        -- realm drives decor-pool allegiance + resonance; neutral = element
+        -- trials whose pet-choice axis is the biome RPS (decor falls back to
+        -- the element alias)
+        if
+            def.realm ~= nil
+            and def.realm ~= "heaven"
+            and def.realm ~= "hell"
+            and def.realm ~= "neutral"
+        then
+            return false, path .. ".realm: expected 'heaven', 'hell', or 'neutral'"
         end
         if def.aggression_policy ~= nil and not AGGRESSION_POLICIES[def.aggression_policy] then
             return false,
