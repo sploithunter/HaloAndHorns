@@ -110,6 +110,17 @@ function MissionInstanceService:Start()
     if not self._config then
         return
     end
+    -- CandleStand self-heal: re-assert the flame truth table against
+    -- whatever the MissionProps rbxm shipped (see CANDLE_FLAME_POINTS).
+    task.spawn(function()
+        local ok, err = pcall(function()
+            ReplicatedStorage:WaitForChild("MissionProps", 30)
+            self:_normalizeCandleStand()
+        end)
+        if not ok then
+            self:_log("Warn", "CandleStand normalization failed", { error = tostring(err) })
+        end
+    end)
     -- BOOT SWEEP: destroy any PERSISTED mission containers (Edit-mode demo
     -- stamps saved/copied into the session). A fresh server has no open
     -- missions by definition — a stale container squatting on a slot means
@@ -1517,6 +1528,95 @@ end
 -- element themes borrow the realm prefab pools (wall decor / features /
 -- fixtures / caps) until they get bespoke sets: lava = hell's, ice = heaven's
 local THEME_POOL_ALIAS = { lava = "hell", ice = "heaven", grass = "heaven", desert = "hell" }
+
+-- CANDLE FLAME TRUTH TABLE (Jason 2026-07-14, captured live from his
+-- hand-fixed CandleStand after the flames drifted TWICE — once from the
+-- gen-1 harvest, once when a stale MissionProps.rbxm clobbered an unsaved
+-- in-place fix): pivot-relative offsets of the nine flame points, plus the
+-- Fire/light dressing each carries. _normalizeCandleStand() re-asserts this
+-- at boot, so no matter what state the rbxm ships, every candelabra lights
+-- correctly. If art changes the stand, update THIS table (it wins).
+local CANDLE_FLAME_POINTS = {
+    C1 = Vector3.new(1.7856, 3.15, 1.0),
+    C2 = Vector3.new(0, 3.55, 1.8),
+    C3 = Vector3.new(-1.5856, 3.15, 0.8),
+    C4 = Vector3.new(-1.5856, 3.15, -0.9269),
+    C5 = Vector3.new(0, 3.6, -1.8),
+    C6 = Vector3.new(1.5856, 3.55, -1.0),
+    C7 = Vector3.new(-1.2936, 4.55, 0.1035),
+    C8 = Vector3.new(0.5643, 4.75, -1.106),
+    C9 = Vector3.new(0.6081, 4.95, 1.0025),
+}
+local CANDLE_FIRE = { size = 2, heat = 2.5 }
+local CANDLE_FIRE_COLOR = Color3.new(1, 0.784314, 0.392157)
+local CANDLE_FIRE_SECONDARY = Color3.new(1, 0.941176, 0.784314)
+local CANDLE_LIGHT = { key = "C1", brightness = 0.4, range = 12 }
+local CANDLE_LIGHT_COLOR = Color3.new(1, 0.901961, 0.666667)
+
+-- Re-assert the CandleStand flame layout against the truth table above.
+-- Runs at Start (and is safe to call any time): repositions drifted flame
+-- parts, recreates missing ones (transparent anchored cubes + Fire),
+-- prunes unknown TorchFlame_C* extras, and guarantees the C1 point light.
+-- WARNs whenever it corrects anything — silent drift is how we got here.
+function MissionInstanceService:_normalizeCandleStand()
+    local store = ReplicatedStorage:FindFirstChild("MissionProps")
+    local stand = store and store:FindFirstChild("CandleStand")
+    if not (stand and stand:IsA("Model")) then
+        return
+    end
+    local pivot = stand:GetPivot()
+    local fixed, created, pruned = 0, 0, 0
+    local wanted = {}
+    for key, rel in pairs(CANDLE_FLAME_POINTS) do
+        local name = "TorchFlame_" .. key
+        wanted[name] = true
+        local part = stand:FindFirstChild(name)
+        if not part then
+            part = Instance.new("Part")
+            part.Name = name
+            part.Size = Vector3.new(0.4, 0.4, 0.4)
+            part.Transparency = 1
+            part.Anchored = true
+            part.CanCollide = false
+            part.CanQuery = false
+            part.CanTouch = false
+            part.Parent = stand
+            created += 1
+        elseif (pivot:PointToObjectSpace(part.Position) - rel).Magnitude > 0.05 then
+            fixed += 1
+        end
+        part.CFrame = pivot * CFrame.new(rel)
+        local fire = part:FindFirstChildOfClass("Fire")
+        if not fire then
+            fire = Instance.new("Fire")
+            fire.Parent = part
+        end
+        fire.Size = CANDLE_FIRE.size
+        fire.Heat = CANDLE_FIRE.heat
+        fire.Color = CANDLE_FIRE_COLOR
+        fire.SecondaryColor = CANDLE_FIRE_SECONDARY
+        if key == CANDLE_LIGHT.key and not part:FindFirstChildOfClass("PointLight") then
+            local light = Instance.new("PointLight")
+            light.Brightness = CANDLE_LIGHT.brightness
+            light.Range = CANDLE_LIGHT.range
+            light.Color = CANDLE_LIGHT_COLOR
+            light.Parent = part
+        end
+    end
+    for _, child in ipairs(stand:GetChildren()) do
+        if child.Name:match("^TorchFlame_C%d+$") and not wanted[child.Name] then
+            child:Destroy()
+            pruned += 1
+        end
+    end
+    if fixed + created + pruned > 0 then
+        self:_log("Warn", "CandleStand flames NORMALIZED (rbxm drifted from the truth table)", {
+            repositioned = fixed,
+            created = created,
+            pruned = pruned,
+        })
+    end
+end
 
 function MissionInstanceService:_applyDressing(
     decorCfg,
