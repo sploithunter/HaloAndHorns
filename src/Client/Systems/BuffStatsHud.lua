@@ -574,12 +574,15 @@ function BuffStatsHud:_refresh()
     }, now, axis("xp"))
     self:_setMult("xp", xp, axis("xp").cap, soonestRemaining(p, { "XpBuffUntil" }, now))
 
-    -- 🧲 Magnet collect radius (base + the Magnet power's bonus, in studs).
+    -- 🧲 Magnet collect radius (base + the Magnet power's bonus + the Auto
+    -- Collector pass's permanent extension, in studs — mirrors DropService's
+    -- actual collect math exactly).
     local magBase = tonumber(DropsConfig.collect_radius) or 11
     local magBonus = 0
     if (p:GetAttribute("MagnetBuffUntil") or 0) > now then
         magBonus = p:GetAttribute("MagnetBuff") or 0
     end
+    magBonus += tonumber(p:GetAttribute("AutoCollectRange")) or 0
     self:_setRange("magnet", magBase, magBonus, soonestRemaining(p, { "MagnetBuffUntil" }, now))
 
     -- 👥/🌍 Team power in three layers (Jason: "team power in area and team power with
