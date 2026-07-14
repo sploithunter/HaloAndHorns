@@ -368,6 +368,17 @@ function MonetizationService:_applyPassBenefits(player, passConfig)
         end
     end
 
+    -- AUTO COLLECTOR (2026-07-14, Jason: "extend Magnet — they get the same
+    -- benefit immediately"): mirror the range as a player attribute so
+    -- DropService's collect loop adds it beside MagnetBuff (pass 30 + magnet
+    -- power 30 = the 60-stud bubble). Bespoke visuals can come later.
+    if benefits.features and benefits.features.auto_collect_enabled then
+        player:SetAttribute(
+            "AutoCollectRange",
+            tonumber(benefits.features.auto_collect_range) or 30
+        )
+    end
+
     self._logger:Info("Game pass benefits applied", {
         player = player.Name,
         pass = passConfig.id,

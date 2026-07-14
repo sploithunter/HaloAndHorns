@@ -1518,11 +1518,27 @@ function EnemyService:_enforceLockouts(now)
     if not pp then
         return
     end
+    self._secondWindAt = self._secondWindAt or setmetatable({}, { __mode = "k" })
     for _, folder in ipairs(pp:GetChildren()) do
         local player = Players:FindFirstChild(folder.Name)
         local ds = player and self:_dataService()
         local data = ds and ds.GetData and ds:GetData(player)
         local state = data and data.PetLockouts
+        -- SECOND WIND pass (2026-07-14, id 1912664284): while the owner is
+        -- OUT of combat, recovery runs at fast_recovery_mult x — each real
+        -- second burns (mult-1) extra seconds off every active lock. Uses
+        -- the same InCombat attribute the combat music keys off; in-combat
+        -- time ticks at normal speed.
+        if state and player then
+            local last = self._secondWindAt[player]
+            self._secondWindAt[player] = now
+            local mult = (ds.GetFeature and tonumber(ds:GetFeature(player, "fast_recovery_mult")))
+                or 0
+            if mult > 1 and last and now > last and player:GetAttribute("InCombat") ~= true then
+                state = PetLockout.accelerate(state, (now - last) * (mult - 1))
+                data.PetLockouts = state
+            end
+        end
         if state then
             for _, pet in ipairs(folder:GetChildren()) do
                 if pet:IsA("Model") then

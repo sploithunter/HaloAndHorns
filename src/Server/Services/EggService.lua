@@ -936,6 +936,33 @@ function EggService:BuildPlayerHatchData(player, eggType, eggData, hatchOptions)
         playerData.hugeLuckBoost = hugeMult
     end
 
+    -- PAID EGG LUCK (2026-07-14, dashboard passes LIVE): Golden Touch /
+    -- Rainbow Radiance / Huge Hunter arrive as DataService features
+    -- (MonetizationService applies them at join + purchase). fixed_odds
+    -- eggs bypass every boost inside simulateHatch, so stated-odds
+    -- exclusives stay exact; modifier_support can opt an egg out.
+    local ds = self._dataService
+    if ds and ds.GetFeature then
+        local ms = (eggData and eggData.modifier_support) or {}
+        if ms.supports_golden_gamepass ~= false and ds:GetFeature(player, "egg_golden_luck") then
+            playerData.hasGoldenGamepass = true
+        end
+        if ms.supports_rainbow_gamepass ~= false and ds:GetFeature(player, "egg_rainbow_luck") then
+            playerData.hasRainbowGamepass = true
+        end
+        if ds:GetFeature(player, "egg_huge_luck") then
+            local okPets, petsCfg = pcall(function()
+                return require(ReplicatedStorage.Configs:WaitForChild("pets"))
+            end)
+            local attempts = (
+                okPets
+                and petsCfg.gamepass_modifiers
+                and tonumber(petsCfg.gamepass_modifiers.huge_gamepass_attempts)
+            ) or 2
+            playerData.hugeLuckBoost = (tonumber(playerData.hugeLuckBoost) or 1) * attempts
+        end
+    end
+
     -- Fortune / Huge Fortune (luck axis): the player's active luck POWER adds to the hatch luck
     -- (a fraction, +0.5 = +50%). Stacks additively with event/gamepass luck above. This is what
     -- makes the marquee luck powers actually change your odds.

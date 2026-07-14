@@ -179,4 +179,54 @@ return function()
             end)
         end
     )
+
+    describe("PetLockout.accelerate (Second Wind pass)", function()
+        local CFG = { pet_lockout_seconds = 300, slot_lock_seconds = 60 }
+
+        it("burns extra seconds off every lock family", function()
+            local now = 1000
+            local state = PetLockout.recordDown(
+                PetLockout.empty(),
+                { kind = "special", uid = "huge-1", slot = "slot_3" },
+                now,
+                CFG
+            )
+            state =
+                PetLockout.recordDown(state, { kind = "stack", stackKey = "bear:basic" }, now, CFG)
+            -- 30 real seconds out of combat at 3x => 60 EXTRA seconds burned
+            local fast = PetLockout.accelerate(state, 60)
+            expect(fast.pets["huge-1"]).to.equal(now + 300 - 60)
+            expect(fast.slots["slot_3"]).to.equal(now + 60 - 60)
+            expect(fast.stacks["bear:basic"][1]).to.equal(now + 60 - 60)
+            -- original state untouched (pure contract)
+            expect(state.pets["huge-1"]).to.equal(now + 300)
+        end)
+
+        it("zero or negative extra time is a no-op", function()
+            local now = 1000
+            local state = PetLockout.recordDown(
+                PetLockout.empty(),
+                { kind = "special", uid = "huge-2" },
+                now,
+                CFG
+            )
+            expect(PetLockout.accelerate(state, 0).pets["huge-2"]).to.equal(now + 300)
+            expect(PetLockout.accelerate(state, -5).pets["huge-2"]).to.equal(now + 300)
+        end)
+
+        it("accelerated locks expire through the normal prune path", function()
+            local now = 1000
+            local state = PetLockout.recordDown(
+                PetLockout.empty(),
+                { kind = "special", uid = "huge-3", slot = "slot_1" },
+                now,
+                CFG
+            )
+            -- 5-min lock, 100s elapsed at 3x = 100 real + 200 extra => done
+            local fast = PetLockout.accelerate(state, 200)
+            local pruned = PetLockout.prune(fast, now + 100)
+            expect(pruned.pets["huge-3"]).to.equal(nil)
+            expect(pruned.slots["slot_1"]).to.equal(nil)
+        end)
+    end)
 end

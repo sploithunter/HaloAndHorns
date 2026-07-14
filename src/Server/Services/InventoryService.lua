@@ -1737,7 +1737,17 @@ function InventoryService:_getMaxEquippedSlots(player, category, configuredSlots
     local attributeSlots = tonumber(player:GetAttribute("ExtraPetSlots")) or 0
     extraSlots = math.max(extraSlots, attributeSlots)
 
-    local maxSlots = tonumber(petConfig.max_slots) or (baseSlots + extraSlots)
+    -- +1 PET SLOT PASS (2026-07-14, dashboard id 1912340314): the feature is
+    -- applied by MonetizationService; it raises the HARD CAP too — max_slots
+    -- bounds PROGRESSION (level ladder tops at 10), the paid slot sits on top
+    -- (10 + 1 = 11 deployed).
+    local passSlots = 0
+    if self._dataService and self._dataService.GetFeature then
+        passSlots = tonumber(self._dataService:GetFeature(player, "extra_equip_slots")) or 0
+    end
+    extraSlots += passSlots
+
+    local maxSlots = (tonumber(petConfig.max_slots) or (baseSlots + extraSlots)) + passSlots
     local finalSlots = math.clamp(baseSlots + extraSlots, 1, maxSlots)
     -- Replicate the UNLOCKED equip-slot count so the Pets-window can draw one ring per slot
     -- (#179: blank rings show how many slots you have at a glance, even when not all are filled).

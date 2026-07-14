@@ -26,7 +26,8 @@ local HttpService = game:GetService("HttpService")
 local TestReport = require(ReplicatedStorage.Shared.API.TestReport)
 local LevelCurve = require(ReplicatedStorage.Shared.Game.LevelCurve)
 local RuntimeServiceBindings = require(ServerScriptService.Server.Services.RuntimeServiceBindings)
-local playerProgressionConfig = require(ReplicatedStorage.Configs:WaitForChild("player_progression"))
+local playerProgressionConfig =
+    require(ReplicatedStorage.Configs:WaitForChild("player_progression"))
 
 local AutomationSuite = {}
 

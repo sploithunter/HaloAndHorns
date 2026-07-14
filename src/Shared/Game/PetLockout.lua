@@ -70,6 +70,33 @@ function PetLockout.recordDown(state, entry, now, cfg)
     return { pets = pets, stacks = stacks, slots = slots }
 end
 
+-- SECOND WIND (pass, 2026-07-14): recovery runs at `mult`x while the owner is
+-- OUT of combat — the service converts elapsed out-of-combat time into EXTRA
+-- seconds ((mult-1) * dt) and burns them off every active lock here. Pure +
+-- immutable like the rest; prune still owns expiry.
+function PetLockout.accelerate(state, extraSeconds)
+    state = norm(state)
+    extraSeconds = tonumber(extraSeconds) or 0
+    if extraSeconds <= 0 then
+        return state
+    end
+    local pets, stacks, slots = {}, {}, {}
+    for uid, t in pairs(state.pets) do
+        pets[uid] = t - extraSeconds
+    end
+    for key, list in pairs(state.stacks) do
+        local n = {}
+        for i, t in ipairs(list) do
+            n[i] = t - extraSeconds
+        end
+        stacks[key] = n
+    end
+    for slot, t in pairs(state.slots) do
+        slots[slot] = t - extraSeconds
+    end
+    return { pets = pets, stacks = stacks, slots = slots }
+end
+
 -- RELEASE a downed pet's locks — the mirror of recordDown, for POWERED revives (the Revive power,
 -- Genie of the Dunes). Without this, PetRevive stands the pet up but the lockout enforcement pass
 -- holds it right back down with the remaining clock ("back for a split second and then dead

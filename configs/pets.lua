@@ -5014,6 +5014,10 @@ local petConfig = {
         luck_gamepass_bonus = 1.0,
         golden_gamepass_multiplier = 2.0, -- 2x golden chance
         rainbow_gamepass_multiplier = 3.0, -- 3x rainbow chance
+        -- HUGE HUNTER pass (2026-07-14): huge luck is an ATTEMPTS multiple
+        -- (the stage-2.5 reroll model) — pass owners roll the huge jackpot
+        -- twice per hatch. Multiplies INTO hugeLuckBoost with events/powers.
+        huge_gamepass_attempts = 2,
 
         -- Luck system configuration
         base_luck = 1.0, -- Default luck multiplier

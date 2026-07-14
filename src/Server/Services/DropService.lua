@@ -909,6 +909,12 @@ function DropService:_step()
                 if not rec.magnetImmune and (plr:GetAttribute("MagnetBuffUntil") or 0) > nowT then
                     bonus = tonumber(plr:GetAttribute("MagnetBuff")) or 0
                 end
+                -- AUTO COLLECTOR pass: a PERMANENT magnet extension set by
+                -- MonetizationService (AutoCollectRange, 30) — adds to the
+                -- power's timed MagnetBuff for the full 60-stud bubble.
+                if not rec.magnetImmune then
+                    bonus += tonumber(plr:GetAttribute("AutoCollectRange")) or 0
+                end
                 local dist = (rec.part.Position - rootPos).Magnitude
                 if dist <= pullR then
                     self:_collect(rec)
