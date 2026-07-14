@@ -164,6 +164,35 @@ def smart_uv(obj: bpy.types.Object) -> None:
     bpy.ops.object.mode_set(mode="OBJECT")
 
 
+def split_uv_seams(obj: bpy.types.Object) -> int:
+    """Split mesh edges along UV island borders so every seam vertex is
+    position-duplicated with exactly ONE UV.
+
+    THE SHATTER ROOT CAUSE (2026-07-14, golden-guardian A/B test): our weld
+    (remove_doubles) merges the split verts, leaving single position-verts
+    with per-face-corner UVs. Studio's importer honors per-corner UVs; Roblox
+    Open Cloud's FBX converter collapses to one UV per vertex, smearing UV
+    islands into each other — texture renders as kaleidoscope while the grey
+    mesh looks perfect (raw Meshy uploads never broke because Meshy exports
+    pre-split). Re-splitting AFTER decimate+UV+bake keeps the weld's benefits
+    and hands Open Cloud a mesh it cannot mangle."""
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.seams_from_islands(mark_seams=True, mark_sharp=False)
+    bpy.ops.mesh.select_all(action="DESELECT")
+    bpy.ops.object.mode_set(mode="OBJECT")
+    seam_edges = [e for e in obj.data.edges if e.use_seam]
+    for e in seam_edges:
+        e.select = True
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.edge_split(type="EDGE")
+    bpy.ops.object.mode_set(mode="OBJECT")
+    return len(seam_edges)
+
+
 def bake_diffuse(source: bpy.types.Object, target: bpy.types.Object, image: bpy.types.Image) -> None:
     """Cycles selected-to-active: transfer the hi-poly's albedo onto target's fresh UVs."""
     scene = bpy.context.scene
@@ -251,8 +280,14 @@ def export_fbx(obj: bpy.types.Object, output_path: Path) -> None:
         object_types={"MESH"},
         use_mesh_modifiers=True,
         mesh_smooth_type="FACE",
+        # EMBED the baked atlas (2026-07-14 root-cause): a bare FBX + separate
+        # texture upload lets Roblox's processor re-weld verts and merge UV
+        # seams — silhouette survives, texture renders as kaleidoscope
+        # ("shatter"). With the texture inside the FBX the processor preserves
+        # the UV layout AND the Model arrives pre-textured (no TextureID
+        # pairing, no Decal->Image resolution).
         path_mode="COPY",
-        embed_textures=False,
+        embed_textures=True,
         axis_forward="-Z",
         axis_up="Y",
     )
@@ -304,6 +339,9 @@ def main() -> None:
     # importer names MeshParts by mesh DATA name
     target.data.name = base_name
     target.name = base_name
+
+    split_count = split_uv_seams(target)
+    print(f"  split {split_count} UV-seam edges (Open Cloud converter guard)")
 
     label = f"{args.target // 1000}k" if args.target % 1000 == 0 else f"{args.target}tris"
     fbx_path = output_dir / f"{base_name}_{label}_baked.fbx"

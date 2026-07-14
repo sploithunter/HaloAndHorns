@@ -159,14 +159,33 @@ THE RULE (2026-07-13, mission-decor post-mortem): for any Meshy static prop,
 the texture must be baked AGAINST THE MESH THAT SHIPS. Meshy's atlas is
 authored for the hi-poly's UVs; welding + decimation rewrites the vertex/UV
 layout, so shipping the original atlas on a decimated mesh renders as UV
-kaleidoscope ("shattered glass"). Two historical failure modes, one cause:
+kaleidoscope ("shattered glass").
 
-- Gen-1 raw-mesh uploads (un-welded): looked fine at first, then Roblox's
-  server-side re-encode scrambled them — split-vert/degenerate geometry rots
-  on re-fetch ("shatter incident", diamond altar, 2026-07-08; batch-wide rot
-  discovered 2026-07-13).
+ROOT CAUSE, FINALLY NAILED (2026-07-14, golden-guardian A/B): the recurring
+"shatter" was never geometry rot and never processing roulette. Roblox
+Open Cloud's FBX converter collapses per-face-corner UVs to ONE UV per
+position-vertex. A welded mesh (remove_doubles) shares seam vertices between
+UV islands, so the collapse smears islands into each other: the GREY mesh
+looks perfect (web preview, texture removed) while the textured render is
+kaleidoscope. Studio's 3D Import honors per-corner UVs — same FBX, correct
+render — which is why the escape-hatch imports always worked. Raw Meshy
+uploads (gems, pets) never broke because Meshy exports pre-split seam verts.
+THE GUARD: rebake_for_roblox.py re-splits edges along UV island borders
+AFTER decimate+UV+bake (split_uv_seams) and embeds the baked atlas in the
+FBX (embed_textures=True — the Model arrives pre-textured, no TextureID
+pairing, no Decal->Image resolution). A/B proof: identical mesh+atlas,
+unsplit upload 133639172611896 = kaleidoscope, seam-split upload
+83409245331595 = correct.
+
+Historical failure modes now explained by the same collapse:
+- Gen-1 raw-mesh uploads: Meshy pre-split verts survived upload — those were
+  fine until WELDED re-uploads replaced them; "rot on re-fetch" was
+  misdiagnosis (the fetched-back asset was a welded generation).
 - Batch-2 decimated uploads: clean geometry, but the ORIGINAL atlas shipped —
   UVs could never match (infernal throne/fountain kaleidoscope).
+- Batch-17 "roulette" (identical re-upload fixes some, not others): which
+  islands share welded border verts decides how visible the smear is; the
+  verdicts were also polluted by back-view screenshots.
 
 Pipeline (scripts/blender/rebake_for_roblox.py, one prop; driver
 scripts/rebake_mission_decor.sh, whole set):
