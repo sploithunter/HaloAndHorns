@@ -79,6 +79,26 @@ return {
             max = 2.0,
             step = 0.05,
         },
+        -- BOSS LADDER on the same slider (Jason 2026-07-13): extra_boss_budget
+        -- = max(0, scale - offset) → floor() guaranteed extra bosses + frac()
+        -- chance of one more. offset 0.75 ⇒ below 100% always exactly one
+        -- boss; 100% = 25% chance of a second; 200% = guaranteed second +25%
+        -- chance of a third. Extra bosses hijack random non-objective spawn
+        -- points and JOIN the clear gate like any mission enemy.
+        boss_budget = {
+            offset = 0.75,
+            -- VILLAIN roll, max slider only ("at 200% you should have a
+            -- chance of a villain"): the first extra boss may upgrade to the
+            -- arch-villain tier (pet-model boss rank → titan; static bosses
+            -- need the mission's villain_unit). egg_chance is the villain's
+            -- exclusive-egg premium (4x boss — rarer encounter, richer roll);
+            -- boss_egg.villain_chance overrides per mission.
+            villain = {
+                at = 2.0,
+                chance = 0.15,
+                egg_chance = 0.02,
+            },
+        },
     },
 
     solver_defaults = {
@@ -257,6 +277,11 @@ return {
             -- 0.5% on FIRST-TIME sequence completion (replays don't advance,
             -- so short maps can't be re-run to farm eggs — Jason).
             boss_egg = { egg = "obsidian_egg", name = "Obsidian Egg", chance = 0.005 },
+            -- STATIC villain mapping (200% slider roll): the boss anchor in an
+            -- extra pack upgrades to this arch-villain def. Pet-model missions
+            -- don't need one (boss rank → titan automatically); heaven_trial
+            -- has none until a heaven arch-villain static is authored.
+            villain_unit = "infernal_archvillain",
             kit = "gray_box",
             theme = "hell",
             -- everyone plays the same mission #1, #2, #3... (Jason: shared experience)

@@ -474,6 +474,153 @@ return function()
         end)
     end)
 
+    describe("MissionPopulation boss ladder (extra bosses + villain)", function()
+        -- the slider contract (Jason 2026-07-13): budget = max(0, scale-0.75)
+        --   below 100% → always exactly one boss
+        --   100%       → 25% chance of a second
+        --   200%       → guaranteed second + 25% chance of a third
+        local LADDER_PACKS = {
+            { weight = 10, units = { { pet = "cinder_whelp", rank = "minion", count = 2 } } },
+            {
+                weight = 3,
+                boss = true,
+                units = {
+                    { pet = "abyssal_wyrm", rank = "boss", count = 1 },
+                    { pet = "cinder_whelp", rank = "minion", count = 2 },
+                },
+            },
+        }
+        local OBJECTIVE = 4
+        local function ladderRoll(seed, budget, villainChance, upgradeUnit)
+            return MissionPopulation.roll(LADDER_PACKS, 8, seed, {
+                bossPointIndex = OBJECTIVE,
+                bossOnlyAtObjective = true,
+                extraBossBudget = budget,
+                villainChance = villainChance,
+                upgradeUnit = upgradeUnit,
+            })
+        end
+        local function tally(rolls)
+            local bosses, titans, bossPoints = 0, 0, {}
+            for pointIndex, units in ipairs(rolls) do
+                for _, unit in ipairs(units) do
+                    if unit.rank == "boss" then
+                        bosses += 1
+                        table.insert(bossPoints, pointIndex)
+                    elseif unit.rank == "titan" then
+                        titans += 1
+                        table.insert(bossPoints, pointIndex)
+                    end
+                end
+            end
+            return bosses, titans, bossPoints
+        end
+        local upgradeBossToTitan = function(unit)
+            if unit.pet and unit.rank == "boss" then
+                return { pet = unit.pet, rank = "titan" }
+            end
+            return nil
+        end
+
+        it("budget 0 leaves the base population byte-identical (below-100% rule)", function()
+            for seed = 1, 30 do
+                local base = MissionPopulation.roll(LADDER_PACKS, 8, seed, {
+                    bossPointIndex = OBJECTIVE,
+                    bossOnlyAtObjective = true,
+                })
+                local ladder = ladderRoll(seed, 0)
+                expect(deepEquals(base, ladder)).to.equal(true)
+                local bosses = select(1, tally(ladder))
+                expect(bosses).to.equal(1)
+            end
+        end)
+
+        it("fractional budget rolls the extra boss at ~frac odds (100% slider = 25%)", function()
+            local extras = 0
+            for seed = 1, 400 do
+                local _, meta = ladderRoll(seed, 0.25)
+                expect(meta.extraBosses == 0 or meta.extraBosses == 1).to.equal(true)
+                extras += meta.extraBosses
+            end
+            -- 400 Bernoulli(0.25) draws: expect ~100; 60..140 is > 5 sigma slack
+            expect(extras > 60 and extras < 140).to.equal(true)
+        end)
+
+        it("budget 1.25 guarantees a second boss off-objective (200% slider)", function()
+            local sawThird = false
+            for seed = 1, 200 do
+                local rolls, meta = ladderRoll(seed, 1.25)
+                expect(meta.extraBosses >= 1).to.equal(true)
+                if meta.extraBosses >= 2 then
+                    sawThird = true
+                end
+                local bosses, _, points = tally(rolls)
+                expect(bosses).to.equal(1 + meta.extraBosses)
+                -- exactly ONE boss at the objective; extras ambush elsewhere
+                local atObjective = 0
+                for _, p in ipairs(points) do
+                    if p == OBJECTIVE then
+                        atObjective += 1
+                    end
+                end
+                expect(atObjective).to.equal(1)
+            end
+            expect(sawThird).to.equal(true) -- the 25% third-boss tail exists
+        end)
+
+        it("villain roll upgrades AT MOST one extra boss to titan", function()
+            local sawVillain = false
+            for seed = 1, 60 do
+                local rolls, meta = ladderRoll(seed, 1.25, 1, upgradeBossToTitan)
+                expect(meta.villain).to.equal(true)
+                sawVillain = true
+                local bosses, titans = tally(rolls)
+                expect(titans).to.equal(1) -- never two villains
+                expect(bosses + titans).to.equal(1 + meta.extraBosses)
+            end
+            expect(sawVillain).to.equal(true)
+            -- chance 0 = never
+            for seed = 1, 60 do
+                local rolls = ladderRoll(seed, 1.25, 0, upgradeBossToTitan)
+                local _, titans = tally(rolls)
+                expect(titans).to.equal(0)
+            end
+        end)
+
+        it("missing upgrade mapping degrades to a plain extra boss", function()
+            local rolls, meta = ladderRoll(99, 1.0, 1, function()
+                return nil -- mission has no villain authored
+            end)
+            expect(meta.extraBosses).to.equal(1)
+            expect(meta.villain).to.equal(false)
+            local bosses, titans = tally(rolls)
+            expect(bosses).to.equal(2)
+            expect(titans).to.equal(0)
+        end)
+
+        it("is deterministic including extras and villain for a fixed seed", function()
+            local a = ladderRoll(4242, 1.25, 0.5, upgradeBossToTitan)
+            local b = ladderRoll(4242, 1.25, 0.5, upgradeBossToTitan)
+            expect(deepEquals(a, b)).to.equal(true)
+        end)
+
+        it("scales extra-pack escorts by countMult but never the villain", function()
+            local rolls = MissionPopulation.roll(LADDER_PACKS, 8, 31337, {
+                bossPointIndex = OBJECTIVE,
+                bossOnlyAtObjective = true,
+                extraBossBudget = 1.0,
+                villainChance = 1,
+                upgradeUnit = upgradeBossToTitan,
+                countMult = 2,
+                scalesUnit = function(unit)
+                    return unit.rank ~= "boss" and unit.rank ~= "titan"
+                end,
+            })
+            local titans = select(2, tally(rolls))
+            expect(titans).to.equal(1)
+        end)
+    end)
+
     describe("MissionDecor.roll", function()
         local catalog = TileCatalog.build(grayBoxDef())
 

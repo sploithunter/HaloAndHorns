@@ -455,11 +455,36 @@ reshape vetted maps (they become a visible re-vet task instead). Dev capture: ad
 command printing the live instance's seed. Per-player layout history deliberately NOT
 persisted (anti-repeat = rolling in-memory last-N seeds if ever needed).
 
-**Named-boss objective** (planned): `objective = { kind = "defeat_named_boss",
-boss = "<enemyId>" }` — population guarantees EXACTLY ONE of that enemy (objective
-chamber, screened by its pack); tracker shows "Defeat <Display Name>!"; completion
-watches that model, not the roster. Composes: boss-only / boss+clear / boss+beacon.
-CoH rule: named it, so there's ONE of it.
+**Named-boss objective** — SHIPPED 2026-07-13 as `objective = { kind =
+"defeat_named", name = "<Display Name>" }`: the objective anchor's boss/arch-villain
+unit wears the authored name (`display_name` override + `MissionNamedTarget`
+attribute) and the beacon gate watches ONLY that model — everything else on the map
+is optional speed-bumps (Jason: "go defeat the Duke of Bastion... you don't have to
+defeat everything"). Tracker shows "Defeat <name>!" 0/1; straggler pings point at
+the named target. A named mission whose target fails to spawn WARNs loudly and
+falls back to the full clear gate (never an unopenable beacon). MissionSchema
+requires the `name` string and a known `objective.kind`.
+
+## 11b. Boss ladder & the villain roll (SHIPPED 2026-07-13)
+
+The Trial Enemy Group Size slider's top half buys EXTRA BOSSES:
+`extra_boss_budget = max(0, scale - offset)` (offset 0.75,
+`missions.player_tuning.boss_budget`) → `floor()` guaranteed extras +
+`frac()` chance of one more. Below 100% = always exactly one boss; 100% =
+25% chance of a second; 200% = guaranteed second + 25% chance of a third.
+Extra bosses hijack random NON-objective spawn points (ambush placement) and
+join the clear gate like any mission enemy. All ladder draws are APPENDED to
+the seeded "spawns" stream, so a seed's base population is byte-identical to
+pre-feature rolls; team scaling deliberately does NOT feed the budget.
+
+**Villain roll**: at `villain.at` (2.0 = max slider only), the first extra
+boss upgrades to the ARCH-VILLAIN tier with `villain.chance` (15%) — pet-model
+boss rank → `titan` automatically; static bosses need the mission's
+`villain_unit` (hell_trial → `infernal_archvillain`; heaven has no static AV
+authored yet, so heaven_trial degrades to a plain extra boss). The villain's
+exclusive-egg roll pays the PREMIUM: `boss_egg.villain_chance`, else the
+global `villain.egg_chance` (2% = 4x boss — rarer encounter, richer roll).
+Specs: mission_worldgen.spec "boss ladder" describe pins the whole table.
 
 ## 12. Element trials & the trials endgame shape (2026-07-09)
 

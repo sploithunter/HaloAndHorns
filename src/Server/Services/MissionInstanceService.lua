@@ -529,11 +529,47 @@ function MissionInstanceService:Open(player, missionId, opts)
         record.groupScale = groupScale
         record.teamScale = teamMult
         local enemyDefs = (self._enemiesConfig and self._enemiesConfig.enemies) or {}
-        local comp = MissionPopulation.roll(
+        -- BOSS LADDER (Jason 2026-07-13): the slider's top half buys extra
+        -- bosses — budget = max(0, scale - offset). Team scaling deliberately
+        -- does NOT feed the budget (a full team at 100% still sees one boss;
+        -- only the deliberate difficulty choice does).
+        local bossBudgetCfg = (self._config.player_tuning or {}).boss_budget
+        local extraBossBudget = 0
+        local villainChance = 0
+        if bossBudgetCfg then
+            extraBossBudget = math.max(0, groupScale - (tonumber(bossBudgetCfg.offset) or 0.75))
+            local villainCfg = bossBudgetCfg.villain
+            if villainCfg and groupScale >= (tonumber(villainCfg.at) or 2) then
+                villainChance = tonumber(villainCfg.chance) or 0
+            end
+        end
+        local comp, popMeta = MissionPopulation.roll(
             mission.packs or {},
             #points,
             MissionSeed.stream(seed, "spawns"),
             {
+                extraBossBudget = extraBossBudget,
+                villainChance = villainChance,
+                -- villain tier mapping: pet-model boss rank → titan (the
+                -- arch-villain rank); static bosses → the mission's authored
+                -- villain_unit. nil = no upgrade authored, boss stays.
+                upgradeUnit = function(unit)
+                    if unit.pet then
+                        if
+                            (unit.rank or "minion") == "boss"
+                            and (self._config.pet_ranks or {}).titan
+                        then
+                            return { pet = unit.pet, rank = "titan" }
+                        end
+                        return nil
+                    end
+                    local vu = mission.villain_unit
+                    local def = unit.enemy and enemyDefs[unit.enemy]
+                    if vu and enemyDefs[vu] and def and def.tier == "boss" then
+                        return { enemy = vu, count = 1 }
+                    end
+                    return nil
+                end,
                 -- CoH rule (Jason's boss-less lava run): the OBJECTIVE room's
                 -- point always rolls a boss-marked pack — the boss guards the
                 -- glowy; weight-3 luck can no longer produce a boss-less map
@@ -552,6 +588,16 @@ function MissionInstanceService:Open(player, missionId, opts)
                 end,
             }
         )
+        if popMeta and (popMeta.extraBosses or 0) > 0 then
+            container:SetAttribute("TrialExtraBosses", popMeta.extraBosses)
+            container:SetAttribute("TrialVillain", popMeta.villain == true)
+            self:_log("Info", "boss ladder rolled", {
+                mission = missionId,
+                groupScale = groupScale,
+                extraBosses = popMeta.extraBosses,
+                villain = popMeta.villain,
+            })
+        end
         local posRng = MissionSeed.mulberry32(MissionSeed.stream(seed, "spawnpos"))
         local SCATTER = 14 -- studs around the anchor (rooms are 96+ wide at 6x scale)
         local enemySvc
@@ -617,7 +663,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                                 and mission.boss_egg
                                 and (synthDef.tier == "boss" or synthDef.tier == "archvillain")
                             then
-                                synthDef.exclusive_egg = mission.boss_egg
+                                synthDef.exclusive_egg = self:_eggForTier(mission, synthDef.tier)
                             end
                         else
                             enemyId = entry
@@ -663,6 +709,17 @@ function MissionInstanceService:Open(player, missionId, opts)
                                 end
                             end
                         end
+                        -- VILLAIN statics (mission-injected arch-villains, e.g.
+                        -- the Infernal Archfiend replacing the Magma Wyrm on a
+                        -- 200% roll): the def carries no exclusive_egg of its
+                        -- own — attach the mission egg at the villain premium.
+                        if type(entry) ~= "table" and mission.boss_egg then
+                            local rawDef = enemyDefs[enemyId]
+                            if rawDef and rawDef.tier == "archvillain" then
+                                synthDef = synthDef or table.clone(rawDef)
+                                synthDef.exclusive_egg = self:_eggForTier(mission, "archvillain")
+                            end
+                        end
                         if type(entry) == "table" and not synthDef then
                             -- config gate (MissionSchema) makes this unreachable
                             -- for typos; if it fires, something deeper broke —
@@ -672,6 +729,24 @@ function MissionInstanceService:Open(player, missionId, opts)
                                 mission = missionId,
                             })
                             return
+                        end
+                        -- NAMED TARGET (defeat_named): the objective anchor's
+                        -- boss/arch-villain IS the mission — it wears the
+                        -- authored name and the gate tracks only it.
+                        local isNamed = false
+                        if
+                            mission.objective
+                            and mission.objective.kind == "defeat_named"
+                            and i == objectivePointIndex
+                            and record.namedTarget == nil
+                        then
+                            local tier = (synthDef or enemyDefs[enemyId] or {}).tier
+                            if tier == "boss" or tier == "archvillain" then
+                                synthDef = synthDef or table.clone(enemyDefs[enemyId])
+                                synthDef.display_name = mission.objective.name
+                                    or synthDef.display_name
+                                isNamed = true
+                            end
                         end
                         local r = enemySvc:SpawnEnemy(player, enemyId, {
                             def = synthDef,
@@ -683,6 +758,10 @@ function MissionInstanceService:Open(player, missionId, opts)
                         })
                         if r and r.ok and r.model then
                             table.insert(record.enemies, r.model)
+                            if isNamed then
+                                record.namedTarget = r.model
+                                r.model:SetAttribute("MissionNamedTarget", true)
+                            end
                         end
                     end)
                 end
@@ -743,10 +822,32 @@ function MissionInstanceService:Open(player, missionId, opts)
     --                        defeated (CoH clear-gate; also the anti-cheese:
     --                        invulnerable players can walk anywhere, but only
     --                        pets can clear, so pets are mandatory)
+    --   defeat_named       — the glowy is INERT until the NAMED objective
+    --                        anchor dies (Jason: "go defeat the Duke of
+    --                        Bastion... you don't have to defeat everything");
+    --                        the rest of the map is optional speed-bumps
     local kind = mission.objective and mission.objective.kind
-    if kind == "reach_beacon" or kind == "clear_then_beacon" then
+    if kind == "reach_beacon" or kind == "clear_then_beacon" or kind == "defeat_named" then
         local beacons = hooks.MissionObjective or {}
-        local gated = kind == "clear_then_beacon"
+        local gated = kind ~= "reach_beacon"
+        -- the gate's watch list: everything for clear, ONE model for named.
+        -- A defeat_named mission with no tracked target is an authoring/spawn
+        -- failure — be LOUD and fall back to the full clear gate rather than
+        -- ship an unopenable beacon.
+        local watched = record.enemies
+        local clearText = "Defeat all enemies!"
+        if kind == "defeat_named" then
+            if record.namedTarget then
+                watched = { record.namedTarget }
+                clearText = ("Defeat %s!"):format(mission.objective.name or "the target")
+            else
+                self:_log(
+                    "Warn",
+                    "defeat_named mission spawned NO named target — falling back to clear gate",
+                    { mission = missionId }
+                )
+            end
+        end
         local INERT_COLOR = Color3.fromRGB(70, 70, 78)
         if gated then
             for _, beacon in ipairs(beacons) do
@@ -760,7 +861,7 @@ function MissionInstanceService:Open(player, missionId, opts)
         -- takes them over while in-mission (Jason: reuse that pop-up, no
         -- parallel banner). Text = instruction line, Count = "3/9" chip,
         -- Fraction = the tracker's fill bar. UI renders them verbatim.
-        local total = #record.enemies
+        local total = #watched
         local function publish(text, count, fraction)
             for _, member in ipairs(membersOf(teamKey)) do
                 member:SetAttribute("MissionObjectiveText", text)
@@ -772,7 +873,7 @@ function MissionInstanceService:Open(player, missionId, opts)
         -- the tracker so players can talk about "Trial #28"
         local seqTag = record.sequence and ("Trial #" .. record.sequence .. " — ") or ""
         if gated and total > 0 then
-            publish(seqTag .. "Defeat all enemies!", ("0/%d"):format(total), 0)
+            publish(seqTag .. clearText, ("0/%d"):format(total), 0)
         else
             publish(seqTag .. "Reach the glowing beacon!", "★", 1)
         end
@@ -812,12 +913,12 @@ function MissionInstanceService:Open(player, missionId, opts)
         end
 
         record.monitor = task.spawn(function()
-            local cleared = not gated or #record.enemies == 0
+            local cleared = not gated or #watched == 0
             local lastDown = -1
             while self._instances[instanceId] do
                 if not cleared then
                     local alive = 0
-                    for _, model in ipairs(record.enemies) do
+                    for _, model in ipairs(watched) do
                         if model.Parent then
                             alive += 1
                         end
@@ -825,7 +926,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                     local down = total - alive
                     if down ~= lastDown then
                         lastDown = down
-                        publish("Defeat all enemies!", ("%d/%d"):format(down, total), down / total)
+                        publish(clearText, ("%d/%d"):format(down, total), down / total)
                     end
                     -- CoH straggler pings: with only a few enemies left, the
                     -- map shows them (hunting the last crow in the dark is
@@ -833,7 +934,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                     local pings = nil
                     if alive > 0 and alive <= 3 then
                         local list = {}
-                        for _, model in ipairs(record.enemies) do
+                        for _, model in ipairs(watched) do
                             if model.Parent then
                                 local okP, pos = pcall(function()
                                     return model:GetPivot().Position
@@ -895,6 +996,24 @@ function MissionInstanceService:Open(player, missionId, opts)
         slot = slotIndex,
     })
     return instanceId
+end
+
+-- The mission's exclusive-egg entry for a spawned tier: boss pays the stated
+-- boss_egg.chance; archvillain (the 200% villain roll) pays the PREMIUM —
+-- per-mission boss_egg.villain_chance, else the global
+-- player_tuning.boss_budget.villain.egg_chance, else 4x the boss rate.
+function MissionInstanceService:_eggForTier(mission, tier)
+    local egg = mission.boss_egg
+    if not egg or tier ~= "archvillain" then
+        return egg
+    end
+    local villainCfg = ((self._config.player_tuning or {}).boss_budget or {}).villain
+    local premium = tonumber(egg.villain_chance)
+        or (villainCfg and tonumber(villainCfg.egg_chance))
+        or (tonumber(egg.chance) or 0) * 4
+    local out = table.clone(egg)
+    out.chance = premium
+    return out
 end
 
 -- Quest-granted persistent unlocks (GameData.Unlocks.<id>, written by

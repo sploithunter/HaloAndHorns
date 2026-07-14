@@ -22,6 +22,25 @@
     BOSS PLACEMENT (opts.bossOnlyAtObjective): boss-marked packs are excluded
     from every ordinary point. bossPointIndex still guarantees one at the
     objective point. The behavior is configured by missions.population.
+
+    EXTRA BOSSES (opts.extraBossBudget ≥ 0, Jason 2026-07-13: the group-size
+    slider's top half is a BOSS ladder — "below 100% there should only be one
+    boss"): floor(budget) guaranteed extra boss packs + one more at frac(budget)
+    odds, each dropped on a seeded random NON-objective point. All extra draws
+    are APPENDED after the per-point loop, so a given seed's base population is
+    byte-identical to pre-feature rolls. Draw order (fixed contract, the spec
+    pins it): frac roll → per-extra pack pick → per-extra point pick → villain
+    roll. Escort units in extra packs still obey countMult/scalesUnit; the
+    boss anchors stay singular as always.
+
+    VILLAIN (opts.villainChance 0..1 + opts.upgradeUnit(unit) → unit|nil): at
+    most ONE per mission — the FIRST extra pack's boss anchor may upgrade to
+    the arch-villain tier ("at 200% you should have a chance of a villain").
+    upgradeUnit is the caller's tier mapping (pet rank boss→titan, or the
+    mission's static villain_unit); returning nil keeps the boss (missions
+    with no villain authored degrade gracefully).
+
+    Returns (composition, meta) — meta = { extraBosses = n, villain = bool }.
 ]]
 
 local MissionSeed = require(script.Parent.MissionSeed)
@@ -101,7 +120,63 @@ function MissionPopulation.roll(packs, pointCount, streamSeed, opts)
             end
         end
     end
-    return out
+
+    -- EXTRA BOSSES + VILLAIN: strictly appended draws (see header contract).
+    local meta = { extraBosses = 0, villain = false }
+    local budget = math.max(0, (opts and tonumber(opts.extraBossBudget)) or 0)
+    if budget > 0 and #bossPacks > 0 and pointCount > 0 then
+        local nExtra = math.floor(budget)
+        local frac = budget - nExtra
+        if frac > 0 and rng() < frac then
+            nExtra += 1
+        end
+        local villainChance = math.max(0, (opts and tonumber(opts.villainChance)) or 0)
+        local upgradeUnit = opts and opts.upgradeUnit
+        for extraIndex = 1, nExtra do
+            local pack = bossPacks[1 + math.floor(rng() * #bossPacks)]
+            -- ambush placement: any point EXCEPT the objective (rounding a
+            -- corridor corner into the Magma Wyrm is the 200% payoff); a
+            -- single-point map falls back to the objective point itself
+            local point
+            if pointCount > 1 and bossPoint then
+                local slot = 1 + math.floor(rng() * (pointCount - 1))
+                point = slot < bossPoint and slot or slot + 1
+            else
+                point = 1 + math.floor(rng() * pointCount)
+            end
+            local villainHere = false
+            if extraIndex == 1 and villainChance > 0 then
+                villainHere = rng() < villainChance
+            end
+            for _, unit in ipairs(pack.units or {}) do
+                local placed = unit
+                if villainHere and not meta.villain and upgradeUnit then
+                    local upgraded = upgradeUnit(unit)
+                    if upgraded then
+                        placed = upgraded
+                        meta.villain = true
+                    end
+                end
+                local n = placed.count or 1
+                if
+                    placed == unit -- the upgraded villain never multiplies
+                    and countMult ~= 1
+                    and (scalesUnit == nil or scalesUnit(unit))
+                then
+                    n = math.max(1, math.floor(n * countMult + 0.5))
+                end
+                for _ = 1, n do
+                    if placed.pet then
+                        table.insert(out[point], { pet = placed.pet, rank = placed.rank })
+                    else
+                        table.insert(out[point], placed.enemy)
+                    end
+                end
+            end
+            meta.extraBosses += 1
+        end
+    end
+    return out, meta
 end
 
 return MissionPopulation

@@ -28,6 +28,7 @@ local MissionSchema = {}
 
 local SEED_POLICIES = { team_stable = true, per_attempt = true, shared_sequence = true }
 local AGGRESSION_POLICIES = { realm = true, universal = true }
+local OBJECTIVE_KINDS = { reach_beacon = true, clear_then_beacon = true, defeat_named = true }
 
 function MissionSchema.validate(cfg, deps)
     deps = deps or {}
@@ -58,6 +59,32 @@ function MissionSchema.validate(cfg, deps)
     end
     if groupScale.step <= 0 or groupScale.step > (groupScale.max - groupScale.min) then
         return false, "player_tuning.group_scale.step: expected positive value within range"
+    end
+    -- boss ladder (slider top half buys extra bosses; villain roll at max)
+    local bossBudget = playerTuning.boss_budget
+    if bossBudget ~= nil then
+        if type(bossBudget) ~= "table" then
+            return false, "player_tuning.boss_budget: expected table"
+        end
+        if type(bossBudget.offset) ~= "number" or bossBudget.offset < 0 then
+            return false, "player_tuning.boss_budget.offset: expected non-negative number"
+        end
+        local villain = bossBudget.villain
+        if villain ~= nil then
+            if type(villain) ~= "table" then
+                return false, "player_tuning.boss_budget.villain: expected table"
+            end
+            if type(villain.at) ~= "number" then
+                return false, "player_tuning.boss_budget.villain.at: expected number"
+            end
+            for _, key in ipairs({ "chance", "egg_chance" }) do
+                local v = villain[key]
+                if type(v) ~= "number" or v < 0 or v > 1 then
+                    return false,
+                        "player_tuning.boss_budget.villain." .. key .. ": expected number in [0,1]"
+                end
+            end
+        end
     end
 
     if cfg.combat ~= nil and type(cfg.combat) ~= "table" then
@@ -154,7 +181,41 @@ function MissionSchema.validate(cfg, deps)
                         .. "' (branding contract: biome RPS + origin drops need the pseudo-zone)"
             end
         end
+        if def.objective ~= nil then
+            if type(def.objective) ~= "table" or not OBJECTIVE_KINDS[def.objective.kind] then
+                return false,
+                    path .. ".objective.kind: unknown kind '" .. tostring(
+                        type(def.objective) == "table" and def.objective.kind
+                    ) .. "'"
+            end
+            -- defeat_named needs its display name (HUD says "Defeat <name>!")
+            if def.objective.kind == "defeat_named" and type(def.objective.name) ~= "string" then
+                return false, path .. ".objective.name: defeat_named requires a name string"
+            end
+        end
+        -- villain_unit (the 200% static upgrade) must be a real arch-villain
+        if def.villain_unit ~= nil then
+            local vdef = enemies[def.villain_unit]
+            if vdef == nil then
+                return false,
+                    path .. ".villain_unit: unknown enemy id '" .. tostring(def.villain_unit) .. "'"
+            end
+            if vdef.tier ~= "archvillain" then
+                return false,
+                    path
+                        .. ".villain_unit: '"
+                        .. tostring(def.villain_unit)
+                        .. "' is not tier 'archvillain' (the villain roll upgrades a boss UP)"
+            end
+        end
         if def.boss_egg ~= nil then
+            local villainChance = def.boss_egg.villain_chance
+            if
+                villainChance ~= nil
+                and (type(villainChance) ~= "number" or villainChance < 0 or villainChance > 1)
+            then
+                return false, path .. ".boss_egg.villain_chance: expected number in [0,1]"
+            end
             local eggs = (deps.pets and deps.pets.egg_sources) or {}
             local eggDef = eggs[def.boss_egg.egg]
             if eggDef == nil then
