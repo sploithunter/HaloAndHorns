@@ -7582,6 +7582,21 @@ function InventoryPanel:SetupRealTimeUpdates()
     if inventoryFolder then
         local petsFolder = inventoryFolder:FindFirstChild("pets")
         if petsFolder then
+            -- InventoryService retains stable pet record folders. One version increment is the
+            -- explicit completion event for a full or targeted projection transaction.
+            local info = petsFolder:FindFirstChild("Info")
+            if info then
+                local function attachProjectionVersion(value)
+                    if value and value:IsA("IntValue") and value.Name == "ProjectionVersion" then
+                        value:GetPropertyChangedSignal("Value"):Connect(function()
+                            self:_schedulePetRefresh()
+                        end)
+                    end
+                end
+                attachProjectionVersion(info:FindFirstChild("ProjectionVersion"))
+                info.ChildAdded:Connect(attachProjectionVersion)
+            end
+
             -- Listen for new pets being added
             -- Mixed structure incremental listeners
             local stacks = petsFolder:FindFirstChild("Stacks")
@@ -7901,37 +7916,14 @@ function InventoryPanel:_onEquippedChanged(categoryName, itemUid, slotName, acti
         self.logger:info("❌ Removed from equipped items", { itemUid = itemUid })
     end
 
-    -- Debug: print occupied slots snapshot after every change
+    -- A squad commit changes several slot values in one replication burst. Update the local
+    -- lookup for each signal, but render the pet grid once on the deferred projection boundary.
     if categoryName == "pets" then
-        local occupied = {}
-        local equippedFolder = Players.LocalPlayer:FindFirstChild("Equipped")
-        if equippedFolder and equippedFolder:FindFirstChild("pets") then
-            for _, slot in ipairs(equippedFolder.pets:GetChildren()) do
-                if slot:IsA("StringValue") then
-                    table.insert(
-                        occupied,
-                        slot.Name .. "=" .. (slot.Value ~= "" and slot.Value or "<empty>")
-                    )
-                end
-            end
-        end
-        print("[EQUIPPED SLOTS] " .. table.concat(occupied, ", "))
+        self:_schedulePetRefresh()
+        return
     end
 
-    -- If this is a stack-backed equip value (bridge format), adjust just that stack card
-    if categoryName == "pets" and type(itemUid) == "string" then
-        local parts = string.split(itemUid, "|")
-        if #parts >= 3 and parts[1] == "stack" then
-            local stackKey = parts[2] -- id:variant
-            self._stackFrames = self._stackFrames or {}
-            self._stackDataByKey = self._stackDataByKey or {}
-            -- Avoid manual local count math to prevent double-decrement; refresh from replicated data
-            self:RefreshFromRealData()
-            return
-        end
-    end
-
-    -- Fallback: refresh full display
+    -- Non-pet equipment currently changes one slot at a time.
     self.logger:info("🔄 Refreshing UI for equipped change")
     self:_updateItemsDisplay()
 end
