@@ -43,6 +43,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target", type=int, default=10000)
     parser.add_argument("--tolerance", type=float, default=0.03)
     parser.add_argument("--tex-size", type=int, default=2048)
+    # SHATTER-RESISTANT overrides (2026-07-14, diamond altar: 3 uploads, 3
+    # shatters — some meshes need a heavier scrub before Roblox's processor
+    # keeps them intact):
+    parser.add_argument("--weld-dist", type=float, default=0.0004)
+    parser.add_argument("--dissolve-dist", type=float, default=1e-5)
     return parser.parse_args(argv)
 
 
@@ -78,24 +83,24 @@ def import_mesh(path: Path) -> bpy.types.Object:
     return bpy.context.active_object
 
 
-def weld_and_clean(obj: bpy.types.Object) -> None:
+def weld_and_clean(obj: bpy.types.Object, dist: float = 0.0004) -> None:
     """Shatter guard — weld split verts BEFORE decimating (see decimate_for_roblox)."""
     import bmesh
 
     bm = bmesh.new()
     bm.from_mesh(obj.data)
-    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0004)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=dist)
     bm.to_mesh(obj.data)
     bm.free()
     obj.data.validate()
 
 
-def dissolve_degenerate(obj: bpy.types.Object) -> None:
+def dissolve_degenerate(obj: bpy.types.Object, dist: float = 1e-5) -> None:
     import bmesh
 
     bm = bmesh.new()
     bm.from_mesh(obj.data)
-    bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=1e-5)
+    bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=dist)
     loose = [v for v in bm.verts if not v.link_faces]
     if loose:
         bmesh.ops.delete(bm, geom=loose, context="VERTS")
@@ -109,9 +114,15 @@ def face_count(obj: bpy.types.Object) -> int:
     return len(obj.data.loop_triangles)
 
 
-def decimate_to_target(obj: bpy.types.Object, target_faces: int, tolerance: float) -> int:
-    weld_and_clean(obj)
-    dissolve_degenerate(obj)
+def decimate_to_target(
+    obj: bpy.types.Object,
+    target_faces: int,
+    tolerance: float,
+    weld_dist: float = 0.0004,
+    dissolve_dist: float = 1e-5,
+) -> int:
+    weld_and_clean(obj, weld_dist)
+    dissolve_degenerate(obj, dissolve_dist)
     current = face_count(obj)
     if current <= target_faces:
         print(f"  welded/cleaned -> {current} tris; no decimation needed")
@@ -129,12 +140,12 @@ def decimate_to_target(obj: bpy.types.Object, target_faces: int, tolerance: floa
         current = face_count(obj)
         print(f"  attempt {attempt + 1}: -> {current} tris")
         if abs(current - target_faces) <= allowed_error:
-            dissolve_degenerate(obj)
+            dissolve_degenerate(obj, dissolve_dist)
             return face_count(obj)
         if current <= 0:
             raise RuntimeError("Decimation collapsed mesh to zero faces")
         ratio *= target_faces / current
-    dissolve_degenerate(obj)
+    dissolve_degenerate(obj, dissolve_dist)
     return face_count(obj)
 
 
@@ -269,7 +280,9 @@ def main() -> None:
     target = bpy.context.active_object
     target.name = f"{base_name}_baked"
 
-    final_tris = decimate_to_target(target, args.target, args.tolerance)
+    final_tris = decimate_to_target(
+        target, args.target, args.tolerance, args.weld_dist, args.dissolve_dist
+    )
     if final_tris > 17500:
         raise RuntimeError(f"{final_tris} tris exceeds the 17.5k single-MeshPart budget")
     smart_uv(target)

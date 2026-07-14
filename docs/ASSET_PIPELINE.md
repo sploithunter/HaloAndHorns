@@ -194,6 +194,22 @@ scripts/rebake_mission_decor.sh, whole set):
     resolved image id, Color WHITE (Color multiplies the atlas), Material
     Plastic. Then File -> Save/Publish — prefabs live in the place file.
 
+### Escape hatch: Studio 3D Import (processing-roulette survivors)
+
+Cloud processing of an uploaded FBX is a ROULETTE: an upload can shatter even
+when the Blender preview and the FBX are clean, and an IDENTICAL re-upload can
+fix it (4/7 of batch 17) or fail repeatedly (diamond altar x4). When re-uploads
+keep losing, ingest through Studio instead: Avatar/3D Import -> the same rebaked
+FBX -> import WITH textures (the baked atlas embeds; the importer sets
+TextureID itself, no Decal->Image resolution step). The pre-upload preview
+window shows the processed result BEFORE it becomes an asset, which is the
+whole point. Caveats: the resulting registry entry is a raw MESH asset id
+(assignable to MeshId but NOT loadable via InsertService:LoadAsset like the
+upload_models.js Model wrappers — transplant by cloning the imported MeshPart),
+and imports land at raw Meshy scale (copy the old prefab's Size). Used
+2026-07-14 for heaven_diamond_altar / heaven_flamecrest_shield /
+heaven_ivory_throne after their v3 re-uploads all shattered.
+
 ### MissionProps solidification (rbxm, Rojo-served)
 
 `ReplicatedStorage.MissionProps` is SOURCE-CONTROLLED: served by Rojo from
