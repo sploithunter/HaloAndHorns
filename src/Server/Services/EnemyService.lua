@@ -1399,7 +1399,7 @@ function EnemyService:_assignPetToEnemy(pet, targetId)
 end
 
 -- Lazy endurance bar over the pet (green->red as it takes damage).
-function EnemyService:_updateEnduranceBar(pet, taken, power, factor)
+function EnemyService:_updateEnduranceBar(pet, _taken, _power, factor)
     PetEnduranceBar.sync(pet, factor)
 end
 
