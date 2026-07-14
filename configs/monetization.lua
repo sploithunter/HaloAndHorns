@@ -28,14 +28,14 @@ return {
         endurance_surge = 0, -- REPLACE: "Endurance Surge (30 min)" product
 
         -- Game Passes
-        vip_pass = 123456789, -- REPLACE: "VIP Pass"
-        auto_collect = 123456790, -- REPLACE: "Auto Collect"
-        speed_boost = 123456791, -- REPLACE: "Speed Boost"
-        golden_luck_pass = 0, -- REPLACE: "Golden Touch" (golden variant luck)
-        rainbow_luck_pass = 0, -- REPLACE: "Rainbow Radiance" (rainbow variant luck)
-        huge_luck_pass = 0, -- REPLACE: "Huge Hunter" (huge tier luck)
-        pet_slot_pass = 0, -- REPLACE: "+1 Pet Slot"
-        second_wind = 0, -- REPLACE: "Second Wind" (3x out-of-combat recovery)
+        vip_pass = 1905890871, -- LIVE (dashboard 2026-07-14)
+        auto_collect = 1911982576, -- LIVE (dashboard 2026-07-14)
+        speed_boost = 1912298316, -- LIVE (dashboard 2026-07-14)
+        golden_luck_pass = 1912204586, -- LIVE (dashboard 2026-07-14)
+        rainbow_luck_pass = 1912084589, -- LIVE (dashboard 2026-07-14)
+        huge_luck_pass = 1912772276, -- LIVE (dashboard 2026-07-14)
+        pet_slot_pass = 1912340314, -- LIVE (dashboard 2026-07-14)
+        second_wind = 1912664284, -- LIVE (dashboard 2026-07-14)
     },
 
     -- Developer Products (consumable Robux purchases).
