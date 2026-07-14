@@ -954,7 +954,9 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
 - **Pet combat orthogonal axes** — targeting (single / targeted_aoe / aura / contagion) × effects
   (DoT burn, on-hit Control, on-hit Shred), all config-declared; aura targeting drives buff scope
   (team / top-1 carry / top-K carries). S-tier kits (Control/Shred/Bonfire) + the Trinity kill-box.
-  Pure `OnHitEffects.lua`.
+  Pure `OnHitEffects.lua`. Pet attack geometry resolves moving enemies through their server-owned
+  `MoveTarget` position; anchored model pivots are presentation fallbacks only and clients never
+  choose damage centers.
 - **Realm resonance live** — light/shadow species multiplier (own 0.8 / opposite 1.5 / neutral 1.0)
   wired into real mining & combat; inventory card shows the true dealt power. Squad diversity bonus
   (distinct archetypes + origins).
