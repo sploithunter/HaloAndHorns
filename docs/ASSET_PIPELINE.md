@@ -153,6 +153,47 @@ The Heaven cathedral and mission portal are the reference implementation:
 The repair script is idempotent. A second run reports healthy four-part landmarks and changes
 nothing.
 
+## Static Prop Rebake Pipeline (decimate-first, bake-second)
+
+THE RULE (2026-07-13, mission-decor post-mortem): for any Meshy static prop,
+the texture must be baked AGAINST THE MESH THAT SHIPS. Meshy's atlas is
+authored for the hi-poly's UVs; welding + decimation rewrites the vertex/UV
+layout, so shipping the original atlas on a decimated mesh renders as UV
+kaleidoscope ("shattered glass"). Two historical failure modes, one cause:
+
+- Gen-1 raw-mesh uploads (un-welded): looked fine at first, then Roblox's
+  server-side re-encode scrambled them — split-vert/degenerate geometry rots
+  on re-fetch ("shatter incident", diamond altar, 2026-07-08; batch-wide rot
+  discovered 2026-07-13).
+- Batch-2 decimated uploads: clean geometry, but the ORIGINAL atlas shipped —
+  UVs could never match (infernal throne/fountain kaleidoscope).
+
+Pipeline (scripts/blender/rebake_for_roblox.py, one prop; driver
+scripts/rebake_mission_decor.sh, whole set):
+
+1. Import source GLB (`assets/source/props/meshy_mission_decor/<name>.glb`).
+2. Duplicate: the hi-poly stays untouched as the bake SOURCE.
+3. Target: weld split verts (remove_doubles 0.0004) -> Decimate to 10k tris
+   -> dissolve degenerate / delete loose / validate (the shatter guard).
+4. Smart-UV-project FRESH UVs on the decimated target.
+5. Cycles selected-to-active bake, DIFFUSE pass COLOR only, 2048px: the
+   hi-poly's albedo lands on the target's new UVs.
+6. Export FBX (mesh DATA renamed to <name> — the importer names MeshParts by
+   data name) + save the baked PNG + render `<name>_preview.png`.
+7. EYEBALL EVERY PREVIEW before uploading — verify-by-render is part of the
+   pipeline, not optional.
+8. Upload group-owned: `upload_models.js --fbx ... --name <name>` (Model) and
+   `upload_icons.js --dir ... --creator-group 15872767` (texture; uploads as
+   Decal — resolve to the wrapped Image id before setting TextureID, via
+   InsertService:LoadAsset(decalId) -> Decal.Texture).
+9. Update `scripts/mission_decor_model_ids.json` + `_texture_ids.json`.
+10. TRANSPLANT THE PLACE PREFABS (ReplicatedStorage.MissionProps +
+    Workspace._PropReview.MeshyDecor): registries alone change nothing the
+    game renders. Swap each prefab's MeshPart for the new Model's (preserve
+    Name/Size/CFrame/attributes/children/welds), set TextureID to the
+    resolved image id, Color WHITE (Color multiplies the atlas), Material
+    Plastic. Then File -> Save/Publish — prefabs live in the place file.
+
 ## Status Values
 
 - `concept`: A reference/prompt is tracked for developer asset generation, but it is not wired into runtime config.
