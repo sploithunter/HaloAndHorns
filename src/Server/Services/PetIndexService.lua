@@ -63,15 +63,34 @@ function PetIndexService:Init()
     -- dynamically" + "if the index updates you basically get a global announcement
     -- that there's a new huge in the realm"): any_pet huge index entries exist only
     -- once the FIRST one has been minted ANYWHERE (PeekSerial reads the global
-    -- counter without incrementing). The census fills the set at boot; live growth
+    -- counter without incrementing). The census fills the set when the service starts in a live
+    -- server; Studio deliberately uses isolated counters and performs no global reads. Live growth
     -- arrives on the PetWorldFirst topic (a same-server publish delivers here too,
     -- so the minting server uses the SAME path as everyone else — no double banner).
     self._globalHuges = {}
-    task.delay(5, function()
-        self:_runHugeCensus()
-    end)
+
+    self._logger:Info("PetIndexService initialized", {
+        context = "PetIndexService",
+        milestones = #(self._config.milestones or {}),
+    })
+end
+
+function PetIndexService:Start()
+    local serials = self._petSerialService
+    if not (serials and serials.UsesGlobalStore and serials:UsesGlobalStore()) then
+        self._logger:Info("PetIndexService global census disabled for this runtime", {
+            context = "PetIndexService",
+        })
+        return
+    end
+
+    if serials.ShouldRunCensus and serials:ShouldRunCensus() then
+        task.spawn(function()
+            self:_runHugeCensus()
+        end)
+    end
     task.spawn(function()
-        pcall(function()
+        local ok, err = pcall(function()
             game:GetService("MessagingService"):SubscribeAsync("PetWorldFirst", function(message)
                 local d = message and message.Data
                 if type(d) == "table" and d.t then
@@ -79,12 +98,13 @@ function PetIndexService:Init()
                 end
             end)
         end)
+        if not ok then
+            self._logger:Warn("Pet world-first subscription unavailable", {
+                context = "PetIndexService",
+                error = tostring(err),
+            })
+        end
     end)
-
-    self._logger:Info("PetIndexService initialized", {
-        context = "PetIndexService",
-        milestones = #(self._config.milestones or {}),
-    })
 end
 
 -- Peek every any_pet huge combo's global serial counter; combos with at least one
@@ -96,6 +116,9 @@ function PetIndexService:_runHugeCensus()
         return
     end
     local grew = false
+    local unavailable = 0
+    local firstFailure
+    local yieldSeconds = tonumber((self._petsConfig.serials or {}).census_yield_seconds) or 0.1
     for _, egg in pairs(self._petsConfig.egg_sources or {}) do
         local huge = egg.huge
         if huge and (tonumber(huge.chance) or 0) > 0 and huge.any_pet == true then
@@ -103,12 +126,20 @@ function PetIndexService:_runHugeCensus()
                 for _, v in ipairs(allowedVariants(egg)) do
                     local comboKey = petId .. ":" .. v
                     if not self._globalHuges[comboKey] then
-                        local count = serials:PeekSerial("huge", petId, v)
+                        local count, key, status = serials:PeekSerial("huge", petId, v)
                         if (tonumber(count) or 0) > 0 then
                             self._globalHuges[comboKey] = true
                             grew = true
+                        elseif count == nil then
+                            unavailable += 1
+                            firstFailure = firstFailure
+                                or {
+                                    key = key,
+                                    error = status and status.error,
+                                    attempts = status and status.attempts,
+                                }
                         end
-                        task.wait(0.1) -- budget the DataStore reads
+                        task.wait(yieldSeconds) -- frame/budget yield; value is config-owned
                     end
                 end
             end
@@ -116,6 +147,13 @@ function PetIndexService:_runHugeCensus()
     end
     if grew then
         self._obtainableTotal = nil
+    end
+    if unavailable > 0 then
+        self._logger:Warn("Pet huge census completed with unavailable serial counters", {
+            context = "PetIndexService",
+            unavailable = unavailable,
+            firstFailure = firstFailure,
+        })
     end
 end
 

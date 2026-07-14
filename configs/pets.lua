@@ -142,6 +142,15 @@ local petConfig = {
 
     serials = {
         store_name = "PetSerials_v1",
+        -- Studio uses an isolated memory counter by default. A development session must not poll
+        -- or mint against production-wide serial state merely because Studio API access is on.
+        live_datastore_in_studio = false,
+        census_enabled = true,
+        census_yield_seconds = 0.1,
+        read_retry = {
+            attempts = 3,
+            backoff_seconds = { 0.5, 1.5 },
+        },
     },
 
     -- DELETION POLICY (Jason: "we will never allow the deletion of Huges or
