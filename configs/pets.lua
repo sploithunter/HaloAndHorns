@@ -4166,6 +4166,12 @@ local petConfig = {
             base_power = 12,
             base_health = 130,
             viewport_zoom = 1.5,
+            -- RIGGED (Meshy Molten Emberdrake biped GLB zip, 2026-07-15): basic
+            -- runtime model = skinned rig prebake (rig asset 111624221245800,
+            -- textures embedded via rig_glb_to_fbx lane); shared biped clip set
+            -- + its own walk (biped_walk_cinderling_imp). Static mesh_asset
+            -- fields stay as the golden/rainbow look + the fallback rebuild.
+            rig_class = "biped",
             asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
             camera = {
                 distance = 3.5,

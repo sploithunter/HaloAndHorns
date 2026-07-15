@@ -54,6 +54,12 @@
       "prebaked": true,
       "rig_asset": "107519892318201",
       "skeleton": "biped"
+    },
+    "cinderling_imp": {
+      "rig_asset": "111624221245800",
+      "skeleton": "biped",
+      "prebaked": false,
+      "note": "GLB zip (Meshy_AI_Molten_Emberdrake_biped) via rig_glb_to_fbx lane, textures embedded"
     }
   },
   "zips": {

@@ -54,6 +54,7 @@ local RIGS: { [string]: { rig: number, height: number, tex: string? } } = {
 	rimewraith_dragon = { rig = 91096733870190, height = 6.34 },
 	sunwell_camel = { rig = 132933270009914, height = 2.53 },
 	cinder_golemite = { rig = 104860498147921, height = 2.40, tex = "rbxassetid://117265727136114" },
+	cinderling_imp = { rig = 111624221245800, height = 2.66 },
 }
 
 for petName, spec in pairs(RIGS) do
@@ -95,6 +96,11 @@ for petName, spec in pairs(RIGS) do
 		animator.Parent = ac
 	end
 
+	-- GetBoundingBox is PIVOT-aligned, and some rigs (cinderling_imp) arrive
+	-- with a rotated char1 CFrame — normalize the pivot to world-identity
+	-- FIRST so the height measurement/scale run in world axes.
+	local cf0, _ = rigModel:GetBoundingBox()
+	mp.PivotOffset = mp.CFrame:Inverse() * CFrame.new(cf0.Position)
 	local _, size = rigModel:GetBoundingBox()
 	rigModel:ScaleTo(rigModel:GetScale() * (spec.height / size.Y))
 	local cf2, _ = rigModel:GetBoundingBox()

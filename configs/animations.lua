@@ -30,6 +30,7 @@ return {
                 "rbxassetid://94535910240811", -- biped_walk_crystalwood
                 "rbxassetid://85051630214138", -- biped_walk_cryoshard
                 "rbxassetid://139269964220454", -- biped_walk_molten_sentinel (Cinder Golemite)
+                "rbxassetid://107700051813744", -- biped_walk_cinderling_imp (GLB zip -> rig_glb_to_fbx lane)
             },
             run = {
                 "rbxassetid://130063719118527", -- biped_run (auto pipeline)
