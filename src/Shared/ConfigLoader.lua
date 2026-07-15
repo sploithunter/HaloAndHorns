@@ -862,6 +862,27 @@ function ConfigLoader:_validateAnimationsConfig(config)
             end
         end
     end
+    -- clip_overrides: pet type -> clip name -> id/pool (wins over the class pool)
+    if config.clip_overrides ~= nil then
+        if type(config.clip_overrides) ~= "table" then
+            return false, "Animations clip_overrides must be a table when present"
+        end
+        for petType, clips in pairs(config.clip_overrides) do
+            if type(clips) ~= "table" then
+                return false, "Animations clip_overrides." .. tostring(petType) .. " must be a table"
+            end
+            for clipName, entry in pairs(clips) do
+                if not validAnimEntry(entry, 0) then
+                    return false,
+                        "Animations clip_overrides."
+                            .. tostring(petType)
+                            .. "."
+                            .. tostring(clipName)
+                            .. " must be an rbxassetid:// string, a pool of them, or a role map"
+                end
+            end
+        end
+    end
     return true
 end
 

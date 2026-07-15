@@ -55,6 +55,7 @@ local RIGS: { [string]: { rig: number, height: number, tex: string? } } = {
 	sunwell_camel = { rig = 132933270009914, height = 2.53 },
 	cinder_golemite = { rig = 104860498147921, height = 2.40, tex = "rbxassetid://117265727136114" },
 	cinderling_imp = { rig = 111624221245800, height = 2.66 },
+	camel = { rig = 90279769761323, height = 2.62 },
 }
 
 for petName, spec in pairs(RIGS) do

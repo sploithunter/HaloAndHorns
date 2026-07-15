@@ -69,12 +69,23 @@ return {
                 "rbxassetid://91206058452622", -- quadruped_walk (ashmane lion)
                 "rbxassetid://96781308918926", -- quadruped_walk_nightdrake
                 "rbxassetid://87604652590062", -- quadruped_walk_lioncub
+                "rbxassetid://100017650497490", -- quadruped_walk_camel (GLB zip -> rig_glb_to_fbx lane)
             },
             run = {
                 "rbxassetid://91206058452622",
                 "rbxassetid://96781308918926",
                 "rbxassetid://87604652590062",
             },
+        },
+    },
+
+    -- Per-PET clip substitutions, keyed pet type -> clip name -> id/pool.
+    -- Wins over the rig_classes pool pick for that pet. For rigs a specific
+    -- pool clip misbehaves on (2026-07-15: MeshyStretchIdle's root-motion
+    -- lift makes the winged cinderling imp "fly up" mid-stretch).
+    clip_overrides = {
+        cinderling_imp = {
+            idle = "rbxassetid://135125543047142", -- MeshyLazyIdle (no lift)
         },
     },
 

@@ -2933,6 +2933,12 @@ local petConfig = {
             base_power = 16,
             base_health = 150,
             viewport_zoom = 1.5, -- sand card framing (see emberling note)
+            -- RIGGED (Meshy Blue-Eyed Baby Camel quadruped GLB zip, 2026-07-15):
+            -- basic runtime model = skinned rig prebake (rig asset 90279769761323,
+            -- textures embedded via rig_glb_to_fbx lane); shared quadruped clip
+            -- set + its own walk (quadruped_walk_camel). Static mesh_asset fields
+            -- stay as the golden/rainbow look + the fallback rebuild.
+            rig_class = "quadruped",
             asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
             camera = {
                 distance = 3.5,

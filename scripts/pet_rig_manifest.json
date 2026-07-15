@@ -60,6 +60,12 @@
       "skeleton": "biped",
       "prebaked": false,
       "note": "GLB zip (Meshy_AI_Molten_Emberdrake_biped) via rig_glb_to_fbx lane, textures embedded"
+    },
+    "camel": {
+      "rig_asset": "90279769761323",
+      "skeleton": "quadruped",
+      "prebaked": false,
+      "note": "GLB zip (Meshy_AI_Blue_Eyed_Baby_Camel_quadruped) via rig_glb_to_fbx lane, textures embedded"
     }
   },
   "zips": {

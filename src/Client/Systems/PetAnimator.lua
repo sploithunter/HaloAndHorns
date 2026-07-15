@@ -81,9 +81,12 @@ local function ensure(model)
     local role = roleOf(model)
     local seed = seedOf(model)
     local knobs = cfg.class_knobs and cfg.class_knobs[model:GetAttribute("RigClass")] or {}
+    -- per-pet substitutions (configs/animations.lua clip_overrides) win over
+    -- the class pool pick — for rigs a specific pool clip misbehaves on.
+    local overrides = cfg.clip_overrides and cfg.clip_overrides[tostring(model:GetAttribute("PetType"))]
     rig = { tracks = {}, state = nil, runSpeedMult = tonumber(knobs.run_speed_mult) }
     for name, entry in pairs(clips) do
-        local id = resolveClip(entry, role, seed)
+        local id = resolveClip(overrides and overrides[name] or entry, role, seed)
         if type(id) == "string" then
             local anim = Instance.new("Animation")
             anim.AnimationId = id
