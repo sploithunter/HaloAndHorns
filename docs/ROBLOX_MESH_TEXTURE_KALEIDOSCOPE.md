@@ -110,6 +110,45 @@ multi-select makes this a two-minute manual step per batch). The Open Cloud
 model-upload API is reserved for raw generator output (rigs, simple
 meshes), which has proven durable.
 
+## FINAL UPDATE: the actual variable is SKINNED vs STATIC — and the fix is a bone
+
+After the seam-split fix failed (delayed rot) and the Studio-import lane
+failed too (same rot, different day), the decisive observation came from
+asking why PET meshes never break: on a day when every static upload was
+being mangled within hours — every lane, raw and rebaked alike — rigged
+meshes uploaded the same morning stayed perfect, as had every rigged
+upload for weeks.
+
+**Roblox's delayed optimizer/re-encode pass does not touch skinned
+meshes.** Static meshes get re-processed (and, in bad windows, mangled —
+UV collapse, torn shells, degenerate spikes). Vertex data carrying bone
+weights evidently can't be safely re-indexed, so skinned uploads skip the
+pass entirely.
+
+Also useful: `AssetService:CreateEditableMeshAsync` reads the SOURCE
+channel, which stays intact even when the render channel rots — so a
+geometry-hash tripwire built on EditableMesh will report CLEAN on a
+visibly shattered asset. Detect render rot with your eyes (or a render
+capture), not EditableMesh.
+
+**The workaround (bone armor):** give every static prop a single root
+bone with all vertices weighted to it, and upload that. The mesh becomes
+technically skinned, the optimizer leaves it alone, and it renders
+identically (an anchored, never-animated prop doesn't care about its
+inert bone). In Blender:
+
+```python
+arm = bpy.data.objects.new("Armature", bpy.data.armatures.new("Armature"))
+# one edit-mode bone, then per mesh:
+vg = mesh_obj.vertex_groups.new(name="Root")
+vg.add(range(len(mesh_obj.data.vertices)), 1.0, "REPLACE")
+mod = mesh_obj.modifiers.new("Armature", "ARMATURE"); mod.object = arm
+mesh_obj.parent = arm
+```
+
+Verified same-day: an un-boned upload of a prop shattered within the
+hour; the bone-armored upload of the same GLB rendered flawlessly.
+
 ## Related lessons (hard-won, same family)
 
 1. **A texture only maps onto the exact mesh generation it was baked/authored
