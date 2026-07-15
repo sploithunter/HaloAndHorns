@@ -1899,7 +1899,8 @@ function MissionInstanceService:_applyDressing(
                 return breakableSvc:SpawnMissionBreakable(
                     pseudoWorld,
                     nodeId,
-                    cf.Position + Vector3.new(0, 1, 0)
+                    cf.Position + Vector3.new(0, 1, 0),
+                    cf.Position.Y -- TRUE floor: the family's sink knobs align to this
                 )
             end)
             if okSpawn and model then
@@ -1948,7 +1949,8 @@ function MissionInstanceService:_applyDressing(
                 return breakableSvc:SpawnMissionBreakable(
                     pseudoWorld,
                     "MissionCrate",
-                    cf.Position + Vector3.new(0, 2, 0)
+                    cf.Position + Vector3.new(0, 2, 0),
+                    cf.Position.Y -- TRUE floor for the bbox aligner
                 )
             end)
             if okSpawn and model then

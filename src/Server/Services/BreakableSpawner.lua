@@ -2638,7 +2638,7 @@ end
 -- auto-target, pet assignment, contrib awards, drops — with no respawn (the
 -- top-up loop only walks configured worlds). The caller owns model lifetime;
 -- teardown destroys its own spawns.
-function BreakableSpawner:SpawnMissionBreakable(pseudoWorld, breakableId, position)
+function BreakableSpawner:SpawnMissionBreakable(pseudoWorld, breakableId, position, floorY)
     if not (breakablesConfig.crystals and breakablesConfig.crystals[breakableId]) then
         return nil
     end
@@ -2667,13 +2667,14 @@ function BreakableSpawner:SpawnMissionBreakable(pseudoWorld, breakableId, positi
     -- upright: mission floors are flat — preserve the store model's asset
     -- orientation (the default branch RESETS pivot to identity+yaw, which
     -- resurrects the 2026-07-15 sideways-crystal bug on any store model
-    -- whose uprightness lives in its pivot)
-    return self:_trySpawnOne(
-        worldFolder,
-        breakableId,
-        { position = position, placement = { upright = true } },
-        true
-    )
+    -- whose uprightness lives in its pivot). surface_y: the caller's TRUE
+    -- floor — without it the bbox aligner treats the (elevated) spawn point
+    -- as the floor and the family's sink_depth/embed_ratio submersion knobs
+    -- compute against the wrong reference (nodes ride high).
+    return self:_trySpawnOne(worldFolder, breakableId, {
+        position = position,
+        placement = { upright = true, surface_y = tonumber(floorY) },
+    }, true)
 end
 
 return BreakableSpawner
