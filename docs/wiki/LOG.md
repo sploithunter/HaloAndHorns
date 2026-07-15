@@ -1,6 +1,144 @@
+## 2026-07-15 — Heaven landmark “shatter” was Studio viewport only
+
+- Live Roblox + Place version history **1527** showed GoldenHaloCathedral /
+  MissionGate_Heaven correctly textured; open Studio place looked kaleidoscope.
+- Full MCP dump vs 1527: MeshId / Size / MeshSize / SA PBR / anchors / welds /
+  Lighting **identical**. EditableMesh `part_00`: 9400 verts / 9999 faces /
+  9400 UVs on both. Not a bad publish, wrong atlas, or weld issue.
+- Confirmed: the same “ugly” Studio place was published to live and rendered
+  correctly in the Roblox player. Studio viewport only.
+- **Remediation:** restart Studio — viewport clears (likely render/mesh cache).
+  No place/asset change required.
+- Lesson: if grey geo is fine and property dumps match a known-good place
+  version, do **not** reimport landmarks — restart Studio and/or check the
+  Roblox player before touching landmark assets.
+- Notes: `scripts/landmark_dumps/v1527_vs_dirty_comparison.md`.
+
+## 2026-07-15 — MESH-CORRUPTION STANDING TEST (mission decor saga closed the same way)
+
+- The mission-decor "delayed rot" saga (four re-uploaded generations:
+  seam-split, Studio-import, raw, bone-armored — each "verified clean then
+  rotted within hours") ended identically to the landmark finding above:
+  Jason published the "mangled" place to a fresh test place (badMeshTest),
+  played it in the real Roblox client — every mesh perfect — and a plain
+  Studio quit+reopen cleared the corruption locally. STUDIO SESSION CACHE
+  BUG serving mangled renders of valid assets.
+- **THE STANDING TEST (any user/agent seeing shattered/kaleidoscope meshes
+  in Studio):** (1) save-as or publish a NEW place and play it in the
+  Roblox client, OR (2) fully quit and reopen Studio. If EITHER renders
+  clean, the asset is healthy and SAFE TO PUBLISH — do not re-upload, do
+  not rebuild pipelines. Optionally file a Roblox bug report (long
+  sessions with heavy asset churn appear to trigger it).
+- The EditableMesh fingerprint alarm (DecorFingerprints) was RIGHT every
+  time it said clean — Studio's viewport was the unreliable instrument.
+- Still REAL from the saga: upload-time UV collapse on WELDED meshes
+  (June gem fix; same-session seam-split A/B), backwards facings
+  (derived-pivot roulette — explicit PrimaryPart=Root labeled fronts are
+  the fix, being redone + saved), and the mission gameplay fixes (crate
+  visual self-heal, openable chests, themed upright crystal nodes,
+  theme-tinted hangings).
+- PHANTOM (docs corrected): every "generation rotted overnight" claim,
+  the Studio-import-lane doctrine, the raw-lane doctrine, skinned/bone
+  "immunity". Public writeup now leads with the restart test.
+
+## 2026-07-15 — Swamp Static for Hell Grass trials
+
+- Uploaded `assets/audio/music/swamp_static.mp3` (group Audio
+  `111140016293110`). First upload failed ("duration too long") until
+  embedded cover-art MJPEG stream was stripped.
+- `mission_hell_grass` → `swamp_static` (replaces temporary
+  `ember_menace_d`). Re-enter Hell Grass Trial after Rojo sync.
+
+## 2026-07-15 — Hell Grass Trial music was Spawn spa
+
+- Element trials publish `CurrentArea=mission_<area>` (e.g. `mission_grass`)
+  for biome RPS/drops. `area_music.mission_grass` was `spa` — so Hell Grass
+  Trial played cheerful Spawn music.
+- Fix: `AreaMusicController` prefers `mission_<CurrentRealm>_<element>` when
+  realm is hell/heaven; `sounds.area_music` adds `mission_hell_grass` →
+  `ember_menace_d` (and siblings for lava/ice/desert × realm). Combat pool
+  also keys off `CurrentRealm` so hell element trials get hell combat beds.
+- Re-enter the trial (or leave+rejoin) to hear the swap.
+
+## 2026-07-15 — Full Meshy lineup dual-gen data dump
+
+- Wall lineup visual pass: all SHIP fronts OK; all REVIEW renders OK;
+  REVIEW #7/8/9/15/16/17 yaw-flipped 180 (facing only).
+- Dump: `scripts/mission_decor_lineup_dump.json` (~98KB) + per-prop
+  `scripts/mission_decor_blessed/<prop>.json` (shipping + review ids,
+  EditableMesh verts/faces/FNV hash, export sha256s, Create URLs).
+- Pairings + DecorFingerprints re-blessed from SHIP row. Note: several
+  SHIP props are ~20k faces (SA) while REVIEW peers are ~10k TextureID.
+
 # Wiki Log
 
 Status: current
+
+## 2026-07-15 — heaven_gilded_bookcase: swap bad bone-armor for verified PropReview 10k
+
+- Two different bookcase *designs* exist: `heaven_archive` (floating halo,
+  was fine) vs `heaven_gilded_bookcase` (no halo).
+- Broken MissionProps copy was bone-armor **SurfaceAppearance** mesh
+  `104288…` (~20k EditableMesh faces) + ColorMap `136375…`.
+- Good `_PropReview.MeshyDecor` copy is static **TextureID** mesh
+  `79109805720279` (exactly **9999** faces = 10k bake) + TextureID
+  `124877813089179`. Cloned into MissionProps (attrs preserved).
+- In-mission visual OK after rbxm save. Full blessed snapshot:
+  `scripts/mission_decor_blessed/heaven_gilded_bookcase.json` (live
+  MissionProps + PropReview + mission instance ids, export sha256s,
+  DecorFingerprint hash, known-bad gen, restore/diagnose checklist).
+  Verify: `node scripts/verify_mission_decor_blessed.js heaven_gilded_bookcase`.
+- Dump/diff of the swap: `scripts/mission_decor_bookcase_swap_dump.json`.
+  Superseded label `pre_boned` for mesh `791098…` is **misnamed** — that
+  id is the good 10k.
+
+## 2026-07-15 — Mission-decor PAIRING audit (multi-path kaleidoscope)
+
+- Live Studio dump of `MissionProps` (MCP): all 20 Meshy props are
+  **skinned + SurfaceAppearance** (empty `TextureID`); albedo is
+  `ColorMap`, not `MeshPart.TextureID`.
+- Registries were three generations deep for every prop: fingerprint
+  mesh id ≠ `DecorFingerprints.lua` mesh id ≠ `model_ids.json` (Model
+  wrapper), and `texture_ids.json` still held **Studio-import TextureIDs**
+  that matched none of the live ColorMaps. That is exactly the
+  "wrong atlas on wrong mesh gen" failure mode — our bookkeeping, not
+  proof of CDN rot.
+- New SSOT: `scripts/mission_decor_pairings.json` + live dump
+  `scripts/mission_decor_live_dump.json` +
+  `scripts/check_mission_decor_pairings.js` (+ Studio
+  `scripts/studio/dump_mission_decor_live.luau`). Hard-fail = live
+  MissionProps drifted from blessed mesh↔albedo pair; soft-warn =
+  stale registry/export gens. Pets still differ: low-poly
+  `CreateMeshPartAsync` + explicit Image `TextureID`, rarely a
+  100k→10k rebake.
+
+## 2026-07-15 — Sound catalog: kill inline SFX bypasses
+
+- Mission crate smash id moved into `configs/sounds.lua` as `crate_smash`;
+  `MissionInstanceService` reads the catalog (no more hardcoded SoundId).
+- Dropped duplicate/stale inline `sound_id` from `enchants.lua` (enchant
+  thunder) and `flash_effects.lua` (old egg-pop id that had drifted from
+  `egg_hatch_pop`). Named keys resolve via Assets.Sounds, then
+  `configs/sounds.lua` (`EnchantLightning` + `EggHatchingService`).
+- Intentional non-bus paths left alone: PowerSound/`power_fx`, area music,
+  animation-synced hatch SFX, high-frequency combat. Heaven combat music
+  fallback to the default trio remains by design.
+- **Tier A celebration stingers landed:** uploaded
+  `quest_complete_chime` / `daily_claim_chime` / `trade_complete_chime` /
+  `discovery_fanfare` / `unlock_gate_sting` (group Audio; ids in
+  `scripts/audio_ids.json`) and wired the matching `game_events` rows off
+  the shared `celebratory_jingle`. New uploads need Roblox moderation
+  before they play in-client.
+- **Tier B + C landed:** power_fx gaps filled (lava/desert buff, lava
+  shield, cast/impact variant pools for ice/lava/desert) and semantic
+  unmix (`pet_down_thud`, `buff_generic_rise`, `enchant_reveal_sparkle`)
+  so revive/grass-impact/cast-neutral no longer share celebration clips.
+- **Mission-decor fingerprint probe:**
+  `scripts/check_mission_decor_fingerprints.js` + ledger
+  `scripts/mission_decor_fingerprints.json` locks atlas sha256 + baked FBX
+  sha256 + Roblox mesh/texture ids per prop. Starting point for tracing
+  kaleidoscope/texture drift without grepping the whole game — `--check`
+  warns which field moved (rebake vs registry).
 
 ## 2026-07-15 — DELAYED RE-ENCODE ROT: seam-split wasn't enough; Studio import is THE lane
 

@@ -1,4 +1,33 @@
-# Roblox mesh looks "shattered" / kaleidoscope after upload — root cause and fix
+# Roblox mesh looks "shattered" / kaleidoscope — READ THIS FIRST
+
+**THE MOST LIKELY CAUSE IS A ROBLOX STUDIO RENDERING/CACHE BUG, NOT YOUR
+ASSET.** After a week-long investigation across four re-uploaded asset
+generations, our "corrupted" meshes turned out to be perfectly fine — 
+Studio's session cache was serving mangled renders of valid assets.
+
+**The test (2 minutes, run it before touching your pipeline):**
+1. Publish the place (or save-as a new test place) and play it in the
+   real Roblox client, **or**
+2. Fully quit Studio and reopen it.
+
+If either shows the mesh rendering correctly, your asset is healthy and
+safe to ship — the shatter was Studio-local. A plain Studio restart
+cleared every "corrupted" mesh we had. Consider filing a bug report with
+Roblox (Studio session cache corruption; long sessions with heavy asset
+churn seem to trigger it).
+
+Corroborating symptoms that point at the Studio cache rather than the
+asset: create.roblox.com previews look fine; `CreateEditableMeshAsync`
+vertex data hashes identical before/after "corruption"; the same asset id
+renders differently in different Studio sessions; production is clean.
+
+Everything below documents the (real) upload-time pitfalls we found along
+the way, and the (phantom) delayed-rot chase the Studio bug sent us on —
+kept intact as a cautionary tale.
+
+---
+
+# Original investigation
 
 If your mesh uploads to Roblox looking like broken glass, camouflage, or a
 kaleidoscope — but ONLY when textured — this document is for you. We chased

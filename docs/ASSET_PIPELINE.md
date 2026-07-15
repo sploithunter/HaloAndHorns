@@ -213,7 +213,22 @@ scripts/rebake_mission_decor.sh, whole set):
     resolved image id, Color WHITE (Color multiplies the atlas), Material
     Plastic. Then File -> Save/Publish — prefabs live in the place file.
 
-### THE INGEST DOCTRINE (2026-07-15 — supersedes everything above about uploads)
+### CORRECTION (2026-07-15 EVENING): the "rot" was a STUDIO CACHE BUG
+
+The lane doctrine below was written while chasing what turned out to be a
+Roblox STUDIO session-cache rendering bug — the assets were never
+corrupted (published places render perfectly; a Studio restart clears the
+"corruption" locally). THE STANDING TEST before believing any shattered
+mesh: publish/save-as a new place and check the real client, or restart
+Studio. See the wiki LOG 2026-07-15 entries and
+docs/ROBLOX_MESH_TEXTURE_KALEIDOSCOPE.md (now leads with this).
+
+What still stands from below: keep uploads under the 17.5k budget, prefer
+UV-preserving decimation, and the seam-split guard costs nothing. Lane
+choice (Open Cloud vs Studio import) is a convenience decision, not a
+survival one.
+
+### THE (SUPERSEDED) INGEST DOCTRINE (2026-07-15 morning — kept as history)
 
 **Static decor NEVER ships through the Open Cloud API. Studio 3D Import is
 the only lane.** Final evidence, one day apart, same files:
