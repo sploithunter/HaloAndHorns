@@ -1887,6 +1887,24 @@ function MissionInstanceService:_applyDressing(
             end)
             if okSpawn and model then
                 spawned = model
+                -- UPRIGHT ENFORCER (2026-07-15): the SmallBlueCrystal store
+                -- model ships sideways in stale Models.rbxm captures and the
+                -- preload adopt path keeps whatever the bake carries. Align
+                -- the spawned node's bounding-box up-axis to world Y here so
+                -- nodes stand regardless of store state (yaw preserved).
+                local bcf = model:GetBoundingBox()
+                if bcf.UpVector.Y < 0.95 then
+                    local axis = bcf.UpVector:Cross(Vector3.yAxis)
+                    if axis.Magnitude > 1e-4 then
+                        local angle = math.acos(math.clamp(bcf.UpVector.Y, -1, 1))
+                        local pivot = model:GetPivot()
+                        model:PivotTo(
+                            CFrame.new(pivot.Position)
+                                * CFrame.fromAxisAngle(axis.Unit, angle)
+                                * (pivot - pivot.Position)
+                        )
+                    end
+                end
                 local lvl = (record and record.openerLevel) or 1
                 model:SetAttribute("MiningLevel", lvl)
                 local hpScaled = (decorCfg.crystal_health_base or 90)
@@ -2022,6 +2040,13 @@ function MissionInstanceService:_applyDressing(
                                 if dd:IsA("SpecialMesh") then
                                     dd.VertexColor = Vector3.new(tint.R, tint.G, tint.B)
                                 elseif dd:IsA("MeshPart") then
+                                    -- MeshPart.Color does NOT composite over
+                                    -- TextureID (verified live 2026-07-15:
+                                    -- navy Color, still-salmon render) —
+                                    -- strip the atlas and go flat. Synty is
+                                    -- flat-shaded; the pole tints too, reads
+                                    -- as painted wood.
+                                    dd.TextureID = ""
                                     dd.Color = tint
                                 end
                             end
@@ -2117,6 +2142,12 @@ local function buildChest(cf)
     if prefab then
         local chest = prefab:Clone()
         chest.Name = "TreasureChest"
+        -- the Synty prefab ships WITHOUT a PrimaryPart — parenting the
+        -- prompt/glow to nil was SILENT (2026-07-15: unopenable, glowless
+        -- chests). Anchor one before anything parents to it.
+        if not chest.PrimaryPart then
+            chest.PrimaryPart = chest:FindFirstChildWhichIsA("BasePart", true)
+        end
         groundModel(chest, cf)
         local glow = Instance.new("PointLight")
         glow.Color = Color3.fromRGB(255, 200, 80)
