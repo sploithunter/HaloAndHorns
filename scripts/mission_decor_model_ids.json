@@ -1,27 +1,4 @@
 {
-<<<<<<< HEAD
-  "_comment": "MIXED GENERATIONS (2026-07-15): 7 props = RAW-Meshy Model uploads (embedded PBR SurfaceAppearance, the weeks-stable upload class) after the Studio-import batch rotted in hours; the rest = Studio 3D Import survivors (24h+ soak-passed) except hell_infernal_throne (edge-worn, on watch). Raw entries ARE LoadAsset-able Models; Studio entries are raw mesh ids.",
-  "heaven_archive": "107064587581875",
-  "heaven_compass_banner": "126547680137901",
-  "heaven_diamond_altar": "126005129346568",
-  "heaven_flamecrest_shield": "121112483596299",
-  "heaven_gilded_bookcase": "79109805720279",
-  "heaven_golden_codex": "95550078808599",
-  "heaven_golden_guardian": "97433952122086",
-  "heaven_golden_throne": "105280295005484",
-  "heaven_ivory_throne": "108019197890274",
-  "heaven_marble_throne": "106151763349044",
-  "heaven_star_fountain": "98811512283787",
-  "hell_gate_of_damned": "85857299942970",
-  "hell_infernal_archive": "118150104222111",
-  "hell_infernal_crest": "104250708373097",
-  "hell_infernal_fountain": "111269812210249",
-  "hell_infernal_throne": "106627197219124",
-  "hell_infernal_throne_flat": "114695375342832",
-  "hell_skull_banner": "102347044634165",
-  "hell_skull_lantern": "83676170999237",
-  "hell_skull_sconce": "108702961525876"
-=======
   "_comment": "BONE-ARMORED generation (2026-07-15): every prop uploads as a SKINNED mesh (one root bone, all verts weighted \u2014 rig_glb_to_fbx.py --add-root-bone) so Roblox's delayed optimizer skips it (the pass only mangles statics; skinned = pet-class immortality). Raw Meshy sources with embedded PBR (SurfaceAppearance); >17.5k sources auto-capped ~20k faces by the skinned pipeline. LoadAsset-able Model uploads.",
   "heaven_archive": "80645361877666",
   "heaven_compass_banner": "99405485005665",
@@ -43,5 +20,4 @@
   "hell_skull_banner": "101805985194472",
   "hell_skull_lantern": "101289093060410",
   "hell_skull_sconce": "120309441051219"
->>>>>>> 2c39244 (assets(mission-decor): THE BONE-ARMORED GENERATION — all 20 props ship as skinned meshes)
 }

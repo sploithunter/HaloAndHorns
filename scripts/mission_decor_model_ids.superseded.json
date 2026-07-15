@@ -72,9 +72,6 @@
   "hell_gate_of_damned_studio_import_rotted": "79113090991943",
   "hell_infernal_archive_studio_import_rotted": "76333842138523",
   "hell_infernal_crest_studio_import_rotted": "92377306378646",
-<<<<<<< HEAD
-  "hell_skull_sconce_studio_import_rotted": "109446511436509"
-=======
   "hell_skull_sconce_studio_import_rotted": "109446511436509",
   "heaven_archive_pre_boned": "107064587581875",
   "heaven_compass_banner_pre_boned": "126547680137901",
@@ -96,5 +93,4 @@
   "hell_skull_banner_pre_boned": "102347044634165",
   "hell_skull_lantern_pre_boned": "83676170999237",
   "hell_skull_sconce_pre_boned": "108702961525876"
->>>>>>> 2c39244 (assets(mission-decor): THE BONE-ARMORED GENERATION — all 20 props ship as skinned meshes)
 }
