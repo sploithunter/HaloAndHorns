@@ -1878,10 +1878,27 @@ function MissionInstanceService:_applyDressing(
         -- upright + sunk via SmallBlueCrystal's own placement config —
         -- instead of inert primitive rubble. Same level-scaling as crates.
         if breakableSvc and prop.kind == "rubble" and decorCfg.crystal_nodes ~= false then
+            -- THEMED node families (Jason 2026-07-15: "a lava trial should
+            -- have red crystals"): the zone ore families already exist —
+            -- pick by theme, deterministic variant per slot. SmallBlueCrystal
+            -- stays the fallback for unthemed missions.
+            local NODE_FAMILY = {
+                lava = "Emberstone",
+                hell = "Emberstone",
+                ice = "Frostshard",
+                heaven = "Frostshard",
+                grass = "Bloomstone",
+                desert = "Sunglass",
+            }
+            local fam = NODE_FAMILY[theme or ""]
+            local nodeId = "SmallBlueCrystal"
+            if fam then
+                nodeId = fam .. "SmallV" .. (1 + math.floor(math.abs(prop.x) * 13) % 3)
+            end
             local okSpawn, model = pcall(function()
                 return breakableSvc:SpawnMissionBreakable(
                     pseudoWorld,
-                    "SmallBlueCrystal",
+                    nodeId,
                     cf.Position + Vector3.new(0, 1, 0)
                 )
             end)

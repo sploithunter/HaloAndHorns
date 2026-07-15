@@ -2664,7 +2664,16 @@ function BreakableSpawner:SpawnMissionBreakable(pseudoWorld, breakableId, positi
         max.Parent = worldFolder
         worldFolder.Parent = crystalsRoot
     end
-    return self:_trySpawnOne(worldFolder, breakableId, { position = position }, true)
+    -- upright: mission floors are flat — preserve the store model's asset
+    -- orientation (the default branch RESETS pivot to identity+yaw, which
+    -- resurrects the 2026-07-15 sideways-crystal bug on any store model
+    -- whose uprightness lives in its pivot)
+    return self:_trySpawnOne(
+        worldFolder,
+        breakableId,
+        { position = position, placement = { upright = true } },
+        true
+    )
 end
 
 return BreakableSpawner
