@@ -157,6 +157,7 @@ local M = {
             -- SPAWN and would bury real crates.
             default_orientation = { x = -90, y = 0, z = 0 },
             placement = {
+                upright = true, -- preserve store orientation; the default branch RESETS pivot to identity (2026-07-15 sideways-node bug)
                 height_offset = 2,
                 sink_depth = 0,
             },
@@ -171,6 +172,7 @@ local M = {
             -- Some uploaded models import sideways; fix with default orientation at preload time
             default_orientation = { x = -90, y = 0, z = 0 },
             placement = {
+                upright = true, -- preserve store orientation; the default branch RESETS pivot to identity (2026-07-15 sideways-node bug)
                 height_offset = 1,
                 sink_depth = 0.75,
             },
