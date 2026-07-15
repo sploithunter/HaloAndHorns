@@ -41,6 +41,7 @@ Formal requirements and plans live outside the wiki and should be treated as sou
 - [Heaven & Hell Rosters](../PET_REALM_HEAVEN_HELL_ROSTER.md) — per-realm pet pools (4–5 per origin, ascended/fallen) + the 11-dragon rebirth set.
 - [Implementation Plan](../IMPLEMENTATION_PLAN.md)
 - [Asset Pipeline](../ASSET_PIPELINE.md)
+- [Pet Rig Onboarding](../PET_RIG_ONBOARDING.md) — the reproducible rig runbook: onboard_pet_rig.sh front half + manual tail + every gotcha.
 - [Roblox Mesh Texture Kaleidoscope](../ROBLOX_MESH_TEXTURE_KALEIDOSCOPE.md) — public root-cause writeup: Open Cloud collapses per-corner UVs; welded meshes must be seam-split before upload.
 - [Map Marker Reference](../MAP_MARKER_REFERENCE.md)
 - [Egg Authoring And Admin Testing](../EGG_AUTHORING_AND_ADMIN_TESTING.md)
