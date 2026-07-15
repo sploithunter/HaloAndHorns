@@ -1493,10 +1493,16 @@ function MissionInstanceService:_ensureMissionCrateVisual()
     if not store then
         return -- preload not done yet; retry on the next spawn
     end
-    self._crateVisualDone = true
     if not crate then
-        return -- no prefab in this place: placeholder crystal visual stands
+        -- MissionProps not replicated yet (Rojo race) — do NOT latch, retry
+        -- on the next spawn. Latching here was the 2026-07-15 bug: crates
+        -- spawned as the sideways SmallBlueCrystal placeholder forever.
+        self:_log("Warn", "MissionCrate visual swap deferred (CrateWood not replicated yet)", {
+            missionProps = tostring(props ~= nil),
+        })
+        return
     end
+    self._crateVisualDone = true
     local fresh = crate:Clone()
     fresh.Name = "MissionCrate"
     -- break SFX (Jason's crate-smash upload): the death handler plays a
@@ -1521,6 +1527,9 @@ function MissionInstanceService:_ensureMissionCrateVisual()
         old:Destroy()
     end
     fresh.Parent = store
+    -- one-shot by the latch above; loud so the 2026-07-15 placeholder-forever
+    -- incident (crates spawning as sideways crystals) can never hide again
+    self:_log("Info", "MissionCrate visual swapped to CrateWood prefab")
 end
 
 -- Per-room tint jitter + seeded primitive clutter (pure rolls from
@@ -1855,6 +1864,40 @@ function MissionInstanceService:_applyDressing(
     for _, prop in ipairs(props) do
         local cf = slotOrigin * CFrame.new(prop.x, 0, prop.z) * CFrame.Angles(0, prop.rot, 0)
         local spawned = nil
+        -- CRYSTAL NODES (Jason 2026-07-15, born from the crate-placeholder
+        -- accident he liked): rubble slots spawn REAL farmable crystals —
+        -- upright + sunk via SmallBlueCrystal's own placement config —
+        -- instead of inert primitive rubble. Same level-scaling as crates.
+        if breakableSvc and prop.kind == "rubble" and decorCfg.crystal_nodes ~= false then
+            local okSpawn, model = pcall(function()
+                return breakableSvc:SpawnMissionBreakable(
+                    pseudoWorld,
+                    "SmallBlueCrystal",
+                    cf.Position + Vector3.new(0, 1, 0)
+                )
+            end)
+            if okSpawn and model then
+                spawned = model
+                local lvl = (record and record.openerLevel) or 1
+                model:SetAttribute("MiningLevel", lvl)
+                local hpScaled = (decorCfg.crystal_health_base or 90)
+                    + lvl * (decorCfg.crystal_health_per_level or 15)
+                model:SetAttribute("MaxHP", hpScaled)
+                model:SetAttribute("HP", hpScaled)
+                model:SetAttribute(
+                    "Value",
+                    (decorCfg.crystal_value_base or 8)
+                        + math.floor(lvl * (decorCfg.crystal_value_per_level or 1))
+                )
+                if record and record.crates then
+                    table.insert(record.crates, model)
+                end
+            else
+                self:_log("Warn", "mission crystal node spawn failed", {
+                    err = not okSpawn and tostring(model) or "returned nil",
+                })
+            end
+        end
         if breakableSvc and FARMABLE_KIND[prop.kind] then
             self:_ensureMissionCrateVisual()
             local okSpawn, model = pcall(function()

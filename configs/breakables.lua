@@ -142,11 +142,20 @@ local M = {
         -- BreakableSpawner:SpawnMissionBreakable (mission pseudo-worlds).
         MissionCrate = {
             display_name = "Supply Crate",
+            -- asset_id is the SmallBlueCrystal asset: a PLACEHOLDER only —
+            -- MissionInstanceService swaps the store model for the Synty
+            -- CrateWood prefab once MissionProps replicates. The orientation
+            -- fix + sink below exist so the placeholder renders sanely
+            -- (upright, grounded) if a spawn ever races the swap.
             asset_id = "rbxassetid://112188519963572",
             scale = 1,
             health = 60, -- crates should POP, not grind (2026-07-08 playtest)
             value = 15,
             currency = "coins",
+            -- preload-time only (fixes the placeholder store model; the
+            -- swapped CrateWood is unaffected). sink stays 0 — it applies at
+            -- SPAWN and would bury real crates.
+            default_orientation = { x = -90, y = 0, z = 0 },
             placement = {
                 height_offset = 2,
                 sink_depth = 0,
