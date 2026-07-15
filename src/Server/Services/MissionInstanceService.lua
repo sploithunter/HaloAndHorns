@@ -1481,28 +1481,31 @@ local THEME_PALETTES = {
 -- the Synty crate prefab when the place carries it. Runtime store
 -- augmentation, AssetPreloadService pattern; retried until the store exists.
 function MissionInstanceService:_ensureMissionCrateVisual()
-    if self._crateVisualDone then
-        return
-    end
+    -- SELF-HEALING, NO SESSION LATCH (2026-07-15): the truth is the STORE
+    -- MODEL's CrateVisual attribute, not a service flag. A `_crateVisualDone`
+    -- latch let one early return (or a boot-time store rebuild / prebake
+    -- adoption of the crystal placeholder) leave crates crystal-skinned for
+    -- the whole session. Now every crate spawn re-checks the actual store
+    -- state and re-swaps when anything clobbered it.
     local store = ReplicatedStorage:FindFirstChild("Assets")
     store = store and store:FindFirstChild("Models")
     store = store and store:FindFirstChild("Breakables")
     store = store and store:FindFirstChild("Crystals")
-    local props = ReplicatedStorage:FindFirstChild("MissionProps")
-    local crate = props and props:FindFirstChild("CrateWood")
     if not store then
         return -- preload not done yet; retry on the next spawn
     end
+    local existing = store:FindFirstChild("MissionCrate")
+    if existing and existing:GetAttribute("CrateVisual") then
+        return -- the real crate is in place
+    end
+    local props = ReplicatedStorage:FindFirstChild("MissionProps")
+    local crate = props and props:FindFirstChild("CrateWood")
     if not crate then
-        -- MissionProps not replicated yet (Rojo race) — do NOT latch, retry
-        -- on the next spawn. Latching here was the 2026-07-15 bug: crates
-        -- spawned as the sideways SmallBlueCrystal placeholder forever.
         self:_log("Warn", "MissionCrate visual swap deferred (CrateWood not replicated yet)", {
             missionProps = tostring(props ~= nil),
         })
         return
     end
-    self._crateVisualDone = true
     local fresh = crate:Clone()
     fresh.Name = "MissionCrate"
     -- break SFX (Jason's crate-smash upload): the death handler plays a
@@ -1522,14 +1525,14 @@ function MissionInstanceService:_ensureMissionCrateVisual()
         SoundGroups.assign(smash, "effects")
         smash.Parent = mesh
     end
-    local old = store:FindFirstChild("MissionCrate")
-    if old then
-        old:Destroy()
+    fresh:SetAttribute("CrateVisual", true) -- the self-heal marker (see top)
+    if existing then
+        existing:Destroy()
     end
     fresh.Parent = store
-    -- one-shot by the latch above; loud so the 2026-07-15 placeholder-forever
-    -- incident (crates spawning as sideways crystals) can never hide again
-    self:_log("Info", "MissionCrate visual swapped to CrateWood prefab")
+    -- loud so the 2026-07-15 placeholder-forever incident (crates spawning
+    -- as sideways crystals) can never hide again
+    self:_log("Warn", "MissionCrate visual swapped to CrateWood prefab (store was the placeholder)")
 end
 
 -- Per-room tint jitter + seeded primitive clutter (pure rolls from
