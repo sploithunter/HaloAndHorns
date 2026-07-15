@@ -72,5 +72,29 @@
   "hell_gate_of_damned_studio_import_rotted": "79113090991943",
   "hell_infernal_archive_studio_import_rotted": "76333842138523",
   "hell_infernal_crest_studio_import_rotted": "92377306378646",
+<<<<<<< HEAD
   "hell_skull_sconce_studio_import_rotted": "109446511436509"
+=======
+  "hell_skull_sconce_studio_import_rotted": "109446511436509",
+  "heaven_archive_pre_boned": "107064587581875",
+  "heaven_compass_banner_pre_boned": "126547680137901",
+  "heaven_diamond_altar_pre_boned": "126005129346568",
+  "heaven_flamecrest_shield_pre_boned": "121112483596299",
+  "heaven_gilded_bookcase_pre_boned": "79109805720279",
+  "heaven_golden_codex_pre_boned": "95550078808599",
+  "heaven_golden_guardian_pre_boned": "97433952122086",
+  "heaven_golden_throne_pre_boned": "105280295005484",
+  "heaven_ivory_throne_pre_boned": "108019197890274",
+  "heaven_marble_throne_pre_boned": "106151763349044",
+  "heaven_star_fountain_pre_boned": "98811512283787",
+  "hell_gate_of_damned_pre_boned": "85857299942970",
+  "hell_infernal_archive_pre_boned": "118150104222111",
+  "hell_infernal_crest_pre_boned": "104250708373097",
+  "hell_infernal_fountain_pre_boned": "111269812210249",
+  "hell_infernal_throne_pre_boned": "106627197219124",
+  "hell_infernal_throne_flat_pre_boned": "114695375342832",
+  "hell_skull_banner_pre_boned": "102347044634165",
+  "hell_skull_lantern_pre_boned": "83676170999237",
+  "hell_skull_sconce_pre_boned": "108702961525876"
+>>>>>>> 2c39244 (assets(mission-decor): THE BONE-ARMORED GENERATION — all 20 props ship as skinned meshes)
 }

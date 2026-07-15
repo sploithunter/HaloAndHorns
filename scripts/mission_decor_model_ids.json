@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "_comment": "MIXED GENERATIONS (2026-07-15): 7 props = RAW-Meshy Model uploads (embedded PBR SurfaceAppearance, the weeks-stable upload class) after the Studio-import batch rotted in hours; the rest = Studio 3D Import survivors (24h+ soak-passed) except hell_infernal_throne (edge-worn, on watch). Raw entries ARE LoadAsset-able Models; Studio entries are raw mesh ids.",
   "heaven_archive": "107064587581875",
   "heaven_compass_banner": "126547680137901",
@@ -20,4 +21,27 @@
   "hell_skull_banner": "102347044634165",
   "hell_skull_lantern": "83676170999237",
   "hell_skull_sconce": "108702961525876"
+=======
+  "_comment": "BONE-ARMORED generation (2026-07-15): every prop uploads as a SKINNED mesh (one root bone, all verts weighted \u2014 rig_glb_to_fbx.py --add-root-bone) so Roblox's delayed optimizer skips it (the pass only mangles statics; skinned = pet-class immortality). Raw Meshy sources with embedded PBR (SurfaceAppearance); >17.5k sources auto-capped ~20k faces by the skinned pipeline. LoadAsset-able Model uploads.",
+  "heaven_archive": "80645361877666",
+  "heaven_compass_banner": "99405485005665",
+  "heaven_diamond_altar": "140340712618610",
+  "heaven_flamecrest_shield": "92462783818095",
+  "heaven_gilded_bookcase": "95194903812056",
+  "heaven_golden_codex": "96074320366858",
+  "heaven_golden_guardian": "116588614438401",
+  "heaven_golden_throne": "93677011996781",
+  "heaven_ivory_throne": "88392017235847",
+  "heaven_marble_throne": "87443553676340",
+  "heaven_star_fountain": "134533416755305",
+  "hell_gate_of_damned": "139032401564414",
+  "hell_infernal_archive": "129631794912198",
+  "hell_infernal_crest": "82920518084284",
+  "hell_infernal_fountain": "134098719881006",
+  "hell_infernal_throne": "104860528024791",
+  "hell_infernal_throne_flat": "103059456645140",
+  "hell_skull_banner": "101805985194472",
+  "hell_skull_lantern": "101289093060410",
+  "hell_skull_sconce": "120309441051219"
+>>>>>>> 2c39244 (assets(mission-decor): THE BONE-ARMORED GENERATION — all 20 props ship as skinned meshes)
 }
