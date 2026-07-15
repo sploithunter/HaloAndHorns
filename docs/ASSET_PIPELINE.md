@@ -213,7 +213,49 @@ scripts/rebake_mission_decor.sh, whole set):
     resolved image id, Color WHITE (Color multiplies the atlas), Material
     Plastic. Then File -> Save/Publish — prefabs live in the place file.
 
-### Escape hatch: Studio 3D Import (processing-roulette survivors)
+### THE INGEST DOCTRINE (2026-07-15 — supersedes everything above about uploads)
+
+**Static decor NEVER ships through the Open Cloud API. Studio 3D Import is
+the only lane.** Final evidence, one day apart, same files:
+
+- The seam-split generation (all 20 props) processed CLEAN via Open Cloud on
+  2026-07-14 — in-game verified, screenshots. By 2026-07-15 the SAME asset
+  ids returned scrambled UVs / dead textures on fresh LoadAsset (altar
+  texture gone entirely; gate/archive/crest/throne/codex geometry mangled
+  with kilometer degenerate spikes). Roblox re-encodes meshes server-side
+  AFTER ingest, on a delay, and that pass re-collapses what upload-time
+  processing kept. Seam-splitting fixed upload-time; nothing we control
+  fixes the re-encode.
+- The SAME FBX files imported via Studio 3D Import (altar/flamecrest/ivory,
+  2026-07-14) re-fetched 2026-07-15: pristine, textures intact.
+- Raw UNPROCESSED Meshy FBX uploads (gems, all 14 pet rigs) have never
+  rotted — worldbloom stable since 07-02. The rot correlates specifically
+  with BLENDER-REBAKED geometry through the API lane.
+
+THE WORKFLOW (light manual step, works fine at 20-prop batch size):
+
+1. Rebake as usual (`scripts/rebake_mission_decor.sh` — seam-split +
+   embedded textures stay: they make the FBX self-contained for import).
+2. Flatten for multi-select: copy every `<name>_10k_baked.fbx` into ONE
+   folder (e.g. `~/Documents/decor_import/`).
+3. HUMAN (or future computer-use agent — the clicks are trivially
+   scriptable): Studio -> Avatar tab -> 3D Importer -> select ALL files ->
+   import with textures (defaults) -> target Workspace. Each lands as
+   `Meshes/<name>_10k_baked` with TextureID minted by the importer, and the
+   pre-upload preview shows the processed result BEFORE minting.
+4. Agent: transplant into `ReplicatedStorage.MissionProps` prefabs (clone
+   imported MeshPart; keep prefab Name/Size/CFrame/attributes; imported
+   scale is raw — copy the old Size), verify FACING in the review grid
+   (front must sit on the pivot look axis; Meshy authoring is inconsistent
+   — rotate the mesh 180° inside the prefab when flipped), record the
+   Studio mesh+texture ids in `scripts/mission_decor_*.json`.
+5. Save-to-File `assets/place/MissionProps.rbxm`, commit WITH the registry.
+
+Registry note: Studio-import entries are raw MESH asset ids — assignable to
+MeshId, NOT loadable via InsertService:LoadAsset (transplant by cloning the
+imported MeshPart, or AssetService:CreateMeshPartAsync for re-fetch).
+
+### Historical: Studio 3D Import as escape hatch (2026-07-14)
 
 Cloud processing of an uploaded FBX is a ROULETTE: an upload can shatter even
 when the Blender preview and the FBX are clean, and an IDENTICAL re-upload can

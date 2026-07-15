@@ -82,6 +82,34 @@ Identical mesh and atlas, uploaded twice on 2026-07-14:
 | 133639172611896 | welded | kaleidoscope |
 | 83409245331595 | split | correct |
 
+## UPDATE (next day): the seam-split fix is NOT enough — delayed re-encode rot
+
+One day after publishing the fix above, the seam-split uploads rotted
+ANYWAY. Timeline, same asset ids throughout:
+
+- Day 0: uploaded via Open Cloud, processed clean, verified in-game.
+- Day 1: fresh `InsertService:LoadAsset` of the same ids returns scrambled
+  UVs, kilometer-long degenerate spike triangles, and in one case a dead
+  texture (mesh loads, texture returns nothing).
+
+Conclusion: Roblox runs a **delayed server-side re-encode** on mesh assets
+after initial ingest, and that pass re-collapses/mangles what upload-time
+processing preserved. Seam-splitting protects you at upload time only.
+
+What never rots, in our observation:
+- Assets ingested via **Studio's 3D Importer** (same FBX files — stable
+  across re-fetches; the importer also previews the processed result
+  before minting).
+- **Raw, unprocessed Meshy FBX uploads** via Open Cloud (rigged pets, gem
+  meshes — weeks stable). The rot correlates specifically with
+  Blender-processed/re-exported FBX through the API lane.
+
+Our final doctrine: decorative/static meshes that went through any DCC
+processing get ingested through **Studio 3D Import only** (bulk
+multi-select makes this a two-minute manual step per batch). The Open Cloud
+model-upload API is reserved for raw generator output (rigs, simple
+meshes), which has proven durable.
+
 ## Related lessons (hard-won, same family)
 
 1. **A texture only maps onto the exact mesh generation it was baked/authored

@@ -2,6 +2,33 @@
 
 Status: current
 
+## 2026-07-15 — DELAYED RE-ENCODE ROT: seam-split wasn't enough; Studio import is THE lane
+
+- The 2026-07-14 seam-split generation (all 20 decor props, verified clean
+  in-game on day 0) ROTTED within a day: fresh LoadAsset of the same ids
+  returns scrambled UVs, kilometer degenerate spikes, one dead texture
+  (diamond altar). Roblox re-encodes mesh assets server-side on a delay;
+  that pass undoes what upload-time processing preserved. Confirmed by
+  fresh-fetch A/B (not a local/rbxm regression — MissionProps.rbxm ids
+  verified byte-for-byte).
+- Controls: the SAME FBXs via Studio 3D Import (altar/flamecrest/ivory,
+  imported 07-14) re-fetched pristine on 07-15; raw Meshy Open Cloud
+  uploads (gems, 14 pet rigs) have never rotted. Rot correlates with
+  BLENDER-PROCESSED FBX through the API lane specifically.
+- DOCTRINE (docs/ASSET_PIPELINE.md "THE INGEST DOCTRINE"): static decor
+  ships via Studio 3D Import ONLY — flat folder (~/Documents/decor_import),
+  bulk multi-select, Jason clicks import (a future computer-use agent can
+  automate the clicks), agent transplants + registry + rbxm save. Open
+  Cloud model upload stays for raw generator FBX (rigs, gems) only.
+- Also from today's trial tour: three meshes are authored back-to-front
+  (flamecrest sconce, golden guardian, ivory throne) — fix = 180° mesh
+  rotation inside the prefab at transplant time; mission crate visuals fell
+  back to the SmallBlueCrystal placeholder (the _ensureMissionCrateVisual
+  latch sets _crateVisualDone BEFORE checking the prefab exists — fix
+  owed) — Jason wants mission crystal farmables kept as a real feature:
+  upright, sunk into the floor.
+- Public writeup updated: docs/ROBLOX_MESH_TEXTURE_KALEIDOSCOPE.md.
+
 ## 2026-07-14 — RIGGED PETS DEAD: the 12-day-stale Models.rbxm time bomb
 
 - "No animation at all on the cinder golemite" (+ worldroot ent) traced to
