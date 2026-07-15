@@ -1356,6 +1356,7 @@ local PROP_BUILDERS = {
 -- torches recolor too (flame part + its PointLight). nil theme = kit as-is.
 local THEME_PALETTES = {
     hell = {
+        banner = Color3.fromRGB(115, 30, 28),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- rough NATURAL surfaces (Jason: walls too "finished" for a hell
         -- dungeon) — Basalt/Slate breaks the smooth-plastic read for free
         wall = Color3.fromRGB(52, 40, 44),
@@ -1376,6 +1377,7 @@ local THEME_PALETTES = {
         },
     },
     lava = {
+        banner = Color3.fromRGB(140, 48, 22),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- molten variant of hell: cracked-lava floors, ember-veined basalt
         wall = Color3.fromRGB(58, 36, 32),
         wallMaterial = "Basalt",
@@ -1394,6 +1396,7 @@ local THEME_PALETTES = {
         },
     },
     ice = {
+        banner = Color3.fromRGB(38, 62, 130),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- glacial: pale blue ice walls, frosted light — cold mirror of lava
         wall = Color3.fromRGB(168, 196, 214),
         wallMaterial = "Ice",
@@ -1415,6 +1418,7 @@ local THEME_PALETTES = {
         },
     },
     grass = {
+        banner = Color3.fromRGB(48, 92, 52),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- overgrown ruin: mossy stone, leafy light
         wall = Color3.fromRGB(96, 118, 82),
         wallMaterial = "Slate",
@@ -1433,6 +1437,7 @@ local THEME_PALETTES = {
         },
     },
     desert = {
+        banner = Color3.fromRGB(152, 104, 42),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- sun-baked sandstone: warm grit
         wall = Color3.fromRGB(194, 156, 108),
         wallMaterial = "Sandstone",
@@ -1451,6 +1456,7 @@ local THEME_PALETTES = {
         },
     },
     heaven = {
+        banner = Color3.fromRGB(228, 204, 148),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- v3 (playtest: "it's the torches" — near-white NEON orbs bloomed the
         -- whole scene): heaven torches are decorative gilded GLASS orbs with
         -- a whisper of light; the bright ambient does the illuminating.
@@ -2003,6 +2009,24 @@ function MissionInstanceService:_applyDressing(
                 end
                 if prefab then
                     local clone = prefab:Clone()
+                    -- THEME-TINTED HANGINGS (Jason 2026-07-15): the plain
+                    -- Synty WallBanner shows up in every mission — tint its
+                    -- cloth to the room's theme (palette.banner). Legacy
+                    -- Synty props are Part+SpecialMesh: textured SpecialMesh
+                    -- tints via VertexColor, MeshParts via Color.
+                    if clone.Name == "WallBanner" then
+                        local pal = THEME_PALETTES[theme or ""]
+                        local tint = pal and pal.banner
+                        if tint then
+                            for _, dd in ipairs(clone:GetDescendants()) do
+                                if dd:IsA("SpecialMesh") then
+                                    dd.VertexColor = Vector3.new(tint.R, tint.G, tint.B)
+                                elseif dd:IsA("MeshPart") then
+                                    dd.Color = tint
+                                end
+                            end
+                        end
+                    end
                     -- MountY = hang height (blades/banners) or half-height
                     -- (floor-standers like bookshelves); StandOff pushes the
                     -- piece off the wall plane by its own depth
