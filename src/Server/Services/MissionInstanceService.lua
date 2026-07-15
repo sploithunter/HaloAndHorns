@@ -40,6 +40,7 @@ local TileKitBuilder = require(ServerScriptService.Server.World.TileKitBuilder)
 local MissionStamper = require(ServerScriptService.Server.World.MissionStamper)
 
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local Sounds = require(ReplicatedStorage.Configs:WaitForChild("sounds"))
 
 local PROMPT_NAME = "MissionDoorPrompt"
 -- streaming-safe warp caps (see _safeWarp)
@@ -121,6 +122,17 @@ function MissionInstanceService:Start()
             self:_log("Warn", "CandleStand normalization failed", { error = tostring(err) })
         end
     end)
+    -- ROT ALARM (Jason 2026-07-15 "save a hash, compare on boot"): Roblox's
+    -- delayed re-encode can mangle uploaded meshes hours after they verify
+    -- clean. Recompute each blessed decor fingerprint (EditableMesh) and
+    -- scream on drift. Studio sessions only — it's a dev tripwire, and
+    -- EditableMesh costs memory prod players shouldn't pay.
+    if game:GetService("RunService"):IsStudio() then
+        task.spawn(function()
+            task.wait(15) -- let boot finish; this is background diagnostics
+            self:_assetRotCheck()
+        end)
+    end
     -- BOOT SWEEP: destroy any PERSISTED mission containers (Edit-mode demo
     -- stamps saved/copied into the session). A fresh server has no open
     -- missions by definition — a stale container squatting on a slot means
@@ -1356,7 +1368,7 @@ local PROP_BUILDERS = {
 -- torches recolor too (flame part + its PointLight). nil theme = kit as-is.
 local THEME_PALETTES = {
     hell = {
-        banner = Color3.fromRGB(115, 30, 28),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
+        banner = Color3.fromRGB(115, 30, 28), -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- rough NATURAL surfaces (Jason: walls too "finished" for a hell
         -- dungeon) — Basalt/Slate breaks the smooth-plastic read for free
         wall = Color3.fromRGB(52, 40, 44),
@@ -1377,7 +1389,7 @@ local THEME_PALETTES = {
         },
     },
     lava = {
-        banner = Color3.fromRGB(140, 48, 22),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
+        banner = Color3.fromRGB(140, 48, 22), -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- molten variant of hell: cracked-lava floors, ember-veined basalt
         wall = Color3.fromRGB(58, 36, 32),
         wallMaterial = "Basalt",
@@ -1396,7 +1408,7 @@ local THEME_PALETTES = {
         },
     },
     ice = {
-        banner = Color3.fromRGB(38, 62, 130),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
+        banner = Color3.fromRGB(38, 62, 130), -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- glacial: pale blue ice walls, frosted light — cold mirror of lava
         wall = Color3.fromRGB(168, 196, 214),
         wallMaterial = "Ice",
@@ -1418,7 +1430,7 @@ local THEME_PALETTES = {
         },
     },
     grass = {
-        banner = Color3.fromRGB(48, 92, 52),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
+        banner = Color3.fromRGB(48, 92, 52), -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- overgrown ruin: mossy stone, leafy light
         wall = Color3.fromRGB(96, 118, 82),
         wallMaterial = "Slate",
@@ -1437,7 +1449,7 @@ local THEME_PALETTES = {
         },
     },
     desert = {
-        banner = Color3.fromRGB(152, 104, 42),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
+        banner = Color3.fromRGB(152, 104, 42), -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- sun-baked sandstone: warm grit
         wall = Color3.fromRGB(194, 156, 108),
         wallMaterial = "Sandstone",
@@ -1456,7 +1468,7 @@ local THEME_PALETTES = {
         },
     },
     heaven = {
-        banner = Color3.fromRGB(228, 204, 148),  -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
+        banner = Color3.fromRGB(228, 204, 148), -- WallBanner cloth tint (Jason 2026-07-15: theme-appropriate hangings)
         -- v3 (playtest: "it's the torches" — near-white NEON orbs bloomed the
         -- whole scene): heaven torches are decorative gilded GLASS orbs with
         -- a whisper of light; the bright ambient does the illuminating.
@@ -1486,6 +1498,74 @@ local THEME_PALETTES = {
 -- One-time (lazy): swap the preloaded MissionCrate placeholder visual for
 -- the Synty crate prefab when the place carries it. Runtime store
 -- augmentation, AssetPreloadService pattern; retried until the store exists.
+-- Recompute every blessed decor mesh fingerprint and WARN on drift. The
+-- hash must match DecorFingerprints' bless-time computation EXACTLY
+-- (FNV-1a over 0.01-quantized vertex positions).
+function MissionInstanceService:_assetRotCheck()
+    local okReq, DecorFingerprints = pcall(function()
+        return require(ReplicatedStorage.Shared.Assets.DecorFingerprints)
+    end)
+    if not okReq or type(DecorFingerprints) ~= "table" then
+        return
+    end
+    local AssetService = game:GetService("AssetService")
+    local drifted, checked = 0, 0
+    for name, fp in pairs(DecorFingerprints) do
+        local ok, err = pcall(function()
+            local em = AssetService:CreateEditableMeshAsync(Content.fromUri(fp.mesh))
+            local verts = em:GetVertices()
+            local h = 2166136261
+            local function mix(n)
+                n = math.floor(n * 100 + 0.5) % 4294967296
+                h = (h + n) % 4294967296
+                h = (h * 16777619) % 4294967296
+            end
+            for _, vid in ipairs(verts) do
+                local p = em:GetPosition(vid)
+                mix(p.X)
+                mix(p.Y)
+                mix(p.Z)
+            end
+            local nv, nf = #verts, #em:GetFaces()
+            em:Destroy()
+            if h ~= fp.hash or nv ~= fp.verts or nf ~= fp.faces then
+                drifted += 1
+                self:_log("Warn", "[ROT ALARM] decor mesh drifted from its blessed fingerprint", {
+                    prop = name,
+                    mesh = fp.mesh,
+                    hash = h .. " vs " .. fp.hash,
+                    verts = nv .. " vs " .. fp.verts,
+                    faces = nf .. " vs " .. fp.faces,
+                })
+            end
+        end)
+        if ok then
+            checked += 1
+        elseif tostring(err):find("not accessible") then
+            -- EditableMesh gated by Game Settings -> Security -> Allow Mesh
+            -- & Image APIs. One pointer, not twenty.
+            self:_log("Warn", "[ROT ALARM] SKIPPED — enable 'Allow Mesh & Image APIs' in Game Settings > Security")
+            return
+        else
+            drifted += 1
+            self:_log("Warn", "[ROT ALARM] decor mesh UNLOADABLE", {
+                prop = name,
+                mesh = fp.mesh,
+                error = tostring(err),
+            })
+        end
+        task.wait(0.2) -- spread the memory/network cost
+    end
+    if drifted == 0 then
+        self:_log("Info", "asset rot check clean", { checked = checked })
+    else
+        self:_log("Warn", "[ROT ALARM] SUMMARY: decor assets drifted", {
+            drifted = drifted,
+            checked = checked,
+        })
+    end
+end
+
 function MissionInstanceService:_ensureMissionCrateVisual()
     -- SELF-HEALING, NO SESSION LATCH (2026-07-15): the truth is the STORE
     -- MODEL's CrateVisual attribute, not a service flag. A `_crateVisualDone`
@@ -1520,16 +1600,19 @@ function MissionInstanceService:_ensureMissionCrateVisual()
     local mesh = fresh:FindFirstChildWhichIsA("MeshPart")
     if mesh then
         mesh.Name = "MissionCrate"
-        local smash = Instance.new("Sound")
-        smash.Name = "bigBreakSound"
-        -- group-owned upload (scripts/audio_ids.json crate_smash)
-        smash.SoundId = "rbxassetid://119529368267127"
-        smash.Volume = 0.4 -- playtest: raw 0.8 was blasting
-        smash.RollOffMaxDistance = 60
-        -- route through the effects bus or the Settings sliders can't touch it
-        local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
-        SoundGroups.assign(smash, "effects")
-        smash.Parent = mesh
+        local def = Sounds.crate_smash
+        if type(def) == "table" and type(def.id) == "string" and def.id ~= "" then
+            local smash = Instance.new("Sound")
+            smash.Name = "bigBreakSound"
+            smash.SoundId = def.id
+            smash.Volume = tonumber(def.volume) or 0.4
+            smash.PlaybackSpeed = tonumber(def.playback_speed) or 1
+            smash.RollOffMaxDistance = 60
+            -- route through the effects bus or the Settings sliders can't touch it
+            local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
+            SoundGroups.assign(smash, "effects")
+            smash.Parent = mesh
+        end
     end
     fresh:SetAttribute("CrateVisual", true) -- the self-heal marker (see top)
     if existing then
