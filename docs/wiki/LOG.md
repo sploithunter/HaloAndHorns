@@ -2,6 +2,36 @@
 
 Status: current
 
+## 2026-07-14 — RIGGED PETS DEAD: the 12-day-stale Models.rbxm time bomb
+
+- "No animation at all on the cinder golemite" (+ worldroot ent) traced to
+  `assets/place/Models.rbxm` having been committed ONCE — at the July-2
+  initial import, HOURS before the first rigged pet existed. Every Rojo
+  reconnect since re-served that static snapshot over
+  `ReplicatedStorage.Assets.Models`, stripping bones + AnimationController
+  from every hand-dropped rigged prebake (12 pets). Plain Play/Stop does
+  NOT trigger it (verified); Rojo server/plugin reconnect does — hence the
+  "randomly breaks between sessions" pattern.
+- Recovery scripted: `scripts/studio/rebuild_rigged_prebakes.luau` —
+  rebuilds all 12 rigged prebakes from the uploaded rig assets
+  (pet_rig_manifest + cinder_golemite 104860498147921). Normalization per
+  pet: PrimaryPart=char1, Animator ensured, uniform scale to the static
+  prebake's height, pivot recentered to bbox CENTER (the 0.50 convention
+  PetFollowController's pivot-to-feet measurement expects). Rig assets
+  insert UPRIGHT, front on the pivot look axis — no rotation needed (the
+  golemite's lying-down/under-floor state was a hand-drop mishap, since
+  its folder wasn't even in the served file).
+- cinder_golemite rig upload is untextured — it shares its static
+  generation's atlas (identical UVs, same Meshy source): TextureID
+  117265727136114 applied in the rebuild script.
+- Live-verified post-rebuild: golemite huge follows upright/grounded,
+  idle+walk tracks playing; all 12 rigs staged with their class walk clips,
+  two-phase screenshots confirm playback.
+- OWED (Jason, one manual step): Play until booted → right-click
+  `ReplicatedStorage.Assets.Models` in the RUNNING game → Save to File →
+  `assets/place/Models.rbxm` → commit. Until that lands, the rigs die on
+  the next Rojo reconnect and the rebuild script must re-run.
+
 ## 2026-07-14 — THE SHATTER ROOT CAUSE: Open Cloud collapses per-corner UVs
 
 - Months of "corrupted/shattered prop" incidents (diamond altar 2026-07-08,

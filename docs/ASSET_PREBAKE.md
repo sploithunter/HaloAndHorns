@@ -46,6 +46,21 @@ the `AssetReport` lists loaded (not skipped) models — those are the ones missi
    git add assets/place/Models.rbxm && git commit -m "chore(prebake): refresh Models cache"
    ```
 
+### Critical: a stale bake SILENTLY KILLS RIGGED PETS
+
+2026-07-14 post-mortem: `assets/place/Models.rbxm` had been committed ONCE
+(July 2, initial import) — hours BEFORE the first rigged pet landed. Every
+Rojo (re)connect re-served that file at `ReplicatedStorage.Assets.Models`,
+replacing every hand-dropped rigged prebake with the static snapshot: bones
+gone, AnimationController gone, pets silently fall back to static/code-gait
+("no animation at all"). Normal Play/Stop does NOT trigger it — a Rojo
+server restart / plugin reconnect does, which is why it looked random
+across sessions. THE RULE: any prebake work that exists only in the live
+place is ON A TIMER — capture + commit `Models.rbxm` in the SAME session,
+or record a deterministic rebuild script. Recovery:
+`scripts/studio/rebuild_rigged_prebakes.luau` rebuilds all rigged prebakes
+from the uploaded rig assets (run via MCP in Edit, then capture).
+
 ### Critical: save from a FULLY-BOOTED RUNTIME, never Edit mode
 
 `InsertService:LoadAsset` content does **not** serialize through an Edit-mode place save — the models
