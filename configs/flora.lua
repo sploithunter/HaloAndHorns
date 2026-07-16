@@ -53,13 +53,27 @@ return {
             -- frosted pines replace the default pines
             ["tree/pine_tree"] = "frosted_pine_1",
             ["tree/pinetree1"] = "frosted_pine_2",
-            -- the dead black tree IS the desert_tree exemplar; in heaven it
-            -- only stands in Heaven_2 Lava (heaven deserts use joshua) —
-            -- "we made pink trees for those"
+            -- the dead black tree stood at heaven's tree/desert_tree anchors
+            -- (only Heaven_2 Lava; heaven deserts use joshua) — "we made
+            -- pink trees for those"
             ["tree/desert_tree"] = "cherry_heaven_tree_1",
+            -- garden palette (2026-07-16 19-item set): heavenly skins for
+            -- the base garden plants
+            ["plant/grass_tuft"] = "pearl_tuft",
+            ["plant/field_flower_bush"] = "softglow_bloom",
+            ["plant/meadow_bush"] = "cloud_bush",
+            ["rock/mossy_pebble"] = "marble_pebble",
         },
         hell = {
             ["tree/baobab_tree"] = "oak_tree",
+            -- new desert_tree exemplar is a leafy savanna tree; hell keeps
+            -- its dead look with the scorched tree instead
+            ["tree/desert_tree"] = "scorched_tree",
+            -- garden palette: hellish skins for the base garden plants
+            ["plant/grass_tuft"] = "ash_tuft",
+            ["plant/field_flower_bush"] = "thorn_tuft",
+            ["plant/meadow_bush"] = "dead_brush",
+            ["rock/mossy_pebble"] = "cinder_rock",
         },
     },
 }

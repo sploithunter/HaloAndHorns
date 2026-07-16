@@ -1,0 +1,22 @@
+{
+  "_comment": "Resolved IMAGE ids (MeshPart.TextureID) for the 2026-07-16 19-item flora set (plants/rocks/trees folders). Decals in flora_set2_texture_decal_ids.json, meshes in flora_set2_model_ids.json. Prebaked in ReplicatedStorage.Assets.Models.Flora; desert_tree/pine_tree/oak_tree replaced the prior exemplars (kept as *_legacy).",
+  "ash_tuft": "115435432775648",
+  "cinder_rock": "77090854583767",
+  "cloud_bush": "139189855419057",
+  "cloud_sapling": "133913595578911",
+  "dead_brush": "93577005204221",
+  "desert_tree": "138645297117553",
+  "field_flower_bush": "83830980449817",
+  "grass_tuft": "96448314717256",
+  "joshua_tree": "114109987074567",
+  "marble_pebble": "108578416067407",
+  "meadow_bush": "111978326415211",
+  "mossy_pebble": "84610353578612",
+  "oak_tree": "112393648010089",
+  "pearl_tuft": "93149319314630",
+  "pine_tree": "102140213792412",
+  "scorched_tree": "121231152966920",
+  "softglow_bloom": "90360878744979",
+  "thorn_tuft": "113998851661485",
+  "withered_sapling": "85629070945010"
+}
