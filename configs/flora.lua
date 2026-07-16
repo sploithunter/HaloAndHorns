@@ -36,9 +36,22 @@ return {
     random_yaw_kinds = { rock = true, cactus = true, plant = true },
 
     layers = {
+        -- Home ("base") is not a realm, so it needs its own row for
+        -- realm-agnostic swaps like the baobab purge.
+        base = {
+            ["tree/baobab_tree"] = "oak_tree",
+        },
         -- heaven_2 = { ["tree/desert_tree"] = "dawnbloom_tree" },
     },
     realms = {
-        -- heaven = { ... }, hell = { ... }
+        -- Jason 2026-07-16: "we should 100% get rid of that boab tree...
+        -- The boab tree is in grass, not desert. Should probably replace it
+        -- with an oak." Every baobab anchor renders as the new oak.
+        heaven = {
+            ["tree/baobab_tree"] = "oak_tree",
+        },
+        hell = {
+            ["tree/baobab_tree"] = "oak_tree",
+        },
     },
 }

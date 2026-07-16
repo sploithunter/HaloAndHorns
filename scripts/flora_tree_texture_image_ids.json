@@ -1,0 +1,10 @@
+{
+  "_comment": "Resolved IMAGE ids (MeshPart.TextureID) for the 2026-07-16 tree batch — resolved from the Decal uploads in flora_tree_texture_decal_ids.json via InsertService. Meshes in flora_tree_model_ids.json. Prebaked in ReplicatedStorage.Assets.Models.Flora.",
+  "acacia_tree_1": "107980532021785",
+  "acacia_tree_2": "113753520202928",
+  "oak_tree": "113391058600255",
+  "frosted_pine_1": "94183052616468",
+  "frosted_pine_2": "90235290101583",
+  "cherry_heaven_tree_1": "104205005554279",
+  "cherry_heaven_tree_2": "83895948384258"
+}
