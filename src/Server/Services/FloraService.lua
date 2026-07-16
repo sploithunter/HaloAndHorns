@@ -78,7 +78,13 @@ function FloraService:_spawnAt(anchor, floraFolder)
         return false
     end
     local clone = template:Clone()
-    local _, size = clone:GetBoundingBox()
+    -- harvested exemplars carry UNRELIABLE pivots (some offset a full ±2000/
+    -- ±4000-stud layer height from their geometry — the 2026-07-16 floating
+    -- ice pines). ScaleTo scales ABOUT the pivot and PivotTo places the
+    -- pivot, so both compound that garbage. Explicit pivot at the bounding-
+    -- box center first; never trust a stored pivot here.
+    local bboxCf, size = clone:GetBoundingBox()
+    clone.WorldPivot = CFrame.new(bboxCf.Position)
     local targetH = tonumber(anchor:GetAttribute("Scale"))
     if targetH and size.Y > 0.001 then
         local scale = targetH / size.Y
@@ -86,7 +92,9 @@ function FloraService:_spawnAt(anchor, floraFolder)
             pcall(function()
                 clone:ScaleTo(math.clamp(scale, 0.2, 5))
             end)
-            _, size = clone:GetBoundingBox()
+            local newCf, newSize = clone:GetBoundingBox()
+            clone.WorldPivot = CFrame.new(newCf.Position)
+            size = newSize
         end
     end
     -- anchor sits 0.2 above the raycast floor; plant the model's bottom there
@@ -100,10 +108,7 @@ function FloraService:_spawnAt(anchor, floraFolder)
             + math.floor(anchor.Position.Z * 19349663)
         yaw = (seed % 6283) / 1000 -- 0 .. 2*pi
     end
-    local pivotRot = clone:GetPivot() - clone:GetPivot().Position
-    clone:PivotTo(
-        CFrame.new(floorPos + Vector3.new(0, size.Y / 2, 0)) * CFrame.Angles(0, yaw, 0) * pivotRot:Inverse()
-    )
+    clone:PivotTo(CFrame.new(floorPos + Vector3.new(0, size.Y / 2, 0)) * CFrame.Angles(0, yaw, 0))
     clone.Name = "Flora_" .. modelName
     clone.Parent = anchor.Parent
     return true

@@ -49,6 +49,14 @@ return {
         -- with an oak." Every baobab anchor renders as the new oak.
         heaven = {
             ["tree/baobab_tree"] = "oak_tree",
+            -- heaven ice reads distinct from base (Jason 2026-07-16):
+            -- frosted pines replace the default pines
+            ["tree/pine_tree"] = "frosted_pine_1",
+            ["tree/pinetree1"] = "frosted_pine_2",
+            -- the dead black tree IS the desert_tree exemplar; in heaven it
+            -- only stands in Heaven_2 Lava (heaven deserts use joshua) —
+            -- "we made pink trees for those"
+            ["tree/desert_tree"] = "cherry_heaven_tree_1",
         },
         hell = {
             ["tree/baobab_tree"] = "oak_tree",
