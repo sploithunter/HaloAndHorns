@@ -1,5 +1,5 @@
 {
-  "_comment": "Resolved IMAGE ids (MeshPart.TextureID) for the 2026-07-16 rock-variety (8) + cacti (7) batches. Decals/meshes in flora_rocks2_*.json and flora_cacti_*.json. Prebaked in ReplicatedStorage.Assets.Models.Flora. bone_cactus = the 'Geometric_Cactus' Meshy zip (identified by ivory texture); pearl_cactus + 6 new plant concepts (crystal_tuft/bloom/bush, toxic_vine, swamp_reed, rotten_mushroom) have images but NO meshes yet. rainbow_fern = Jason's hand-built model, adopted from Workspace.",
+  "_comment": "Resolved IMAGE ids (MeshPart.TextureID) for the 2026-07-16 rock-variety (8) + cacti (7) batches. Decals/meshes in flora_rocks2_*.json and flora_cacti_*.json. Prebaked in ReplicatedStorage.Assets.Models.Flora. bone_cactus = the 'Geometric_Cactus' Meshy zip (identified by ivory texture); pearl_cactus + 6 new plant concepts (crystal_tuft/bloom/bush, toxic_vine, swamp_reed, rotten_mushroom) have images but NO meshes yet. rainbow_fern = Jason's hand-built 4-frond model (moved into the Flora folder himself; ALL GROUP-OWNED: published Model asset 121004665334032, mesh 120103735780661, texture 86002989500744).",
   "amethyst_geode": "102124881592196",
   "animal_skull": "85024694013959",
   "bloom_cactus": "96934058051283",
