@@ -349,16 +349,15 @@ return {
 
         -- entry_anchor: a named anchor Part inside the destination realm's map folder
         -- (workspace.Maps.<Folder>) that the gate teleports the player TO, instead of a pure
-        -- Y-shift from where they stood. Lets each realm START the player in a specific area
-        -- (Heaven 1 -> Lava, where the Fire/Dragon roster lives). Falls back to the Y-shift if
-        -- the anchor is absent.
+        -- Y-shift from where they stood. UNUSED since 2026-07-16 (Jason: "no longer have an
+        -- order — have the portals all operate the same way"; heaven_1 used to force
+        -- SpawnLocationLava). Supported but unset: every layer is a pure Y-shift now.
         heaven_1 = {
             y_offset = 2000,
             requires_soul = 20,
             token_cost = 100,
             requires_level = 7, -- Jason: realm travel gated by Level (1=7, +7 per layer). Layers 3-5
             -- ALSO need their realm geometry built (the COMING SOON gate) before the level gate matters.
-            entry_anchor = "SpawnLocationLava",
         },
         heaven_2 = { y_offset = 4000, requires_soul = 40, token_cost = 250, requires_level = 14 },
         heaven_3 = { y_offset = 6000, requires_soul = 60, token_cost = 500, requires_level = 21 },
