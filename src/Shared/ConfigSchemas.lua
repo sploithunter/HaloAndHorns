@@ -20,6 +20,7 @@ local SCHEMAS = {
         slot_types = "table",
     }),
     biomes = schema({ order = "table", biomes = "table" }),
+    flora = schema({ layers = "table", realms = "table" }),
     boot = schema({ milestones = "table", player_gates = "table", phases = "table" }),
     buff_auras = schema({ poll_interval = "number", auras = "table" }),
     buffs = schema({ axes = "table", default_cap = "number" }),

@@ -18,6 +18,7 @@ This project treats Studio-authored maps as geometry plus invisible gameplay hoo
 | `ChaseableRegion` | `AreaId`, `ChaseableId` | none | Future chaseable spawn region. |
 | `ShopAnchor` | `AnchorId` | `AreaId` | Shop or UI world anchor. |
 | `NPCAnchor` | `AnchorId` | `AreaId` | NPC placement anchor. |
+| `FloraAnchor` | `Kind`, `Variant` | none | Authored flora (trees/cacti/rocks/plants) tagged in place. FloraService swaps each for the layer/realm-themed model per `configs/flora.lua` at boot (no entry = original stays). The authored place remains the layout SSOT — restyles are config-only. 280 anchors tagged 2026-07-16. |
 
 ## Config Source
 

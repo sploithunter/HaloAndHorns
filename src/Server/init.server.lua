@@ -425,6 +425,13 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.LayerService,
     { "Logger", "ConfigLoader", "DataService", "EconomyService" }
 )
+-- FloraService: FloraAnchor-tagged map flora restyled per layer/realm from
+-- configs/flora.lua (Jason 2026-07-16 — style swaps are config, not map edits).
+loader:RegisterModule(
+    "FloraService",
+    ServerScriptService.Server.Services.FloraService,
+    { "Logger", "ConfigLoader" }
+)
 -- Phase 3 party core (Halo & Horns): active squad, spirit form, stack pool.
 loader:RegisterModule(
     "ActiveSquadService",
