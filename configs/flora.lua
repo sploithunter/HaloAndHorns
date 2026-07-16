@@ -58,7 +58,8 @@ return {
             -- pink trees for those"
             ["tree/desert_tree"] = "cherry_heaven_tree_1",
             -- garden palette (2026-07-16 19-item set): heavenly skins for
-            -- the base garden plants
+            -- the base garden plants; center tree = the realm sapling
+            ["tree/oak_tree"] = "cloud_sapling",
             ["plant/grass_tuft"] = "pearl_tuft",
             ["plant/field_flower_bush"] = "softglow_bloom",
             ["plant/meadow_bush"] = "cloud_bush",
@@ -69,7 +70,9 @@ return {
             -- new desert_tree exemplar is a leafy savanna tree; hell keeps
             -- its dead look with the scorched tree instead
             ["tree/desert_tree"] = "scorched_tree",
-            -- garden palette: hellish skins for the base garden plants
+            -- garden palette: hellish skins for the base garden plants;
+            -- center tree = the realm sapling
+            ["tree/oak_tree"] = "withered_sapling",
             ["plant/grass_tuft"] = "ash_tuft",
             ["plant/field_flower_bush"] = "thorn_tuft",
             ["plant/meadow_bush"] = "dead_brush",
