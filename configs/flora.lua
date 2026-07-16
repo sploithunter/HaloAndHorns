@@ -41,27 +41,45 @@ return {
         base = {
             ["tree/baobab_tree"] = "oak_tree",
         },
-        -- Layer tier beats realm tier — per-layer garden identity (Jason
-        -- 2026-07-16: "Heaven 1 and Heaven 2 gardens are the same. We're
-        -- looking for variety"). Heaven_1 keeps the realm cloud/pearl look;
-        -- Heaven_2 goes crystalline. Hell_1 keeps ash/cinder; Hell_2 leans
+        -- Layer tier beats realm tier — per-layer IDENTITY on top of the
+        -- realm theme (Jason 2026-07-16: "not a lot of differentiation...
+        -- we should have assets that are in theme"). Heaven_1 = cloud/
+        -- pearl, Heaven_2 = crystal/cherry; Hell_1 = ash/bone, Hell_2 =
         -- rot/sulfur. Deeper splits (crystal_* plants for heaven_2,
         -- toxic/swamp/rotten for hell_2) land when those meshes exist.
+        heaven_1 = {
+            ["tree/tree1"] = "cloud_sapling",
+            ["rock/rock"] = { "marble_pebble", "pearl_quartz" },
+        },
         heaven_2 = {
+            ["tree/tree1"] = { "cherry_heaven_tree_1", "cherry_heaven_tree_2" },
+            ["rock/rock"] = { "pearl_quartz", "amethyst_geode", "rosegold_geode" },
             ["tree/oak_tree"] = "rainbow_fern", -- garden center = Jason's fern
             ["rock/mossy_pebble"] = { "rosegold_geode", "amethyst_geode" },
         },
+        hell_1 = {
+            ["rock/rock"] = { "bone_rock", "sulfur_rock", "cinder_rock" },
+        },
         hell_2 = {
+            ["rock/rock"] = { "putrid_rock", "sulfur_rock", "bone_rock" },
             ["tree/oak_tree"] = "scorched_tree",
             ["rock/mossy_pebble"] = { "putrid_rock", "sulfur_rock" },
         },
     },
     realms = {
-        -- Jason 2026-07-16: "we should 100% get rid of that boab tree...
-        -- The boab tree is in grass, not desert. Should probably replace it
-        -- with an oak." Every baobab anchor renders as the new oak.
+        -- Baobab purge (Jason 2026-07-16): base renders oaks (layers.base);
+        -- heaven/hell render their themed trees below.
         heaven = {
-            ["tree/baobab_tree"] = "oak_tree",
+            -- REALM THEME (Jason: "we have heaven and hell themes — assets
+            -- should be in theme"): every generic green/grey exemplar gets
+            -- a celestial skin. Home keeps the naturals.
+            ["tree/baobab_tree"] = "cherry_heaven_tree_1",
+            ["tree/tree1"] = { "cloud_sapling", "cherry_heaven_tree_2" },
+            ["tree/tree2"] = "cloud_sapling",
+            ["tree/world_tree_10k"] = "cherry_heaven_tree_1",
+            ["rock/rock"] = { "marble_pebble", "pearl_quartz" },
+            ["rock/rocks2"] = "marble_pebble",
+            ["rock/rockstone"] = "pearl_quartz",
             -- heaven ice reads distinct from base (Jason 2026-07-16):
             -- frosted pines replace the default pines
             ["tree/pine_tree"] = "frosted_pine_1",
@@ -82,7 +100,14 @@ return {
             cactus = { "cloud_cactus", "crystal_cactus" },
         },
         hell = {
-            ["tree/baobab_tree"] = "oak_tree",
+            -- REALM THEME: dead and scorched everywhere a generic green
+            -- exemplar would have spawned.
+            ["tree/baobab_tree"] = "withered_sapling",
+            ["tree/tree1"] = { "withered_sapling", "scorched_tree" },
+            ["tree/tree2"] = "withered_sapling",
+            ["rock/rock"] = { "putrid_rock", "sulfur_rock", "bone_rock" },
+            ["rock/rocks2"] = "bone_rock",
+            ["rock/rockstone"] = "sulfur_rock",
             -- hell DESERT keeps real desert trees (savanna default) —
             -- lava-zone anchors carry Variant=scorched_tree and default to
             -- the scorched model, so no desert_tree rule here
@@ -93,11 +118,8 @@ return {
             ["plant/field_flower_bush"] = "thorn_tuft",
             ["plant/meadow_bush"] = "dead_brush",
             ["rock/mossy_pebble"] = "cinder_rock",
-            -- hell deserts grow fire/rot cacti; hell boulders mix the
-            -- 2026-07-16 rock set (variant-keyed so rocks2/rockstone/
-            -- small_rock_path keep their authored look)
+            -- hell deserts grow fire/rot cacti
             cactus = { "lava_cactus", "rotted_cactus" },
-            ["rock/rock"] = { "putrid_rock", "sulfur_rock", "bone_rock" },
         },
     },
 }
