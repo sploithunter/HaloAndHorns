@@ -155,7 +155,20 @@ return {
                 --                Lighting ClockTime 13 / Brightness 1.88 / FogEnd 100000.
                 -- To make a layer use a sky, fill its `textures = { ft, bk, lf, rt, up, dn, ... }`.
                 base = { textures = nil },
-                heaven_1 = { textures = nil },
+                -- heaven_1 faces: staged Decals (scripts/skybox_heaven_1_ids.json)
+                -- resolved to their wrapped IMAGE ids 2026-07-16 (Sky needs Image
+                -- content ids; resolve = InsertService:LoadAsset(decal).Texture).
+                heaven_1 = {
+                    textures = {
+                        ft = 110711974579507,
+                        bk = 79921254667534,
+                        lf = 93524495880415,
+                        rt = 108810460537141,
+                        up = 82201621051615,
+                        dn = 124790963674953,
+                        celestial_bodies_shown = false,
+                    },
+                },
                 heaven_2 = { textures = nil },
                 heaven_3 = { textures = nil },
                 heaven_4 = { textures = nil },
