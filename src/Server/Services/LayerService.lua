@@ -53,6 +53,29 @@ function LayerService:_settleOnJoin(player)
 end
 
 function LayerService:Start()
+    -- SKY SINGLETON SWEEP (2026-07-16): a stray second Sky in Lighting
+    -- (e.g. a hand-staged "_HawaiiPreviewSky" saved into the place) makes
+    -- the engine's active-sky pick arbitrary, so RealmAtmosphere's
+    -- per-layer skybox swap mutates a Sky the renderer may ignore — hell
+    -- layers showed the base aurora everywhere. Keep the FIRST Sky, purge
+    -- extras, loudly.
+    do
+        local Lighting = game:GetService("Lighting")
+        local kept
+        for _, c in ipairs(Lighting:GetChildren()) do
+            if c:IsA("Sky") then
+                if not kept then
+                    kept = c
+                else
+                    warn(
+                        ("[LayerService] duplicate Sky '%s' removed from Lighting (keeping '%s') — "
+                            .. "duplicates break the per-layer skybox swap"):format(c.Name, kept.Name)
+                    )
+                    c:Destroy()
+                end
+            end
+        end
+    end
     for _, player in ipairs(Players:GetPlayers()) do
         task.spawn(function()
             self:_settleOnJoin(player)
