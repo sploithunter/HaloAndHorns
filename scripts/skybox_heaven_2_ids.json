@@ -1,0 +1,10 @@
+{
+  "SkyboxFt": "89244100718825",
+  "SkyboxBk": "117802625153532",
+  "SkyboxLf": "125239264423271",
+  "SkyboxRt": "111017703875853",
+  "SkyboxUp": "80746694188980",
+  "SkyboxDn": "130156601347148",
+  "source": "assets/skybox/heaven_2 (from Downloads/hdr_high_* (3).png — Hyper3D HDRI -> panorama-to-cubemap)",
+  "layer": "heaven_2"
+}

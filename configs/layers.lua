@@ -169,7 +169,20 @@ return {
                         celestial_bodies_shown = false,
                     },
                 },
-                heaven_2 = { textures = nil },
+                -- heaven_2: pink dawn clouds (Hyper3D HDRI -> panorama-to-cubemap,
+                -- docs/SKYBOX_PIPELINE.md). Decals in scripts/skybox_heaven_2_ids.json;
+                -- these are the resolved IMAGE ids.
+                heaven_2 = {
+                    textures = {
+                        ft = 117330190709420,
+                        bk = 126641502921298,
+                        lf = 111294854118430,
+                        rt = 114580899592866,
+                        up = 124807829419776,
+                        dn = 120098452154269,
+                        celestial_bodies_shown = false,
+                    },
+                },
                 heaven_3 = { textures = nil },
                 heaven_4 = { textures = nil },
                 heaven_5 = { textures = nil },
