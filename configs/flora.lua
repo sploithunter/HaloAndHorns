@@ -101,7 +101,13 @@ return {
         },
         hell = {
             -- REALM THEME: dead and scorched everywhere a generic green
-            -- exemplar would have spawned.
+            -- exemplar would have spawned. Canon sub-themes (design doc
+            -- "surprise contrast" + Jason 2026-07-16): Hell Ice = FREEZING
+            -- COLD FIRE (blues) — INTERIM bare black trees until the
+            -- coldfire_pine/coldfire_rock/dark_ice_shard set is generated;
+            -- Hell Lava = corrupted volcanic; rot carries Hell_2.
+            ["tree/pine_tree"] = "withered_sapling",
+            ["tree/pinetree1"] = "withered_sapling",
             ["tree/baobab_tree"] = "withered_sapling",
             ["tree/tree1"] = { "withered_sapling", "scorched_tree" },
             ["tree/tree2"] = "withered_sapling",
