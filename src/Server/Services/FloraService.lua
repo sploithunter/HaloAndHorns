@@ -100,6 +100,10 @@ function FloraService:_spawnAt(anchor, floraFolder)
     end
     -- anchor sits 0.2 above the raycast floor; plant the model's bottom there
     local floorPos = anchor.Position - Vector3.new(0, 0.2, 0)
+    -- irregular meshes (rocks) touch only at their lowest vertex and read
+    -- as floating — sink a configured slice of their height into the floor
+    local sinkKinds = self._config.sink_fraction
+    local sink = (type(sinkKinds) == "table" and tonumber(sinkKinds[kind]) or 0) * size.Y
     local yaw = select(2, anchor.CFrame:ToEulerAnglesYXZ())
     -- variety kinds get a DETERMINISTIC random yaw (position-seeded: stable
     -- across boots); trees etc. keep the authored anchor rotation
@@ -110,6 +114,14 @@ function FloraService:_spawnAt(anchor, floraFolder)
         yaw = (seed % 6283) / 1000 -- 0 .. 2*pi
     end
     clone:PivotTo(CFrame.new(floorPos + Vector3.new(0, size.Y / 2, 0)) * CFrame.Angles(0, yaw, 0))
+    -- yaw shifts an irregular mesh's true bounding box, so measure AFTER
+    -- rotating and drop the model until its real bottom sits at floor - sink
+    local placedCf, placedSize = clone:GetBoundingBox()
+    local bottom = placedCf.Position.Y - placedSize.Y / 2
+    local drop = bottom - (floorPos.Y - sink)
+    if math.abs(drop) > 0.01 then
+        clone:PivotTo(clone:GetPivot() - Vector3.new(0, drop, 0))
+    end
     clone.Name = "Flora_" .. modelName
     clone.Parent = anchor.Parent
     return true

@@ -35,6 +35,12 @@ return {
     -- part in Studio to change one.
     random_yaw_kinds = { rock = true, cactus = true, plant = true },
 
+    -- fraction of a spawn's height sunk BELOW the anchor floor, per kind
+    -- (Jason 2026-07-16: "sink the rocks into the ground a bit — they look
+    -- like they're kind of floating there on points"). Irregular meshes
+    -- only touch at their lowest vertex, so burying a slice reads seated.
+    sink_fraction = { rock = 0.18 },
+
     layers = {
         -- Home ("base") is not a realm, so it needs its own row for
         -- realm-agnostic swaps like the baobab purge.
