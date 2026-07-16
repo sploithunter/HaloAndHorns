@@ -44,6 +44,7 @@ Formal requirements and plans live outside the wiki and should be treated as sou
 - [Pet Rig Onboarding](../PET_RIG_ONBOARDING.md) — the reproducible rig runbook: onboard_pet_rig.sh front half + manual tail + every gotcha.
 - [Skybox Pipeline](../SKYBOX_PIPELINE.md) — HDRI (Hyper3D) → cubemap faces (panorama-to-cubemap) → stage/upload/resolve/wire per realm layer; the one-Sky rule.
 - [Roblox Mesh Texture Kaleidoscope](../ROBLOX_MESH_TEXTURE_KALEIDOSCOPE.md) — public root-cause writeup: Open Cloud collapses per-corner UVs; welded meshes must be seam-split before upload.
+- [Authored Map Workflow](../AUTHORED_MAP_WORKFLOW.md) — Studio-authored world editing, incl. duplicating Terrain-Editor work between realm layers (CopyRegion/PasteRegion, +2000Y = +500 voxels).
 - [Map Marker Reference](../MAP_MARKER_REFERENCE.md)
 - [Egg Authoring And Admin Testing](../EGG_AUTHORING_AND_ADMIN_TESTING.md)
 
