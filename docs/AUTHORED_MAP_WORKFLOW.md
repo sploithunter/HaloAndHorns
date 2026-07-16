@@ -134,3 +134,30 @@ The current NewWorld cleanup copy uses `Workspace.SpawnLocation` this way. Witho
 3. Run travel and egg smoke tests.
 4. Temporarily switch to `map.mode = "authored"` before a release candidate to fail loudly if any configured hook is missing.
 5. Switch back to `auto` for day-to-day mixed synthetic/authored development.
+
+## Duplicating terrain between realm layers (2026-07-16)
+
+The layer ladder shares one footprint at different Y elevations (layers are
+exactly +2000 studs apart), so Terrain-Editor work done on one layer can be
+copied to another with a pure vertical translate — run in the command bar /
+MCP (Edit mode):
+
+```lua
+local Terrain = workspace.Terrain
+-- source band (world studs, snapped to the 4-stud voxel grid)
+local min = Vector3int16.new(-560/4, 1900/4, -176/4)  -- Heaven_1 band
+local max = Vector3int16.new(216/4, 2140/4, 800/4)
+local copied = Terrain:CopyRegion(Region3int16.new(min, max))
+-- paste +2000 studs up = +500 voxels (Heaven_2)
+Terrain:PasteRegion(copied, Vector3int16.new(min.X, min.Y + 500, min.Z), false)
+```
+
+- `pasteEmptyCells = false` keeps the target's existing terrain where the
+  source is empty (safe additive copy).
+- Region3int16 is in VOXELS (world studs / 4); layer offsets are multiples
+  of 4, so alignment is exact.
+- Grass-blade decoration follows the material automatically; placed models
+  (flowers, rocks) are parts and must be cloned separately.
+- Terrain persists in the PLACE file — save/publish the place after.
+- Verify with a voxel count over matching bands (ReadVoxels) — the copy
+  above reproduced Heaven_1's 1,704 Grass voxels exactly.
