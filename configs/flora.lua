@@ -53,10 +53,10 @@ return {
             -- frosted pines replace the default pines
             ["tree/pine_tree"] = "frosted_pine_1",
             ["tree/pinetree1"] = "frosted_pine_2",
-            -- the dead black tree stood at heaven's tree/desert_tree anchors
-            -- (only Heaven_2 Lava; heaven deserts use joshua) — "we made
-            -- pink trees for those"
-            ["tree/desert_tree"] = "cherry_heaven_tree_1",
+            -- lava-zone tree anchors carry Variant=scorched_tree (retagged
+            -- 2026-07-16 — "not sure why we have lava trees inside of
+            -- sand"); heaven's lava banks bloom pink instead
+            ["tree/scorched_tree"] = "cherry_heaven_tree_1",
             -- garden palette (2026-07-16 19-item set): heavenly skins for
             -- the base garden plants; center tree = the realm sapling
             ["tree/oak_tree"] = "cloud_sapling",
@@ -70,9 +70,9 @@ return {
         },
         hell = {
             ["tree/baobab_tree"] = "oak_tree",
-            -- new desert_tree exemplar is a leafy savanna tree; hell keeps
-            -- its dead look with the scorched tree instead
-            ["tree/desert_tree"] = "scorched_tree",
+            -- hell DESERT keeps real desert trees (savanna default) —
+            -- lava-zone anchors carry Variant=scorched_tree and default to
+            -- the scorched model, so no desert_tree rule here
             -- garden palette: hellish skins for the base garden plants;
             -- center tree = the realm sapling
             ["tree/oak_tree"] = "withered_sapling",
