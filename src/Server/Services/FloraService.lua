@@ -1,16 +1,23 @@
 --[[
-    FloraService — realm restyling via FloraAnchor markers (Jason 2026-07-16:
-    "a part on the floor of every tree, every cactus... quickly replace
-    things to change styles for heaven and hell").
+    FloraService — flora as SPAWNABLE items on floor anchors (Jason
+    2026-07-16: "find a tree, project down to the floor, set an invisible
+    anchored part there and label it — treat the trees, cactuses etc. as
+    spawnable items — easy to reskin").
 
-    Authored flora models (Maps.<Layer>) are TAGGED `FloraAnchor` with
-    Kind/Variant attributes — the authored place remains the layout SSOT.
-    At boot, every tagged model whose (layer, kind, variant) resolves to a
-    replacement in configs/flora.lua is swapped in place: clone the themed
-    model from ReplicatedStorage.Assets.Models.Flora, ground it on the
-    original's footprint (bottom-center + yaw preserved), destroy the
-    original INSTANCE (place file untouched). No config entry = original
-    stays. Missing replacement models WARN loudly (loud-validation).
+    The map carries only invisible FloraAnchor PARTS (tagged, at true floor
+    level, attrs Kind/Variant/Scale, yaw in the part CFrame) — the 280
+    authored flora models were harvested into
+    ReplicatedStorage.Assets.Models.Flora (one exemplar per Variant = the
+    DEFAULT skin) and then replaced by anchors (2026-07-16 migration).
+
+    At boot every anchor spawns a model:
+      1. configs/flora.lua override (FloraTheme precedence: layer-variant >
+         layer-kind > realm-variant > realm-kind), else
+      2. the Variant's default from Assets.Models.Flora.
+
+    Spawns match the authored height (Scale attribute) and yaw, bottom on
+    the anchor's floor point. Missing models WARN loudly. The world looks
+    identical with an empty config — restyles are pure config changes.
 ]]
 
 local CollectionService = game:GetService("CollectionService")
@@ -52,49 +59,45 @@ local function layerOf(inst)
     return nil
 end
 
--- bottom-center + yaw of a model/part footprint
-local function footprintOf(inst)
-    local cf, size
-    if inst:IsA("Model") then
-        cf, size = inst:GetBoundingBox()
-    else
-        cf, size = inst.CFrame, inst.Size
+function FloraService:_spawnAt(anchor, floraFolder)
+    local kind = anchor:GetAttribute("Kind")
+    local variant = anchor:GetAttribute("Variant")
+    if not (kind and variant) then
+        self:_log("Warn", "anchor missing Kind/Variant attributes", { anchor = anchor:GetFullName() })
+        return false
     end
-    local bottom = cf.Position - Vector3.new(0, size.Y / 2, 0)
-    local look = cf.LookVector
-    local yaw = math.atan2(-look.X, -look.Z)
-    return bottom, yaw, size
-end
-
-function FloraService:_replace(anchor, modelName, floraFolder)
+    local layerId = layerOf(anchor)
+    local modelName = FloraTheme.resolve(self._config, layerId, kind, variant) or variant
     local template = floraFolder and floraFolder:FindFirstChild(modelName)
     if not template then
-        self:_log("Warn", "replacement model MISSING in Assets.Models.Flora", {
+        self:_log("Warn", "flora model MISSING in Assets.Models.Flora", {
             model = modelName,
+            variant = variant,
             anchor = anchor:GetFullName(),
         })
         return false
     end
-    local bottom, yaw, oldSize = footprintOf(anchor)
     local clone = template:Clone()
     local _, size = clone:GetBoundingBox()
-    -- scale the clone's footprint height to the authored one (style swaps
-    -- shouldn't change the world's silhouette drastically)
-    local scale = oldSize.Y / math.max(size.Y, 0.001)
-    if math.abs(scale - 1) > 0.05 and clone.ScaleTo then
-        pcall(function()
-            clone:ScaleTo(math.clamp(scale, 0.2, 5))
-        end)
-        _, size = clone:GetBoundingBox()
+    local targetH = tonumber(anchor:GetAttribute("Scale"))
+    if targetH and size.Y > 0.001 then
+        local scale = targetH / size.Y
+        if math.abs(scale - 1) > 0.05 then
+            pcall(function()
+                clone:ScaleTo(math.clamp(scale, 0.2, 5))
+            end)
+            _, size = clone:GetBoundingBox()
+        end
     end
+    -- anchor sits 0.2 above the raycast floor; plant the model's bottom there
+    local floorPos = anchor.Position - Vector3.new(0, 0.2, 0)
+    local yaw = select(2, anchor.CFrame:ToEulerAnglesYXZ())
+    local pivotRot = clone:GetPivot() - clone:GetPivot().Position
     clone:PivotTo(
-        CFrame.new(bottom + Vector3.new(0, size.Y / 2, 0))
-            * CFrame.Angles(0, yaw, 0)
-            * (clone:GetPivot() - clone:GetPivot().Position):Inverse()
+        CFrame.new(floorPos + Vector3.new(0, size.Y / 2, 0)) * CFrame.Angles(0, yaw, 0) * pivotRot:Inverse()
     )
-    clone.Name = anchor.Name .. "_themed"
+    clone.Name = "Flora_" .. modelName
     clone.Parent = anchor.Parent
-    anchor:Destroy()
     return true
 end
 
@@ -102,26 +105,24 @@ function FloraService:Start()
     local models = ReplicatedStorage:FindFirstChild("Assets")
     models = models and models:FindFirstChild("Models")
     local floraFolder = models and models:FindFirstChild("Flora")
-    local swapped, kept, missing = 0, 0, 0
+    if not floraFolder then
+        self:_log("Warn", "Assets.Models.Flora missing — no flora spawned")
+        return
+    end
+    local spawned, failed = 0, 0
     for _, anchor in ipairs(CollectionService:GetTagged(TAG)) do
-        if anchor:IsDescendantOf(workspace) then
-            local kind = anchor:GetAttribute("Kind")
-            local variant = anchor:GetAttribute("Variant")
-            local layerId = layerOf(anchor)
-            local modelName = kind
-                and FloraTheme.resolve(self._config, layerId, kind, variant)
-            if modelName then
-                if self:_replace(anchor, modelName, floraFolder) then
-                    swapped += 1
-                else
-                    missing += 1
-                end
+        if anchor:IsDescendantOf(workspace) and anchor:IsA("BasePart") then
+            if self:_spawnAt(anchor, floraFolder) then
+                spawned += 1
             else
-                kept += 1
+                failed += 1
             end
         end
     end
-    self:_log("Info", "flora themed", { swapped = swapped, kept = kept, missing = missing })
+    self:_log(failed > 0 and "Warn" or "Info", "flora spawned", {
+        spawned = spawned,
+        failed = failed,
+    })
 end
 
 return FloraService
