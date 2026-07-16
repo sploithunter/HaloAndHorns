@@ -85,6 +85,9 @@ return {
             { part = "Portal_Horn3", layer = "hell_3", action = "Enter Hell 3" },
             { part = "Portal_Horn4", layer = "hell_4", action = "Enter Hell 4" },
             { part = "Portal_Horn5", layer = "hell_5", action = "Enter Hell 5" },
+            -- Jason 2026-07-16: authored in every non-base layer's spawn —
+            -- one-tap ride back to Home (dest "base" skips the level gate).
+            { part = "Portal_Home", layer = "base", action = "Return Home" },
         },
     },
 
