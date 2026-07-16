@@ -40,6 +40,9 @@ return {
         -- realm-agnostic swaps like the baobab purge.
         base = {
             ["tree/baobab_tree"] = "oak_tree",
+            -- ice-zone boulders carry Variant=ice_rock (retagged 2026-07-16
+            -- so hell ice can run cold-fire); Home keeps granite
+            ["rock/ice_rock"] = "rock",
         },
         -- Layer tier beats realm tier — per-layer IDENTITY on top of the
         -- realm theme (Jason 2026-07-16: "not a lot of differentiation...
@@ -56,6 +59,10 @@ return {
             ["rock/rock"] = { "pearl_quartz", "amethyst_geode", "rosegold_geode" },
             ["tree/oak_tree"] = "rainbow_fern", -- garden center = Jason's fern
             ["rock/mossy_pebble"] = { "rosegold_geode", "amethyst_geode" },
+            -- crystalline garden plants (crystal_* meshes, 2026-07-16)
+            ["plant/grass_tuft"] = "crystal_tuft",
+            ["plant/field_flower_bush"] = "crystal_bloom",
+            ["plant/meadow_bush"] = "crystal_bush",
         },
         hell_1 = {
             ["rock/rock"] = { "bone_rock", "sulfur_rock", "cinder_rock" },
@@ -64,6 +71,10 @@ return {
             ["rock/rock"] = { "putrid_rock", "sulfur_rock", "bone_rock" },
             ["tree/oak_tree"] = "scorched_tree",
             ["rock/mossy_pebble"] = { "putrid_rock", "sulfur_rock" },
+            -- ROT garden (swamp meshes, 2026-07-16)
+            ["plant/grass_tuft"] = "swamp_reed",
+            ["plant/field_flower_bush"] = "rotten_mushroom",
+            ["plant/meadow_bush"] = { "putrid_bush", "toxic_vine" },
         },
     },
     realms = {
@@ -88,6 +99,8 @@ return {
             -- 2026-07-16 — "not sure why we have lava trees inside of
             -- sand"); heaven's lava banks bloom pink instead
             ["tree/scorched_tree"] = "cherry_heaven_tree_1",
+            -- heaven ice boulders stay holy-frost pale
+            ["rock/ice_rock"] = { "marble_pebble", "pearl_quartz" },
             -- garden palette (2026-07-16 19-item set): heavenly skins for
             -- the base garden plants; center tree = the realm sapling
             ["tree/oak_tree"] = "cloud_sapling",
@@ -103,11 +116,12 @@ return {
             -- REALM THEME: dead and scorched everywhere a generic green
             -- exemplar would have spawned. Canon sub-themes (design doc
             -- "surprise contrast" + Jason 2026-07-16): Hell Ice = FREEZING
-            -- COLD FIRE (blues) — INTERIM bare black trees until the
-            -- coldfire_pine/coldfire_rock/dark_ice_shard set is generated;
-            -- Hell Lava = corrupted volcanic; rot carries Hell_2.
-            ["tree/pine_tree"] = "withered_sapling",
-            ["tree/pinetree1"] = "withered_sapling",
+            -- COLD FIRE (the blues), Hell Lava = corrupted volcanic
+            -- (lava_eye_tree), rot carries Hell_2.
+            ["tree/pine_tree"] = "coldfire_pine",
+            ["tree/pinetree1"] = "coldfire_pine",
+            ["rock/ice_rock"] = { "coldfire_rock", "dark_ice_shard" },
+            ["tree/scorched_tree"] = "lava_eye_tree",
             ["tree/baobab_tree"] = "withered_sapling",
             ["tree/tree1"] = { "withered_sapling", "scorched_tree" },
             ["tree/tree2"] = "withered_sapling",

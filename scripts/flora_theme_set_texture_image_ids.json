@@ -1,0 +1,15 @@
+{
+  "_comment": "Resolved IMAGE ids for the 2026-07-16 theme-compliance set: cold-fire (hell ice), lava_eye_tree (hell lava), crystal_* (heaven_2 gardens), swamp/rot (hell_2 gardens). Decals/meshes in flora_theme_set_*.json. Ice-zone boulder anchors retagged Variant=ice_rock (7 per layer, 35 total). coldfire_tuft prebaked but unwired (no plant anchors in ice zones yet). pearl_cactus still concept-only.",
+  "coldfire_pine": "131294198953344",
+  "coldfire_rock": "83690890735271",
+  "coldfire_tuft": "132648458129641",
+  "crystal_bloom": "74881097074065",
+  "crystal_bush": "126556415305770",
+  "crystal_tuft": "75710327821975",
+  "dark_ice_shard": "105085009261532",
+  "lava_eye_tree": "81697931116508",
+  "putrid_bush": "121720697873706",
+  "rotten_mushroom": "119901993856594",
+  "swamp_reed": "75561655613314",
+  "toxic_vine": "102849242678181"
+}
