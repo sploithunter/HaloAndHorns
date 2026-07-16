@@ -1,0 +1,18 @@
+{
+  "_comment": "Resolved IMAGE ids (MeshPart.TextureID) for the 2026-07-16 rock-variety (8) + cacti (7) batches. Decals/meshes in flora_rocks2_*.json and flora_cacti_*.json. Prebaked in ReplicatedStorage.Assets.Models.Flora. bone_cactus = the 'Geometric_Cactus' Meshy zip (identified by ivory texture); pearl_cactus + 6 new plant concepts (crystal_tuft/bloom/bush, toxic_vine, swamp_reed, rotten_mushroom) have images but NO meshes yet. rainbow_fern = Jason's hand-built model, adopted from Workspace.",
+  "amethyst_geode": "102124881592196",
+  "animal_skull": "85024694013959",
+  "bloom_cactus": "96934058051283",
+  "bone_cactus": "118422576623668",
+  "bone_rock": "111173324179888",
+  "cloud_cactus": "93725123554102",
+  "crystal_cactus": "75064665033553",
+  "golden_nugget": "119922093857144",
+  "lava_cactus": "89883709895155",
+  "pearl_quartz": "89665069960485",
+  "putrid_rock": "138233003891228",
+  "rosegold_geode": "128733757062955",
+  "rotted_cactus": "109509013036415",
+  "sulfur_rock": "111373565045147",
+  "swamp_cactus": "129733038059792"
+}

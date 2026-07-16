@@ -67,7 +67,8 @@ function FloraService:_spawnAt(anchor, floraFolder)
         return false
     end
     local layerId = layerOf(anchor)
-    local modelName = FloraTheme.resolve(self._config, layerId, kind, variant) or variant
+    local resolved = FloraTheme.resolve(self._config, layerId, kind, variant)
+    local modelName = FloraTheme.pick(resolved, anchor.Position.X, anchor.Position.Z) or variant
     local template = floraFolder and floraFolder:FindFirstChild(modelName)
     if not template then
         self:_log("Warn", "flora model MISSING in Assets.Models.Flora", {

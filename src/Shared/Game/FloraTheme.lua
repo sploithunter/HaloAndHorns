@@ -28,8 +28,24 @@ function FloraTheme.realmOf(layerId)
     return realm
 end
 
+-- Pick one model name from a resolved value. Strings pass through; an
+-- ARRAY value means "any of these" — chosen deterministically from the
+-- anchor's XZ position so the world is stable across boots (same scheme
+-- as FloraService's random yaw).
+function FloraTheme.pick(value, x, z)
+    if type(value) ~= "table" then
+        return value
+    end
+    if #value == 0 then
+        return nil
+    end
+    local seed = math.floor((tonumber(x) or 0) * 73856093) + math.floor((tonumber(z) or 0) * 19349663)
+    return value[(seed % #value) + 1]
+end
+
 -- Resolve the replacement model NAME for (layerId, kind, variant) against
--- the configs/flora.lua table. nil = keep the authored original.
+-- the configs/flora.lua table. nil = keep the authored original. The value
+-- may be a string or an array of names (see FloraTheme.pick).
 function FloraTheme.resolve(config, layerId, kind, variant)
     if type(config) ~= "table" then
         return nil

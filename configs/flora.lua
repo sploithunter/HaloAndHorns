@@ -64,6 +64,9 @@ return {
             ["plant/field_flower_bush"] = "softglow_bloom",
             ["plant/meadow_bush"] = "cloud_bush",
             ["rock/mossy_pebble"] = "marble_pebble",
+            -- heaven deserts grow cloud/crystal cacti (array = deterministic
+            -- position-seeded mix, FloraTheme.pick)
+            cactus = { "cloud_cactus", "crystal_cactus" },
         },
         hell = {
             ["tree/baobab_tree"] = "oak_tree",
@@ -77,6 +80,11 @@ return {
             ["plant/field_flower_bush"] = "thorn_tuft",
             ["plant/meadow_bush"] = "dead_brush",
             ["rock/mossy_pebble"] = "cinder_rock",
+            -- hell deserts grow fire/rot cacti; hell boulders mix the
+            -- 2026-07-16 rock set (variant-keyed so rocks2/rockstone/
+            -- small_rock_path keep their authored look)
+            cactus = { "lava_cactus", "rotted_cactus" },
+            ["rock/rock"] = { "putrid_rock", "sulfur_rock", "bone_rock" },
         },
     },
 }

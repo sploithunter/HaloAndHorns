@@ -62,6 +62,33 @@ return function()
         end)
     end)
 
+    describe("FloraTheme.pick", function()
+        it("passes strings through", function()
+            expect(FloraTheme.pick("oak_tree", 10, 20)).to.equal("oak_tree")
+            expect(FloraTheme.pick(nil, 10, 20)).to.equal(nil)
+        end)
+
+        it("picks deterministically from arrays by position", function()
+            local list = { "a", "b", "c" }
+            local first = FloraTheme.pick(list, 100, 200)
+            expect(FloraTheme.pick(list, 100, 200)).to.equal(first)
+            -- some other position eventually differs (not all same)
+            local seen = { [first] = true }
+            for x = 1, 20 do
+                seen[FloraTheme.pick(list, x * 7.3, x * 3.1)] = true
+            end
+            local count = 0
+            for _ in pairs(seen) do
+                count += 1
+            end
+            expect(count > 1).to.equal(true)
+        end)
+
+        it("empty array means keep original", function()
+            expect(FloraTheme.pick({}, 1, 2)).to.equal(nil)
+        end)
+    end)
+
     describe("FloraTheme.realmOf", function()
         it("parses layer ids", function()
             expect(FloraTheme.realmOf("heaven_2")).to.equal("heaven")
