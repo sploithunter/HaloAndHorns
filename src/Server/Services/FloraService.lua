@@ -92,6 +92,14 @@ function FloraService:_spawnAt(anchor, floraFolder)
     -- anchor sits 0.2 above the raycast floor; plant the model's bottom there
     local floorPos = anchor.Position - Vector3.new(0, 0.2, 0)
     local yaw = select(2, anchor.CFrame:ToEulerAnglesYXZ())
+    -- variety kinds get a DETERMINISTIC random yaw (position-seeded: stable
+    -- across boots); trees etc. keep the authored anchor rotation
+    local randomKinds = self._config.random_yaw_kinds
+    if type(randomKinds) == "table" and randomKinds[kind] then
+        local seed = math.floor(anchor.Position.X * 73856093)
+            + math.floor(anchor.Position.Z * 19349663)
+        yaw = (seed % 6283) / 1000 -- 0 .. 2*pi
+    end
     local pivotRot = clone:GetPivot() - clone:GetPivot().Position
     clone:PivotTo(
         CFrame.new(floorPos + Vector3.new(0, size.Y / 2, 0)) * CFrame.Angles(0, yaw, 0) * pivotRot:Inverse()

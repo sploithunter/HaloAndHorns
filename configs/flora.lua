@@ -28,6 +28,13 @@
 ]]
 
 return {
+    -- kinds that spawn with a DETERMINISTIC random yaw (seeded by anchor
+    -- position, so the world is stable across boots) instead of the
+    -- authored rotation. Trees keep their authored facing (Jason: "large
+    -- items we might want to rotate a particular way") — rotate the anchor
+    -- part in Studio to change one.
+    random_yaw_kinds = { rock = true, cactus = true, plant = true },
+
     layers = {
         -- heaven_2 = { ["tree/desert_tree"] = "dawnbloom_tree" },
     },
