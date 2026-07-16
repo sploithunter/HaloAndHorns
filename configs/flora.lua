@@ -41,7 +41,20 @@ return {
         base = {
             ["tree/baobab_tree"] = "oak_tree",
         },
-        -- heaven_2 = { ["tree/desert_tree"] = "dawnbloom_tree" },
+        -- Layer tier beats realm tier — per-layer garden identity (Jason
+        -- 2026-07-16: "Heaven 1 and Heaven 2 gardens are the same. We're
+        -- looking for variety"). Heaven_1 keeps the realm cloud/pearl look;
+        -- Heaven_2 goes crystalline. Hell_1 keeps ash/cinder; Hell_2 leans
+        -- rot/sulfur. Deeper splits (crystal_* plants for heaven_2,
+        -- toxic/swamp/rotten for hell_2) land when those meshes exist.
+        heaven_2 = {
+            ["tree/oak_tree"] = "rainbow_fern", -- garden center = Jason's fern
+            ["rock/mossy_pebble"] = { "rosegold_geode", "amethyst_geode" },
+        },
+        hell_2 = {
+            ["tree/oak_tree"] = "scorched_tree",
+            ["rock/mossy_pebble"] = { "putrid_rock", "sulfur_rock" },
+        },
     },
     realms = {
         -- Jason 2026-07-16: "we should 100% get rid of that boab tree...
