@@ -128,6 +128,7 @@ EffectiveStats.AXES = {
             "MoveSpeedBuffUntil",
             "MoveSpeedBuffPotion",
             "MoveSpeedBuffPotionUntil",
+            "MoveSpeedBuffPass",
         },
         sources = function(get)
             return {
@@ -136,6 +137,11 @@ EffectiveStats.AXES = {
                     fraction = frac(get, "MoveSpeedBuffPotion"),
                     expiry = frac(get, "MoveSpeedBuffPotionUntil"),
                 },
+                -- gamepass speed (VIP +0.25, Speed Boost +0.5): PERMANENT, no
+                -- expiry — MonetizationService sums owned passes at grant.
+                -- Was routed into PlayerEffectsService (a dead end nothing
+                -- reads) until the 2026-07-16 gamepass audit.
+                { fraction = frac(get, "MoveSpeedBuffPass") },
             }
         end,
     },

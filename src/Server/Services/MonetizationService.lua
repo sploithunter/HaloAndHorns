@@ -110,6 +110,11 @@ function MonetizationService:Start()
     Players.PlayerAdded:Connect(function(player)
         self:_checkPassesWhenReady(player, true)
     end)
+    Players.PlayerRemoving:Connect(function(player)
+        if self._speedPassApplied then
+            self._speedPassApplied[player.UserId] = nil
+        end
+    end)
 
     self._logger:Info("MonetizationService started")
 end
@@ -381,6 +386,21 @@ function MonetizationService:_applyPassBenefits(player, passConfig)
         if effect.permanent then
             -- Apply permanent effect
             self._playerEffectsService:ApplyPermanentEffect(player, effect.id, effect.stats)
+        end
+        -- SPEED reaches the character via the move_speed axis (MoveSpeedBuff*
+        -- attrs -> Eff_Speed -> client WalkSpeed), NOT PlayerEffectsService —
+        -- publish pass speed on the axis' permanent pass source. Guarded per
+        -- pass per session so a test-mode re-purchase can't double-stack.
+        local speedFrac = effect.stats and tonumber(effect.stats.speedMultiplier)
+        if speedFrac and speedFrac ~= 0 then
+            self._speedPassApplied = self._speedPassApplied or {}
+            local applied = self._speedPassApplied[player.UserId] or {}
+            self._speedPassApplied[player.UserId] = applied
+            if not applied[passConfig.id] then
+                applied[passConfig.id] = true
+                local current = tonumber(player:GetAttribute("MoveSpeedBuffPass")) or 0
+                player:SetAttribute("MoveSpeedBuffPass", current + speedFrac)
+            end
         end
     end
 

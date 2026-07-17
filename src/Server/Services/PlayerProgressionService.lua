@@ -382,6 +382,15 @@ function PlayerProgressionService:AddExperience(player, amount, source)
             amount = math.floor(amount * (1 + m) + 0.5)
         end
     end
+    -- VIP pass (profile multiplier, monetization.lua benefits.multipliers.xp):
+    -- same choke point as every other XP fold. Was WRITTEN by the pass grant
+    -- but never read until the 2026-07-16 gamepass audit.
+    do
+        local vipMult = tonumber(self._dataService:GetMultiplier(player, "xp")) or 1
+        if vipMult ~= 1 then
+            amount = math.floor(amount * vipMult + 0.5)
+        end
+    end
     -- EARLY-GAME ONRAMP (leveling.onramp): the 1-to-5 climb earns boosted XP
     -- (Jason: "just the bottom end of the curve needs up") — same single
     -- choke point as every other XP multiplier.

@@ -316,9 +316,33 @@ function EconomyService:Transact(player, options)
     return result
 end
 
+-- Earning streams that honor the VIP "coins" profile multiplier (VIPs EARN
+-- faster). Deliberately narrow: farming income only — fixed grants, trades,
+-- shop buybacks, and gems must never inflate (gem economy doctrine).
+local VIP_EARN_REASON_PREFIXES = { "breakable", "combat_loot", "mining" }
+
+local function isVipEarnReason(reason)
+    for _, prefix in ipairs(VIP_EARN_REASON_PREFIXES) do
+        if string.sub(tostring(reason or ""), 1, #prefix) == prefix then
+            return true
+        end
+    end
+    return false
+end
+
 function EconomyService:AddCurrency(player, currencyType, amount, reason)
     if not self._dataService:IsDataLoaded(player) then
         return false
+    end
+
+    -- VIP pass coin rate (monetization.lua benefits.multipliers.coins): was
+    -- WRITTEN by the pass grant but never read until the 2026-07-16 gamepass
+    -- audit. Coins-only, earn-reasons-only.
+    if currencyType == "coins" and (tonumber(amount) or 0) > 0 and isVipEarnReason(reason) then
+        local mult = tonumber(self._dataService:GetMultiplier(player, "coins")) or 1
+        if mult ~= 1 then
+            amount = math.floor(amount * mult + 0.5)
+        end
     end
 
     local oldAmount = self:GetCurrency(player, currencyType)
