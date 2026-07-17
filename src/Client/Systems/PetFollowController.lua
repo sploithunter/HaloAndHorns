@@ -25,13 +25,13 @@ local PetMeander = require(ReplicatedStorage.Shared.Game.PetMeander)
 local Gait = require(ReplicatedStorage.Shared.Game.Gait)
 local HitReact = require(ReplicatedStorage.Shared.Game.HitReact)
 local AttackAnim = require(ReplicatedStorage.Shared.Game.AttackAnim)
+local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local PetAnimator = require(script.Parent.PetAnimator)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local RangedFX = require(ReplicatedStorage.Shared.Effects.RangedFX)
 local CombatHitFX = require(ReplicatedStorage.Shared.Effects.CombatHitFX)
 local AreaFX = require(ReplicatedStorage.Shared.Effects.AreaFX)
 local CombatFX = require(ReplicatedStorage.Shared.Effects.CombatFX)
-local FloatingText = require(ReplicatedStorage.Shared.Effects.FloatingText)
 local PowerSound = require(ReplicatedStorage.Shared.Effects.PowerSound)
 local PowerFXRender = require(ReplicatedStorage.Shared.Effects.PowerFXRender)
 local PetRoles = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
@@ -329,17 +329,8 @@ function PetFollowController.start()
         return CombatOrigin.resolve(pe, archetype, originCfg)
     end
 
-    -- Floating combat text (damage / crit / MISS numbers over the target). Config-driven.
-    local ctCfg = config.combat_text or {}
-    local function ctRGB(t, dr, dg, db)
-        if type(t) == "table" and t[1] then
-            return Color3.fromRGB(t[1], t[2] or 0, t[3] or 0)
-        end
-        return Color3.fromRGB(dr, dg, db)
-    end
-
-    -- Area power VFX (Cataclysm etc.): the server fires Power_AreaFx with the engagement centre +
-    -- per-enemy hits. Play the element eruption + a lingering molten pool, then float each number.
+    -- Area power VFX (Cataclysm etc.). Damage numbers are NOT rendered from this effect packet:
+    -- Combat_Result is the one authoritative presentation stream for all combat outcomes.
     local areaCfg = require(ReplicatedStorage.Configs:WaitForChild("area_fx"))
     Signals.Power_AreaFx.OnClientEvent:Connect(function(data)
         if type(data) ~= "table" then
@@ -387,8 +378,9 @@ function PetFollowController.start()
                     element = element,
                     radius = tonumber(data.radius) or 12,
                     anchor = center,
-                    duration = 0.9,
+                    duration = tonumber(data.duration) or 0.9,
                     burst = true,
+                    indicator = data.rangeIndicator == true,
                 })
             end)
             -- element SFX from the power_fx registry: self burst ⇒ cast clip, else ⇒ impact clip
@@ -400,14 +392,6 @@ function PetFollowController.start()
             pcall(PowerSound.play, phase, element, center, vol)
             -- the heavy "lands hard" boom under every AoE (slam.neutral ⇒ all elements get it).
             pcall(PowerSound.play, "slam", element, center, vol)
-        end
-        for _, h in ipairs(data.hits or {}) do
-            if type(h) == "table" and typeof(h.pos) == "Vector3" and h.amount then
-                FloatingText.show(h.pos + Vector3.new(0, 4, 0), tostring(h.amount), {
-                    color = ctRGB(ctCfg.colors and ctCfg.colors.crit, 255, 150, 60),
-                    size = (ctCfg.size or 22) + 4,
-                })
-            end
         end
     end)
     -- Mining impact FX (impact-library test bed + mining visual): each mined ore plays a named
@@ -478,77 +462,6 @@ function PetFollowController.start()
                 pcall(PowerSound.play, ranged and "crit" or "crit_melee", element, pos)
             end
         end
-
-        -- Floating combat text: the damage number (or MISS) pops + rises above the target.
-        -- Renders for FOREIGN hits too (Jason: "this is supposed to be a team effect game"
-        -- — shared world effects are fully shared, damage stream included; only private
-        -- events like achievements/hatching stay owner-only).
-        if ctCfg.enabled ~= false then
-            local pos = (target.PrimaryPart and target.PrimaryPart.Position)
-                or target:GetPivot().Position
-            local up = 3
-            local okE, ext = pcall(function()
-                return target:GetExtentsSize()
-            end)
-            if okE and ext then
-                up = ext.Y * 0.5 + 1
-            end
-            pos = pos + Vector3.new(0, up, 0)
-            local cols = ctCfg.colors or {}
-            if data.miss then
-                FloatingText.show(pos, ctCfg.miss_text or "MISS", {
-                    color = ctRGB(cols.miss, 170, 170, 170),
-                    size = ctCfg.size or 22,
-                    rise = ctCfg.rise,
-                    duration = ctCfg.duration,
-                })
-            elseif isCrit then
-                FloatingText.show(pos, tostring(data.amount or 0) .. "!", {
-                    color = ctRGB(cols.crit, 255, 200, 60),
-                    size = ctCfg.crit_size or 32,
-                    rise = (ctCfg.rise or 6) + 2,
-                    duration = (ctCfg.duration or 0.9) + 0.2,
-                })
-            else
-                FloatingText.show(pos, tostring(data.amount or 0), {
-                    color = ctRGB(cols.normal, 255, 255, 255),
-                    size = ctCfg.size or 22,
-                    rise = ctCfg.rise,
-                    duration = ctCfg.duration,
-                })
-            end
-        end
-    end)
-
-    -- Heal numbers: a green "+N" floats over a healed pet (support auto-heal / heal power, to
-    -- the owner) or a healed enemy (enemy healer, broadcast — the "kill the healer" tell).
-    Signals.Combat_Heal.OnClientEvent:Connect(function(data)
-        if ctCfg.enabled == false or type(data) ~= "table" then
-            return
-        end
-        local target = data.target
-        if typeof(target) ~= "Instance" or not target.Parent then
-            return
-        end
-        local pos = (target.PrimaryPart and target.PrimaryPart.Position)
-            or (target:IsA("Model") and target:GetPivot().Position)
-        if not pos then
-            return
-        end
-        local up = 3
-        local okE, ext = pcall(function()
-            return target:GetExtentsSize()
-        end)
-        if okE and ext then
-            up = ext.Y * 0.5 + 1
-        end
-        local cols = ctCfg.colors or {}
-        FloatingText.show(pos + Vector3.new(0, up, 0), "+" .. tostring(data.amount or 0), {
-            color = ctRGB(cols.heal, 90, 230, 110),
-            size = ctCfg.size or 22,
-            rise = ctCfg.rise,
-            duration = ctCfg.duration,
-        })
     end)
 
     -- OTHER players' pets, server-relayed (the server never relays our own — those stay local).
@@ -632,7 +545,11 @@ function PetFollowController.start()
                 -- CAPITAL ROOT (enemy ice control): a rooted pet FREEZES in place — skip
                 -- positioning it while the window is live (it stays visible; the hold badge
                 -- on its card says why it stopped).
-                local rooted = (tonumber(m:GetAttribute("PetRootedUntil")) or 0) > os.time()
+                local rooted = CrowdControl.isImmobilized(
+                    m:GetAttribute("PetRootedUntil"),
+                    m:GetAttribute("PetHeldUntil"),
+                    os.time()
+                )
                 if not downed and not rooted then
                     table.insert(pets, m)
                 else

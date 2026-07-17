@@ -73,7 +73,20 @@ local FAMILY_TEXT = {
         return ("+%s crit chance for %s."):format(pct(kind.magnitude), target)
     end,
     root = function(_, target)
-        return ("Holds %s in place."):format(target)
+        return ("Roots %s in place; they can still attack and use powers."):format(target)
+    end,
+    hold = function(_, target)
+        return ("Fully holds %s; they cannot move, attack, or use powers."):format(target)
+    end,
+    disarm = function(_, target)
+        return ("Disarms %s; they can still move, but cannot attack or use powers."):format(target)
+    end,
+    accuracy_mark = function(kind, target)
+        return ("Marks %s: your squad and hostile powers gain +%d percentage points to hit it. Holds have a %s chance to pierce innate Hold Immunity."):format(
+            target,
+            math.floor((tonumber(kind.magnitude) or 0) * 100 + 0.5),
+            pct(kind.hold_pierce)
+        )
     end,
     blind = function(kind, target)
         -- magnitude is the to-hit REDUCTION (fraction): a blinded enemy misses that much more.
@@ -208,6 +221,9 @@ function PowerDescribe.describe(powersCfg, powerId)
     else
         if (tonumber(kind.duration) or 0) > 0 then
             lines[#lines + 1] = "Lasts " .. span(kind.duration)
+        end
+        if (tonumber(kind.radius) or 0) > 0 then
+            lines[#lines + 1] = ("Radius %d studs"):format(kind.radius)
         end
         if (tonumber(def.focus_cost) or 0) > 0 then
             lines[#lines + 1] = ("Focus %d"):format(def.focus_cost)

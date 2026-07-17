@@ -1,0 +1,144 @@
+{
+  "_comment": "Blessed dual-gen dump for hell_infernal_crest. shipping = MissionProps (missions). review = PropReview TextureID ref.",
+  "prop": "hell_infernal_crest",
+  "blessed_at": "2026-07-15T21:21:47Z",
+  "visual_status": {
+    "shipping_front": "correct",
+    "shipping_render": "ok_jason_lineup_pass_2026-07-15",
+    "review_render": "correct",
+    "review_yaw_flipped_180": false
+  },
+  "shipping": {
+    "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.14_hell_infernal_crest",
+    "has_skinned_mesh": true,
+    "instance_name": "14_hell_infernal_crest",
+    "bind_mode": "SurfaceAppearance",
+    "prop": "hell_infernal_crest",
+    "attributes": {
+      "Mount": "wall",
+      "MountY": "11",
+      "Theme": "hell",
+      "StandOff": "0.7082263946533203"
+    },
+    "bone_count": 1,
+    "material": "Enum.Material.Plastic",
+    "n": 14,
+    "pivot": {
+      "y": 2.250000238418579,
+      "x": 20182,
+      "z": 7.341773986816406
+    },
+    "color_map": "97471590489784",
+    "albedo_id": "97471590489784",
+    "normal_map": "88556817104166",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 5458,
+      "verts": 15966,
+      "fnv1a_hash": 1279409592
+    },
+    "size": {
+      "y": 4.500110149383545,
+      "x": 4.056567192077637,
+      "z": 1.0164521932601929
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/127699320929775",
+    "bones": [
+      "Root"
+    ],
+    "create_albedo": "https://create.roblox.com/store/asset/97471590489784",
+    "color": {
+      "b": 0.6470588445663452,
+      "g": 0.6352941393852234,
+      "r": 0.6392157077789307
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "",
+    "row": "SHIP",
+    "mesh_id": "127699320929775",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest.png",
+      "atlas_sha256": "fe68b89171b48f3d336e12c4028fac7e8b6549745929d6fc15e8adf2cff52dec",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "ca570ab558040dcc6392971f8a26c893eacc6390f1eeb2714d81ddf579c525f4",
+      "preview_sha256": "d2e8d0667a22103b529f6194ce892fc70557db40eb5d69eeb84bd9b0716958ff",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_crest.glb",
+      "source_glb_sha256": "6a1cd9626981f88bd54c328590ffacc518501242c695ee5b4607813957d1d492",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_crest.glb\noriginal_tris: 5458\n\n10k: hell_infernal_crest_10k.fbx (5456 tris, target 10000)"
+    }
+  },
+  "review": {
+    "path": "Workspace._MeshyLineup.B_PropReview_TextureID.14_hell_infernal_crest",
+    "has_skinned_mesh": false,
+    "instance_name": "14_hell_infernal_crest",
+    "bind_mode": "TextureID",
+    "prop": "hell_infernal_crest",
+    "attributes": {
+      "Mount": "wall",
+      "MountY": "11",
+      "Theme": "hell",
+      "StandOff": "0.7082263946533203"
+    },
+    "bone_count": 0,
+    "material": "Enum.Material.Plastic",
+    "n": 14,
+    "pivot": {
+      "y": 2.250000238418579,
+      "x": 20182,
+      "z": 47.341773986816406
+    },
+    "color_map": "",
+    "albedo_id": "73363642652170",
+    "normal_map": "",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 5456,
+      "verts": 15935,
+      "fnv1a_hash": 1453222176
+    },
+    "size": {
+      "y": 4.500110149383545,
+      "x": 4.056567192077637,
+      "z": 1.0164521932601929
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/92377306378646",
+    "bones": [],
+    "create_albedo": "https://create.roblox.com/store/asset/73363642652170",
+    "color": {
+      "b": 1,
+      "g": 1,
+      "r": 1
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "73363642652170",
+    "row": "REVIEW",
+    "mesh_id": "92377306378646",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest.png",
+      "atlas_sha256": "fe68b89171b48f3d336e12c4028fac7e8b6549745929d6fc15e8adf2cff52dec",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "ca570ab558040dcc6392971f8a26c893eacc6390f1eeb2714d81ddf579c525f4",
+      "preview_sha256": "d2e8d0667a22103b529f6194ce892fc70557db40eb5d69eeb84bd9b0716958ff",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_crest.glb",
+      "source_glb_sha256": "6a1cd9626981f88bd54c328590ffacc518501242c695ee5b4607813957d1d492",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_crest.glb\noriginal_tris: 5458\n\n10k: hell_infernal_crest_10k.fbx (5456 tris, target 10000)"
+    }
+  },
+  "diagnose_if_bad_again": [
+    "Dump live mesh_id/albedo/bind/editable hash",
+    "Diff against shipping.* (missions) or review.* (TextureID gen)",
+    "ids drifted -> transplant/rbxm; ids match + ugly -> CDN/render"
+  ]
+}

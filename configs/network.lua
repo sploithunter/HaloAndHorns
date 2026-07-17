@@ -1307,6 +1307,19 @@ return {
                 arguments = { { name = "heal", type = "table" } },
             },
         },
+        Combat_Result = {
+            name = "Combat_Result",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "broadcast",
+            topic = "combat.result",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "result", type = "table" } },
+            },
+        },
         Combat_EnemyHit = {
             name = "Combat_EnemyHit",
             transport = "reliable_event",

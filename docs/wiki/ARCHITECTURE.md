@@ -40,6 +40,12 @@ filtered out of production registries.
   `docs/TRADE_ESCROW_CRASH_SAFETY.md`.
 - Combat drop-table currencies and def-less realm coin fallbacks also terminate at
   `EconomyService`; combat math and area-coin selection remain service-owned upstream.
+- `CombatApplication` is the runtime combat-state boundary. `ApplyHit` publishes resolved
+  hit/miss/dodge/block/absorb/immune outcomes, `ApplyDamage` mutates enemy HP or pet endurance and
+  credits contribution, and `ApplyPowerHeal` mutates active/power healing. All three publish the
+  resulting `Combat_Result` only after the authoritative transition; `CombatTextController` is its
+  sole floating-text consumer. Passive regeneration, spawn/scaling initialization, admin resets,
+  and revive restoration remain explicit silent state-maintenance paths outside this boundary.
 - `ServerClockService` owns deterministic UTC day/seed behavior.
 - `WorldBindingService` discovers, validates, and serves Studio map hooks. In `auto`/`synthetic` map modes it fabricates missing baseplate hooks from `configs/areas.lua` and `configs/markers.lua`.
 - `ZoneService` owns area unlocks and server-authoritative `TeleportPad`/`Portal` travel. It uses

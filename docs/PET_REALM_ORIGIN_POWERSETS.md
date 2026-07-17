@@ -1,7 +1,7 @@
 # Pet Realm — Origin Powersets (working roster)
 
-Status: **DRAFT for review** (not yet in `powers.lua`). Target: **11 powers per origin = 7 cores + 4
-signatures**, symmetric cadence, role-balanced. Neutral pool (11) is already in config.
+Status: **SHIPPED; this page records the roster and current spatial contracts.** Target:
+**11 powers per origin = 7 cores + 4 signatures**, symmetric cadence, role-balanced.
 
 ## Cadence (all origins identical)
 
@@ -71,16 +71,16 @@ wrapped ("Capacitor" art) · **Fear** = flee.
 | Lvl | Power | Type | Note |
 |---|---|---|---|
 | 6 | Frost Bind | Control — Root (feet) | |
-| 6 | Ice Armor | Pet Armor | |
+| 6 | Ice Armor | Pet Armor | 160 Defense for 12s; sustained counterpart to Dune Shield |
 | 6 | Disarm | Control — Disarm (hands) | ↻ now a TRUE disarm · new mechanic |
-| 9 | Focus Fire | Targeted Debuff (vuln) | |
+| 9 | Focus Fire | Targeted Accuracy Mark | +15 accuracy points for the caster's squad/powers; 25% innate hold-immunity penetration |
 | 9 | Ice Shard | Targeted Damage | ✚ new |
 | 12 | Deep Freeze | Control — Hold (full / "Capacitor") | ✚ new |
-| 12 | Frost Field | `player_field` (slow/freeze AoE) | ✚ new |
-| 15 | Permafrost | AoE Control | sig |
-| 22 | Shatter | Targeted Damage | sig |
-| 30 | Absolute Zero | Targeted Control | sig |
-| 44 | Eternal Winter | AoE Control (field) | capstone |
+| 12 | Frost Field | `player_field` root | 20 studs centered on the player |
+| 15 | Permafrost | Encounter-group root | 30 studs around the focused enemy |
+| 22 | Shatter | Targeted AoE vulnerability | 20 studs; ×2.2, or ×3.08 against frozen targets |
+| 30 | Absolute Zero | Targeted AoE hold | 20 studs around the focused enemy |
+| 44 | Eternal Winter | Encounter-group hold | 20 studs around the focused enemy |
 | ✕ | ~~Blizzard~~ | (cut — AoE slow covered by Frost Field) | |
 
 ## PYROMANCER — lava · damage  *(glass cannon: 1 shield, no heal/control)*

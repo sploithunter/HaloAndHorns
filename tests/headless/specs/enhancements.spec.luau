@@ -101,6 +101,18 @@ return function()
             expect((Enhancements.compatibleWith(cfg, "range", wildfire, kinds))).to.equal(true)
         end)
 
+        it("range fits every spatial Cryomancer AoE with an authored radius", function()
+            expect(
+                (Enhancements.compatibleWith(cfg, "range", powersCfg.powers.eternal_winter, kinds))
+            ).to.equal(true)
+            expect((Enhancements.compatibleWith(cfg, "range", powersCfg.powers.frost_field, kinds))).to.equal(
+                true
+            )
+            expect((Enhancements.compatibleWith(cfg, "range", powersCfg.powers.shatter, kinds))).to.equal(
+                true
+            )
+        end)
+
         it("recharge fits anything (families = *)", function()
             expect(
                 (Enhancements.compatibleWith(cfg, "recharge", powersCfg.powers.dune_shield, kinds))
@@ -115,6 +127,16 @@ return function()
                     )
                 )
             ).to.equal(true)
+        end)
+
+        it("gives Focus Fire real accuracy-mark axes but no damage slot", function()
+            local focus = powersCfg.powers.focus_fire
+            local kinds = powersCfg.effect_kinds
+            expect((Enhancements.compatibleWith(cfg, "accuracy", focus, kinds))).to.equal(true)
+            expect((Enhancements.compatibleWith(cfg, "potency", focus, kinds))).to.equal(true)
+            expect((Enhancements.compatibleWith(cfg, "duration", focus, kinds))).to.equal(true)
+            expect((Enhancements.compatibleWith(cfg, "recharge", focus, kinds))).to.equal(true)
+            expect((Enhancements.compatibleWith(cfg, "damage", focus, kinds))).to.equal(false)
         end)
 
         it("Windfall (drop_rate) accepts recharge, duration AND potency", function()

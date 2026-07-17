@@ -118,6 +118,12 @@ function Enhancements.compatibleWith(cfg, enhType, powerDef, effectKinds)
             return false, "not_aoe"
         end
     end
+    if def.requires_radius then
+        local radiusFamily = family and (cfg.radius_families or {})[family]
+        if not (radiusFamily or (kind and (tonumber(kind.radius) or 0) > 0)) then
+            return false, "no_radius"
+        end
+    end
     return true
 end
 

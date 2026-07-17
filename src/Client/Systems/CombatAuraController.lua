@@ -25,7 +25,6 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 local CombatFX = require(ReplicatedStorage.Shared.Effects.CombatFX)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
@@ -41,14 +40,26 @@ local started = false
 -- per Instance -> { slot -> handle }; per Instance -> { connections } for cleanup.
 local handles = setmetatable({}, { __mode = "k" })
 local conns = setmetatable({}, { __mode = "k" })
-local armorIcons = setmetatable({}, { __mode = "k" }) -- pet -> BillboardGui (shield icon while armored)
+local armorIcons = setmetatable({}, { __mode = "k" }) -- pet -> { gui, powerId }
 local armorTokens = setmetatable({}, { __mode = "k" }) -- pet -> token, for the badge self-expire
 local armorTok = 0
 
 -- A gold shield badge that floats over an armored pet, so "this pet has armor" reads at a glance.
 local function showArmorIcon(pet)
-    if armorIcons[pet] and armorIcons[pet].Parent then
+    -- Choose only a LIVE channel. Power-id attributes intentionally remain after expiry, so simply
+    -- preferring CombatShieldPowerId can make a later Ice Armor cast reuse an old shield's artwork.
+    local now = os.time()
+    local shieldLive = (tonumber(pet:GetAttribute("CombatShieldUntil")) or 0) > now
+    local armorLive = (tonumber(pet:GetAttribute("DefenseBuffUntil")) or 0) > now
+    local powerId = (shieldLive and pet:GetAttribute("CombatShieldPowerId"))
+        or (armorLive and pet:GetAttribute("DefenseBuffPowerId"))
+    local current = armorIcons[pet]
+    if current and current.gui.Parent and current.powerId == powerId then
         return
+    end
+    if current then
+        current.gui:Destroy()
+        armorIcons[pet] = nil
     end
     local pp = pet.PrimaryPart or pet:FindFirstChildWhichIsA("BasePart")
     if not pp then
@@ -72,9 +83,7 @@ local function showArmorIcon(pet)
     -- ring) when nothing tagged it.
     -- shield powers stamp CombatShieldPowerId; armor/hardening powers (Stone Skin, Ice Armor) stamp
     -- DefenseBuffPowerId. Resolve whichever tagged this pet so the floating badge matches the card.
-    local badge = PetBadge.forPower(
-        pet:GetAttribute("CombatShieldPowerId") or pet:GetAttribute("DefenseBuffPowerId")
-    )
+    local badge = PetBadge.forPower(powerId)
     if badge then
         PetBadge.create(bb, { element = badge.element, symbol = badge.symbol, ring = badge.ring })
     else
@@ -86,15 +95,15 @@ local function showArmorIcon(pet)
         img.Parent = bb
     end
     bb.Parent = pp
-    armorIcons[pet] = bb
+    armorIcons[pet] = { gui = bb, powerId = powerId }
 end
 
 local function hideArmorIcon(pet)
-    local bb = armorIcons[pet]
-    if bb then
+    local record = armorIcons[pet]
+    if record then
         armorIcons[pet] = nil
         pcall(function()
-            bb:Destroy()
+            record.gui:Destroy()
         end)
     end
 end
@@ -421,47 +430,6 @@ local function refreshAuraField(pet)
     end
 end
 
--- Floating "Dodge!" that rises + fades over a pet that just evaded a hit (Mirage Step). Server
--- bumps DodgeTick per turned-aside blow; we pop one of these per bump.
-local function popDodge(pet)
-    local root = pet.PrimaryPart
-        or pet:FindFirstChild("HumanoidRootPart")
-        or pet:FindFirstChildWhichIsA("BasePart")
-    if not root then
-        return
-    end
-    local bb = Instance.new("BillboardGui")
-    bb.Name = "DodgePop"
-    bb.Size = UDim2.fromOffset(90, 30)
-    bb.StudsOffset = Vector3.new(0, 2.6, 0)
-    bb.AlwaysOnTop = true
-    bb.Adornee = root
-    bb.Parent = root
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.fromScale(1, 1)
-    lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.GothamBlack
-    lbl.TextScaled = true
-    lbl.Text = "DODGE" -- all-caps to match the combat_text "MISS" float (consistent word-float style)
-    lbl.TextColor3 = Color3.fromRGB(255, 221, 64) -- yellow (Jason) — reads as a lucky avoid, distinct from damage
-    lbl.TextStrokeTransparency = 0.3
-    lbl.Parent = bb
-    TweenService
-        :Create(
-            bb,
-            TweenInfo.new(0.7, Enum.EasingStyle.Quad),
-            { StudsOffset = Vector3.new(0, 5.2, 0) }
-        )
-        :Play()
-    TweenService:Create(lbl, TweenInfo.new(0.7), {
-        TextTransparency = 1,
-        TextStrokeTransparency = 1,
-    }):Play()
-    task.delay(0.75, function()
-        bb:Destroy()
-    end)
-end
-
 local function hookPet(pet)
     if conns[pet] or not pet:IsA("Model") then
         return
@@ -482,6 +450,11 @@ local function hookPet(pet)
             end)
         end
     end)
+    -- The server tags which armor power applied the duration. Attribute replication can deliver the
+    -- duration first, so this identity channel must independently re-run badge resolution.
+    list[#list + 1] = pet:GetAttributeChangedSignal("DefenseBuffPowerId"):Connect(function()
+        refreshArmor(pet)
+    end)
     list[#list + 1] = pet:GetAttributeChangedSignal("HealFxUntil"):Connect(function()
         refreshTimedAura(pet, "HealFxUntil", "heal", "heal")
     end)
@@ -494,10 +467,6 @@ local function hookPet(pet)
     -- badge appears whichever of (CombatShieldPowerId, CombatShieldUntil) replicates last.
     list[#list + 1] = pet:GetAttributeChangedSignal("CombatShieldUntil"):Connect(function()
         refreshArmor(pet)
-    end)
-    -- Evasion: each turned-aside blow bumps DodgeTick -> pop a floating "Dodge!".
-    list[#list + 1] = pet:GetAttributeChangedSignal("DodgeTick"):Connect(function()
-        popDodge(pet)
     end)
     -- Aura field (bear's ground AoE): the server bumps AuraFieldUntil each engaged tick.
     list[#list + 1] = pet:GetAttributeChangedSignal("AuraFieldUntil"):Connect(function()

@@ -127,6 +127,17 @@ elseif gameConfig.GameMode == "TowerDefense" then
     -- systems.PathVisualizationSystem = require(...)
 end
 
+-- Floating combat text is a universal combat-result presenter. Start it independently from pet
+-- movement so a disabled or failed movement controller cannot suppress damage/heal/miss feedback.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.CombatTextController).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start CombatTextController", { error = tostring(err) })
+    end
+end
+
 -- Pet follow movement (issue #4): client-side visualisation of the local
 -- player's pets (smooth, full-framerate). Self-gates on pet_follow.service_owned;
 -- pets are anchored server-side (can't fall) and positioned here each frame.

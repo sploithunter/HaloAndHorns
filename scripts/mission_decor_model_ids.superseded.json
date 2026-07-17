@@ -92,5 +92,6 @@
   "hell_infernal_throne_flat_pre_boned": "114695375342832",
   "hell_skull_banner_pre_boned": "102347044634165",
   "hell_skull_lantern_pre_boned": "83676170999237",
-  "hell_skull_sconce_pre_boned": "108702961525876"
+  "hell_skull_sconce_pre_boned": "108702961525876",
+  "_notes_heaven_gilded_bookcase": "heaven_gilded_bookcase_pre_boned=79109805720279 is MISNAMED: Jason verified that mesh+TextureID 124877813089179 as GOOD in-mission 2026-07-15 (true 9999-face 10k bake). Bad gen was bone-armor mesh 104288692238467 + ColorMap 136375084305596. See scripts/mission_decor_blessed/heaven_gilded_bookcase.json"
 }

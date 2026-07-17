@@ -77,8 +77,11 @@ A **kit** is a themed set of tile Models (e.g. `hell_catacombs`,
 ReplicatedStorage.Assets.Models.MissionTiles.<kitId>.<tileId>   (Model)
 ```
 
-built/loaded by AssetPreloadService like every other model family (prebake
-fast-path applies). Registered in `configs/mission_tiles.lua` (§6).
+Code-defined kits are rebuilt into this runtime store from their source module
+on first use. They deliberately do **not** use a prebaked fast path:
+`Models.rbxm` can contain an ephemeral `MissionTiles` folder if Assets.Models is
+saved from a running Studio session, and that captured cache is never
+authoritative. Registered in `configs/mission_tiles.lua` (§6).
 
 ### 2.1 Tile Model spec
 
@@ -371,9 +374,9 @@ src/Shared/Worldgen/TileCatalog.lua      ✅ pure: kit def → catalog (validate
 src/Shared/Worldgen/LayoutSolver.lua     ✅ pure: frontier-growth solver + validate() invariant checker (§4)
 src/Shared/Worldgen/GrayBoxKit.lua       ✅ pure: M2 gray-box kit — definition() (solver geometry) + parts() (primitive visual geometry) in ONE module so walls can never disagree with solver AABBs/doors
 src/Server/World/TileKitBuilder.lua      ✅ kit (definition+parts) → Folder of tile Models (pivot=TileRoot, tags, $MISSION attrs verbatim). Edit-mode note: build into a scratch parent, NOT ReplicatedStorage.Assets.Models (Rojo-owned rbxm subtree)
-src/Server/World/MissionStamper.lua      ✅ spec → Instances (§5.1)
+src/Server/World/MissionStamper.lua      ✅ spec → Instances (§5.1); reasserts each clone's PrimaryPart=TileRoot before PivotTo
 scripts/studio/stamp_mission_graybox.luau ✅ Edit-mode smoke: solve seed → stamp → camera frame
-src/Server/Services/MissionInstanceService.lua   ✅ lifecycle (§5.2): slots, caps, TTL sweep, door+exit prompts, party teleport; registered in init.server.lua
+src/Server/Services/MissionInstanceService.lua   ✅ lifecycle (§5.2): slots, caps, TTL sweep, door+exit prompts, party teleport; code-defined kits replace any captured runtime cache; registered in init.server.lua
 configs/missions.lua                             ✅ worldgen_version, slots, limits, solver knobs, mission defs (+ _validateMissionsConfig in ConfigLoader, same commit)
 configs/markers.lua                              ✅ MissionDoor + MissionObjective tags added
 configs/mission_tiles.lua, configs/missions.lua  (+ ConfigLoader schemas)

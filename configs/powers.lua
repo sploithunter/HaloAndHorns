@@ -31,7 +31,10 @@ return {
     -- alive enemy must be to the squad to count as engaged.
     enemy_targeted_families = {
         vulnerable = true,
+        accuracy_mark = true,
         root = true,
+        hold = true,
+        disarm = true,
         root_guard = true, -- Seismic Hold (roots enemies + hardens the squad)
         fear = true, -- you terrify something that's fighting you (needs an engaged enemy)
         amplified_burst = true,
@@ -85,8 +88,11 @@ return {
         -- team_aoe) get the `cast_burst` ring (reads as AoE), single-target ones get the small
         -- `cast_emit` body emission. A per-power `fx.source` still overrides. `target` = the enemy hit.
         vulnerable = { target = "eruption" },
+        accuracy_mark = { target = "eruption" },
         burn_spread = { target = "eruption" },
         root = { target = "eruption" },
+        hold = { target = "eruption" },
+        disarm = { target = "eruption" },
         root_guard = { target = "eruption" },
         -- no clean visual yet ⇒ floating "(effect TBD)"
         summon = { source = "tbd" },
@@ -119,7 +125,10 @@ return {
     -- belong here. Tune freely.
     accuracy_family_base = {
         vulnerable = 0.9, -- marks/debuffs: ~10% base miss before the level curve
-        root = 0.9, -- holds/slows
+        accuracy_mark = 0.9, -- Focus Fire must first land before it helps later attacks land
+        root = 0.9, -- movement roots/slows
+        hold = 0.9, -- full holds
+        disarm = 0.9, -- action lock: movement remains available
         root_guard = 0.9, -- Seismic's root rolls like every other control (was the one auto-lander)
         fear = 0.9, -- terror can miss too (control-family base)
         -- Sandstorm rolled to-hit but had NO base entry → base 1.0 → auto-landed at-level, and "a
@@ -137,7 +146,11 @@ return {
         -- Armor / hardening = a temp +Defense % reducer on the armor curve (NOT an absorb pool):
         -- the pet's own material HARDENS (Stone Skin, Ice Armor). Sustained mitigation vs. shield's
         -- burst soak. Applies to the squad and expires after `duration`s (no permanent armor).
-        armor = { family = "defense_buff", magnitude = 80, duration = 12 },
+        -- Sustained mitigation counterpart to Dune Shield's front-loaded 400-point pool.
+        -- At 160 defense, a tank with 100 native defense prevents ~45 from a standard
+        -- 201-raw boss blow (versus ~29 at the old 80), reaching shield-like total value
+        -- across the full 12-second window without granting immediate immunity.
+        armor = { family = "defense_buff", magnitude = 160, duration = 12 },
         -- Single-pet armor (Stone Skin): concentration premium — a bigger +Defense on ONE pet
         -- than the team `armor`, paired with cheap/low-cooldown casting (babysit your carry).
         armor_single = { family = "defense_buff", magnitude = 160, duration = 10 },
@@ -216,13 +229,23 @@ return {
         -- player powers don't deal direct damage; they make pets hit harder / lock enemies). =====
         sunder = { family = "vulnerable", magnitude = 1.6, duration = 6 }, -- armor break (AoE)
         expose = { family = "vulnerable", magnitude = 1.4, duration = 8 }, -- expose one target
-        disarm = { family = "vulnerable", magnitude = 1.3, duration = 6 }, -- weaken one target
-        focus_fire = { family = "vulnerable", magnitude = 1.5, duration = 6 }, -- designate + soften
+        -- Action lock, not another vulnerability/accuracy debuff: the target may keep moving but
+        -- cannot attack or use any active enemy power for the duration.
+        disarm = { family = "disarm", magnitude = 0, duration = 6 },
+        -- Focus Fire is a player-scoped accuracy mark, not another vulnerability. `magnitude` is
+        -- flat percentage points added to this caster's pet/power hit chance against the target.
+        -- Innate HoldImmune can be pierced; temporary boss breakout resistance cannot.
+        focus_fire = {
+            family = "accuracy_mark",
+            magnitude = 0.15,
+            duration = 8,
+            hold_pierce = 0.25,
+        },
         strike = { family = "vulnerable", magnitude = 1.5, duration = 4 }, -- basic single hit
 
         -- ===== NEW origin-core effects — placeholder families so the powers resolve + show in menus;
-        -- the real mechanics (Rage HP-curve, Fear flee, true Disarm/Hold, heals, player_field) are
-        -- separate build slices. Firewall-safe. See docs/PET_REALM_ORIGIN_POWERSETS.md. =====
+        -- the remaining mechanics (Rage HP-curve, Fear flee, heals, player_field) are separate build
+        -- slices. Firewall-safe. See docs/PET_REALM_ORIGIN_POWERSETS.md. =====
         taunt = { family = "taunt", magnitude = 0, duration = 8, radius = 18 }, -- AoE aggro pull onto the tank
         -- RAGE (tank self-buff): the holder pets (selected pet, else all tanks — same set as taunt)
         -- get a flat `base` pet-damage bonus PLUS a "critical" bonus that GROWS the lower the pet's HP
@@ -261,11 +284,16 @@ return {
         -- recovers (negatives snap to 0). No bespoke flee AI — the same table taunt pins positive.
         fear = { family = "fear", magnitude = 0, duration = 5 },
         ice_shard = { family = "vulnerable", magnitude = 1.4, duration = 4 }, -- targeted damage (via pets)
-        -- Deep Freeze INTERIM buff (balance audit): was 4s — strictly WORSE than the L6 Frost Bind
-        -- (5s, cheaper) despite being the L12 pick. 8s until the true HOLD (stops attacks too) ships;
-        -- part of the cryo hold ladder 8/10/12 (deep_freeze/absolute_zero/eternal_winter).
-        deep_freeze = { family = "root", magnitude = 0, duration = 8 }, -- TBD: full hold (Capacitor)
-        frost_field = { family = "root", magnitude = 0, duration = 6 }, -- player_field slow/freeze
+        -- Full HOLD: stops movement, attacks, powers, and other active behavior. This begins the
+        -- cryo hold ladder 8/10/12 (deep_freeze/absolute_zero/eternal_winter).
+        deep_freeze = { family = "hold", magnitude = 0, duration = 8 },
+        frost_field = {
+            family = "root",
+            magnitude = 0,
+            duration = 6,
+            radius = 20,
+            area_scope = "player",
+        }, -- player-centered freeze; Permafrost remains the larger target-centered root
         scorch = { family = "vulnerable", magnitude = 1.3, duration = 8 }, -- -def debuff
         -- Fire Nova (2026-07-02 audit): "Self-AoE Burn" had no burn — just the vuln mark. The generic
         -- `dot` rider (same one the cryo holds use) makes it actually burn while the mark is live.
@@ -348,24 +376,38 @@ return {
             family = "root",
             magnitude = 0,
             duration = 8,
+            radius = 30,
+            area_scope = "encounter_group",
             dot = { per_tick = 3, interval = 1, aoe = true },
         },
-        shatter = { family = "vulnerable", magnitude = 2.2, duration = 5, frozen_bonus = 1.4 }, -- big vuln, x1.4 again on FROZEN targets (2.2->3.08)
+        shatter = {
+            family = "vulnerable",
+            magnitude = 2.2,
+            duration = 5,
+            frozen_bonus = 1.4,
+            radius = 20,
+            area_scope = "targeted",
+        }, -- targeted AoE vuln, x1.4 again on FROZEN targets (2.2->3.08)
         -- mass hard freeze + deeper frostbite (4 HP/sec AoE (10x world); between Permafrost and Eternal
         -- Winter). 7 -> 10s (balance audit): the cryo hold LADDER is 8/10/12 (deep_freeze/absolute_zero/
         -- eternal_winter) so the controller owns the game's long holds.
         absolute_zero = {
-            family = "root",
+            family = "hold",
             magnitude = 0,
             duration = 10,
+            radius = 20,
+            area_scope = "targeted",
             dot = { per_tick = 4, interval = 1, aoe = true },
         },
-        -- Capstone: field-wide hold + a MINOR AoE DoT — 5 HP/sec (10x world; deliberately small so the
-        -- frostbite chips slowly rather than bursting). Holds every enemy and grinds them down.
+        -- Capstone: wide encounter-group hold + a MINOR AoE DoT — 5 HP/sec (10x world; deliberately
+        -- small so the frostbite chips slowly rather than bursting). The authored pack is eligible,
+        -- but the effective radius still decides which members are caught.
         eternal_winter = {
-            family = "root",
+            family = "hold",
             magnitude = 0,
             duration = 12,
+            radius = 20,
+            area_scope = "encounter_group",
             dot = { per_tick = 5, interval = 1, aoe = true },
         },
         -- Desert / Sandwalker (heal/sustain)
@@ -583,7 +625,7 @@ return {
             cooldown_seconds = 25,
             effect = "sunder",
             display_name = "Sunder",
-            subtitle = "Single-Target Debuff",
+            subtitle = "Single-Target Accuracy Mark",
             role = "debuff",
             element = "earth",
             target = "single",
@@ -1075,7 +1117,7 @@ return {
             cooldown_seconds = 28,
             effect = "shatter",
             display_name = "Shatter",
-            subtitle = "AoE Damage",
+            subtitle = "Targeted AoE Shatter",
             signature = true,
             role = "damage",
             element = "ice",

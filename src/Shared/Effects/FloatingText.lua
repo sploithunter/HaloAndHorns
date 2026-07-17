@@ -1,9 +1,8 @@
 --[[
     FloatingText — client floating combat text (damage / crit / miss / heal numbers).
 
-    A number pops above a hit point and floats UP while fading out. Driven by Combat_PetHit on
-    the client (the real swing), so the number is the damage that actually landed. Reusable for
-    heals (green) / other feedback later.
+    A number/result pops above a hit point and floats UP while fading out. Driven exclusively by
+    Combat_Result, published by the authoritative ApplyHit / ApplyDamage / ApplyPowerHeal path.
 
       FloatingText.show(worldPosition, text, { color, size, rise, duration, jitter, max_distance })
 ]]

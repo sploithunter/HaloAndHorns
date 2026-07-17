@@ -143,6 +143,16 @@ function AdminPowerPalette.maxSlots(powersConfig, enhConfig, powerId, opts)
             if applies and td.requires_aoe == true and not isAoe then
                 applies = false -- range only matters on a power with a real radius
             end
+            if
+                applies
+                and td.requires_radius == true
+                and not (
+                    ((enhConfig.radius_families or {})[family] == true)
+                    or ((tonumber(kind.radius) or 0) > 0)
+                )
+            then
+                applies = false
+            end
             if applies then
                 chosen = t
                 break

@@ -1,0 +1,2580 @@
+{
+  "visual_notes": {
+    "review": "All REVIEW renders correct; 7/8/9/15/16/17 yaw-flipped 180",
+    "ship": "All SHIP fronts correct (Jason)"
+  },
+  "source": "Workspace._MeshyLineup",
+  "place": "Halo and Horns",
+  "captured_at": "2026-07-15T21:21:47Z",
+  "shipping": [
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.01_heaven_archive",
+      "has_skinned_mesh": true,
+      "instance_name": "01_heaven_archive",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_archive",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "4.499999523162842",
+        "Theme": "heaven",
+        "StandOff": "1.5045178890228272"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 1,
+      "pivot": {
+        "y": 4.499999523162842,
+        "x": 20000,
+        "z": 6.4454827308654785
+      },
+      "color_map": "86931724351114",
+      "albedo_id": "86931724351114",
+      "normal_map": "74889114377463",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4785,
+        "verts": 13542,
+        "fnv1a_hash": 2495831986
+      },
+      "size": {
+        "y": 8.999999046325684,
+        "x": 5.414783000946045,
+        "z": 2.809034824371338
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/78031900206735",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/86931724351114",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "78031900206735",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_archive/heaven_archive.png",
+        "atlas_sha256": "f5ad8b545dbcb343bccaaedb706d580d568851cfc85654c06ea9a895b99c76ff",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_archive/heaven_archive_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "4b5a5c906ffd618ff74f43c20726af05fb9b6f8dd0929c1bbd64e23b275222eb",
+        "preview_sha256": "693f49be368dc3aa5f7f46ea3eb63093723cdd176992884037bc85e65ebc5369",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_archive.glb",
+        "source_glb_sha256": "65bdbeb79bcac1580e5028d390c8b9e2ad9d7ff226baa8750eb8f0f82b182d5d",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_archive.glb\noriginal_tris: 4785\n\n10k: heaven_archive_10k.fbx (4785 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.02_heaven_compass_banner",
+      "has_skinned_mesh": true,
+      "instance_name": "02_heaven_compass_banner",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_compass_banner",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "heaven",
+        "StandOff": "0.5511295020580291"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 2,
+      "pivot": {
+        "y": 3,
+        "x": 20014,
+        "z": 7.498870372772217
+      },
+      "color_map": "124452683346782",
+      "albedo_id": "124452683346782",
+      "normal_map": "127342384612712",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 2339,
+        "verts": 6416,
+        "fnv1a_hash": 3561412988
+      },
+      "size": {
+        "y": 6,
+        "x": 4.373716354370117,
+        "z": 0.7022590041160583
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/123934269734118",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/124452683346782",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "123934269734118",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_compass_banner/heaven_compass_banner.png",
+        "atlas_sha256": "f344f3251bd6778ddb076d18826145117e9bc678d3ed17205bb47bc021f5e951",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_compass_banner/heaven_compass_banner_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "9241ac33638ee12ef825db8fd16a133440d381ca22b091fb38c7e5d611d76e7c",
+        "preview_sha256": "621f21de1f52a173c296f6c6e979cb46d379a668ff37906e539b792dd4465f95",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_compass_banner.glb",
+        "source_glb_sha256": "87e30e4d23a69adfcc37bb465a6ac5cd05626df3a955ef078e2de3012b9a7a35",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_compass_banner.glb\noriginal_tris: 2339\n\n10k: heaven_compass_banner_10k.fbx (2337 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.03_heaven_diamond_altar",
+      "has_skinned_mesh": true,
+      "instance_name": "03_heaven_diamond_altar",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_diamond_altar",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "4",
+        "Theme": "heaven",
+        "StandOff": "3.294955110549927"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 3,
+      "pivot": {
+        "y": 4.00003719329834,
+        "x": 20028,
+        "z": 4.655165195465088
+      },
+      "color_map": "128951546292202",
+      "albedo_id": "128951546292202",
+      "normal_map": "77780046574692",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4494,
+        "verts": 13152,
+        "fnv1a_hash": 2021085032
+      },
+      "size": {
+        "y": 8.000097274780273,
+        "x": 6.028820514678955,
+        "z": 6.39022159576416
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/84842558046045",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/128951546292202",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "84842558046045",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_diamond_altar/heaven_diamond_altar.png",
+        "atlas_sha256": "e218f56c0918aed13beaf71139c666fa287d7e59a89edb9b56c7a9352605ba4f",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_diamond_altar/heaven_diamond_altar_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "3311389821a1ef72bd6217d684bd06b56ba73ae0ac44460341b0027283beb2cd",
+        "preview_sha256": "c070ecee0ad8b7e9779c7d9aaf2991d5e8917c4c4920df7db541e6cec5620c2d",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_diamond_altar.glb",
+        "source_glb_sha256": "e7d68f3a0accaf812a92b6a566d666a2e999de089893cb6aa51d195abdad8c4e",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_diamond_altar.glb\noriginal_tris: 4494\n\n10k: heaven_diamond_altar_10k.fbx (4494 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.04_heaven_flamecrest_shield",
+      "has_skinned_mesh": true,
+      "instance_name": "04_heaven_flamecrest_shield",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_flamecrest_shield",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "heaven",
+        "StandOff": "0.9161192893981933"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 4,
+      "pivot": {
+        "y": 2.249966859817505,
+        "x": 20042,
+        "z": 7.1338934898376465
+      },
+      "color_map": "134536839473444",
+      "albedo_id": "134536839473444",
+      "normal_map": "73416609392082",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 3867,
+        "verts": 10795,
+        "fnv1a_hash": 2946780474
+      },
+      "size": {
+        "y": 4.5,
+        "x": 1.6909648180007935,
+        "z": 1.4322385787963867
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/124667039413678",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/134536839473444",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "124667039413678",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_flamecrest_shield/heaven_flamecrest_shield.png",
+        "atlas_sha256": "83ee10e968e9b57e391efdc4993d56726e162fb8975c95dd78a25fcb1ba7715b",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_flamecrest_shield/heaven_flamecrest_shield_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "c131bc8d7e9f0fb47e21cc82fbabcc180ed211000c4d51ce32a12ec3d39eb2cf",
+        "preview_sha256": "dd7b134a7dc31c3d295401763d0e287e5143d5ab3bab90ae2cf642ee4facea04",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_flamecrest_shield.glb",
+        "source_glb_sha256": "1b7ccafa42fae2d84be10d8e1022bd15e973fa9e8cdd9d12aa6b82d07ba38b8a",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_flamecrest_shield.glb\noriginal_tris: 3867\n\n10k: heaven_flamecrest_shield_10k.fbx (3867 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.05_heaven_gilded_bookcase",
+      "has_skinned_mesh": false,
+      "instance_name": "05_heaven_gilded_bookcase",
+      "bind_mode": "TextureID",
+      "prop": "heaven_gilded_bookcase",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "4.5",
+        "Theme": "heaven",
+        "StandOff": "1.0807735085487367"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 5,
+      "pivot": {
+        "y": 4.5,
+        "x": 20056,
+        "z": 6.869307041168213
+      },
+      "color_map": "",
+      "albedo_id": "124877813089179",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 9999,
+        "verts": 25416,
+        "fnv1a_hash": 3849671704
+      },
+      "size": {
+        "y": 9,
+        "x": 5.416957378387451,
+        "z": 1.9615470170974731
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/79109805720279",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/124877813089179",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "124877813089179",
+      "row": "SHIP",
+      "mesh_id": "79109805720279",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase.png",
+        "atlas_sha256": "a4cad0311ddc6a55e9febcf2c0283121f8cbd4de1f2f1031e5d4878d4d86db42",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "cbf9cef4e42d1bcd66b51824ac5457eeef35914ea5c65ef0c3cbfbf0435e4276",
+        "preview_sha256": "c036179fe6c3411159759288fbed43b5f0c7c26151d3ab1c027e2616ffbeb600",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_gilded_bookcase.glb",
+        "source_glb_sha256": "263135e2ea38d2a957ec1541dc5c9fd2cce02e0ecda31ad1fbf3f79eacd24d84",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_gilded_bookcase.glb\noriginal_tris: 476714\n\n10k: heaven_gilded_bookcase_10k.fbx (9999 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.06_heaven_golden_codex",
+      "has_skinned_mesh": true,
+      "instance_name": "06_heaven_golden_codex",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_golden_codex",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "2.5",
+        "Theme": "heaven",
+        "StandOff": "1.1112937688827516"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 6,
+      "pivot": {
+        "y": 2.499999761581421,
+        "x": 20070,
+        "z": 6.8387064933776855
+      },
+      "color_map": "116299618242527",
+      "albedo_id": "116299618242527",
+      "normal_map": "88704061662341",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5037,
+        "verts": 13916,
+        "fnv1a_hash": 3527805972
+      },
+      "size": {
+        "y": 4.999999523162842,
+        "x": 3.316220998764038,
+        "z": 2.0225870609283447
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/79025906147334",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/116299618242527",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "79025906147334",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_golden_codex/heaven_golden_codex.png",
+        "atlas_sha256": "1b515687c5d7e1ba16e329450a2e5b0bfc2dc145d0180c00f34507923d75e0f7",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_golden_codex/heaven_golden_codex_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "7fc4ac2dfcbabeb504b54f0ac14c3c708abb96020aec4fbc963c1bd30c850e85",
+        "preview_sha256": "95fd93b3a770f679491738225ae4e4e9cd3f22e7f3f959ef0213c669e59b1b9f",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_golden_codex.glb",
+        "source_glb_sha256": "a9bcdbab841a2c720208108dd7fd385c6d8eeafc97b71a91f91366fda8d62f42",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_golden_codex.glb\noriginal_tris: 5037\n\n10k: heaven_golden_codex_10k.fbx (5040 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.07_heaven_golden_guardian",
+      "has_skinned_mesh": true,
+      "instance_name": "07_heaven_golden_guardian",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_golden_guardian",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "heaven",
+        "StandOff": "0.9"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 7,
+      "pivot": {
+        "y": 4.49990177154541,
+        "x": 20084,
+        "z": 7.1370368003845215
+      },
+      "color_map": "81393542093891",
+      "albedo_id": "81393542093891",
+      "normal_map": "83325010072375",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4482,
+        "verts": 12996,
+        "fnv1a_hash": 3467473080
+      },
+      "size": {
+        "y": 9,
+        "x": 5.425925254821777,
+        "z": 1.4259265661239624
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/77496157366357",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/81393542093891",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "77496157366357",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_golden_guardian/heaven_golden_guardian.png",
+        "atlas_sha256": "3d72a5ed6028f2a3fbc555dd67e5772886c8ede5a67498946c3efc4f5b08454a",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_golden_guardian/heaven_golden_guardian_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "38c361acbf95d372a0526f03f78c1a71ad100acaede0fcd4e6803902e443cc15",
+        "preview_sha256": "dc9c0c70524e754bebb20d5369b7dc6c68a751546d847d74a53ad23064de7116",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_golden_guardian.glb",
+        "source_glb_sha256": "ee4383038a8e58573ebc07817655c4b0c7f0f1dc5d03c52ea1a403dfbddcfc46",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_golden_guardian.glb\noriginal_tris: 4482\n\n10k: heaven_golden_guardian_10k.fbx (4482 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.08_heaven_golden_throne",
+      "has_skinned_mesh": true,
+      "instance_name": "08_heaven_golden_throne",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_golden_throne",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "5",
+        "Theme": "heaven",
+        "StandOff": "2.4801214694976808"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 8,
+      "pivot": {
+        "y": 5.000000476837158,
+        "x": 20098,
+        "z": 5.470122814178467
+      },
+      "color_map": "121218309703368",
+      "albedo_id": "121218309703368",
+      "normal_map": "116349257891299",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 20000,
+        "verts": 24237,
+        "fnv1a_hash": 2140130448
+      },
+      "size": {
+        "y": 10,
+        "x": 5.2655534744262695,
+        "z": 4.760242938995361
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/79404346104290",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/121218309703368",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "79404346104290",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_golden_throne/heaven_golden_throne.png",
+        "atlas_sha256": "56dec375576b743f96d64790907d1c3af8c94201ef8226469c2f97e8607a2e66",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_golden_throne/heaven_golden_throne_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "32f272a12f39d43acbd642dc55e82f57ebabb0448a56c74fdf39661003ec98b5",
+        "preview_sha256": "6f535acb7758dc47436eef27c56ea25c3c6210b7c75710be3b6ec52cf53a9b4d",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_golden_throne.glb",
+        "source_glb_sha256": "0dc80e32a7991b861fb6d5c4ea160985eb0564a0aaaa28ce0be12fcee1473d83",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_golden_throne.glb\noriginal_tris: 441404\n\n10k: heaven_golden_throne_10k.fbx (9999 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.09_heaven_ivory_throne",
+      "has_skinned_mesh": true,
+      "instance_name": "09_heaven_ivory_throne",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_ivory_throne",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "5",
+        "Theme": "heaven",
+        "StandOff": "2.63586483001709"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 9,
+      "pivot": {
+        "y": 4.999999523162842,
+        "x": 20112,
+        "z": 5.3141937255859375
+      },
+      "color_map": "134447613660113",
+      "albedo_id": "134447613660113",
+      "normal_map": "74106729534664",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5446,
+        "verts": 15129,
+        "fnv1a_hash": 1428836976
+      },
+      "size": {
+        "y": 9.999999046325684,
+        "x": 6.139629364013672,
+        "z": 5.071868419647217
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/109650476169656",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/134447613660113",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "109650476169656",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_ivory_throne/heaven_ivory_throne.png",
+        "atlas_sha256": "a82a6194778285e51d887e00f08823b217719179e06e377392b412d8808d33be",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_ivory_throne/heaven_ivory_throne_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "d0109d47d228d3570000765c403cfcf3baa4f589b431bf6bf8391c0d9c8bdb48",
+        "preview_sha256": "634e23ee349ded2fd25cb14f893a4d205e03aebc96c66a7b85651c4bd490132d",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_ivory_throne.glb",
+        "source_glb_sha256": "4299bf67e603a26300f5867975341064ff7024938134a3d415dcff562acbe6f5",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_ivory_throne.glb\noriginal_tris: 5446\n\n10k: heaven_ivory_throne_10k.fbx (5446 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.10_heaven_marble_throne",
+      "has_skinned_mesh": true,
+      "instance_name": "10_heaven_marble_throne",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_marble_throne",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "5.000000476837158",
+        "Theme": "heaven",
+        "StandOff": "2.5728264808654786"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 10,
+      "pivot": {
+        "y": 5,
+        "x": 20126,
+        "z": 5.377173900604248
+      },
+      "color_map": "137962979882666",
+      "albedo_id": "137962979882666",
+      "normal_map": "80033004905740",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5017,
+        "verts": 14374,
+        "fnv1a_hash": 1685550640
+      },
+      "size": {
+        "y": 10,
+        "x": 13.070650100708008,
+        "z": 4.945652008056641
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/121186869634374",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/137962979882666",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "121186869634374",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_marble_throne/heaven_marble_throne.png",
+        "atlas_sha256": "fb46d9cf3bdbec8a55c4f3f3c7fd8b3adc9f47163b30941e48a62a1c3a729731",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_marble_throne/heaven_marble_throne_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "41d184e1630d6093e5dfac0d52dcd227c35b8893a6bf0a9a981dfa4bb8718cb1",
+        "preview_sha256": "28f2059b0c0994c41ce7fcf78eb403513b875e1be573fbe4203f31a87503e466",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_marble_throne.glb",
+        "source_glb_sha256": "af99aa1cd2d7a3b4bd404630e0fd7e0429db5072497dd732fdba8334e8b4b525",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_marble_throne.glb\noriginal_tris: 5017\n\n10k: heaven_marble_throne_10k.fbx (5017 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.11_heaven_star_fountain",
+      "has_skinned_mesh": true,
+      "instance_name": "11_heaven_star_fountain",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "heaven_star_fountain",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "9",
+        "Theme": "heaven",
+        "StandOff": "1.8"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 11,
+      "pivot": {
+        "y": 3.9999940395355225,
+        "x": 20140,
+        "z": 6.264791011810303
+      },
+      "color_map": "140287418899744",
+      "albedo_id": "140287418899744",
+      "normal_map": "75664983127736",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4430,
+        "verts": 11268,
+        "fnv1a_hash": 1610113280
+      },
+      "size": {
+        "y": 8,
+        "x": 3.36755633354187,
+        "z": 3.17043137550354
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/106893725310650",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/140287418899744",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "106893725310650",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain.png",
+        "atlas_sha256": "5582a858ed5f5455ddfda90412e76cbd5ed51daf9c623ed74647df7c49a8ca32",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "8fa6baa981aa50c7d9b1838723a1b3b7349703e027d1a540782c8de65218433d",
+        "preview_sha256": "475fe44274b305db096c11268c81c7f911053d388598667145c76fa1242a6249",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_star_fountain.glb",
+        "source_glb_sha256": "f1f00c13bd6073f2a8742eda1445835212d3c417502c98cf2ddfff9a262abf07",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_star_fountain.glb\noriginal_tris: 4430\n\n10k: heaven_star_fountain_10k.fbx (4435 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.12_hell_gate_of_damned",
+      "has_skinned_mesh": true,
+      "instance_name": "12_hell_gate_of_damned",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "hell_gate_of_damned",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "13",
+        "Theme": "hell",
+        "StandOff": "2.1"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 12,
+      "pivot": {
+        "y": 7,
+        "x": 20154,
+        "z": 5.95745849609375
+      },
+      "color_map": "87592307077130",
+      "albedo_id": "87592307077130",
+      "normal_map": "91307940257621",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 6625,
+        "verts": 19096,
+        "fnv1a_hash": 391225486
+      },
+      "size": {
+        "y": 14,
+        "x": 13.278968811035156,
+        "z": 3.7854080200195312
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/78769818741284",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/87592307077130",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "78769818741284",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_gate_of_damned/hell_gate_of_damned.png",
+        "atlas_sha256": "76df1aafc72cae24b096cf6deaeb82c1e5443abe4794ec885e6c7fc83713d192",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_gate_of_damned/hell_gate_of_damned_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "266ba1008431bbc1b1a8b8d360c12805ebe53dcd97c85d059f7dfd6fa875422f",
+        "preview_sha256": "bf9eceb34cc2d27a3c4d8765223f38aad93ad1707174be1b3a5841e9f7241c99",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_gate_of_damned.glb",
+        "source_glb_sha256": "57a5bc9372ca8d8a7e5d55f6aa40965ae63207d60864930420fc8d45fe19db53",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_gate_of_damned.glb\noriginal_tris: 6625\n\n10k: hell_gate_of_damned_10k.fbx (6625 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.13_hell_infernal_archive",
+      "has_skinned_mesh": true,
+      "instance_name": "13_hell_infernal_archive",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "hell_infernal_archive",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "4.499999523162842",
+        "Theme": "hell",
+        "StandOff": "1.8094463109970094"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 13,
+      "pivot": {
+        "y": 4.499999523162842,
+        "x": 20168,
+        "z": 6.140553951263428
+      },
+      "color_map": "110530822975465",
+      "albedo_id": "110530822975465",
+      "normal_map": "79989135942488",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5805,
+        "verts": 16488,
+        "fnv1a_hash": 4250749176
+      },
+      "size": {
+        "y": 8.999999046325684,
+        "x": 6.5236124992370605,
+        "z": 3.418891668319702
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/89717900211635",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/110530822975465",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "89717900211635",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive.png",
+        "atlas_sha256": "fc5088027d84f7db08d9921015ec81d3d4f97d76661feaf024d1fcce75147d75",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "75c93f284c3cededae779752c0a62dc225fe376de3e4565c594c57f05cc22b54",
+        "preview_sha256": "25fec5ff363921ec32cef69df0b958d9e7b0c6e9af30c439ac7885df97730577",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_archive.glb",
+        "source_glb_sha256": "d4de60482073149d0ce89ca431a2782769ee81c830ccbb5fd465ef04322a1197",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_archive.glb\noriginal_tris: 5805\n\n10k: hell_infernal_archive_10k.fbx (5805 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.14_hell_infernal_crest",
+      "has_skinned_mesh": true,
+      "instance_name": "14_hell_infernal_crest",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "hell_infernal_crest",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "hell",
+        "StandOff": "0.7082263946533203"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 14,
+      "pivot": {
+        "y": 2.250000238418579,
+        "x": 20182,
+        "z": 7.341773986816406
+      },
+      "color_map": "97471590489784",
+      "albedo_id": "97471590489784",
+      "normal_map": "88556817104166",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5458,
+        "verts": 15966,
+        "fnv1a_hash": 1279409592
+      },
+      "size": {
+        "y": 4.500110149383545,
+        "x": 4.056567192077637,
+        "z": 1.0164521932601929
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/127699320929775",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/97471590489784",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "127699320929775",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest.png",
+        "atlas_sha256": "fe68b89171b48f3d336e12c4028fac7e8b6549745929d6fc15e8adf2cff52dec",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "ca570ab558040dcc6392971f8a26c893eacc6390f1eeb2714d81ddf579c525f4",
+        "preview_sha256": "d2e8d0667a22103b529f6194ce892fc70557db40eb5d69eeb84bd9b0716958ff",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_crest.glb",
+        "source_glb_sha256": "6a1cd9626981f88bd54c328590ffacc518501242c695ee5b4607813957d1d492",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_crest.glb\noriginal_tris: 5458\n\n10k: hell_infernal_crest_10k.fbx (5456 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.15_hell_infernal_fountain",
+      "has_skinned_mesh": true,
+      "instance_name": "15_hell_infernal_fountain",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "hell_infernal_fountain",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "3.999999761581421",
+        "Theme": "hell",
+        "StandOff": "2.231700038909912"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 15,
+      "pivot": {
+        "y": 3.9998648166656494,
+        "x": 20196,
+        "z": 5.720889091491699
+      },
+      "color_map": "112527313536272",
+      "albedo_id": "112527313536272",
+      "normal_map": "96421561003389",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 19996,
+        "verts": 24081,
+        "fnv1a_hash": 2929148352
+      },
+      "size": {
+        "y": 7.999999523162842,
+        "x": 4.270282745361328,
+        "z": 4.263400077819824
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/94148201608679",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/112527313536272",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "94148201608679",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain.png",
+        "atlas_sha256": "30f19c0602ef02008df86c3544cf7eff6fe6e60e59498521d007a22e758da12b",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "accf957c2f244aa2f5486faa69c3f6b22f5dd0160f14245e4093bff630c05fb2",
+        "preview_sha256": "9ae1f604ccfb240419ed69880f37af4ceac6fd535ba2d0ce60dd0442341e3d3c",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_fountain.glb",
+        "source_glb_sha256": "f64a393b423a566410aa51c8598b54e2faa740002a0b6c640d199e0105a22a0c",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_fountain.glb\noriginal_tris: 678640\n\n10k: hell_infernal_fountain_10k.fbx (10000 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.16_hell_infernal_throne",
+      "has_skinned_mesh": true,
+      "instance_name": "16_hell_infernal_throne",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "hell_infernal_throne",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "5",
+        "Theme": "hell",
+        "StandOff": "3.037320947647095"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 16,
+      "pivot": {
+        "y": 4.999709606170654,
+        "x": 20210,
+        "z": 4.920332431793213
+      },
+      "color_map": "126630031994674",
+      "albedo_id": "126630031994674",
+      "normal_map": "121681310802621",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 19994,
+        "verts": 27028,
+        "fnv1a_hash": 1412525528
+      },
+      "size": {
+        "y": 10,
+        "x": 5.489624500274658,
+        "z": 5.8746418952941895
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/134390034169903",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/126630031994674",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "134390034169903",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne.png",
+        "atlas_sha256": "87dc483e85e90c17c4b304110c3edbc679999ea454eb11fdff0ae6beb69fe6cb",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "b686ea84a7473dd9c14fae7024c3deebe1dd457226e66b84db1ec0c17736c71f",
+        "preview_sha256": "0740fc0714813552a2a7b2d678ed1fae0dc2769ff6a21231e6de31dfb9ad6e62",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_throne.glb",
+        "source_glb_sha256": "00bed22afd2766cb85bf47ddb68a2a9db5772f292c2c20333bfd54fb9e21a183",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_throne.glb\noriginal_tris: 716314\n\n10k: hell_infernal_throne_10k.fbx (10000 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.17_hell_infernal_throne_flat",
+      "has_skinned_mesh": true,
+      "instance_name": "17_hell_infernal_throne_flat",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "hell_infernal_throne_flat",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "hell",
+        "StandOff": "1.1"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 17,
+      "pivot": {
+        "y": 4.993332386016846,
+        "x": 20224,
+        "z": 6.9593048095703125
+      },
+      "color_map": "137767612484602",
+      "albedo_id": "137767612484602",
+      "normal_map": "127896791162761",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 20000,
+        "verts": 19438,
+        "fnv1a_hash": 3764863264
+      },
+      "size": {
+        "y": 10,
+        "x": 6.070017337799072,
+        "z": 1.7835524082183838
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/114077872717626",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/137767612484602",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "114077872717626",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne_flat/hell_infernal_throne_flat.png",
+        "atlas_sha256": "feec8062922bf979afed34d4ae1ed4f5d2d0f2d33a25ef289465ea4afd0caf6a",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne_flat/hell_infernal_throne_flat_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "9303901aaaf4ca43596253375beedeaeb4b067a1d5d7d46313a4b65ec4567590",
+        "preview_sha256": "87d3988cd706412221ccfcb95db23e90cfb4d82c38bc4c72084df3543d5c9c97",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_throne_flat.glb",
+        "source_glb_sha256": "e0e20d1f2b1dbc886fe9ebc87dd20d56d908f32187f1d9ae7428d8a737adf17b",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_throne_flat.glb\noriginal_tris: 738080\n\n10k: hell_infernal_throne_flat_10k.fbx (9999 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.18_hell_skull_banner",
+      "has_skinned_mesh": true,
+      "instance_name": "18_hell_skull_banner",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "hell_skull_banner",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "hell",
+        "StandOff": "0.6434453547000885"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 18,
+      "pivot": {
+        "y": 2.999999761581421,
+        "x": 20238,
+        "z": 7.40655517578125
+      },
+      "color_map": "96830518194716",
+      "albedo_id": "96830518194716",
+      "normal_map": "116384919097716",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4665,
+        "verts": 13180,
+        "fnv1a_hash": 2514287888
+      },
+      "size": {
+        "y": 5.999999523162842,
+        "x": 5.556467533111572,
+        "z": 0.8870636224746704
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/112401985756621",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/96830518194716",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "112401985756621",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_banner/hell_skull_banner.png",
+        "atlas_sha256": "15689a5d904c6eb687aea0f8cd7a1d7495a878c997d125343a86d94c28e8e810",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_skull_banner/hell_skull_banner_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "6e3fe58c46f973480cbf0f9ff8b3e3c1441ca57752cdd2c45e048f68ec9881b5",
+        "preview_sha256": "168eb7238f729de447ac92337543c37b30dfefd86299cb75b438f1bb2645e7c3",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_skull_banner.glb",
+        "source_glb_sha256": "081844e9f18d750467d3d6d34da49fb4e8f08b744644741d88d627f339f7b2ce",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_skull_banner.glb\noriginal_tris: 4665\n\n10k: hell_skull_banner_10k.fbx (4667 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.19_hell_skull_lantern",
+      "has_skinned_mesh": true,
+      "instance_name": "19_hell_skull_lantern",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "hell_skull_lantern",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "3.000000238418579",
+        "Theme": "hell",
+        "StandOff": "1.5969385862350465"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 19,
+      "pivot": {
+        "y": 3.0000250339508057,
+        "x": 20252,
+        "z": 6.353061676025391
+      },
+      "color_map": "92355696570955",
+      "albedo_id": "92355696570955",
+      "normal_map": "129811921410876",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4360,
+        "verts": 12488,
+        "fnv1a_hash": 1425553520
+      },
+      "size": {
+        "y": 6.000073432922363,
+        "x": 3.3758108615875244,
+        "z": 2.9938764572143555
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/121415762722335",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/92355696570955",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "121415762722335",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_lantern/hell_skull_lantern.png",
+        "atlas_sha256": "26b5eec78d5105286e2de6908883fbde345eae8a0477f3eebf1701e5ee5502f2",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_skull_lantern/hell_skull_lantern_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "cdfffe8313f7cc8eea6ebfa7e245006a9b6e67a441797eb486d28c4f7c157f61",
+        "preview_sha256": "83d0b90d54532dcff5bd8053b4cfc637886c836b9ffd8bff0de7c2caa2726133",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_skull_lantern.glb",
+        "source_glb_sha256": "d9a6394d5818400f6ddddc25e5eb1e2f2f037b03cefca780a33f14d0cd804de9",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_skull_lantern.glb\noriginal_tris: 4360\n\n10k: hell_skull_lantern_10k.fbx (4360 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.20_hell_skull_sconce",
+      "has_skinned_mesh": true,
+      "instance_name": "20_hell_skull_sconce",
+      "bind_mode": "SurfaceAppearance",
+      "prop": "hell_skull_sconce",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "hell",
+        "StandOff": "1.744149398803711"
+      },
+      "bone_count": 1,
+      "material": "Enum.Material.Plastic",
+      "n": 20,
+      "pivot": {
+        "y": 2.0000126361846924,
+        "x": 20266,
+        "z": 6.305854320526123
+      },
+      "color_map": "115359258182587",
+      "albedo_id": "115359258182587",
+      "normal_map": "73715743243944",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5104,
+        "verts": 14475,
+        "fnv1a_hash": 4044160128
+      },
+      "size": {
+        "y": 4.000049114227295,
+        "x": 2.3737454414367676,
+        "z": 3.0883336067199707
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/78199195680560",
+      "bones": [
+        "Root"
+      ],
+      "create_albedo": "https://create.roblox.com/store/asset/115359258182587",
+      "color": {
+        "b": 0.6470588445663452,
+        "g": 0.6352941393852234,
+        "r": 0.6392157077789307
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "",
+      "row": "SHIP",
+      "mesh_id": "78199195680560",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce.png",
+        "atlas_sha256": "5d711e1f985f26d92413480e9a4b30822e0a1cb1200949e6b326bfb5c3e0282b",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "fb3eeb03128f508e1cdc0ae671a20abb848aaf278a0062e7afb0f90cc7a245e4",
+        "preview_sha256": "544c0b4a3e67035d26e3b9d2118ee9dea58b80e31b2d3c6b210aa835d2edbc72",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_skull_sconce.glb",
+        "source_glb_sha256": "0bc49d17153f5e2e1832ff53aeac0c17da72b4a25e42de8930c3bfbb98e617af",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_skull_sconce.glb\noriginal_tris: 5104\n\n10k: hell_skull_sconce_10k.fbx (5104 tris, target 10000)"
+      }
+    }
+  ],
+  "place_id": 77766176054993,
+  "review": [
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.01_heaven_archive",
+      "has_skinned_mesh": false,
+      "instance_name": "01_heaven_archive",
+      "bind_mode": "TextureID",
+      "prop": "heaven_archive",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "4.499999523162842",
+        "Theme": "heaven",
+        "StandOff": "1.5045178890228272"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 1,
+      "pivot": {
+        "y": 4.499999523162842,
+        "x": 20000,
+        "z": 46.44548416137695
+      },
+      "color_map": "",
+      "albedo_id": "112068110727242",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4785,
+        "verts": 13537,
+        "fnv1a_hash": 1169212968
+      },
+      "size": {
+        "y": 8.999999046325684,
+        "x": 5.414783000946045,
+        "z": 2.809034824371338
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/107064587581875",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/112068110727242",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "112068110727242",
+      "row": "REVIEW",
+      "mesh_id": "107064587581875",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_archive/heaven_archive.png",
+        "atlas_sha256": "f5ad8b545dbcb343bccaaedb706d580d568851cfc85654c06ea9a895b99c76ff",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_archive/heaven_archive_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "4b5a5c906ffd618ff74f43c20726af05fb9b6f8dd0929c1bbd64e23b275222eb",
+        "preview_sha256": "693f49be368dc3aa5f7f46ea3eb63093723cdd176992884037bc85e65ebc5369",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_archive.glb",
+        "source_glb_sha256": "65bdbeb79bcac1580e5028d390c8b9e2ad9d7ff226baa8750eb8f0f82b182d5d",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_archive.glb\noriginal_tris: 4785\n\n10k: heaven_archive_10k.fbx (4785 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.02_heaven_compass_banner",
+      "has_skinned_mesh": false,
+      "instance_name": "02_heaven_compass_banner",
+      "bind_mode": "TextureID",
+      "prop": "heaven_compass_banner",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "heaven",
+        "StandOff": "0.5511295020580291"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 2,
+      "pivot": {
+        "y": 3,
+        "x": 20014,
+        "z": 47.498870849609375
+      },
+      "color_map": "",
+      "albedo_id": "125843928654701",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 2337,
+        "verts": 6337,
+        "fnv1a_hash": 3360793824
+      },
+      "size": {
+        "y": 6,
+        "x": 4.373716354370117,
+        "z": 0.7022590041160583
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/126547680137901",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/125843928654701",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "125843928654701",
+      "row": "REVIEW",
+      "mesh_id": "126547680137901",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_compass_banner/heaven_compass_banner.png",
+        "atlas_sha256": "f344f3251bd6778ddb076d18826145117e9bc678d3ed17205bb47bc021f5e951",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_compass_banner/heaven_compass_banner_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "9241ac33638ee12ef825db8fd16a133440d381ca22b091fb38c7e5d611d76e7c",
+        "preview_sha256": "621f21de1f52a173c296f6c6e979cb46d379a668ff37906e539b792dd4465f95",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_compass_banner.glb",
+        "source_glb_sha256": "87e30e4d23a69adfcc37bb465a6ac5cd05626df3a955ef078e2de3012b9a7a35",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_compass_banner.glb\noriginal_tris: 2339\n\n10k: heaven_compass_banner_10k.fbx (2337 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.03_heaven_diamond_altar",
+      "has_skinned_mesh": false,
+      "instance_name": "03_heaven_diamond_altar",
+      "bind_mode": "TextureID",
+      "prop": "heaven_diamond_altar",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "4",
+        "Theme": "heaven",
+        "StandOff": "3.294955110549927"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 3,
+      "pivot": {
+        "y": 4.000048637390137,
+        "x": 20028,
+        "z": 44.65488815307617
+      },
+      "color_map": "",
+      "albedo_id": "99934841034157",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4494,
+        "verts": 13132,
+        "fnv1a_hash": 3893299428
+      },
+      "size": {
+        "y": 8.000097274780273,
+        "x": 6.028820514678955,
+        "z": 6.39022159576416
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/126005129346568",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/99934841034157",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "99934841034157",
+      "row": "REVIEW",
+      "mesh_id": "126005129346568",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_diamond_altar/heaven_diamond_altar.png",
+        "atlas_sha256": "e218f56c0918aed13beaf71139c666fa287d7e59a89edb9b56c7a9352605ba4f",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_diamond_altar/heaven_diamond_altar_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "3311389821a1ef72bd6217d684bd06b56ba73ae0ac44460341b0027283beb2cd",
+        "preview_sha256": "c070ecee0ad8b7e9779c7d9aaf2991d5e8917c4c4920df7db541e6cec5620c2d",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_diamond_altar.glb",
+        "source_glb_sha256": "e7d68f3a0accaf812a92b6a566d666a2e999de089893cb6aa51d195abdad8c4e",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_diamond_altar.glb\noriginal_tris: 4494\n\n10k: heaven_diamond_altar_10k.fbx (4494 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.04_heaven_flamecrest_shield",
+      "has_skinned_mesh": false,
+      "instance_name": "04_heaven_flamecrest_shield",
+      "bind_mode": "TextureID",
+      "prop": "heaven_flamecrest_shield",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "heaven",
+        "StandOff": "0.9161192893981933"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 4,
+      "pivot": {
+        "y": 2.2499725818634033,
+        "x": 20042,
+        "z": 47.133880615234375
+      },
+      "color_map": "",
+      "albedo_id": "140483513602781",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 3867,
+        "verts": 10794,
+        "fnv1a_hash": 3466807464
+      },
+      "size": {
+        "y": 4.5,
+        "x": 1.6909648180007935,
+        "z": 1.4322385787963867
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/121112483596299",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/140483513602781",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "140483513602781",
+      "row": "REVIEW",
+      "mesh_id": "121112483596299",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_flamecrest_shield/heaven_flamecrest_shield.png",
+        "atlas_sha256": "83ee10e968e9b57e391efdc4993d56726e162fb8975c95dd78a25fcb1ba7715b",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_flamecrest_shield/heaven_flamecrest_shield_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "c131bc8d7e9f0fb47e21cc82fbabcc180ed211000c4d51ce32a12ec3d39eb2cf",
+        "preview_sha256": "dd7b134a7dc31c3d295401763d0e287e5143d5ab3bab90ae2cf642ee4facea04",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_flamecrest_shield.glb",
+        "source_glb_sha256": "1b7ccafa42fae2d84be10d8e1022bd15e973fa9e8cdd9d12aa6b82d07ba38b8a",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_flamecrest_shield.glb\noriginal_tris: 3867\n\n10k: heaven_flamecrest_shield_10k.fbx (3867 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.05_heaven_gilded_bookcase",
+      "has_skinned_mesh": false,
+      "instance_name": "05_heaven_gilded_bookcase",
+      "bind_mode": "TextureID",
+      "prop": "heaven_gilded_bookcase",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "4.5",
+        "Theme": "heaven",
+        "StandOff": "1.0807735085487367"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 5,
+      "pivot": {
+        "y": 4.5,
+        "x": 20056,
+        "z": 46.86930847167969
+      },
+      "color_map": "",
+      "albedo_id": "124877813089179",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 9999,
+        "verts": 25416,
+        "fnv1a_hash": 3849671704
+      },
+      "size": {
+        "y": 9,
+        "x": 5.416957378387451,
+        "z": 1.9615470170974731
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/79109805720279",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/124877813089179",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "124877813089179",
+      "row": "REVIEW",
+      "mesh_id": "79109805720279",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase.png",
+        "atlas_sha256": "a4cad0311ddc6a55e9febcf2c0283121f8cbd4de1f2f1031e5d4878d4d86db42",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "cbf9cef4e42d1bcd66b51824ac5457eeef35914ea5c65ef0c3cbfbf0435e4276",
+        "preview_sha256": "c036179fe6c3411159759288fbed43b5f0c7c26151d3ab1c027e2616ffbeb600",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_gilded_bookcase.glb",
+        "source_glb_sha256": "263135e2ea38d2a957ec1541dc5c9fd2cce02e0ecda31ad1fbf3f79eacd24d84",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_gilded_bookcase.glb\noriginal_tris: 476714\n\n10k: heaven_gilded_bookcase_10k.fbx (9999 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.06_heaven_golden_codex",
+      "has_skinned_mesh": false,
+      "instance_name": "06_heaven_golden_codex",
+      "bind_mode": "TextureID",
+      "prop": "heaven_golden_codex",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "2.5",
+        "Theme": "heaven",
+        "StandOff": "1.1112937688827516"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 6,
+      "pivot": {
+        "y": 2.499999761581421,
+        "x": 20070,
+        "z": 46.838706970214844
+      },
+      "color_map": "",
+      "albedo_id": "107361991734196",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5040,
+        "verts": 13878,
+        "fnv1a_hash": 2955456122
+      },
+      "size": {
+        "y": 4.999999523162842,
+        "x": 3.316220998764038,
+        "z": 2.0225870609283447
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/108218400185593",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/107361991734196",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "107361991734196",
+      "row": "REVIEW",
+      "mesh_id": "108218400185593",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_golden_codex/heaven_golden_codex.png",
+        "atlas_sha256": "1b515687c5d7e1ba16e329450a2e5b0bfc2dc145d0180c00f34507923d75e0f7",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_golden_codex/heaven_golden_codex_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "7fc4ac2dfcbabeb504b54f0ac14c3c708abb96020aec4fbc963c1bd30c850e85",
+        "preview_sha256": "95fd93b3a770f679491738225ae4e4e9cd3f22e7f3f959ef0213c669e59b1b9f",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_golden_codex.glb",
+        "source_glb_sha256": "a9bcdbab841a2c720208108dd7fd385c6d8eeafc97b71a91f91366fda8d62f42",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_golden_codex.glb\noriginal_tris: 5037\n\n10k: heaven_golden_codex_10k.fbx (5040 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.07_heaven_golden_guardian",
+      "has_skinned_mesh": false,
+      "instance_name": "07_heaven_golden_guardian",
+      "bind_mode": "TextureID",
+      "prop": "heaven_golden_guardian",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "heaven",
+        "StandOff": "0.9"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 7,
+      "pivot": {
+        "y": 4.499890327453613,
+        "x": 20084,
+        "z": 47.13703536987305
+      },
+      "color_map": "",
+      "albedo_id": "87739061488992",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4482,
+        "verts": 12981,
+        "fnv1a_hash": 450427472
+      },
+      "size": {
+        "y": 9,
+        "x": 5.425925254821777,
+        "z": 1.4259265661239624
+      },
+      "look": {
+        "y": 0,
+        "x": 8.742277657347586e-08,
+        "z": 1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/86224993592641",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/87739061488992",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_+Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "87739061488992",
+      "row": "REVIEW",
+      "mesh_id": "86224993592641",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_golden_guardian/heaven_golden_guardian.png",
+        "atlas_sha256": "3d72a5ed6028f2a3fbc555dd67e5772886c8ede5a67498946c3efc4f5b08454a",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_golden_guardian/heaven_golden_guardian_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "38c361acbf95d372a0526f03f78c1a71ad100acaede0fcd4e6803902e443cc15",
+        "preview_sha256": "dc9c0c70524e754bebb20d5369b7dc6c68a751546d847d74a53ad23064de7116",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_golden_guardian.glb",
+        "source_glb_sha256": "ee4383038a8e58573ebc07817655c4b0c7f0f1dc5d03c52ea1a403dfbddcfc46",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_golden_guardian.glb\noriginal_tris: 4482\n\n10k: heaven_golden_guardian_10k.fbx (4482 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.08_heaven_golden_throne",
+      "has_skinned_mesh": false,
+      "instance_name": "08_heaven_golden_throne",
+      "bind_mode": "TextureID",
+      "prop": "heaven_golden_throne",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "5",
+        "Theme": "heaven",
+        "StandOff": "2.4801214694976808"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 8,
+      "pivot": {
+        "y": 5,
+        "x": 20098,
+        "z": 45.469879150390625
+      },
+      "color_map": "",
+      "albedo_id": "90249877064262",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 9999,
+        "verts": 20735,
+        "fnv1a_hash": 2171034234
+      },
+      "size": {
+        "y": 10,
+        "x": 5.2655534744262695,
+        "z": 4.760242938995361
+      },
+      "look": {
+        "y": 0,
+        "x": 8.742277657347586e-08,
+        "z": 1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/105280295005484",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/90249877064262",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_+Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "90249877064262",
+      "row": "REVIEW",
+      "mesh_id": "105280295005484",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_golden_throne/heaven_golden_throne.png",
+        "atlas_sha256": "56dec375576b743f96d64790907d1c3af8c94201ef8226469c2f97e8607a2e66",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_golden_throne/heaven_golden_throne_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "32f272a12f39d43acbd642dc55e82f57ebabb0448a56c74fdf39661003ec98b5",
+        "preview_sha256": "6f535acb7758dc47436eef27c56ea25c3c6210b7c75710be3b6ec52cf53a9b4d",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_golden_throne.glb",
+        "source_glb_sha256": "0dc80e32a7991b861fb6d5c4ea160985eb0564a0aaaa28ce0be12fcee1473d83",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_golden_throne.glb\noriginal_tris: 441404\n\n10k: heaven_golden_throne_10k.fbx (9999 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.09_heaven_ivory_throne",
+      "has_skinned_mesh": false,
+      "instance_name": "09_heaven_ivory_throne",
+      "bind_mode": "TextureID",
+      "prop": "heaven_ivory_throne",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "5",
+        "Theme": "heaven",
+        "StandOff": "2.63586483001709"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 9,
+      "pivot": {
+        "y": 4.999999523162842,
+        "x": 20112,
+        "z": 45.314205169677734
+      },
+      "color_map": "",
+      "albedo_id": "102765981276842",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5446,
+        "verts": 15087,
+        "fnv1a_hash": 3454540152
+      },
+      "size": {
+        "y": 9.999999046325684,
+        "x": 6.139629364013672,
+        "z": 5.071868419647217
+      },
+      "look": {
+        "y": 0,
+        "x": 8.742277657347586e-08,
+        "z": 1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/108019197890274",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/102765981276842",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_+Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "102765981276842",
+      "row": "REVIEW",
+      "mesh_id": "108019197890274",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_ivory_throne/heaven_ivory_throne.png",
+        "atlas_sha256": "a82a6194778285e51d887e00f08823b217719179e06e377392b412d8808d33be",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_ivory_throne/heaven_ivory_throne_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "d0109d47d228d3570000765c403cfcf3baa4f589b431bf6bf8391c0d9c8bdb48",
+        "preview_sha256": "634e23ee349ded2fd25cb14f893a4d205e03aebc96c66a7b85651c4bd490132d",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_ivory_throne.glb",
+        "source_glb_sha256": "4299bf67e603a26300f5867975341064ff7024938134a3d415dcff562acbe6f5",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_ivory_throne.glb\noriginal_tris: 5446\n\n10k: heaven_ivory_throne_10k.fbx (5446 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.10_heaven_marble_throne",
+      "has_skinned_mesh": false,
+      "instance_name": "10_heaven_marble_throne",
+      "bind_mode": "TextureID",
+      "prop": "heaven_marble_throne",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "5.000000476837158",
+        "Theme": "heaven",
+        "StandOff": "2.5728264808654786"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 10,
+      "pivot": {
+        "y": 5,
+        "x": 20126,
+        "z": 45.377174377441406
+      },
+      "color_map": "",
+      "albedo_id": "94129372276670",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5017,
+        "verts": 14354,
+        "fnv1a_hash": 4162372688
+      },
+      "size": {
+        "y": 10,
+        "x": 13.070650100708008,
+        "z": 4.945652008056641
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/106151763349044",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/94129372276670",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "94129372276670",
+      "row": "REVIEW",
+      "mesh_id": "106151763349044",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_marble_throne/heaven_marble_throne.png",
+        "atlas_sha256": "fb46d9cf3bdbec8a55c4f3f3c7fd8b3adc9f47163b30941e48a62a1c3a729731",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_marble_throne/heaven_marble_throne_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "41d184e1630d6093e5dfac0d52dcd227c35b8893a6bf0a9a981dfa4bb8718cb1",
+        "preview_sha256": "28f2059b0c0994c41ce7fcf78eb403513b875e1be573fbe4203f31a87503e466",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_marble_throne.glb",
+        "source_glb_sha256": "af99aa1cd2d7a3b4bd404630e0fd7e0429db5072497dd732fdba8334e8b4b525",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_marble_throne.glb\noriginal_tris: 5017\n\n10k: heaven_marble_throne_10k.fbx (5017 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.11_heaven_star_fountain",
+      "has_skinned_mesh": false,
+      "instance_name": "11_heaven_star_fountain",
+      "bind_mode": "TextureID",
+      "prop": "heaven_star_fountain",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "9",
+        "Theme": "heaven",
+        "StandOff": "1.8"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 11,
+      "pivot": {
+        "y": 3.999999761581421,
+        "x": 20140,
+        "z": 46.26478576660156
+      },
+      "color_map": "",
+      "albedo_id": "121573144939943",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4435,
+        "verts": 11246,
+        "fnv1a_hash": 2471566504
+      },
+      "size": {
+        "y": 8,
+        "x": 3.36755633354187,
+        "z": 3.17043137550354
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/82843610165083",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/121573144939943",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "121573144939943",
+      "row": "REVIEW",
+      "mesh_id": "82843610165083",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain.png",
+        "atlas_sha256": "5582a858ed5f5455ddfda90412e76cbd5ed51daf9c623ed74647df7c49a8ca32",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "8fa6baa981aa50c7d9b1838723a1b3b7349703e027d1a540782c8de65218433d",
+        "preview_sha256": "475fe44274b305db096c11268c81c7f911053d388598667145c76fa1242a6249",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_star_fountain.glb",
+        "source_glb_sha256": "f1f00c13bd6073f2a8742eda1445835212d3c417502c98cf2ddfff9a262abf07",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_star_fountain.glb\noriginal_tris: 4430\n\n10k: heaven_star_fountain_10k.fbx (4435 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.12_hell_gate_of_damned",
+      "has_skinned_mesh": false,
+      "instance_name": "12_hell_gate_of_damned",
+      "bind_mode": "TextureID",
+      "prop": "hell_gate_of_damned",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "13",
+        "Theme": "hell",
+        "StandOff": "2.1"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 12,
+      "pivot": {
+        "y": 7,
+        "x": 20154,
+        "z": 45.95746994018555
+      },
+      "color_map": "",
+      "albedo_id": "101732454255089",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 6625,
+        "verts": 19050,
+        "fnv1a_hash": 208764877
+      },
+      "size": {
+        "y": 14,
+        "x": 13.278968811035156,
+        "z": 3.7854080200195312
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/79113090991943",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/101732454255089",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "101732454255089",
+      "row": "REVIEW",
+      "mesh_id": "79113090991943",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_gate_of_damned/hell_gate_of_damned.png",
+        "atlas_sha256": "76df1aafc72cae24b096cf6deaeb82c1e5443abe4794ec885e6c7fc83713d192",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_gate_of_damned/hell_gate_of_damned_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "266ba1008431bbc1b1a8b8d360c12805ebe53dcd97c85d059f7dfd6fa875422f",
+        "preview_sha256": "bf9eceb34cc2d27a3c4d8765223f38aad93ad1707174be1b3a5841e9f7241c99",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_gate_of_damned.glb",
+        "source_glb_sha256": "57a5bc9372ca8d8a7e5d55f6aa40965ae63207d60864930420fc8d45fe19db53",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_gate_of_damned.glb\noriginal_tris: 6625\n\n10k: hell_gate_of_damned_10k.fbx (6625 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.13_hell_infernal_archive",
+      "has_skinned_mesh": false,
+      "instance_name": "13_hell_infernal_archive",
+      "bind_mode": "TextureID",
+      "prop": "hell_infernal_archive",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "4.499999523162842",
+        "Theme": "hell",
+        "StandOff": "1.8094463109970094"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 13,
+      "pivot": {
+        "y": 4.499999523162842,
+        "x": 20168,
+        "z": 46.14055252075195
+      },
+      "color_map": "",
+      "albedo_id": "101515220913268",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5805,
+        "verts": 16457,
+        "fnv1a_hash": 1787594104
+      },
+      "size": {
+        "y": 8.999999046325684,
+        "x": 6.5236124992370605,
+        "z": 3.418891668319702
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/76333842138523",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/101515220913268",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "101515220913268",
+      "row": "REVIEW",
+      "mesh_id": "76333842138523",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive.png",
+        "atlas_sha256": "fc5088027d84f7db08d9921015ec81d3d4f97d76661feaf024d1fcce75147d75",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "75c93f284c3cededae779752c0a62dc225fe376de3e4565c594c57f05cc22b54",
+        "preview_sha256": "25fec5ff363921ec32cef69df0b958d9e7b0c6e9af30c439ac7885df97730577",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_archive.glb",
+        "source_glb_sha256": "d4de60482073149d0ce89ca431a2782769ee81c830ccbb5fd465ef04322a1197",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_archive.glb\noriginal_tris: 5805\n\n10k: hell_infernal_archive_10k.fbx (5805 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.14_hell_infernal_crest",
+      "has_skinned_mesh": false,
+      "instance_name": "14_hell_infernal_crest",
+      "bind_mode": "TextureID",
+      "prop": "hell_infernal_crest",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "hell",
+        "StandOff": "0.7082263946533203"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 14,
+      "pivot": {
+        "y": 2.250000238418579,
+        "x": 20182,
+        "z": 47.341773986816406
+      },
+      "color_map": "",
+      "albedo_id": "73363642652170",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5456,
+        "verts": 15935,
+        "fnv1a_hash": 1453222176
+      },
+      "size": {
+        "y": 4.500110149383545,
+        "x": 4.056567192077637,
+        "z": 1.0164521932601929
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/92377306378646",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/73363642652170",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "73363642652170",
+      "row": "REVIEW",
+      "mesh_id": "92377306378646",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest.png",
+        "atlas_sha256": "fe68b89171b48f3d336e12c4028fac7e8b6549745929d6fc15e8adf2cff52dec",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "ca570ab558040dcc6392971f8a26c893eacc6390f1eeb2714d81ddf579c525f4",
+        "preview_sha256": "d2e8d0667a22103b529f6194ce892fc70557db40eb5d69eeb84bd9b0716958ff",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_crest.glb",
+        "source_glb_sha256": "6a1cd9626981f88bd54c328590ffacc518501242c695ee5b4607813957d1d492",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_crest.glb\noriginal_tris: 5458\n\n10k: hell_infernal_crest_10k.fbx (5456 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.15_hell_infernal_fountain",
+      "has_skinned_mesh": false,
+      "instance_name": "15_hell_infernal_fountain",
+      "bind_mode": "TextureID",
+      "prop": "hell_infernal_fountain",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "3.999999761581421",
+        "Theme": "hell",
+        "StandOff": "2.231700038909912"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 15,
+      "pivot": {
+        "y": 3.999999761581421,
+        "x": 20196,
+        "z": 45.718299865722656
+      },
+      "color_map": "",
+      "albedo_id": "99032404381548",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 10000,
+        "verts": 24071,
+        "fnv1a_hash": 321370480
+      },
+      "size": {
+        "y": 7.999999523162842,
+        "x": 4.270282745361328,
+        "z": 4.263400077819824
+      },
+      "look": {
+        "y": 0,
+        "x": 8.742277657347586e-08,
+        "z": 1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/111269812210249",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/99032404381548",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_+Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "99032404381548",
+      "row": "REVIEW",
+      "mesh_id": "111269812210249",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain.png",
+        "atlas_sha256": "30f19c0602ef02008df86c3544cf7eff6fe6e60e59498521d007a22e758da12b",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "accf957c2f244aa2f5486faa69c3f6b22f5dd0160f14245e4093bff630c05fb2",
+        "preview_sha256": "9ae1f604ccfb240419ed69880f37af4ceac6fd535ba2d0ce60dd0442341e3d3c",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_fountain.glb",
+        "source_glb_sha256": "f64a393b423a566410aa51c8598b54e2faa740002a0b6c640d199e0105a22a0c",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_fountain.glb\noriginal_tris: 678640\n\n10k: hell_infernal_fountain_10k.fbx (10000 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.16_hell_infernal_throne",
+      "has_skinned_mesh": false,
+      "instance_name": "16_hell_infernal_throne",
+      "bind_mode": "TextureID",
+      "prop": "hell_infernal_throne",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "5",
+        "Theme": "hell",
+        "StandOff": "3.037320947647095"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 16,
+      "pivot": {
+        "y": 5,
+        "x": 20210,
+        "z": 44.91267776489258
+      },
+      "color_map": "",
+      "albedo_id": "124299076630012",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 10000,
+        "verts": 25198,
+        "fnv1a_hash": 4000159784
+      },
+      "size": {
+        "y": 10,
+        "x": 5.489624500274658,
+        "z": 5.8746418952941895
+      },
+      "look": {
+        "y": 0,
+        "x": 8.742277657347586e-08,
+        "z": 1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/106627197219124",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/124299076630012",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_+Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "124299076630012",
+      "row": "REVIEW",
+      "mesh_id": "106627197219124",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne.png",
+        "atlas_sha256": "87dc483e85e90c17c4b304110c3edbc679999ea454eb11fdff0ae6beb69fe6cb",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "b686ea84a7473dd9c14fae7024c3deebe1dd457226e66b84db1ec0c17736c71f",
+        "preview_sha256": "0740fc0714813552a2a7b2d678ed1fae0dc2769ff6a21231e6de31dfb9ad6e62",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_throne.glb",
+        "source_glb_sha256": "00bed22afd2766cb85bf47ddb68a2a9db5772f292c2c20333bfd54fb9e21a183",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_throne.glb\noriginal_tris: 716314\n\n10k: hell_infernal_throne_10k.fbx (10000 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.17_hell_infernal_throne_flat",
+      "has_skinned_mesh": false,
+      "instance_name": "17_hell_infernal_throne_flat",
+      "bind_mode": "TextureID",
+      "prop": "hell_infernal_throne_flat",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "hell",
+        "StandOff": "1.1"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 17,
+      "pivot": {
+        "y": 5,
+        "x": 20224,
+        "z": 46.95822525024414
+      },
+      "color_map": "",
+      "albedo_id": "86103136637798",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 9999,
+        "verts": 22200,
+        "fnv1a_hash": 1026404728
+      },
+      "size": {
+        "y": 10,
+        "x": 6.070017337799072,
+        "z": 1.7835524082183838
+      },
+      "look": {
+        "y": 0,
+        "x": 8.742277657347586e-08,
+        "z": 1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/114695375342832",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/86103136637798",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_+Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "86103136637798",
+      "row": "REVIEW",
+      "mesh_id": "114695375342832",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne_flat/hell_infernal_throne_flat.png",
+        "atlas_sha256": "feec8062922bf979afed34d4ae1ed4f5d2d0f2d33a25ef289465ea4afd0caf6a",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne_flat/hell_infernal_throne_flat_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "9303901aaaf4ca43596253375beedeaeb4b067a1d5d7d46313a4b65ec4567590",
+        "preview_sha256": "87d3988cd706412221ccfcb95db23e90cfb4d82c38bc4c72084df3543d5c9c97",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_throne_flat.glb",
+        "source_glb_sha256": "e0e20d1f2b1dbc886fe9ebc87dd20d56d908f32187f1d9ae7428d8a737adf17b",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_throne_flat.glb\noriginal_tris: 738080\n\n10k: hell_infernal_throne_flat_10k.fbx (9999 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.18_hell_skull_banner",
+      "has_skinned_mesh": false,
+      "instance_name": "18_hell_skull_banner",
+      "bind_mode": "TextureID",
+      "prop": "hell_skull_banner",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "hell",
+        "StandOff": "0.6434453547000885"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 18,
+      "pivot": {
+        "y": 2.999999761581421,
+        "x": 20238,
+        "z": 47.40655517578125
+      },
+      "color_map": "",
+      "albedo_id": "127253811127290",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4667,
+        "verts": 13137,
+        "fnv1a_hash": 1460936944
+      },
+      "size": {
+        "y": 5.999999523162842,
+        "x": 5.556467533111572,
+        "z": 0.8870636224746704
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/102347044634165",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/127253811127290",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "127253811127290",
+      "row": "REVIEW",
+      "mesh_id": "102347044634165",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_banner/hell_skull_banner.png",
+        "atlas_sha256": "15689a5d904c6eb687aea0f8cd7a1d7495a878c997d125343a86d94c28e8e810",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_skull_banner/hell_skull_banner_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "6e3fe58c46f973480cbf0f9ff8b3e3c1441ca57752cdd2c45e048f68ec9881b5",
+        "preview_sha256": "168eb7238f729de447ac92337543c37b30dfefd86299cb75b438f1bb2645e7c3",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_skull_banner.glb",
+        "source_glb_sha256": "081844e9f18d750467d3d6d34da49fb4e8f08b744644741d88d627f339f7b2ce",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_skull_banner.glb\noriginal_tris: 4665\n\n10k: hell_skull_banner_10k.fbx (4667 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.19_hell_skull_lantern",
+      "has_skinned_mesh": false,
+      "instance_name": "19_hell_skull_lantern",
+      "bind_mode": "TextureID",
+      "prop": "hell_skull_lantern",
+      "attributes": {
+        "Mount": "floor",
+        "MountY": "3.000000238418579",
+        "Theme": "hell",
+        "StandOff": "1.5969385862350465"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 19,
+      "pivot": {
+        "y": 3.000035524368286,
+        "x": 20252,
+        "z": 46.35306167602539
+      },
+      "color_map": "",
+      "albedo_id": "82935360953918",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 4360,
+        "verts": 12466,
+        "fnv1a_hash": 4162337856
+      },
+      "size": {
+        "y": 6.000073432922363,
+        "x": 3.3758108615875244,
+        "z": 2.9938764572143555
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/83676170999237",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/82935360953918",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "82935360953918",
+      "row": "REVIEW",
+      "mesh_id": "83676170999237",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_lantern/hell_skull_lantern.png",
+        "atlas_sha256": "26b5eec78d5105286e2de6908883fbde345eae8a0477f3eebf1701e5ee5502f2",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_skull_lantern/hell_skull_lantern_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "cdfffe8313f7cc8eea6ebfa7e245006a9b6e67a441797eb486d28c4f7c157f61",
+        "preview_sha256": "83d0b90d54532dcff5bd8053b4cfc637886c836b9ffd8bff0de7c2caa2726133",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_skull_lantern.glb",
+        "source_glb_sha256": "d9a6394d5818400f6ddddc25e5eb1e2f2f037b03cefca780a33f14d0cd804de9",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_skull_lantern.glb\noriginal_tris: 4360\n\n10k: hell_skull_lantern_10k.fbx (4360 tris, target 10000)"
+      }
+    },
+    {
+      "path": "Workspace._MeshyLineup.B_PropReview_TextureID.20_hell_skull_sconce",
+      "has_skinned_mesh": false,
+      "instance_name": "20_hell_skull_sconce",
+      "bind_mode": "TextureID",
+      "prop": "hell_skull_sconce",
+      "attributes": {
+        "Mount": "wall",
+        "MountY": "11",
+        "Theme": "hell",
+        "StandOff": "1.744149398803711"
+      },
+      "bone_count": 0,
+      "material": "Enum.Material.Plastic",
+      "n": 20,
+      "pivot": {
+        "y": 2.0000219345092773,
+        "x": 20266,
+        "z": 46.305870056152344
+      },
+      "color_map": "",
+      "albedo_id": "92288408884132",
+      "normal_map": "",
+      "editable_mesh": {
+        "ok": true,
+        "faces": 5104,
+        "verts": 14439,
+        "fnv1a_hash": 3440974168
+      },
+      "size": {
+        "y": 4.000049114227295,
+        "x": 2.3737454414367676,
+        "z": 3.0883336067199707
+      },
+      "look": {
+        "y": 0,
+        "x": 0,
+        "z": -1
+      },
+      "create_mesh": "https://create.roblox.com/store/asset/109446511436509",
+      "bones": [],
+      "create_albedo": "https://create.roblox.com/store/asset/92288408884132",
+      "color": {
+        "b": 1,
+        "g": 1,
+        "r": 1
+      },
+      "yaw_note": "look_-Z",
+      "meshpart_name": "Mesh_0_decimated",
+      "texture_id": "92288408884132",
+      "row": "REVIEW",
+      "mesh_id": "109446511436509",
+      "exports": {
+        "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce.png",
+        "atlas_sha256": "5d711e1f985f26d92413480e9a4b30822e0a1cb1200949e6b326bfb5c3e0282b",
+        "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce_10k_baked.fbx",
+        "fbx_10k_baked_sha256": "fb3eeb03128f508e1cdc0ae671a20abb848aaf278a0062e7afb0f90cc7a245e4",
+        "preview_sha256": "544c0b4a3e67035d26e3b9d2118ee9dea58b80e31b2d3c6b210aa835d2edbc72",
+        "source_glb_path": "assets/source/props/meshy_mission_decor/hell_skull_sconce.glb",
+        "source_glb_sha256": "0bc49d17153f5e2e1832ff53aeac0c17da72b4a25e42de8930c3bfbb98e617af",
+        "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_skull_sconce.glb\noriginal_tris: 5104\n\n10k: hell_skull_sconce_10k.fbx (5104 tris, target 10000)"
+      }
+    }
+  ],
+  "count_review": 20,
+  "count_shipping": 20,
+  "_comment": "Full Meshy decor lineup dump (SHIP MissionProps + REVIEW PropReview). Jason visual: all SHIP fronts OK; all REVIEW renders OK; REVIEW #7,8,9,15,16,17 yaw-flipped. If kaleidoscope returns: diff live mesh_id/albedo/bind/editable hash against the matching row here.",
+  "rbxm": {
+    "path": "assets/place/MissionProps.rbxm",
+    "sha256": "174e3b926f2a2fa4558da51e96692aa70a3caca4249eca185ab21d1f850bf43b",
+    "bytes": 434240
+  }
+}

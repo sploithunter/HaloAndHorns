@@ -26,7 +26,6 @@ local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
 local HitReact = require(ReplicatedStorage.Shared.Game.HitReact)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatHitFX = require(ReplicatedStorage.Shared.Effects.CombatHitFX)
-local FloatingText = require(ReplicatedStorage.Shared.Effects.FloatingText)
 
 local EnemyMotion = {}
 
@@ -207,41 +206,6 @@ function EnemyMotion.start()
             defaultKind = boltCfg.kind or "plasma",
             crit = data.crit == true,
         })
-        -- A whiff floats "MISS" over the PET (same FloatingText path the pets use over enemies).
-        -- A Sandstorm-blinded attacker recolours it orange (combat_text.colors.blind_miss) so the
-        -- accuracy cut reads at a glance; a plain accuracy miss stays grey.
-        if data.miss then
-            local ctCfg = petCfg.combat_text or {}
-            if ctCfg.enabled ~= false then
-                local cols = ctCfg.colors or {}
-                -- Blind whiff -> orange: config colour if present, else a hardcoded orange so a blind
-                -- miss is NEVER silently grey (don't let it hinge on the new config key syncing).
-                -- Plain accuracy miss -> grey.
-                local rgb
-                if data.blind then
-                    rgb = cols.blind_miss or { 255, 150, 40 }
-                else
-                    rgb = cols.miss or { 175, 175, 175 }
-                end
-                local up = 3
-                local okE, ext = pcall(function()
-                    return target:GetExtentsSize()
-                end)
-                if okE and ext then
-                    up = ext.Y * 0.5 + 1
-                end
-                local pos = (
-                    (target.PrimaryPart and target.PrimaryPart.Position)
-                    or target:GetPivot().Position
-                ) + Vector3.new(0, up, 0)
-                pcall(FloatingText.show, pos, ctCfg.miss_text or "MISS", {
-                    color = Color3.fromRGB(rgb[1] or 175, rgb[2] or 175, rgb[3] or 175),
-                    size = ctCfg.size or 22,
-                    rise = ctCfg.rise,
-                    duration = ctCfg.duration,
-                })
-            end
-        end
     end)
 
     RunService.RenderStepped:Connect(function(dt)

@@ -24,7 +24,10 @@ local FAMILY_CATEGORY = {
     buff = "buff",
     damage_buff = "buff",
     vulnerable = "debuff",
+    accuracy_mark = "debuff",
     root = "hold",
+    hold = "hold",
+    disarm = "hold",
     root_guard = "hold",
     absorb = "shield",
     team_shield = "shield",
@@ -48,7 +51,6 @@ local FAMILY_CATEGORY = {
     xp_boost = "xp",
     revive = "utility",
     sunder = "debuff",
-    disarm = "debuff",
     expose = "debuff",
     cripple = "debuff",
     focus_fire = "debuff",
@@ -65,6 +67,7 @@ local SINGLE_TARGET_ENEMY = {
     cripple = true,
     sunder = true,
     focus_fire = true,
+    deep_freeze = true,
 }
 
 local function titleize(id)

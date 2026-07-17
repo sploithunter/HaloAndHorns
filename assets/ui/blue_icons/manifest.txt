@@ -1,5 +1,5 @@
-assets_dir: /Users/jason/Documents/RBX-Template/assets/ui/blue_icons
-icon_count: 54
+assets_dir: /Users/jason/Documents/HaloAndHorns/assets/ui/blue_icons
+icon_count: 55
 
 armor_chest.png
 arrow_right.png
@@ -11,6 +11,7 @@ clover_lucky.png
 coins_up.png
 contagion.png
 critical_hit.png
+disarm.png
 eye.png
 eye_hidden.png
 fear.png

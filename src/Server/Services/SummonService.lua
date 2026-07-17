@@ -15,9 +15,9 @@ local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PetRevive = require(script.Parent.Parent.PetRevive)
 local ResSickness = require(ReplicatedStorage.Shared.Game.ResSickness) -- post-revive heal clamp
+local CombatApplication = require(script.Parent.Parent.CombatApplication)
 local RunService = game:GetService("RunService")
 local InsertService = game:GetService("InsertService")
 
@@ -210,7 +210,7 @@ function SummonService:_buildModel(player, gkind, gcfg)
 end
 
 -- Heal one pet by `amount` endurance (mirrors PowerService:_healPet; used by the Djinn HoT).
-local function healPet(pet, amount)
+local function healPet(pet, amount, sourceUserId)
     if not (pet and pet:IsA("Model")) or pet:GetAttribute("CombatDowned") then
         return
     end
@@ -218,16 +218,13 @@ local function healPet(pet, amount)
     if amount <= 0 or taken <= 0 then
         return
     end
-    -- res-sickness clamp: the genie's own burst/HoT can't lift a fresh revive past its res floor
-    local newTaken =
-        ResSickness.clampTaken(pet:GetAttributes(), math.max(0, taken - amount), os.time())
-    local healed = math.max(0, taken - newTaken)
-    pet:SetAttribute("CombatDamageTaken", newTaken)
-    pet:SetAttribute("HealFxUntil", os.time() + 3)
-    -- green "+N" float, like every other heal path (this was the one heal with no number)
-    pcall(function()
-        Signals.Combat_Heal:FireAllClients({ target = pet, amount = math.floor(healed + 0.5) })
-    end)
+    CombatApplication.ApplyPowerHeal(pet, amount, {
+        resource = "pet_endurance",
+        minimumTaken = ResSickness.floorFor(pet:GetAttributes(), os.time()),
+        fxSeconds = 3,
+        sourceUserId = sourceUserId,
+        kind = "guardian_heal",
+    })
 end
 
 -- Summon a guardian for `kind` (the effect_kind: guardian/duration/revive/magnitude). Called by
@@ -269,7 +266,7 @@ function SummonService:Summon(player, kind, now, powerId)
         local burst = tonumber(kind.magnitude) or 0
         if burst > 0 then
             for _, pet in ipairs(pets:GetChildren()) do
-                healPet(pet, burst)
+                healPet(pet, burst, player.UserId)
             end
         end
         -- Colossus standing buffs: the WALL (squad +Defense) + the FIST (x pet-damage)
@@ -281,8 +278,8 @@ function SummonService:Summon(player, kind, now, powerId)
             for _, pet in ipairs(pets:GetChildren()) do
                 if pet:IsA("Model") then
                     pet:SetAttribute("DefenseBuff", defense)
-                    pet:SetAttribute("DefenseBuffUntil", now + dur)
                     pet:SetAttribute("DefenseBuffPowerId", powerId)
+                    pet:SetAttribute("DefenseBuffUntil", now + dur)
                 end
             end
             player:SetAttribute("PetDamageBuff", 1 + dmgBonus)
@@ -436,7 +433,7 @@ function SummonService:_step()
                                 end
                             end)
                         end
-                        healPet(pet, rec.healAmt or 0)
+                        healPet(pet, rec.healAmt or 0, rec.owner)
                     end
                 end
             end

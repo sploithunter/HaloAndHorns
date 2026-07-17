@@ -2,7 +2,7 @@
     DevMetricsHud (client, Studio-only) — live balancing bars at the top of the screen.
 
     Three rolling 1-minute averages so numbers settle fast without waiting for a long build:
-      ⚔ DPS        — sum of pet-hit `amount` (Combat_PetHit) over the last 60s / window
+      ⚔ DPS        — sum of authoritative local-player damage (Combat_Result) over the window
       💰 Coins/sec  — sum of positive coin-currency attribute deltas over the last 60s / window
       🐾 Pet Speed  — mean measured travel speed (studs/s) of the player's pets over the last 60s
 
@@ -143,8 +143,16 @@ end
 -- ---- data ---------------------------------------------------------------
 
 function DevMetricsHud:_connect()
-    -- DPS: owner-only per-hit signal carries the dealt `amount`.
-    Signals.Combat_PetHit.OnClientEvent:Connect(function(data)
+    -- DPS: count only this player's authoritative damage results. Combat_Result is broadcast so
+    -- nearby teammates can see numbers too; sourceUserId prevents their damage entering our meter.
+    Signals.Combat_Result.OnClientEvent:Connect(function(data)
+        if
+            not data
+            or data.outcome ~= "damage"
+            or tonumber(data.sourceUserId) ~= self.player.UserId
+        then
+            return
+        end
         local amt = data and tonumber(data.amount)
         if amt and amt > 0 then
             self.hits[#self.hits + 1] = { t = clock(), v = amt }

@@ -39,7 +39,8 @@ function FloraTheme.pick(value, x, z)
     if #value == 0 then
         return nil
     end
-    local seed = math.floor((tonumber(x) or 0) * 73856093) + math.floor((tonumber(z) or 0) * 19349663)
+    local seed = math.floor((tonumber(x) or 0) * 73856093)
+        + math.floor((tonumber(z) or 0) * 19349663)
     return value[(seed % #value) + 1]
 end
 

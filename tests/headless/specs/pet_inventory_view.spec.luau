@@ -160,6 +160,25 @@ return function()
         end)
     end)
 
+    describe("PetInventoryView.draftRemaining", function()
+        it(
+            "returns a fully-deployed one-copy stack to inventory when removed from draft",
+            function()
+                local whileDrafted, owned = View.draftRemaining(0, 1, 1)
+                expect(owned).to.equal(1)
+                expect(whileDrafted).to.equal(0)
+                expect(View.draftRemaining(0, 1, 0)).to.equal(1)
+            end
+        )
+
+        it("does not subtract drafted copies twice from the unequipped projection", function()
+            -- Three owned: two projected unequipped and one currently live.
+            expect(View.draftRemaining(2, 1, 1)).to.equal(2)
+            expect(View.draftRemaining(2, 1, 2)).to.equal(1)
+            expect(View.draftRemaining(2, 1, 0)).to.equal(3)
+        end)
+    end)
+
     describe("PetInventoryView capability gating", function()
         it("treats an explicitly unique fused pet as a per-instance record", function()
             expect(View.isSpecial({ id = "bear", variant = "basic", unique = true }, CAP)).to.equal(

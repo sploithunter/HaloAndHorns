@@ -226,7 +226,16 @@ function MissionInstanceService:_kit(kitId)
             store.Name = "MissionTiles"
             store.Parent = models
         end
-        folder = store:FindFirstChild(kitId) or TileKitBuilder.build(kit, store)
+        -- KITS are code-defined runtime assets. Models.rbxm may accidentally
+        -- contain a MissionTiles cache when Assets.Models is saved from a
+        -- running Studio session; that snapshot is not authoritative and can
+        -- carry stale model pivots/PrimaryParts. Rebuild once per server from
+        -- the source kit instead.
+        local captured = store:FindFirstChild(kitId)
+        if captured then
+            captured:Destroy()
+        end
+        folder = TileKitBuilder.build(kit, store)
         self._kitFolders[kitId] = folder
     end
     return self._catalogs[kitId], folder
@@ -776,6 +785,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                             position = point.Position + offset,
                             home = point.Position,
                             movementLeash = movementLeash,
+                            encounterGroup = point,
                             dormant = true, -- no birth aggro: engage when the team arrives
                             persistent = true, -- never idle-despawn: defeat or teardown only
                         })
@@ -1512,6 +1522,7 @@ function MissionInstanceService:_assetRotCheck()
     local drifted, checked = 0, 0
     for name, fp in pairs(DecorFingerprints) do
         local ok, err = pcall(function()
+            -- selene: allow(undefined_variable)
             local em = AssetService:CreateEditableMeshAsync(Content.fromUri(fp.mesh))
             local verts = em:GetVertices()
             local h = 2166136261
@@ -1544,7 +1555,10 @@ function MissionInstanceService:_assetRotCheck()
         elseif tostring(err):find("not accessible") then
             -- EditableMesh gated by Game Settings -> Security -> Allow Mesh
             -- & Image APIs. One pointer, not twenty.
-            self:_log("Warn", "[ROT ALARM] SKIPPED — enable 'Allow Mesh & Image APIs' in Game Settings > Security")
+            self:_log(
+                "Warn",
+                "[ROT ALARM] SKIPPED — enable 'Allow Mesh & Image APIs' in Game Settings > Security"
+            )
             return
         else
             drifted += 1

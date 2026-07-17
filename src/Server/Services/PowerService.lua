@@ -23,8 +23,9 @@ local PowerRegistry = require(ReplicatedStorage.Shared.Game.PowerRegistry)
 local PowerStats = require(ReplicatedStorage.Shared.Game.PowerStats)
 local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
-local PetCombat = require(ReplicatedStorage.Shared.Game.PetCombat)
 local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark) -- additive vulnerability marks (SSOT)
+local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
+local FocusFire = require(ReplicatedStorage.Shared.Game.FocusFire)
 local ResSickness = require(ReplicatedStorage.Shared.Game.ResSickness) -- post-revive heal clamp
 local AdminPowerPalette = require(ReplicatedStorage.Shared.Game.AdminPowerPalette)
 local FocusUpkeep = require(ReplicatedStorage.Shared.Game.FocusUpkeep)
@@ -32,6 +33,7 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local RunService = game:GetService("RunService")
+local CombatApplication = require(script.Parent.Parent.CombatApplication)
 
 -- Admin gate for the power-bar test remotes: the server-set IsAdmin attribute, or Studio.
 local function adminAllowed(player)
@@ -448,6 +450,18 @@ local function enemiesAlive()
     return out
 end
 
+local function enemyPosition(enemy)
+    if not enemy then
+        return nil
+    end
+    local moveTarget = enemy:GetAttribute("MoveTarget")
+    if typeof(moveTarget) == "Vector3" then
+        return moveTarget
+    end
+    local part = enemy.PrimaryPart or enemy:FindFirstChildWhichIsA("BasePart")
+    return part and part.Position or nil
+end
+
 -- All alive farm nodes (crystals/ore) — Models under Game.Breakables/<type>/<world> with HP > 0.
 -- These are NOT enemies (no EnemyId); a target-strength debuff (vulnerable) speeds mining the same
 -- way it speeds combat. #174: farming powers reach crystals through the pets, just like enemies.
@@ -535,6 +549,69 @@ end
 function PowerService:_engagedEnemy(player)
     local enemyService = self._enemyService
     return enemyService and enemyService.GetFocusEnemy and enemyService:GetFocusEnemy(player) or nil
+end
+
+-- Nearest living enemy within the ordinary offensive cast reach. This is the pre-aggro opener seam:
+-- encounter AoEs can acquire a patrol pack before its aggro table has noticed the player.
+function PowerService:_nearestEnemyForPower(player)
+    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then
+        return nil
+    end
+    local maxRange = tonumber(self._powersConfig.engage_radius) or 60
+    local best, bestDistance
+    for _, enemy in ipairs(enemiesAlive()) do
+        local pos = enemyPosition(enemy)
+        if pos then
+            local distance = (pos - hrp.Position).Magnitude
+            if distance <= maxRange and (not bestDistance or distance < bestDistance) then
+                best, bestDistance = enemy, distance
+            end
+        end
+    end
+    return best
+end
+
+-- Resolve a configured AoE around the squad's focused enemy. `targeted` may catch any enemy inside
+-- the circle; `encounter_group` first restricts candidates to the focus enemy's authored pack, even
+-- before aggro, then applies the same spatial radius. Group membership never bypasses distance.
+function PowerService:_scopedAreaTargets(player, kind)
+    local scope = kind and kind.area_scope
+    if scope ~= "targeted" and scope ~= "encounter_group" and scope ~= "player" then
+        return nil, nil, nil, nil
+    end
+    local anchor
+    local center
+    if scope == "player" then
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        center = hrp and hrp.Position or nil
+    else
+        anchor = self:_engagedEnemy(player) or self:_nearestEnemyForPower(player)
+        center = enemyPosition(anchor)
+    end
+    if not center then
+        return {}, anchor, 0, center
+    end
+    local candidates
+    if scope == "encounter_group" and self._enemyService and self._enemyService.GetEnemyGroup then
+        candidates = self._enemyService:GetEnemyGroup(anchor)
+    else
+        candidates = enemiesAlive()
+    end
+    local radius = math.max(0, tonumber(kind.radius) or 0)
+    local targets = {}
+    for _, enemy in ipairs(candidates) do
+        local pos = enemyPosition(enemy)
+        if
+            enemy.Parent
+            and (enemy:GetAttribute("HP") or 0) > 0
+            and pos
+            and (pos - center).Magnitude <= radius
+        then
+            targets[#targets + 1] = enemy
+        end
+    end
+    return targets, anchor, #candidates, center
 end
 
 -- Crystals the squad is engaged with (#174). Mirrors _hasEngagedEnemy's primary signal: a pet whose
@@ -803,7 +880,7 @@ function PowerService:_tauntHolders(player)
         if
             pet:IsA("Model")
             and not pet:GetAttribute("CombatDowned")
-            and (tonumber(pet:GetAttribute("PetHeldUntil")) or 0) <= nowT
+            and CrowdControl.canAct(pet:GetAttribute("PetHeldUntil"), nowT)
         then
             live[#live + 1] = pet
         end
@@ -906,15 +983,13 @@ function PowerService:_healPet(player, pet, amount, now)
     if amount <= 0 or taken <= 0 then
         return
     end
-    -- res-sickness clamp: a freshly revived pet can't be healed past its res floor (window-gated)
-    local newTaken = ResSickness.clampTaken(pet:GetAttributes(), math.max(0, taken - amount), now)
-    local healed = math.max(0, taken - newTaken)
-    pet:SetAttribute("CombatDamageTaken", newTaken)
-    pet:SetAttribute("HealFxUntil", now + 3)
-    if healed >= 1 then
-        -- shared world effect (Jason: team effect game) — every nearby client sees the +N
-        Signals.Combat_Heal:FireAllClients({ target = pet, amount = math.floor(healed + 0.5) })
-    end
+    CombatApplication.ApplyPowerHeal(pet, amount, {
+        resource = "pet_endurance",
+        minimumTaken = ResSickness.floorFor(pet:GetAttributes(), now),
+        fxUntil = now + 3,
+        sourcePlayer = player,
+        kind = "power_heal",
+    })
 end
 
 -- Shared GROUND RUNE for player AoE powers: the uploaded MagicCircle symbol on a flat shared-world
@@ -1226,7 +1301,8 @@ function PowerService:_damageOverTime(
     totalSeconds,
     aoe,
     powerId,
-    critBase
+    critBase,
+    fixedTargets
 )
     perTick = tonumber(perTick) or 0
     interval = math.max(0.1, tonumber(interval) or 1)
@@ -1255,7 +1331,12 @@ function PowerService:_damageOverTime(
             end
             local targets
             if aoe then
-                targets = enemiesAlive()
+                targets = {}
+                for _, target in ipairs(fixedTargets or enemiesAlive()) do
+                    if target.Parent and (target:GetAttribute("HP") or 0) > 0 then
+                        targets[#targets + 1] = target
+                    end
+                end
                 -- #174 extension (Jason: "powers should be beneficial in both farming and
                 -- combat, maybe not symmetrically"): DoT ticks also chip the crystals the
                 -- squad is actively mining. _dotHit is target-agnostic (HP attribute +
@@ -1270,9 +1351,16 @@ function PowerService:_damageOverTime(
                 -- single-target DoT burns the ENEMY THE SQUAD IS FIGHTING (assist target /
                 -- most-targeted) first; a squad that is MINING (no engaged enemy) burns its
                 -- crystal instead. Only then fall back to an arbitrary alive enemy.
-                local primary = self:_engagedEnemy(player)
-                    or self:_engagedBreakables(player)[1]
-                    or enemiesAlive()[1]
+                local primary
+                if fixedTargets then
+                    -- Compound power: only a target whose parent effect landed may receive its DoT.
+                    -- An empty list is an intentional all-missed result, not permission to retarget.
+                    primary = fixedTargets[1]
+                else
+                    primary = self:_engagedEnemy(player)
+                        or self:_engagedBreakables(player)[1]
+                        or enemiesAlive()[1]
+                end
                 targets = primary and { primary } or {}
             end
             local now = os.time()
@@ -1333,34 +1421,43 @@ function PowerService:_dotHit(player, enemy, perTick, critChance, critMult, now,
             end
         end
     end
-    local newHp = math.max(0, hp - tick) -- EnemyService HP-watcher -> death + loot
-    enemy:SetAttribute("HP", newHp)
-    self:_creditDot(enemy, player, hp - newHp)
+    local def = self._powersConfig.powers and self._powersConfig.powers[tostring(powerId)]
+    local applied = CombatApplication.ApplyDamage(enemy, tick, {
+        sourcePlayer = player,
+        powerId = powerId,
+        element = (def and def.element) or "neutral",
+        kind = "dot",
+        crit = roll.crit,
+    })
+    local newHp = applied.after
+    local dealt = applied.amount
     if roll.crit then
         enemy:SetAttribute("CritFxUntil", now + 1) -- crit tell (client, P6)
     end
-    enemy:SetAttribute("DebuffPowerId", powerId)
-    enemy:SetAttribute("DebuffUntil", now + (badgeSecs or 2))
-end
-
--- Record DoT damage in the enemy's Contrib ledger (a NumberValue per UserId under the model) so the
--- kill credits this player for loot — the same ledger pet damage writes to in PetFollowService:_mine.
-function PowerService:_creditDot(enemy, player, amount)
-    if amount <= 0 then
-        return
+    if self._combatConfig and self._combatConfig.combat_trace then
+        print(
+            string.format(
+                "[PowerDotTick] %s -> %s amount=%.1f hp=%.1f%s",
+                tostring(powerId),
+                tostring(
+                    enemy:GetAttribute("DisplayName") or enemy:GetAttribute("EnemyId") or enemy.Name
+                ),
+                dealt,
+                newHp,
+                roll.crit and " CRIT" or ""
+            )
+        )
     end
-    local contrib = enemy:FindFirstChild("Contrib")
-    if not contrib then
-        return
+    -- Do not shorten or extend this power's existing semantic status channel. A hold+DoT power
+    -- (Absolute Zero / Eternal Winter) stamps DebuffUntil == HeldUntil; replacing that with the
+    -- tick's two-second cosmetic window makes StatusBadges think HELD and the named power are two
+    -- different effects, producing duplicate icons. The original family owns its full duration.
+    -- A bare DoT still claims/refreshes the channel once the prior window has expired.
+    local currentUntil = tonumber(enemy:GetAttribute("DebuffUntil")) or 0
+    if currentUntil <= now then
+        enemy:SetAttribute("DebuffPowerId", powerId)
+        enemy:SetAttribute("DebuffUntil", now + (badgeSecs or 2))
     end
-    local key = tostring(player.UserId)
-    local nv = contrib:FindFirstChild(key)
-    if not nv then
-        nv = Instance.new("NumberValue")
-        nv.Name = key
-        nv.Parent = contrib
-    end
-    nv.Value = nv.Value + amount
 end
 
 -- THIS PLAYER'S COMBAT SET — the enemies a player-cast AoE / control / debuff should hit: the fight
@@ -1427,12 +1524,38 @@ function PowerService:_applyEffect(player, kind, now, powerId)
     local family = kind.family
     local mag = kind.magnitude or 0
     local dur = kind.duration or 0
+    -- Compound hostile powers roll once per enemy. Their riders (notably DoT) must inherit that
+    -- exact landed set: a resisted root/hold/mark is a complete miss, not free damage.
+    local landedDotTargets
     -- Shadow the file-global enemiesAlive() with a CASTER-BOUNDED version for the whole family
     -- if/elseif below, so every enemy-targeting family (root / vulnerable / root_guard / heal_blind /
     -- …) hits enemies near the caster instead of globally. radius = the power's own `radius` or
     -- engage_radius. (_burnSpread / _amplifiedBurst already distance-filter inline, so they're fine.)
     local enemiesAlive = function()
         return self:_enemiesInRange(player, tonumber(kind.radius))
+    end
+    local scopedTargets, areaAnchor, areaCandidates, areaCenter =
+        self:_scopedAreaTargets(player, kind)
+    if scopedTargets then
+        enemiesAlive = function()
+            return scopedTargets
+        end
+        if self._combatConfig and self._combatConfig.combat_trace then
+            print(
+                string.format(
+                    "[PowerArea] %s scope=%s radius=%.1f targets=%d/%d anchor=%s",
+                    tostring(powerId),
+                    tostring(kind.area_scope),
+                    tonumber(kind.radius) or 0,
+                    #scopedTargets,
+                    areaCandidates or #scopedTargets,
+                    tostring(
+                        areaAnchor and (areaAnchor:GetAttribute("EnemyId") or areaAnchor.Name)
+                            or "none"
+                    )
+                )
+            )
+        end
     end
     -- TRUE SINGLE-TARGET (2026-07-02 audit, Jason: "single target is supposed to be single
     -- target"). A target="single" power used to hit the WHOLE combat set — the label only drove
@@ -1474,22 +1597,6 @@ function PowerService:_applyEffect(player, kind, now, powerId)
             return one and { one } or {}
         end
     end
-    -- A `dot` block layers damage-over-time on top of whatever the family does (a vulnerable MARK
-    -- that also burns, an ice HOLD that chips). Generic — any power opts in via config. aoe=true
-    -- hits every alive enemy; aoe=false the single primary target. Fires alongside the family below.
-    -- EXCEPTION: burn_spread (Wildfire) owns its own burn INSIDE _burnSpread, gated to the enemies
-    -- actually on fire (contagion) rather than every enemy — so the damage follows the visible spread.
-    if kind.dot and family ~= "burn_spread" then
-        self:_damageOverTime(
-            player,
-            kind.dot.per_tick,
-            kind.dot.interval or 1,
-            kind.dot.duration or dur,
-            kind.dot.aoe,
-            powerId,
-            kind._critBase -- P5: power's own crit chance (+ live CritBuff/CritAura per tick)
-        )
-    end
     if family == "heal" then
         if kind.field then
             -- Healing Field: a STATIONARY heal zone dropped at the player's feet. Your player's
@@ -1503,23 +1610,7 @@ function PowerService:_applyEffect(player, kind, now, powerId)
             -- (team_aoe — pets cluster, so squad-wide reads as the around-you AoE).
             -- _targetPets already drops downed pets.
             for _, pet in ipairs(self:_targetPets(player, powerId)) do
-                local taken = pet:GetAttribute("CombatDamageTaken") or 0
-                if taken > 0 then
-                    -- res-sickness clamp: can't heal a fresh revive past its res floor
-                    local newTaken =
-                        ResSickness.clampTaken(pet:GetAttributes(), math.max(0, taken - mag), now)
-                    local healed = math.max(0, taken - newTaken)
-                    pet:SetAttribute("CombatDamageTaken", newTaken)
-                    -- Instant-effect tell: blinking heal badge on the card (3s, mirrors
-                    -- combat.engagement.instant_fx_seconds) — same feedback as auto-heal.
-                    pet:SetAttribute("HealFxUntil", now + 3)
-                    if healed >= 1 then
-                        Signals.Combat_Heal:FireAllClients({
-                            target = pet,
-                            amount = math.floor(healed + 0.5),
-                        })
-                    end
-                end
+                self:_healPet(player, pet, mag, now)
             end
             -- Oasis: a heal-over-time tail follows the big upfront pulse (`hot`/tick for `hot_seconds`).
             if tonumber(kind.hot) then
@@ -1586,8 +1677,8 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         -- unless the power is single_pet (-> the selected pet only).
         for _, pet in ipairs(self:_targetPets(player, powerId)) do
             pet:SetAttribute("DefenseBuff", mag)
-            pet:SetAttribute("DefenseBuffUntil", now + dur)
             pet:SetAttribute("DefenseBuffPowerId", powerId)
+            pet:SetAttribute("DefenseBuffUntil", now + dur)
             self:_stampPowerBadge(pet, powerId, now + dur)
         end
     elseif family == "coin_yield" then
@@ -1684,13 +1775,118 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         player:SetAttribute("MagnetBuffUntil", now + dur)
         player:SetAttribute("MagnetBuffPowerId", powerId)
     elseif family == "root" then
-        for _, enemy in ipairs(enemiesAlive()) do
-            if self:_accuracyHit(player, enemy, kind) then -- P4: a hold can be resisted (per target)
+        local targets = enemiesAlive()
+        if kind.dot and (scopedTargets ~= nil or #targets > 0) then
+            landedDotTargets = {}
+        end
+        for _, enemy in ipairs(targets) do
+            if self:_accuracyHit(player, enemy, kind) then -- P4: control can be resisted (per target)
                 enemy:SetAttribute("RootedUntil", now + dur)
                 -- stamp WHICH power debuffed it, so the client can show the matching badge above it
                 -- (alongside the aura) instead of leaving you to decode the particle colour.
                 enemy:SetAttribute("DebuffPowerId", powerId)
                 enemy:SetAttribute("DebuffUntil", now + dur)
+                if landedDotTargets then
+                    landedDotTargets[#landedDotTargets + 1] = enemy
+                end
+            end
+        end
+    elseif family == "hold" then
+        local targets = enemiesAlive()
+        if kind.dot and (scopedTargets ~= nil or #targets > 0) then
+            landedDotTargets = {}
+        end
+        for _, enemy in ipairs(targets) do
+            -- Resolve ordinary accuracy first. A landed hold may then gamble through INNATE support
+            -- immunity when Focus Fire is active. Boss post-breakout resistance remains absolute.
+            if self:_accuracyHit(player, enemy, kind) then
+                local temporaryResist = (tonumber(enemy:GetAttribute("HoldResistUntil")) or 0) > now
+                local innateImmune = enemy:GetAttribute("HoldImmune") == true
+                local pierced = false
+                if innateImmune and not temporaryResist then
+                    local keys = FocusFire.keys(player.UserId)
+                    local pierceRoll = math.random()
+                    local marked = FocusFire.isActive(enemy:GetAttribute(keys.untilTime), now)
+                    local pierceChance = marked
+                            and (tonumber(enemy:GetAttribute(keys.holdPierce)) or 0)
+                        or 0
+                    pierced = FocusFire.piercesInnateHold(
+                        enemy:GetAttribute(keys.untilTime),
+                        pierceChance,
+                        now,
+                        pierceRoll
+                    )
+                    if self._combatConfig and self._combatConfig.combat_trace then
+                        print(
+                            string.format(
+                                "[FocusFire] hold_pierce -> %s chance=%.3f roll=%.3f %s",
+                                tostring(enemy:GetAttribute("EnemyId") or enemy.Name),
+                                pierceChance,
+                                pierceRoll,
+                                pierced and "PIERCE" or "IMMUNE"
+                            )
+                        )
+                    end
+                end
+                if temporaryResist or (innateImmune and not pierced) then
+                    CombatApplication.ApplyHit(enemy, {
+                        outcome = "immune",
+                        sourcePlayer = player,
+                        kind = "power_hold",
+                    })
+                    continue
+                end
+                local heldUntil = CrowdControl.extend(enemy:GetAttribute("HeldUntil"), now, dur)
+                enemy:SetAttribute("HeldUntil", heldUntil)
+                enemy:SetAttribute("DebuffPowerId", powerId)
+                enemy:SetAttribute("DebuffUntil", heldUntil)
+                self:_stampPowerBadge(enemy, powerId, heldUntil)
+                if landedDotTargets then
+                    landedDotTargets[#landedDotTargets + 1] = enemy
+                end
+            end
+        end
+    elseif family == "accuracy_mark" then
+        -- Focus Fire is scoped to its caster. It improves that player's pets and hostile powers
+        -- against this enemy; it does not globally buff every player attacking the same target.
+        for _, enemy in ipairs(enemiesAlive()) do
+            if self:_accuracyHit(player, enemy, kind) then
+                local untilTime = now + dur
+                local keys = FocusFire.keys(player.UserId)
+                enemy:SetAttribute(keys.untilTime, untilTime)
+                enemy:SetAttribute(keys.accuracyBonus, math.max(0, mag))
+                enemy:SetAttribute(
+                    keys.holdPierce,
+                    math.clamp(tonumber(kind.hold_pierce) or 0, 0, 1)
+                )
+                enemy:SetAttribute("DebuffPowerId", powerId)
+                enemy:SetAttribute("DebuffUntil", untilTime)
+                self:_stampPowerBadge(enemy, powerId, untilTime)
+                if self._combatConfig and self._combatConfig.combat_trace then
+                    print(
+                        string.format(
+                            "[FocusFire] marked %s accuracy=+%.3f holdPierce=%.3f dur=%.1f",
+                            tostring(enemy:GetAttribute("EnemyId") or enemy.Name),
+                            math.max(0, mag),
+                            math.clamp(tonumber(kind.hold_pierce) or 0, 0, 1),
+                            dur
+                        )
+                    )
+                end
+            end
+        end
+    elseif family == "disarm" then
+        -- ACTION lock only: unlike a hold this deliberately leaves movement untouched. The enemy
+        -- may chase/reposition, but EnemyService gates its bite and every active power while this
+        -- timestamp is live.
+        for _, enemy in ipairs(enemiesAlive()) do
+            if self:_accuracyHit(player, enemy, kind) then
+                local disarmedUntil =
+                    CrowdControl.extend(enemy:GetAttribute("DisarmedUntil"), now, dur)
+                enemy:SetAttribute("DisarmedUntil", disarmedUntil)
+                enemy:SetAttribute("DebuffPowerId", powerId)
+                enemy:SetAttribute("DebuffUntil", disarmedUntil)
+                self:_stampPowerBadge(enemy, powerId, disarmedUntil)
             end
         end
     elseif family == "blind" then
@@ -1911,14 +2107,25 @@ function PowerService:_applyEffect(player, kind, now, powerId)
             )
         end
     elseif family == "vulnerable" then
-        -- Shatter: x`frozen_bonus` again on FROZEN (rooted) targets — the freeze->shatter payoff.
+        -- Shatter: x`frozen_bonus` again on FROZEN targets — either a movement root or a full hold
+        -- counts as frozen. This is the freeze->shatter payoff across the whole Cryomancer kit.
         local frozenBonus = tonumber(kind.frozen_bonus)
         local applied, missed = 0, 0
         local lastStack -- the last applied enemy's TOTAL (trace: proves marks ADD, not clobber)
-        for _, enemy in ipairs(enemiesAlive()) do
+        local targets = enemiesAlive()
+        if kind.dot and (scopedTargets ~= nil or #targets > 0) then
+            landedDotTargets = {}
+        end
+        for _, enemy in ipairs(targets) do
             if self:_accuracyHit(player, enemy, kind) then -- P4: the mark can miss (per target)
                 local m = mag
-                if frozenBonus and (enemy:GetAttribute("RootedUntil") or 0) > now then
+                local frozen = frozenBonus
+                    and CrowdControl.isImmobilized(
+                        enemy:GetAttribute("RootedUntil"),
+                        enemy:GetAttribute("HeldUntil"),
+                        now
+                    )
+                if frozen then
                     m = mag * frozenBonus
                 end
                 -- ADDITIVE marks (Jason: the glass cannon's damage IS its marks — they must ADD).
@@ -1928,6 +2135,21 @@ function PowerService:_applyEffect(player, kind, now, powerId)
                 enemy:SetAttribute("DebuffPowerId", powerId)
                 enemy:SetAttribute("DebuffUntil", now + dur)
                 lastStack = VulnMark.multiplier(enemy:GetAttributes(), now)
+                if frozenBonus and self._combatConfig and self._combatConfig.combat_trace then
+                    print(
+                        string.format(
+                            "[ShatterTrace] %s frozen=%s mark=x%.2f totalVuln=x%.2f dur=%.1f",
+                            tostring(enemy:GetAttribute("EnemyId") or enemy.Name),
+                            tostring(frozen == true),
+                            m,
+                            lastStack,
+                            dur
+                        )
+                    )
+                end
+                if landedDotTargets then
+                    landedDotTargets[#landedDotTargets + 1] = enemy
+                end
                 applied += 1
             else
                 missed += 1
@@ -2003,8 +2225,8 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         end
         for _, pet in ipairs(self:_targetPets(player, powerId)) do
             pet:SetAttribute("DefenseBuff", mag)
-            pet:SetAttribute("DefenseBuffUntil", now + dur)
             pet:SetAttribute("DefenseBuffPowerId", powerId)
+            pet:SetAttribute("DefenseBuffUntil", now + dur)
             self:_stampPowerBadge(pet, powerId, now + dur)
         end
     elseif family == "fortify" then
@@ -2013,8 +2235,9 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         local healAmt = tonumber(kind.heal) or 0
         for _, pet in ipairs(self:_targetPets(player, powerId)) do
             pet:SetAttribute("DefenseBuff", mag)
-            pet:SetAttribute("DefenseBuffUntil", now + dur)
             pet:SetAttribute("DefenseBuffPowerId", powerId)
+            pet:SetAttribute("DefenseBuffUntil", now + dur)
+            self:_stampPowerBadge(pet, powerId, now + dur)
             self:_healPet(player, pet, healAmt, now) -- upfront pulse
         end
         if tonumber(kind.hot_tick) then
@@ -2112,6 +2335,41 @@ function PowerService:_applyEffect(player, kind, now, powerId)
             )
         )
     end
+    -- A `dot` block layers damage-over-time on top of the landed family effect. Accuracy-rolling
+    -- compound powers pass only their successful targets; an empty table means every target missed
+    -- and therefore schedules no enemy damage. Wildfire owns its contagion DoT inside _burnSpread.
+    if kind.dot and family ~= "burn_spread" then
+        local dotTargets = landedDotTargets
+        if dotTargets == nil then
+            dotTargets = scopedTargets
+        end
+        if landedDotTargets and self._combatConfig and self._combatConfig.combat_trace then
+            print(
+                string.format(
+                    "[PowerDot] %s armed=%d (successful %s targets only)",
+                    tostring(powerId),
+                    #landedDotTargets,
+                    tostring(family)
+                )
+            )
+        end
+        self:_damageOverTime(
+            player,
+            kind.dot.per_tick,
+            kind.dot.interval or 1,
+            kind.dot.duration or dur,
+            kind.dot.aoe,
+            powerId,
+            kind._critBase, -- P5: power's own crit chance (+ live CritBuff/CritAura per tick)
+            dotTargets
+        )
+    end
+    return {
+        enemies = enemiesAlive(),
+        anchor = areaAnchor,
+        center = areaCenter,
+        radius = tonumber(kind.radius),
+    }
 end
 
 -- Squad centroid (living pets), else the player's HRP. nil if neither is available.
@@ -2320,20 +2578,12 @@ function PowerService:_amplifiedBurst(player, kind, now)
             local dmg =
                 AmplifiedBurst.atDistance(squadAttack, kind.magnitude, dist, radius, kind.falloff)
             if dmg > 0 then
-                local hp = it.model:GetAttribute("HP") or 0
-                local applied = PetCombat.applyDamage(hp, dmg)
-                it.model:SetAttribute("HP", applied.hp)
-                local contrib = it.model:FindFirstChild("Contrib")
-                if contrib then
-                    local key = tostring(player.UserId)
-                    local nv = contrib:FindFirstChild(key)
-                    if not nv then
-                        nv = Instance.new("NumberValue")
-                        nv.Name = key
-                        nv.Parent = contrib
-                    end
-                    nv.Value += applied.contributed
-                end
+                local applied = CombatApplication.ApplyDamage(it.model, dmg, {
+                    sourcePlayer = player,
+                    powerId = "cataclysm",
+                    element = "lava",
+                    kind = "power_burst",
+                })
                 -- molten pool: lingering vulnerability so pets keep shredding the survivors.
                 -- Fixed "pit" channel (this fn has no powerId; cataclysm is the only amplified_burst)
                 -- — additive with the caster's other marks.
@@ -2401,17 +2651,49 @@ end
 
 -- P4 accuracy: does this hostile application LAND on `enemy`? Rolls accuracyBase × the level-diff
 -- to-hit curve (the same Accuracy core pet/enemy attacks use); a boss (Level reads +rank_offset) is
--- harder to hit. On a miss, stamps a transient MissFxUntil for the client tell and returns false so
--- the caller skips this enemy. Crystals never call this (no Level → mining exemption preserved).
+-- harder to hit. On a miss, publish the authoritative result and return false so the caller skips
+-- this enemy. Crystals never call this (no Level → mining exemption preserved).
 function PowerService:_accuracyHit(player, enemy, kind)
     local accBase = tonumber(kind._accuracyBase) or 1
     local casterLevel = tonumber(kind._casterLevel) or 1
     local enemyLevel = tonumber(enemy:GetAttribute("Level")) or casterLevel
     local accCfg = self._combatConfig and self._combatConfig.accuracy
     local chance = math.clamp(accBase * Accuracy.toHit(casterLevel, enemyLevel, accCfg), 0, 1)
-    local res = CombatRoll.resolve({ hit_chance = chance }, math.random())
+    local focusBonus = 0
+    if kind.family ~= "accuracy_mark" then
+        local keys = FocusFire.keys(player.UserId)
+        chance, focusBonus = FocusFire.applyAccuracy(
+            chance,
+            enemy:GetAttribute(keys.accuracyBonus),
+            enemy:GetAttribute(keys.untilTime),
+            os.time(),
+            accCfg and accCfg.cap
+        )
+    end
+    local randomRoll = math.random()
+    local res = CombatRoll.resolve({ hit_chance = chance }, randomRoll)
+    if self._combatConfig and self._combatConfig.combat_trace then
+        print(
+            string.format(
+                "[PowerAccuracy] %s -> %s chance=%.3f roll=%.3f %s casterLv=%d targetLv=%d base=%.3f focus=+%.3f",
+                tostring(kind.family or "unknown"),
+                tostring(enemy:GetAttribute("EnemyId") or enemy.Name),
+                chance,
+                randomRoll,
+                res.hit and "HIT" or "MISS",
+                casterLevel,
+                enemyLevel,
+                accBase,
+                focusBonus
+            )
+        )
+    end
     if not res.hit then
-        enemy:SetAttribute("MissFxUntil", os.time() + 2) -- client surfaces the "Miss" tell (P6)
+        CombatApplication.ApplyHit(enemy, {
+            outcome = "miss",
+            sourcePlayer = player,
+            kind = "power_" .. tostring(kind.family or "effect"),
+        })
         return false
     end
     return true
@@ -2556,7 +2838,7 @@ function PowerService:Cast(player, powerId, opts)
         end
     end
 
-    self:_applyEffect(player, kind, now, tostring(powerId))
+    local castArea = self:_applyEffect(player, kind, now, tostring(powerId)) or {}
     -- Cast VFX. amplified_burst / team_cleave fire their own bespoke area FX inside _applyEffect.
     -- Archetype powers play a caster cast-tell (small `cast_emit` body emission for single-target,
     -- the `cast_burst` ring for AoE powers) and, if hostile, a targeted strike on each engaged enemy
@@ -2587,7 +2869,9 @@ function PowerService:Cast(player, powerId, opts)
         -- fell to "tbd" and cast the "(effect TBD)" float + generic sound
         -- forever (Jason: "why is there TBD still floating?").
         local kindTarget = def.target or (kind and kind.target)
-        local isAoe = kindTarget == "targeted_aoe" or kindTarget == "team_aoe"
+        local isAoe = kindTarget == "targeted_aoe"
+            or kindTarget == "team_aoe"
+            or kindTarget == "player_field"
         local sourcePrim = (def.fx and def.fx.source)
             or (kind and kind.fx and kind.fx.source)
             or (generic and "tbd")
@@ -2610,7 +2894,7 @@ function PowerService:Cast(player, powerId, opts)
             -- and the spread shows via the per-enemy fire as it catches.
             local impactFoes
             if isAoe then
-                impactFoes = enemiesAlive()
+                impactFoes = castArea.enemies or enemiesAlive()
             else
                 local foe = self:_engagedEnemy(player)
                 impactFoes = foe and { foe } or {}
@@ -2626,6 +2910,22 @@ function PowerService:Cast(player, powerId, opts)
                     })
                 end
             end
+        end
+        -- A scoped AoE gets a ground ring at its actual enhanced radius. This is both the cast tell
+        -- and the player's range indicator: the visual boundary and the server target test share
+        -- the same `kind.radius` value.
+        local areaCenter = castArea.center or enemyPosition(castArea.anchor)
+        if isAoe and areaCenter and (tonumber(castArea.radius) or 0) > 0 then
+            Signals.Power_AreaFx:FireAllClients({
+                element = element,
+                variant = "targeted",
+                center = areaCenter,
+                radius = castArea.radius,
+                rangeIndicator = true,
+                duration = 2.25,
+                pit = false,
+                hits = {},
+            })
         end
     end
 

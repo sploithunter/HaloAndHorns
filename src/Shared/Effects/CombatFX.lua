@@ -203,6 +203,7 @@ local function spawnAuraField(theme, radius, opts)
     local point = opts.point -- fixed Vector3 (momentary), or nil
     local duration = opts.duration
     local burst = opts.burst == true
+    local indicator = opts.indicator == true
     -- parent the (anchored) parts to the pet model when following — so they GC with it — else to a
     -- dedicated Workspace folder for point-anchored bursts.
     local model = (follow and follow.Parent) or fieldFolder()
@@ -376,6 +377,46 @@ local function spawnAuraField(theme, radius, opts)
         discImg.Parent = sg
     end
 
+    -- Exact gameplay boundary: a clean circular UIStroke on a transparent ground plane. The
+    -- textured disc and particle rim sell the element, but they feather/fade by design and are too
+    -- ambiguous for a range read. This circumference stays at the effective radius for the whole
+    -- short cast tell, then fades. SurfaceGui keeps it bright under every map's lighting.
+    local indicatorPart, indicatorStroke
+    if indicator then
+        indicatorPart = Instance.new("Part")
+        indicatorPart.Name = "AoERangeIndicator"
+        indicatorPart.Anchored = true
+        indicatorPart.CanCollide = false
+        indicatorPart.CanQuery = false
+        indicatorPart.CastShadow = false
+        indicatorPart.Transparency = 1
+        indicatorPart.Size = Vector3.new(radius * 2, 0.05, radius * 2)
+        indicatorPart.CFrame = CFrame.new(originPos())
+        indicatorPart.Parent = model
+
+        local surface = Instance.new("SurfaceGui")
+        surface.Face = Enum.NormalId.Top
+        surface.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+        surface.PixelsPerStud = 10
+        surface.LightInfluence = 0
+        surface.AlwaysOnTop = true
+        surface.Parent = indicatorPart
+
+        local circle = Instance.new("Frame")
+        circle.Size = UDim2.fromScale(1, 1)
+        circle.BackgroundTransparency = 1
+        circle.Parent = surface
+        local round = Instance.new("UICorner")
+        round.CornerRadius = UDim.new(0.5, 0)
+        round.Parent = circle
+        indicatorStroke = Instance.new("UIStroke")
+        indicatorStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        indicatorStroke.Color = c2
+        indicatorStroke.Thickness = 4
+        indicatorStroke.Transparency = 0.05
+        indicatorStroke.Parent = circle
+    end
+
     -- (4) green spirit-FIRE wisps around the rim (Roblox Fire = dynamic flicker no particle can fake).
     -- Each is an invisible part with a tinted Fire; positioned on the floor ring each frame below.
     local fireParts = {}
@@ -534,6 +575,9 @@ local function spawnAuraField(theme, radius, opts)
                 discImg.Rotation = (discImg.Rotation + spin * dt) % 360
             end
         end
+        if indicatorPart then
+            indicatorPart.CFrame = CFrame.new(origin.X, floorY + 0.12, origin.Z)
+        end
         if #fireParts > 0 then
             fireAng = fireAng + (fc.spin or 0.4) * dt
             local rf = (fc.ring_frac or 0.8) * radius
@@ -648,6 +692,13 @@ local function spawnAuraField(theme, radius, opts)
                 TweenService:Create(discImg, TweenInfo.new(0.4), { ImageTransparency = 1 }):Play()
             end
             Debris:AddItem(disc, 0.5)
+        end
+        if indicatorPart then
+            if indicatorStroke then
+                TweenService:Create(indicatorStroke, TweenInfo.new(0.35), { Transparency = 1 })
+                    :Play()
+            end
+            Debris:AddItem(indicatorPart, 0.4)
         end
         for _, p in ipairs(fireParts) do
             local f = p:FindFirstChildOfClass("Fire")
@@ -788,6 +839,7 @@ end
 --     anchor   = <pet/part to FOLLOW>  OR  <Vector3 point to sit at>,
 --     duration = seconds (0/nil = persistent; caller stops),
 --     burst    = bool (one-shot: pop + expanding ring + disc flash — a mechanically-instant AoE),
+--     indicator = bool (crisp persistent circumference showing the exact gameplay boundary),
 --   }
 -- Returns { stop() } (or nil if the element has no field theme).
 function CombatFX.groundField(spec)
@@ -801,7 +853,11 @@ function CombatFX.groundField(spec)
         return nil
     end
     local radius = tonumber(spec.radius) or tonumber(theme.radius) or 10
-    local opts = { duration = spec.duration, burst = spec.burst }
+    local opts = {
+        duration = spec.duration,
+        burst = spec.burst,
+        indicator = spec.indicator,
+    }
     local a = spec.anchor
     if typeof(a) == "Vector3" then
         opts.point = a

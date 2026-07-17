@@ -301,7 +301,8 @@ function PetBadge.forPower(powerId)
     -- armor the team-AoE ring, player_field the aura -- instead of every armor power sharing one
     -- ring. Falls back to the signature/effect default for powers with no `target` (always-on
     -- neutrals -> self/aura).
-    local targetKind = POWER_ICONS.power_target_ring[def.target or ""]
+    local targetKind = (POWER_ICONS.power_ring_override or {})[powerId]
+        or POWER_ICONS.power_target_ring[def.target or ""]
     if not targetKind then
         if def.signature then
             targetKind = POWER_ICONS.power_signature_ring[def.target or ""] or "single"

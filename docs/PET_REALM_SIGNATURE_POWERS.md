@@ -47,10 +47,10 @@ Legend: **family** = the effect_kind family it routes through (✅ exists today,
 
 | # | Power | Lvl | Role | Mechanic (family) | What it does | Target | Focus / CD |
 |---|---|---|---|---|---|---|---|
-| 1 | **Permafrost** ⭐anchor | 15 | control | root ✅ (long/strong) | the premier lockdown — roots & slows every engaged enemy for the longest duration in the game. If you want CONTROL, you take Cryomancer for this. | enemy_aoe | 25 / 30s |
-| 2 | **Shatter** | 22 | control→dmg | vulnerable ✅ (bonus vs rooted 🆕) | detonate the frozen: enemies currently rooted/slowed take a **massive vulnerability spike** — the payoff for your control. | enemy_aoe | 25 / 28s |
-| 3 | **Absolute Zero** | 30 | hard CC | root ✅ (global) | flash-freeze **every enemy on screen** solid for a long window — mass hard crowd-control to reset a fight. | enemy_aoe | 45 / 60s |
-| 4 | **Eternal Winter** 🌟capstone | 44 | endgame **HOLD** | root ✅ (global, very long) | a crazy *hold*, not a nuke: **the entire field freezes solid** — every enemy hard-frozen and unable to act for a long window, while frozen targets take bonus damage from your pets. Total board control to trivialize a wave/boss adds. Long recharge. | enemy_aoe | 70 / 120s |
+| 1 | **Permafrost** ⭐anchor | 15 | control | root ✅ | roots the focused enemy's encounter group within 30 studs. Authored group membership permits pre-aggro control without selecting the whole map. | encounter_group | 25 / 30s |
+| 2 | **Shatter** | 22 | control→dmg | vulnerable ✅ | marks targets within 20 studs of the focused enemy ×2.2 vulnerable, or ×3.08 if rooted or held. | targeted_aoe | 25 / 28s |
+| 3 | **Absolute Zero** | 30 | hard CC | hold ✅ | hard-holds targets within 20 studs of the focused enemy; only successful hold rolls receive its frostbite rider. | targeted_aoe | 45 / 60s |
+| 4 | **Eternal Winter** 🌟capstone | 44 | endgame **HOLD** | hold ✅ | hard-holds the focused enemy's encounter group within 20 studs; only successful holds receive the damage-over-time rider. | encounter_group | 70 / 120s |
 
 ---
 

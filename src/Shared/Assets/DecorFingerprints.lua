@@ -13,6 +13,9 @@
     RE-BLESS (only after visual verification!): recompute via the same
     hash (see _assetRotCheck) and update the entry alongside the registry
     change in scripts/mission_decor_model_ids.json — same commit.
+
+    The table was re-blessed 2026-07-15 from Workspace._MeshyLineup SHIP
+    (MissionProps).
 ]]
 
 return {
@@ -20,7 +23,7 @@ return {
     heaven_compass_banner = { mesh = "rbxassetid://123934269734118", hash = 3561412988, verts = 6416, faces = 2339 },
     heaven_diamond_altar = { mesh = "rbxassetid://84842558046045", hash = 2021085032, verts = 13152, faces = 4494 },
     heaven_flamecrest_shield = { mesh = "rbxassetid://124667039413678", hash = 2946780474, verts = 10795, faces = 3867 },
-    heaven_gilded_bookcase = { mesh = "rbxassetid://104288692238467", hash = 2933687225, verts = 9785, faces = 19974 },
+    heaven_gilded_bookcase = { mesh = "rbxassetid://79109805720279", hash = 3849671704, verts = 25416, faces = 9999 }, -- TextureID 10k (verified good); others are SA/bone-armor shipping
     heaven_golden_codex = { mesh = "rbxassetid://79025906147334", hash = 3527805972, verts = 13916, faces = 5037 },
     heaven_golden_guardian = { mesh = "rbxassetid://77496157366357", hash = 3467473080, verts = 12996, faces = 4482 },
     heaven_golden_throne = { mesh = "rbxassetid://79404346104290", hash = 2140130448, verts = 24237, faces = 20000 },

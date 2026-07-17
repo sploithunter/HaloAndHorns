@@ -333,6 +333,18 @@ function PetInventoryView.categoryCounts(items, config, capability)
     }
 end
 
+-- The replicated client stack quantity is the UNEQUIPPED count, while draft editing happens before
+-- the live Equipped slots change. Reconstruct total ownership from both projections, then subtract
+-- the working draft. This keeps a fully-deployed one-copy stack available in the inventory grid as
+-- soon as its draft slot is removed (0 unequipped + 1 live - 0 drafted = 1).
+function PetInventoryView.draftRemaining(unequippedCount, liveEquippedCount, draftedCount)
+    local unequipped = math.max(0, math.floor(tonumber(unequippedCount) or 0))
+    local live = math.max(0, math.floor(tonumber(liveEquippedCount) or 0))
+    local drafted = math.max(0, math.floor(tonumber(draftedCount) or 0))
+    local owned = unequipped + live
+    return math.max(0, owned - drafted), owned
+end
+
 -- Config-driven capability checks (replacing the deleted `_kind == "special"` guard).
 function PetInventoryView.isLevelable(record, capability)
     return PetInventoryView.isSpecial(record, capability)

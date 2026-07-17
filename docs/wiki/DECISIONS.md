@@ -439,3 +439,82 @@ its config-owned `level_scaling.at_min` block defines the level-14 endpoint for 
 armor, and ability damage, with a clamped linear interpolation between them. This keeps current
 level-50 tuning intact while making the first reachable Trial tier independently balanceable without
 service-code constants or a second boss-synthesis path.
+
+## Visible Combat State Has One Application Boundary (2026-07-17)
+
+Runtime combat mutations and their feedback are one authoritative operation. `CombatApplication`
+owns `ApplyHit`, `ApplyDamage`, and `ApplyPowerHeal`: resolved misses/avoids publish without a health
+change, while damage and active healing publish only after the real HP or pet-endurance change.
+Contribution credit is part of damage application rather than a caller-owned follow-up.
+
+`Combat_Result` is the one player-visible result stream and the independent
+`CombatTextController` is its sole floating-text presenter. Feature remotes may still drive attack,
+impact, and area animation, but they must not carry a second damage/heal/miss number. Passive
+out-of-combat regeneration remains a direct, silent state-maintenance write; spawn/scaling, admin
+reset, revive restoration, and test setup are likewise not combat applications.
+
+## Crowd Control Separates Movement From Action (2026-07-17)
+
+Root, disarm, and hold are three distinct control states. Root prevents movement but permits attacks
+and powers. Disarm permits movement but prevents every active action, including basic attacks,
+abilities, support casts, and active self-healing. Hold combines both restrictions. Blind remains the
+accuracy-debuff family; disarm must not duplicate it or act as a vulnerability/damage-taken debuff.
+
+All actor action gates should use the shared `CrowdControl` semantics so delayed attacks also fizzle
+when disarm or hold lands during their windup. Movement gates deliberately exclude disarm.
+
+## Downtime Recovery Is Passive, Not A Rest Power (2026-07-17)
+
+Every living, non-downed pet recovers without a button. Five seconds after its last hit it keeps the
+ordinary flat regeneration; once the squad has been out of combat for 15 seconds, recovery accelerates
+to at least 12.5% of that pet's maximum endurance per second. This makes the remaining recovery window
+at most eight seconds regardless of pet strength and permits movement between pulls.
+
+This is silent state maintenance, not a power heal: it does not publish floating healing text, revive a
+downed pet, bypass resurrection sickness, or run while the squad is still marked in combat.
+
+## Area Controls Declare Their Center And Candidate Scope (2026-07-17)
+
+An AoE's target mode is not enough to define its geometry. Each area control owns both a real radius and
+an explicit center/scope contract. Frost Field is a 20-stud player-centered root; Shatter is a 20-stud
+target-centered vulnerability burst. Permafrost and Eternal Winter select the focused enemy's authored
+encounter group and then clip it by radius, while Absolute Zero is target-centered.
+
+The same enhanced radius and resolved center drive target membership, the gameplay circumference, trace
+output, descriptions, and Range-enhancement eligibility.
+
+## Control Counters Telegraph Before They Remove Holds (2026-07-17)
+
+Support-role enemies are hold-immune and may cleanse nearby held allies after a visible 1.5-second
+windup. Disarm interrupts that cleanse and forces a short retry delay, preserving player counterplay.
+Bosses and archvillains are not blanket hold-immune: a successful hold always locks them for the
+2.5-second breakout windup, after which they clear it, gain four seconds of hold resistance, and put
+breakout on a 24-second cooldown.
+
+These counters are special actions, not ordinary enemy powers. A boss can therefore complete a
+breakout while held, but a support cleanse still obeys the action gate so Disarm can stop it.
+
+## Defensive Powers Are Compared By Prevented And Restored Damage (2026-07-17)
+
+Balance decisions use the opt-in `[DefenseTrace]` decomposition rather than badge magnitude alone. It
+records raw damage, native and power defense, armor prevention, shield absorption, Mirage restoration,
+damage applied, and remaining shield.
+
+The first controlled Infernal Boss pass showed a standard 201.3-raw blow landing for 100.6 after a
+tank's native defense. Ice Armor at 80 prevented only 28.8; its magnitude is now 160, preventing 44.7
+from that same blow across its 12-second window. Dune Shield remains a front-loaded 400-point pool.
+Mirage Veil remains a 450-point team-signature pool whose heal consumes that same pool; live traces
+showed 30.2 absorbed plus 120 restored, followed by 150.9 absorbed plus 104.2 restored, without
+creating a second durability budget.
+
+## Focus Fire Is Accuracy Setup, Not Another Vulnerability (2026-07-17)
+
+Focus Fire marks one enemy for eight seconds. Only the caster's pets and hostile powers receive its
+flat +15-percentage-point to-hit bonus, so simultaneous players own independent mark channels. The mark
+itself remains a hostile accuracy roll; Accuracy helps it land, Potency raises the to-hit bonus,
+Duration extends it, and Recharge shortens its cooldown. Damage enhancements do not fit it.
+
+A landed hold against an innately `HoldImmune` enemy has a fixed 25% chance to penetrate while that
+caster's mark is active. This exception does not penetrate `HoldResistUntil`: the temporary resistance
+earned by a boss breakout remains absolute. Ordinary accuracy resolves before immunity penetration, so
+combat feedback distinguishes `Miss` from `Immune`.

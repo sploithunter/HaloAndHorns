@@ -1,0 +1,27 @@
+{
+  "_comment": "Index of mission-decor blessed dumps.",
+  "lineup_dump": "scripts/mission_decor_lineup_dump.json",
+  "captured_at": "2026-07-15T21:21:47Z",
+  "props": [
+    "heaven_archive",
+    "heaven_compass_banner",
+    "heaven_diamond_altar",
+    "heaven_flamecrest_shield",
+    "heaven_gilded_bookcase",
+    "heaven_golden_codex",
+    "heaven_golden_guardian",
+    "heaven_golden_throne",
+    "heaven_ivory_throne",
+    "heaven_marble_throne",
+    "heaven_star_fountain",
+    "hell_gate_of_damned",
+    "hell_infernal_archive",
+    "hell_infernal_crest",
+    "hell_infernal_fountain",
+    "hell_infernal_throne",
+    "hell_infernal_throne_flat",
+    "hell_skull_banner",
+    "hell_skull_lantern",
+    "hell_skull_sconce"
+  ]
+}

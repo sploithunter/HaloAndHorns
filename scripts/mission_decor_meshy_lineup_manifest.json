@@ -1,0 +1,98 @@
+{
+  "_comment": "Workspace._MeshyLineup QA grid. Row A = MissionProps (shipping). Row B = PropReview TextureID refs. Labels are BillboardGuis (#NN name + SHIP|REVIEW + SA|TEX).",
+  "origin": [
+    20000,
+    0,
+    0
+  ],
+  "how_to_view": "In Studio Edit, select Workspace._MeshyLineup and Focus (F), or set camera near 20000,25,-40 looking at +Z.",
+  "legend": {
+    "SHIP SA": "MissionProps SurfaceAppearance / bone-armor gen (most props)",
+    "SHIP TEX": "MissionProps TextureID (heaven_gilded_bookcase only \u2014 verified good)",
+    "REVIEW TEX": "PropReview MeshyDecor TextureID generation (A/B reference)"
+  },
+  "captured_at": "2026-07-15T21:12:07Z",
+  "props": [
+    {
+      "n": 1,
+      "name": "heaven_archive"
+    },
+    {
+      "n": 2,
+      "name": "heaven_compass_banner"
+    },
+    {
+      "n": 3,
+      "name": "heaven_diamond_altar"
+    },
+    {
+      "n": 4,
+      "name": "heaven_flamecrest_shield"
+    },
+    {
+      "n": 5,
+      "name": "heaven_gilded_bookcase",
+      "note": "only SHIP TEX \u2014 known good"
+    },
+    {
+      "n": 6,
+      "name": "heaven_golden_codex"
+    },
+    {
+      "n": 7,
+      "name": "heaven_golden_guardian"
+    },
+    {
+      "n": 8,
+      "name": "heaven_golden_throne"
+    },
+    {
+      "n": 9,
+      "name": "heaven_ivory_throne"
+    },
+    {
+      "n": 10,
+      "name": "heaven_marble_throne"
+    },
+    {
+      "n": 11,
+      "name": "heaven_star_fountain"
+    },
+    {
+      "n": 12,
+      "name": "hell_gate_of_damned"
+    },
+    {
+      "n": 13,
+      "name": "hell_infernal_archive"
+    },
+    {
+      "n": 14,
+      "name": "hell_infernal_crest"
+    },
+    {
+      "n": 15,
+      "name": "hell_infernal_fountain"
+    },
+    {
+      "n": 16,
+      "name": "hell_infernal_throne"
+    },
+    {
+      "n": 17,
+      "name": "hell_infernal_throne_flat"
+    },
+    {
+      "n": 18,
+      "name": "hell_skull_banner"
+    },
+    {
+      "n": 19,
+      "name": "hell_skull_lantern"
+    },
+    {
+      "n": 20,
+      "name": "hell_skull_sconce"
+    }
+  ]
+}

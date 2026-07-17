@@ -57,12 +57,15 @@ return {
         accuracy = {
             symbol = "target",
             axis = "accuracy",
-            -- Only families that ROLL to-hit (_accuracyHit: vulnerable marks, root holds) AND land
+            -- Only families that ROLL to-hit (_accuracyHit: vulnerable marks, roots, holds) AND land
             -- below 1.0 (accuracy_family_base) — there a +accuracy enhancement actually improves the
             -- chance the debuff lands. Other families auto-land (no roll) → accuracy was a dead slot.
             families = {
                 vulnerable = true,
+                accuracy_mark = true, -- improves the hostile roll that applies Focus Fire's mark
                 root = true,
+                hold = true,
+                disarm = true,
                 blind = true, -- Sandstorm: a to-hit roll lands the blind, so +accuracy helps it stick
             },
         },
@@ -92,18 +95,20 @@ return {
         range = {
             symbol = "range",
             axis = "radius",
-            -- Only families with a REAL radius the game reads: Magnet (collect reach, via the
-            -- radius_families magnitude fold), Cataclysm's burst, Firestorm's cleave, Wildfire's
-            -- spread. The other "AoE" debuffs hit ALL engaged enemies (no radius to widen), so range
-            -- was a dead slot there — excluded. (Gives a power a `radius` to bring it back in.)
+            -- Only families with a REAL radius the game reads. `requires_radius` below rejects an
+            -- AoE whose effect kind has no radius, so Range can never become a dead slot.
             families = {
                 magnet = true,
                 amplified_burst = true,
                 team_cleave = true,
                 burn_spread = true,
                 farm_boost = true, -- Resonance: widen the crystal-boost AoE (real `radius` base)
+                root = true,
+                hold = true,
+                vulnerable = true, -- only AoE marks with an authored radius pass requires_radius
             },
             requires_aoe = true, -- still blocked on melee / single-target powers
+            requires_radius = true,
         },
         duration = {
             symbol = "hourglass",
@@ -115,7 +120,10 @@ return {
                 fortify = true,
                 absorb = true,
                 vulnerable = true,
+                accuracy_mark = true,
                 root = true,
+                hold = true,
+                disarm = true,
                 root_guard = true,
                 fear = true,
                 taunt = true,
@@ -157,6 +165,7 @@ return {
                 xp = true,
                 rage = true,
                 vulnerable = true,
+                accuracy_mark = true, -- raises Focus Fire's flat to-hit bonus; pierce stays fixed
                 -- SUMMON capstones: scales the guardian's strength — Genie's heal burst (kind.magnitude,
                 -- scaled at cast) + the gcfg-sourced strength SummonService scales by the potency factor
                 -- (Colossus squad defense/damage, Djinn HoT). The "stronger guardian" axis.

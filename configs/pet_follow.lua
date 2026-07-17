@@ -297,6 +297,10 @@ return {
                 crit = { 255, 200, 60 },
                 miss = { 175, 175, 175 },
                 blind_miss = { 255, 150, 40 }, -- orange MISS: a BLINDED enemy whiffed (Sandstorm), vs grey for a plain miss
+                dodge = { 255, 221, 64 }, -- yellow avoid
+                blocked = { 130, 190, 255 }, -- blue defense result
+                absorbed = { 130, 210, 255 }, -- shield consumed the blow
+                immune = { 190, 160, 255 }, -- effect could not affect this target
                 heal = { 90, 230, 110 }, -- green "+N" on heals
             },
         },

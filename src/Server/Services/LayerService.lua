@@ -68,8 +68,10 @@ function LayerService:Start()
                     kept = c
                 else
                     warn(
-                        ("[LayerService] duplicate Sky '%s' removed from Lighting (keeping '%s') — "
-                            .. "duplicates break the per-layer skybox swap"):format(c.Name, kept.Name)
+                        (
+                            "[LayerService] duplicate Sky '%s' removed from Lighting (keeping '%s') — "
+                            .. "duplicates break the per-layer skybox swap"
+                        ):format(c.Name, kept.Name)
                     )
                     c:Destroy()
                 end

@@ -85,6 +85,15 @@ function MissionStamper.stamp(spec, opts)
         clone.Name = ("%s_%d"):format(t.tileId, i)
         clone.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 
+        -- TileRoot is the placement contract. Reassert it on the clone so a
+        -- stale/captured Model.WorldPivot can never offset the stamped floor.
+        local tileRoot = clone:FindFirstChild("TileRoot")
+        assert(
+            tileRoot and tileRoot:IsA("BasePart"),
+            ("MissionStamper: tile %q has no BasePart TileRoot"):format(tostring(t.tileId))
+        )
+        clone.PrimaryPart = tileRoot
+
         local bounds = clone:FindFirstChild("Bounds")
         if bounds then
             bounds:Destroy()

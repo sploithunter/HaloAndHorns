@@ -47,6 +47,39 @@ return function()
             expect(d.summary:find("coins") ~= nil).to.equal(true)
         end)
 
+        it("distinguishes a movement root from a full action-lock hold", function()
+            local root = PowerDescribe.describe(powersCfg, "frost_bind")
+            expect(root.summary:find("can still attack", 1, true) ~= nil).to.equal(true)
+            local hold = PowerDescribe.describe(powersCfg, "deep_freeze")
+            expect(hold.summary:find("cannot move, attack, or use powers", 1, true) ~= nil).to.equal(
+                true
+            )
+        end)
+
+        it("describes Disarm as an action lock that preserves movement", function()
+            local disarm = PowerDescribe.describe(powersCfg, "disarm")
+            expect(disarm.summary:find("can still move", 1, true) ~= nil).to.equal(true)
+            expect(disarm.summary:find("cannot attack or use powers", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(disarm.summary:find("damage", 1, true) == nil).to.equal(true)
+        end)
+
+        it("describes Focus Fire's accuracy and innate-immunity penetration", function()
+            local focus = PowerDescribe.describe(powersCfg, "focus_fire")
+            expect(focus.summary:find("+15 percentage points", 1, true) ~= nil).to.equal(true)
+            expect(focus.summary:find("25% chance", 1, true) ~= nil).to.equal(true)
+            expect(focus.summary:find("Hold Immunity", 1, true) ~= nil).to.equal(true)
+            expect(focus.summary:find("damage", 1, true) == nil).to.equal(true)
+        end)
+
+        it("shows the configured AoE radius", function()
+            local d = PowerDescribe.describe(powersCfg, "eternal_winter")
+            expect(table.concat(d.lines, " | "):find("Radius 20 studs", 1, true) ~= nil).to.equal(
+                true
+            )
+        end)
+
         it("multiplier magnitudes read as the BONUS (x1.3 damage buff -> +30%)", function()
             -- find any damage_buff power in the live config (x1.3 since the balance-audit
             -- team-buff swap: geo's Mountain's Strength trimmed so the tank doesn't out-buff pyro)

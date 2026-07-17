@@ -25,7 +25,6 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
-local PetCombat = require(ReplicatedStorage.Shared.Game.PetCombat)
 local PetFormation = require(ReplicatedStorage.Shared.Game.PetFormation)
 local CombatMath = require(ReplicatedStorage.Shared.Game.CombatMath)
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
@@ -39,8 +38,11 @@ local DamageOverTime = require(ReplicatedStorage.Shared.Game.DamageOverTime)
 local OnHitEffects = require(ReplicatedStorage.Shared.Game.OnHitEffects)
 local MovingTargetPosition = require(ReplicatedStorage.Shared.Game.MovingTargetPosition)
 local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark) -- additive vulnerability marks (SSOT)
+local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
+local FocusFire = require(ReplicatedStorage.Shared.Game.FocusFire)
 local SquadDiversity = require(ReplicatedStorage.Shared.Game.SquadDiversity)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local CombatApplication = require(script.Parent.Parent.CombatApplication)
 
 local PetFollowService = {}
 PetFollowService.__index = PetFollowService
@@ -551,7 +553,7 @@ function PetFollowService:_mine(player, pet, breakable)
     end
     -- MEZ (#269): a HELD pet is fully controlled — no attacks, no mining, until the window
     -- lapses (root only stops movement; hold stops output too).
-    if (tonumber(pet:GetAttribute("PetHeldUntil")) or 0) > os.time() then
+    if CrowdControl.isHeld(pet:GetAttribute("PetHeldUntil"), os.time()) then
         return
     end
     -- the SERVER enforcement: pets of a player who hasn't unlocked this node's
@@ -718,7 +720,10 @@ function PetFollowService:_mine(player, pet, breakable)
     -- channel, the total = 1 + Σ live fractions, uncapped). The glass cannon's layered marks
     -- finally STACK (eruption + strike = x2.5, not last-write x1.5). Still a SEPARATE axis from
     -- pet output (enemy weakness), so it multiplies across axes.
-    dmg = dmg * VulnMark.multiplier(breakable:GetAttributes(), nowT)
+    local preVulnerabilityDmg = dmg
+    local vulnerabilityMult = VulnMark.multiplier(breakable:GetAttributes(), nowT)
+    dmg = dmg * vulnerabilityMult
+    local postVulnerabilityDmg = dmg
     -- Defensive stat: an enemy's Armor mitigates pet damage on the armor curve
     -- (crystals have no Armor -> unchanged). Vulnerability above counteracts it.
     local armor = breakable:GetAttribute("Armor") or 0
@@ -739,6 +744,14 @@ function PetFollowService:_mine(player, pet, breakable)
             or (player:GetAttribute("Level") or 1)
         local enemyLevel = breakable:GetAttribute("Level") or atkLevel
         hitChance = Accuracy.combatToHit(atkLevel, enemyLevel, accCfg)
+        local keys = FocusFire.keys(player.UserId)
+        hitChance = FocusFire.applyAccuracy(
+            hitChance,
+            breakable:GetAttribute(keys.accuracyBonus),
+            breakable:GetAttribute(keys.untilTime),
+            os.time(),
+            accCfg and accCfg.cap
+        )
     else
         hitChance = Accuracy.miningHitChance(accCfg)
     end
@@ -780,6 +793,37 @@ function PetFollowService:_mine(player, pet, breakable)
 
     dmg = math.floor(dmg + 0.5)
 
+    -- Shatter damage proof: only logs while Shatter's own vulnerability channel is live, so the
+    -- master combat trace shows the actual before/after damage without flooding every ordinary hit.
+    if
+        self._combatConfig
+        and self._combatConfig.combat_trace
+        and breakable:GetAttribute("EnemyId")
+    then
+        local shatterFraction = VulnMark.liveFraction(
+            breakable:GetAttribute(VulnMark.attr("shatter")),
+            breakable:GetAttribute(VulnMark.untilAttr("shatter")),
+            nowT
+        )
+        if shatterFraction > 0 then
+            local outcome = roll.hit
+                    and string.format("final=%d%s", dmg, roll.crit and " CRIT" or "")
+                or "MISS"
+            print(
+                string.format(
+                    "[ShatterDamage] %s -> %s preVuln=%.1f shatter=x%.2f totalVuln=x%.2f postVuln=%.1f %s",
+                    tostring(pet:GetAttribute("PetType") or pet.Name),
+                    tostring(breakable:GetAttribute("EnemyId") or breakable.Name),
+                    preVulnerabilityDmg,
+                    1 + shatterFraction,
+                    vulnerabilityMult,
+                    postVulnerabilityDmg,
+                    outcome
+                )
+            )
+        end
+    end
+
     -- [RageTrace] (Jason balance pass): while a pet is RAGING and hitting an ENEMY, log its endurance
     -- + this hit's damage, so we can watch the "critical" bonus climb as the pet drops. Gated on
     -- combat.combat_trace + RagePowerUntil + EnemyId so it never floods a normal run.
@@ -810,8 +854,14 @@ function PetFollowService:_mine(player, pet, breakable)
         )
     end
 
-    local applied = PetCombat.applyDamage(hp, dmg)
-    breakable:SetAttribute("HP", applied.hp)
+    local applied = CombatApplication.ApplyHit(breakable, {
+        outcome = roll.multiplier <= 0 and "miss" or "damage",
+        amount = dmg,
+        crit = roll.crit,
+        source = pet,
+        sourcePlayer = player,
+        kind = "pet_attack",
+    })
 
     -- Damage builds aggro: hurting an enemy makes it want to attack this pet (the threat
     -- table the enemy targets from). Only enemies carry an EnemyId; crystals don't.
@@ -827,18 +877,6 @@ function PetFollowService:_mine(player, pet, breakable)
         end
     end
 
-    local contrib = breakable:FindFirstChild("Contrib")
-    if contrib then
-        local key = tostring(player.UserId)
-        local nv = contrib:FindFirstChild(key)
-        if not nv then
-            nv = Instance.new("NumberValue")
-            nv.Name = key
-            nv.Parent = contrib
-        end
-        nv.Value += applied.contributed
-    end
-
     -- DoT (burn/poison/bleed): a pet with attack_dot stamps a ticking burn on the ENEMY it hit —
     -- orthogonal to targeting, so it rides on top of single/aoe alike. perTick = a fraction of THIS
     -- hit (DamageOverTime.perTick); EnemyService:_dotPass applies the ticks. Re-hit refreshes the
@@ -851,8 +889,8 @@ function PetFollowService:_mine(player, pet, breakable)
     -- continuously-hit primary almost never reached it (Jason: "1 in 20"); the spread pass zeroes
     -- ContagionSpreadAt after it fires, so a later hit re-arms it for the next hop.
     local burn = burnProfile(pet, self._combatConfig.pet_contagion)
-    if breakable:GetAttribute("EnemyId") and dmg > 0 and burn then
-        local perTick = DamageOverTime.perTick(dmg, burn.fraction)
+    if breakable:GetAttribute("EnemyId") and applied.contributed > 0 and burn then
+        local perTick = DamageOverTime.perTick(applied.contributed, burn.fraction)
         self:_ensureResonanceConfigs()
         local burnEl = self._petElementMap and self._petElementMap[pet:GetAttribute("PetType")]
         stampBurn(
@@ -867,7 +905,7 @@ function PetFollowService:_mine(player, pet, breakable)
         )
     end
     -- On-hit control/shred (orthogonal to the burn) on the primary target.
-    if breakable:GetAttribute("EnemyId") and dmg > 0 then
+    if breakable:GetAttribute("EnemyId") and applied.contributed > 0 then
         applyOnHit(breakable, pet, nowT)
     end
 
@@ -929,19 +967,12 @@ function PetFollowService:_mine(player, pet, breakable)
                 then
                     local otherPos = targetPosition(other)
                     if (otherPos - origin).Magnitude <= radius then
-                        local ap = PetCombat.applyDamage(other:GetAttribute("HP") or 0, splash)
-                        other:SetAttribute("HP", ap.hp)
-                        local sc = other:FindFirstChild("Contrib")
-                        if sc and ap.contributed > 0 then
-                            local k = tostring(player.UserId)
-                            local nv3 = sc:FindFirstChild(k)
-                            if not nv3 then
-                                nv3 = Instance.new("NumberValue")
-                                nv3.Name = k
-                                nv3.Parent = sc
-                            end
-                            nv3.Value += ap.contributed
-                        end
+                        CombatApplication.ApplyDamage(other, splash, {
+                            source = pet,
+                            sourcePlayer = player,
+                            kind = "pet_aoe",
+                            element = element,
+                        })
                         -- AoE-CONTAGION: a splash target that's an enemy also catches the burn (scaled
                         -- off the SPLASH damage), and — if the burn is contagious — arms its own hop.
                         -- So the swing ignites the whole cluster and each ignited enemy then spreads.
@@ -961,31 +992,6 @@ function PetFollowService:_mine(player, pet, breakable)
                             -- on-hit control/shred hits the whole splash cluster too (AoE control /
                             -- AoE shred when the pet has targeted_aoe geometry).
                             applyOnHit(other, pet, nowT)
-                        end
-                        -- VISUALIZE the splash: an impact + floating number on each splashed target
-                        -- (splash = true tells the client to play the IMPACT look, not launch a fresh
-                        -- bolt from the pet — the primary keeps its bolt, the fire "spreads"). Shared
-                        -- to the owner + nearby spectators, like the primary hit.
-                        local splashHit = {
-                            pet = pet,
-                            target = other,
-                            crit = false,
-                            amount = splash,
-                            miss = false,
-                            splash = true,
-                        }
-                        Signals.Combat_PetHit:FireClient(player, splashHit)
-                        local shp = otherPos
-                        for _, sp in ipairs(Players:GetPlayers()) do
-                            if sp ~= player then
-                                local shrp = sp.Character
-                                    and sp.Character:FindFirstChild("HumanoidRootPart")
-                                if shrp and (shrp.Position - shp).Magnitude <= 80 then
-                                    local foreignSplash = table.clone(splashHit)
-                                    foreignSplash.foreign = true
-                                    Signals.Combat_PetHit:FireClient(sp, foreignSplash)
-                                end
-                            end
                         end
                         hitN += 1
                     end
@@ -1012,20 +1018,11 @@ function PetFollowService:_mine(player, pet, breakable)
                 if e ~= breakable and e:IsA("Model") and (e:GetAttribute("HP") or 0) > 0 then
                     local enemyPos = targetPosition(e)
                     if (enemyPos - tp).Magnitude <= radius then
-                        local appliedSplash =
-                            PetCombat.applyDamage(e:GetAttribute("HP") or 0, splash)
-                        e:SetAttribute("HP", appliedSplash.hp)
-                        local sc = e:FindFirstChild("Contrib")
-                        if sc then
-                            local k = tostring(player.UserId)
-                            local nv2 = sc:FindFirstChild(k)
-                            if not nv2 then
-                                nv2 = Instance.new("NumberValue")
-                                nv2.Name = k
-                                nv2.Parent = sc
-                            end
-                            nv2.Value += appliedSplash.contributed
-                        end
+                        CombatApplication.ApplyDamage(e, splash, {
+                            source = pet,
+                            sourcePlayer = player,
+                            kind = "team_cleave",
+                        })
                     end
                 end
             end
@@ -1057,7 +1054,7 @@ function PetFollowService:_mine(player, pet, breakable)
         pet = pet,
         target = breakable,
         crit = roll.crit,
-        amount = dmg, -- floored, post-roll/mitigation damage (0 on a miss)
+        amount = applied.contributed, -- actual authoritative HP delta (0 on a miss/overkill remainder)
         miss = roll.multiplier <= 0,
     }
     Signals.Combat_PetHit:FireClient(player, hit)

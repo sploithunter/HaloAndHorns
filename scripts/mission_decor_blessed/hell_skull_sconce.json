@@ -1,0 +1,144 @@
+{
+  "_comment": "Blessed dual-gen dump for hell_skull_sconce. shipping = MissionProps (missions). review = PropReview TextureID ref.",
+  "prop": "hell_skull_sconce",
+  "blessed_at": "2026-07-15T21:21:47Z",
+  "visual_status": {
+    "shipping_front": "correct",
+    "shipping_render": "ok_jason_lineup_pass_2026-07-15",
+    "review_render": "correct",
+    "review_yaw_flipped_180": false
+  },
+  "shipping": {
+    "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.20_hell_skull_sconce",
+    "has_skinned_mesh": true,
+    "instance_name": "20_hell_skull_sconce",
+    "bind_mode": "SurfaceAppearance",
+    "prop": "hell_skull_sconce",
+    "attributes": {
+      "Mount": "wall",
+      "MountY": "11",
+      "Theme": "hell",
+      "StandOff": "1.744149398803711"
+    },
+    "bone_count": 1,
+    "material": "Enum.Material.Plastic",
+    "n": 20,
+    "pivot": {
+      "y": 2.0000126361846924,
+      "x": 20266,
+      "z": 6.305854320526123
+    },
+    "color_map": "115359258182587",
+    "albedo_id": "115359258182587",
+    "normal_map": "73715743243944",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 5104,
+      "verts": 14475,
+      "fnv1a_hash": 4044160128
+    },
+    "size": {
+      "y": 4.000049114227295,
+      "x": 2.3737454414367676,
+      "z": 3.0883336067199707
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/78199195680560",
+    "bones": [
+      "Root"
+    ],
+    "create_albedo": "https://create.roblox.com/store/asset/115359258182587",
+    "color": {
+      "b": 0.6470588445663452,
+      "g": 0.6352941393852234,
+      "r": 0.6392157077789307
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "",
+    "row": "SHIP",
+    "mesh_id": "78199195680560",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce.png",
+      "atlas_sha256": "5d711e1f985f26d92413480e9a4b30822e0a1cb1200949e6b326bfb5c3e0282b",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "fb3eeb03128f508e1cdc0ae671a20abb848aaf278a0062e7afb0f90cc7a245e4",
+      "preview_sha256": "544c0b4a3e67035d26e3b9d2118ee9dea58b80e31b2d3c6b210aa835d2edbc72",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_skull_sconce.glb",
+      "source_glb_sha256": "0bc49d17153f5e2e1832ff53aeac0c17da72b4a25e42de8930c3bfbb98e617af",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_skull_sconce.glb\noriginal_tris: 5104\n\n10k: hell_skull_sconce_10k.fbx (5104 tris, target 10000)"
+    }
+  },
+  "review": {
+    "path": "Workspace._MeshyLineup.B_PropReview_TextureID.20_hell_skull_sconce",
+    "has_skinned_mesh": false,
+    "instance_name": "20_hell_skull_sconce",
+    "bind_mode": "TextureID",
+    "prop": "hell_skull_sconce",
+    "attributes": {
+      "Mount": "wall",
+      "MountY": "11",
+      "Theme": "hell",
+      "StandOff": "1.744149398803711"
+    },
+    "bone_count": 0,
+    "material": "Enum.Material.Plastic",
+    "n": 20,
+    "pivot": {
+      "y": 2.0000219345092773,
+      "x": 20266,
+      "z": 46.305870056152344
+    },
+    "color_map": "",
+    "albedo_id": "92288408884132",
+    "normal_map": "",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 5104,
+      "verts": 14439,
+      "fnv1a_hash": 3440974168
+    },
+    "size": {
+      "y": 4.000049114227295,
+      "x": 2.3737454414367676,
+      "z": 3.0883336067199707
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/109446511436509",
+    "bones": [],
+    "create_albedo": "https://create.roblox.com/store/asset/92288408884132",
+    "color": {
+      "b": 1,
+      "g": 1,
+      "r": 1
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "92288408884132",
+    "row": "REVIEW",
+    "mesh_id": "109446511436509",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce.png",
+      "atlas_sha256": "5d711e1f985f26d92413480e9a4b30822e0a1cb1200949e6b326bfb5c3e0282b",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "fb3eeb03128f508e1cdc0ae671a20abb848aaf278a0062e7afb0f90cc7a245e4",
+      "preview_sha256": "544c0b4a3e67035d26e3b9d2118ee9dea58b80e31b2d3c6b210aa835d2edbc72",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_skull_sconce.glb",
+      "source_glb_sha256": "0bc49d17153f5e2e1832ff53aeac0c17da72b4a25e42de8930c3bfbb98e617af",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_skull_sconce.glb\noriginal_tris: 5104\n\n10k: hell_skull_sconce_10k.fbx (5104 tris, target 10000)"
+    }
+  },
+  "diagnose_if_bad_again": [
+    "Dump live mesh_id/albedo/bind/editable hash",
+    "Diff against shipping.* (missions) or review.* (TextureID gen)",
+    "ids drifted -> transplant/rbxm; ids match + ugly -> CDN/render"
+  ]
+}

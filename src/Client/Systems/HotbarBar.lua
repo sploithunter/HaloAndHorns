@@ -136,6 +136,7 @@ local SYMBOL_KIND = {
     contagion = "DoT",
     capacitor = "Hold",
     user_desk = "Root",
+    disarm = "Disarm",
     target = "Accuracy Buff",
     target_down = "Accuracy Debuff",
     shield_broken = "Armor Break",
