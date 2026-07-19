@@ -1204,3 +1204,11 @@ Imported ore models do not consistently define `PrimaryPart`. `BreakableSpawner`
 health and Resonance boost billboards on a fallback mesh but later searched only `PrimaryPart` when
 updating them, leaving valid bars permanently disabled. Each spawned breakable now resolves one
 stable overhead host and uses it for creation, fill updates, visibility, and engagement distance.
+
+## 2026-07-19 — Provisional beta analytics and staged-release plan
+
+Added the launch operating plan for three paid stranger waves. It preserves native Roblox analytics
+plus the raw `RetentionEvents_v1` trace, defines activation/retention metrics and trust guardrails,
+converts the 5,000-Robux budget into the current 19-ad-credit constraint, and uses comparable
+Tuesday cohorts rather than a confounded Friday follow-up. Schema-v2 build, campaign, session-date,
+and first-play-cohort attribution plus a published-server export rehearsal are hard pre-spend gates.
