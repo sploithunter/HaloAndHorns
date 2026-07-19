@@ -1212,3 +1212,11 @@ plus the raw `RetentionEvents_v1` trace, defines activation/retention metrics an
 converts the 5,000-Robux budget into the current 19-ad-credit constraint, and uses comparable
 Tuesday cohorts rather than a confounded Friday follow-up. Schema-v2 build, campaign, session-date,
 and first-play-cohort attribution plus a published-server export rehearsal are hard pre-spend gates.
+
+## 2026-07-19 — Remote pets animate on every observing client
+
+The pet owner continues to report only clean, gait-free transforms through `PetPositionsRelay`.
+Observers now keep a separate clean interpolation base and layer the same per-type procedural gait
+or rigged idle/run animation used by the owner. Cosmetic bob and tilt therefore cannot feed back
+into network smoothing, and the relay remains presentation-only rather than movement authority.
+A live Studio relay probe measured both vertical bob and roll across 133 observer-rendered frames.
