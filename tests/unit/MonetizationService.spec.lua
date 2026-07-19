@@ -69,7 +69,9 @@ return function()
                 GetOwnedPasses = function()
                     return {}
                 end,
-                SetOwnedPasses = function() end,
+                SetOwnedPasses = function()
+                    return true
+                end,
                 RecordPurchase = function() end,
                 AddToInventory = function()
                     return true
@@ -147,6 +149,19 @@ return function()
                                 },
                             },
                             test_mode_enabled = true,
+                        }
+                    end
+                    return nil
+                end,
+                GetPassByRobloxId = function(id)
+                    if id == 123456789 then
+                        return {
+                            id = "vip_pass",
+                            name = "VIP Pass",
+                            price_robux = 499,
+                            benefits = {
+                                multipliers = { xp = 2.0, coins = 1.5 },
+                            },
                         }
                     end
                     return nil
@@ -449,6 +464,33 @@ return function()
         end)
 
         describe("Game Pass Management", function()
+            it("completes a Marketplace pass purchase and persists ownership", function()
+                local stored
+                local recorded
+                mockDataService.HasMadeAnyPurchase = function()
+                    return true
+                end
+                mockDataService.GetOwnedPasses = function()
+                    return {}
+                end
+                mockDataService.SetOwnedPasses = function(_, passes)
+                    stored = passes
+                    return true
+                end
+                mockDataService.RecordPurchase = function(_, purchase)
+                    recorded = purchase
+                    return true
+                end
+
+                local ok =
+                    monetizationService:_handleGamePassPurchase(createMockPlayer(), 123456789)
+                expect(ok).to.equal(true)
+                expect(stored[1]).to.equal("vip_pass")
+                expect(recorded.type).to.equal("gamepass")
+                expect(recorded.id).to.equal("vip_pass")
+                expect(recorded.gamePassId).to.equal(123456789)
+            end)
+
             it("should check and apply game pass benefits", function()
                 local multiplierSet = false
                 local effectApplied = false

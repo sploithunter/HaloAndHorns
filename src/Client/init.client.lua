@@ -1305,6 +1305,17 @@ do
         buildPanel("Shop", function()
             return require(script.UI.Menus.RewardShopPanel).new()
         end)
+        -- The authored Pet Shop buildings are the primary world entry point.
+        -- This only opens the menu; every purchase still routes through the
+        -- server-owned MonetizationService.
+        do
+            local ok, err = pcall(function()
+                require(script.Systems.ShopWorldPrompt).start(menuManager)
+            end)
+            if not ok then
+                Logger:Warn("UI boot: Pet Shop prompts FAILED", { error = tostring(err) })
+            end
+        end
         buildPanel("Inventory", function()
             return require(script.UI.Menus.InventoryPanel).new()
         end)
