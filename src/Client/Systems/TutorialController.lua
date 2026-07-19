@@ -436,10 +436,10 @@ local function showUiPulse(token, name, withArrow)
         pulseArrow.Name = "TutorialArrow"
         pulseArrow.BackgroundTransparency = 1
         pulseArrow.AnchorPoint = Vector2.new(0.5, 1)
-        pulseArrow.Position = UDim2.new(0.5, 0, 0, -4) -- centered just above the target
-        pulseArrow.Size = UDim2.fromOffset(48, 30)
+        pulseArrow.Position = UDim2.new(0.5, 0, 0, -6) -- centered just above the target
+        pulseArrow.Size = UDim2.fromOffset(68, 44)
         pulseArrow.Font = Enum.Font.GothamBlack
-        pulseArrow.TextSize = 26
+        pulseArrow.TextSize = 38
         pulseArrow.TextColor3 = GOLD
         pulseArrow.TextStrokeColor3 = Color3.new(0, 0, 0)
         pulseArrow.TextStrokeTransparency = 0.3
@@ -453,7 +453,7 @@ local function showUiPulse(token, name, withArrow)
             pulseStroke.Transparency = 0.25 + 0.55 * s
             if pulseArrow then
                 pulseArrow.TextTransparency = 0.05 + 0.55 * s -- blink
-                pulseArrow.Position = UDim2.new(0.5, 0, 0, -4 - math.floor(6 * s)) -- bob
+                pulseArrow.Position = UDim2.new(0.5, 0, 0, -6 - math.floor(8 * s)) -- bob
             end
             RunService.RenderStepped:Wait()
         end
