@@ -11,6 +11,33 @@ return {
     slot_count = 20,
     bind_types = { "power", "roster", "pet", "tactical", "potion" },
     tactical_commands = { "scatter", "focus_fire", "regroup", "retreat", "rally" },
+    tactical_details = {
+        scatter = {
+            display_name = "Scatter",
+            type = "Squad command",
+            description = "Spread your pets out so they stop clustering on the same spot.",
+        },
+        focus_fire = {
+            display_name = "Focus Fire",
+            type = "Squad command",
+            description = "Order the whole squad to attack your current target together.",
+        },
+        regroup = {
+            display_name = "Regroup",
+            type = "Squad command",
+            description = "Pull your pets into a tighter formation around you.",
+        },
+        retreat = {
+            display_name = "Retreat",
+            type = "Squad command",
+            description = "Break off the current fight and move the squad away from danger.",
+        },
+        rally = {
+            display_name = "Rally",
+            type = "Squad command · Panic button",
+            description = "Instantly call every pet back to your side when a fight goes wrong.",
+        },
+    },
 
     -- Default layout for a new player. Power slots fill from the player's OWNED powers (picked via
     -- level-up) in order — a fresh character owns none, so the bar comes up EMPTY and fills as you

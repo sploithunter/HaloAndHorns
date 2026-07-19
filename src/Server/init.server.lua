@@ -504,11 +504,14 @@ loader:RegisterModule(
 loader:RegisterModule(
     "TutorialService",
     ServerScriptService.Server.Services.TutorialService,
-    appendIfEnabled(
-        { "Logger", "ConfigLoader", "DataService", "EnhancementService", "PotionService" },
-        "player_progression",
-        "PlayerProgressionService"
-    )
+    appendIfEnabled({
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "EnhancementService",
+        "PotionService",
+        "HotbarService",
+    }, "player_progression", "PlayerProgressionService")
 )
 -- RetentionService: persisted activation milestones + Roblox onboarding/custom analytics.
 loader:RegisterModule(

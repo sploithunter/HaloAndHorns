@@ -90,6 +90,76 @@ return function()
         end)
     end)
 
+    describe("HotbarLogic.ensureBindAt", function()
+        it("repairs a missing tutorial bind at its authored slot", function()
+            local hotbar = {
+                ["20"] = { type = "potion", target = "berserk_brew" },
+            }
+            local result = HotbarLogic.ensureBindAt(
+                hotbar,
+                11,
+                { type = "tactical", target = "rally" },
+                config
+            )
+
+            expect(result.ok).to.equal(true)
+            expect(result.changed).to.equal(true)
+            expect(hotbar["11"].target).to.equal("rally")
+            expect(hotbar["20"].target).to.equal("berserk_brew")
+        end)
+
+        it("moves an occupied authored slot instead of deleting its bind", function()
+            local hotbar = {
+                ["11"] = { type = "potion", target = "fortune_flask" },
+                ["20"] = { type = "potion", target = "berserk_brew" },
+            }
+            local result = HotbarLogic.ensureBindAt(
+                hotbar,
+                11,
+                { type = "tactical", target = "rally" },
+                config
+            )
+
+            expect(result.ok).to.equal(true)
+            expect(hotbar["11"].target).to.equal("rally")
+            expect(result.movedTo).to.equal(12)
+            expect(hotbar["12"].target).to.equal("fortune_flask")
+        end)
+
+        it("moves an existing copy to the tutorial's visible slot", function()
+            local hotbar = {
+                ["15"] = { type = "tactical", target = "rally" },
+                ["11"] = { type = "tactical", target = "scatter" },
+            }
+            local result = HotbarLogic.ensureBindAt(
+                hotbar,
+                11,
+                { type = "tactical", target = "rally" },
+                config
+            )
+
+            expect(result.movedFrom).to.equal(15)
+            expect(result.movedTo).to.equal(15)
+            expect(hotbar["11"].target).to.equal("rally")
+            expect(hotbar["15"].target).to.equal("scatter")
+        end)
+
+        it("is idempotent when the required bind is already correct", function()
+            local hotbar = {
+                ["11"] = { type = "tactical", target = "rally" },
+            }
+            local result = HotbarLogic.ensureBindAt(
+                hotbar,
+                11,
+                { type = "tactical", target = "rally" },
+                config
+            )
+
+            expect(result.ok).to.equal(true)
+            expect(result.changed).to.equal(false)
+        end)
+    end)
+
     describe("HotbarLogic.potionAutoBindSlot", function()
         it("fills the top row from the right", function()
             local hotbar = {

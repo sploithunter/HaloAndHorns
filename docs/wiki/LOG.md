@@ -1172,3 +1172,13 @@ and subtracts the working draft. Fully deployed single-copy pets immediately ret
 grid when removed, larger stacks no longer double-subtract deployed copies, and the renderer reads
 the stable live Quantity object so a pre-projection card cache cannot stage a phantom extra copy.
 Added pure headless coverage in `InventoryDraftView`.
+
+## 2026-07-19 — Tutorial Rally repair + descriptive hotbar editor
+
+The Rally flag is now an explicit idempotent grant on entry to the tutorial's `rally_call` step,
+rather than relying on a one-time profile seed. Reconnect/state-pull reapplies an unfinished step's
+grant, `HotbarLogic.ensureBindAt` preserves any displaced binding, and the authoritative hotbar
+snapshot is pushed immediately so the tutorial cannot point at an empty slot 11. The hotbar picker
+now uses the shared area-themed panel chrome and a two-pane select/preview/assign flow; power and
+potion descriptions come from their existing config-derived SSOT, while tactical command
+descriptions live in `configs/hotbar.lua`, making the same details available to mouse and touch.

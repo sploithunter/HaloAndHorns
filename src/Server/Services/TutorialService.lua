@@ -29,6 +29,7 @@ function TutorialService:Init()
     self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
     self._enhancementService = self._modules and self._modules.EnhancementService
     self._potionService = self._modules and self._modules.PotionService
+    self._hotbarService = self._modules and self._modules.HotbarService
     self._config = self._configLoader:LoadConfig("tutorial")
 
     fireGameEvent.tap(function(player, name, ctx)
@@ -41,7 +42,8 @@ function TutorialService:Start()
     -- join race where the one-shot push lands before the client connected the signal
     Signals.TutorialStateRequest.OnServerEvent:Connect(function(player)
         if self._dataService:IsDataLoaded(player) then
-            self:_ensureProgress(player)
+            local data = self:_ensureProgress(player)
+            self:_applyStepGrant(player, data)
             self:_push(player)
         end
     end)
@@ -59,7 +61,8 @@ end
 
 function TutorialService:_waitForDataAndPush(player)
     if Readiness.awaitAttribute(player, "DataLoaded", true, 20) and player.Parent then
-        self:_ensureProgress(player)
+        local data = self:_ensureProgress(player)
+        self:_applyStepGrant(player, data)
         self:_push(player)
     end
 end
@@ -101,8 +104,8 @@ function TutorialService:_onEvent(player, name, ctx)
     end
     data.Tutorial = progress
     self._dataService:RequestSave(player, "tutorial_step")
-    self:_push(player)
     self:_applyStepGrant(player, data) -- reward on ENTER (e.g. slot step grants potency + a slot)
+    self:_push(player)
     if completedStep and (progress.done or progress.step ~= completedIndex) then
         -- One semantic completion event keeps cross-cutting consumers independent from the
         -- tutorial's internal count/sum rules.
@@ -142,6 +145,36 @@ function TutorialService:_applyStepGrant(player, data)
         return -- already rewarded this step (rejoin / repeated event)
     end
     data.Tutorial.granted[id] = true
+    local grantFailed = false
+
+    if type(grant.hotbar_bind) == "table" then
+        local hotbar = self._hotbarService
+        if hotbar and hotbar.EnsureBindAt then
+            local ok, result = pcall(function()
+                return hotbar:EnsureBindAt(player, grant.hotbar_bind.slot, {
+                    type = grant.hotbar_bind.type,
+                    target = grant.hotbar_bind.target,
+                }, "tutorial_hotbar_grant")
+            end)
+            if not ok or (type(result) == "table" and result.ok == false) then
+                grantFailed = true
+                if self._logger then
+                    self._logger:Warn("tutorial hotbar grant FAILED", {
+                        player = player.Name,
+                        target = tostring(grant.hotbar_bind.target),
+                        err = not ok and tostring(result) or tostring(result and result.reason),
+                    })
+                end
+            end
+        else
+            grantFailed = true
+            if self._logger then
+                self._logger:Warn("tutorial hotbar grant SKIPPED — HotbarService not injected", {
+                    step = tostring(step.id),
+                })
+            end
+        end
+    end
 
     if type(grant.potions) == "table" then
         local potions = self._potionService
@@ -195,6 +228,12 @@ function TutorialService:_applyStepGrant(player, data)
         end
     end
 
+    -- A failed service-backed grant must be retried by the next state pull/rejoin. This is safe for
+    -- Rally's idempotent EnsureBindAt grant and prevents a transient startup race from stranding the
+    -- tutorial while its UI points at an empty slot.
+    if grantFailed then
+        data.Tutorial.granted[id] = nil
+    end
     self._dataService:RequestSave(player, "tutorial_grant", { critical = true })
 end
 

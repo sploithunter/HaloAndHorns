@@ -263,6 +263,24 @@ function HotbarService:Rebind(player, index, bind)
     return { ok = true, hotbar = hotbar }
 end
 
+-- Authoritative placement for authored progression/tutorial binds. Unlike a normal player rebind,
+-- this preserves a displaced slot when possible and immediately publishes the repaired snapshot.
+-- The pure placement rule makes repeat calls harmless, so reconnecting on a grant step is safe.
+function HotbarService:EnsureBindAt(player, index, bind, reason)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    local hotbar = self:_ensureDefaults(data)
+    local result = HotbarLogic.ensureBindAt(hotbar, index, bind, self._config)
+    if not result.ok or not result.changed then
+        return result
+    end
+    self._dataService:RequestSave(player, reason or "hotbar_ensure_bind", { critical = true })
+    self:_pushState(player)
+    return result
+end
+
 -- POTIONS FILL FROM THE TOP RIGHT (Jason: "powers fill from the bottom left,
 -- potions fill from the top right — they could use them immediately"): when a
 -- potion is first acquired it auto-binds to the highest free TOP-ROW slot
