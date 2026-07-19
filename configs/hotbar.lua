@@ -11,6 +11,12 @@ return {
     slot_count = 20,
     bind_types = { "power", "roster", "pet", "tactical", "potion" },
     tactical_commands = { "scatter", "focus_fire", "regroup", "retreat", "rally" },
+    -- Exact bar used for a brand-new profile and the admin "Reset to Beginning" test path.
+    -- Keep this authored separately from archetype defaults: a beginning player has no origin or
+    -- selected powers yet, but Rally must already be visible for its tutorial lesson.
+    beginning_binds = {
+        { slot = 11, type = "tactical", target = "rally" },
+    },
     tactical_details = {
         scatter = {
             display_name = "Scatter",

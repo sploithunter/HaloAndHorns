@@ -55,6 +55,32 @@ return function()
         end)
     end)
 
+    describe("HotbarLogic.beginningBindings", function()
+        it("builds the authored new-player bar without an archetype", function()
+            local bindings = HotbarLogic.beginningBindings(config)
+
+            expect(bindings[11].type).to.equal("tactical")
+            expect(bindings[11].target).to.equal("rally")
+            expect(bindings[1]).to.equal(nil)
+        end)
+
+        it("ignores malformed beginning rows", function()
+            local cfg = table.clone(config)
+            cfg.beginning_binds = {
+                { slot = 0, type = "tactical", target = "rally" },
+                { slot = 2, type = "spell", target = "resonance" },
+                { slot = 3, type = "power", target = "" },
+                { slot = 4, type = "power", target = "resonance" },
+            }
+            local bindings = HotbarLogic.beginningBindings(cfg)
+
+            expect(bindings[1]).to.equal(nil)
+            expect(bindings[2]).to.equal(nil)
+            expect(bindings[3]).to.equal(nil)
+            expect(bindings[4].target).to.equal("resonance")
+        end)
+    end)
+
     describe("HotbarLogic.canRebind", function()
         it("allows rebinding to a valid power/roster bind", function()
             expect(HotbarLogic.canRebind(1, { type = "roster", target = "Healer Team" }, config).ok).to.equal(

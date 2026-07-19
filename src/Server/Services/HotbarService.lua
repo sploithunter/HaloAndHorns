@@ -207,22 +207,27 @@ function HotbarService:_ensureDefaults(data)
     end
     data.HotbarInitialized = true -- defaults are a one-time seed; never auto-repopulate again
 
-    -- RALLY ON THE BAR (Jason: "teach the player about the rally flag... expose
-    -- it in the upper-left power bar position — you can call your pets to you").
+    -- BEGINNING UTILITIES ON THE BAR (currently Rally at slot 11).
     -- One-time seed at slot 11 (top row, leftmost) for EVERY save that doesn't
     -- already carry rally somewhere; skips if the player has claimed slot 11
     -- themselves. Backfill-flagged so clearing it later is respected forever.
     if not data.RallyBarSeeded then
         data.RallyBarSeeded = true
-        local hasRally = false
-        for _, b in pairs(data.Hotbar) do
-            if type(b) == "table" and b.type == "tactical" and b.target == "rally" then
-                hasRally = true
-                break
+        for index, authored in pairs(HotbarLogic.beginningBindings(self._config)) do
+            local alreadyBound = false
+            for _, existing in pairs(data.Hotbar) do
+                if
+                    type(existing) == "table"
+                    and existing.type == authored.type
+                    and existing.target == authored.target
+                then
+                    alreadyBound = true
+                    break
+                end
             end
-        end
-        if not hasRally and data.Hotbar["11"] == nil then
-            data.Hotbar["11"] = { type = "tactical", target = "rally" }
+            if not alreadyBound and HotbarLogic.bindAt(data.Hotbar, index) == nil then
+                data.Hotbar[tostring(index)] = authored
+            end
         end
     end
 
@@ -239,6 +244,27 @@ function HotbarService:GetState(player)
         return { ok = false, reason = "data_not_loaded" }
     end
     return { ok = true, hotbar = self:_ensureDefaults(data), slot_count = self._config.slot_count }
+end
+
+-- Restore the exact authored new-player bar and publish it immediately. Admin reset uses this
+-- instead of clearing Hotbar indirectly through respec, which left the one-time seed flags set and
+-- the client displaying its pre-reset snapshot.
+function HotbarService:ResetToBeginning(player)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+
+    data.Hotbar = {}
+    for index, bind in pairs(HotbarLogic.beginningBindings(self._config)) do
+        data.Hotbar[tostring(index)] = bind
+    end
+    data.HotbarInitialized = true
+    data.RallyBarSeeded = true
+
+    self._dataService:RequestSave(player, "hotbar_reset_to_beginning", { critical = true })
+    self:_pushState(player)
+    return { ok = true, hotbar = data.Hotbar }
 end
 
 -- Rebind a slot. `bind` is { type, target } or nil to clear.
