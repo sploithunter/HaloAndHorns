@@ -1160,3 +1160,6 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Added mergeable daily server-sharded launch counters and exporter summaries for average completed
   session time, tutorial step reach/conversion/timing/exit point, and earned/claimed-level exit
   distributions. Raw events remain available for recomputation and distributional analysis.
+- Fixed the mobile currency HUD after portrait/landscape rotation. `CurrencyStack` now reflows from
+  settled `MainContainer` and menu absolute-geometry changes (and camera replacement), avoiding the
+  stale portrait Y-coordinate that could place the money stack below the landscape viewport.
