@@ -160,6 +160,30 @@ function ProductIdMapper:GetProductByRobloxId(robloxProductId)
     return self:GetProductConfig(configId)
 end
 
+-- Get game pass config by Roblox Marketplace ID. Purchase-finished callbacks
+-- carry only the numeric ID, so the server must map it back to the authored
+-- config before applying benefits and recording ownership.
+function ProductIdMapper:GetPassByRobloxId(robloxPassId)
+    if not monetizationConfig then
+        self:_loadConfig()
+    end
+
+    if not monetizationConfig then
+        return nil
+    end
+
+    for configId, mappedId in pairs(monetizationConfig.product_id_mapping or {}) do
+        if mappedId == robloxPassId then
+            local pass = self:GetPassConfig(configId)
+            if pass then
+                return pass
+            end
+        end
+    end
+
+    return nil
+end
+
 -- Get all products
 function ProductIdMapper:GetAllProducts()
     if not monetizationConfig then

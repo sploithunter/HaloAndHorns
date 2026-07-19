@@ -1220,3 +1220,13 @@ Observers now keep a separate clean interpolation base and layer the same per-ty
 or rigged idle/run animation used by the owner. Cosmetic bob and tilt therefore cannot feed back
 into network smoothing, and the relay remains presentation-only rather than movement authority.
 A live Studio relay probe measured both vertical bob and roll across 133 observer-rendered frames.
+
+## 2026-07-19 — Unified Pet Shop and game-pass purchase completion
+
+The world Pet Shop now opens a responsive unified storefront with all eight live game passes,
+their Marketplace artwork, authored benefits, Robux prices, and owned state; the original
+earned-currency offers remain on a separate tab. Streaming-safe proximity-prompt discovery makes
+the shop building the primary entry point. The missing server purchase-completion path now maps
+Roblox pass IDs to config, applies and saves benefits, refreshes capacity, records analytics, and
+pushes ownership to the client. Developer products remain hidden until their IDs and grant handlers
+are real, at which point the catalog exposes their Boosts tab automatically.

@@ -814,6 +814,28 @@ render live data; HUD reads "Level 10 · 0/1000 XP" live after the XP grant.
 Follow-up: per-breakable XP gain isn't wired yet (XP currently comes from the spine —
 quests/daily/achievements/shop). Add a per-mine XP grant + curve tuning when balancing.
 
+## Halo & Horns — Unified Pet Shop monetization
+
+Last checked: 2026-07-19
+
+- The existing earned-currency offer panel is now a unified **Pet Shop**. Its default
+  tab lists every configured live game pass with the Marketplace thumbnail, authored
+  benefit description, Robux price, and authoritative owned/purchase state. Earned
+  offers remain available on their own tab.
+- Every streamed `Pet shop` world model receives a client-owned proximity prompt that
+  opens the same panel through `MenuManager`. Prompt discovery tolerates models whose
+  sign/parts stream in after the outer model.
+- Game-pass purchase completion now maps the Roblox pass ID back to its authored
+  config, applies the benefit, persists ownership, refreshes capacity, records
+  analytics, and pushes the updated owned state to the client.
+- Developer products are deliberately omitted while their Roblox IDs are zero and
+  their grant handlers are placeholders. A **Boosts** tab appears automatically once
+  live mapped products exist, avoiding nonfunctional purchase buttons at launch.
+
+Verification: headless **1411/1411 across 135 specs**; Rojo build OK; live Studio
+walk-up/E-key test opened the Pet Shop through the real proximity prompt and rendered
+all 8 game-pass cards with live Marketplace artwork.
+
 ## Halo & Horns — Phase 10 (Escrow two-player trade + Trade UI)
 
 Last checked: 2026-05-30
