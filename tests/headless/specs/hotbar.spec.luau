@@ -89,4 +89,29 @@ return function()
             expect(HotbarLogic.bindAt(hotbar, 1).target).to.equal("stone_skin")
         end)
     end)
+
+    describe("HotbarLogic.potionAutoBindSlot", function()
+        it("fills the top row from the right", function()
+            local hotbar = {
+                ["11"] = { type = "tactical", target = "rally" },
+                ["20"] = { type = "potion", target = "fortune_flask" },
+            }
+            expect(HotbarLogic.potionAutoBindSlot(hotbar, "berserk_brew", config)).to.equal(19)
+        end)
+
+        it("does not duplicate an existing potion binding", function()
+            local hotbar = {
+                ["20"] = { type = "potion", target = "berserk_brew" },
+            }
+            expect(HotbarLogic.potionAutoBindSlot(hotbar, "berserk_brew", config)).to.equal(nil)
+        end)
+
+        it("does not spill into the power row when the top row is full", function()
+            local hotbar = {}
+            for slot = 11, 20 do
+                hotbar[tostring(slot)] = { type = "tactical", target = "filled_" .. slot }
+            end
+            expect(HotbarLogic.potionAutoBindSlot(hotbar, "berserk_brew", config)).to.equal(nil)
+        end)
+    end)
 end

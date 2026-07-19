@@ -10,6 +10,7 @@
       defaultBindings(availablePowers, config)         -> { [index] = bind }
       canRebind(index, bind, config)                   -> { ok, reason? }  (nil bind clears)
       bindAt(hotbar, index)                            -> bind or nil
+      potionAutoBindSlot(hotbar, potionId, config)     -> slot or nil
 ]]
 
 local HotbarLogic = {}
@@ -91,6 +92,28 @@ function HotbarLogic.bindAt(hotbar, index)
         return nil
     end
     return hotbar[index] or hotbar[tostring(index)]
+end
+
+-- Potions fill the top row from right to left. Returning nil means either this
+-- potion is already bound or the top row is full.
+function HotbarLogic.potionAutoBindSlot(hotbar, potionId, config)
+    if type(hotbar) ~= "table" or type(potionId) ~= "string" or potionId == "" then
+        return nil
+    end
+    local slotCount = math.max(0, math.floor(tonumber(config and config.slot_count) or 0))
+    for i = 1, slotCount do
+        local bind = HotbarLogic.bindAt(hotbar, i)
+        if type(bind) == "table" and bind.type == "potion" and bind.target == potionId then
+            return nil
+        end
+    end
+    local topRowStart = math.floor(slotCount / 2) + 1
+    for i = slotCount, topRowStart, -1 do
+        if HotbarLogic.bindAt(hotbar, i) == nil then
+            return i
+        end
+    end
+    return nil
 end
 
 return HotbarLogic
