@@ -15,6 +15,11 @@ filtered out of production registries.
 
 - `ConfigLoader` validates config shape and cross-references at boot. Current focused validators cover currencies, game, breakables, pets/egg sources, events, economy exchange, egg system, inventory, upgrades, areas, markers, pet index, achievements, leaderboards, UI, context menus, items, and monetization.
 - `DataService` owns ProfileStore data, schema versioning, migrations, durable state, stat counter storage, pet index state, achievement completion state, and currency source/sink ledger aggregates.
+- `RetentionService` taps the server `FireGameEvent` stream and maps stable tutorial, quest, and
+  area events through `configs/retention.lua`. It writes the native Roblox onboarding funnel and a
+  low-cardinality custom milestone event, while persisting exact first-occurrence timestamps under
+  `profile.Analytics.Retention` for admin/support inspection. See
+  [Retention Analytics](RETENTION_ANALYTICS.md).
 - `StatsService` owns declared tracked counters and emits counter change signals.
 - `ModifierService` plus shared `ModifierPipeline` resolve derived values from pets, enchants, upgrades, boosts, events, rebirths, and gamepasses. Breakable rewards now route through this path, with active global events registered as a provider.
 - `EconomyService` owns currency mutation and passes source reasons into the ledger. Reward bundle

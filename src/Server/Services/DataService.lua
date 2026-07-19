@@ -150,6 +150,14 @@ local function generateProfileTemplate(configLoader)
             LastSessionDuration = 0,
             Purchases = {},
             Achievements = {},
+            Retention = {
+                Version = 1,
+                Eligible = false,
+                EligibilityDecided = false,
+                InstrumentedAt = 0,
+                Milestones = {},
+                AnalyticsFunnelStep = 0,
+            },
         },
 
         -- Active Effects (persistent across sessions)

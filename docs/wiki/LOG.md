@@ -1144,3 +1144,13 @@ migration is needed for the abandoned "element splits stacks" spec.
 - **2026-07-14 — Batched squad pet-XP projection.** Per-breakable pet XP now preserves the per-contributor mining/modifier calculation but batches each player's equipped unique squad into one targeted projection update and one debounced save request. Pet projection reconciliation retains unchanged Instances, progression/enchant paths update exact record keys instead of tearing down every inventory card, and client slot-change bursts coalesce into one deferred inventory render.
 - **2026-07-14 — Contextual pet-power sorting.** Inventory pet cards still perform an intentional full refresh/re-sort when effective power context changes. Biome (`CurrentArea`) and realm (`CurrentRealm`) transitions now share one deferred refresh boundary, preventing paired portal attribute updates from causing duplicate renders while ensuring Heaven/Hell and mission resonance changes cannot leave the power order stale.
 - **2026-07-14 — XP projections no longer redraw the inventory.** Pet projection transactions now publish a separate `RenderVersion`: ordinary XP progress continues to replicate and advance the diagnostic `ProjectionVersion`, but it does not destroy/recreate the open inventory grid. A level/power change or permanent-enchant reveal still emits one render event and re-sorts, preserving power-order correctness.
+
+## 2026-07-18 — Tutorial potion hotbar repair + retention funnel
+
+- Fixed tutorial potion grants persisting slot 20 without refreshing the client's hotbar snapshot.
+  Potion auto-binding now resolves through headless-tested pure logic and pushes the authoritative
+  bar immediately, so the granted Berserk Brews appear and are usable at tutorial step 6.
+- Added first-session retention measurement: native Roblox onboarding funnel steps for join, every
+  tutorial objective, first quest, First Steps completion, and first area unlock; one custom
+  milestone event for Explore breakdowns; and compact per-player timestamps for every quest/area
+  milestone under `Analytics.Retention`. `retention.get` exposes the live player snapshot.

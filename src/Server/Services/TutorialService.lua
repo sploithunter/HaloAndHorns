@@ -93,6 +93,8 @@ function TutorialService:_onEvent(player, name, ctx)
     if not data or data.Tutorial.done then
         return
     end
+    local completedIndex = data.Tutorial.step
+    local completedStep = self._config.steps and self._config.steps[completedIndex]
     local progress, changed = TutorialFlow.advance(self._config, data.Tutorial, name, ctx)
     if not changed then
         return
@@ -101,6 +103,14 @@ function TutorialService:_onEvent(player, name, ctx)
     self._dataService:RequestSave(player, "tutorial_step")
     self:_push(player)
     self:_applyStepGrant(player, data) -- reward on ENTER (e.g. slot step grants potency + a slot)
+    if completedStep and (progress.done or progress.step ~= completedIndex) then
+        -- One semantic completion event keeps cross-cutting consumers independent from the
+        -- tutorial's internal count/sum rules.
+        fireGameEvent(player, "tutorial_step_completed", {
+            stepId = completedStep.id,
+            stepIndex = completedIndex,
+        })
+    end
     if progress.done then
         -- finishing the LAST step is its own moment: stinger + burst (configs/game_events)
         fireGameEvent(player, "tutorial_complete", {})

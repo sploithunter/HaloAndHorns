@@ -510,6 +510,12 @@ loader:RegisterModule(
         "PlayerProgressionService"
     )
 )
+-- RetentionService: persisted activation milestones + Roblox onboarding/custom analytics.
+loader:RegisterModule(
+    "RetentionService",
+    ServerScriptService.Server.Services.RetentionService,
+    { "Logger", "ConfigLoader", "DataService" }
+)
 -- HotbarService: Halo & Horns hotbar / command bar (Feature 16).
 loader:RegisterModule(
     "HotbarService",
@@ -880,6 +886,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
             PotionService = modules:Get("PotionService"),
             PowerService = modules:Get("PowerService"),
             QuestService = modules:Get("QuestService"),
+            RetentionService = modules:Get("RetentionService"),
             RewardService = modules:Get("RewardService"),
             RosterService = modules:Get("RosterService"),
             ShopService = modules:Get("ShopService"),
@@ -978,6 +985,7 @@ table.insert(requiredModules, "EnhancementService")
 table.insert(requiredModules, "EnhancementShopService")
 table.insert(requiredModules, "PotionService")
 table.insert(requiredModules, "TutorialService")
+table.insert(requiredModules, "RetentionService")
 table.insert(requiredModules, "HotbarService")
 table.insert(requiredModules, "RosterService")
 table.insert(requiredModules, "PartyService")
