@@ -97,6 +97,7 @@ function AdminToolsService:BindPeerServices(services)
     self._powerService = services.PowerService
     self._tutorialService = services.TutorialService
     self._enhancementService = services.EnhancementService
+    self._hotbarService = services.HotbarService
 end
 
 function AdminToolsService:_handleSpawnEnemy(adminPlayer, data)
@@ -655,12 +656,29 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     targetPlayer:SetAttribute("ExtraPetSlots", 0)
 
     -- 5b) Powers + enhancement slots + ORIGIN: full respec to a true new-player state (origin is
-    --     re-chosen at L5). Clears Powers/Slots/Hotbar/Archetype so the bar starts empty.
+    --     re-chosen at L5). Respec clears Powers/Slots/Hotbar/Archetype; the dedicated hotbar reset
+    --     below then restores the authored beginning utilities and publishes the fresh snapshot.
     local arche = self._archetypeService
     if arche and arche.Respec then
         pcall(function()
             arche:Respec(targetPlayer, nil)
         end)
+    end
+    local hotbarReset = self._hotbarService
+    if hotbarReset and hotbarReset.ResetToBeginning then
+        local ok, result = pcall(function()
+            return hotbarReset:ResetToBeginning(targetPlayer)
+        end)
+        if not ok or (type(result) == "table" and result.ok == false) then
+            self._logger:Warn("admin beginning reset could not restore hotbar", {
+                target = targetPlayer.Name,
+                err = not ok and tostring(result) or tostring(result and result.reason),
+            })
+        end
+    else
+        self._logger:Warn("admin beginning reset missing HotbarService", {
+            target = targetPlayer.Name,
+        })
     end
     -- 5c) Clear the always-on PASSIVE buff attributes (Magnet/Swift/Hasten/XP) — respec wipes the
     --     owned powers but those buffs live on player ATTRIBUTES; ReapplyPassives clears + re-stamps
@@ -743,7 +761,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         kind = "reset_to_beginning",
         success = true,
         message = string.format(
-            "Reset %s — kept %d huge [%s], deleted %d; currencies/zones/level/XP/slots/powers/origin reset",
+            "Reset %s — kept %d huge [%s], deleted %d; currencies/zones/level/XP/slots/powers/origin/hotbar reset",
             targetPlayer.Name,
             #kept,
             table.concat(kept, ", "),

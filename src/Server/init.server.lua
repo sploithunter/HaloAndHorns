@@ -841,6 +841,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 PowerService = modules:Get("PowerService"),
                 TutorialService = modules:Get("TutorialService"),
                 EnhancementService = modules:Get("EnhancementService"),
+                HotbarService = modules:Get("HotbarService"),
             })
         end
         modules:Get("PowerService"):BindPeerServices({

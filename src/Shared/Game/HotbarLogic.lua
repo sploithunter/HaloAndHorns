@@ -8,6 +8,7 @@
       isValidSlot(index, config)                       -> boolean
       isValidBindType(bindType, config)                -> boolean
       defaultBindings(availablePowers, config)         -> { [index] = bind }
+      beginningBindings(config)                        -> { [index] = bind }
       canRebind(index, bind, config)                   -> { ok, reason? }  (nil bind clears)
       bindAt(hotbar, index)                            -> bind or nil
       ensureBindAt(hotbar, index, bind, config)        -> { ok, changed, movedFrom?, movedTo? }
@@ -66,6 +67,25 @@ function HotbarLogic.defaultBindings(availablePowers, config)
         local command = config.tactical_commands and config.tactical_commands[i]
         if command then
             bindings[slot] = { type = "tactical", target = command }
+        end
+    end
+    return bindings
+end
+
+-- Authored origin-free beginning layout. This is deliberately separate from defaultBindings:
+-- reset/new-player state has no archetype yet, while tutorial utilities such as Rally still belong
+-- on the bar. Invalid config rows are ignored so a typo cannot create an unusable persisted bind.
+function HotbarLogic.beginningBindings(config)
+    local bindings = {}
+    for _, bind in ipairs((config and config.beginning_binds) or {}) do
+        if
+            type(bind) == "table"
+            and HotbarLogic.isValidSlot(bind.slot, config)
+            and HotbarLogic.isValidBindType(bind.type, config)
+            and type(bind.target) == "string"
+            and bind.target ~= ""
+        then
+            bindings[tonumber(bind.slot)] = { type = bind.type, target = bind.target }
         end
     end
     return bindings

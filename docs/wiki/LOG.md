@@ -1182,3 +1182,18 @@ snapshot is pushed immediately so the tutorial cannot point at an empty slot 11.
 now uses the shared area-themed panel chrome and a two-pane select/preview/assign flow; power and
 potion descriptions come from their existing config-derived SSOT, while tactical command
 descriptions live in `configs/hotbar.lua`, making the same details available to mouse and touch.
+
+## 2026-07-19 — Reset-to-beginning restores the authored hotbar
+
+The admin `Reset to Beginning` path now resets the power bar through
+`HotbarService:ResetToBeginning`: it replaces stale/custom bindings with
+`configs/hotbar.lua` `beginning_binds`, resets the one-time initialization state, saves, and pushes
+the fresh snapshot immediately. The beginning layout is headless-tested and currently contains only
+Rally at slot 11; origin powers remain absent until normal progression grants/binds them.
+
+## 2026-07-19 — Hotbar assignment is direct and tooltip-driven
+
+Replaced the two-pane select/preview/assign picker with the compact single-list layout. A row now
+binds only when that exact row is clicked; hovering cannot silently change a pending selection.
+Picker rows reuse the existing config-derived hotbar tooltip for power, tactical, and potion details,
+so the separate preview pane and distant confirmation button are no longer needed.

@@ -165,8 +165,7 @@ local function deriveType(powerId)
     return tgt and (tgt .. " " .. cat) or cat
 end
 
--- One description path powers both the normal hover tooltip and the edit picker's always-visible
--- preview. Mouse users can hover; touch users can tap a row and read it before assigning.
+-- One description path powers both normal hotbar-slot tooltips and assignment-row tooltips.
 local function describeBind(bind)
     if bind == nil then
         return {
@@ -479,7 +478,9 @@ function HotbarBar.start()
     tip.BackgroundTransparency = 0.05
     tip.BorderSizePixel = 0
     tip.Visible = false
-    tip.ZIndex = 40
+    -- The same tooltip is also used by the edit picker, whose panel chrome starts at ZIndex 100.
+    -- Keep it above both surfaces instead of maintaining a second picker-only description widget.
+    tip.ZIndex = 140
     tip.Parent = gui
     do
         local c = Instance.new("UICorner")
@@ -509,7 +510,7 @@ function HotbarBar.start()
     tipName.TextXAlignment = Enum.TextXAlignment.Left
     tipName.TextColor3 = Color3.fromRGB(245, 245, 255)
     tipName.Text = ""
-    tipName.ZIndex = 41
+    tipName.ZIndex = 141
     tipName.Parent = tip
     local tipType = Instance.new("TextLabel")
     tipType.LayoutOrder = 2
@@ -520,7 +521,7 @@ function HotbarBar.start()
     tipType.TextXAlignment = Enum.TextXAlignment.Left
     tipType.TextColor3 = Color3.fromRGB(150, 156, 175)
     tipType.Text = ""
-    tipType.ZIndex = 41
+    tipType.ZIndex = 141
     tipType.Parent = tip
     local tipDesc = Instance.new("TextLabel")
     tipDesc.LayoutOrder = 3
@@ -534,13 +535,12 @@ function HotbarBar.start()
     tipDesc.TextYAlignment = Enum.TextYAlignment.Top
     tipDesc.TextColor3 = Color3.fromRGB(205, 210, 225)
     tipDesc.Text = ""
-    tipDesc.ZIndex = 41
+    tipDesc.ZIndex = 141
     tipDesc.Parent = tip
 
     local hoverToken = 0 -- bumped on enter/leave so a stale delayed show is ignored
-    local function showTip(card)
-        local bind = card and card.bindObj
-        if not bind then
+    local function showBindTip(bind, source, pickerPlacement)
+        if bind == nil and not pickerPlacement then
             return
         end
         local detail = describeBind(bind)
@@ -550,9 +550,29 @@ function HotbarBar.start()
         tipType.Text = detail.typeText or ""
         tipType.Visible = tipType.Text ~= ""
         tipDesc.Text = detail.description or "(no description)"
-        local ap = card.frame.AbsolutePosition
-        tip.Position = UDim2.fromOffset(math.floor(ap.X), math.floor(ap.Y) - 6)
+        local ap = source.AbsolutePosition
+        if pickerPlacement then
+            local sourceRight = ap.X + source.AbsoluteSize.X
+            local tipWidth = tip.AbsoluteSize.X > 0 and tip.AbsoluteSize.X or 236
+            local camera = workspace.CurrentCamera
+            local screenWidth = camera and camera.ViewportSize.X or 1920
+            local x = sourceRight + 8
+            if x + tipWidth > screenWidth - 8 then
+                x = math.max(8, ap.X - tipWidth - 8)
+            end
+            tip.AnchorPoint = Vector2.new(0, 0)
+            tip.Position = UDim2.fromOffset(math.floor(x), math.floor(ap.Y))
+        else
+            tip.AnchorPoint = Vector2.new(0, 1)
+            tip.Position = UDim2.fromOffset(math.floor(ap.X), math.floor(ap.Y) - 6)
+        end
         tip.Visible = true
+    end
+    local function showTip(card)
+        local bind = card and card.bindObj
+        if bind and card.frame then
+            showBindTip(bind, card.frame, false)
+        end
     end
     local function hideTip()
         tip.Visible = false
@@ -1039,15 +1059,17 @@ function HotbarBar.start()
 
     local pickerFrame
     local function closePicker()
+        hoverToken += 1
+        hideTip()
         if pickerFrame then
             pickerFrame:Destroy()
             pickerFrame = nil
         end
     end
 
-    -- House-styled assignment picker. The left side selects an action; the right side is an
-    -- always-visible description + explicit Assign button. This is intentionally two-stage:
-    -- mouse users can hover to preview and touch users can tap to preview before committing.
+    -- Compact assignment picker: click the exact row to bind it. Full details use the same delayed
+    -- hover tooltip as the hotbar itself, eliminating the old select-row -> travel-to-Assign flow
+    -- where merely crossing another row could silently change what the button would bind.
     openPicker = function(slot)
         closePicker()
         -- The player clicked a slot — the "pick a slot" arrow has done its job; clear it so it doesn't
@@ -1059,7 +1081,7 @@ function HotbarBar.start()
         local shell = PanelChrome.build(gui, {
             name = "Picker",
             title = "Assign slot " .. slot,
-            size = UDim2.fromOffset(520, 330),
+            size = UDim2.fromOffset(300, 330),
             onClose = closePicker,
         })
         local p = shell.frame
@@ -1070,7 +1092,7 @@ function HotbarBar.start()
         local listFrame = Instance.new("ScrollingFrame")
         listFrame.Name = "Choices"
         listFrame.Position = UDim2.fromOffset(15, 45)
-        listFrame.Size = UDim2.fromOffset(220, 268)
+        listFrame.Size = UDim2.fromOffset(270, 268)
         listFrame.BackgroundTransparency = 1
         listFrame.BorderSizePixel = 0
         listFrame.ScrollBarThickness = 6
@@ -1083,110 +1105,7 @@ function HotbarBar.start()
         layout.Padding = UDim.new(0, 5)
         layout.Parent = listFrame
 
-        local divider = Instance.new("Frame")
-        divider.Name = "Divider"
-        divider.Position = UDim2.fromOffset(246, 48)
-        divider.Size = UDim2.fromOffset(1, 260)
-        divider.BackgroundColor3 = Color3.fromRGB(84, 88, 106)
-        divider.BackgroundTransparency = 0.35
-        divider.BorderSizePixel = 0
-        divider.ZIndex = 102
-        divider.Parent = p
-
-        local detailPane = Instance.new("Frame")
-        detailPane.Name = "Preview"
-        detailPane.Position = UDim2.fromOffset(258, 45)
-        detailPane.Size = UDim2.fromOffset(247, 268)
-        detailPane.BackgroundColor3 = Color3.fromRGB(34, 36, 46)
-        detailPane.BackgroundTransparency = 0.1
-        detailPane.BorderSizePixel = 0
-        detailPane.ZIndex = 102
-        detailPane.Parent = p
-        local detailCorner = Instance.new("UICorner")
-        detailCorner.CornerRadius = UDim.new(0, 14)
-        detailCorner.Parent = detailPane
-        PanelChrome.pillBorder(detailPane, shell.areaKey, 103, 0, 0.09)
-
-        local iconHolder = Instance.new("Frame")
-        iconHolder.Name = "Icon"
-        iconHolder.Position = UDim2.fromOffset(12, 12)
-        iconHolder.Size = UDim2.fromOffset(62, 62)
-        iconHolder.BackgroundColor3 = Color3.fromRGB(22, 24, 32)
-        iconHolder.BackgroundTransparency = 0.15
-        iconHolder.BorderSizePixel = 0
-        iconHolder.ZIndex = 105
-        iconHolder.Parent = detailPane
-        local iconCorner = Instance.new("UICorner")
-        iconCorner.CornerRadius = UDim.new(1, 0)
-        iconCorner.Parent = iconHolder
-
-        local detailName = Instance.new("TextLabel")
-        detailName.Name = "Name"
-        detailName.Position = UDim2.fromOffset(84, 14)
-        detailName.Size = UDim2.fromOffset(150, 25)
-        detailName.BackgroundTransparency = 1
-        detailName.Font = Enum.Font.GothamBold
-        detailName.TextSize = 18
-        detailName.TextWrapped = true
-        detailName.TextXAlignment = Enum.TextXAlignment.Left
-        detailName.TextColor3 = Color3.fromRGB(245, 245, 255)
-        detailName.Text = "Choose an action"
-        detailName.ZIndex = 105
-        detailName.Parent = detailPane
-
-        local detailType = Instance.new("TextLabel")
-        detailType.Name = "Type"
-        detailType.Position = UDim2.fromOffset(84, 43)
-        detailType.Size = UDim2.fromOffset(150, 28)
-        detailType.BackgroundTransparency = 1
-        detailType.Font = Enum.Font.GothamMedium
-        detailType.TextSize = 11
-        detailType.TextWrapped = true
-        detailType.TextXAlignment = Enum.TextXAlignment.Left
-        detailType.TextYAlignment = Enum.TextYAlignment.Top
-        detailType.TextColor3 = Color3.fromRGB(160, 166, 186)
-        detailType.Text = "Preview"
-        detailType.ZIndex = 105
-        detailType.Parent = detailPane
-
-        local detailDesc = Instance.new("TextLabel")
-        detailDesc.Name = "Description"
-        detailDesc.Position = UDim2.fromOffset(12, 86)
-        detailDesc.Size = UDim2.fromOffset(223, 116)
-        detailDesc.BackgroundTransparency = 1
-        detailDesc.Font = Enum.Font.Gotham
-        detailDesc.TextSize = 13
-        detailDesc.TextWrapped = true
-        detailDesc.TextXAlignment = Enum.TextXAlignment.Left
-        detailDesc.TextYAlignment = Enum.TextYAlignment.Top
-        detailDesc.TextColor3 = Color3.fromRGB(215, 219, 233)
-        detailDesc.Text = "Select a power or command to see what it does."
-        detailDesc.ZIndex = 105
-        detailDesc.Parent = detailPane
-
-        local assignBtn = Instance.new("TextButton")
-        assignBtn.Name = "Assign"
-        assignBtn.AnchorPoint = Vector2.new(0.5, 1)
-        assignBtn.Position = UDim2.new(0.5, 0, 1, -12)
-        assignBtn.Size = UDim2.fromOffset(213, 42)
-        assignBtn.BackgroundColor3 = shell.areaColor
-        assignBtn.BorderSizePixel = 0
-        assignBtn.AutoButtonColor = false
-        assignBtn.Font = Enum.Font.GothamBold
-        assignBtn.TextSize = 14
-        assignBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        assignBtn.Text = "Choose an action"
-        assignBtn.ZIndex = 106
-        assignBtn.Parent = detailPane
-        local assignCorner = Instance.new("UICorner")
-        assignCorner.CornerRadius = UDim.new(1, 0)
-        assignCorner.Parent = assignBtn
-        PanelChrome.pillBorder(assignBtn, shell.areaKey, 107, 0, 0.18)
-
         local order = 0
-        local selectedBind
-        local selectedSet = false
-        local selectedRow
         local currentBind = lastHotbarState
             and lastHotbarState.hotbar
             and (lastHotbarState.hotbar[tostring(slot)] or lastHotbarState.hotbar[slot])
@@ -1195,72 +1114,6 @@ function HotbarBar.start()
                 and type(b) == "table"
                 and a.type == b.type
                 and a.target == b.target
-        end
-
-        local function drawPreviewBadge(detail, bind)
-            for _, child in ipairs(iconHolder:GetChildren()) do
-                if not child:IsA("UICorner") then
-                    child:Destroy()
-                end
-            end
-            if detail.badge then
-                if bind and bind.type == "tactical" then
-                    local disc = Instance.new("ImageLabel")
-                    disc.BackgroundTransparency = 1
-                    disc.Size = UDim2.fromScale(0.9, 0.9)
-                    disc.Position = UDim2.fromScale(0.5, 0.5)
-                    disc.AnchorPoint = Vector2.new(0.5, 0.5)
-                    disc.ScaleType = Enum.ScaleType.Fit
-                    disc.Image = POWER_ICONS.discFor(detail.badge.element, detail.badge.symbol)
-                        or ""
-                    disc.ZIndex = 108
-                    disc.Parent = iconHolder
-                else
-                    PetBadge.create(iconHolder, {
-                        element = detail.badge.element,
-                        symbol = detail.badge.symbol,
-                        ring = detail.badge.ring,
-                        zIndex = 108,
-                    })
-                end
-            else
-                local glyph = Instance.new("TextLabel")
-                glyph.BackgroundTransparency = 1
-                glyph.Size = UDim2.fromScale(1, 1)
-                glyph.Font = Enum.Font.GothamBlack
-                glyph.TextScaled = true
-                glyph.TextColor3 = detail.color
-                glyph.Text = bind == nil and "×" or string.upper(string.sub(detail.name, 1, 1))
-                glyph.ZIndex = 108
-                glyph.Parent = iconHolder
-            end
-        end
-
-        local function selectCandidate(bind, row)
-            if selectedRow and selectedRow.Parent then
-                selectedRow.BackgroundColor3 = Color3.fromRGB(42, 44, 55)
-                local oldStroke = selectedRow:FindFirstChild("SelectionStroke")
-                if oldStroke then
-                    oldStroke.Transparency = 0.75
-                end
-            end
-            selectedBind = bind
-            selectedSet = true
-            selectedRow = row
-            local detail = describeBind(bind)
-            row.BackgroundColor3 = Color3.fromRGB(54, 57, 70)
-            local stroke = row:FindFirstChild("SelectionStroke")
-            if stroke then
-                stroke.Color = detail.color
-                stroke.Transparency = 0
-            end
-            detailName.Text = detail.name
-            detailName.TextColor3 = detail.color
-            detailType.Text = detail.typeText or ""
-            detailDesc.Text = detail.description or "(no description)"
-            assignBtn.Text = bind == nil and ("Clear slot " .. slot) or ("Assign to slot " .. slot)
-            assignBtn.BackgroundColor3 = detail.color:Lerp(Color3.fromRGB(25, 27, 35), 0.28)
-            drawPreviewBadge(detail, bind)
         end
 
         local function header(text)
@@ -1334,17 +1187,25 @@ function HotbarBar.start()
             selectionStroke.Name = "SelectionStroke"
             selectionStroke.Color = detail.color
             selectionStroke.Thickness = 2
-            selectionStroke.Transparency = 0.75
+            selectionStroke.Transparency = bindMatches(currentBind, bind) and 0 or 0.75
             selectionStroke.Parent = e
             e.MouseButton1Click:Connect(function()
-                selectCandidate(bind, e)
+                Signals.Hotbar_Rebind:FireServer({ slot = slot, bind = bind })
+                closePicker()
             end)
             e.MouseEnter:Connect(function()
-                selectCandidate(bind, e)
+                hoverToken += 1
+                local mine = hoverToken
+                task.delay(HOVER_DELAY, function()
+                    if hoverToken == mine and e.Parent then
+                        showBindTip(bind, e, true)
+                    end
+                end)
             end)
-            if (currentBind and bindMatches(currentBind, bind)) or not selectedSet then
-                selectCandidate(bind, e)
-            end
+            e.MouseLeave:Connect(function()
+                hoverToken += 1
+                hideTip()
+            end)
             return e
         end
 
@@ -1417,14 +1278,6 @@ function HotbarBar.start()
         end
         header("Slot")
         entry(nil)
-
-        assignBtn.MouseButton1Click:Connect(function()
-            if not selectedSet then
-                return
-            end
-            Signals.Hotbar_Rebind:FireServer({ slot = slot, bind = selectedBind })
-            closePicker()
-        end)
     end
 
     -- EDIT MODE must SCREAM (Jason fell in the trap himself: forgot to press Done,
