@@ -94,6 +94,7 @@ local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 -- server so the displayed power matches the power that mines/fights.
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
 local InventoryCategories = require(ReplicatedStorage.Shared.Game.InventoryCategories) -- pure tab visibility (specced)
+local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local PetBadge = require(script.Parent.Parent.PetBadge)
 -- Two-number card display (⛏ mining / ⚔ combat) — assembles the PetPower profile from config.
@@ -1706,27 +1707,43 @@ end
 -- slot-less "stack|<stackKey>" that _draftRefForItem produces. Strip the slot so the seed matches the
 -- rendered cards (otherwise the strip shows phantom-empty and the cap locks the panel).
 function InventoryPanel:_normalizeEquippedRef(value)
-    if type(value) ~= "string" then
-        return nil
-    end
-    if string.sub(value, 1, 6) == "stack|" then
-        return (string.gsub(value, "|%d+$", ""))
-    end
-    return value
+    return InventoryDraftView.normalizeRef(value)
 end
 
 -- The area-insensitive identity of a stack ref: "stack|pet:enchant:area" -> "pet:enchant". Lets a
 -- deployed pet match its inventory card even when the Equipped value's area segment has drifted.
 function InventoryPanel:_stackPrefix(ref)
-    if type(ref) ~= "string" or string.sub(ref, 1, 6) ~= "stack|" then
-        return nil
+    return InventoryDraftView.stackPrefix(ref)
+end
+
+-- Snapshot the live deployed refs in slot order. The replicated stack Quantity excludes these pets,
+-- so the draft grid overlays them to reconstruct total ownership while the player edits locally.
+function InventoryPanel:_deployedPetRefs()
+    local refs = {}
+    local player = self.player or Players.LocalPlayer
+    local equipped = player and player:FindFirstChild("Equipped")
+    local pets = equipped and equipped:FindFirstChild("pets")
+    if not pets then
+        return refs
     end
-    local key = string.sub(ref, 7)
-    local a, b = string.match(key, "^([^:]*):([^:]*)")
-    if a and a ~= "" and b then
-        return a .. ":" .. b
+
+    local bySlot = {}
+    for _, value in ipairs(pets:GetChildren()) do
+        if value:IsA("StringValue") and value.Value ~= "" then
+            local slot = tonumber(string.match(value.Name, "slot_(%d+)"))
+            local ref = self:_normalizeEquippedRef(value.Value)
+            if slot and ref then
+                table.insert(bySlot, { slot = slot, ref = ref })
+            end
+        end
     end
-    return nil
+    table.sort(bySlot, function(a, b)
+        return a.slot < b.slot
+    end)
+    for _, entry in ipairs(bySlot) do
+        table.insert(refs, entry.ref)
+    end
+    return refs
 end
 
 -- Cached display data for a deployed stack ref, EVEN at quantity 0. A fully-deployed stack (every copy
@@ -2917,6 +2934,9 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                         color = getRarityColor(rarityId, variant, pdata),
                         category = "Pets",
                         count = qtyValue.Value,
+                        -- Stable server projection object. Its live Value wins over the cached count
+                        -- if equip settles before the panel's refresh listener attaches.
+                        _quantityValue = qtyValue,
                         power = power,
                         -- zone-aware SORT key = the displayed number (full profile chain)
                         zonePower = displaySortPower(power, petType, variant),
@@ -4162,9 +4182,30 @@ function InventoryPanel:_updateItemsDisplay()
     -- Get current category folders for filtering
     local categoryFolders = self:_getCategoryFolders(self.selectedCategory)
 
+    -- inventoryData intentionally excludes server-projected qty-0 stacks. Merge the cache back into
+    -- the candidate catalog so a fully deployed one-pet stack has a card available the instant it is
+    -- removed from the working draft. The availability pass below still suppresses it while drafted.
+    local candidateItems = table.clone(self.inventoryData)
+    local candidateStackRefs = {}
+    for _, item in ipairs(candidateItems) do
+        local ref = self:_draftRefForItem(item)
+        if type(ref) == "string" and string.sub(ref, 1, 6) == "stack|" then
+            candidateStackRefs[ref] = true
+        end
+    end
+    for _, item in pairs(self._stackDataByKey or {}) do
+        local ref = self:_draftRefForItem(item)
+        if ref and not candidateStackRefs[ref] then
+            candidateStackRefs[ref] = true
+            table.insert(candidateItems, item)
+        end
+    end
+
+    local deployedRefs = self:_deployedPetRefs()
+
     -- Filter items
     local filteredItems = {}
-    for _, item in ipairs(self.inventoryData) do
+    for _, item in ipairs(candidateItems) do
         local isStackItem = typeof(item.id) == "string" and string.sub(item.id, 1, 6) == "stack|"
         local matchesCategory =
             self:_itemMatchesCategory(item, self.selectedCategory, categoryFolders)
@@ -4200,32 +4241,34 @@ function InventoryPanel:_updateItemsDisplay()
             isEquipped = false -- in team mode the strip shows the DRAFT (rendered below), not live
         end
         local container = isEquipped and self.equippedGrid or self.inventoryGrid
-        -- In draft mode, an inventory stack shows REMAINING availability (owned − drafted) so you can
-        -- see how many of a common you can still field. Clone for display, but stamp _ownedTotal so the
-        -- add-cap still uses the true owned count.
+        -- Replicated Quantity is UNEQUIPPED, not total ownership. Reconstruct the stable total as
+        -- unequipped + live deployed, then subtract the WORKING draft. This makes a fully deployed
+        -- one-pet stack return immediately when its draft card is clicked, and avoids subtracting
+        -- already-deployed copies twice for larger stacks.
         local renderItem = item
         if teamMode and item.folder_source == "pets" then
             local ref = self:_draftRefForItem(item)
             if ref and string.sub(ref, 1, 6) == "stack|" then
-                local owned = tonumber(item.count) or tonumber(item.quantity) or 0
-                local drafted = 0
-                for _, v in ipairs(draftRefs or {}) do
-                    if v == ref then
-                        drafted += 1
-                    end
+                local liveQuantity = item._quantityValue
+                    and item._quantityValue.Parent
+                    and item._quantityValue.Value
+                local counts = InventoryDraftView.stackCounts(
+                    InventoryDraftView.unequippedCount(
+                        tonumber(item.count) or tonumber(item.quantity) or 0,
+                        liveQuantity
+                    ),
+                    ref,
+                    deployedRefs,
+                    draftRefs
+                )
+                if counts.available <= 0 then
+                    -- The whole stack is in the working draft: do not show a phantom extra card.
+                    continue
                 end
-                if drafted > 0 then
-                    local remaining = math.max(0, owned - drafted)
-                    if remaining <= 0 then
-                        -- The whole stack is in the draft: drop it from inventory so it isn't a
-                        -- phantom "+1" card that looks like another copy you can still add.
-                        continue
-                    end
-                    renderItem = table.clone(item)
-                    renderItem._ownedTotal = owned
-                    renderItem.count = remaining
-                    renderItem.quantity = remaining
-                end
+                renderItem = table.clone(item)
+                renderItem._ownedTotal = counts.owned
+                renderItem.count = counts.available
+                renderItem.quantity = counts.available
             elseif ref then
                 -- A unique is one-of: if it's in the draft it's fully deployed, so drop it from the
                 -- inventory grid (else the deployed unique shows in BOTH the strip and inventory and

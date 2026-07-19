@@ -1144,3 +1144,41 @@ migration is needed for the abandoned "element splits stacks" spec.
 - **2026-07-14 — Batched squad pet-XP projection.** Per-breakable pet XP now preserves the per-contributor mining/modifier calculation but batches each player's equipped unique squad into one targeted projection update and one debounced save request. Pet projection reconciliation retains unchanged Instances, progression/enchant paths update exact record keys instead of tearing down every inventory card, and client slot-change bursts coalesce into one deferred inventory render.
 - **2026-07-14 — Contextual pet-power sorting.** Inventory pet cards still perform an intentional full refresh/re-sort when effective power context changes. Biome (`CurrentArea`) and realm (`CurrentRealm`) transitions now share one deferred refresh boundary, preventing paired portal attribute updates from causing duplicate renders while ensuring Heaven/Hell and mission resonance changes cannot leave the power order stale.
 - **2026-07-14 — XP projections no longer redraw the inventory.** Pet projection transactions now publish a separate `RenderVersion`: ordinary XP progress continues to replicate and advance the diagnostic `ProjectionVersion`, but it does not destroy/recreate the open inventory grid. A level/power change or permanent-enchant reveal still emits one render event and re-sorts, preserving power-order correctness.
+
+## 2026-07-18 — Tutorial potion hotbar repair + retention funnel
+
+- Fixed tutorial potion grants persisting slot 20 without refreshing the client's hotbar snapshot.
+  Potion auto-binding now resolves through headless-tested pure logic and pushes the authoritative
+  bar immediately, so the granted Berserk Brews appear and are usable at tutorial step 6.
+- Added first-session retention measurement: native Roblox onboarding funnel steps for join, every
+  tutorial objective, first quest, First Steps completion, and first area unlock; one custom
+  milestone event for Explore breakdowns; and compact per-player timestamps for every quest/area
+  milestone under `Analytics.Retention`. `retention.get` exposes the live player snapshot.
+- Expanded launch capture into the single `RetentionEvents_v1` DataStore: every semantic game
+  event, session-boundary progression snapshots, whitelisted client context, partitioned chunk
+  writes, and a read-only Open Cloud JSONL/CSV exporter.
+- Added mergeable daily server-sharded launch counters and exporter summaries for average completed
+  session time, tutorial step reach/conversion/timing/exit point, and earned/claimed-level exit
+  distributions. Raw events remain available for recomputation and distributional analysis.
+- Fixed the mobile currency HUD after portrait/landscape rotation. `CurrencyStack` now reflows from
+  settled `MainContainer` and menu absolute-geometry changes (and camera replacement), avoiding the
+  stale portrait Y-coordinate that could place the money stack below the landscape viewport.
+
+## 2026-07-19 — Squad-draft stacked-pet UI repair
+
+Fixed squad-draft stack reconciliation in `InventoryPanel`: replicated pet stack
+`Quantity` is unequipped-only, so the UI now derives total ownership from unequipped + live deployed
+and subtracts the working draft. Fully deployed single-copy pets immediately return to the inventory
+grid when removed, larger stacks no longer double-subtract deployed copies, and the renderer reads
+the stable live Quantity object so a pre-projection card cache cannot stage a phantom extra copy.
+Added pure headless coverage in `InventoryDraftView`.
+
+## 2026-07-19 — Tutorial Rally repair + descriptive hotbar editor
+
+The Rally flag is now an explicit idempotent grant on entry to the tutorial's `rally_call` step,
+rather than relying on a one-time profile seed. Reconnect/state-pull reapplies an unfinished step's
+grant, `HotbarLogic.ensureBindAt` preserves any displaced binding, and the authoritative hotbar
+snapshot is pushed immediately so the tutorial cannot point at an empty slot 11. The hotbar picker
+now uses the shared area-themed panel chrome and a two-pane select/preview/assign flow; power and
+potion descriptions come from their existing config-derived SSOT, while tactical command
+descriptions live in `configs/hotbar.lua`, making the same details available to mouse and touch.

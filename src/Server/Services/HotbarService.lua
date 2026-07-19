@@ -263,6 +263,24 @@ function HotbarService:Rebind(player, index, bind)
     return { ok = true, hotbar = hotbar }
 end
 
+-- Authoritative placement for authored progression/tutorial binds. Unlike a normal player rebind,
+-- this preserves a displaced slot when possible and immediately publishes the repaired snapshot.
+-- The pure placement rule makes repeat calls harmless, so reconnecting on a grant step is safe.
+function HotbarService:EnsureBindAt(player, index, bind, reason)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    local hotbar = self:_ensureDefaults(data)
+    local result = HotbarLogic.ensureBindAt(hotbar, index, bind, self._config)
+    if not result.ok or not result.changed then
+        return result
+    end
+    self._dataService:RequestSave(player, reason or "hotbar_ensure_bind", { critical = true })
+    self:_pushState(player)
+    return result
+end
+
 -- POTIONS FILL FROM THE TOP RIGHT (Jason: "powers fill from the bottom left,
 -- potions fill from the top right — they could use them immediately"): when a
 -- potion is first acquired it auto-binds to the highest free TOP-ROW slot
@@ -272,23 +290,22 @@ end
 function HotbarService:AutoBindPotion(player, potionId)
     local data = self._dataService:GetData(player)
     if not data then
-        return
+        return { ok = false, reason = "data_not_loaded" }
     end
     local hotbar = self:_ensureDefaults(data)
-    local slotCount = (self._config and self._config.slot_count) or 20
-    for i = 1, slotCount do
-        local b = hotbar[tostring(i)]
-        if type(b) == "table" and b.type == "potion" and b.target == potionId then
-            return -- already on the bar
-        end
+    local slot = HotbarLogic.potionAutoBindSlot(hotbar, potionId, self._config)
+    if not slot then
+        return { ok = false, reason = "already_bound_or_top_row_full" }
     end
-    local rowFloor = math.floor(slotCount / 2) + 1 -- top row only (11..20)
-    for i = slotCount, rowFloor, -1 do
-        if hotbar[tostring(i)] == nil then
-            self:Rebind(player, i, { type = "potion", target = potionId })
-            return
-        end
+    local result = self:Rebind(player, slot, { type = "potion", target = potionId })
+    if not result.ok then
+        return result
     end
+    -- A tutorial/drop grant can arrive after the client's initial state pull.
+    -- PotionUpdate only refreshes counts against that last snapshot, so publish
+    -- the new binding here as part of the authoritative auto-bind transaction.
+    self:_pushState(player)
+    return { ok = true, slot = slot }
 end
 
 -- Fire the bind on a hotbar slot. `payload` is the slot index (1-20) or { slot = n }.
