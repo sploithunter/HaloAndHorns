@@ -7,6 +7,7 @@
 ]]
 
 local AnalyticsService = game:GetService("AnalyticsService")
+local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -17,6 +18,56 @@ local RetentionLogic = require(ReplicatedStorage.Shared.Game.RetentionLogic)
 
 local RetentionService = {}
 RetentionService.__index = RetentionService
+
+local function utcDate(timestamp)
+    return os.date("!%Y%m%d", timestamp)
+end
+
+local function countEntries(value)
+    local count = 0
+    for _ in pairs(type(value) == "table" and value or {}) do
+        count += 1
+    end
+    return count
+end
+
+local function inventoryCounts(inventory)
+    local counts = {}
+    for bucketName, bucket in pairs(type(inventory) == "table" and inventory or {}) do
+        if type(bucket) == "table" and type(bucket.items) == "table" then
+            counts[bucketName] = countEntries(bucket.items)
+        end
+    end
+    return counts
+end
+
+local function progressionSnapshot(data)
+    data = type(data) == "table" and data or {}
+    local stats = type(data.Stats) == "table" and data.Stats or {}
+    local gameData = type(data.GameData) == "table" and data.GameData or {}
+    local tutorial = type(data.Tutorial) == "table" and data.Tutorial or {}
+    return {
+        schemaVersion = data.SchemaVersion,
+        joinDate = data.JoinDate,
+        lastLogin = data.LastLogin,
+        level = stats.Level,
+        claimedLevel = stats.ClaimedLevel,
+        experience = stats.Experience,
+        counters = stats.Counters,
+        currencies = data.Currencies,
+        tutorial = {
+            step = tutorial.step,
+            count = tutorial.count,
+            done = tutorial.done == true,
+        },
+        questClaims = data.QuestClaims,
+        questActiveTrack = data.QuestActiveTrack,
+        unlockedAreas = gameData.UnlockedAreas,
+        unlocks = gameData.Unlocks,
+        inventoryCounts = inventoryCounts(data.Inventory),
+        equippedCount = countEntries(data.Equipped),
+    }
+end
 
 local function customFields(category, id)
     return {
@@ -31,6 +82,30 @@ function RetentionService:Init()
     self._dataService = self._modules and self._modules.DataService
     self._config = self._configLoader:LoadConfig("retention")
     self._sessionStarted = {}
+    self._sessionStartedAt = {}
+    self._rawSessions = {}
+    self._pendingClientContext = {}
+    self._rawFlushElapsed = 0
+    self._eventConfig = self._config.event_store or {}
+    self._rawStore = nil
+
+    if
+        self._eventConfig.enabled ~= false
+        and (not RunService:IsStudio() or self._eventConfig.write_in_studio == true)
+    then
+        local ok, storeOrError = pcall(function()
+            return DataStoreService:GetDataStore(self._eventConfig.name or "RetentionEvents_v1")
+        end)
+        if ok then
+            self._rawStore = storeOrError
+        elseif self._logger then
+            self._logger:Warn("Retention event store unavailable", {
+                context = "RetentionService",
+                store = self._eventConfig.name or "RetentionEvents_v1",
+                error = tostring(storeOrError),
+            })
+        end
+    end
 
     fireGameEvent.tap(function(player, name, ctx)
         self:_onGameEvent(player, name, ctx)
@@ -40,19 +115,208 @@ end
 function RetentionService:Start()
     local function begin(player)
         self._sessionStarted[player] = os.clock()
+        self._sessionStartedAt[player] = os.time()
         task.spawn(function()
             if Readiness.awaitAttribute(player, "DataLoaded", true, 20) and player.Parent then
+                self:_beginRawSession(player)
                 self:_recordEvent(player, "retention_joined", {})
             end
         end)
     end
     Players.PlayerAdded:Connect(begin)
     Players.PlayerRemoving:Connect(function(player)
+        self:_endRawSession(player, "player_removing")
         self._sessionStarted[player] = nil
+        self._sessionStartedAt[player] = nil
+        self._pendingClientContext[player] = nil
     end)
     for _, player in ipairs(Players:GetPlayers()) do
         begin(player)
     end
+
+    RunService.Heartbeat:Connect(function(deltaTime)
+        self._rawFlushElapsed += deltaTime
+        local interval = math.max(5, tonumber(self._eventConfig.flush_seconds) or 15)
+        if self._rawFlushElapsed < interval then
+            return
+        end
+        self._rawFlushElapsed = 0
+        for player in pairs(self._rawSessions) do
+            self:_scheduleRawFlush(player)
+        end
+    end)
+
+    game:BindToClose(function()
+        local activePlayers = {}
+        for player in pairs(self._rawSessions) do
+            table.insert(activePlayers, player)
+        end
+        for _, player in ipairs(activePlayers) do
+            self:_endRawSession(player, "server_shutdown")
+        end
+    end)
+end
+
+function RetentionService:_beginRawSession(player)
+    if self._rawSessions[player] or not self._rawStore then
+        return
+    end
+    local data = self._dataService:GetData(player)
+    if type(data) ~= "table" then
+        return
+    end
+    local startedAt = self._sessionStartedAt[player] or os.time()
+    local sessionNumber =
+        math.max(1, math.floor(tonumber(data.Analytics and data.Analytics.SessionCount) or 1))
+    local cohortDate = utcDate(startedAt)
+    self._rawSessions[player] = {
+        userId = player.UserId,
+        sessionNumber = sessionNumber,
+        startedAt = startedAt,
+        cohortDate = cohortDate,
+        keyPrefix = RetentionLogic.eventKeyPrefix(cohortDate, player.UserId, sessionNumber),
+        sequence = 0,
+        nextChunk = 1,
+        pending = {},
+        flushing = false,
+        closing = false,
+        server = {
+            jobId = game.JobId,
+            placeId = game.PlaceId,
+            universeId = game.GameId,
+            privateServer = game.PrivateServerId ~= "",
+        },
+    }
+    self:_appendRawEvent(player, "session_started", {
+        accountAgeDays = player.AccountAge,
+        membership = player.MembershipType.Name,
+        firstSession = sessionNumber == 1,
+        progression = progressionSnapshot(data),
+    })
+    if self._pendingClientContext[player] then
+        self:_appendRawEvent(player, "client_context", self._pendingClientContext[player])
+        self._pendingClientContext[player] = nil
+    end
+end
+
+function RetentionService:_appendRawEvent(player, name, context)
+    local session = self._rawSessions[player]
+    if not session or session.closing then
+        return
+    end
+    session.sequence += 1
+    table.insert(
+        session.pending,
+        RetentionLogic.rawEvent(
+            session.sequence,
+            name,
+            os.time(),
+            os.clock() - (self._sessionStarted[player] or os.clock()),
+            context,
+            self._eventConfig
+        )
+    )
+    local maxEvents = math.max(10, math.floor(tonumber(self._eventConfig.events_per_chunk) or 100))
+    if #session.pending >= maxEvents then
+        self:_scheduleRawFlush(player)
+    end
+end
+
+function RetentionService:_rawPayload(session, chunk, events)
+    return {
+        schemaVersion = math.max(1, math.floor(tonumber(self._eventConfig.schema_version) or 1)),
+        cohortDate = session.cohortDate,
+        userId = session.userId,
+        sessionNumber = session.sessionNumber,
+        sessionStartedAt = session.startedAt,
+        chunk = chunk,
+        server = session.server,
+        events = events,
+    }
+end
+
+function RetentionService:_restoreRawBatch(session, batch)
+    local restored = {}
+    for _, event in ipairs(batch) do
+        table.insert(restored, event)
+    end
+    for _, event in ipairs(session.pending) do
+        table.insert(restored, event)
+    end
+    session.pending = restored
+end
+
+function RetentionService:_flushRawSession(player)
+    local session = self._rawSessions[player]
+    if not session or session.flushing or #session.pending == 0 then
+        return
+    end
+    session.flushing = true
+    local maxEvents = math.max(10, math.floor(tonumber(self._eventConfig.events_per_chunk) or 100))
+
+    while #session.pending > 0 do
+        local batch = {}
+        local remaining = {}
+        for index, event in ipairs(session.pending) do
+            table.insert(index <= maxEvents and batch or remaining, event)
+        end
+        session.pending = remaining
+
+        local chunk = session.nextChunk
+        local key = RetentionLogic.eventChunkKey(session.keyPrefix, chunk)
+        local ok, err = pcall(function()
+            self._rawStore:SetAsync(
+                key,
+                self:_rawPayload(session, chunk, batch),
+                { session.userId }
+            )
+        end)
+        if not ok then
+            self:_restoreRawBatch(session, batch)
+            if self._logger then
+                self._logger:Warn("Retention event chunk save failed", {
+                    context = "RetentionService",
+                    key = key,
+                    events = #batch,
+                    error = tostring(err),
+                })
+            end
+            break
+        end
+        session.nextChunk += 1
+        if not session.closing then
+            break
+        end
+    end
+
+    session.flushing = false
+    if session.closing and #session.pending == 0 then
+        self._rawSessions[player] = nil
+    end
+end
+
+function RetentionService:_scheduleRawFlush(player)
+    local session = self._rawSessions[player]
+    if not session or session.flushing or #session.pending == 0 then
+        return
+    end
+    task.spawn(function()
+        self:_flushRawSession(player)
+    end)
+end
+
+function RetentionService:_endRawSession(player, reason)
+    local session = self._rawSessions[player]
+    if not session or session.closing then
+        return
+    end
+    local data = self._dataService:GetData(player)
+    self:_appendRawEvent(player, "session_ended", {
+        reason = reason,
+        progression = progressionSnapshot(data),
+    })
+    session.closing = true
+    self:_flushRawSession(player)
 end
 
 function RetentionService:_state(player)
@@ -138,6 +402,7 @@ function RetentionService:_recordEvent(player, name, ctx)
     if not (player and player.Parent) or not self._dataService:IsDataLoaded(player) then
         return
     end
+    self:_appendRawEvent(player, name, ctx)
     for _, step in ipairs(RetentionLogic.matchingSteps(self._config, name, ctx)) do
         self:_recordMilestone(player, step.id, "onboarding")
     end
@@ -153,6 +418,15 @@ function RetentionService:_onGameEvent(player, name, ctx)
     self:_recordEvent(player, name, ctx)
 end
 
+function RetentionService:SetClientContext(player, context)
+    if not self._rawSessions[player] then
+        self._pendingClientContext[player] = context
+        return { ok = true, queued = true }
+    end
+    self:_appendRawEvent(player, "client_context", context)
+    return { ok = true }
+end
+
 function RetentionService:GetSnapshot(player)
     local state, data = self:_state(player)
     if not state then
@@ -165,6 +439,14 @@ function RetentionService:GetSnapshot(player)
     snapshot.lastSessionDuration = data.Analytics.LastSessionDuration
     snapshot.joinDate = data.JoinDate
     snapshot.lastLogin = data.LastLogin
+    local rawSession = self._rawSessions[player]
+    snapshot.eventStore = {
+        enabled = self._rawStore ~= nil,
+        name = self._eventConfig.name or "RetentionEvents_v1",
+        keyPrefix = rawSession and rawSession.keyPrefix or nil,
+        pendingEvents = rawSession and #rawSession.pending or 0,
+        nextChunk = rawSession and rawSession.nextChunk or nil,
+    }
     return snapshot
 end
 

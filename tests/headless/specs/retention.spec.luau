@@ -25,6 +25,36 @@ return function()
     end)
 
     describe("RetentionLogic", function()
+        it("builds date-partitioned event chunk keys below the Roblox key limit", function()
+            local prefix = RetentionLogic.eventKeyPrefix("20260718", 123456789012345, 42)
+            local key = RetentionLogic.eventChunkKey(prefix, 7)
+            expect(key).to.equal("d20260718/u123456789012345/s42/c00007")
+            expect(#key <= 50).to.equal(true)
+        end)
+
+        it("sanitizes raw event context to DataStore-safe bounded values", function()
+            local cyclic = { keep = "abcdef", nan = 0 / 0, nested = { value = true } }
+            cyclic.self = cyclic
+            local event = RetentionLogic.rawEvent(2, "test", 100, 1.25, cyclic, {
+                max_string_length = 4,
+                max_context_depth = 3,
+                max_table_items = 10,
+            })
+            expect(event.sequence).to.equal(2)
+            expect(event.name).to.equal("test")
+            expect(event.context.keep).to.equal("abcd")
+            expect(event.context.nan).to.equal(nil)
+            expect(event.context.self).to.equal(nil)
+            expect(event.context.nested.value).to.equal(true)
+        end)
+
+        it("keeps sanitized arrays contiguous when an element cannot be stored", function()
+            local clean = RetentionLogic.sanitize({ "first", 0 / 0, "third" }, {})
+            expect(#clean).to.equal(2)
+            expect(clean[1]).to.equal("first")
+            expect(clean[2]).to.equal("third")
+        end)
+
         it(
             "decides first-session eligibility when a reconciled template is still undecided",
             function()

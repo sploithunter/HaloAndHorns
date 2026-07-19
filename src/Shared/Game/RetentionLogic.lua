@@ -8,6 +8,103 @@
 
 local RetentionLogic = {}
 
+local function finiteNumber(value)
+    return value == value and value ~= math.huge and value ~= -math.huge
+end
+
+local function arrayLength(value)
+    local count = 0
+    local maxIndex = 0
+    for key in pairs(value) do
+        if type(key) ~= "number" or key < 1 or key ~= math.floor(key) then
+            return nil
+        end
+        count += 1
+        maxIndex = math.max(maxIndex, key)
+    end
+    return count == maxIndex and count or nil
+end
+
+local function sanitized(value, limits, depth, seen)
+    local valueType = type(value)
+    if valueType == "nil" or valueType == "boolean" then
+        return value
+    elseif valueType == "number" then
+        return finiteNumber(value) and value or nil
+    elseif valueType == "string" then
+        local maxLength = math.max(1, math.floor(tonumber(limits.max_string_length) or 256))
+        return #value <= maxLength and value or string.sub(value, 1, maxLength)
+    elseif valueType ~= "table" then
+        return tostring(value)
+    end
+
+    local maxDepth = math.max(1, math.floor(tonumber(limits.max_context_depth) or 4))
+    if depth >= maxDepth or seen[value] then
+        return nil
+    end
+    seen[value] = true
+
+    local maxItems = math.max(1, math.floor(tonumber(limits.max_table_items) or 50))
+    local out = {}
+    local length = arrayLength(value)
+    if length then
+        for index = 1, math.min(length, maxItems) do
+            local clean = sanitized(value[index], limits, depth + 1, seen)
+            if clean ~= nil then
+                table.insert(out, clean)
+            end
+        end
+    else
+        local count = 0
+        for key, child in pairs(value) do
+            if count >= maxItems then
+                break
+            end
+            local keyType = type(key)
+            if keyType == "string" or keyType == "number" then
+                local clean = sanitized(child, limits, depth + 1, seen)
+                if clean ~= nil then
+                    out[tostring(key)] = clean
+                    count += 1
+                end
+            end
+        end
+    end
+    seen[value] = nil
+    return out
+end
+
+function RetentionLogic.sanitize(value, limits)
+    return sanitized(value, type(limits) == "table" and limits or {}, 0, {})
+end
+
+function RetentionLogic.eventKeyPrefix(cohortDate, userId, session)
+    local date = tostring(cohortDate or ""):gsub("[^%d]", "")
+    if #date ~= 8 then
+        date = "00000000"
+    end
+    return string.format(
+        "d%s/u%d/s%d",
+        date,
+        math.max(0, math.floor(tonumber(userId) or 0)),
+        math.max(1, math.floor(tonumber(session) or 1))
+    )
+end
+
+function RetentionLogic.eventChunkKey(prefix, chunk)
+    return string.format("%s/c%05d", prefix, math.max(1, math.floor(tonumber(chunk) or 1)))
+end
+
+function RetentionLogic.rawEvent(sequence, name, at, seconds, context, limits)
+    return {
+        sequence = math.max(1, math.floor(tonumber(sequence) or 1)),
+        name = tostring(name or "unknown"),
+        at = math.floor(tonumber(at) or 0),
+        seconds = math.max(0, tonumber(seconds) or 0),
+        context = RetentionLogic.sanitize(context, limits),
+    }
+end
+
 local function matches(step, eventName, ctx)
     if type(step) ~= "table" or step.event ~= eventName then
         return false

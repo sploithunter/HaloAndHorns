@@ -758,6 +758,45 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("retention.context", {
+        description = "Record a whitelisted client environment snapshot for retention analysis.",
+        validate = function(args)
+            return Validators.fields(args, {
+                deviceClass = "string",
+                locale = "string",
+                systemLocale = "string",
+                viewport = "table",
+                touch = "boolean",
+                keyboard = "boolean",
+                mouse = "boolean",
+                gamepad = "boolean",
+                vr = "boolean",
+                tenFoot = "boolean",
+            })
+        end,
+        handler = function(context, args)
+            local svc = self:_service("RetentionService")
+            if not svc then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return svc:SetClientContext(context.player, {
+                deviceClass = string.sub(args.deviceClass, 1, 20),
+                locale = string.sub(args.locale, 1, 20),
+                systemLocale = string.sub(args.systemLocale, 1, 20),
+                viewport = {
+                    width = math.clamp(math.floor(tonumber(args.viewport.width) or 0), 0, 20000),
+                    height = math.clamp(math.floor(tonumber(args.viewport.height) or 0), 0, 20000),
+                },
+                touch = args.touch,
+                keyboard = args.keyboard,
+                mouse = args.mouse,
+                gamepad = args.gamepad,
+                vr = args.vr,
+                tenFoot = args.tenFoot,
+            })
+        end,
+    })
+
     bus:register("enh.get", {
         description = "Enhancement inventory + per-power slotted view for the calling player.",
         handler = function(context)

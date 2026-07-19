@@ -1154,3 +1154,6 @@ migration is needed for the abandoned "element splits stacks" spec.
   tutorial objective, first quest, First Steps completion, and first area unlock; one custom
   milestone event for Explore breakdowns; and compact per-player timestamps for every quest/area
   milestone under `Analytics.Retention`. `retention.get` exposes the live player snapshot.
+- Expanded launch capture into the single `RetentionEvents_v1` DataStore: every semantic game
+  event, session-boundary progression snapshots, whitelisted client context, partitioned chunk
+  writes, and a read-only Open Cloud JSONL/CSV exporter.
