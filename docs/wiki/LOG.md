@@ -1197,3 +1197,10 @@ Replaced the two-pane select/preview/assign picker with the compact single-list 
 binds only when that exact row is clicked; hovering cannot silently change a pending selection.
 Picker rows reuse the existing config-derived hotbar tooltip for power, tactical, and potion details,
 so the separate preview pane and distant confirmation button are no longer needed.
+
+## 2026-07-19 — Crystal overhead bars tolerate missing PrimaryPart
+
+Imported ore models do not consistently define `PrimaryPart`. `BreakableSpawner` previously created
+health and Resonance boost billboards on a fallback mesh but later searched only `PrimaryPart` when
+updating them, leaving valid bars permanently disabled. Each spawned breakable now resolves one
+stable overhead host and uses it for creation, fill updates, visibility, and engagement distance.
