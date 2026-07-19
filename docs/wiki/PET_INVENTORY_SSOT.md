@@ -77,6 +77,12 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   intended replication layer, not legacy debt. The client renders these folders; equipped commons
   show as "ghost" cards from the equipped folder. `ResolvePetTarget` maps client identifiers back
   to a `{kind, uid|stackKey, slot?}` target.
+- **Squad-draft UI counts** must treat replicated `Quantity` as unequipped availability, not total
+  ownership. While editing locally, a stack card's total is `Quantity + live deployed copies`, and
+  its working-grid availability is that total minus working-draft copies. The client retains display
+  metadata for quantity-zero stacks and reads the stable `Quantity` value object live (not a possibly
+  pre-projection cached count), so removing the only deployed copy immediately returns its card to
+  the inventory grid before Activate commits the draft.
 
 ### Rebuild tiers (do NOT re-validate equip on every mutation)
 

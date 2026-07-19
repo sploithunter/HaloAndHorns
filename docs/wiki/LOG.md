@@ -1163,3 +1163,12 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Fixed the mobile currency HUD after portrait/landscape rotation. `CurrencyStack` now reflows from
   settled `MainContainer` and menu absolute-geometry changes (and camera replacement), avoiding the
   stale portrait Y-coordinate that could place the money stack below the landscape viewport.
+
+## 2026-07-19 — Squad-draft stacked-pet UI repair
+
+Fixed squad-draft stack reconciliation in `InventoryPanel`: replicated pet stack
+`Quantity` is unequipped-only, so the UI now derives total ownership from unequipped + live deployed
+and subtracts the working draft. Fully deployed single-copy pets immediately return to the inventory
+grid when removed, larger stacks no longer double-subtract deployed copies, and the renderer reads
+the stable live Quantity object so a pre-projection card cache cannot stage a phantom extra copy.
+Added pure headless coverage in `InventoryDraftView`.
