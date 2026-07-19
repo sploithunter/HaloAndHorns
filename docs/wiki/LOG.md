@@ -1157,3 +1157,6 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Expanded launch capture into the single `RetentionEvents_v1` DataStore: every semantic game
   event, session-boundary progression snapshots, whitelisted client context, partitioned chunk
   writes, and a read-only Open Cloud JSONL/CSV exporter.
+- Added mergeable daily server-sharded launch counters and exporter summaries for average completed
+  session time, tutorial step reach/conversion/timing/exit point, and earned/claimed-level exit
+  distributions. Raw events remain available for recomputation and distributional analysis.

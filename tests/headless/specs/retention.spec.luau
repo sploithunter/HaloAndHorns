@@ -55,6 +55,84 @@ return function()
             expect(clean[2]).to.equal("third")
         end)
 
+        it("aggregates new-player tutorial reach, timing, and exit counters once", function()
+            local counters = RetentionLogic.newAggregate()
+            local seen = {}
+            RetentionLogic.aggregateSessionStarted(counters, true)
+            RetentionLogic.aggregateEvent(
+                counters,
+                seen,
+                "tutorial_step_completed",
+                { stepId = "hatch_first_egg" },
+                12.5,
+                true
+            )
+            RetentionLogic.aggregateEvent(
+                counters,
+                seen,
+                "tutorial_step_completed",
+                { stepId = "hatch_first_egg" },
+                13,
+                true
+            )
+            RetentionLogic.aggregateSessionEnded(counters, {
+                durationSeconds = 90,
+                firstSession = true,
+                earnedLevel = 1,
+                claimedLevel = 1,
+                tutorialDone = false,
+                currentTutorialStep = "equip_pet",
+            })
+
+            expect(counters.newPlayers).to.equal(1)
+            expect(counters.tutorialSteps.hatch_first_egg.reached).to.equal(1)
+            expect(counters.tutorialSteps.hatch_first_egg.totalSecondsToReach).to.equal(12.5)
+            expect(counters.tutorialExitBefore.equip_pet).to.equal(1)
+            expect(counters.exitedBeforeEarnedLevel2).to.equal(1)
+            expect(counters.exitedBeforeClaimedLevel2).to.equal(1)
+            expect(counters.newPlayerTotalSessionSeconds).to.equal(90)
+        end)
+
+        it("separates any-session tutorial completions from first-session completions", function()
+            local counters = RetentionLogic.newAggregate()
+            RetentionLogic.aggregateEvent(counters, {}, "tutorial_complete", {}, 120, true)
+            RetentionLogic.aggregateEvent(counters, {}, "tutorial_complete", {}, 30, false)
+            expect(counters.tutorialCompleted).to.equal(2)
+            expect(counters.newPlayerTutorialCompleted).to.equal(1)
+        end)
+
+        it("keeps veteran sessions in general counters but out of the new-player funnel", function()
+            local counters = RetentionLogic.newAggregate()
+            local seen = {}
+            RetentionLogic.aggregateSessionStarted(counters, false)
+            RetentionLogic.aggregateEvent(
+                counters,
+                seen,
+                "tutorial_step_completed",
+                { stepId = "hatch_first_egg" },
+                2,
+                false
+            )
+            RetentionLogic.aggregateSessionEnded(counters, {
+                durationSeconds = 30,
+                firstSession = false,
+                earnedLevel = 10,
+                claimedLevel = 9,
+            })
+            expect(counters.sessionsStarted).to.equal(1)
+            expect(counters.sessionsEnded).to.equal(1)
+            expect(counters.totalSessionSeconds).to.equal(30)
+            expect(counters.newPlayers).to.equal(0)
+            expect(counters.tutorialSteps.hatch_first_egg).to.equal(nil)
+        end)
+
+        it("builds a bounded daily aggregate shard key", function()
+            local key =
+                RetentionLogic.aggregateKey("20260718", "12345678-1234-1234-1234-123456789012")
+            expect(key).to.equal("a20260718/j12345678123412341234123456789012")
+            expect(#key <= 50).to.equal(true)
+        end)
+
         it(
             "decides first-session eligibility when a reconciled template is still undecided",
             function()

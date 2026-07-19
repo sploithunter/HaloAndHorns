@@ -22,7 +22,9 @@ filtered out of production registries.
   [Retention Analytics](RETENTION_ANALYTICS.md).
 - The same observer archives every semantic bus event plus session boundary progression snapshots
   and whitelisted client context into the single `RetentionEvents_v1` store. Date/user/session/chunk
-  keys support Open Cloud prefix export without a global hot key.
+  keys support Open Cloud prefix export without a global hot key. Daily per-server `a<date>/j<job>`
+  shards pre-aggregate additive session, tutorial, quest, area, and level counters without
+  cross-server counter contention.
 - `StatsService` owns declared tracked counters and emits counter change signals.
 - `ModifierService` plus shared `ModifierPipeline` resolve derived values from pets, enchants, upgrades, boosts, events, rebirths, and gamepasses. Breakable rewards now route through this path, with active global events registered as a provider.
 - `EconomyService` owns currency mutation and passes source reasons into the ledger. Reward bundle

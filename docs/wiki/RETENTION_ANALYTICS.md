@@ -38,6 +38,28 @@ ordered events. Writes flush every 15 seconds, at 100 pending events, on player 
 server shutdown. Partitioning keeps the dataset in one inspectable store without putting every
 player behind one 4 MB key or one per-key write bottleneck.
 
+The same store contains mergeable daily counter shards:
+
+`aYYYYMMDD/j<serverJobId>`
+
+Each server owns its shard, so no live servers contend on one counter key. Shards count sessions,
+completed-session seconds, first-session players, tutorial step reach and total time-to-step,
+tutorial exits by active step, quest/area completions, level events, and earned/claimed level at
+exit. The raw events remain the source of truth for medians, quantiles, segmentation, and metric
+recomputation; shard sums provide an immediate launch readout.
+
+Canonical launch definitions:
+
+- Average completed session time = total ended-session seconds / ended sessions.
+- Tutorial completions = players firing the one-time completion event in any session.
+- New-player tutorial completion rate = first-session tutorial completions / first-session players.
+- Step reach rate = distinct first-session players completing a step / first-session players.
+- Step conversion = distinct players completing a step / distinct players completing its previous
+  step.
+- Tutorial exit step = the active tutorial objective when a first-session player left unfinished.
+- Pre-level-2 exit rate = first-session players leaving below earned (or claimed) level 2 /
+  first-session players whose session ended.
+
 For an immediate long-form export, create a read-only Open Cloud key with list/read access, then:
 
 ```bash
@@ -49,8 +71,9 @@ python3 tools/export_retention.py \
 ```
 
 The exporter writes lossless `chunks.jsonl`, event-grain `events.jsonl`, analyst-friendly
-`events.csv`, and a count manifest. The key is read only from the environment and is never written
-to an output file.
+`events.csv`, raw `aggregates.jsonl`, `summary.json`, `tutorial_funnel.csv`, `level_exit.csv`,
+`event_counts.csv`, `cohort_summary.csv`, and a count manifest. The key is read only from the
+environment and is never written to an output file.
 
 ## Admin access
 

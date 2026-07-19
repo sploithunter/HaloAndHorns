@@ -105,6 +105,131 @@ function RetentionLogic.rawEvent(sequence, name, at, seconds, context, limits)
     }
 end
 
+local function increment(map, key, amount)
+    key = tostring(key or "unknown")
+    map[key] = (tonumber(map[key]) or 0) + (tonumber(amount) or 1)
+end
+
+function RetentionLogic.newAggregate()
+    return {
+        sessionsStarted = 0,
+        sessionsEnded = 0,
+        totalSessionSeconds = 0,
+        newPlayers = 0,
+        newPlayerSessionsEnded = 0,
+        newPlayerTotalSessionSeconds = 0,
+        tutorialCompleted = 0,
+        newPlayerTutorialCompleted = 0,
+        exitedBeforeEarnedLevel2 = 0,
+        exitedBeforeClaimedLevel2 = 0,
+        events = {},
+        tutorialSteps = {},
+        tutorialExitBefore = {},
+        questsCompleted = {},
+        areasUnlocked = {},
+        earnedLevels = {},
+        claimedLevels = {},
+        exitEarnedLevels = {},
+        exitClaimedLevels = {},
+        newPlayerExitEarnedLevels = {},
+        newPlayerExitClaimedLevels = {},
+    }
+end
+
+function RetentionLogic.aggregateSessionStarted(counters, firstSession)
+    counters.sessionsStarted = (tonumber(counters.sessionsStarted) or 0) + 1
+    if firstSession then
+        counters.newPlayers = (tonumber(counters.newPlayers) or 0) + 1
+    end
+end
+
+function RetentionLogic.aggregateEvent(counters, seen, name, ctx, seconds, firstSession)
+    seen = type(seen) == "table" and seen or {}
+    ctx = type(ctx) == "table" and ctx or {}
+    increment(counters.events, name)
+
+    if name == "quest_complete" and type(ctx.quest) == "string" then
+        increment(counters.questsCompleted, ctx.quest)
+    elseif name == "area_unlocked" and type(ctx.areaId) == "string" then
+        increment(counters.areasUnlocked, ctx.areaId)
+    elseif name == "level_earned" and tonumber(ctx.level) then
+        increment(counters.earnedLevels, math.floor(ctx.level))
+    elseif name == "level_claimed" and tonumber(ctx.level) then
+        increment(counters.claimedLevels, math.floor(ctx.level))
+    end
+
+    if name == "tutorial_complete" and not seen.tutorialComplete then
+        seen.tutorialComplete = true
+        counters.tutorialCompleted = (tonumber(counters.tutorialCompleted) or 0) + 1
+        if firstSession then
+            counters.newPlayerTutorialCompleted = (
+                tonumber(counters.newPlayerTutorialCompleted) or 0
+            ) + 1
+        end
+    end
+
+    if not firstSession then
+        return
+    end
+    if name == "tutorial_step_completed" and type(ctx.stepId) == "string" then
+        local seenKey = "tutorial:" .. ctx.stepId
+        if not seen[seenKey] then
+            seen[seenKey] = true
+            local step = counters.tutorialSteps[ctx.stepId]
+            if type(step) ~= "table" then
+                step = { reached = 0, totalSecondsToReach = 0 }
+                counters.tutorialSteps[ctx.stepId] = step
+            end
+            step.reached = (tonumber(step.reached) or 0) + 1
+            step.totalSecondsToReach = (tonumber(step.totalSecondsToReach) or 0)
+                + math.max(0, tonumber(seconds) or 0)
+        end
+    end
+end
+
+function RetentionLogic.aggregateSessionEnded(counters, summary)
+    summary = type(summary) == "table" and summary or {}
+    local duration = math.max(0, tonumber(summary.durationSeconds) or 0)
+    local earnedLevel = math.max(1, math.floor(tonumber(summary.earnedLevel) or 1))
+    local claimedLevel = math.max(1, math.floor(tonumber(summary.claimedLevel) or 1))
+
+    counters.sessionsEnded = (tonumber(counters.sessionsEnded) or 0) + 1
+    counters.totalSessionSeconds = (tonumber(counters.totalSessionSeconds) or 0) + duration
+    increment(counters.exitEarnedLevels, earnedLevel)
+    increment(counters.exitClaimedLevels, claimedLevel)
+
+    if not summary.firstSession then
+        return
+    end
+    counters.newPlayerSessionsEnded = (tonumber(counters.newPlayerSessionsEnded) or 0) + 1
+    counters.newPlayerTotalSessionSeconds = (tonumber(counters.newPlayerTotalSessionSeconds) or 0)
+        + duration
+    increment(counters.newPlayerExitEarnedLevels, earnedLevel)
+    increment(counters.newPlayerExitClaimedLevels, claimedLevel)
+    if earnedLevel < 2 then
+        counters.exitedBeforeEarnedLevel2 = (tonumber(counters.exitedBeforeEarnedLevel2) or 0) + 1
+    end
+    if claimedLevel < 2 then
+        counters.exitedBeforeClaimedLevel2 = (tonumber(counters.exitedBeforeClaimedLevel2) or 0) + 1
+    end
+    if summary.tutorialDone ~= true then
+        increment(counters.tutorialExitBefore, summary.currentTutorialStep or "unknown")
+    end
+end
+
+function RetentionLogic.aggregateKey(cohortDate, jobId)
+    local date = tostring(cohortDate or ""):gsub("[^%d]", "")
+    if #date ~= 8 then
+        date = "00000000"
+    end
+    local shard = tostring(jobId or ""):gsub("[^%w]", "")
+    if shard == "" then
+        shard = "unknown"
+    end
+    shard = string.sub(shard, 1, 32)
+    return string.format("a%s/j%s", date, shard)
+end
+
 local function matches(step, eventName, ctx)
     if type(step) ~= "table" or step.event ~= eventName then
         return false

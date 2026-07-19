@@ -101,8 +101,138 @@ def event_rows(chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return rows
 
 
-def write_exports(output_dir: Path, chunks: list[dict[str, Any]]) -> tuple[int, int]:
+def merge_numeric(target: dict[str, Any], source: dict[str, Any]) -> None:
+    for key, value in source.items():
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, (int, float)):
+            target[key] = target.get(key, 0) + value
+        elif isinstance(value, dict):
+            child = target.setdefault(key, {})
+            if isinstance(child, dict):
+                merge_numeric(child, value)
+
+
+def combined_counters(aggregates: list[dict[str, Any]]) -> dict[str, Any]:
+    combined: dict[str, Any] = {}
+    for aggregate in aggregates:
+        counters = aggregate.get("counters")
+        if isinstance(counters, dict):
+            merge_numeric(combined, counters)
+    return combined
+
+
+def ratio(numerator: Any, denominator: Any) -> float | None:
+    denominator = float(denominator or 0)
+    return float(numerator or 0) / denominator if denominator > 0 else None
+
+
+def summary_from(aggregates: list[dict[str, Any]]) -> dict[str, Any]:
+    counters = combined_counters(aggregates)
+    sessions_ended = counters.get("sessionsEnded", 0)
+    new_players = counters.get("newPlayers", 0)
+    new_player_sessions_ended = counters.get("newPlayerSessionsEnded", 0)
+    return {
+        "aggregateShardCount": len(aggregates),
+        "sessionsStarted": counters.get("sessionsStarted", 0),
+        "sessionsEnded": sessions_ended,
+        "averageCompletedSessionSeconds": ratio(
+            counters.get("totalSessionSeconds", 0), sessions_ended
+        ),
+        "newPlayers": new_players,
+        "newPlayerSessionsEnded": new_player_sessions_ended,
+        "averageCompletedNewPlayerSessionSeconds": ratio(
+            counters.get("newPlayerTotalSessionSeconds", 0), new_player_sessions_ended
+        ),
+        "tutorialCompleted": counters.get("tutorialCompleted", 0),
+        "newPlayerTutorialCompleted": counters.get("newPlayerTutorialCompleted", 0),
+        "newPlayerTutorialCompletionRate": ratio(
+            counters.get("newPlayerTutorialCompleted", 0), new_players
+        ),
+        "exitedBeforeEarnedLevel2": counters.get("exitedBeforeEarnedLevel2", 0),
+        "exitedBeforeEarnedLevel2Rate": ratio(
+            counters.get("exitedBeforeEarnedLevel2", 0), new_player_sessions_ended
+        ),
+        "exitedBeforeClaimedLevel2": counters.get("exitedBeforeClaimedLevel2", 0),
+        "exitedBeforeClaimedLevel2Rate": ratio(
+            counters.get("exitedBeforeClaimedLevel2", 0), new_player_sessions_ended
+        ),
+    }
+
+
+def tutorial_rows(aggregates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    counters = combined_counters(aggregates)
+    new_players = counters.get("newPlayers", 0)
+    step_counters = counters.get("tutorialSteps", {})
+    exit_counters = counters.get("tutorialExitBefore", {})
+    definitions: list[dict[str, Any]] = []
+    for aggregate in aggregates:
+        candidate = (aggregate.get("definitions") or {}).get("tutorialSteps")
+        if isinstance(candidate, list) and candidate:
+            definitions = candidate
+            break
+
+    rows = []
+    previous = new_players
+    for step in definitions:
+        metric = step_counters.get(step.get("id"), {})
+        reached = metric.get("reached", 0)
+        rows.append(
+            {
+                "step": step.get("index"),
+                "step_id": step.get("id"),
+                "step_name": step.get("name"),
+                "new_players": new_players,
+                "reached": reached,
+                "reach_rate": ratio(reached, new_players),
+                "conversion_from_previous": ratio(reached, previous),
+                "drop_from_previous": max(0, previous - reached),
+                "mean_seconds_to_reach": ratio(metric.get("totalSecondsToReach", 0), reached),
+                "exited_while_step_active": exit_counters.get(step.get("id"), 0),
+            }
+        )
+        previous = reached
+    return rows
+
+
+def level_exit_rows(aggregates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    counters = combined_counters(aggregates)
+    rows = []
+    for dimension in (
+        "exitEarnedLevels",
+        "exitClaimedLevels",
+        "newPlayerExitEarnedLevels",
+        "newPlayerExitClaimedLevels",
+    ):
+        values = counters.get(dimension, {})
+        for level, players in values.items():
+            rows.append({"dimension": dimension, "level": int(level), "players": players})
+    rows.sort(key=lambda row: (row["dimension"], row["level"]))
+    return rows
+
+
+def event_count_rows(aggregates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    events = combined_counters(aggregates).get("events", {})
+    return [
+        {"event_name": name, "count": count}
+        for name, count in sorted(events.items(), key=lambda item: (-item[1], item[0]))
+    ]
+
+
+def write_csv(path: Path, rows: list[dict[str, Any]], fields: list[str]) -> None:
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def write_exports(
+    output_dir: Path,
+    chunks: list[dict[str, Any]],
+    aggregates: list[dict[str, Any]] | None = None,
+) -> tuple[int, int]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    aggregates = aggregates or []
     rows = event_rows(chunks)
 
     with (output_dir / "chunks.jsonl").open("w", encoding="utf-8") as handle:
@@ -132,16 +262,92 @@ def write_exports(output_dir: Path, chunks: list[dict[str, Any]]) -> tuple[int, 
         "context_json",
         "entry_path",
     ]
-    with (output_dir / "events.csv").open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields)
-        writer.writeheader()
-        writer.writerows(rows)
+    write_csv(output_dir / "events.csv", rows, fields)
+
+    with (output_dir / "aggregates.jsonl").open("w", encoding="utf-8") as handle:
+        for aggregate in aggregates:
+            json.dump(aggregate, handle, separators=(",", ":"), sort_keys=True)
+            handle.write("\n")
+
+    summary = summary_from(aggregates)
+    (output_dir / "summary.json").write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    write_csv(
+        output_dir / "tutorial_funnel.csv",
+        tutorial_rows(aggregates),
+        [
+            "step",
+            "step_id",
+            "step_name",
+            "new_players",
+            "reached",
+            "reach_rate",
+            "conversion_from_previous",
+            "drop_from_previous",
+            "mean_seconds_to_reach",
+            "exited_while_step_active",
+        ],
+    )
+    write_csv(
+        output_dir / "level_exit.csv",
+        level_exit_rows(aggregates),
+        ["dimension", "level", "players"],
+    )
+    write_csv(
+        output_dir / "event_counts.csv",
+        event_count_rows(aggregates),
+        ["event_name", "count"],
+    )
+
+    cohort_rows = []
+    for cohort_date in sorted(
+        {str(aggregate.get("cohortDate")) for aggregate in aggregates}
+    ):
+        cohort_aggregates = [
+            aggregate
+            for aggregate in aggregates
+            if str(aggregate.get("cohortDate")) == cohort_date
+        ]
+        cohort_rows.append({"cohort_date": cohort_date, **summary_from(cohort_aggregates)})
+    write_csv(
+        output_dir / "cohort_summary.csv",
+        cohort_rows,
+        [
+            "cohort_date",
+            "aggregateShardCount",
+            "sessionsStarted",
+            "sessionsEnded",
+            "averageCompletedSessionSeconds",
+            "newPlayers",
+            "newPlayerSessionsEnded",
+            "averageCompletedNewPlayerSessionSeconds",
+            "tutorialCompleted",
+            "newPlayerTutorialCompleted",
+            "newPlayerTutorialCompletionRate",
+            "exitedBeforeEarnedLevel2",
+            "exitedBeforeEarnedLevel2Rate",
+            "exitedBeforeClaimedLevel2",
+            "exitedBeforeClaimedLevel2Rate",
+        ],
+    )
 
     manifest = {
         "schemaVersion": 1,
         "chunkCount": len(chunks),
         "eventCount": len(rows),
-        "files": ["chunks.jsonl", "events.jsonl", "events.csv"],
+        "aggregateShardCount": len(aggregates),
+        "files": [
+            "chunks.jsonl",
+            "events.jsonl",
+            "events.csv",
+            "aggregates.jsonl",
+            "summary.json",
+            "tutorial_funnel.csv",
+            "level_exit.csv",
+            "event_counts.csv",
+            "cohort_summary.csv",
+        ],
     }
     (output_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -171,10 +377,11 @@ def main() -> int:
         print("--date must be YYYYMMDD", file=sys.stderr)
         return 2
 
-    key_prefix = f"d{args.date}/" if args.date else "d"
+    event_prefix = f"d{args.date}/" if args.date else "d"
+    aggregate_prefix = f"a{args.date}/" if args.date else "a"
     output_dir = args.output or Path(f"retention-export-{args.date or 'all'}")
     chunks = []
-    for listed in list_entries(args.universe_id, args.store, api_key, key_prefix):
+    for listed in list_entries(args.universe_id, args.store, api_key, event_prefix):
         chunk = get_entry(listed, api_key)
         if args.user_id is None or chunk.get("userId") == args.user_id:
             chunks.append(chunk)
@@ -186,8 +393,21 @@ def main() -> int:
             int(chunk.get("chunk") or 0),
         )
     )
-    chunk_count, event_count = write_exports(output_dir, chunks)
-    print(f"Exported {event_count} events in {chunk_count} chunks to {output_dir}")
+    aggregates = []
+    if args.user_id is None:
+        for listed in list_entries(args.universe_id, args.store, api_key, aggregate_prefix):
+            aggregates.append(get_entry(listed, api_key))
+        aggregates.sort(
+            key=lambda aggregate: (
+                str(aggregate.get("cohortDate") or ""),
+                str((aggregate.get("server") or {}).get("jobId") or ""),
+            )
+        )
+    chunk_count, event_count = write_exports(output_dir, chunks, aggregates)
+    print(
+        f"Exported {event_count} events in {chunk_count} chunks and "
+        f"{len(aggregates)} aggregate shards to {output_dir}"
+    )
     return 0
 
 
