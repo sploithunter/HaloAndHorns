@@ -4,8 +4,8 @@ Buy/sell enhancements for **gems**. v1 scope and decisions locked with Jason.
 
 ## Decisions (locked)
 
-- **Scope v1: NATURALS ONLY.** Origin (single/dual) enhancements stay drop-only / field-earned so they
-  keep their value. `grade_mult` leaves room to price single/dual later.
+- **Buy scope: natural + dual + single.** Bought origin enhancements carry the buyer's archetype so
+  they are usable; `grade_mult` keeps the stronger/rarer grades materially more expensive.
 - **Currency: gems.**
 - **Pricing: STATIC** — a pure function of band level. `buy = base + per_level × level`, **flat across
   types** (natural magnitude 0.15 is identical on every axis, so type doesn't change price). No dynamic
@@ -25,6 +25,12 @@ Buy/sell enhancements for **gems**. v1 scope and decisions locked with Jason.
 - **Tracking: free** — the gem ledger already records every move by `source`
   (`enh_buy:<type>_L<level>`, `enh_sell:…`). Add lifetime `enhancements_bought` / `enhancements_sold`
   stats to mirror `enhancements_found`; OpsAlert can flag anomalies.
+- **Upgrade All:** slotted enhancements are permanent, so the Power Choice screen offers one
+  server-quoted bulk purchase instead of making the player replace them one at a time at each
+  five-level band boundary. It upgrades every filled slot below the current shop band and preserves
+  the exact type, origins/grade, and slot position. Each slot costs its full grade-aware buy price at
+  the target band (no sell credit); current-band and above-band drops are skipped. The debit and all
+  level writes are one transaction, with quote revalidation/refund if slots change during confirm.
 
 ## Starting price table (TUNE vs gem income — `configs/enhancements.lua` `shop` knobs)
 
@@ -63,6 +69,9 @@ base 20, per_level 10, sell 0.30:
    slots it (CANCEL keeps it in inventory). Reuses the tested grid layout, so structurally low-risk.
    **Pending: live visual pass** (layout/price-chip placement; can't verify without a Play session).
    Sell-from-inventory UI + lifetime stats still to come.
+5. **DONE — permanent-slot Upgrade All.** `EnhancementPricing.upgradeAllPlan` is the deterministic
+   quote SSOT; `EnhancementShopService:UpgradeAllPreview/UpgradeAll` owns the authoritative gem
+   transaction; Power Choice shows the affected-slot count + exact total and requires confirmation.
 
 ## Endgame vision — signature powers afford 6 enhancement types → drop-only SETS (CoH invention sets)
 

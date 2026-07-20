@@ -1614,6 +1614,48 @@ function GameAPIService:_registerCommands()
             return s:GetState(context.player)
         end,
     })
+    bus:register("potion.shop.catalog", {
+        description = "List potion-tent stock, prices, owned counts, and gem balance.",
+        handler = function(context)
+            local s = self:_service("PotionShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Catalog(context.player)
+        end,
+    })
+    bus:register("potion.shop.buy", {
+        description = "Buy potion stock from a nearby authored potion tent.",
+        validate = function(args)
+            return Validators.fields(args, {
+                potionId = "string",
+                quantity = { type = "int", min = 1, max = 100 },
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("PotionShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Buy(context.player, args)
+        end,
+    })
+    bus:register("potion.shop.sell", {
+        description = "Sell owned potion stock to a nearby authored potion tent.",
+        validate = function(args)
+            return Validators.fields(args, {
+                potionId = "string",
+                quantity = { type = "int", min = 1, max = 100 },
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("PotionShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Sell(context.player, args)
+        end,
+    })
     bus:register("potion.grant", {
         description = "ADMIN/TEST: grant N of a potion into your inventory.",
         validate = function(args)
@@ -1772,6 +1814,33 @@ function GameAPIService:_registerCommands()
                 return { ok = false, reason = "service_unavailable" }
             end
             return s:Buy(context.player, args)
+        end,
+    })
+    bus:register("enhancement.shop.upgrade_all_preview", {
+        description = "Quote upgrading every outgrown slotted enhancement to the current band.",
+        handler = function(context)
+            local s = self:_service("EnhancementShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:UpgradeAllPreview(context.player)
+        end,
+    })
+    bus:register("enhancement.shop.upgrade_all", {
+        description = "Atomically upgrade every outgrown slotted enhancement, preserving identity.",
+        validate = function(args)
+            return Validators.fields(args, {
+                expectedTargetLevel = { type = "int", min = 1, optional = true },
+                expectedCount = { type = "int", min = 1, optional = true },
+                expectedCost = { type = "int", min = 0, optional = true },
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("EnhancementShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:UpgradeAll(context.player, args)
         end,
     })
     bus:register("enhancement.shop.sell", {

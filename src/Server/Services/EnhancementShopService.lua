@@ -1,7 +1,7 @@
 --[[
     EnhancementShopService — buy/sell enhancements for gems (configs/enhancements.lua `shop`).
 
-    Naturals-only for BUY (v1); SELL accepts any grade the player owns. Enhancements are STACKS keyed
+    BUY supports configured grades; SELL accepts any grade the player owns. Enhancements are STACKS keyed
     by identity (enh_<type>_<origins>_L<level>), so:
       • BUY routes through EnhancementService:Grant, which INCREMENTS the matching stack's quantity
         (no duplicate uids).
@@ -9,7 +9,7 @@
         and refunds gems = per-unit sellPrice × quantity.
 
     Pricing is the pure EnhancementPricing core; this service is the impure spend/grant boundary.
-    Bus commands: enhancement.shop.catalog / .buy / .sell (GameAPIService).
+    Bus commands: enhancement.shop.catalog / .buy / .sell / .upgrade_all_* (GameAPIService).
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -74,6 +74,125 @@ function EnhancementShopService:Catalog(player)
         balance = self._economyService:GetCurrency(player, currency),
         band = cat.band,
         offers = cat.offers,
+    }
+end
+
+function EnhancementShopService:_upgradeAllPlan(player)
+    local shop = self:_shop()
+    if not (shop and shop.enabled) then
+        return nil, "shop_disabled"
+    end
+    if shop.upgrade_all and shop.upgrade_all.enabled == false then
+        return nil, "upgrade_all_disabled"
+    end
+    local data = self._dataService and self._dataService:GetData(player)
+    if not data then
+        return nil, "data_not_loaded"
+    end
+    return EnhancementPricing.upgradeAllPlan(data.Slots or {}, playerLevel(player), shop), nil, data
+end
+
+-- Authoritative quote for the Power Choice footer. The client receives only summary data; the exact
+-- slot plan and signature stay server-side and are rebuilt at commit.
+function EnhancementShopService:UpgradeAllPreview(player)
+    local plan, reason = self:_upgradeAllPlan(player)
+    if not plan then
+        return { ok = false, reason = reason }
+    end
+    local shop = self:_shop()
+    local currency = shop.currency or CURRENCY_FALLBACK
+    local balance = self._economyService:GetCurrency(player, currency)
+    return {
+        ok = true,
+        currency = currency,
+        balance = balance,
+        affordable = plan.cost <= balance,
+        targetLevel = plan.targetLevel,
+        count = plan.count,
+        cost = plan.cost,
+        byGrade = plan.byGrade,
+    }
+end
+
+-- Upgrade every OUTGROWN slotted enhancement to the current shop band in one transaction. Only the
+-- `level` field changes; exact type, origins, and slot positions survive. A second plan is built
+-- inside the currency commit so a concurrent slot edit rejects the quote and refunds the debit.
+function EnhancementShopService:UpgradeAll(player, args)
+    args = args or {}
+    local plan, reason, data = self:_upgradeAllPlan(player)
+    if not plan then
+        return { ok = false, reason = reason }
+    end
+    if plan.count < 1 then
+        return {
+            ok = false,
+            reason = "nothing_to_upgrade",
+            targetLevel = plan.targetLevel,
+            count = 0,
+            cost = 0,
+        }
+    end
+
+    -- The confirmation is a quote, not a blank cheque. If anything changed while it was open,
+    -- return a fresh preview instead of silently charging a different total.
+    if
+        (args.expectedTargetLevel ~= nil and args.expectedTargetLevel ~= plan.targetLevel)
+        or (args.expectedCount ~= nil and args.expectedCount ~= plan.count)
+        or (args.expectedCost ~= nil and args.expectedCost ~= plan.cost)
+    then
+        local fresh = self:UpgradeAllPreview(player)
+        fresh.ok = false
+        fresh.reason = "quote_changed"
+        return fresh
+    end
+
+    local shop = self:_shop()
+    local currency = shop.currency or CURRENCY_FALLBACK
+    local transaction = self._economyService:Transact(player, {
+        debits = plan.cost > 0 and { [currency] = plan.cost } or {},
+        reason = "enhancement_upgrade_all",
+        commit = function()
+            local freshData = self._dataService:GetData(player)
+            if freshData ~= data then
+                return false
+            end
+            local freshPlan =
+                EnhancementPricing.upgradeAllPlan(freshData.Slots or {}, playerLevel(player), shop)
+            if freshPlan.signature ~= plan.signature then
+                return false
+            end
+            for _, change in ipairs(freshPlan.changes) do
+                -- The signature above proves the identity/from-level still matches. These are plain
+                -- profile-table writes, so there is no fallible inventory operation mid-transaction.
+                freshData.Slots[change.powerId][change.slotIndex].enh.level = change.toLevel
+            end
+            return true
+        end,
+    })
+    if not transaction.ok then
+        return {
+            ok = false,
+            reason = transaction.reason == "precondition_failed" and "insufficient_funds"
+                or transaction.reason == "commit_failed" and "quote_changed"
+                or transaction.reason,
+            currency = currency,
+            targetLevel = plan.targetLevel,
+            count = plan.count,
+            cost = plan.cost,
+            balance = self._economyService:GetCurrency(player, currency),
+        }
+    end
+
+    self._dataService:RequestSave(player, "enhancement_upgrade_all", { critical = true })
+    self._enhancementService:ReapplySlottedEffects(player)
+    return {
+        ok = true,
+        currency = currency,
+        targetLevel = plan.targetLevel,
+        upgraded = plan.count,
+        cost = plan.cost,
+        byGrade = plan.byGrade,
+        balance = self._economyService:GetCurrency(player, currency),
     }
 end
 

@@ -1268,6 +1268,19 @@ return {
                 arguments = { { name = "station", type = "table" } },
             },
         },
+        PotionShopOpened = {
+            name = "PotionShopOpened",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "potions.shop_opened",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "shop", type = "table" } },
+            },
+        },
         AdminToolResult = {
             name = "AdminToolResult",
             transport = "reliable_event",

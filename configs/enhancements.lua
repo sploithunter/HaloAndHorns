@@ -416,6 +416,12 @@ return {
             -- un-slotted stacks only. Always < buy (no arbitrage). e.g. natural L13 -> 45, L14 -> 48.
             fraction = 0.30,
         },
+        -- One-click replacement of every OUTGROWN slotted enhancement. The target is the same current
+        -- shop band as BUY; exact type + origins + slot position are preserved, and each replacement
+        -- costs its normal grade-aware band price. Already-current and above-band drops are untouched.
+        upgrade_all = {
+            enabled = true,
+        },
         -- BULK "Sell Junk" sweep (one-click clear of outgrown drops). Per-stack sell (1 / N) works on
         -- ANY grade; this bulk button is conservative: only DEAD stacks (more than `dead_window` levels
         -- below the player — contributing nothing) of the allowed GRADES. Jason: naturals + duals;

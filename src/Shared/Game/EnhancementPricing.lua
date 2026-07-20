@@ -1,8 +1,8 @@
 --[[
-    EnhancementPricing — pure price math for the enhancement STORE (buy/sell naturals for gems).
+    EnhancementPricing — pure price math for the enhancement STORE (buy/sell/upgrade for gems).
 
-    Naturals all share one magnitude (configs/enhancements.lua values.natural), so price is a pure
-    function of LEVEL (flat across types). The store sells in fixed increments (level_step) and shows
+    Price is a pure function of LEVEL + GRADE (flat across types). The store sells in fixed
+    increments (level_step) and shows
     only the ONE band the player can currently SLOT — the nearest multiple of level_step, which is
     always within the slot window (±2), so e.g. L17 → L15, L18 → L20.
 
@@ -10,6 +10,7 @@
       EnhancementPricing.bandFor(playerLevel, cfg)        -> number   (the buyable band)
       EnhancementPricing.buyPrice(grade, level, cfg)      -> number   (gems; value floored)
       EnhancementPricing.sellPrice(grade, level, cfg)     -> number   (gems; value × sell fraction)
+      EnhancementPricing.upgradeAllPlan(slots, level, cfg) -> table   (slotted upgrade quote)
 
     BUY is offered only at band levels (multiples of level_step) and only for buyable grades, but SELL
     works at the item's ACTUAL level (smooth — L14 sells for more than L13) and for ANY grade the
@@ -94,6 +95,89 @@ function EnhancementPricing.gradeFromOrigins(origins)
         return "single"
     end
     return "dual"
+end
+
+-- Quote the one-click "Upgrade All" action for every FILLED power slot.
+--
+-- "Correct level" is the player's current shop band. Only enhancements BELOW that band are
+-- included: an unusually strong +1/+2 field drop must never be downgraded. The replacement keeps
+-- the exact type/origin identity and charges the same grade-aware price as buying that enhancement
+-- at the target band. `slots` is profile.Slots:
+--   { [powerId] = { { enh = { type, origins, level } }, ... } }
+--
+-- The deterministic signature lets the impure service reject/refund a quote if slots change between
+-- preview and commit. The plan intentionally contains no live table references.
+function EnhancementPricing.upgradeAllPlan(slots, playerLevel, cfg)
+    cfg = cfg or {}
+    local targetLevel = EnhancementPricing.bandFor(playerLevel, cfg)
+    local changes = {}
+    local totalCost = 0
+    local byGrade = { natural = 0, dual = 0, single = 0 }
+
+    for powerId, powerSlots in pairs(type(slots) == "table" and slots or {}) do
+        if type(powerSlots) == "table" then
+            for slotIndex, slot in ipairs(powerSlots) do
+                local enh = type(slot) == "table" and slot.enh
+                local fromLevel = enh and math.max(1, math.floor(tonumber(enh.level) or 1))
+                if
+                    type(enh) == "table"
+                    and type(enh.type) == "string"
+                    and fromLevel < targetLevel
+                then
+                    local origins = type(enh.origins) == "table" and enh.origins or {}
+                    local grade = EnhancementPricing.gradeFromOrigins(origins)
+                    local price = EnhancementPricing.buyPrice(grade, targetLevel, cfg)
+                    local copiedOrigins = table.clone(origins)
+                    changes[#changes + 1] = {
+                        powerId = powerId,
+                        slotIndex = slotIndex,
+                        type = enh.type,
+                        origins = copiedOrigins,
+                        grade = grade,
+                        fromLevel = fromLevel,
+                        toLevel = targetLevel,
+                        price = price,
+                    }
+                    totalCost += price
+                    byGrade[grade] = (byGrade[grade] or 0) + 1
+                end
+            end
+        end
+    end
+
+    table.sort(changes, function(a, b)
+        local ap, bp = tostring(a.powerId), tostring(b.powerId)
+        if ap ~= bp then
+            return ap < bp
+        end
+        return a.slotIndex < b.slotIndex
+    end)
+
+    local signatureParts = {
+        tostring(targetLevel),
+        tostring(#changes),
+        tostring(totalCost),
+    }
+    for _, change in ipairs(changes) do
+        signatureParts[#signatureParts + 1] = table.concat({
+            tostring(change.powerId),
+            tostring(change.slotIndex),
+            change.type,
+            table.concat(change.origins, "+"),
+            tostring(change.fromLevel),
+            tostring(change.toLevel),
+            tostring(change.price),
+        }, "|")
+    end
+
+    return {
+        targetLevel = targetLevel,
+        count = #changes,
+        cost = totalCost,
+        byGrade = byGrade,
+        changes = changes,
+        signature = table.concat(signatureParts, ";"),
+    }
 end
 
 -- The buyable catalog for a player: ONE band (their slottable multiple-of-step) × each buyable grade

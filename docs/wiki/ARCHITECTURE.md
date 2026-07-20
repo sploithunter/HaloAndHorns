@@ -29,6 +29,12 @@ filtered out of production registries.
   already landed.
 - Enhancement sales use `InventoryService:BulkRemove` with an economy commit callback. Inventory
   snapshots restore exact stacks and slot counts when credit is rejected, before replication/save.
+- `PotionShopService` binds the authored Home/Heaven/Hell potion tents without putting state or
+  scripts in the map models. A prompt grants short-lived, distance-checked shop access; catalog,
+  five-gem purchases, and two-gem sales remain server-authoritative. Buys debit through
+  `EconomyService` and refund on failed delivery; sales use `InventoryService:BulkRemove` so a
+  rejected credit restores the exact potion stack. Shop quantities are restricted server-side to
+  `1`, `10`, or `100`; bulk purchases land as one stack mutation/save rather than N item grants.
 - Trade gem escrow debits, owner refunds, and recipient delivery credits use `EconomyService`.
   Escrow descriptors retain complete source records and keys. `PetTransferService` inserts existing
   pet records without mint defaults or new UIDs, while `TradeDeliveryTransaction` stages inventory

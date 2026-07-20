@@ -18,6 +18,35 @@ return {
     -- tick the drain this often (server heartbeat coalesce); UI interpolates the pie between ticks
     tick_seconds = 1,
 
+    -- Authored potion tents are presentation hooks; PotionShopService discovers these exact model
+    -- names and attaches the server-owned prompt/transaction boundary at runtime. Current stock is
+    -- intentionally explicit so adding a future potion does not silently put it on sale.
+    shop = {
+        enabled = true,
+        currency = "gems",
+        buy_price = 5,
+        sell_price = 2,
+        stock = {
+            "berserk_brew",
+            "fortune_flask",
+            "swift_tonic",
+            "weakening_vial",
+        },
+        interaction = {
+            model_names = { "HomePotionShop", "HeavenPotionShop", "HellPotionShop" },
+            prompt_part_name = "PotionBannerLabel",
+            prompt_offset = { x = 0, y = -4, z = 0 },
+            action_text = "Browse Potions",
+            object_text = "Potion Shop",
+            key = "E",
+            max_distance = 14,
+            distance_grace = 8,
+            hold_duration = 0,
+            requires_line_of_sight = false,
+            access_seconds = 120,
+        },
+    },
+
     meters = {
         -- buff_axis = configs/buffs.lua axis (the hard cap backstop); buff_attr = the player
         -- attribute the PotionService writes ("<attr>" + "<attr>Until"); cap stays under the axis cap.

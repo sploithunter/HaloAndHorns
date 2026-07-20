@@ -1252,3 +1252,27 @@ migration is needed for the abandoned "element splits stacks" spec.
 - Focus Fire now accepts Accuracy, Potency, Duration, and Recharge enhancements but not Damage.
   Tooltips derive the accuracy and penetration values from live config, and combat trace reports the
   mark bonus plus each hold-penetration roll.
+
+## 2026-07-17 - Authored potion tents become transactional shops
+
+- Added one service-owned shop contract for the Home, Heaven, and Hell potion tents. Runtime prompts
+  open a shared `PanelChrome` potion surface only while the player is near the activated tent.
+- The four current potions cost five gems to buy and return two gems when sold. Stock and pricing
+  live in `configs/potions.lua`; exact 1/10/100 buy and sell controls are validated by the server.
+  Buys refund failed grants, bulk grants mutate/save one stack once, and sales restore removed
+  stacks if the gem credit fails.
+- Potion shop actions use the existing `GameAPICommand` bus and a manifest-owned open event. The
+  client renders server-provided balances, owned counts, descriptions, and unified potion disc art.
+- Corrected stack-slot accounting during full stack removal: buckets whose stacks do not count
+  toward capacity no longer decrement `used_slots` below zero when a potion or enhancement stack
+  is sold out.
+
+## 2026-07-17 — Permanent enhancement Upgrade All
+
+- Added a server-authoritative **Upgrade All** purchase to Power Choice for the five-level
+  enhancement-band transition. Every filled slot below the player's current shop band is upgraded
+  in place at its full grade-aware buy price; exact enhancement type, origins/grade, and slot
+  position remain permanent, while current/above-band drops are skipped. The confirm displays slot
+  count + total gems, and the server re-quotes inside one currency transaction so a concurrent slot
+  change refunds the debit rather than partially applying. Headless coverage pins band targeting,
+  full-buy pricing (including rare proc identities), no downgrade, and deterministic quoting.

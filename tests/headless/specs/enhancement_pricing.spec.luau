@@ -169,4 +169,59 @@ return function()
             end
         end)
     end)
+
+    describe("EnhancementPricing.upgradeAllPlan", function()
+        local slots = {
+            magnet = {
+                { enh = { type = "accuracy", origins = {}, level = 15 } },
+                { enh = { type = "recharge", origins = { "sandwalker" }, level = 16 } },
+                { enh = { type = "focus", origins = { "sandwalker", "cryomancer" }, level = 20 } },
+                {},
+            },
+            ["mirage_step"] = {
+                { enh = { type = "duration", origins = { "sandwalker" }, level = 22 } },
+                { enh = { type = "spark", origins = { "sandwalker" }, level = 10 } },
+            },
+        }
+
+        it("targets the current band and skips current/above-band/empty slots", function()
+            local plan = EnhancementPricing.upgradeAllPlan(slots, 18, CFG)
+            expect(plan.targetLevel).to.equal(20)
+            expect(plan.count).to.equal(3)
+            expect(plan.byGrade.natural).to.equal(1)
+            expect(plan.byGrade.single).to.equal(2)
+            expect(plan.byGrade.dual).to.equal(0)
+            for _, change in ipairs(plan.changes) do
+                expect(change.fromLevel < 20).to.equal(true)
+                expect(change.toLevel).to.equal(20)
+            end
+        end)
+
+        it(
+            "charges the exact grade-aware replacement prices, including excluded rare types",
+            function()
+                local plan = EnhancementPricing.upgradeAllPlan(slots, 18, CFG)
+                -- natural L20 = 220; two singles L20 = floor(220*2.86)=629 each.
+                expect(plan.cost).to.equal(220 + 629 + 629)
+                local sawSpark = false
+                for _, change in ipairs(plan.changes) do
+                    if change.type == "spark" then
+                        sawSpark = true
+                    end
+                end
+                expect(sawSpark).to.equal(true)
+            end
+        )
+
+        it(
+            "does not mutate slot identity while planning and produces a stable signature",
+            function()
+                local first = EnhancementPricing.upgradeAllPlan(slots, 18, CFG)
+                local second = EnhancementPricing.upgradeAllPlan(slots, 18, CFG)
+                expect(first.signature).to.equal(second.signature)
+                expect(slots.magnet[1].enh.level).to.equal(15)
+                expect(slots.magnet[2].enh.origins[1]).to.equal("sandwalker")
+            end
+        )
+    end)
 end

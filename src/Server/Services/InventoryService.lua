@@ -827,7 +827,9 @@ function InventoryService:BulkRemove(player, bucketName, entries, opts)
                     local take = math.min(qty, have)
                     if take >= have then
                         bucket.items[uid] = nil
-                        bucket.used_slots = bucket.used_slots - 1
+                        if bucketConfig.stacks_count_toward_limit ~= false then
+                            bucket.used_slots = bucket.used_slots - 1
+                        end
                     else
                         item.quantity = have - take
                     end
@@ -888,7 +890,10 @@ function InventoryService:_removeStackableItem(player, bucketName, uid, quantity
     if item.quantity <= quantity then
         -- Remove entire stack
         bucket.items[uid] = nil
-        bucket.used_slots = bucket.used_slots - 1
+        local bucketConfig = self._inventoryConfig.buckets[bucketName]
+        if bucketConfig.stacks_count_toward_limit ~= false then
+            bucket.used_slots = bucket.used_slots - 1
+        end
 
         self._logger:Debug("📦 STACKABLE REMOVE - Removed entire stack", {
             player = player.Name,

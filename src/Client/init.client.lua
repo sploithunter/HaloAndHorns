@@ -834,6 +834,18 @@ Signals.EnchantStationOpened.OnClientEvent:Connect(function(data)
     end
     showNotice(tostring(displayName) .. " ready.", false)
 end)
+Signals.PotionShopOpened.OnClientEvent:Connect(function(data)
+    local menuManager = _G.MenuManager
+    local panel = menuManager and menuManager:GetPanel("PotionShop")
+    if not (menuManager and panel) then
+        showNotice("Potion shop is still loading. Try again.", true)
+        return
+    end
+    if panel.SetShopContext then
+        panel:SetShopContext(data)
+    end
+    menuManager:OpenPotionShopPanel("bounce_in")
+end)
 Signals.EnchantPetResult.OnClientEvent:Connect(function(data)
     if _G.MenuManager then
         local enchantPanel = _G.MenuManager:GetPanel("Enchant")
@@ -1328,6 +1340,9 @@ do
         end)
         buildPanel("EnhancementSell", function()
             return require(script.UI.Menus.EnhancementSellPanel).new()
+        end)
+        buildPanel("PotionShop", function()
+            return require(script.UI.Menus.PotionShopPanel).new()
         end)
         buildPanel("Effects", function()
             return require(script.UI.Menus.EffectsPanel).new()

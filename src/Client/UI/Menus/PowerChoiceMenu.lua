@@ -101,9 +101,11 @@ local SLOTS_PER_ROUND = 2
 -- chip palette (base colours; dimmed when a chip is disabled)
 local COMMIT_COLOR = Color3.fromRGB(235, 200, 90)
 local UNDO_COLOR = Color3.fromRGB(150, 150, 165)
+local UPGRADE_COLOR = Color3.fromRGB(92, 176, 205)
 local LEVEL_COLOR = Color3.fromRGB(120, 205, 130)
 local RESET_COLOR = Color3.fromRGB(150, 120, 200)
 local STAGED_GLOW = Color3.fromRGB(235, 200, 90)
+local makeChip -- forward declaration: upgrade confirmation uses the shared pill builder below
 
 -- selection levels -> set, for O(1) "is this a power level?"
 local SEL = {}
@@ -145,6 +147,8 @@ function PowerChoiceMenu.new()
     self.pendingLevels = 0 -- earned - claimed (claimable level-ups waiting), from the server
     self.atMax = false
     self.notice = nil -- transient error/notice text (e.g. a rejected bus call)
+    self.upgradePreview = nil -- authoritative current-band quote for all filled/outgrown slots
+    self._upgradeInFlight = false
     -- ui refs
     self.naturalCol = nil
     self.originCol = nil
@@ -153,6 +157,7 @@ function PowerChoiceMenu.new()
     self.levelBtn = nil
     self.commitBtn = nil
     self.undoBtn = nil
+    self.upgradeBtn = nil
     self.resetBtn = nil
     return self
 end
@@ -262,6 +267,7 @@ function PowerChoiceMenu:_loadLive()
     -- the row circles looked empty after slotting — only the strip knew)
     local enhState = callBus("enh.get", {})
     self.enhSlots = (enhState and enhState.slots) or {}
+    self.upgradePreview = callBus("enhancement.shop.upgrade_all_preview", {})
     local st = lvl.state
     self.archetype = arche.archetype
     if self.archetype then
@@ -1371,7 +1377,191 @@ function PowerChoiceMenu:_statusText()
         end
         return "READY — press COMMIT", COMMIT_COLOR
     end
+    local upgrade = self.upgradePreview
+    if self.live and upgrade and upgrade.ok and (tonumber(upgrade.count) or 0) > 0 then
+        return ("UPGRADE AVAILABLE — %d enhancement%s to L%d"):format(
+            upgrade.count,
+            upgrade.count == 1 and "" or "s",
+            upgrade.targetLevel
+        ),
+            UPGRADE_COLOR
+    end
     return "Level Up for your next choice", Color3.fromRGB(200, 200, 210)
+end
+
+local function formatWholeNumber(value)
+    local digits = tostring(math.max(0, math.floor(tonumber(value) or 0)))
+    while true do
+        local nextDigits, replacements = string.gsub(digits, "^(-?%d+)(%d%d%d)", "%1,%2")
+        digits = nextDigits
+        if replacements == 0 then
+            return digits
+        end
+    end
+end
+
+local function setChipText(button, text)
+    local label = button and button:FindFirstChild("Label")
+    if label then
+        label.Text = text
+    end
+end
+
+-- Confirmation is intentionally explicit: this can replace dozens of permanent slotted pieces at
+-- once. The server re-quotes during commit, so this displayed total can never become a blank cheque.
+function PowerChoiceMenu:_showUpgradeAllConfirm()
+    local preview = self.upgradePreview
+    if
+        self._upgradeInFlight
+        or not (preview and preview.ok)
+        or (tonumber(preview.count) or 0) < 1
+    then
+        return
+    end
+    if preview.affordable == false then
+        self.notice = ("Need 💎%s; balance is 💎%s"):format(
+            formatWholeNumber(preview.cost),
+            formatWholeNumber(preview.balance)
+        )
+        self:_render()
+        return
+    end
+
+    local old = self.frame and self.frame:FindFirstChild("UpgradeAllConfirm")
+    if old then
+        old:Destroy()
+    end
+    local scrim = Instance.new("TextButton")
+    scrim.Name = "UpgradeAllConfirm"
+    scrim.Text = ""
+    scrim.AutoButtonColor = false
+    scrim.Size = UDim2.fromScale(1, 1)
+    scrim.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    scrim.BackgroundTransparency = 0.42
+    scrim.BorderSizePixel = 0
+    scrim.ZIndex = 600
+    scrim.Parent = self.frame
+
+    local card = Instance.new("Frame")
+    card.Size = UDim2.fromScale(0.7, 0.28)
+    card.AnchorPoint = Vector2.new(0.5, 0.5)
+    card.Position = UDim2.fromScale(0.5, 0.5)
+    card.BackgroundColor3 = Color3.fromRGB(35, 38, 48)
+    card.BorderSizePixel = 0
+    card.ZIndex = 601
+    card.Parent = scrim
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 16)
+    corner.Parent = card
+    PanelChrome.pillBorder(card, PanelChrome.areaPill(), 605, 0, 0.12)
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.fromScale(0.9, 0.22)
+    title.Position = UDim2.fromScale(0.05, 0.09)
+    title.BackgroundTransparency = 1
+    title.Text = ("Upgrade %d enhancement%s to L%d?"):format(
+        preview.count,
+        preview.count == 1 and "" or "s",
+        preview.targetLevel
+    )
+    title.TextColor3 = Color3.fromRGB(240, 240, 248)
+    title.TextScaled = true
+    title.TextWrapped = true
+    title.Font = Enum.Font.GothamBold
+    title.ZIndex = 602
+    title.Parent = card
+    local titleSize = Instance.new("UITextSizeConstraint")
+    titleSize.MaxTextSize = 24
+    titleSize.MinTextSize = 14
+    titleSize.Parent = title
+
+    local note = Instance.new("TextLabel")
+    note.Size = UDim2.fromScale(0.86, 0.24)
+    note.Position = UDim2.fromScale(0.07, 0.35)
+    note.BackgroundTransparency = 1
+    note.Text = ("Permanent types, origins, and slots stay unchanged.\nFull purchase total: 💎%s"):format(
+        formatWholeNumber(preview.cost)
+    )
+    note.TextColor3 = Color3.fromRGB(190, 200, 215)
+    note.TextScaled = true
+    note.TextWrapped = true
+    note.Font = Enum.Font.GothamMedium
+    note.ZIndex = 602
+    note.Parent = card
+    local noteSize = Instance.new("UITextSizeConstraint")
+    noteSize.MaxTextSize = 15
+    noteSize.MinTextSize = 10
+    noteSize.Parent = note
+
+    local cancel = makeChip(
+        card,
+        "CANCEL",
+        UDim2.fromScale(0.25, 0.18),
+        UDim2.fromScale(0.3, 0.82),
+        Color3.fromRGB(72, 76, 90),
+        1
+    )
+    cancel.ZIndex = 603
+    cancel.Label.ZIndex = 604
+    cancel.Label.TextColor3 = Color3.fromRGB(235, 238, 245)
+    local confirm = makeChip(
+        card,
+        ("UPGRADE  ·  💎%s"):format(formatWholeNumber(preview.cost)),
+        UDim2.fromScale(0.38, 0.18),
+        UDim2.fromScale(0.69, 0.82),
+        UPGRADE_COLOR,
+        2
+    )
+    confirm.ZIndex = 603
+    confirm.Label.ZIndex = 604
+
+    local function close()
+        if scrim.Parent then
+            scrim:Destroy()
+        end
+    end
+    scrim.Activated:Connect(close)
+    cancel.Activated:Connect(close)
+    confirm.Activated:Connect(function()
+        close()
+        if self._upgradeInFlight then
+            return
+        end
+        self._upgradeInFlight = true
+        self.notice = ("Upgrading %d slots…"):format(preview.count)
+        self:_render()
+        task.spawn(function()
+            local result = callBus("enhancement.shop.upgrade_all", {
+                expectedTargetLevel = preview.targetLevel,
+                expectedCount = preview.count,
+                expectedCost = preview.cost,
+            })
+            self._upgradeInFlight = false
+            if not self.frame then
+                return
+            end
+            if result and result.ok then
+                self.notice = ("Upgraded %d slots to L%d for 💎%s ✓"):format(
+                    result.upgraded or preview.count,
+                    result.targetLevel or preview.targetLevel,
+                    formatWholeNumber(result.cost or preview.cost)
+                )
+                self:_loadLive()
+            else
+                local why = result and result.reason or "unavailable"
+                if why == "quote_changed" then
+                    self:_loadLive()
+                    self.notice = "Slots changed; quote refreshed — nothing was charged"
+                elseif why == "insufficient_funds" then
+                    self:_loadLive()
+                    self.notice = "Not enough gems — nothing was changed"
+                else
+                    self.notice = "Upgrade failed: " .. tostring(why)
+                end
+            end
+            self:_render()
+        end)
+    end)
 end
 
 -- Hover tooltip: derived power description (PowerDescribe — summary from the LIVE numbers).
@@ -2003,28 +2193,71 @@ function PowerChoiceMenu:_render()
         -- DEV-only button (hidden for players below). In live mode it BANKS a level (so the next
         -- one previews); in local-preview mode it advances the fake level. Enabled unless at max.
         local atMax = self.atMax or (self.claimedLevel or self.level) >= MAX_LEVEL
-        self.levelBtn.Text = atMax and ("MAX (L" .. MAX_LEVEL .. ")") or "LEVEL UP  ▶  (BANK)"
+        setChipText(
+            self.levelBtn,
+            atMax and ("MAX (L" .. MAX_LEVEL .. ")") or "LEVEL UP  ▶  (BANK)"
+        )
         setChipEnabled(self.levelBtn, not atMax)
     end
-    setChipEnabled(self.commitBtn, self:_canCommit())
-    setChipEnabled(self.undoBtn, #self.staged > 0)
+    local levelChoiceAvailable = self.pendingPower > 0 or self.pendingSlots > 0
+    setChipEnabled(self.commitBtn, levelChoiceAvailable and self:_canCommit())
+    setChipEnabled(self.undoBtn, levelChoiceAvailable and #self.staged > 0)
+    local upgradeVisible = false
+    if self.upgradeBtn then
+        local quote = self.upgradePreview
+        upgradeVisible = self.live
+            and not levelChoiceAvailable
+            and quote
+            and quote.ok
+            and (tonumber(quote.count) or 0) > 0
+        local available = upgradeVisible and quote.affordable ~= false and not self._upgradeInFlight
+        self.upgradeBtn.Visible = upgradeVisible
+        if self._upgradeInFlight then
+            setChipText(self.upgradeBtn, "UPGRADING…")
+        elseif quote and quote.ok and (tonumber(quote.count) or 0) > 0 then
+            setChipText(
+                self.upgradeBtn,
+                ("UPGRADE ALL (%d)  💎%s"):format(quote.count, formatWholeNumber(quote.cost))
+            )
+        else
+            setChipText(self.upgradeBtn, "UPGRADE ALL")
+        end
+        setChipEnabled(self.upgradeBtn, available and true or false)
+    end
 
-    -- DEV-only controls: LEVEL UP (self-pacer) + RESET. A player resolves the pick they came for
-    -- (UNDO + COMMIT) and levels up at the altar — so for them, hide those two and re-center the
-    -- pair. Tracks the live ADMIN toggle.
+    -- Footer modes are mutually exclusive (Jason): resolve a pending LEVEL choice with Undo/Commit,
+    -- OR buy the current-band Upgrade All. Never show both workflows at once. Dev Bank appears only
+    -- when neither workflow is active; Reset remains available to developers.
     local dev = devMode()
     if self.levelBtn then
-        self.levelBtn.Visible = dev
+        self.levelBtn.Visible = dev and not levelChoiceAvailable and not upgradeVisible
     end
     if self.resetBtn then
         self.resetBtn.Visible = dev
     end
     if self.undoBtn then
-        self.undoBtn.Position = dev and UDim2.fromScale(0.12, 0.965) or UDim2.fromScale(0.34, 0.965)
+        self.undoBtn.Visible = levelChoiceAvailable
+        self.undoBtn.Size = UDim2.fromScale(0.2, 0.05)
+        self.undoBtn.Position = dev and UDim2.fromScale(0.3, 0.965) or UDim2.fromScale(0.35, 0.965)
     end
     if self.commitBtn then
-        self.commitBtn.Position = dev and UDim2.fromScale(0.36, 0.965)
-            or UDim2.fromScale(0.62, 0.965)
+        self.commitBtn.Visible = levelChoiceAvailable
+        self.commitBtn.Size = UDim2.fromScale(0.24, 0.055)
+        self.commitBtn.Position = dev and UDim2.fromScale(0.55, 0.965)
+            or UDim2.fromScale(0.63, 0.965)
+    end
+    if self.upgradeBtn then
+        self.upgradeBtn.Size = UDim2.fromScale(0.36, 0.055)
+        self.upgradeBtn.Position = dev and UDim2.fromScale(0.44, 0.965)
+            or UDim2.fromScale(0.5, 0.965)
+    end
+    if self.levelBtn then
+        self.levelBtn.Size = UDim2.fromScale(0.24, 0.055)
+        self.levelBtn.Position = UDim2.fromScale(0.48, 0.965)
+    end
+    if self.resetBtn then
+        self.resetBtn.Size = UDim2.fromScale(0.12, 0.05)
+        self.resetBtn.Position = UDim2.fromScale(0.9, 0.965)
     end
 end
 
@@ -2054,7 +2287,7 @@ local function makeColumnHolder(parent, xScale)
     return f
 end
 
-local function chip(parent, text, size, pos, color, order)
+makeChip = function(parent, text, size, pos, color, order)
     -- THE shared currency-HUD capsule (Pill.button): rounded + gradient + stroke + child label.
     local b, label = Pill.button({
         parent = parent,
@@ -2068,6 +2301,10 @@ local function chip(parent, text, size, pos, color, order)
     })
     b.LayoutOrder = order or 0
     label.TextScaled = true
+    local textSize = Instance.new("UITextSizeConstraint")
+    textSize.MaxTextSize = 18
+    textSize.MinTextSize = 9
+    textSize.Parent = label
     return b
 end
 
@@ -2184,8 +2421,8 @@ function PowerChoiceMenu:Show(parent)
     div.BorderSizePixel = 0
     div.Parent = root
 
-    -- bottom controls: ↶ UNDO · ✓ COMMIT · LEVEL UP ▶ · ↺ RESET
-    self.undoBtn = chip(
+    -- bottom controls: ↶ UNDO · ✓ COMMIT · UPGRADE ALL · LEVEL UP ▶ · ↺ RESET
+    self.undoBtn = makeChip(
         root,
         "↶ UNDO",
         UDim2.fromScale(0.17, 0.05),
@@ -2197,7 +2434,7 @@ function PowerChoiceMenu:Show(parent)
         self:_undo()
     end)
 
-    self.commitBtn = chip(
+    self.commitBtn = makeChip(
         root,
         "✓ COMMIT",
         UDim2.fromScale(0.24, 0.055),
@@ -2209,25 +2446,37 @@ function PowerChoiceMenu:Show(parent)
         self:_commit()
     end)
 
-    self.levelBtn = chip(
+    self.upgradeBtn = makeChip(
+        root,
+        "UPGRADE ALL",
+        UDim2.fromScale(0.25, 0.055),
+        UDim2.fromScale(0.47, 0.965),
+        UPGRADE_COLOR,
+        3
+    )
+    self.upgradeBtn.Activated:Connect(function()
+        self:_showUpgradeAllConfirm()
+    end)
+
+    self.levelBtn = makeChip(
         root,
         "LEVEL UP  ▶",
         UDim2.fromScale(0.24, 0.055),
         UDim2.fromScale(0.64, 0.965),
         LEVEL_COLOR,
-        3
+        4
     )
     self.levelBtn.Activated:Connect(function()
         self:_levelUp()
     end)
 
-    self.resetBtn = chip(
+    self.resetBtn = makeChip(
         root,
         "↺ RESET",
         UDim2.fromScale(0.15, 0.05),
         UDim2.fromScale(0.88, 0.965),
         RESET_COLOR,
-        4
+        5
     )
     self.resetBtn.Activated:Connect(function()
         self:_resetRun()
@@ -2264,7 +2513,10 @@ function PowerChoiceMenu:Hide()
     self.levelBtn = nil
     self.commitBtn = nil
     self.undoBtn = nil
+    self.upgradeBtn = nil
     self.resetBtn = nil
+    self.upgradePreview = nil
+    self._upgradeInFlight = false
 end
 
 function PowerChoiceMenu:GetFrame()
