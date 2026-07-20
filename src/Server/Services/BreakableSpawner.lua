@@ -1837,11 +1837,16 @@ function BreakableSpawner:_trySpawnOne(
     contribFolder.Name = "Contrib"
     contribFolder.Parent = model
 
+    -- Imported ore models do not consistently author PrimaryPart. Resolve one stable presentation
+    -- host and use it for BOTH billboard creation and every later update; creating on a fallback
+    -- mesh but reading only PrimaryPart left valid HP/Boost bars permanently disabled.
+    local overheadHost = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+
     -- Pet Realm ore meshes are bare MeshParts with no baked Health/Boost UI. Build simple
     -- billboards so the bars below have something to drive. Skipped if the model already has a
     -- baked Health bar (template blue crystals). Starts hidden; shown only while being attacked.
     do
-        local pp = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+        local pp = overheadHost
         if pp then
             -- Normalization: EVERY breakable's HP/boost meters use the ONE shared OverheadBar widget
             -- (same as pets + enemies) — no per-crystal hand-rolled bars. Strip any authored
@@ -1883,7 +1888,7 @@ function BreakableSpawner:_trySpawnOne(
 
     -- Health + boost meters drive the shared OverheadBar (fillOf/setFraction) off model attributes.
     local function setOverheadBar(name, value, maxValue)
-        local pp = model.PrimaryPart
+        local pp = overheadHost
         local bb = pp and pp:FindFirstChild(name)
         local fill = pp and OverheadBar.fillOf(pp, name)
         if not (bb and fill) then
@@ -1909,7 +1914,7 @@ function BreakableSpawner:_trySpawnOne(
         -- health + boost billboards together.
         local engaged = maxHp > 0 and hp < maxHp and hp > 0
         bb.Enabled = engaged
-        local ppNow = model.PrimaryPart
+        local ppNow = overheadHost
         local boostBB = ppNow and ppNow:FindFirstChild("BoostBillboardGui")
         if boostBB then
             -- Boost bar also shows whenever there's Boost (Resonance pulses raise Boost without
@@ -2012,9 +2017,9 @@ function BreakableSpawner:_trySpawnOne(
                 efficiency.Value = efficiency.Value + eff.Value
             end
             -- Enable crystal SFX/UI when pets engage
-            local pp = model.PrimaryPart
+            local pp = overheadHost
             if pp then
-                local bb = pp:FindFirstChild("BillboardGui")
+                local bb = pp:FindFirstChild("HealthBillboardGui")
                 if bb then
                     bb.MaxDistance = 75
                 end
@@ -2049,9 +2054,9 @@ function BreakableSpawner:_trySpawnOne(
                 if star then
                     star:Destroy()
                 end
-                local pp = model.PrimaryPart
+                local pp = overheadHost
                 if pp then
-                    local bb = pp:FindFirstChild("BillboardGui")
+                    local bb = pp:FindFirstChild("HealthBillboardGui")
                     if bb then
                         bb.MaxDistance = 25
                     end
@@ -2523,9 +2528,9 @@ function BreakableSpawner:_trySpawnOne(
             end
         end
         -- Visual/audio feedback
-        local pp = model.PrimaryPart
+        local pp = overheadHost
         if pp then
-            local bb = pp:FindFirstChild("BillboardGui")
+            local bb = pp:FindFirstChild("HealthBillboardGui")
             if bb then
                 bb.MaxDistance = 75
             end

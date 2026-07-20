@@ -22,6 +22,7 @@ local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
 local Locations = require(ReplicatedStorage.Shared.Locations)
+local PetEquipCapacity = require(ReplicatedStorage.Shared.Game.PetEquipCapacity)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
 local PetProjectionPolicy = require(ReplicatedStorage.Shared.Inventory.PetProjectionPolicy)
 local Signal = require(ReplicatedStorage.Shared.Libraries.Signal)
@@ -1853,20 +1854,23 @@ function InventoryService:_getMaxEquippedSlots(player, category, configuredSlots
     end
 
     local attributeSlots = tonumber(player:GetAttribute("ExtraPetSlots")) or 0
-    extraSlots = math.max(extraSlots, attributeSlots)
 
-    -- +1 PET SLOT PASS (2026-07-14, dashboard id 1912340314): the feature is
-    -- applied by MonetizationService; it raises the HARD CAP too — max_slots
-    -- bounds PROGRESSION (level ladder tops at 10), the paid slot sits on top
-    -- (10 + 1 = 11 deployed).
+    -- DEPLOY AN EXTRA PET pass (dashboard id 1912340314): this is additive to
+    -- the player's CURRENT capacity, not a fixed unlock of slot 11. A new
+    -- player goes 3 -> 4 immediately; progression can later go 10 -> 11.
+    -- Raise the hard cap by the same paid delta so the bonus survives at cap.
     local passSlots = 0
     if self._dataService and self._dataService.GetFeature then
         passSlots = tonumber(self._dataService:GetFeature(player, "extra_equip_slots")) or 0
     end
-    extraSlots += passSlots
 
-    local maxSlots = (tonumber(petConfig.max_slots) or (baseSlots + extraSlots)) + passSlots
-    local finalSlots = math.clamp(baseSlots + extraSlots, 1, maxSlots)
+    local finalSlots = PetEquipCapacity.resolve({
+        baseSlots = baseSlots,
+        progressionCap = petConfig.max_slots,
+        earnedSlots = extraSlots,
+        replicatedSlots = attributeSlots,
+        paidSlots = passSlots,
+    })
     -- Replicate the UNLOCKED equip-slot count so the Pets-window can draw one ring per slot
     -- (#179: blank rings show how many slots you have at a glance, even when not all are filled).
     player:SetAttribute("PetEquipSlots", finalSlots)

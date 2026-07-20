@@ -313,6 +313,74 @@ function MonetizationService:_processProductPurchase(player, productConfig, rece
     return true
 end
 
+-- Complete a Marketplace game-pass purchase. Roblox's finished callback carries
+-- the numeric pass ID only; map that back to config, apply the permanent benefit,
+-- persist ownership/purchase history, and refresh the shop snapshot immediately.
+function MonetizationService:_handleGamePassPurchase(player, gamePassId)
+    local passConfig = self._productIdMapper:GetPassByRobloxId(gamePassId)
+    if not passConfig then
+        self._logger:Error("Unknown game pass purchased", {
+            player = player.Name,
+            gamePassId = gamePassId,
+        })
+        self:_sendPurchaseError(player, "Game pass not found")
+        return false
+    end
+
+    local ownedPasses = self._dataService:GetOwnedPasses(player) or {}
+    if table.find(ownedPasses, passConfig.id) then
+        self:_sendOwnedPasses(player)
+        return true
+    end
+
+    local firstPurchase = self:_isFirstPurchase(player)
+    self:_applyPassBenefits(player, passConfig)
+    table.insert(ownedPasses, passConfig.id)
+    if not self._dataService:SetOwnedPasses(player, ownedPasses) then
+        self._logger:Error("Failed to persist purchased game pass", {
+            player = player.Name,
+            pass = passConfig.id,
+        })
+        self:_sendPurchaseError(player, "Purchase completed, but saving is delayed. Please rejoin.")
+        return false
+    end
+
+    if self._inventoryService and self._inventoryService.RefreshEquipCapacity then
+        pcall(function()
+            self._inventoryService:RefreshEquipCapacity(player)
+        end)
+    end
+
+    if firstPurchase then
+        self:_grantFirstPurchaseBonus(player)
+    end
+
+    local purchaseId = "GAMEPASS_" .. tostring(gamePassId) .. "_" .. tostring(os.time())
+    self._dataService:RecordPurchase(player, {
+        type = "gamepass",
+        id = passConfig.id,
+        gamePassId = gamePassId,
+        purchaseId = purchaseId,
+        robuxSpent = passConfig.price_robux,
+        timestamp = os.time(),
+    })
+    self:_trackPurchase(player, passConfig, { PurchaseId = purchaseId })
+
+    self.PassPurchased:Fire(player, passConfig)
+    self._signals.PurchaseSuccess:FireClient(player, {
+        type = "gamepass",
+        id = passConfig.id,
+    })
+    self:_sendOwnedPasses(player)
+
+    self._logger:Info("Game pass purchase processed", {
+        player = player.Name,
+        pass = passConfig.id,
+        gamePassId = gamePassId,
+    })
+    return true
+end
+
 -- Check game passes for a player
 function MonetizationService:CheckPlayerPasses(player)
     local passes = self._productIdMapper:GetAllPasses()
@@ -570,19 +638,8 @@ function MonetizationService:_simulateTestPassPurchase(player, passId)
         pass = passId,
     })
 
-    -- Apply benefits
-    self:_applyPassBenefits(player, passConfig)
-
-    -- Record as owned
-    local ownedPasses = self._dataService:GetOwnedPasses(player) or {}
-    table.insert(ownedPasses, passId)
-    self._dataService:SetOwnedPasses(player, ownedPasses)
-
-    -- Send success
-    self._signals.PurchaseSuccess:FireClient(player, {
-        type = "gamepass",
-        id = passId,
-    })
+    local robloxId = self._productIdMapper:GetProductId(passId)
+    self:_handleGamePassPurchase(player, robloxId)
 end
 
 -- Helper functions

@@ -195,20 +195,72 @@ local M = {
     -- Disc colour comes from the PET through PetBadge.elementForPetType; it is never hard-coded by
     -- aura kind (exclusive pets such as Ashwing/Lumen Dove therefore stay purple).
     support_badge = {
-        heal = { symbol = "plus", label = "Heal" },
-        defense = { symbol = "armor_chest", label = "Defense" },
-        offense = { symbol = "chevrons_up", label = "War-Cry" },
-        yield = { symbol = "coins_up", label = "Crystal Yield" },
-        luck = { symbol = "clover_lucky", label = "Luck" },
-        hold = { symbol = "capacitor", label = "Hold" },
-        empower = { symbol = "chevrons_up", label = "Empower" },
-        haste = { symbol = "history", label = "Haste" },
-        recharge = { symbol = "history", label = "Recharge" }, -- Ashwing Ember Tempo
-        focus = { symbol = "focus_regen", label = "Focus Regen" }, -- Lumen Dove Inner Light
-        drain = { symbol = "plus", label = "Drain Heal" },
-        shred = { symbol = "shield_broken", label = "Armor Shred" },
-        curse = { symbol = "fist_broken", label = "Weaken" },
-        rage = { symbol = "rage", label = "Rage" },
+        heal = { symbol = "plus", label = "Heal", tooltip = "Restores the most-injured pet." },
+        defense = {
+            symbol = "armor_chest",
+            label = "Defense",
+            tooltip = "Raises the squad's defense.",
+        },
+        offense = {
+            symbol = "chevrons_up",
+            label = "War-Cry",
+            tooltip = "Raises the squad's mining and combat damage.",
+        },
+        yield = {
+            symbol = "coins_up",
+            label = "Crystal Yield",
+            tooltip = "Increases currency earned from crystals.",
+        },
+        luck = {
+            symbol = "clover_lucky",
+            label = "Luck",
+            tooltip = "Improves hatch luck while this pet is deployed.",
+        },
+        hold = {
+            symbol = "capacitor",
+            label = "Hold",
+            tooltip = "Stops the focused enemy from moving or attacking.",
+        },
+        empower = {
+            symbol = "chevrons_up",
+            label = "Empower",
+            tooltip = "Boosts the strongest ally's damage.",
+        },
+        haste = {
+            symbol = "history",
+            label = "Haste",
+            tooltip = "Makes the squad attack faster.",
+        },
+        recharge = {
+            symbol = "history",
+            label = "Recharge",
+            tooltip = "Shortens the squad's power recharge times.",
+        }, -- Ashwing Ember Tempo
+        focus = {
+            symbol = "focus_regen",
+            label = "Focus Regen",
+            tooltip = "Restores the player's Focus over time.",
+        }, -- Lumen Dove Inner Light
+        drain = {
+            symbol = "plus",
+            label = "Drain Heal",
+            tooltip = "Drains an enemy to heal an injured ally.",
+        },
+        shred = {
+            symbol = "shield_broken",
+            label = "Armor Shred",
+            tooltip = "Makes the focused enemy take more damage.",
+        },
+        curse = {
+            symbol = "fist_broken",
+            label = "Weaken",
+            tooltip = "Reduces the focused enemy's damage.",
+        },
+        rage = {
+            symbol = "rage",
+            label = "Rage",
+            tooltip = "Raises this pet's damage as its health falls.",
+        },
     },
     power_glyph_symbol = {
         debuff = "contagion",

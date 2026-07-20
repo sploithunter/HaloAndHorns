@@ -1155,3 +1155,125 @@ migration is needed for the abandoned "element splits stacks" spec.
   auras, or refresh taunt. Existing DoTs and passive recovery remain status effects, not new actions.
 - Headless coverage locks the root-vs-hold boundary, non-shortening refresh, Cryomancer hold dispatch,
   and player-facing descriptions.
+
+## 2026-07-18 — Tutorial potion hotbar repair + retention funnel
+
+- Fixed tutorial potion grants persisting slot 20 without refreshing the client's hotbar snapshot.
+  Potion auto-binding now resolves through headless-tested pure logic and pushes the authoritative
+  bar immediately, so the granted Berserk Brews appear and are usable at tutorial step 6.
+- Added first-session retention measurement: native Roblox onboarding funnel steps for join, every
+  tutorial objective, first quest, First Steps completion, and first area unlock; one custom
+  milestone event for Explore breakdowns; and compact per-player timestamps for every quest/area
+  milestone under `Analytics.Retention`. `retention.get` exposes the live player snapshot.
+- Expanded launch capture into the single `RetentionEvents_v1` DataStore: every semantic game
+  event, session-boundary progression snapshots, whitelisted client context, partitioned chunk
+  writes, and a read-only Open Cloud JSONL/CSV exporter.
+- Added mergeable daily server-sharded launch counters and exporter summaries for average completed
+  session time, tutorial step reach/conversion/timing/exit point, and earned/claimed-level exit
+  distributions. Raw events remain available for recomputation and distributional analysis.
+- Fixed the mobile currency HUD after portrait/landscape rotation. `CurrencyStack` now reflows from
+  settled `MainContainer` and menu absolute-geometry changes (and camera replacement), avoiding the
+  stale portrait Y-coordinate that could place the money stack below the landscape viewport.
+
+## 2026-07-19 — Squad-draft stacked-pet UI repair
+
+Fixed squad-draft stack reconciliation in `InventoryPanel`: replicated pet stack
+`Quantity` is unequipped-only, so the UI now derives total ownership from unequipped + live deployed
+and subtracts the working draft. Fully deployed single-copy pets immediately return to the inventory
+grid when removed, larger stacks no longer double-subtract deployed copies, and the renderer reads
+the stable live Quantity object so a pre-projection card cache cannot stage a phantom extra copy.
+Added pure headless coverage in `InventoryDraftView`.
+
+## 2026-07-19 — Tutorial Rally repair + descriptive hotbar editor
+
+The Rally flag is now an explicit idempotent grant on entry to the tutorial's `rally_call` step,
+rather than relying on a one-time profile seed. Reconnect/state-pull reapplies an unfinished step's
+grant, `HotbarLogic.ensureBindAt` preserves any displaced binding, and the authoritative hotbar
+snapshot is pushed immediately so the tutorial cannot point at an empty slot 11. The hotbar picker
+now uses the shared area-themed panel chrome and a two-pane select/preview/assign flow; power and
+potion descriptions come from their existing config-derived SSOT, while tactical command
+descriptions live in `configs/hotbar.lua`, making the same details available to mouse and touch.
+
+## 2026-07-19 — Reset-to-beginning restores the authored hotbar
+
+The admin `Reset to Beginning` path now resets the power bar through
+`HotbarService:ResetToBeginning`: it replaces stale/custom bindings with
+`configs/hotbar.lua` `beginning_binds`, resets the one-time initialization state, saves, and pushes
+the fresh snapshot immediately. The beginning layout is headless-tested and currently contains only
+Rally at slot 11; origin powers remain absent until normal progression grants/binds them.
+
+## 2026-07-19 — Hotbar assignment is direct and tooltip-driven
+
+Replaced the two-pane select/preview/assign picker with the compact single-list layout. A row now
+binds only when that exact row is clicked; hovering cannot silently change a pending selection.
+Picker rows reuse the existing config-derived hotbar tooltip for power, tactical, and potion details,
+so the separate preview pane and distant confirmation button are no longer needed.
+
+## 2026-07-19 — Crystal overhead bars tolerate missing PrimaryPart
+
+Imported ore models do not consistently define `PrimaryPart`. `BreakableSpawner` previously created
+health and Resonance boost billboards on a fallback mesh but later searched only `PrimaryPart` when
+updating them, leaving valid bars permanently disabled. Each spawned breakable now resolves one
+stable overhead host and uses it for creation, fill updates, visibility, and engagement distance.
+
+## 2026-07-19 — Provisional beta analytics and staged-release plan
+
+Added the launch operating plan for three paid stranger waves. It preserves native Roblox analytics
+plus the raw `RetentionEvents_v1` trace, defines activation/retention metrics and trust guardrails,
+converts the 5,000-Robux budget into the current 19-ad-credit constraint, and uses comparable
+Tuesday cohorts rather than a confounded Friday follow-up. Schema-v2 build, campaign, session-date,
+and first-play-cohort attribution plus a published-server export rehearsal are hard pre-spend gates.
+
+## 2026-07-19 — Remote pets animate on every observing client
+
+The pet owner continues to report only clean, gait-free transforms through `PetPositionsRelay`.
+Observers now keep a separate clean interpolation base and layer the same per-type procedural gait
+or rigged idle/run animation used by the owner. Cosmetic bob and tilt therefore cannot feed back
+into network smoothing, and the relay remains presentation-only rather than movement authority.
+A live Studio relay probe measured both vertical bob and roll across 133 observer-rendered frames.
+
+## 2026-07-19 — Unified Pet Shop and game-pass purchase completion
+
+The world Pet Shop now opens a responsive unified storefront with all eight live game passes,
+their Marketplace artwork, authored benefits, Robux prices, and owned state. Streaming-safe
+proximity-prompt discovery makes the shop building the primary entry point. The missing server purchase-completion path now maps
+Roblox pass IDs to config, applies and saves benefits, refreshes capacity, records analytics, and
+pushes ownership to the client. Developer products remain hidden until their IDs and grant handlers
+are real, at which point the catalog exposes their Boosts tab automatically.
+
+## 2026-07-19 — Pet Shop corrected to Robux-only
+
+Removed the legacy Phase 7 earned-currency offer tab from the Pet Shop. Crystal Cache, the
+earnable Speed Boost, and the coin-priced Starter Pack belong to the neighboring economy shop;
+they are not developer products and no longer appear in the Robux storefront. The Pet Shop shows
+game passes now and will add only live, deterministic developer products when their IDs and grant
+handlers are complete.
+
+## 2026-07-19 — Pet Shop controls use the shared pill style
+
+Replaced the Pet Shop's hand-colored flat category and Buy/Owned buttons with the shared
+`PanelChrome` glossy pill panel and neon border assets already used by the Quest tabs and daily
+cards. Selected categories use citrine, live purchases use emerald, owned passes use amethyst,
+and inactive future categories inherit the player's area color.
+
+## 2026-07-19 — Extra-pet pass describes its additive entitlement
+
+Renamed the `pet_slot_pass` storefront card from `+1 Pet Slot` to `Deploy an Extra Pet` and
+replaced the fixed-eleventh-pet description with the actual contract: one above the player's
+current limit, so three becomes four now and progression's ten becomes eleven later. The runtime
+capacity calculation was verified to already apply and cap that paid slot additively.
+
+## 2026-07-20 — Base-realm crystal currency and mining XP doubled
+
+The five base-realm breakable worlds now apply `value_mult = 2` at the spawned node Value seam.
+That doubles both the biome-currency split and mining XP, which is calculated from the same Value,
+for free players whose launch pacing was too slow. Heaven/Hell worlds intentionally keep their
+existing ore baseline and layer multipliers, while paid XP entitlements continue to stack
+independently on the new base rate.
+
+## 2026-07-20 — Egg previews expose pet archetypes and support abilities
+
+The world-space egg chance cards now reuse the inventory's universal `PetBadge` renderer and
+`pet_roles`/`power_icons` data. Every possible hatch shows its archetype badge; pets with a
+support or control ability show that ability and its targeting ring as a second badge. Hover
+explains either badge, while touch players can tap to toggle the same config-owned tooltip.

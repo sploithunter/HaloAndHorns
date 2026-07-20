@@ -88,11 +88,15 @@ return {
         },
         -- THE RALLY FLAG (Jason: "teach the player even in tutorial about the
         -- rally flag" — the panic button lives at the TOP-LEFT of the bar,
-        -- seeded on every bar at slot 11). Taught right after the cave fights
-        -- while "a fight going wrong" is a fresh memory.
+        -- granted on step entry at slot 11). Taught right after the cave fights
+        -- while "a fight going wrong" is a fresh memory. Rejoin reapplies this
+        -- idempotently so the objective can never point at an empty slot.
         {
             id = "rally_call",
             title = "Call them back",
+            grant = {
+                hotbar_bind = { slot = 11, type = "tactical", target = "rally" },
+            },
             body = "See the FLAG at the top-left of your power bar? That's Rally — press it and your pets instantly return to your side. Your escape button when a fight goes wrong!",
             target = { kind = "ui", name = "Slot_11" },
             complete_on = { event = "rally_used" },

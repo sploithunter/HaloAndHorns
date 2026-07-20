@@ -165,6 +165,9 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - The hatch drawer now summarizes saved auto-delete filter count in its header, using config-owned summary strings such as `summary_empty`, `summary_enabled_format`, and `summary_disabled_format`. The summary exposes count attributes for smoke tests and helps players understand when filters are saved but auto-delete is off.
 - Egg hatching is treated as two-stage: first roll chooses the pet species, second hidden roll chooses basic/golden/rainbow. Egg previews stay species-only and show basic-form pets, while `egg_sources.<id>.variant_rolls` controls allowed variants and optional cost multipliers such as the starter `20x` no-basic/golden mode.
 - Egg preview percentages now use the same relative `pet_weights` denominator as the server hatch roll. Large weights are no longer treated as an implicit out-of-100000 table, so preview odds sum to the real hatch distribution.
+- Egg preview cards reuse the inventory's universal identity badges: every species shows its
+  archetype and support/control pets also show their configured ability. Hovering a badge explains
+  it; touch players can tap the badge to toggle the same tooltip.
 - Near-egg hatch controls are now settings-driven instead of always-visible. `Settings.AutoSystems.hatch.action_mode` persists what the E key does (`single`, `max`, or `auto`), the Settings menu exposes this choice plus Show Hatch/Silent Hatch toggles, and the original `EggCurrentTarget` proximity UI is the single egg-side surface. It shows the selected action prompt plus total cost, per-egg cost, max entitlement, and affordability; the separate lower `EggHatchPanel` surface was removed.
 - Egg prompt discoverability is developer-configured through `egg_system.ui.interaction_prompt.mode`. The default `clean` mode follows the configured E-key action, while `advertised_hotkeys` can show the legacy `E Hatch | R Max | T Auto` prompt for games that want that onboarding surface.
 - Hatch filter UX direction: avoid permanent on-screen filter panels near eggs. Auto-delete filters still exist in the engine and drawer for testing, but the preferred player-facing path is contextual selection through settings, egg preview interactions, or inventory actions such as “do not hatch this pet anymore.”
@@ -814,6 +817,34 @@ render live data; HUD reads "Level 10 · 0/1000 XP" live after the XP grant.
 Follow-up: per-breakable XP gain isn't wired yet (XP currently comes from the spine —
 quests/daily/achievements/shop). Add a per-mine XP grant + curve tuning when balancing.
 
+## Halo & Horns — Unified Pet Shop monetization
+
+Last checked: 2026-07-19
+
+- The **Pet Shop is Robux-only**. Its default tab lists every configured live game
+  pass with the Marketplace thumbnail, authored benefit description, Robux price,
+  and authoritative owned/purchase state. Earned gem/coin offers belong to the
+  neighboring economy shop and are deliberately excluded from this panel.
+- Category and purchase-state controls use the same area/citrine/emerald/amethyst
+  glossy pill assets as the established menu style guide; the storefront does not
+  maintain a parallel flat-button palette.
+- Every streamed `Pet shop` world model receives a client-owned proximity prompt that
+  opens the same panel through `MenuManager`. Prompt discovery tolerates models whose
+  sign/parts stream in after the outer model.
+- Game-pass purchase completion now maps the Roblox pass ID back to its authored
+  config, applies the benefit, persists ownership, refreshes capacity, records
+  analytics, and pushes the updated owned state to the client.
+- Developer products are deliberately omitted while their Roblox IDs are zero and
+  their grant handlers are placeholders. A **Boosts** tab appears automatically once
+  live mapped products exist, avoiding nonfunctional purchase buttons at launch.
+- The pet-capacity pass is presented as **Deploy an Extra Pet** and adds one to the
+  player's current deploy limit (3→4 immediately, up through 10→11 after progression);
+  it is not a fixed unlock that jumps every buyer directly to eleven pets.
+
+Verification: headless **1411/1411 across 135 specs**; Rojo build OK; live Studio
+walk-up/E-key test opened the Pet Shop through the real proximity prompt and rendered
+all 8 game-pass cards with live Marketplace artwork.
+
 ## Halo & Horns — Phase 10 (Escrow two-player trade + Trade UI)
 
 Last checked: 2026-05-30
@@ -863,8 +894,11 @@ The active game layer on top of the template baseline. Design SoT:
 own coin; HUD shows the four with a live `+N` gain indicator (legacy `coins`/`crystals` removed).
 `ZoneTrackerService` resolves the current area from config bounds by raycasting biome baseplates;
 farming is scoped to that area. Per-biome egg stands (Earth/Ember/Ice/Sand) place real hatch-target
-eggs. **Mining income identity: `coins/sec = DPS × (value/HP)`, ratio = 0.2** (`configs/breakables.lua`
-ORE_TIERS) — every crystal tier pays the same rate; bigger ones just take longer. Outer zones spawn
+eggs. **Mining income identity: `coins/sec = DPS × (value/HP) × world value multiplier`**.
+`configs/breakables.lua` ORE_TIERS holds the shared 0.2 ratio; the five base-realm worlds use
+`value_mult = 2` for an effective 0.4 ratio and double mining XP from the same scaled node Value.
+Heaven/Hell retain their separate layer scaling. Every crystal tier pays the same rate; bigger ones
+just take longer. Outer zones spawn
 `max=100` with 5–60s distributed respawn; the local depletion sag is a **designed throttle**
 (active>passive). Active-mining boost: clicking a node amplifies pet damage on it.
 

@@ -13,6 +13,7 @@
 ]]
 
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 
 local CurrencyStack = {}
 local started = false
@@ -97,21 +98,61 @@ function CurrencyStack.start()
         -- Sit money's bottom just ABOVE the lower-left menu buttons. `stack` is unscaled and lives in
         -- MainContainer (which spans the whole screen, only inset-shifted), so a measured pixel offset
         -- lands device-correctly. Falls back to 63% of MainContainer when the buttons aren't found yet.
+        --
+        -- IMPORTANT: on mobile orientation changes Camera.ViewportSize updates BEFORE Roblox finishes
+        -- recomputing GuiObject.AbsolutePosition. Reflowing only from the camera event can therefore
+        -- write the old portrait button Y into the new landscape canvas, leaving this stack below the
+        -- screen until the next rotation. Absolute geometry changes are the authoritative layout signal.
+        local menu = mc:FindFirstChild("menu_buttons_pane")
+            or mc:FindFirstChild("SettingsButton", true)
         local function reflowAboveButtons()
-            local menu = mc:FindFirstChild("menu_buttons_pane")
-                or mc:FindFirstChild("SettingsButton", true)
+            if not (menu and menu.Parent) then
+                menu = mc:FindFirstChild("menu_buttons_pane")
+                    or mc:FindFirstChild("SettingsButton", true)
+            end
             local buttonsTop = menu and menu.AbsoluteSize.Y > 0 and menu.AbsolutePosition.Y
                 or (mc.AbsolutePosition.Y + mc.AbsoluteSize.Y * 0.63)
             local posY = (buttonsTop - 8) - mc.AbsolutePosition.Y -- MainContainer maps 1:1 (only shifted)
             stack.Position = UDim2.new(0, 12, 0, math.floor(posY))
         end
-        task.defer(reflowAboveButtons)
-        local cam = workspace.CurrentCamera
-        if cam then
-            cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-                task.defer(reflowAboveButtons)
+
+        local reflowQueued = false
+        local function scheduleReflow()
+            if reflowQueued then
+                return
+            end
+            reflowQueued = true
+            task.defer(function()
+                reflowQueued = false
+                if stack.Parent then
+                    reflowAboveButtons()
+                end
             end)
         end
+
+        mc:GetPropertyChangedSignal("AbsolutePosition"):Connect(scheduleReflow)
+        mc:GetPropertyChangedSignal("AbsoluteSize"):Connect(scheduleReflow)
+        if menu then
+            menu:GetPropertyChangedSignal("AbsolutePosition"):Connect(scheduleReflow)
+            menu:GetPropertyChangedSignal("AbsoluteSize"):Connect(scheduleReflow)
+        end
+
+        local cameraConnection
+        local function watchCamera(camera)
+            if cameraConnection then
+                cameraConnection:Disconnect()
+                cameraConnection = nil
+            end
+            if camera then
+                cameraConnection =
+                    camera:GetPropertyChangedSignal("ViewportSize"):Connect(scheduleReflow)
+            end
+            scheduleReflow()
+        end
+        watchCamera(Workspace.CurrentCamera)
+        Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+            watchCamera(Workspace.CurrentCamera)
+        end)
     end)
 end
 

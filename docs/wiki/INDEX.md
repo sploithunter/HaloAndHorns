@@ -14,6 +14,9 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Current Status](CURRENT_STATUS.md) — what exists right now.
 - [Decisions](DECISIONS.md) — durable decisions and rationale.
 - [Architecture](ARCHITECTURE.md) — system shape and service boundaries.
+- [Retention Analytics](RETENTION_ANALYTICS.md) — onboarding funnel, player milestones, and admin access.
+- [Beta Analytics & Release Plan](BETA_ANALYTICS_RELEASE_PLAN.md) — provisional three-wave launch
+  calendar, KPI definitions, data-quality gates, ad-credit budget, and rollback runbook.
 - [Template vs Game](TEMPLATE_VS_GAME.md) — which systems are reusable template (trading, hatching, rewards…), which are Pet-Realm reference examples, which are game-only content. The pick-list for a future template extraction.
 - [Pet Inventory SSOT](PET_INVENTORY_SSOT.md) — the single-source-of-truth pet model: ownership in `Inventory.pets.items`, equip as a separate validated layer. Read before touching pet inventory/equip/trade.
 - [Studio Workflow](STUDIO_WORKFLOW.md) — Rojo, Roblox Studio, MCP, and verification workflow.
