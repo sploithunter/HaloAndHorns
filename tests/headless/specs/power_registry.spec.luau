@@ -23,11 +23,11 @@ end
 
 return function()
     describe("PowerRegistry.record — identity + base stats", function()
-        it("composes Eternal Winter (root + AoE DoT capstone)", function()
+        it("composes Eternal Winter (full hold + AoE DoT capstone)", function()
             local r = PowerRegistry.record("eternal_winter", cfg)
             expect(r.id).to.equal("eternal_winter")
             expect(r.name).to.equal("Eternal Winter")
-            expect(r.effect).to.equal("root") -- dispatch = family
+            expect(r.effect).to.equal("hold") -- dispatch = family
             expect(r.durationBase).to.equal(12)
             expect(r.damageBase).to.equal(5) -- from dot.per_tick (10x world)
             expect(r.tickBase).to.equal(1)
@@ -35,6 +35,14 @@ return function()
             expect(r.origin[1]).to.equal("cryomancer")
             expect(contains(r.kind, "hold")).to.equal(true)
             expect(contains(r.kind, "dot")).to.equal(true)
+        end)
+
+        it("keeps Deep Freeze single-target while dispatching a full hold", function()
+            local r = PowerRegistry.record("deep_freeze", cfg)
+            expect(r.effect).to.equal("hold")
+            expect(r.durationBase).to.equal(8)
+            expect(contains(r.kind, "target")).to.equal(true)
+            expect(contains(r.kind, "hold")).to.equal(true)
         end)
 
         it("composes Mark of Flame (vulnerable + targeted DoT)", function()
@@ -85,6 +93,8 @@ return function()
         it("debuff/control families take the sub-1 accuracy_family_base (can miss)", function()
             local r = PowerRegistry.record("strike", cfg) -- vulnerable family -> 0.9 default
             expect(r.accuracyBase).to.equal(cfg.accuracy_family_base.vulnerable)
+            local hold = PowerRegistry.record("deep_freeze", cfg)
+            expect(hold.accuracyBase).to.equal(cfg.accuracy_family_base.hold)
         end)
         it("returns nil for an unknown id", function()
             expect(PowerRegistry.record("nope_not_real", cfg)).to.equal(nil)

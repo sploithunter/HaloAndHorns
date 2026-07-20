@@ -25,6 +25,7 @@ local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
 local PetCombat = require(ReplicatedStorage.Shared.Game.PetCombat)
 local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark) -- additive vulnerability marks (SSOT)
+local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local ResSickness = require(ReplicatedStorage.Shared.Game.ResSickness) -- post-revive heal clamp
 local AdminPowerPalette = require(ReplicatedStorage.Shared.Game.AdminPowerPalette)
 local FocusUpkeep = require(ReplicatedStorage.Shared.Game.FocusUpkeep)
@@ -803,7 +804,7 @@ function PowerService:_tauntHolders(player)
         if
             pet:IsA("Model")
             and not pet:GetAttribute("CombatDowned")
-            and (tonumber(pet:GetAttribute("PetHeldUntil")) or 0) <= nowT
+            and CrowdControl.canAct(pet:GetAttribute("PetHeldUntil"), nowT)
         then
             live[#live + 1] = pet
         end
@@ -1685,12 +1686,22 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         player:SetAttribute("MagnetBuffPowerId", powerId)
     elseif family == "root" then
         for _, enemy in ipairs(enemiesAlive()) do
-            if self:_accuracyHit(player, enemy, kind) then -- P4: a hold can be resisted (per target)
+            if self:_accuracyHit(player, enemy, kind) then -- P4: control can be resisted (per target)
                 enemy:SetAttribute("RootedUntil", now + dur)
                 -- stamp WHICH power debuffed it, so the client can show the matching badge above it
                 -- (alongside the aura) instead of leaving you to decode the particle colour.
                 enemy:SetAttribute("DebuffPowerId", powerId)
                 enemy:SetAttribute("DebuffUntil", now + dur)
+            end
+        end
+    elseif family == "hold" then
+        for _, enemy in ipairs(enemiesAlive()) do
+            if self:_accuracyHit(player, enemy, kind) then
+                local heldUntil = CrowdControl.extend(enemy:GetAttribute("HeldUntil"), now, dur)
+                enemy:SetAttribute("HeldUntil", heldUntil)
+                enemy:SetAttribute("DebuffPowerId", powerId)
+                enemy:SetAttribute("DebuffUntil", heldUntil)
+                self:_stampPowerBadge(enemy, powerId, heldUntil)
             end
         end
     elseif family == "blind" then

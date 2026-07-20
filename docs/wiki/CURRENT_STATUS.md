@@ -1030,6 +1030,15 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
   killing the stale-key "CHANGED EXTERNALLY" watchdog false alarm. Per-color gem-drop rendering +
   size-invariant inventory card framing.
 
+## 2026-07-17 — True symmetric combat holds
+
+- **Hold is a full action lock, distinct from root.** The shared `CrowdControl` timing rule treats
+  `HeldUntil` (enemy) and `PetHeldUntil` (pet) as no movement, basic attacks, powers, support output,
+  damage auras, or taunt. Root remains movement-only.
+- Deep Freeze / Absolute Zero / Eternal Winter are the Cryomancer 8/10/12-second full-hold ladder.
+  A hold landing during a capital-enemy slam wind-up cancels the impact, and intentional long holds
+  do not feed the chase-stuck despawn timer. There is no hold-break power yet.
+
 ## Links
 
 - [Decisions](DECISIONS.md)

@@ -57,12 +57,13 @@ return {
         accuracy = {
             symbol = "target",
             axis = "accuracy",
-            -- Only families that ROLL to-hit (_accuracyHit: vulnerable marks, root holds) AND land
+            -- Only families that ROLL to-hit (_accuracyHit: vulnerable marks, roots, holds) AND land
             -- below 1.0 (accuracy_family_base) — there a +accuracy enhancement actually improves the
             -- chance the debuff lands. Other families auto-land (no roll) → accuracy was a dead slot.
             families = {
                 vulnerable = true,
                 root = true,
+                hold = true,
                 blind = true, -- Sandstorm: a to-hit roll lands the blind, so +accuracy helps it stick
             },
         },
@@ -116,6 +117,7 @@ return {
                 absorb = true,
                 vulnerable = true,
                 root = true,
+                hold = true,
                 root_guard = true,
                 fear = true,
                 taunt = true,

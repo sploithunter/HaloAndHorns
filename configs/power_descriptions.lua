@@ -41,7 +41,8 @@ return {
     blizzard = "Slows/roots enemies in an area for 6s.",
     disarm = "Disarms a target: reduces its attack.",
     focus_fire = "Designates a priority target for the squad.",
-    permafrost = "Signature: long-hold freeze on enemies.",
+    deep_freeze = "Fully freezes one enemy: no movement, attacks, or powers.",
+    permafrost = "Signature: long-duration root on enemies.",
     shatter = "Signature: a shattering ice burst.",
     absolute_zero = "Signature: deep-freeze hold on enemies.",
     eternal_winter = {

@@ -39,6 +39,7 @@ local DamageOverTime = require(ReplicatedStorage.Shared.Game.DamageOverTime)
 local OnHitEffects = require(ReplicatedStorage.Shared.Game.OnHitEffects)
 local MovingTargetPosition = require(ReplicatedStorage.Shared.Game.MovingTargetPosition)
 local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark) -- additive vulnerability marks (SSOT)
+local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local SquadDiversity = require(ReplicatedStorage.Shared.Game.SquadDiversity)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
@@ -551,7 +552,7 @@ function PetFollowService:_mine(player, pet, breakable)
     end
     -- MEZ (#269): a HELD pet is fully controlled — no attacks, no mining, until the window
     -- lapses (root only stops movement; hold stops output too).
-    if (tonumber(pet:GetAttribute("PetHeldUntil")) or 0) > os.time() then
+    if CrowdControl.isHeld(pet:GetAttribute("PetHeldUntil"), os.time()) then
         return
     end
     -- the SERVER enforcement: pets of a player who hasn't unlocked this node's

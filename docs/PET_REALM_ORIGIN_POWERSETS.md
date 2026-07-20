@@ -3,6 +3,10 @@
 Status: **DRAFT for review** (not yet in `powers.lua`). Target: **11 powers per origin = 7 cores + 4
 signatures**, symmetric cadence, role-balanced. Neutral pool (11) is already in config.
 
+Runtime note (2026-07-17): true Hold is shipped through the shared `HeldUntil` / `PetHeldUntil`
+contract. A held enemy or pet cannot move, attack, cast powers, emit support/damage auras, taunt, or
+finish a pending wind-up. No hold-break power exists yet; holds lapse only at their configured expiry.
+
 ## Cadence (all origins identical)
 
 | Tier | Levels |
@@ -121,6 +125,6 @@ Each origin **over-indexes on its identity** (symmetric specialization, like CoH
 ## Still open / to build
 
 - **`display_name`** on all cores (sigs already have them).
-- Effects/mechanics for the 8 net-new powers + the 5 new mechanics.
+- Remaining effects/mechanics from the net-new roster; true Hold is complete.
 - Cuts to confirm: Geo ✕ Aegis, Bulwark · Sand ✕ Cripple · Cryo ✕ Blizzard.
 - Per-tier core level split (L6/9/12) is a first pass — tunable.

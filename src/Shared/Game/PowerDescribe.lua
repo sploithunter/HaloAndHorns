@@ -73,7 +73,10 @@ local FAMILY_TEXT = {
         return ("+%s crit chance for %s."):format(pct(kind.magnitude), target)
     end,
     root = function(_, target)
-        return ("Holds %s in place."):format(target)
+        return ("Roots %s in place; they can still attack and use powers."):format(target)
+    end,
+    hold = function(_, target)
+        return ("Fully holds %s; they cannot move, attack, or use powers."):format(target)
     end,
     blind = function(kind, target)
         -- magnitude is the to-hit REDUCTION (fraction): a blinded enemy misses that much more.

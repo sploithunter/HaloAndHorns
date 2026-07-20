@@ -32,6 +32,7 @@ return {
     enemy_targeted_families = {
         vulnerable = true,
         root = true,
+        hold = true,
         root_guard = true, -- Seismic Hold (roots enemies + hardens the squad)
         fear = true, -- you terrify something that's fighting you (needs an engaged enemy)
         amplified_burst = true,
@@ -87,6 +88,7 @@ return {
         vulnerable = { target = "eruption" },
         burn_spread = { target = "eruption" },
         root = { target = "eruption" },
+        hold = { target = "eruption" },
         root_guard = { target = "eruption" },
         -- no clean visual yet ⇒ floating "(effect TBD)"
         summon = { source = "tbd" },
@@ -119,7 +121,8 @@ return {
     -- belong here. Tune freely.
     accuracy_family_base = {
         vulnerable = 0.9, -- marks/debuffs: ~10% base miss before the level curve
-        root = 0.9, -- holds/slows
+        root = 0.9, -- movement roots/slows
+        hold = 0.9, -- full holds
         root_guard = 0.9, -- Seismic's root rolls like every other control (was the one auto-lander)
         fear = 0.9, -- terror can miss too (control-family base)
         -- Sandstorm rolled to-hit but had NO base entry → base 1.0 → auto-landed at-level, and "a
@@ -220,9 +223,7 @@ return {
         focus_fire = { family = "vulnerable", magnitude = 1.5, duration = 6 }, -- designate + soften
         strike = { family = "vulnerable", magnitude = 1.5, duration = 4 }, -- basic single hit
 
-        -- ===== NEW origin-core effects — placeholder families so the powers resolve + show in menus;
-        -- the real mechanics (Rage HP-curve, Fear flee, true Disarm/Hold, heals, player_field) are
-        -- separate build slices. Firewall-safe. See docs/PET_REALM_ORIGIN_POWERSETS.md. =====
+        -- ===== Origin-core effects. Firewall-safe. See docs/PET_REALM_ORIGIN_POWERSETS.md. =====
         taunt = { family = "taunt", magnitude = 0, duration = 8, radius = 18 }, -- AoE aggro pull onto the tank
         -- RAGE (tank self-buff): the holder pets (selected pet, else all tanks — same set as taunt)
         -- get a flat `base` pet-damage bonus PLUS a "critical" bonus that GROWS the lower the pet's HP
@@ -261,10 +262,9 @@ return {
         -- recovers (negatives snap to 0). No bespoke flee AI — the same table taunt pins positive.
         fear = { family = "fear", magnitude = 0, duration = 5 },
         ice_shard = { family = "vulnerable", magnitude = 1.4, duration = 4 }, -- targeted damage (via pets)
-        -- Deep Freeze INTERIM buff (balance audit): was 4s — strictly WORSE than the L6 Frost Bind
-        -- (5s, cheaper) despite being the L12 pick. 8s until the true HOLD (stops attacks too) ships;
-        -- part of the cryo hold ladder 8/10/12 (deep_freeze/absolute_zero/eternal_winter).
-        deep_freeze = { family = "root", magnitude = 0, duration = 8 }, -- TBD: full hold (Capacitor)
+        -- Full HOLD: stops movement, attacks, powers, and other active behavior. This begins the
+        -- cryo hold ladder 8/10/12 (deep_freeze/absolute_zero/eternal_winter).
+        deep_freeze = { family = "hold", magnitude = 0, duration = 8 },
         frost_field = { family = "root", magnitude = 0, duration = 6 }, -- player_field slow/freeze
         scorch = { family = "vulnerable", magnitude = 1.3, duration = 8 }, -- -def debuff
         -- Fire Nova (2026-07-02 audit): "Self-AoE Burn" had no burn — just the vuln mark. The generic
@@ -355,7 +355,7 @@ return {
         -- Winter). 7 -> 10s (balance audit): the cryo hold LADDER is 8/10/12 (deep_freeze/absolute_zero/
         -- eternal_winter) so the controller owns the game's long holds.
         absolute_zero = {
-            family = "root",
+            family = "hold",
             magnitude = 0,
             duration = 10,
             dot = { per_tick = 4, interval = 1, aoe = true },
@@ -363,7 +363,7 @@ return {
         -- Capstone: field-wide hold + a MINOR AoE DoT — 5 HP/sec (10x world; deliberately small so the
         -- frostbite chips slowly rather than bursting). Holds every enemy and grinds them down.
         eternal_winter = {
-            family = "root",
+            family = "hold",
             magnitude = 0,
             duration = 12,
             dot = { per_tick = 5, interval = 1, aoe = true },
@@ -533,9 +533,8 @@ return {
 
         -- ===== ORIGIN CORES — 7 per origin (full schema: display_name/role/element/target/glyph/
         -- unlock_level). See docs/PET_REALM_ORIGIN_POWERSETS.md. Signatures follow below.
-        -- NOTE: new effects (taunt/rage/armor_field/restoring_sands/healing_field/fear/ice_shard/
-        -- deep_freeze/frost_field/scorch/fire_nova) + target "player_field" have placeholder
-        -- effect_kinds; their mechanics are separate build slices. =====
+        -- NOTE: the `effect` key resolves mechanics through effect_kinds above; target controls
+        -- scope independently (single / player_field / targeted_aoe). =====
 
         -- Geomancer (earth · tank): targeted+team armor, buff, debuff, Taunt, Rage, Armor Field
         stone_skin = {
