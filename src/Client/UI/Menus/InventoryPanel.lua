@@ -2317,13 +2317,26 @@ function InventoryPanel:_cullCardViewports()
         if container then
             for _, card in ipairs(container:GetChildren()) do
                 if card:IsA("GuiObject") then
+                    local top = card.AbsolutePosition.Y
+                    local bottom = top + card.AbsoluteSize.Y
+                    local inWindow = (bottom >= lo) and (top <= hi)
+                    -- A failed flat image registers a construction callback instead of immediately
+                    -- allocating a viewport. Materialize it only when this card reaches the visible
+                    -- window; a full CDN outage therefore cannot create 1,000 hidden viewports.
+                    local imageHolder = card:FindFirstChild("PetImage", true)
+                    local lazyFallbacks = self._lazyThumbnailFallbacks
+                    local buildFallback = imageHolder
+                        and lazyFallbacks
+                        and lazyFallbacks[imageHolder]
+                    if inWindow and buildFallback then
+                        lazyFallbacks[imageHolder] = nil
+                        buildFallback()
+                    end
                     -- A resilient flat thumbnail can wrap its live fallback inside a Frame named
                     -- PetImage, so search by class instead of stopping at that outer name.
                     local vp = card:FindFirstChildWhichIsA("ViewportFrame", true)
                     if vp then
-                        local top = card.AbsolutePosition.Y
-                        local bottom = top + card.AbsoluteSize.Y
-                        vp.Visible = (bottom >= lo) and (top <= hi)
+                        vp.Visible = inWindow
                     end
                 end
             end
@@ -3521,7 +3534,7 @@ function InventoryPanel:_extractEggDataFromFolder(itemFolder)
     return itemData
 end
 
--- 🖼️ PET IMAGE ICON CREATION (Using Pre-generated Images)
+-- 🖼️ PET IMAGE ICON CREATION (flat texture with a visible-card-only 3D failure fallback)
 function InventoryPanel:_createPetImageIcon(parent, item)
     self.logger:info(
         "🖼️ CREATING PET IMAGE",
@@ -3535,27 +3548,25 @@ function InventoryPanel:_createPetImageIcon(parent, item)
     -- elegant card path — a huge is just a resize, the Creator Colorado is huge-sized and frames
     -- fine through this same path.)
 
-    -- Try to get pre-generated image from AssetPreloadService (huge pets get the up-close baked shot)
-    local imageViewport =
-        self:_getPetImageFromAssets(item.petType, item.variant, false, item.huge == true)
+    local imageIcon =
+        self:_getPetImageFromAssets(item.petType, item.variant, false, item.huge == true, item)
 
-    if imageViewport then
-        -- Use the pre-generated ViewportFrame
-        imageViewport.Name = "PetImage"
-        imageViewport.Size = UDim2.new(1, 0, 1, 0) -- Fill the iconBG
-        imageViewport.Position = UDim2.new(0, 0, 0, 0)
-        imageViewport.BackgroundTransparency = 1
-        imageViewport.ZIndex = 104
-        imageViewport.Parent = parent
+    if imageIcon then
+        imageIcon.Name = "PetImage"
+        imageIcon.Size = UDim2.new(1, 0, 1, 0) -- Fill the iconBG
+        imageIcon.Position = UDim2.new(0, 0, 0, 0)
+        imageIcon.BackgroundTransparency = 1
+        imageIcon.ZIndex = 104
+        imageIcon.Parent = parent
 
         self.logger:info("✅ PET IMAGE LOADED", {
             itemId = item.id,
             petType = item.petType,
             variant = item.variant,
-            source = "pre-generated",
+            source = "flat-or-lazy-fallback",
         })
 
-        return imageViewport
+        return imageIcon
     else
         -- Fallback to emoji if image not available
         self.logger:warn("❌ PET IMAGE NOT FOUND, using emoji fallback", {
@@ -3622,9 +3633,9 @@ end
 -- just means "this pet has no uploaded flat texture yet" so nobody is surprised it's a live viewport.
 local warnedNoFlatThumb = {}
 
--- Clone the server-generated ViewportFrame for a pet card. This is deliberately separate from the
--- flat-thumbnail lookup: a registered/uploaded image can still fail at Roblox's CDN after the card
--- is built, and that delivery failure must be able to fall back to the already-generated 3D view.
+-- Clone the server-generated ViewportFrame only for a pet/variant that has NO uploaded flat image.
+-- Registered flat images never use this cache: their rare delivery failures build one viewport
+-- directly from the already-loaded model, on demand, for the affected card only.
 local function cloneBakedPetThumbnail(petType, variant, huge)
     local success, imageViewport = pcall(function()
         local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
@@ -3645,13 +3656,13 @@ local function cloneBakedPetThumbnail(petType, variant, huge)
 end
 
 -- 🔍 GET PET IMAGE FROM ASSETS (Helper function)
--- ONE card path: a registered flat ImageLabel is layered over the baked ViewportFrame until Roblox
--- confirms AssetFetchStatus.Success. On Failure/TimedOut the flat layer is removed and the viewport
--- remains. This prevents a transient asset-delivery NetFail from leaving a permanently blank card.
-function InventoryPanel:_getPetImageFromAssets(petType, variant, quiet, huge)
+-- ONE card path: registered flat images remain viewport-free during None/Loading/Success. A cheap
+-- glyph sits underneath while the CDN is pending. Only Failure/TimedOut constructs a 3D viewport
+-- from the already-loaded model for this one card.
+function InventoryPanel:_getPetImageFromAssets(petType, variant, quiet, huge, item)
     -- FAST PATH: a pre-uploaded flat thumbnail. An ImageLabel is a plain texture (replicated +
-    -- CDN-cached, zero per-frame cost). Keep the baked viewport underneath until ContentProvider
-    -- confirms that texture actually arrived; a registry entry proves identity, not delivery.
+    -- CDN-cached, zero per-frame cost). A cheap glyph remains underneath until ContentProvider
+    -- confirms that the texture arrived; a registry entry proves identity, not delivery.
     local thumbId = resolveThumbnailId(petType, variant, huge)
     if thumbId then
         local holder = Instance.new("Frame")
@@ -3659,15 +3670,18 @@ function InventoryPanel:_getPetImageFromAssets(petType, variant, quiet, huge)
         holder.ClipsDescendants = huge == true
         holder.Size = UDim2.fromScale(1, 1)
 
-        local fallbackViewport = cloneBakedPetThumbnail(petType, variant, huge)
-        if fallbackViewport then
-            fallbackViewport.Name = "PetViewportFallback"
-            fallbackViewport.BackgroundTransparency = 1
-            fallbackViewport.Size = UDim2.fromScale(1, 1)
-            fallbackViewport.Position = UDim2.fromScale(0, 0)
-            fallbackViewport.ZIndex = 103
-            fallbackViewport.Parent = holder
-        end
+        -- Zero-cost pending state: one text glyph, not a cloned model/WorldModel/Camera.
+        local placeholder = Instance.new("TextLabel")
+        placeholder.Name = "PetThumbnailPending"
+        placeholder.Size = UDim2.fromScale(0.8, 0.8)
+        placeholder.Position = UDim2.fromScale(0.1, 0.1)
+        placeholder.BackgroundTransparency = 1
+        placeholder.Text = (item and item.icon) or "🐾"
+        placeholder.TextScaled = true
+        placeholder.Font = Enum.Font.GothamBold
+        placeholder.TextColor3 = Color3.fromRGB(255, 255, 255)
+        placeholder.ZIndex = 103
+        placeholder.Parent = holder
 
         local label = Instance.new("ImageLabel")
         label.Name = "PetFlatThumbnail"
@@ -3675,11 +3689,11 @@ function InventoryPanel:_getPetImageFromAssets(petType, variant, quiet, huge)
         label.Image = thumbId
         label.ScaleType = Enum.ScaleType.Fit -- preserve the baked framing's aspect (square canvas)
         label.Size = UDim2.fromScale(1, 1)
-        label.ZIndex = 104
+        label.ZIndex = 105
         label.Parent = holder
         if huge then
-            -- HUGE: zoom the same flat art inside the clipped holder. The viewport fallback already
-            -- uses the server's separately baked huge framing.
+            -- HUGE: zoom the same flat art inside the clipped holder. The on-demand 3D fallback
+            -- applies the pet's huge scale and huge-face camera framing when it is actually needed.
             local HUGE_ZOOM, HUGE_RAISE = 1.4, 0.1
             label.AnchorPoint = Vector2.new(0.5, 0.5)
             label.Size = UDim2.fromScale(HUGE_ZOOM, HUGE_ZOOM)
@@ -3687,121 +3701,50 @@ function InventoryPanel:_getPetImageFromAssets(petType, variant, quiet, huge)
         end
 
         local statusConnection
-        local readyConnection
+        local fallbackViewport
         local settled = false
         local function disconnect()
             if statusConnection then
                 statusConnection:Disconnect()
                 statusConnection = nil
             end
-            if readyConnection then
-                readyConnection:Disconnect()
-                readyConnection = nil
-            end
         end
-        local function ensureFallback()
+        local function createFallback()
             if fallbackViewport and fallbackViewport.Parent then
                 return fallbackViewport
             end
-            fallbackViewport = cloneBakedPetThumbnail(petType, variant, huge)
-            if fallbackViewport then
-                fallbackViewport.Name = "PetViewportFallback"
-                fallbackViewport.BackgroundTransparency = 1
-                fallbackViewport.Size = UDim2.fromScale(1, 1)
-                fallbackViewport.Position = UDim2.fromScale(0, 0)
-                fallbackViewport.ZIndex = 103
-                fallbackViewport.Parent = holder
-            end
+            -- Models are already cached under ReplicatedStorage.Assets.Models.Pets. This method
+            -- creates the ViewportFrame now and loads that cached model asynchronously; no global
+            -- viewport cache or per-card eager clone is involved.
+            fallbackViewport = self:_create3DPetIcon(holder, item)
+            fallbackViewport.Name = "PetViewportFallback"
+            fallbackViewport.ZIndex = 104
             return fallbackViewport
-        end
-        local function createEmergencyFallback()
-            local fallbackIcon = Instance.new("TextLabel")
-            fallbackIcon.Name = "PetEmojiFallback"
-            fallbackIcon.Size = UDim2.fromScale(0.8, 0.8)
-            fallbackIcon.Position = UDim2.fromScale(0.1, 0.1)
-            fallbackIcon.BackgroundTransparency = 1
-            fallbackIcon.Text = "🐾"
-            fallbackIcon.TextScaled = true
-            fallbackIcon.Font = Enum.Font.GothamBold
-            fallbackIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-            fallbackIcon.ZIndex = 103
-            fallbackIcon.Parent = holder
-            return fallbackIcon
         end
         local function applyFetchStatus(status)
             if settled or not holder.Parent and not label.Parent then
                 return
             end
             local statusName = status.Name
-            if statusName == "Failure" or statusName == "TimedOut" then
-                -- Retry the viewport lookup in case its deferred server bake finished after this
-                -- card was constructed.
-                ensureFallback()
-            end
-            local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
-            local bakedThumbnailsReady = not assetsFolder
-                or assetsFolder:GetAttribute("PetThumbnailsReady") == true
-            local action = PetThumbnailFetchPolicy.action(
-                statusName,
-                fallbackViewport ~= nil and fallbackViewport.Parent ~= nil,
-                bakedThumbnailsReady
-            )
+            local action = PetThumbnailFetchPolicy.action(statusName)
             if action == "flat" then
                 settled = true
-                if fallbackViewport then
-                    fallbackViewport:Destroy()
-                    fallbackViewport = nil
-                end
+                placeholder:Destroy()
                 disconnect()
-            elseif action == "viewport" then
-                -- The flat layer is transparent on delivery failure. Remove it explicitly so the
-                -- generated viewport is the sole visual.
+            elseif action == "lazy_3d" then
                 settled = true
                 label:Destroy()
                 disconnect()
-                self.logger:warn("Flat pet thumbnail failed; retained baked viewport", {
+                self._lazyThumbnailFallbacks = self._lazyThumbnailFallbacks or {}
+                self._lazyThumbnailFallbacks[holder] = createFallback
+                self:_requestCull()
+                self.logger:warn("Flat pet thumbnail failed; queued visible-card 3D fallback", {
                     petType = petType,
                     variant = variant,
                     huge = huge == true,
                     image = thumbId,
                     status = statusName,
                 })
-            elseif action == "emergency" then
-                settled = true
-                label:Destroy()
-                createEmergencyFallback()
-                disconnect()
-                self.logger:warn(
-                    "Flat and baked pet thumbnails unavailable; using emergency icon",
-                    {
-                        petType = petType,
-                        variant = variant,
-                        huge = huge == true,
-                        image = thumbId,
-                        status = statusName,
-                    }
-                )
-            end
-        end
-
-        -- If the deferred server thumbnail pass has not populated this pet yet, make the same card
-        -- self-heal when PetThumbnailsReady flips instead of requiring a menu close/reopen.
-        if not fallbackViewport then
-            local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
-            if assetsFolder and assetsFolder:GetAttribute("PetThumbnailsReady") ~= true then
-                readyConnection = assetsFolder
-                    :GetAttributeChangedSignal("PetThumbnailsReady")
-                    :Connect(function()
-                        if assetsFolder:GetAttribute("PetThumbnailsReady") == true then
-                            ensureFallback()
-                            local okStatus, currentStatus = pcall(function()
-                                return ContentProvider:GetAssetFetchStatus(thumbId)
-                            end)
-                            if okStatus then
-                                applyFetchStatus(currentStatus)
-                            end
-                        end
-                    end)
             end
         end
 
@@ -3811,7 +3754,12 @@ function InventoryPanel:_getPetImageFromAssets(petType, variant, quiet, huge)
         if okSignal and signal then
             statusConnection = signal:Connect(applyFetchStatus)
         end
-        holder.Destroying:Once(disconnect)
+        holder.Destroying:Once(function()
+            disconnect()
+            if self._lazyThumbnailFallbacks then
+                self._lazyThumbnailFallbacks[holder] = nil
+            end
+        end)
 
         local okStatus, currentStatus = pcall(function()
             return ContentProvider:GetAssetFetchStatus(thumbId)

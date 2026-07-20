@@ -129,6 +129,13 @@ end
 
 local logger = LoggerWrapper.new("EggPetPreviewService")
 
+local thumbnailRegistryOk, thumbnailRegistry = pcall(function()
+    return require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
+end)
+if not thumbnailRegistryOk then
+    thumbnailRegistry = nil
+end
+
 -- === PLAYER DATA GATHERING ===
 
 -- Get player's current luck modifiers and stats
@@ -1129,6 +1136,21 @@ end
 
 -- Get pet image from preloaded assets
 function EggPetPreviewService:GetPetImageFromAssets(petType, variant)
+    -- Egg-stand previews share the same flat art as inventory cards. This avoids retaining one
+    -- replicated WorldModel/Camera/model clone per catalog entry just to populate the billboard.
+    local flatId = thumbnailRegistry
+        and thumbnailRegistry.pets
+        and thumbnailRegistry.pets[petType]
+        and thumbnailRegistry.pets[petType][variant]
+    if flatId then
+        local image = Instance.new("ImageLabel")
+        image.Name = "PetFlatThumbnail"
+        image.BackgroundTransparency = 1
+        image.Image = flatId
+        image.ScaleType = Enum.ScaleType.Fit
+        return image
+    end
+
     -- Try to get from ReplicatedStorage.Assets.Images.Pets first
     local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
     if assetsFolder then

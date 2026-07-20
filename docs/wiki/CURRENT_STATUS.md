@@ -158,12 +158,14 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Pet tooltip metadata visibility is driven by `configs/inventory.lua` `tooltip_fields`, so fields can be hidden, labeled, or ordered without editing `InventoryPanel`.
 - Pet inventory cards now distinguish rarity/specialness and variant separately. Rarity rings are config-driven and can animate around the card using a `UIGradient`; the default rarity ladder currently includes Common, Uncommon, Rare, Epic, Legendary, Mythical, Secret, Exclusive, and Huge. Variant backgrounds are also config-driven, including darker gold and rainbow fills. Inventory display reads rarity names/colors from `configs/pets.lua`.
 - Pet-card thumbnails use uploaded, group-owned flat images for the cheap steady state and
-  server-generated ViewportFrames as the delivery fallback. `AssetPreloadService` publishes
-  `PetThumbnailsReady`, `PetThumbnailCount`, and `PetThumbnailFailures` on
-  `ReplicatedStorage.Assets`; the client prewarms both caches without holding the HUD gate.
-  Inventory cards keep the baked viewport underneath until `AssetFetchStatus.Success`, retain it on
-  `Failure`/`TimedOut`, retry when a deferred bake finishes, and use a paw icon only if both sources
-  are terminally unavailable.
+  lazily constructed 3D views as the delivery fallback. The client does not catalog-prewarm pet
+  textures; only cards a player actually owns request their flat art.
+  `AssetPreloadService` does not generate cached ViewportFrames for registered flat pet/egg art;
+  those caches exist only for variants with no uploaded thumbnail. Inventory cards use a cheap glyph
+  during `None`/`Loading`, stay flat-only after `AssetFetchStatus.Success`, and queue an on-demand
+  viewport after `Failure`/`TimedOut`. That viewport is built from the already-loaded model only when
+  the failed card enters the visible scroll window, so even a broad CDN outage cannot allocate
+  hidden viewports across a large collection. Egg-stand previews also read the flat registry.
 - Pet power is now config-only durable data. `configs/pets.lua` defines family base power plus global Basic/Golden/Rainbow multipliers, while grant/progression/inventory save paths avoid writing per-copy power or stats power. `tests/studio/BackfillPetPowerSourceOfTruth.lua` can strip legacy saved power fields for the current Studio player.
 - `configs/auto_systems.lua` and `AutoTargetService` now provide the first Phase 5 auto-system slice. Target mode choices persist under `Settings.AutoSystems.auto_target`; clients request auto-target work and the server selects the breakable. The configured default modes are nearest, highest value, weakest, strongest, and selected currency.
 - Hatch auto-delete filters persist under `Settings.AutoSystems.auto_delete` and are enforced in `EggService` before `PetGrantService` writes inventory. Filters can match rarity, pet family, or variant, and Secret/Exclusive/Huge are protected by default.

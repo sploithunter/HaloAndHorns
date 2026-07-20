@@ -1425,3 +1425,14 @@ server-generated ViewportFrame beneath each unresolved flat image, retire it onl
 `AssetFetchStatus.Success`, and retain it after `Failure` or `TimedOut`. A deferred bake can repair
 an already-open card, an emergency paw prevents a terminally blank card, viewport culling recognizes
 the nested fallback, and the previously dormant client prewarm runs concurrently with UI startup.
+
+## 2026-07-20 — Pet-card 3D fallbacks made truly lazy
+
+Refined the delivery-failure safety net so it preserves the flat-image architecture at large catalog
+sizes. The client no longer prewarms the entire pet-art catalog, registered flat pet/egg art no longer
+receives server-generated ViewportFrame caches, and `None`/`Loading` cards allocate only a text glyph.
+A `Failure` or `TimedOut` card queues one on-demand 3D renderer from its already-loaded model, and that
+renderer is materialized only when the affected card enters the visible inventory window. Flat-image
+success therefore creates zero ViewportFrames, while a full CDN outage cannot create them for hidden
+cards. Egg-stand pet previews now read the same flat registry, so removing registered pets from the
+replicated viewport cache does not degrade those previews to emoji.
