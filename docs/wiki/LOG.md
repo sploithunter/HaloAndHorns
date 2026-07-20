@@ -1244,3 +1244,10 @@ Replaced the Pet Shop's hand-colored flat category and Buy/Owned buttons with th
 `PanelChrome` glossy pill panel and neon border assets already used by the Quest tabs and daily
 cards. Selected categories use citrine, live purchases use emerald, owned passes use amethyst,
 and inactive future categories inherit the player's area color.
+
+## 2026-07-19 — Extra-pet pass describes its additive entitlement
+
+Renamed the `pet_slot_pass` storefront card from `+1 Pet Slot` to `Deploy an Extra Pet` and
+replaced the fixed-eleventh-pet description with the actual contract: one above the player's
+current limit, so three becomes four now and progression's ten becomes eleven later. The runtime
+capacity calculation was verified to already apply and cap that paid slot additively.
