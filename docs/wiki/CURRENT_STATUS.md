@@ -818,10 +818,10 @@ quests/daily/achievements/shop). Add a per-mine XP grant + curve tuning when bal
 
 Last checked: 2026-07-19
 
-- The existing earned-currency offer panel is now a unified **Pet Shop**. Its default
-  tab lists every configured live game pass with the Marketplace thumbnail, authored
-  benefit description, Robux price, and authoritative owned/purchase state. Earned
-  offers remain available on their own tab.
+- The **Pet Shop is Robux-only**. Its default tab lists every configured live game
+  pass with the Marketplace thumbnail, authored benefit description, Robux price,
+  and authoritative owned/purchase state. Earned gem/coin offers belong to the
+  neighboring economy shop and are deliberately excluded from this panel.
 - Every streamed `Pet shop` world model receives a client-owned proximity prompt that
   opens the same panel through `MenuManager`. Prompt discovery tolerates models whose
   sign/parts stream in after the outer model.

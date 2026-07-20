@@ -1,11 +1,11 @@
 --[[
-    RewardShopPanel — the unified Pet Shop.
+    RewardShopPanel — the Robux-only Pet Shop.
 
     The default tab is the real Roblox game-pass catalog. Developer products
-    appear automatically only after they have positive Marketplace IDs; the
-    rating-safe earnable-currency RewardShop remains available on its own tab.
-    All Robux prompts travel through MonetizationService via Signals, never
-    directly from a card.
+    appear automatically only after they have positive Marketplace IDs.
+    Earned-currency offers belong to the neighboring economy shop and must
+    never appear here. All Robux prompts travel through MonetizationService
+    via Signals, never directly from a card.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -16,8 +16,6 @@ local MonetizationCatalog = require(ReplicatedStorage.Shared.Game.MonetizationCa
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local monetization = require(ReplicatedStorage.Configs:WaitForChild("monetization"))
-
-local REMOTE_NAME = "GameAPICommand"
 
 local COLORS = {
     panel = Color3.fromRGB(22, 24, 32),
@@ -30,11 +28,8 @@ local COLORS = {
     cardTop = Color3.fromRGB(57, 61, 78),
     cardStroke = Color3.fromRGB(91, 98, 121),
     buy = Color3.fromRGB(39, 177, 102),
-    buyHover = Color3.fromRGB(32, 151, 86),
-    disabled = Color3.fromRGB(77, 82, 98),
     owned = Color3.fromRGB(111, 82, 166),
     robux = Color3.fromRGB(83, 204, 132),
-    reward = Color3.fromRGB(255, 214, 88),
     text = Color3.fromRGB(255, 255, 255),
     subtext = Color3.fromRGB(204, 210, 224),
     error = Color3.fromRGB(255, 125, 125),
@@ -55,37 +50,6 @@ local function constrain(label, maxSize, minSize)
     constraint.MaxTextSize = maxSize
     constraint.MinTextSize = minSize or 8
     constraint.Parent = label
-end
-
-local function summarize(bundle)
-    local parts = {}
-    for currency, amount in pairs((bundle and bundle.currencies) or {}) do
-        parts[#parts + 1] = tostring(amount) .. " " .. tostring(currency)
-    end
-    for _, item in ipairs((bundle and bundle.items) or {}) do
-        parts[#parts + 1] = tostring(item.qty or 1) .. "x " .. tostring(item.id)
-    end
-    for _, pet in ipairs((bundle and bundle.pets) or {}) do
-        parts[#parts + 1] = "Pet: " .. tostring(pet.id)
-    end
-    for _, effect in ipairs((bundle and bundle.effects) or {}) do
-        parts[#parts + 1] = tostring(effect.id)
-    end
-    for slot, amount in pairs((bundle and bundle.slots) or {}) do
-        parts[#parts + 1] = "+" .. tostring(amount) .. " " .. tostring(slot)
-    end
-    if (bundle and bundle.experience or 0) > 0 then
-        parts[#parts + 1] = tostring(bundle.experience) .. " XP"
-    end
-    return table.concat(parts, "\n")
-end
-
-local function costText(cost)
-    local parts = {}
-    for currency, amount in pairs((cost and cost.currencies) or {}) do
-        parts[#parts + 1] = tostring(amount) .. " " .. tostring(currency)
-    end
-    return table.concat(parts, " + ")
 end
 
 function RewardShopPanel.new()
@@ -131,20 +95,6 @@ function RewardShopPanel.new()
         end),
     }
     return self
-end
-
-function RewardShopPanel:_callBus(name, args)
-    local remote = ReplicatedStorage:FindFirstChild(REMOTE_NAME)
-    if not remote then
-        return nil
-    end
-    local ok, envelope = pcall(function()
-        return remote:InvokeServer(name, args or {})
-    end)
-    if not ok or type(envelope) ~= "table" then
-        return nil
-    end
-    return envelope.result
 end
 
 function RewardShopPanel:Show(parent)
@@ -255,7 +205,7 @@ function RewardShopPanel:_createHeader()
     subtitle.Size = UDim2.new(1, -120, 0, 21)
     subtitle.Position = UDim2.new(0, 24, 0, 43)
     subtitle.BackgroundTransparency = 1
-    subtitle.Text = "Permanent perks and fair, deterministic rewards"
+    subtitle.Text = "Game passes and deterministic Robux purchases"
     subtitle.TextColor3 = COLORS.subtext
     subtitle.TextScaled = true
     subtitle.Font = Enum.Font.GothamMedium
@@ -294,7 +244,6 @@ function RewardShopPanel:_createTabs()
     if #self.liveProducts > 0 then
         definitions[#definitions + 1] = { id = "products", text = "BOOSTS" }
     end
-    definitions[#definitions + 1] = { id = "rewards", text = "EARNED OFFERS" }
 
     for order, definition in ipairs(definitions) do
         local button = Instance.new("TextButton")
@@ -411,8 +360,6 @@ function RewardShopPanel:_refresh()
         for _, entry in ipairs(self.liveProducts) do
             self:_createMarketplaceCard(entry)
         end
-    else
-        self:_createRewardCards()
     end
 end
 
@@ -550,120 +497,6 @@ function RewardShopPanel:_createMarketplaceCard(entry)
                 productType = entry.kind,
             })
         end)
-    end
-end
-
-function RewardShopPanel:_createRewardCards()
-    local result = self:_callBus("shop.list", {})
-    local offers = result and result.offers
-    if type(offers) ~= "table" then
-        self:_setStatus("Earned offers are temporarily unavailable.", true)
-        return
-    end
-    table.sort(offers, function(a, b)
-        return (a.name or a.id) < (b.name or b.id)
-    end)
-    for order, offer in ipairs(offers) do
-        self:_createRewardCard(offer, order)
-    end
-end
-
-function RewardShopPanel:_createRewardCard(offer, order)
-    local card = Instance.new("Frame")
-    card.Name = "Offer_" .. tostring(offer.id)
-    card.BackgroundColor3 = COLORS.card
-    card.BorderSizePixel = 0
-    card.LayoutOrder = order
-    card.ZIndex = 102
-    card.Parent = self.gridFrame
-    round(card, 14)
-
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = COLORS.cardStroke
-    stroke.Thickness = 1
-    stroke.Transparency = 0.3
-    stroke.Parent = card
-
-    local icon = Instance.new("TextLabel")
-    icon.Size = UDim2.new(1, -16, 0, 76)
-    icon.Position = UDim2.new(0, 8, 0, 25)
-    icon.BackgroundTransparency = 1
-    icon.Text = "🎁"
-    icon.TextScaled = true
-    icon.Font = Enum.Font.GothamBold
-    icon.ZIndex = 103
-    icon.Parent = card
-
-    local name = Instance.new("TextLabel")
-    name.Size = UDim2.new(1, -16, 0, 30)
-    name.Position = UDim2.new(0, 8, 0, 104)
-    name.BackgroundTransparency = 1
-    name.Text = offer.name or offer.id
-    name.TextColor3 = COLORS.text
-    name.TextScaled = true
-    name.Font = Enum.Font.GothamBold
-    name.ZIndex = 103
-    name.Parent = card
-    constrain(name, 18, 9)
-
-    local reward = Instance.new("TextLabel")
-    reward.Size = UDim2.new(1, -20, 0, 70)
-    reward.Position = UDim2.new(0, 10, 0, 139)
-    reward.BackgroundTransparency = 1
-    reward.Text = summarize(offer.reward)
-    reward.TextColor3 = COLORS.reward
-    reward.TextWrapped = true
-    reward.TextScaled = true
-    reward.Font = Enum.Font.GothamMedium
-    reward.ZIndex = 103
-    reward.Parent = card
-    constrain(reward, 15, 8)
-
-    local cost = Instance.new("TextLabel")
-    cost.Size = UDim2.new(1, -16, 0, 24)
-    cost.Position = UDim2.new(0, 8, 1, -70)
-    cost.BackgroundTransparency = 1
-    cost.Text = costText(offer.cost)
-    cost.TextColor3 = COLORS.subtext
-    cost.TextScaled = true
-    cost.Font = Enum.Font.GothamBold
-    cost.ZIndex = 103
-    cost.Parent = card
-    constrain(cost, 14, 8)
-
-    local buy = Instance.new("TextButton")
-    buy.Name = "BuyButton"
-    buy.Size = UDim2.new(1, -16, 0, 40)
-    buy.Position = UDim2.new(0, 8, 1, -44)
-    buy.BorderSizePixel = 0
-    buy.TextColor3 = COLORS.text
-    buy.TextScaled = true
-    buy.Font = Enum.Font.GothamBold
-    buy.ZIndex = 103
-    buy.Parent = card
-    round(buy, 10)
-    constrain(buy, 16, 9)
-
-    local soldOut = offer.reason == "out_of_stock"
-    if offer.purchasable then
-        buy.Text = "Buy"
-        buy.BackgroundColor3 = COLORS.buy
-        buy.Activated:Connect(function()
-            buy.Text = "…"
-            buy.Active = false
-            self:_callBus("shop.purchase", { offerId = offer.id })
-            self:_refresh()
-        end)
-    elseif soldOut then
-        buy.Text = (offer.limit == 1) and "Owned ✓" or "Sold out"
-        buy.BackgroundColor3 = COLORS.owned
-        buy.AutoButtonColor = false
-        buy.Active = false
-    else
-        buy.Text = "Can't afford"
-        buy.BackgroundColor3 = COLORS.disabled
-        buy.AutoButtonColor = false
-        buy.Active = false
     end
 end
 
