@@ -891,8 +891,11 @@ The active game layer on top of the template baseline. Design SoT:
 own coin; HUD shows the four with a live `+N` gain indicator (legacy `coins`/`crystals` removed).
 `ZoneTrackerService` resolves the current area from config bounds by raycasting biome baseplates;
 farming is scoped to that area. Per-biome egg stands (Earth/Ember/Ice/Sand) place real hatch-target
-eggs. **Mining income identity: `coins/sec = DPS × (value/HP)`, ratio = 0.2** (`configs/breakables.lua`
-ORE_TIERS) — every crystal tier pays the same rate; bigger ones just take longer. Outer zones spawn
+eggs. **Mining income identity: `coins/sec = DPS × (value/HP) × world value multiplier`**.
+`configs/breakables.lua` ORE_TIERS holds the shared 0.2 ratio; the five base-realm worlds use
+`value_mult = 2` for an effective 0.4 ratio and double mining XP from the same scaled node Value.
+Heaven/Hell retain their separate layer scaling. Every crystal tier pays the same rate; bigger ones
+just take longer. Outer zones spawn
 `max=100` with 5–60s distributed respawn; the local depletion sag is a **designed throttle**
 (active>passive). Active-mining boost: clicking a node amplifies pet damage on it.
 
