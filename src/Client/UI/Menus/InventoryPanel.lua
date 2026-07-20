@@ -1159,7 +1159,7 @@ function InventoryPanel:_createUI(parent)
             b.Font = Enum.Font.GothamBold
             b.ZIndex = 250
             b.Parent = btnRow
-            pillify(b) -- currency-pill capsule (Eggs / AUTO / Cards / Delete header pills)
+            pillify(b) -- currency-pill capsule (hatch settings / Cards / Delete header pills)
             local tc2 = Instance.new("UITextSizeConstraint")
             tc2.MaxTextSize = 28 -- Jason
             tc2.Parent = b
@@ -1178,8 +1178,8 @@ function InventoryPanel:_createUI(parent)
                 -- right-to-left after Trade: TWO settings pills only (Jason: "not sure
                 -- why we have a hatch button" — hatching happens AT the egg; these
                 -- configure how the E-key/auto hatch behaves)
-                local countBtn = pill("Eggs: 1", 4, Color3.fromRGB(70, 100, 160))
-                local autoBtn = pill("Manual", 3, Color3.fromRGB(90, 90, 110))
+                local countBtn = pill("Hatch: 1 Egg", 4, Color3.fromRGB(70, 100, 160))
+                local autoBtn = pill("Hatch: Manual", 3, Color3.fromRGB(90, 90, 110))
 
                 local countMode = "one" -- one | half | max (display follows the service truth)
                 local function refresh()
@@ -1188,11 +1188,14 @@ function InventoryPanel:_createUI(parent)
                     -- running loop — Jason: "it should just turn ON auto hatch so when
                     -- I'm near an egg and hatch, it auto hatches")
                     local isAuto = st.mode == "auto"
-                    autoBtn.Text = isAuto and "AUTO" or "Manual"
+                    autoBtn.Text = isAuto and "Hatch: Auto" or "Hatch: Manual"
                     autoBtn.BackgroundColor3 = isAuto and Color3.fromRGB(220, 82, 95)
                         or Color3.fromRGB(90, 90, 110)
                     pillify(autoBtn) -- re-tint the capsule to the new state color
-                    countBtn.Text = ("Eggs: %d"):format(st.count)
+                    countBtn.Text = ("Hatch: %d %s"):format(
+                        st.count,
+                        st.count == 1 and "Egg" or "Eggs"
+                    )
                 end
                 local function flash(text)
                     autoBtn.Text = text
