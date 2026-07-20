@@ -25,6 +25,7 @@ local PetVariantVisuals = require(ReplicatedStorage.Shared.Services.PetVariantVi
 local MeshAssembly = require(ReplicatedStorage.Shared.Assets.MeshAssembly)
 local AssetReport = require(ReplicatedStorage.Shared.Game.AssetReport)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 
 -- Record one model/mesh load attempt into the consolidated boot AssetReport. `kind` is inferred
 -- from the target folder (Pets -> pet_model, etc.) so failures read as "what + where" in one log.
@@ -52,6 +53,7 @@ end
 -- Service dependencies (injected)
 local logger
 local petConfig
+local petThumbnailConfig
 local soundsConfig
 local breakablesConfig
 
@@ -59,6 +61,16 @@ function AssetPreloadService:Init()
     logger = self._modules.Logger
     petConfig = self._modules.ConfigLoader:LoadConfig("pets")
     soundsConfig = self._modules.ConfigLoader:LoadConfig("sounds")
+    local okThumbs, thumbs = pcall(function()
+        return self._modules.ConfigLoader:LoadConfig("pet_thumbnail_assets")
+    end)
+    petThumbnailConfig = okThumbs and thumbs or { pets = {}, eggs = {} }
+    if not okThumbs then
+        logger:Warn(
+            "pet_thumbnail_assets failed to load; cached viewport generation will cover all pets",
+            { error = tostring(thumbs) }
+        )
+    end
 
     -- Optional: breakables (crystals, etc.)
     local ok, cfg = pcall(function()
@@ -71,6 +83,19 @@ function AssetPreloadService:Init()
     end
 
     logger:Info("AssetPreloadService initialized")
+end
+
+local function hasFlatPetThumbnail(petType, variant)
+    local variants = petThumbnailConfig
+        and petThumbnailConfig.pets
+        and petThumbnailConfig.pets[petType]
+    return variants ~= nil and variants[variant] ~= nil
+end
+
+local function hasFlatEggThumbnail(eggType)
+    return petThumbnailConfig
+        and petThumbnailConfig.eggs
+        and petThumbnailConfig.eggs[eggType] ~= nil
 end
 
 function AssetPreloadService:Start()
@@ -516,10 +541,9 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
     local adoptedCount = 0
     local fetchedCount = 0
 
-    -- Pet/egg card thumbnails (ViewportFrames) are COSMETIC (inventory cards) and each costs a second
-    -- clone of the model — they don't gate gameplay. We collect them here and generate them in a
-    -- deferred, yielding pass AFTER ModelsReady flips, so world population (egg placement waits on
-    -- ModelsReady) isn't stuck behind ~all-pet thumbnail rendering. Job = { model, parent, name, … }.
+    -- Cached ViewportFrames are a compatibility fallback only for catalog entries with no uploaded
+    -- flat texture. Each costs a second model clone, so registered flat pet/egg art never enters this
+    -- deferred queue. These cosmetic jobs run after ModelsReady and never gate world population.
     local thumbnailJobs = {}
 
     logger:Info("🔄 LoadAllModelsIntoAssets: Checking dependencies...")
@@ -833,26 +857,30 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
                             end
                         end
 
-                        -- Defer the thumbnail (cosmetic) — see thumbnailJobs note above.
-                        table.insert(thumbnailJobs, {
-                            model = petTypeFolder:FindFirstChild(variant),
-                            parent = petImageTypeFolder,
-                            name = variant,
-                            petType = petType,
-                            variant = variant,
-                        })
-                        -- A second, HUGE-framed thumbnail (any pet can roll huge — orthogonal). Stored
-                        -- under "<variant>__huge" in the same type folder; the card picks it when the
-                        -- pet record is huge, else falls back to the normal one. Same baked path, no
-                        -- live-viewport huge card.
-                        table.insert(thumbnailJobs, {
-                            model = petTypeFolder:FindFirstChild(variant),
-                            parent = petImageTypeFolder,
-                            name = variant .. "__huge",
-                            petType = petType,
-                            variant = variant,
-                            huge = true,
-                        })
+                        -- Flat images are the scale path. Generate cached ViewportFrames only for
+                        -- pet variants that do not have one; a CDN failure for a registered flat
+                        -- image builds one affected card's 3D fallback client-side on demand.
+                        if
+                            PetThumbnailFetchPolicy.needsCachedBake(
+                                hasFlatPetThumbnail(petType, variant)
+                            )
+                        then
+                            table.insert(thumbnailJobs, {
+                                model = petTypeFolder:FindFirstChild(variant),
+                                parent = petImageTypeFolder,
+                                name = variant,
+                                petType = petType,
+                                variant = variant,
+                            })
+                            table.insert(thumbnailJobs, {
+                                model = petTypeFolder:FindFirstChild(variant),
+                                parent = petImageTypeFolder,
+                                name = variant .. "__huge",
+                                petType = petType,
+                                variant = variant,
+                                huge = true,
+                            })
+                        end
                     else
                         modelFailureCount = modelFailureCount + 1
                     end
@@ -924,14 +952,17 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
             if modelSuccess then
                 modelSuccessCount = modelSuccessCount + 1
 
-                -- Defer the egg-card thumbnail (cosmetic) — see thumbnailJobs note above.
-                table.insert(thumbnailJobs, {
-                    model = eggsFolder:FindFirstChild(eggType),
-                    parent = eggImagesFolder,
-                    name = eggType,
-                    petType = eggType, -- petType parameter (for eggs, use eggType)
-                    variant = "egg", -- variant parameter (all eggs are "egg" variant)
-                })
+                -- Same scale rule for eggs: do not maintain a ViewportFrame cache when an uploaded
+                -- texture is registered.
+                if PetThumbnailFetchPolicy.needsCachedBake(hasFlatEggThumbnail(eggType)) then
+                    table.insert(thumbnailJobs, {
+                        model = eggsFolder:FindFirstChild(eggType),
+                        parent = eggImagesFolder,
+                        name = eggType,
+                        petType = eggType, -- petType parameter (for eggs, use eggType)
+                        variant = "egg", -- variant parameter (all eggs are "egg" variant)
+                    })
+                end
             else
                 modelFailureCount = modelFailureCount + 1
             end

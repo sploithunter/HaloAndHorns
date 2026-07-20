@@ -122,7 +122,7 @@
    "deadline": 1
   },
   "src/Client/init.client.lua": {
-   "deadline": 2,
+   "deadline": 1,
    "periodic": 1,
    "watchdog": 1
   },

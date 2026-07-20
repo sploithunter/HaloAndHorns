@@ -1,30 +1,23 @@
 --!strict
 
--- Pure decision policy for inventory pet thumbnails. A configured asset id is not proof that the
--- client actually received its pixels; Roblox can report a terminal delivery failure after the card
--- exists. Keeping this policy pure makes every terminal state headless-testable.
+-- Pure decision policy for inventory pet thumbnails. Flat images are the only steady-state card
+-- renderer; a 3D viewport is constructed lazily only after a terminal delivery failure.
 local PetThumbnailFetchPolicy = {}
 
-export type Action = "flat" | "viewport" | "emergency" | "pending" | "wait_for_bake"
+export type Action = "flat" | "lazy_3d" | "pending"
 
-function PetThumbnailFetchPolicy.action(
-    statusName: string,
-    hasBakedViewport: boolean,
-    bakedThumbnailsReady: boolean
-): Action
+function PetThumbnailFetchPolicy.action(statusName: string): Action
     if statusName == "Success" then
         return "flat"
     end
-    if statusName ~= "Failure" and statusName ~= "TimedOut" then
-        return "pending"
+    if statusName == "Failure" or statusName == "TimedOut" then
+        return "lazy_3d"
     end
-    if hasBakedViewport then
-        return "viewport"
-    end
-    if bakedThumbnailsReady then
-        return "emergency"
-    end
-    return "wait_for_bake"
+    return "pending"
+end
+
+function PetThumbnailFetchPolicy.needsCachedBake(hasFlatThumbnail: boolean): boolean
+    return not hasFlatThumbnail
 end
 
 return PetThumbnailFetchPolicy

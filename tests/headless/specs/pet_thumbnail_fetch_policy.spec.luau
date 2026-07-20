@@ -2,25 +2,23 @@ local PetThumbnailFetchPolicy = loadModule("src/Shared/UI/PetThumbnailFetchPolic
 
 return function()
     describe("PetThumbnailFetchPolicy", function()
-        it("retires the viewport only after flat-image success", function()
-            expect(PetThumbnailFetchPolicy.action("Success", true, true)).to.equal("flat")
+        it("uses only the flat image after delivery succeeds", function()
+            expect(PetThumbnailFetchPolicy.action("Success")).to.equal("flat")
         end)
 
-        it("keeps the baked viewport on delivery failure or timeout", function()
-            expect(PetThumbnailFetchPolicy.action("Failure", true, true)).to.equal("viewport")
-            expect(PetThumbnailFetchPolicy.action("TimedOut", true, true)).to.equal("viewport")
+        it("constructs 3D only after delivery failure or timeout", function()
+            expect(PetThumbnailFetchPolicy.action("Failure")).to.equal("lazy_3d")
+            expect(PetThumbnailFetchPolicy.action("TimedOut")).to.equal("lazy_3d")
         end)
 
-        it("waits for a deferred bake before using the emergency icon", function()
-            expect(PetThumbnailFetchPolicy.action("Failure", false, false)).to.equal(
-                "wait_for_bake"
-            )
-            expect(PetThumbnailFetchPolicy.action("Failure", false, true)).to.equal("emergency")
+        it("keeps nonterminal delivery states viewport-free", function()
+            expect(PetThumbnailFetchPolicy.action("None")).to.equal("pending")
+            expect(PetThumbnailFetchPolicy.action("Loading")).to.equal("pending")
         end)
 
-        it("leaves nonterminal delivery states pending", function()
-            expect(PetThumbnailFetchPolicy.action("None", true, true)).to.equal("pending")
-            expect(PetThumbnailFetchPolicy.action("Loading", true, true)).to.equal("pending")
+        it("bakes cached viewports only for variants missing flat art", function()
+            expect(PetThumbnailFetchPolicy.needsCachedBake(true)).to.equal(false)
+            expect(PetThumbnailFetchPolicy.needsCachedBake(false)).to.equal(true)
         end)
     end)
 end
