@@ -343,6 +343,7 @@ return {
     roles = {
         tank = {
             label = "Tank",
+            tooltip = "High defense and threat; protects the squad but deals less damage.",
             glyph = "T",
             color = { 70, 130, 195 },
             icon = "",
@@ -358,6 +359,7 @@ return {
         },
         melee = {
             label = "Melee",
+            tooltip = "Close-range fighter with balanced mining and combat damage.",
             glyph = "M",
             color = { 205, 85, 70 },
             icon = "",
@@ -373,6 +375,7 @@ return {
         -- an enemy chasing it has to close the gap (the melee-closes / ranged-kites loop).
         ranged = {
             label = "Blaster",
+            tooltip = "Long-range damage dealer that fights from a safer distance.",
             glyph = "R",
             color = { 120, 180, 85 },
             icon = "",
@@ -392,6 +395,7 @@ return {
         },
         support = {
             label = "Buffer",
+            tooltip = "Supports the squad with a special ability; lower personal damage.",
             glyph = "S",
             color = { 150, 110, 215 },
             icon = "",
@@ -416,6 +420,7 @@ return {
         },
         control = {
             label = "Control",
+            tooltip = "Disables or weakens enemies; trades personal damage for control.",
             glyph = "C",
             color = { 90, 185, 205 },
             icon = "",

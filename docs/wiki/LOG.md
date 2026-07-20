@@ -1259,3 +1259,10 @@ That doubles both the biome-currency split and mining XP, which is calculated fr
 for free players whose launch pacing was too slow. Heaven/Hell worlds intentionally keep their
 existing ore baseline and layer multipliers, while paid XP entitlements continue to stack
 independently on the new base rate.
+
+## 2026-07-20 — Egg previews expose pet archetypes and support abilities
+
+The world-space egg chance cards now reuse the inventory's universal `PetBadge` renderer and
+`pet_roles`/`power_icons` data. Every possible hatch shows its archetype badge; pets with a
+support or control ability show that ability and its targeting ring as a second badge. Hover
+explains either badge, while touch players can tap to toggle the same config-owned tooltip.
