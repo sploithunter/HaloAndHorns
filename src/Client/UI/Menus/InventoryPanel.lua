@@ -18,6 +18,7 @@
 
 local Players = game:GetService("Players")
 local AssetFetch = require(game:GetService("ReplicatedStorage").Shared.Utils.AssetFetch)
+local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -95,6 +96,7 @@ local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
 local InventoryCategories = require(ReplicatedStorage.Shared.Game.InventoryCategories) -- pure tab visibility (specced)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local PetBadge = require(script.Parent.Parent.PetBadge)
@@ -2315,9 +2317,10 @@ function InventoryPanel:_cullCardViewports()
         if container then
             for _, card in ipairs(container:GetChildren()) do
                 if card:IsA("GuiObject") then
-                    local vp = card:FindFirstChild("PetImage", true)
-                        or card:FindFirstChild("PetViewport", true)
-                    if vp and vp:IsA("ViewportFrame") then
+                    -- A resilient flat thumbnail can wrap its live fallback inside a Frame named
+                    -- PetImage, so search by class instead of stopping at that outer name.
+                    local vp = card:FindFirstChildWhichIsA("ViewportFrame", true)
+                    if vp then
                         local top = card.AbsolutePosition.Y
                         local bottom = top + card.AbsoluteSize.Y
                         vp.Visible = (bottom >= lo) and (top <= hi)
@@ -3619,84 +3622,216 @@ end
 -- just means "this pet has no uploaded flat texture yet" so nobody is surprised it's a live viewport.
 local warnedNoFlatThumb = {}
 
--- 🔍 GET PET IMAGE FROM ASSETS (Helper function)
--- ONE card path: returns a flat ImageLabel when a pre-uploaded thumbnail exists (a texture, no
--- per-frame render), otherwise a clone of the baked ViewportFrame (the live 3D fallback). The caller
--- (_createPetImageIcon) styles whatever GuiObject comes back identically — it never branches per-pet.
-function InventoryPanel:_getPetImageFromAssets(petType, variant, quiet, huge)
-    -- Try to get image from ReplicatedStorage.Assets.Images.Pets
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- Clone the server-generated ViewportFrame for a pet card. This is deliberately separate from the
+-- flat-thumbnail lookup: a registered/uploaded image can still fail at Roblox's CDN after the card
+-- is built, and that delivery failure must be able to fall back to the already-generated 3D view.
+local function cloneBakedPetThumbnail(petType, variant, huge)
+    local success, imageViewport = pcall(function()
+        local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
+        local imagesFolder = assetsFolder and assetsFolder:FindFirstChild("Images")
+        local petsImagesFolder = imagesFolder and imagesFolder:FindFirstChild("Pets")
+        local petTypeFolder = petsImagesFolder and petsImagesFolder:FindFirstChild(petType)
+        if not petTypeFolder then
+            return nil
+        end
 
+        -- HUGE pets prefer the up-close "<variant>__huge" thumbnail (baked with the huge_face
+        -- camera), then fall back to the normal framing.
+        local petImageViewport = (huge and petTypeFolder:FindFirstChild(variant .. "__huge"))
+            or petTypeFolder:FindFirstChild(variant)
+        return petImageViewport and petImageViewport:Clone() or nil
+    end)
+    return success and imageViewport or nil
+end
+
+-- 🔍 GET PET IMAGE FROM ASSETS (Helper function)
+-- ONE card path: a registered flat ImageLabel is layered over the baked ViewportFrame until Roblox
+-- confirms AssetFetchStatus.Success. On Failure/TimedOut the flat layer is removed and the viewport
+-- remains. This prevents a transient asset-delivery NetFail from leaving a permanently blank card.
+function InventoryPanel:_getPetImageFromAssets(petType, variant, quiet, huge)
     -- FAST PATH: a pre-uploaded flat thumbnail. An ImageLabel is a plain texture (replicated +
-    -- CDN-cached, zero per-frame cost) and accepts the exact Name/Size/Position/ZIndex the caller
-    -- sets, so it drops into the card in place of the ViewportFrame with no other changes.
+    -- CDN-cached, zero per-frame cost). Keep the baked viewport underneath until ContentProvider
+    -- confirms that texture actually arrived; a registry entry proves identity, not delivery.
     local thumbId = resolveThumbnailId(petType, variant, huge)
     if thumbId then
+        local holder = Instance.new("Frame")
+        holder.BackgroundTransparency = 1
+        holder.ClipsDescendants = huge == true
+        holder.Size = UDim2.fromScale(1, 1)
+
+        local fallbackViewport = cloneBakedPetThumbnail(petType, variant, huge)
+        if fallbackViewport then
+            fallbackViewport.Name = "PetViewportFallback"
+            fallbackViewport.BackgroundTransparency = 1
+            fallbackViewport.Size = UDim2.fromScale(1, 1)
+            fallbackViewport.Position = UDim2.fromScale(0, 0)
+            fallbackViewport.ZIndex = 103
+            fallbackViewport.Parent = holder
+        end
+
         local label = Instance.new("ImageLabel")
+        label.Name = "PetFlatThumbnail"
         label.BackgroundTransparency = 1
         label.Image = thumbId
         label.ScaleType = Enum.ScaleType.Fit -- preserve the baked framing's aspect (square canvas)
-        label.Size = UDim2.new(1, 0, 1, 0)
+        label.Size = UDim2.fromScale(1, 1)
+        label.ZIndex = 104
+        label.Parent = holder
+        if huge then
+            -- HUGE: zoom the same flat art inside the clipped holder. The viewport fallback already
+            -- uses the server's separately baked huge framing.
+            local HUGE_ZOOM, HUGE_RAISE = 1.4, 0.1
+            label.AnchorPoint = Vector2.new(0.5, 0.5)
+            label.Size = UDim2.fromScale(HUGE_ZOOM, HUGE_ZOOM)
+            label.Position = UDim2.new(0.5, 0, 0.5 + HUGE_RAISE, 0)
+        end
+
+        local statusConnection
+        local readyConnection
+        local settled = false
+        local function disconnect()
+            if statusConnection then
+                statusConnection:Disconnect()
+                statusConnection = nil
+            end
+            if readyConnection then
+                readyConnection:Disconnect()
+                readyConnection = nil
+            end
+        end
+        local function ensureFallback()
+            if fallbackViewport and fallbackViewport.Parent then
+                return fallbackViewport
+            end
+            fallbackViewport = cloneBakedPetThumbnail(petType, variant, huge)
+            if fallbackViewport then
+                fallbackViewport.Name = "PetViewportFallback"
+                fallbackViewport.BackgroundTransparency = 1
+                fallbackViewport.Size = UDim2.fromScale(1, 1)
+                fallbackViewport.Position = UDim2.fromScale(0, 0)
+                fallbackViewport.ZIndex = 103
+                fallbackViewport.Parent = holder
+            end
+            return fallbackViewport
+        end
+        local function createEmergencyFallback()
+            local fallbackIcon = Instance.new("TextLabel")
+            fallbackIcon.Name = "PetEmojiFallback"
+            fallbackIcon.Size = UDim2.fromScale(0.8, 0.8)
+            fallbackIcon.Position = UDim2.fromScale(0.1, 0.1)
+            fallbackIcon.BackgroundTransparency = 1
+            fallbackIcon.Text = "🐾"
+            fallbackIcon.TextScaled = true
+            fallbackIcon.Font = Enum.Font.GothamBold
+            fallbackIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+            fallbackIcon.ZIndex = 103
+            fallbackIcon.Parent = holder
+            return fallbackIcon
+        end
+        local function applyFetchStatus(status)
+            if settled or not holder.Parent and not label.Parent then
+                return
+            end
+            local statusName = status.Name
+            if statusName == "Failure" or statusName == "TimedOut" then
+                -- Retry the viewport lookup in case its deferred server bake finished after this
+                -- card was constructed.
+                ensureFallback()
+            end
+            local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
+            local bakedThumbnailsReady = not assetsFolder
+                or assetsFolder:GetAttribute("PetThumbnailsReady") == true
+            local action = PetThumbnailFetchPolicy.action(
+                statusName,
+                fallbackViewport ~= nil and fallbackViewport.Parent ~= nil,
+                bakedThumbnailsReady
+            )
+            if action == "flat" then
+                settled = true
+                if fallbackViewport then
+                    fallbackViewport:Destroy()
+                    fallbackViewport = nil
+                end
+                disconnect()
+            elseif action == "viewport" then
+                -- The flat layer is transparent on delivery failure. Remove it explicitly so the
+                -- generated viewport is the sole visual.
+                settled = true
+                label:Destroy()
+                disconnect()
+                self.logger:warn("Flat pet thumbnail failed; retained baked viewport", {
+                    petType = petType,
+                    variant = variant,
+                    huge = huge == true,
+                    image = thumbId,
+                    status = statusName,
+                })
+            elseif action == "emergency" then
+                settled = true
+                label:Destroy()
+                createEmergencyFallback()
+                disconnect()
+                self.logger:warn(
+                    "Flat and baked pet thumbnails unavailable; using emergency icon",
+                    {
+                        petType = petType,
+                        variant = variant,
+                        huge = huge == true,
+                        image = thumbId,
+                        status = statusName,
+                    }
+                )
+            end
+        end
+
+        -- If the deferred server thumbnail pass has not populated this pet yet, make the same card
+        -- self-heal when PetThumbnailsReady flips instead of requiring a menu close/reopen.
+        if not fallbackViewport then
+            local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
+            if assetsFolder and assetsFolder:GetAttribute("PetThumbnailsReady") ~= true then
+                readyConnection = assetsFolder
+                    :GetAttributeChangedSignal("PetThumbnailsReady")
+                    :Connect(function()
+                        if assetsFolder:GetAttribute("PetThumbnailsReady") == true then
+                            ensureFallback()
+                            local okStatus, currentStatus = pcall(function()
+                                return ContentProvider:GetAssetFetchStatus(thumbId)
+                            end)
+                            if okStatus then
+                                applyFetchStatus(currentStatus)
+                            end
+                        end
+                    end)
+            end
+        end
+
+        local okSignal, signal = pcall(function()
+            return ContentProvider:GetAssetFetchStatusChangedSignal(thumbId)
+        end)
+        if okSignal and signal then
+            statusConnection = signal:Connect(applyFetchStatus)
+        end
+        holder.Destroying:Once(disconnect)
+
+        local okStatus, currentStatus = pcall(function()
+            return ContentProvider:GetAssetFetchStatus(thumbId)
+        end)
+        if okStatus then
+            applyFetchStatus(currentStatus)
+        end
+
         self.logger:info("🎯 PET THUMBNAIL (flat image)", {
             petType = petType,
             variant = variant,
             huge = huge == true,
             image = thumbId,
         })
-        if not huge then
-            return label
-        end
-        -- HUGE: an up-close shot of the face, mirroring the viewport "__huge" framing. There's no
-        -- separate huge texture, so we zoom the flat one: scale it up inside a clipped frame and lift
-        -- it so the face fills the card. Scale-based, so it's resolution-independent and needs no extra
-        -- asset. (HUGE_RAISE shifts the image DOWN so the upper-body/face rises to the card centre.)
-        local HUGE_ZOOM, HUGE_RAISE = 1.4, 0.1
-        label.AnchorPoint = Vector2.new(0.5, 0.5)
-        label.Size = UDim2.fromScale(HUGE_ZOOM, HUGE_ZOOM)
-        label.Position = UDim2.new(0.5, 0, 0.5 + HUGE_RAISE, 0)
-        label.ZIndex = 104
-        local clip = Instance.new("Frame")
-        clip.BackgroundTransparency = 1
-        clip.ClipsDescendants = true
-        clip.Size = UDim2.new(1, 0, 1, 0)
-        label.Parent = clip
-        return clip
+        return holder
     end
 
-    local success, imageViewport = pcall(function()
-        local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
-        if not assetsFolder then
-            return nil
-        end
+    local imageViewport = cloneBakedPetThumbnail(petType, variant, huge)
 
-        local imagesFolder = assetsFolder:FindFirstChild("Images")
-        if not imagesFolder then
-            return nil
-        end
-
-        local petsImagesFolder = imagesFolder:FindFirstChild("Pets")
-        if not petsImagesFolder then
-            return nil
-        end
-
-        local petTypeFolder = petsImagesFolder:FindFirstChild(petType)
-        if not petTypeFolder then
-            return nil
-        end
-
-        -- HUGE pets prefer the up-close "<variant>__huge" thumbnail (baked with the huge_face camera);
-        -- fall back to the normal one if it isn't generated yet (same one card path either way).
-        local petImageViewport = (huge and petTypeFolder:FindFirstChild(variant .. "__huge"))
-            or petTypeFolder:FindFirstChild(variant)
-        if not petImageViewport then
-            return nil
-        end
-
-        -- Clone the ViewportFrame to avoid "Parent property is locked" errors
-        return petImageViewport:Clone()
-    end)
-
-    if success and imageViewport then
+    if imageViewport then
         -- We're here because resolveThumbnailId returned nil (no uploaded flat texture for this
         -- pet/variant) — so the card uses the live baked ViewportFrame. Warn ONCE per pet/variant so
         -- a missing/greyed-out (ownership mismatch) thumbnail is visible to devs, never silent.
@@ -3722,7 +3857,7 @@ function InventoryPanel:_getPetImageFromAssets(petType, variant, quiet, huge)
         self.logger:warn("🚫 PET IMAGE NOT FOUND", {
             petType = petType,
             variant = variant,
-            error = success and "Image not found" or imageViewport,
+            error = "Image not found",
         })
     end
     return nil

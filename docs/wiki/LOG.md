@@ -1416,3 +1416,12 @@ the current game tree, preserving the potion and enhancement shops, stacked-pet 
 and append-only project history. The hotbar's third periodic UI pulse is now explicitly classified
 in the runtime-wait ledger, all seven architecture rules report zero unclassified debt, and the
 integrated tree passes the complete CI gate with 1,457 headless tests.
+
+## 2026-07-20 — Inventory thumbnails survive Roblox delivery failures
+
+Studio logs identified approved, group-owned Blightlamb and Dread Hare images failing with
+`HttpError: NetFail` and then `Invalid image or texture`. Inventory pet cards now layer the
+server-generated ViewportFrame beneath each unresolved flat image, retire it only after
+`AssetFetchStatus.Success`, and retain it after `Failure` or `TimedOut`. A deferred bake can repair
+an already-open card, an emergency paw prevents a terminally blank card, viewport culling recognizes
+the nested fallback, and the previously dormant client prewarm runs concurrently with UI startup.

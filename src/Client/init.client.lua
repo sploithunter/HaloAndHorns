@@ -1268,6 +1268,11 @@ local function prewarmPetThumbnailViewports()
     end)
 end
 
+-- Warm the generated viewport cache and flat textures in parallel with UI construction. This is
+-- cosmetic and must never hold the HUD gate; resilient inventory cards can still display their
+-- baked fallback while an individual flat texture is loading or after delivery failure.
+task.spawn(prewarmPetThumbnailViewports)
+
 -- The REAL game UI boot: MenuManager + every panel + BaseUI + the ClientUIReady gate.
 -- (Historically wrapped in RunService:IsStudio() from its "test GUI" days — which meant a
 -- PUBLISHED build had NO menus and the boot screen only released via timeout. Always run.)
