@@ -12,6 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local CloseButton = require(script.Parent.Parent.Components.CloseButton)
+local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 local MonetizationCatalog = require(ReplicatedStorage.Shared.Game.MonetizationCatalog)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
@@ -22,12 +23,9 @@ local COLORS = {
     panelTop = Color3.fromRGB(39, 43, 58),
     header = Color3.fromRGB(34, 126, 171),
     headerDeep = Color3.fromRGB(24, 78, 128),
-    tab = Color3.fromRGB(49, 54, 70),
-    tabSelected = Color3.fromRGB(237, 167, 55),
     card = Color3.fromRGB(42, 45, 58),
     cardTop = Color3.fromRGB(57, 61, 78),
     cardStroke = Color3.fromRGB(91, 98, 121),
-    buy = Color3.fromRGB(39, 177, 102),
     owned = Color3.fromRGB(111, 82, 166),
     robux = Color3.fromRGB(83, 204, 132),
     text = Color3.fromRGB(255, 255, 255),
@@ -64,6 +62,7 @@ function RewardShopPanel.new()
     self.ownedPasses = {}
     self.livePasses = MonetizationCatalog.livePasses(monetization)
     self.liveProducts = MonetizationCatalog.liveProducts(monetization)
+    self._areaKey, self._areaColor = PanelChrome.areaPill()
     self.connections = {
         Signals.OwnedPasses.OnClientEvent:Connect(function(snapshot)
             self.ownedPasses = MonetizationCatalog.ownedSet(snapshot)
@@ -156,7 +155,7 @@ function RewardShopPanel:_createUI(parent)
     sizeLimit.Parent = frame
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = COLORS.tabSelected
+    stroke.Color = self._areaColor or COLORS.header
     stroke.Thickness = 3
     stroke.Transparency = 0.18
     stroke.Parent = frame
@@ -250,16 +249,25 @@ function RewardShopPanel:_createTabs()
         button.Name = "Tab_" .. definition.id
         button.Size = UDim2.new(0, 170, 0, 40)
         button.LayoutOrder = order
-        button.BackgroundColor3 = COLORS.tab
+        button.BackgroundTransparency = 1
         button.BorderSizePixel = 0
-        button.Text = definition.text
-        button.TextColor3 = COLORS.text
-        button.TextScaled = true
-        button.Font = Enum.Font.GothamBold
+        button.Text = ""
+        button.AutoButtonColor = false
         button.ZIndex = 103
         button.Parent = bar
-        round(button, 10)
-        constrain(button, 15, 8)
+
+        local label = Instance.new("TextLabel")
+        label.Name = "Label"
+        label.Size = UDim2.fromScale(1, 1)
+        label.BackgroundTransparency = 1
+        label.Text = definition.text
+        label.TextColor3 = COLORS.text
+        label.TextScaled = true
+        label.Font = Enum.Font.GothamBold
+        label.ZIndex = 110
+        label.Parent = button
+        constrain(label, 15, 8)
+
         button.Activated:Connect(function()
             self:_selectTab(definition.id)
         end)
@@ -277,7 +285,7 @@ function RewardShopPanel:_createGrid()
     grid.BackgroundTransparency = 1
     grid.BorderSizePixel = 0
     grid.ScrollBarThickness = 6
-    grid.ScrollBarImageColor3 = COLORS.tabSelected
+    grid.ScrollBarImageColor3 = self._areaColor or COLORS.header
     grid.CanvasSize = UDim2.new()
     grid.AutomaticCanvasSize = Enum.AutomaticSize.Y
     grid.ZIndex = 101
@@ -323,8 +331,19 @@ end
 function RewardShopPanel:_updateTabStyle()
     for id, button in pairs(self.tabs) do
         local selected = id == self.selectedTab
-        button.BackgroundColor3 = selected and COLORS.tabSelected or COLORS.tab
-        button.TextColor3 = selected and Color3.fromRGB(35, 31, 24) or COLORS.text
+        local pillKey = selected and "citrine" or (self._areaKey or "sapphire")
+        for _, child in ipairs(button:GetChildren()) do
+            if child.Name == "PillPanel" or child.Name == "PillBorder" then
+                child:Destroy()
+            end
+        end
+        PanelChrome.pillPanel(button, pillKey, 100)
+        PanelChrome.pillBorder(button, pillKey, 103, 0)
+
+        local label = button:FindFirstChild("Label")
+        if label then
+            label.TextColor3 = selected and Color3.fromRGB(64, 46, 8) or COLORS.text
+        end
     end
 end
 
@@ -474,22 +493,33 @@ function RewardShopPanel:_createMarketplaceCard(entry)
     buy.Name = "BuyButton"
     buy.Size = UDim2.new(1, -16, 0, 40)
     buy.Position = UDim2.new(0, 8, 1, -44)
-    buy.BackgroundColor3 = owned and COLORS.owned or COLORS.buy
+    buy.BackgroundTransparency = 1
     buy.BorderSizePixel = 0
-    buy.Text = owned and "Owned ✓" or "Buy"
-    buy.TextColor3 = COLORS.text
-    buy.TextScaled = true
-    buy.Font = Enum.Font.GothamBold
-    buy.AutoButtonColor = not owned
+    buy.Text = ""
+    buy.AutoButtonColor = false
     buy.Active = not owned
     buy.ZIndex = 104
     buy.Parent = card
-    round(buy, 10)
-    constrain(buy, 16, 9)
+
+    local actionKey = owned and "amethyst" or "emerald"
+    PanelChrome.pillPanel(buy, actionKey, 102)
+    PanelChrome.pillBorder(buy, actionKey, 105, 0)
+
+    local buyLabel = Instance.new("TextLabel")
+    buyLabel.Name = "Label"
+    buyLabel.Size = UDim2.fromScale(1, 1)
+    buyLabel.BackgroundTransparency = 1
+    buyLabel.Text = owned and "Owned ✓" or "Buy"
+    buyLabel.TextColor3 = COLORS.text
+    buyLabel.TextScaled = true
+    buyLabel.Font = Enum.Font.GothamBold
+    buyLabel.ZIndex = 110
+    buyLabel.Parent = buy
+    constrain(buyLabel, 16, 9)
 
     if not owned then
         buy.Activated:Connect(function()
-            buy.Text = "Opening…"
+            buyLabel.Text = "Opening…"
             buy.Active = false
             self:_setStatus("Opening Roblox purchase confirmation…", false)
             Signals.InitiatePurchase:FireServer({
