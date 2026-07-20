@@ -16,7 +16,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
-local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -25,6 +24,7 @@ local PILL = require(ReplicatedStorage.Configs:WaitForChild("pill_ui"))
 local POWERS = require(ReplicatedStorage.Configs:WaitForChild("powers"))
 local POWER_DESC = require(ReplicatedStorage.Configs:WaitForChild("power_descriptions"))
 local POTIONS = require(ReplicatedStorage.Configs:WaitForChild("potions"))
+local HOTBAR_CONFIG = require(ReplicatedStorage.Configs:WaitForChild("hotbar"))
 -- Derived-description SSOT (the same source the powers menu uses). The hotbar tooltip used to read
 -- the hardcoded POWER_DESC table, which only covered some powers — new ones (Taunt etc.) fell to
 -- "(no description)" even though the menu showed a full one. PowerDescribe builds from the live
@@ -33,7 +33,7 @@ local PowerDescribe = require(ReplicatedStorage.Shared.Game.PowerDescribe)
 local PotionDescribe = require(ReplicatedStorage.Shared.Game.PotionDescribe)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local UITheme = require(script.Parent.Parent.UI.UITheme)
-local CloseButton = require(script.Parent.Parent.UI.Components.CloseButton)
+local PanelChrome = require(script.Parent.Parent.UI.Components.PanelChrome)
 
 -- Tint a pill ImageLabel to the player's area palette (frames are keyed by colour name —
 -- sapphire/citrine/ruby/emerald/neutral — same keys UITheme returns), re-applying when the area
@@ -164,6 +164,77 @@ local function deriveType(powerId)
     local cat = SYMBOL_KIND[b.symbol] or "Power"
     local tgt = RING_TARGET[b.ring]
     return tgt and (tgt .. " " .. cat) or cat
+end
+
+-- One description path powers both normal hotbar-slot tooltips and assignment-row tooltips.
+local function describeBind(bind)
+    if bind == nil then
+        return {
+            name = "Clear this slot",
+            typeText = "Hotbar action",
+            description = "Remove the current binding and leave this slot empty.",
+            color = Color3.fromRGB(225, 105, 110),
+        }
+    end
+    local id = tostring(bind.target or "")
+    if bind.type == "power" then
+        local def = POWERS.powers and POWERS.powers[id]
+        local badge = PetBadge.forPower(id)
+        local authored = POWER_DESC[id]
+        local d = PowerDescribe.describe(POWERS, id)
+        local description = d and d.summary or "A power you can cast from the hotbar."
+        if d and d.lines and #d.lines > 0 then
+            description ..= "\n" .. table.concat(d.lines, "  ·  ")
+        end
+        return {
+            name = (def and def.display_name) or (id:gsub("_", " ")),
+            typeText = ((type(authored) == "table") and authored.type) or deriveType(id),
+            description = description,
+            badge = badge,
+            color = (badge and POWER_ICONS.elementColor3(badge.element, "bright"))
+                or TYPE_COLOR.power,
+        }
+    elseif bind.type == "potion" then
+        local d = PotionDescribe.describe(POTIONS, id)
+        if d then
+            local description = d.summary
+            if d.lines and #d.lines > 0 then
+                description ..= "\n" .. table.concat(d.lines, "  ·  ")
+            end
+            local badge = PetBadge.forPower("potion_" .. tostring(d.meter))
+            return {
+                name = d.name,
+                typeText = d.type,
+                description = description,
+                badge = badge,
+                color = (badge and POWER_ICONS.elementColor3(badge.element, "bright"))
+                    or TYPE_COLOR.potion,
+            }
+        end
+    elseif bind.type == "tactical" then
+        local d = (HOTBAR_CONFIG.tactical_details or {})[id] or {}
+        local badge = TACTICAL_BADGE[id]
+        return {
+            name = d.display_name or (id:gsub("_", " ")),
+            typeText = d.type or "Squad command",
+            description = d.description or "Give this command to your active pet squad.",
+            badge = badge,
+            color = TYPE_COLOR.tactical,
+        }
+    elseif bind.type == "roster" then
+        return {
+            name = id:gsub("_", " "),
+            typeText = "Team roster",
+            description = "Deploy the pets saved in this roster.",
+            color = TYPE_COLOR.roster,
+        }
+    end
+    return {
+        name = id:gsub("_", " "),
+        typeText = tostring(bind.type or "Hotbar action"),
+        description = "Assign this action to the selected hotbar slot.",
+        color = TYPE_COLOR[bind.type] or Color3.fromRGB(185, 190, 205),
+    }
 end
 
 function HotbarBar.start()
@@ -408,7 +479,9 @@ function HotbarBar.start()
     tip.BackgroundTransparency = 0.05
     tip.BorderSizePixel = 0
     tip.Visible = false
-    tip.ZIndex = 40
+    -- The same tooltip is also used by the edit picker, whose panel chrome starts at ZIndex 100.
+    -- Keep it above both surfaces instead of maintaining a second picker-only description widget.
+    tip.ZIndex = 140
     tip.Parent = gui
     do
         local c = Instance.new("UICorner")
@@ -438,7 +511,7 @@ function HotbarBar.start()
     tipName.TextXAlignment = Enum.TextXAlignment.Left
     tipName.TextColor3 = Color3.fromRGB(245, 245, 255)
     tipName.Text = ""
-    tipName.ZIndex = 41
+    tipName.ZIndex = 141
     tipName.Parent = tip
     local tipType = Instance.new("TextLabel")
     tipType.LayoutOrder = 2
@@ -449,7 +522,7 @@ function HotbarBar.start()
     tipType.TextXAlignment = Enum.TextXAlignment.Left
     tipType.TextColor3 = Color3.fromRGB(150, 156, 175)
     tipType.Text = ""
-    tipType.ZIndex = 41
+    tipType.ZIndex = 141
     tipType.Parent = tip
     local tipDesc = Instance.new("TextLabel")
     tipDesc.LayoutOrder = 3
@@ -463,57 +536,44 @@ function HotbarBar.start()
     tipDesc.TextYAlignment = Enum.TextYAlignment.Top
     tipDesc.TextColor3 = Color3.fromRGB(205, 210, 225)
     tipDesc.Text = ""
-    tipDesc.ZIndex = 41
+    tipDesc.ZIndex = 141
     tipDesc.Parent = tip
 
     local hoverToken = 0 -- bumped on enter/leave so a stale delayed show is ignored
-    local function showTip(card)
-        local bind = card and card.bindObj
-        if not bind then
+    local function showBindTip(bind, source, pickerPlacement)
+        if bind == nil and not pickerPlacement then
             return
         end
-        local id = tostring(bind.target)
-        local name, typeText, descText, badge
-        if bind.type == "power" then
-            local def = POWERS.powers and POWERS.powers[id]
-            name = (def and def.display_name) or (id:gsub("_", " "))
-            badge = PetBadge.forPower(id)
-            -- Description from the DERIVED SSOT (PowerDescribe) — the exact source the powers menu
-            -- uses. POWER_DESC remains only for an optional `type` override.
-            local entry = POWER_DESC[id]
-            local d = PowerDescribe.describe(POWERS, id)
-            typeText = ((type(entry) == "table") and entry.type) or deriveType(id)
-            if d then
-                descText = d.summary
-                if d.lines and #d.lines > 0 then
-                    descText = descText .. "\n" .. table.concat(d.lines, "  ·  ")
-                end
-            end
-        elseif bind.type == "potion" then
-            local d = PotionDescribe.describe(POTIONS, id)
-            if not d then
-                return
-            end
-            name = d.name
-            typeText = d.type
-            descText = d.summary
-            if d.lines and #d.lines > 0 then
-                descText = descText .. "\n" .. table.concat(d.lines, "  ·  ")
-            end
-            badge = PetBadge.forPower("potion_" .. tostring(d.meter))
-        else
-            return -- empty/tactical/roster slots have no description contract yet
-        end
+        local detail = describeBind(bind)
 
-        tipName.Text = name
-        tipName.TextColor3 = (badge and POWER_ICONS.elementColor3(badge.element, "bright"))
-            or Color3.fromRGB(245, 245, 255)
-        tipType.Text = typeText or ""
+        tipName.Text = detail.name
+        tipName.TextColor3 = detail.color
+        tipType.Text = detail.typeText or ""
         tipType.Visible = tipType.Text ~= ""
-        tipDesc.Text = descText or "(no description)"
-        local ap = card.frame.AbsolutePosition
-        tip.Position = UDim2.fromOffset(math.floor(ap.X), math.floor(ap.Y) - 6)
+        tipDesc.Text = detail.description or "(no description)"
+        local ap = source.AbsolutePosition
+        if pickerPlacement then
+            local sourceRight = ap.X + source.AbsoluteSize.X
+            local tipWidth = tip.AbsoluteSize.X > 0 and tip.AbsoluteSize.X or 236
+            local camera = workspace.CurrentCamera
+            local screenWidth = camera and camera.ViewportSize.X or 1920
+            local x = sourceRight + 8
+            if x + tipWidth > screenWidth - 8 then
+                x = math.max(8, ap.X - tipWidth - 8)
+            end
+            tip.AnchorPoint = Vector2.new(0, 0)
+            tip.Position = UDim2.fromOffset(math.floor(x), math.floor(ap.Y))
+        else
+            tip.AnchorPoint = Vector2.new(0, 1)
+            tip.Position = UDim2.fromOffset(math.floor(ap.X), math.floor(ap.Y) - 6)
+        end
         tip.Visible = true
+    end
+    local function showTip(card)
+        local bind = card and card.bindObj
+        if bind and card.frame then
+            showBindTip(bind, card.frame, false)
+        end
     end
     local function hideTip()
         tip.Visible = false
@@ -1000,14 +1060,17 @@ function HotbarBar.start()
 
     local pickerFrame
     local function closePicker()
+        hoverToken += 1
+        hideTip()
         if pickerFrame then
             pickerFrame:Destroy()
             pickerFrame = nil
         end
     end
 
-    -- Build the assignment picker for a slot: powers (server palette), pet summons
-    -- (the player's equipped squad), tacticals, and Clear. Selecting one rebinds.
+    -- Compact assignment picker: click the exact row to bind it. Full details use the same delayed
+    -- hover tooltip as the hotbar itself, eliminating the old select-row -> travel-to-Assign flow
+    -- where merely crossing another row could silently change what the button would bind.
     openPicker = function(slot)
         closePicker()
         -- The player clicked a slot — the "pick a slot" arrow has done its job; clear it so it doesn't
@@ -1016,80 +1079,133 @@ function HotbarBar.start()
             editHint:Destroy()
             editHint = nil
         end
-        local p = Instance.new("Frame")
-        p.Name = "Picker"
+        local shell = PanelChrome.build(gui, {
+            name = "Picker",
+            title = "Assign slot " .. slot,
+            size = UDim2.fromOffset(300, 330),
+            onClose = closePicker,
+        })
+        local p = shell.frame
         p.AnchorPoint = Vector2.new(0.5, 1)
         p.Position = UDim2.new(0.5, 0, 1, -(SLOT * 2 + PAD + 18))
-        p.Size = UDim2.fromOffset(320, 280)
-        p.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
-        p.BorderSizePixel = 0
-        p.Parent = gui
-        local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(0, 8)
-        c.Parent = p
         pickerFrame = p
 
-        local title = Instance.new("TextLabel")
-        title.BackgroundTransparency = 1
-        title.Size = UDim2.new(1, -28, 0, 24)
-        title.Position = UDim2.fromOffset(10, 4)
-        title.Font = Enum.Font.GothamBold
-        title.TextSize = 13
-        title.TextXAlignment = Enum.TextXAlignment.Left
-        title.TextColor3 = Color3.fromRGB(255, 215, 120)
-        title.Text = "Assign slot " .. slot
-        title.Parent = p
-
-        -- THE standard close X (shared component; "✕" tofu-boxes in Gotham)
-        CloseButton.attach(p, { onClick = closePicker })
-
         local listFrame = Instance.new("ScrollingFrame")
-        listFrame.Position = UDim2.fromOffset(6, 30)
-        listFrame.Size = UDim2.new(1, -12, 1, -36)
+        listFrame.Name = "Choices"
+        listFrame.Position = UDim2.fromOffset(15, 45)
+        listFrame.Size = UDim2.fromOffset(270, 268)
         listFrame.BackgroundTransparency = 1
         listFrame.BorderSizePixel = 0
         listFrame.ScrollBarThickness = 6
         listFrame.CanvasSize = UDim2.new()
         listFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        listFrame.ZIndex = 102
         listFrame.Parent = p
         local layout = Instance.new("UIListLayout")
-        layout.Padding = UDim.new(0, 3)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        layout.Padding = UDim.new(0, 5)
         layout.Parent = listFrame
 
         local order = 0
+        local currentBind = lastHotbarState
+            and lastHotbarState.hotbar
+            and (lastHotbarState.hotbar[tostring(slot)] or lastHotbarState.hotbar[slot])
+        local function bindMatches(a, b)
+            return type(a) == "table"
+                and type(b) == "table"
+                and a.type == b.type
+                and a.target == b.target
+        end
+
         local function header(text)
             order += 1
             local h = Instance.new("TextLabel")
-            h.Size = UDim2.new(1, 0, 0, 16)
-            h.BackgroundTransparency = 1
+            h.Size = UDim2.new(1, -8, 0, 21)
+            h.BackgroundColor3 = shell.areaColor
+            h.BackgroundTransparency = 0.18
             h.Font = Enum.Font.GothamBold
             h.TextSize = 11
             h.TextXAlignment = Enum.TextXAlignment.Left
-            h.TextColor3 = Color3.fromRGB(150, 155, 170)
-            h.Text = text
+            h.TextColor3 = Color3.fromRGB(255, 255, 255)
+            h.Text = "  " .. text
             h.LayoutOrder = order
+            h.ZIndex = 103
             h.Parent = listFrame
+            local hc = Instance.new("UICorner")
+            hc.CornerRadius = UDim.new(0, 7)
+            hc.Parent = h
         end
-        local function entry(label, color, bind)
+
+        local function entry(bind, suffix)
             order += 1
+            local detail = describeBind(bind)
             local e = Instance.new("TextButton")
-            e.Size = UDim2.new(1, 0, 0, 24)
-            e.AutoButtonColor = true
-            e.Font = Enum.Font.GothamMedium
-            e.TextSize = 12
-            e.TextXAlignment = Enum.TextXAlignment.Left
-            e.Text = "  " .. label
-            e.TextColor3 = Color3.fromRGB(235, 235, 245)
-            e.BackgroundColor3 = color
+            e.Name = bind and tostring(bind.target) or "Clear"
+            e.Size = UDim2.new(1, -8, 0, 43)
+            e.AutoButtonColor = false
+            e.Text = ""
+            e.BackgroundColor3 = Color3.fromRGB(42, 44, 55)
             e.BorderSizePixel = 0
             e.LayoutOrder = order
+            e.ZIndex = 103
             e.Parent = listFrame
             local ec = Instance.new("UICorner")
-            ec.CornerRadius = UDim.new(0, 4)
+            ec.CornerRadius = UDim.new(0, 9)
             ec.Parent = e
+            local accent = Instance.new("Frame")
+            accent.Size = UDim2.fromOffset(5, 29)
+            accent.Position = UDim2.fromOffset(5, 7)
+            accent.BackgroundColor3 = detail.color
+            accent.BorderSizePixel = 0
+            accent.ZIndex = 104
+            accent.Parent = e
+            local ac = Instance.new("UICorner")
+            ac.CornerRadius = UDim.new(1, 0)
+            ac.Parent = accent
+            local name = Instance.new("TextLabel")
+            name.Position = UDim2.fromOffset(17, 4)
+            name.Size = UDim2.new(1, -24, 0, 18)
+            name.BackgroundTransparency = 1
+            name.Font = Enum.Font.GothamBold
+            name.TextSize = 12
+            name.TextXAlignment = Enum.TextXAlignment.Left
+            name.TextColor3 = Color3.fromRGB(242, 243, 250)
+            name.Text = detail.name .. (suffix or "")
+            name.ZIndex = 104
+            name.Parent = e
+            local kind = Instance.new("TextLabel")
+            kind.Position = UDim2.fromOffset(17, 22)
+            kind.Size = UDim2.new(1, -24, 0, 15)
+            kind.BackgroundTransparency = 1
+            kind.Font = Enum.Font.Gotham
+            kind.TextSize = 10
+            kind.TextXAlignment = Enum.TextXAlignment.Left
+            kind.TextColor3 = Color3.fromRGB(157, 164, 184)
+            kind.Text = detail.typeText or ""
+            kind.ZIndex = 104
+            kind.Parent = e
+            local selectionStroke = Instance.new("UIStroke")
+            selectionStroke.Name = "SelectionStroke"
+            selectionStroke.Color = detail.color
+            selectionStroke.Thickness = 2
+            selectionStroke.Transparency = bindMatches(currentBind, bind) and 0 or 0.75
+            selectionStroke.Parent = e
             e.MouseButton1Click:Connect(function()
                 Signals.Hotbar_Rebind:FireServer({ slot = slot, bind = bind })
                 closePicker()
+            end)
+            e.MouseEnter:Connect(function()
+                hoverToken += 1
+                local mine = hoverToken
+                task.delay(HOVER_DELAY, function()
+                    if hoverToken == mine and e.Parent then
+                        showBindTip(bind, e, true)
+                    end
+                end)
+            end)
+            e.MouseLeave:Connect(function()
+                hoverToken += 1
+                hideTip()
             end)
             return e
         end
@@ -1107,34 +1223,25 @@ function HotbarBar.start()
             end
         end
         for _, id in ipairs(available.powers or {}) do
-            local row = entry(
-                (tostring(id):gsub("_", " ")),
-                TYPE_COLOR.power,
-                { type = "power", target = id }
-            )
+            local row = entry({ type = "power", target = id })
             if id == "resonance" and not anyPowerBound and row then
                 local arrow = Instance.new("TextLabel")
                 arrow.BackgroundTransparency = 1
                 arrow.AnchorPoint = Vector2.new(1, 0.5)
-                arrow.Position = UDim2.new(1, -6, 0.5, 0)
+                arrow.Position = UDim2.new(1, -8, 0.5, 0)
                 arrow.Size = UDim2.fromOffset(22, 22)
                 arrow.Font = Enum.Font.GothamBlack
                 arrow.TextSize = 18
                 arrow.Text = "⬅"
                 arrow.TextColor3 = Color3.fromRGB(255, 220, 90)
-                arrow.ZIndex = 5
+                arrow.ZIndex = 106
                 arrow.Parent = row
-                local st = Instance.new("UIStroke")
-                st.Color = Color3.fromRGB(255, 220, 90)
-                st.Thickness = 2
-                st.Parent = row
                 task.spawn(function()
                     local t = 0
                     while row.Parent do
                         t += 0.05
                         local a = (math.sin(t * 5) + 1) / 2
                         arrow.TextTransparency = 0.05 + 0.5 * a
-                        st.Transparency = 0.2 + 0.6 * a
                         task.wait(0.05)
                     end
                 end)
@@ -1144,25 +1251,21 @@ function HotbarBar.start()
         -- feature (Jason). The squad is managed in the inventory deploy flow, not bound per hotbar slot.
         header("Tactical")
         for _, cmd in ipairs(available.tacticals or {}) do
-            entry(
-                (tostring(cmd):gsub("_", " ")),
-                TYPE_COLOR.tactical,
-                { type = "tactical", target = cmd }
-            )
+            entry({ type = "tactical", target = cmd })
         end
         -- Potions you OWN (drink on tap, like a power). Prefer the LIVE map (potionByPotion, refreshed
         -- on every grant / PotionUpdate) so a mid-session grant appears immediately; the boot palette
         -- (available.potions) is only a fallback (it goes stale between Hotbar_State pushes).
         local potionList, seenPotion = {}, {}
-        for _, p in pairs(potionByPotion) do
-            if p.id and (tonumber(p.count) or 0) > 0 then
-                potionList[#potionList + 1] = p
-                seenPotion[p.id] = true
+        for _, potion in pairs(potionByPotion) do
+            if potion.id and (tonumber(potion.count) or 0) > 0 then
+                potionList[#potionList + 1] = potion
+                seenPotion[potion.id] = true
             end
         end
-        for _, p in ipairs(available.potions or {}) do
-            if p.id and not seenPotion[p.id] and (tonumber(p.count) or 0) > 0 then
-                potionList[#potionList + 1] = p
+        for _, potion in ipairs(available.potions or {}) do
+            if potion.id and not seenPotion[potion.id] and (tonumber(potion.count) or 0) > 0 then
+                potionList[#potionList + 1] = potion
             end
         end
         table.sort(potionList, function(a, b)
@@ -1171,22 +1274,16 @@ function HotbarBar.start()
         if #potionList > 0 then
             header("Potions")
             for _, pot in ipairs(potionList) do
-                local label = tostring(pot.icon or "🧪")
-                    .. " "
-                    .. tostring(pot.name or pot.id)
-                    .. " ×"
-                    .. tostring(pot.count or 0)
-                entry(label, TYPE_COLOR.potion, { type = "potion", target = pot.id })
+                entry({ type = "potion", target = pot.id }, "  ×" .. tostring(pot.count or 0))
             end
         end
-        header("")
-        entry("✖ Clear slot", Color3.fromRGB(70, 50, 50), nil)
+        header("Slot")
+        entry(nil)
     end
 
     -- EDIT MODE must SCREAM (Jason fell in the trap himself: forgot to press Done,
     -- "couldn't click a power" — the only tell was the tiny button text). While
     -- editing, the whole bar pill pulses orange and a banner floats above it.
-    local editPulseThread
     local editBanner
     -- "Pick a slot" cue: while editing, a blinking arrow hovers over slot 1 so a first-timer knows the
     -- next move is to click a slot. Cleared when a slot is clicked (openPicker) or editing ends.
@@ -1247,7 +1344,7 @@ function HotbarBar.start()
                 editBanner.Parent = barFrame
             end
             editBanner.Visible = true
-            editPulseThread = task.spawn(function()
+            task.spawn(function()
                 -- the pill is a 9-slice ImageLabel: pulse its TINT (ImageColor3)
                 local t = 0
                 while editMode do

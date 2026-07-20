@@ -88,6 +88,12 @@ local SCHEMAS = {
     }),
     rifts = schema({ multipliers = "table", default_multiplier = "number", schedule = "table" }),
     rosters = schema({ injury_rules = "table", default_injury_rule = "string" }),
+    retention = schema({
+        version = "number",
+        onboarding = "table",
+        custom_event = "table",
+        event_store = "table",
+    }),
     shop = schema({ offers = "table" }),
     showcase = schema({ place_ids = "table", apply = "function" }),
     soul = schema({ delta_per_conquest = "number", range = "table", bands = "table" }),

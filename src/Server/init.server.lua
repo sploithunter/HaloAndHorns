@@ -513,11 +513,20 @@ loader:RegisterModule("PotionShopService", ServerScriptService.Server.Services.P
 loader:RegisterModule(
     "TutorialService",
     ServerScriptService.Server.Services.TutorialService,
-    appendIfEnabled(
-        { "Logger", "ConfigLoader", "DataService", "EnhancementService", "PotionService" },
-        "player_progression",
-        "PlayerProgressionService"
-    )
+    appendIfEnabled({
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "EnhancementService",
+        "PotionService",
+        "HotbarService",
+    }, "player_progression", "PlayerProgressionService")
+)
+-- RetentionService: persisted activation milestones + Roblox onboarding/custom analytics.
+loader:RegisterModule(
+    "RetentionService",
+    ServerScriptService.Server.Services.RetentionService,
+    { "Logger", "ConfigLoader", "DataService" }
 )
 -- HotbarService: Halo & Horns hotbar / command bar (Feature 16).
 loader:RegisterModule(
@@ -841,6 +850,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 PowerService = modules:Get("PowerService"),
                 TutorialService = modules:Get("TutorialService"),
                 EnhancementService = modules:Get("EnhancementService"),
+                HotbarService = modules:Get("HotbarService"),
             })
         end
         modules:Get("PowerService"):BindPeerServices({
@@ -890,6 +900,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
             PotionShopService = modules:Get("PotionShopService"),
             PowerService = modules:Get("PowerService"),
             QuestService = modules:Get("QuestService"),
+            RetentionService = modules:Get("RetentionService"),
             RewardService = modules:Get("RewardService"),
             RosterService = modules:Get("RosterService"),
             ShopService = modules:Get("ShopService"),
@@ -989,6 +1000,7 @@ table.insert(requiredModules, "EnhancementShopService")
 table.insert(requiredModules, "PotionService")
 table.insert(requiredModules, "PotionShopService")
 table.insert(requiredModules, "TutorialService")
+table.insert(requiredModules, "RetentionService")
 table.insert(requiredModules, "HotbarService")
 table.insert(requiredModules, "RosterService")
 table.insert(requiredModules, "PartyService")

@@ -21,11 +21,25 @@ local AssetFetch = require(game:GetService("ReplicatedStorage").Shared.Utils.Ass
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 -- Dependencies
 local Locations = require(ReplicatedStorage.Shared.Locations)
+local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
 local petConfig = Locations.getConfig("pets")
 local eggSystemConfig = Locations.getConfig("egg_system")
+local powerIconsOk, POWER_ICONS = pcall(function()
+    return require(ReplicatedStorage.Configs:FindFirstChild("power_icons"))
+end)
+if not powerIconsOk then
+    POWER_ICONS = nil
+end
+local petRolesOk, PET_ROLES = pcall(function()
+    return require(ReplicatedStorage.Configs:FindFirstChild("pet_roles"))
+end)
+if not petRolesOk then
+    PET_ROLES = nil
+end
 local petVisualsOk, PetVariantVisuals = pcall(function()
     return require(ReplicatedStorage.Shared.Services.PetVariantVisuals)
 end)
@@ -38,6 +52,33 @@ local camera = workspace.CurrentCamera
 local petPreviewUI = nil
 local currentEggType = nil
 local iconCache = {}
+local activeIdentityTooltip = nil
+local petBadgeModule = nil
+
+-- EggPetPreviewService lives under Shared for historical reasons but runs only on the client.
+-- Resolve the SAME PetBadge module InventoryPanel uses through Locations.ClientUI, without a
+-- runtime wait. If UI is not ready yet, badge rendering degrades gracefully and retries next draw.
+local function getPetBadge()
+    if petBadgeModule then
+        return petBadgeModule
+    end
+    local source = Locations.ClientUI and Locations.ClientUI:FindFirstChild("PetBadge")
+    if not source then
+        return nil
+    end
+    local ok, result = pcall(require, source)
+    if ok then
+        petBadgeModule = result
+    end
+    return petBadgeModule
+end
+
+local function dismissIdentityTooltip()
+    if activeIdentityTooltip then
+        activeIdentityTooltip:Destroy()
+        activeIdentityTooltip = nil
+    end
+end
 
 -- Logger setup using LoggerWrapper pattern from memory
 local LoggerWrapper
@@ -376,6 +417,7 @@ function EggPetPreviewService:UpdatePetPreview(eggType, eggAnchor)
         local petChances = self:CalculatePetChances(eggType)
 
         -- Clear existing pet displays
+        dismissIdentityTooltip()
         for _, child in ipairs(container:GetChildren()) do
             child:Destroy()
         end
@@ -397,6 +439,7 @@ function EggPetPreviewService:UpdatePetPreview(eggType, eggAnchor)
         currentEggType = eggType
     else
         -- Hide when no egg in range
+        dismissIdentityTooltip()
         frame.Visible = false
         petPreviewUI.Adornee = nil
         currentEggType = nil
@@ -504,6 +547,207 @@ function EggPetPreviewService:CreatePetDisplayAtPosition(
 
     -- Call the pet content creation logic
     self:CreatePetContent(petFrame, petInfo, previewConfig, effectiveConfig)
+end
+
+local function createIdentityTooltip(petFrame, titleText, bodyText, placement)
+    dismissIdentityTooltip()
+
+    local tooltip = Instance.new("Frame")
+    tooltip.Name = "PetIdentityTooltip"
+    tooltip.Size = UDim2.fromScale(2.05, 0.58)
+    tooltip.Position = placement == "support" and UDim2.fromScale(-1.05, 0.08)
+        or UDim2.fromScale(0, -0.52)
+    tooltip.BackgroundColor3 = Color3.fromRGB(18, 20, 30)
+    tooltip.BackgroundTransparency = 0.04
+    tooltip.BorderSizePixel = 0
+    tooltip.ZIndex = 60
+    tooltip:SetAttribute("TooltipTitle", titleText)
+    tooltip:SetAttribute("TooltipBody", bodyText)
+    tooltip.Parent = petFrame
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = tooltip
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(90, 170, 255)
+    stroke.Thickness = 2
+    stroke.Transparency = 0.08
+    stroke.Parent = tooltip
+
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Size = UDim2.fromScale(0.92, 0.34)
+    title.Position = UDim2.fromScale(0.04, 0.04)
+    title.BackgroundTransparency = 1
+    title.Text = titleText
+    title.TextColor3 = Color3.fromRGB(255, 226, 125)
+    title.TextScaled = true
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Font = Enum.Font.GothamBold
+    title.ZIndex = 61
+    title.Parent = tooltip
+
+    local body = Instance.new("TextLabel")
+    body.Name = "Body"
+    body.Size = UDim2.fromScale(0.92, 0.54)
+    body.Position = UDim2.fromScale(0.04, 0.39)
+    body.BackgroundTransparency = 1
+    body.Text = bodyText
+    body.TextColor3 = Color3.fromRGB(238, 240, 248)
+    body.TextScaled = true
+    body.TextWrapped = true
+    body.TextXAlignment = Enum.TextXAlignment.Left
+    body.TextYAlignment = Enum.TextYAlignment.Top
+    body.Font = Enum.Font.GothamMedium
+    body.ZIndex = 61
+    body.Parent = tooltip
+
+    activeIdentityTooltip = tooltip
+    return tooltip
+end
+
+local function wireIdentityTooltip(button, petFrame, titleText, bodyText, placement)
+    local ownedTooltip = nil
+    local function show()
+        ownedTooltip = createIdentityTooltip(petFrame, titleText, bodyText, placement)
+    end
+    local function hide()
+        if ownedTooltip and activeIdentityTooltip == ownedTooltip then
+            dismissIdentityTooltip()
+        end
+        ownedTooltip = nil
+    end
+
+    -- Roblox can synthesize MouseEnter/MouseLeave from a touch tap. Ignore those synthesized hover
+    -- events so they do not immediately undo the explicit touch toggle below. Hybrid devices still
+    -- hover normally whenever their most recent input came from a mouse.
+    button.MouseEnter:Connect(function()
+        if UserInputService:GetLastInputType() ~= Enum.UserInputType.Touch then
+            show()
+        end
+    end)
+    button.MouseLeave:Connect(function()
+        if UserInputService:GetLastInputType() ~= Enum.UserInputType.Touch then
+            hide()
+        end
+    end)
+    -- Touch has no hover. A direct badge tap toggles its explanation; rebuilding/hiding the egg
+    -- preview destroys it, and tapping another badge replaces it through the single-tooltip seam.
+    button.InputBegan:Connect(function(input)
+        if UserInputService.TouchEnabled and input.UserInputType == Enum.UserInputType.Touch then
+            if ownedTooltip and ownedTooltip.Parent then
+                hide()
+            else
+                show()
+            end
+        end
+    end)
+end
+
+local function createBadgeButton(petFrame, name, size, position, zIndex)
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Size = size
+    button.Position = position
+    button.BackgroundTransparency = 1
+    button.BorderSizePixel = 0
+    button.Text = ""
+    button.AutoButtonColor = false
+    button.Active = true
+    button.ZIndex = zIndex
+    button.Parent = petFrame
+
+    local aspect = Instance.new("UIAspectRatioConstraint")
+    aspect.AspectRatio = 1
+    aspect.AspectType = Enum.AspectType.FitWithinMaxSize
+    aspect.Parent = button
+    return button
+end
+
+-- Inventory-equivalent identity badges for an egg's pet-chance card:
+-- upper-left = archetype + attack targeting; lower-right = support/control ability + its scope.
+-- Both layers use the universal PetBadge renderer and the same pet_roles/power_icons SSOT.
+function EggPetPreviewService:CreatePetIdentityBadges(petFrame, petInfo)
+    local PetBadge = getPetBadge()
+    if not (PetBadge and POWER_ICONS and PET_ROLES and petInfo and petInfo.petType) then
+        return
+    end
+
+    local petType = petInfo.petType
+    local petDef = petInfo.petData or (petConfig.pets and petConfig.pets[petType]) or {}
+    local roleId = (PET_ROLES.by_type and PET_ROLES.by_type[petType]) or PET_ROLES.default
+    local role = PET_ROLES.roles and PET_ROLES.roles[roleId]
+    if role then
+        local roleButton = createBadgeButton(
+            petFrame,
+            "ArchetypeBadge",
+            UDim2.fromScale(0.4, 0.4),
+            UDim2.fromScale(-0.04, 0.01),
+            20
+        )
+        local attackScope = PetTargeting.attackScope(petDef.attack_targeting, roleId, PET_ROLES)
+        local badge = PetBadge.create(roleButton, {
+            element = PetBadge.elementForPetType(petType),
+            role = roleId,
+            ring = POWER_ICONS.targeting_ring[attackScope],
+            zIndex = 20,
+        })
+        if badge and badge.disc and badge.disc.Visible then
+            petFrame:SetAttribute("ArchetypeId", roleId)
+            petFrame:SetAttribute("ArchetypeLabel", role.label)
+            wireIdentityTooltip(
+                roleButton,
+                petFrame,
+                role.label .. " archetype",
+                role.tooltip or "This pet's combat role.",
+                "role"
+            )
+        else
+            roleButton:Destroy()
+        end
+    end
+
+    local entry = PET_ROLES.support_auras and PET_ROLES.support_auras[petType]
+    local auras = nil
+    if type(entry) == "table" then
+        auras = entry.kind and { entry } or entry
+    end
+    local shown = 0
+    for _, aura in ipairs(auras or {}) do
+        local meta = POWER_ICONS.support_badge and POWER_ICONS.support_badge[aura.kind]
+        if meta and meta.symbol then
+            local abilityButton = createBadgeButton(
+                petFrame,
+                "SupportBadge" .. (shown > 0 and tostring(shown + 1) or ""),
+                UDim2.fromScale(0.36, 0.36),
+                UDim2.fromScale(0.63 - shown * 0.12, 0.4),
+                30 + (#auras - shown)
+            )
+            local auraScope = PetTargeting.auraScope(aura, PET_ROLES)
+            local badge = PetBadge.create(abilityButton, {
+                element = PetBadge.elementForPetType(petType),
+                symbol = meta.symbol,
+                ring = POWER_ICONS.targeting_ring[auraScope],
+                zIndex = abilityButton.ZIndex,
+            })
+            if badge and badge.disc and badge.disc.Visible then
+                shown += 1
+                abilityButton:SetAttribute("AbilityKind", aura.kind)
+                abilityButton:SetAttribute("AbilityLabel", meta.label)
+                wireIdentityTooltip(
+                    abilityButton,
+                    petFrame,
+                    meta.label .. " ability",
+                    meta.tooltip or "This pet provides a special squad ability.",
+                    "support"
+                )
+            else
+                abilityButton:Destroy()
+            end
+        end
+    end
+    petFrame:SetAttribute("SupportBadgeCount", shown)
 end
 
 --[[
@@ -645,6 +889,8 @@ function EggPetPreviewService:CreatePetContent(petFrame, petInfo, previewConfig,
             or Color3.fromRGB(139, 0, 0)
     end
     chanceLabel.TextScaled = true
+
+    self:CreatePetIdentityBadges(petFrame, petInfo)
 end
 
 -- Load 3D pet model into ViewportFrame with configurable zoom (using ReplicatedStorage.Assets)
@@ -1043,6 +1289,7 @@ end
 
 -- Cleanup
 function EggPetPreviewService:Destroy()
+    dismissIdentityTooltip()
     if petPreviewUI then
         petPreviewUI:Destroy()
         petPreviewUI = nil

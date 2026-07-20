@@ -207,22 +207,27 @@ function HotbarService:_ensureDefaults(data)
     end
     data.HotbarInitialized = true -- defaults are a one-time seed; never auto-repopulate again
 
-    -- RALLY ON THE BAR (Jason: "teach the player about the rally flag... expose
-    -- it in the upper-left power bar position — you can call your pets to you").
+    -- BEGINNING UTILITIES ON THE BAR (currently Rally at slot 11).
     -- One-time seed at slot 11 (top row, leftmost) for EVERY save that doesn't
     -- already carry rally somewhere; skips if the player has claimed slot 11
     -- themselves. Backfill-flagged so clearing it later is respected forever.
     if not data.RallyBarSeeded then
         data.RallyBarSeeded = true
-        local hasRally = false
-        for _, b in pairs(data.Hotbar) do
-            if type(b) == "table" and b.type == "tactical" and b.target == "rally" then
-                hasRally = true
-                break
+        for index, authored in pairs(HotbarLogic.beginningBindings(self._config)) do
+            local alreadyBound = false
+            for _, existing in pairs(data.Hotbar) do
+                if
+                    type(existing) == "table"
+                    and existing.type == authored.type
+                    and existing.target == authored.target
+                then
+                    alreadyBound = true
+                    break
+                end
             end
-        end
-        if not hasRally and data.Hotbar["11"] == nil then
-            data.Hotbar["11"] = { type = "tactical", target = "rally" }
+            if not alreadyBound and HotbarLogic.bindAt(data.Hotbar, index) == nil then
+                data.Hotbar[tostring(index)] = authored
+            end
         end
     end
 
@@ -239,6 +244,27 @@ function HotbarService:GetState(player)
         return { ok = false, reason = "data_not_loaded" }
     end
     return { ok = true, hotbar = self:_ensureDefaults(data), slot_count = self._config.slot_count }
+end
+
+-- Restore the exact authored new-player bar and publish it immediately. Admin reset uses this
+-- instead of clearing Hotbar indirectly through respec, which left the one-time seed flags set and
+-- the client displaying its pre-reset snapshot.
+function HotbarService:ResetToBeginning(player)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+
+    data.Hotbar = {}
+    for index, bind in pairs(HotbarLogic.beginningBindings(self._config)) do
+        data.Hotbar[tostring(index)] = bind
+    end
+    data.HotbarInitialized = true
+    data.RallyBarSeeded = true
+
+    self._dataService:RequestSave(player, "hotbar_reset_to_beginning", { critical = true })
+    self:_pushState(player)
+    return { ok = true, hotbar = data.Hotbar }
 end
 
 -- Rebind a slot. `bind` is { type, target } or nil to clear.
@@ -263,6 +289,24 @@ function HotbarService:Rebind(player, index, bind)
     return { ok = true, hotbar = hotbar }
 end
 
+-- Authoritative placement for authored progression/tutorial binds. Unlike a normal player rebind,
+-- this preserves a displaced slot when possible and immediately publishes the repaired snapshot.
+-- The pure placement rule makes repeat calls harmless, so reconnecting on a grant step is safe.
+function HotbarService:EnsureBindAt(player, index, bind, reason)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    local hotbar = self:_ensureDefaults(data)
+    local result = HotbarLogic.ensureBindAt(hotbar, index, bind, self._config)
+    if not result.ok or not result.changed then
+        return result
+    end
+    self._dataService:RequestSave(player, reason or "hotbar_ensure_bind", { critical = true })
+    self:_pushState(player)
+    return result
+end
+
 -- POTIONS FILL FROM THE TOP RIGHT (Jason: "powers fill from the bottom left,
 -- potions fill from the top right — they could use them immediately"): when a
 -- potion is first acquired it auto-binds to the highest free TOP-ROW slot
@@ -272,23 +316,22 @@ end
 function HotbarService:AutoBindPotion(player, potionId)
     local data = self._dataService:GetData(player)
     if not data then
-        return
+        return { ok = false, reason = "data_not_loaded" }
     end
     local hotbar = self:_ensureDefaults(data)
-    local slotCount = (self._config and self._config.slot_count) or 20
-    for i = 1, slotCount do
-        local b = hotbar[tostring(i)]
-        if type(b) == "table" and b.type == "potion" and b.target == potionId then
-            return -- already on the bar
-        end
+    local slot = HotbarLogic.potionAutoBindSlot(hotbar, potionId, self._config)
+    if not slot then
+        return { ok = false, reason = "already_bound_or_top_row_full" }
     end
-    local rowFloor = math.floor(slotCount / 2) + 1 -- top row only (11..20)
-    for i = slotCount, rowFloor, -1 do
-        if hotbar[tostring(i)] == nil then
-            self:Rebind(player, i, { type = "potion", target = potionId })
-            return
-        end
+    local result = self:Rebind(player, slot, { type = "potion", target = potionId })
+    if not result.ok then
+        return result
     end
+    -- A tutorial/drop grant can arrive after the client's initial state pull.
+    -- PotionUpdate only refreshes counts against that last snapshot, so publish
+    -- the new binding here as part of the authoritative auto-bind transaction.
+    self:_pushState(player)
+    return { ok = true, slot = slot }
 end
 
 -- Fire the bind on a hotbar slot. `payload` is the slot index (1-20) or { slot = n }.

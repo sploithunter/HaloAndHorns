@@ -254,6 +254,29 @@ return function()
         end)
     end)
 
+    describe("base-realm crystal progression balance", function()
+        local breakables = loadModule("configs/breakables.lua")
+        local baseWorlds = { "Spawn", "Meadow", "Lava", "Ice", "Desert" }
+
+        it("doubles node currency and mining XP at the world Value seam", function()
+            for _, worldId in ipairs(baseWorlds) do
+                local world = breakables.worlds and breakables.worlds[worldId]
+                expect(world).to.be.ok()
+                expect(world.value_mult).to.equal(2)
+            end
+        end)
+
+        it("does not apply the base-realm multiplier to Heaven or Hell", function()
+            for worldId, world in pairs(breakables.worlds or {}) do
+                local isRealmWorld = tostring(worldId):match("^Heaven_%d")
+                    or tostring(worldId):match("^Hell_%d")
+                if isRealmWorld then
+                    expect(world.value_mult).never.to.equal(2)
+                end
+            end
+        end)
+    end)
+
     describe("level track rewards reference canonical currencies", function()
         local levelTrack = loadModule("configs/level_track.lua")
         local currencies = loadModule("configs/currencies.lua")

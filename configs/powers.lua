@@ -243,9 +243,7 @@ return {
         },
         strike = { family = "vulnerable", magnitude = 1.5, duration = 4 }, -- basic single hit
 
-        -- ===== NEW origin-core effects — placeholder families so the powers resolve + show in menus;
-        -- the remaining mechanics (Rage HP-curve, Fear flee, heals, player_field) are separate build
-        -- slices. Firewall-safe. See docs/PET_REALM_ORIGIN_POWERSETS.md. =====
+        -- ===== Origin-core effects. Firewall-safe. See docs/PET_REALM_ORIGIN_POWERSETS.md. =====
         taunt = { family = "taunt", magnitude = 0, duration = 8, radius = 18 }, -- AoE aggro pull onto the tank
         -- RAGE (tank self-buff): the holder pets (selected pet, else all tanks — same set as taunt)
         -- get a flat `base` pet-damage bonus PLUS a "critical" bonus that GROWS the lower the pet's HP
@@ -575,9 +573,8 @@ return {
 
         -- ===== ORIGIN CORES — 7 per origin (full schema: display_name/role/element/target/glyph/
         -- unlock_level). See docs/PET_REALM_ORIGIN_POWERSETS.md. Signatures follow below.
-        -- NOTE: new effects (taunt/rage/armor_field/restoring_sands/healing_field/fear/ice_shard/
-        -- deep_freeze/frost_field/scorch/fire_nova) + target "player_field" have placeholder
-        -- effect_kinds; their mechanics are separate build slices. =====
+        -- NOTE: the `effect` key resolves mechanics through effect_kinds above; target controls
+        -- scope independently (single / player_field / targeted_aoe). =====
 
         -- Geomancer (earth · tank): targeted+team armor, buff, debuff, Taunt, Rage, Armor Field
         stone_skin = {

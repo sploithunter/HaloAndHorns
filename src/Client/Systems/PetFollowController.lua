@@ -10,9 +10,10 @@
     Attack:  pets SURROUND the target in an animated ring (orbit/static_ring/lunge).
              Switch live with localPlayer:SetAttribute("PetAttackStyle", "lunge").
 
-    Damage + target assignment are server-side; this is pure visualisation. Other
-    clients seeing a player's pets move (position replication) is a documented
-    follow-up; this drives the LOCAL player's view.
+    Damage + target assignment are server-side; this is pure visualisation. The
+    owner reports clean, gait-free transforms through the server; every other
+    client smooths those transforms and layers the same local gait/rig animation
+    over them, so presentation never becomes movement authority.
 ]]
 
 local Players = game:GetService("Players")
@@ -466,6 +467,7 @@ function PetFollowController.start()
 
     -- OTHER players' pets, server-relayed (the server never relays our own — those stay local).
     local remoteTargets = setmetatable({}, { __mode = "k" }) -- pet model -> latest relayed CFrame
+    local remoteBaseCF = setmetatable({}, { __mode = "k" }) -- clean smoothed CFrame, no gait
     local remoteDownAccum = 0 -- throttle for the remote downed-hide sweep (~4 Hz)
     local remoteDownApplied = setmetatable({}, { __mode = "k" }) -- pet -> last applied downed bool
     Signals.PetPositionsRelay.OnClientEvent:Connect(function(list)
@@ -480,14 +482,38 @@ function PetFollowController.start()
     end)
 
     RunService.RenderStepped:Connect(function(dt)
-        -- Smooth OTHER players' pets toward their relayed transforms (always, even if we have no
-        -- pets of our own). Our own pets are handled below, purely locally.
+        -- Smooth OTHER players' pets toward their relayed CLEAN transforms (always, even if we
+        -- have no pets of our own), then apply the same observer-local gait/rig animation used by
+        -- the owner. Keep the clean base separate from the rendered pivot so cosmetic bob/tilt
+        -- never feeds back into interpolation. Our own pets are handled below, purely locally.
         local remoteAlpha = 1 - math.exp(-(config.movement.remote_lerp_rate or 14) * dt)
         for pet, targetCf in pairs(remoteTargets) do
             if pet.Parent and pet:IsA("Model") and pet.PrimaryPart then
-                pet:PivotTo(pet:GetPivot():Lerp(targetCf, remoteAlpha))
+                local clean = remoteBaseCF[pet] or pet:GetPivot()
+                local nextClean = clean:Lerp(targetCf, remoteAlpha)
+                remoteBaseCF[pet] = nextClean
+                local step = Vector3.new(
+                    nextClean.Position.X - clean.Position.X,
+                    0,
+                    nextClean.Position.Z - clean.Position.Z
+                ).Magnitude
+
+                if PetAnimator.isRigged(pet) then
+                    PetAnimator.update(pet, dt > 0 and step / dt or 0)
+                    pet:PivotTo(nextClean)
+                else
+                    local st = gaitState[pet]
+                    if not st then
+                        st = { phase = 0, amp = 0 }
+                        gaitState[pet] = st
+                    end
+                    local gait = resolveGait(pet:GetAttribute("PetType"))
+                    local bob, roll, yaw = Gait.advance(st, gait, step, dt)
+                    pet:PivotTo(CFrame.new(0, bob, 0) * nextClean * CFrame.Angles(0, yaw, roll))
+                end
             else
                 remoteTargets[pet] = nil
+                remoteBaseCF[pet] = nil
             end
         end
 

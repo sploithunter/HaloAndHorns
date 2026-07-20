@@ -170,7 +170,7 @@ return {
                     extra_inventory_slots = 50,
                 },
             },
-            icon = "rbxassetid://0", -- Replace with actual asset ID
+            icon = "rbxassetid://110202501857174", -- live Marketplace thumbnail
             test_mode_enabled = true,
         },
         {
@@ -192,7 +192,7 @@ return {
                     auto_collect_rate = 1.0,
                 },
             },
-            icon = "rbxassetid://0", -- Replace with actual asset ID
+            icon = "rbxassetid://89924974140822", -- live Marketplace thumbnail
             test_mode_enabled = true,
         },
         {
@@ -214,7 +214,7 @@ return {
                     },
                 },
             },
-            icon = "rbxassetid://0", -- Replace with actual asset ID
+            icon = "rbxassetid://108419236875263", -- live Marketplace thumbnail
             test_mode_enabled = true,
         },
         -- EGG LUCK LADDER (reworked 2026-07-14): species luck CUT — that axis
@@ -233,7 +233,7 @@ return {
             description = "Golden pets hatch more often from coin eggs!",
             price_robux = 349,
             benefits = { features = { egg_golden_luck = true } },
-            icon = "rbxassetid://0",
+            icon = "rbxassetid://134610056334126",
             test_mode_enabled = true,
         },
         {
@@ -242,7 +242,7 @@ return {
             description = "Rainbow pets hatch more often from coin eggs!",
             price_robux = 449,
             benefits = { features = { egg_rainbow_luck = true } },
-            icon = "rbxassetid://0",
+            icon = "rbxassetid://140134292222194",
             test_mode_enabled = true,
         },
         {
@@ -251,16 +251,16 @@ return {
             description = "HUGE pets hatch more often from coin eggs!",
             price_robux = 549,
             benefits = { features = { egg_huge_luck = true } },
-            icon = "rbxassetid://0",
+            icon = "rbxassetid://106457794496527",
             test_mode_enabled = true,
         },
         {
             id = "pet_slot_pass",
-            name = "🐾 +1 Pet Slot",
-            description = "Deploy an eleventh pet!",
+            name = "🐾 Deploy an Extra Pet",
+            description = "Deploy one more pet than your current limit — 3 becomes 4, 10 becomes 11.",
             price_robux = 399,
             benefits = { features = { extra_equip_slots = 1 } },
-            icon = "rbxassetid://0",
+            icon = "rbxassetid://93743165018355",
             test_mode_enabled = true,
         },
         {
@@ -278,7 +278,7 @@ return {
                 -- lockout tick; feature flag below is stored today.
                 features = { fast_recovery_mult = 3 },
             },
-            icon = "rbxassetid://0",
+            icon = "rbxassetid://134787629853603",
             test_mode_enabled = true,
         },
     },

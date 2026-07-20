@@ -8,8 +8,11 @@
       isValidSlot(index, config)                       -> boolean
       isValidBindType(bindType, config)                -> boolean
       defaultBindings(availablePowers, config)         -> { [index] = bind }
+      beginningBindings(config)                        -> { [index] = bind }
       canRebind(index, bind, config)                   -> { ok, reason? }  (nil bind clears)
       bindAt(hotbar, index)                            -> bind or nil
+      ensureBindAt(hotbar, index, bind, config)        -> { ok, changed, movedFrom?, movedTo? }
+      potionAutoBindSlot(hotbar, potionId, config)     -> slot or nil
 ]]
 
 local HotbarLogic = {}
@@ -69,6 +72,25 @@ function HotbarLogic.defaultBindings(availablePowers, config)
     return bindings
 end
 
+-- Authored origin-free beginning layout. This is deliberately separate from defaultBindings:
+-- reset/new-player state has no archetype yet, while tutorial utilities such as Rally still belong
+-- on the bar. Invalid config rows are ignored so a typo cannot create an unusable persisted bind.
+function HotbarLogic.beginningBindings(config)
+    local bindings = {}
+    for _, bind in ipairs((config and config.beginning_binds) or {}) do
+        if
+            type(bind) == "table"
+            and HotbarLogic.isValidSlot(bind.slot, config)
+            and HotbarLogic.isValidBindType(bind.type, config)
+            and type(bind.target) == "string"
+            and bind.target ~= ""
+        then
+            bindings[tonumber(bind.slot)] = { type = bind.type, target = bind.target }
+        end
+    end
+    return bindings
+end
+
 -- Validate a rebind. A nil bind clears the slot (always allowed on a valid slot).
 function HotbarLogic.canRebind(index, bind, config)
     if not HotbarLogic.isValidSlot(index, config) then
@@ -91,6 +113,110 @@ function HotbarLogic.bindAt(hotbar, index)
         return nil
     end
     return hotbar[index] or hotbar[tostring(index)]
+end
+
+local function sameBind(a, b)
+    return type(a) == "table" and type(b) == "table" and a.type == b.type and a.target == b.target
+end
+
+local function writeSlot(hotbar, index, bind)
+    -- Profiles persist string keys, but a few pure callers/tests use numeric keys. Normalize the
+    -- write and remove the alternate representation so one logical slot can never hold two binds.
+    hotbar[index] = nil
+    hotbar[tostring(index)] = bind
+end
+
+-- Put a required bind at an authored slot without silently destroying a player's existing bind.
+-- If the required bind already lives elsewhere, that old slot becomes the displacement target.
+-- Otherwise we relocate the displaced bind to the first free slot in the same tray, then anywhere.
+-- This is used by tutorial grants whose copy must match the UI target (for example Rally at slot 11).
+function HotbarLogic.ensureBindAt(hotbar, index, bind, config)
+    if type(hotbar) ~= "table" then
+        return { ok = false, reason = "invalid_hotbar" }
+    end
+    local decision = HotbarLogic.canRebind(index, bind, config)
+    if not decision.ok or bind == nil then
+        return { ok = false, reason = decision.reason or "bind_required" }
+    end
+
+    index = tonumber(index)
+    local current = HotbarLogic.bindAt(hotbar, index)
+    if sameBind(current, bind) then
+        return { ok = true, changed = false }
+    end
+
+    local slotCount = math.max(0, math.floor(tonumber(config and config.slot_count) or 0))
+    local existingSlot
+    for slot = 1, slotCount do
+        if sameBind(HotbarLogic.bindAt(hotbar, slot), bind) then
+            existingSlot = slot
+            break
+        end
+    end
+
+    local displaced = current
+    if existingSlot and existingSlot ~= index then
+        writeSlot(hotbar, existingSlot, nil)
+    end
+
+    local movedTo
+    if displaced and not sameBind(displaced, bind) then
+        if existingSlot and existingSlot ~= index then
+            movedTo = existingSlot
+        else
+            local traySize = math.max(1, math.floor(slotCount / 2))
+            local trayStart = index > traySize and traySize + 1 or 1
+            local trayEnd = math.min(slotCount, trayStart + traySize - 1)
+            for slot = trayStart, trayEnd do
+                if slot ~= index and HotbarLogic.bindAt(hotbar, slot) == nil then
+                    movedTo = slot
+                    break
+                end
+            end
+            if not movedTo then
+                for slot = 1, slotCount do
+                    if slot ~= index and HotbarLogic.bindAt(hotbar, slot) == nil then
+                        movedTo = slot
+                        break
+                    end
+                end
+            end
+        end
+        if movedTo then
+            writeSlot(hotbar, movedTo, displaced)
+        end
+    end
+
+    writeSlot(hotbar, index, { type = bind.type, target = bind.target })
+    return {
+        ok = true,
+        changed = true,
+        movedFrom = existingSlot,
+        movedTo = movedTo,
+        displaced = displaced ~= nil and movedTo == nil,
+    }
+end
+
+-- Potions fill the top row from right to left. Returning nil means either this
+-- potion is already bound or the top row is full.
+function HotbarLogic.potionAutoBindSlot(hotbar, potionId, config)
+    if type(hotbar) ~= "table" or type(potionId) ~= "string" or potionId == "" then
+        return nil
+    end
+    local slotCount = math.max(0, math.floor(tonumber(config and config.slot_count) or 0))
+    for i = 1, slotCount do
+        local bind = HotbarLogic.bindAt(hotbar, i)
+        if type(bind) == "table" and bind.type == "potion" and bind.target == potionId then
+            return nil
+        end
+    end
+    local topRowStart = math.floor(slotCount / 2) + 1
+    for i = slotCount, topRowStart, -1 do
+        if HotbarLogic.bindAt(hotbar, i) == nil then
+            return i
+        end
+    end
+    return nil
 end
 
 return HotbarLogic
