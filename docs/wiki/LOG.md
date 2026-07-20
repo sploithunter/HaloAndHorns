@@ -1237,3 +1237,10 @@ earnable Speed Boost, and the coin-priced Starter Pack belong to the neighboring
 they are not developer products and no longer appear in the Robux storefront. The Pet Shop shows
 game passes now and will add only live, deterministic developer products when their IDs and grant
 handlers are complete.
+
+## 2026-07-19 — Pet Shop controls use the shared pill style
+
+Replaced the Pet Shop's hand-colored flat category and Buy/Owned buttons with the shared
+`PanelChrome` glossy pill panel and neon border assets already used by the Quest tabs and daily
+cards. Selected categories use citrine, live purchases use emerald, owned passes use amethyst,
+and inactive future categories inherit the player's area color.

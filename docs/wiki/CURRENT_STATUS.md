@@ -822,6 +822,9 @@ Last checked: 2026-07-19
   pass with the Marketplace thumbnail, authored benefit description, Robux price,
   and authoritative owned/purchase state. Earned gem/coin offers belong to the
   neighboring economy shop and are deliberately excluded from this panel.
+- Category and purchase-state controls use the same area/citrine/emerald/amethyst
+  glossy pill assets as the established menu style guide; the storefront does not
+  maintain a parallel flat-button palette.
 - Every streamed `Pet shop` world model receives a client-owned proximity prompt that
   opens the same panel through `MenuManager`. Prompt discovery tolerates models whose
   sign/parts stream in after the outer model.
