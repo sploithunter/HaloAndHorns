@@ -68,7 +68,12 @@ local SCHEMAS = {
     pet_roles = schema({ default = "string", by_type = "table", roles = "table" }),
     pet_thumbnail_assets = schema({ pets = "table", eggs = "table" }),
     pill_ui = schema({ frames = "table", panels = "table", rings = "table" }),
-    potions = schema({ tick_seconds = "number", meters = "table", potions = "table" }),
+    potions = schema({
+        tick_seconds = "number",
+        shop = "table",
+        meters = "table",
+        potions = "table",
+    }),
     power_descriptions = schema({ stone_skin = "string", bulwark = "string" }),
     power_fx = schema({ primitives = "table", probe = "table", sounds = "table" }),
     power_icons = schema({ powers = "table", status = "table", actions = "table" }),

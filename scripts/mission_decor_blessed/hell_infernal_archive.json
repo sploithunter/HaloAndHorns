@@ -1,0 +1,144 @@
+{
+  "_comment": "Blessed dual-gen dump for hell_infernal_archive. shipping = MissionProps (missions). review = PropReview TextureID ref.",
+  "prop": "hell_infernal_archive",
+  "blessed_at": "2026-07-15T21:21:47Z",
+  "visual_status": {
+    "shipping_front": "correct",
+    "shipping_render": "ok_jason_lineup_pass_2026-07-15",
+    "review_render": "correct",
+    "review_yaw_flipped_180": false
+  },
+  "shipping": {
+    "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.13_hell_infernal_archive",
+    "has_skinned_mesh": true,
+    "instance_name": "13_hell_infernal_archive",
+    "bind_mode": "SurfaceAppearance",
+    "prop": "hell_infernal_archive",
+    "attributes": {
+      "Mount": "floor",
+      "MountY": "4.499999523162842",
+      "Theme": "hell",
+      "StandOff": "1.8094463109970094"
+    },
+    "bone_count": 1,
+    "material": "Enum.Material.Plastic",
+    "n": 13,
+    "pivot": {
+      "y": 4.499999523162842,
+      "x": 20168,
+      "z": 6.140553951263428
+    },
+    "color_map": "110530822975465",
+    "albedo_id": "110530822975465",
+    "normal_map": "79989135942488",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 5805,
+      "verts": 16488,
+      "fnv1a_hash": 4250749176
+    },
+    "size": {
+      "y": 8.999999046325684,
+      "x": 6.5236124992370605,
+      "z": 3.418891668319702
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/89717900211635",
+    "bones": [
+      "Root"
+    ],
+    "create_albedo": "https://create.roblox.com/store/asset/110530822975465",
+    "color": {
+      "b": 0.6470588445663452,
+      "g": 0.6352941393852234,
+      "r": 0.6392157077789307
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "",
+    "row": "SHIP",
+    "mesh_id": "89717900211635",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive.png",
+      "atlas_sha256": "fc5088027d84f7db08d9921015ec81d3d4f97d76661feaf024d1fcce75147d75",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "75c93f284c3cededae779752c0a62dc225fe376de3e4565c594c57f05cc22b54",
+      "preview_sha256": "25fec5ff363921ec32cef69df0b958d9e7b0c6e9af30c439ac7885df97730577",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_archive.glb",
+      "source_glb_sha256": "d4de60482073149d0ce89ca431a2782769ee81c830ccbb5fd465ef04322a1197",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_archive.glb\noriginal_tris: 5805\n\n10k: hell_infernal_archive_10k.fbx (5805 tris, target 10000)"
+    }
+  },
+  "review": {
+    "path": "Workspace._MeshyLineup.B_PropReview_TextureID.13_hell_infernal_archive",
+    "has_skinned_mesh": false,
+    "instance_name": "13_hell_infernal_archive",
+    "bind_mode": "TextureID",
+    "prop": "hell_infernal_archive",
+    "attributes": {
+      "Mount": "floor",
+      "MountY": "4.499999523162842",
+      "Theme": "hell",
+      "StandOff": "1.8094463109970094"
+    },
+    "bone_count": 0,
+    "material": "Enum.Material.Plastic",
+    "n": 13,
+    "pivot": {
+      "y": 4.499999523162842,
+      "x": 20168,
+      "z": 46.14055252075195
+    },
+    "color_map": "",
+    "albedo_id": "101515220913268",
+    "normal_map": "",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 5805,
+      "verts": 16457,
+      "fnv1a_hash": 1787594104
+    },
+    "size": {
+      "y": 8.999999046325684,
+      "x": 6.5236124992370605,
+      "z": 3.418891668319702
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/76333842138523",
+    "bones": [],
+    "create_albedo": "https://create.roblox.com/store/asset/101515220913268",
+    "color": {
+      "b": 1,
+      "g": 1,
+      "r": 1
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "101515220913268",
+    "row": "REVIEW",
+    "mesh_id": "76333842138523",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive.png",
+      "atlas_sha256": "fc5088027d84f7db08d9921015ec81d3d4f97d76661feaf024d1fcce75147d75",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "75c93f284c3cededae779752c0a62dc225fe376de3e4565c594c57f05cc22b54",
+      "preview_sha256": "25fec5ff363921ec32cef69df0b958d9e7b0c6e9af30c439ac7885df97730577",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_archive.glb",
+      "source_glb_sha256": "d4de60482073149d0ce89ca431a2782769ee81c830ccbb5fd465ef04322a1197",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_archive.glb\noriginal_tris: 5805\n\n10k: hell_infernal_archive_10k.fbx (5805 tris, target 10000)"
+    }
+  },
+  "diagnose_if_bad_again": [
+    "Dump live mesh_id/albedo/bind/editable hash",
+    "Diff against shipping.* (missions) or review.* (TextureID gen)",
+    "ids drifted -> transplant/rbxm; ids match + ugly -> CDN/render"
+  ]
+}

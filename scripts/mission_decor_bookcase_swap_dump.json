@@ -1,0 +1,93 @@
+{
+  "prop": "heaven_gilded_bookcase",
+  "captured_at": "2026-07-15T21:04:22Z",
+  "action": "Replaced ReplicatedStorage.MissionProps.heaven_gilded_bookcase with clone of Workspace._PropReview.MeshyDecor.heaven_gilded_bookcase (kept Mount/MountY/Theme/StandOff attrs + pivot)",
+  "before": {
+    "label": "broken_missionprops_bone_armor_sa",
+    "mesh_id": "104288692238467",
+    "bind_mode": "SurfaceAppearance",
+    "color_map": "136375084305596",
+    "normal_map": "83605510864245",
+    "texture_id": "",
+    "has_skinned_mesh": true,
+    "bone_count": 1,
+    "editable_verts": 9785,
+    "editable_faces": 19974,
+    "color_rgb": [
+      0.639,
+      0.635,
+      0.647
+    ]
+  },
+  "after": {
+    "label": "good_propreview_10k_textureid",
+    "mesh_id": "79109805720279",
+    "bind_mode": "TextureID",
+    "color_map": "",
+    "normal_map": "",
+    "texture_id": "124877813089179",
+    "has_skinned_mesh": false,
+    "bone_count": 0,
+    "editable_verts": 25416,
+    "editable_faces": 9999,
+    "color_rgb": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "diff_fields": {
+    "label": {
+      "from": "broken_missionprops_bone_armor_sa",
+      "to": "good_propreview_10k_textureid"
+    },
+    "mesh_id": {
+      "from": "104288692238467",
+      "to": "79109805720279"
+    },
+    "bind_mode": {
+      "from": "SurfaceAppearance",
+      "to": "TextureID"
+    },
+    "color_map": {
+      "from": "136375084305596",
+      "to": ""
+    },
+    "normal_map": {
+      "from": "83605510864245",
+      "to": ""
+    },
+    "texture_id": {
+      "from": "",
+      "to": "124877813089179"
+    },
+    "has_skinned_mesh": {
+      "from": true,
+      "to": false
+    },
+    "bone_count": {
+      "from": 1,
+      "to": 0
+    },
+    "editable_verts": {
+      "from": 9785,
+      "to": 25416
+    },
+    "editable_faces": {
+      "from": 19974,
+      "to": 9999
+    },
+    "color_rgb": {
+      "from": [
+        0.639,
+        0.635,
+        0.647
+      ],
+      "to": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  }
+}

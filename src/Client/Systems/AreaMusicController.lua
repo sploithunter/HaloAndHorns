@@ -20,7 +20,9 @@
     (a guaranteed-approved track) so an area is never silent. SFX (PowerSound) are already safe by
     their gaps-are-silent design; this covers the one noticeable case — looping area/combat music.
 
-    Add tracks + remap areas + grow the combat list entirely in configs/sounds.lua — no code here.
+    Add tracks + remap areas + grow the combat list entirely in configs/sounds.lua — no code here
+    except the mission_<realm>_<element> prefer path (element trials share MissionArea across
+    realms for drops/RPS; music must still be realm-flavored).
 ]]
 
 local Players = game:GetService("Players")
@@ -45,10 +47,18 @@ function AreaMusicController.start()
     local combatExitDelay = sounds.combat_music_exit_delay or 3.0
     local rng = Random.new()
 
-    -- The combat pool for wherever the player is standing RIGHT NOW: realm
-    -- zones are "Heaven_<layer>_<origin>" / "Hell_...", missions publish
-    -- "mission_heaven" / "mission_hell". Anywhere else = the default pool.
+    -- The combat pool for wherever the player is standing RIGHT NOW.
+    -- Prefer CurrentRealm (set on hell/heaven trials even when MissionArea is
+    -- an element like "grass" → CurrentArea "mission_grass"). Fall back to
+    -- area-name prefixes for open-world Heaven_*/Hell_* zones.
     local function combatPool()
+        local realm = tostring(localPlayer:GetAttribute("CurrentRealm") or "")
+        if realm == "heaven" and combatByRealm.heaven then
+            return combatByRealm.heaven
+        end
+        if realm == "hell" and combatByRealm.hell then
+            return combatByRealm.hell
+        end
         local area = tostring(
             localPlayer:GetAttribute("CurrentArea") or localPlayer:GetAttribute("HomeArea") or ""
         )
@@ -75,6 +85,27 @@ function AreaMusicController.start()
     local exitToken = 0 -- cancels a pending "return to area music" when combat re-engages
 
     local function trackForArea(area)
+        area = tostring(area or "")
+        -- Element trials keep MissionArea = grass/lava/... (biome RPS / drops
+        -- stay on mission_<element>), but hell grass must not share Spawn's
+        -- spa bed. Prefer mission_<realm>_<element> when CurrentRealm is set
+        -- (Jason 2026-07-15: Hell Grass Trial played cheerful Spawn music).
+        if area:sub(1, 8) == "mission_" then
+            local realm = tostring(localPlayer:GetAttribute("CurrentRealm") or "")
+            local element = area:sub(9) -- "grass", "lava", "hell", ...
+            if
+                (realm == "hell" or realm == "heaven")
+                and element ~= ""
+                and element ~= "hell"
+                and element ~= "heaven"
+            then
+                local flavored = "mission_" .. realm .. "_" .. element
+                local flavoredKey = areaMap[flavored]
+                if flavoredKey and music[flavoredKey] then
+                    return flavoredKey, music[flavoredKey]
+                end
+            end
+        end
         local key = areaMap[area] or areaMap.default
         return key, key and music[key]
     end

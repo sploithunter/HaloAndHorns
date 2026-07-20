@@ -284,6 +284,9 @@ local env = makeEnv({
         table.sort(out)
         return out
     end,
+    readFile = function(path: string): string
+        return fs.readFile(path)
+    end,
     afterEach = function(_: () -> ()) end, -- no-op subset for now
     loadModule = loadModule,
 })

@@ -1,0 +1,144 @@
+{
+  "_comment": "Blessed dual-gen dump for heaven_star_fountain. shipping = MissionProps (missions). review = PropReview TextureID ref.",
+  "prop": "heaven_star_fountain",
+  "blessed_at": "2026-07-15T21:21:47Z",
+  "visual_status": {
+    "shipping_front": "correct",
+    "shipping_render": "ok_jason_lineup_pass_2026-07-15",
+    "review_render": "correct",
+    "review_yaw_flipped_180": false
+  },
+  "shipping": {
+    "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.11_heaven_star_fountain",
+    "has_skinned_mesh": true,
+    "instance_name": "11_heaven_star_fountain",
+    "bind_mode": "SurfaceAppearance",
+    "prop": "heaven_star_fountain",
+    "attributes": {
+      "Mount": "wall",
+      "MountY": "9",
+      "Theme": "heaven",
+      "StandOff": "1.8"
+    },
+    "bone_count": 1,
+    "material": "Enum.Material.Plastic",
+    "n": 11,
+    "pivot": {
+      "y": 3.9999940395355225,
+      "x": 20140,
+      "z": 6.264791011810303
+    },
+    "color_map": "140287418899744",
+    "albedo_id": "140287418899744",
+    "normal_map": "75664983127736",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 4430,
+      "verts": 11268,
+      "fnv1a_hash": 1610113280
+    },
+    "size": {
+      "y": 8,
+      "x": 3.36755633354187,
+      "z": 3.17043137550354
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/106893725310650",
+    "bones": [
+      "Root"
+    ],
+    "create_albedo": "https://create.roblox.com/store/asset/140287418899744",
+    "color": {
+      "b": 0.6470588445663452,
+      "g": 0.6352941393852234,
+      "r": 0.6392157077789307
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "",
+    "row": "SHIP",
+    "mesh_id": "106893725310650",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain.png",
+      "atlas_sha256": "5582a858ed5f5455ddfda90412e76cbd5ed51daf9c623ed74647df7c49a8ca32",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "8fa6baa981aa50c7d9b1838723a1b3b7349703e027d1a540782c8de65218433d",
+      "preview_sha256": "475fe44274b305db096c11268c81c7f911053d388598667145c76fa1242a6249",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_star_fountain.glb",
+      "source_glb_sha256": "f1f00c13bd6073f2a8742eda1445835212d3c417502c98cf2ddfff9a262abf07",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_star_fountain.glb\noriginal_tris: 4430\n\n10k: heaven_star_fountain_10k.fbx (4435 tris, target 10000)"
+    }
+  },
+  "review": {
+    "path": "Workspace._MeshyLineup.B_PropReview_TextureID.11_heaven_star_fountain",
+    "has_skinned_mesh": false,
+    "instance_name": "11_heaven_star_fountain",
+    "bind_mode": "TextureID",
+    "prop": "heaven_star_fountain",
+    "attributes": {
+      "Mount": "wall",
+      "MountY": "9",
+      "Theme": "heaven",
+      "StandOff": "1.8"
+    },
+    "bone_count": 0,
+    "material": "Enum.Material.Plastic",
+    "n": 11,
+    "pivot": {
+      "y": 3.999999761581421,
+      "x": 20140,
+      "z": 46.26478576660156
+    },
+    "color_map": "",
+    "albedo_id": "121573144939943",
+    "normal_map": "",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 4435,
+      "verts": 11246,
+      "fnv1a_hash": 2471566504
+    },
+    "size": {
+      "y": 8,
+      "x": 3.36755633354187,
+      "z": 3.17043137550354
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/82843610165083",
+    "bones": [],
+    "create_albedo": "https://create.roblox.com/store/asset/121573144939943",
+    "color": {
+      "b": 1,
+      "g": 1,
+      "r": 1
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "121573144939943",
+    "row": "REVIEW",
+    "mesh_id": "82843610165083",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain.png",
+      "atlas_sha256": "5582a858ed5f5455ddfda90412e76cbd5ed51daf9c623ed74647df7c49a8ca32",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "8fa6baa981aa50c7d9b1838723a1b3b7349703e027d1a540782c8de65218433d",
+      "preview_sha256": "475fe44274b305db096c11268c81c7f911053d388598667145c76fa1242a6249",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_star_fountain.glb",
+      "source_glb_sha256": "f1f00c13bd6073f2a8742eda1445835212d3c417502c98cf2ddfff9a262abf07",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_star_fountain.glb\noriginal_tris: 4430\n\n10k: heaven_star_fountain_10k.fbx (4435 tris, target 10000)"
+    }
+  },
+  "diagnose_if_bad_again": [
+    "Dump live mesh_id/albedo/bind/editable hash",
+    "Diff against shipping.* (missions) or review.* (TextureID gen)",
+    "ids drifted -> transplant/rbxm; ids match + ugly -> CDN/render"
+  ]
+}

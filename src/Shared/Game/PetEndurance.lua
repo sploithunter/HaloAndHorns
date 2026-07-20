@@ -51,6 +51,21 @@ function PetEndurance.regen(damageTaken, dt, perSecond)
     return d
 end
 
+-- Resolve passive recovery speed after a pet has been left uninjured for `idleSeconds`.
+-- The ordinary trickle remains flat; once `fast_delay_seconds` has elapsed, recovery becomes
+-- pool-relative so stronger pets do not take progressively longer to recover between fights.
+-- The caller owns the squad-wide out-of-combat gate.
+function PetEndurance.regenPerSecond(maxEndurance, idleSeconds, config)
+    config = config or {}
+    local base = math.max(0, tonumber(config.partial_per_second) or 0)
+    local fastDelay = tonumber(config.fast_delay_seconds)
+    local fastFraction = math.max(0, tonumber(config.fast_fraction_per_second) or 0)
+    if fastDelay and idleSeconds >= fastDelay and fastFraction > 0 then
+        return math.max(base, math.max(1, tonumber(maxEndurance) or 1) * fastFraction)
+    end
+    return base
+end
+
 -- Whether enough time has passed since the last hit to start regenerating.
 function PetEndurance.canRegen(now, lastHitAt, delaySeconds)
     return (now - (lastHitAt or 0)) >= (delaySeconds or 0)

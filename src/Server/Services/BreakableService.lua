@@ -10,6 +10,7 @@ BreakableService.__index = BreakableService
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local CombatApplication = require(script.Parent.Parent.CombatApplication)
 
 local logger
 local configLoader
@@ -168,29 +169,12 @@ function BreakableService:_onAttack(player, payload)
     -- Ensure pets are assigned to this target for follow/damage behavior
     assignPlayerPetsToTarget(player, target)
 
-    -- Reduce HP
-    local hp = tonumber(target:GetAttribute("HP")) or 0
-    local maxHp = tonumber(target:GetAttribute("MaxHP")) or hp
-    local applied = math.min(dmg, hp)
-    hp = math.max(0, hp - dmg)
-    target:SetAttribute("HP", hp)
-
-    -- Credit the damage in the Contrib ledger (same ledger pet mining and DoTs
-    -- write) so a node this path finishes still PAYS - the dead-squad ghost
-    -- drain broke crystals with an empty ledger and rewarded nothing.
-    if applied > 0 then
-        local contrib = target:FindFirstChild("Contrib")
-        if contrib then
-            local key = tostring(player.UserId)
-            local nv = contrib:FindFirstChild(key)
-            if not nv then
-                nv = Instance.new("NumberValue")
-                nv.Name = key
-                nv.Parent = contrib
-            end
-            nv.Value += applied
-        end
-    end
+    -- The client path is sanitized to zero damage above; any future server-owned direct strike still
+    -- uses the authoritative damage + contribution + combat-result contract.
+    CombatApplication.ApplyDamage(target, dmg, {
+        sourcePlayer = player,
+        kind = "breakable_attack",
+    })
 
     -- Do not destroy here; BreakableSpawner listens to HP attribute and handles death/awards
 end

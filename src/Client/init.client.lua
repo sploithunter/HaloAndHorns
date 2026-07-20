@@ -127,6 +127,17 @@ elseif gameConfig.GameMode == "TowerDefense" then
     -- systems.PathVisualizationSystem = require(...)
 end
 
+-- Floating combat text is a universal combat-result presenter. Start it independently from pet
+-- movement so a disabled or failed movement controller cannot suppress damage/heal/miss feedback.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.CombatTextController).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start CombatTextController", { error = tostring(err) })
+    end
+end
+
 -- Pet follow movement (issue #4): client-side visualisation of the local
 -- player's pets (smooth, full-framerate). Self-gates on pet_follow.service_owned;
 -- pets are anchored server-side (can't fall) and positioned here each frame.
@@ -833,6 +844,18 @@ Signals.EnchantStationOpened.OnClientEvent:Connect(function(data)
     end
     showNotice(tostring(displayName) .. " ready.", false)
 end)
+Signals.PotionShopOpened.OnClientEvent:Connect(function(data)
+    local menuManager = _G.MenuManager
+    local panel = menuManager and menuManager:GetPanel("PotionShop")
+    if not (menuManager and panel) then
+        showNotice("Potion shop is still loading. Try again.", true)
+        return
+    end
+    if panel.SetShopContext then
+        panel:SetShopContext(data)
+    end
+    menuManager:OpenPotionShopPanel("bounce_in")
+end)
 Signals.EnchantPetResult.OnClientEvent:Connect(function(data)
     if _G.MenuManager then
         local enchantPanel = _G.MenuManager:GetPanel("Enchant")
@@ -1338,6 +1361,9 @@ do
         end)
         buildPanel("EnhancementSell", function()
             return require(script.UI.Menus.EnhancementSellPanel).new()
+        end)
+        buildPanel("PotionShop", function()
+            return require(script.UI.Menus.PotionShopPanel).new()
         end)
         buildPanel("Effects", function()
             return require(script.UI.Menus.EffectsPanel).new()

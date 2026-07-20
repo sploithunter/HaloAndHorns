@@ -1,0 +1,228 @@
+{
+  "place": "Place1",
+  "captured_at": "2026-07-15T21:04:22Z",
+  "source": "ReplicatedStorage.MissionProps",
+  "props": {
+    "hell_gate_of_damned": {
+      "color_map": "87592307077130",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "78769818741284",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "91307940257621",
+      "texture_id": ""
+    },
+    "hell_infernal_crest": {
+      "color_map": "97471590489784",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "127699320929775",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "88556817104166",
+      "texture_id": ""
+    },
+    "hell_infernal_fountain": {
+      "color_map": "112527313536272",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "94148201608679",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "96421561003389",
+      "texture_id": ""
+    },
+    "heaven_golden_guardian": {
+      "color_map": "81393542093891",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "77496157366357",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "83325010072375",
+      "texture_id": ""
+    },
+    "heaven_golden_throne": {
+      "color_map": "121218309703368",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "79404346104290",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "116349257891299",
+      "texture_id": ""
+    },
+    "hell_skull_banner": {
+      "color_map": "96830518194716",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "112401985756621",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "116384919097716",
+      "texture_id": ""
+    },
+    "hell_skull_lantern": {
+      "color_map": "92355696570955",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "121415762722335",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "129811921410876",
+      "texture_id": ""
+    },
+    "heaven_ivory_throne": {
+      "color_map": "134447613660113",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "109650476169656",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "74106729534664",
+      "texture_id": ""
+    },
+    "heaven_flamecrest_shield": {
+      "color_map": "134536839473444",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "124667039413678",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "73416609392082",
+      "texture_id": ""
+    },
+    "heaven_compass_banner": {
+      "color_map": "124452683346782",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "123934269734118",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "127342384612712",
+      "texture_id": ""
+    },
+    "hell_infernal_archive": {
+      "color_map": "110530822975465",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "89717900211635",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "79989135942488",
+      "texture_id": ""
+    },
+    "hell_skull_sconce": {
+      "color_map": "115359258182587",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "78199195680560",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "73715743243944",
+      "texture_id": ""
+    },
+    "heaven_golden_codex": {
+      "color_map": "116299618242527",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "79025906147334",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "88704061662341",
+      "texture_id": ""
+    },
+    "hell_infernal_throne_flat": {
+      "color_map": "137767612484602",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "114077872717626",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "127896791162761",
+      "texture_id": ""
+    },
+    "heaven_archive": {
+      "color_map": "86931724351114",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "78031900206735",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "74889114377463",
+      "texture_id": ""
+    },
+    "heaven_gilded_bookcase": {
+      "mesh_id": "79109805720279",
+      "texture_id": "124877813089179",
+      "has_skinned_mesh": false,
+      "bone_count": 0,
+      "bind_mode": "TextureID",
+      "color_map": "",
+      "metalness_map": "",
+      "normal_map": "",
+      "roughness_map": ""
+    },
+    "heaven_star_fountain": {
+      "color_map": "140287418899744",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "106893725310650",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "75664983127736",
+      "texture_id": ""
+    },
+    "hell_infernal_throne": {
+      "color_map": "126630031994674",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "134390034169903",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "121681310802621",
+      "texture_id": ""
+    },
+    "heaven_diamond_altar": {
+      "color_map": "128951546292202",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "84842558046045",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "77780046574692",
+      "texture_id": ""
+    },
+    "heaven_marble_throne": {
+      "color_map": "137962979882666",
+      "roughness_map": "",
+      "has_skinned_mesh": true,
+      "bind_mode": "SurfaceAppearance",
+      "mesh_id": "121186869634374",
+      "metalness_map": "",
+      "bone_count": 1,
+      "normal_map": "80033004905740",
+      "texture_id": ""
+    }
+  },
+  "_note": "heaven_gilded_bookcase refreshed after PropReview swap; other props still prior bone-armor dump"
+}

@@ -214,6 +214,11 @@ local ENEMY_EFFECTS = {
         key = "held",
         source = "enemy",
         untilAttr = "HeldUntil", -- controller HOLD pinning this foe (no move/attack) — timed countdown
+        -- A named player power stamps DebuffPowerId/DebuffUntil to the exact same expiry. In that
+        -- case the power-specific HEX disc already represents this hold, so suppress this generic
+        -- HELD fallback. Pet/enemy aura holds have no named channel and still show HELD.
+        mirroredPowerIdAttr = "DebuffPowerId",
+        mirroredUntilAttr = "DebuffUntil",
         color = Color3.fromRGB(150, 110, 215), -- control violet (matches the world HELD badge)
         label = "HELD",
         icon = POWER_ICONS.discFor("ice", "capacitor"), -- hold glyph (capacitor IS the hold art)

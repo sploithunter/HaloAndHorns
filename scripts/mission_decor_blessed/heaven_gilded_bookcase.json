@@ -1,0 +1,167 @@
+{
+  "_comment": "Blessed dual-gen dump for heaven_gilded_bookcase. shipping = MissionProps (missions). review = PropReview TextureID ref.",
+  "prop": "heaven_gilded_bookcase",
+  "blessed_at": "2026-07-15T21:21:47Z",
+  "visual_status": {
+    "shipping_front": "correct",
+    "shipping_render": "verified_good_in_mission_2026-07-15",
+    "review_render": "correct",
+    "review_yaw_flipped_180": false
+  },
+  "shipping": {
+    "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.05_heaven_gilded_bookcase",
+    "has_skinned_mesh": false,
+    "instance_name": "05_heaven_gilded_bookcase",
+    "bind_mode": "TextureID",
+    "prop": "heaven_gilded_bookcase",
+    "attributes": {
+      "Mount": "floor",
+      "MountY": "4.5",
+      "Theme": "heaven",
+      "StandOff": "1.0807735085487367"
+    },
+    "bone_count": 0,
+    "material": "Enum.Material.Plastic",
+    "n": 5,
+    "pivot": {
+      "y": 4.5,
+      "x": 20056,
+      "z": 6.869307041168213
+    },
+    "color_map": "",
+    "albedo_id": "124877813089179",
+    "normal_map": "",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 9999,
+      "verts": 25416,
+      "fnv1a_hash": 3849671704
+    },
+    "size": {
+      "y": 9,
+      "x": 5.416957378387451,
+      "z": 1.9615470170974731
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/79109805720279",
+    "bones": [],
+    "create_albedo": "https://create.roblox.com/store/asset/124877813089179",
+    "color": {
+      "b": 1,
+      "g": 1,
+      "r": 1
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "124877813089179",
+    "row": "SHIP",
+    "mesh_id": "79109805720279",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase.png",
+      "atlas_sha256": "a4cad0311ddc6a55e9febcf2c0283121f8cbd4de1f2f1031e5d4878d4d86db42",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "cbf9cef4e42d1bcd66b51824ac5457eeef35914ea5c65ef0c3cbfbf0435e4276",
+      "preview_sha256": "c036179fe6c3411159759288fbed43b5f0c7c26151d3ab1c027e2616ffbeb600",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_gilded_bookcase.glb",
+      "source_glb_sha256": "263135e2ea38d2a957ec1541dc5c9fd2cce02e0ecda31ad1fbf3f79eacd24d84",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_gilded_bookcase.glb\noriginal_tris: 476714\n\n10k: heaven_gilded_bookcase_10k.fbx (9999 tris, target 10000)"
+    }
+  },
+  "review": {
+    "path": "Workspace._MeshyLineup.B_PropReview_TextureID.05_heaven_gilded_bookcase",
+    "has_skinned_mesh": false,
+    "instance_name": "05_heaven_gilded_bookcase",
+    "bind_mode": "TextureID",
+    "prop": "heaven_gilded_bookcase",
+    "attributes": {
+      "Mount": "floor",
+      "MountY": "4.5",
+      "Theme": "heaven",
+      "StandOff": "1.0807735085487367"
+    },
+    "bone_count": 0,
+    "material": "Enum.Material.Plastic",
+    "n": 5,
+    "pivot": {
+      "y": 4.5,
+      "x": 20056,
+      "z": 46.86930847167969
+    },
+    "color_map": "",
+    "albedo_id": "124877813089179",
+    "normal_map": "",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 9999,
+      "verts": 25416,
+      "fnv1a_hash": 3849671704
+    },
+    "size": {
+      "y": 9,
+      "x": 5.416957378387451,
+      "z": 1.9615470170974731
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/79109805720279",
+    "bones": [],
+    "create_albedo": "https://create.roblox.com/store/asset/124877813089179",
+    "color": {
+      "b": 1,
+      "g": 1,
+      "r": 1
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "124877813089179",
+    "row": "REVIEW",
+    "mesh_id": "79109805720279",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase.png",
+      "atlas_sha256": "a4cad0311ddc6a55e9febcf2c0283121f8cbd4de1f2f1031e5d4878d4d86db42",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "cbf9cef4e42d1bcd66b51824ac5457eeef35914ea5c65ef0c3cbfbf0435e4276",
+      "preview_sha256": "c036179fe6c3411159759288fbed43b5f0c7c26151d3ab1c027e2616ffbeb600",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/heaven_gilded_bookcase.glb",
+      "source_glb_sha256": "263135e2ea38d2a957ec1541dc5c9fd2cce02e0ecda31ad1fbf3f79eacd24d84",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/heaven_gilded_bookcase.glb\noriginal_tris: 476714\n\n10k: heaven_gilded_bookcase_10k.fbx (9999 tris, target 10000)"
+    }
+  },
+  "diagnose_if_bad_again": [
+    "Dump live mesh_id/albedo/bind/editable hash",
+    "Diff against shipping.* (missions) or review.* (TextureID gen)",
+    "ids drifted -> transplant/rbxm; ids match + ugly -> CDN/render"
+  ],
+  "prior_blessed_notes": {
+    "known_bad_generation": {
+      "label": "bone_armor_SurfaceAppearance_kaleidoscope_2026-07-15",
+      "mesh_id": "104288692238467",
+      "bind_mode": "SurfaceAppearance",
+      "color_map": "136375084305596",
+      "normal_map": "83605510864245",
+      "texture_id": "",
+      "has_skinned_mesh": true,
+      "bone_count": 1,
+      "editable_mesh": {
+        "verts": 9785,
+        "faces": 19974
+      },
+      "model_asset_id_wrong_gen": "95194903812056",
+      "symptoms": "In-mission kaleidoscope / UV shatter; grey geometry may still look ok",
+      "create_urls": {
+        "mesh": "https://create.roblox.com/store/asset/104288692238467",
+        "color_map": "https://create.roblox.com/store/asset/136375084305596",
+        "model": "https://create.roblox.com/store/asset/95194903812056"
+      }
+    },
+    "swap_record": "scripts/mission_decor_bookcase_swap_dump.json",
+    "design_note": "Distinct from heaven_archive (floating halo ring + wings). This is the no-halo gothic bookcase."
+  }
+}

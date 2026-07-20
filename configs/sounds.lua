@@ -34,7 +34,10 @@ return {
 
     -- Add more named sounds here as needed
 
-    -- Short celebratory stinger (non-looping) — level-up / ascend. Uploaded via scripts/upload_audio.js.
+    -- Short celebratory stinger (non-looping) — kept for moments that still share one
+    -- generic cheer (achievements, fusion, rare hatch, etc.). Tier A celebrations
+    -- below got their OWN clips so quest/daily/trade/discovery/unlock no longer
+    -- all sound identical. Uploaded via scripts/upload_audio.js.
     celebratory_jingle = {
         id = "rbxassetid://118066342271463",
         volume = 0.18, -- halved twice (Jason: 0.7 -> 0.35 "still too loud" -> 0.18) — this
@@ -44,6 +47,39 @@ return {
         bus = "effects", -- was "ui": the UI bus is a binary toggle, so level-up/area-
         -- unlock/achievement jingles IGNORED the SFX slider (Jason: "really loud...
         -- not on the sound bus"). effects = rides the slider like everything else.
+    },
+
+    -- Tier A celebration variety (2026-07-15): distinct stingers so win-moments
+    -- don't all share celebratory_jingle. Group-uploaded; moderation may delay first play.
+    quest_complete_chime = {
+        id = "rbxassetid://78517299741673",
+        volume = 0.45,
+        playback_speed = 1.0,
+        bus = "effects",
+    },
+    daily_claim_chime = {
+        id = "rbxassetid://81984404553482",
+        volume = 0.4,
+        playback_speed = 1.0,
+        bus = "effects",
+    },
+    trade_complete_chime = {
+        id = "rbxassetid://88088676952931",
+        volume = 0.4,
+        playback_speed = 1.0,
+        bus = "effects",
+    },
+    discovery_fanfare = {
+        id = "rbxassetid://79125886915267",
+        volume = 0.45,
+        playback_speed = 1.0,
+        bus = "effects",
+    },
+    unlock_gate_sting = {
+        id = "rbxassetid://85279429076401",
+        volume = 0.45,
+        playback_speed = 1.0,
+        bus = "effects",
     },
 
     -- LEVEL-UP theme ("An Epic Modern-day Video Game", instrumental) — the full 7.5s level-up
@@ -150,6 +186,7 @@ return {
     coin_collect_min_gap = 0.12, -- min seconds between coin-gain sounds (anti-spam during farming)
 
     -- Rising "power up" sting (uploaded SFX) — pet revive and similar comeback moments.
+    -- Buff-cast SFX moved to buff_generic_rise so this stays revive/pickup-flavored.
     power_up_stronger = {
         id = "rbxassetid://105379088796995",
         volume = 0.6,
@@ -157,7 +194,16 @@ return {
         bus = "effects",
     },
 
-    -- Sparkly cartoon spell cast (uploaded SFX) — enchant success reveal.
+    -- Soft ascending buff swell (Tier C) — power_fx buff/neutral only; not a celebration.
+    buff_generic_rise = {
+        id = "rbxassetid://128135089698297",
+        volume = 0.55,
+        playback_speed = 1.0,
+        bus = "effects",
+    },
+
+    -- Sparkly cartoon spell cast (uploaded SFX) — kept for cast/neutral power SFX.
+    -- Enchant reveal uses enchant_reveal_sparkle so the two moments no longer share a clip.
     cartoony_spell_cast = {
         id = "rbxassetid://140394538590179",
         volume = 0.6,
@@ -165,11 +211,38 @@ return {
         bus = "effects",
     },
 
-    -- Low heavy thud (uploaded SFX) — a pet going DOWN (somber, quiet).
+    -- Enchant station / reroll reveal (Tier C).
+    enchant_reveal_sparkle = {
+        id = "rbxassetid://121764787956164",
+        volume = 0.55,
+        playback_speed = 1.0,
+        bus = "effects",
+    },
+
+    -- Low heavy thud (uploaded SFX) — grass power impact flavor (power_fx).
+    -- Pet-down uses pet_down_thud so downs no longer share this clip.
     deep_earthen_impact = {
         id = "rbxassetid://90412394528626",
         volume = 0.35,
         playback_speed = 0.9,
+        bus = "effects",
+    },
+
+    -- Somber pet-down thud (Tier C) — quieter body-fall, no debris trail.
+    pet_down_thud = {
+        id = "rbxassetid://74319961707223",
+        volume = 0.4,
+        playback_speed = 1.0,
+        bus = "effects",
+    },
+
+    -- Mission crate break (group-owned upload; scripts/audio_ids.json crate_smash).
+    -- Authored onto MissionCrate mesh as bigBreakSound so the death handler plays it
+    -- positionally. Catalog key keeps the id out of MissionInstanceService.
+    crate_smash = {
+        id = "rbxassetid://119529368267127",
+        volume = 0.4, -- playtest: raw 0.8 was blasting
+        playback_speed = 1.0,
         bus = "effects",
     },
 
@@ -223,6 +296,8 @@ return {
         -- displace golden_horizon + grass_meadow_b to the spare shelf):
         heaven_sands_a = { id = "rbxassetid://116298138591304", volume = 0.45 },
         heaven_sands_b = { id = "rbxassetid://98035120998310", volume = 0.45 },
+        -- Hell Grass / swamp trial bed (Jason 2026-07-15 "Swamp Static" — way better than spa):
+        swamp_static = { id = "rbxassetid://111140016293110", volume = 0.45 },
     },
 
     -- COMBAT MUSIC: while the local player is InCombat (server-set Player attribute), AreaMusicController
@@ -284,15 +359,28 @@ return {
         Hell_2_Desert = "ember_menace_a",
         Hell_2_Grass = "lava_homeworld_b", -- (Jason: hell L2)
 
-        -- MISSION pseudo-areas (ZoneTracker publishes mission_<theme> while
-        -- InMission). Door trials keep bespoke identities; element trials
-        -- serve BOTH realms, so they stay on the neutral homeworld tracks.
+        -- MISSION pseudo-areas (ZoneTracker publishes mission_<MissionArea>
+        -- while InMission). Door trials: mission_hell / mission_heaven.
+        -- Element trials keep MissionArea = grass/lava/... for biome RPS +
+        -- drops, but AreaMusicController prefers mission_<realm>_<element>
+        -- when CurrentRealm is hell/heaven (so Hell Grass ≠ Spawn spa).
         mission_hell = "iron_gates_a",
         mission_heaven = "weightless_cathedral_b",
         mission_earth = "awe",
+        -- Neutral / unflavored element fallbacks (door-less element maps,
+        -- or realm missing): no longer map grass→spa (that was the bug).
         mission_lava = "epic_drum",
         mission_ice = "arctic_hunt",
-        mission_grass = "spa",
+        mission_grass = "grass_meadow",
         mission_desert = "desert_hunt",
+        -- Realm-flavored element trials (mirror the matching Hell_*/Heaven_* beds):
+        mission_hell_grass = "swamp_static", -- Swamp Static (Jason 2026-07-15)
+        mission_hell_lava = "lava_homeworld",
+        mission_hell_ice = "ember_menace_b",
+        mission_hell_desert = "ember_menace_c",
+        mission_heaven_grass = "grass_meadow",
+        mission_heaven_lava = "heaven_lava_choir",
+        mission_heaven_ice = "weightless_hymn_b",
+        mission_heaven_desert = "heaven_sands_a",
     },
 }

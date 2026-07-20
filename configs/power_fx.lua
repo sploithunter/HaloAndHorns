@@ -260,9 +260,11 @@ return {
             },
             lava = {
                 { id = "rbxassetid://87704208327077", seconds = 3.0 }, -- fireball_launch
+                { id = "rbxassetid://111030124255945", seconds = 1.36 }, -- lava_cast_variant_b
             },
             ice = {
                 { id = "rbxassetid://125126568964512", seconds = 2.0 }, -- icy_wind_casting
+                { id = "rbxassetid://135567341670109", seconds = 1.76 }, -- ice_cast_variant_b
             },
             desert = {
                 { id = "rbxassetid://104317755911761", seconds = 14.0 }, -- desert_magic_cast_long (long tail)
@@ -287,9 +289,11 @@ return {
             },
             ice = {
                 { id = "rbxassetid://76218561522804", seconds = 3.0 }, -- freezing_crack_single_target
+                { id = "rbxassetid://104330013324871", seconds = 2.08 }, -- ice_impact_variant_b
             },
             desert = {
                 { id = "rbxassetid://74442492755990", seconds = 2.0 }, -- arrow_impact_desert
+                { id = "rbxassetid://123076978707580", seconds = 2.08 }, -- desert_impact_variant_b
             },
             neutral = {
                 { id = "rbxassetid://70478220013693", seconds = 0.48 }, -- single_target_punch
@@ -303,8 +307,15 @@ return {
             ice = {
                 { id = "rbxassetid://138731814463789", seconds = 2.3 }, -- ice_buff_storm_wind
             },
+            lava = {
+                { id = "rbxassetid://123592224494571", seconds = 2.68 }, -- lava_buff_ignite
+            },
+            desert = {
+                { id = "rbxassetid://83930188993513", seconds = 2.68 }, -- desert_buff_sandrise
+            },
+            -- Dedicated buff swell (Tier C) — frees power_up_stronger for revive/pickup events.
             neutral = {
-                { id = "rbxassetid://105379088796995", seconds = 1.0 }, -- power_up_stronger
+                { id = "rbxassetid://128135089698297", seconds = 1.76 }, -- buff_generic_rise
             },
         },
         -- shield raise (rides the `shield_bubble` primitive)
@@ -315,6 +326,9 @@ return {
             },
             ice = {
                 { id = "rbxassetid://93258219658109", seconds = 6.8 }, -- ice_crystals_freeze
+            },
+            lava = {
+                { id = "rbxassetid://98164672046871", seconds = 2.68 }, -- lava_shield_magma
             },
             desert = {
                 -- volume 1.0 (2x the 0.5 default): the snake-slither clip was barely audible on cast

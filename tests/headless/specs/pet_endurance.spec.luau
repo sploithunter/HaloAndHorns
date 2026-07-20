@@ -63,6 +63,26 @@ return function()
         end)
     end)
 
+    describe("PetEndurance.regenPerSecond (downtime catch-up)", function()
+        local cfg = {
+            partial_per_second = 15,
+            fast_delay_seconds = 15,
+            fast_fraction_per_second = 0.125,
+        }
+
+        it("uses the ordinary trickle before the fast delay", function()
+            expect(PetEndurance.regenPerSecond(10000, 14.99, cfg)).to.equal(15)
+        end)
+
+        it("switches to pool-relative recovery at the fast delay", function()
+            expect(PetEndurance.regenPerSecond(10000, 15, cfg)).to.equal(1250)
+        end)
+
+        it("never makes the configured fast path slower than the ordinary trickle", function()
+            expect(PetEndurance.regenPerSecond(10, 20, cfg)).to.equal(15)
+        end)
+    end)
+
     describe("PetEndurance.state (staged degradation)", function()
         -- power 100, factor 1.0 -> ceiling 100. thresholds: strained<=0.6, critical<=0.3
         local th = { strained_at = 0.6, critical_at = 0.3 }

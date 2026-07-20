@@ -1,5 +1,5 @@
-assets_dir: /Users/jason/Documents/RBX-Template/assets/ui/purple_icons
-icon_count: 54
+assets_dir: /Users/jason/Documents/HaloAndHorns/assets/ui/purple_icons
+icon_count: 56
 
 armor_chest.png
 arrow_right.png
@@ -11,6 +11,7 @@ clover_lucky.png
 coins_up.png
 contagion.png
 critical_hit.png
+disarm.png
 eye.png
 eye_hidden.png
 fear.png
@@ -20,6 +21,7 @@ fist_broken.png
 fist_impact.png
 flag.png
 focus.png
+focus_regen.png
 gift_up.png
 hand_stop.png
 heart.png

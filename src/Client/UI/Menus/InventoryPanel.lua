@@ -94,6 +94,7 @@ local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 -- server so the displayed power matches the power that mines/fights.
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
 local InventoryCategories = require(ReplicatedStorage.Shared.Game.InventoryCategories) -- pure tab visibility (specced)
+local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local PetBadge = require(script.Parent.Parent.PetBadge)
@@ -1769,6 +1770,63 @@ function InventoryPanel:_stackDataForRef(ref)
         end
     end
     return nil
+end
+
+-- Resolve a possibly drifted equipped stack ref back to the exact cache-owned ref. Equipped values
+-- can carry an older third identity segment, so _stackDataForRef retains the existing prefix fallback
+-- without making two current exact stack keys collide.
+function InventoryPanel:_canonicalStackRef(ref)
+    local normalized = self:_normalizeEquippedRef(ref)
+    if not normalized or string.sub(normalized, 1, 6) ~= "stack|" then
+        return nil
+    end
+    local data = self:_stackDataForRef(normalized)
+    return (data and self:_draftRefForItem(data)) or normalized
+end
+
+function InventoryPanel:_liveEquippedStackCount(ref)
+    local canonical = self:_canonicalStackRef(ref)
+    if not canonical then
+        return 0
+    end
+    local player = self.player or Players.LocalPlayer
+    local equipped = player and player:FindFirstChild("Equipped")
+    local pets = equipped and equipped:FindFirstChild("pets")
+    local count = 0
+    for _, slot in ipairs(pets and pets:GetChildren() or {}) do
+        if
+            slot:IsA("StringValue")
+            and slot.Value ~= ""
+            and self:_canonicalStackRef(slot.Value) == canonical
+        then
+            count += 1
+        end
+    end
+    return count
+end
+
+function InventoryPanel:_draftedStackCount(ref, draftRefs)
+    local canonical = self:_canonicalStackRef(ref)
+    if not canonical then
+        return 0
+    end
+    local count = 0
+    for _, draftRef in ipairs(draftRefs or {}) do
+        if self:_canonicalStackRef(draftRef) == canonical then
+            count += 1
+        end
+    end
+    return count
+end
+
+-- Returns (remaining for the inventory grid, total owned). StackData.count is the server-projected
+-- UNEQUIPPED quantity, not total ownership; live Equipped slots supply the other half while a local
+-- draft is being edited.
+function InventoryPanel:_draftStackAvailability(item, ref, draftRefs)
+    local unequipped = tonumber(item and (item.count or item.quantity)) or 0
+    local live = self:_liveEquippedStackCount(ref)
+    local drafted = self:_draftedStackCount(ref, draftRefs)
+    return PetInventoryView.draftRemaining(unequipped, live, drafted)
 end
 
 function InventoryPanel:_seedDraftFromEquipped()
@@ -4205,6 +4263,7 @@ function InventoryPanel:_updateItemsDisplay()
 
     -- Filter items
     local filteredItems = {}
+    local filteredStackRefs = {}
     for _, item in ipairs(candidateItems) do
         local isStackItem = typeof(item.id) == "string" and string.sub(item.id, 1, 6) == "stack|"
         local matchesCategory =
@@ -4220,6 +4279,35 @@ function InventoryPanel:_updateItemsDisplay()
 
         if (matchesCategory or equippedBypass) and matchesSearch then
             table.insert(filteredItems, item)
+            if isStackItem then
+                local filteredRef = self:_canonicalStackRef(self:_draftRefForItem(item))
+                if filteredRef then
+                    filteredStackRefs[filteredRef] = true
+                end
+            end
+        end
+    end
+
+    -- A fully-deployed stack projects Quantity=0 and therefore has no inventoryData card. If the
+    -- player removes one from the LOCAL draft, synthesize its now-available card from the stable
+    -- stack cache immediately; waiting for Activate cannot work because live Equipped has not changed.
+    for _, item in pairs(self._stackDataByKey or {}) do
+        local ref = self:_canonicalStackRef(self:_draftRefForItem(item))
+        local remaining = ref and self:_draftStackAvailability(item, ref, draftRefs) or 0
+        local matchesCategory =
+            self:_itemMatchesCategory(item, self.selectedCategory, categoryFolders)
+        local matchesSearch = (
+            self.searchTerm == "" or self:_itemSearchText(item):find(self.searchTerm, 1, true)
+        )
+        if
+            ref
+            and not filteredStackRefs[ref]
+            and remaining > 0
+            and matchesCategory
+            and matchesSearch
+        then
+            table.insert(filteredItems, item)
+            filteredStackRefs[ref] = true
         end
     end
 
@@ -5040,7 +5128,11 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
         self._stackDataByKey = self._stackDataByKey or {}
         local key = item.uid or item.id:sub(7)
         self._stackFrames[key] = itemFrame
-        self._stackDataByKey[key] = item
+        -- Render-only clones carry draft-remaining counts. Never let one overwrite the cache's
+        -- server-projected UNEQUIPPED quantity or the next local re-render inflates ownership.
+        if self._stackDataByKey[key] == nil then
+            self._stackDataByKey[key] = item
+        end
     end
 end
 

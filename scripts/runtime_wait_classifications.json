@@ -27,7 +27,7 @@
    "debounce": 2
   },
   "src/Client/Systems/CombatAuraController.lua": {
-   "cooldown": 6
+   "cooldown": 5
   },
   "src/Client/Systems/CurrencyStyle.lua": {
    "retry_backoff": 1
@@ -42,7 +42,7 @@
   "src/Client/Systems/HotbarBar.lua": {
    "deadline": 2,
    "debounce": 3,
-   "periodic": 2
+   "periodic": 3
   },
   "src/Client/Systems/LevelUpController.lua": {
    "animation": 4,
@@ -184,6 +184,9 @@
   "src/Server/Services/GameStructureService.server.lua": {
    "retry_backoff": 1
   },
+  "src/Server/Services/GameAPIService.lua": {
+   "test": 1
+  },
   "src/Server/Services/LeaderboardService.lua": {
    "periodic": 1
   },
@@ -192,8 +195,9 @@
    "retry_backoff": 1
   },
   "src/Server/Services/MissionInstanceService.lua": {
-   "periodic": 1,
-   "simulation": 3
+   "deadline": 2,
+   "frame_budget": 1,
+   "periodic": 3
   },
   "src/Server/Services/PetCharacterAttachments.server.lua": {
    "periodic": 1

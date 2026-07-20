@@ -33,6 +33,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", required=True)
     parser.add_argument("--anim", action="store_true", help="bake the GLB's animation into the FBX")
     parser.add_argument(
+        "--no-embed",
+        action="store_true",
+        help="bare FBX: no embedded textures (the bobby-pet upload class — bind a separate Image at runtime)",
+    )
+    parser.add_argument(
         "--add-root-bone",
         action="store_true",
         help="BONE ARMOR for static props: add a single root bone with all vertices "
@@ -88,7 +93,7 @@ def main() -> None:
         mesh_smooth_type="FACE",
         add_leaf_bones=False,
         path_mode="COPY",
-        embed_textures=True,
+        embed_textures=not args.no_embed,
         bake_anim=bool(args.anim),
         axis_forward="-Z",
         axis_up="Y",

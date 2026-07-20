@@ -83,7 +83,7 @@ Firewall-safe: the player doesn't damage the target; the debuff makes the *pets*
 | **Sunder** | geomancer | vulnerable ×1.6 | TARGET | **AoE** | armor-break: all engaged take ×1.6, 6s (+crystals) | shield_broken · enemy_aoe | 18 / 25s |
 | **Expose** | sandwalker | vulnerable ×1.4 | TARGET | single | reveal/soften one target ×1.4, 8s | eye · single | 15 / 20s |
 | **Disarm** | cryomancer | vulnerable ×1.3 | TARGET | single | weaken one target ×1.3, 6s | fist_broken · single | 18 / 25s |
-| **Focus Fire** | cryomancer | vulnerable ×1.5 | TARGET | single | designate + soften priority target ×1.5, 6s | target · single | 12 / 15s |
+| **Focus Fire** | cryomancer | accuracy_mark +0.15 | TARGET | single | caster-scoped accuracy mark for 8s; holds gain 25% innate-immunity penetration | target · single | 12 / 15s |
 | **Strike** | pyromancer | vulnerable ×1.5 | TARGET | single | quick single hit ×1.5, 4s | fist · single | 10 / 12s |
 | **Mark of Flame** | pyromancer | damage_over_time ×1.5 | TARGET | single | burning mark ×1.5, 6s | contagion · single | 20 / 25s |
 | **Sandstorm** | sandwalker | aoe_blind ×1.5 | TARGET | **AoE** | blind + ×1.5 to all engaged, 6s | eye_hidden · enemy_aoe | 35 / 50s |

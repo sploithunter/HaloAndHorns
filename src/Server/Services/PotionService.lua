@@ -110,7 +110,7 @@ function PotionService:_meterCfg(meterId)
 end
 
 -- Total owned count of a potion id (sum stacked quantities in the bucket).
-function PotionService:_count(player, potionId)
+function PotionService:Count(player, potionId)
     local inv = self._inventoryService
     local bucket = inv and inv:GetInventory(player, BUCKET)
     local n = 0
@@ -162,8 +162,13 @@ function PotionService:Grant(player, potionId, count)
     if not inv then
         return { ok = false, reason = "service_unavailable" }
     end
-    for _ = 1, count do
-        inv:AddItem(player, BUCKET, { id = potionId, category = "potions" })
+    -- One stack mutation regardless of quantity. Shop "Buy 100", admin grants, and future bundles
+    -- therefore rebuild the replicated inventory folder and request a save exactly once.
+    local uid, addReason =
+        inv:AddItem(player, BUCKET, { id = potionId, category = "potions", quantity = count })
+    if not uid then
+        self:_push(player)
+        return { ok = false, reason = addReason or "grant_failed" }
     end
     -- potions fill from the TOP RIGHT of the hotbar (Jason) — usable immediately
     if self._hotbarService and self._hotbarService.AutoBindPotion then
@@ -172,7 +177,13 @@ function PotionService:Grant(player, potionId, count)
         end)
     end
     self:_push(player)
-    return { ok = true, count = self:_count(player, potionId) }
+    return { ok = true, count = self:Count(player, potionId) }
+end
+
+-- Public state refresh for inventory mutations owned by another authoritative service
+-- (the potion shop's sell path). Keeps hotbar counts in sync without exposing the remote.
+function PotionService:Refresh(player)
+    self:_push(player)
 end
 
 -- Write (or clear) a meter's buff contribution.
@@ -284,7 +295,7 @@ function PotionService:Drink(player, potionId)
     self._meters[uid][meterId] = charge
     self:_applyMeter(player, meterId, charge)
     self:_finishUse(player, potionId)
-    return { ok = true, charge = charge, count = self:_count(player, potionId) }
+    return { ok = true, charge = charge, count = self:Count(player, potionId) }
 end
 
 -- Throw one enemy-target potion at the squad's shared focus target. Explicit HUD focus wins, then
@@ -346,7 +357,7 @@ function PotionService:Throw(player, potionId)
     return {
         ok = true,
         charge = charge,
-        count = self:_count(player, potionId),
+        count = self:Count(player, potionId),
         target = target.Name,
     }
 end

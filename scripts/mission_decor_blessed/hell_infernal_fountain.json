@@ -1,0 +1,144 @@
+{
+  "_comment": "Blessed dual-gen dump for hell_infernal_fountain. shipping = MissionProps (missions). review = PropReview TextureID ref.",
+  "prop": "hell_infernal_fountain",
+  "blessed_at": "2026-07-15T21:21:47Z",
+  "visual_status": {
+    "shipping_front": "correct",
+    "shipping_render": "ok_jason_lineup_pass_2026-07-15",
+    "review_render": "correct",
+    "review_yaw_flipped_180": true
+  },
+  "shipping": {
+    "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.15_hell_infernal_fountain",
+    "has_skinned_mesh": true,
+    "instance_name": "15_hell_infernal_fountain",
+    "bind_mode": "SurfaceAppearance",
+    "prop": "hell_infernal_fountain",
+    "attributes": {
+      "Mount": "floor",
+      "MountY": "3.999999761581421",
+      "Theme": "hell",
+      "StandOff": "2.231700038909912"
+    },
+    "bone_count": 1,
+    "material": "Enum.Material.Plastic",
+    "n": 15,
+    "pivot": {
+      "y": 3.9998648166656494,
+      "x": 20196,
+      "z": 5.720889091491699
+    },
+    "color_map": "112527313536272",
+    "albedo_id": "112527313536272",
+    "normal_map": "96421561003389",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 19996,
+      "verts": 24081,
+      "fnv1a_hash": 2929148352
+    },
+    "size": {
+      "y": 7.999999523162842,
+      "x": 4.270282745361328,
+      "z": 4.263400077819824
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/94148201608679",
+    "bones": [
+      "Root"
+    ],
+    "create_albedo": "https://create.roblox.com/store/asset/112527313536272",
+    "color": {
+      "b": 0.6470588445663452,
+      "g": 0.6352941393852234,
+      "r": 0.6392157077789307
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "",
+    "row": "SHIP",
+    "mesh_id": "94148201608679",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain.png",
+      "atlas_sha256": "30f19c0602ef02008df86c3544cf7eff6fe6e60e59498521d007a22e758da12b",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "accf957c2f244aa2f5486faa69c3f6b22f5dd0160f14245e4093bff630c05fb2",
+      "preview_sha256": "9ae1f604ccfb240419ed69880f37af4ceac6fd535ba2d0ce60dd0442341e3d3c",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_fountain.glb",
+      "source_glb_sha256": "f64a393b423a566410aa51c8598b54e2faa740002a0b6c640d199e0105a22a0c",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_fountain.glb\noriginal_tris: 678640\n\n10k: hell_infernal_fountain_10k.fbx (10000 tris, target 10000)"
+    }
+  },
+  "review": {
+    "path": "Workspace._MeshyLineup.B_PropReview_TextureID.15_hell_infernal_fountain",
+    "has_skinned_mesh": false,
+    "instance_name": "15_hell_infernal_fountain",
+    "bind_mode": "TextureID",
+    "prop": "hell_infernal_fountain",
+    "attributes": {
+      "Mount": "floor",
+      "MountY": "3.999999761581421",
+      "Theme": "hell",
+      "StandOff": "2.231700038909912"
+    },
+    "bone_count": 0,
+    "material": "Enum.Material.Plastic",
+    "n": 15,
+    "pivot": {
+      "y": 3.999999761581421,
+      "x": 20196,
+      "z": 45.718299865722656
+    },
+    "color_map": "",
+    "albedo_id": "99032404381548",
+    "normal_map": "",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 10000,
+      "verts": 24071,
+      "fnv1a_hash": 321370480
+    },
+    "size": {
+      "y": 7.999999523162842,
+      "x": 4.270282745361328,
+      "z": 4.263400077819824
+    },
+    "look": {
+      "y": 0,
+      "x": 8.742277657347586e-08,
+      "z": 1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/111269812210249",
+    "bones": [],
+    "create_albedo": "https://create.roblox.com/store/asset/99032404381548",
+    "color": {
+      "b": 1,
+      "g": 1,
+      "r": 1
+    },
+    "yaw_note": "look_+Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "99032404381548",
+    "row": "REVIEW",
+    "mesh_id": "111269812210249",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain.png",
+      "atlas_sha256": "30f19c0602ef02008df86c3544cf7eff6fe6e60e59498521d007a22e758da12b",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "accf957c2f244aa2f5486faa69c3f6b22f5dd0160f14245e4093bff630c05fb2",
+      "preview_sha256": "9ae1f604ccfb240419ed69880f37af4ceac6fd535ba2d0ce60dd0442341e3d3c",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_fountain.glb",
+      "source_glb_sha256": "f64a393b423a566410aa51c8598b54e2faa740002a0b6c640d199e0105a22a0c",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_fountain.glb\noriginal_tris: 678640\n\n10k: hell_infernal_fountain_10k.fbx (10000 tris, target 10000)"
+    }
+  },
+  "diagnose_if_bad_again": [
+    "Dump live mesh_id/albedo/bind/editable hash",
+    "Diff against shipping.* (missions) or review.* (TextureID gen)",
+    "ids drifted -> transplant/rbxm; ids match + ugly -> CDN/render"
+  ]
+}

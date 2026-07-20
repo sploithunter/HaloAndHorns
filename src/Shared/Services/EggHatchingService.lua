@@ -976,7 +976,7 @@ function EggHatchingService:AnimateFlash(eggComponents, duration)
     end
 
     if eggComponents._silentHatch ~= true then
-        -- Play configured sound effect (prefer preloaded named sound)
+        -- Play configured sound effect (prefer preloaded named sound → sounds.lua catalog)
         local soundSettings = (flashEffectsConfig and flashEffectsConfig.sound) or {}
         local named = (effectConfig and effectConfig.sound_name) or soundSettings.sound_name
         local soundId = (effectConfig and effectConfig.sound_id) or soundSettings.sound_id
@@ -984,6 +984,33 @@ function EggHatchingService:AnimateFlash(eggComponents, duration)
         local speed = (effectConfig and effectConfig.playback_speed)
             or soundSettings.playback_speed
             or 1.0
+
+        -- Named keys resolve through Assets.Sounds, then configs/sounds.lua — never
+        -- require a duplicated inline sound_id that can drift from the catalog.
+        if (not soundId or soundId == "") and named then
+            local ok, catalog = pcall(function()
+                return require(ReplicatedStorage.Configs:WaitForChild("sounds"))
+            end)
+            local entry = ok and type(catalog) == "table" and catalog[named]
+            if type(entry) == "table" and type(entry.id) == "string" then
+                soundId = entry.id
+                if
+                    entry.volume ~= nil
+                    and not ((effectConfig and effectConfig.volume) or soundSettings.volume)
+                then
+                    volume = entry.volume
+                end
+                if
+                    entry.playback_speed ~= nil
+                    and not (
+                        (effectConfig and effectConfig.playback_speed)
+                        or soundSettings.playback_speed
+                    )
+                then
+                    speed = entry.playback_speed
+                end
+            end
+        end
 
         local played = false
         if named then

@@ -170,8 +170,8 @@ local M = {
         xp_boost = { symbol = "xp_up", target = "self" }, -- XP boost
         -- Attack fill (origin-coloured):
         sunder = { symbol = "shield_broken", target = "enemy_aoe" }, -- armor break
-        disarm = { symbol = "fist_broken", target = "single" }, -- weaken enemy attack
-        focus_fire = { symbol = "target", target = "single" }, -- designate priority target
+        disarm = { symbol = "disarm", target = "single" }, -- action lock; movement remains (shackled-hands glyph)
+        focus_fire = { symbol = "target", target = "single" }, -- accuracy + hold-penetration mark
         expose = { symbol = "eye", target = "single" }, -- reveal + accuracy/crit
         cripple = { symbol = "target_down", target = "single" }, -- slow + weaken
         strike = { symbol = "ranged_impact", target = "single" }, -- basic ranged hit (fist_impact stays for true melee)
@@ -268,7 +268,7 @@ local M = {
         buff = "chevrons_up",
         -- origin-signature glyphs (docs/PET_REALM_SIGNATURE_POWERS.md)
         shield = "armor_chest", -- Bastion / Living Mountain / Mirage Veil
-        hold = "capacitor", -- Permafrost / Seismic Hold / Absolute Zero / Eternal Winter (capacitor = HOLD)
+        hold = "capacitor", -- full holds (capacitor = HOLD); movement roots override to user_desk
         heal = "plus", -- Oasis / Simoom
         summon = "pet", -- Gaia's Colossus / Genie of the Dunes (call a guardian) -> paw glyph
         brand = "contagion", -- Inferno Brand (ramping mark)
@@ -278,8 +278,9 @@ local M = {
         firestorm = "fire_storm", -- team-cleave Firestorm gets its own storm art (not the burst glyph)
         seismic_hold = "knockback", -- "Seismic Event" is now a knockback-DoT, not a hold
         cataclysm = "nuke", -- the meteor capstone (≠ Eruption's ranged_impact)
-        -- The three AoE holds were all `capacitor` -> give two of them dedicated ice art so the
-        -- trio reads distinct (Permafrost keeps the plain capacitor hold).
+        -- Keep the Cryomancer control trio semantically distinct: Permafrost is a movement ROOT;
+        -- Absolute Zero and Eternal Winter are full holds with dedicated ice art.
+        permafrost = "user_desk",
         absolute_zero = "ice_hold",
         eternal_winter = "winter_hold",
     },
@@ -289,6 +290,11 @@ local M = {
         targeted_aoe = "enemy_aoe",
         team_aoe = "team_aoe",
         friendly = "ally",
+    },
+    -- Per-power targeting-ring exceptions. Absolute Zero is the precise cluster freeze; the other
+    -- Cryomancer AoEs intentionally retain the broad encounter-AoE ring.
+    power_ring_override = {
+        absolute_zero = "targeted_aoe",
     },
     -- A power's `target` (who it hits) -> targeting-ring KIND, used for EVERY power so the ring is
     -- honest: single_pet armor reads as one pet (outward), team armor as the squad, player_field as

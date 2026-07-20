@@ -1268,6 +1268,19 @@ return {
                 arguments = { { name = "station", type = "table" } },
             },
         },
+        PotionShopOpened = {
+            name = "PotionShopOpened",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "potions.shop_opened",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "shop", type = "table" } },
+            },
+        },
         AdminToolResult = {
             name = "AdminToolResult",
             transport = "reliable_event",
@@ -1305,6 +1318,19 @@ return {
             schema = {
                 kind = "tuple",
                 arguments = { { name = "heal", type = "table" } },
+            },
+        },
+        Combat_Result = {
+            name = "Combat_Result",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "broadcast",
+            topic = "combat.result",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "result", type = "table" } },
             },
         },
         Combat_EnemyHit = {

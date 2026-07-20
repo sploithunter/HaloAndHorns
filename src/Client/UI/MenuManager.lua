@@ -627,6 +627,10 @@ function MenuManager:OpenShopPanel(effect)
     return self:OpenPanel("Shop", effect)
 end
 
+function MenuManager:OpenPotionShopPanel(effect)
+    return self:OpenPanel("PotionShop", effect)
+end
+
 function MenuManager:OpenInventoryPanel(effect)
     return self:OpenPanel("Inventory", effect)
 end

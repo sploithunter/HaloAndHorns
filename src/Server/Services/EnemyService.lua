@@ -64,6 +64,7 @@ local ZoneResolver = require(ReplicatedStorage.Shared.Game.ZoneResolver)
 local EnemyLeash = require(ReplicatedStorage.Shared.Game.EnemyLeash)
 local MissionRankScale = require(ReplicatedStorage.Shared.Game.MissionRankScale)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local CombatApplication = require(script.Parent.Parent.CombatApplication)
 
 local EnemyService = {}
 EnemyService.__index = EnemyService
@@ -913,6 +914,17 @@ function EnemyService:_attachEnemyDecor(model, body, enemyId, def, targetId)
     model:SetAttribute("MaxHP", def.hp)
     model:SetAttribute("IsEnemy", true)
     model:SetAttribute("Armor", def.armor or 0) -- defensive stat: mitigates pet damage
+    model:SetAttribute("Tier", def.tier or "trash_mob")
+    local counterCfg = self._combatConfig and self._combatConfig.control_counters
+    local cleanseCfg = counterCfg and counterCfg.support_cleanse
+    model:SetAttribute(
+        "HoldImmune",
+        cleanseCfg
+                and cleanseCfg.enabled ~= false
+                and cleanseCfg.hold_immune == true
+                and (def.role or "melee") == (cleanseCfg.role or "support")
+            or false
+    )
 
     local height = 7
     local okExtents, sz = pcall(function()
@@ -1155,6 +1167,12 @@ function EnemyService:_despawnEnemy(targetId)
         )
     end
     self._enemies[targetId] = nil
+    if self._supportCleanseState then
+        self._supportCleanseState[targetId] = nil
+    end
+    if self._bossBreakoutState then
+        self._bossBreakoutState[targetId] = nil
+    end
     self:_clearEnemyFromPetThreat(targetId)
     self:_releasePets(targetId)
     if entry.model then
@@ -1198,6 +1216,12 @@ function EnemyService:_onDefeated(targetId)
         return
     end
     self._enemies[targetId] = nil
+    if self._supportCleanseState then
+        self._supportCleanseState[targetId] = nil
+    end
+    if self._bossBreakoutState then
+        self._bossBreakoutState[targetId] = nil
+    end
     self:_clearEnemyFromPetThreat(targetId)
     local model = entry.model
 
@@ -1722,9 +1746,13 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
         crit_mult = enemyAtkRoll and enemyAtkRoll.crit_mult,
     }, math.random(), math.random())
     if roll.multiplier <= 0 then
-        -- Whiff -> the caller floats a "MISS" over the pet via Combat_EnemyHit (same FloatingText path
-        -- the pets use). `blinded` recolours it orange so a Sandstorm whiff reads distinct from a
-        -- plain accuracy miss.
+        pet:SetAttribute("LastHitCrit", false)
+        CombatApplication.ApplyHit(pet, {
+            outcome = "miss",
+            source = enemyModel,
+            blind = blinded == true,
+            kind = "enemy_attack",
+        })
         return true, blinded == true -- missed, wasBlinded
     end
     dmg = dmg * roll.multiplier
@@ -1782,7 +1810,11 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     -- successful roll: zero damage + pop a floating "Dodge!" (DodgeTick, same VFX the absorb-skin used).
     if (pet:GetAttribute("EvadeUntil") or 0) > os.time() then
         if Evasion.evaded(pet:GetAttribute("EvadeChance"), math.random()) then
-            pet:SetAttribute("DodgeTick", (pet:GetAttribute("DodgeTick") or 0) + 1)
+            CombatApplication.ApplyHit(pet, {
+                outcome = "dodge",
+                source = enemyModel,
+                kind = "enemy_attack",
+            })
             return -- avoided the hit entirely
         end
     end
@@ -1791,20 +1823,25 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     local nowT = os.time()
     -- Defense = innate role toughness (tanks are naturally tanky) + the pet's own Defense
     -- attribute + any active DefenseBuff (Bulwark etc.). All feed the armor curve below.
-    local defense = self:_roleDefense(pet) + (pet:GetAttribute("Defense") or 0)
+    local baseDefense = self:_roleDefense(pet) + (pet:GetAttribute("Defense") or 0)
+    local powerDefense = 0
     if (pet:GetAttribute("DefenseBuffUntil") or 0) > nowT then
-        defense = defense + (pet:GetAttribute("DefenseBuff") or 0)
+        powerDefense = pet:GetAttribute("DefenseBuff") or 0
     end
     -- Ice buffer's team defense aura (penguin) — separate channel from a power's DefenseBuff
     -- above, so an aura + an activated shield STACK on the armor curve.
     if (pet:GetAttribute("TeamDefenseBuffUntil") or 0) > nowT then
-        defense = defense + (pet:GetAttribute("TeamDefenseBuff") or 0)
+        baseDefense = baseDefense + (pet:GetAttribute("TeamDefenseBuff") or 0)
     end
-    dmg = CombatMath.mitigate(dmg, defense, self._combatConfig.armor_curve_k or 100)
+    local armorK = self._combatConfig.armor_curve_k or 100
+    local rawBeforeDefense = dmg
+    local withoutPowerArmor = CombatMath.mitigate(rawBeforeDefense, baseDefense, armorK)
+    dmg = CombatMath.mitigate(rawBeforeDefense, baseDefense + powerDefense, armorK)
     -- Combat-origin element: durability side. ice/desert take less, lava takes more — the mirror
     -- of the outgoing attack_mult (configs/combat_fx.lua origin.element_stats). Capture the mult so the
     -- [GlassTrace] below can show how much extra a squishy element (lava) is eating per hit.
     local takenMult = self:_originTakenMult(pet)
+    local powerArmorPrevented = math.max(0, (withoutPowerArmor - dmg) * takenMult)
     dmg = dmg * takenMult
     -- Absorption shield (Stone Skin etc.) soaks mitigated damage before any reaches
     -- endurance; it depletes as it absorbs. SSOT: a TIMED shield's DURATION is authoritative — the
@@ -1819,6 +1856,8 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     if shieldExpired and (pet:GetAttribute("CombatShield") or 0) > 0 then
         pet:SetAttribute("CombatShield", 0) -- stale pool from a lost timer → clear it
     end
+    local absorbedTotal = 0
+    local mirageHealed = 0
     if shield > 0 and dmg > 0 then
         -- CRIT PENETRATION (Jason: shields are BINARY immunity — "the shield
         -- is the real problem"): the crit BONUS pierces the pool and lands on
@@ -1827,19 +1866,9 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
         local pierce = dmg * critBonusFrac
         local soakable = dmg - pierce
         local absorbed = math.min(shield, soakable)
+        absorbedTotal = absorbed
         pet:SetAttribute("CombatShield", shield - absorbed)
         dmg = (soakable - absorbed) + pierce
-        -- On-hit VFX is config-driven: if the absorbing power declares combat_vfx.on_hit = "dodge_pop"
-        -- (e.g. Mirage Step), bump a tick so the client pops a floating "Dodge!" over the pet. A real
-        -- shield has no on_hit, so it just soaks silently.
-        if absorbed > 0 then
-            local pid = pet:GetAttribute("CombatShieldPowerId")
-            local def = pid and self._powersConfig.powers and self._powersConfig.powers[pid]
-            local vfx = def and def.combat_vfx
-            if vfx and vfx.on_hit == "dodge_pop" then
-                pet:SetAttribute("DodgeTick", (pet:GetAttribute("DodgeTick") or 0) + 1)
-            end
-        end
         -- Mirage Veil (sandwalker signature): the veil heals a little each time it turns a blow
         -- aside (heal-on-evade) while MirageHealUntil is live — sustain that rewards being shielded.
         if absorbed > 0 and (pet:GetAttribute("MirageHealUntil") or 0) > nowT then
@@ -1851,17 +1880,58 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
             local takenNow = pet:GetAttribute("CombatDamageTaken") or 0
             if heal > 0 and takenNow > 0 then
                 pet:SetAttribute("CombatShield", remaining - heal)
-                -- res-sickness clamp: can't heal a fresh revive past its res floor
-                pet:SetAttribute(
-                    "CombatDamageTaken",
-                    ResSickness.clampTaken(pet:GetAttributes(), math.max(0, takenNow - heal), nowT)
-                )
-                pet:SetAttribute("HealFxUntil", os.time() + 2)
+                local healResult = CombatApplication.ApplyPowerHeal(pet, heal, {
+                    resource = "pet_endurance",
+                    minimumTaken = ResSickness.floorFor(pet:GetAttributes(), nowT),
+                    fxSeconds = 2,
+                    source = pet,
+                    powerId = pet:GetAttribute("CombatShieldPowerId"),
+                    kind = "power_heal",
+                })
+                mirageHealed = healResult.amount or 0
             end
         end
     end
-    local taken = PetEndurance.applyHit(pet:GetAttribute("CombatDamageTaken") or 0, dmg)
-    pet:SetAttribute("CombatDamageTaken", taken)
+    local hitResult
+    if dmg > 0 then
+        hitResult = CombatApplication.ApplyHit(pet, {
+            outcome = "damage",
+            amount = dmg,
+            resource = "pet_endurance",
+            source = enemyModel,
+            crit = roll.crit,
+            kind = "enemy_attack",
+        })
+    else
+        hitResult = CombatApplication.ApplyHit(pet, {
+            outcome = absorbedTotal > 0 and "absorbed" or "immune",
+            amount = absorbedTotal,
+            source = enemyModel,
+            kind = "enemy_attack",
+        })
+    end
+    local taken = hitResult.after or (pet:GetAttribute("CombatDamageTaken") or 0)
+    if
+        self._combatConfig.combat_trace
+        and (self._combatConfig.defense_trace or _G.DefenseTrace == true)
+    then
+        print(
+            string.format(
+                "[DefenseTrace] pet=%s raw=%.1f baseDef=%.1f powerDef=%.1f armorPower=%s armorPrevented=%.1f shieldPower=%s shieldAbsorbed=%.1f shieldHealed=%.1f applied=%.1f shieldRemaining=%.1f",
+                tostring(pet:GetAttribute("PetType") or pet.Name),
+                rawBeforeDefense,
+                baseDefense,
+                powerDefense,
+                tostring(pet:GetAttribute("DefenseBuffPowerId") or "none"),
+                powerArmorPrevented,
+                tostring(pet:GetAttribute("CombatShieldPowerId") or "none"),
+                absorbedTotal,
+                mirageHealed,
+                math.max(0, tonumber(hitResult.amount) or 0),
+                math.max(0, tonumber(pet:GetAttribute("CombatShield")) or 0)
+            )
+        )
+    end
     local pc = self._petCombat[pet]
     if not pc then
         pc = {}
@@ -2826,6 +2896,13 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         entry.lastTargetDist = nil
         return
     end
+    -- DISARM: action lock without movement lock. The enemy continues through chase/positioning
+    -- below, but every bite and active ability shares this one gate.
+    local actionLocked = CrowdControl.isActionLocked(
+        model:GetAttribute("HeldUntil"),
+        model:GetAttribute("DisarmedUntil"),
+        os.time()
+    )
 
     -- 4) CHASE the aggro target until in attack range. A tank/melee target orbits inside
     -- attack_range so the enemy just holds + bites it; a ranged target kites near the
@@ -3003,7 +3080,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         return valid[k] == true and (self:_petPosition(k, pfs) - ePos).Magnitude <= atk
     end)
     entry.nextAttack = entry.nextAttack or 0
-    if biteTarget and not held and now >= entry.nextAttack then
+    if biteTarget and not actionLocked and now >= entry.nextAttack then
         local enemyLevel = model:GetAttribute("Level") or 1
         -- Pet defends at its owner's EFFECTIVE level (teaming seam), same value its own attacks use.
         local petLevel = player:GetAttribute("EffectiveLevel")
@@ -3074,7 +3151,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     -- `damage` — per-pet accuracy/crit/shield/evade via _hitPet, and the Enraged amp applies
     -- (an enraged arch-villain slam is a squad-wiper). Same rune primitive the player casts use.
     local slam = def and def.abilities and def.abilities.slam
-    if slam and not held then
+    if slam and not actionLocked then
         entry.nextSlam = entry.nextSlam or (now + (tonumber(slam.cooldown) or 10) * 0.5)
         if now >= entry.nextSlam then
             local slamRange = tonumber(slam.range) or 40
@@ -3108,9 +3185,13 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
                 task.delay(telegraph, function()
                     if
                         not (model.Parent and (model:GetAttribute("HP") or 0) > 0)
-                        or CrowdControl.isHeld(model:GetAttribute("HeldUntil"), os.time())
+                        or CrowdControl.isActionLocked(
+                            model:GetAttribute("HeldUntil"),
+                            model:GetAttribute("DisarmedUntil"),
+                            os.time()
+                        )
                     then
-                        return -- died or was held mid-windup: the slam fizzles
+                        return -- died or was action-locked mid-windup: the slam fizzles
                     end
                     for pet in pairs(valid) do
                         if pet.Parent and not pet:GetAttribute("CombatDowned") then
@@ -3163,7 +3244,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     local kitCurse = def
         and def.abilities
         and (def.abilities.band_debuff or def.abilities.single_debuff)
-    if (kitBuff or kitCurse) and not held then
+    if (kitBuff or kitCurse) and not actionLocked then
         entry.nextSupport = entry.nextSupport or (now + 2)
         if now >= entry.nextSupport then
             entry.nextSupport = now + (tonumber((kitBuff or kitCurse).interval) or 8)
@@ -3240,7 +3321,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     -- PetRootedUntil (client stops positioning them) + the hold badge on their cards.
     local kitRoot = def and def.abilities and (def.abilities.hold or def.abilities.root)
     local kitIsHold = def and def.abilities and def.abilities.hold ~= nil
-    if kitRoot and not held then
+    if kitRoot and not actionLocked then
         entry.nextRoot = entry.nextRoot or (now + 3)
         if now >= entry.nextRoot then
             entry.nextRoot = now + (tonumber(kitRoot.interval) or 8)
@@ -3274,7 +3355,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     end
 
     local pulse = def and def.abilities and def.abilities.pulse
-    if pulse and not held then
+    if pulse and not actionLocked then
         entry.nextPulse = entry.nextPulse or (now + (tonumber(pulse.interval) or 4))
         if now >= entry.nextPulse then
             entry.nextPulse = now + (tonumber(pulse.interval) or 4)
@@ -3333,9 +3414,11 @@ function EnemyService:_regenPass(now, dt, eng)
         return
     end
     local delay = (eng.regen and eng.regen.delay_seconds) or 3
-    local perSec = (eng.regen and eng.regen.partial_per_second) or 12
+    local regenConfig = eng.regen or {}
     local factor = self._combatConfig.pet_down_threshold_factor or 1
     for _, folder in ipairs(playerPets:GetChildren()) do
+        local player = Players:FindFirstChild(folder.Name)
+        local squadOutOfCombat = player ~= nil and player:GetAttribute("InCombat") ~= true
         for _, pet in ipairs(folder:GetChildren()) do
             if pet:IsA("Model") and pet.PrimaryPart and not pet:GetAttribute("CombatDowned") then
                 local taken = pet:GetAttribute("CombatDamageTaken") or 0
@@ -3343,6 +3426,14 @@ function EnemyService:_regenPass(now, dt, eng)
                     local pc = self._petCombat[pet]
                     local lastHit = (pc and pc.lastHit) or 0
                     if PetEndurance.canRegen(now, lastHit, delay) then
+                        local power = self:_petPower(pet)
+                        local maxEndurance = PetEndurance.maxEndurance(power, factor)
+                        local idleSeconds = now - lastHit
+                        local perSec = tonumber(regenConfig.partial_per_second) or 12
+                        if squadOutOfCombat then
+                            perSec =
+                                PetEndurance.regenPerSecond(maxEndurance, idleSeconds, regenConfig)
+                        end
                         -- res-sickness clamp: regen can't lift a fresh revive past its res floor
                         local newTaken = ResSickness.clampTaken(
                             pet:GetAttributes(),
@@ -3558,7 +3649,17 @@ function EnemyService:_updateHeldBadge(model, nowTime)
     if not pp then
         return
     end
-    local held = CrowdControl.isHeld(model:GetAttribute("HeldUntil"), nowTime)
+    local heldUntil = tonumber(model:GetAttribute("HeldUntil")) or 0
+    local debuffUntil = tonumber(model:GetAttribute("DebuffUntil")) or 0
+    local debuffPowerId = model:GetAttribute("DebuffPowerId")
+    -- A named hold (Deep Freeze / Absolute Zero / Eternal Winter) already gets the matching
+    -- client-side DebuffIcon from CombatAuraController. The old generic HeldBadge drew a second,
+    -- identical capacitor disc above it. Keep the generic badge only for unnamed enemy/pet-aura
+    -- holds, where it remains the sole readable world tell.
+    local namedHold = debuffPowerId
+        and debuffPowerId ~= ""
+        and math.abs(debuffUntil - heldUntil) < 0.01
+    local held = CrowdControl.isHeld(heldUntil, nowTime) and not namedHold
     local bb = pp:FindFirstChild("HeldBadge")
     if held then
         if not bb then
@@ -3671,13 +3772,17 @@ function EnemyService:_auraHeal(folder, heal, vmult)
     local pool = PetEndurance.maxEndurance(self:_petPower(target), factor)
     local healAmt = heal.fraction and (pool * heal.fraction) or (heal.amount or 0)
     healAmt = healAmt * (tonumber(vmult) or 1) -- variant-scaled (golden/rainbow mend more)
-    -- res-sickness clamp: a support aura can't heal a fresh revive past its res floor
-    local newTaken = ResSickness.clampTaken(
-        target:GetAttributes(),
-        math.max(0, (target:GetAttribute("CombatDamageTaken") or 0) - healAmt),
-        os.time()
-    )
-    target:SetAttribute("CombatDamageTaken", newTaken)
+    local fxSec = (
+        self._combatConfig.engagement and self._combatConfig.engagement.instant_fx_seconds
+    ) or 3
+    local healResult = CombatApplication.ApplyPowerHeal(target, healAmt, {
+        resource = "pet_endurance",
+        minimumTaken = ResSickness.floorFor(target:GetAttributes(), os.time()),
+        fxSeconds = fxSec,
+        sourcePlayer = Players:FindFirstChild(folder.Name),
+        kind = "support_heal",
+    })
+    local newTaken = healResult.after
     if newTaken <= 0 then
         self:_clearEnduranceBar(target)
     else
@@ -3685,15 +3790,7 @@ function EnemyService:_auraHeal(folder, heal, vmult)
     end
     -- Visual tell: blinking heal badge (HealFxUntil) + world heal puff, so an instant heal
     -- is visible even though it has no duration.
-    local fxSec = (
-        self._combatConfig.engagement and self._combatConfig.engagement.instant_fx_seconds
-    ) or 3
-    target:SetAttribute("HealFxUntil", os.time() + fxSec)
     self:_spawnHealVisual(target)
-    -- Floating green heal number — shared world effect (Jason: team effect game).
-    if healAmt >= 1 then
-        Signals.Combat_Heal:FireAllClients({ target = target, amount = math.floor(healAmt + 0.5) })
-    end
 end
 
 -- Defense aura (Ice / penguin): a short-lived TeamDefenseBuff on EVERY ally. Consumed in
@@ -3793,6 +3890,43 @@ function EnemyService:GetFocusEnemy(player)
     return self:_focusEnemy(player)
 end
 
+-- The authored encounter pack containing `focusModel`. Patrol sorties share their cave-band key;
+-- mission enemies share their MissionSpawn anchor. This is deliberately independent of aggro, so
+-- an opening control power can freeze a pack before it notices the player. Ungrouped/admin-spawned
+-- enemies safely form a one-member group.
+function EnemyService:GetEnemyGroup(focusModel)
+    if not focusModel then
+        return {}
+    end
+    local focusEntry
+    for _, entry in pairs(self._enemies) do
+        if entry.model == focusModel then
+            focusEntry = entry
+            break
+        end
+    end
+    if not focusEntry then
+        return { focusModel }
+    end
+    local groupKey = focusEntry.encounterGroup or focusEntry.patrolBand
+    if not groupKey then
+        return { focusModel }
+    end
+    local out = {}
+    for _, entry in pairs(self._enemies) do
+        local model = entry.model
+        if
+            (entry.encounterGroup or entry.patrolBand) == groupKey
+            and model
+            and model.Parent
+            and (model:GetAttribute("HP") or 0) > 0
+        then
+            out[#out + 1] = model
+        end
+    end
+    return out
+end
+
 -- Hell COMBAT-debuff aura: stamp a debuff on the squad's focus enemy.
 --   shred = VulnerableMult (enemy takes more from EVERYONE — the same seam the shred power/on-hit use).
 --   curse = WeakenMult (enemy DEALS less — consumed in _hitPet). Refresh-to-stronger / longer so a
@@ -3846,6 +3980,12 @@ function EnemyService:_auraHold(folder, aura)
     local now = os.time()
     local model = self:_focusEnemy(player)
     if not model then
+        return
+    end
+    if
+        model:GetAttribute("HoldImmune") == true
+        or (tonumber(model:GetAttribute("HoldResistUntil")) or 0) > now
+    then
         return
     end
     -- don't re-stamp an already-held target (lets a repeat cast roll onto a fresh enemy instead)
@@ -4512,7 +4652,11 @@ function EnemyService:_enemyHealPass(now)
             if
                 heal
                 and (heal.amount or 0) > 0
-                and CrowdControl.canAct(model:GetAttribute("HeldUntil"), os.time())
+                and CrowdControl.canTakeAction(
+                    model:GetAttribute("HeldUntil"),
+                    model:GetAttribute("DisarmedUntil"),
+                    os.time()
+                )
                 and (not self._enemyHealAt[tid] or now >= self._enemyHealAt[tid])
             then
                 self._enemyHealAt[tid] = now + (heal.interval or 2)
@@ -4531,21 +4675,230 @@ function EnemyService:_enemyHealPass(now)
                     end
                 end
                 if target then
-                    local maxhp = target:GetAttribute("MaxHP") or 1
-                    local before = target:GetAttribute("HP") or 0
-                    local after = math.min(maxhp, before + heal.amount)
-                    target:SetAttribute("HP", after)
-                    -- Same heal attribute pets carry (SquadHud reads HealFxUntil) — so the EnemyHud
-                    -- lights a HEAL badge on the mended foe via the SHARED StatusBadges path. The
-                    -- enemy speaks the pet status vocabulary; one renderer reads both.
-                    target:SetAttribute("HealFxUntil", os.time() + 2)
+                    CombatApplication.ApplyPowerHeal(target, heal.amount, {
+                        source = model,
+                        fxSeconds = 2,
+                        kind = "enemy_heal",
+                    })
                     self:_spawnHealVisual(target) -- works on any model with a PrimaryPart
-                    -- Green heal number to ALL clients, so you SEE the enemy healer working
-                    -- (the "kill the healer to flip the fight" tell).
-                    local healed = math.floor(after - before + 0.5)
-                    if healed >= 1 then
-                        Signals.Combat_Heal:FireAllClients({ target = target, amount = healed })
+                end
+            end
+        end
+    end
+end
+
+-- Clear only the hold-owned presentation channel. Other vulnerability/root channels may be live
+-- simultaneously and must not be erased merely because a support unit or boss broke this hold.
+function EnemyService:_breakEnemyHold(model)
+    local heldUntil = tonumber(model:GetAttribute("HeldUntil")) or 0
+    if heldUntil <= os.time() then
+        return false
+    end
+    local debuffUntil = tonumber(model:GetAttribute("DebuffUntil")) or 0
+    local powerId = model:GetAttribute("DebuffPowerId")
+    model:SetAttribute("HeldUntil", 0)
+    if math.abs(debuffUntil - heldUntil) < 0.1 then
+        model:SetAttribute("DebuffUntil", 0)
+        if powerId then
+            model:SetAttribute("Power_" .. tostring(powerId) .. "_Until", 0)
+        end
+    end
+    return true
+end
+
+function EnemyService:_controlCounterFx(model, center, radius)
+    pcall(function()
+        Signals.Power_AreaFx:FireAllClients({
+            primId = "aura",
+            element = "neutral",
+            kind = "source",
+            caster = model,
+        })
+        if center and radius and radius > 0 then
+            Signals.Power_AreaFx:FireAllClients({
+                element = "neutral",
+                variant = "targeted",
+                center = center,
+                radius = radius,
+                rangeIndicator = true,
+                duration = 1.25,
+                pit = false,
+                hits = {},
+            })
+        end
+    end)
+end
+
+-- Support counterplay: the support is hold-immune, but its cleanse is a normal active action.
+-- Disarm during the telegraphed wind-up cancels it, giving Cryomancer a deliberate setup sequence:
+-- disarm the support, then hold the pack.
+function EnemyService:_supportCleansePass(now)
+    local cfg = self._combatConfig.control_counters
+        and self._combatConfig.control_counters.support_cleanse
+    if not cfg or cfg.enabled == false then
+        return
+    end
+    self._supportCleanseState = self._supportCleanseState or {}
+    local nowTime = os.time()
+    local role = cfg.role or "support"
+    local range = tonumber(cfg.range) or 24
+    for tid, entry in pairs(self._enemies) do
+        local model = entry.model
+        if
+            model
+            and model.Parent
+            and (model:GetAttribute("HP") or 0) > 0
+            and model:GetAttribute("Role") == role
+        then
+            local state = self._supportCleanseState[tid] or { readyAt = 0 }
+            self._supportCleanseState[tid] = state
+            if state.finishAt then
+                if
+                    not CrowdControl.canTakeAction(
+                        nil,
+                        model:GetAttribute("DisarmedUntil"),
+                        nowTime
+                    )
+                then
+                    state.finishAt = nil
+                    state.readyAt = now + (tonumber(cfg.interrupted_cooldown_seconds) or 4)
+                    model:SetAttribute("CleanseCastUntil", 0)
+                    if self._combatConfig.combat_trace then
+                        print(
+                            string.format(
+                                "[ControlCounter] support_cleanse INTERRUPTED support=%s",
+                                tostring(model:GetAttribute("EnemyId") or model.Name)
+                            )
+                        )
                     end
+                elseif now >= state.finishAt then
+                    local cleansed = 0
+                    for _, ally in pairs(self._enemies) do
+                        if
+                            ally.model
+                            and ally.model.Parent
+                            and (ally.model:GetAttribute("HP") or 0) > 0
+                            and ally.pos
+                            and entry.pos
+                            and (ally.pos - entry.pos).Magnitude <= range
+                            and self:_breakEnemyHold(ally.model)
+                        then
+                            cleansed += 1
+                        end
+                    end
+                    state.finishAt = nil
+                    state.readyAt = now + (tonumber(cfg.cooldown_seconds) or 14)
+                    model:SetAttribute("CleanseCastUntil", 0)
+                    if cleansed > 0 then
+                        self:_controlCounterFx(model, entry.pos, range)
+                    end
+                    if self._combatConfig.combat_trace then
+                        print(
+                            string.format(
+                                "[ControlCounter] support_cleanse COMPLETE support=%s cleansed=%d",
+                                tostring(model:GetAttribute("EnemyId") or model.Name),
+                                cleansed
+                            )
+                        )
+                    end
+                end
+            elseif
+                now >= (state.readyAt or 0)
+                and CrowdControl.canTakeAction(nil, model:GetAttribute("DisarmedUntil"), nowTime)
+            then
+                local hasHeldAlly = false
+                for _, ally in pairs(self._enemies) do
+                    if
+                        ally.model
+                        and ally.model.Parent
+                        and (ally.model:GetAttribute("HP") or 0) > 0
+                        and CrowdControl.isHeld(ally.model:GetAttribute("HeldUntil"), nowTime)
+                        and ally.pos
+                        and entry.pos
+                        and (ally.pos - entry.pos).Magnitude <= range
+                    then
+                        hasHeldAlly = true
+                        break
+                    end
+                end
+                if hasHeldAlly then
+                    local windup = tonumber(cfg.windup_seconds) or 1.5
+                    state.finishAt = now + windup
+                    model:SetAttribute("CleanseCastUntil", Workspace:GetServerTimeNow() + windup)
+                    self:_controlCounterFx(model)
+                    if self._combatConfig.combat_trace then
+                        print(
+                            string.format(
+                                "[ControlCounter] support_cleanse WINDUP support=%s seconds=%.1f",
+                                tostring(model:GetAttribute("EnemyId") or model.Name),
+                                windup
+                            )
+                        )
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Bosses are never blanket hold-immune. A landed hold always buys its wind-up window; the boss then
+-- invokes its special breakout (allowed while held) and gains a short resistance window.
+function EnemyService:_bossBreakoutPass(now)
+    local cfg = self._combatConfig.control_counters
+        and self._combatConfig.control_counters.boss_breakout
+    if not cfg or cfg.enabled == false then
+        return
+    end
+    self._bossBreakoutState = self._bossBreakoutState or {}
+    local nowTime = os.time()
+    for tid, entry in pairs(self._enemies) do
+        local model = entry.model
+        local tier = model and model:GetAttribute("Tier")
+        if
+            model
+            and model.Parent
+            and (model:GetAttribute("HP") or 0) > 0
+            and cfg.tiers
+            and cfg.tiers[tier] == true
+        then
+            local state = self._bossBreakoutState[tid] or { readyAt = 0 }
+            self._bossBreakoutState[tid] = state
+            local held = CrowdControl.isHeld(model:GetAttribute("HeldUntil"), nowTime)
+            if state.finishAt then
+                if not held then
+                    state.finishAt = nil
+                    model:SetAttribute("BreakoutCastUntil", 0)
+                elseif now >= state.finishAt then
+                    self:_breakEnemyHold(model)
+                    local resistance = tonumber(cfg.resistance_seconds) or 4
+                    model:SetAttribute("HoldResistUntil", nowTime + resistance)
+                    model:SetAttribute("BreakoutCastUntil", 0)
+                    state.finishAt = nil
+                    state.readyAt = now + (tonumber(cfg.cooldown_seconds) or 24)
+                    self:_controlCounterFx(model, entry.pos, 10)
+                    if self._combatConfig.combat_trace then
+                        print(
+                            string.format(
+                                "[ControlCounter] boss_breakout COMPLETE boss=%s resist=%.1fs",
+                                tostring(model:GetAttribute("EnemyId") or model.Name),
+                                resistance
+                            )
+                        )
+                    end
+                end
+            elseif held and now >= (state.readyAt or 0) then
+                local windup = tonumber(cfg.windup_seconds) or 2.5
+                state.finishAt = now + windup
+                model:SetAttribute("BreakoutCastUntil", Workspace:GetServerTimeNow() + windup)
+                self:_controlCounterFx(model)
+                if self._combatConfig.combat_trace then
+                    print(
+                        string.format(
+                            "[ControlCounter] boss_breakout WINDUP boss=%s seconds=%.1f",
+                            tostring(model:GetAttribute("EnemyId") or model.Name),
+                            windup
+                        )
+                    )
                 end
             end
         end
@@ -4574,7 +4927,6 @@ function EnemyService:_auraDamagePass(now)
     local pfs = self:_petFollowService()
     for _, folder in ipairs(playerPets:GetChildren()) do
         local owner = Players:FindFirstChild(folder.Name)
-        local ownerKey = owner and tostring(owner.UserId)
         for _, pet in ipairs(folder:GetChildren()) do
             if
                 pet:IsA("Model")
@@ -4596,22 +4948,12 @@ function EnemyService:_auraDamagePass(now)
                                     or model:FindFirstChildWhichIsA("BasePart")
                                 if ep and (ep.Position - pos).Magnitude <= radius then
                                     engaged = true
-                                    local hp = tonumber(model:GetAttribute("HP")) or 0
-                                    local newHp = math.max(0, hp - dmg)
-                                    local dealt = hp - newHp
-                                    model:SetAttribute("HP", newHp)
-                                    local contrib = dealt > 0
-                                        and ownerKey
-                                        and model:FindFirstChild("Contrib")
-                                    if contrib then
-                                        local nv = contrib:FindFirstChild(ownerKey)
-                                        if not nv then
-                                            nv = Instance.new("NumberValue")
-                                            nv.Name = ownerKey
-                                            nv.Parent = contrib
-                                        end
-                                        nv.Value += dealt
-                                    end
+                                    local damageResult = CombatApplication.ApplyDamage(model, dmg, {
+                                        source = pet,
+                                        sourcePlayer = owner,
+                                        kind = "pet_aura",
+                                    })
+                                    local dealt = damageResult.amount
                                     -- BONFIRE (aura + DoT): if the aura pet carries an attack_dot, its
                                     -- field also LEAVES A BURN on each enemy it ticks — a persistent
                                     -- burning zone. Composes the aura geometry with the DoT axis; the
@@ -4619,7 +4961,7 @@ function EnemyService:_auraDamagePass(now)
                                     local dotFrac = tonumber(pet:GetAttribute("DotFraction")) or 0
                                     local dotDur = tonumber(pet:GetAttribute("DotDuration")) or 0
                                     if dotFrac > 0 and dotDur > 0 then
-                                        local perTick = DamageOverTime.perTick(dmg, dotFrac)
+                                        local perTick = DamageOverTime.perTick(dealt, dotFrac)
                                         if perTick > 0 then
                                             local tick = math.max(
                                                 0.1,
@@ -4645,19 +4987,6 @@ function EnemyService:_auraDamagePass(now)
                                                 os.time() + math.ceil(dotDur)
                                             )
                                         end
-                                    end
-                                    -- VISUALIZE: a floating number on each enemy the field ticks, so
-                                    -- the aura reads (splash = number-only, no per-target bolt). Without
-                                    -- this the aura is silent and looks like it's "not hitting".
-                                    if dealt > 0 and owner then
-                                        Signals.Combat_PetHit:FireClient(owner, {
-                                            pet = pet,
-                                            target = model,
-                                            crit = false,
-                                            amount = dealt,
-                                            miss = false,
-                                            splash = true,
-                                        })
                                     end
                                 end
                             end
@@ -4788,44 +5117,11 @@ function EnemyService:_dotPass(now)
                     )
                     if count > 0 then
                         model:SetAttribute("DotNextTick", nextAt)
-                        local hp = tonumber(model:GetAttribute("HP")) or 0
-                        local newHp = math.max(0, hp - perTick * count)
-                        local dealt = hp - newHp
-                        model:SetAttribute("HP", newHp)
                         local uid = model:GetAttribute("DotSourceUserId")
-                        local contrib = dealt > 0 and model:FindFirstChild("Contrib")
-                        if uid and contrib then
-                            local key = tostring(uid)
-                            local nv = contrib:FindFirstChild(key)
-                            if not nv then
-                                nv = Instance.new("NumberValue")
-                                nv.Name = key
-                                nv.Parent = contrib
-                            end
-                            nv.Value += dealt
-                        end
-                        -- VISUALIZE the burn tick: float the number on the enemy so the DoT/contagion
-                        -- damage READS (the fire shows it's burning; this shows how much). The DoT pass
-                        -- has no source-pet ref, so use any of the owner's deployed pets purely as the
-                        -- Combat_PetHit ref; splash = true -> number-only (no bolt), so the ref's
-                        -- identity doesn't matter. Skipped if the owner/pets are gone.
-                        if dealt > 0 and uid then
-                            local owner = Players:GetPlayerByUserId(uid)
-                            local folder = owner
-                                and Workspace:FindFirstChild("PlayerPets")
-                                and Workspace.PlayerPets:FindFirstChild(owner.Name)
-                            local refPet = folder and folder:FindFirstChildWhichIsA("Model")
-                            if refPet then
-                                Signals.Combat_PetHit:FireClient(owner, {
-                                    pet = refPet,
-                                    target = model,
-                                    crit = false,
-                                    amount = dealt,
-                                    miss = false,
-                                    splash = true,
-                                })
-                            end
-                        end
+                        CombatApplication.ApplyDamage(model, perTick * count, {
+                            sourceUserId = uid,
+                            kind = "dot",
+                        })
                     end
                 end
             end
@@ -5678,6 +5974,7 @@ function EnemyService:_updateBand(part, player, cfg, now, dt)
                     if e then
                         self:_setAggroOwner(e, nil) -- start unaware: patrol, don't beeline the cave
                         e.patrolBand = part
+                        e.encounterGroup = part
                         e.home = band.anchor
                         e.spawnedAt = now
                         e.allegiance = allegiance -- which side this invader fights for (themed content keys off this)
@@ -5836,6 +6133,8 @@ function EnemyService:_combatTick(dt)
     self:_contagionPass(now) -- spread contagion burns to the nearest un-burning enemy (the plague)
     self:_auraDamagePass(now) -- AURA pets damage enemies in a radius around themselves
     self:_enemyHealPass(now)
+    self:_supportCleansePass(now)
+    self:_bossBreakoutPass(now)
     self:_enforceLockouts(nowTime) -- #179: hold re-teamed/locked pets down for their recovery
     self:_refreshGroundExclude() -- rebuild the ground-snap raycast filter once for the whole tick
     self:_patrolTick(now, dt) -- roaming hell-realm patrol bands (flag-gated); updates member home anchors
@@ -6057,6 +6356,7 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         -- generated room rectangle; the movement code remains unaware of mission/map specifics.
         movementLeash = (opts and type(opts.movementLeash) == "table") and opts.movementLeash
             or nil,
+        encounterGroup = opts and opts.encounterGroup or nil,
         aggro = AggroTable.new(),
         lastActiveAt = os.clock(), -- engagement timer seed (idle-despawn clock; refreshed while aggro'd)
         persistent = (opts and opts.persistent) == true, -- mission population: NEVER idle-despawns (defeat or teardown only)

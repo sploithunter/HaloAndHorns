@@ -21,16 +21,43 @@ return {
     -- [AggroTrace], [FearTrace], [PowerCast] taunt/rage/fear) that we read while tuning combat. Left
     -- in the code (Jason: "we need them for combat") but flag-gated so they don't spam a normal run —
     -- flip to true for a balancing pass.
-    combat_trace = false,
+    combat_trace = true,
     -- [GlassTrace] SUB-FLAG: the per-hit pet-endurance line fires on EVERY landed enemy hit — in a
     -- 12-enemy brawl that's a flood (it contributed to a frame-time spike). Needs combat_trace AND
     -- this. The *** DOWNED *** / DOWN markers stay on combat_trace alone (rare + always valuable).
     glass_trace = false,
+    -- [DefenseTrace] SUB-FLAG: decomposes each incoming hit into damage prevented by the active
+    -- player armor buff, shield absorption, Mirage healing, and final endurance damage. Enable only
+    -- for an armor-vs-shield balance capture; `_G.DefenseTrace = true` also opens it live in Studio.
+    defense_trace = false,
     -- [AggroTrace] SUB-FLAG: one line PER ENGAGED ENEMY PER SECOND — a 12-enemy fight floods the
     -- output so hard it evicts everything else from the log history (it buried the fear casts in
     -- the 2026-07-02 live test). Needs combat_trace AND this; flip on only when reading the threat
     -- tables directly (fear/taunt/aggro debugging). [FearTrace]/[PowerCast] stay on combat_trace.
     aggro_trace = false,
+
+    -- CONTROL COUNTERS: encounter mechanics, not blanket duration nerfs.
+    -- Support enemies cannot themselves be held, but remain vulnerable to Disarm; they telegraph
+    -- an interruptible cleanse that releases nearby held allies. Bosses always grant a short useful
+    -- hold window, then break out and gain brief hold resistance before they can be held again.
+    control_counters = {
+        support_cleanse = {
+            enabled = true,
+            role = "support",
+            hold_immune = true,
+            range = 24,
+            windup_seconds = 1.5,
+            cooldown_seconds = 14,
+            interrupted_cooldown_seconds = 4,
+        },
+        boss_breakout = {
+            enabled = true,
+            tiers = { boss = true, archvillain = true },
+            windup_seconds = 2.5,
+            cooldown_seconds = 24,
+            resistance_seconds = 4,
+        },
+    },
 
     group_scaling = {
         per_extra_player = 0.5,
@@ -492,6 +519,12 @@ return {
         regen = {
             partial_per_second = 15, -- a slow trickle (x10 world; same relative rate) — heals/support/potions are the FAST way back
             delay_seconds = 5, -- the "must disengage" window before the trickle even starts
+            -- DOWNTIME CATCH-UP: once the whole squad is out of combat and this pet has gone
+            -- uninjured for 15s, recover a fraction of its own pool each second. Flat regen alone
+            -- made high-power tanks take many minutes to refill. 12.5%/s = at most 8s after the
+            -- catch-up begins; downed pets still require their normal recovery/revive path.
+            fast_delay_seconds = 15,
+            fast_fraction_per_second = 0.125,
         },
         -- ENEMY regen (Jason: "enemies and pets are essentially supposed to be the exact
         -- same mechanic") — same shape as the pet trickle above, at A THIRD of the pet

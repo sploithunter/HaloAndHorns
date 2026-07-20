@@ -2,7 +2,7 @@
 
 **THE MOST LIKELY CAUSE IS A ROBLOX STUDIO RENDERING/CACHE BUG, NOT YOUR
 ASSET.** After a week-long investigation across four re-uploaded asset
-generations, our "corrupted" meshes turned out to be perfectly fine — 
+generations, our "corrupted" meshes turned out to be perfectly fine —
 Studio's session cache was serving mangled renders of valid assets.
 
 **The test (2 minutes, run it before touching your pipeline):**

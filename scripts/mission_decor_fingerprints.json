@@ -1,0 +1,186 @@
+{
+  "_comment": "Mission-decor generation lock. atlas_sha256 + fbx_sha256 + roblox mesh/texture ids must move together. Stamp after a known-good rebake/import; --check warns when any field drifts. Does NOT prove Roblox CDN content is unchanged \u2014 only that OUR exports+registries stayed locked.",
+  "stamped_at": "2026-07-15T20:48:48.507Z",
+  "props": {
+    "heaven_archive": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_archive/heaven_archive.png",
+      "atlas_sha256": "f5ad8b545dbcb343bccaaedb706d580d568851cfc85654c06ea9a895b99c76ff",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_archive/heaven_archive_10k_baked.fbx",
+      "fbx_sha256": "4b5a5c906ffd618ff74f43c20726af05fb9b6f8dd0929c1bbd64e23b275222eb",
+      "roblox_mesh_id": "78031900206735",
+      "roblox_texture_id": "86931724351114",
+      "roblox_model_asset_id": "80645361877666"
+    },
+    "heaven_compass_banner": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_compass_banner/heaven_compass_banner.png",
+      "atlas_sha256": "f344f3251bd6778ddb076d18826145117e9bc678d3ed17205bb47bc021f5e951",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_compass_banner/heaven_compass_banner_10k_baked.fbx",
+      "fbx_sha256": "9241ac33638ee12ef825db8fd16a133440d381ca22b091fb38c7e5d611d76e7c",
+      "roblox_mesh_id": "123934269734118",
+      "roblox_texture_id": "124452683346782",
+      "roblox_model_asset_id": "99405485005665"
+    },
+    "heaven_diamond_altar": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_diamond_altar/heaven_diamond_altar.png",
+      "atlas_sha256": "e218f56c0918aed13beaf71139c666fa287d7e59a89edb9b56c7a9352605ba4f",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_diamond_altar/heaven_diamond_altar_10k_baked.fbx",
+      "fbx_sha256": "3311389821a1ef72bd6217d684bd06b56ba73ae0ac44460341b0027283beb2cd",
+      "roblox_mesh_id": "84842558046045",
+      "roblox_texture_id": "128951546292202",
+      "roblox_model_asset_id": "140340712618610"
+    },
+    "heaven_flamecrest_shield": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_flamecrest_shield/heaven_flamecrest_shield.png",
+      "atlas_sha256": "83ee10e968e9b57e391efdc4993d56726e162fb8975c95dd78a25fcb1ba7715b",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_flamecrest_shield/heaven_flamecrest_shield_10k_baked.fbx",
+      "fbx_sha256": "c131bc8d7e9f0fb47e21cc82fbabcc180ed211000c4d51ce32a12ec3d39eb2cf",
+      "roblox_mesh_id": "124667039413678",
+      "roblox_texture_id": "134536839473444",
+      "roblox_model_asset_id": "92462783818095"
+    },
+    "heaven_gilded_bookcase": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase.png",
+      "atlas_sha256": "a4cad0311ddc6a55e9febcf2c0283121f8cbd4de1f2f1031e5d4878d4d86db42",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_gilded_bookcase/heaven_gilded_bookcase_10k_baked.fbx",
+      "fbx_sha256": "cbf9cef4e42d1bcd66b51824ac5457eeef35914ea5c65ef0c3cbfbf0435e4276",
+      "roblox_mesh_id": "79109805720279",
+      "roblox_texture_id": "124877813089179",
+      "roblox_model_asset_id": "95194903812056"
+    },
+    "heaven_golden_codex": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_golden_codex/heaven_golden_codex.png",
+      "atlas_sha256": "1b515687c5d7e1ba16e329450a2e5b0bfc2dc145d0180c00f34507923d75e0f7",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_golden_codex/heaven_golden_codex_10k_baked.fbx",
+      "fbx_sha256": "7fc4ac2dfcbabeb504b54f0ac14c3c708abb96020aec4fbc963c1bd30c850e85",
+      "roblox_mesh_id": "79025906147334",
+      "roblox_texture_id": "116299618242527",
+      "roblox_model_asset_id": "96074320366858"
+    },
+    "heaven_golden_guardian": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_golden_guardian/heaven_golden_guardian.png",
+      "atlas_sha256": "3d72a5ed6028f2a3fbc555dd67e5772886c8ede5a67498946c3efc4f5b08454a",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_golden_guardian/heaven_golden_guardian_10k_baked.fbx",
+      "fbx_sha256": "38c361acbf95d372a0526f03f78c1a71ad100acaede0fcd4e6803902e443cc15",
+      "roblox_mesh_id": "77496157366357",
+      "roblox_texture_id": "81393542093891",
+      "roblox_model_asset_id": "116588614438401"
+    },
+    "heaven_golden_throne": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_golden_throne/heaven_golden_throne.png",
+      "atlas_sha256": "56dec375576b743f96d64790907d1c3af8c94201ef8226469c2f97e8607a2e66",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_golden_throne/heaven_golden_throne_10k_baked.fbx",
+      "fbx_sha256": "32f272a12f39d43acbd642dc55e82f57ebabb0448a56c74fdf39661003ec98b5",
+      "roblox_mesh_id": "79404346104290",
+      "roblox_texture_id": "121218309703368",
+      "roblox_model_asset_id": "93677011996781"
+    },
+    "heaven_ivory_throne": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_ivory_throne/heaven_ivory_throne.png",
+      "atlas_sha256": "a82a6194778285e51d887e00f08823b217719179e06e377392b412d8808d33be",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_ivory_throne/heaven_ivory_throne_10k_baked.fbx",
+      "fbx_sha256": "d0109d47d228d3570000765c403cfcf3baa4f589b431bf6bf8391c0d9c8bdb48",
+      "roblox_mesh_id": "109650476169656",
+      "roblox_texture_id": "134447613660113",
+      "roblox_model_asset_id": "88392017235847"
+    },
+    "heaven_marble_throne": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_marble_throne/heaven_marble_throne.png",
+      "atlas_sha256": "fb46d9cf3bdbec8a55c4f3f3c7fd8b3adc9f47163b30941e48a62a1c3a729731",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_marble_throne/heaven_marble_throne_10k_baked.fbx",
+      "fbx_sha256": "41d184e1630d6093e5dfac0d52dcd227c35b8893a6bf0a9a981dfa4bb8718cb1",
+      "roblox_mesh_id": "121186869634374",
+      "roblox_texture_id": "137962979882666",
+      "roblox_model_asset_id": "87443553676340"
+    },
+    "heaven_star_fountain": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain.png",
+      "atlas_sha256": "5582a858ed5f5455ddfda90412e76cbd5ed51daf9c623ed74647df7c49a8ca32",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/heaven_star_fountain/heaven_star_fountain_10k_baked.fbx",
+      "fbx_sha256": "8fa6baa981aa50c7d9b1838723a1b3b7349703e027d1a540782c8de65218433d",
+      "roblox_mesh_id": "106893725310650",
+      "roblox_texture_id": "140287418899744",
+      "roblox_model_asset_id": "134533416755305"
+    },
+    "hell_gate_of_damned": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_gate_of_damned/hell_gate_of_damned.png",
+      "atlas_sha256": "76df1aafc72cae24b096cf6deaeb82c1e5443abe4794ec885e6c7fc83713d192",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/hell_gate_of_damned/hell_gate_of_damned_10k_baked.fbx",
+      "fbx_sha256": "266ba1008431bbc1b1a8b8d360c12805ebe53dcd97c85d059f7dfd6fa875422f",
+      "roblox_mesh_id": "78769818741284",
+      "roblox_texture_id": "87592307077130",
+      "roblox_model_asset_id": "139032401564414"
+    },
+    "hell_infernal_archive": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive.png",
+      "atlas_sha256": "fc5088027d84f7db08d9921015ec81d3d4f97d76661feaf024d1fcce75147d75",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/hell_infernal_archive/hell_infernal_archive_10k_baked.fbx",
+      "fbx_sha256": "75c93f284c3cededae779752c0a62dc225fe376de3e4565c594c57f05cc22b54",
+      "roblox_mesh_id": "89717900211635",
+      "roblox_texture_id": "110530822975465",
+      "roblox_model_asset_id": "129631794912198"
+    },
+    "hell_infernal_crest": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest.png",
+      "atlas_sha256": "fe68b89171b48f3d336e12c4028fac7e8b6549745929d6fc15e8adf2cff52dec",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/hell_infernal_crest/hell_infernal_crest_10k_baked.fbx",
+      "fbx_sha256": "ca570ab558040dcc6392971f8a26c893eacc6390f1eeb2714d81ddf579c525f4",
+      "roblox_mesh_id": "127699320929775",
+      "roblox_texture_id": "97471590489784",
+      "roblox_model_asset_id": "82920518084284"
+    },
+    "hell_infernal_fountain": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain.png",
+      "atlas_sha256": "30f19c0602ef02008df86c3544cf7eff6fe6e60e59498521d007a22e758da12b",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/hell_infernal_fountain/hell_infernal_fountain_10k_baked.fbx",
+      "fbx_sha256": "accf957c2f244aa2f5486faa69c3f6b22f5dd0160f14245e4093bff630c05fb2",
+      "roblox_mesh_id": "94148201608679",
+      "roblox_texture_id": "112527313536272",
+      "roblox_model_asset_id": "134098719881006"
+    },
+    "hell_infernal_throne": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne.png",
+      "atlas_sha256": "87dc483e85e90c17c4b304110c3edbc679999ea454eb11fdff0ae6beb69fe6cb",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne_10k_baked.fbx",
+      "fbx_sha256": "b686ea84a7473dd9c14fae7024c3deebe1dd457226e66b84db1ec0c17736c71f",
+      "roblox_mesh_id": "134390034169903",
+      "roblox_texture_id": "126630031994674",
+      "roblox_model_asset_id": "104860528024791"
+    },
+    "hell_infernal_throne_flat": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne_flat/hell_infernal_throne_flat.png",
+      "atlas_sha256": "feec8062922bf979afed34d4ae1ed4f5d2d0f2d33a25ef289465ea4afd0caf6a",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne_flat/hell_infernal_throne_flat_10k_baked.fbx",
+      "fbx_sha256": "9303901aaaf4ca43596253375beedeaeb4b067a1d5d7d46313a4b65ec4567590",
+      "roblox_mesh_id": "114077872717626",
+      "roblox_texture_id": "137767612484602",
+      "roblox_model_asset_id": "103059456645140"
+    },
+    "hell_skull_banner": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_banner/hell_skull_banner.png",
+      "atlas_sha256": "15689a5d904c6eb687aea0f8cd7a1d7495a878c997d125343a86d94c28e8e810",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/hell_skull_banner/hell_skull_banner_10k_baked.fbx",
+      "fbx_sha256": "6e3fe58c46f973480cbf0f9ff8b3e3c1441ca57752cdd2c45e048f68ec9881b5",
+      "roblox_mesh_id": "112401985756621",
+      "roblox_texture_id": "96830518194716",
+      "roblox_model_asset_id": "101805985194472"
+    },
+    "hell_skull_lantern": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_lantern/hell_skull_lantern.png",
+      "atlas_sha256": "26b5eec78d5105286e2de6908883fbde345eae8a0477f3eebf1701e5ee5502f2",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/hell_skull_lantern/hell_skull_lantern_10k_baked.fbx",
+      "fbx_sha256": "cdfffe8313f7cc8eea6ebfa7e245006a9b6e67a441797eb486d28c4f7c157f61",
+      "roblox_mesh_id": "121415762722335",
+      "roblox_texture_id": "92355696570955",
+      "roblox_model_asset_id": "101289093060410"
+    },
+    "hell_skull_sconce": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce.png",
+      "atlas_sha256": "5d711e1f985f26d92413480e9a4b30822e0a1cb1200949e6b326bfb5c3e0282b",
+      "fbx_path": "assets/exports/props/meshy_mission_decor/hell_skull_sconce/hell_skull_sconce_10k_baked.fbx",
+      "fbx_sha256": "fb3eeb03128f508e1cdc0ae671a20abb848aaf278a0062e7afb0f90cc7a245e4",
+      "roblox_mesh_id": "78199195680560",
+      "roblox_texture_id": "115359258182587",
+      "roblox_model_asset_id": "120309441051219"
+    }
+  }
+}

@@ -1,7 +1,8 @@
 --[[
-    CrowdControl — shared timing rules for roots and full holds.
+    CrowdControl — shared timing rules for roots, disarms, and full holds.
 
     Root: movement lock only.
+    Disarm: action lock only; movement remains available.
     Hold: full mez; the affected unit cannot move or perform active actions.
 
     Until values use epoch seconds (os.time) throughout combat. Keeping the comparisons and
@@ -18,8 +19,20 @@ function CrowdControl.isHeld(heldUntil, now)
     return CrowdControl.isActive(heldUntil, now)
 end
 
+function CrowdControl.isDisarmed(disarmedUntil, now)
+    return CrowdControl.isActive(disarmedUntil, now)
+end
+
 function CrowdControl.canAct(heldUntil, now)
     return not CrowdControl.isHeld(heldUntil, now)
+end
+
+function CrowdControl.isActionLocked(heldUntil, disarmedUntil, now)
+    return CrowdControl.isHeld(heldUntil, now) or CrowdControl.isDisarmed(disarmedUntil, now)
+end
+
+function CrowdControl.canTakeAction(heldUntil, disarmedUntil, now)
+    return not CrowdControl.isActionLocked(heldUntil, disarmedUntil, now)
 end
 
 function CrowdControl.isImmobilized(rootedUntil, heldUntil, now)

@@ -176,6 +176,19 @@ function AdminPowerBar.start()
         { enemyId = "ember_acolyte", forward = 24 },
         { enemyId = "cinder_whelp", count = 4, spread = 8, forward = 8 },
     })
+    -- Five stationary members of ONE encounter group, placed directly away from the player. Spawn
+    -- the anchor first, then wait five seconds so the pets settle on that near edge before the
+    -- 10/20/30/40-stud members appear. At Eternal Winter's bare 20-stud radius, the first three are
+    -- in and the final two are visibly out. The same geometry is useful for damage-AoE/contagion QA.
+    spawnBtn("🎯 DUMMY LINE", -528, 82, {
+        {
+            enemyId = "training_dummy",
+            count = 5,
+            layout = "line",
+            spacing = 10,
+            delayAfterFirst = 5,
+        },
+    })
 
     -- Tab strip.
     local tabStrip = Instance.new("Frame")

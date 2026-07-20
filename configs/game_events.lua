@@ -67,7 +67,7 @@ return {
     -- A new area/gate was unlocked (client: init.client ZoneUnlockResult ok). Celebratory, and no
     -- prior fanfare, so no conflict with existing reactions.
     area_unlocked = {
-        sound = "celebratory_jingle",
+        sound = "unlock_gate_sting",
         vfx = { kind = "burst", color = { 120, 230, 150 } }, -- green "new ground" burst
     },
 
@@ -119,7 +119,7 @@ return {
     },
 
     met_creator = {
-        world_sound = "celebratory_jingle", -- audible around the meeting, not just to the met player
+        world_sound = "discovery_fanfare", -- audible around the meeting, not just to the met player
         vfx = { kind = "burst", color = { 255, 215, 0 } }, -- creator gold
         banner = { seconds = 10, color = { 255, 215, 0 } },
         -- Jason: "it wasn't very obvious that the creator's on this server" — a big
@@ -137,7 +137,7 @@ return {
 
     -- A quest was claimed (server: QuestService:Claim success).
     quest_complete = {
-        sound = "celebratory_jingle",
+        sound = "quest_complete_chime",
         vfx = { kind = "burst", color = { 90, 180, 255 } }, -- sky blue
     },
 
@@ -145,14 +145,14 @@ return {
     -- its unlock_level). "New quests available!" — sound + a lingering banner (ctx.name carries the
     -- "🆕 New Quests: <Track>!" text). Jason: nothing passive — the level-cross is an EVENT.
     track_unlocked = {
-        sound = "celebratory_jingle",
+        sound = "quest_complete_chime",
         vfx = { kind = "burst", color = { 120, 200, 255 } }, -- bright blue
         banner = { seconds = 5, color = { 120, 200, 255 } },
     },
 
     -- The daily streak reward was claimed (server: DailyService:Claim success).
     daily_claim = {
-        sound = "celebratory_jingle",
+        sound = "daily_claim_chime",
         vfx = { kind = "burst", color = { 80, 220, 210 } }, -- teal
     },
 
@@ -166,7 +166,7 @@ return {
 
     -- An escrow trade completed — fired to BOTH players (server: TradeService:_deliver).
     trade_complete = {
-        sound = "celebratory_jingle",
+        sound = "trade_complete_chime",
         vfx = { kind = "burst", color = { 240, 240, 255 } }, -- white sparkle
     },
 
@@ -198,7 +198,7 @@ return {
 
     -- First-ever discovery of a species/variant (server: PetIndexService — the Pet Index grew).
     new_species = {
-        sound = "celebratory_jingle",
+        sound = "discovery_fanfare",
         vfx = { kind = "burst", color = { 255, 235, 120 }, count = 18 }, -- star gold
     },
 
@@ -248,13 +248,13 @@ return {
     -- An enchant reroll SUCCEEDED (server: EnchantService — fired at the same reveal moment as
     -- EnchantPetResult so the juice syncs with the reveal).
     enchant_success = {
-        sound = "cartoony_spell_cast",
+        sound = "enchant_reveal_sparkle",
         vfx = { kind = "burst", color = { 200, 120, 255 }, count = 14 }, -- arcane purple
     },
 
     -- One of YOUR pets went down (server: EnemyService:_downPet). Somber low thud, no burst.
     pet_down = {
-        sound = "deep_earthen_impact",
+        sound = "pet_down_thud",
         world_visual = true, -- the pet visibly collapses — the world IS the visual
     },
 

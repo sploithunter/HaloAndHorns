@@ -39,6 +39,12 @@ filtered out of production registries.
   already landed.
 - Enhancement sales use `InventoryService:BulkRemove` with an economy commit callback. Inventory
   snapshots restore exact stacks and slot counts when credit is rejected, before replication/save.
+- `PotionShopService` binds the authored Home/Heaven/Hell potion tents without putting state or
+  scripts in the map models. A prompt grants short-lived, distance-checked shop access; catalog,
+  five-gem purchases, and two-gem sales remain server-authoritative. Buys debit through
+  `EconomyService` and refund on failed delivery; sales use `InventoryService:BulkRemove` so a
+  rejected credit restores the exact potion stack. Shop quantities are restricted server-side to
+  `1`, `10`, or `100`; bulk purchases land as one stack mutation/save rather than N item grants.
 - Trade gem escrow debits, owner refunds, and recipient delivery credits use `EconomyService`.
   Escrow descriptors retain complete source records and keys. `PetTransferService` inserts existing
   pet records without mint defaults or new UIDs, while `TradeDeliveryTransaction` stages inventory
@@ -50,6 +56,12 @@ filtered out of production registries.
   `docs/TRADE_ESCROW_CRASH_SAFETY.md`.
 - Combat drop-table currencies and def-less realm coin fallbacks also terminate at
   `EconomyService`; combat math and area-coin selection remain service-owned upstream.
+- `CombatApplication` is the runtime combat-state boundary. `ApplyHit` publishes resolved
+  hit/miss/dodge/block/absorb/immune outcomes, `ApplyDamage` mutates enemy HP or pet endurance and
+  credits contribution, and `ApplyPowerHeal` mutates active/power healing. All three publish the
+  resulting `Combat_Result` only after the authoritative transition; `CombatTextController` is its
+  sole floating-text consumer. Passive regeneration, spawn/scaling initialization, admin resets,
+  and revive restoration remain explicit silent state-maintenance paths outside this boundary.
 - `ServerClockService` owns deterministic UTC day/seed behavior.
 - `WorldBindingService` discovers, validates, and serves Studio map hooks. In `auto`/`synthetic` map modes it fabricates missing baseplate hooks from `configs/areas.lua` and `configs/markers.lua`.
 - `ZoneService` owns area unlocks and server-authoritative `TeleportPad`/`Portal` travel. It uses

@@ -1,3 +1,47 @@
+# Log
+
+## 2026-07-17 — Disarm icon (shackled hands) in all colors
+
+- Normalized ChatGPT disarm disc (black bg → transparent) into
+  `assets/ui/{blue,green,red,yellow,purple,white}_icons/disarm.png`.
+- Uploaded + Decal→Image resolved; wired `power_icons.lua` `disarm` symbol
+  (was `fist_broken`). Contact sheets / `icons_all_colors.png` rebuilt.
+
+## 2026-07-16 — Skybox lesson: don’t poison place Lighting.Sky with Decals
+
+- Hell_1/2 sky **configs were never changed** and still correct in
+  `layers.lua`. “Hell broken” after Heaven_1 sky attempt = place
+  `Lighting.Sky` overwritten with Open Cloud **Decal** ids (Sky needs
+  **Image** ids; hell faces were Studio Asset Manager imports).
+- Restored documented aurora base sky on `Lighting.Sky` + atmosphere mood.
+- Reverted `heaven_1.textures` to nil until faces are imported as Images
+  (or Decal→Image resolved) like hell. Staged PNGs remain in
+  `assets/skybox/heaven_1/`; Decal ids in `scripts/skybox_heaven_1_ids.json`.
+
+## 2026-07-16 — Heaven_2 lava first tint pass
+
+- Left `LavaShack` / `Lava Monastery` in place (Jason generating H2 swaps).
+- Floor stays named `Lava` (spawn contract); tinted mauve-charcoal Slate.
+- Spikes named on H2: ~40% `LightSpike` (rose ember neon), rest `DarkSpike`
+  (ash-mauve). Cliffs pale mauve. Cloned H1 edge plants +2000 Y as
+  `CloudFrangipani` / `CloudHibiscus` / etc. with paler alpine tint.
+- Note: H2 had no top-level `LavaLair` (has `BaddieSpawnerLava`); not removed
+  by this pass.
+
+## 2026-07-15 — Heaven_1 map restyle pass (in progress)
+
+- Starting multi-iteration Heaven_1 dressing: same layout, palette/props only.
+- Constraints: keep lairs + spawn points; egg stands keep **name** + `UIanchor`;
+  lava crystals stay ruby; aurora sky reserved for later heavens.
+- Naming: `LightSpike` / `DarkSpike` / `Volcano`(+`VolcanoCone`) so Hell/Heaven
+  dupes can retint by name. **Biome floor parts must keep names `Lava` / `Ice` /
+  `Desert` / `Grass`** — `BreakableSpawner` raycast uses
+  `surface_match_name` (e.g. Heaven_1_Lava → `"Lava"`). Renaming to `LavaFloor`
+  killed crystal spawns; reverted. Dress via Color/Material/attrs, not rename.
+- Mass edits must top-down compare Home vs layer at ±2000 Y before moving on
+  (caught accidental volcano delete).
+- Meshy credits ~5860 available for houses/shops/lair replacements later.
+
 ## 2026-07-15 — Heaven landmark “shatter” was Studio viewport only
 
 - Live Roblox + Place version history **1527** showed GoldenHaloCathedral /
@@ -1145,6 +1189,93 @@ migration is needed for the abandoned "element splits stacks" spec.
 - **2026-07-14 — Contextual pet-power sorting.** Inventory pet cards still perform an intentional full refresh/re-sort when effective power context changes. Biome (`CurrentArea`) and realm (`CurrentRealm`) transitions now share one deferred refresh boundary, preventing paired portal attribute updates from causing duplicate renders while ensuring Heaven/Hell and mission resonance changes cannot leave the power order stale.
 - **2026-07-14 — XP projections no longer redraw the inventory.** Pet projection transactions now publish a separate `RenderVersion`: ordinary XP progress continues to replicate and advance the diagnostic `ProjectionVersion`, but it does not destroy/recreate the open inventory grid. A level/power change or permanent-enchant reveal still emits one render event and re-sorts, preserving power-order correctness.
 
+## 2026-07-17 - Cryomancer area controls use encounter groups plus real radii
+
+- Split movement roots from full action-lock holds: Deep Freeze, Absolute Zero, and Eternal Winter now use the `hold` family, while Permafrost remains a root. Held enemies and pets cannot move, attack, or use powers; rooted actors can still act.
+- The signature area controls now own explicit spatial contracts: Permafrost is a 30-stud encounter-group root, Absolute Zero is a 20-stud targeted AoE hold, and Eternal Winter is provisionally a 20-stud encounter-group hold for boundary playtesting. Authored patrol/mission groups make pre-aggro casts possible without reverting to global enemy selection.
+- Fixed the legacy aggro bypass that admitted every team-engaged enemy before distance testing. Encounter-group membership now selects the candidate pack, then the effective radius filters that pack around the focused enemy. The same enhanced radius drives targeting, DoT membership, the cast ring, tooltips, and Range-enhancement compatibility. Combat trace emits `[PowerArea]` with scope, radius, count, and anchor.
+- Added an admin-power-bar dummy line: one stationary anchor spawns immediately, then its four encounter-group partners appear five seconds later at 10/20/30/40 studs farther from the player. The delay lets pets settle on the near edge before the line extends, making the same rig useful for hold/root radii, damage AoEs, and contagion. At bare Eternal Winter radius, three are eligible and two are outside; `[PowerArea]` reports `targets=3/5`.
+- Scoped player AoEs now add a crisp, lighting-independent circumference at the exact effective radius for a 2.25-second cast tell. The ring is separate from the textured ice impact/particle feather so the gameplay boundary remains readable without implying a persistent enter-later field.
+- Fixed duplicate hold badges on Absolute Zero and Eternal Winter. Their DoT ticks no longer replace the family-owned `DebuffUntil == HeldUntil` channel with a short cosmetic tick window; the named hold badge therefore continues to mirror and suppress the generic HELD fallback for the full control duration.
+- Compound hostile effects now share one per-target accuracy result. A target that resists Absolute Zero/Eternal Winter receives neither the hold nor frostbite; the same no-free-rider rule applies to Permafrost root+DoT and vulnerable-mark+DoT powers. `[PowerDot]` reports the successfully armed target count under combat trace.
+- DoT damage now follows the universal floating-combat-text contract instead of changing HP silently. Normal and critical ticks render distinctly for every viewer, and combat trace reports `[PowerDotTick]` with power, target, applied amount, remaining HP, and crit state. Named holds also suppress the older server-created generic world hold disc, removing the second overhead icon while preserving that fallback for unnamed enemy/pet-aura holds.
+
+## 2026-07-17 - Combat mutations and floating results share one authority
+
+- Added `CombatApplication` as the runtime boundary for resolved hits, damage, and active/power healing. Enemy HP, pet endurance, and contribution credit now change together before one `Combat_Result` is published; misses, dodges, blocks, absorbs, and immunity use the same result contract without inventing a health delta.
+- Migrated pet attacks and splash, enemy attacks and DoTs, breakables, player-power damage/DoTs/heals, summon heals, support auras, and enemy active heals. Passive out-of-combat regeneration remains intentionally silent and direct.
+- Added an independent `CombatTextController` as the sole floating-number/result consumer and removed number rendering from feature-specific attack, area, heal, and dodge packets. Headless architecture coverage prevents migrated services from reintroducing direct combat health writes or a second floating-text listener.
+- Live Studio verification applied `17.5` damage and `6.25` power healing to the same target, observed authoritative HP `100 -> 82.5 -> 88.75`, contribution `17.5`, and client labels for damage, heal, miss, dodge, block, absorb, and immunity.
+
+## 2026-07-17 - Disarm is an action lock
+
+- Replaced Disarm's accidental `+30% damage taken` vulnerability with a six-second action lock. A disarmed enemy can still pursue and reposition, but cannot bite, start or finish a slam, heal itself, buff or curse allies, root or hold a target, or use a pulse ability.
+- Root remains movement-only control, Hold blocks movement and action, and Blind remains the accuracy debuff. The shared crowd-control helper and headless contracts now preserve those distinctions.
+- Live Studio verification confirmed the cast sets `DisarmedUntil` without `VulnerableMult`, and a sole disarmed Raging Bear dealt zero damage while pets continued damaging it.
+
+## 2026-07-17 - Runtime mission tiles cannot be prebaked
+
+- Diagnosed mismatched mezzanine floors and floating mission props in a live Heaven Desert Trial. Ordinary tile floors landed 20 studs below the slot origin, mezzanine floors landed 28 studs below it, while crates and chests correctly dressed the slot-origin floor plane.
+- The dirty `Models.rbxm` snapshot had captured the runtime-generated `MissionTiles.gray_box` cache from a running Studio session. Its models retained `TileRoot` geometry but lost `PrimaryPart`, so `Model:PivotTo` aligned stale WorldPivots at Y=20/28 instead of the floor-level root.
+- Code-defined kits now destroy any captured same-name cache and rebuild once per server from `GrayBoxKit`. `MissionStamper` also reasserts every clone's `PrimaryPart` as its `TileRoot` before placement, so a malformed persisted model cannot silently offset a generated map. Asset-model saves must not be treated as mission-kit source.
+- Fresh Play-mode verification included a source-built `mezzanine_hall`: all 30 floor tops, 48 mission-crate bottoms, and four treasure-chest bottoms were exactly Y=0. The live kit's ten tile templates all reported `PrimaryPart=TileRoot`.
+
+## 2026-07-17 - Passive recovery, explicit Cryomancer geometry, and counter-control
+
+- Added universal passive downtime recovery instead of a Rest button. Living pets keep the ordinary
+  five-second delayed trickle, then recover at least 12.5% maximum endurance per second after the squad
+  has been out of combat for 15 seconds. Downed pets, resurrection-sickness limits, and silent
+  out-of-combat presentation are unchanged.
+- Frost Field is now a 20-stud player-centered root and Shatter a 20-stud target-centered vulnerability
+  burst. Live trace confirmed `scope=player` for Frost Field and `scope=targeted radius=20 targets=2/5`
+  for Shatter; Shatter's frozen ×3.08 payoff remained active.
+- Support-role enemies are hold-immune and cleanse nearby held allies after an interruptible 1.5-second
+  windup. Live verification observed WINDUP → COMPLETE on two held allies, then a separate
+  WINDUP → INTERRUPTED when the support was disarmed.
+- Bosses and archvillains now break a landed hold only after 2.5 seconds, then gain four seconds of hold
+  resistance on a 24-second cooldown. Live Infernal Boss verification observed both breakout phases and
+  the resistance stamp.
+- Added gated `[DefenseTrace]` accounting for raw damage, armor prevention, shield absorption, Mirage
+  restoration, applied damage, and remaining pool. A 201.3-raw boss blow against 100 native defense
+  landed for 100.6; Ice Armor 80 prevented 28.8, while the new 160 value prevented 44.7. Dune Shield
+  remained a front-loaded 400 pool. Mirage's live 450-pool trace showed absorption and 120/104.2 healing
+  consuming the same pool, so Sandwalker shields were not given a second hidden durability budget.
+
+## 2026-07-17 - Focus Fire becomes the Cryomancer accuracy setup
+
+- Removed Focus Fire's redundant ×1.5 vulnerability. It now applies an eight-second, caster-scoped
+  accuracy mark: that player's pets and hostile powers gain +15 percentage points to hit the marked
+  enemy, capped by the ordinary accuracy rule.
+- A hold that first passes its normal accuracy roll has a fixed 25% chance to penetrate innate
+  `HoldImmune` while the mark is active. Boss `HoldResistUntil` remains absolute, preserving the
+  breakout window.
+- Focus Fire now accepts Accuracy, Potency, Duration, and Recharge enhancements but not Damage.
+  Tooltips derive the accuracy and penetration values from live config, and combat trace reports the
+  mark bonus plus each hold-penetration roll.
+
+## 2026-07-17 - Authored potion tents become transactional shops
+
+- Added one service-owned shop contract for the Home, Heaven, and Hell potion tents. Runtime prompts
+  open a shared `PanelChrome` potion surface only while the player is near the activated tent.
+- The four current potions cost five gems to buy and return two gems when sold. Stock and pricing
+  live in `configs/potions.lua`; exact 1/10/100 buy and sell controls are validated by the server.
+  Buys refund failed grants, bulk grants mutate/save one stack once, and sales restore removed
+  stacks if the gem credit fails.
+- Potion shop actions use the existing `GameAPICommand` bus and a manifest-owned open event. The
+  client renders server-provided balances, owned counts, descriptions, and unified potion disc art.
+- Corrected stack-slot accounting during full stack removal: buckets whose stacks do not count
+  toward capacity no longer decrement `used_slots` below zero when a potion or enhancement stack
+  is sold out.
+
+## 2026-07-17 — Permanent enhancement Upgrade All
+
+- Added a server-authoritative **Upgrade All** purchase to Power Choice for the five-level
+  enhancement-band transition. Every filled slot below the player's current shop band is upgraded
+  in place at its full grade-aware buy price; exact enhancement type, origins/grade, and slot
+  position remain permanent, while current/above-band drops are skipped. The confirm displays slot
+  count + total gems, and the server re-quotes inside one currency transaction so a concurrent slot
+  change refunds the debit rather than partially applying. Headless coverage pins band targeting,
+  full-buy pricing (including rare proc identities), no downgrade, and deterministic quoting.
 ## 2026-07-17 - True symmetric combat holds
 
 - Deep Freeze, Absolute Zero, and Eternal Winter now dispatch through a real `hold` family instead of
@@ -1277,3 +1408,11 @@ The world-space egg chance cards now reuse the inventory's universal `PetBadge` 
 `pet_roles`/`power_icons` data. Every possible hatch shows its archetype badge; pets with a
 support or control ability show that ability and its targeting ring as a second badge. Hover
 explains either badge, while touch players can tap to toggle the same config-owned tooltip.
+
+## 2026-07-20 — Repository integration and release-state cleanup
+
+Reconciled the authoritative combat/content branch with the true-combat-hold implementation and
+the current game tree, preserving the potion and enhancement shops, stacked-pet inventory fix,
+and append-only project history. The hotbar's third periodic UI pulse is now explicitly classified
+in the runtime-wait ledger, all seven architecture rules report zero unclassified debt, and the
+integrated tree passes the complete CI gate with 1,457 headless tests.

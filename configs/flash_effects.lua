@@ -4,10 +4,11 @@
 local config = {
     default_effect = "sparkle", -- Options: starburst, shockwave, confetti
 
-    -- Global sound settings for egg open (prefer named asset preloads)
+    -- Global sound settings for egg open (prefer named asset preloads).
+    -- sound_name → configs/sounds.lua / Assets.Sounds. No inline sound_id (stale
+    -- fallbacks drifted from the catalog before).
     sound = {
-        sound_name = "egg_hatch_pop", -- references configs/sounds.lua and Assets.Sounds
-        sound_id = "rbxassetid://86006129075096", -- fallback if not preloaded
+        sound_name = "egg_hatch_pop",
         volume = 0.8,
         playback_speed = 1.0,
     },

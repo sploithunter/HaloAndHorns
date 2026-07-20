@@ -142,6 +142,18 @@ function EnhancementService:_inventoryService()
     return self._inventoryServiceInstance
 end
 
+-- Re-stamp passive/toggle-derived player state after an authoritative bulk slot-level mutation.
+-- Active powers read slots on their next cast; passives need the same immediate refresh used by Slot.
+function EnhancementService:ReapplySlottedEffects(player)
+    local ok = pcall(function()
+        local power = self._powerService
+        if power and power.ReapplyPassives then
+            power:ReapplyPassives(player)
+        end
+    end)
+    return ok
+end
+
 -- One-time migration: records granted into the old private store (data.EnhancementInv) move
 -- into the InventoryService bucket so they show in the Inventory UI and can trade later.
 function EnhancementService:_migrateLegacy(player, data)
@@ -357,12 +369,7 @@ function EnhancementService:Slot(player, powerId, slotIndex, uid)
     -- PASSIVES apply their magnitude at the ownership re-stamp — without this, a
     -- potency slotted into Swift/Magnet/XP Surge stays dormant until respawn (Jason:
     -- "it did not change my speed").
-    pcall(function()
-        local power = self._powerService
-        if power and power.ReapplyPassives then
-            power:ReapplyPassives(player)
-        end
-    end)
+    self:ReapplySlottedEffects(player)
     return {
         ok = true,
         powerId = powerId,

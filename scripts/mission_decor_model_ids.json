@@ -1,5 +1,5 @@
 {
-  "_comment": "BONE-ARMORED generation (2026-07-15): every prop uploads as a SKINNED mesh (one root bone, all verts weighted \u2014 rig_glb_to_fbx.py --add-root-bone) so Roblox's delayed optimizer skips it (the pass only mangles statics; skinned = pet-class immortality). Raw Meshy sources with embedded PBR (SurfaceAppearance); >17.5k sources auto-capped ~20k faces by the skinned pipeline. LoadAsset-able Model uploads.",
+  "_comment": "BONE-ARMORED generation (2026-07-15): every prop uploads as a SKINNED mesh (one root bone, all verts weighted \u2014 rig_glb_to_fbx.py --add-root-bone) so Roblox's delayed optimizer skips it. These are LoadAsset-able Open Cloud MODEL wrapper ids, not MeshPart.MeshId values; after InsertService:LoadAsset, record the child MeshPart.MeshId and SurfaceAppearance.ColorMap in mission_decor_pairings.json. Current MissionProps pairings may lag if an upload landed but its transplant is pending.",
   "heaven_archive": "80645361877666",
   "heaven_compass_banner": "99405485005665",
   "heaven_diamond_altar": "140340712618610",

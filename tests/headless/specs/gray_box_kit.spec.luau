@@ -71,6 +71,7 @@ return function()
                     local root = findOne(specs, "TileRoot")
                     expect(root ~= nil).to.equal(true)
                     expect(root.pos[1]).to.equal(0)
+                    expect(root.pos[2]).to.equal(0)
                     expect(root.pos[3]).to.equal(0)
 
                     local bounds = findOne(specs, "Bounds")
@@ -155,6 +156,8 @@ return function()
                     expect(floor ~= nil).to.equal(true)
                     expect(floor.size[1]).to.equal(tile.bounds.sx)
                     expect(floor.size[3]).to.equal(tile.bounds.sz)
+                    expect(floor.pos[2]).to.equal(-0.5)
+                    expect(floor.pos[2] + floor.size[2] / 2).to.equal(0)
                 end
             end
         end)

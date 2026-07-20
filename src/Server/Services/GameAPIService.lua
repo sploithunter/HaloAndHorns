@@ -1664,6 +1664,48 @@ function GameAPIService:_registerCommands()
             return s:GetState(context.player)
         end,
     })
+    bus:register("potion.shop.catalog", {
+        description = "List potion-tent stock, prices, owned counts, and gem balance.",
+        handler = function(context)
+            local s = self:_service("PotionShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Catalog(context.player)
+        end,
+    })
+    bus:register("potion.shop.buy", {
+        description = "Buy potion stock from a nearby authored potion tent.",
+        validate = function(args)
+            return Validators.fields(args, {
+                potionId = "string",
+                quantity = { type = "int", min = 1, max = 100 },
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("PotionShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Buy(context.player, args)
+        end,
+    })
+    bus:register("potion.shop.sell", {
+        description = "Sell owned potion stock to a nearby authored potion tent.",
+        validate = function(args)
+            return Validators.fields(args, {
+                potionId = "string",
+                quantity = { type = "int", min = 1, max = 100 },
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("PotionShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Sell(context.player, args)
+        end,
+    })
     bus:register("potion.grant", {
         description = "ADMIN/TEST: grant N of a potion into your inventory.",
         validate = function(args)
@@ -1822,6 +1864,33 @@ function GameAPIService:_registerCommands()
                 return { ok = false, reason = "service_unavailable" }
             end
             return s:Buy(context.player, args)
+        end,
+    })
+    bus:register("enhancement.shop.upgrade_all_preview", {
+        description = "Quote upgrading every outgrown slotted enhancement to the current band.",
+        handler = function(context)
+            local s = self:_service("EnhancementShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:UpgradeAllPreview(context.player)
+        end,
+    })
+    bus:register("enhancement.shop.upgrade_all", {
+        description = "Atomically upgrade every outgrown slotted enhancement, preserving identity.",
+        validate = function(args)
+            return Validators.fields(args, {
+                expectedTargetLevel = { type = "int", min = 1, optional = true },
+                expectedCount = { type = "int", min = 1, optional = true },
+                expectedCost = { type = "int", min = 0, optional = true },
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("EnhancementShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:UpgradeAll(context.player, args)
         end,
     })
     bus:register("enhancement.shop.sell", {
@@ -2152,6 +2221,13 @@ function GameAPIService:_registerTestCommands()
                 count = { type = "int", min = 1, max = 10, optional = true },
                 spread = { type = "number", min = 0, optional = true }, -- ring radius (studs)
                 forward = { type = "number", optional = true }, -- extra forward distance (far control)
+                layout = {
+                    type = "string",
+                    oneOf = { "ring", "line" },
+                    optional = true,
+                },
+                spacing = { type = "number", min = 1, max = 100, optional = true },
+                delayAfterFirst = { type = "number", min = 0, max = 10, optional = true },
             })
         end,
         handler = function(context, args)
@@ -2170,19 +2246,78 @@ function GameAPIService:_registerTestCommands()
             -- `forward` pushes the whole group further out (for an out-of-AoE-range control dummy).
             local spread = tonumber(args.spread) or (count > 1 and 6 or 0)
             local fwdBase = tonumber(args.forward) or 0
+            local layout = args.layout or "ring"
+            local spacing = tonumber(args.spacing) or 10
+            -- One command is one encounter pack. This matters for encounter-group powers:
+            -- membership chooses the eligible pack, while their real radius still clips the line.
+            local encounterGroup = {}
+            local lineAnchorPosition
+            local hrp = context.player.Character
+                and context.player.Character:FindFirstChild("HumanoidRootPart")
+            local lineDirection = hrp
+                    and Vector3.new(hrp.CFrame.LookVector.X, 0, hrp.CFrame.LookVector.Z)
+                or Vector3.new(0, 0, -1)
+            lineDirection = lineDirection.Magnitude > 0.01 and lineDirection.Unit
+                or Vector3.new(0, 0, -1)
             local spawned, last = 0, nil
-            for i = 1, count do
-                local angle = (count > 1) and ((i - 1) / count) * 2 * math.pi or 0
-                local off = {
-                    forward = fwdBase + math.cos(angle) * spread,
-                    right = math.sin(angle) * spread,
-                }
+            local function spawnIndex(i)
+                local off
+                if layout == "line" then
+                    if lineAnchorPosition then
+                        off = {
+                            position = lineAnchorPosition + lineDirection * ((i - 1) * spacing),
+                            encounterGroup = encounterGroup,
+                        }
+                    else
+                        off = {
+                            forward = fwdBase,
+                            right = 0,
+                            encounterGroup = encounterGroup,
+                        }
+                    end
+                else
+                    local angle = (count > 1) and ((i - 1) / count) * 2 * math.pi or 0
+                    off = {
+                        forward = fwdBase + math.cos(angle) * spread,
+                        right = math.sin(angle) * spread,
+                        encounterGroup = encounterGroup,
+                    }
+                end
                 last = enemyService:SpawnEnemy(context.player, args.enemyId or "lava_imp", off)
                 if type(last) == "table" and last.ok ~= false then
                     spawned += 1
+                    if layout == "line" and last.model then
+                        if i == 1 then
+                            lineAnchorPosition = last.model:GetAttribute("MoveTarget")
+                        end
+                        last.model:SetAttribute("AdminLineOffset", (i - 1) * spacing)
+                    end
                 end
             end
-            return { ok = true, spawned = spawned, sample = last }
+
+            local delayAfterFirst = tonumber(args.delayAfterFirst) or 0
+            spawnIndex(1)
+            if count > 1 and delayAfterFirst > 0 then
+                task.delay(delayAfterFirst, function()
+                    if not (context.player and context.player.Parent) then
+                        return
+                    end
+                    for i = 2, count do
+                        spawnIndex(i)
+                    end
+                end)
+            else
+                for i = 2, count do
+                    spawnIndex(i)
+                end
+            end
+            return {
+                ok = true,
+                spawned = spawned,
+                scheduled = (delayAfterFirst > 0) and math.max(0, count - 1) or 0,
+                delay = delayAfterFirst,
+                sample = last,
+            }
         end,
     })
 

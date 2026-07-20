@@ -142,6 +142,7 @@ buff/debuff *pairs*. Targeting (single vs AoE vs team) is the **ring**, never th
 | `coins_up` | coin buff | `gift_up` | gift buff |
 | `clover_lucky` | pet luck | `clover_huge` | huge luck |
 | `capacitor` | **HOLD** | `user_desk` | **ROOT** |
+| `disarm` | **DISARM** (hands shackled, feet free) | `hand_stop` | *unassigned (stun/interrupt candidate)* |
 | `star_sparkle` | **support-pet icon** (NOT "burst") | `knockback` | knockback |
 | `history` | hasten / recharge | `magnet` | magnet |
 | `pet_transfer` | recall (teleport to current/last egg) | `portal` | teleport (World Travel) |
@@ -255,7 +256,7 @@ Generic (⚪ white) unless an origin fits better. All use **existing art** unles
 |---|---|---|
 | Sunder | `shield_broken` | enemy armor break (takes more damage) |
 | Disarm | `fist_broken` | reduce enemy attack |
-| Focus Fire | `target` | designate priority target (+damage to it) |
+| Focus Fire | `target` | +15 accuracy points against one target; holds may pierce innate immunity |
 | Expose | `eye` | reveal + accuracy/crit boost vs target |
 | Cripple | `target_down` | slow + weaken one target |
 | Strike | `fist` | basic single-target hit (low-level filler) |

@@ -20,6 +20,13 @@ return function()
             expect(CrowdControl.isImmobilized(100, 100, 100)).to.equal(false)
         end)
 
+        it("makes disarm an action lock without making it a movement lock", function()
+            expect(CrowdControl.isDisarmed(101, 100)).to.equal(true)
+            expect(CrowdControl.canTakeAction(0, 101, 100)).to.equal(false)
+            expect(CrowdControl.isImmobilized(0, 0, 100)).to.equal(false)
+            expect(CrowdControl.canTakeAction(0, 100, 100)).to.equal(true)
+        end)
+
         it("refreshes without shortening a stronger existing hold", function()
             expect(CrowdControl.extend(120, 100, 8)).to.equal(120)
             expect(CrowdControl.extend(0, 100, 8)).to.equal(108)

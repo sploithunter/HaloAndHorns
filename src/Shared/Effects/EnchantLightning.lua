@@ -365,6 +365,25 @@ local function getConfiguredSoundTemplate(soundName)
     return nil
 end
 
+-- Resolve a catalog entry from configs/sounds.lua by key (SSOT when Assets
+-- preload hasn't finished or sound_id was intentionally dropped from config).
+local function resolveCatalogSoundId(soundName)
+    if type(soundName) ~= "string" or soundName == "" then
+        return nil
+    end
+    local ok, catalog = pcall(function()
+        return require(ReplicatedStorage.Configs:WaitForChild("sounds"))
+    end)
+    if not ok or type(catalog) ~= "table" then
+        return nil
+    end
+    local entry = catalog[soundName]
+    if type(entry) == "table" and type(entry.id) == "string" and entry.id ~= "" then
+        return entry.id, entry
+    end
+    return nil
+end
+
 local function playThunder(station, config)
     local soundName = config.sound_name or "Thunder"
     local sound = station:FindFirstChild(soundName, true)
@@ -376,9 +395,23 @@ local function playThunder(station, config)
     end
 
     local template = getConfiguredSoundTemplate(soundName)
+    local catalogId, catalogEntry
+    if not template then
+        catalogId, catalogEntry = resolveCatalogSoundId(soundName)
+    end
     if template then
         sound = template:Clone()
+    elseif catalogId then
+        sound = Instance.new("Sound")
+        sound.SoundId = catalogId
+        if catalogEntry and catalogEntry.volume and not config.volume then
+            sound.Volume = catalogEntry.volume
+        end
+        if catalogEntry and catalogEntry.playback_speed and not config.playback_speed then
+            sound.PlaybackSpeed = catalogEntry.playback_speed
+        end
     elseif type(config.sound_id) == "string" and config.sound_id ~= "" then
+        -- Legacy fallback for configs that still inline an id; prefer sound_name.
         sound = Instance.new("Sound")
         sound.SoundId = config.sound_id
     else

@@ -161,8 +161,9 @@ return {
                     fade_out_seconds = 0.35,
                     duration = 2.8,
                     result_delay_seconds = 2.95,
+                    -- Prefer named catalog key (configs/sounds.lua → Assets.Sounds).
+                    -- No inline sound_id — keeps one SSOT and avoids stale-id drift.
                     sound_name = "enchant_thunder",
-                    sound_id = "rbxassetid://71266985896124",
                     volume = 0.9,
                     playback_speed = 0.85,
                     sound_lifetime_seconds = 16,

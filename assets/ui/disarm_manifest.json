@@ -1,0 +1,76 @@
+{
+  "symbol": "disarm",
+  "meaning": "DISARM \u2014 hands shackled, feet free",
+  "wired_as": "configs/power_icons.lua powers/effects map symbol = disarm",
+  "local_files": {
+    "blue": {
+      "path": "assets/ui/blue_icons/disarm.png",
+      "size": "1040x1040",
+      "mode": "RGBA"
+    },
+    "green": {
+      "path": "assets/ui/green_icons/disarm.png",
+      "size": "1040x1040",
+      "mode": "RGBA"
+    },
+    "red": {
+      "path": "assets/ui/red_icons/disarm.png",
+      "size": "1040x1040",
+      "mode": "RGBA"
+    },
+    "yellow": {
+      "path": "assets/ui/yellow_icons/disarm.png",
+      "size": "1040x1040",
+      "mode": "RGBA"
+    },
+    "purple": {
+      "path": "assets/ui/purple_icons/disarm.png",
+      "size": "1040x1040",
+      "mode": "RGBA"
+    },
+    "white": {
+      "path": "assets/ui/white_icons/disarm.png",
+      "size": "1040x1040",
+      "mode": "RGBA"
+    }
+  },
+  "roblox": {
+    "blue": {
+      "decal": "113302877326259",
+      "image": "101064931235909",
+      "image_rbx": "rbxassetid://101064931235909"
+    },
+    "green": {
+      "decal": "127594877634338",
+      "image": "101238452719504",
+      "image_rbx": "rbxassetid://101238452719504"
+    },
+    "red": {
+      "decal": "79206210712092",
+      "image": "77901669691859",
+      "image_rbx": "rbxassetid://77901669691859"
+    },
+    "yellow": {
+      "decal": "73011070737995",
+      "image": "100629227113514",
+      "image_rbx": "rbxassetid://100629227113514"
+    },
+    "purple": {
+      "decal": "114468862848614",
+      "image": "93477196108575",
+      "image_rbx": "rbxassetid://93477196108575"
+    },
+    "white": {
+      "decal": "77123637470406",
+      "image": "93192405394398",
+      "image_rbx": "rbxassetid://93192405394398"
+    }
+  },
+  "runtime_elements": {
+    "earth": "green",
+    "fire": "red",
+    "desert": "yellow",
+    "ice": "blue",
+    "neutral": "purple"
+  }
+}

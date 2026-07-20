@@ -19,6 +19,8 @@
       powerIdAttr — (optional) attribute holding the power id that applied this buff; when set the
                     badge resolves THAT power's element disc + tinted ring (matches the hotbar /
                     world icon). Falls back to the static `icon` when absent.
+      mirroredPowerIdAttr / mirroredUntilAttr — suppress this generic fallback when a named power
+                    channel carries the exact same expiry (one effect, one HUD badge).
       stacksAttr  — (optional) # of same-kind sources folded into this buff (pile + xN).
       icon        — static disc image (fallback when no powerIdAttr disc resolves). "" = label chip.
       color/label — chip colour + short text (shown when there's no icon).
@@ -111,7 +113,14 @@ function StatusBadges.resolveEffects(EFFECTS, sources, now)
             end
             if e.untilAttr then
                 local until_ = src:GetAttribute(e.untilAttr) or 0
-                if until_ > now then
+                local mirrorPowerId = e.mirroredPowerIdAttr
+                    and src:GetAttribute(e.mirroredPowerIdAttr)
+                local mirrorUntil = e.mirroredUntilAttr
+                    and tonumber(src:GetAttribute(e.mirroredUntilAttr))
+                local mirroredByNamedPower = mirrorPowerId
+                    and mirrorPowerId ~= ""
+                    and mirrorUntil == tonumber(until_)
+                if until_ > now and not mirroredByNamedPower then
                     out[#out + 1] = {
                         key = e.key,
                         color = e.color,

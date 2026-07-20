@@ -500,6 +500,15 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.PotionService,
     { "Logger", "ConfigLoader", "DataService", "InventoryService" }
 )
+-- PotionShopService: authored-tent prompts + authoritative 5-gem buy / 2-gem sell boundary.
+loader:RegisterModule("PotionShopService", ServerScriptService.Server.Services.PotionShopService, {
+    "Logger",
+    "ConfigLoader",
+    "DataService",
+    "EconomyService",
+    "InventoryService",
+    "PotionService",
+})
 -- TutorialService: event-driven new-player tutorial (taps the GameEvents bus; configs/tutorial).
 loader:RegisterModule(
     "TutorialService",
@@ -888,6 +897,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 "PlayerProgressionService"
             ) or nil,
             PotionService = modules:Get("PotionService"),
+            PotionShopService = modules:Get("PotionShopService"),
             PowerService = modules:Get("PowerService"),
             QuestService = modules:Get("QuestService"),
             RetentionService = modules:Get("RetentionService"),
@@ -988,6 +998,7 @@ table.insert(requiredModules, "AugmentationService")
 table.insert(requiredModules, "EnhancementService")
 table.insert(requiredModules, "EnhancementShopService")
 table.insert(requiredModules, "PotionService")
+table.insert(requiredModules, "PotionShopService")
 table.insert(requiredModules, "TutorialService")
 table.insert(requiredModules, "RetentionService")
 table.insert(requiredModules, "HotbarService")

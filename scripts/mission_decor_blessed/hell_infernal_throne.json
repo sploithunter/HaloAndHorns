@@ -1,0 +1,144 @@
+{
+  "_comment": "Blessed dual-gen dump for hell_infernal_throne. shipping = MissionProps (missions). review = PropReview TextureID ref.",
+  "prop": "hell_infernal_throne",
+  "blessed_at": "2026-07-15T21:21:47Z",
+  "visual_status": {
+    "shipping_front": "correct",
+    "shipping_render": "ok_jason_lineup_pass_2026-07-15",
+    "review_render": "correct",
+    "review_yaw_flipped_180": true
+  },
+  "shipping": {
+    "path": "Workspace._MeshyLineup.A_MissionProps_SHIPPING.16_hell_infernal_throne",
+    "has_skinned_mesh": true,
+    "instance_name": "16_hell_infernal_throne",
+    "bind_mode": "SurfaceAppearance",
+    "prop": "hell_infernal_throne",
+    "attributes": {
+      "Mount": "floor",
+      "MountY": "5",
+      "Theme": "hell",
+      "StandOff": "3.037320947647095"
+    },
+    "bone_count": 1,
+    "material": "Enum.Material.Plastic",
+    "n": 16,
+    "pivot": {
+      "y": 4.999709606170654,
+      "x": 20210,
+      "z": 4.920332431793213
+    },
+    "color_map": "126630031994674",
+    "albedo_id": "126630031994674",
+    "normal_map": "121681310802621",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 19994,
+      "verts": 27028,
+      "fnv1a_hash": 1412525528
+    },
+    "size": {
+      "y": 10,
+      "x": 5.489624500274658,
+      "z": 5.8746418952941895
+    },
+    "look": {
+      "y": 0,
+      "x": 0,
+      "z": -1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/134390034169903",
+    "bones": [
+      "Root"
+    ],
+    "create_albedo": "https://create.roblox.com/store/asset/126630031994674",
+    "color": {
+      "b": 0.6470588445663452,
+      "g": 0.6352941393852234,
+      "r": 0.6392157077789307
+    },
+    "yaw_note": "look_-Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "",
+    "row": "SHIP",
+    "mesh_id": "134390034169903",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne.png",
+      "atlas_sha256": "87dc483e85e90c17c4b304110c3edbc679999ea454eb11fdff0ae6beb69fe6cb",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "b686ea84a7473dd9c14fae7024c3deebe1dd457226e66b84db1ec0c17736c71f",
+      "preview_sha256": "0740fc0714813552a2a7b2d678ed1fae0dc2769ff6a21231e6de31dfb9ad6e62",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_throne.glb",
+      "source_glb_sha256": "00bed22afd2766cb85bf47ddb68a2a9db5772f292c2c20333bfd54fb9e21a183",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_throne.glb\noriginal_tris: 716314\n\n10k: hell_infernal_throne_10k.fbx (10000 tris, target 10000)"
+    }
+  },
+  "review": {
+    "path": "Workspace._MeshyLineup.B_PropReview_TextureID.16_hell_infernal_throne",
+    "has_skinned_mesh": false,
+    "instance_name": "16_hell_infernal_throne",
+    "bind_mode": "TextureID",
+    "prop": "hell_infernal_throne",
+    "attributes": {
+      "Mount": "floor",
+      "MountY": "5",
+      "Theme": "hell",
+      "StandOff": "3.037320947647095"
+    },
+    "bone_count": 0,
+    "material": "Enum.Material.Plastic",
+    "n": 16,
+    "pivot": {
+      "y": 5,
+      "x": 20210,
+      "z": 44.91267776489258
+    },
+    "color_map": "",
+    "albedo_id": "124299076630012",
+    "normal_map": "",
+    "editable_mesh": {
+      "ok": true,
+      "faces": 10000,
+      "verts": 25198,
+      "fnv1a_hash": 4000159784
+    },
+    "size": {
+      "y": 10,
+      "x": 5.489624500274658,
+      "z": 5.8746418952941895
+    },
+    "look": {
+      "y": 0,
+      "x": 8.742277657347586e-08,
+      "z": 1
+    },
+    "create_mesh": "https://create.roblox.com/store/asset/106627197219124",
+    "bones": [],
+    "create_albedo": "https://create.roblox.com/store/asset/124299076630012",
+    "color": {
+      "b": 1,
+      "g": 1,
+      "r": 1
+    },
+    "yaw_note": "look_+Z",
+    "meshpart_name": "Mesh_0_decimated",
+    "texture_id": "124299076630012",
+    "row": "REVIEW",
+    "mesh_id": "106627197219124",
+    "exports": {
+      "atlas_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne.png",
+      "atlas_sha256": "87dc483e85e90c17c4b304110c3edbc679999ea454eb11fdff0ae6beb69fe6cb",
+      "fbx_10k_baked_path": "assets/exports/props/meshy_mission_decor/hell_infernal_throne/hell_infernal_throne_10k_baked.fbx",
+      "fbx_10k_baked_sha256": "b686ea84a7473dd9c14fae7024c3deebe1dd457226e66b84db1ec0c17736c71f",
+      "preview_sha256": "0740fc0714813552a2a7b2d678ed1fae0dc2769ff6a21231e6de31dfb9ad6e62",
+      "source_glb_path": "assets/source/props/meshy_mission_decor/hell_infernal_throne.glb",
+      "source_glb_sha256": "00bed22afd2766cb85bf47ddb68a2a9db5772f292c2c20333bfd54fb9e21a183",
+      "manifest_txt": "source: /Users/jason/Documents/HaloAndHorns/assets/source/props/meshy_mission_decor/hell_infernal_throne.glb\noriginal_tris: 716314\n\n10k: hell_infernal_throne_10k.fbx (10000 tris, target 10000)"
+    }
+  },
+  "diagnose_if_bad_again": [
+    "Dump live mesh_id/albedo/bind/editable hash",
+    "Diff against shipping.* (missions) or review.* (TextureID gen)",
+    "ids drifted -> transplant/rbxm; ids match + ugly -> CDN/render"
+  ]
+}
