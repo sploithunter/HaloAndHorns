@@ -1436,3 +1436,12 @@ renderer is materialized only when the affected card enters the visible inventor
 success therefore creates zero ViewportFrames, while a full CDN outage cannot create them for hidden
 cards. Egg-stand pet previews now read the same flat registry, so removing registered pets from the
 replicated viewport cache does not degrade those previews to emoji.
+
+## 2026-07-20 — Hatch-result reveals restored to flat pet art
+
+Fixed the regression caused when registered pets stopped receiving server-baked viewport caches:
+`EggInteractionService` had treated cache presence as the only proof that a hatch-result image
+existed, so every registered pet fell through to the placeholder. Hatch reveals now resolve uploaded
+flat art first, retain generated ViewportFrames only for missing catalog art, and explicitly make the
+ImageLabel reveal opaque. The Studio animation smoke now inspects the pet reveal itself so visible
+rarity badges cannot mask a missing pet image.

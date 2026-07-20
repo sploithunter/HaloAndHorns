@@ -210,6 +210,9 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Special hatch reveal now includes a config-driven backdrop layer. `egg_system.hatching.animation.special_backdrop` controls a rarity-colored backdrop behind special pet reveals, `ConfigLoader` validates it, and animation debug state exposes the backdrop contract for Studio smokes.
 - Egg-system config validation now cross-references hatch special rarity ids and hatch auto-delete drawer filter ids against pet config. `hatching.animation.special_rarities` must reference `pets.rarities`, while hatch drawer `rarity_filters`, `pet_type_filters`, and `variant_filters` must reference configured rarities, pet families, and variants.
 - Hatch result stacking is now config-driven. `egg_system.hatching.animation.result_stack` controls whether duplicate hatch results collapse, whether name/count labels show, the minimum count label threshold, tween timing, and hold duration. The animation debug state exposes stack group/count/name metadata for Studio smokes.
+- Hatch-result pet reveals consume `pet_thumbnail_assets` directly, with generated ViewportFrames only
+  for catalog entries missing flat art. The animation debug state and `EggAnimationContractSmoke`
+  assert that the actual reveal image is visible, not merely its rarity/variant badges.
 - Egg authoring and hatch-admin testing now have a dedicated project doc at `docs/EGG_AUTHORING_AND_ADMIN_TESTING.md`. It records the current authored `EggStand` stamping contract, two-stage hatch model, hatch entitlement stubs, Show Hatch vs Skip Hatch behavior, and Studio smoke commands.
 
 ## Phase 0 Verification

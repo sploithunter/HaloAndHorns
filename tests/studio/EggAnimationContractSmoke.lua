@@ -145,9 +145,11 @@ function EggAnimationContractSmoke.run(options)
             and second
             and first.badges.SpecialBadge
             and first.badges.SpecialBadge.visible == true
+            and first.revealVisible == true
             and first.specialRevealBackdropVisible == true
             and second.badges.AutoDeleteBadge
             and second.badges.AutoDeleteBadge.visible == true
+            and second.revealVisible == true
         then
             return state
         end

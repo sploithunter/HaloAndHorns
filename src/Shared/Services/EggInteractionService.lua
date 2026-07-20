@@ -22,6 +22,14 @@ local eggSystemConfig = Locations.getConfig("egg_system")
 local autoSystemsConfig = Locations.getConfig("auto_systems")
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local HatchRevealPolicy = require(ReplicatedStorage.Shared.Game.HatchRevealPolicy)
+
+local thumbnailRegistryOk, thumbnailRegistry = pcall(function()
+    return require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
+end)
+if not thumbnailRegistryOk then
+    thumbnailRegistry = nil
+end
 
 -- Local player reference
 local player = Players.LocalPlayer
@@ -2239,8 +2247,14 @@ function EggInteractionService:GetEggImageId(eggType)
 end
 
 function EggInteractionService:GetPetImageId(petType, variant)
-    -- Try to get pet image from generated assets
+    -- Uploaded flat art is the normal hatch-reveal path. Generated ViewportFrames remain only as
+    -- compatibility for pets that have not received a flat thumbnail yet.
     local success, imageId = pcall(function()
+        local flatId = thumbnailRegistry
+            and thumbnailRegistry.pets
+            and thumbnailRegistry.pets[petType]
+            and thumbnailRegistry.pets[petType][variant]
+        local hasGeneratedViewport = false
         local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
         if assetsFolder then
             local imagesFolder = assetsFolder:FindFirstChild("Images")
@@ -2251,16 +2265,16 @@ function EggInteractionService:GetPetImageId(petType, variant)
                     if petTypeFolder then
                         local petImage = petTypeFolder:FindFirstChild(variant)
                         if petImage then
-                            return "generated_image" -- Special flag for cloned ViewportFrame
+                            hasGeneratedViewport = true
                         end
                     end
                 end
             end
         end
-        return "rbxasset://textures/face.png" -- Fallback
+        return HatchRevealPolicy.source(flatId, hasGeneratedViewport)
     end)
 
-    return success and imageId or "rbxasset://textures/face.png"
+    return success and imageId or HatchRevealPolicy.FALLBACK_IMAGE
 end
 
 -- === INITIALIZATION ===

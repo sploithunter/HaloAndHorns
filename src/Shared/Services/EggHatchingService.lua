@@ -29,10 +29,17 @@ local EggHatchFX = require(ReplicatedStorage.Shared.Effects.EggHatchFX)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
 local HatchTiming = require(ReplicatedStorage.Shared.Game.HatchTiming)
+local HatchRevealPolicy = require(ReplicatedStorage.Shared.Game.HatchRevealPolicy)
 local CompletionGroup = require(ReplicatedStorage.Shared.Utils.CompletionGroup)
 
 local eggSystemConfig = Locations.getConfig("egg_system")
 local petConfig = Locations.getConfig("pets")
+local thumbnailRegistryOk, thumbnailRegistry = pcall(function()
+    return require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
+end)
+if not thumbnailRegistryOk then
+    thumbnailRegistry = nil
+end
 
 -- Load flash effects configuration
 local flashEffectsConfig
@@ -1431,17 +1438,19 @@ function EggHatchingService:AnimateReveal(eggComponents, petImageId, petData, du
         end
 
         if not petReveal:IsA("ViewportFrame") then
-            -- First reveal on these components: swap the ImageLabel for the generated viewport.
+            -- First reveal on these components: swap the empty ImageLabel for the resolved flat
+            -- image or legacy generated viewport.
             local generatedImage = self:GetGeneratedPetImage(petData.petType, petData.variant)
             if generatedImage then
                 petReveal:Destroy()
-                petReveal = generatedImage:Clone()
+                petReveal = generatedImage
                 petReveal.Name = "PetReveal"
                 petReveal.BackgroundTransparency = 1
                 petReveal.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 petReveal.Parent = parent
                 eggComponents.reveal = petReveal
             else
+                petReveal.Image = HatchRevealPolicy.FALLBACK_IMAGE
             end
         elseif petReveal.Parent ~= parent then
             -- Already swapped by a prior AnimateReveal (fast-hatch double-fire) but orphaned —
@@ -1472,11 +1481,12 @@ function EggHatchingService:AnimateReveal(eggComponents, petImageId, petData, du
     petReveal.Size = UDim2.new(0.3, 0, 0.3, 0)
     petReveal.Position = UDim2.new(0.35, 0, 0.35, 0)
 
-    -- Handle transparency for both ImageLabel and ViewportFrame
+    -- Handle transparency for both ImageLabel and ViewportFrame. The former implementation reset
+    -- ImageTransparency to 1 here and never tweened it back, which made every flat reveal invisible.
     if petReveal.ClassName == "ViewportFrame" then
         petReveal.BackgroundTransparency = 1
-    else
-        petReveal.ImageTransparency = 1
+    elseif petReveal:IsA("ImageLabel") then
+        petReveal.ImageTransparency = 0
     end
 
     -- Ensure the reveal element itself has a clear background
@@ -2460,6 +2470,9 @@ function EggHatchingService:GetActiveAnimationDebugState()
     state.frameCount = #frames
     for _, frame in ipairs(frames) do
         local specialBackdrop = frame:FindFirstChild("SpecialRevealBackdrop")
+        local reveal = frame:FindFirstChild("PetReveal")
+        local revealIsImage = reveal and reveal:IsA("ImageLabel")
+        local revealIsViewport = reveal and reveal:IsA("ViewportFrame")
         local frameState = {
             name = frame.Name,
             eggIndex = frame:GetAttribute("EggIndex"),
@@ -2493,6 +2506,13 @@ function EggHatchingService:GetActiveAnimationDebugState()
             specialRevealBackdropPulseDuration = frame:GetAttribute(
                 "SpecialRevealBackdropPulseDuration"
             ),
+            revealClassName = reveal and reveal.ClassName or nil,
+            revealImage = revealIsImage and reveal.Image or nil,
+            revealTransparency = revealIsImage and reveal.ImageTransparency or nil,
+            revealVisible = reveal ~= nil
+                    and reveal.Visible == true
+                    and (revealIsViewport or (revealIsImage and reveal.Image ~= "" and reveal.ImageTransparency < 1))
+                or false,
             badges = {},
         }
 
@@ -2701,6 +2721,19 @@ end
 
 function EggHatchingService:GetGeneratedPetImage(petType, variant)
     local success, image = pcall(function()
+        local flatId = thumbnailRegistry
+            and thumbnailRegistry.pets
+            and thumbnailRegistry.pets[petType]
+            and thumbnailRegistry.pets[petType][variant]
+        if flatId then
+            local flatImage = Instance.new("ImageLabel")
+            flatImage.Name = "PetFlatThumbnail"
+            flatImage.BackgroundTransparency = 1
+            flatImage.Image = flatId
+            flatImage.ScaleType = Enum.ScaleType.Fit
+            return flatImage
+        end
+
         local assetsFolder = ReplicatedStorage:FindFirstChild("Assets")
         if assetsFolder then
             local imagesFolder = assetsFolder:FindFirstChild("Images")
