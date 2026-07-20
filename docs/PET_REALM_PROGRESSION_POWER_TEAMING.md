@@ -203,19 +203,25 @@ class** (decoupled from size math).
 
 The mining economy is anchored to a single ratio. **Read this before tuning any zone's income.**
 
-- **Income identity: `coins/sec = DPS × (value ÷ HP)`.** The current ratio is **0.2** (crystal
+- **Income identity: `coins/sec = DPS × (value ÷ HP) × world value multiplier`.** The shared ore
+  ratio is **0.2** (crystal
   `value` scales with `HP` so every tier — Small/Medium/Large — pays the *same* coins/sec; bigger
   crystals just take longer to break, they don't pay more per second). Set in
-  `configs/breakables.lua` `ORE_TIERS` (20/100, 100/500, 400/2000). To raise/lower income, move the
-  ratio (e.g. 0.2 → 0.15), **not** individual tiers.
-- **Verified live (grass, farming `Near`):** 3 fresh dogs ≈ 46 DPS → ~10 cps; 3 fresh bears ≈ 25
-  DPS → ~6 cps (tanks mine slow *by design*, `mining_mult 0.6`); a graduated 2-golden+1-rainbow dog
-  squad ≈ 85 DPS → ~17 cps. Ice/lava hold the same ratio (150-DPS squads → ~30 cps). The small
-  overshoot vs `DPS×0.2` is the active-mining boost + crits — expected.
+  `configs/breakables.lua` `ORE_TIERS` (20/100, 100/500, 400/2000). Base-realm worlds apply
+  `value_mult = 2`, for an effective **0.4** ratio and double mining XP because XP derives from
+  the scaled node value. Heaven/Hell do not inherit that base-only multiplier; their existing
+  layer scaling remains authoritative. To raise/lower income, move a whole-world multiplier or
+  the shared ratio, **not** individual tiers.
+- **Prior live calibration (grass, farming `Near`, before the base 2×):** 3 fresh dogs ≈ 46 DPS →
+  ~10 cps; 3 fresh bears ≈ 25 DPS → ~6 cps (tanks mine slow *by design*, `mining_mult 0.6`); a
+  graduated 2-golden+1-rainbow dog squad ≈ 85 DPS → ~17 cps. The base multiplier makes the expected
+  launch rates ~20 / 12 / 34 cps respectively; an Ice/Lava 150-DPS squad moves from ~30 to ~60 cps.
+  The small overshoot vs the identity is active-mining boost + crits — expected.
 - **Pacing anchor — the "200-egg arc":** ~200 hatches reliably yields strong variants (golden /
-  rainbow). At 100-coin grass eggs that's ~20,000 coins ≈ **~33 min fresh / ~20 min upgraded** to
-  "graduate your starter squad." Size new zones' egg cost + income so the graduate arc lands in
-  that ballpark. The hatch loop itself is snappy from minute one (an egg every ~10 s at 10 cps).
+  rainbow). At 100-coin grass eggs that's ~20,000 coins ≈ **~17 min fresh / ~10 min upgraded** under
+  the base 2× to "graduate your starter squad." Size new zones' egg cost + income so the graduate
+  arc lands in that ballpark. The hatch loop itself is immediate (roughly one egg every ~5 s at
+  ~20 cps for the fresh-dog calibration).
 - **Targeting modes (`configs/auto_systems.lua`):** `free_mode = nearest` (minimize travel — the
   best DPS the flat ~26 studs/s pet speed allows), `paid_mode = highest_value` (camp big payouts).
   `weakest` is the *worst* free mode (chases scattered small crystals → travel overhead halves

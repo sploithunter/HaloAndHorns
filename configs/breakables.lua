@@ -97,10 +97,14 @@ local ORE_FAMILIES = {
 -- `scale` is used for PLACEHOLDER families (the blue-crystal meshes are already sized per
 -- tier, so scale stays 1). `size_scale` is used for real VARIANT families (normalized to a
 -- common base, so the tier supplies the size): Small/Medium/Large ≈ 3.6 / 6 / 10.8 studs.
--- value = coins per break. value/HP is the income RATIO (coins/sec = DPS x value/HP). Live grass
+-- value = coins per break. value/HP is the shared ore income RATIO before each world's
+-- `value_mult` (coins/sec = DPS x value/HP x value_mult). Live grass
 -- homeworld: a 3-dog starter (~45 DPS) earned ~5 coins/sec, a 3-bear (~25 DPS) ~2.5 — too slow.
 -- Raised the ratio 0.1 -> 0.2 (was 5/25/100, then 10/50/200, now 20/100/400) so dogs ~9 coins/sec
--- (100-coin grass egg in ~11s), bears ~5. DPS felt right; this lifts INCOME only. Pure dev knob.
+-- before world scaling. Base-realm worlds now use value_mult=2 (effective ratio 0.4) because
+-- no-pass launch pacing was still too slow; realms intentionally retain their existing baseline
+-- and layer multipliers. Mining XP derives from the scaled node Value, so base mining XP doubles
+-- with currency while the paid 2x XP entitlement remains an independent multiplier.
 local ORE_TIERS = {
     {
         suffix = "Small",
@@ -230,6 +234,7 @@ local M = {
         -- Spawn uses an invisible SpawnArea part under:
         -- Workspace.Game.Breakables.Crystals.Spawn
         Spawn = {
+            value_mult = 2, -- launch baseline: 2x coins + mining XP in the base realm
             max = 14, -- Starter area should feel curated, not crowded
             interval = 8, -- seconds between spawn attempts per spawner
             spawn_area = {
@@ -900,6 +905,7 @@ local M = {
             },
         },
         Meadow = {
+            value_mult = 2, -- base-realm crystal yield; realms keep their own scaling
             max = 8,
             interval = 10,
             spawn_area = {
@@ -932,6 +938,7 @@ local M = {
         -- Emberstone ore only, paying lava_coins. Marked always-active in BreakableSpawner
         -- (_isWorldActive) for now; swap to proper enter-the-zone activation via the area system later.
         Lava = {
+            value_mult = 2, -- base-realm crystal yield; realms keep their own scaling
             max = 100,
             interval = 8,
             spawn_area = {
@@ -974,6 +981,7 @@ local M = {
         -- ICE ZONE: spawns on the flat "Ice" baseplate (Home.Ice, center ~-375,0,377).
         -- Frostshard ore only, paying ice_coins. Always-active for now (see _isWorldActive).
         Ice = {
+            value_mult = 2, -- base-realm crystal yield; realms keep their own scaling
             max = 100,
             interval = 8,
             spawn_area = {
@@ -1014,6 +1022,7 @@ local M = {
         -- DESERT ZONE: spawns on the flat "Desert" baseplate (Home.Desert, center ~-127,1,475).
         -- Sunglass ore only, paying desert_coins. Always-active for now (see _isWorldActive).
         Desert = {
+            value_mult = 2, -- base-realm crystal yield; realms keep their own scaling
             max = 100,
             interval = 8,
             spawn_area = {

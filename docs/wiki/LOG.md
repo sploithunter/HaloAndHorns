@@ -1251,3 +1251,11 @@ Renamed the `pet_slot_pass` storefront card from `+1 Pet Slot` to `Deploy an Ext
 replaced the fixed-eleventh-pet description with the actual contract: one above the player's
 current limit, so three becomes four now and progression's ten becomes eleven later. The runtime
 capacity calculation was verified to already apply and cap that paid slot additively.
+
+## 2026-07-20 — Base-realm crystal currency and mining XP doubled
+
+The five base-realm breakable worlds now apply `value_mult = 2` at the spawned node Value seam.
+That doubles both the biome-currency split and mining XP, which is calculated from the same Value,
+for free players whose launch pacing was too slow. Heaven/Hell worlds intentionally keep their
+existing ore baseline and layer multipliers, while paid XP entitlements continue to stack
+independently on the new base rate.
