@@ -1408,3 +1408,11 @@ The world-space egg chance cards now reuse the inventory's universal `PetBadge` 
 `pet_roles`/`power_icons` data. Every possible hatch shows its archetype badge; pets with a
 support or control ability show that ability and its targeting ring as a second badge. Hover
 explains either badge, while touch players can tap to toggle the same config-owned tooltip.
+
+## 2026-07-20 — Repository integration and release-state cleanup
+
+Reconciled the authoritative combat/content branch with the true-combat-hold implementation and
+the current game tree, preserving the potion and enhancement shops, stacked-pet inventory fix,
+and append-only project history. The hotbar's third periodic UI pulse is now explicitly classified
+in the runtime-wait ledger, all seven architecture rules report zero unclassified debt, and the
+integrated tree passes the complete CI gate with 1,457 headless tests.

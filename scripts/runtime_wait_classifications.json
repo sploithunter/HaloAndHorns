@@ -42,7 +42,7 @@
   "src/Client/Systems/HotbarBar.lua": {
    "deadline": 2,
    "debounce": 3,
-   "periodic": 2
+   "periodic": 3
   },
   "src/Client/Systems/LevelUpController.lua": {
    "animation": 4,

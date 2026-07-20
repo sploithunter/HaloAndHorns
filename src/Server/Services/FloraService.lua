@@ -63,7 +63,11 @@ function FloraService:_spawnAt(anchor, floraFolder)
     local kind = anchor:GetAttribute("Kind")
     local variant = anchor:GetAttribute("Variant")
     if not (kind and variant) then
-        self:_log("Warn", "anchor missing Kind/Variant attributes", { anchor = anchor:GetFullName() })
+        self:_log(
+            "Warn",
+            "anchor missing Kind/Variant attributes",
+            { anchor = anchor:GetFullName() }
+        )
         return false
     end
     local layerId = layerOf(anchor)
