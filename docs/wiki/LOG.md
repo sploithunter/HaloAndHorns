@@ -1144,3 +1144,14 @@ migration is needed for the abandoned "element splits stacks" spec.
 - **2026-07-14 — Batched squad pet-XP projection.** Per-breakable pet XP now preserves the per-contributor mining/modifier calculation but batches each player's equipped unique squad into one targeted projection update and one debounced save request. Pet projection reconciliation retains unchanged Instances, progression/enchant paths update exact record keys instead of tearing down every inventory card, and client slot-change bursts coalesce into one deferred inventory render.
 - **2026-07-14 — Contextual pet-power sorting.** Inventory pet cards still perform an intentional full refresh/re-sort when effective power context changes. Biome (`CurrentArea`) and realm (`CurrentRealm`) transitions now share one deferred refresh boundary, preventing paired portal attribute updates from causing duplicate renders while ensuring Heaven/Hell and mission resonance changes cannot leave the power order stale.
 - **2026-07-14 — XP projections no longer redraw the inventory.** Pet projection transactions now publish a separate `RenderVersion`: ordinary XP progress continues to replicate and advance the diagnostic `ProjectionVersion`, but it does not destroy/recreate the open inventory grid. A level/power change or permanent-enchant reveal still emits one render event and re-sorts, preserving power-order correctness.
+
+## 2026-07-17 - True symmetric combat holds
+
+- Deep Freeze, Absolute Zero, and Eternal Winter now dispatch through a real `hold` family instead of
+  the movement-only `root` family. Holds write `HeldUntil`; roots continue to write `RootedUntil`.
+- Added the pure shared `CrowdControl` expiry/refresh contract and applied it symmetrically to enemy
+  and pet movement/action gates. Held enemies cannot move, bite/shoot, heal, use capital powers, or
+  finish an already-telegraphed slam. Held pets cannot move, mine/attack, emit support or damage
+  auras, or refresh taunt. Existing DoTs and passive recovery remain status effects, not new actions.
+- Headless coverage locks the root-vs-hold boundary, non-shortening refresh, Cryomancer hold dispatch,
+  and player-facing descriptions.

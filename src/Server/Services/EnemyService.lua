@@ -55,6 +55,7 @@ local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura)
 local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView) -- effective combat power (empower carry pick)
 local DamageOverTime = require(ReplicatedStorage.Shared.Game.DamageOverTime) -- DoT burn ticks
 local OnHitEffects = require(ReplicatedStorage.Shared.Game.OnHitEffects) -- slow/shred on-hit math
+local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark) -- additive vulnerability marks (SSOT)
 local ResSickness = require(ReplicatedStorage.Shared.Game.ResSickness) -- post-revive heal clamp
 local OverheadBar = require(ReplicatedStorage.Shared.UI.OverheadBar) -- shared enemy HP / pet endurance bar
@@ -2124,8 +2125,12 @@ function EnemyService:_fleeStep(entry, model, def, eng, pfs, valid, dt, now)
     local fromPos = fearPet and self:_petPosition(fearPet, pfs) or nil
     -- control still applies: held/rooted = pinned mid-terror (cower in place). Control COUNTERS
     -- fear-flight by design (root the runner) — same rule as the flyer counter.
-    local held = (model:GetAttribute("HeldUntil") or 0) > os.time()
-    local rooted = held or (model:GetAttribute("RootedUntil") or 0) > os.time()
+    local held = CrowdControl.isHeld(model:GetAttribute("HeldUntil"), os.time())
+    local rooted = CrowdControl.isImmobilized(
+        model:GetAttribute("RootedUntil"),
+        model:GetAttribute("HeldUntil"),
+        os.time()
+    )
     local moveSpeed = rooted and 0 or ((def and def.move_speed) or eng.default_move_speed or 12)
     if not rooted and (model:GetAttribute("SlowUntil") or 0) > os.time() then
         moveSpeed = OnHitEffects.slowSpeed(moveSpeed, model:GetAttribute("SlowFactor"))
@@ -2371,10 +2376,13 @@ function EnemyService:_loiter(entry, model, ePos, dt)
     -- CONTROL: loiter is a SEPARATE mover from the chase path, so it needs the same root gate or a
     -- controlled enemy that disengages (target moved away) wanders out of the snare while RootedUntil
     -- is still ticking — the root looks broken. HeldUntil = full mez, RootedUntil = snare; both freeze
-    -- position (a held/rooted enemy can still bite, but it does not move OR wander).
+    -- position (a rooted enemy can still bite; a held enemy is action-locked elsewhere).
     if
-        (model:GetAttribute("HeldUntil") or 0) > os.time()
-        or (model:GetAttribute("RootedUntil") or 0) > os.time()
+        CrowdControl.isImmobilized(
+            model:GetAttribute("RootedUntil"),
+            model:GetAttribute("HeldUntil"),
+            os.time()
+        )
     then
         return
     end
@@ -2610,7 +2618,11 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     if type(tauntCfg) == "table" and (tauntCfg.lead or 0) > 0 then
         entry.tauntAt = entry.tauntAt or setmetatable({}, { __mode = "k" })
         for pet in pairs(valid) do
-            if self:_isTaunt(pet) and (not entry.tauntAt[pet] or now >= entry.tauntAt[pet]) then
+            if
+                CrowdControl.canAct(pet:GetAttribute("PetHeldUntil"), os.time())
+                and self:_isTaunt(pet)
+                and (not entry.tauntAt[pet] or now >= entry.tauntAt[pet])
+            then
                 entry.tauntAt[pet] = now + (tauntCfg.interval or 3)
                 -- Taunt rolls too: a miss fizzles this pulse; a crit grabs harder (lead × mult).
                 local troll =
@@ -2731,6 +2743,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         and tl.pet
         and tl.pet.Parent
         and not tl.pet:GetAttribute("CombatDowned")
+        and CrowdControl.canAct(tl.pet:GetAttribute("PetHeldUntil"), os.time())
     then
         targetPet = tl.pet
     else
@@ -2803,14 +2816,28 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     entry.targetPet = targetPet -- published so co-attackers can spread off each other (below)
     self:_publishAggroTarget(model, targetPet) -- red-beam ref for the TargetBeams admin overlay
 
+    -- FULL HOLD: one authoritative action gate before every mover, basic attack, and enemy power.
+    -- The aggro table still updates above, so the fight resumes naturally when the hold lapses, but
+    -- the enemy cannot chase, turn, attack, heal, buff, debuff, root, pulse, or start a slam here.
+    -- Reset anti-hang progress because deliberate control must never despawn a long-held objective.
+    local held = CrowdControl.isHeld(model:GetAttribute("HeldUntil"), os.time())
+    if held then
+        entry.stuckTime = 0
+        entry.lastTargetDist = nil
+        return
+    end
+
     -- 4) CHASE the aggro target until in attack range. A tank/melee target orbits inside
     -- attack_range so the enemy just holds + bites it; a ranged target kites near the
     -- player, so the enemy has to close the gap. A ROOTED enemy can't move.
     local targetPos = self:_petPosition(targetPet, pfs)
     -- CONTROL: HeldUntil = full mez (can't move OR attack — see the bite gate below); RootedUntil =
     -- snare (can't move, still bites). Either zeroes move speed. This is the controller's lockdown.
-    local held = (model:GetAttribute("HeldUntil") or 0) > os.time()
-    local rooted = held or (model:GetAttribute("RootedUntil") or 0) > os.time()
+    local rooted = CrowdControl.isImmobilized(
+        model:GetAttribute("RootedUntil"),
+        model:GetAttribute("HeldUntil"),
+        os.time()
+    )
     local moveSpeed = rooted and 0 or ((def and def.move_speed) or eng.default_move_speed or 12)
     -- SLOW (graded control, Anvil pets): SlowUntil/SlowFactor reduce move speed without a full root,
     -- so a slowed pack still drifts toward the squad but stays parked in the AoE/plague. Stacks under
@@ -3079,8 +3106,11 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
                 local slamEnemyLevel = model:GetAttribute("Level") or 1
                 local r2 = radius * radius
                 task.delay(telegraph, function()
-                    if not (model.Parent and (model:GetAttribute("HP") or 0) > 0) then
-                        return -- died mid-windup: the slam fizzles
+                    if
+                        not (model.Parent and (model:GetAttribute("HP") or 0) > 0)
+                        or CrowdControl.isHeld(model:GetAttribute("HeldUntil"), os.time())
+                    then
+                        return -- died or was held mid-windup: the slam fizzles
                     end
                     for pet in pairs(valid) do
                         if pet.Parent and not pet:GetAttribute("CombatDowned") then
@@ -3528,7 +3558,7 @@ function EnemyService:_updateHeldBadge(model, nowTime)
     if not pp then
         return
     end
-    local held = (model:GetAttribute("HeldUntil") or 0) > nowTime
+    local held = CrowdControl.isHeld(model:GetAttribute("HeldUntil"), nowTime)
     local bb = pp:FindFirstChild("HeldBadge")
     if held then
         if not bb then
@@ -3819,10 +3849,13 @@ function EnemyService:_auraHold(folder, aura)
         return
     end
     -- don't re-stamp an already-held target (lets a repeat cast roll onto a fresh enemy instead)
-    if (model:GetAttribute("HeldUntil") or 0) > now then
+    if CrowdControl.isHeld(model:GetAttribute("HeldUntil"), now) then
         return
     end
-    model:SetAttribute("HeldUntil", now + (tonumber(aura.duration) or 10))
+    model:SetAttribute(
+        "HeldUntil",
+        CrowdControl.extend(model:GetAttribute("HeldUntil"), now, aura.duration or 10)
+    )
 
     -- FREEZE roar: positional ice-crystal sound at the moment the hold lands (server-created, so
     -- every nearby player hears the foe get frozen). Plays once per hold (guarded above).
@@ -3982,7 +4015,7 @@ function EnemyService:_supportPass(now)
                 pet:IsA("Model")
                 and pet.PrimaryPart
                 and not pet:GetAttribute("CombatDowned")
-                and (tonumber(pet:GetAttribute("PetHeldUntil")) or 0) <= now
+                and CrowdControl.canAct(pet:GetAttribute("PetHeldUntil"), now)
             then
                 local vmult = tonumber(vmults[pet:GetAttribute("PetVariant")]) or 1
                 for _, aura in ipairs(self:_petAuras(pet) or {}) do
@@ -4479,6 +4512,7 @@ function EnemyService:_enemyHealPass(now)
             if
                 heal
                 and (heal.amount or 0) > 0
+                and CrowdControl.canAct(model:GetAttribute("HeldUntil"), os.time())
                 and (not self._enemyHealAt[tid] or now >= self._enemyHealAt[tid])
             then
                 self._enemyHealAt[tid] = now + (heal.interval or 2)
@@ -4545,6 +4579,7 @@ function EnemyService:_auraDamagePass(now)
             if
                 pet:IsA("Model")
                 and not pet:GetAttribute("CombatDowned")
+                and CrowdControl.canAct(pet:GetAttribute("PetHeldUntil"), os.time())
                 and pet:GetAttribute("AttackTargeting") == "aura"
             then
                 local nextAt = self._auraAt[pet]

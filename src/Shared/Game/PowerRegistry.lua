@@ -25,6 +25,7 @@ local FAMILY_CATEGORY = {
     damage_buff = "buff",
     vulnerable = "debuff",
     root = "hold",
+    hold = "hold",
     root_guard = "hold",
     absorb = "shield",
     team_shield = "shield",
@@ -65,6 +66,7 @@ local SINGLE_TARGET_ENEMY = {
     cripple = true,
     sunder = true,
     focus_fire = true,
+    deep_freeze = true,
 }
 
 local function titleize(id)

@@ -25,6 +25,7 @@ local PetMeander = require(ReplicatedStorage.Shared.Game.PetMeander)
 local Gait = require(ReplicatedStorage.Shared.Game.Gait)
 local HitReact = require(ReplicatedStorage.Shared.Game.HitReact)
 local AttackAnim = require(ReplicatedStorage.Shared.Game.AttackAnim)
+local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local PetAnimator = require(script.Parent.PetAnimator)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local RangedFX = require(ReplicatedStorage.Shared.Effects.RangedFX)
@@ -632,7 +633,11 @@ function PetFollowController.start()
                 -- CAPITAL ROOT (enemy ice control): a rooted pet FREEZES in place — skip
                 -- positioning it while the window is live (it stays visible; the hold badge
                 -- on its card says why it stopped).
-                local rooted = (tonumber(m:GetAttribute("PetRootedUntil")) or 0) > os.time()
+                local rooted = CrowdControl.isImmobilized(
+                    m:GetAttribute("PetRootedUntil"),
+                    m:GetAttribute("PetHeldUntil"),
+                    os.time()
+                )
                 if not downed and not rooted then
                     table.insert(pets, m)
                 else

@@ -47,6 +47,15 @@ return function()
             expect(d.summary:find("coins") ~= nil).to.equal(true)
         end)
 
+        it("distinguishes a movement root from a full action-lock hold", function()
+            local root = PowerDescribe.describe(powersCfg, "frost_bind")
+            expect(root.summary:find("can still attack", 1, true) ~= nil).to.equal(true)
+            local hold = PowerDescribe.describe(powersCfg, "deep_freeze")
+            expect(hold.summary:find("cannot move, attack, or use powers", 1, true) ~= nil).to.equal(
+                true
+            )
+        end)
+
         it("multiplier magnitudes read as the BONUS (x1.3 damage buff -> +30%)", function()
             -- find any damage_buff power in the live config (x1.3 since the balance-audit
             -- team-buff swap: geo's Mountain's Strength trimmed so the tank doesn't out-buff pyro)
