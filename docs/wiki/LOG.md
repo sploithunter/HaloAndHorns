@@ -1224,9 +1224,16 @@ A live Studio relay probe measured both vertical bob and roll across 133 observe
 ## 2026-07-19 — Unified Pet Shop and game-pass purchase completion
 
 The world Pet Shop now opens a responsive unified storefront with all eight live game passes,
-their Marketplace artwork, authored benefits, Robux prices, and owned state; the original
-earned-currency offers remain on a separate tab. Streaming-safe proximity-prompt discovery makes
-the shop building the primary entry point. The missing server purchase-completion path now maps
+their Marketplace artwork, authored benefits, Robux prices, and owned state. Streaming-safe
+proximity-prompt discovery makes the shop building the primary entry point. The missing server purchase-completion path now maps
 Roblox pass IDs to config, applies and saves benefits, refreshes capacity, records analytics, and
 pushes ownership to the client. Developer products remain hidden until their IDs and grant handlers
 are real, at which point the catalog exposes their Boosts tab automatically.
+
+## 2026-07-19 — Pet Shop corrected to Robux-only
+
+Removed the legacy Phase 7 earned-currency offer tab from the Pet Shop. Crystal Cache, the
+earnable Speed Boost, and the coin-priced Starter Pack belong to the neighboring economy shop;
+they are not developer products and no longer appear in the Robux storefront. The Pet Shop shows
+game passes now and will add only live, deterministic developer products when their IDs and grant
+handlers are complete.
