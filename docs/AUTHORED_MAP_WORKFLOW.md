@@ -161,3 +161,19 @@ Terrain:PasteRegion(copied, Vector3int16.new(min.X, min.Y + 500, min.Z), false)
 - Terrain persists in the PLACE file — save/publish the place after.
 - Verify with a voxel count over matching bands (ReadVoxels) — the copy
   above reproduced Heaven_1's 1,704 Grass voxels exactly.
+
+## Replicating placed boundary repairs between realm layers (2026-07-20)
+
+Placed boundary models are copied separately from Terrain. Treat `Workspace.Maps.Home`
+as the source only after visually confirming the repair, then clone the exact repaired
+models into `Heaven_1`, `Hell_1`, `Heaven_2`, and `Hell_2` with Y offsets of `+2000`,
+`-2000`, `+4000`, and `-4000` studs. Remove obsolete pieces by exact mesh, child count,
+and normalized X/Z position rather than by a broad name match because the imported map
+contains many siblings named `TerrainVariant2`.
+
+The Ice-boundary repair replaced two cap-only `TerrainVariant2` models near normalized
+X/Z `(-459, 428)` and `(-452, 494)` with three complete two-part wall models near Z
+`433`, `465`, and `502`. Each complete model contains the collidable gray wall mesh and
+its white snow cap. After replication, verify each target has zero cap-only models and
+three complete models in that region, then use **Save to Roblox**; an Edit-mode MCP
+script cannot call `game:SavePlace()`.

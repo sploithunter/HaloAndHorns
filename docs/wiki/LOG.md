@@ -1445,3 +1445,11 @@ existed, so every registered pet fell through to the placeholder. Hatch reveals 
 flat art first, retain generated ViewportFrames only for missing catalog art, and explicitly make the
 ImageLabel reveal opaque. The Studio animation smoke now inspects the pet reveal itself so visible
 rarity badges cannot mask a missing pet image.
+
+## 2026-07-20 — Ice boundary walls restored across every realm layer
+
+Replicated Home's repaired Ice boundary into `Heaven_1`, `Hell_1`, `Heaven_2`, and
+`Hell_2` at their exact vertical offsets. Each target lost two obsolete floating snow-cap
+models and gained three complete, collidable wall-and-cap models, closing the fall-off gap.
+The four target layers now match Home's repaired Z positions (`433`, `465`, `502`), were
+visually checked in Edit mode, and were saved to the Roblox cloud place.
