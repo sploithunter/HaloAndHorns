@@ -256,8 +256,8 @@ return {
         },
         {
             id = "pet_slot_pass",
-            name = "🐾 +1 Pet Slot",
-            description = "Deploy an eleventh pet!",
+            name = "🐾 Deploy an Extra Pet",
+            description = "Deploy one more pet than your current limit — 3 becomes 4, 10 becomes 11.",
             price_robux = 399,
             benefits = { features = { extra_equip_slots = 1 } },
             icon = "rbxassetid://93743165018355",

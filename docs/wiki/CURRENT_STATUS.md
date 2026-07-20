@@ -834,6 +834,9 @@ Last checked: 2026-07-19
 - Developer products are deliberately omitted while their Roblox IDs are zero and
   their grant handlers are placeholders. A **Boosts** tab appears automatically once
   live mapped products exist, avoiding nonfunctional purchase buttons at launch.
+- The pet-capacity pass is presented as **Deploy an Extra Pet** and adds one to the
+  player's current deploy limit (3→4 immediately, up through 10→11 after progression);
+  it is not a fixed unlock that jumps every buyer directly to eleven pets.
 
 Verification: headless **1411/1411 across 135 specs**; Rojo build OK; live Studio
 walk-up/E-key test opened the Pet Shop through the real proximity prompt and rendered
