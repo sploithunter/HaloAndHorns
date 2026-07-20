@@ -19,4 +19,20 @@ describe("pet role coverage", function()
         table.sort(missing)
         expect(table.concat(missing, ", ")).to.equal("")
     end)
+
+    it("gives every archetype readable badge copy", function()
+        local missing = {}
+        for roleId, role in pairs(rolesConfig.roles or {}) do
+            if
+                type(role.label) ~= "string"
+                or role.label == ""
+                or type(role.tooltip) ~= "string"
+                or role.tooltip == ""
+            then
+                table.insert(missing, roleId)
+            end
+        end
+        table.sort(missing)
+        expect(table.concat(missing, ", ")).to.equal("")
+    end)
 end)
