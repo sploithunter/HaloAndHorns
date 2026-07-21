@@ -18,6 +18,7 @@ local Workspace = game:GetService("Workspace")
 
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 local AllianceRules = require(ReplicatedStorage.Shared.Game.AllianceRules)
+local SpawnGroupGate = require(ReplicatedStorage.Shared.Game.SpawnGroupGate)
 
 local BaddieSpawnerService = {}
 BaddieSpawnerService.__index = BaddieSpawnerService
@@ -172,6 +173,11 @@ function BaddieSpawnerService:_trigger(part, player, rng)
     local scatter = tonumber(self._config.scatter) or 8
     local homeBinding = self:_homeBindingFor(part)
     local state = self._spawners[part]
+    -- One spawner owns exactly one group. This guard is repeated in Start's scheduler for readable
+    -- branching, then enforced again here so no future caller can stack a second wave.
+    if not state or not SpawnGroupGate.canSpawn(#state.alive) then
+        return
+    end
     -- PACK SCALING (docs/TEAMING.md): waves grow with the ENGAGED team — the triggering
     -- player's teammates within pack.engaged_radius of the spawner. Unit counts AND the
     -- alive cap scale together (else the cap defeats the pack). Config: configs/teaming.lua.
@@ -239,9 +245,9 @@ function BaddieSpawnerService:_trigger(part, player, rng)
             return
         end
         wave = { units = { { enemy = pick } } }
-        -- one pushover ON TOP of whatever's already out — a vet's live wave
-        -- at the same cave must never block the newbie's First Fight critter
-        cap = #state.alive + 1
+        -- The solo tutorial group is exactly one enemy. It follows the same group lifecycle as a
+        -- team wave: nothing else may spawn here until this model is destroyed/despawned.
+        cap = 1
     end
     for _, unit in ipairs(wave.units or {}) do
         for _ = 1, (onramp and 1 or PackScale.count(unit.count, engaged, nil, teamingCfg)) do
@@ -496,7 +502,6 @@ function BaddieSpawnerService:Start()
     local cd = self._config.cooldown
     local cdMin = (type(cd) == "table" and tonumber(cd.min)) or tonumber(cd) or 60
     local cdMax = (type(cd) == "table" and tonumber(cd.max)) or cdMin
-    local cap = tonumber(self._config.max_alive) or 6
     -- onramp threshold (combat.engagement.min_engage_level): sub-threshold
     -- players get the FIRST-FIGHT cadence — no 30-120s ambient roll
     local minEngage = 5
@@ -531,14 +536,9 @@ function BaddieSpawnerService:Start()
                     -- proximity-wave system stays OUT of realms so it never spawns neutral earth packs
                     -- (raging_bear etc.) in heaven/hell (Jason: "in heaven only spawn heaven enemies").
                 else
-                    -- TWO INDEPENDENT STREAMS (Jason watched a sub-5 newcomer
-                    -- walk up to a vet-camped cave and never get his First
-                    -- Fight — the vet's ambient roll owned the shared
-                    -- cooldown and the vet's live wave held the alive-cap
-                    -- shut): the 3s First-Fight beat runs on its OWN clock
-                    -- and ignores the ambient cap, so a camping vet can't
-                    -- starve the tutorial gate and the newbie can't starve
-                    -- the vet's waves either.
+                    -- ONE ACTIVE GROUP PER SPAWNER. A team-scaled group may contain many enemies;
+                    -- the solo First Fight group contains one. A new group cannot spawn until every
+                    -- model in the prior group has been destroyed/despawned.
                     local subNear, vetNear = nil, nil
                     for _, player in ipairs(Players:GetPlayers()) do
                         local hrp = player.Character
@@ -553,10 +553,11 @@ function BaddieSpawnerService:Start()
                     end
                     if subNear and now >= (state.onrampCooldownUntil or 0) then
                         state.onrampCooldownUntil = now + 3
+                        local groupActive = SpawnGroupGate.isActive(#state.alive)
                         if subNear:GetAttribute("AllianceAnchor") ~= nil then
                             -- already allied into the camp's fight — the
                             -- alliance IS their onramp while it lasts
-                        elseif vetNear and #state.alive > 0 then
+                        elseif vetNear and groupActive then
                             -- INCLUSION over isolation (Jason 2026-07-21:
                             -- "preferably they get to experience a team right
                             -- off the bat... right now it feels like I'm
@@ -570,7 +571,7 @@ function BaddieSpawnerService:Start()
                             -- waves nothing forms (banner would flap) — the
                             -- vet's next trigger allies them at spawn.
                             self:_formAlliances(vetNear, part)
-                        elseif not vetNear then
+                        elseif not vetNear and not groupActive then
                             -- alone at the cave: the classic First Fight
                             -- (Jason: "spawn the neutered enemies ENDLESSLY
                             -- until I defeat one")
@@ -585,7 +586,11 @@ function BaddieSpawnerService:Start()
                             state.cooldownUntil = math.min(state.cooldownUntil, now)
                         end
                     end
-                    if vetNear and now >= state.cooldownUntil and #state.alive < cap then
+                    if
+                        vetNear
+                        and now >= state.cooldownUntil
+                        and SpawnGroupGate.canSpawn(#state.alive)
+                    then
                         state.cooldownUntil = now + rng:NextNumber(cdMin, cdMax)
                         self:_trigger(part, vetNear, rng)
                     end

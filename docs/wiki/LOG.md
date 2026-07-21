@@ -1560,3 +1560,10 @@ granted once and automatically deployed; the existing lucky first Earth Egg hatc
 and immediately follows. Reset to Beginning safely removes/re-arms only this reproducible starter.
 Raw retention events and daily aggregate shards now measure selector shown/selected conversion,
 decision time, and pet preference under analytics schema version 2.
+
+## 2026-07-21 — Proximity spawners enforce one active group
+
+Fixed the First Fight cave stacking another solo Jackalope every three seconds. Every proximity
+spawner now owns one active group: a solo onramp group contains one enemy, while team-scaled groups
+may contain several; no replacement group can spawn until every member of the current group has
+been destroyed or despawned. The invariant is enforced at both scheduling and spawn boundaries.
