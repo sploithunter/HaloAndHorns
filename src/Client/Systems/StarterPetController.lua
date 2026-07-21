@@ -9,6 +9,7 @@ local TweenService = game:GetService("TweenService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
+local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local UIViewportScale = require(script.Parent.Parent.UI.UIViewportScale)
 
 local THUMBNAILS = require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
@@ -28,7 +29,7 @@ local COLORS = {
     gold = Color3.fromRGB(255, 194, 55),
     white = Color3.fromRGB(247, 248, 252),
     body = Color3.fromRGB(202, 207, 220),
-    muted = Color3.fromRGB(151, 158, 176),
+    muted = Color3.fromRGB(184, 190, 206),
     green = Color3.fromRGB(36, 186, 102),
 }
 
@@ -119,6 +120,21 @@ local function makeCard(parent, choice, index)
     image.Image = PetThumbnailResolver.resolve(THUMBNAILS, choice.id, "basic", false) or ""
     image.Parent = imageBack
 
+    -- Use the same element + combat-role badge shown on inventory and squad cards. The adjacent
+    -- role copy turns this first choice into the player's legend for that icon vocabulary.
+    local badgeHolder = Instance.new("Frame")
+    badgeHolder.Name = "RoleBadge"
+    badgeHolder.BackgroundTransparency = 1
+    badgeHolder.Size = UDim2.fromOffset(50, 50)
+    badgeHolder.Position = UDim2.fromOffset(3, 6)
+    badgeHolder.ZIndex = 6
+    badgeHolder.Parent = button
+    PetBadge.create(badgeHolder, {
+        element = PetBadge.elementForPetType(choice.id),
+        role = choice.role,
+        zIndex = 6,
+    })
+
     local name = label(
         button,
         tostring(choice.display_name or choice.id),
@@ -126,7 +142,7 @@ local function makeCard(parent, choice, index)
         UDim2.fromOffset(159, 14),
         Enum.Font.GothamBlack,
         COLORS.white,
-        25
+        30
     )
     name.TextYAlignment = Enum.TextYAlignment.Bottom
 
@@ -137,7 +153,7 @@ local function makeCard(parent, choice, index)
         UDim2.fromOffset(159, 50),
         Enum.Font.GothamBold,
         accent,
-        13
+        18
     )
     role.TextYAlignment = Enum.TextYAlignment.Top
 
@@ -148,18 +164,18 @@ local function makeCard(parent, choice, index)
         UDim2.fromOffset(159, 76),
         Enum.Font.GothamMedium,
         COLORS.body,
-        15
+        20
     )
     summary.TextYAlignment = Enum.TextYAlignment.Top
 
     local detail = label(
         button,
         tostring(choice.detail or ""),
-        UDim2.fromOffset(310, 54),
+        UDim2.fromOffset(310, 70),
         UDim2.fromOffset(159, 131),
         Enum.Font.Gotham,
         COLORS.muted,
-        13
+        18
     )
     detail.TextYAlignment = Enum.TextYAlignment.Top
 
@@ -171,7 +187,7 @@ local function makeCard(parent, choice, index)
     corner(choose, 10)
     choose.Parent = button
     local chooseText =
-        label(choose, "CHOOSE", UDim2.fromScale(1, 1), nil, Enum.Font.GothamBold, COLORS.white, 16)
+        label(choose, "CHOOSE", UDim2.fromScale(1, 1), nil, Enum.Font.GothamBold, COLORS.white, 20)
     chooseText.TextXAlignment = Enum.TextXAlignment.Center
 
     button.MouseEnter:Connect(function()
@@ -248,7 +264,7 @@ local function show(state)
         UDim2.fromOffset(20, 10),
         Enum.Font.GothamBlack,
         COLORS.white,
-        32
+        36
     )
     title.TextXAlignment = Enum.TextXAlignment.Center
 
@@ -259,7 +275,7 @@ local function show(state)
         UDim2.fromOffset(20, 55),
         Enum.Font.GothamMedium,
         Color3.fromRGB(220, 235, 252),
-        16
+        21
     )
     subtitle.TextXAlignment = Enum.TextXAlignment.Center
 
@@ -269,12 +285,12 @@ local function show(state)
 
     statusLabel = label(
         panel,
-        "Your choice is free, basic, permanent, and automatically deployed. Your lucky first egg is still next!",
+        "Free basic starter • Automatically deployed • Your lucky first egg is still next!",
         UDim2.new(1, -40, 0, 34),
         UDim2.fromOffset(20, 570),
         Enum.Font.GothamMedium,
         COLORS.body,
-        14
+        19
     )
     statusLabel.TextXAlignment = Enum.TextXAlignment.Center
 
