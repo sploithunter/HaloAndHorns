@@ -252,6 +252,43 @@ function PlayerProgressionService:_claimedProgress(player, claimed)
     return { xpIntoLevel = into, xpForNext = step }
 end
 
+-- Roblox's built-in player list only displays values parented under a lowercase
+-- `leaderstats` folder. Level remains derived from XP; this IntValue is a replicated
+-- presentation mirror, never another persistence/source-of-truth field.
+function PlayerProgressionService:_publishNativeLevel(player, level)
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if leaderstats and not leaderstats:IsA("Folder") then
+        self._logger:Warn("Cannot publish native Level: leaderstats is not a Folder", {
+            player = player.Name,
+            className = leaderstats.ClassName,
+            context = "PlayerProgressionService",
+        })
+        return
+    end
+    if not leaderstats then
+        leaderstats = Instance.new("Folder")
+        leaderstats.Name = "leaderstats"
+        leaderstats.Parent = player
+    end
+
+    local nativeLevel = leaderstats:FindFirstChild("Level")
+    if nativeLevel and not nativeLevel:IsA("IntValue") then
+        self._logger:Warn("Cannot publish native Level: existing value is not an IntValue", {
+            player = player.Name,
+            className = nativeLevel.ClassName,
+            context = "PlayerProgressionService",
+        })
+        return
+    end
+    if not nativeLevel then
+        nativeLevel = Instance.new("IntValue")
+        nativeLevel.Name = "Level"
+        nativeLevel:SetAttribute("IsPrimary", true)
+        nativeLevel.Parent = leaderstats
+    end
+    nativeLevel.Value = math.max(1, math.floor(tonumber(level) or 1))
+end
+
 -- Mirror earned/claimed level + XP onto player attributes for the HUD.
 --   Level        = earnedLevel (combat/egg scaling — unchanged from before)
 --   ClaimedLevel = the HUD badge / claim gate
@@ -277,6 +314,7 @@ function PlayerProgressionService:_publish(player)
     local pending = math.min(math.max(0, earned - claimed), remaining)
     local prog = self:_claimedProgress(player, claimed)
     player:SetAttribute("Level", earned)
+    self:_publishNativeLevel(player, earned)
     player:SetAttribute("ClaimedLevel", claimed)
     -- Combat level the level-diff curves read (Accuracy + LevelScale). = earned today; teaming
     -- will override this attribute to sync sidekicks/exemplars to the team lead.

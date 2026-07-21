@@ -1537,3 +1537,10 @@ world-egg weights: Common 45, Uncommon 30, Rare 18, Epic 6, Legendary 1, Secret 
 uses Common, Bear and Doggy use Uncommon, Kitty uses Legendary, and Dragon uses Secret directly
 from one shared config table. Added a headless contract to prevent rarity labels and base odds from
 drifting apart again.
+
+## 2026-07-21 — Native Roblox player list now shows Level
+
+`PlayerProgressionService` now mirrors the authoritative XP-derived earned level into a primary
+`leaderstats.Level` IntValue whenever progression publishes. Roblox's regular player list therefore
+shows Level without a custom replacement menu or a second saved progression value. Verified in a
+fresh Studio play session that the native value exists and equals the replicated `Level` attribute.
