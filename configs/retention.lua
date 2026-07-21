@@ -102,7 +102,7 @@ return {
     event_store = {
         enabled = true,
         name = "RetentionEvents_v1",
-        schema_version = 1,
+        schema_version = 2,
         write_in_studio = false,
         flush_seconds = 15,
         events_per_chunk = 100,

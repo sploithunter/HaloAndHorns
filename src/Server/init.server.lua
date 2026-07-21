@@ -378,6 +378,11 @@ loader:RegisterModule(
     )
 )
 loader:RegisterModule(
+    "StarterPetService",
+    ServerScriptService.Server.Services.StarterPetService,
+    { "Logger", "ConfigLoader", "DataService", "InventoryService", "PetGrantService" }
+)
+loader:RegisterModule(
     "SettingsService",
     ServerScriptService.Server.Services.SettingsService,
     { "Logger", "DataService", "ConfigLoader" }
@@ -857,6 +862,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 TutorialService = modules:Get("TutorialService"),
                 EnhancementService = modules:Get("EnhancementService"),
                 HotbarService = modules:Get("HotbarService"),
+                StarterPetService = modules:Get("StarterPetService"),
             })
         end
         modules:Get("PowerService"):BindPeerServices({
@@ -974,6 +980,7 @@ local requiredModules = {
     "InventoryService",
     "PetSerialService",
     "PetGrantService",
+    "StarterPetService",
     "PetTransferService",
     "SettingsService",
     "HatchEntitlementService",

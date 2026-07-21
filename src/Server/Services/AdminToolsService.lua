@@ -18,6 +18,7 @@ function AdminToolsService.new()
     self._zoneService = nil
     self._petGrantService = nil
     self._hatchEntitlementService = nil
+    self._starterPetService = nil
     self._petsConfig = nil
     self._inventoryConfig = nil
     self._eggSystemConfig = nil
@@ -98,6 +99,7 @@ function AdminToolsService:BindPeerServices(services)
     self._tutorialService = services.TutorialService
     self._enhancementService = services.EnhancementService
     self._hotbarService = services.HotbarService
+    self._starterPetService = services.StarterPetService
 end
 
 function AdminToolsService:_handleSpawnEnemy(adminPlayer, data)
@@ -571,7 +573,12 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         or {}
     local kept, keptKeys, deleteCount = {}, {}, 0
     for key, rec in pairs(pets.items) do
-        if PetInventoryView.isProtectedFromReset(rec, capability) then
+        -- The free starter is reproducible and must not block replaying the new-player choice.
+        -- Every other unique/huge retains the normal never-delete protection.
+        if
+            rec.grant_source ~= "starter_choice"
+            and PetInventoryView.isProtectedFromReset(rec, capability)
+        then
             kept[#kept + 1] = describe(rec)
             keptKeys[key] = rec
         else
@@ -722,6 +729,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.Achievements = nil
     playerData.Ledger = nil
     playerData.EnhancementIndex = nil
+    playerData.StarterPet = { forceOffer = true }
 
     -- 5d) Tutorial restarts + enhancements wiped — "reset to beginning" means the NEW-PLAYER
     --     experience (Jason hit this: his tutorial stayed done=true through this reset because
@@ -748,6 +756,9 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         "admin_reset_to_beginning",
         { critical = true, debounceSeconds = 0 }
     )
+    if self._starterPetService and self._starterPetService.Refresh then
+        self._starterPetService:Refresh(targetPlayer)
+    end
 
     self._logger:Warn("🔄 ADMIN RESET TO BEGINNING (KEEP HUGE)", {
         admin = adminPlayer.Name,

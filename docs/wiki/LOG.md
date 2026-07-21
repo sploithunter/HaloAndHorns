@@ -1550,3 +1550,13 @@ fresh Studio play session that the native value exists and equals the replicated
 Added the config-owned loading-screen promise `Hatch Pets • Build a Squad • Battle Monsters`
 above the live boot phase text. It communicates the collection, team-building, and combat payoff
 during existing load time without delaying play or replacing the operational readiness messages.
+
+## 2026-07-21 — First companion teaches the four starter roles
+
+Added a mandatory, mobile-scaled first-companion choice for genuinely new players: Bunny teaches
+Support and hatch luck, Bear teaches Tank, Doggy teaches Melee, and Legendary Kitty teaches Ranged
+glass-cannon play. The selected companion is a basic, individually tracked, soulbound pet that is
+granted once and automatically deployed; the existing lucky first Earth Egg hatch remains unchanged
+and immediately follows. Reset to Beginning safely removes/re-arms only this reproducible starter.
+Raw retention events and daily aggregate shards now measure selector shown/selected conversion,
+decision time, and pet preference under analytics schema version 2.

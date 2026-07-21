@@ -21,6 +21,13 @@ This record answers how far one player reached and in which session/how many sec
 `Analytics.SessionCount`, `TotalPlayTime`, and `LastSessionDuration` remain the session source of
 truth.
 
+The first-companion role lesson has its own pre-hatch microfunnel. The semantic events
+`starter_pet_choice_shown` and `starter_pet_selected` are present in the raw stream, and daily
+aggregate shards expose `starterChoice.shown`, `selected`, `totalSecondsToSelect`, and `byPet`.
+These are first-session distinct counts, so the selector's conversion, average decision time, and
+role preference are available without downloading raw chunks. They deliberately do not alter the
+already-live Roblox onboarding funnel step order.
+
 ## Raw launch dataset
 
 `RetentionEvents_v1` is the single standard DataStore for event-level launch analysis. It contains
@@ -45,7 +52,7 @@ The same store contains mergeable daily counter shards:
 Each server owns its shard, so no live servers contend on one counter key. Shards count sessions,
 completed-session seconds, first-session players, tutorial step reach and total time-to-step,
 tutorial exits by active step, quest/area completions, level events, and earned/claimed level at
-exit. The raw events remain the source of truth for medians, quantiles, segmentation, and metric
+exit, plus the starter-choice microfunnel and pet split. The raw events remain the source of truth for medians, quantiles, segmentation, and metric
 recomputation; shard sums provide an immediate launch readout.
 
 Canonical launch definitions:
