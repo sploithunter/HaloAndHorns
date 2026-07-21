@@ -1463,3 +1463,10 @@ is 9/43 and canonical activation is 7/43. Added Open Cloud retry/pacing, a raw
 `--session-number` filter with manifest provenance, and tests so launch exports survive rate limits
 without downloading veteran traces. Corrected the ignored local Open Cloud universe setting to the
 active production universe; the restricted raw export and executed notebook remain outside git.
+
+## 2026-07-21 — First hatch now favors useful starter pets
+
+Reclassified Bear and Doggy from common to uncommon while leaving Bunny common. Because species
+luck boosts every non-common tier, the existing 50x first-hatch protection now yields Bear or Doggy
+about 98.1% of the time and Bunny below 1%, without changing ordinary Earth Egg weights. Added a
+headless contract test so the onboarding power floor cannot silently regress.

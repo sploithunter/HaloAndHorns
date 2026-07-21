@@ -84,6 +84,12 @@ luck products against the bunny rows, not the no-bunny ones.
 4. **Separate channels stay separate.** Golden/rainbow boosts (`goldenLuckBoost`,
    `rainbowLuckBoost`) are their own products/events ("2x golden weekend"); huge luck
    is fractional attempts on the jackpot stage only.
+5. **The first hatch favors a useful starter.** Bear and Doggy are `uncommon`, while
+   Bunny remains `common`. With the one-roll 50x first-hatch boost, a fresh level-1
+   player receives Bear or Doggy about 98.1% of the time (about 49.1% each), while
+   Bunny falls below 1%. The raw Earth Egg weights are unchanged, so ordinary hatches
+   remain about 33.1% each for Bear, Bunny, and Doggy. This intentionally prioritizes
+   immediate mining/combat usefulness over a first-hatch Kitty surprise.
 
 ## The simulator
 

@@ -24,6 +24,33 @@ end
 
 return function()
     describe("hatch luck progression", function()
+        it("first-hatch luck favors useful Bear and Doggy starters over Bunny", function()
+            -- Rarity is part of the species-luck mechanic, not merely a display label.
+            -- Keeping Bunny common while Bear/Doggy are uncommon lets the one-roll
+            -- first-hatch boost establish a useful mining/combat floor. Ordinary
+            -- no-luck hatch odds remain controlled by the unchanged raw weights.
+            expect(pets.pets.bear.rarity).to.equal("uncommon")
+            expect(pets.pets.doggy.rarity).to.equal("uncommon")
+            expect(pets.pets.bunny.rarity).to.equal("common")
+
+            math.randomseed(20260721)
+            local counts = { bear = 0, bunny = 0, doggy = 0 }
+            local trials = 5000
+            for _ = 1, trials do
+                local result = pets.simulateHatch("grass_egg", {
+                    level = 1,
+                    indexCompletion = 0,
+                    firstHatchLuck = 50,
+                })
+                if counts[result.pet] ~= nil then
+                    counts[result.pet] += 1
+                end
+            end
+
+            expect((counts.bear + counts.doggy) / trials > 0.96).to.equal(true)
+            expect(counts.bunny / trials < 0.02).to.equal(true)
+        end)
+
         it("fresh player is ~1x", function()
             expect(near(luckFor({ level = 0, indexCompletion = 0 }), 1.0)).to.equal(true)
         end)
