@@ -1484,3 +1484,10 @@ Fixed the remaining consumer of the retired eager ViewportFrame cache. TradePane
 same uploaded flat pet-art registry as inventory and hatching, keeps a cheap pending/error glyph,
 and uses generated viewports only for catalog entries without uploaded art. The registry lookup is
 now a shared pure module with contracts covering Huge fallback and the pets from the reported trade.
+
+## 2026-07-21 — Trade button labels separated from pill gradients
+
+Fixed the low-contrast outline/glow across the Trade player picker, request popup, and trade window.
+The shared capsule gradient had been applied directly to each TextButton and therefore tinted its
+built-in text. Trade buttons now retain their real text for state/accessibility but render a synced,
+pure-white child label with an explicit no-stroke contract and the original size limits.

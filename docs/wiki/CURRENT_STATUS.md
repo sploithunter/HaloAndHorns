@@ -882,7 +882,9 @@ API was deprecated). So the escrow *pattern* is implemented server-authoritative
   popup** (Accept/Decline) and the **two-player window** (your removable offer +
   pet picker, the partner's offer, per-side confirm indicators, Confirm/Cancel),
   driven by TradeUpdate so it works even when the menu is closed. No bespoke
-  remotes — all via the GameAPICommand bridge.
+  remotes — all via the GameAPICommand bridge. Its pill buttons render text in a
+  separate white child label so the capsule's `UIGradient` cannot tint or outline
+  Request/Sent, Refresh, Accept/Decline, or Confirm/Cancel text.
 
 Verification: `mise run ci` green; headless **291/291 across 34 specs**; selene 0
 errors on new files; rojo build OK; live `AutomationSuite` **122/122** (trade
