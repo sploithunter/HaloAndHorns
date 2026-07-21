@@ -325,19 +325,40 @@ function BaddieSpawnerService:_republishEffective(player)
     end)
 end
 
--- The anchor's banner names every live ally (csv); nil clears it.
-function BaddieSpawnerService:_refreshAnchorBadge(anchor)
+-- Publish the alliance GROUP (Jason: "all the alliance players team — heals and shields
+-- should apply to each other"): every member's AllianceWith lists every OTHER member, so the
+-- anchor and ALL lows are mutual allies — squad-wide support casts, guardian summons, and
+-- the enemy rail treat the whole group as one side. The banner reads the same attribute.
+function BaddieSpawnerService:_publishAllianceGroup(anchor)
     if not anchor or not anchor.Parent then
         return
     end
-    local names = {}
+    local memberNames = { anchor.Name }
+    local lows = {}
     for low, rec in pairs(self._alliances) do
         if rec.anchor == anchor and low.Parent then
-            names[#names + 1] = low.Name
+            lows[#lows + 1] = low
+            memberNames[#memberNames + 1] = low.Name
         end
     end
-    table.sort(names)
-    anchor:SetAttribute("AllianceWith", #names > 0 and table.concat(names, ",") or nil)
+    if #lows == 0 then
+        anchor:SetAttribute("AllianceWith", nil)
+        return
+    end
+    table.sort(memberNames)
+    local function othersCsv(selfName)
+        local out = {}
+        for _, n in ipairs(memberNames) do
+            if n ~= selfName then
+                out[#out + 1] = n
+            end
+        end
+        return table.concat(out, ",")
+    end
+    anchor:SetAttribute("AllianceWith", othersCsv(anchor.Name))
+    for _, low in ipairs(lows) do
+        low:SetAttribute("AllianceWith", othersCsv(low.Name))
+    end
 end
 
 function BaddieSpawnerService:_formAlliances(triggerer, part)
@@ -369,11 +390,14 @@ function BaddieSpawnerService:_formAlliances(triggerer, part)
                     -- to the fresh wave — only a genuinely new pairing counts for stats.
                     local existing = self._alliances[other]
                     local isNew = not existing or existing.anchor ~= triggerer
+                    local oldAnchor = existing and existing.anchor ~= triggerer and existing.anchor
                     self._alliances[other] = { anchor = triggerer, spawner = part }
                     other:SetAttribute("AllianceAnchor", triggerer.Name)
-                    other:SetAttribute("AllianceWith", triggerer.Name)
                     self:_republishEffective(other)
-                    self:_refreshAnchorBadge(triggerer)
+                    self:_publishAllianceGroup(triggerer)
+                    if oldAnchor then -- re-anchored away: the old group shrinks
+                        self:_publishAllianceGroup(oldAnchor)
+                    end
                     if isNew then
                         -- achievement counters (configs/achievements.lua): both sides count —
                         -- the lifted ("Unlikely Allies") and the lifter ("Guardian Angel")
@@ -405,7 +429,7 @@ function BaddieSpawnerService:_dissolveAlliance(low, reason)
         low:SetAttribute("AllianceWith", nil)
         self:_republishEffective(low)
     end
-    self:_refreshAnchorBadge(rec.anchor)
+    self:_publishAllianceGroup(rec.anchor)
     self._logger:Info("Temporary alliance dissolved", {
         low = low.Name,
         anchor = rec.anchor and rec.anchor.Name or "?",

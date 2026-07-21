@@ -141,12 +141,17 @@ local function engagedEnemies(now)
 
     -- TEAM WIDENING (Jason live-caught: the rail showed fewer enemies than the team was
     -- fighting): a team battle is ONE fight, so "my squad" = my folder + every TEAMMATE's
-    -- folder, and an AggroOwner naming any team member counts. Solo, teamNames = just me.
+    -- folder — and every TEMPORARY ALLIANCE partner's (docs/TEAMING.md), since an alliance
+    -- fight is shared too. Solo and unallied, teamNames = just me.
     local teamNames = { [localPlayer.Name] = true }
-    local members = localPlayer:GetAttribute("TeamMembers")
-    if type(members) == "string" and members ~= "" then
-        for name in members:gmatch("[^,]+") do
-            teamNames[name] = true
+    for _, csv in ipairs({
+        localPlayer:GetAttribute("TeamMembers"),
+        localPlayer:GetAttribute("AllianceWith"),
+    }) do
+        if type(csv) == "string" and csv ~= "" then
+            for name in csv:gmatch("[^,]+") do
+                teamNames[name] = true
+            end
         end
     end
 

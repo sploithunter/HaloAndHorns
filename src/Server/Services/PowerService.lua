@@ -22,6 +22,7 @@ local AmplifiedBurst = require(ReplicatedStorage.Shared.Game.AmplifiedBurst)
 local PowerRegistry = require(ReplicatedStorage.Shared.Game.PowerRegistry)
 local PowerStats = require(ReplicatedStorage.Shared.Game.PowerStats)
 local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
+local CombatAllies = require(ReplicatedStorage.Shared.Game.CombatAllies) -- team ∪ temporary alliance
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
 local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark) -- additive vulnerability marks (SSOT)
 local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
@@ -743,31 +744,51 @@ function PowerService:_supportFamily(powerId)
 end
 
 -- Squad-wide team cover (docs/TEAMING.md): extend a squad-wide SUPPORT cast's target list
--- with every TEAMMATE's live pets, SameTeam-gated per member. Non-support powers (or an
--- unteamed caster) get the caster's own list back untouched.
+-- with every TEAMMATE's live pets (SameTeam-gated per member) AND every TEMPORARY ALLIANCE
+-- partner's (Jason: "heals and shields should apply to each other" — reciprocity-gated: the
+-- other side's server-stamped AllianceWith must name the caster). Non-support powers get
+-- the caster's own list back untouched.
 function PowerService:_withTeamPets(player, powerId, live)
-    local members = player:GetAttribute("TeamMembers")
     if not self:_supportFamily(powerId) then
         return live
     end
-    if type(members) ~= "string" or members == "" then
-        return live
-    end
-    local partySvc = self._partyService
-    if not (partySvc and partySvc.SameTeam) then
-        return live
-    end
     local pp = Workspace:FindFirstChild("PlayerPets")
-    for name in members:gmatch("[^,]+") do
-        if name ~= player.Name then
-            local mate = Players:FindFirstChild(name)
-            local folder = mate and pp and pp:FindFirstChild(name)
-            if mate and folder and partySvc:SameTeam(player, mate) then
-                for _, pet in ipairs(folder:GetChildren()) do
-                    if pet:IsA("Model") and not pet:GetAttribute("CombatDowned") then
-                        live[#live + 1] = pet
-                    end
+    if not pp then
+        return live
+    end
+    local added = {}
+    local function addPetsOf(name)
+        if name == player.Name or added[name] then
+            return
+        end
+        added[name] = true
+        local folder = pp:FindFirstChild(name)
+        if folder then
+            for _, pet in ipairs(folder:GetChildren()) do
+                if pet:IsA("Model") and not pet:GetAttribute("CombatDowned") then
+                    live[#live + 1] = pet
                 end
+            end
+        end
+    end
+    -- formal teammates (SameTeam-gated per member, as before)
+    local members = player:GetAttribute("TeamMembers")
+    local partySvc = self._partyService
+    if type(members) == "string" and members ~= "" and partySvc and partySvc.SameTeam then
+        for name in members:gmatch("[^,]+") do
+            local mate = Players:FindFirstChild(name)
+            if mate and partySvc:SameTeam(player, mate) then
+                addPetsOf(name)
+            end
+        end
+    end
+    -- temporary-alliance partners (whole GROUP: anchor + sibling lows are all mutual)
+    local allies = player:GetAttribute("AllianceWith")
+    if type(allies) == "string" and allies ~= "" then
+        for name in allies:gmatch("[^,]+") do
+            local mate = Players:FindFirstChild(name)
+            if mate and CombatAllies.csvHas(mate:GetAttribute("AllianceWith"), player.Name) then
+                addPetsOf(name)
             end
         end
     end
@@ -1479,14 +1500,20 @@ function PowerService:_enemiesInRange(player, radius)
     local name = player.Name
     local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     local cx, cz = hrp and hrp.Position.X, hrp and hrp.Position.Z
-    -- TEAM BATTLE (docs/TEAMING.md): enemies engaged with any TEAMMATE count as the
-    -- caster's fight too — a taunt/debuff reaches the pack mauling your teammate's squad.
+    -- TEAM BATTLE (docs/TEAMING.md): enemies engaged with any TEAMMATE — or any TEMPORARY
+    -- ALLIANCE partner — count as the caster's fight too, so a taunt/debuff reaches the
+    -- pack mauling an ally's squad.
     local team = { [name] = true }
-    local members = player:GetAttribute("TeamMembers")
-    if type(members) == "string" and members ~= "" then
-        for m in members:gmatch("[^,]+") do
-            team[m] = true
-        end
+    for _, allyName in
+        ipairs(
+            CombatAllies.names(
+                player:GetAttribute("TeamMembers"),
+                player:GetAttribute("AllianceWith"),
+                player.Name
+            )
+        )
+    do
+        team[allyName] = true
     end
     local out, seen = {}, {}
     for _, e in ipairs(enemiesAlive()) do

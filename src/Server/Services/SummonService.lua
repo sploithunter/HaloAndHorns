@@ -96,11 +96,17 @@ local function teamSquadFolders(player)
     if own then
         folders[#folders + 1] = own
     end
-    local members = player and player:GetAttribute("TeamMembers")
-    if type(members) == "string" and members ~= "" then
+    -- teammates ∪ TEMPORARY ALLIANCE partners (docs/TEAMING.md — the genie revives allies too)
+    local members = table.concat({
+        tostring(player and player:GetAttribute("TeamMembers") or ""),
+        tostring(player and player:GetAttribute("AllianceWith") or ""),
+    }, ",")
+    if members ~= "," then
         local pp = Workspace:FindFirstChild("PlayerPets")
+        local added = {}
         for name in members:gmatch("[^,]+") do
-            if name ~= player.Name then
+            if name ~= player.Name and not added[name] then
+                added[name] = true
                 local f = pp and pp:FindFirstChild(name)
                 if f then
                     folders[#folders + 1] = f
