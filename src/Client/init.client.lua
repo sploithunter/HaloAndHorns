@@ -162,6 +162,17 @@ do
     end
 end
 
+-- Temporary Alliance banner (docs/TEAMING.md): pure attribute renderer for the
+-- sidekick-up-at-spawn alliance — shows while the server-stamped AllianceWith is set.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.AllianceBanner).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start AllianceBanner", { error = tostring(err) })
+    end
+end
+
 -- Enemy movement smoothing (Feature 10): interpolates the visible enemy model toward
 -- the server's authoritative step target each frame, so chasing looks smooth despite
 -- the coarse server tick. Self-gates on pet_follow.service_owned.

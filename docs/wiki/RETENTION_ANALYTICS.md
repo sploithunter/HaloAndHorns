@@ -105,9 +105,25 @@ hatched; this is descriptive rather than a causal estimate. Treat the opening 20
 first product intervention and keep acquisition spend small until a fresh cohort improves.
 
 Roblox Ads Manager still had no attributed plays in this snapshot, so the 43 internal first
-sessions are not labeled as paid conversions. Raw event payloads also lack the build/commit id;
-adding build identity is the highest-priority telemetry refinement before comparing published
-versions. D1 was not mature when this readout was made.
+sessions are not labeled as paid conversions. D1 was not mature when this readout was made.
+
+## Pre-publish marker: consistent Home/Grass pets
+
+At 2026-07-21 17:39:40 UTC (11:39:40 AM MDT), the aggregate-only production snapshot recorded 50
+ended first sessions on the 2026-07-21 UTC cohort date. The consistent Home/Grass pet candidate was
+Studio-verified at commit `a1eac80` but had not been merged or published; production still reported
+build `bc337a4`. This is therefore a pre-exposure baseline, not a post-change result.
+
+The exact counter snapshot is stored at
+`docs/wiki/raw/retention/2026-07-21_home_grass_consistent_pets_baseline.json`. Future aggregate pulls
+can subtract that snapshot from the current 2026-07-21 counters, then use full subsequent UTC days,
+without downloading raw 100-event chunks. Raw chunks are reserved for medians, player timelines,
+device cuts, and forensic follow-up.
+
+`RetentionService` now stamps build version, commit, branch, build time, dirty state, and analytics
+schema version into each future raw-session and aggregate-shard server record. The first production
+publish containing that telemetry becomes the durable intervention boundary; build-grouped shards
+will allow quick published-version comparisons without hand-matching server jobs.
 
 ## Export operations
 

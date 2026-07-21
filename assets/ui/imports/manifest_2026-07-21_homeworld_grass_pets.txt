@@ -59,5 +59,21 @@ dragon_gold	83575962013296	82423030148985	rbxassetid://137902863642024	rbxasseti
 Reminder: runtime texture_asset = resolved IMAGE id, not the Decal id.
 Full registry: scripts/pet_mesh_ids.json
 
+## Group-owned flat card thumbnails (inventory / egg preview / trade)
+
+stem	decal_asset_id	image_asset_id
+bear_basic	118693030998537	72116634639213
+bear_gold	72304793494807	110568698023011
+bunny_basic	105465021506714	100736300063954
+bunny_gold	97237571974759	128401392113239
+doggy_basic	121991664207154	75731963946532
+doggy_gold	124537714019075	101554486473755
+dragon_basic	114721391745803	102539163624156
+dragon_gold	108214205431597	96167411359549
+kitty_basic	104993704934541	74416019256177
+kitty_gold	120185818797056	118103974007378
+
+Full registry: scripts/pet_thumbnail_ids.json
+
 ## Runtime status
-Wired in `configs/pets.lua` on 2026-07-21. Basic/gold use the resolved mesh + IMAGE ids above; rainbow variants retain their existing packaged models.
+Wired in `configs/pets.lua` on 2026-07-21. Basic/gold use the resolved mesh + IMAGE ids above; rainbow variants reuse the basic mesh/texture with the runtime rainbow treatment.

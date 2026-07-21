@@ -113,6 +113,30 @@ All slices landed plus everything the verify shook out:
   teammate's card to EXPAND their pet list while the other members' groups collapse to
   aggregate headers (SquadHud already collapses >2-member rosters and expands the selected
   mate, so most of the rail work exists; the missing piece is the invite flow + polish).
+- TEMPORARY ALLIANCE shipped (Jason, 2026-07-08 — the mixed-level retention fix): two
+  UNTEAMED players at a home spawn cave, the higher one trips the wave (enemies tune to the
+  TRIGGERER) → every unteamed, combat-active bystander in pack.engaged_radius who is
+  ≥ alliance.min_level_gap below the triggerer is SIDEKICKED UP to (triggerer +
+  sidekick.level_offset) for the encounter. SIDEKICK-UP ONLY — no imposed exemplar (formal
+  teams stay the consensual way down); walking into an already-running fight forms nothing
+  ("purple enemies are your problem"). Wiring: BaddieSpawnerService stamps AllianceAnchor
+  (feeds the GetEffectiveLevel alliance branch via the pure AllianceRules core + spec) and
+  AllianceWith on BOTH sides (drives the client AllianceBanner — a gold top-center pill that
+  stays up for the fight). Dissolves on: wave dead + linger_seconds, leaving
+  alliance.dissolve_radius, joining a real team, or either player leaving. Knobs:
+  configs/teaming.lua alliance{}. Rewards intentionally unchanged (existing contributor /
+  kill-credit rules apply) — revisit if boosting shows up.
+  GROUP SEMANTICS (Jason: "all the alliance players team — heals and shields should apply
+  to each other"): N-player capable — every unteamed lower bystander at the trigger allies
+  to the TRIGGERER (the anchor must be the triggerer: the ENEMIES tune to them, so anchoring
+  to a higher bystander would overlevel the group vs the actual content). All members are
+  MUTUAL: AllianceWith on every member lists every other member (anchor + sibling lows), and
+  the ally set (CombatAllies pure core) extends the same surfaces teams get — squad-wide
+  support casts (_withTeamPets, reciprocity-gated), guardian summons (genie revives allies),
+  the caster's combat set (_enemiesInRange — taunts reach packs mauling an ally), and the
+  enemy rail. Explicit single-target casts already crossed via SELECTABLE = AFFECTABLE.
+  Achievements: alliances_formed ("Unlikely Allies") + allies_aided ("Guardian Angel"),
+  new-pairings-only.
 - TEAM FOLLOW shipped (Jason, 2026-07-07): any member auto-follows any teammate (not just the
   lead). Client `TeamFollowController` walk-follows via Humanoid:MoveTo; ANY manual movement
   input (WASD or mobile joystick, via the PlayerModule move vector) breaks it. Toggle = follow

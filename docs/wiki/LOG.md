@@ -12,9 +12,11 @@
   `assets/ui/imports/homeworld_grass_pets_2026-07-21_contact_sheet.png`,
   `assets/ui/imports/manifest_2026-07-21_homeworld_grass_pets.txt`.
 - Wired all ten `mesh_asset`/resolved-IMAGE `texture_asset` pairs in
-  `configs/pets.lua`; basic/golden now use the consistent Meshy art while
-  rainbow stays on its existing packaged model. Per-variant scale normalizes
-  the two source-size lanes to the established ~3-stud pet silhouette.
+  `configs/pets.lua`; basic/golden use the consistent Meshy art, and rainbow
+  reuses the basic mesh/texture under the existing runtime rainbow treatment.
+  Per-variant scale normalizes the two source-size lanes to the established
+  ~3-stud pet silhouette. Group-owned flat card thumbnails were also replaced
+  so inventory, egg preview, and trade surfaces no longer show the legacy art.
 - Pet prebakes now compare their baked MeshPart mesh/texture ids with config
   before taking the fast path, so a stale `Models.rbxm` is replaced at runtime
   instead of silently keeping the previous art. Rigged-basic prebakes remain
@@ -1518,3 +1520,20 @@ Corrected the first contrast fix after live mobile testing showed Roblox still d
 TextButton glyphs beneath `UIGradient` despite `TextTransparency = 1`, creating worse doubled text.
 The native text is now always empty; a `DisplayText` attribute preserves the semantic state and a
 single child TextLabel renders it. Request-to-Sent updates now write through that one label directly.
+
+## 2026-07-21 — Consistent-pet retention baseline and build marker
+
+Captured the aggregate-only production retention baseline immediately before publishing the
+consistent Home/Grass pets: 50 ended first sessions, 5m57s average first-session time, 72% first
+hatch reach, 22% tutorial completion, and 74% exiting before earned level 2. Saved the exact merged
+counter snapshot under `docs/wiki/raw/retention/` so same-day post-publish increments can be diffed
+without downloading 1,030 raw event chunks. Future raw sessions and daily aggregate shards now carry
+the stamped build version/commit/branch/build time/dirty state plus analytics schema version.
+
+## 2026-07-21 — Earth Egg restored to the standard rarity curve
+
+Replaced the Grass/Earth Egg's inherited three-way 33% test-era table with the canonical per-pet
+world-egg weights: Common 45, Uncommon 30, Rare 18, Epic 6, Legendary 1, Secret 0.025. Bunny now
+uses Common, Bear and Doggy use Uncommon, Kitty uses Legendary, and Dragon uses Secret directly
+from one shared config table. Added a headless contract to prevent rarity labels and base odds from
+drifting apart again.

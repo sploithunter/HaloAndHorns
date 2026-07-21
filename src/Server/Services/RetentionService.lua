@@ -82,6 +82,7 @@ function RetentionService:Init()
     self._dataService = self._modules and self._modules.DataService
     self._config = self._configLoader:LoadConfig("retention")
     self._tutorialConfig = self._configLoader:LoadConfig("tutorial")
+    self._buildInfo = self._configLoader:LoadConfig("build_info")
     self._sessionStarted = {}
     self._sessionStartedAt = {}
     self._rawSessions = {}
@@ -200,6 +201,12 @@ function RetentionService:_beginRawSession(player)
             placeId = game.PlaceId,
             universeId = game.GameId,
             privateServer = game.PrivateServerId ~= "",
+            buildVersion = self._buildInfo.version,
+            buildCommit = self._buildInfo.commit,
+            buildBranch = self._buildInfo.branch,
+            buildBuiltAt = self._buildInfo.built_at,
+            buildDirty = self._buildInfo.dirty == true,
+            analyticsSchemaVersion = tonumber(self._eventConfig.schema_version) or 1,
         },
     }
     self:_appendRawEvent(player, "session_started", {

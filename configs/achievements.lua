@@ -183,6 +183,60 @@ return {
                 },
             },
         },
+        -- TEMPORARY ALLIANCES (Jason 2026-07-08): both sides of a spawn-trigger alliance
+        -- count — being lifted, and lifting. "Guardian Angel" fits the heaven/hell theme:
+        -- a veteran whose presence carries lower players through their fights.
+        alliances_formed = {
+            id = "alliances_formed",
+            category = "combat",
+            display_name = "Unlikely Allies",
+            stat = "alliances_formed",
+            tiers = {
+                {
+                    id = "allied_1",
+                    goal = 1,
+                    reward = { type = "currency", currency = "gems", amount = 15 },
+                },
+                {
+                    id = "allied_10",
+                    goal = 10,
+                    reward = { type = "currency", currency = "gems", amount = 50 },
+                },
+                {
+                    id = "allied_50",
+                    goal = 50,
+                    reward = { type = "currency", currency = "gems", amount = 150 },
+                },
+            },
+        },
+        allies_aided = {
+            id = "allies_aided",
+            category = "combat",
+            display_name = "Guardian Angel",
+            stat = "allies_aided",
+            tiers = {
+                {
+                    id = "aided_1",
+                    goal = 1,
+                    reward = { type = "currency", currency = "gems", amount = 15 },
+                },
+                {
+                    id = "aided_10",
+                    goal = 10,
+                    reward = { type = "currency", currency = "gems", amount = 50 },
+                },
+                {
+                    id = "aided_50",
+                    goal = 50,
+                    reward = { type = "currency", currency = "gems", amount = 150 },
+                },
+                {
+                    id = "aided_250",
+                    goal = 250,
+                    reward = { type = "currency", currency = "gems", amount = 500 },
+                },
+            },
+        },
 
         -- ===================== COLLECTION =====================
         distinct_pets = {

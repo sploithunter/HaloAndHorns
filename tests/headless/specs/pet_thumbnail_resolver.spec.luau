@@ -39,5 +39,21 @@ return function()
             expect(Resolver.resolve(realRegistry, "ashfeather_phoenix", "golden", false)).to.ok()
             expect(Resolver.resolve(realRegistry, "ashmane_lion", "basic", false)).to.ok()
         end)
+
+        it("uses the replaced Home/grass thumbnails and shares basic art with rainbow", function()
+            local expected = {
+                bear = { "rbxassetid://72116634639213", "rbxassetid://110568698023011" },
+                bunny = { "rbxassetid://100736300063954", "rbxassetid://128401392113239" },
+                doggy = { "rbxassetid://75731963946532", "rbxassetid://101554486473755" },
+                dragon = { "rbxassetid://102539163624156", "rbxassetid://96167411359549" },
+                kitty = { "rbxassetid://74416019256177", "rbxassetid://118103974007378" },
+            }
+
+            for petType, ids in pairs(expected) do
+                expect(Resolver.resolve(realRegistry, petType, "basic", false)).to.equal(ids[1])
+                expect(Resolver.resolve(realRegistry, petType, "golden", false)).to.equal(ids[2])
+                expect(Resolver.resolve(realRegistry, petType, "rainbow", false)).to.equal(ids[1])
+            end
+        end)
     end)
 end

@@ -95,6 +95,17 @@ return {
             color = "origin",
             sound = nil,
         },
+        -- caster-anchored HEAL glow (attached golden motes, ~2s) — the Revive moment. Attached, not
+        -- pbaoe, ON PURPOSE: Revive is generic/white (element "neutral") and the pbaoe/st_aoe
+        -- renderers are hand-authored per biome — attached themes are the only element-agnostic path.
+        heal_glow = {
+            pattern = "attached",
+            anchor = "self",
+            category = "heal",
+            duration = 2.0,
+            color = "origin",
+            sound = nil,
+        },
 
         -- ===== Palette expansion (cheap unlocks over the existing renderers) =====
         -- CAST tells -------------------------------------------------------------------------------

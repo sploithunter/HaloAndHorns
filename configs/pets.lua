@@ -10,8 +10,22 @@
     - Balanced progression system with clear rarity tiers
 --]]
 
+-- Canonical per-pet species weights for ordinary world eggs. Egg-specific tables may
+-- deliberately override these (for example, a bespoke apex chase), but standard eggs
+-- should reference this table so a Common/Uncommon/etc. label has one configured meaning.
+local STANDARD_EGG_SPECIES_WEIGHTS = {
+    common = 45,
+    uncommon = 30,
+    rare = 18,
+    epic = 6,
+    legendary = 1,
+    secret = 0.025,
+}
+
 local petConfig = {
     version = "1.0.0",
+
+    standard_egg_species_weights = STANDARD_EGG_SPECIES_WEIGHTS,
 
     -- Egg-stand resolution (unified, area/world-based). An egg-hatcher stand is an AUTHORED map
     -- Model with a `UIanchor` part. EggStandPlacement discovers every such stand under
@@ -2497,7 +2511,10 @@ local petConfig = {
                     -- Uses default viewport_zoom (1.5)
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://92437511216136",
+                    -- Rainbow is a runtime visual treatment over the basic body, not separate art.
+                    mesh_asset = "rbxassetid://133536425144853",
+                    texture_asset = "rbxassetid://84442074169129",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Bear",
                     abilities = { "rainbow_scratch", "ultimate_magnet", "luck_aura" },
@@ -3126,7 +3143,9 @@ local petConfig = {
                     viewport_zoom = 1.8, -- Golden bunny zoom
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://113112612195316",
+                    mesh_asset = "rbxassetid://82125034029803",
+                    texture_asset = "rbxassetid://71468779539283",
+                    asset_transform = { scale = 1.6 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Bunny",
                     abilities = { "rainbow_hop", "time_warp", "double_luck" },
@@ -3176,7 +3195,9 @@ local petConfig = {
                     -- Uses default viewport_zoom (1.5)
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://139772169909973",
+                    mesh_asset = "rbxassetid://112015302170996",
+                    texture_asset = "rbxassetid://122469325720894",
+                    asset_transform = { scale = 1.6 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Doggy",
                     abilities = { "rainbow_bark", "pack_leader", "infinite_loyalty" },
@@ -3224,7 +3245,9 @@ local petConfig = {
                     viewport_zoom = 1.5, -- fleet default (inventory card size is normalized in AssetPreloadService, not here)
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://120821607721730",
+                    mesh_asset = "rbxassetid://136769550943735",
+                    texture_asset = "rbxassetid://113540978797107",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Dragon",
                     abilities = { "prismatic_breath", "reality_burn", "cosmic_flight" },
@@ -3277,7 +3300,9 @@ local petConfig = {
                     viewport_zoom = 1.6, -- Golden kitty zoom
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://124744079930917",
+                    mesh_asset = "rbxassetid://102876972452299",
+                    texture_asset = "rbxassetid://107470584206079",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Kitty",
                     abilities = { "rainbow_claws", "nine_lives", "shadow_step" },
@@ -6274,13 +6299,14 @@ local petConfig = {
                 offset = Vector3.new(0, 0, 0),
                 lighting = "default",
             },
-            -- Stage 1: which earth pet (same roster/weights as the original basic_egg).
+            -- Stage 1: canonical per-pet rarity weights. Bear and Doggy are both
+            -- Uncommon, so they intentionally receive the same standard weight.
             pet_weights = {
-                bear = 24990,
-                bunny = 24990,
-                doggy = 24990,
-                kitty = 500, -- ~0.66% — matched to basic_egg (was a 10/1 test placeholder)
-                dragon = 19, -- ~0.05% SECRET — hidden from all odds displays -- HALVED (global x2 coins => x2 hatch rate; wall-clock secret rate preserved)
+                bear = STANDARD_EGG_SPECIES_WEIGHTS.uncommon,
+                bunny = STANDARD_EGG_SPECIES_WEIGHTS.common,
+                doggy = STANDARD_EGG_SPECIES_WEIGHTS.uncommon,
+                kitty = STANDARD_EGG_SPECIES_WEIGHTS.legendary,
+                dragon = STANDARD_EGG_SPECIES_WEIGHTS.secret,
             },
             -- Stage 2: variant rarity (basic mostly; small golden/rainbow chance).
             rarity_rates = {
