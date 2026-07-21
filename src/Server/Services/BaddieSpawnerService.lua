@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
+local AllianceRules = require(ReplicatedStorage.Shared.Game.AllianceRules)
 
 local BaddieSpawnerService = {}
 BaddieSpawnerService.__index = BaddieSpawnerService
@@ -38,6 +39,8 @@ function BaddieSpawnerService:Init()
         return configLoader:LoadConfig("enemy_leash")
     end)
     self._leashConfig = (okLeash and leashCfg) or {}
+    -- TEMPORARY ALLIANCES formed at spawn triggers: [lowPlayer] = { anchor, spawner, lingerUntil }
+    self._alliances = {}
     self._spawners = {} -- part -> { cooldownUntil }
 end
 
@@ -173,6 +176,10 @@ function BaddieSpawnerService:_trigger(part, player, rng)
     local engaged = self:_engagedTeamCount(player, part.Position)
     local teamingCfg = self:_teamingConfig()
     local cap = PackScale.count(tonumber(self._config.max_alive) or 6, engaged, nil, teamingCfg)
+    -- TEMPORARY ALLIANCE (Jason, docs/TEAMING.md): everyone co-present at THIS trigger
+    -- allies for the encounter — lower unteamed players sidekick UP to the triggerer.
+    -- Formed at the spawn moment only; wandering into a running fight forms nothing.
+    self:_formAlliances(player, part)
     -- COMBAT ONRAMP CAVE (Jason: "open up combat immediately at the caves...
     -- only ONE enemy ever spawns from that cave at level one — the odds of
     -- being defeated are pretty low"): a sub-onramp player triggers a SOLO
@@ -301,6 +308,133 @@ function BaddieSpawnerService:_trigger(part, player, rng)
 end
 
 -- True if this spawner part lives inside a realm map folder (Maps/Heaven_N or Maps/Hell_N). Those
+-- ── TEMPORARY ALLIANCE (Jason 2026-07-08, docs/TEAMING.md) ─────────────────────────────
+-- Sidekick-UP-only proximity alliance formed at the SPAWN TRIGGER: unteamed, combat-active
+-- bystanders meaningfully below the triggerer anchor to them for the encounter. The
+-- AllianceAnchor attribute feeds PlayerProgressionService:GetEffectiveLevel (same pipe the
+-- formal-team sidekick uses), AllianceWith drives the client banner on BOTH players, and
+-- the tick below dissolves the alliance when the fight ends / someone leaves.
+
+function BaddieSpawnerService:_republishEffective(player)
+    pcall(function()
+        local prog = _G.RBXTemplateServices
+            and _G.RBXTemplateServices:Get("PlayerProgressionService")
+        if prog and prog.GetEffectiveLevel then
+            player:SetAttribute("EffectiveLevel", prog:GetEffectiveLevel(player))
+        end
+    end)
+end
+
+-- The anchor's banner names every live ally (csv); nil clears it.
+function BaddieSpawnerService:_refreshAnchorBadge(anchor)
+    if not anchor or not anchor.Parent then
+        return
+    end
+    local names = {}
+    for low, rec in pairs(self._alliances) do
+        if rec.anchor == anchor and low.Parent then
+            names[#names + 1] = low.Name
+        end
+    end
+    table.sort(names)
+    anchor:SetAttribute("AllianceWith", #names > 0 and table.concat(names, ",") or nil)
+end
+
+function BaddieSpawnerService:_formAlliances(triggerer, part)
+    local teamingCfg = self:_teamingConfig()
+    local aCfg = teamingCfg.alliance or {}
+    if aCfg.enabled == false then
+        return
+    end
+    local minEngage = 5
+    pcall(function()
+        local combat = require(ReplicatedStorage.Configs:WaitForChild("combat"))
+        minEngage = tonumber(combat.engagement and combat.engagement.min_engage_level) or 5
+    end)
+    local radius = tonumber(teamingCfg.pack and teamingCfg.pack.engaged_radius) or 60
+    local trigLevel = tonumber(triggerer:GetAttribute("Level")) or 1
+    for _, other in ipairs(Players:GetPlayers()) do
+        -- unteamed bystanders only: a formal team already governs its members' EffectiveLevel
+        if other ~= triggerer and other:GetAttribute("TeamId") == nil then
+            local hrp = other.Character and other.Character:FindFirstChild("HumanoidRootPart")
+            if hrp and (hrp.Position - part.Position).Magnitude <= radius then
+                local lvl = tonumber(other:GetAttribute("Level")) or 1
+                local ally = AllianceRules.shouldAlly(trigLevel, lvl, {
+                    enabled = aCfg.enabled,
+                    min_level_gap = aCfg.min_level_gap,
+                    min_engage_level = minEngage,
+                })
+                if ally then
+                    -- new alliance or refresh (a re-trigger re-anchors to the fresh wave)
+                    self._alliances[other] = { anchor = triggerer, spawner = part }
+                    other:SetAttribute("AllianceAnchor", triggerer.Name)
+                    other:SetAttribute("AllianceWith", triggerer.Name)
+                    self:_republishEffective(other)
+                    self:_refreshAnchorBadge(triggerer)
+                    self._logger:Info("Temporary alliance formed", {
+                        low = other.Name,
+                        anchor = triggerer.Name,
+                        spawner = part.Name,
+                    })
+                end
+            end
+        end
+    end
+end
+
+function BaddieSpawnerService:_dissolveAlliance(low, reason)
+    local rec = self._alliances[low]
+    if not rec then
+        return
+    end
+    self._alliances[low] = nil
+    if low.Parent then
+        low:SetAttribute("AllianceAnchor", nil)
+        low:SetAttribute("AllianceWith", nil)
+        self:_republishEffective(low)
+    end
+    self:_refreshAnchorBadge(rec.anchor)
+    self._logger:Info("Temporary alliance dissolved", {
+        low = low.Name,
+        anchor = rec.anchor and rec.anchor.Name or "?",
+        reason = reason,
+    })
+end
+
+-- Runs on the spawner tick: an alliance holds while its spawner's wave is alive and the
+-- allied player stays near; the fight ending (plus a short linger so re-triggers re-form
+-- seamlessly), leaving the area, joining a REAL team, or either player leaving dissolves it.
+function BaddieSpawnerService:_allianceTick(now)
+    local aCfg = self:_teamingConfig().alliance or {}
+    local dissolveRadius = tonumber(aCfg.dissolve_radius) or 140
+    local linger = tonumber(aCfg.linger_seconds) or 5
+    for low, rec in pairs(self._alliances) do
+        if not low.Parent or not rec.anchor.Parent then
+            self:_dissolveAlliance(low, "player_left")
+        elseif low:GetAttribute("TeamId") ~= nil then
+            self:_dissolveAlliance(low, "joined_team") -- the formal team takes over
+        else
+            local hrp = low.Character and low.Character:FindFirstChild("HumanoidRootPart")
+            local nearSpawner = hrp
+                and rec.spawner.Parent
+                and (hrp.Position - rec.spawner.Position).Magnitude <= dissolveRadius
+            if not nearSpawner then
+                self:_dissolveAlliance(low, "left_area")
+            else
+                local state = self._spawners[rec.spawner]
+                local aliveCount = state and #state.alive or 0
+                if aliveCount > 0 then
+                    rec.lingerUntil = nil -- fight is live: the alliance holds
+                elseif rec.lingerUntil == nil then
+                    rec.lingerUntil = now + linger
+                elseif now >= rec.lingerUntil then
+                    self:_dissolveAlliance(low, "fight_over")
+                end
+            end
+        end
+    end
+end
+
 -- caves are driven by the EnemyService roaming patrol, not this homeworld proximity-wave system.
 function BaddieSpawnerService:_isRealmCave(part)
     local node = part.Parent
@@ -375,6 +509,7 @@ function BaddieSpawnerService:Start()
                     end
                 end
             end
+            self:_allianceTick(now)
             task.wait(0.5)
         end
     end)

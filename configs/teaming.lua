@@ -67,6 +67,21 @@ return {
         economy_auras_shared = true, -- yield/luck pet auras also benefit FRESH teammates (consumer-side fold)
     },
 
+    -- TEMPORARY ALLIANCE (Jason 2026-07-08): two UNTEAMED players at the same home spawn
+    -- cave — the higher one trips the wave (enemies tune to THEM), so everyone co-present at
+    -- the trigger moment allies for the encounter: the lower player sidekicks UP to
+    -- (triggerer + sidekick.level_offset) via the existing EffectiveLevel path, and a
+    -- TEMPORARY ALLIANCE banner shows on both until the fight ends. SIDEKICK-UP ONLY — the
+    -- anchor is never exemplared down (that stays a consensual formal-team thing). Walking
+    -- into an already-running fight forms nothing ("purple enemies are your problem").
+    -- Formation radius = pack.engaged_radius (same scan as pack scaling).
+    alliance = {
+        enabled = true,
+        min_level_gap = 3, -- triggerer must be at least this much higher (near-equals = noise)
+        dissolve_radius = 140, -- studs from the spawner before the alliance drops
+        linger_seconds = 5, -- grace after the wave dies before dissolving (re-triggers re-form)
+    },
+
     -- Kill credit (TM5): teammates of any damage contributor SHARE the kill award when
     -- within `radius` studs of the down site — the healer/buffer gets paid without landing
     -- a hit. Contributors themselves are always paid regardless of distance.

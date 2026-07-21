@@ -210,6 +210,26 @@ function PlayerProgressionService:GetEffectiveLevel(player)
             end
         end
     end
+    -- TEMPORARY ALLIANCE (2026-07-08, docs/TEAMING.md): an UNTEAMED player co-present at a
+    -- spawn trigger anchors to the (higher) triggerer via the AllianceAnchor attribute that
+    -- BaddieSpawnerService stamps for the encounter. SIDEKICK-UP ONLY — AllianceRules never
+    -- lowers anyone. Formal teams above take precedence (the branch only runs unteamed).
+    local allyName = player:GetAttribute("AllianceAnchor")
+    if type(allyName) == "string" and allyName ~= "" then
+        local anchor = Players:FindFirstChild(allyName)
+        if anchor then
+            local anchorLevel = self:GetEarnedLevel(anchor)
+            if anchorLevel and anchorLevel > 0 then
+                local offset = -1
+                pcall(function()
+                    local teaming = require(ReplicatedStorage.Configs:WaitForChild("teaming"))
+                    offset = tonumber(teaming.sidekick and teaming.sidekick.level_offset) or offset
+                end)
+                local AllianceRules = require(ReplicatedStorage.Shared.Game.AllianceRules)
+                return AllianceRules.effectiveLevel(own, anchorLevel, offset)
+            end
+        end
+    end
     return own
 end
 
