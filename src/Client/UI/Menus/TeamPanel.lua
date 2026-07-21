@@ -13,9 +13,11 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local CloseButton = require(script.Parent.Parent.Components.CloseButton)
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
+local TeamPanelLayout = require(script.Parent.TeamPanelLayout)
 
 local REMOTE_NAME = "GameAPICommand"
 
@@ -66,6 +68,8 @@ function TeamPanel.new()
     self.frame = nil
     self.liveGui = nil
     self.invitePopup = nil
+    self.viewportConnection = nil
+    self.cameraConnection = nil
     -- Live from boot: an invite is a replicated attribute stamp, not an event.
     localPlayer:GetAttributeChangedSignal("TeamInviteFrom"):Connect(function()
         local from = localPlayer:GetAttribute("TeamInviteFrom")
@@ -82,6 +86,71 @@ function TeamPanel.new()
         end
     end)
     return self
+end
+
+function TeamPanel:_disconnectViewport()
+    if self.viewportConnection then
+        self.viewportConnection:Disconnect()
+        self.viewportConnection = nil
+    end
+    if self.cameraConnection then
+        self.cameraConnection:Disconnect()
+        self.cameraConnection = nil
+    end
+end
+
+function TeamPanel:_applyResponsiveLayout()
+    if not self.frame then
+        return
+    end
+
+    local camera = Workspace.CurrentCamera
+    local viewport = camera and camera.ViewportSize or Vector2.new(1280, 720)
+    local panel = TeamPanelLayout.panelSize(viewport.X, viewport.Y)
+    self.frame.Size = UDim2.fromOffset(panel.width, panel.height)
+
+    local teamed = self.leaveBtn and self.leaveBtn.Visible or false
+    local content = TeamPanelLayout.content(panel.height, teamed)
+    if self.header then
+        self.header.Size = UDim2.new(1, 0, 0, content.headerHeight)
+    end
+    if self.hint then
+        self.hint.Size = UDim2.new(1, -(content.horizontalMargin * 2), 0, content.hintHeight)
+        self.hint.Position = UDim2.fromOffset(content.horizontalMargin, content.hintTop)
+    end
+    if self.list then
+        self.list.Size = UDim2.new(1, -(content.horizontalMargin * 2), 0, content.listHeight)
+        self.list.Position = UDim2.fromOffset(content.horizontalMargin, content.listTop)
+    end
+    if self.leaveBtn then
+        self.leaveBtn.Size = UDim2.fromOffset(180, content.leaveHeight)
+        self.leaveBtn.Position = UDim2.new(0.5, 0, 1, -content.leaveBottom)
+        self.leaveBtn.AnchorPoint = Vector2.new(0.5, 1)
+    end
+end
+
+function TeamPanel:_watchViewport()
+    self:_disconnectViewport()
+
+    local function attachCamera()
+        if self.viewportConnection then
+            self.viewportConnection:Disconnect()
+            self.viewportConnection = nil
+        end
+        local camera = Workspace.CurrentCamera
+        if camera then
+            self.viewportConnection = camera
+                :GetPropertyChangedSignal("ViewportSize")
+                :Connect(function()
+                    self:_applyResponsiveLayout()
+                end)
+        end
+        self:_applyResponsiveLayout()
+    end
+
+    self.cameraConnection = Workspace:GetPropertyChangedSignal("CurrentCamera")
+        :Connect(attachCamera)
+    attachCamera()
 end
 
 function TeamPanel:_callBus(name, args)
@@ -104,7 +173,7 @@ function TeamPanel:Show(parent)
     end
     local frame = Instance.new("Frame")
     frame.Name = "TeamPanel"
-    frame.Size = UDim2.new(0.42, 0, 0.6, 0)
+    frame.Size = UDim2.fromOffset(760, 520)
     frame.Position = UDim2.new(0.5, 0, 0.5, 0)
     frame.AnchorPoint = Vector2.new(0.5, 0.5)
     frame.BackgroundColor3 = COLORS.panel
@@ -124,6 +193,7 @@ function TeamPanel:Show(parent)
     header.BorderSizePixel = 0
     header.ZIndex = 101
     header.Parent = frame
+    self.header = header
     corner(header, 20)
     local g = Instance.new("UIGradient")
     g.Color = ColorSequence.new({
@@ -205,6 +275,7 @@ function TeamPanel:Show(parent)
 
     self.isVisible = true
     self:_refresh()
+    self:_watchViewport()
 end
 
 -- Render from the replicated attributes: solo -> invite picker; teamed -> roster.
@@ -255,6 +326,7 @@ function TeamPanel:_refresh()
             ec.Parent = empty
         end
     end
+    self:_applyResponsiveLayout()
 end
 
 function TeamPanel:_row(name, order, opts)
@@ -404,6 +476,8 @@ function TeamPanel:Hide()
         self.frame:Destroy()
         self.frame = nil
     end
+    self:_disconnectViewport()
+    self.header = nil
     self.list = nil
     self.hint = nil
     self.leaveBtn = nil
