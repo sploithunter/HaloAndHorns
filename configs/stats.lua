@@ -40,6 +40,19 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        -- TEMPORARY ALLIANCE counters (Jason 2026-07-08): formed at spawn triggers between
+        -- unteamed mixed-level players (docs/TEAMING.md). Two sides, two stats — being
+        -- LIFTED and doing the LIFTING are different achievements.
+        alliances_formed = {
+            display_name = "Temporary Alliances", -- the sidekicked side: you were lifted
+            scope = "lifetime",
+            default = 0,
+        },
+        allies_aided = {
+            display_name = "Allies Aided", -- the anchor side: your presence lifted someone
+            scope = "lifetime",
+            default = 0,
+        },
         enhancements_found = {
             display_name = "Enhancements Found",
             scope = "lifetime",

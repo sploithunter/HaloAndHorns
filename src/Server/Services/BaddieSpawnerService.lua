@@ -365,17 +365,29 @@ function BaddieSpawnerService:_formAlliances(triggerer, part)
                     min_engage_level = minEngage,
                 })
                 if ally then
-                    -- new alliance or refresh (a re-trigger re-anchors to the fresh wave)
+                    -- NEW alliance vs refresh: a re-trigger of the same pair just re-anchors
+                    -- to the fresh wave — only a genuinely new pairing counts for stats.
+                    local existing = self._alliances[other]
+                    local isNew = not existing or existing.anchor ~= triggerer
                     self._alliances[other] = { anchor = triggerer, spawner = part }
                     other:SetAttribute("AllianceAnchor", triggerer.Name)
                     other:SetAttribute("AllianceWith", triggerer.Name)
                     self:_republishEffective(other)
                     self:_refreshAnchorBadge(triggerer)
-                    self._logger:Info("Temporary alliance formed", {
-                        low = other.Name,
-                        anchor = triggerer.Name,
-                        spawner = part.Name,
-                    })
+                    if isNew then
+                        -- achievement counters (configs/achievements.lua): both sides count —
+                        -- the lifted ("Unlikely Allies") and the lifter ("Guardian Angel")
+                        pcall(function()
+                            local stats = _G.RBXTemplateServices:Get("StatsService")
+                            stats:Increment(other, "alliances_formed", 1)
+                            stats:Increment(triggerer, "allies_aided", 1)
+                        end)
+                        self._logger:Info("Temporary alliance formed", {
+                            low = other.Name,
+                            anchor = triggerer.Name,
+                            spawner = part.Name,
+                        })
+                    end
                 end
             end
         end
