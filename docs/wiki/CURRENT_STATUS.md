@@ -92,8 +92,11 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Breakable crystal spawners are present and visually tuned on the baseplate.
 - Coin generator exists so testing can fund egg hatching.
 - Eggs can hatch pets from configured asset ids.
-- Fusion mints unique Chaotic pets through `PetGrantService` and rolls failed consumption back to exact inventory records. The six original packaged pets and newer Meshy pets retain their separate asset-loading paths.
-- Original reference bear asset was restored for style consistency.
+- Fusion mints unique Chaotic pets through `PetGrantService` and rolls failed consumption back to exact inventory records. Packaged-model pets and Meshy mesh+texture pets retain their separate asset-loading paths.
+- The Home/grass bunny, doggy, kitty, bear, and dragon use a consistent Meshy batch for basic +
+  golden variants (ten group-owned mesh/image pairs, 2026-07-21); their rainbow variants remain on
+  the existing packaged models. Mesh-combine prebakes validate their baked MeshPart source ids
+  against config before the fast path, so changing art cannot silently retain a stale model cache.
 - Rainbow pet visual effect exists and applies to models such as Rainbow Bear.
 - Admin control panel opens and includes event/effects testing commands.
 - Global event support has started, including scheduled event concepts and a UTC event clock.

@@ -1,5 +1,25 @@
 # Log
 
+## 2026-07-21 — Homeworld grass pet replacements (basic + gold)
+
+- Dropped bunny/doggy/kitty/bear/dragon GLBs into `assets/source/pets/`
+  (`_basic` / `_gold`, plus `_golden` aliases for manifest keys).
+- Bunny was 15,278 tris → decimated to 10k FBX via `decimate_mesh.sh`;
+  others already ≤6.5k (pass-through `_10k.fbx`).
+- Uploaded + Studio-resolved mesh/image ids (group 15872767) into
+  `scripts/pet_mesh_ids.json`.
+- Contact sheet + import manifest:
+  `assets/ui/imports/homeworld_grass_pets_2026-07-21_contact_sheet.png`,
+  `assets/ui/imports/manifest_2026-07-21_homeworld_grass_pets.txt`.
+- Wired all ten `mesh_asset`/resolved-IMAGE `texture_asset` pairs in
+  `configs/pets.lua`; basic/golden now use the consistent Meshy art while
+  rainbow stays on its existing packaged model. Per-variant scale normalizes
+  the two source-size lanes to the established ~3-stud pet silhouette.
+- Pet prebakes now compare their baked MeshPart mesh/texture ids with config
+  before taking the fast path, so a stale `Models.rbxm` is replaced at runtime
+  instead of silently keeping the previous art. Rigged-basic prebakes remain
+  explicitly exempt because their static mesh fields are intentional fallbacks.
+
 ## 2026-07-17 — Disarm icon (shackled hands) in all colors
 
 - Normalized ChatGPT disarm disc (black bg → transparent) into

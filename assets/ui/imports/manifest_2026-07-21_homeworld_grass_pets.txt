@@ -1,0 +1,63 @@
+# Homeworld grass pet replacements — 2026-07-21
+# bunny / doggy / kitty / bear / dragon × basic + gold
+
+## Contact sheet
+assets/ui/imports/homeworld_grass_pets_2026-07-21_contact_sheet.png
+(also: assets/exports/pets/homeworld_grass_pets_2026-07-21_contact_sheet.png)
+
+## Processing
+- Source GLBs from Downloads → assets/source/pets/{pet}_{basic,gold}.glb
+  (+ {pet}_golden.* aliases for assets/manifest/pets.json keys)
+- Bunny 15,278 tris → decimated to 10k via scripts/decimate_mesh.sh
+- Others already ≤6.5k → pass-through *_10k.fbx
+- Preview PNGs edge-white → assets/exports/pets/{basic,gold}/
+- Upload: node scripts/upload_pets.js upload --pets bunny,doggy,kitty,bear,dragon --variants basic,gold --realm base --origin grass
+- Studio resolve (InsertService) → meshId + imageId in scripts/pet_mesh_ids.json
+
+## Triangle counts (source → export)
+
+pet	variant	source_tris	export_fbx	export_tris
+bunny	basic	15278	assets/exports/pets/bunny_basic/bunny_basic_10k.fbx	10000
+bunny	gold	15278	assets/exports/pets/bunny_gold/bunny_gold_10k.fbx	10000
+doggy	basic	5003	assets/exports/pets/doggy_basic/doggy_basic_10k.fbx	5003
+doggy	gold	5003	assets/exports/pets/doggy_gold/doggy_gold_10k.fbx	5003
+kitty	basic	6120	assets/exports/pets/kitty_basic/kitty_basic_10k.fbx	6112
+kitty	gold	6120	assets/exports/pets/kitty_gold/kitty_gold_10k.fbx	6112
+bear	basic	5418	assets/exports/pets/bear_basic/bear_basic_10k.fbx	5418
+bear	gold	5418	assets/exports/pets/bear_gold/bear_gold_10k.fbx	5418
+dragon	basic	6458	assets/exports/pets/dragon_basic/dragon_basic_10k.fbx	6458
+dragon	gold	6458	assets/exports/pets/dragon_gold/dragon_gold_10k.fbx	6458
+
+## Preview images (transparent)
+
+pet	variant	preview_png
+bunny	basic	assets/exports/pets/basic/bunny_basic.png
+bunny	gold	assets/exports/pets/gold/bunny_gold.png
+doggy	basic	assets/exports/pets/basic/doggy_basic.png
+doggy	gold	assets/exports/pets/gold/doggy_gold.png
+kitty	basic	assets/exports/pets/basic/kitty_basic.png
+kitty	gold	assets/exports/pets/gold/kitty_gold.png
+bear	basic	assets/exports/pets/basic/bear_basic.png
+bear	gold	assets/exports/pets/gold/bear_gold.png
+dragon	basic	assets/exports/pets/basic/dragon_basic.png
+dragon	gold	assets/exports/pets/gold/dragon_gold.png
+
+## Uploaded + resolved (group 15872767)
+
+stem	model_asset_id	texture_decal_id	mesh_id	image_id
+bunny_basic	129732620533207	98201681159663	rbxassetid://82125034029803	rbxassetid://71468779539283
+bunny_gold	87380438652677	123202309821549	rbxassetid://104487535980339	rbxassetid://70991171666859
+doggy_basic	136186466674597	114058332708104	rbxassetid://112015302170996	rbxassetid://122469325720894
+doggy_gold	107874469300427	95278195527446	rbxassetid://75516117278305	rbxassetid://108981069156200
+kitty_basic	85016491785449	86269930517584	rbxassetid://102876972452299	rbxassetid://107470584206079
+kitty_gold	81172485806216	127238305089401	rbxassetid://124827770454459	rbxassetid://111506677857460
+bear_basic	111688029636170	92179789219966	rbxassetid://133536425144853	rbxassetid://84442074169129
+bear_gold	76133392237663	73071344165712	rbxassetid://87363912630069	rbxassetid://108884590012437
+dragon_basic	74376873693118	95515949949882	rbxassetid://136769550943735	rbxassetid://113540978797107
+dragon_gold	83575962013296	82423030148985	rbxassetid://137902863642024	rbxassetid://111720576430272
+
+Reminder: runtime texture_asset = resolved IMAGE id, not the Decal id.
+Full registry: scripts/pet_mesh_ids.json
+
+## Pending
+Wire mesh_asset + texture_asset into configs/pets.lua (replace packaged asset_id for these homeworld variants) when ready to swap live models.
