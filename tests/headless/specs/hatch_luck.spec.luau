@@ -24,6 +24,17 @@ end
 
 return function()
     describe("hatch luck progression", function()
+        it("grass egg uses the canonical species weights for each pet rarity", function()
+            local standard = pets.standard_egg_species_weights
+            local weights = pets.egg_sources.grass_egg.pet_weights
+
+            expect(weights.bunny).to.equal(standard.common)
+            expect(weights.bear).to.equal(standard.uncommon)
+            expect(weights.doggy).to.equal(standard.uncommon)
+            expect(weights.kitty).to.equal(standard.legendary)
+            expect(weights.dragon).to.equal(standard.secret)
+        end)
+
         it("first-hatch luck favors useful Bear and Doggy starters over Bunny", function()
             -- Rarity is part of the species-luck mechanic, not merely a display label.
             -- Keeping Bunny common while Bear/Doggy are uncommon lets the one-roll

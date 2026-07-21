@@ -1529,3 +1529,11 @@ hatch reach, 22% tutorial completion, and 74% exiting before earned level 2. Sav
 counter snapshot under `docs/wiki/raw/retention/` so same-day post-publish increments can be diffed
 without downloading 1,030 raw event chunks. Future raw sessions and daily aggregate shards now carry
 the stamped build version/commit/branch/build time/dirty state plus analytics schema version.
+
+## 2026-07-21 — Earth Egg restored to the standard rarity curve
+
+Replaced the Grass/Earth Egg's inherited three-way 33% test-era table with the canonical per-pet
+world-egg weights: Common 45, Uncommon 30, Rare 18, Epic 6, Legendary 1, Secret 0.025. Bunny now
+uses Common, Bear and Doggy use Uncommon, Kitty uses Legendary, and Dragon uses Secret directly
+from one shared config table. Added a headless contract to prevent rarity labels and base odds from
+drifting apart again.

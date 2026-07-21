@@ -10,8 +10,22 @@
     - Balanced progression system with clear rarity tiers
 --]]
 
+-- Canonical per-pet species weights for ordinary world eggs. Egg-specific tables may
+-- deliberately override these (for example, a bespoke apex chase), but standard eggs
+-- should reference this table so a Common/Uncommon/etc. label has one configured meaning.
+local STANDARD_EGG_SPECIES_WEIGHTS = {
+    common = 45,
+    uncommon = 30,
+    rare = 18,
+    epic = 6,
+    legendary = 1,
+    secret = 0.025,
+}
+
 local petConfig = {
     version = "1.0.0",
+
+    standard_egg_species_weights = STANDARD_EGG_SPECIES_WEIGHTS,
 
     -- Egg-stand resolution (unified, area/world-based). An egg-hatcher stand is an AUTHORED map
     -- Model with a `UIanchor` part. EggStandPlacement discovers every such stand under
@@ -6285,13 +6299,14 @@ local petConfig = {
                 offset = Vector3.new(0, 0, 0),
                 lighting = "default",
             },
-            -- Stage 1: which earth pet (same roster/weights as the original basic_egg).
+            -- Stage 1: canonical per-pet rarity weights. Bear and Doggy are both
+            -- Uncommon, so they intentionally receive the same standard weight.
             pet_weights = {
-                bear = 24990,
-                bunny = 24990,
-                doggy = 24990,
-                kitty = 500, -- ~0.66% — matched to basic_egg (was a 10/1 test placeholder)
-                dragon = 19, -- ~0.05% SECRET — hidden from all odds displays -- HALVED (global x2 coins => x2 hatch rate; wall-clock secret rate preserved)
+                bear = STANDARD_EGG_SPECIES_WEIGHTS.uncommon,
+                bunny = STANDARD_EGG_SPECIES_WEIGHTS.common,
+                doggy = STANDARD_EGG_SPECIES_WEIGHTS.uncommon,
+                kitty = STANDARD_EGG_SPECIES_WEIGHTS.legendary,
+                dragon = STANDARD_EGG_SPECIES_WEIGHTS.secret,
             },
             -- Stage 2: variant rarity (basic mostly; small golden/rainbow chance).
             rarity_rates = {
