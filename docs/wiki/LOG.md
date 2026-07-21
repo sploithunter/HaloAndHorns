@@ -1544,3 +1544,9 @@ drifting apart again.
 `leaderstats.Level` IntValue whenever progression publishes. Roblox's regular player list therefore
 shows Level without a custom replacement menu or a second saved progression value. Verified in a
 fresh Studio play session that the native value exists and equals the replicated `Level` attribute.
+
+## 2026-07-21 — Loading screen states the core fantasy
+
+Added the config-owned loading-screen promise `Hatch Pets • Build a Squad • Battle Monsters`
+above the live boot phase text. It communicates the collection, team-building, and combat payoff
+during existing load time without delaying play or replacing the operational readiness messages.

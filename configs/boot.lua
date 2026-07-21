@@ -14,6 +14,10 @@
 ]]
 
 return {
+    -- The player-facing fantasy promise. Keep this separate from the changing phase text so the
+    -- loading screen explains both why the game is worth entering and what it is doing right now.
+    promise_text = "Hatch Pets  •  Build a Squad  •  Battle Monsters",
+
     -- Global, server-wide milestones (fire once per server). The orchestrator mirrors each to
     -- ReplicatedStorage.BootStatus so every client reads real server readiness.
     -- `background = true` => off the critical path: shown on the loading screen but does NOT gate play.

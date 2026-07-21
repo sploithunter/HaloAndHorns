@@ -40,6 +40,8 @@ local PHASES = (bootConfig and bootConfig.phases)
         { key = "client_ui", source = "player", blocking = true, text = "Preparing the HUD" },
     }
 local PLAYER_GATES = (bootConfig and bootConfig.player_gates) or {}
+local PROMISE_TEXT = (bootConfig and bootConfig.promise_text)
+    or "Hatch Pets  •  Build a Squad  •  Battle Monsters"
 local HARD_TIMEOUT = (bootConfig and bootConfig.reveal_timeout_seconds) or 25 -- never hang the boot
 local MIN_DISPLAY = (bootConfig and bootConfig.min_display_seconds) or 2 -- never blink past it
 local SETTLE = 0.75 -- seconds after the last gate: restyle passes (tray/currency/quest) land
@@ -71,9 +73,24 @@ title.TextColor3 = Color3.fromRGB(235, 238, 245)
 title.Text = "HALO AND HORNS"
 title.Parent = bg
 
+local promise = Instance.new("TextLabel")
+promise.Size = UDim2.fromScale(0.82, 0.045)
+promise.Position = UDim2.fromScale(0.5, 0.5)
+promise.AnchorPoint = Vector2.new(0.5, 0.5)
+promise.BackgroundTransparency = 1
+promise.Font = Enum.Font.GothamBold
+promise.TextScaled = true
+promise.TextColor3 = Color3.fromRGB(205, 181, 238)
+promise.Text = PROMISE_TEXT
+promise.Parent = bg
+local promiseTextLimit = Instance.new("UITextSizeConstraint")
+promiseTextLimit.MinTextSize = 13
+promiseTextLimit.MaxTextSize = 24
+promiseTextLimit.Parent = promise
+
 local status = Instance.new("TextLabel")
 status.Size = UDim2.fromScale(0.6, 0.05)
-status.Position = UDim2.fromScale(0.5, 0.56)
+status.Position = UDim2.fromScale(0.5, 0.57)
 status.AnchorPoint = Vector2.new(0.5, 0.5)
 status.BackgroundTransparency = 1
 status.Font = Enum.Font.GothamMedium
@@ -308,6 +325,7 @@ task.spawn(function()
     local fade = TweenService:Create(bg, t, { BackgroundTransparency = 1 })
     fade:Play()
     TweenService:Create(title, t, { TextTransparency = 1 }):Play()
+    TweenService:Create(promise, t, { TextTransparency = 1 }):Play()
     TweenService:Create(status, t, { TextTransparency = 1 }):Play()
     TweenService:Create(track, t, { BackgroundTransparency = 1 }):Play()
     TweenService:Create(fill, t, { BackgroundTransparency = 1 }):Play()
