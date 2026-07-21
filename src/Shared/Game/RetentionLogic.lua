@@ -133,6 +133,12 @@ function RetentionLogic.newAggregate()
         exitClaimedLevels = {},
         newPlayerExitEarnedLevels = {},
         newPlayerExitClaimedLevels = {},
+        starterChoice = {
+            shown = 0,
+            selected = 0,
+            totalSecondsToSelect = 0,
+            byPet = {},
+        },
     }
 end
 
@@ -170,6 +176,17 @@ function RetentionLogic.aggregateEvent(counters, seen, name, ctx, seconds, first
 
     if not firstSession then
         return
+    end
+    if name == "starter_pet_choice_shown" and not seen.starterChoiceShown then
+        seen.starterChoiceShown = true
+        counters.starterChoice.shown = (tonumber(counters.starterChoice.shown) or 0) + 1
+    elseif name == "starter_pet_selected" and not seen.starterPetSelected then
+        seen.starterPetSelected = true
+        counters.starterChoice.selected = (tonumber(counters.starterChoice.selected) or 0) + 1
+        counters.starterChoice.totalSecondsToSelect = (
+            tonumber(counters.starterChoice.totalSecondsToSelect) or 0
+        ) + math.max(0, tonumber(seconds) or 0)
+        increment(counters.starterChoice.byPet, ctx.petType)
     end
     if name == "tutorial_step_completed" and type(ctx.stepId) == "string" then
         local seenKey = "tutorial:" .. ctx.stepId

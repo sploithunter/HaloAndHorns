@@ -22,7 +22,14 @@ template, so this is intentionally strict. Read this before touching anything un
   ```
   items[uid] = { uid, id, variant, obtained_at, level, exp, enchantments, huge, serial, rarity_id, … }
   ```
-  Specials carry per-instance state, so they can never be stacked.
+Specials carry per-instance state, so they can never be stacked.
+
+The one-time chosen starter companion is intentionally a special uid record even when its species
+is normally stackable. `grant_source = "starter_choice"`, `unique = true`, and `locked = true`
+preserve its one-time provenance and keep the free grant out of trading. It is always the basic
+variant; the following Earth Egg remains a separate normal hatch. Admin Reset to Beginning removes
+only this reproducible starter special and re-arms the selector while retaining all other protected
+unique/huge pets.
 
 Discriminator: an entry is a **common stack** iff its key is exactly `id:variant` (contains `:`);
 a **special** is keyed by its uid (never contains `:`). There is **no `_kind` field**, **no

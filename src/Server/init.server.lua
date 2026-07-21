@@ -862,6 +862,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 TutorialService = modules:Get("TutorialService"),
                 EnhancementService = modules:Get("EnhancementService"),
                 HotbarService = modules:Get("HotbarService"),
+                StarterPetService = modules:Get("StarterPetService"),
             })
         end
         modules:Get("PowerService"):BindPeerServices({

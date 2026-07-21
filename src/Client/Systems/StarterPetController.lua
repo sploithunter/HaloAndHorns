@@ -312,7 +312,7 @@ function StarterPetController.start()
     Signals.StarterPetState.OnClientEvent:Connect(apply)
     task.spawn(function()
         local player = Players.LocalPlayer
-        if player:GetAttribute("ClientUIReady") ~= true then
+        while player:GetAttribute("ClientUIReady") ~= true do
             player:GetAttributeChangedSignal("ClientUIReady"):Wait()
         end
         Signals.StarterPetStateRequest:FireServer()

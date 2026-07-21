@@ -101,6 +101,33 @@ return function()
             expect(counters.newPlayerTutorialCompleted).to.equal(1)
         end)
 
+        it("aggregates the starter choice microfunnel and selected role once", function()
+            local counters = RetentionLogic.newAggregate()
+            local seen = {}
+            RetentionLogic.aggregateEvent(counters, seen, "starter_pet_choice_shown", {}, 2, true)
+            RetentionLogic.aggregateEvent(counters, seen, "starter_pet_choice_shown", {}, 3, true)
+            RetentionLogic.aggregateEvent(
+                counters,
+                seen,
+                "starter_pet_selected",
+                { petType = "kitty", role = "ranged" },
+                8.5,
+                true
+            )
+            RetentionLogic.aggregateEvent(
+                counters,
+                seen,
+                "starter_pet_selected",
+                { petType = "kitty" },
+                10,
+                true
+            )
+            expect(counters.starterChoice.shown).to.equal(1)
+            expect(counters.starterChoice.selected).to.equal(1)
+            expect(counters.starterChoice.totalSecondsToSelect).to.equal(8.5)
+            expect(counters.starterChoice.byPet.kitty).to.equal(1)
+        end)
+
         it("keeps veteran sessions in general counters but out of the new-player funnel", function()
             local counters = RetentionLogic.newAggregate()
             local seen = {}

@@ -181,4 +181,11 @@ function StarterPetService:_choose(player, request)
     finish({ granted = true, grantedPet = choice.id })
 end
 
+-- Admin Reset to Beginning uses this after it has rebuilt the new-player profile. Re-push in the
+-- same running session so playtesters do not need to leave/rejoin to see the selector.
+function StarterPetService:Refresh(player)
+    self._shown[player] = nil
+    self:_push(player)
+end
+
 return StarterPetService

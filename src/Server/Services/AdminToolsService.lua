@@ -18,6 +18,7 @@ function AdminToolsService.new()
     self._zoneService = nil
     self._petGrantService = nil
     self._hatchEntitlementService = nil
+    self._starterPetService = nil
     self._petsConfig = nil
     self._inventoryConfig = nil
     self._eggSystemConfig = nil
@@ -98,6 +99,7 @@ function AdminToolsService:BindPeerServices(services)
     self._tutorialService = services.TutorialService
     self._enhancementService = services.EnhancementService
     self._hotbarService = services.HotbarService
+    self._starterPetService = services.StarterPetService
 end
 
 function AdminToolsService:_handleSpawnEnemy(adminPlayer, data)
@@ -754,6 +756,9 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         "admin_reset_to_beginning",
         { critical = true, debounceSeconds = 0 }
     )
+    if self._starterPetService and self._starterPetService.Refresh then
+        self._starterPetService:Refresh(targetPlayer)
+    end
 
     self._logger:Warn("🔄 ADMIN RESET TO BEGINNING (KEEP HUGE)", {
         admin = adminPlayer.Name,
