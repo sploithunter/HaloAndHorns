@@ -8,11 +8,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local UIViewportScale = require(script.Parent.Parent.UI.UIViewportScale)
 
 local THUMBNAILS = require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
+local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
+local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
 
 local StarterPetController = {}
 local started = false
@@ -134,6 +137,32 @@ local function makeCard(parent, choice, index)
         role = choice.role,
         zIndex = 6,
     })
+
+    -- Support pets also carry their specific provided-power badge in the inventory card's
+    -- lower-right position. Bunny therefore teaches both halves of its identity here:
+    -- SUPPORT (archetype) and LUCK (the aura it provides while deployed).
+    local aura = PET_ROLES.support_auras and PET_ROLES.support_auras[choice.id]
+    local supportMeta = aura
+        and aura.kind
+        and POWER_ICONS.support_badge
+        and POWER_ICONS.support_badge[aura.kind]
+    if supportMeta and supportMeta.symbol then
+        local supportBadgeHolder = Instance.new("Frame")
+        supportBadgeHolder.Name = "SupportBadge"
+        supportBadgeHolder.BackgroundTransparency = 1
+        supportBadgeHolder.Size = UDim2.fromOffset(48, 48)
+        supportBadgeHolder.Position = UDim2.fromOffset(104, 104)
+        supportBadgeHolder.ZIndex = 8
+        supportBadgeHolder.Parent = button
+
+        local auraScope = PetTargeting.auraScope(aura, PET_ROLES)
+        PetBadge.create(supportBadgeHolder, {
+            element = PetBadge.elementForPetType(choice.id),
+            symbol = supportMeta.symbol,
+            ring = POWER_ICONS.targeting_ring and POWER_ICONS.targeting_ring[auraScope],
+            zIndex = 8,
+        })
+    end
 
     local name = label(
         button,
