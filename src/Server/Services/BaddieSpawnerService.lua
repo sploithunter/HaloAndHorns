@@ -29,6 +29,8 @@ end
 function BaddieSpawnerService:Init()
     self._logger = self._modules.Logger
     self._enemyService = self._modules.EnemyService
+    self._playerProgressionService = self._modules.PlayerProgressionService
+    self._statsService = self._modules.StatsService
     local configLoader = self._modules.ConfigLoader
     local ok, cfg = pcall(function()
         return configLoader:LoadConfig("enemies")
@@ -319,8 +321,7 @@ end
 
 function BaddieSpawnerService:_republishEffective(player)
     pcall(function()
-        local prog = _G.RBXTemplateServices
-            and _G.RBXTemplateServices:Get("PlayerProgressionService")
+        local prog = self._playerProgressionService
         if prog and prog.GetEffectiveLevel then
             player:SetAttribute("EffectiveLevel", prog:GetEffectiveLevel(player))
         end
@@ -404,7 +405,7 @@ function BaddieSpawnerService:_formAlliances(triggerer, part)
                         -- achievement counters (configs/achievements.lua): both sides count —
                         -- the lifted ("Unlikely Allies") and the lifter ("Guardian Angel")
                         pcall(function()
-                            local stats = _G.RBXTemplateServices:Get("StatsService")
+                            local stats = self._statsService
                             stats:Increment(other, "alliances_formed", 1)
                             stats:Increment(triggerer, "allies_aided", 1)
                         end)

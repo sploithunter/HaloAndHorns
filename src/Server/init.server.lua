@@ -663,7 +663,13 @@ loader:RegisterModule(
 loader:RegisterModule(
     "BaddieSpawnerService",
     ServerScriptService.Server.Services.BaddieSpawnerService,
-    { "Logger", "ConfigLoader", "EnemyService" }
+    {
+        "Logger",
+        "ConfigLoader",
+        "EnemyService",
+        "PlayerProgressionService",
+        "StatsService",
+    }
 )
 -- MeetCreatorService: first-time-in-a-server-with-a-creator -> their egg, once ever
 -- (configs/creators.lua). Resolves Data/Inventory/PetGrant services at runtime.
