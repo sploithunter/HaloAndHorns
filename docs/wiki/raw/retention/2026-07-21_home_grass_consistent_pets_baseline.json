@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "marker": {
+    "id": "home_grass_consistent_pets_pre_publish",
+    "capturedAtUtc": "2026-07-21T17:39:40Z",
+    "capturedAtLocal": "2026-07-21 11:39:40 AM MDT",
+    "status": "pre_publish_baseline",
+    "candidateCommit": "a1eac80",
+    "productionBuildAtCapture": "bc337a4",
+    "note": "The consistent Home/Grass pets were Studio-verified but not yet merged or published. Post-change exposure begins only after production publish."
+  },
+  "source": {
+    "universeId": 10307183003,
+    "placeId": 77766176054993,
+    "dataStore": "RetentionEvents_v1",
+    "cohortDateUtc": "20260721",
+    "grain": "merged daily aggregate counters",
+    "aggregateShardCount": 27
+  },
+  "summary": {
+    "sessionsStarted": 67,
+    "sessionsEnded": 65,
+    "totalSessionSeconds": 27734.292345507212,
+    "averageCompletedSessionSeconds": 426.68142070011095,
+    "newPlayers": 50,
+    "newPlayerSessionsEnded": 50,
+    "newPlayerTotalSessionSeconds": 17840.24399525401,
+    "averageCompletedNewPlayerSessionSeconds": 356.8048799050802,
+    "newPlayerTutorialCompleted": 11,
+    "newPlayerTutorialCompletionRate": 0.22,
+    "exitedBeforeEarnedLevel2": 37,
+    "exitedBeforeEarnedLevel2Rate": 0.74,
+    "exitedBeforeClaimedLevel2": 40,
+    "exitedBeforeClaimedLevel2Rate": 0.8
+  },
+  "tutorial": [
+    {"step": 1, "id": "hatch_first_egg", "reached": 36, "reachRate": 0.72, "conversionFromPrevious": 0.72, "meanSecondsToReach": 22.064815706486115, "exitedWhileActive": 14},
+    {"step": 2, "id": "equip_pet", "reached": 29, "reachRate": 0.58, "conversionFromPrevious": 0.8055555555555556, "meanSecondsToReach": 42.22805346682435, "exitedWhileActive": 7},
+    {"step": 3, "id": "farm_crystals", "reached": 24, "reachRate": 0.48, "conversionFromPrevious": 0.8275862068965517, "meanSecondsToReach": 61.72160295813228, "exitedWhileActive": 5},
+    {"step": 4, "id": "hatch_another", "reached": 19, "reachRate": 0.38, "conversionFromPrevious": 0.7916666666666666, "meanSecondsToReach": 81.75739947313713, "exitedWhileActive": 5},
+    {"step": 5, "id": "first_fight", "reached": 15, "reachRate": 0.3, "conversionFromPrevious": 0.7894736842105263, "meanSecondsToReach": 217.828756783728, "exitedWhileActive": 4},
+    {"step": 6, "id": "battle_brew", "reached": 13, "reachRate": 0.26, "conversionFromPrevious": 0.8666666666666667, "meanSecondsToReach": 253.31274623975443, "exitedWhileActive": 2},
+    {"step": 7, "id": "rally_call", "reached": 13, "reachRate": 0.26, "conversionFromPrevious": 1.0, "meanSecondsToReach": 288.1021825015554, "exitedWhileActive": 0},
+    {"step": 8, "id": "bind_power", "reached": 13, "reachRate": 0.26, "conversionFromPrevious": 1.0, "meanSecondsToReach": 322.71995765245697, "exitedWhileActive": 0},
+    {"step": 9, "id": "cast_power", "reached": 13, "reachRate": 0.26, "conversionFromPrevious": 1.0, "meanSecondsToReach": 339.407197740323, "exitedWhileActive": 0},
+    {"step": 10, "id": "slot_power", "reached": 11, "reachRate": 0.22, "conversionFromPrevious": 0.8461538461538461, "meanSecondsToReach": 388.10688729533945, "exitedWhileActive": 2}
+  ],
+  "newPlayerExitEarnedLevels": {"1": 37, "2": 5, "3": 4, "4": 2, "5": 2},
+  "newPlayerExitClaimedLevels": {"1": 40, "2": 6, "3": 2, "5": 2},
+  "questCompletionsAllSessions": {"fs_boost": 9, "fs_cave": 2, "fs_coffers": 3, "fs_grow": 4, "fs_mine": 7, "gear_hunter": 1, "hatch_25": 1, "hatch_100": 1, "hatch_250": 1},
+  "areaUnlocksAllSessions": {"Ice": 6, "Lava": 1},
+  "eventCounts": {
+    "retention_joined": 67,
+    "tutorial_step_completed": 194,
+    "tutorial_complete": 12,
+    "egg_hatch": 287,
+    "pet_equipped": 72,
+    "enemy_defeated": 191,
+    "power_cast": 154,
+    "power_cast_failed": 66,
+    "quest_complete": 29,
+    "area_unlocked": 7
+  }
+}

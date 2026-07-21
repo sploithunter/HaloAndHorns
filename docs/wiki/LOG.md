@@ -1520,3 +1520,12 @@ Corrected the first contrast fix after live mobile testing showed Roblox still d
 TextButton glyphs beneath `UIGradient` despite `TextTransparency = 1`, creating worse doubled text.
 The native text is now always empty; a `DisplayText` attribute preserves the semantic state and a
 single child TextLabel renders it. Request-to-Sent updates now write through that one label directly.
+
+## 2026-07-21 — Consistent-pet retention baseline and build marker
+
+Captured the aggregate-only production retention baseline immediately before publishing the
+consistent Home/Grass pets: 50 ended first sessions, 5m57s average first-session time, 72% first
+hatch reach, 22% tutorial completion, and 74% exiting before earned level 2. Saved the exact merged
+counter snapshot under `docs/wiki/raw/retention/` so same-day post-publish increments can be diffed
+without downloading 1,030 raw event chunks. Future raw sessions and daily aggregate shards now carry
+the stamped build version/commit/branch/build time/dirty state plus analytics schema version.
