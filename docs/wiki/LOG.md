@@ -1477,3 +1477,10 @@ Replaced TeamPanel's percentage shell plus fixed interior bands with one viewpor
 The modal now recomputes when the camera or its viewport changes, uses compact metrics on short
 landscape screens, and always reserves usable height for the player list and invite controls. Added
 headless contracts for the reported tablet ratio, landscape and portrait phones, and tiny viewports.
+
+## 2026-07-21 — Trade pet artwork restored after lazy-thumbnail refinement
+
+Fixed the remaining consumer of the retired eager ViewportFrame cache. TradePanel now resolves the
+same uploaded flat pet-art registry as inventory and hatching, keeps a cheap pending/error glyph,
+and uses generated viewports only for catalog entries without uploaded art. The registry lookup is
+now a shared pure module with contracts covering Huge fallback and the pets from the reported trade.

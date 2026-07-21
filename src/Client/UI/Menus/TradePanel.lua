@@ -15,6 +15,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ContentProvider = game:GetService("ContentProvider")
 local CloseButton = require(script.Parent.Parent.Components.CloseButton)
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 local Pill = require(script.Parent.Parent.Pill)
@@ -23,6 +24,15 @@ local QuantitySelector = require(script.Parent.Parent.Components.QuantitySelecto
 
 local REMOTE_NAME = "GameAPICommand"
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
+local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
+
+local petThumbsOk, PET_THUMBNAILS = pcall(function()
+    return require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
+end)
+if not petThumbsOk then
+    PET_THUMBNAILS = nil
+end
 
 local COLORS = {
     panel = Color3.fromRGB(20, 20, 25),
@@ -1034,18 +1044,88 @@ function TradePanel:_petCard(parent, pet, order, opts)
     -- config) — same config the inventory cards render from (PetCardStyle)
     PetCardStyle.applyChrome(card, pet.rarity_id, pet.variant, pet.id)
 
-    -- icon: pre-generated pet image viewport (same source the inventory uses)
+    -- Flat uploaded art is the steady-state renderer, exactly as in InventoryPanel. The old code
+    -- only cloned ReplicatedStorage.Assets.Images.Pets, but the lazy-loading refinement correctly
+    -- stopped generating those live ViewportFrames for registered flat art. That left most trade
+    -- cards on the paw placeholder even though their uploaded images existed.
     local icon
-    pcall(function()
-        local img = ReplicatedStorage:FindFirstChild("Assets")
-        img = img and img:FindFirstChild("Images")
-        img = img and img:FindFirstChild("Pets")
-        img = img and img:FindFirstChild(tostring(pet.id))
-        img = img and img:FindFirstChild(tostring(pet.variant or "basic"))
-        if img then
-            icon = img:Clone()
+    local variant = tostring(pet.variant or "basic")
+    local thumbId =
+        PetThumbnailResolver.resolve(PET_THUMBNAILS, tostring(pet.id), variant, pet.huge == true)
+    if thumbId then
+        local holder = Instance.new("Frame")
+        holder.Name = "PetThumbnail"
+        holder.BackgroundTransparency = 1
+
+        local pending = Instance.new("TextLabel")
+        pending.Name = "PetThumbnailPending"
+        pending.Size = UDim2.fromScale(0.8, 0.8)
+        pending.Position = UDim2.fromScale(0.1, 0.1)
+        pending.BackgroundTransparency = 1
+        pending.Text = "🐾"
+        pending.TextScaled = true
+        pending.ZIndex = 104
+        pending.Parent = holder
+
+        local flat = Instance.new("ImageLabel")
+        flat.Name = "PetFlatThumbnail"
+        flat.Size = UDim2.fromScale(1, 1)
+        flat.BackgroundTransparency = 1
+        flat.Image = thumbId
+        flat.ScaleType = Enum.ScaleType.Fit
+        flat.ZIndex = 105
+        flat.Parent = holder
+
+        local statusConnection
+        local function disconnect()
+            if statusConnection then
+                statusConnection:Disconnect()
+                statusConnection = nil
+            end
         end
-    end)
+        local function applyFetchStatus(status)
+            local action = PetThumbnailFetchPolicy.action(status.Name)
+            if action == "flat" then
+                if pending.Parent then
+                    pending:Destroy()
+                end
+                disconnect()
+            elseif action == "lazy_3d" then
+                -- A registered image has no eagerly generated viewport cache. Keep the cheap paw
+                -- visible on a terminal CDN failure rather than presenting a blank card.
+                if flat.Parent then
+                    flat:Destroy()
+                end
+                disconnect()
+            end
+        end
+        local okSignal, signal = pcall(function()
+            return ContentProvider:GetAssetFetchStatusChangedSignal(thumbId)
+        end)
+        if okSignal and signal then
+            statusConnection = signal:Connect(applyFetchStatus)
+        end
+        holder.Destroying:Once(disconnect)
+        local okStatus, status = pcall(function()
+            return ContentProvider:GetAssetFetchStatus(thumbId)
+        end)
+        if okStatus then
+            applyFetchStatus(status)
+        end
+        icon = holder
+    else
+        -- Catalog entries with no uploaded flat art retain the generated viewport fallback.
+        pcall(function()
+            local img = ReplicatedStorage:FindFirstChild("Assets")
+            img = img and img:FindFirstChild("Images")
+            img = img and img:FindFirstChild("Pets")
+            img = img and img:FindFirstChild(tostring(pet.id))
+            img = img and img:FindFirstChild(variant)
+            if img then
+                icon = img:Clone()
+            end
+        end)
+    end
     if icon then
         icon.Name = "PetImage"
         icon.Size = UDim2.new(1, -10, 1, -30)
