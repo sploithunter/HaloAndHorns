@@ -1453,3 +1453,13 @@ Replicated Home's repaired Ice boundary into `Heaven_1`, `Hell_1`, `Heaven_2`, a
 models and gained three complete, collidable wall-and-cap models, closing the fall-off gap.
 The four target layers now match Home's repaired Z positions (`433`, `465`, `502`), were
 visually checked in Edit mode, and were saved to the Roblox cloud place.
+
+## 2026-07-21 — First live acquisition-cohort retention readout
+
+Exported and reconciled the first campaign-coincident production cohort from
+`RetentionEvents_v1`: 43 first-session profiles, 100% session-end/client-context coverage, and no
+chunk or sequence gaps. The largest leak is join → first hatch (29/43 reached); tutorial completion
+is 9/43 and canonical activation is 7/43. Added Open Cloud retry/pacing, a raw
+`--session-number` filter with manifest provenance, and tests so launch exports survive rate limits
+without downloading veteran traces. Corrected the ignored local Open Cloud universe setting to the
+active production universe; the restricted raw export and executed notebook remain outside git.

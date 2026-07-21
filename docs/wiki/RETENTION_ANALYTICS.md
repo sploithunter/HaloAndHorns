@@ -89,3 +89,32 @@ environment and is never written to an output file.
 Only genuine first-session profiles enter the Roblox onboarding funnel. All profiles retain new
 milestones and raw events for diagnosis. Analytics calls and raw event-store writes are server-only
 and suppressed in Studio.
+
+## Launch readout: 2026-07-20 campaign cohort
+
+The first campaign-coincident snapshot covered 43 production session-1 profiles beginning after
+the Ads Manager schedule started at 2026-07-20 21:00 UTC. Internal telemetry was complete: every
+session had an end event and client context, and the 761 raw chunks had no chunk gaps, event-sequence
+gaps, or duplicate sequence numbers.
+
+The main leak was join → first hatch: 29/43 (67.4%) reached the first tutorial objective. Tutorial
+completion was 9/43 (20.9%; 95% Wilson interval 11.4%–35.2%) and canonical first-session activation
+was 7/43 (16.3%; 8.1%–30.0%). Every later tutorial step converted at least 78.9% from the previous
+step. Players who never hatched stayed a median 11.6 seconds versus 139 seconds among players who
+hatched; this is descriptive rather than a causal estimate. Treat the opening 20 seconds as the
+first product intervention and keep acquisition spend small until a fresh cohort improves.
+
+Roblox Ads Manager still had no attributed plays in this snapshot, so the 43 internal first
+sessions are not labeled as paid conversions. Raw event payloads also lack the build/commit id;
+adding build identity is the highest-priority telemetry refinement before comparing published
+versions. D1 was not mature when this readout was made.
+
+## Export operations
+
+`tools/export_retention.py` retries Roblox Open Cloud 429/5xx responses with bounded backoff and
+paces entry reads. Use `--session-number 1` to avoid downloading veteran/test traces when the
+question is first-session acquisition behavior; aggregate shards still cover all sessions for the
+selected UTC date and the manifest records that distinction. The active production universe is
+`10307183003` (place `77766176054993`). A stale local universe id can successfully authenticate but
+list a different set of DataStores, so verify the universe before treating a missing
+`RetentionEvents_v1` store as a telemetry failure.
