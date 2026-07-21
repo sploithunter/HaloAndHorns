@@ -652,6 +652,47 @@ return {
                     ground = { rate = 0.5, size = 0.6, transparency = 0.2 },
                 },
             },
+            -- NEUTRAL (white/generic powers — Hasten, Revive, Magnet, …): pale white-gold, no
+            -- biome identity. Attached-pattern primitives only (aura/shield/heal glows) — the
+            -- pbaoe/st_aoe renderers are hand-authored per biome and have no neutral variant.
+            neutral = {
+                -- generic buff (Hasten's recharge surge etc.): rising white-gold sparkles
+                buff = {
+                    colors = { { 250, 245, 225 }, { 255, 225, 140 } },
+                    rate = 18,
+                    rise = true,
+                    size = 0.7,
+                    light_emission = 0.5,
+                },
+                -- generic debuff: sinking dim grey motes
+                debuff = {
+                    colors = { { 140, 140, 145 }, { 80, 80, 90 } },
+                    rate = 14,
+                    rise = false,
+                    size = 0.8,
+                    light_emission = 0.1,
+                },
+                shield = {
+                    colors = { { 240, 240, 250 } },
+                    transparency = 0.55,
+                    light_emission = 0.35,
+                },
+                damage = {
+                    colors = { { 250, 250, 240 }, { 255, 235, 170 } },
+                    rate = 22,
+                    rise = true,
+                    size = 0.7,
+                    light_emission = 0.4,
+                },
+                -- the Revive moment: warm golden motes streaming up off the body
+                heal = {
+                    colors = { { 255, 235, 170 }, { 255, 250, 230 } },
+                    rate = 16,
+                    rise = true,
+                    size = 0.75,
+                    light_emission = 0.6,
+                },
+            },
         },
     },
 }

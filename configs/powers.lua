@@ -94,14 +94,18 @@ return {
         hold = { target = "eruption" },
         disarm = { target = "eruption" },
         root_guard = { target = "eruption" },
-        -- no clean visual yet ⇒ floating "(effect TBD)"
-        summon = { source = "tbd" },
-        revive = { source = "tbd" },
-        recall = { source = "tbd" },
-        world_travel = { source = "tbd" },
-        magnet = { source = "tbd" },
-        coin_yield = { source = "tbd" },
-        drop_rate = { source = "tbd" }, -- Windfall (was keyed by the kind name "windfall")
+        -- utility/white families (Jason 2026-07-21: "I thought we got all those done" — the TBD
+        -- placeholders retired). Generic powers render element "neutral" (combat_fx neutral theme),
+        -- so these must stay on ATTACHED-pattern prims (aura/heal_glow) — pbaoe/st_aoe have no
+        -- neutral renderer. summon powers are archetype capstones (genie=desert) so the element-
+        -- themed geyser is safe there.
+        summon = { source = "cast_geyser" }, -- the ground erupts under the caster — a heavy summoning
+        revive = { source = "heal_glow" }, -- golden second-chance glow on the caster
+        recall = { source = "aura" },
+        world_travel = { source = "aura" },
+        magnet = { source = "aura" },
+        coin_yield = { source = "aura" },
+        drop_rate = { source = "aura" }, -- Windfall (was keyed by the kind name "windfall")
     },
 
     -- How each `effect` keyword resolves to a concrete SUPPORT action when cast

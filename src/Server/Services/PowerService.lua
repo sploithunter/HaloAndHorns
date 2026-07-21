@@ -2885,8 +2885,12 @@ function PowerService:Cast(player, powerId, opts)
         local fx = self._powersConfig.family_fx and self._powersConfig.family_fx[family]
         -- Caster cast-tell resolution (priority order):
         --   1. per-power override (def.fx.source) — hand-authored look for a specific power
-        --   2. generic/white powers ⇒ "tbd" placeholder (no element-themed visual yet)
-        --   3. friendly family source (heal_nova / aura / shield_bubble) — those read by family, not AoE
+        --   2. friendly family source (heal_nova / aura / shield_bubble) — those read by family, not AoE
+        --   3. generic/white powers ⇒ neutral `aura` (white-gold attached glow) — the pbaoe/st_aoe
+        --      defaults below are hand-authored per BIOME and render nothing for element "neutral",
+        --      so generics must land on an attached-pattern prim (Jason 2026-07-21: Hasten/Revive
+        --      still floated "(effect TBD)" — the old rung here FORCED every generic to "tbd", even
+        --      past a perfectly good family mapping).
         --   4. hostile default by AoE-ness: AoE powers get the `cast_burst` RING (reads as AoE);
         --      single-target ones get the small `cast_emit` body emission ("emits from the player").
         -- NOTE the powers/effect_kinds SPLIT: display fields live on def
@@ -2901,8 +2905,8 @@ function PowerService:Cast(player, powerId, opts)
             or kindTarget == "player_field"
         local sourcePrim = (def.fx and def.fx.source)
             or (kind and kind.fx and kind.fx.source)
-            or (generic and "tbd")
             or (fx and fx.source)
+            or (generic and "aura")
             or (isAoe and "cast_burst")
             or "cast_emit"
         Signals.Power_AreaFx:FireAllClients({
