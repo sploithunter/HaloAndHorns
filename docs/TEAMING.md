@@ -137,6 +137,18 @@ All slices landed plus everything the verify shook out:
   enemy rail. Explicit single-target casts already crossed via SELECTABLE = AFFECTABLE.
   Achievements: alliances_formed ("Unlikely Allies") + allies_aided ("Guardian Angel"),
   new-pairings-only.
+  NEWBIE ONBOARDING VIA ALLIANCE (Jason 2026-07-21: "preferably they get to experience a
+  team right off the bat... right now it feels like I'm being left out"): sub-onramp
+  (< min_engage_level) bystanders now ALLY TOO — AllianceRules dropped its min-engage gate,
+  and EnemyService:_engagesCombat treats an active AllianceAnchor as combat-engaged, so the
+  allied newbie is a FULL combatant at anchor−1 (pets pull, enemies aggro, damage dealt and
+  taken both read EffectiveLevel; vets' heals/shields/summons already cover them via the
+  group). The solo First-Fight pushover only spawns when the newbie is ALONE at the cave:
+  with vets camped, their 3s beat instead (a) joins any RUNNING fight into the alliance —
+  the one deliberate exception to "walking into a running fight forms nothing" — or (b) if
+  no wave is live, pulls the vet's next REAL wave in immediately ("we still want it to spawn
+  quickly"), whose trigger allies everyone at spawn. When the alliance dissolves, the
+  onramp gate re-closes and the solo pushover cadence resumes.
 - TEAM FOLLOW shipped (Jason, 2026-07-07): any member auto-follows any teammate (not just the
   lead). Client `TeamFollowController` walk-follows via Humanoid:MoveTo; ANY manual movement
   input (WASD or mobile joystick, via the PlayerModule move vector) breaks it. Toggle = follow

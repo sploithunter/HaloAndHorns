@@ -17,12 +17,14 @@
 local AllianceRules = {}
 
 -- Should `bystander` ally to `triggerer` at spawn time?
--- cfg: { enabled, min_level_gap, min_engage_level }
+-- cfg: { enabled, min_level_gap, min_engage_level (accepted, unused) }
 --   • enabled=false kills the feature
---   • the bystander must be combat-ACTIVE (>= min_engage_level): sub-onramp players are
---     invisible to combat by design and keep that protection instead
 --   • the triggerer must be meaningfully higher (min_level_gap) — near-equals gain nothing
 --     and the banner would be noise
+--   • sub-onramp newbies ALLY TOO (Jason 2026-07-21: "preferably they get to experience a
+--     team right off the bat... right now it feels like I'm being left out") — the alliance
+--     lifts them and EnemyService treats allied players as combat-engaged, so joining the
+--     camp's fight REPLACES the solo First-Fight pushover while the alliance lasts.
 function AllianceRules.shouldAlly(triggerLevel, bystanderLevel, cfg)
     cfg = cfg or {}
     if cfg.enabled == false then
@@ -30,10 +32,6 @@ function AllianceRules.shouldAlly(triggerLevel, bystanderLevel, cfg)
     end
     triggerLevel = tonumber(triggerLevel) or 1
     bystanderLevel = tonumber(bystanderLevel) or 1
-    local minEngage = tonumber(cfg.min_engage_level) or 1
-    if bystanderLevel < minEngage then
-        return false -- combat-invisible newbie: the onramp protects them, not the alliance
-    end
     local gap = tonumber(cfg.min_level_gap) or 3
     return (triggerLevel - bystanderLevel) >= gap
 end
