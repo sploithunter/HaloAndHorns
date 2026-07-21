@@ -65,6 +65,10 @@ local function generateProfileTemplate(configLoader)
         LastLogin = 0,
         PlayTime = 0,
 
+        -- One-time first-companion selection. Empty means the new-player eligibility rules may
+        -- offer a choice; a completed choice stores pet id/version/uid and is never re-granted.
+        StarterPet = {},
+
         -- Currencies (generated from configuration)
         Currencies = {},
 

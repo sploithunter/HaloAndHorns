@@ -378,6 +378,11 @@ loader:RegisterModule(
     )
 )
 loader:RegisterModule(
+    "StarterPetService",
+    ServerScriptService.Server.Services.StarterPetService,
+    { "Logger", "ConfigLoader", "DataService", "InventoryService", "PetGrantService" }
+)
+loader:RegisterModule(
     "SettingsService",
     ServerScriptService.Server.Services.SettingsService,
     { "Logger", "DataService", "ConfigLoader" }
@@ -974,6 +979,7 @@ local requiredModules = {
     "InventoryService",
     "PetSerialService",
     "PetGrantService",
+    "StarterPetService",
     "PetTransferService",
     "SettingsService",
     "HatchEntitlementService",

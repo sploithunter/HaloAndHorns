@@ -571,7 +571,12 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         or {}
     local kept, keptKeys, deleteCount = {}, {}, 0
     for key, rec in pairs(pets.items) do
-        if PetInventoryView.isProtectedFromReset(rec, capability) then
+        -- The free starter is reproducible and must not block replaying the new-player choice.
+        -- Every other unique/huge retains the normal never-delete protection.
+        if
+            rec.grant_source ~= "starter_choice"
+            and PetInventoryView.isProtectedFromReset(rec, capability)
+        then
             kept[#kept + 1] = describe(rec)
             keptKeys[key] = rec
         else
@@ -722,6 +727,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.Achievements = nil
     playerData.Ledger = nil
     playerData.EnhancementIndex = nil
+    playerData.StarterPet = { forceOffer = true }
 
     -- 5d) Tutorial restarts + enhancements wiped — "reset to beginning" means the NEW-PLAYER
     --     experience (Jason hit this: his tutorial stayed done=true through this reset because

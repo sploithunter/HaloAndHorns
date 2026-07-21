@@ -98,6 +98,12 @@ local SCHEMAS = {
     showcase = schema({ place_ids = "table", apply = "function" }),
     soul = schema({ delta_per_conquest = "number", range = "table", bands = "table" }),
     sounds = schema({ egg_hatch_pop = "table", egg_roll_snare = "table" }),
+    starter_pets = schema({
+        version = "number",
+        enabled = "boolean",
+        grant = "table",
+        choices = "table",
+    }),
     spirit_form = schema({ cooldown_tiers = "table", heaven_recharge_multiplier = "number" }),
     squad = schema({ limits = "table", swap_cooldown_seconds = "number", slot_recovery = "table" }),
     squad_diversity = schema({ archetype = "table", origin = "table", max_mult = "number" }),
