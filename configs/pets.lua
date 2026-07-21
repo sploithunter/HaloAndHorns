@@ -306,7 +306,9 @@ local petConfig = {
         },
     },
 
-    -- === RARITY SYSTEM (Visual/Organization Only) ===
+    -- === RARITY SYSTEM ===
+    -- Rarity controls presentation/organization AND the species-luck reweight in
+    -- simulateHatch: every tier above common receives the active luck multiplier.
     rarities = {
         -- Normal tiers (stackable)
         common = {
@@ -2427,7 +2429,7 @@ local petConfig = {
             origin = "grass", -- backfilled from egg SSOT (egg_sources.pet_weights + realm_area_eggs)
             display_name = "Bear",
             category = "forest",
-            rarity = "common",
+            rarity = "uncommon",
             base_power = 10,
             base_health = 150,
             -- AURA (Jason): the HUGE bear tank is a "get close and everything burns" bruiser — an
@@ -3132,7 +3134,7 @@ local petConfig = {
             origin = "grass", -- backfilled from egg SSOT (egg_sources.pet_weights + realm_area_eggs)
             display_name = "Doggy",
             category = "domestic",
-            rarity = "common",
+            rarity = "uncommon",
             base_power = 12,
             base_health = 140,
 
