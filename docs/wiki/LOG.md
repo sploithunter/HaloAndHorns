@@ -1491,3 +1491,10 @@ Fixed the low-contrast outline/glow across the Trade player picker, request popu
 The shared capsule gradient had been applied directly to each TextButton and therefore tinted its
 built-in text. Trade buttons now retain their real text for state/accessibility but render a synced,
 pure-white child label with an explicit no-stroke contract and the original size limits.
+
+## 2026-07-21 — Trade buttons corrected to a single rendered label
+
+Corrected the first contrast fix after live mobile testing showed Roblox still drawing the native
+TextButton glyphs beneath `UIGradient` despite `TextTransparency = 1`, creating worse doubled text.
+The native text is now always empty; a `DisplayText` attribute preserves the semantic state and a
+single child TextLabel renders it. Request-to-Sent updates now write through that one label directly.

@@ -123,10 +123,20 @@ local function corner(inst, r)
 end
 
 -- Capsule treatment on an EXISTING button. UIGradient also colors a TextButton's built-in glyphs,
--- which produced the muddy outline/glow in the Trade flow. Keep the real Text property for state
--- updates/accessibility, make its rendering transparent, and mirror it into an un-tinted child label
--- (the same contract as Pill.button).
+-- which produced the muddy outline/glow in the Trade flow. The native Text MUST be empty: Roblox
+-- still rendered it under UIGradient when TextTransparency was 1, producing two overlaid labels.
+-- State changes write through setPillText so only the un-tinted child label ever draws.
+local function setPillText(btn, text)
+    btn.Text = ""
+    btn:SetAttribute("DisplayText", text)
+    local buttonLabel = btn:FindFirstChild("Label")
+    if buttonLabel and buttonLabel:IsA("TextLabel") then
+        buttonLabel.Text = text
+    end
+end
+
 local function pillify(btn, maxTextSize)
+    local initialText = btn.Text
     for _, c in ipairs(btn:GetChildren()) do
         if c:IsA("UICorner") or c:IsA("UIGradient") or c:IsA("UIStroke") then
             c:Destroy()
@@ -138,7 +148,7 @@ local function pillify(btn, maxTextSize)
     buttonLabel.Name = "Label"
     buttonLabel.Size = UDim2.fromScale(1, 1)
     buttonLabel.BackgroundTransparency = 1
-    buttonLabel.Text = btn.Text
+    buttonLabel.Text = initialText
     buttonLabel.TextColor3 = btn.TextColor3
     buttonLabel.TextTransparency = 0
     buttonLabel.TextStrokeTransparency = 1
@@ -152,11 +162,9 @@ local function pillify(btn, maxTextSize)
     constraint.MaxTextSize = maxTextSize or 18
     constraint.Parent = buttonLabel
 
-    btn.TextTransparency = 1
+    btn.Text = ""
     btn.TextStrokeTransparency = 1
-    btn:GetPropertyChangedSignal("Text"):Connect(function()
-        buttonLabel.Text = btn.Text
-    end)
+    btn:SetAttribute("DisplayText", initialText)
     btn:GetPropertyChangedSignal("TextColor3"):Connect(function()
         buttonLabel.TextColor3 = btn.TextColor3
     end)
@@ -402,7 +410,7 @@ function TradePanel:_playerRow(p, order)
     if not p.busy then
         btn.Activated:Connect(function()
             local res = self:_callBus("trade.request", { targetUserId = p.userId })
-            btn.Text = (res and res.ok) and "Sent ✓" or "Failed"
+            setPillText(btn, (res and res.ok) and "Sent ✓" or "Failed")
             btn.Active = false
             btn.AutoButtonColor = false
         end)
