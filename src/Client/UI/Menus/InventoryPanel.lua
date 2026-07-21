@@ -97,6 +97,7 @@ local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
 local InventoryCategories = require(ReplicatedStorage.Shared.Game.InventoryCategories) -- pure tab visibility (specced)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
+local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local PetBadge = require(script.Parent.Parent.PetBadge)
@@ -3620,14 +3621,7 @@ end
 -- Returns "rbxassetid://N" or nil. Same huge-then-base fallback as the ViewportFrame path below so a
 -- pet with no baked huge thumbnail still resolves to its normal one through the one card path.
 local function resolveThumbnailId(petType, variant, huge)
-    if not PET_THUMBNAILS or not PET_THUMBNAILS.pets then
-        return nil
-    end
-    local byVariant = PET_THUMBNAILS.pets[petType]
-    if not byVariant then
-        return nil
-    end
-    return (huge and byVariant[variant .. "__huge"]) or byVariant[variant]
+    return PetThumbnailResolver.resolve(PET_THUMBNAILS, petType, variant, huge)
 end
 
 -- Dedupe the "no flat thumbnail → using viewport" warning to once per petType/variant/huge, so a new

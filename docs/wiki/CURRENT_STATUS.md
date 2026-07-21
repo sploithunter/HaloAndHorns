@@ -165,7 +165,9 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
   during `None`/`Loading`, stay flat-only after `AssetFetchStatus.Success`, and queue an on-demand
   viewport after `Failure`/`TimedOut`. That viewport is built from the already-loaded model only when
   the failed card enters the visible scroll window, so even a broad CDN outage cannot allocate
-  hidden viewports across a large collection. Egg-stand previews also read the flat registry.
+  hidden viewports across a large collection. Egg-stand previews and TradePanel pet cards also read
+  the flat registry through the shared `PetThumbnailResolver`; secondary card surfaces must not infer
+  flat-art availability from the generated ViewportFrame cache.
 - Pet power is now config-only durable data. `configs/pets.lua` defines family base power plus global Basic/Golden/Rainbow multipliers, while grant/progression/inventory save paths avoid writing per-copy power or stats power. `tests/studio/BackfillPetPowerSourceOfTruth.lua` can strip legacy saved power fields for the current Studio player.
 - `configs/auto_systems.lua` and `AutoTargetService` now provide the first Phase 5 auto-system slice. Target mode choices persist under `Settings.AutoSystems.auto_target`; clients request auto-target work and the server selects the breakable. The configured default modes are nearest, highest value, weakest, strongest, and selected currency.
 - Hatch auto-delete filters persist under `Settings.AutoSystems.auto_delete` and are enforced in `EggService` before `PetGrantService` writes inventory. Filters can match rarity, pet family, or variant, and Secret/Exclusive/Huge are protected by default.
