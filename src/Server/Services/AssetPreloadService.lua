@@ -337,6 +337,32 @@ local function mergeAssetTransforms(baseTransform, overrideTransform)
     return merged
 end
 
+local function numericAssetId(asset)
+    if type(asset) ~= "string" then
+        return nil
+    end
+    return asset:match("%d+")
+end
+
+-- A valid pre-bake is only useful when it represents the asset currently named by config. The old
+-- fast path checked for geometry alone, so replacing a packaged `asset_id` with a Meshy
+-- `mesh_asset` silently kept the old model forever. Mesh-combine pets are deterministic: compare
+-- the configured mesh + resolved IMAGE ids with the baked MeshPart before adopting it.
+local function prebakedMeshMatchesConfig(model, variantData)
+    local expectedMesh = numericAssetId(variantData and variantData.mesh_asset)
+    if not expectedMesh then
+        return true
+    end
+
+    local meshPart = model and model:FindFirstChildWhichIsA("MeshPart", true)
+    if not meshPart or numericAssetId(meshPart.MeshId) ~= expectedMesh then
+        return false
+    end
+
+    local expectedTexture = numericAssetId(variantData.texture_asset)
+    return not expectedTexture or numericAssetId(meshPart.TextureID) == expectedTexture
+end
+
 function AssetPreloadService:ResolvePetAssetTransform(petData, variantData)
     return mergeAssetTransforms(
         petData and petData.asset_transform,
@@ -637,11 +663,26 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
                     local existingVariant = petTypeFolder:FindFirstChild(variant)
                     local modelSuccess
 
-                    if
-                        existingVariant
+                    local hasPrebakedGeometry = existingVariant
                         and existingVariant:IsA("Model")
-                        and existingVariant:FindFirstChildWhichIsA("BasePart", true)
-                    then
+                        and existingVariant:FindFirstChildWhichIsA("BasePart", true) ~= nil
+                    -- Rigged basic pets intentionally retain their static mesh fields as a fallback;
+                    -- their committed rig prebake will not match that fallback MeshId and must win.
+                    local isRiggedBasicPrebake = hasPrebakedGeometry
+                        and variant == "basic"
+                        and petData.rig_class ~= nil
+                        and (
+                            existingVariant:GetAttribute("RigClass") ~= nil
+                            or existingVariant:FindFirstChildWhichIsA("Bone", true) ~= nil
+                        )
+                    local prebakeMatchesSource = hasPrebakedGeometry
+                        and (
+                            isRiggedBasicPrebake
+                            or not hasMeshAsset
+                            or prebakedMeshMatchesConfig(existingVariant, variantData)
+                        )
+
+                    if prebakeMatchesSource then
                         -- PRE-BAKED FAST PATH (mesh-combine AND asset_id pets alike): a valid model is
                         -- already present (the Rojo-synced ReplicatedStorage.Assets.Models, captured from
                         -- a fully-loaded runtime). Adopt it as-is — no fetch, no mesh-combine, no
@@ -657,6 +698,14 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
                         adoptedCount = adoptedCount + 1
                         modelSuccess = true
                     elseif hasMeshAsset then
+                        if hasPrebakedGeometry then
+                            logger:Info("Replacing stale pet prebake with configured mesh", {
+                                petType = petType,
+                                variant = variant,
+                                meshAsset = variantData.mesh_asset,
+                                textureAsset = variantData.texture_asset,
+                            })
+                        end
                         -- Combine path: textured MeshPart from a separately-uploaded mesh + texture
                         -- (FBX->Model uploads come out untextured). Mirrors the enemy/gem combine.
                         if existingVariant then
@@ -1135,6 +1184,8 @@ function AssetPreloadService:BuildMeshPartModelIntoFolder(
         self:SetPreferredPrimaryPart(modelClone)
         modelClone:PivotTo(CFrame.identity)
         self:ApplyConfiguredModelTransform(modelClone, options)
+        modelClone:SetAttribute("SourceMeshAsset", tostring(meshId))
+        modelClone:SetAttribute("SourceTextureAsset", tostring(textureId or ""))
         self:WeldModelParts(modelClone)
 
         local isPetFolder = (parentFolder.Name == "Pets")

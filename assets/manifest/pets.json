@@ -16,31 +16,32 @@
       "pet": "bear",
       "variant": "basic",
       "display_name": "Bear",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "cute low-poly bear pet companion for a Roblox pet simulator, rounded ears, small paws, friendly face, warm brown fur, chunky toy-like silhouette",
       "meshy": {
         "task_id": "",
         "source_url": "",
-        "notes": "A Meshy replacement was generated on 2026-05-26 but is not used because the original Bear better matches the existing art style."
+        "notes": "Approved Home/grass replacement uploaded and resolved on 2026-07-21."
       },
       "files": {
-        "source_glb": "",
-        "source_fbx": ""
+        "source_glb": "assets/source/pets/bear_basic.glb",
+        "source_fbx": "assets/source/pets/bear_basic.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://102676279378350",
-        "image_asset_id": "rbxassetid://0",
-        "unused_meshi_model_asset_id": "rbxassetid://130306156035035",
-        "unused_imported_model_asset_id": "rbxassetid://112539359698557"
+        "source_model_asset_id": "rbxassetid://111688029636170",
+        "mesh_asset_id": "rbxassetid://133536425144853",
+        "texture_decal_asset_id": "rbxassetid://92179789219966",
+        "texture_image_asset_id": "rbxassetid://84442074169129",
+        "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Runtime uses the original remote Bear asset for style consistency. The Meshy-generated Bear source remains in assets/source/pets/bear_basic.glb as an unused experiment."
+      "notes": "Runtime uses the 2026-07-21 Home/grass Meshy replacement through mesh_asset + texture_asset."
     },
     {
       "key": "bear.golden",
       "pet": "bear",
       "variant": "golden",
       "display_name": "Golden Bear",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "golden version of a cute low-poly bear Roblox pet, metallic gold fur, friendly face, toy-like rounded body, subtle coin sparkle accents",
       "meshy": {
         "task_id": "",
@@ -52,10 +53,13 @@
         "source_fbx": "assets/source/pets/bear_golden.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://107758879638540",
+        "source_model_asset_id": "rbxassetid://76133392237663",
+        "mesh_asset_id": "rbxassetid://87363912630069",
+        "texture_decal_asset_id": "rbxassetid://73071344165712",
+        "texture_image_asset_id": "rbxassetid://108884590012437",
         "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+      "notes": "Runtime uses the 2026-07-21 Home/grass Meshy replacement through mesh_asset + texture_asset."
     },
     {
       "key": "bear.rainbow",
@@ -84,7 +88,7 @@
       "pet": "bunny",
       "variant": "basic",
       "display_name": "Bunny",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "cute low-poly bunny pet companion for Roblox, long soft ears, tiny round tail, pastel cream fur, cheerful face, compact toy-like body",
       "meshy": {
         "task_id": "",
@@ -96,17 +100,20 @@
         "source_fbx": "assets/source/pets/bunny_basic.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://119448221139567",
+        "source_model_asset_id": "rbxassetid://129732620533207",
+        "mesh_asset_id": "rbxassetid://82125034029803",
+        "texture_decal_asset_id": "rbxassetid://98201681159663",
+        "texture_image_asset_id": "rbxassetid://71468779539283",
         "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+      "notes": "Runtime uses the 2026-07-21 Home/grass Meshy replacement through mesh_asset + texture_asset."
     },
     {
       "key": "bunny.golden",
       "pet": "bunny",
       "variant": "golden",
       "display_name": "Golden Bunny",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "golden cute low-poly bunny Roblox pet, long ears, tiny tail, shiny gold material, cheerful toy-like face, small sparkle accents",
       "meshy": {
         "task_id": "",
@@ -118,10 +125,13 @@
         "source_fbx": "assets/source/pets/bunny_golden.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://133150464787030",
+        "source_model_asset_id": "rbxassetid://87380438652677",
+        "mesh_asset_id": "rbxassetid://104487535980339",
+        "texture_decal_asset_id": "rbxassetid://123202309821549",
+        "texture_image_asset_id": "rbxassetid://70991171666859",
         "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+      "notes": "Runtime uses the 2026-07-21 Home/grass Meshy replacement through mesh_asset + texture_asset."
     },
     {
       "key": "bunny.rainbow",
@@ -150,7 +160,7 @@
       "pet": "doggy",
       "variant": "basic",
       "display_name": "Doggy",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "cute low-poly dog pet companion for Roblox, floppy ears, wagging tail pose, friendly face, warm tan and brown colors, chunky toy-like body",
       "meshy": {
         "task_id": "",
@@ -162,17 +172,20 @@
         "source_fbx": "assets/source/pets/doggy_basic.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://95584496209726",
+        "source_model_asset_id": "rbxassetid://136186466674597",
+        "mesh_asset_id": "rbxassetid://112015302170996",
+        "texture_decal_asset_id": "rbxassetid://114058332708104",
+        "texture_image_asset_id": "rbxassetid://122469325720894",
         "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+      "notes": "Runtime uses the 2026-07-21 Home/grass Meshy replacement through mesh_asset + texture_asset."
     },
     {
       "key": "doggy.golden",
       "pet": "doggy",
       "variant": "golden",
       "display_name": "Golden Doggy",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "golden cute low-poly dog Roblox pet, floppy ears, shiny gold coat, friendly face, premium toy-like companion, subtle glow accents",
       "meshy": {
         "task_id": "",
@@ -184,10 +197,13 @@
         "source_fbx": "assets/source/pets/doggy_golden.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://97337398672225",
+        "source_model_asset_id": "rbxassetid://107874469300427",
+        "mesh_asset_id": "rbxassetid://75516117278305",
+        "texture_decal_asset_id": "rbxassetid://95278195527446",
+        "texture_image_asset_id": "rbxassetid://108981069156200",
         "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+      "notes": "Runtime uses the 2026-07-21 Home/grass Meshy replacement through mesh_asset + texture_asset."
     },
     {
       "key": "doggy.rainbow",
@@ -216,7 +232,7 @@
       "pet": "dragon",
       "variant": "basic",
       "display_name": "Dragon",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "cute low-poly baby dragon Roblox pet, small wings, tiny horns, friendly face, emerald scales, chunky toy-like fantasy companion",
       "meshy": {
         "task_id": "",
@@ -228,17 +244,20 @@
         "source_fbx": "assets/source/pets/dragon_basic.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://71645322477288",
+        "source_model_asset_id": "rbxassetid://74376873693118",
+        "mesh_asset_id": "rbxassetid://136769550943735",
+        "texture_decal_asset_id": "rbxassetid://95515949949882",
+        "texture_image_asset_id": "rbxassetid://113540978797107",
         "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Secret-tier pet in config; existing Roblox asset id from configs/pets.lua."
+      "notes": "Secret-tier pet; runtime uses the 2026-07-21 Home/grass Meshy replacement."
     },
     {
       "key": "dragon.golden",
       "pet": "dragon",
       "variant": "golden",
       "display_name": "Golden Dragon",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "golden cute low-poly baby dragon Roblox pet, small wings, tiny horns, shiny golden scales, treasure guardian vibe, toy-like fantasy companion",
       "meshy": {
         "task_id": "",
@@ -250,10 +269,13 @@
         "source_fbx": "assets/source/pets/dragon_golden.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://91261941530299",
+        "source_model_asset_id": "rbxassetid://83575962013296",
+        "mesh_asset_id": "rbxassetid://137902863642024",
+        "texture_decal_asset_id": "rbxassetid://82423030148985",
+        "texture_image_asset_id": "rbxassetid://111720576430272",
         "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Secret-tier pet in config; existing Roblox asset id from configs/pets.lua."
+      "notes": "Secret-tier pet; runtime uses the 2026-07-21 Home/grass Meshy replacement."
     },
     {
       "key": "dragon.rainbow",
@@ -282,7 +304,7 @@
       "pet": "kitty",
       "variant": "basic",
       "display_name": "Kitty",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "cute low-poly cat pet companion for Roblox, pointy ears, tiny whiskers, curled tail, friendly face, soft gray fur, toy-like body",
       "meshy": {
         "task_id": "",
@@ -294,17 +316,20 @@
         "source_fbx": "assets/source/pets/kitty_basic.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://73405612786363",
+        "source_model_asset_id": "rbxassetid://85016491785449",
+        "mesh_asset_id": "rbxassetid://102876972452299",
+        "texture_decal_asset_id": "rbxassetid://86269930517584",
+        "texture_image_asset_id": "rbxassetid://107470584206079",
         "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+      "notes": "Runtime uses the 2026-07-21 Home/grass Meshy replacement through mesh_asset + texture_asset."
     },
     {
       "key": "kitty.golden",
       "pet": "kitty",
       "variant": "golden",
       "display_name": "Golden Kitty",
-      "status": "needs_source",
+      "status": "generated",
       "prompt": "golden cute low-poly cat Roblox pet, pointy ears, curled tail, shiny gold fur, friendly premium toy-like companion",
       "meshy": {
         "task_id": "",
@@ -316,10 +341,13 @@
         "source_fbx": "assets/source/pets/kitty_golden.fbx"
       },
       "roblox": {
-        "model_asset_id": "rbxassetid://131968646516737",
+        "source_model_asset_id": "rbxassetid://81172485806216",
+        "mesh_asset_id": "rbxassetid://124827770454459",
+        "texture_decal_asset_id": "rbxassetid://127238305089401",
+        "texture_image_asset_id": "rbxassetid://111506677857460",
         "image_asset_id": "rbxassetid://0"
       },
-      "notes": "Existing Roblox asset id from configs/pets.lua; source model file is not present locally yet."
+      "notes": "Runtime uses the 2026-07-21 Home/grass Meshy replacement through mesh_asset + texture_asset."
     },
     {
       "key": "kitty.rainbow",

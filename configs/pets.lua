@@ -2474,11 +2474,12 @@ local petConfig = {
 
             variants = {
                 basic = {
-                    -- Repointed from the uncached personal-owned upload 102676279378350 (the only
-                    -- model not in ReplicatedStorage.PlaceAssets -> failed AssetFetch for non-owner
-                    -- accounts in Studio) to 92437511216136, the cached "Bear" model the rainbow
-                    -- variant already uses. Same established "variants reuse one model" pattern.
-                    asset_id = "rbxassetid://92437511216136",
+                    -- Home/grass Meshy replacement (2026-07-21). This source lane was authored at
+                    -- ~1 stud, so 3.2x matches the ~3-stud runtime silhouette used by the 1.9-stud
+                    -- batch members at the standard 1.6x scale.
+                    mesh_asset = "rbxassetid://133536425144853",
+                    texture_asset = "rbxassetid://84442074169129",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Bear",
                     abilities = { "scratch" },
@@ -2487,7 +2488,9 @@ local petConfig = {
                     -- Uses default display settings
                 },
                 golden = {
-                    asset_id = "rbxassetid://107758879638540",
+                    mesh_asset = "rbxassetid://87363912630069",
+                    texture_asset = "rbxassetid://108884590012437",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Golden Bear",
                     abilities = { "golden_scratch", "coin_magnet" },
@@ -3103,7 +3106,9 @@ local petConfig = {
 
             variants = {
                 basic = {
-                    asset_id = "rbxassetid://119448221139567",
+                    mesh_asset = "rbxassetid://82125034029803",
+                    texture_asset = "rbxassetid://71468779539283",
+                    asset_transform = { scale = 1.6 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Bunny",
                     abilities = { "hop_attack" },
@@ -3112,7 +3117,9 @@ local petConfig = {
                     -- Uses default display settings
                 },
                 golden = {
-                    asset_id = "rbxassetid://133150464787030",
+                    mesh_asset = "rbxassetid://104487535980339",
+                    texture_asset = "rbxassetid://70991171666859",
+                    asset_transform = { scale = 1.6 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Golden Bunny",
                     abilities = { "golden_hop", "speed_boost" },
@@ -3149,7 +3156,9 @@ local petConfig = {
 
             variants = {
                 basic = {
-                    asset_id = "rbxassetid://95584496209726",
+                    mesh_asset = "rbxassetid://112015302170996",
+                    texture_asset = "rbxassetid://122469325720894",
+                    asset_transform = { scale = 1.6 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Doggy",
                     abilities = { "bark_stun" },
@@ -3158,7 +3167,9 @@ local petConfig = {
                     -- Uses default display settings
                 },
                 golden = {
-                    asset_id = "rbxassetid://97337398672225",
+                    mesh_asset = "rbxassetid://75516117278305",
+                    texture_asset = "rbxassetid://108981069156200",
+                    asset_transform = { scale = 1.6 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Golden Doggy",
                     abilities = { "golden_bark", "loyalty_bonus" },
@@ -3195,14 +3206,18 @@ local petConfig = {
 
             variants = {
                 basic = {
-                    asset_id = "rbxassetid://71645322477288",
+                    mesh_asset = "rbxassetid://136769550943735",
+                    texture_asset = "rbxassetid://113540978797107",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Dragon",
                     abilities = { "fire_breath" },
                     viewport_zoom = 1.5, -- fleet default (inventory card size is normalized in AssetPreloadService, not here)
                 },
                 golden = {
-                    asset_id = "rbxassetid://91261941530299",
+                    mesh_asset = "rbxassetid://137902863642024",
+                    texture_asset = "rbxassetid://111720576430272",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Golden Dragon",
                     abilities = { "golden_flame", "treasure_sense" },
@@ -3244,14 +3259,18 @@ local petConfig = {
 
             variants = {
                 basic = {
-                    asset_id = "rbxassetid://73405612786363",
+                    mesh_asset = "rbxassetid://102876972452299",
+                    texture_asset = "rbxassetid://107470584206079",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Kitty",
                     abilities = { "claw_swipe" },
                     viewport_zoom = 1.6, -- Kitties are small, zoom in more
                 },
                 golden = {
-                    asset_id = "rbxassetid://131968646516737",
+                    mesh_asset = "rbxassetid://124827770454459",
+                    texture_asset = "rbxassetid://111506677857460",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Golden Kitty",
                     abilities = { "golden_claws", "stealth_bonus" },
