@@ -80,6 +80,9 @@ All slices landed plus everything the verify shook out:
   TeamInviteFrom popup armed from boot. Duo = BOTH full squads on the rail (teammate pets as
   HudCard cards under their owner's header); 3–4 players collapse to aggregate cards that
   expand while selected.
+- Mobile invite layout: TeamPanel is bounded to the live camera viewport and recomputes on
+  rotation. Its header, hint, invite list, and teamed footer share one responsive layout contract,
+  so fixed pixel bands cannot collapse the player list on a short landscape phone/tablet.
 - Sidekick/exemplar: `GetEffectiveLevel` anchors members to lead + `sidekick.level_offset`
   (-1); PlayerBar disc shows the synced combat level (green up / orange down). EVERY
   EffectiveLevel consumer verified: accuracy/damage curves, layer access (= the guest pass),

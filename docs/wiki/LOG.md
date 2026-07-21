@@ -1470,3 +1470,10 @@ Reclassified Bear and Doggy from common to uncommon while leaving Bunny common. 
 luck boosts every non-common tier, the existing 50x first-hatch protection now yields Bear or Doggy
 about 98.1% of the time and Bunny below 1%, without changing ordinary Earth Egg weights. Added a
 headless contract test so the onboarding power floor cannot silently regress.
+
+## 2026-07-21 — Team invite panel made rotation-safe on mobile
+
+Replaced TeamPanel's percentage shell plus fixed interior bands with one viewport-bounded layout.
+The modal now recomputes when the camera or its viewport changes, uses compact metrics on short
+landscape screens, and always reserves usable height for the player list and invite controls. Added
+headless contracts for the reported tablet ratio, landscape and portrait phones, and tiny viewports.
