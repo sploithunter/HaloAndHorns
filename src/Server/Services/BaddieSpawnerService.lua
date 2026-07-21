@@ -49,7 +49,7 @@ function BaddieSpawnerService:_scan()
     for _, inst in ipairs(Workspace:GetDescendants()) do
         if inst:IsA("BasePart") and inst.Name:sub(1, #prefix) == prefix then
             if not self._spawners[inst] then
-                self._spawners[inst] = { cooldownUntil = 0, alive = {} }
+                self._spawners[inst] = { cooldownUntil = 0, onrampCooldownUntil = 0, alive = {} }
                 self._logger:Info("Baddie spawner armed", { part = inst.Name })
             end
         end
@@ -237,7 +237,9 @@ function BaddieSpawnerService:_trigger(part, player, rng)
             return
         end
         wave = { units = { { enemy = pick } } }
-        cap = 1
+        -- one pushover ON TOP of whatever's already out — a vet's live wave
+        -- at the same cave must never block the newbie's First Fight critter
+        cap = #state.alive + 1
     end
     for _, unit in ipairs(wave.units or {}) do
         for _ = 1, (onramp and 1 or PackScale.count(unit.count, engaged, nil, teamingCfg)) do
@@ -527,21 +529,36 @@ function BaddieSpawnerService:Start()
                     -- realm-appropriate enemies (heaven enemies in heaven, hell in hell). The homeworld
                     -- proximity-wave system stays OUT of realms so it never spawns neutral earth packs
                     -- (raging_bear etc.) in heaven/hell (Jason: "in heaven only spawn heaven enemies").
-                elseif now >= state.cooldownUntil and #state.alive < cap then
+                else
+                    -- TWO INDEPENDENT STREAMS (Jason watched a sub-5 newcomer
+                    -- walk up to a vet-camped cave and never get his First
+                    -- Fight — the vet's ambient roll owned the shared
+                    -- cooldown and the vet's live wave held the alive-cap
+                    -- shut): the 3s First-Fight beat runs on its OWN clock
+                    -- and ignores the ambient cap, so a camping vet can't
+                    -- starve the tutorial gate and the newbie can't starve
+                    -- the vet's waves either.
+                    local subNear, vetNear = nil, nil
                     for _, player in ipairs(Players:GetPlayers()) do
                         local hrp = player.Character
                             and player.Character:FindFirstChild("HumanoidRootPart")
                         if hrp and (hrp.Position - part.Position).Magnitude <= radius then
-                            -- FIRST FIGHT cadence (Jason: "spawn the neutered
-                            -- enemies ENDLESSLY until I defeat one"): a
-                            -- sub-onramp player near the cave restocks on a
-                            -- 3s beat — the ambient 30-120s roll is for the
-                            -- real world, not the tutorial gate
-                            local sub = (tonumber(player:GetAttribute("Level")) or 1) < minEngage
-                            state.cooldownUntil = now + (sub and 3 or rng:NextNumber(cdMin, cdMax))
-                            self:_trigger(part, player, rng)
-                            break
+                            if (tonumber(player:GetAttribute("Level")) or 1) < minEngage then
+                                subNear = subNear or player
+                            else
+                                vetNear = vetNear or player
+                            end
                         end
+                    end
+                    if subNear and now >= (state.onrampCooldownUntil or 0) then
+                        -- FIRST FIGHT cadence (Jason: "spawn the neutered
+                        -- enemies ENDLESSLY until I defeat one")
+                        state.onrampCooldownUntil = now + 3
+                        self:_trigger(part, subNear, rng)
+                    end
+                    if vetNear and now >= state.cooldownUntil and #state.alive < cap then
+                        state.cooldownUntil = now + rng:NextNumber(cdMin, cdMax)
+                        self:_trigger(part, vetNear, rng)
                     end
                 end
             end
