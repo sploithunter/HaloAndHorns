@@ -12,9 +12,11 @@
   `assets/ui/imports/homeworld_grass_pets_2026-07-21_contact_sheet.png`,
   `assets/ui/imports/manifest_2026-07-21_homeworld_grass_pets.txt`.
 - Wired all ten `mesh_asset`/resolved-IMAGE `texture_asset` pairs in
-  `configs/pets.lua`; basic/golden now use the consistent Meshy art while
-  rainbow stays on its existing packaged model. Per-variant scale normalizes
-  the two source-size lanes to the established ~3-stud pet silhouette.
+  `configs/pets.lua`; basic/golden use the consistent Meshy art, and rainbow
+  reuses the basic mesh/texture under the existing runtime rainbow treatment.
+  Per-variant scale normalizes the two source-size lanes to the established
+  ~3-stud pet silhouette. Group-owned flat card thumbnails were also replaced
+  so inventory, egg preview, and trade surfaces no longer show the legacy art.
 - Pet prebakes now compare their baked MeshPart mesh/texture ids with config
   before taking the fast path, so a stale `Models.rbxm` is replaced at runtime
   instead of silently keeping the previous art. Rigged-basic prebakes remain

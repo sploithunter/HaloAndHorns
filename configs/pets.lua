@@ -2497,7 +2497,10 @@ local petConfig = {
                     -- Uses default viewport_zoom (1.5)
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://92437511216136",
+                    -- Rainbow is a runtime visual treatment over the basic body, not separate art.
+                    mesh_asset = "rbxassetid://133536425144853",
+                    texture_asset = "rbxassetid://84442074169129",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Bear",
                     abilities = { "rainbow_scratch", "ultimate_magnet", "luck_aura" },
@@ -3126,7 +3129,9 @@ local petConfig = {
                     viewport_zoom = 1.8, -- Golden bunny zoom
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://113112612195316",
+                    mesh_asset = "rbxassetid://82125034029803",
+                    texture_asset = "rbxassetid://71468779539283",
+                    asset_transform = { scale = 1.6 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Bunny",
                     abilities = { "rainbow_hop", "time_warp", "double_luck" },
@@ -3176,7 +3181,9 @@ local petConfig = {
                     -- Uses default viewport_zoom (1.5)
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://139772169909973",
+                    mesh_asset = "rbxassetid://112015302170996",
+                    texture_asset = "rbxassetid://122469325720894",
+                    asset_transform = { scale = 1.6 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Doggy",
                     abilities = { "rainbow_bark", "pack_leader", "infinite_loyalty" },
@@ -3224,7 +3231,9 @@ local petConfig = {
                     viewport_zoom = 1.5, -- fleet default (inventory card size is normalized in AssetPreloadService, not here)
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://120821607721730",
+                    mesh_asset = "rbxassetid://136769550943735",
+                    texture_asset = "rbxassetid://113540978797107",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Dragon",
                     abilities = { "prismatic_breath", "reality_burn", "cosmic_flight" },
@@ -3277,7 +3286,9 @@ local petConfig = {
                     viewport_zoom = 1.6, -- Golden kitty zoom
                 },
                 rainbow = {
-                    asset_id = "rbxassetid://124744079930917",
+                    mesh_asset = "rbxassetid://102876972452299",
+                    texture_asset = "rbxassetid://107470584206079",
+                    asset_transform = { scale = 3.2 },
                     image_id = "rbxassetid://0", -- TODO: Generate from 3D model
                     display_name = "Rainbow Kitty",
                     abilities = { "rainbow_claws", "nine_lives", "shadow_step" },
