@@ -122,17 +122,45 @@ local function corner(inst, r)
     return inst
 end
 
--- Capsule treatment on an EXISTING button (currency-HUD pill look: full corner + gradient + stroke),
--- keeping the button's intrinsic text so live `btn.Text = "…"` updates still work. (Jason: pills on
--- the buttons, same treatment as the powers menu.)
-local function pillify(btn)
+-- Capsule treatment on an EXISTING button. UIGradient also colors a TextButton's built-in glyphs,
+-- which produced the muddy outline/glow in the Trade flow. Keep the real Text property for state
+-- updates/accessibility, make its rendering transparent, and mirror it into an un-tinted child label
+-- (the same contract as Pill.button).
+local function pillify(btn, maxTextSize)
     for _, c in ipairs(btn:GetChildren()) do
         if c:IsA("UICorner") or c:IsA("UIGradient") or c:IsA("UIStroke") then
             c:Destroy()
         end
     end
     Pill.applyTo(btn, { color = btn.BackgroundColor3 })
-    return btn
+
+    local buttonLabel = Instance.new("TextLabel")
+    buttonLabel.Name = "Label"
+    buttonLabel.Size = UDim2.fromScale(1, 1)
+    buttonLabel.BackgroundTransparency = 1
+    buttonLabel.Text = btn.Text
+    buttonLabel.TextColor3 = btn.TextColor3
+    buttonLabel.TextTransparency = 0
+    buttonLabel.TextStrokeTransparency = 1
+    buttonLabel.TextScaled = btn.TextScaled
+    buttonLabel.TextSize = btn.TextSize
+    buttonLabel.Font = btn.Font
+    buttonLabel.ZIndex = btn.ZIndex + 1
+    buttonLabel.Parent = btn
+
+    local constraint = Instance.new("UITextSizeConstraint")
+    constraint.MaxTextSize = maxTextSize or 18
+    constraint.Parent = buttonLabel
+
+    btn.TextTransparency = 1
+    btn.TextStrokeTransparency = 1
+    btn:GetPropertyChangedSignal("Text"):Connect(function()
+        buttonLabel.Text = btn.Text
+    end)
+    btn:GetPropertyChangedSignal("TextColor3"):Connect(function()
+        buttonLabel.TextColor3 = btn.TextColor3
+    end)
+    return btn, buttonLabel
 end
 
 local function label(parent, text, size, pos, color, font, scaled)
@@ -221,10 +249,7 @@ function TradePanel:Show(parent)
     refresh.Font = Enum.Font.GothamBold
     refresh.ZIndex = 102
     refresh.Parent = frame
-    pillify(refresh)
-    local rc = Instance.new("UITextSizeConstraint")
-    rc.MaxTextSize = 18
-    rc.Parent = refresh
+    pillify(refresh, 18)
     refresh.Activated:Connect(function()
         self:_refreshPlayers()
     end)
@@ -373,10 +398,7 @@ function TradePanel:_playerRow(p, order)
     btn.AutoButtonColor = not p.busy
     btn.ZIndex = 103
     btn.Parent = row
-    pillify(btn)
-    local bc = Instance.new("UITextSizeConstraint")
-    bc.MaxTextSize = 16
-    bc.Parent = btn
+    pillify(btn, 16)
     if not p.busy then
         btn.Activated:Connect(function()
             local res = self:_callBus("trade.request", { targetUserId = p.userId })
@@ -469,10 +491,7 @@ function TradePanel:_showRequestPopup(fromUserId, fromName)
         b.Font = Enum.Font.GothamBold
         b.ZIndex = 201
         b.Parent = pop
-        pillify(b)
-        local c = Instance.new("UITextSizeConstraint")
-        c.MaxTextSize = 18
-        c.Parent = b
+        pillify(b, 18)
         b.Activated:Connect(function()
             self:_callBus("trade.respond", { fromUserId = fromUserId, accept = accept })
             self:_closeRequestPopup()
@@ -749,10 +768,7 @@ function TradePanel:_renderWindow(state)
     confirm.Active = not state.you.confirmed
     confirm.ZIndex = 103
     confirm.Parent = win
-    pillify(confirm)
-    local cc = Instance.new("UITextSizeConstraint")
-    cc.MaxTextSize = 16
-    cc.Parent = confirm
+    pillify(confirm, 16)
     confirm.Activated:Connect(function()
         self:_callBus("trade.confirm", {})
     end)
@@ -768,10 +784,7 @@ function TradePanel:_renderWindow(state)
     cancel.Font = Enum.Font.GothamBold
     cancel.ZIndex = 103
     cancel.Parent = win
-    pillify(cancel)
-    local cancc = Instance.new("UITextSizeConstraint")
-    cancc.MaxTextSize = 16
-    cancc.Parent = cancel
+    pillify(cancel, 16)
     cancel.Activated:Connect(function()
         self:_callBus("trade.cancel", {})
     end)
