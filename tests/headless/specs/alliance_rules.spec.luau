@@ -13,8 +13,13 @@ return function()
             expect(AllianceRules.shouldAlly(50, 10, CFG)).to.equal(true)
         end)
 
-        it("never allies a combat-invisible newbie (onramp protects them instead)", function()
-            expect(AllianceRules.shouldAlly(50, 3, CFG)).to.equal(false)
+        it("allies a sub-onramp newbie too (team onboarding beats the solo First Fight)", function()
+            -- Jason 2026-07-21: "preferably they get to experience a team right off the bat...
+            -- right now it feels like I'm being left out" — allied newbies become full
+            -- combatants (EnemyService treats AllianceAnchor as combat-engaged), so the
+            -- alliance REPLACES the solo pushover whenever higher players are camped.
+            expect(AllianceRules.shouldAlly(50, 3, CFG)).to.equal(true)
+            expect(AllianceRules.shouldAlly(26, 1, CFG)).to.equal(true)
         end)
 
         it("skips near-equals below the gap (banner would be noise)", function()

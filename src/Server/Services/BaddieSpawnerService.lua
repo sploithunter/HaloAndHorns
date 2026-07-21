@@ -552,10 +552,38 @@ function BaddieSpawnerService:Start()
                         end
                     end
                     if subNear and now >= (state.onrampCooldownUntil or 0) then
-                        -- FIRST FIGHT cadence (Jason: "spawn the neutered
-                        -- enemies ENDLESSLY until I defeat one")
                         state.onrampCooldownUntil = now + 3
-                        self:_trigger(part, subNear, rng)
+                        if subNear:GetAttribute("AllianceAnchor") ~= nil then
+                            -- already allied into the camp's fight — the
+                            -- alliance IS their onramp while it lasts
+                        elseif vetNear and #state.alive > 0 then
+                            -- INCLUSION over isolation (Jason 2026-07-21:
+                            -- "preferably they get to experience a team right
+                            -- off the bat... right now it feels like I'm
+                            -- being left out"): with vets mid-fight here, the
+                            -- newbie's 3s beat JOINS them into the temporary
+                            -- alliance (sidekicked up, banner, full
+                            -- combatant) instead of spawning a pushover the
+                            -- vets' pets vaporize on sight. Sub-onramp guests
+                            -- are the ONE deliberate exception to "walking
+                            -- into a running fight forms nothing". Between
+                            -- waves nothing forms (banner would flap) — the
+                            -- vet's next trigger allies them at spawn.
+                            self:_formAlliances(vetNear, part)
+                        elseif not vetNear then
+                            -- alone at the cave: the classic First Fight
+                            -- (Jason: "spawn the neutered enemies ENDLESSLY
+                            -- until I defeat one")
+                            self:_trigger(part, subNear, rng)
+                        else
+                            -- vet camped, no live wave: the newbie's beat
+                            -- PULLS the next real wave in now ("we still want
+                            -- it to spawn quickly") — it spawns at the camp's
+                            -- level and the trigger's _formAlliances allies
+                            -- everyone, so the newbie's 3s cadence effectively
+                            -- restocks the TEAM fight while they're present.
+                            state.cooldownUntil = math.min(state.cooldownUntil, now)
+                        end
                     end
                     if vetNear and now >= state.cooldownUntil and #state.alive < cap then
                         state.cooldownUntil = now + rng:NextNumber(cdMin, cdMax)

@@ -333,6 +333,13 @@ function EnemyService:_engagesCombat(player)
     if not player then
         return false
     end
+    -- TEMPORARY ALLIANCE guest (Jason 2026-07-21: "preferably they get to experience a team
+    -- right off the bat"): an allied sub-onramp player is IN the fight for real — lifted to
+    -- anchor−1 on the EffectiveLevel pipe (damage dealt AND taken both read it), pets pull,
+    -- enemies engage. The gate re-closes the moment the alliance dissolves.
+    if player:GetAttribute("AllianceAnchor") ~= nil then
+        return true
+    end
     local eng = self._combatConfig and self._combatConfig.engagement
     local minLvl = eng and tonumber(eng.min_engage_level)
     if not minLvl or minLvl <= 1 then
