@@ -6044,6 +6044,28 @@ function EnemyService:_updateBand(part, player, cfg, now, dt)
     end
 end
 
+-- Read-only patrol lifecycle boundary for realm systems such as RealmAllianceService.
+-- The band table remains private to EnemyService; callers only need to know whether this
+-- cave currently owns a live group. This preserves the one-group-per-cave authority here.
+function EnemyService:IsPatrolBandAlive(part)
+    local band = self._bands and self._bands[part]
+    if not band then
+        return false
+    end
+    for _, id in ipairs(band.members or {}) do
+        local entry = self._enemies and self._enemies[id]
+        if
+            entry
+            and entry.model
+            and entry.model.Parent
+            and (tonumber(entry.model:GetAttribute("HP")) or 0) > 0
+        then
+            return true
+        end
+    end
+    return false
+end
+
 function EnemyService:_patrolTick(now, dt)
     local cfg = self._combatConfig and self._combatConfig.enemy_patrol
     if not cfg or cfg.enabled ~= true then

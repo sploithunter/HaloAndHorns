@@ -149,6 +149,13 @@ All slices landed plus everything the verify shook out:
   no wave is live, pulls the vet's next REAL wave in immediately ("we still want it to spawn
   quickly"), whose trigger allies everyone at spawn. When the alliance dissolves, the
   onramp gate re-closes and the solo pushover cadence resumes.
+  REALM PATROL ALLIANCE (Jason 2026-07-22): Heaven/Hell caves deliberately use a parallel
+  `RealmAllianceService`, not the homeworld spawner path. There is no newcomer/onramp cadence
+  in realms. While a cave's one patrol group is alive, the highest-level nearby unteamed
+  player anchors every eligible lower player within `pack.patrol_engaged_radius`; the same
+  `AllianceRules`, `AllianceAnchor`, mutual `AllianceWith`, effective-level, support, and
+  achievement contracts apply. The realm alliance ends after the patrol dies plus the normal
+  linger, either player leaves `alliance.dissolve_radius`, joins a formal team, or leaves.
 - TEAM FOLLOW shipped (Jason, 2026-07-07): any member auto-follows any teammate (not just the
   lead). Client `TeamFollowController` walk-follows via Humanoid:MoveTo; ANY manual movement
   input (WASD or mobile joystick, via the PlayerModule move vector) breaks it. Toggle = follow
