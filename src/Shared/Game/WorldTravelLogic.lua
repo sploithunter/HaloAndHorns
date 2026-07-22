@@ -1,10 +1,10 @@
 --[[
     WorldTravelLogic — pure realm/origin destination naming and unlocked catalog filtering.
 
-    Config order controls presentation. Runtime services provide three permission sets:
-    usable layers (LayerService), built layers (map geometry), and unlocked zones (ZoneService).
-    A destination appears only in the intersection, and the server rebuilds the same catalog when
-    a client selects it. Pure so the security/filter contract is headless-testable.
+    Config order controls presentation. Runtime services provide built layers (map geometry) and
+    persisted unlocked zones (ZoneService). An unlocked origin is proof that the player has already
+    reached that realm; World Travel is a return trip and must not reapply the realm's first-entry
+    Soul/token gate. The server rebuilds the same catalog when a client selects it.
 ]]
 
 local WorldTravelLogic = {}
@@ -60,17 +60,16 @@ local function asSet(values)
     return set
 end
 
--- opts = { usableLayers, builtLayers, unlockedZones, quotes, currentLayer, currentArea }
+-- opts = { builtLayers, unlockedZones, currentLayer, currentArea }
 function WorldTravelLogic.catalog(travelConfig, areasConfig, opts)
     opts = opts or {}
-    local usable = asSet(opts.usableLayers)
     local built = asSet(opts.builtLayers)
     local unlocked = asSet(opts.unlockedZones)
     local zones = (areasConfig and areasConfig.zones) or {}
     local out = {}
 
     for _, layerId in ipairs((travelConfig and travelConfig.layer_order) or {}) do
-        if usable[layerId] and built[layerId] then
+        if built[layerId] then
             local origins = {}
             for order, origin in ipairs((travelConfig and travelConfig.origins) or {}) do
                 local zoneId = WorldTravelLogic.zoneId(layerId, origin)
@@ -85,13 +84,11 @@ function WorldTravelLogic.catalog(travelConfig, areasConfig, opts)
                 end
             end
             if #origins > 0 then
-                local quote = (opts.quotes and opts.quotes[layerId]) or {}
                 out[#out + 1] = {
                     id = layerId,
                     label = WorldTravelLogic.layerLabel(layerId),
                     current = layerId == opts.currentLayer,
-                    cost = tonumber(quote.cost) or 0,
-                    currency = quote.currency,
+                    cost = 0,
                     origins = origins,
                 }
             end

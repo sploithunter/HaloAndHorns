@@ -13,16 +13,10 @@ return function()
             expect(WorldTravelLogic.zoneId("hell_2", grass)).to.equal("Hell_2_Grass")
         end)
 
-        it("returns only the intersection of usable, built, configured, and unlocked", function()
+        it("returns only the intersection of built, configured, and persisted unlocked", function()
             local catalog = WorldTravelLogic.catalog(layersConfig.world_travel, areasConfig, {
-                usableLayers = { base = true, hell_1 = true, hell_2 = true, heaven_1 = true },
                 builtLayers = { base = true, hell_1 = false, hell_2 = true, heaven_1 = true },
                 unlockedZones = { "Spawn", "Ice", "Hell_2_Ice" },
-                quotes = {
-                    base = { cost = 0 },
-                    hell_2 = { cost = 250, currency = "shadow_tokens" },
-                    heaven_1 = { cost = 100, currency = "light_tokens" },
-                },
                 currentLayer = "base",
                 currentArea = "Spawn",
             })
@@ -35,20 +29,31 @@ return function()
             expect(catalog[1].origins[2].id).to.equal("ice")
 
             expect(catalog[2].id).to.equal("hell_2")
-            expect(catalog[2].cost).to.equal(250)
-            expect(catalog[2].currency).to.equal("shadow_tokens")
+            expect(catalog[2].cost).to.equal(0)
+            expect(catalog[2].currency).to.equal(nil)
             expect(#catalog[2].origins).to.equal(1)
             expect(catalog[2].origins[1].id).to.equal("ice")
         end)
 
         it("omits accessible layers with no unlocked configured origin", function()
             local catalog = WorldTravelLogic.catalog(layersConfig.world_travel, areasConfig, {
-                usableLayers = { base = true, heaven_1 = true },
                 builtLayers = { base = true, heaven_1 = true },
                 unlockedZones = { "Spawn" },
             })
             expect(#catalog).to.equal(1)
             expect(catalog[1].id).to.equal("base")
+        end)
+
+        it("shows an unlocked opposite-alignment realm without a live entry quote", function()
+            local catalog = WorldTravelLogic.catalog(layersConfig.world_travel, areasConfig, {
+                builtLayers = { base = true, heaven_1 = true, hell_1 = true },
+                unlockedZones = { "Spawn", "Heaven_1_Grass", "Hell_1_Grass" },
+                currentLayer = "base",
+            })
+            expect(#catalog).to.equal(3)
+            expect(catalog[1].id).to.equal("base")
+            expect(catalog[2].id).to.equal("heaven_1")
+            expect(catalog[3].id).to.equal("hell_1")
         end)
 
         it("find accepts only an exact catalog destination", function()

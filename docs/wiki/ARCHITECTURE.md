@@ -69,11 +69,12 @@ filtered out of production registries.
   `EconomyService`, and persists area unlock state only after a successful debit.
 - `LayerService` resolves realm token earnings and traversal costs from layer config, then commits
   both through `EconomyService`. A failed traversal debit leaves the player's layer unchanged.
-- `WorldTravelService` composes (rather than duplicates) `LayerService` realm access with
-  `ZoneService` persisted area unlocks and `WorldBindingService` map/spawn availability. Activating
-  the World Travel power opens a server-filtered realm → origin catalog without spending Focus;
-  selecting a destination revalidates the same intersection before realm cost, Focus, cooldown,
-  analytics, and teleport commit.
+- `WorldTravelService` composes `LayerService` realm movement with `ZoneService` persisted area
+  unlocks and `WorldBindingService` map/spawn availability. A persisted unlocked origin is proof the
+  player already reached its realm, so World Travel does not reapply first-entry Soul/alignment or
+  traversal-token gates (including for an opposite-alignment realm). Activating opens the catalog
+  without spending Focus; selecting revalidates the saved unlock before Focus, cooldown, analytics,
+  and teleport commit.
 - `ShopService` uses injected economy and reward boundaries. Its pure purchase transaction debits
   configured currencies in stable order, rolls prior debits back if a later debit or the reward
   grant fails, and increments the purchase ledger only after success.

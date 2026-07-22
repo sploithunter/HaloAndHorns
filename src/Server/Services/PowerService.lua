@@ -2891,9 +2891,8 @@ function PowerService:Cast(player, powerId, opts)
     if worldTravelPlan then
         local travelResult = self._worldTravelService:Travel(player, worldTravelPlan)
         if not travelResult.ok then
-            -- Focus was the only cast cost committed before travel. Realm tokens are charged inside
-            -- LayerService only after the same server-side catalog check, and the destination spawn
-            -- was already validated, so downstream failure is limited to transient character state.
+            -- Focus is the only cast cost: this power returns to persisted unlocked destinations and
+            -- never charges the first-entry realm traversal token. Restore it on a transient failure.
             if focusCost > 0 and self._focusService and self._focusService.Restore then
                 self._focusService:Restore(player, focusCost)
             end
