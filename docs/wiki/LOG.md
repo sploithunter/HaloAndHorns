@@ -1606,3 +1606,9 @@ emerald/citrine/area pill has the style-guide contrast instead of white text was
 Replaced Recall's session-only saved coordinate with durable `GameData.LastHatchedEggId`, written
 only after a server-confirmed hatch. Casts resolve the current live EggStand position and fail before
 Focus/cooldown commitment when the player has no hatch history or a temporary egg has disappeared.
+
+## 2026-07-22 — Natural Recall safe arrival
+
+Fixed Recall placing the player's root at the egg/UI anchor inside the hatcher. Successful hatches
+now save the player's egg-relative root offset; Recall validates that reconstructed position and uses
+a ground/collision-checked radial fallback for older saves or newly obstructed stands.

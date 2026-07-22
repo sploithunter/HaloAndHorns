@@ -633,6 +633,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.GameData = playerData.GameData or {}
     playerData.GameData.UnlockedAreas = { "Spawn" }
     playerData.GameData.LastHatchedEggId = ""
+    playerData.GameData.LastHatchedEggOffset = {}
     if self._zoneService and self._zoneService._getUnlockSet then
         pcall(function()
             self._zoneService:_getUnlockSet(targetPlayer)
