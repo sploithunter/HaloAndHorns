@@ -1,9 +1,10 @@
 --[[
     WorldTravelService — server authority for the World Travel power's realm -> origin menu.
 
-    LayerService owns realm access, recurring traversal cost, and CurrentLayer. ZoneService owns
-    persisted origin unlocks and spawn placement. This service exposes only their intersection and
-    rebuilds it on selection, so a forged client cannot travel to a locked or unbuilt destination.
+    LayerService owns CurrentLayer and physical realm movement. ZoneService owns persisted origin
+    unlocks and spawn placement. A saved origin unlock proves the player has reached that realm;
+    World Travel returns there without reapplying first-entry Soul/token gates. The server rebuilds
+    the catalog on selection, so a forged client cannot travel to a locked or unbuilt destination.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -43,22 +44,15 @@ end
 
 function WorldTravelService:GetCatalog(player)
     local travelConfig = self._layersConfig.world_travel or {}
-    local usable, built, quotes = {}, {}, {}
+    local built = {}
     for _, layerId in ipairs(travelConfig.layer_order or {}) do
-        local quote = self._layerService:CanUseLayer(player, layerId)
-        if quote.ok then
-            usable[layerId] = true
-            quotes[layerId] = quote
-        end
         if self:_isBuilt(layerId) then
             built[layerId] = true
         end
     end
     return WorldTravelLogic.catalog(travelConfig, self._areasConfig, {
-        usableLayers = usable,
         builtLayers = built,
         unlockedZones = self._zoneService:GetUnlockedZones(player),
-        quotes = quotes,
         currentLayer = self._layerService:GetCurrentLayer(player),
         currentArea = player:GetAttribute("CurrentArea"),
     })
@@ -108,7 +102,10 @@ function WorldTravelService:Travel(player, prepared)
     if not current.ok then
         return current
     end
-    local layerResult = self._layerService:UseLayer(player, current.layer)
+    -- This is a return to a persisted unlocked destination, not a first realm entry. The catalog
+    -- validation above is the authority; force prevents LayerService from reapplying alignment and
+    -- traversal-token gates that would hide already-unlocked opposite-alignment realms.
+    local layerResult = self._layerService:UseLayer(player, current.layer, { force = true })
     if not layerResult.ok then
         return layerResult
     end

@@ -1582,3 +1582,10 @@ realm and origin picker. The server catalog is the intersection of live `LayerSe
 built map folders, configured area zones, and the player's persisted `ZoneService` unlocks; forged
 or stale selections are rebuilt and rejected. Opening the picker is free, while a successful final
 selection uses the normal Focus, traversal-token, cooldown, analytics, layer, and zone authorities.
+
+## 2026-07-22 — World Travel return access follows saved origins
+
+Corrected the first World Travel catalog after Colorado's saved Heaven 1/2 and Hell 1/2 origins
+were hidden behind the current Soul/token first-entry quote. Persisted origin unlocks now prove a
+realm was already reached; built/configured unlocked destinations appear across both alignments and
+return travel uses Focus/cooldown without charging or reapplying the realm entry gate.

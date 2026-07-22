@@ -42,7 +42,7 @@ is an additive **fraction** that stacks via BuffStack (e.g. +0.5 = +50%, two of 
 | **Magnet** | magnet | PLAYER | — | — | +30-stud drop collect radius 20s | magnet · self | 15 / 30s |
 | **Revive** | revive | MECHANIC | — | one downed pet | instantly re-summon a downed pet (ignores cooldown) | revive · self | 25 / 30s |
 | **Recall** | recall | PLAYER teleport | — | — | teleport to your last hatched egg / saved spot | pet_transfer · self | 10 / 30s |
-| **World Travel** | world_travel | PLAYER teleport | — | — | opens realm → origin picker; only currently accessible realms, built maps, and persisted unlocked areas are offered; server revalidates and teleports | portal · self | 10 / 30s |
+| **World Travel** | world_travel | PLAYER teleport | — | — | opens realm → origin picker; built maps with persisted unlocked areas are offered, including previously reached opposite-alignment realms; server revalidates and teleports | portal · self | 10 / 30s |
 
 ---
 
