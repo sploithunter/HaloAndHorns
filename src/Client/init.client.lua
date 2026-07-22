@@ -242,6 +242,17 @@ do
     end
 end
 
+-- World Travel: hotbar activation opens a server-filtered realm -> origin picker; selection routes
+-- back through the normal power cast (Focus/cooldown) and server-owned layer/zone travel services.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.WorldTravelMenu).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start WorldTravelMenu", { error = tostring(err) })
+    end
+end
+
 -- Admin-only power test bar (replaces the hotbar while ADMIN mode is on). Self-gates to admins.
 do
     local ok, err = pcall(function()

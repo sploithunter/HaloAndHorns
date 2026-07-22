@@ -55,6 +55,36 @@ return {
         hatch_luck_per_depth = 0.1,
     },
 
+    -- World Travel power menu. The server intersects this presentation order with live
+    -- LayerService access, built map folders, configured area zones, and the player's persisted
+    -- ZoneService unlocks. Entries listed here are never permission by themselves.
+    world_travel = {
+        layer_order = {
+            "base",
+            "heaven_1",
+            "hell_1",
+            "heaven_2",
+            "hell_2",
+            "heaven_3",
+            "hell_3",
+            "heaven_4",
+            "hell_4",
+            "heaven_5",
+            "hell_5",
+        },
+        origins = {
+            { id = "grass", display_name = "Grass", base_zone = "Spawn", suffix = "Grass" },
+            { id = "ice", display_name = "Ice", base_zone = "Ice", suffix = "Ice" },
+            { id = "lava", display_name = "Lava", base_zone = "Lava", suffix = "Lava" },
+            {
+                id = "desert",
+                display_name = "Desert",
+                base_zone = "Desert",
+                suffix = "Desert",
+            },
+        },
+    },
+
     -- TEST portals (RealmPortalService): named workspace parts you walk up to, mapped to a realm
     -- layer. Toggling enters that realm (or returns to base if already in it). `bypass_access`
     -- skips the soul/level/token gate so the realm is reachable for testing before the economy

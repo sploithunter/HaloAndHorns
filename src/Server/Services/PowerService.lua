@@ -104,6 +104,7 @@ function PowerService:Init()
     self._statsService = nil
     self._playerProgressionService = nil
     self._hotbarService = nil
+    self._worldTravelService = nil
     self._powersConfig = self._configLoader:LoadConfig("powers")
     self._archetypesConfig = self._configLoader:LoadConfig("archetypes")
     self._combatConfig = self._configLoader:LoadConfig("combat") -- accuracy curve for P4 to-hit
@@ -161,6 +162,7 @@ function PowerService:BindPeerServices(services)
     self._statsService = services.StatsService
     self._playerProgressionService = services.PlayerProgressionService
     self._hotbarService = services.HotbarService
+    self._worldTravelService = services.WorldTravelService
 end
 
 -- Families whose `passive = true` powers apply permanently by OWNERSHIP. Each maps to its single
@@ -976,8 +978,8 @@ function PowerService:_toggleAxisBuff(player, attr, frac, powerId)
     end
 end
 
--- Teleport the player's character to `pos` (a Vector3) or, if nil, the world spawn (World Travel /
--- recall fallback). A small lift keeps them above the floor.
+-- Teleport the player's character to `pos` (a Vector3) or, if nil, the world spawn (Recall
+-- fallback). World Travel is owned by WorldTravelService so it can enforce realm + area unlocks.
 function PowerService:_teleportPlayer(player, pos)
     local char = player.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -1794,7 +1796,8 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         -- the world spawn — the AFK-farmer "get back to where I was" QoL.
         self:_teleportPlayer(player, player:GetAttribute("RecallPoint"))
     elseif family == "world_travel" then
-        self:_teleportPlayer(player, nil) -- to the world hub (spawn)
+        -- Handled transactionally in Cast through WorldTravelService. Keeping this branch explicit
+        -- makes an accidental direct _applyEffect call harmless instead of bypassing unlock checks.
     elseif family == "magnet" then
         -- #167: widen the drop auto-collect radius by `magnitude` studs for `duration`s. DropService's
         -- collect loop reads MagnetBuff while MagnetBuffUntil is live (a flat studs bonus, not an axis).
@@ -2819,6 +2822,25 @@ function PowerService:Cast(player, powerId, opts)
         kind._strengthMult = 1 + (enhAxes.magnitude or 0)
     end
 
+    -- World Travel is a two-step cast. The first hotbar activation only opens the server-built
+    -- unlocked destination catalog; it spends no Focus and starts no cooldown. A later selection
+    -- returns through this same Cast chokepoint and is revalidated before any cost is committed.
+    local worldTravelPlan
+    if kind.family == "world_travel" then
+        local travelService = self._worldTravelService
+        if not travelService then
+            return self:_flub(player, "travel_unavailable")
+        end
+        local destination = opts and opts.worldTravelDestination
+        if destination == nil then
+            return travelService:Open(player)
+        end
+        worldTravelPlan = travelService:Prepare(player, destination)
+        if not worldTravelPlan.ok then
+            return self:_flub(player, worldTravelPlan.reason or "destination_locked")
+        end
+    end
+
     -- Target gate: an offensive power reaches the enemy THROUGH the pets, so it can't fire unless
     -- the squad is engaged with one (the pet is fighting something). Friendly powers (heal/buff/
     -- shield) target your own pets and skip the gate. Refused casts don't spend the cooldown.
@@ -2865,7 +2887,22 @@ function PowerService:Cast(player, powerId, opts)
         end
     end
 
-    local castArea = self:_applyEffect(player, kind, now, tostring(powerId)) or {}
+    local castArea
+    if worldTravelPlan then
+        local travelResult = self._worldTravelService:Travel(player, worldTravelPlan)
+        if not travelResult.ok then
+            -- Focus was the only cast cost committed before travel. Realm tokens are charged inside
+            -- LayerService only after the same server-side catalog check, and the destination spawn
+            -- was already validated, so downstream failure is limited to transient character state.
+            if focusCost > 0 and self._focusService and self._focusService.Restore then
+                self._focusService:Restore(player, focusCost)
+            end
+            return self:_flub(player, travelResult.reason or "travel_failed")
+        end
+        castArea = { travel = travelResult }
+    else
+        castArea = self:_applyEffect(player, kind, now, tostring(powerId)) or {}
+    end
     -- Cast VFX. amplified_burst / team_cleave fire their own bespoke area FX inside _applyEffect.
     -- Archetype powers play a caster cast-tell (small `cast_emit` body emission for single-target,
     -- the `cast_burst` ring for AoE powers) and, if hostile, a targeted strike on each engaged enemy
@@ -2994,7 +3031,11 @@ function PowerService:Cast(player, powerId, opts)
             self._statsService:Increment(player, "powers_cast", 1)
         end)
     end
-    return { ok = true, power = powerId, cooldown = cd }
+    local response = { ok = true, power = powerId, cooldown = cd }
+    if castArea.travel then
+        response.travel = castArea.travel
+    end
+    return response
 end
 
 function PowerService:_level(player, override)

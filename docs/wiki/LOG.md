@@ -1574,3 +1574,11 @@ Added a parallel Heaven/Hell alliance service for mixed-level unteamed players n
 patrol. Realm alliances reuse the shared level-gap, sidekick-up, mutual-support, banner, and
 achievement contracts, but intentionally exclude the homeworld's special newcomer/first-fight
 cadence. The realm patrol group remains owned exclusively by EnemyService.
+
+## 2026-07-22 — World Travel is an unlocked realm → origin power
+
+Replaced World Travel's placeholder first-SpawnLocation teleport with a two-step, mobile-scaled
+realm and origin picker. The server catalog is the intersection of live `LayerService` access,
+built map folders, configured area zones, and the player's persisted `ZoneService` unlocks; forged
+or stale selections are rebuilt and rejected. Opening the picker is free, while a successful final
+selection uses the normal Focus, traversal-token, cooldown, analytics, layer, and zone authorities.

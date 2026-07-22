@@ -54,7 +54,12 @@ local SCHEMAS = {
     gems = schema({ meshes = "table", textures = "table", default_color = "string" }),
     guardians = schema({ model_asset = "table", colossus = "table", djinn = "table" }),
     hotbar = schema({ slot_count = "number", bind_types = "table", tactical_commands = "table" }),
-    layers = schema({ traversal = "table", earning = "table", depth_rewards = "table" }),
+    layers = schema({
+        traversal = "table",
+        earning = "table",
+        depth_rewards = "table",
+        world_travel = "table",
+    }),
     level_track = schema({ version = "string", max_level = "number", milestones = "table" }),
     leveling = schema({ xp_rewards = "table", combat_xp = "table", scale = "table" }),
     logging = schema({ global = "table", performance_monitor = "table", services = "table" }),
