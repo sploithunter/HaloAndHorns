@@ -23,8 +23,6 @@ local pending = false
 
 local COLORS = {
     panel = Color3.fromRGB(28, 30, 41),
-    card = Color3.fromRGB(44, 47, 62),
-    cardHover = Color3.fromRGB(57, 63, 82),
     white = Color3.fromRGB(248, 249, 253),
     body = Color3.fromRGB(201, 207, 222),
     muted = Color3.fromRGB(157, 165, 184),
@@ -33,12 +31,6 @@ local COLORS = {
     gold = Color3.fromRGB(245, 180, 50),
     red = Color3.fromRGB(238, 91, 91),
 }
-
-local function corner(parent, radius)
-    local value = Instance.new("UICorner")
-    value.CornerRadius = UDim.new(0, radius)
-    value.Parent = parent
-end
 
 local function textLabel(parent, name, text, size, position, textSize, color, font)
     local value = Instance.new("TextLabel")
@@ -53,7 +45,7 @@ local function textLabel(parent, name, text, size, position, textSize, color, fo
     value.TextWrapped = true
     value.TextXAlignment = Enum.TextXAlignment.Left
     value.TextYAlignment = Enum.TextYAlignment.Center
-    value.ZIndex = 104
+    value.ZIndex = 106
     value.Parent = parent
     return value
 end
@@ -94,35 +86,27 @@ local function setStatus(text, isError)
     end
 end
 
-local function makeButton(parent, name, title, detail, y, accent, callback)
+local function makeButton(parent, name, title, detail, y, pillKey, accent, callback)
     local button = Instance.new("TextButton")
     button.Name = name
     button.AutoButtonColor = false
     button.Text = ""
     button.Size = UDim2.new(1, -24, 0, 78)
     button.Position = UDim2.fromOffset(12, y)
-    button.BackgroundColor3 = COLORS.card
+    button.BackgroundTransparency = 1
     button.BorderSizePixel = 0
     button.ZIndex = 103
     button.Parent = parent
-    corner(button, 13)
-
-    local marker = Instance.new("Frame")
-    marker.Name = "Accent"
-    marker.Size = UDim2.fromOffset(7, 54)
-    marker.Position = UDim2.fromOffset(12, 12)
-    marker.BackgroundColor3 = accent
-    marker.BorderSizePixel = 0
-    marker.ZIndex = 104
-    marker.Parent = button
-    corner(marker, 4)
+    local fill = PanelChrome.pillPanel(button, pillKey, 103)
+    fill.ImageTransparency = 0.04
+    PanelChrome.pillBorder(button, pillKey, 105, 0, 0.18)
 
     textLabel(
         button,
         "Title",
         title,
-        UDim2.new(1, -90, 0, 34),
-        UDim2.fromOffset(32, 8),
+        UDim2.new(1, -92, 0, 34),
+        UDim2.fromOffset(30, 8),
         24,
         COLORS.white,
         Enum.Font.GothamBold
@@ -131,8 +115,8 @@ local function makeButton(parent, name, title, detail, y, accent, callback)
         button,
         "Detail",
         detail,
-        UDim2.new(1, -90, 0, 27),
-        UDim2.fromOffset(32, 42),
+        UDim2.new(1, -92, 0, 27),
+        UDim2.fromOffset(30, 42),
         17,
         COLORS.body,
         Enum.Font.Gotham
@@ -151,11 +135,11 @@ local function makeButton(parent, name, title, detail, y, accent, callback)
 
     button.MouseEnter:Connect(function()
         if not pending then
-            button.BackgroundColor3 = COLORS.cardHover
+            fill.ImageTransparency = 0
         end
     end)
     button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = COLORS.card
+        fill.ImageTransparency = 0.04
     end)
     button.Activated:Connect(function()
         if not pending then
@@ -210,10 +194,20 @@ local function renderRealms()
             details ..= "  •  Free travel"
         end
         local accent = layer.current and COLORS.green or COLORS.blue
-        makeButton(content, "Realm_" .. layer.id, layer.label, details, y, accent, function()
-            selectedLayer = layer
-            renderOrigins()
-        end)
+        local pillKey = layer.current and "emerald" or shell.areaKey
+        makeButton(
+            content,
+            "Realm_" .. layer.id,
+            layer.label,
+            details,
+            y,
+            pillKey,
+            accent,
+            function()
+                selectedLayer = layer
+                renderOrigins()
+            end
+        )
         y += 88
     end
     content.CanvasSize = UDim2.fromOffset(0, y + 8)
@@ -232,15 +226,24 @@ renderOrigins = function()
     back.Name = "Back"
     back.Size = UDim2.fromOffset(116, 38)
     back.Position = UDim2.fromOffset(12, 4)
-    back.BackgroundColor3 = COLORS.card
+    back.BackgroundTransparency = 1
     back.BorderSizePixel = 0
-    back.Text = "‹  REALMS"
-    back.TextColor3 = COLORS.white
-    back.TextSize = 17
-    back.Font = Enum.Font.GothamBold
+    back.Text = ""
     back.ZIndex = 104
     back.Parent = content
-    corner(back, 9)
+    PanelChrome.pillPanel(back, shell.areaKey, 104)
+    PanelChrome.pillBorder(back, shell.areaKey, 105, 0, 0.18)
+    local backText = textLabel(
+        back,
+        "Label",
+        "‹  REALMS",
+        UDim2.fromScale(1, 1),
+        nil,
+        17,
+        COLORS.white,
+        Enum.Font.GothamBold
+    )
+    backText.TextXAlignment = Enum.TextXAlignment.Center
     back.Activated:Connect(renderRealms)
 
     textLabel(
@@ -257,14 +260,24 @@ renderOrigins = function()
     for _, origin in ipairs(layer.origins or {}) do
         local detail = origin.current and "You are here" or "Travel to this origin"
         local accent = origin.current and COLORS.green or COLORS.gold
-        makeButton(content, "Origin_" .. origin.id, origin.label, detail, y, accent, function()
-            pending = true
-            setStatus("Traveling to " .. layer.label .. " — " .. origin.label .. "…", false)
-            Signals.WorldTravel_Select:FireServer({
-                layer = layer.id,
-                origin = origin.id,
-            })
-        end)
+        local pillKey = origin.current and "emerald" or shell.areaKey
+        makeButton(
+            content,
+            "Origin_" .. origin.id,
+            origin.label,
+            detail,
+            y,
+            pillKey,
+            accent,
+            function()
+                pending = true
+                setStatus("Traveling to " .. layer.label .. " — " .. origin.label .. "…", false)
+                Signals.WorldTravel_Select:FireServer({
+                    layer = layer.id,
+                    origin = origin.id,
+                })
+            end
+        )
         y += 88
     end
     content.CanvasSize = UDim2.fromOffset(0, y + 8)
