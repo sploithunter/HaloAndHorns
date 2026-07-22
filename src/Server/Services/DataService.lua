@@ -114,6 +114,9 @@ local function generateProfileTemplate(configLoader)
             TutorialCompleted = false,
             CurrentQuest = nil,
             UnlockedAreas = { "Spawn" },
+            -- Natural Recall stores egg identity, not coordinates. The live EggStand is resolved on
+            -- cast so authored stands may move and removed event eggs fail closed.
+            LastHatchedEggId = "",
         },
 
         -- Settings
