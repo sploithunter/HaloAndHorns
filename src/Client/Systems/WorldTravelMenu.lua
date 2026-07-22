@@ -26,9 +26,8 @@ local COLORS = {
     white = Color3.fromRGB(248, 249, 253),
     body = Color3.fromRGB(201, 207, 222),
     muted = Color3.fromRGB(157, 165, 184),
+    pillText = Color3.fromRGB(12, 12, 16),
     blue = Color3.fromRGB(58, 139, 224),
-    green = Color3.fromRGB(37, 190, 105),
-    gold = Color3.fromRGB(245, 180, 50),
     red = Color3.fromRGB(238, 91, 91),
 }
 
@@ -86,7 +85,7 @@ local function setStatus(text, isError)
     end
 end
 
-local function makeButton(parent, name, title, detail, y, pillKey, accent, callback)
+local function makeButton(parent, name, title, detail, y, pillKey, callback)
     local button = Instance.new("TextButton")
     button.Name = name
     button.AutoButtonColor = false
@@ -108,7 +107,7 @@ local function makeButton(parent, name, title, detail, y, pillKey, accent, callb
         UDim2.new(1, -92, 0, 34),
         UDim2.fromOffset(30, 8),
         24,
-        COLORS.white,
+        COLORS.pillText,
         Enum.Font.GothamBold
     )
     textLabel(
@@ -118,7 +117,7 @@ local function makeButton(parent, name, title, detail, y, pillKey, accent, callb
         UDim2.new(1, -92, 0, 27),
         UDim2.fromOffset(30, 42),
         17,
-        COLORS.body,
+        COLORS.pillText,
         Enum.Font.Gotham
     )
     local arrow = textLabel(
@@ -128,7 +127,7 @@ local function makeButton(parent, name, title, detail, y, pillKey, accent, callb
         UDim2.fromOffset(42, 54),
         UDim2.new(1, -58, 0, 12),
         38,
-        accent,
+        COLORS.pillText,
         Enum.Font.GothamBold
     )
     arrow.TextXAlignment = Enum.TextXAlignment.Center
@@ -193,21 +192,11 @@ local function renderRealms()
         else
             details ..= "  •  Free travel"
         end
-        local accent = layer.current and COLORS.green or COLORS.blue
         local pillKey = layer.current and "emerald" or shell.areaKey
-        makeButton(
-            content,
-            "Realm_" .. layer.id,
-            layer.label,
-            details,
-            y,
-            pillKey,
-            accent,
-            function()
-                selectedLayer = layer
-                renderOrigins()
-            end
-        )
+        makeButton(content, "Realm_" .. layer.id, layer.label, details, y, pillKey, function()
+            selectedLayer = layer
+            renderOrigins()
+        end)
         y += 88
     end
     content.CanvasSize = UDim2.fromOffset(0, y + 8)
@@ -240,7 +229,7 @@ renderOrigins = function()
         UDim2.fromScale(1, 1),
         nil,
         17,
-        COLORS.white,
+        COLORS.pillText,
         Enum.Font.GothamBold
     )
     backText.TextXAlignment = Enum.TextXAlignment.Center
@@ -259,25 +248,15 @@ renderOrigins = function()
     local y = 52
     for _, origin in ipairs(layer.origins or {}) do
         local detail = origin.current and "You are here" or "Travel to this origin"
-        local accent = origin.current and COLORS.green or COLORS.gold
         local pillKey = origin.current and "emerald" or shell.areaKey
-        makeButton(
-            content,
-            "Origin_" .. origin.id,
-            origin.label,
-            detail,
-            y,
-            pillKey,
-            accent,
-            function()
-                pending = true
-                setStatus("Traveling to " .. layer.label .. " — " .. origin.label .. "…", false)
-                Signals.WorldTravel_Select:FireServer({
-                    layer = layer.id,
-                    origin = origin.id,
-                })
-            end
-        )
+        makeButton(content, "Origin_" .. origin.id, origin.label, detail, y, pillKey, function()
+            pending = true
+            setStatus("Traveling to " .. layer.label .. " — " .. origin.label .. "…", false)
+            Signals.WorldTravel_Select:FireServer({
+                layer = layer.id,
+                origin = origin.id,
+            })
+        end)
         y += 88
     end
     content.CanvasSize = UDim2.fromOffset(0, y + 8)
