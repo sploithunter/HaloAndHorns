@@ -10,6 +10,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local AllianceRules = require(ReplicatedStorage.Shared.Game.AllianceRules)
@@ -247,12 +248,13 @@ function RealmAllianceService:_formAtLivePatrols()
 end
 
 function RealmAllianceService:Start()
-    task.spawn(function()
-        while true do
-            local now = os.clock()
-            self:_maintainExisting(now)
+    local elapsed = 0
+    self._heartbeat = RunService.Heartbeat:Connect(function(dt)
+        elapsed += dt
+        if elapsed >= 0.5 then
+            elapsed %= 0.5
+            self:_maintainExisting(os.clock())
             self:_formAtLivePatrols()
-            task.wait(0.5)
         end
     end)
 end
