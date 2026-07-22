@@ -49,6 +49,7 @@ local function effectiveRarityIds(hatchResult)
     return rid, rname
 end
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
+local RecallTarget = require(ReplicatedStorage.Shared.Game.RecallTarget)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
 local OpsAlert = require(script.Parent.Parent.OpsAlert)
@@ -1033,14 +1034,6 @@ function EggService:BuildPlayerHatchData(player, eggType, eggData, hatchOptions)
         end
     end
 
-    -- Recall power: stamp where the player is hatching, so Recall (default target = last hatched
-    -- egg) brings an AFK farmer back here after a server reboot.
-    local recallChar = player.Character
-    local recallHrp = recallChar and recallChar:FindFirstChild("HumanoidRootPart")
-    if recallHrp then
-        player:SetAttribute("RecallPoint", recallHrp.Position)
-    end
-
     hatchOptions = type(hatchOptions) == "table" and hatchOptions or {}
     if hatchOptions.chargedMode == true then
         local hatching = self:GetHatchingConfig()
@@ -1564,6 +1557,10 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
         end)
     end
 
+    -- Recall is durable hatch HISTORY, not the client-reported nearby egg. Record only after at
+    -- least one result was successfully processed (auto-deleted results still count as a hatch).
+    self:SaveLastHatchedEgg(player, request.eggType)
+
     local stopReason = nil
     if processedCount < request.requestedCount then
         if storageStop then
@@ -1621,7 +1618,28 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
     return response
 end
 
--- === CURRENT EGG TRACKING (for persistence) ===
+-- === CURRENT EGG TRACKING (client proximity only; not durable Recall history) ===
+
+function EggService:SaveLastHatchedEgg(player, eggType)
+    local data = self._dataService and self._dataService:GetData(player)
+    local recorded = RecallTarget.record(data, eggType)
+    if not recorded.ok then
+        Logger:Warn("Could not persist Recall egg", {
+            player = player and player.Name or "?",
+            eggType = eggType,
+            reason = recorded.reason,
+        })
+        return false
+    end
+
+    -- Repeated auto-hatches at the same stand do not need another DataStore write. A changed egg is
+    -- critical because every result may have been auto-deleted, leaving no inventory flush to carry
+    -- the profile change; profile release also flushes any still-dirty request.
+    if recorded.changed then
+        self._dataService:RequestSave(player, "last_hatched_egg", { critical = true })
+    end
+    return true
+end
 
 function EggService:SetLastEgg(player, eggType)
     local playerId = player.UserId
@@ -1631,9 +1649,6 @@ function EggService:SetLastEgg(player, eggType)
         player = player.Name,
         eggType = eggType or "nil",
     })
-
-    -- TODO: Save to player data for persistence across sessions
-    -- This would integrate with your DataService to save the current egg
 
     return true
 end

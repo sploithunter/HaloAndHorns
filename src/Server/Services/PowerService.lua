@@ -32,6 +32,8 @@ local AdminPowerPalette = require(ReplicatedStorage.Shared.Game.AdminPowerPalett
 local FocusUpkeep = require(ReplicatedStorage.Shared.Game.FocusUpkeep)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
+local RecallTarget = require(ReplicatedStorage.Shared.Game.RecallTarget)
+local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
 local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local RunService = game:GetService("RunService")
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
@@ -978,22 +980,28 @@ function PowerService:_toggleAxisBuff(player, attr, frac, powerId)
     end
 end
 
--- Teleport the player's character to `pos` (a Vector3) or, if nil, the world spawn (Recall
--- fallback). World Travel is owned by WorldTravelService so it can enforce realm + area unlocks.
+-- Teleport the player's character to an already validated position. Recall deliberately has no
+-- spawn fallback: if its saved egg cannot be resolved, the cast must fail without spending.
 function PowerService:_teleportPlayer(player, pos)
     local char = player.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if not hrp then
-        return
+    if not hrp or typeof(pos) ~= "Vector3" then
+        return false
     end
-    local target = pos
-    if typeof(target) ~= "Vector3" then
-        local spawn = Workspace:FindFirstChildWhichIsA("SpawnLocation", true)
-        target = spawn and spawn.Position
-    end
-    if typeof(target) == "Vector3" then
-        hrp.CFrame = CFrame.new(target + Vector3.new(0, 4, 0))
-    end
+    hrp.CFrame = CFrame.new(pos + Vector3.new(0, 4, 0))
+    return true
+end
+
+function PowerService:_prepareRecall(player)
+    local data = self._dataService and self._dataService:GetData(player)
+    return RecallTarget.resolve(data, function(eggId)
+        local egg = EggWorldQuery.FindEggByType(eggId)
+        local anchor = egg and EggWorldQuery.GetAnchor(egg)
+        if anchor and anchor:IsDescendantOf(Workspace) then
+            return anchor
+        end
+        return nil
+    end)
 end
 
 -- Heal one pet by `amount` endurance (shared by heal / fortify / heal_blind / summon families).
@@ -1792,9 +1800,7 @@ function PowerService:_applyEffect(player, kind, now, powerId)
             end
         end
     elseif family == "recall" then
-        -- Recall: teleport to the player's saved spot (RecallPoint, stamped on each hatch), else
-        -- the world spawn — the AFK-farmer "get back to where I was" QoL.
-        self:_teleportPlayer(player, player:GetAttribute("RecallPoint"))
+        -- Handled transactionally in Cast so a missing/expired egg cannot spend Focus or cooldown.
     elseif family == "world_travel" then
         -- Handled transactionally in Cast through WorldTravelService. Keeping this branch explicit
         -- makes an accidental direct _applyEffect call harmless instead of bypassing unlock checks.
@@ -2826,6 +2832,7 @@ function PowerService:Cast(player, powerId, opts)
     -- unlocked destination catalog; it spends no Focus and starts no cooldown. A later selection
     -- returns through this same Cast chokepoint and is revalidated before any cost is committed.
     local worldTravelPlan
+    local recallPlan
     if kind.family == "world_travel" then
         local travelService = self._worldTravelService
         if not travelService then
@@ -2838,6 +2845,11 @@ function PowerService:Cast(player, powerId, opts)
         worldTravelPlan = travelService:Prepare(player, destination)
         if not worldTravelPlan.ok then
             return self:_flub(player, worldTravelPlan.reason or "destination_locked")
+        end
+    elseif kind.family == "recall" then
+        recallPlan = self:_prepareRecall(player)
+        if not recallPlan.ok then
+            return self:_flub(player, recallPlan.reason or "recall_unavailable")
         end
     end
 
@@ -2899,6 +2911,19 @@ function PowerService:Cast(player, powerId, opts)
             return self:_flub(player, travelResult.reason or "travel_failed")
         end
         castArea = { travel = travelResult }
+    elseif recallPlan then
+        -- Re-resolve at commit time. A temporary/event egg can disappear in the small window between
+        -- preflight and Focus reservation; compensate the Focus and leave cooldown untouched.
+        recallPlan = self:_prepareRecall(player)
+        local teleported = recallPlan.ok
+            and self:_teleportPlayer(player, recallPlan.target.Position)
+        if not teleported then
+            if focusCost > 0 and self._focusService and self._focusService.Restore then
+                self._focusService:Restore(player, focusCost)
+            end
+            return self:_flub(player, recallPlan.reason or "recall_failed")
+        end
+        castArea = { recall = { eggId = recallPlan.eggId } }
     else
         castArea = self:_applyEffect(player, kind, now, tostring(powerId)) or {}
     end
@@ -3033,6 +3058,9 @@ function PowerService:Cast(player, powerId, opts)
     local response = { ok = true, power = powerId, cooldown = cd }
     if castArea.travel then
         response.travel = castArea.travel
+    end
+    if castArea.recall then
+        response.recall = castArea.recall
     end
     return response
 end

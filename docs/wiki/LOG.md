@@ -1600,3 +1600,9 @@ emerald pill state; other controls inherit the active area palette.
 
 Changed realm/origin titles, detail copy, arrows, and the Back label to near-black so every bright
 emerald/citrine/area pill has the style-guide contrast instead of white text washing into the fill.
+
+## 2026-07-22 — Natural Recall persists the last hatched egg
+
+Replaced Recall's session-only saved coordinate with durable `GameData.LastHatchedEggId`, written
+only after a server-confirmed hatch. Casts resolve the current live EggStand position and fail before
+Focus/cooldown commitment when the player has no hatch history or a temporary egg has disappeared.
