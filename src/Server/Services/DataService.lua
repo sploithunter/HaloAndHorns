@@ -117,6 +117,9 @@ local function generateProfileTemplate(configLoader)
             -- Natural Recall stores egg identity, not coordinates. The live EggStand is resolved on
             -- cast so authored stands may move and removed event eggs fail closed.
             LastHatchedEggId = "",
+            -- Player root position in the egg anchor's local space. This reproduces the safe side of
+            -- the hatcher where the player stood without fossilizing a world coordinate.
+            LastHatchedEggOffset = {},
         },
 
         -- Settings

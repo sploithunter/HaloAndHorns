@@ -56,7 +56,10 @@ Implemented so far:
 - A successful hatch now persists `GameData.LastHatchedEggId` for the Natural Recall power. Recall
   resolves that id against the live `EggStand` registry at cast time instead of saving coordinates;
   moved stands remain valid, while removed temporary/event eggs make Recall fail without Focus or
-  cooldown cost. Client-reported nearby-egg tracking remains separate and cannot overwrite history.
+  cooldown cost. The player's safe hatch position is stored relative to the egg anchor so Recall
+  returns outside the hatcher even after the stand moves; older id-only saves use a ground/collision-
+  checked radial fallback. Client-reported nearby-egg tracking remains separate and cannot overwrite
+  history.
 
 Still to build:
 

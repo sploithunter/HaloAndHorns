@@ -980,15 +980,16 @@ function PowerService:_toggleAxisBuff(player, attr, frac, powerId)
     end
 end
 
--- Teleport the player's character to an already validated position. Recall deliberately has no
--- spawn fallback: if its saved egg cannot be resolved, the cast must fail without spending.
+-- Teleport the player's character root to an already validated arrival. The arrival calculation
+-- already includes the humanoid's floor clearance, so adding a generic vertical offset here would
+-- move the player away from the exact safe position captured at hatch time.
 function PowerService:_teleportPlayer(player, pos)
     local char = player.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     if not hrp or typeof(pos) ~= "Vector3" then
         return false
     end
-    hrp.CFrame = CFrame.new(pos + Vector3.new(0, 4, 0))
+    hrp.CFrame = CFrame.new(pos)
     return true
 end
 
@@ -998,10 +999,105 @@ function PowerService:_prepareRecall(player)
         local egg = EggWorldQuery.FindEggByType(eggId)
         local anchor = egg and EggWorldQuery.GetAnchor(egg)
         if anchor and anchor:IsDescendantOf(Workspace) then
-            return anchor
+            return {
+                egg = egg,
+                anchor = anchor,
+                stand = anchor.Parent,
+            }
         end
         return nil
     end)
+end
+
+function PowerService:_recallPositionClear(player, position)
+    local character = player.Character
+    if not character then
+        return false
+    end
+
+    local params = OverlapParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = { character }
+    local parts = Workspace:GetPartBoundsInBox(CFrame.new(position), Vector3.new(4, 4.5, 4), params)
+    for _, part in ipairs(parts) do
+        if part.CanCollide then
+            return false
+        end
+    end
+    return true
+end
+
+function PowerService:_fallbackRecallPosition(player, target)
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character and character:FindFirstChildWhichIsA("Humanoid")
+    local anchor = target and target.anchor
+    if not (root and anchor) then
+        return nil
+    end
+
+    -- Prefer the side of the egg facing the caster's current position. Rotate around the stand when
+    -- that side is blocked, always staying within the 18-stud hatch radius.
+    local towardCaster =
+        Vector3.new(root.Position.X - anchor.Position.X, 0, root.Position.Z - anchor.Position.Z)
+    if towardCaster.Magnitude < 0.1 then
+        towardCaster = Vector3.new(anchor.CFrame.LookVector.X, 0, anchor.CFrame.LookVector.Z)
+    end
+    if towardCaster.Magnitude < 0.1 then
+        towardCaster = Vector3.new(0, 0, 1)
+    end
+    towardCaster = towardCaster.Unit
+
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = { character }
+    local rootClearance = (humanoid and humanoid.HipHeight or 2) + (root.Size.Y * 0.5)
+
+    for _, radius in ipairs({ 14, 17, 11 }) do
+        for step = 0, 7 do
+            local angle = math.rad(step * 45)
+            local direction = CFrame.Angles(0, angle, 0):VectorToWorldSpace(towardCaster)
+            local horizontal = anchor.Position + (direction * radius)
+            local hit = Workspace:Raycast(
+                horizontal + Vector3.new(0, 30, 0),
+                Vector3.new(0, -90, 0),
+                rayParams
+            )
+            if
+                hit
+                and hit.Normal.Y >= 0.65
+                and not (
+                    target.stand
+                    and (hit.Instance == target.stand or hit.Instance:IsDescendantOf(target.stand))
+                )
+            then
+                local position = hit.Position + Vector3.new(0, rootClearance + 0.25, 0)
+                if self:_recallPositionClear(player, position) then
+                    return position
+                end
+            end
+        end
+    end
+    return nil
+end
+
+function PowerService:_recallArrival(player, plan)
+    local target = plan and plan.target
+    local anchor = target and target.anchor
+    if not anchor then
+        return nil
+    end
+
+    local offset = plan.localOffset
+    if offset then
+        local savedPosition =
+            anchor.CFrame:PointToWorldSpace(Vector3.new(offset.x, offset.y, offset.z))
+        if self:_recallPositionClear(player, savedPosition) then
+            return savedPosition
+        end
+    end
+
+    return self:_fallbackRecallPosition(player, target)
 end
 
 -- Heal one pet by `amount` endurance (shared by heal / fortify / heal_blind / summon families).
@@ -2915,13 +3011,13 @@ function PowerService:Cast(player, powerId, opts)
         -- Re-resolve at commit time. A temporary/event egg can disappear in the small window between
         -- preflight and Focus reservation; compensate the Focus and leave cooldown untouched.
         recallPlan = self:_prepareRecall(player)
-        local teleported = recallPlan.ok
-            and self:_teleportPlayer(player, recallPlan.target.Position)
+        local arrival = recallPlan.ok and self:_recallArrival(player, recallPlan)
+        local teleported = arrival and self:_teleportPlayer(player, arrival)
         if not teleported then
             if focusCost > 0 and self._focusService and self._focusService.Restore then
                 self._focusService:Restore(player, focusCost)
             end
-            return self:_flub(player, recallPlan.reason or "recall_failed")
+            return self:_flub(player, recallPlan.reason or "recall_no_safe_arrival")
         end
         castArea = { recall = { eggId = recallPlan.eggId } }
     else

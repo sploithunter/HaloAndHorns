@@ -1622,7 +1622,29 @@ end
 
 function EggService:SaveLastHatchedEgg(player, eggType)
     local data = self._dataService and self._dataService:GetData(player)
-    local recorded = RecallTarget.record(data, eggType)
+    local localOffset
+    local character = player and player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if root then
+        -- Resolve the exact stand the player is beside. Egg ids are normally unique, but closest
+        -- preserves the right relative side if a future event places two stands of one source type.
+        local record = EggWorldQuery.FindClosestEgg(
+            root.Position,
+            { eggType },
+            eggSystemConfig.proximity.max_distance
+        )
+        local anchor = record and record.anchor
+        if anchor then
+            local localPosition = anchor.CFrame:PointToObjectSpace(root.Position)
+            localOffset = {
+                x = localPosition.X,
+                y = localPosition.Y,
+                z = localPosition.Z,
+            }
+        end
+    end
+
+    local recorded = RecallTarget.record(data, eggType, localOffset)
     if not recorded.ok then
         Logger:Warn("Could not persist Recall egg", {
             player = player and player.Name or "?",
