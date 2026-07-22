@@ -706,6 +706,19 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.EnemyService,
     { "Logger", "ConfigLoader" }
 )
+-- RealmAllianceService: mixed-level temporary alliances at live Heaven/Hell cave patrols.
+-- Kept separate from the homeworld spawner service and its newcomer/onramp behavior.
+loader:RegisterModule(
+    "RealmAllianceService",
+    ServerScriptService.Server.Services.RealmAllianceService,
+    {
+        "Logger",
+        "ConfigLoader",
+        "EnemyService",
+        "PlayerProgressionService",
+        "StatsService",
+    }
+)
 -- ZoneTrackerService: config-bounds "which area am I in" → CurrentArea SSOT attribute.
 -- Drives area-scoped farming (AutoTargetService) and future area music / zone activation.
 loader:RegisterModule(

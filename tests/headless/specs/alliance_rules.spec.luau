@@ -13,6 +13,11 @@ return function()
             expect(AllianceRules.shouldAlly(50, 10, CFG)).to.equal(true)
         end)
 
+        it("allies the reported Hell 1 level-9 player to the level-29 anchor", function()
+            expect(AllianceRules.shouldAlly(29, 9, CFG)).to.equal(true)
+            expect(AllianceRules.effectiveLevel(9, 29, -1)).to.equal(28)
+        end)
+
         it("allies a sub-onramp newbie too (team onboarding beats the solo First Fight)", function()
             -- Jason 2026-07-21: "preferably they get to experience a team right off the bat...
             -- right now it feels like I'm being left out" — allied newbies become full

@@ -1567,3 +1567,10 @@ Fixed the First Fight cave stacking another solo Jackalope every three seconds. 
 spawner now owns one active group: a solo onramp group contains one enemy, while team-scaled groups
 may contain several; no replacement group can spawn until every member of the current group has
 been destroyed or despawned. The invariant is enforced at both scheduling and spawn boundaries.
+
+## 2026-07-22 — Realm patrols form separate temporary alliances
+
+Added a parallel Heaven/Hell alliance service for mixed-level unteamed players near a live cave
+patrol. Realm alliances reuse the shared level-gap, sidekick-up, mutual-support, banner, and
+achievement contracts, but intentionally exclude the homeworld's special newcomer/first-fight
+cadence. The realm patrol group remains owned exclusively by EnemyService.
