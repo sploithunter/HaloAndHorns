@@ -140,6 +140,16 @@ function FocusService:Drain(player, amount)
     return { ok = true, focus = after, drained = before - after }
 end
 
+-- Compensate a committed cast when a downstream transactional action (currently World Travel)
+-- fails after Focus was reserved. Never exceeds focus_max.
+function FocusService:Restore(player, amount)
+    local before = focusOf(self, player)
+    local restored = math.max(0, tonumber(amount) or 0)
+    self._focus[player] = math.min(self._config.focus_max, before + restored)
+    self:_push(player)
+    return { ok = true, focus = self._focus[player], restored = self._focus[player] - before }
+end
+
 -- Regenerate Focus over `elapsed` seconds (clamped to focus_max), then mirror to the HUD.
 function FocusService:RegenTick(player, elapsed)
     self._focus[player] = FocusMath.regen(focusOf(self, player), elapsed, self._config)

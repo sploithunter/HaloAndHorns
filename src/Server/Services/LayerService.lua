@@ -125,6 +125,26 @@ function LayerService:AccessibleLayers(player)
     )
 end
 
+-- Quote the exact gate UseLayer will enforce from the player's CURRENT layer. Unlike the legacy
+-- AccessibleLayers list, this honors deeper_only traversal (retreating is free) and is therefore
+-- suitable for an actionable travel menu. No currency or state is mutated here.
+function LayerService:CanUseLayer(player, layerId)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    if not (self._layersConfig.access and self._layersConfig.access[layerId]) then
+        return { ok = false, reason = "unknown_layer" }
+    end
+    local currency = self._layersConfig.token_currency
+        and self._layersConfig.token_currency[layerId]
+    local balance = currency and (self._dataService:GetCurrency(player, currency) or 0) or 0
+    return LayerAccess.canAccess(data.Soul or 0, balance, layerId, self._layersConfig, {
+        playerLevel = self:_playerLevel(player),
+        fromLayer = data.CurrentLayer or "base",
+    })
+end
+
 -- Income/reward scaling for the player's current layer (layers.multipliers; 1.0 at base).
 -- The reward for descending: deeper realm = bigger income (+ bigger token cut, which is a
 -- fraction of that income).
@@ -219,12 +239,8 @@ function LayerService:UseLayer(player, layerId, opts)
     local cost, currency = 0, nil
 
     if not opts.force then
-        currency = self._layersConfig.token_currency and self._layersConfig.token_currency[layerId]
-        local balance = currency and (self._dataService:GetCurrency(player, currency) or 0) or 0
-        local decision = LayerAccess.canAccess(soul, balance, layerId, self._layersConfig, {
-            playerLevel = self:_playerLevel(player),
-            fromLayer = data.CurrentLayer or "base", -- applies the charge_on traversal sink
-        })
+        local decision = self:CanUseLayer(player, layerId)
+        currency = decision.currency
         if not decision.ok then
             return {
                 ok = false,

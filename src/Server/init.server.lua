@@ -199,6 +199,12 @@ registerFeatureModule(
     { "Logger", "ConfigLoader", "DataService", "EconomyService", "WorldBindingService" }
 )
 registerFeatureModule(
+    "map_binding",
+    "WorldTravelService",
+    ServerScriptService.Server.Services.WorldTravelService,
+    { "Logger", "ConfigLoader", "LayerService", "ZoneService", "WorldBindingService" }
+)
+registerFeatureModule(
     "global_events",
     "EventService",
     ServerScriptService.Server.Services.EventService,
@@ -889,7 +895,13 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 "PlayerProgressionService"
             ) or nil,
             HotbarService = modules:Get("HotbarService"),
+            WorldTravelService = isFeatureEnabled("map_binding") and modules:Get(
+                "WorldTravelService"
+            ) or nil,
         })
+        if isFeatureEnabled("map_binding") then
+            modules:Get("WorldTravelService"):BindPowerService(modules:Get("PowerService"))
+        end
         modules:Get("PotionService"):BindPeerServices({
             HotbarService = modules:Get("HotbarService"),
             EnemyService = modules:Get("EnemyService"),
@@ -1005,6 +1017,7 @@ appendIfEnabled(requiredModules, "upgrades", "UpgradeService")
 appendIfEnabled(requiredModules, "player_progression", "PlayerProgressionService")
 appendIfEnabled(requiredModules, "map_binding", "WorldBindingService")
 appendIfEnabled(requiredModules, "map_binding", "ZoneService")
+appendIfEnabled(requiredModules, "map_binding", "WorldTravelService")
 appendIfEnabled(requiredModules, "global_events", "EventService")
 appendIfEnabled(requiredModules, "admin_tools", "AdminToolsService")
 appendIfEnabled(requiredModules, "auto_target", "AutoTargetService")
