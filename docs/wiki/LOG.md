@@ -1595,3 +1595,8 @@ return travel uses Focus/cooldown without charging or reapplying the realm entry
 Replaced the realm/origin rounded-card controls and Back rectangle with the same filled nine-slice
 pill panels and neon pill borders used by the rest of the game UI. Current destinations use the
 emerald pill state; other controls inherit the active area palette.
+
+## 2026-07-22 — World Travel pills use dark foregrounds
+
+Changed realm/origin titles, detail copy, arrows, and the Back label to near-black so every bright
+emerald/citrine/area pill has the style-guide contrast instead of white text washing into the fill.
