@@ -1589,3 +1589,9 @@ Corrected the first World Travel catalog after Colorado's saved Heaven 1/2 and H
 were hidden behind the current Soul/token first-entry quote. Persisted origin unlocks now prove a
 realm was already reached; built/configured unlocked destinations appear across both alignments and
 return travel uses Focus/cooldown without charging or reapplying the realm entry gate.
+
+## 2026-07-22 — World Travel controls use shared pill chrome
+
+Replaced the realm/origin rounded-card controls and Back rectangle with the same filled nine-slice
+pill panels and neon pill borders used by the rest of the game UI. Current destinations use the
+emerald pill state; other controls inherit the active area palette.
