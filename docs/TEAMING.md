@@ -137,6 +137,14 @@ All slices landed plus everything the verify shook out:
   enemy rail. Explicit single-target casts already crossed via SELECTABLE = AFFECTABLE.
   Achievements: alliances_formed ("Unlikely Allies") + allies_aided ("Guardian Angel"),
   new-pairings-only.
+  HOME ANCHOR SELECTION (2026-07-23): cave scheduling deterministically chooses the highest-level
+  nearby player (UserId breaks ties), matching the realm service. `Players:GetPlayers()` ordering
+  is not authoritative; choosing its first veteran could tune Home Lava to the lower player and
+  make the sidekick-UP-only rule correctly refuse an alliance with the higher bystander.
+  CAST SAFETY (2026-07-23): cast-through-player resolution covers the configured friendly
+  families, including evade, blind-heal, damage buff, fortify, and root guard. An explicitly
+  selected downed, removed, or otherwise invalid pet returns no target and flubs before Focus;
+  it never silently redirects the cast to a different pet or back to the caster.
   NEWBIE ONBOARDING VIA ALLIANCE (Jason 2026-07-21: "preferably they get to experience a
   team right off the bat... right now it feels like I'm being left out"): sub-onramp
   (< min_engage_level) bystanders now ALLY TOO — AllianceRules dropped its min-engage gate,

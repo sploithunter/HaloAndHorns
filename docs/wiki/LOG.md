@@ -1612,3 +1612,15 @@ Focus/cooldown commitment when the player has no hatch history or a temporary eg
 Fixed Recall placing the player's root at the egg/UI anchor inside the hatcher. Successful hatches
 now save the player's egg-relative root offset; Recall validates that reconstructed position and uses
 a ground/collision-checked radial fallback for older saves or newly obstructed stands.
+
+## 2026-07-23 — Power casts fail safely; Home alliances anchor highest
+
+Closed the post-audit silent-cast gaps: Sandstorm blind now requires an engaged enemy; Revive
+requires a downed pet; pet-dependent shields, armor, heals, evasion, and fortification require a
+living target; Simoom requires either a heal or blind target; and Resonance requires a crystal in
+range. Every refusal occurs before Focus and cooldown commitment. Prospector and Windfall now say
+they are timed instead of Always-On. Home cave waves, including Home Lava, deterministically tune
+to the highest nearby player rather than arbitrary player iteration order, so eligible lower
+bystanders reliably form the intended temporary alliance. Cross-player support resolution now
+covers every configured friendly family, and explicit dead/stale selections fail safely rather
+than redirecting the cast to a different pet or squad.

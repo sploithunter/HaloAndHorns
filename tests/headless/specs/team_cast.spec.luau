@@ -18,10 +18,12 @@ return function()
             { key = "aggro", enduranceFrac = 0.6, hasAggro = true },
         }
 
-        it("heal picks the single most-hurt LIVE pet", function()
+        it("heals pick the single most-hurt LIVE pet", function()
             local picked = TeamCast.pick("heal", squad)
             expect(#picked).to.equal(1)
             expect(picked[1].key).to.equal("hurt")
+            expect(TeamCast.pick("heal_over_time", squad)[1].key).to.equal("hurt")
+            expect(TeamCast.pick("heal_blind", squad)[1].key).to.equal("hurt")
         end)
 
         it("revive picks all downed pets", function()
@@ -30,8 +32,9 @@ return function()
             expect(picked[1].key).to.equal("down")
         end)
 
-        it("absorb prefers the aggro holder over the tank", function()
+        it("single-pet protection prefers the aggro holder over the tank", function()
             expect(TeamCast.pick("absorb", squad)[1].key).to.equal("aggro")
+            expect(TeamCast.pick("evade", squad)[1].key).to.equal("aggro")
         end)
 
         it("absorb falls back to the tank, then lowest endurance", function()
@@ -45,8 +48,16 @@ return function()
             )
         end)
 
-        it("buffs cover the whole live squad", function()
-            expect(#TeamCast.pick("defense_buff", squad)).to.equal(3)
+        it("squad buffs cover the whole live squad", function()
+            for _, family in ipairs({
+                "defense_buff",
+                "damage_buff",
+                "buff",
+                "fortify",
+                "root_guard",
+            }) do
+                expect(#TeamCast.pick(family, squad)).to.equal(3)
+            end
         end)
 
         it("unsupported families and empty squads pick nothing", function()
