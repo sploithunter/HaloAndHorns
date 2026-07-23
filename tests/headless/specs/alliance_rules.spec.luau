@@ -8,6 +8,32 @@ local AllianceRules = loadModule("src/Shared/Game/AllianceRules.lua")
 local CFG = { enabled = true, min_level_gap = 3, min_engage_level = 5 }
 
 return function()
+    describe("AllianceRules.pickHighest", function()
+        it("selects the highest player regardless of Roblox iteration order", function()
+            local low = { name = "Low", level = 9, userId = 20 }
+            local high = { name = "High", level = 29, userId = 30 }
+            local mid = { name = "Mid", level = 17, userId = 10 }
+            expect(AllianceRules.pickHighest({ low, high, mid })).to.equal(high)
+        end)
+
+        it("uses the stable tie key for equal levels", function()
+            local later = { level = 29, userId = 200 }
+            local earlier = { level = 29, userId = 100 }
+            expect(AllianceRules.pickHighest({ later, earlier })).to.equal(earlier)
+        end)
+
+        it("returns nil for no candidates", function()
+            expect(AllianceRules.pickHighest({})).to.equal(nil)
+        end)
+
+        it("is wired into the Home cave spawner", function()
+            local source = readFile("src/Server/Services/BaddieSpawnerService.lua")
+            expect(source:find("AllianceRules.pickHighest(vetCandidates", 1, true) ~= nil).to.equal(
+                true
+            )
+        end)
+    end)
+
     describe("AllianceRules.shouldAlly", function()
         it("allies a mid player to a much higher triggerer (the retention scenario)", function()
             expect(AllianceRules.shouldAlly(50, 10, CFG)).to.equal(true)

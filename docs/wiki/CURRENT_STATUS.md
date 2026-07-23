@@ -63,8 +63,10 @@ sides, a capital-baddie encounter ladder, and the powers roster fully implemente
   to hit the whole combat set at the widest default radius); `_applyEffect` warns on unknown
   families (how fear + Armor Field once shipped dead); Armor Field re-kinded to defense_buff;
   Fire Nova really burns; Simoom really blinds; every hostile family rolls accuracy (blind /
-  heal_blind / root_guard included). Shield = absorb pool / armor = +Defense curve / evade = miss
-  roll — three defensive pillars, deliberately no fourth.
+  heal_blind / root_guard included). Cast preflight covers enemy-targeted blind, downed-pet Revive,
+  pet-dependent support, Simoom's heal-or-blind hybrid, and Resonance crystals before Focus/cooldown
+  commitment. Shield = absorb pool / armor = +Defense curve / evade = miss roll — three defensive
+  pillars, deliberately no fourth.
 - **Veteran levels** (`docs/VETERAN_LEVELS.md`): 50 stays the build cap; overflow XP = flat
   2000-XP vet levels paying enhancement ROLLS (not currency), `data.VeteranPaid` once-only ledger,
   PlayerBar shows `VET N · x/y XP` at cap. The "keep going" branch vs Rebirth/dragons.

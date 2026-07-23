@@ -539,18 +539,30 @@ function BaddieSpawnerService:Start()
                     -- ONE ACTIVE GROUP PER SPAWNER. A team-scaled group may contain many enemies;
                     -- the solo First Fight group contains one. A new group cannot spawn until every
                     -- model in the prior group has been destroyed/despawned.
-                    local subNear, vetNear = nil, nil
+                    local subCandidates, vetCandidates = {}, {}
                     for _, player in ipairs(Players:GetPlayers()) do
                         local hrp = player.Character
                             and player.Character:FindFirstChild("HumanoidRootPart")
                         if hrp and (hrp.Position - part.Position).Magnitude <= radius then
                             if (tonumber(player:GetAttribute("Level")) or 1) < minEngage then
-                                subNear = subNear or player
+                                subCandidates[#subCandidates + 1] = player
                             else
-                                vetNear = vetNear or player
+                                vetCandidates[#vetCandidates + 1] = player
                             end
                         end
                     end
+                    local function levelOf(player)
+                        return tonumber(player:GetAttribute("Level")) or 1
+                    end
+                    local function userIdOf(player)
+                        return player.UserId
+                    end
+                    -- The wave must tune to the HIGHEST nearby player. Players:GetPlayers() ordering
+                    -- is arbitrary; picking its first veteran made a lower player the triggerer in
+                    -- Home Lava, so the sidekick-UP-only alliance correctly refused the higher one.
+                    -- RealmAllianceService already follows this highest-anchor contract.
+                    local subNear = AllianceRules.pickHighest(subCandidates, levelOf, userIdOf)
+                    local vetNear = AllianceRules.pickHighest(vetCandidates, levelOf, userIdOf)
                     if subNear and now >= (state.onrampCooldownUntil or 0) then
                         state.onrampCooldownUntil = now + 3
                         local groupActive = SpawnGroupGate.isActive(#state.alive)

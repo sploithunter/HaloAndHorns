@@ -7,11 +7,11 @@
         { key = <anything>, enduranceFrac = 0..1, downed = bool, hasAggro = bool, isTank = bool }
 
     Family semantics:
-      heal / heal_over_time -> the ONE lowest-enduranceFrac live pet (most hurt first)
-      revive                -> ALL downed pets
-      absorb (shield)       -> the aggro holder, else the tank, else lowest endurance
-      defense_buff / damage_buff -> ALL live pets (squad scope, like self-cast)
-      anything else         -> nil (not a supported cross-player family)
+      heal / heal_over_time / heal_blind -> ONE lowest-enduranceFrac live pet
+      revive                             -> ALL downed pets
+      absorb / evade                     -> aggro holder, else tank, else lowest endurance
+      defense_buff / damage_buff / buff / fortify / root_guard -> ALL live pets
+      anything else                      -> no targets
 ]]
 
 local TeamCast = {}
@@ -39,7 +39,7 @@ end
 --- family: string; pets: array of pet states. Returns an ARRAY of chosen states ({} if none).
 function TeamCast.pick(family, pets)
     pets = pets or {}
-    if family == "heal" or family == "heal_over_time" then
+    if family == "heal" or family == "heal_over_time" or family == "heal_blind" then
         local target = lowest(liveOnly(pets))
         return target and { target } or {}
     end
@@ -52,7 +52,7 @@ function TeamCast.pick(family, pets)
         end
         return out
     end
-    if family == "absorb" then
+    if family == "absorb" or family == "evade" then
         local live = liveOnly(pets)
         for _, p in ipairs(live) do
             if p.hasAggro then
@@ -67,7 +67,13 @@ function TeamCast.pick(family, pets)
         local target = lowest(live)
         return target and { target } or {}
     end
-    if family == "defense_buff" or family == "damage_buff" then
+    if
+        family == "defense_buff"
+        or family == "damage_buff"
+        or family == "buff"
+        or family == "fortify"
+        or family == "root_guard"
+    then
         return liveOnly(pets)
     end
     return {}

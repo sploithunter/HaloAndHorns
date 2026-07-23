@@ -16,6 +16,26 @@
 
 local AllianceRules = {}
 
+-- Deterministically choose the highest-level nearby player. Roblox does not promise that
+-- Players:GetPlayers() is level-sorted; using its first result made a lower player trigger Home
+-- cave content, after which the sidekick-UP-only rule correctly refused to pull the higher player
+-- down. `tieOf` keeps equal-level selection stable (UserId in runtime).
+function AllianceRules.pickHighest(candidates, levelOf, tieOf)
+    local best, bestLevel, bestTie
+    for index, candidate in ipairs(candidates or {}) do
+        local level = tonumber(levelOf and levelOf(candidate))
+            or tonumber(type(candidate) == "table" and candidate.level)
+            or 1
+        local tie = tonumber(tieOf and tieOf(candidate))
+            or tonumber(type(candidate) == "table" and (candidate.tie or candidate.userId))
+            or index
+        if best == nil or level > bestLevel or (level == bestLevel and tie < bestTie) then
+            best, bestLevel, bestTie = candidate, level, tie
+        end
+    end
+    return best
+end
+
 -- Should `bystander` ally to `triggerer` at spawn time?
 -- cfg: { enabled, min_level_gap, min_engage_level (accepted, unused) }
 --   • enabled=false kills the feature

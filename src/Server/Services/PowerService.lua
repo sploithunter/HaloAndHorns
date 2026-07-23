@@ -21,6 +21,7 @@ local ArchetypeLogic = require(ReplicatedStorage.Shared.Game.ArchetypeLogic)
 local AmplifiedBurst = require(ReplicatedStorage.Shared.Game.AmplifiedBurst)
 local PowerRegistry = require(ReplicatedStorage.Shared.Game.PowerRegistry)
 local PowerStats = require(ReplicatedStorage.Shared.Game.PowerStats)
+local PowerCastGate = require(ReplicatedStorage.Shared.Game.PowerCastGate)
 local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local CombatAllies = require(ReplicatedStorage.Shared.Game.CombatAllies) -- team ∪ temporary alliance
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
@@ -665,6 +666,28 @@ function PowerService:_hasEngagedFarmTarget(player)
     return #self:_engagedBreakables(player) > 0
 end
 
+-- Breakables actually reachable by a player-centered farming cast (Resonance). Shared by preflight
+-- and application so "castable" and "affected" use the same radius and center.
+function PowerService:_breakablesNearPlayer(player, radius)
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local center = (hrp and hrp.Position) or self:_squadCenter(player)
+    local targets = {}
+    if not center then
+        return targets, nil
+    end
+    radius = tonumber(radius) or 25
+    for _, crystal in ipairs(breakablesAlive()) do
+        local ok, pos = pcall(function()
+            return crystal:GetPivot().Position
+        end)
+        if ok and (pos - center).Magnitude <= radius then
+            targets[#targets + 1] = crystal
+        end
+    end
+    return targets, center
+end
+
 -- Apply a cast power's SUPPORT effect (no direct damage — see configs/powers.lua). `powerId` is
 -- stamped onto each buff it applies (CombatShieldPowerId / DefenseBuffPowerId / PetDamageBuffPowerId)
 -- so every UI surface resolves the SAME icon for it via PetBadge.forPower (no generic fallbacks).
@@ -712,14 +735,57 @@ function PowerService:_targetPets(player, powerId)
         return self:_withTeamPets(player, powerId, live)
     end
     if sel and sel ~= 0 then
-        for _, pet in ipairs(live) do
-            local pn = pet:FindFirstChild("PositionNumber")
-            if pn and pn.Value == sel then
-                return { pet }
+        -- An explicit card selection must never slide to another pet. In particular, a
+        -- selected downed pet is not a valid shield/heal/buff target: return no targets so
+        -- Cast flubs without spending Focus instead of silently hitting live[1].
+        for _, pet in ipairs(folder:GetChildren()) do
+            if pet:IsA("Model") then
+                local pn = pet:FindFirstChild("PositionNumber")
+                if pn and pn.Value == sel then
+                    return pet:GetAttribute("CombatDowned") and {} or { pet }
+                end
             end
         end
+        return {} -- stale/removed explicit slot
     end
     return live[1] and { live[1] } or {} -- fallback: first non-downed pet
+end
+
+-- Resolve the exact downed pet Revive would affect. This is intentionally separate from
+-- _targetPets, which excludes downed pets. The selected player's squad has priority, then the
+-- caster's; within a squad the selected slot wins, otherwise the first downed pet does.
+function PowerService:_reviveTarget(player)
+    local pp = Workspace:FindFirstChild("PlayerPets")
+    local folders = {}
+    local mateName = player:GetAttribute("CombatBuffTargetPlayer")
+    if type(mateName) == "string" and mateName ~= "" and mateName ~= player.Name then
+        local selected = pp and pp:FindFirstChild(mateName)
+        if selected then
+            folders[#folders + 1] = selected
+        end
+    end
+    local own = pp and pp:FindFirstChild(player.Name)
+    if own then
+        folders[#folders + 1] = own
+    end
+
+    local sel = player:GetAttribute("CombatBuffTarget")
+    for _, pets in ipairs(folders) do
+        local firstDowned
+        for _, pet in ipairs(pets:GetChildren()) do
+            if pet:IsA("Model") and pet:GetAttribute("CombatDowned") then
+                firstDowned = firstDowned or pet
+                local pn = pet:FindFirstChild("PositionNumber")
+                if sel and sel ~= 0 and pn and pn.Value == sel then
+                    return pet
+                end
+            end
+        end
+        if firstDowned then
+            return firstDowned
+        end
+    end
+    return nil
 end
 
 -- Lazy teaming deps (config + pure cores). Shared by every team-cast path below.
@@ -822,7 +888,7 @@ function PowerService:_teamTargetPets(player, powerId)
     end
     local target = Players:FindFirstChild(targetName)
     if not target then
-        return nil
+        return {} -- stale explicit player selection must not redirect back to the caster
     end
     -- SELECTABLE = AFFECTABLE (Jason, CoH-style): an EXPLICITLY selected player's pets take
     -- support casts teamed or NOT — drive-by heals/shields on strangers are the point. No
@@ -832,7 +898,7 @@ function PowerService:_teamTargetPets(player, powerId)
     local folder = Workspace:FindFirstChild("PlayerPets")
         and Workspace.PlayerPets:FindFirstChild(targetName)
     if not folder then
-        return nil
+        return {}
     end
     -- EXPLICIT teammate-pet pick (Jason: clicking a teammate's pet card should select IT):
     -- the client sends the pet's PositionNumber alongside playerName, stamped as
@@ -844,10 +910,11 @@ function PowerService:_teamTargetPets(player, powerId)
             if pet:IsA("Model") then
                 local pn = pet:FindFirstChild("PositionNumber")
                 if pn and pn.Value == sel then
-                    return { pet }
+                    return pet:GetAttribute("CombatDowned") and {} or { pet }
                 end
             end
         end
+        return {} -- stale/removed explicit slot
     end
     local states = {}
     for _, pet in ipairs(folder:GetChildren()) do
@@ -869,7 +936,7 @@ function PowerService:_teamTargetPets(player, powerId)
     end
     local picked = self._teamCast.pick(family, states)
     if #picked == 0 then
-        return nil -- nothing appropriate on their side: fall back to own squad
+        return {} -- selected player has no valid target; never fall back to the caster's squad
     end
     local pets = {}
     for _, state in ipairs(picked) do
@@ -1653,7 +1720,7 @@ function PowerService:_stampPowerBadge(entity, powerId, untilTime)
     end
 end
 
-function PowerService:_applyEffect(player, kind, now, powerId)
+function PowerService:_applyEffect(player, kind, now, powerId, prepared)
     local family = kind.family
     local mag = kind.magnitude or 0
     local dur = kind.duration or 0
@@ -1849,51 +1916,20 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         -- SELECTABLE = AFFECTABLE (#270, Jason: Genie of the Desert wasn't ressing teammates'
         -- pets): a selected PLAYER (CombatBuffTargetPlayer) makes THEIR folder the revive pool
         -- first — their selected downed pet, else their first downed — falling back to the
-        -- caster's own squad when their side has nobody down (the cast is never wasted).
+        -- caster's own squad when their side has nobody down. Cast preflight refuses when neither
+        -- side has a downed pet, before Focus/cooldown are committed.
         -- Bespoke resolver on purpose: _targetPets excludes downed pets (same gotcha as taunt).
-        local pp = Workspace:FindFirstChild("PlayerPets")
-        local folders = {}
-        local mateName = player:GetAttribute("CombatBuffTargetPlayer")
-        if type(mateName) == "string" and mateName ~= "" and mateName ~= player.Name then
-            local f = pp and pp:FindFirstChild(mateName)
-            if f then
-                folders[#folders + 1] = f
+        local target = (prepared and prepared.reviveTarget) or self:_reviveTarget(player)
+        if target then
+            -- ResurrectPet releases the #179 lockout ledger BEFORE reviving — PetRevive alone
+            -- gets held right back down by the lockout enforcement ("up for a split second").
+            local enemyService = self._enemyService
+            if enemyService and enemyService.ResurrectPet then
+                enemyService:ResurrectPet(target, player)
+            else
+                PetRevive.revive(target, player)
             end
-        end
-        local own = pp and pp:FindFirstChild(player.Name)
-        if own then
-            folders[#folders + 1] = own
-        end
-        if #folders > 0 then
-            local sel = player:GetAttribute("CombatBuffTarget")
-            local target, firstDowned
-            for _, pets in ipairs(folders) do
-                for _, pet in ipairs(pets:GetChildren()) do
-                    if pet:IsA("Model") and pet:GetAttribute("CombatDowned") then
-                        firstDowned = firstDowned or pet
-                        local pn = pet:FindFirstChild("PositionNumber")
-                        if sel and sel ~= 0 and pn and pn.Value == sel then
-                            target = pet
-                        end
-                    end
-                end
-                -- the SELECTED player's downed outrank falling through to the caster's own
-                if target or firstDowned then
-                    break
-                end
-            end
-            target = target or firstDowned
-            if target then
-                -- ResurrectPet releases the #179 lockout ledger BEFORE reviving — PetRevive alone
-                -- gets held right back down by the lockout enforcement ("up for a split second").
-                local enemyService = self._enemyService
-                if enemyService and enemyService.ResurrectPet then
-                    enemyService:ResurrectPet(target, player)
-                else
-                    PetRevive.revive(target, player)
-                end
-                fireGameEvent(player, "pet_revive", { pet = target.Name })
-            end
+            fireGameEvent(player, "pet_revive", { pet = target.Name })
         end
     elseif family == "recall" then
         -- Handled transactionally in Cast so a missing/expired egg cannot spend Focus or cooldown.
@@ -2428,20 +2464,13 @@ function PowerService:_applyEffect(player, kind, now, powerId)
         -- reusing the configs/breakables.lua M.boost SSOT — pet-damage amplification + Boost decay
         -- already live there, and BreakableSpawner shows the boost bar while Boost > 0. `mag` = Boost
         -- added per cast (full = slams to max); `radius` = the AoE (range-enhanceable via radiusBase).
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        local center = (hrp and hrp.Position) or self:_squadCenter(player)
         local radius = tonumber(kind.radius) or 25
+        local crystals, center = self:_breakablesNearPlayer(player, radius)
         if center then
-            for _, crystal in ipairs(breakablesAlive()) do
-                local ok, pos = pcall(function()
-                    return crystal:GetPivot().Position
-                end)
-                if ok and (pos - center).Magnitude <= radius then
-                    local maxBoost = tonumber(crystal:GetAttribute("MaxBoost")) or 100
-                    local cur = tonumber(crystal:GetAttribute("Boost")) or 0
-                    crystal:SetAttribute("Boost", math.min(maxBoost, cur + mag))
-                end
+            for _, crystal in ipairs(crystals) do
+                local maxBoost = tonumber(crystal:GetAttribute("MaxBoost")) or 100
+                local cur = tonumber(crystal:GetAttribute("Boost")) or 0
+                crystal:SetAttribute("Boost", math.min(maxBoost, cur + mag))
             end
             -- Cast tell: a momentary YELLOW rune (matches the crystals' yellow boost bars) that flashes
             -- in BRIGHT and fades away over ~1.3s — long enough to read, gone before the next cast.
@@ -2929,6 +2958,7 @@ function PowerService:Cast(player, powerId, opts)
     -- returns through this same Cast chokepoint and is revalidated before any cost is committed.
     local worldTravelPlan
     local recallPlan
+    local prepared = {}
     if kind.family == "world_travel" then
         local travelService = self._worldTravelService
         if not travelService then
@@ -2972,6 +3002,26 @@ function PowerService:Cast(player, powerId, opts)
     -- there's nothing to rage — no pet selected AND no tanks deployed.
     if (kind.family == "taunt" or kind.family == "rage") and #self:_tauntHolders(player) == 0 then
         return self:_flub(player, "no_tank")
+    end
+
+    -- Friendly/farming target preflight. These families used to pass the hostile gate, spend Focus,
+    -- start cooldown, then iterate an empty target list. Keep the decision pure (PowerCastGate) and
+    -- resolve the same runtime targets the application path will use.
+    local gateState = {
+        livePetCount = #self:_targetPets(player, tostring(powerId)),
+    }
+    if kind.family == "revive" then
+        prepared.reviveTarget = self:_reviveTarget(player)
+        gateState.hasDownedPet = prepared.reviveTarget ~= nil
+    elseif kind.family == "farm_boost" then
+        local crystals = self:_breakablesNearPlayer(player, tonumber(kind.radius))
+        gateState.breakableCount = #crystals
+    elseif kind.family == "heal_blind" then
+        gateState.enemyCount = #self:_enemiesInRange(player, tonumber(kind.radius))
+    end
+    local targetOk, targetReason = PowerCastGate.validate(kind, gateState)
+    if not targetOk then
+        return self:_flub(player, targetReason or "no_target")
     end
 
     -- FOCUS COST: the cast COMMITS here — every refusal gate above (cooldown / no_target) has passed,
@@ -3021,7 +3071,7 @@ function PowerService:Cast(player, powerId, opts)
         end
         castArea = { recall = { eggId = recallPlan.eggId } }
     else
-        castArea = self:_applyEffect(player, kind, now, tostring(powerId)) or {}
+        castArea = self:_applyEffect(player, kind, now, tostring(powerId), prepared) or {}
     end
     -- Cast VFX. amplified_burst / team_cleave fire their own bespoke area FX inside _applyEffect.
     -- Archetype powers play a caster cast-tell (small `cast_emit` body emission for single-target,

@@ -35,6 +35,7 @@ return {
         root = true,
         hold = true,
         disarm = true,
+        blind = true,
         root_guard = true, -- Seismic Hold (roots enemies + hardens the squad)
         fear = true, -- you terrify something that's fighting you (needs an engaged enemy)
         amplified_burst = true,
@@ -466,7 +467,7 @@ return {
             cooldown_seconds = 40,
             effect = "coin_yield",
             unlock_level = 2,
-            subtitle = "Always-On",
+            subtitle = "Timed — 30s yield boost",
         },
         windfall = {
             generic = true,
@@ -475,7 +476,7 @@ return {
             cooldown_seconds = 60,
             effect = "windfall",
             unlock_level = 6,
-            subtitle = "Always-On",
+            subtitle = "Timed — 10s drop boost",
         },
         -- (Mother Lode cut: "+mining damage" was redundant — damage buffs/debuffs already speed up
         --  crystal mining, and support pets cover yield. No distinct mechanic, so no power.)
