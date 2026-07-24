@@ -242,6 +242,36 @@ function TutorialService:_push(player)
     if not data then
         return
     end
+    -- THE PROLOGUE COMES FIRST (Jason: "the tutorial shouldn't even start yet... we do our
+    -- battle there, and when that battle is finished we go to tutorial one of ten"). Hold the
+    -- tutorial state push while the prologue decision is pending or running; re-push when the
+    -- attributes settle. Same decision-based, fail-open pattern as the starter chooser gate —
+    -- if PrologueService never initialized, nothing is held.
+    local prologueRuns = game:GetService("Workspace"):GetAttribute("PrologueServiceInit") == true
+    if
+        prologueRuns
+        and (player:GetAttribute("InPrologue") or player:GetAttribute("PrologueGate") == nil)
+    then
+        self._prologueWaiters = self._prologueWaiters or {}
+        if not self._prologueWaiters[player] then
+            self._prologueWaiters[player] = true
+            local function retry()
+                if not player.Parent then
+                    return
+                end
+                if
+                    not player:GetAttribute("InPrologue")
+                    and player:GetAttribute("PrologueGate") ~= nil
+                then
+                    self._prologueWaiters[player] = nil
+                    self:_push(player)
+                end
+            end
+            player:GetAttributeChangedSignal("InPrologue"):Connect(retry)
+            player:GetAttributeChangedSignal("PrologueGate"):Connect(retry)
+        end
+        return
+    end
     pcall(function()
         Signals.TutorialState:FireClient(player, TutorialFlow.stateFor(self._config, data.Tutorial))
     end)

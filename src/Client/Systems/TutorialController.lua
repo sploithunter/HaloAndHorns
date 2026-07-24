@@ -535,7 +535,45 @@ function TutorialController.start()
     print("[TutorialController] build:", BUILD)
     local pg = Players.LocalPlayer:WaitForChild("PlayerGui")
     buildCapsule(pg)
-    Signals.TutorialState.OnClientEvent:Connect(apply)
+
+    -- THE PROLOGUE OWNS THE SCREEN (docs/PROLOGUE.md). While InPrologue is set, the tutorial
+    -- renders NOTHING — capsule hidden, breadcrumb cleared — and whatever state arrives is
+    -- parked for the warp-out. This is the client-side half of the ordering: the server gate
+    -- holds the initial push, but a state that already rendered (or slips any race) must be
+    -- RETRACTED, not just not-sent (Jason: tutorial 1/10 + a breadcrumb to nowhere, drawn
+    -- inside the mezzanine toward an egg 8000 studs above).
+    local me = Players.LocalPlayer
+    local parked = nil
+    local function inPrologue()
+        return me:GetAttribute("InPrologue") == true
+    end
+    local function gatedApply(state)
+        if inPrologue() then
+            parked = state
+            clearGuidance()
+            if capsule then
+                capsule.Visible = false
+            end
+            return
+        end
+        apply(state)
+    end
+    me:GetAttributeChangedSignal("InPrologue"):Connect(function()
+        if inPrologue() then
+            clearGuidance()
+            if capsule then
+                capsule.Visible = false
+            end
+        elseif parked then
+            local state = parked
+            parked = nil
+            apply(state)
+        else
+            Signals.TutorialStateRequest:FireServer() -- nothing parked: pull fresh
+        end
+    end)
+
+    Signals.TutorialState.OnClientEvent:Connect(gatedApply)
     -- pull current state — the server's join-time push may predate this connection
     Signals.TutorialStateRequest:FireServer()
 end

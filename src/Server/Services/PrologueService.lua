@@ -262,10 +262,14 @@ function PrologueService:Start()
                         -- ATTRIBUTE TRACE: console prints proved unreadable across the
                         -- Studio server/inspector VM split, and a diagnostic you can't read
                         -- is not a diagnostic. Attributes always replicate.
-                        player:SetAttribute(
-                            "PrologueGate",
-                            eligible and "eligible" or tostring(why)
-                        )
+                        -- ORDER MATTERS: for an ELIGIBLE player the gate attribute is stamped
+                        -- AFTER Begin (below). The starter/tutorial gates read "PrologueGate
+                        -- set + InPrologue nil" as all-clear, and stamping first opened
+                        -- exactly that window (Jason: tutorial 1/10 + a breadcrumb to
+                        -- nowhere rendered inside the mezzanine).
+                        if not eligible then
+                            player:SetAttribute("PrologueGate", tostring(why))
+                        end
                         player:SetAttribute("PrologueHadRecord", type(data.Prologue) == "table")
                         self:_log("Info", "[PROLOGUE GATE] decision", {
                             player = player.Name,
@@ -277,6 +281,9 @@ function PrologueService:Start()
                         if eligible then
                             local ok, info = self:Begin(player)
                             player:SetAttribute("PrologueBegin", ok and "ok" or tostring(info))
+                            -- stamped AFTER Begin: on success InPrologue is already true, so
+                            -- downstream gates never see a clear window mid-warp
+                            player:SetAttribute("PrologueGate", "eligible")
                             self:_log(ok and "Info" or "Warn", "[PROLOGUE GATE] begin", {
                                 player = player.Name,
                                 ok = ok,

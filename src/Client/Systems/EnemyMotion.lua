@@ -163,6 +163,10 @@ function EnemyMotion.start()
     -- shared default. Cached so we don't rebuild the table every frame.
     local gaitCache = {}
     local function resolveGait(enemyId)
+        -- NPC-squad pets carry no EnemyId; a nil key here crashed every RenderStepped
+        -- ("table index is nil" x thousands — Jason's console flood). They get the default
+        -- gait under a sentinel key.
+        enemyId = enemyId or "__default"
         local cached = gaitCache[enemyId]
         if cached then
             return cached
@@ -232,17 +236,20 @@ function EnemyMotion.start()
     end)
 
     RunService.RenderStepped:Connect(function(dt)
-        local folder = enemiesFolder()
-        if not folder then
-            return
-        end
         local alpha = 1 - math.exp(-rate * dt)
         -- Enemies plus any NPC-principal squads: both drive off the same MoveTarget contract.
-        local models = folder:GetChildren()
+        -- The Enemies folder is OPTIONAL here (it appears lazily with the first enemy spawn):
+        -- the old early-return when it was absent silently killed NPC-squad rendering too —
+        -- live: Jason in the prologue room, squad frozen, Game.Enemies=false.
+        local folder = enemiesFolder()
+        local models = folder and folder:GetChildren() or {}
         for _, squad in ipairs(npcSquadFolders()) do
             for _, m in ipairs(squad:GetChildren()) do
                 models[#models + 1] = m
             end
+        end
+        if #models == 0 then
+            return
         end
         for _, model in ipairs(models) do
             if model:IsA("Model") and model.PrimaryPart then

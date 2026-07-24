@@ -515,6 +515,16 @@ end
 -- Follow the summoner + expire. Pet mining/combat is NOT here — PetFollowService owns that.
 function NpcPrincipalService:_step(now)
     for name, rec in pairs(self._active) do
+        -- THE PROLOGUE HOLDS THE CURTAIN: while the summoner is still in the cold open, the
+        -- Creator must not time out (Jason, live: "Colorado was here for a bit and then
+        -- disappeared with the pets" — the 38s summon window lapsed inside an open-ended
+        -- prologue). The timer resumes the moment InPrologue clears.
+        local inPrologue = rec.owner
+            and rec.owner.Parent
+            and rec.owner:GetAttribute("InPrologue") == true
+        if inPrologue then
+            rec.expireAt = now + 30 -- keep a rolling grace window
+        end
         if now >= rec.expireAt then
             self:Despawn(name)
         else
