@@ -1079,21 +1079,36 @@ function HotbarBar.start()
             editHint:Destroy()
             editHint = nil
         end
+        -- MOBILE HEIGHT CLAMP (Jason, tutorial 6 on a phone: "you can't actually set your
+        -- power because the menu is blocked by the player menu on top"). The fixed 330px
+        -- panel rode up under the top-center player bar + tutorial capsule on short
+        -- viewports, hiding the POWERS section it exists to offer. Clamp the panel to the
+        -- space between the hotbar and the top HUD zone — the relative scroll list below
+        -- keeps every row reachable at any height.
+        local bottomOffset = SLOT * 2 + PAD + 18
+        local guiScale = 1
+        local sc = gui:FindFirstChildWhichIsA("UIScale")
+        if sc and sc.Scale > 0 then
+            guiScale = sc.Scale
+        end
+        local TOP_SAFE = 130 -- player bar + tutorial capsule zone (scaled px)
+        local availH = gui.AbsoluteSize.Y / guiScale - bottomOffset - TOP_SAFE
+        local panelH = math.clamp(math.floor(availH), 180, 330)
         local shell = PanelChrome.build(gui, {
             name = "Picker",
             title = "Assign slot " .. slot,
-            size = UDim2.fromOffset(300, 330),
+            size = UDim2.fromOffset(300, panelH),
             onClose = closePicker,
         })
         local p = shell.frame
         p.AnchorPoint = Vector2.new(0.5, 1)
-        p.Position = UDim2.new(0.5, 0, 1, -(SLOT * 2 + PAD + 18))
+        p.Position = UDim2.new(0.5, 0, 1, -bottomOffset)
         pickerFrame = p
 
         local listFrame = Instance.new("ScrollingFrame")
         listFrame.Name = "Choices"
         listFrame.Position = UDim2.fromOffset(15, 45)
-        listFrame.Size = UDim2.fromOffset(270, 268)
+        listFrame.Size = UDim2.new(1, -30, 1, -62)
         listFrame.BackgroundTransparency = 1
         listFrame.BorderSizePixel = 0
         listFrame.ScrollBarThickness = 6
