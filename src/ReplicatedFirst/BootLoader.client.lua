@@ -124,7 +124,6 @@ Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
 local versionText = "dev build"
 do
     local ok, info = pcall(function()
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local configs = ReplicatedStorage:WaitForChild("Configs", 10)
         local mod = configs and configs:WaitForChild("build_info", 5)
         return mod and require(mod)
@@ -316,6 +315,60 @@ task.spawn(function()
     -- screen past MIN_DISPLAY even on instant local loads.
     status.Text = "Ready!"
     awaitDuration(math.max(SETTLE, MIN_DISPLAY - (os.clock() - start)))
+
+    -- THE PROLOGUE TITLE CARD (Jason: "for ONE MONTH FROM NOW we can probably put that in
+    -- the black startup screen in very big, bold letters — it will only be there for first
+    -- runs"). If the server has dropped this player into the cold open, the boot screen
+    -- doubles as the card: everything else hides, the caption punches in, and the fade
+    -- reveals the battle already running underneath. PrologueGate resolving to anything
+    -- without InPrologue means a normal session — no wait beyond the short race window.
+    do
+        local prologueBound = localPlayer:GetAttribute("InPrologue") == true
+        if not prologueBound then
+            -- The race window: Begin lands a beat after the profile milestone (stream-around
+            -- included), and PrologueGate resolves fast for ineligible players — so only a
+            -- prologue-bound-or-unresolved boot ever actually waits here.
+            local deadline = os.clock() + 5
+            while os.clock() < deadline do
+                if localPlayer:GetAttribute("InPrologue") == true then
+                    prologueBound = true
+                    break
+                end
+                if localPlayer:GetAttribute("PrologueGate") ~= nil then
+                    break
+                end
+                task.wait(0.1)
+            end
+        end
+        if prologueBound then
+            local capText = "ONE MONTH FROM NOW"
+            pcall(function()
+                local cfg =
+                    require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("prologue", 3))
+                capText = (cfg.caption and cfg.caption.cut) or capText
+            end)
+            title.Visible = false
+            promise.Visible = false
+            status.Visible = false
+            track.Visible = false
+            local cap = Instance.new("TextLabel")
+            cap.Size = UDim2.fromScale(0.9, 0.16)
+            cap.Position = UDim2.fromScale(0.5, 0.48)
+            cap.AnchorPoint = Vector2.new(0.5, 0.5)
+            cap.BackgroundTransparency = 1
+            cap.Font = Enum.Font.GothamBlack
+            cap.TextScaled = true
+            cap.TextColor3 = Color3.fromRGB(240, 240, 248)
+            cap.TextTransparency = 1
+            cap.Text = capText
+            cap.Parent = bg
+            localPlayer:SetAttribute("PrologueCardShown", true) -- self-verify hook (client-only)
+            print(("[PrologueTrace] title card up at +%.1fs (boot)"):format(os.clock() - start))
+            TweenService:Create(cap, TweenInfo.new(0.5), { TextTransparency = 0 }):Play()
+            task.wait(2.6)
+            TweenService:Create(cap, TweenInfo.new(0.4), { TextTransparency = 1 }):Play()
+        end
+    end
     for _, connection in ipairs(controlConnections) do
         connection:Disconnect()
     end
@@ -330,5 +383,6 @@ task.spawn(function()
     TweenService:Create(track, t, { BackgroundTransparency = 1 }):Play()
     TweenService:Create(fill, t, { BackgroundTransparency = 1 }):Play()
     fade.Completed:Wait()
+    print(("[PrologueTrace] boot screen released at +%.1fs"):format(os.clock() - start))
     gui:Destroy()
 end)

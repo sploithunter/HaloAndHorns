@@ -173,6 +173,17 @@ do
     end
 end
 
+-- Prologue cinematics (docs/PROLOGUE.md): VICTORY! when the wave is wiped + the
+-- PRESENT DAY hard cut at warp-out. Pure attribute renderer, same contract as the banner.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.PrologueCinematics).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start PrologueCinematics", { error = tostring(err) })
+    end
+end
+
 -- Enemy movement smoothing (Feature 10): interpolates the visible enemy model toward
 -- the server's authoritative step target each frame, so chasing looks smooth despite
 -- the coarse server tick. Self-gates on pet_follow.service_owned.

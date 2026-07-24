@@ -74,7 +74,12 @@ return {
     -- Where the player lands afterwards: nil = the normal spawn (tutorial takes over at
     -- `hatch_first_egg`).
     caption = {
-        cut = "ONE MONTH FROM NOW",
-        land = "Today.",
+        cut = "ONE MONTH FROM NOW", -- the black boot screen doubles as the title card (first runs only)
+        victory = "VICTORY!", -- giant floating text the moment the wave is wiped
+        land = "PRESENT DAY", -- the hard cut back to the real beginning
     },
+
+    -- Seconds the VICTORY beat holds before the cut ("once the battle is over, it ends
+    -- pretty quickly").
+    victory_hold = 3,
 }

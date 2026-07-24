@@ -212,16 +212,36 @@ function PrologueService:Begin(player, opts)
     self:_grantGhostSquad(player, target)
     rec.waveBounds = self:_spawnWave(player, room)
 
-    -- THE CUT: fight for `duration` seconds, then hard-cut to spawn. Token-checked so a
-    -- manual/admin Finish (or a replay) can't double-fire the warp.
+    -- THE CUT (Jason: "once the battle is over, it ends pretty quickly"): watch the wave —
+    -- the moment it's wiped, VICTORY floats up and the warp follows after victory_hold.
+    -- `duration` stays as the hard cap for a fight that drags. Token-checked so a manual
+    -- Finish or a replay can't double-fire.
     local duration = tonumber(self._config.duration) or 8
-    task.delay(duration, function()
+    local hold = tonumber(self._config.victory_hold) or 3
+    task.spawn(function()
+        local t0 = os.clock()
+        local fought = false
+        while self._active[player] == rec and player.Parent do
+            local elapsed = os.clock() - t0
+            local alive = self:_waveAlive(rec.waveBounds)
+            fought = fought or alive > 0
+            if fought and alive == 0 and elapsed >= 4 then
+                player:SetAttribute("PrologueVictory", true)
+                task.wait(hold)
+                break
+            end
+            if elapsed >= duration then
+                break
+            end
+            task.wait(0.5)
+        end
         if self._active[player] == rec and player.Parent then
             self:Finish(player)
         end
     end)
 
     self:_log("Info", "Prologue begun", { player = player.Name, duration = duration })
+    print(("[PrologueTrace] Begin complete for %s (ghosts+wave spawned)"):format(player.Name))
     return true, { room = room:GetPivot().Position }
 end
 
@@ -242,6 +262,7 @@ function PrologueService:Finish(player)
         end
     end
     player:SetAttribute("InPrologue", nil)
+    player:SetAttribute("PrologueVictory", nil)
     -- Wipe the preview's XP: put the snapshot back and republish the level attributes
     -- (earned level derives from Experience, so restoring the stat restores the ring).
     if rec and rec.xpSnapshot ~= nil and self._dataService and self._dataService.SetStat then
@@ -326,7 +347,10 @@ function PrologueService:_spawnWave(player, room)
                     movementLeash = leash,
                     persistent = true, -- defeat or teardown only
                     ungated = true, -- the real player is level 1 under the lift
-                    dormant = true, -- trials contract: engage on perception, not birth
+                    -- NO dormant flag (Jason: "three or four second meandering where the
+                    -- enemies are not attacking"): trials pre-fill dormant because the team
+                    -- arrives later — here the player lands IN the midst, so birth aggro is
+                    -- the point. The fight is already raging when the black screen lifts.
                 })
             end)
             if ok and type(res) == "table" and res.ok then
@@ -339,6 +363,35 @@ function PrologueService:_spawnWave(player, room)
         min = center - Vector3.new(80, 60, 80),
         max = center + Vector3.new(80, 60, 80),
     }
+end
+
+-- Living wave members inside the room bounds — the victory condition reads zero.
+function PrologueService:_waveAlive(bounds)
+    if not bounds then
+        return 0
+    end
+    local game_ = Workspace:FindFirstChild("Game")
+    local enemies = game_ and game_:FindFirstChild("Enemies")
+    local alive = 0
+    for _, m in ipairs(enemies and enemies:GetChildren() or {}) do
+        if (m:GetAttribute("HP") or 0) > 0 then
+            local ok, pivot = pcall(m.GetPivot, m)
+            if ok then
+                local p = pivot.Position
+                if
+                    p.X >= bounds.min.X
+                    and p.X <= bounds.max.X
+                    and p.Y >= bounds.min.Y
+                    and p.Y <= bounds.max.Y
+                    and p.Z >= bounds.min.Z
+                    and p.Z <= bounds.max.Z
+                then
+                    alive += 1
+                end
+            end
+        end
+    end
+    return alive
 end
 
 -- Tear the wave down — bounds-scoped so only the prologue room is swept.

@@ -52,6 +52,11 @@ function AreaMusicController.start()
     -- an element like "grass" → CurrentArea "mission_grass"). Fall back to
     -- area-name prefixes for open-world Heaven_*/Hell_* zones.
     local function combatPool()
+        -- THE PROLOGUE fights hell adversaries wherever the room floats (Jason: "start with
+        -- the hell music") — the hell pool wins outright while the cold open runs.
+        if localPlayer:GetAttribute("InPrologue") == true and combatByRealm.hell then
+            return combatByRealm.hell
+        end
         local realm = tostring(localPlayer:GetAttribute("CurrentRealm") or "")
         if realm == "heaven" and combatByRealm.heaven then
             return combatByRealm.heaven
@@ -177,8 +182,12 @@ function AreaMusicController.start()
     end
 
     -- Combat-music transitions, driven by the server-set `InCombat` Player attribute.
+    -- The prologue counts as combat FROM ITS FIRST FRAME (Jason: the reveal played the
+    -- intro spa bed over a battle) — InPrologue ORs in, so the hell track is already
+    -- rolling under the black title card and holds through the whole cold open.
     local function onCombatChanged()
         local fighting = localPlayer:GetAttribute("InCombat") == true
+            or localPlayer:GetAttribute("InPrologue") == true
         if fighting then
             exitToken += 1 -- cancel any pending return-to-area fade
             if not inCombat then
@@ -209,6 +218,10 @@ function AreaMusicController.start()
     localPlayer:GetAttributeChangedSignal("CurrentArea"):Connect(apply)
     localPlayer:GetAttributeChangedSignal("HomeArea"):Connect(apply)
     localPlayer:GetAttributeChangedSignal("InCombat"):Connect(onCombatChanged)
+    localPlayer:GetAttributeChangedSignal("InPrologue"):Connect(onCombatChanged)
+    if localPlayer:GetAttribute("InPrologue") == true then
+        onCombatChanged() -- already mid-cold-open when this controller booted
+    end
 end
 
 return AreaMusicController
