@@ -296,8 +296,21 @@ function PrologueService:Finish(player)
         end
     end
     local data = self._dataService and self._dataService:GetData(player)
-    if data and type(data.Prologue) == "table" then
-        data.Prologue.completed = true
+    if data then
+        -- WRITE + SAVE, unconditionally (live-caught: "I turned Studio off and back on and
+        -- ended up in the fight scene again" — hadRecord=false at the reboot). Replay nils
+        -- the record and an in-flight reset save can serialize that record-less snapshot;
+        -- Finish was the only writer of completed=true and it NEVER SAVED, so a Studio kill
+        -- lost the completion entirely. A fresh critical save at the cut is the durability
+        -- point: the prologue is once-ever the moment the player lands.
+        data.Prologue = {
+            seenAt = (type(data.Prologue) == "table" and data.Prologue.seenAt) or os.time(),
+            version = 1,
+            completed = true,
+        }
+        if self._dataService.RequestSave then
+            self._dataService:RequestSave(player, "prologue_completed", { critical = true })
+        end
     end
     local spawn = Workspace:FindFirstChildWhichIsA("SpawnLocation", true)
     local character = player.Character
