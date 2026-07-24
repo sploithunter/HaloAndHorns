@@ -51,6 +51,21 @@ return {
         { pet = "aurora_dragon", variant = "rainbow" },
     },
 
+    -- THE BATTLE (Jason: "spawn him and Colorado with Colorado's pets in the midst of a huge
+    -- number of enemies"). Pre-filled at Begin exactly like the trials (dormant + persistent +
+    -- room movementLeash) — the hell (lava) roster. Levels auto-tune: SpawnEnemy reads the
+    -- spawner's EffectiveLevel, which the alliance has already lifted to ~49.
+    wave = {
+        units = {
+            { enemy = "lava_imp", count = 6 },
+            { enemy = "murder_crow", count = 4 },
+            { enemy = "ember_acolyte", count = 4 },
+            { enemy = "ember_brute", count = 2 },
+        },
+        ring_radius = 32, -- scatter ring around the room center, in front of the stage
+        scatter = 12, -- deterministic per-index radial jitter
+    },
+
     -- Seconds the sequence runs before the warp-out. Hard cap — the beats compress rather
     -- than the player waiting. DEBUG: held at 30 while the room is being iterated on;
     -- drop back to ~8-12 before launch.

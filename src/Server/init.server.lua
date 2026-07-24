@@ -260,7 +260,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "PrologueService",
     ServerScriptService.Server.Services.PrologueService,
-    { "Logger", "ConfigLoader", "DataService", "NpcPrincipalService" }
+    { "Logger", "ConfigLoader", "DataService", "NpcPrincipalService", "EnemyService" }
 )
 loader:RegisterModule(
     "PlayerEffectsService",

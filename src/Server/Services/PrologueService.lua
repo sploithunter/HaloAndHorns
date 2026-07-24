@@ -166,6 +166,15 @@ function PrologueService:Begin(player, opts)
     if not room then
         return false, "room_unavailable"
     end
+    -- RE-ENTRY (replay while a run is active): quietly retire the previous run's encounter
+    -- first, or its wave/ghosts stack on top of the new ones (live-caught: 30 enemies in the
+    -- room — two waves) and its orphaned cut timer token-fails into a never-swept room.
+    local prev = self._active[player]
+    if prev then
+        self._active[player] = nil
+        self:_clearGhostSquad(player)
+        self:_clearWave(prev.waveBounds)
+    end
     local character = player.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
     if not root then
@@ -194,6 +203,7 @@ function PrologueService:Begin(player, opts)
     self._active[player] = rec
     player:SetAttribute("InPrologue", true)
     self:_grantGhostSquad(player, target)
+    rec.waveBounds = self:_spawnWave(player, room)
 
     -- THE CUT: fight for `duration` seconds, then hard-cut to spawn. Token-checked so a
     -- manual/admin Finish (or a replay) can't double-fire the warp.
@@ -214,6 +224,7 @@ function PrologueService:Finish(player)
     local rec = self._active[player]
     self._active[player] = nil
     self:_clearGhostSquad(player)
+    self:_clearWave(rec and rec.waveBounds)
     -- Colorado leaves with the LAST player out — another player mid-prologue keeps him.
     if next(self._active) == nil then
         local npc = self._modules and self._modules.NpcPrincipalService
@@ -261,6 +272,67 @@ function PrologueService:_grantGhostSquad(player, originCf)
     self:_log("Info", "Prologue ghost squad granted", { player = player.Name, pets = n })
 end
 
+-- THE HELL WAVE — trials-style pre-fill (Jason: "the trial spawn method is probably more
+-- appropriate"): dormant (no birth aggro; perception engages as the squads land), persistent
+-- (immune to idle-despawn at Y=-8000), penned by a room-rect movementLeash. Enemy levels
+-- auto-tune to the player's alliance-lifted EffectiveLevel. Returns the despawn bounds.
+function PrologueService:_spawnWave(player, room)
+    local enemySvc = self._modules and self._modules.EnemyService
+    local wave = self._config.wave
+    if not enemySvc or type(wave) ~= "table" or type(wave.units) ~= "table" then
+        return nil
+    end
+    local center = room:GetPivot().Position
+    local leash = {
+        shapes = { { kind = "box", cx = center.X, cz = center.Z, halfX = 66, halfZ = 66 } },
+        inset = 4,
+        recovery = center + Vector3.new(0, 3, 0),
+    }
+    local ringR = tonumber(wave.ring_radius) or 32
+    local scatter = tonumber(wave.scatter) or 12
+    local total, idx = 0, 0
+    for _, unit in ipairs(wave.units) do
+        total += tonumber(unit.count) or 0
+    end
+    local spawned = 0
+    for _, unit in ipairs(wave.units) do
+        for _ = 1, tonumber(unit.count) or 0 do
+            idx += 1
+            local a = (idx - 1) / math.max(total, 1) * math.pi * 2
+            local r = ringR + (idx * 37) % scatter
+            local ok, res = pcall(function()
+                return enemySvc:SpawnEnemy(player, unit.enemy, {
+                    position = center + Vector3.new(math.cos(a) * r, 3, math.sin(a) * r),
+                    home = center,
+                    movementLeash = leash,
+                    persistent = true, -- defeat or teardown only
+                    ungated = true, -- the real player is level 1 under the lift
+                    dormant = true, -- trials contract: engage on perception, not birth
+                })
+            end)
+            if ok and type(res) == "table" and res.ok then
+                spawned += 1
+            end
+        end
+    end
+    self:_log("Info", "Prologue wave spawned", { player = player.Name, enemies = spawned })
+    return {
+        min = center - Vector3.new(80, 60, 80),
+        max = center + Vector3.new(80, 60, 80),
+    }
+end
+
+-- Tear the wave down — bounds-scoped so only the prologue room is swept.
+function PrologueService:_clearWave(bounds)
+    local enemySvc = self._modules and self._modules.EnemyService
+    if not enemySvc or not bounds or not enemySvc.DespawnEnemiesInBounds then
+        return
+    end
+    pcall(function()
+        enemySvc:DespawnEnemiesInBounds(bounds.min, bounds.max)
+    end)
+end
+
 -- Strip the temporary squad — ONLY GhostPet-marked models; owned pets are untouched.
 function PrologueService:_clearGhostSquad(player)
     local root = Workspace:FindFirstChild("PlayerPets")
@@ -295,7 +367,21 @@ end
 
 function PrologueService:Start()
     Players.PlayerRemoving:Connect(function(player)
+        -- A mid-prologue quit must not leak the encounter: the wave is persistent=true
+        -- (never idle-despawns) and Colorado holds a rolling grace while InPrologue.
+        local rec = self._active[player]
         self._active[player] = nil
+        if rec then
+            self:_clearWave(rec.waveBounds)
+            if next(self._active) == nil then
+                local npc = self._modules and self._modules.NpcPrincipalService
+                if npc then
+                    pcall(function()
+                        npc:Despawn("Colorado the Creator")
+                    end)
+                end
+            end
+        end
     end)
 
     -- NEW PLAYERS ONLY, on their first character. Everything is gated inside Begin (the

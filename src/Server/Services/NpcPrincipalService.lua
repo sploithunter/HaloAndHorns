@@ -274,8 +274,9 @@ function NpcPrincipalService:SpawnGhostSquad(folder, squad, originCf)
             pn.Value = i
             model:SetAttribute("PetType", entry.pet)
             model:SetAttribute("Variant", entry.variant or "basic")
-            -- Preview power: endurance bars read power; default 1 renders a sliver.
-            model:SetAttribute("EffectivePower", 250)
+            -- Damage + HUD endurance both read the Power NUMBERVALUE (the prototype carries
+            -- the pet's real base_power via AddPetSystemComponents) — ghosts hit like the
+            -- dragons they are, no synthetic stat.
             if entry.huge then
                 local raw = petsConfig and petsConfig.pets and petsConfig.pets[entry.pet]
                 local hugeScale = raw
