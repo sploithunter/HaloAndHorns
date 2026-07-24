@@ -41,12 +41,28 @@ function PrologueService:Init()
         or require(ReplicatedStorage.Configs:WaitForChild("prologue"))
     self._room = nil -- the built mezzanine hall, one per server
     self._active = {} -- player -> { startedAt }
+    game:GetService("Workspace"):SetAttribute("PrologueServiceInit", true)
+    self:_log("Info", "[PROLOGUE] Init", {
+        enabled = self._config and self._config.enabled,
+        hasDataService = self._dataService ~= nil,
+        hasLogger = self._logger ~= nil,
+    })
 end
 
 function PrologueService:_log(level, msg, data)
     if self._logger and self._logger[level] then
         self._logger[level](self._logger, msg, data)
+        return
     end
+    -- RAW FALLBACK. A silent _log is worse than none: the first live debug of this service
+    -- produced no output at all and looked like "the code never ran", when the truth was
+    -- simply that the injected Logger wasn't there. Never let a diagnostic depend on a
+    -- dependency being wired.
+    local parts = {}
+    for k, v in pairs(data or {}) do
+        parts[#parts + 1] = tostring(k) .. "=" .. tostring(v)
+    end
+    print(("[PROLOGUE][%s] %s %s"):format(level, msg, table.concat(parts, " ")))
 end
 
 -- ── The room ────────────────────────────────────────────────────────────────────────
@@ -216,8 +232,8 @@ function PrologueService:Start()
 
     -- NEW PLAYERS ONLY, on their first character. Everything is gated inside Begin (the
     -- data.Prologue record), so a returning player falls straight through to normal spawn.
-    Players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function()
+    local function watch(player)
+        local function onCharacter()
             if self._active[player] or player:GetAttribute("PrologueChecked") then
                 return
             end
@@ -226,11 +242,35 @@ function PrologueService:Start()
             -- returns no_profile until then, so retry briefly rather than guessing a delay.
             task.spawn(function()
                 for _ = 1, 40 do
-                    local eligible = self:IsEligible(player)
                     local data = self._dataService and self._dataService:GetData(player)
                     if data then
+                        local eligible, why = self:IsEligible(player)
+                        -- TRACE (Jason: "put some tracing information in there and make sure
+                        -- everything is gated correctly"). One line that answers "why didn't
+                        -- the prologue fire?" without a debugging session.
+                        -- ATTRIBUTE TRACE: console prints proved unreadable across the
+                        -- Studio server/inspector VM split, and a diagnostic you can't read
+                        -- is not a diagnostic. Attributes always replicate.
+                        player:SetAttribute(
+                            "PrologueGate",
+                            eligible and "eligible" or tostring(why)
+                        )
+                        player:SetAttribute("PrologueHadRecord", type(data.Prologue) == "table")
+                        self:_log("Info", "[PROLOGUE GATE] decision", {
+                            player = player.Name,
+                            eligible = eligible,
+                            reason = eligible and "ok" or tostring(why),
+                            hasPrologueRecord = type(data.Prologue) == "table",
+                            enabled = self._config.enabled ~= false,
+                        })
                         if eligible then
-                            local ok = self:Begin(player)
+                            local ok, info = self:Begin(player)
+                            player:SetAttribute("PrologueBegin", ok and "ok" or tostring(info))
+                            self:_log(ok and "Info" or "Warn", "[PROLOGUE GATE] begin", {
+                                player = player.Name,
+                                ok = ok,
+                                detail = (not ok) and tostring(info) or nil,
+                            })
                             if ok then
                                 self:_stageCreator(player)
                             end
@@ -239,9 +279,25 @@ function PrologueService:Start()
                     end
                     task.wait(0.25)
                 end
+                player:SetAttribute("PrologueGate", "profile_never_resolved")
+                self:_log("Warn", "[PROLOGUE GATE] profile never resolved — skipped", {
+                    player = player.Name,
+                })
             end)
-        end)
-    end)
+        end
+        player.CharacterAdded:Connect(onCharacter)
+        if player.Character then
+            onCharacter() -- character already existed when we connected
+        end
+    end
+
+    -- BOTH paths: PlayerAdded only fires for players who join AFTER this connection, and in
+    -- Studio Play the local player is frequently already present by the time services start.
+    -- Missing that is the difference between "the prologue is broken" and "it never ran".
+    Players.PlayerAdded:Connect(watch)
+    for _, player in ipairs(Players:GetPlayers()) do
+        watch(player)
+    end
 end
 
 return PrologueService

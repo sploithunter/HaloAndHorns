@@ -732,6 +732,11 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.Ledger = nil
     playerData.EnhancementIndex = nil
     playerData.StarterPet = { forceOffer = true }
+    -- THE PROLOGUE re-arms too (docs/PROLOGUE.md). Its one-time record is written on START,
+    -- so without this a single test run permanently consumes it and the cold open can never
+    -- be observed again — exactly what happened live: the first successful run wrote the
+    -- record, and every reset afterwards still resolved `already_seen`.
+    playerData.Prologue = nil
 
     -- 5d) Tutorial restarts + enhancements wiped — "reset to beginning" means the NEW-PLAYER
     --     experience (Jason hit this: his tutorial stayed done=true through this reset because

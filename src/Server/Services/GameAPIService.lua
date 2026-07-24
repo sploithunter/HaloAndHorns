@@ -1050,6 +1050,41 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("admin.replayPrologue", {
+        description = "[admin] Clear the one-time prologue record and play the cold open again right now. The dedicated replay path — the full Reset to Beginning is heavier and its clear proved unreliable to confirm.",
+        validate = function(args)
+            return Validators.fields(args, { clearOnly = { type = "boolean", optional = true } })
+        end,
+        handler = function(context, args)
+            local isAdmin = context.isTest
+                or (context.player and context.player:GetAttribute("IsAdmin") == true)
+            if not isAdmin then
+                return { ok = false, reason = "not_admin" }
+            end
+            local prologue = self:_service("PrologueService")
+            local dataSvc = self:_service("DataService")
+            if not prologue or not dataSvc then
+                return { ok = false, reason = "services_unavailable" }
+            end
+            local data = dataSvc:GetData(context.player)
+            if data then
+                data.Prologue = nil
+                if dataSvc.RequestSave then
+                    dataSvc:RequestSave(context.player, "prologue_replay", { critical = true })
+                end
+            end
+            context.player:SetAttribute("PrologueChecked", nil)
+            if args.clearOnly then
+                return { ok = true, cleared = true }
+            end
+            local ok, info = prologue:Begin(context.player, { force = true })
+            if ok then
+                prologue:_stageCreator(context.player)
+            end
+            return { ok = ok, detail = (not ok) and tostring(info) or nil }
+        end,
+    })
+
     bus:register("egg_item.hatch", {
         description = "Hatch one held egg ITEM from the eggs inventory bucket (e.g. a Meet-The-Creator egg).",
         validate = function(args)
