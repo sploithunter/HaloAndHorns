@@ -79,6 +79,28 @@ function AreaMusicController.start()
         return combatList
     end
 
+    -- PRELOAD the prologue battle tracks: the cold open needs its music at second zero,
+    -- and a cold asset cache is exactly when the load watchdog used to misfire.
+    task.spawn(function()
+        local ids = {}
+        for _, k in ipairs(sounds.prologue_combat_music or {}) do
+            local def = music[k]
+            if def and def.id then
+                local s2 = Instance.new("Sound")
+                s2.SoundId = def.id
+                ids[#ids + 1] = s2
+            end
+        end
+        if #ids > 0 then
+            pcall(function()
+                game:GetService("ContentProvider"):PreloadAsync(ids)
+            end)
+            for _, s2 in ipairs(ids) do
+                s2:Destroy()
+            end
+        end
+    end)
+
     local sound = Instance.new("Sound")
     sound.Name = "AreaMusic"
     sound.Looped = true
@@ -152,7 +174,20 @@ function AreaMusicController.start()
                 if sound.IsLoaded and sound.TimeLength > 0 then
                     return -- loaded fine, nothing to do
                 end
+                -- COMBAT stays combat (Jason: "the battle music didn't play that time" —
+                -- a stalled hell-track load was swapping in the HUB THEME mid-battle): while
+                -- fighting, fall back to another member of the current combat pool before
+                -- ever reaching for the area fallback.
                 local fbKey = sounds.music_fallback
+                if inCombat then
+                    for _, k in ipairs(combatPool()) do
+                        if k ~= key and music[k] and music[k].id then
+                            fbKey = k
+                            combatKey = k -- the held fight-track follows the swap
+                            break
+                        end
+                    end
+                end
                 local fbDef = fbKey and music[fbKey]
                 if not fbDef or not fbDef.id or key == fbKey then
                     return -- no fallback, or we're already on it (avoid a loop)
