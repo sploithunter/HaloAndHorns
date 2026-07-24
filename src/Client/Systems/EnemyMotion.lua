@@ -36,6 +36,29 @@ local function enemiesFolder()
     return game and game:FindFirstChild("Enemies")
 end
 
+-- MoveTarget-driven models that AREN'T enemies: an NPC principal's squad
+-- (docs/CREATOR_SUMMON.md). Pet movement is normally client-driven by the OWNING player's
+-- client — but an NPC has no client, so its pets would never move. Rather than couple them
+-- to the summoner's client (which breaks for every other player, and dies if that one
+-- disconnects), the server stamps the same `MoveTarget` contract enemies use and this
+-- renderer smooths it. Attributes replicate, so every client renders them, with the
+-- procedural gait for free.
+local function npcSquadFolders()
+    local out = {}
+    local root = Workspace:FindFirstChild("PlayerPets")
+    if not root then
+        return out
+    end
+    for _, folder in ipairs(root:GetChildren()) do
+        -- NPC folders are marked by the server; a real player's folder is never touched here
+        -- (their own client owns it, and double-driving would fight it).
+        if folder:GetAttribute("NpcSquad") == true then
+            out[#out + 1] = folder
+        end
+    end
+    return out
+end
+
 function EnemyMotion.start()
     local petCfg = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("pet_follow"))
     if not petCfg.service_owned then
@@ -214,7 +237,14 @@ function EnemyMotion.start()
             return
         end
         local alpha = 1 - math.exp(-rate * dt)
-        for _, model in ipairs(folder:GetChildren()) do
+        -- Enemies plus any NPC-principal squads: both drive off the same MoveTarget contract.
+        local models = folder:GetChildren()
+        for _, squad in ipairs(npcSquadFolders()) do
+            for _, m in ipairs(squad:GetChildren()) do
+                models[#models + 1] = m
+            end
+        end
+        for _, model in ipairs(models) do
             if model:IsA("Model") and model.PrimaryPart then
                 updateLabel(model) -- difficulty-coloured name tag (every enemy, moving or not)
                 local target = model:GetAttribute("MoveTarget")

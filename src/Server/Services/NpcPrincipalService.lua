@@ -95,23 +95,96 @@ function NpcPrincipalService:_buildCharacter(def, cf)
     end
 
     model.Name = def.name
+
+    -- DO NOT ANCHOR A CHARACTER. An R15 rig is held together and animated by Motor6D joints;
+    -- anchoring the parts destroys them. The first version here copied the PET contract
+    -- (anchored + server-pivoted) onto a humanoid, and Jason's screenshot showed the result:
+    -- a dressed body with the hat and collar floating where a head should be, sliding around
+    -- with no walk animation. Live inspection: 18 parts, **0 Motor6Ds**, so nothing held the
+    -- head on and the Animator had nothing to drive.
+    --
+    -- Pets can be anchored because they're single-mesh, jointless models. A character is the
+    -- opposite: leave it unanchored, let the Humanoid own it, and Roblox's default walk/run/
+    -- idle animations play for free.
+    local hum = model:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.WalkSpeed = tonumber(def.walk_speed) or 24 -- brisk enough to keep up with a player
+        hum.DisplayName = def.display_name or def.name
+    end
+    model:PivotTo(cf)
+    -- Server keeps network ownership so no client can be handed the NPC's physics.
     local hrp = model:FindFirstChild("HumanoidRootPart")
     if hrp then
-        -- Anchored + server-pivoted: the same contract the pets use, so nothing fights the
-        -- physics solver over an NPC nobody is controlling.
-        for _, d in ipairs(model:GetDescendants()) do
-            if d:IsA("BasePart") then
-                d.Anchored = true
-                d.CanCollide = false
-            end
-        end
-        model:PivotTo(cf)
+        pcall(function()
+            hrp:SetNetworkOwner(nil)
+        end)
     end
+    self:_driveAnimations(model)
     model:SetAttribute("NpcPrincipal", true)
     model:SetAttribute("Level", tonumber(def.level) or 50)
     model:SetAttribute("EffectiveLevel", tonumber(def.level) or 50)
     model:SetAttribute("DisplayName", def.display_name or def.name)
     return model
+end
+
+-- Idle/walk animation for the NPC.
+--
+-- A PLAYER's character gets a stock `Animate` LocalScript that plays walk/run/idle off the
+-- Humanoid's state. A rig built from a HumanoidDescription does NOT — so the NPC assembled
+-- and walked correctly but stood perfectly still while sliding (live: MoveState=Running,
+-- playingAnims=none). Since an NPC has no client to run a LocalScript, drive the Animator
+-- from the server off Humanoid.Running instead.
+local R15_IDLE = "rbxassetid://507766388"
+local R15_WALK = "rbxassetid://507777826"
+
+function NpcPrincipalService:_driveAnimations(model)
+    local hum = model:FindFirstChildOfClass("Humanoid")
+    if not hum then
+        return
+    end
+    local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator")
+    animator.Parent = hum
+
+    local function load(id)
+        local a = Instance.new("Animation")
+        a.AnimationId = id
+        local ok, track = pcall(function()
+            return animator:LoadAnimation(a)
+        end)
+        return ok and track or nil
+    end
+
+    local idle, walk = load(R15_IDLE), load(R15_WALK)
+    if idle then
+        idle.Looped = true
+        idle:Play()
+    end
+    if walk then
+        walk.Looped = true
+    end
+
+    -- Crossfade on the Running signal: speed > 0 means locomotion.
+    hum.Running:Connect(function(speed)
+        if speed > 0.1 then
+            if walk and not walk.IsPlaying then
+                walk:Play(0.15)
+            end
+            if idle and idle.IsPlaying then
+                idle:Stop(0.15)
+            end
+            if walk then
+                -- scale playback so a brisk WalkSpeed doesn't look like a moonwalk
+                walk:AdjustSpeed(math.clamp(speed / 16, 0.5, 2))
+            end
+        else
+            if walk and walk.IsPlaying then
+                walk:Stop(0.15)
+            end
+            if idle and not idle.IsPlaying then
+                idle:Play(0.15)
+            end
+        end
+    end)
 end
 
 -- ── Ghost squad ─────────────────────────────────────────────────────────────────────
@@ -186,6 +259,9 @@ function NpcPrincipalService:_spawnSquad(def, originCf)
     end
     folder = Instance.new("Folder")
     folder.Name = def.name
+    -- Marker the client EnemyMotion renderer looks for: this folder's pets are driven by
+    -- MoveTarget, not by an owning player's client (there isn't one).
+    folder:SetAttribute("NpcSquad", true)
     folder.Parent = root
 
     local spawned = 0
@@ -358,17 +434,25 @@ function NpcPrincipalService:Despawn(name)
     return true
 end
 
--- Trail the NPC's squad behind it, SERVER-SIDE.
+-- Trail the NPC's squad behind it via the ENEMY MOVEMENT CONTRACT (Jason: "you can probably
+-- use the enemy's movement code as well" — the better half of that idea).
 --
--- This is the one place an NPC principal genuinely cannot reuse the player path. Pet
--- MOVEMENT in this game is client-driven (PetFollowService's own boot log: "anchored pets,
--- client-driven movement, server damage") — each player's client pivots its own pets and
--- reports positions back. An NPC has no client, so nothing would ever move its squad; they
--- spawned and sat at the summon point.
+-- Pet movement is normally client-driven: each player's client pivots its OWN pets. An NPC
+-- has no client, so its squad spawned and sat still. The first fix here pivoted them
+-- server-side, which worked but was a parallel implementation — no gait, no smoothing, and
+-- coarse at the 0.2s service tick.
 --
--- PetFollowService still owns their mining/combat via _tickPrincipal — this only supplies the
--- motion the missing client would have.
-function NpcPrincipalService:_moveSquad(rec, lerp)
+-- Enemies already solved exactly this problem for entities with no owning client: the server
+-- decides a destination and stamps `MoveTarget`, and the client EnemyMotion renderer lerps
+-- the anchored model toward it every RenderStepped with a procedural gait. Adopting that
+-- contract means:
+--   • no coupling to the summoner's client (which would freeze on their disconnect, and
+--     render nothing for anyone else)
+--   • every client renders it, because attributes replicate — no position relay needed
+--   • the gait comes for free
+-- EnemyMotion picks these up via the folder's NpcSquad marker. PetFollowService still owns
+-- their mining/combat through _tickPrincipal; this is only where they should BE.
+function NpcPrincipalService:_moveSquad(rec)
     local folder = rec.folder
     if not (folder and folder.Parent and rec.model) then
         return
@@ -379,8 +463,9 @@ function NpcPrincipalService:_moveSquad(rec, lerp)
         if pet:IsA("Model") and pet.PrimaryPart then
             i += 1
             -- simple rank behind the NPC; formation styles are a later pass
-            local goal = base * CFrame.new((i - 2) * 5, 0, 6)
-            pet:PivotTo(pet:GetPivot():Lerp(goal, lerp))
+            local goal = (base * CFrame.new((i - 2) * 5, 0, 6)).Position
+            pet:SetAttribute("MoveTarget", goal)
+            pet:SetAttribute("MoveFace", base.Position) -- face the way the NPC is heading
         end
     end
 end
@@ -400,9 +485,24 @@ function NpcPrincipalService:_step(now)
                 local off = rec.def.follow_offset or {}
                 local goal = hrp.CFrame
                     * CFrame.new(tonumber(off.x) or -8, tonumber(off.y) or 0, tonumber(off.z) or 6)
-                local lerp = tonumber(rec.def.follow_lerp) or 0.18
-                rec.model:PivotTo(rec.model:GetPivot():Lerp(goal, lerp))
-                self:_moveSquad(rec, lerp)
+                -- WALK, don't teleport: Humanoid:MoveTo drives the rig through its own
+                -- locomotion, so the default walk/run animations play and the Motor6D joints
+                -- do the work. Re-issued each tick — MoveTo times out on its own, and the
+                -- goal keeps moving with the player anyway.
+                local hum = rec.model:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum:MoveTo(goal.Position)
+                    -- Long gap (portal, teleport, falling behind): walking there would take
+                    -- forever, so close it instantly. Ordinary following stays a walk.
+                    local gap = (rec.model:GetPivot().Position - goal.Position).Magnitude
+                    local leash = tonumber(rec.def.teleport_leash) or 60
+                    if gap > leash then
+                        rec.model:PivotTo(goal)
+                    end
+                else
+                    rec.model:PivotTo(goal) -- placeholder rig has no locomotion
+                end
+                self:_moveSquad(rec)
             elseif not (owner and owner.Parent) then
                 self:Despawn(name) -- summoner left
             end

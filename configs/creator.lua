@@ -35,7 +35,7 @@ return {
         -- AVATAR: built from a real Roblox user's appearance via HumanoidDescription rather
         -- than an authored lookalike — zero asset work, always current, and "that's literally
         -- him" reads harder than a resemblance. nil = a plain placeholder rig.
-        avatar_user_id = 873359641, -- MacrosGodOfMagic
+        avatar_user_id = 3200870803, -- coloradoplays (roblox.com/users/3200870803)
 
         -- Seconds the summon stands before it despawns.
         duration = 20,
@@ -51,7 +51,9 @@ return {
 
         -- Formation spacing behind the summoner, in studs.
         follow_offset = { x = -8, y = 0, z = 6 },
-        follow_lerp = 0.18, -- matches guardians.follow_lerp so the motion reads the same
+        follow_lerp = 0.18, -- squad trail smoothing (the NPC itself WALKS via Humanoid:MoveTo)
+        walk_speed = 24, -- brisk enough to keep up with a running player
+        teleport_leash = 60, -- gap beyond this closes instantly (portals, teleports)
 
         -- ALLIANCE: on summon, nearby unteamed players below the Creator ally to him and
         -- sidekick up for the window. Radius in studs. The gap gate + the lift math are the
