@@ -1031,7 +1031,11 @@ function GameAPIService:_registerCommands()
             if not isAdmin then
                 return { ok = false, reason = "not_admin" }
             end
-            local svc = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("NpcPrincipalService")
+            -- Resolve through the BOUND service map, not the _G locator: GameAPIService gets
+            -- its peers injected via BindServices, and _G.RBXTemplateServices is not populated
+            -- in this VM (that locator belongs to services which aren't bus-bound). Copying the
+            -- wrong pattern here returned npc_principal_service_unavailable on every call.
+            local svc = self:_service("NpcPrincipalService")
             if not svc then
                 return { ok = false, reason = "npc_principal_service_unavailable" }
             end

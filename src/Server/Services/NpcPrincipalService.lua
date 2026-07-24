@@ -36,6 +36,7 @@ NpcPrincipalService.__index = NpcPrincipalService
 function NpcPrincipalService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
+    self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
     self._config = (self._configLoader and self._configLoader:LoadConfig("creator"))
         or require(ReplicatedStorage.Configs:WaitForChild("creator"))
     self._active = {} -- name -> { model, folder, expireAt, owner, allied = {player,...} }
@@ -118,7 +119,11 @@ end
 -- Clone a pet model from the same ReplicatedStorage tree PetHandler uses. Returns nil if the
 -- type/variant isn't present rather than substituting something surprising.
 function NpcPrincipalService:_clonePet(petId, variant)
-    local models = ReplicatedStorage:FindFirstChild("Models")
+    -- ReplicatedStorage.ASSETS.Models.Pets — the same root PetHandler clones from. (An earlier
+    -- guess at ReplicatedStorage.Models silently produced a zero-pet squad: the folder simply
+    -- doesn't exist, and every lookup short-circuited to nil.)
+    local assets = ReplicatedStorage:FindFirstChild("Assets")
+    local models = assets and assets:FindFirstChild("Models")
     local pets = models and models:FindFirstChild("Pets")
     local typeFolder = pets and pets:FindFirstChild(petId)
     if not typeFolder then
@@ -130,6 +135,33 @@ function NpcPrincipalService:_clonePet(petId, variant)
         return nil
     end
     local model = proto:Clone()
+    -- The AUTHORED prototypes carry no PrimaryPart — PetHandler assigns one after cloning,
+    -- preferring a Face/Head part. Same rule here; without it every consumer that guards on
+    -- `pet.PrimaryPart` silently skips the model (caught live: the squad spawned but never
+    -- ticked, because PetFollowService's loop requires a PrimaryPart).
+    if not model.PrimaryPart then
+        local candidate
+        for _, d in ipairs(model:GetDescendants()) do
+            if d:IsA("BasePart") then
+                local n = string.lower(d.Name)
+                if string.find(n, "face") or string.find(n, "head") then
+                    candidate = d
+                    break
+                end
+                candidate = candidate or d
+            end
+        end
+        model.PrimaryPart = candidate
+    end
+    if not model.PrimaryPart then
+        return nil -- unusable model; the caller logs and carries on
+    end
+    for _, d in ipairs(model:GetDescendants()) do
+        if d:IsA("BasePart") then
+            d.Anchored = true -- server-pivoted, same contract as player pets
+            d.CanCollide = false
+        end
+    end
     model:SetAttribute("PetType", petId)
     model:SetAttribute("PetVariant", variant or "basic")
     -- GHOST MARKER: these are manifested, not owned. Anything that reconciles pets against
@@ -222,10 +254,14 @@ function NpcPrincipalService:_formAlliance(def, rec)
     end
 end
 
+-- Republish the player's EffectiveLevel so the lift lands immediately.
+-- INJECTED, not a locator: `_G.RBXTemplateServices` is never assigned anywhere in this
+-- codebase, so a locator lookup here silently no-ops inside the pcall and the sidekick lift
+-- never appears (caught live — allied player stayed at level 1 with the anchor set).
+-- BaddieSpawnerService uses the same injected-dependency pattern.
 function NpcPrincipalService:_republishEffective(player)
     pcall(function()
-        local prog = _G.RBXTemplateServices
-            and _G.RBXTemplateServices:Get("PlayerProgressionService")
+        local prog = self._playerProgressionService
         if prog and prog.GetEffectiveLevel then
             player:SetAttribute("EffectiveLevel", prog:GetEffectiveLevel(player))
         end
@@ -322,7 +358,34 @@ function NpcPrincipalService:Despawn(name)
     return true
 end
 
--- Follow the summoner + expire. Pet movement is NOT here — PetFollowService owns the folder.
+-- Trail the NPC's squad behind it, SERVER-SIDE.
+--
+-- This is the one place an NPC principal genuinely cannot reuse the player path. Pet
+-- MOVEMENT in this game is client-driven (PetFollowService's own boot log: "anchored pets,
+-- client-driven movement, server damage") — each player's client pivots its own pets and
+-- reports positions back. An NPC has no client, so nothing would ever move its squad; they
+-- spawned and sat at the summon point.
+--
+-- PetFollowService still owns their mining/combat via _tickPrincipal — this only supplies the
+-- motion the missing client would have.
+function NpcPrincipalService:_moveSquad(rec, lerp)
+    local folder = rec.folder
+    if not (folder and folder.Parent and rec.model) then
+        return
+    end
+    local base = rec.model:GetPivot()
+    local i = 0
+    for _, pet in ipairs(folder:GetChildren()) do
+        if pet:IsA("Model") and pet.PrimaryPart then
+            i += 1
+            -- simple rank behind the NPC; formation styles are a later pass
+            local goal = base * CFrame.new((i - 2) * 5, 0, 6)
+            pet:PivotTo(pet:GetPivot():Lerp(goal, lerp))
+        end
+    end
+end
+
+-- Follow the summoner + expire. Pet mining/combat is NOT here — PetFollowService owns that.
 function NpcPrincipalService:_step(now)
     for name, rec in pairs(self._active) do
         if now >= rec.expireAt then
@@ -339,6 +402,7 @@ function NpcPrincipalService:_step(now)
                     * CFrame.new(tonumber(off.x) or -8, tonumber(off.y) or 0, tonumber(off.z) or 6)
                 local lerp = tonumber(rec.def.follow_lerp) or 0.18
                 rec.model:PivotTo(rec.model:GetPivot():Lerp(goal, lerp))
+                self:_moveSquad(rec, lerp)
             elseif not (owner and owner.Parent) then
                 self:Despawn(name) -- summoner left
             end

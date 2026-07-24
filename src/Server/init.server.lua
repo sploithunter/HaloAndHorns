@@ -253,7 +253,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "NpcPrincipalService",
     ServerScriptService.Server.Services.NpcPrincipalService,
-    { "Logger", "ConfigLoader" }
+    { "Logger", "ConfigLoader", "PlayerProgressionService" }
 )
 loader:RegisterModule(
     "PlayerEffectsService",
@@ -936,6 +936,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
             LayerService = modules:Get("LayerService"),
             MeetCreatorService = modules:Get("MeetCreatorService"),
             MissionInstanceService = modules:Get("MissionInstanceService"),
+            NpcPrincipalService = modules:Get("NpcPrincipalService"),
             PartyService = modules:Get("PartyService"),
             PetGrantService = modules:Get("PetGrantService"),
             PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(
