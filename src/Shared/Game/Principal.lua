@@ -51,7 +51,10 @@ function Principal.register(rec)
         return nil, "principal needs a name"
     end
     -- A registered NPC must never shadow a real player: name collisions would make
-    -- AllianceWith/AllianceAnchor references ambiguous and silently mis-resolve.
+    -- AllianceWith/AllianceAnchor references ambiguous and silently mis-resolve. `resolve`
+    -- already lets a live player win, so an NPC registered under a taken name would simply be
+    -- unreachable — register it anyway rather than erroring (the caller refuses first), and
+    -- keep the resolution rule as the single source of truth.
     npcs[name] = {
         kind = Principal.KIND_NPC,
         name = name,

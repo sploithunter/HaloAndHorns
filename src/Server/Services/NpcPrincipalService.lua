@@ -253,6 +253,16 @@ function NpcPrincipalService:_spawnSquad(def, originCf)
         root.Name = "PlayerPets"
         root.Parent = Workspace
     end
+    -- HARD SAFETY: never touch a folder that belongs to a real player. The NPC's configured
+    -- name is username-impossible (it contains spaces) so this shouldn't be reachable — but
+    -- the destroy below would delete a live player's entire visible squad if it ever were,
+    -- and that is not a failure mode worth leaving to configuration discipline.
+    if Players:FindFirstChild(def.name) then
+        self:_log("Error", "NPC principal: name collides with a live player — refusing", {
+            npc = def.name,
+        })
+        return nil, 0
+    end
     local folder = root:FindFirstChild(def.name)
     if folder then
         folder:Destroy() -- a re-summon replaces, never stacks
@@ -381,10 +391,21 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
     local off = def.follow_offset or {}
     local cf = hrp.CFrame
         * CFrame.new(tonumber(off.x) or -8, tonumber(off.y) or 0, tonumber(off.z) or 6)
+    -- Same collision guard as _spawnSquad, checked BEFORE anything is built: a real player
+    -- with this name owns the Workspace model name, the pet folder, and every name-based
+    -- alliance reference. Refuse rather than fight them for it.
+    if Players:FindFirstChild(def.name) then
+        return false, "name collides with a live player: " .. def.name
+    end
+
     local model = self:_buildCharacter(def, cf)
     model.Parent = Workspace
 
     local folder, spawned = self:_spawnSquad(def, cf)
+    if not folder then
+        model:Destroy()
+        return false, "squad spawn refused"
+    end
 
     -- Register BEFORE the alliance forms: the anchor resolves by name through the registry,
     -- so an unregistered NPC would fail to lift anyone.

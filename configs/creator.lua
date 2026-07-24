@@ -25,8 +25,15 @@ return {
         -- carries, and the AllianceWith csv on both sides. Must never collide with a real
         -- player's username — Principal.resolve deliberately lets a real player win, so a
         -- collision would silently mis-resolve someone's alliance.
-        name = "Colorado",
-        display_name = "Colorado — the Creator",
+        -- IDENTITY MUST NOT COLLIDE WITH A REAL USERNAME (Jason: "make sure that if
+        -- Colorado happens to be in the game when this happens, it doesn't break things").
+        -- This name keys the Workspace model, the pet folder (PlayerPets/<name>), and the
+        -- AllianceAnchor/AllianceWith attributes. If the real player `Colorado` joined, every
+        -- one of those would collide — and _spawnSquad destroys the folder it finds, which
+        -- would have DELETED that player's pets. Roblox usernames allow no spaces, so a
+        -- spaced name can never collide with one.
+        name = "Colorado the Creator",
+        display_name = "Colorado",
 
         -- Combat level. This is what a nearby low player sidekicks UP to (minus the
         -- teaming.sidekick.level_offset, so 50 → they fight at 49).
@@ -41,12 +48,22 @@ return {
         duration = 20,
 
         -- THE SQUAD. Pet types are ids from configs/pets.lua; `variant` picks the model skin.
-        -- Kept small on purpose: this spawns while the rest of the world is still streaming
-        -- on whatever phone the player is holding, and count is what costs.
+        -- ELEVEN, per Jason — the Creator fights with a full apex roster, and the prologue's
+        -- whole job is to look like the endgame. All ids verified present in
+        -- Assets.Models.Pets. Watch this count on mobile: it spawns while the rest of the
+        -- world is still streaming, and count is what costs.
         squad = {
+            { pet = "colorado_creator", variant = "rainbow" }, -- the Creator's own apex
             { pet = "empyrean_dragon", variant = "rainbow" },
-            { pet = "abyssal_wyrm", variant = "golden" },
-            { pet = "colorado_creator", variant = "basic" },
+            { pet = "abyssal_wyrm", variant = "rainbow" },
+            { pet = "aurora_dragon", variant = "golden" },
+            { pet = "rimewraith_dragon", variant = "golden" },
+            { pet = "aurora_leviathan", variant = "golden" },
+            { pet = "black_ice_leviathan", variant = "golden" },
+            { pet = "solar_phoenix", variant = "golden" },
+            { pet = "ashfeather_phoenix", variant = "golden" },
+            { pet = "glacial_seraph", variant = "basic" },
+            { pet = "empyreal_couatl", variant = "basic" },
         },
 
         -- Formation spacing behind the summoner, in studs.

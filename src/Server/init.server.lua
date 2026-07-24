@@ -255,6 +255,13 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.NpcPrincipalService,
     { "Logger", "ConfigLoader", "PlayerProgressionService" }
 )
+-- PrologueService (docs/PROLOGUE.md): the playable cold open. A genuinely-new player spawns
+-- into the trials' mezzanine hall beside the Creator instead of onto the homeworld.
+loader:RegisterModule(
+    "PrologueService",
+    ServerScriptService.Server.Services.PrologueService,
+    { "Logger", "ConfigLoader", "DataService", "NpcPrincipalService" }
+)
 loader:RegisterModule(
     "PlayerEffectsService",
     ServerScriptService.Server.Services.PlayerEffectsService,
@@ -937,6 +944,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
             MeetCreatorService = modules:Get("MeetCreatorService"),
             MissionInstanceService = modules:Get("MissionInstanceService"),
             NpcPrincipalService = modules:Get("NpcPrincipalService"),
+            PrologueService = modules:Get("PrologueService"),
             PartyService = modules:Get("PartyService"),
             PetGrantService = modules:Get("PetGrantService"),
             PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(

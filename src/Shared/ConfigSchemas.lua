@@ -55,6 +55,8 @@ local SCHEMAS = {
     -- NPC principals (docs/CREATOR_SUMMON.md): summonable allies that own a squad and anchor
     -- a real alliance. Distinct from `guardians` above — those are buff-aura models.
     creator = schema({ enabled = "boolean", creator = "table" }),
+    -- The playable cold open (docs/PROLOGUE.md).
+    prologue = schema({ enabled = "boolean", room = "table", duration = "number" }),
     guardians = schema({ model_asset = "table", colossus = "table", djinn = "table" }),
     hotbar = schema({ slot_count = "number", bind_types = "table", tactical_commands = "table" }),
     layers = schema({
