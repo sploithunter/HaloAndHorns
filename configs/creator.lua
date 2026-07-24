@@ -54,6 +54,8 @@ return {
         follow_lerp = 0.18, -- squad trail smoothing (the NPC itself WALKS via Humanoid:MoveTo)
         walk_speed = 24, -- brisk enough to keep up with a running player
         teleport_leash = 60, -- gap beyond this closes instantly (portals, teleports)
+        pet_speed = 34, -- squad travel speed, studs/sec (above player run so they close gaps)
+        pet_teleport_leash = 90, -- squad gap beyond this snaps instead of trudging
 
         -- ALLIANCE: on summon, nearby unteamed players below the Creator ally to him and
         -- sidekick up for the window. Radius in studs. The gap gate + the lift math are the
