@@ -68,25 +68,99 @@ the game's real pace — an over-promise here is a broken promise later.
 
 ## Architecture
 
-### Scripted, not simulated
+### Real combat, rigged outcome (Jason's call — supersedes the scripted-diorama draft)
 
-**Recommendation: the prologue runs on real *visuals* and fake *outcomes*.**
+> "Could we throw an NPC character in there and use the sidekicking code? We still want them
+> to have powers, but it might be a better coding path."
 
-- Real: models, `CombatFX` primitives, `PowerSound`, animations, the actual power VFX the
-  live game uses. It must not be a lie about what the game looks like.
-- Fake: no damage math, no aggro tables, no pathfinding, no `EnemyService` combat loop.
-  Enemy "deaths" are scripted despawns on a timeline.
+Right, and better than the diorama this spec originally proposed — because it's **honest**.
+Real stats, real damage numbers, real to-hit curve. A faked set piece is a promise the game
+might not keep; this is the actual game running.
 
-A prologue that occasionally fails because pathing hiccuped or an aggro roll went sideways
-is worse than no prologue. Determinism is the requirement; authenticity of *look* is the
-constraint. This is why it is not simply "spawn a real fight at level 50."
+Determinism is still the hard requirement (an 8-second set piece that occasionally whiffs is
+worse than none), but it's bought a better way: **real combat against rigged enemies.** The
+onramp already does exactly this — `BaddieSpawnerService` clones a real def and scales it by
+`engagement.onramp` `hp_mult` / `dmg_mult`. Same trick, harder numbers: trivial HP, zero
+outgoing damage. Real system end to end, guaranteed result.
 
-### Profile isolation (hard rule)
+### The lift: a third `GetEffectiveLevel` branch, not an NPC anchor
 
-The prologue is **read-only with respect to the player profile.** It grants nothing, saves
-nothing, spends nothing, and touches no inventory. If it errors, times out, or the player
-disconnects mid-sequence, they land at normal spawn in a clean level-1 state and the
+The existing sidekick branches (`TeamLead`, `AllianceAnchor`) both resolve their anchor with
+`Players:FindFirstChild(name)` — **an NPC has no Player object**, so neither can anchor to
+one as written.
+
+The fix is smaller than making NPCs anchorable. `GetEffectiveLevel` is already a clean branch
+chain; the prologue is a third link reading a `PrologueLevel` attribute:
+
+```
+team lead  →  alliance anchor  →  PROLOGUE  →  own earned level
+```
+
+~10 lines, structurally identical to its neighbours, and since it's the same pipe every
+consumer — pet damage, the accuracy curve, enemy spawn tuning — inherits it for free. Clear
+the attribute at warp-out and the player is level 1 again with no teardown.
+
+### So the NPC becomes a character, not plumbing
+
+Freed from being the lift mechanism, the NPC ally is worth having for what it *says*: a
+veteran fighting beside you, with the **TEMPORARY ALLIANCE** banner up. The prologue then
+teaches the exact mechanic that will rescue this player at a camped cave three days later —
+onboarding a real system instead of only showing off.
+
+### Open: where do the prologue's pets come from?
+
+The prologue runs **before** the starter-pet choice, so the player owns nothing.
+`PetHandler.loadEquipped` builds models from the player's `Equipped` folder — unusable here.
+
+Assumption to verify in step 1, not step 4: spawn **ghost pets** directly into
+`workspace.PlayerPets/<name>` without any inventory record. `PetFollowService:_tickPlayer`
+iterates that folder's children directly, so movement and combat *should* pick them up — but
+that is currently an inference from the code, not a tested fact. If it doesn't hold, the
+fallback is a prologue-only spawn path, and the cost estimate moves.
+
+Either way the profile-isolation rule stands: ghost pets are never inventory records.
+
+### The cast: heaven pets vs hell adversaries (Jason)
+
+Player fights with **heaven** pets; the enemy wave is **hell** — scarier silhouettes, and the
+right visual read for an 8-second threat. Both are temporary (see ghost pets below).
+
+**Tension worth naming:** the ad creative promises CHOOSE YOUR SIDE with both dragons as
+equals, and the whole realm identity is that hell is *playable*, not villainous. A prologue
+that casts hell as the monsters prejudices a choice the game wants to keep open — the player
+who was going to pick hell just watched hell get flattened as the bad guys.
+
+**Recommended resolution: randomize the sides per player.** Same room, same beats, swapped
+casts. It costs nothing (both rosters exist), keeps faith with the ad, foreshadows the choice
+rather than pre-empting it, and doubles as a free A/B on which framing converts better. If it
+has to be one fixed framing, Jason's is the right one — hell reads scarier.
+
+### Profile isolation (hard rule) — and where the reward goes
+
+The prologue itself is **read-only with respect to the player profile.** It grants nothing,
+saves nothing, spends nothing, and touches no inventory. If it errors, times out, or the
+player disconnects mid-sequence, they land at normal spawn in a clean level-1 state and the
 tutorial proceeds. Same doctrine as the economy work: no partial state, ever.
+
+**The reward is granted at landing, not during** (Jason: "players should have some kind of
+reward for the experience"). One atomic grant through the existing `RewardService`, fired
+after the warp-out, in normal game state — so a crash mid-sequence can never leave a half-paid
+player, and the isolation rule survives intact.
+
+What it should *be* is constrained by two collisions:
+
+- **Not a pet.** The starter-pet chooser is the very next thing that happens; a granted pet
+  competes with the choice the prologue exists to set up.
+- **Nothing that outclasses level 1.** The prologue's whole job is to make the early game feel
+  like the first step toward power, not to hand over the power.
+
+**Recommendation: an achievement + a small gem grant.** The achievement matters more than the
+gems — it lands as the *first entry in their Achievements panel*, so the trophy case isn't
+empty in minute one. Empty-state avoidance is a real retention lever and this gets it for
+free. The gems are the tangible "that counted."
+
+Open: whether the achievement is visible to everyone (a permanent "was there at the start"
+marker, which ages well) or is a standard tiered entry.
 
 ### Components
 
@@ -199,13 +273,15 @@ so it should have to earn them.
 
 ## Open questions
 
-1. **Heaven or hell room** — pick one, or randomize per player and let it foreshadow the
-   CHOOSE YOUR SIDE identity from the ad?
+1. **Fixed or randomized sides** — Jason's call is heaven-player / hell-adversary; the
+   recommendation above is to randomize and A/B it. Needs a decision.
 2. **Which two powers** for the tap moments? Wants maximum visual read — a screen-clearing
    AoE first, then something structurally different (summon? control?) for the second.
 3. **Boss tease** — confirm the Empyrean Dragon / Abysmal Wyrm pairing, for continuity with
    the ad creative.
 4. **Skip button** — visible from t=0, or after ~2s so the tap moment gets its chance?
+5. **Reward shape** — achievement + gems as recommended, and is the achievement a permanent
+   "was there at the start" marker or a normal tiered entry?
 
 ## Build order
 
