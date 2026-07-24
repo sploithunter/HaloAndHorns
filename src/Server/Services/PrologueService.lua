@@ -183,6 +183,9 @@ function PrologueService:Begin(player, opts)
     local prev = self._active[player]
     if prev then
         self._active[player] = nil
+        if prev.charConn then
+            prev.charConn:Disconnect()
+        end
         self:_clearGhostSquad(player)
         self:_clearWave(prev.waveBounds)
     end
@@ -206,7 +209,14 @@ function PrologueService:Begin(player, opts)
     pcall(function()
         player:RequestStreamAroundAsync(target.Position, STREAM_WAIT)
     end)
-    if not root.Parent then
+    -- RE-RESOLVE after the stream yield: a BRAND-NEW profile's first join RESPAWNS the
+    -- character after data creation (live-caught on a fresh alt: music + card played,
+    -- Colorado summoned, but the player stood at Home while the wave fought the ghosts
+    -- alone in the room below). The old abort ate the respawn as "left"; take whatever
+    -- character exists now and warp THAT.
+    character = player.Character or character
+    local liveRoot = character and character:FindFirstChild("HumanoidRootPart")
+    if not liveRoot then
         return false, "left_during_stream"
     end
     character:PivotTo(target)
@@ -221,6 +231,22 @@ function PrologueService:Begin(player, opts)
     end
     self._active[player] = rec
     player:SetAttribute("InPrologue", true)
+
+    -- ANY respawn during the active window comes back to the stage (the fresh-profile
+    -- first-join respawn can land AFTER the pivot above; a mid-battle death respawn must
+    -- not strand the player at Home either). Token-guarded to this run.
+    rec.charConn = player.CharacterAdded:Connect(function(newChar)
+        task.defer(function()
+            if self._active[player] ~= rec then
+                return
+            end
+            local hrp = newChar:FindFirstChild("HumanoidRootPart")
+                or newChar:WaitForChild("HumanoidRootPart", 5)
+            if hrp and self._active[player] == rec then
+                newChar:PivotTo(target)
+            end
+        end)
+    end)
     -- ORDER IS THE FIX (Jason's screenshot: "Murder Crow Lv 1... spawned at my level"):
     -- the Creator summons FIRST so the alliance lift (EffectiveLevel 49) exists before the
     -- wave tunes itself — and so the enemies birth-aggro into a room that already holds
@@ -268,6 +294,9 @@ end
 function PrologueService:Finish(player)
     local rec = self._active[player]
     self._active[player] = nil
+    if rec and rec.charConn then
+        rec.charConn:Disconnect()
+    end
     self:_clearGhostSquad(player)
     self:_clearWave(rec and rec.waveBounds)
     -- Colorado leaves with the LAST player out — another player mid-prologue keeps him.
@@ -546,6 +575,9 @@ function PrologueService:Start()
         local rec = self._active[player]
         self._active[player] = nil
         if rec then
+            if rec.charConn then
+                rec.charConn:Disconnect()
+            end
             self:_clearWave(rec.waveBounds)
             if next(self._active) == nil then
                 local npc = self._modules and self._modules.NpcPrincipalService
