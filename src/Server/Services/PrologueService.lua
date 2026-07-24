@@ -202,6 +202,7 @@ function PrologueService:Begin(player, opts)
         end
     end
 
+    self:_sealDoors(room)
     local target = self:_stageCFrame(room)
     pcall(function()
         player:RequestStreamAroundAsync(target.Position, STREAM_WAIT)
@@ -451,6 +452,62 @@ function PrologueService:_clearGhostSquad(player)
             m:Destroy()
         end
     end
+end
+
+-- SEAL THE DOORWAYS (Jason: "close these doors up so somebody doesn't run out and fall
+-- to their death — we have that already in the spawned trail code"). The trials mate cap
+-- tiles onto unused apertures; the prologue's lone room gets the same visual language
+-- directly: a full-height plug slab (the cap's Backing look) over every door connector.
+function PrologueService:_sealDoors(room)
+    if room:GetAttribute("DoorsSealed") then
+        return
+    end
+    room:SetAttribute("DoorsSealed", true)
+    local sealed = 0
+    for _, d in ipairs(room:GetDescendants()) do
+        if d:IsA("BasePart") and d:GetAttribute("DoorClass") ~= nil then
+            local doorH = d.Size.Y
+            local slab = Instance.new("Part")
+            slab.Name = "PrologueDoorSeal"
+            -- generous overlap: wider than the aperture, floor to the mezzanine wall top
+            slab.Size = Vector3.new(d.Size.X + 4, 64, 2)
+            slab.CFrame = d.CFrame * CFrame.new(0, 32 - doorH / 2, 0)
+            slab.Anchored = true
+            slab.CanCollide = true
+            slab.Color = Color3.fromRGB(30, 28, 32) -- the cap Backing colour
+            slab.Material = Enum.Material.SmoothPlastic
+            slab.Parent = room
+            sealed += 1
+        end
+    end
+    self:_log("Info", "Prologue doors sealed", { count = sealed })
+end
+
+-- Re-run the cold open RIGHT NOW (Jason: "just throw you into that spawned battle...
+-- so we don't have to stop and start Studio"): clear the one-time record and Begin in
+-- place. The ONE code path for the admin reset AND the replay bus command.
+function PrologueService:Replay(player)
+    local data = self._dataService and self._dataService:GetData(player)
+    if data then
+        data.Prologue = nil
+    end
+    player:SetAttribute("PrologueChecked", nil)
+    -- CLOSE THE GATE for the whole throw-in (live-caught: the admin reset re-arms the
+    -- starter chooser, and its Refresh pushed the offer in the gap BEFORE Begin set
+    -- InPrologue — "I have the choose your first companion menu up in front of me and I
+    -- can't get rid of it", floating over the battle). Gate nil = "unresolved": the
+    -- offer-only deferral holds every push until the cut; the re-stamp after Begin
+    -- mirrors the boot watcher, so the chooser arrives at warp-out exactly like a
+    -- real first run.
+    player:SetAttribute("PrologueGate", nil)
+    player:SetAttribute("PrologueVictory", nil)
+    local ok, info = self:Begin(player, { force = true })
+    if ok then
+        player:SetAttribute("PrologueGate", "eligible") -- InPrologue is already true here
+    else
+        player:SetAttribute("PrologueGate", "replay_failed_" .. tostring(info))
+    end
+    return ok, info
 end
 
 -- Put the Creator in the room beside the player, with his full apex squad. Deliberately

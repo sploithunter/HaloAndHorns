@@ -1077,10 +1077,9 @@ function GameAPIService:_registerCommands()
             if args.clearOnly then
                 return { ok = true, cleared = true }
             end
-            local ok, info = prologue:Begin(context.player, { force = true })
-            if ok then
-                prologue:_stageCreator(context.player)
-            end
+            -- Replay owns the whole sequence; the old extra _stageCreator here became a
+            -- DOUBLE-SUMMON when Creator staging moved inside Begin (ordering fix).
+            local ok, info = prologue:Replay(context.player)
             return { ok = ok, detail = (not ok) and tostring(info) or nil }
         end,
     })

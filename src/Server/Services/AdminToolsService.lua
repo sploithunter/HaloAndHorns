@@ -100,6 +100,7 @@ function AdminToolsService:BindPeerServices(services)
     self._enhancementService = services.EnhancementService
     self._hotbarService = services.HotbarService
     self._starterPetService = services.StarterPetService
+    self._prologueService = services.PrologueService
 end
 
 function AdminToolsService:_handleSpawnEnemy(adminPlayer, data)
@@ -775,6 +776,12 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         "admin_reset_to_beginning",
         { critical = true, debounceSeconds = 0 }
     )
+    -- Close the prologue gate BEFORE the starter refresh: the relaunch below re-enters
+    -- the cold open, and Refresh's offer push must defer behind it (offer-only deferral
+    -- reads gate-nil as "unresolved"), not render over the battle.
+    if self._prologueService and self._prologueService.Replay then
+        targetPlayer:SetAttribute("PrologueGate", nil)
+    end
     if self._starterPetService and self._starterPetService.Refresh then
         self._starterPetService:Refresh(targetPlayer)
     end
@@ -786,6 +793,20 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         deleted = deleteCount,
         kept = kept,
     })
+
+    -- STRAIGHT INTO THE COLD OPEN (Jason: "reset to beginning should just throw you into
+    -- that spawned battle... so we don't have to stop and start Studio"). Deferred a beat so
+    -- the reset's save/replication settles; the client plays the title-card flash on the
+    -- InPrologue transition (no boot screen needed — "it should just blank you out").
+    if self._prologueService and self._prologueService.Replay then
+        task.delay(0.75, function()
+            if targetPlayer.Parent then
+                pcall(function()
+                    self._prologueService:Replay(targetPlayer)
+                end)
+            end
+        end)
+    end
 
     self:_sendResult(adminPlayer, {
         kind = "reset_to_beginning",

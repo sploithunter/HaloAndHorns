@@ -81,7 +81,9 @@ local function playVictory(text)
 end
 
 -- The PRESENT DAY cut: a black flash carrying the caption, then a fade into now.
-local function playLanding(text)
+-- `hold` stretches the black — the mid-session ENTRY flash runs long because the warp to
+-- the room stalls the client for a beat and wall-clock tweens play through frozen frames.
+local function playLanding(text, hold)
     local g = gui()
     local black = Instance.new("Frame")
     black.Size = UDim2.fromScale(1, 1)
@@ -104,7 +106,7 @@ local function playLanding(text)
 
     TweenService:Create(black, TweenInfo.new(0.15), { BackgroundTransparency = 0 }):Play()
     TweenService:Create(label, TweenInfo.new(0.3), { TextTransparency = 0 }):Play()
-    task.delay(1.6, function()
+    task.delay(tonumber(hold) or 1.6, function()
         TweenService:Create(black, TweenInfo.new(0.8), { BackgroundTransparency = 1 }):Play()
         TweenService:Create(label, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
         task.delay(0.9, function()
@@ -127,6 +129,11 @@ function M.start()
         local nowIn = localPlayer:GetAttribute("InPrologue") == true
         if wasIn and not nowIn then
             playLanding(tostring(cap.land or "PRESENT DAY"))
+        elseif nowIn and not wasIn then
+            -- MID-SESSION ENTRY (admin Reset to Beginning): no boot screen to carry the
+            -- title card, so the same black-flash beat plays it — "it should just blank
+            -- you out and throw you into the reset."
+            playLanding(tostring(cap.cut or "ONE MONTH FROM NOW"), 3.4)
         end
         wasIn = nowIn
     end)

@@ -300,6 +300,12 @@ local function showEggPath(token, finder)
     local PathfindingService = game:GetService("PathfindingService")
 
     local function dot(pos, index)
+        -- clearGuidance can nil pathFolder DURING a pathfinding yield (live-caught at the
+        -- jackalope cave after the prologue's retract/replay churn) — a dot with nowhere
+        -- to go is just skipped.
+        if not pathFolder then
+            return nil
+        end
         local d = Instance.new("Part")
         d.Shape = Enum.PartType.Cylinder
         d.Size = Vector3.new(0.2, 2.2, 2.2)
@@ -358,7 +364,7 @@ local function showEggPath(token, finder)
                     end
                     -- straight-line fallback when pathfinding drew nothing (NoPath) —
                     -- each dot raycast-snapped to the ground
-                    if #pathFolder:GetChildren() == 0 and dist > PROMPT_RANGE then
+                    if pathFolder and #pathFolder:GetChildren() == 0 and dist > PROMPT_RANGE then
                         local params = RaycastParams.new()
                         params.FilterType = Enum.RaycastFilterType.Exclude
                         params.FilterDescendantsInstances = { char, pathFolder }
