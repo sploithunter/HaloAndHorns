@@ -1,0 +1,9 @@
+assets_dir: assets/ad_labels
+label_count: 5
+# Transparent alpha PNGs for Roblox advertising creative.
+
+choose_heaven.png
+choose_hell.png
+halo_and_horns.png
+hatch_pets.png
+take_them_to_battle.png
