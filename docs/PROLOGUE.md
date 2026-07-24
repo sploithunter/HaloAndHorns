@@ -107,18 +107,48 @@ veteran fighting beside you, with the **TEMPORARY ALLIANCE** banner up. The prol
 teaches the exact mechanic that will rescue this player at a camped cave three days later —
 onboarding a real system instead of only showing off.
 
-### Open: where do the prologue's pets come from?
+### Ghost pets — RESOLVED: the world folder is the interface
 
-The prologue runs **before** the starter-pet choice, so the player owns nothing.
-`PetHandler.loadEquipped` builds models from the player's `Equipped` folder — unusable here.
+The prologue runs **before** the starter-pet choice, so the player owns nothing. Jason asked
+whether we could inject fake entries into the `Equipped` folder. **We don't need to — and
+shouldn't.**
 
-Assumption to verify in step 1, not step 4: spawn **ghost pets** directly into
-`workspace.PlayerPets/<name>` without any inventory record. `PetFollowService:_tickPlayer`
-iterates that folder's children directly, so movement and combat *should* pick them up — but
-that is currently an inference from the code, not a tested fact. If it doesn't hold, the
-fallback is a prologue-only spawn path, and the cost estimate moves.
+Code read (2026-07-24) settles it. `workspace.PlayerPets/<name>` is the real seam, and
+everything downstream reads that folder *directly*, with no inventory or `Equipped` lookup:
 
-Either way the profile-isolation rule stands: ghost pets are never inventory records.
+| Consumer | What it reads |
+|---|---|
+| `PetFollowService:_tickPlayer` | every `Model` with a `PrimaryPart` in the folder — movement, mining, combat |
+| `SquadHud` | the same folder's children — **this is what builds the HUD cards** |
+
+`Equipped` sits *upstream* of that: it's the profile→world builder that `loadEquipped`
+consumes. Injecting there means fighting the save layer for a result the world folder gives
+us for free.
+
+**So: spawn plain pet models straight into `workspace.PlayerPets/<name>`.** They follow,
+fight, mine, and render squad cards — with zero profile contact. The isolation rule holds by
+construction: ghost pets are never inventory records, and cleanup is destroying the models.
+
+### Why the Genie doesn't show in the pet HUD (and why the prologue must not copy it)
+
+> "We kinda have similar code for the Genie of the Sands... it's not a real pet but it
+> manifests everything. The only thing is it doesn't show up in the pet HUD. I kind of always
+> thought it should."
+
+Mystery solved, and it's not a missing feature. `SummonService` parents guardians to its own
+`Workspace.Guardians` folder — **not** `PlayerPets`. `SquadHud` is already built to render
+exactly what Jason wants; the genie simply isn't in the room the HUD is looking at.
+
+**Implication for the prologue:** ghost pets must be *plain pet models in `PlayerPets`*
+(driven by `PetFollowService`), NOT guardian-style self-driven models. Copying the guardian
+pattern would inherit the exact HUD gap we need to avoid — a level-50 fantasy with an empty
+squad rail is not the fantasy.
+
+**Implication for the genie** (separate task, not this one): moving guardians into
+`PlayerPets` would get HUD cards, but `PetFollowService` would immediately start driving a
+model `SummonService._step` is *also* driving — two movers, one model. The fix needs a
+movement-ownership marker the follow service skips. Small, but not free, and out of scope
+here.
 
 ### The cast: heaven pets vs hell adversaries (Jason)
 
@@ -286,6 +316,8 @@ so it should have to earn them.
 ## Build order
 
 1. `configs/prologue.lua` + pure `PrologueFlow` (eligibility predicate + beat timeline) + spec
+   — the ghost-pet unknown that used to live here is **resolved** (see above), so step 1 is
+   back to being cheap
 2. `PrologueService` — gate, `data.Prologue` record, room build, warp-out. **Plus the
    admin-reset clear**, so it's testable from step two onward
 3. `PrologueController` — camera, prompts, captions, skip
