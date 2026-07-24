@@ -107,6 +107,17 @@ veteran fighting beside you, with the **TEMPORARY ALLIANCE** banner up. The prol
 teaches the exact mechanic that will rescue this player at a camped cave three days later —
 onboarding a real system instead of only showing off.
 
+**And the ally should be the Creator** — see `docs/CREATOR_SUMMON.md`. Jason wants a summonable
+NPC version of himself (his best pets, his powers, 1000s recharge) as a real power; the
+prologue ally is the same entity at a different invocation site. That inverts the economics:
+the prologue's most bespoke piece stops being scaffolding and becomes a shipping feature, and
+a brand-new player's first fight is beside the person who made the game — a better story than
+"a veteran NPC."
+
+Note this is a **bigger primitive than a guardian** (an NPC that owns a squad and casts, not a
+buff-aura model). The prologue is its second consumer, not its driver — so prologue scheduling
+depends on that spec landing.
+
 ### Ghost pets — RESOLVED: the world folder is the interface
 
 The prologue runs **before** the starter-pet choice, so the player owns nothing. Jason asked
