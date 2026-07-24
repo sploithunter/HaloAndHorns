@@ -1631,3 +1631,9 @@ Moved hatch-grid sizing onto the animation container's actual drawable dimension
 post-reveal label/count footer when solving every egg square. Configurable safe margins now keep
 single, partial-row, mobile-landscape, and 99-hatch presentations fully visible instead of allowing
 the final row to extend below the screen.
+
+## 2026-07-24 — Transparent advertising labels retained in-repo
+
+Added the five prepared transparent PNG labels under `assets/ad_labels/`: Choose Heaven, Choose
+Hell, Hatch Pets, Take Them to Battle, and Halo and Horns. A portable manifest records the complete
+asset set for future advertising-composition work.
