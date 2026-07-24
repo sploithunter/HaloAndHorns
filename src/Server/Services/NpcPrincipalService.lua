@@ -243,6 +243,64 @@ function NpcPrincipalService:_clonePet(petId, variant)
     return model
 end
 
+-- PUBLIC: spawn ghost pets into an EXISTING folder without wiping it (the prologue grants
+-- the player a temporary squad this way — Jason: "one of every dragon plus a huge Ent for a
+-- tank"). Each entry: { pet, variant, huge }. Huge applies the same relative ScaleTo the
+-- real hatch path uses (pets.lua asset_transform.huge_scale). Returns count spawned.
+function NpcPrincipalService:SpawnGhostSquad(folder, squad, originCf)
+    if not folder then
+        return 0
+    end
+    local petsConfig
+    pcall(function()
+        petsConfig = require(ReplicatedStorage.Configs:WaitForChild("pets"))
+    end)
+    local spawned = 0
+    for i, entry in ipairs(squad or {}) do
+        local model = self:_clonePet(entry.pet, entry.variant)
+        if model then
+            -- Clone source is Pets/<pet>/<variant>, so the clone arrives named "rainbow" —
+            -- name it by PET (indexed: duplicates share a folder) for HUD/config lookups.
+            model.Name = ("%s_%d"):format(entry.pet, i)
+            -- Stamp what the squad HUD + formation drive read off a REAL pet. PositionNumber
+            -- is the card key AND the formation slot — the prototype's default collapses all
+            -- ten ghosts into one card (live-caught: only "Aurora Dragon" showed).
+            local pn = model:FindFirstChild("PositionNumber")
+            if not pn then
+                pn = Instance.new("IntValue")
+                pn.Name = "PositionNumber"
+                pn.Parent = model
+            end
+            pn.Value = i
+            model:SetAttribute("PetType", entry.pet)
+            model:SetAttribute("Variant", entry.variant or "basic")
+            -- Preview power: endurance bars read power; default 1 renders a sliver.
+            model:SetAttribute("EffectivePower", 250)
+            if entry.huge then
+                local raw = petsConfig and petsConfig.pets and petsConfig.pets[entry.pet]
+                local hugeScale = raw
+                    and raw.asset_transform
+                    and tonumber(raw.asset_transform.huge_scale)
+                if hugeScale and hugeScale > 1 then
+                    pcall(function()
+                        model:ScaleTo(model:GetScale() * hugeScale)
+                    end)
+                end
+                model:SetAttribute("Huge", true)
+            end
+            model:PivotTo(originCf * CFrame.new((i - (#squad + 1) / 2) * 5, 0, 5))
+            model.Parent = folder
+            spawned += 1
+        else
+            self:_log("Warn", "ghost squad: pet model missing", {
+                pet = tostring(entry.pet),
+                variant = tostring(entry.variant),
+            })
+        end
+    end
+    return spawned
+end
+
 -- Spawn the squad into workspace.PlayerPets/<name>. That folder IS the interface: both
 -- PetFollowService (movement/combat) and the client SquadHud read its children directly, so
 -- ghost pets need no inventory record to behave — or to render.

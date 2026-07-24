@@ -190,9 +190,21 @@ function PrologueService:Begin(player, opts)
     end
     character:PivotTo(target)
 
-    self._active[player] = { startedAt = os.clock() }
+    local rec = { startedAt = os.clock() }
+    self._active[player] = rec
     player:SetAttribute("InPrologue", true)
-    self:_log("Info", "Prologue begun", { player = player.Name })
+    self:_grantGhostSquad(player, target)
+
+    -- THE CUT: fight for `duration` seconds, then hard-cut to spawn. Token-checked so a
+    -- manual/admin Finish (or a replay) can't double-fire the warp.
+    local duration = tonumber(self._config.duration) or 8
+    task.delay(duration, function()
+        if self._active[player] == rec and player.Parent then
+            self:Finish(player)
+        end
+    end)
+
+    self:_log("Info", "Prologue begun", { player = player.Name, duration = duration })
     return true, { room = room:GetPivot().Position }
 end
 
@@ -201,6 +213,16 @@ end
 function PrologueService:Finish(player)
     local rec = self._active[player]
     self._active[player] = nil
+    self:_clearGhostSquad(player)
+    -- Colorado leaves with the LAST player out — another player mid-prologue keeps him.
+    if next(self._active) == nil then
+        local npc = self._modules and self._modules.NpcPrincipalService
+        if npc then
+            pcall(function()
+                npc:Despawn("Colorado the Creator")
+            end)
+        end
+    end
     player:SetAttribute("InPrologue", nil)
     local data = self._dataService and self._dataService:GetData(player)
     if data and type(data.Prologue) == "table" then
@@ -216,6 +238,41 @@ function PrologueService:Finish(player)
         seconds = rec and (os.clock() - rec.startedAt) or -1,
     })
     return true
+end
+
+-- THE PLAYER'S TEMPORARY SQUAD (Jason: "one of every dragon, plus a huge Ent for a tank").
+-- Ghost models in the player's OWN folder — the client drive gives them the real formations
+-- exactly like owned pets, and the SquadHud shows them. GhostPet-marked, so Finish can strip
+-- them without touching anything the player actually owns.
+function PrologueService:_grantGhostSquad(player, originCf)
+    local npc = self._modules and self._modules.NpcPrincipalService
+    local squad = self._config.player_squad
+    if not npc or type(squad) ~= "table" or #squad == 0 then
+        return
+    end
+    local root = Workspace:FindFirstChild("PlayerPets")
+    local folder = root and root:FindFirstChild(player.Name)
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = player.Name
+        folder.Parent = root or Workspace
+    end
+    local n = npc:SpawnGhostSquad(folder, squad, originCf)
+    self:_log("Info", "Prologue ghost squad granted", { player = player.Name, pets = n })
+end
+
+-- Strip the temporary squad — ONLY GhostPet-marked models; owned pets are untouched.
+function PrologueService:_clearGhostSquad(player)
+    local root = Workspace:FindFirstChild("PlayerPets")
+    local folder = root and root:FindFirstChild(player.Name)
+    if not folder then
+        return
+    end
+    for _, m in ipairs(folder:GetChildren()) do
+        if m:GetAttribute("GhostPet") then
+            m:Destroy()
+        end
+    end
 end
 
 -- Put the Creator in the room beside the player, with his full apex squad. Deliberately

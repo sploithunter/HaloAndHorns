@@ -32,9 +32,29 @@ return {
         origin = { x = 0, y = -8000, z = 0 },
     },
 
+    -- THE PLAYER'S TEMPORARY SQUAD (Jason: "one of every dragon, plus a huge Ent for a
+    -- tank"). Ghost models in the player's own folder — the client drive gives them real
+    -- formations exactly like owned pets; destroyed at warp-out, never inventory.
+    player_squad = {
+        -- Jason: "fill out a temporary 10 slots with dragons and a ent" — a preview of
+        -- the endgame roster. Huge Ent tank up front, then one of every dragon, then
+        -- variant repeats to fill all 10 slots.
+        { pet = "worldroot_ent", variant = "basic", huge = true }, -- the tank, slot 1
+        { pet = "dragon", variant = "rainbow" },
+        { pet = "empyrean_dragon", variant = "rainbow" },
+        { pet = "abyssal_wyrm", variant = "rainbow" },
+        { pet = "aurora_dragon", variant = "golden" },
+        { pet = "rimewraith_dragon", variant = "golden" },
+        { pet = "dragon", variant = "golden" },
+        { pet = "empyrean_dragon", variant = "golden" },
+        { pet = "abyssal_wyrm", variant = "golden" },
+        { pet = "aurora_dragon", variant = "rainbow" },
+    },
+
     -- Seconds the sequence runs before the warp-out. Hard cap — the beats compress rather
-    -- than the player waiting.
-    duration = 8,
+    -- than the player waiting. DEBUG: held at 30 while the room is being iterated on;
+    -- drop back to ~8-12 before launch.
+    duration = 30,
 
     -- Where the player lands afterwards: nil = the normal spawn (tutorial takes over at
     -- `hatch_first_egg`).

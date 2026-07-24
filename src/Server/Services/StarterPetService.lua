@@ -69,32 +69,6 @@ function StarterPetService:_push(player, extra)
         end)
         return
     end
-    -- THE PROLOGUE COMES FIRST (docs/PROLOGUE.md). The cold open shows the player their own
-    -- future — apex pets, level 50 — and the starter chooser is meant to land as the first
-    -- step TOWARD that, not as a competing modal on top of it. Without this gate the chooser
-    -- fires the moment the profile loads and races the prologue (Jason caught it live: he
-    -- spawned straight to "Choose Your First Companion").
-    -- Re-pushed when PrologueService clears the attribute at warp-out.
-    if player:GetAttribute("InPrologue") then
-        if not self._prologueWaiters then
-            self._prologueWaiters = {}
-        end
-        if not self._prologueWaiters[player] then
-            self._prologueWaiters[player] = true
-            local conn
-            conn = player:GetAttributeChangedSignal("InPrologue"):Connect(function()
-                if player:GetAttribute("InPrologue") == nil then
-                    conn:Disconnect()
-                    self._prologueWaiters[player] = nil
-                    if player.Parent then
-                        self:_push(player, extra)
-                    end
-                end
-            end)
-        end
-        return
-    end
-
     local data = self._dataService:GetData(player)
     if not data then
         return
@@ -106,6 +80,43 @@ function StarterPetService:_push(player, extra)
             state[key] = value
         end
     end
+    -- THE PROLOGUE COMES FIRST — but gate ONLY the offer, and only until the prologue
+    -- DECISION exists. The first version of this gate deferred EVERY push while InPrologue
+    -- was set, which swallowed the post-choice state update: Jason chose Kitty, the modal
+    -- stuck on "your companion is joining the squad", and the stuck modal blocked the admin
+    -- menu. Non-offer pushes (choice results, celebrations) must ALWAYS flow.
+    -- "Decision exists" = the PrologueGate attribute is stamped (PrologueService stamps it on
+    -- every path once the profile resolves, including failures). Checking InPrologue alone
+    -- also raced: it is nil for the seconds before the prologue begins, so the offer slipped
+    -- out first. Fail-open when PrologueService never initialized (Workspace flag absent) so
+    -- a broken prologue can never brick the new-player chooser.
+    if state.eligible then
+        local prologueRuns = game:GetService("Workspace"):GetAttribute("PrologueServiceInit")
+            == true
+        local pending = prologueRuns
+            and (player:GetAttribute("InPrologue") or player:GetAttribute("PrologueGate") == nil)
+        if pending then
+            self._prologueWaiters = self._prologueWaiters or {}
+            if not self._prologueWaiters[player] then
+                self._prologueWaiters[player] = true
+                local function retry()
+                    if not player.Parent then
+                        return
+                    end
+                    local stillPending = player:GetAttribute("InPrologue")
+                        or player:GetAttribute("PrologueGate") == nil
+                    if not stillPending then
+                        self._prologueWaiters[player] = nil
+                        self:_push(player, extra)
+                    end
+                end
+                player:GetAttributeChangedSignal("InPrologue"):Connect(retry)
+                player:GetAttributeChangedSignal("PrologueGate"):Connect(retry)
+            end
+            return
+        end
+    end
+
     Signals.StarterPetState:FireClient(player, state)
     if state.eligible and not self._shown[player] then
         self._shown[player] = true

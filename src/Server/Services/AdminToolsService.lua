@@ -736,6 +736,14 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- so without this a single test run permanently consumes it and the cold open can never
     -- be observed again — exactly what happened live: the first successful run wrote the
     -- record, and every reset afterwards still resolved `already_seen`.
+    -- UNEQUIP EVERYTHING (Jason: "you basically unequip any equipped pets for this reset").
+    -- The kept huges survive in the inventory but must NOT be deployed: a reset account
+    -- should enter the prologue BLANK, exactly like a real new player — the temporary dragon
+    -- squad is the only thing at their side until the starter choice.
+    if type(playerData.Equipped) == "table" then
+        playerData.Equipped.pets = {}
+    end
+
     -- Write an explicit REPLAY MARKER rather than deleting the key: `= nil` is a deletion,
     -- and the record demonstrably survived a critical save that way (Jason: "I specifically
     -- went back in and hit reset to beginning" — and the gate still said already_seen).
