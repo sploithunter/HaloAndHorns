@@ -265,8 +265,6 @@ function PetFollowController.start()
     -- been standing still (the gate that releases the squad to wander).
     local meanderCfg = config.meander or {}
     local meanderStates = {}
-    local lastPlayerPos = nil
-    local playerStillFor = 0
     local reportAccum = 0
     local reportInterval = (config.replication and config.replication.interval) or 0.1
 
@@ -481,6 +479,8 @@ function PetFollowController.start()
         end
     end)
 
+    -- per-ANCHOR meander stillness clocks (the per-model stores above are shared safely)
+    local anchorStill = {}
     RunService.RenderStepped:Connect(function(dt)
         -- Smooth OTHER players' pets toward their relayed CLEAN transforms (always, even if we
         -- have no pets of our own), then apply the same observer-local gait/rig animation used by
@@ -546,550 +546,595 @@ function PetFollowController.start()
             end
         end
 
-        local char = localPlayer.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        local petsFolder = Workspace:FindFirstChild("PlayerPets")
-            and Workspace.PlayerPets:FindFirstChild(localPlayer.Name)
-        if not hrp or not petsFolder then
-            return
-        end
+        -- ── drive ONE anchor's folder ─────────────────────────────────────────────
+        -- Extracted so the SAME code that drives the local player's squad drives an NPC
+        -- principal's (docs/CREATOR_SUMMON.md). Jason: "you should look at how the client
+        -- code follows the player — it can be almost exactly the same, they just need to
+        -- follow Colorado... they should just have the regular movement and regular
+        -- formations." attrs = whoever owns the formation/speed attributes (the local
+        -- player, or the NPC model — whose nil attributes fall through to defaults).
+        -- isLocal gates the position report: only the player's own pets report to the
+        -- server (the mining gate); NPC pets are read via their world pivots.
+        local function driveAnchor(anchorChar, petsFolder, attrs, anchorKey, isLocal)
+            local char = anchorChar
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if not hrp or not petsFolder then
+                return
+            end
 
-        -- Downed pets are OUT of the fight: hide them (client-only LocalTransparencyModifier
-        -- so we never touch base Transparency) + any billboards, and skip positioning them.
-        -- They reappear when the player summons them (server clears CombatDowned).
-        local pets = {}
-        for _, m in ipairs(petsFolder:GetChildren()) do
-            if m:IsA("Model") and m.PrimaryPart then
-                local downed = m:GetAttribute("CombatDowned")
-                for _, d in ipairs(m:GetDescendants()) do
-                    if d:IsA("BasePart") then
-                        d.LocalTransparencyModifier = downed and 1 or 0
-                    elseif d:IsA("BillboardGui") then
-                        d.Enabled = not downed
+            -- Downed pets are OUT of the fight: hide them (client-only LocalTransparencyModifier
+            -- so we never touch base Transparency) + any billboards, and skip positioning them.
+            -- They reappear when the player summons them (server clears CombatDowned).
+            local pets = {}
+            for _, m in ipairs(petsFolder:GetChildren()) do
+                if m:IsA("Model") and m.PrimaryPart then
+                    local downed = m:GetAttribute("CombatDowned")
+                    for _, d in ipairs(m:GetDescendants()) do
+                        if d:IsA("BasePart") then
+                            d.LocalTransparencyModifier = downed and 1 or 0
+                        elseif d:IsA("BillboardGui") then
+                            d.Enabled = not downed
+                        end
+                    end
+                    -- CAPITAL ROOT (enemy ice control): a rooted pet FREEZES in place — skip
+                    -- positioning it while the window is live (it stays visible; the hold badge
+                    -- on its card says why it stopped).
+                    local rooted = CrowdControl.isImmobilized(
+                        m:GetAttribute("PetRootedUntil"),
+                        m:GetAttribute("PetHeldUntil"),
+                        os.time()
+                    )
+                    if not downed and not rooted then
+                        table.insert(pets, m)
+                    else
+                        -- Downed OR rooted: skip positioning, and forget the cached transform
+                        -- (Jason's wandering-revive saga) so revival / root-release resumes
+                        -- from the fresh pivot instead of a stale death-spot lerp.
+                        baseCF[m] = nil
                     end
                 end
-                -- CAPITAL ROOT (enemy ice control): a rooted pet FREEZES in place — skip
-                -- positioning it while the window is live (it stays visible; the hold badge
-                -- on its card says why it stopped).
-                local rooted = CrowdControl.isImmobilized(
-                    m:GetAttribute("PetRootedUntil"),
-                    m:GetAttribute("PetHeldUntil"),
-                    os.time()
-                )
-                if not downed and not rooted then
-                    table.insert(pets, m)
+            end
+            local count = #pets
+            if count == 0 then
+                return
+            end
+
+            local cf = hrp.CFrame
+            local frame = {
+                position = { x = cf.Position.X, y = cf.Position.Y, z = cf.Position.Z },
+                look = { x = cf.LookVector.X, y = cf.LookVector.Y, z = cf.LookVector.Z },
+                right = { x = cf.RightVector.X, y = cf.RightVector.Y, z = cf.RightVector.Z },
+            }
+            local phase = os.clock() - startClock
+            local flat = Vector3.new(cf.LookVector.X, 0, cf.LookVector.Z)
+            local upFwd = flat.Magnitude > 0.01 and flat.Unit or Vector3.new(0, 0, -1)
+
+            -- Anchor stillness clock (meander gate), PER ANCHOR: any real movement resets
+            -- it, so the squad snaps to formation while travelling and only wanders once the
+            -- anchor settles. Keyed so the NPC's clock never fights the player's.
+            local still = anchorStill[anchorKey]
+            if not still then
+                still = { t = 0 }
+                anchorStill[anchorKey] = still
+            end
+            if still.lastPos and (cf.Position - still.lastPos).Magnitude < 0.5 then
+                still.t += dt
+            else
+                still.t = 0
+            end
+            still.lastPos = cf.Position
+            local meanderActive = meanderCfg.enabled ~= false
+                and still.t >= (tonumber(meanderCfg.player_still_seconds) or 2)
+
+            -- Idle stroll offset for an untargeted follower; everyone else glides home.
+            local function meanderOffset(model, isIdle)
+                local state = meanderStates[model]
+                if not (isIdle and meanderActive) then
+                    if state then
+                        PetMeander.reset(state, meanderCfg, math.random)
+                    end
+                    return 0, 0
+                end
+                if not state then
+                    state = PetMeander.newState(meanderCfg, math.random)
+                    meanderStates[model] = state
+                end
+                return PetMeander.step(state, dt, meanderCfg, math.random)
+            end
+
+            -- Frame-rate-independent smoothing (momentum feel), scaled per pet by move speed:
+            -- the player's PetMoveSpeed stat times the pet's optional MoveSpeedMult. Higher = the
+            -- pet catches its slot / repositions faster.
+            local followRate = config.movement.follow_lerp_rate or 10
+            local attackRate = config.movement.attack_lerp_rate or 16
+            local speedCfg = config.movement.speed
+            local maxTravel = config.movement.max_travel_speed
+            local playerSpeed = attrs:GetAttribute("PetMoveSpeed")
+            -- Swift (move_speed axis): the player's move-speed buff speeds the pets up too (+fraction).
+            -- power (MoveSpeedBuff) + potion (MoveSpeedBuffPotion) ADD, each gated by its own Until.
+            do
+                local nowT = os.time()
+                local moveFrac = 0
+                if (attrs:GetAttribute("MoveSpeedBuffUntil") or 0) > nowT then
+                    moveFrac += attrs:GetAttribute("MoveSpeedBuff") or 0
+                end
+                if (attrs:GetAttribute("MoveSpeedBuffPotionUntil") or 0) > nowT then
+                    moveFrac += attrs:GetAttribute("MoveSpeedBuffPotion") or 0
+                end
+                if moveFrac ~= 0 then
+                    playerSpeed = (playerSpeed or 1) * (1 + moveFrac)
+                end
+            end
+
+            -- Move a pet toward its goal at `baseRate` smoothing, scaled by its move-speed
+            -- multiplier. Snap if catastrophically far (the player teleported). Otherwise
+            -- smooth-lerp BUT cap the per-frame travel to max_travel_speed*mult so a pet
+            -- flies over to a new target at a bounded speed instead of teleporting onto it
+            -- (the exponential lerp alone covers any distance almost instantly). Orientation
+            -- still uses the full lerp; only linear position is capped.
+            local catchupDist = config.movement.catchup_distance
+
+            -- Pick this frame's HEADING: face the way the pet is actually moving when it's
+            -- travelling above face_move_speed (so it heads forward instead of sliding), else
+            -- settle onto restDir (player-forward following / the target when attacking). The
+            -- turn is eased so it never snaps. Returns a horizontal unit Vector3.
+            local function facingFor(cur, curPos, newPos, restDir)
+                local moveVec = Vector3.new(newPos.X - curPos.X, 0, newPos.Z - curPos.Z)
+                local speed = moveVec.Magnitude / math.max(dt, 1e-3)
+                local desired
+                if speed > faceMoveSpeed and moveVec.Magnitude > 1e-4 then
+                    desired = moveVec.Unit
+                elseif restDir and restDir.Magnitude > 1e-4 then
+                    desired = restDir.Unit
+                end
+                local curLook = Vector3.new(cur.LookVector.X, 0, cur.LookVector.Z)
+                curLook = (curLook.Magnitude > 1e-4) and curLook.Unit or upFwd
+                if not desired then
+                    return curLook
+                end
+                local turnAlpha = 1 - math.exp(-faceTurnRate * dt)
+                local newLook = curLook:Lerp(desired, turnAlpha)
+                return (newLook.Magnitude > 1e-4) and newLook.Unit or desired
+            end
+
+            -- Store the clean (gait-free, anim-free) pivot, then PivotTo with the walk gait AND
+            -- any attack flourish layered on. Keeping baseCF clean means neither feeds back into
+            -- the lerp or the position report. `anim` is a resolved AttackAnim (or nil to follow).
+            local function applyMotion(model, cleanPivot, stepDist, anim)
+                baseCF[model] = cleanPivot
+                -- Rigged (skeletal) pets: published clips own the body motion — skip the procedural
+                -- gait/bob AND the attack flourish (PetAnimator plays idle/run here + a punch per
+                -- real server hit). Hit-react below still applies: it moves the whole model.
+                local rigged = PetAnimator.isRigged(model)
+                local bob, roll, yaw = 0, 0, 0
+                if rigged then
+                    PetAnimator.update(model, dt > 0 and stepDist / dt or 0)
                 else
-                    -- Downed OR rooted: skip positioning, and forget the cached transform
-                    -- (Jason's wandering-revive saga) so revival / root-release resumes
-                    -- from the fresh pivot instead of a stale death-spot lerp.
-                    baseCF[m] = nil
+                    local st = gaitState[model]
+                    if not st then
+                        st = { phase = 0, amp = 0 }
+                        gaitState[model] = st
+                    end
+                    local gait = resolveGait(model:GetAttribute("PetType"))
+                    bob, roll, yaw = Gait.advance(st, gait, stepDist, dt)
                 end
-            end
-        end
-        local count = #pets
-        if count == 0 then
-            return
-        end
 
-        local cf = hrp.CFrame
-        local frame = {
-            position = { x = cf.Position.X, y = cf.Position.Y, z = cf.Position.Z },
-            look = { x = cf.LookVector.X, y = cf.LookVector.Y, z = cf.LookVector.Z },
-            right = { x = cf.RightVector.X, y = cf.RightVector.Y, z = cf.RightVector.Z },
-        }
-        local phase = os.clock() - startClock
-        local flat = Vector3.new(cf.LookVector.X, 0, cf.LookVector.Z)
-        local upFwd = flat.Magnitude > 0.01 and flat.Unit or Vector3.new(0, 0, -1)
-
-        -- Player stillness clock (meander gate): any real movement resets it, so the
-        -- squad snaps to formation while travelling and only wanders once you settle.
-        if lastPlayerPos and (cf.Position - lastPlayerPos).Magnitude < 0.5 then
-            playerStillFor += dt
-        else
-            playerStillFor = 0
-        end
-        lastPlayerPos = cf.Position
-        local meanderActive = meanderCfg.enabled ~= false
-            and playerStillFor >= (tonumber(meanderCfg.player_still_seconds) or 2)
-
-        -- Idle stroll offset for an untargeted follower; everyone else glides home.
-        local function meanderOffset(model, isIdle)
-            local state = meanderStates[model]
-            if not (isIdle and meanderActive) then
-                if state then
-                    PetMeander.reset(state, meanderCfg, math.random)
+                -- Attack flourish (spin / pounce). Resets its clock when the pet stops attacking.
+                local aYaw, aLunge, aBob = 0, 0, 0
+                if anim and anim.enabled and not rigged then
+                    local ts = attackTimer[model]
+                    if not ts then
+                        ts = { t = 0 }
+                        attackTimer[model] = ts
+                    end
+                    aYaw, aLunge, aBob = AttackAnim.advance(ts, anim, dt)
+                else
+                    attackTimer[model] = nil
                 end
-                return 0, 0
-            end
-            if not state then
-                state = PetMeander.newState(meanderCfg, math.random)
-                meanderStates[model] = state
-            end
-            return PetMeander.step(state, dt, meanderCfg, math.random)
-        end
 
-        -- Frame-rate-independent smoothing (momentum feel), scaled per pet by move speed:
-        -- the player's PetMoveSpeed stat times the pet's optional MoveSpeedMult. Higher = the
-        -- pet catches its slot / repositions faster.
-        local followRate = config.movement.follow_lerp_rate or 10
-        local attackRate = config.movement.attack_lerp_rate or 16
-        local speedCfg = config.movement.speed
-        local maxTravel = config.movement.max_travel_speed
-        local playerSpeed = localPlayer:GetAttribute("PetMoveSpeed")
-        -- Swift (move_speed axis): the player's move-speed buff speeds the pets up too (+fraction).
-        -- power (MoveSpeedBuff) + potion (MoveSpeedBuffPotion) ADD, each gated by its own Until.
-        do
-            local nowT = os.time()
-            local moveFrac = 0
-            if (localPlayer:GetAttribute("MoveSpeedBuffUntil") or 0) > nowT then
-                moveFrac += localPlayer:GetAttribute("MoveSpeedBuff") or 0
-            end
-            if (localPlayer:GetAttribute("MoveSpeedBuffPotionUntil") or 0) > nowT then
-                moveFrac += localPlayer:GetAttribute("MoveSpeedBuffPotion") or 0
-            end
-            if moveFrac ~= 0 then
-                playerSpeed = (playerSpeed or 1) * (1 + moveFrac)
-            end
-        end
-
-        -- Move a pet toward its goal at `baseRate` smoothing, scaled by its move-speed
-        -- multiplier. Snap if catastrophically far (the player teleported). Otherwise
-        -- smooth-lerp BUT cap the per-frame travel to max_travel_speed*mult so a pet
-        -- flies over to a new target at a bounded speed instead of teleporting onto it
-        -- (the exponential lerp alone covers any distance almost instantly). Orientation
-        -- still uses the full lerp; only linear position is capped.
-        local catchupDist = config.movement.catchup_distance
-
-        -- Pick this frame's HEADING: face the way the pet is actually moving when it's
-        -- travelling above face_move_speed (so it heads forward instead of sliding), else
-        -- settle onto restDir (player-forward following / the target when attacking). The
-        -- turn is eased so it never snaps. Returns a horizontal unit Vector3.
-        local function facingFor(cur, curPos, newPos, restDir)
-            local moveVec = Vector3.new(newPos.X - curPos.X, 0, newPos.Z - curPos.Z)
-            local speed = moveVec.Magnitude / math.max(dt, 1e-3)
-            local desired
-            if speed > faceMoveSpeed and moveVec.Magnitude > 1e-4 then
-                desired = moveVec.Unit
-            elseif restDir and restDir.Magnitude > 1e-4 then
-                desired = restDir.Unit
-            end
-            local curLook = Vector3.new(cur.LookVector.X, 0, cur.LookVector.Z)
-            curLook = (curLook.Magnitude > 1e-4) and curLook.Unit or upFwd
-            if not desired then
-                return curLook
-            end
-            local turnAlpha = 1 - math.exp(-faceTurnRate * dt)
-            local newLook = curLook:Lerp(desired, turnAlpha)
-            return (newLook.Magnitude > 1e-4) and newLook.Unit or desired
-        end
-
-        -- Store the clean (gait-free, anim-free) pivot, then PivotTo with the walk gait AND
-        -- any attack flourish layered on. Keeping baseCF clean means neither feeds back into
-        -- the lerp or the position report. `anim` is a resolved AttackAnim (or nil to follow).
-        local function applyMotion(model, cleanPivot, stepDist, anim)
-            baseCF[model] = cleanPivot
-            -- Rigged (skeletal) pets: published clips own the body motion — skip the procedural
-            -- gait/bob AND the attack flourish (PetAnimator plays idle/run here + a punch per
-            -- real server hit). Hit-react below still applies: it moves the whole model.
-            local rigged = PetAnimator.isRigged(model)
-            local bob, roll, yaw = 0, 0, 0
-            if rigged then
-                PetAnimator.update(model, dt > 0 and stepDist / dt or 0)
-            else
-                local st = gaitState[model]
-                if not st then
-                    st = { phase = 0, amp = 0 }
-                    gaitState[model] = st
+                local pivot = cleanPivot
+                if aLunge ~= 0 then
+                    pivot = cleanPivot * CFrame.new(0, 0, -aLunge) -- jab forward toward the faced target
                 end
-                local gait = resolveGait(model:GetAttribute("PetType"))
-                bob, roll, yaw = Gait.advance(st, gait, stepDist, dt)
-            end
 
-            -- Attack flourish (spin / pounce). Resets its clock when the pet stops attacking.
-            local aYaw, aLunge, aBob = 0, 0, 0
-            if anim and anim.enabled and not rigged then
-                local ts = attackTimer[model]
-                if not ts then
-                    ts = { t = 0 }
-                    attackTimer[model] = ts
+                -- Hit-react: a rise in CombatDamageTaken = this pet was just bitten. Flinch it
+                -- backward (recoil along -look) + a twist; decays to 0 so it never sticks.
+                local dmg = tonumber(model:GetAttribute("CombatDamageTaken")) or 0
+                local prev = lastDmg[model]
+                if prev and dmg > prev then
+                    local fs = flinchState[model]
+                    if not fs then
+                        fs = {}
+                        flinchState[model] = fs
+                    end
+                    local lv = cleanPivot.LookVector
+                    HitReact.start(fs, os.clock(), -lv.X, -lv.Z, math.random() < 0.5 and 1 or -1)
                 end
-                aYaw, aLunge, aBob = AttackAnim.advance(ts, anim, dt)
-            else
-                attackTimer[model] = nil
-            end
+                lastDmg[model] = dmg
 
-            local pivot = cleanPivot
-            if aLunge ~= 0 then
-                pivot = cleanPivot * CFrame.new(0, 0, -aLunge) -- jab forward toward the faced target
-            end
-
-            -- Hit-react: a rise in CombatDamageTaken = this pet was just bitten. Flinch it
-            -- backward (recoil along -look) + a twist; decays to 0 so it never sticks.
-            local dmg = tonumber(model:GetAttribute("CombatDamageTaken")) or 0
-            local prev = lastDmg[model]
-            if prev and dmg > prev then
+                local cf = CFrame.new(0, bob + aBob, 0) * pivot * CFrame.Angles(0, yaw + aYaw, roll)
                 local fs = flinchState[model]
-                if not fs then
-                    fs = {}
-                    flinchState[model] = fs
-                end
-                local lv = cleanPivot.LookVector
-                HitReact.start(fs, os.clock(), -lv.X, -lv.Z, math.random() < 0.5 and 1 or -1)
-            end
-            lastDmg[model] = dmg
-
-            local cf = CFrame.new(0, bob + aBob, 0) * pivot * CFrame.Angles(0, yaw + aYaw, roll)
-            local fs = flinchState[model]
-            if fs then
-                local fx, fz, fyaw = HitReact.sample(fs, os.clock())
-                if fx ~= 0 or fz ~= 0 or fyaw ~= 0 then
-                    cf = (cf + Vector3.new(fx, 0, fz)) * CFrame.Angles(0, fyaw, 0)
-                end
-            end
-            model:PivotTo(cf)
-        end
-
-        -- Move a pet toward goalPos (Vector3), facing its heading while moving / restDir at
-        -- rest, at baseRate smoothing scaled by move speed. `anim` (optional) layers a flourish.
-        local function moveToward(model, goalPos, restDir, baseRate, anim)
-            -- Cast-locked (just-fired ranged pet): hold position so it can't kite freely, but
-            -- keep facing its target (restDir) so it still aims at its prey while "casting".
-            if castLockUntil[model] and dt and os.clock() < castLockUntil[model] then
-                local cur = baseCF[model] or model:GetPivot()
-                local face = facingFor(cur, cur.Position, cur.Position, restDir)
-                applyMotion(model, CFrame.lookAt(cur.Position, cur.Position + face), 0, anim)
-                return
-            end
-            local mult = PetFormation.moveSpeedMultiplier(
-                playerSpeed,
-                model:GetAttribute("MoveSpeedMult"),
-                speedCfg
-            )
-            local cur = baseCF[model] or model:GetPivot()
-            local curPos = cur.Position
-            if PetFormation.shouldSnap((curPos - goalPos).Magnitude, catchupDist) then
-                local face = (restDir and restDir.Magnitude > 1e-4) and restDir.Unit or upFwd
-                applyMotion(model, CFrame.lookAt(goalPos, goalPos + face), 0, anim) -- teleport
-                return
-            end
-            local alpha = 1 - math.exp(-(baseRate * mult) * dt)
-            local newPos = curPos:Lerp(goalPos, alpha)
-            if maxTravel and maxTravel > 0 then
-                local step = newPos - curPos
-                local maxStep = maxTravel * mult * dt
-                if step.Magnitude > maxStep then
-                    newPos = curPos + step.Unit * maxStep
-                end
-            end
-            local face = facingFor(cur, curPos, newPos, restDir)
-            local cleanPivot = CFrame.lookAt(newPos, newPos + face)
-            local stepDist = (Vector3.new(newPos.X, 0, newPos.Z) - Vector3.new(
-                curPos.X,
-                0,
-                curPos.Z
-            )).Magnitude
-            applyMotion(model, cleanPivot, stepDist, anim)
-        end
-
-        -- Full attack config (so every style's params reach attackOffset). The per-pet STYLE is
-        -- resolved in the group loop below (role-driven in "individual" mode, shared in "team");
-        -- a PetAttackStyle attribute still force-overrides the whole squad for live testing.
-        local attackCfg = table.clone(config.attack)
-        local styleOverride = localPlayer:GetAttribute("PetAttackStyle")
-
-        local groups = {} -- id -> { center, pets = {} }   (melee/tank: orbit the target)
-        local followers = {}
-        local followPlace = {} -- resolved follower placements (separated before moving)
-        local kiterFace = {} -- kiter pet -> its target model (so it faces what it snipes)
-        for slot, pet in ipairs(pets) do
-            local tid = pet:FindFirstChild("TargetID")
-            local breakable = nil
-            if tid and tid.Value ~= 0 then
-                local tt = pet:FindFirstChild("TargetType")
-                local tw = pet:FindFirstChild("TargetWorld")
-                breakable = findBreakable(tt and tt.Value, tw and tw.Value, tid.Value)
-            end
-            local posNV = pet:FindFirstChild("PositionNumber")
-            local index = (posNV and posNV.Value > 0) and posNV.Value or slot
-            -- A kiter snipes from the player formation ONLY while its target is within range of
-            -- the formation; if the target is farther than attack_range it advances to engage
-            -- (joins the attack group, holding at its standoff). Decision is target-vs-formation
-            -- (stable) so it doesn't flip-flop as the pet moves.
-            local kiteSnipe = false
-            if breakable and roleKites(pet) then
-                local c = breakable:GetPivot().Position
-                local petPos = pet:GetPivot().Position
-                -- Snipe-in-place ONLY if the pet's formation SLOT would actually be within attack
-                -- range of the target — otherwise advance to a forward standoff and fire from there.
-                -- The old check measured PLAYER->target minus a fixed 8-stud fudge, but a kiter's slot
-                -- sits ~10-15 studs BEHIND the player; when the player stood ~20 out from a target the
-                -- pet "sniped" from ~33 (outside its 28 range) and froze forever (Jason's gold dragon
-                -- "stays at my shoulder, never fires"). Estimate the slot as player->target plus the
-                -- pet's own current distance-behind-the-player (its formation depth); the triangle-
-                -- inequality over-estimate errs toward ADVANCING, which is what we want for engaging.
-                -- As the pet advances forward its depth grows, so it stays in advance mode (no flip-
-                -- flop) and holds at the attack-group standoff, which is inside range.
-                local playerToTarget =
-                    Vector3.new(cf.Position.X - c.X, 0, cf.Position.Z - c.Z).Magnitude
-                local formationDepth =
-                    Vector3.new(petPos.X - cf.Position.X, 0, petPos.Z - cf.Position.Z).Magnitude
-                kiteSnipe = (playerToTarget + formationDepth) <= attackRangeOf(pet)
-            end
-            if kiteSnipe then
-                -- Ranged in range: hold the player formation and fire, facing the target.
-                table.insert(followers, { pet = pet, index = index })
-                kiterFace[pet] = breakable
-            elseif breakable then
-                local g = groups[tid.Value]
-                if not g then
-                    g = {
-                        center = breakable:GetPivot().Position,
-                        model = breakable,
-                        isEnemy = breakable:GetAttribute("IsEnemy") == true,
-                        pets = {},
-                    }
-                    groups[tid.Value] = g
-                end
-                table.insert(g.pets, pet)
-            else
-                table.insert(followers, { pet = pet, index = index })
-            end
-        end
-
-        -- A follower's rest facing: player-forward, unless it's a ranged kiter — then it
-        -- faces the target it's firing on (computed per pet from its world position).
-        local function followerRestDir(pet, targetPos)
-            local kt = kiterFace[pet]
-            if kt and kt.Parent and kt.PrimaryPart then
-                local p = kt:GetPivot().Position
-                local d = Vector3.new(p.X - targetPos.X, 0, p.Z - targetPos.Z)
-                if d.Magnitude > 1e-3 then
-                    return d.Unit
-                end
-            end
-            return upFwd
-        end
-
-        -- Followers: hold the formation slot behind the player.
-        -- Mode comes from the player's saved setting (PetFormationMode attribute, stage 3) or the
-        -- config default. The size-aware modes sort by footprint + scale spacing via resolve();
-        -- anything else falls back to the legacy index-based path.
-        local mode = localPlayer:GetAttribute("PetFormationMode") or config.formation.default_mode
-        local sizeAware = mode == "conga" or mode == "risers" or mode == "arc"
-
-        if sizeAware and #followers > 0 then
-            -- Stable input order by equip slot so equal-size pets keep a deterministic order.
-            table.sort(followers, function(lhs, rhs)
-                return lhs.index < rhs.index
-            end)
-            local input = {}
-            for _, f in ipairs(followers) do
-                input[#input + 1] = { model = f.pet, footprint = petFootprint(f.pet, config) }
-            end
-            local fm = table.clone(config.formation)
-            fm.mode = mode
-            local placed = PetFormation.resolve(input, fm)
-            for slot, e in ipairs(placed) do
-                local model = e.pet.model
-                local t = PetFormation.toWorld(frame, e.offset)
-                local bob = PetFormation.floatOffset(phase + slot, config.float)
-                local mx, mz = meanderOffset(model, kiterFace[model] == nil)
-                local ty = PetAnimator.isRigged(model) and groundedY(model, t.x + mx, t.z + mz, t.y)
-                    or (t.y + bob + floatTouchup(model, config))
-                followPlace[#followPlace + 1] = {
-                    model = model,
-                    target = Vector3.new(t.x + mx, ty, t.z + mz),
-                }
-            end
-        else
-            for _, f in ipairs(followers) do
-                local t = PetFormation.targetPosition(frame, f.index, count, config.formation)
-                local bob = PetFormation.floatOffset(phase + f.index, config.float)
-                local mx, mz = meanderOffset(f.pet, kiterFace[f.pet] == nil)
-                local ty = PetAnimator.isRigged(f.pet) and groundedY(f.pet, t.x + mx, t.z + mz, t.y)
-                    or (t.y + bob + floatTouchup(f.pet, config))
-                followPlace[#followPlace + 1] = {
-                    model = f.pet,
-                    target = Vector3.new(t.x + mx, ty, t.z + mz),
-                }
-            end
-        end
-
-        -- Soft separation (no collisions): overlapping TARGETS get pushed apart and
-        -- the regular moveToward smoothing walks the pets off each other.
-        local sepDist = tonumber(meanderCfg.separation) or 0
-        if sepDist > 0 and #followPlace > 1 then
-            local pts = {}
-            for i, p in ipairs(followPlace) do
-                pts[i] = { x = p.target.X, z = p.target.Z }
-            end
-            local push = PetMeander.separate(pts, sepDist)
-            for i, p in ipairs(followPlace) do
-                p.target = p.target + Vector3.new(push[i].x, 0, push[i].z)
-            end
-        end
-        for _, p in ipairs(followPlace) do
-            moveToward(p.model, p.target, followerRestDir(p.model, p.target), followRate)
-        end
-
-        -- Map-collision exclude set (built once/frame): everything dynamic the pet should pass
-        -- through — Workspace.Game (crystals/enemies/drops), all players' pets, and characters —
-        -- so slotBlocked() only ever flags authored MAP walls/rocks.
-        local mapExclude = {}
-        local gameFolder = Workspace:FindFirstChild("Game")
-        if gameFolder then
-            mapExclude[#mapExclude + 1] = gameFolder
-        end
-        local petsRoot = Workspace:FindFirstChild("PlayerPets")
-        if petsRoot then
-            mapExclude[#mapExclude + 1] = petsRoot
-        end
-        for _, pl in ipairs(Players:GetPlayers()) do
-            if pl.Character then
-                mapExclude[#mapExclude + 1] = pl.Character
-            end
-        end
-
-        -- Attackers: arrange around the target per the attack style, facing the center.
-        for _, g in pairs(groups) do
-            -- Combat (enemy) rings: ROLE first so the tank owns slot-0 (the peel anchor) regardless
-            -- of size — otherwise a huge tank size-sorts to a far slot and draws the enemy toward you.
-            -- Mining rings: smallest -> first slot, so huge pets take the outer slots (spiral arm /
-            -- line ends). Either way, tiebreak by equip slot so identical pets keep a fixed order
-            -- (no frame-to-frame swap), which is also how multiple same-role tanks order.
-            table.sort(g.pets, function(p1, p2)
-                if g.isEnemy then
-                    local r1, r2 = combatSlotPriority(p1), combatSlotPriority(p2)
-                    if r1 ~= r2 then
-                        return r1 < r2
+                if fs then
+                    local fx, fz, fyaw = HitReact.sample(fs, os.clock())
+                    if fx ~= 0 or fz ~= 0 or fyaw ~= 0 then
+                        cf = (cf + Vector3.new(fx, 0, fz)) * CFrame.Angles(0, fyaw, 0)
                     end
                 end
-                local f1, f2 = petFootprint(p1, config), petFootprint(p2, config)
-                if f1 ~= f2 then
-                    return f1 < f2
+                model:PivotTo(cf)
+            end
+
+            -- Move a pet toward goalPos (Vector3), facing its heading while moving / restDir at
+            -- rest, at baseRate smoothing scaled by move speed. `anim` (optional) layers a flourish.
+            local function moveToward(model, goalPos, restDir, baseRate, anim)
+                -- Cast-locked (just-fired ranged pet): hold position so it can't kite freely, but
+                -- keep facing its target (restDir) so it still aims at its prey while "casting".
+                if castLockUntil[model] and dt and os.clock() < castLockUntil[model] then
+                    local cur = baseCF[model] or model:GetPivot()
+                    local face = facingFor(cur, cur.Position, cur.Position, restDir)
+                    applyMotion(model, CFrame.lookAt(cur.Position, cur.Position + face), 0, anim)
+                    return
                 end
-                return petSlot(p1) < petSlot(p2)
-            end)
-            local gcount = #g.pets
-            for gi, pet in ipairs(g.pets) do
-                -- per-pet style: role-driven in "individual" mode, team-shared otherwise (g.isEnemy
-                -- picks the combat vs mining mode lane). Mutating .style is cheap — no per-frame alloc.
-                attackCfg.style = PetFormation.resolveStyle(
-                    config.attack,
-                    petRoleId(pet),
-                    g.isEnemy,
-                    styleOverride
+                local mult = PetFormation.moveSpeedMultiplier(
+                    playerSpeed,
+                    model:GetAttribute("MoveSpeedMult"),
+                    speedCfg
                 )
-                local off = PetFormation.attackOffset(gi, gcount, phase, attackCfg)
-                -- Role standoff: ranged/support hold further out (push the slot radially
-                -- away from the target) so melee crowds in and ranged kites at distance.
-                local standoff = roleStandoff(pet)
-                if standoff > 0 then
-                    local horiz = Vector3.new(off.x, 0, off.z)
-                    if horiz.Magnitude > 0.01 then
-                        local pushed = horiz + horiz.Unit * standoff
-                        off = { x = pushed.X, y = off.y, z = pushed.Z }
+                local cur = baseCF[model] or model:GetPivot()
+                local curPos = cur.Position
+                if PetFormation.shouldSnap((curPos - goalPos).Magnitude, catchupDist) then
+                    local face = (restDir and restDir.Magnitude > 1e-4) and restDir.Unit or upFwd
+                    applyMotion(model, CFrame.lookAt(goalPos, goalPos + face), 0, anim) -- teleport
+                    return
+                end
+                local alpha = 1 - math.exp(-(baseRate * mult) * dt)
+                local newPos = curPos:Lerp(goalPos, alpha)
+                if maxTravel and maxTravel > 0 then
+                    local step = newPos - curPos
+                    local maxStep = maxTravel * mult * dt
+                    if step.Magnitude > maxStep then
+                        newPos = curPos + step.Unit * maxStep
                     end
                 end
-                -- Orient the attack ring toward the PLAYER (combat). The wheel's angle-0 is world
-                -- +x, so a lone attacker always sat on the +x side of its target → the enemy chased
-                -- it that way and the pair walked the same compass direction off the map no matter
-                -- where it spawned. Rotating the offset so angle-0 points target->player makes pets
-                -- engage from YOUR side and draws enemies back toward you (the on-map anchor).
-                if g.isEnemy then
-                    local toP =
-                        Vector3.new(cf.Position.X - g.center.X, 0, cf.Position.Z - g.center.Z)
-                    if toP.Magnitude > 0.01 then
-                        local a = math.atan2(toP.Z, toP.X)
-                        -- Flip the pole if configured: "away_from_player" points angle-0 AWAY from
-                        -- you, so pets take the far side and DRAW enemies toward you (vs the default
-                        -- "toward_player", which peels/shoves them away). See pet_follow.lua.
-                        if config.attack.combat_ring_zero == "away_from_player" then
-                            a = a + math.pi
+                local face = facingFor(cur, curPos, newPos, restDir)
+                local cleanPivot = CFrame.lookAt(newPos, newPos + face)
+                local stepDist = (Vector3.new(newPos.X, 0, newPos.Z) - Vector3.new(
+                    curPos.X,
+                    0,
+                    curPos.Z
+                )).Magnitude
+                applyMotion(model, cleanPivot, stepDist, anim)
+            end
+
+            -- Full attack config (so every style's params reach attackOffset). The per-pet STYLE is
+            -- resolved in the group loop below (role-driven in "individual" mode, shared in "team");
+            -- a PetAttackStyle attribute still force-overrides the whole squad for live testing.
+            local attackCfg = table.clone(config.attack)
+            local styleOverride = attrs:GetAttribute("PetAttackStyle")
+
+            local groups = {} -- id -> { center, pets = {} }   (melee/tank: orbit the target)
+            local followers = {}
+            local followPlace = {} -- resolved follower placements (separated before moving)
+            local kiterFace = {} -- kiter pet -> its target model (so it faces what it snipes)
+            for slot, pet in ipairs(pets) do
+                local tid = pet:FindFirstChild("TargetID")
+                local breakable = nil
+                if tid and tid.Value ~= 0 then
+                    local tt = pet:FindFirstChild("TargetType")
+                    local tw = pet:FindFirstChild("TargetWorld")
+                    breakable = findBreakable(tt and tt.Value, tw and tw.Value, tid.Value)
+                end
+                local posNV = pet:FindFirstChild("PositionNumber")
+                local index = (posNV and posNV.Value > 0) and posNV.Value or slot
+                -- A kiter snipes from the player formation ONLY while its target is within range of
+                -- the formation; if the target is farther than attack_range it advances to engage
+                -- (joins the attack group, holding at its standoff). Decision is target-vs-formation
+                -- (stable) so it doesn't flip-flop as the pet moves.
+                local kiteSnipe = false
+                if breakable and roleKites(pet) then
+                    local c = breakable:GetPivot().Position
+                    local petPos = pet:GetPivot().Position
+                    -- Snipe-in-place ONLY if the pet's formation SLOT would actually be within attack
+                    -- range of the target — otherwise advance to a forward standoff and fire from there.
+                    -- The old check measured PLAYER->target minus a fixed 8-stud fudge, but a kiter's slot
+                    -- sits ~10-15 studs BEHIND the player; when the player stood ~20 out from a target the
+                    -- pet "sniped" from ~33 (outside its 28 range) and froze forever (Jason's gold dragon
+                    -- "stays at my shoulder, never fires"). Estimate the slot as player->target plus the
+                    -- pet's own current distance-behind-the-player (its formation depth); the triangle-
+                    -- inequality over-estimate errs toward ADVANCING, which is what we want for engaging.
+                    -- As the pet advances forward its depth grows, so it stays in advance mode (no flip-
+                    -- flop) and holds at the attack-group standoff, which is inside range.
+                    local playerToTarget =
+                        Vector3.new(cf.Position.X - c.X, 0, cf.Position.Z - c.Z).Magnitude
+                    local formationDepth =
+                        Vector3.new(petPos.X - cf.Position.X, 0, petPos.Z - cf.Position.Z).Magnitude
+                    kiteSnipe = (playerToTarget + formationDepth) <= attackRangeOf(pet)
+                end
+                if kiteSnipe then
+                    -- Ranged in range: hold the player formation and fire, facing the target.
+                    table.insert(followers, { pet = pet, index = index })
+                    kiterFace[pet] = breakable
+                elseif breakable then
+                    local g = groups[tid.Value]
+                    if not g then
+                        g = {
+                            center = breakable:GetPivot().Position,
+                            model = breakable,
+                            isEnemy = breakable:GetAttribute("IsEnemy") == true,
+                            pets = {},
+                        }
+                        groups[tid.Value] = g
+                    end
+                    table.insert(g.pets, pet)
+                else
+                    table.insert(followers, { pet = pet, index = index })
+                end
+            end
+
+            -- A follower's rest facing: player-forward, unless it's a ranged kiter — then it
+            -- faces the target it's firing on (computed per pet from its world position).
+            local function followerRestDir(pet, targetPos)
+                local kt = kiterFace[pet]
+                if kt and kt.Parent and kt.PrimaryPart then
+                    local p = kt:GetPivot().Position
+                    local d = Vector3.new(p.X - targetPos.X, 0, p.Z - targetPos.Z)
+                    if d.Magnitude > 1e-3 then
+                        return d.Unit
+                    end
+                end
+                return upFwd
+            end
+
+            -- Followers: hold the formation slot behind the player.
+            -- Mode comes from the player's saved setting (PetFormationMode attribute, stage 3) or the
+            -- config default. The size-aware modes sort by footprint + scale spacing via resolve();
+            -- anything else falls back to the legacy index-based path.
+            local mode = attrs:GetAttribute("PetFormationMode") or config.formation.default_mode
+            local sizeAware = mode == "conga" or mode == "risers" or mode == "arc"
+
+            if sizeAware and #followers > 0 then
+                -- Stable input order by equip slot so equal-size pets keep a deterministic order.
+                table.sort(followers, function(lhs, rhs)
+                    return lhs.index < rhs.index
+                end)
+                local input = {}
+                for _, f in ipairs(followers) do
+                    input[#input + 1] = { model = f.pet, footprint = petFootprint(f.pet, config) }
+                end
+                local fm = table.clone(config.formation)
+                fm.mode = mode
+                local placed = PetFormation.resolve(input, fm)
+                for slot, e in ipairs(placed) do
+                    local model = e.pet.model
+                    local t = PetFormation.toWorld(frame, e.offset)
+                    local bob = PetFormation.floatOffset(phase + slot, config.float)
+                    local mx, mz = meanderOffset(model, kiterFace[model] == nil)
+                    local ty = PetAnimator.isRigged(model)
+                            and groundedY(model, t.x + mx, t.z + mz, t.y)
+                        or (t.y + bob + floatTouchup(model, config))
+                    followPlace[#followPlace + 1] = {
+                        model = model,
+                        target = Vector3.new(t.x + mx, ty, t.z + mz),
+                    }
+                end
+            else
+                for _, f in ipairs(followers) do
+                    local t = PetFormation.targetPosition(frame, f.index, count, config.formation)
+                    local bob = PetFormation.floatOffset(phase + f.index, config.float)
+                    local mx, mz = meanderOffset(f.pet, kiterFace[f.pet] == nil)
+                    local ty = PetAnimator.isRigged(f.pet)
+                            and groundedY(f.pet, t.x + mx, t.z + mz, t.y)
+                        or (t.y + bob + floatTouchup(f.pet, config))
+                    followPlace[#followPlace + 1] = {
+                        model = f.pet,
+                        target = Vector3.new(t.x + mx, ty, t.z + mz),
+                    }
+                end
+            end
+
+            -- Soft separation (no collisions): overlapping TARGETS get pushed apart and
+            -- the regular moveToward smoothing walks the pets off each other.
+            local sepDist = tonumber(meanderCfg.separation) or 0
+            if sepDist > 0 and #followPlace > 1 then
+                local pts = {}
+                for i, p in ipairs(followPlace) do
+                    pts[i] = { x = p.target.X, z = p.target.Z }
+                end
+                local push = PetMeander.separate(pts, sepDist)
+                for i, p in ipairs(followPlace) do
+                    p.target = p.target + Vector3.new(push[i].x, 0, push[i].z)
+                end
+            end
+            for _, p in ipairs(followPlace) do
+                moveToward(p.model, p.target, followerRestDir(p.model, p.target), followRate)
+            end
+
+            -- Map-collision exclude set (built once/frame): everything dynamic the pet should pass
+            -- through — Workspace.Game (crystals/enemies/drops), all players' pets, and characters —
+            -- so slotBlocked() only ever flags authored MAP walls/rocks.
+            local mapExclude = {}
+            local gameFolder = Workspace:FindFirstChild("Game")
+            if gameFolder then
+                mapExclude[#mapExclude + 1] = gameFolder
+            end
+            local petsRoot = Workspace:FindFirstChild("PlayerPets")
+            if petsRoot then
+                mapExclude[#mapExclude + 1] = petsRoot
+            end
+            for _, pl in ipairs(Players:GetPlayers()) do
+                if pl.Character then
+                    mapExclude[#mapExclude + 1] = pl.Character
+                end
+            end
+
+            -- Attackers: arrange around the target per the attack style, facing the center.
+            for _, g in pairs(groups) do
+                -- Combat (enemy) rings: ROLE first so the tank owns slot-0 (the peel anchor) regardless
+                -- of size — otherwise a huge tank size-sorts to a far slot and draws the enemy toward you.
+                -- Mining rings: smallest -> first slot, so huge pets take the outer slots (spiral arm /
+                -- line ends). Either way, tiebreak by equip slot so identical pets keep a fixed order
+                -- (no frame-to-frame swap), which is also how multiple same-role tanks order.
+                table.sort(g.pets, function(p1, p2)
+                    if g.isEnemy then
+                        local r1, r2 = combatSlotPriority(p1), combatSlotPriority(p2)
+                        if r1 ~= r2 then
+                            return r1 < r2
                         end
-                        local ca, sa = math.cos(a), math.sin(a)
-                        off =
-                            { x = off.x * ca - off.z * sa, y = off.y, z = off.x * sa + off.z * ca }
                     end
-                end
-                -- Same per-pet vertical touch-up as the follow paths: the ring anchors at the
-                -- TARGET's pivot with a flat ring_height, so a huge pet loses its float_offsets
-                -- tune the moment it attacks (the huge Ent sank mid-body into the floor).
-                -- Rigged pets instead plant on the map via the ground ray, like when following.
-                local target = g.center
-                    + Vector3.new(off.x, off.y + floatTouchup(pet, config), off.z)
-                if PetAnimator.isRigged(pet) then
-                    target = Vector3.new(
-                        target.X,
-                        groundedY(pet, target.X, target.Z, target.Y),
-                        target.Z
+                    local f1, f2 = petFootprint(p1, config), petFootprint(p2, config)
+                    if f1 ~= f2 then
+                        return f1 < f2
+                    end
+                    return petSlot(p1) < petSlot(p2)
+                end)
+                local gcount = #g.pets
+                for gi, pet in ipairs(g.pets) do
+                    -- per-pet style: role-driven in "individual" mode, team-shared otherwise (g.isEnemy
+                    -- picks the combat vs mining mode lane). Mutating .style is cheap — no per-frame alloc.
+                    attackCfg.style = PetFormation.resolveStyle(
+                        config.attack,
+                        petRoleId(pet),
+                        g.isEnemy,
+                        styleOverride
                     )
-                end
-                -- Map clamp: the standoff slot can land inside authored geometry (a rock/cliff the
-                -- foe hovers against, a cactus). Do NOT freeze the pet at its current spot — that
-                -- strands the whole squad whenever an enemy sits near terrain (combat just stops,
-                -- the exact "pets do nothing" bug). Pets don't collide, so instead walk the goal
-                -- back along pet->target to the nearest CLEAR point: the pet still advances as far
-                -- as it can and gets into range. Only if the entire approach is blocked do we hold.
-                if g.isEnemy and slotBlocked(target, mapExclude) then
-                    local from = (baseCF[pet] and baseCF[pet].Position) or pet:GetPivot().Position
-                    local cleared
-                    for step = 1, 6 do
-                        local probe = target:Lerp(from, step / 7) -- from the goal back toward the pet
-                        if not slotBlocked(probe, mapExclude) then
-                            cleared = probe
-                            break
+                    local off = PetFormation.attackOffset(gi, gcount, phase, attackCfg)
+                    -- Role standoff: ranged/support hold further out (push the slot radially
+                    -- away from the target) so melee crowds in and ranged kites at distance.
+                    local standoff = roleStandoff(pet)
+                    if standoff > 0 then
+                        local horiz = Vector3.new(off.x, 0, off.z)
+                        if horiz.Magnitude > 0.01 then
+                            local pushed = horiz + horiz.Unit * standoff
+                            off = { x = pushed.X, y = off.y, z = pushed.Z }
                         end
                     end
-                    target = cleared or from
+                    -- Orient the attack ring toward the PLAYER (combat). The wheel's angle-0 is world
+                    -- +x, so a lone attacker always sat on the +x side of its target → the enemy chased
+                    -- it that way and the pair walked the same compass direction off the map no matter
+                    -- where it spawned. Rotating the offset so angle-0 points target->player makes pets
+                    -- engage from YOUR side and draws enemies back toward you (the on-map anchor).
+                    if g.isEnemy then
+                        local toP =
+                            Vector3.new(cf.Position.X - g.center.X, 0, cf.Position.Z - g.center.Z)
+                        if toP.Magnitude > 0.01 then
+                            local a = math.atan2(toP.Z, toP.X)
+                            -- Flip the pole if configured: "away_from_player" points angle-0 AWAY from
+                            -- you, so pets take the far side and DRAW enemies toward you (vs the default
+                            -- "toward_player", which peels/shoves them away). See pet_follow.lua.
+                            if config.attack.combat_ring_zero == "away_from_player" then
+                                a = a + math.pi
+                            end
+                            local ca, sa = math.cos(a), math.sin(a)
+                            off = {
+                                x = off.x * ca - off.z * sa,
+                                y = off.y,
+                                z = off.x * sa + off.z * ca,
+                            }
+                        end
+                    end
+                    -- Same per-pet vertical touch-up as the follow paths: the ring anchors at the
+                    -- TARGET's pivot with a flat ring_height, so a huge pet loses its float_offsets
+                    -- tune the moment it attacks (the huge Ent sank mid-body into the floor).
+                    -- Rigged pets instead plant on the map via the ground ray, like when following.
+                    local target = g.center
+                        + Vector3.new(off.x, off.y + floatTouchup(pet, config), off.z)
+                    if PetAnimator.isRigged(pet) then
+                        target = Vector3.new(
+                            target.X,
+                            groundedY(pet, target.X, target.Z, target.Y),
+                            target.Z
+                        )
+                    end
+                    -- Map clamp: the standoff slot can land inside authored geometry (a rock/cliff the
+                    -- foe hovers against, a cactus). Do NOT freeze the pet at its current spot — that
+                    -- strands the whole squad whenever an enemy sits near terrain (combat just stops,
+                    -- the exact "pets do nothing" bug). Pets don't collide, so instead walk the goal
+                    -- back along pet->target to the nearest CLEAR point: the pet still advances as far
+                    -- as it can and gets into range. Only if the entire approach is blocked do we hold.
+                    if g.isEnemy and slotBlocked(target, mapExclude) then
+                        local from = (baseCF[pet] and baseCF[pet].Position)
+                            or pet:GetPivot().Position
+                        local cleared
+                        for step = 1, 6 do
+                            local probe = target:Lerp(from, step / 7) -- from the goal back toward the pet
+                            if not slotBlocked(probe, mapExclude) then
+                                cleared = probe
+                                break
+                            end
+                        end
+                        target = cleared or from
+                    end
+                    local toC = Vector3.new(g.center.X - target.X, 0, g.center.Z - target.Z)
+                    local dir = toC.Magnitude > 0.01 and toC.Unit or upFwd
+                    -- Mining (breakables) spins; combat (enemies) faces the target. The flourish
+                    -- layers on the facing — a spinning pet still orients to its prey underneath.
+                    local anim = g.isEnemy and combatAnim or miningAnim
+                    moveToward(pet, target, dir, attackRate, anim)
                 end
-                local toC = Vector3.new(g.center.X - target.X, 0, g.center.Z - target.Z)
-                local dir = toC.Magnitude > 0.01 and toC.Unit or upFwd
-                -- Mining (breakables) spins; combat (enemies) faces the target. The flourish
-                -- layers on the facing — a spinning pet still orients to its prey underneath.
-                local anim = g.isEnemy and combatAnim or miningAnim
-                moveToward(pet, target, dir, attackRate, anim)
-            end
 
-            -- Mining impact FX: play a library impact at the ore on cadence (test bed + visual).
-            if miningFx.enabled and not g.isEnemy and g.model and g.model.Parent then
-                local nowC = os.clock()
-                if not nextMineFx[g.model] or nowC >= nextMineFx[g.model] then
-                    nextMineFx[g.model] = nowC + (miningFx.interval or 0.7)
-                    local cols = miningFx.colors or {}
-                    RangedFX.playImpact(
-                        miningFx.impact or "small",
-                        g.center + Vector3.new(0, 1, 0),
-                        cols[1] or { 255, 150, 40 },
-                        cols[2] or cols[1] or { 255, 90, 20 },
-                        { scale = miningFx.scale, sparks = miningFx.sparks }
-                    )
+                -- Mining impact FX: play a library impact at the ore on cadence (test bed + visual).
+                if miningFx.enabled and not g.isEnemy and g.model and g.model.Parent then
+                    local nowC = os.clock()
+                    if not nextMineFx[g.model] or nowC >= nextMineFx[g.model] then
+                        nextMineFx[g.model] = nowC + (miningFx.interval or 0.7)
+                        local cols = miningFx.colors or {}
+                        RangedFX.playImpact(
+                            miningFx.impact or "small",
+                            g.center + Vector3.new(0, 1, 0),
+                            cols[1] or { 255, 150, 40 },
+                            cols[2] or cols[1] or { 255, 90, 20 },
+                            { scale = miningFx.scale, sparks = miningFx.sparks }
+                        )
+                    end
                 end
             end
-        end
 
-        -- (Attack visuals are no longer fired on a client timer here — they're driven by the
-        --  server's real hit via Combat_PetHit, connected once below in start().)
+            -- (Attack visuals are no longer fired on a client timer here — they're driven by the
+            --  server's real hit via Combat_PetHit, connected once below in start().)
 
-        -- Throttled: report this player's pet positions to the server (drives the mining gate;
-        -- foundation for multiplayer pet visibility). Positions are post-move (this frame).
-        -- prune meander states for despawned pets (recall/down/re-team)
-        for model in pairs(meanderStates) do
-            if not model.Parent then
-                meanderStates[model] = nil
+            -- Throttled: report this player's pet positions to the server (drives the mining gate;
+            -- foundation for multiplayer pet visibility). Positions are post-move (this frame).
+            -- prune meander states for despawned pets (recall/down/re-team)
+            for model in pairs(meanderStates) do
+                if not model.Parent then
+                    meanderStates[model] = nil
+                end
             end
-        end
 
-        reportAccum += dt
-        if reportAccum >= reportInterval then
-            reportAccum = 0
-            local report = {}
-            for _, m in ipairs(pets) do
-                -- Report the clean base (no gait bob/tilt) so the server mining gate
-                -- measures true position, not the cosmetic waddle offset.
-                report[#report + 1] = { pet = m, cf = baseCF[m] or m:GetPivot() }
+            reportAccum += dt
+            if isLocal and reportAccum >= reportInterval then
+                reportAccum = 0
+                local report = {}
+                for _, m in ipairs(pets) do
+                    -- Report the clean base (no gait bob/tilt) so the server mining gate
+                    -- measures true position, not the cosmetic waddle offset.
+                    report[#report + 1] = { pet = m, cf = baseCF[m] or m:GetPivot() }
+                end
+                Signals.PetReportPositions:FireServer(report)
             end
-            Signals.PetReportPositions:FireServer(report)
+        end -- driveAnchor
+
+        -- The local player's squad, exactly as before…
+        driveAnchor(
+            localPlayer.Character,
+            Workspace:FindFirstChild("PlayerPets")
+                and Workspace.PlayerPets:FindFirstChild(localPlayer.Name),
+            localPlayer,
+            "player",
+            true
+        )
+        -- …and every NPC principal's squad through the SAME code: real formations, meander,
+        -- speed scaling, gait — nothing bespoke. The NPC model doubles as the attribute
+        -- source (its nil formation/speed attributes fall through to config defaults).
+        local pp = Workspace:FindFirstChild("PlayerPets")
+        if pp then
+            for _, folder in ipairs(pp:GetChildren()) do
+                if folder:GetAttribute("NpcSquad") == true then
+                    local npcModel = Workspace:FindFirstChild(folder.Name)
+                    if npcModel then
+                        driveAnchor(npcModel, folder, npcModel, folder.Name, false)
+                    end
+                end
+            end
         end
     end)
 end

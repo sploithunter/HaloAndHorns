@@ -455,63 +455,6 @@ function NpcPrincipalService:Despawn(name)
     return true
 end
 
--- Trail the NPC's squad behind it via the ENEMY MOVEMENT CONTRACT (Jason: "you can probably
--- use the enemy's movement code as well" — the better half of that idea).
---
--- Pet movement is normally client-driven: each player's client pivots its OWN pets. An NPC
--- has no client, so its squad spawned and sat still. The first fix here pivoted them
--- server-side, which worked but was a parallel implementation — no gait, no smoothing, and
--- coarse at the 0.2s service tick.
---
--- Enemies already solved exactly this problem for entities with no owning client: the server
--- decides a destination and stamps `MoveTarget`, and the client EnemyMotion renderer lerps
--- the anchored model toward it every RenderStepped with a procedural gait. Adopting that
--- contract means:
---   • no coupling to the summoner's client (which would freeze on their disconnect, and
---     render nothing for anyone else)
---   • every client renders it, because attributes replicate — no position relay needed
---   • the gait comes for free
--- EnemyMotion picks these up via the folder's NpcSquad marker. PetFollowService still owns
--- their mining/combat through _tickPrincipal; this is only where they should BE.
-function NpcPrincipalService:_moveSquad(rec, dt)
-    local folder = rec.folder
-    if not (folder and folder.Parent and rec.model) then
-        return
-    end
-    local base = rec.model:GetPivot()
-    local speed = tonumber(rec.def.pet_speed) or 34 -- studs/sec; > player run so they close gaps
-    local leash = tonumber(rec.def.pet_teleport_leash) or 90
-    local step = speed * (dt or 0.2)
-    local i = 0
-    for _, pet in ipairs(folder:GetChildren()) do
-        if pet:IsA("Model") and pet.PrimaryPart then
-            i += 1
-            -- simple rank behind the NPC; formation styles are a later pass
-            local slot = (base * CFrame.new((i - 2) * 5, 0, 6)).Position
-            local from = pet:GetAttribute("MoveTarget") or pet:GetPivot().Position
-            local delta = slot - from
-            local gap = delta.Magnitude
-
-            -- STEP the target, don't jump it. EnemyMotion's client lerp is tuned to smooth
-            -- the SMALL per-tick deltas EnemyService produces; handing it the final
-            -- destination in one jump made the pets crawl — live: correct targets 6-8 studs
-            -- behind Colorado while the pets themselves sat 111 studs back, never closing.
-            -- Stepping at a real speed gives them a travel rate the lerp can actually track.
-            local target
-            if gap > leash then
-                target = slot -- absurd gap (spawn, portal, teleport): close it now
-                pet:PivotTo(CFrame.new(slot))
-            elseif gap <= step then
-                target = slot
-            else
-                target = from + delta.Unit * step
-            end
-            pet:SetAttribute("MoveTarget", target)
-            pet:SetAttribute("MoveFace", base.Position) -- face the way the NPC is heading
-        end
-    end
-end
-
 -- Follow the summoner + expire. Pet mining/combat is NOT here — PetFollowService owns that.
 function NpcPrincipalService:_step(now)
     for name, rec in pairs(self._active) do
@@ -554,7 +497,6 @@ function NpcPrincipalService:_step(now)
                 else
                     rec.model:PivotTo(goal) -- placeholder rig has no locomotion
                 end
-                self:_moveSquad(rec, 0.2)
             elseif not (owner and owner.Parent) then
                 self:Despawn(name) -- summoner left
             end

@@ -36,29 +36,6 @@ local function enemiesFolder()
     return game and game:FindFirstChild("Enemies")
 end
 
--- MoveTarget-driven models that AREN'T enemies: an NPC principal's squad
--- (docs/CREATOR_SUMMON.md). Pet movement is normally client-driven by the OWNING player's
--- client — but an NPC has no client, so its pets would never move. Rather than couple them
--- to the summoner's client (which breaks for every other player, and dies if that one
--- disconnects), the server stamps the same `MoveTarget` contract enemies use and this
--- renderer smooths it. Attributes replicate, so every client renders them, with the
--- procedural gait for free.
-local function npcSquadFolders()
-    local out = {}
-    local root = Workspace:FindFirstChild("PlayerPets")
-    if not root then
-        return out
-    end
-    for _, folder in ipairs(root:GetChildren()) do
-        -- NPC folders are marked by the server; a real player's folder is never touched here
-        -- (their own client owns it, and double-driving would fight it).
-        if folder:GetAttribute("NpcSquad") == true then
-            out[#out + 1] = folder
-        end
-    end
-    return out
-end
-
 function EnemyMotion.start()
     local petCfg = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("pet_follow"))
     if not petCfg.service_owned then
@@ -241,13 +218,11 @@ function EnemyMotion.start()
         -- The Enemies folder is OPTIONAL here (it appears lazily with the first enemy spawn):
         -- the old early-return when it was absent silently killed NPC-squad rendering too —
         -- live: Jason in the prologue room, squad frozen, Game.Enemies=false.
+        -- NPC-squad pets are now driven by PetFollowController's driveAnchor (the same
+        -- code path as the player's own squad — real formations/meander/gait), so they no
+        -- longer render here; two writers on one pivot fight each other.
         local folder = enemiesFolder()
         local models = folder and folder:GetChildren() or {}
-        for _, squad in ipairs(npcSquadFolders()) do
-            for _, m in ipairs(squad:GetChildren()) do
-                models[#models + 1] = m
-            end
-        end
         if #models == 0 then
             return
         end
