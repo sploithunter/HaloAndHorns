@@ -1624,3 +1624,10 @@ to the highest nearby player rather than arbitrary player iteration order, so el
 bystanders reliably form the intended temporary alliance. Cross-player support resolution now
 covers every configured friendly family, and explicit dead/stale selections fail safely rather
 than redirecting the cast to a different pet or squad.
+
+## 2026-07-24 — Hatch reveals stay inside the rendered viewport
+
+Moved hatch-grid sizing onto the animation container's actual drawable dimensions and reserved the
+post-reveal label/count footer when solving every egg square. Configurable safe margins now keep
+single, partial-row, mobile-landscape, and 99-hatch presentations fully visible instead of allowing
+the final row to extend below the screen.

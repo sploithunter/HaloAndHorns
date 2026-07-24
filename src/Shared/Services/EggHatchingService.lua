@@ -30,6 +30,7 @@ local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
 local HatchTiming = require(ReplicatedStorage.Shared.Game.HatchTiming)
 local HatchRevealPolicy = require(ReplicatedStorage.Shared.Game.HatchRevealPolicy)
+local HatchGridLayout = require(ReplicatedStorage.Shared.Game.HatchGridLayout)
 local CompletionGroup = require(ReplicatedStorage.Shared.Utils.CompletionGroup)
 
 local eggSystemConfig = Locations.getConfig("egg_system")
@@ -183,6 +184,9 @@ local function getLayoutPolicy()
         compactMinEggSize = math.max(1, tonumber(layout.compact_min_egg_size) or 70),
         compactThreshold = math.max(1, math.floor(tonumber(layout.compact_threshold) or 37)),
         maxEggSize = math.max(1, tonumber(layout.max_egg_size) or 300),
+        safeMargin = math.max(0, tonumber(layout.safe_margin) or 16),
+        resultFooterBase = math.max(0, tonumber(layout.result_footer_base) or 4),
+        resultFooterScale = math.max(0, tonumber(layout.result_footer_scale) or 0.4),
     }
 end
 
@@ -395,29 +399,11 @@ end
 -- DYNAMIC GRID LAYOUT SYSTEM
 -- ═══════════════════════════════════════════════════════════════════════════════════
 
-local GRID_LAYOUTS = {
-    { columns = 1, rows = 1, minItems = 1, maxItems = 1, name = "1x1" },
-    { columns = 2, rows = 1, minItems = 2, maxItems = 2, name = "2x1" },
-    { columns = 2, rows = 2, minItems = 3, maxItems = 4, name = "2x2" },
-    { columns = 3, rows = 2, minItems = 5, maxItems = 6, name = "3x2" },
-    { columns = 3, rows = 3, minItems = 7, maxItems = 9, name = "3x3" },
-    { columns = 4, rows = 3, minItems = 10, maxItems = 12, name = "4x3" },
-    { columns = 4, rows = 4, minItems = 13, maxItems = 16, name = "4x4" },
-    { columns = 5, rows = 4, minItems = 17, maxItems = 20, name = "5x4" },
-    { columns = 5, rows = 5, minItems = 21, maxItems = 25, name = "5x5" },
-    { columns = 6, rows = 5, minItems = 26, maxItems = 30, name = "6x5" },
-    { columns = 6, rows = 6, minItems = 31, maxItems = 36, name = "6x6" },
-    { columns = 7, rows = 6, minItems = 37, maxItems = 42, name = "7x6" },
-    { columns = 7, rows = 7, minItems = 43, maxItems = 49, name = "7x7" },
-    { columns = 8, rows = 7, minItems = 50, maxItems = 56, name = "8x7" },
-    { columns = 8, rows = 8, minItems = 57, maxItems = 64, name = "8x8" },
-    { columns = 9, rows = 8, minItems = 65, maxItems = 72, name = "9x8" },
-    { columns = 9, rows = 9, minItems = 73, maxItems = 81, name = "9x9" },
-    { columns = 10, rows = 9, minItems = 82, maxItems = 90, name = "10x9" },
-    { columns = 10, rows = 10, minItems = 91, maxItems = 100, name = "10x10" },
-}
-
-local function getResolvedAnimationViewportSize()
+local function getResolvedAnimationViewportSize(container)
+    local containerSize = container and container.AbsoluteSize or Vector2.new(0, 0)
+    if containerSize.X >= 320 and containerSize.Y >= 240 then
+        return containerSize
+    end
     local camera = workspace.CurrentCamera
     local viewportSize = camera and camera.ViewportSize or Vector2.new(0, 0)
     if viewportSize.X >= 320 and viewportSize.Y >= 240 then
@@ -429,104 +415,12 @@ end
 
 -- Calculate optimal grid layout for given number of eggs
 function EggHatchingService:CalculateGridLayout(eggCount, containerWidth, containerHeight)
-    local layoutPolicy = getLayoutPolicy()
-    -- Find the best fitting grid layout
-    local layout = nil
-    for _, gridLayout in ipairs(GRID_LAYOUTS) do
-        if eggCount >= gridLayout.minItems and eggCount <= gridLayout.maxItems then
-            layout = gridLayout
-            break
-        end
-    end
-
-    -- Fallback to largest grid if we exceed maximum
-    if not layout then
-        layout = GRID_LAYOUTS[#GRID_LAYOUTS]
-        warn("Egg count exceeds maximum grid size. Using largest available grid:", layout.name)
-    end
-
-    -- Calculate cell dimensions
-    local padding = layoutPolicy.padding
-    local availableWidth = containerWidth - (padding * (layout.columns + 1))
-    local availableHeight = containerHeight - (padding * (layout.rows + 1))
-
-    local cellWidth = math.max(1, availableWidth / layout.columns)
-    local cellHeight = math.max(1, availableHeight / layout.rows)
-
-    -- Keep eggs square (use smaller dimension)
-    local eggSize = math.min(cellWidth, cellHeight)
-
-    -- Enforce minimum and maximum egg sizes for visibility
-    local configuredMinEggSize = eggCount >= layoutPolicy.compactThreshold
-            and layoutPolicy.compactMinEggSize
-        or layoutPolicy.minEggSize
-    local maxEggSize = layoutPolicy.maxEggSize
-    local originalEggSize = eggSize
-    eggSize = math.min(maxEggSize, math.max(1, eggSize))
-    local minEggSize = math.min(configuredMinEggSize, eggSize)
-
-    -- Calculate starting position to center the grid
-    local gridWidth = (eggSize * layout.columns) + (padding * (layout.columns - 1))
-    local gridHeight = (eggSize * layout.rows) + (padding * (layout.rows - 1))
-    local startX = (containerWidth - gridWidth) / 2
-    local startY = (containerHeight - gridHeight) / 2
-
-    return {
-        layout = layout,
-        eggSize = eggSize,
-        startX = startX,
-        startY = startY,
-        padding = padding,
-        minEggSize = minEggSize,
-        maxEggSize = maxEggSize,
-        compactMode = eggCount >= layoutPolicy.compactThreshold,
-        totalWidth = gridWidth,
-        totalHeight = gridHeight,
-    }
+    return HatchGridLayout.resolve(eggCount, containerWidth, containerHeight, getLayoutPolicy())
 end
 
 -- Generate positions for all eggs in the grid with centered partial rows
 function EggHatchingService:GenerateEggPositions(eggCount, gridInfo)
-    local positions = {}
-    local layout = gridInfo.layout
-
-    -- Calculate how many eggs are in each row
-    local fullRows = math.floor(eggCount / layout.columns)
-    local remainingEggs = eggCount % layout.columns
-
-    for i = 1, math.min(eggCount, layout.maxItems) do
-        -- Convert linear index to grid coordinates (0-based)
-        local gridIndex = i - 1
-        local col = gridIndex % layout.columns
-        local row = math.floor(gridIndex / layout.columns)
-
-        -- Adjust column position if this is a partial row (center it)
-        local adjustedCol = col
-        local isPartialRow = (row == fullRows and remainingEggs > 0)
-
-        if isPartialRow then
-            -- Center the partial row by shifting it
-            local emptySpaces = layout.columns - remainingEggs
-            local offset = emptySpaces / 2
-            adjustedCol = col + offset
-        end
-
-        -- Calculate pixel position using adjusted column
-        local x = gridInfo.startX + (adjustedCol * (gridInfo.eggSize + gridInfo.padding))
-        local y = gridInfo.startY + (row * (gridInfo.eggSize + gridInfo.padding))
-
-        table.insert(positions, {
-            x = x,
-            y = y,
-            size = gridInfo.eggSize,
-            gridCol = adjustedCol,
-            gridRow = row,
-            index = i,
-            isPartialRow = isPartialRow,
-        })
-    end
-
-    return positions
+    return HatchGridLayout.positions(eggCount, gridInfo)
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════════
@@ -1645,9 +1539,12 @@ function EggHatchingService:StartHatchingAnimation(eggsData)
 
     -- Enable the persistent GUI
     self._persistentGui.Enabled = true
+    -- ScreenGui insets make the rendered container shorter than CurrentCamera.ViewportSize on
+    -- several Studio/mobile surfaces. Wait one frame, then use the GuiObject's authoritative size.
+    RunService.RenderStepped:Wait()
 
-    -- Calculate grid layout using proper screen dimensions
-    local screenSize = getResolvedAnimationViewportSize()
+    -- Calculate grid layout using the actual usable GUI dimensions.
+    local screenSize = getResolvedAnimationViewportSize(container)
     local containerSize = Vector2.new(screenSize.X, screenSize.Y)
 
     local gridInfo = self:CalculateGridLayout(eggCount, containerSize.X, containerSize.Y)
@@ -1659,6 +1556,8 @@ function EggHatchingService:StartHatchingAnimation(eggsData)
     self._persistentGui:SetAttribute("GridRows", gridInfo.layout.rows)
     self._persistentGui:SetAttribute("GridEggSize", gridInfo.eggSize)
     self._persistentGui:SetAttribute("GridPadding", gridInfo.padding)
+    self._persistentGui:SetAttribute("GridSafeMargin", gridInfo.safeMargin)
+    self._persistentGui:SetAttribute("GridResultFooter", gridInfo.resultFooter)
     self._persistentGui:SetAttribute("GridCompactMode", gridInfo.compactMode)
 
     -- Create egg frames
@@ -2094,7 +1993,7 @@ function EggHatchingService:AnimateStackedResults(eggFrames, _eggComponents, egg
     end
 
     -- Re-center representatives using a compact grid in the middle of the screen
-    local containerSize = workspace.CurrentCamera.ViewportSize
+    local containerSize = getResolvedAnimationViewportSize(self._persistentContainer)
     local groupKeys = {}
     for key, _ in pairs(groups) do
         table.insert(groupKeys, key)
@@ -2432,6 +2331,8 @@ function EggHatchingService:GetActiveAnimationDebugState()
             rows = self._persistentGui:GetAttribute("GridRows"),
             eggSize = self._persistentGui:GetAttribute("GridEggSize"),
             padding = self._persistentGui:GetAttribute("GridPadding"),
+            safeMargin = self._persistentGui:GetAttribute("GridSafeMargin"),
+            resultFooter = self._persistentGui:GetAttribute("GridResultFooter"),
             compactMode = self._persistentGui:GetAttribute("GridCompactMode") == true,
         }
         state.timing = {

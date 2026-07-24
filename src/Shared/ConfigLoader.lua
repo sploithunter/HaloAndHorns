@@ -2791,6 +2791,22 @@ function ConfigLoader:_validateEggSystemConfig(config)
             return ok, err
         end
     end
+    for _, fieldName in ipairs({
+        "safe_margin",
+        "result_footer_base",
+        "result_footer_scale",
+    }) do
+        if layout[fieldName] ~= nil then
+            ok, err = self:_requireNonNegativeNumber(
+                "egg_system",
+                layout[fieldName],
+                "hatching.animation.layout." .. fieldName
+            )
+            if not ok then
+                return ok, err
+            end
+        end
+    end
     if
         layout.min_egg_size
         and layout.max_egg_size

@@ -108,6 +108,8 @@ function EggAnimationContractSmoke.run(options)
     local autoDeletedFrame = initial.frames[2]
     assert(initial.layout.name == "2x2", "Animation layout name mismatch")
     assert(initial.layout.padding == layoutConfig.padding, "Animation layout padding mismatch")
+    assert(initial.layout.safeMargin == layoutConfig.safe_margin, "Animation safe margin mismatch")
+    assert(initial.layout.resultFooter > 0, "Animation result footer missing")
     assert(
         initial.layout.eggSize >= layoutConfig.min_egg_size,
         "Animation egg size below configured min"
