@@ -27,6 +27,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local TileKitBuilder = require(ServerScriptService.Server.World.TileKitBuilder)
 local GrayBoxKit = require(ReplicatedStorage.Shared.Worldgen.GrayBoxKit)
+local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
 
 local PrologueService = {}
 PrologueService.__index = PrologueService
@@ -162,6 +163,17 @@ function PrologueService:Begin(player, opts)
             return false, reason
         end
     end
+    -- THE RACE (Jason: "sometimes my team is getting populated and sometimes it's not"):
+    -- on the boot path Begin can outrun the models_ready milestone — the pet prototypes and
+    -- the combat components AssetPreloadService stamps onto them (TargetID/TargetType/Power)
+    -- don't exist yet, so the squads clone empty or inert and NOBODY fights. Await the
+    -- milestone like every other consumer (boot doctrine: completion events, never timing).
+    local modelsReady = BootReadiness.await("models_ready", 20)
+    if not modelsReady then
+        self:_log("Warn", "Prologue: models_ready never signalled — proceeding degraded")
+    end
+    print("[PrologueTrace] models_ready awaited, ready=" .. tostring(modelsReady))
+
     local room = self:_ensureRoom()
     if not room then
         return false, "room_unavailable"
@@ -209,6 +221,13 @@ function PrologueService:Begin(player, opts)
     end
     self._active[player] = rec
     player:SetAttribute("InPrologue", true)
+    -- ORDER IS THE FIX (Jason's screenshot: "Murder Crow Lv 1... spawned at my level"):
+    -- the Creator summons FIRST so the alliance lift (EffectiveLevel 49) exists before the
+    -- wave tunes itself — and so the enemies birth-aggro into a room that already holds
+    -- both squads. The old call site (the watcher, after Begin returned) meant the boot
+    -- path spawned a level-1 wave that never engaged; the replay path only worked because
+    -- Colorado survived from the previous cycle.
+    self:_stageCreator(player)
     self:_grantGhostSquad(player, target)
     rec.waveBounds = self:_spawnWave(player, room)
 
@@ -328,6 +347,14 @@ function PrologueService:_spawnWave(player, room)
         inset = 4,
         recovery = center + Vector3.new(0, 3, 0),
     }
+    -- EXPLICIT LEVEL: never trust attribute replication timing again — the wave fights at
+    -- the alliance level (EffectiveLevel, just lifted by the summon above) with a hard 49
+    -- fallback, passed straight into the def.
+    local waveLevel = tonumber(player:GetAttribute("EffectiveLevel")) or 49
+    local enemiesCfg
+    pcall(function()
+        enemiesCfg = self._configLoader and self._configLoader:LoadConfig("enemies")
+    end)
     local ringR = tonumber(wave.ring_radius) or 32
     local scatter = tonumber(wave.scatter) or 12
     local total, idx = 0, 0
@@ -341,7 +368,14 @@ function PrologueService:_spawnWave(player, room)
             local a = (idx - 1) / math.max(total, 1) * math.pi * 2
             local r = ringR + (idx * 37) % scatter
             local ok, res = pcall(function()
+                local baseDef = enemiesCfg and enemiesCfg.enemies and enemiesCfg.enemies[unit.enemy]
+                local defOverride
+                if type(baseDef) == "table" then
+                    defOverride = table.clone(baseDef)
+                    defOverride.level = waveLevel
+                end
                 return enemySvc:SpawnEnemy(player, unit.enemy, {
+                    def = defOverride,
                     position = center + Vector3.new(math.cos(a) * r, 3, math.sin(a) * r),
                     home = center,
                     movementLeash = leash,
@@ -504,9 +538,7 @@ function PrologueService:Start()
                                 ok = ok,
                                 detail = (not ok) and tostring(info) or nil,
                             })
-                            if ok then
-                                self:_stageCreator(player)
-                            end
+                            -- Creator staging moved INSIDE Begin (before the wave spawns)
                         end
                         return
                     end

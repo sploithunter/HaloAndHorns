@@ -430,6 +430,14 @@ function PlayerProgressionService:AddExperience(player, amount, source)
     if not player or amount <= 0 or not self._dataService then
         return self:GetProgress(player)
     end
+    -- THE PROLOGUE PAYS NO XP (Jason: "just wipe out the XP... we really do want them to
+    -- learn the game. It is balanced."). Suppressing at the single choke point beats the
+    -- snapshot/restore approach it replaces: kill-credit XP lands ASYNC, so a restore at the
+    -- cut raced the last awards and lost — and mid-battle level-ups spammed the cold open.
+    -- Coins/gems/enhancement drops are deliberately untouched (Jason: "leave that").
+    if player:GetAttribute("InPrologue") == true then
+        return self:GetProgress(player)
+    end
     -- XP Surge (xp axis): the player's xp buff boosts EVERY xp source (mining/combat/rewards) by
     -- its fraction. Single choke point so the multiplier applies everywhere.
     -- XP buff fold via THE registry (EffectiveStats — SSOT doctrine): same
