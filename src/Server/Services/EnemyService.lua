@@ -4382,6 +4382,13 @@ function EnemyService:_assignPetTargets(eng)
     local aggroRange = eng.aggro_range or 45
     for _, folder in ipairs(playerPets:GetChildren()) do
         local player = Players:FindFirstChild(folder.Name)
+        -- NPC PRINCIPAL squads (Jason: "are Colorado's own pets not fighting? that might
+        -- explain some things" — they weren't; this loop skipped folders with no Player).
+        -- The squad fights AS ITS OWNER: same territory/allegiance/team/assist gates, and
+        -- the alliance-anchored owner passes the onramp the same way their own pets do.
+        if not player and folder:GetAttribute("NpcSquad") then
+            player = Players:FindFirstChild(tostring(folder:GetAttribute("NpcOwner") or ""))
+        end
         local assist = player and player:GetAttribute("CombatAssistTarget")
         -- TRANSIENT focus: a directed assist target lapses after assist_seconds so the squad is never
         -- stranded on an unreachable/stale focus — it reverts to normal auto-targeting (re-click to
@@ -5648,6 +5655,13 @@ function EnemyService:_teamSquads(player)
         for name in members:gmatch("[^,]+") do
             if name ~= player.Name then
                 add(Players:FindFirstChild(name))
+                -- NPC PRINCIPAL teammate (Colorado): no Player exists, but the squad folder
+                -- does — attribute it to the querying player so enemies treat his pets as
+                -- part of this team's fight (threat, attacks, team-battle join).
+                local folder = pp and pp:FindFirstChild(name)
+                if folder and folder:GetAttribute("NpcSquad") then
+                    squads[#squads + 1] = { player = player, folder = folder }
+                end
             end
         end
     end

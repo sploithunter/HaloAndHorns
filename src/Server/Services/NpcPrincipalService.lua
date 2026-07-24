@@ -472,6 +472,10 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
         model:Destroy()
         return false, "squad spawn refused"
     end
+    -- COMBAT PROXY: the NPC's squad fights AS THE OWNER's — EnemyService resolves NpcSquad
+    -- folders through this attribute, so every player-keyed gate (territory, allegiance,
+    -- team battle, assist focus) just works and kill credit flows to the summoner.
+    folder:SetAttribute("NpcOwner", owner.Name)
 
     -- Register BEFORE the alliance forms: the anchor resolves by name through the registry,
     -- so an unregistered NPC would fail to lift anyone.
