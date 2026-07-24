@@ -736,7 +736,11 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- so without this a single test run permanently consumes it and the cold open can never
     -- be observed again — exactly what happened live: the first successful run wrote the
     -- record, and every reset afterwards still resolved `already_seen`.
-    playerData.Prologue = nil
+    -- Write an explicit REPLAY MARKER rather than deleting the key: `= nil` is a deletion,
+    -- and the record demonstrably survived a critical save that way (Jason: "I specifically
+    -- went back in and hit reset to beginning" — and the gate still said already_seen).
+    -- A written value round-trips reliably; PrologueService reads `replay` as "not seen".
+    playerData.Prologue = { replay = true }
 
     -- 5d) Tutorial restarts + enhancements wiped — "reset to beginning" means the NEW-PLAYER
     --     experience (Jason hit this: his tutorial stayed done=true through this reset because

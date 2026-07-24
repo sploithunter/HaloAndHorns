@@ -123,7 +123,18 @@ end
 -- gate: the record's ABSENCE is the "new player" signal.
 function PrologueService:_alreadySeen(data)
     local rec = data and data.Prologue
-    return type(rec) == "table" and rec.seenAt ~= nil
+    if type(rec) ~= "table" then
+        return false
+    end
+    -- EXPLICIT REPLAY MARKER beats key deletion. Admin reset used to clear this by writing
+    -- `data.Prologue = nil`, and the record kept coming back: a nil assignment is a DELETION,
+    -- and deletions are exactly what merge-style persistence can silently drop, whereas a
+    -- written value always survives. So the reset now writes { replay = true } and this reads
+    -- it as "not seen" — same outcome, but it round-trips through the save layer.
+    if rec.replay == true then
+        return false
+    end
+    return rec.seenAt ~= nil
 end
 
 function PrologueService:IsEligible(player)
