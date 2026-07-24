@@ -80,6 +80,11 @@ function EggAnimationMaxBatchSmoke.run(options)
     assert(state.layout.rows == 10, "Max hatch animation row count mismatch")
     assert(state.layout.compactMode == true, "Max hatch animation should use compact mode")
     assert(state.layout.padding == layoutConfig.padding, "Max hatch animation padding mismatch")
+    assert(
+        state.layout.safeMargin == layoutConfig.safe_margin,
+        "Max hatch animation safe margin mismatch"
+    )
+    assert(state.layout.resultFooter > 0, "Max hatch animation result footer missing")
     assert(state.layout.eggSize > 0, "Max hatch animation egg size should be positive")
     assert(
         state.layout.eggSize <= layoutConfig.max_egg_size,
@@ -101,8 +106,9 @@ function EggAnimationMaxBatchSmoke.run(options)
             "Max hatch animation frame escaped right edge"
         )
         assert(
-            frame.position.y + frame.size.y <= viewportSize.Y + 1,
-            "Max hatch animation frame escaped bottom edge"
+            frame.position.y + frame.size.y + state.layout.resultFooter
+                <= viewportSize.Y - state.layout.safeMargin + 1,
+            "Max hatch animation reveal/readout escaped bottom edge"
         )
         if frame.eggVisualSource == "authored" then
             authoredCount += 1

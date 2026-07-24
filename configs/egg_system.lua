@@ -75,6 +75,11 @@ return {
                 compact_min_egg_size = 70,
                 compact_threshold = 37,
                 max_egg_size = 300,
+                safe_margin = 16,
+                -- Result names and duplicate counts render below the square reveal frame.
+                -- Reserve 4px + 40% of the resolved frame size so that readout stays on-screen.
+                result_footer_base = 4,
+                result_footer_scale = 0.4,
             },
             special_reveal_enabled = true,
             special_world_fx = true,

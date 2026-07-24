@@ -46,6 +46,12 @@ Implemented so far:
 - Egg source unlock requirements now run through the server hatch pipeline. `EggService` checks `egg_sources.<id>.unlock_requirement` for real and simulated hatches, returns `egg_locked` with current/required progress, `ConfigLoader` validates the requirement shape, and `EggUnlockSmoke` verifies locked/unlocked golden egg behavior in Studio.
 - Skip Hatch is now guarded at the animation service boundary too. `EggInteractionService` already avoids calling hatch animation when `skipHatch` is active, and `EggHatchingService` now immediately returns a completed skipped result without enabling the animation GUI or creating frames if a future caller passes `skipHatch`; `EggAnimationContractSmoke` verifies this contract.
 - Show Hatch is now a free, persisted, default-on presentation preference. `egg_system.ui.hatch_panel.modes.show.default_enabled` seeds/migrates `Settings.AutoSystems.hatch.modes.showHatch`; turning it off suppresses hatch animations without needing the paid Skip Hatch entitlement, while Skip Hatch remains a separate hard animation suppressor.
+- Hatch/reveal grids now resolve against the rendered `HatchingContainer.AbsoluteSize`, not only
+  `CurrentCamera.ViewportSize`, so Studio chrome and mobile safe insets cannot silently reduce the
+  usable height. The shared `HatchGridLayout` also reserves a configurable bottom footer for
+  post-reveal rarity/name/count labels plus a safe edge margin. Headless bounds coverage includes
+  desktop, landscape-phone, partial-row, and 99-hatch layouts; Studio smokes assert the same final
+  reveal footprint.
 - `HatchEntitlementService` now centralizes the server hatch shop/unlock stubs. `EggService` resolves Auto/Golden/Charged/Fast/Skip, max hatch count, hatch-luck bonus, and secret-luck bonus through the same service that admin tools use for snapshots and overrides.
 - The hatch settings drawer now surfaces server-protected auto-delete tiers directly from `configs/auto_systems.lua`. Secret/Exclusive/Huge protection remains a single source of truth in `auto_delete.protected_rarities`, while the UI renders the current protected list and `EggProximitySmoke` verifies it.
 - `ConfigLoader` now cross-validates egg-system rarity/filter references against pet config. Special hatch rarity ids must exist in `pets.rarities`, and hatch drawer auto-delete filter lists must reference configured rarity, pet family, and variant ids.
