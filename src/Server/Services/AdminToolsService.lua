@@ -776,6 +776,15 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         "admin_reset_to_beginning",
         { critical = true, debounceSeconds = 0 }
     )
+    -- FARM NEAR back to the new-player default (Jason: "for game quality, start with
+    -- farming near ON for all players" — it IS the default, but a tester's old Farm-Off
+    -- toggle persisted through resets and read as a bad first-run). "Reset to beginning"
+    -- means the NEW-PLAYER experience: wipe the AutoSystems settings so the next
+    -- hydration re-applies the defaults (enabled=true), exactly like a fresh account.
+    if type(playerData.Settings) == "table" then
+        playerData.Settings.AutoSystems = nil
+    end
+
     -- Close the prologue gate BEFORE the starter refresh: the relaunch below re-enters
     -- the cold open, and Refresh's offer push must defer behind it (offer-only deferral
     -- reads gate-nil as "unresolved"), not render over the battle.

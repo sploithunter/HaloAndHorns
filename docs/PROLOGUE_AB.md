@@ -1,9 +1,12 @@
 # Prologue A/B Test — Design (NOT YET IMPLEMENTED)
 
-> Status: **design only** (Jason 2026-07-24: "design how we're gonna do the A/B testing —
-> don't implement that yet; I want durability proven a couple times first").
-> Prerequisite before implementation: the once-ever durability fix (b0d2e46) confirmed
-> across several stop/start cycles, and `duration` dropped from its 30s debug value.
+> Status: **PARKED — superseded by a before/after cohort comparison** (Jason 2026-07-24:
+> "leave it on and run a whole ad run and see if we get more retention versus what we had
+> before. We already had the A — this could be the B."). The previous ad run's retention
+> is the baseline arm; the current build (prologue for ALL new players) is the treatment.
+> RetentionService's existing cohort aggregates carry the comparison. This doc stays as
+> the design of record if a true concurrent split is ever wanted (it controls for
+> seasonality/ad-targeting drift that before/after cannot).
 
 ## The question
 

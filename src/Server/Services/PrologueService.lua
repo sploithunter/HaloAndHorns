@@ -172,7 +172,6 @@ function PrologueService:Begin(player, opts)
     if not modelsReady then
         self:_log("Warn", "Prologue: models_ready never signalled — proceeding degraded")
     end
-    print("[PrologueTrace] models_ready awaited, ready=" .. tostring(modelsReady))
 
     local room = self:_ensureRoom()
     if not room then
@@ -261,7 +260,6 @@ function PrologueService:Begin(player, opts)
     end)
 
     self:_log("Info", "Prologue begun", { player = player.Name, duration = duration })
-    print(("[PrologueTrace] Begin complete for %s (ghosts+wave spawned)"):format(player.Name))
     return true, { room = room:GetPivot().Position }
 end
 
