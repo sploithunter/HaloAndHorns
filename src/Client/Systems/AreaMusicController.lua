@@ -216,15 +216,34 @@ function AreaMusicController.start()
         end
     end
 
-    apply()
-    onCombatChanged() -- in case we spawn already in combat
+    -- FIRST APPLY: a prologue-bound boot must open STRAIGHT onto battle music (Jason:
+    -- "there was some environmental music in there... if the pets are battling, it should
+    -- be battle music without any other music"). The controller can boot before InPrologue
+    -- replicates, and starting the area bed just to crossfade it away plays BOTH tracks
+    -- under the title card. Same bounded race window as the boot card: hold silent until
+    -- the prologue gate resolves, then start on whichever track is actually right.
+    task.spawn(function()
+        local deadline = os.clock() + 8
+        while os.clock() < deadline do
+            if
+                localPlayer:GetAttribute("InPrologue") ~= nil
+                or localPlayer:GetAttribute("PrologueGate") ~= nil
+            then
+                break
+            end
+            task.wait(0.1)
+        end
+        if localPlayer:GetAttribute("InPrologue") == true then
+            onCombatChanged() -- straight to the battle pool; no area bed ever starts
+        else
+            apply()
+            onCombatChanged() -- in case we spawn already in combat
+        end
+    end)
     localPlayer:GetAttributeChangedSignal("CurrentArea"):Connect(apply)
     localPlayer:GetAttributeChangedSignal("HomeArea"):Connect(apply)
     localPlayer:GetAttributeChangedSignal("InCombat"):Connect(onCombatChanged)
     localPlayer:GetAttributeChangedSignal("InPrologue"):Connect(onCombatChanged)
-    if localPlayer:GetAttribute("InPrologue") == true then
-        onCombatChanged() -- already mid-cold-open when this controller booted
-    end
 end
 
 return AreaMusicController
