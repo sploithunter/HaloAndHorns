@@ -29,6 +29,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Principal = require(ReplicatedStorage.Shared.Game.Principal)
 local AllianceRules = require(ReplicatedStorage.Shared.Game.AllianceRules)
+local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark)
+local ResSickness = require(ReplicatedStorage.Shared.Game.ResSickness)
+local CombatApplication = require(script.Parent.Parent.CombatApplication)
 
 local NpcPrincipalService = {}
 NpcPrincipalService.__index = NpcPrincipalService
@@ -37,8 +41,11 @@ function NpcPrincipalService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
+    self._summonService = self._modules and self._modules.SummonService
     self._config = (self._configLoader and self._configLoader:LoadConfig("creator"))
         or require(ReplicatedStorage.Configs:WaitForChild("creator"))
+    self._powersConfig = (self._configLoader and self._configLoader:LoadConfig("powers"))
+        or require(ReplicatedStorage.Configs:WaitForChild("powers"))
     self._active = {} -- name -> { model, folder, expireAt, owner, allied = {player,...} }
 end
 
@@ -485,6 +492,26 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
         allied = {},
     }
     self._active[def.name] = rec
+
+    -- BASIC TEAMING (Jason: "Colorado should be teamed with you using the basic teaming").
+    -- The team HUD is a pure function of the TeamMembers attribute, and the mate strip
+    -- renders by NAME from workspace.PlayerPets — so stamping the roster is the whole
+    -- integration. Never clobber a REAL party (TeamId set), and leave TeamId nil: every
+    -- alliance path requires TeamId == nil, so the sidekick lift keeps working.
+    if owner:GetAttribute("TeamId") == nil then
+        local csv = owner.Name .. "," .. def.name
+        owner:SetAttribute("TeamLead", owner.Name)
+        owner:SetAttribute("TeamMembers", csv)
+        rec.teamStamp = csv
+    end
+
+    -- Cast clocks for the rotation — staggered opens so the tells read one at a time.
+    rec.castAt = {}
+    for i in ipairs(def.powers or {}) do
+        local entry = def.powers[i]
+        rec.castAt[i] = os.clock() + (tonumber(entry.first) or (i * 3))
+    end
+
     self:_formAlliance(def, rec)
 
     self:_log("Info", "NPC principal summoned", {
@@ -502,6 +529,14 @@ function NpcPrincipalService:Despawn(name)
         return false
     end
     self:_dissolveAlliance(rec)
+    -- Retract the team stamp — only if it is still OURS (a real party formed since would
+    -- have overwritten the csv, and PartyService owns it from then on).
+    if rec.teamStamp and rec.owner and rec.owner.Parent then
+        if rec.owner:GetAttribute("TeamMembers") == rec.teamStamp then
+            rec.owner:SetAttribute("TeamMembers", nil)
+            rec.owner:SetAttribute("TeamLead", nil)
+        end
+    end
     Principal.unregister(name)
     if rec.folder then
         rec.folder:Destroy()
@@ -512,6 +547,171 @@ function NpcPrincipalService:Despawn(name)
     self._active[name] = nil
     self:_log("Info", "NPC principal despawned", { npc = name })
     return true
+end
+
+-- ── The Creator's cast rotation ────────────────────────────────────────────────────
+-- Scripted casts (Jason: "Colorado should be casting several powers when that's going on").
+-- PowerService:Cast is Player-hardwired down to FireClient (docs/CREATOR_SUMMON.md open
+-- question #4), so the NPC composes the same primitives the real casts bottom out in:
+-- Power_AreaFx broadcasts (caster may be any Instance — the enemy control-counter FX is
+-- the precedent), CombatApplication heals, shield/badge attributes, VulnMark. Magnitudes
+-- and durations are read from configs/powers.lua at cast time — the numbers stay SSOT.
+
+local function livePetsOf(folder)
+    local out = {}
+    for _, m in ipairs(folder and folder:GetChildren() or {}) do
+        if m:IsA("Model") and not m:GetAttribute("CombatDowned") then
+            out[#out + 1] = m
+        end
+    end
+    return out
+end
+
+-- The Creator's own ghosts + the summoner's squad: team_aoe semantics for a two-man team.
+function NpcPrincipalService:_teamPets(rec)
+    local out = livePetsOf(rec.folder)
+    local pp = Workspace:FindFirstChild("PlayerPets")
+    local ownerFolder = rec.owner and rec.owner.Parent and pp and pp:FindFirstChild(rec.owner.Name)
+    for _, m in ipairs(livePetsOf(ownerFolder)) do
+        out[#out + 1] = m
+    end
+    return out
+end
+
+local function liveEnemiesNear(pos, range)
+    local out = {}
+    local game_ = Workspace:FindFirstChild("Game")
+    local enemies = game_ and game_:FindFirstChild("Enemies")
+    for _, m in ipairs(enemies and enemies:GetChildren() or {}) do
+        if (m:GetAttribute("HP") or 0) > 0 then
+            local ok, pivot = pcall(m.GetPivot, m)
+            if ok and (pivot.Position - pos).Magnitude <= range then
+                out[#out + 1] = m
+            end
+        end
+    end
+    return out
+end
+
+function NpcPrincipalService:_castStep(rec, now)
+    local powers = rec.def and rec.def.powers
+    if type(powers) ~= "table" or not rec.model or not rec.model.Parent then
+        return
+    end
+    -- powers only fly MID-BATTLE; outside combat the meander stays quiet
+    if #liveEnemiesNear(rec.model:GetPivot().Position, 80) == 0 then
+        return
+    end
+    for i, entry in ipairs(powers) do
+        if now >= (rec.castAt and rec.castAt[i] or math.huge) then
+            rec.castAt[i] = now + (tonumber(entry.every) or 15)
+            local ok, err = pcall(function()
+                self:_castPower(rec, tostring(entry.id))
+            end)
+            if not ok then
+                self:_log("Warn", "NPC cast failed", { power = entry.id, err = tostring(err) })
+            end
+            break -- one cast per step: the tells read one at a time
+        end
+    end
+end
+
+function NpcPrincipalService:_castPower(rec, powerId)
+    local cfg = self._powersConfig or {}
+    local def = cfg.powers and cfg.powers[powerId]
+    local kind = cfg.effect_kinds and cfg.effect_kinds[(def and def.effect) or powerId]
+    if not def or not kind then
+        self:_log("Warn", "NPC cast: unknown power", { power = powerId })
+        return
+    end
+    local now = os.time()
+    local family = kind.family
+    local element = tostring(def.element or "desert")
+
+    if family == "summon" then
+        -- Genie of the Dunes: the REAL guardian via SummonService, summoned on the owner —
+        -- its team folders are name-based, so the djinn serves the Creator's ghosts too.
+        if self._summonService and rec.owner and rec.owner.Parent then
+            self._summonService:Summon(rec.owner, kind, now, powerId)
+        end
+    elseif family == "absorb" then -- Mirage Veil
+        Signals.Power_AreaFx:FireAllClients({
+            primId = "shield_bubble",
+            element = element,
+            kind = "source",
+            caster = rec.model,
+        })
+        local mag = tonumber(kind.magnitude) or 0
+        local dur = tonumber(kind.duration) or 10
+        for _, pet in ipairs(self:_teamPets(rec)) do
+            pet:SetAttribute("CombatShieldPowerId", powerId)
+            pet:SetAttribute("CombatShield", math.max(pet:GetAttribute("CombatShield") or 0, mag))
+            pet:SetAttribute("CombatShieldUntil", now + dur)
+            pet:SetAttribute("Power_" .. powerId .. "_Until", now + dur)
+        end
+    elseif family == "heal_blind" then -- Simoom: team heal + sand-scoured enemies
+        Signals.Power_AreaFx:FireAllClients({
+            primId = "heal_nova",
+            element = element,
+            kind = "source",
+            caster = rec.model,
+        })
+        local mag = tonumber(kind.magnitude) or 0
+        for _, pet in ipairs(self:_teamPets(rec)) do
+            CombatApplication.ApplyPowerHeal(pet, mag, {
+                resource = "pet_endurance",
+                minimumTaken = ResSickness.floorFor(pet:GetAttributes(), now),
+                fxUntil = now + 3,
+                source = rec.name,
+                kind = "power_heal",
+            })
+        end
+        local vuln = tonumber(kind.vuln)
+        if vuln and vuln > 1 then
+            local dur = tonumber(kind.duration) or 6
+            for _, m in ipairs(liveEnemiesNear(rec.model:GetPivot().Position, 30)) do
+                VulnMark.apply(m, "simoom", vuln, now + dur)
+            end
+        end
+    elseif family == "heal" and kind.field then -- Healing Field: a zone at his feet
+        Signals.Power_AreaFx:FireAllClients({
+            primId = "heal_glow",
+            element = element,
+            kind = "source",
+            caster = rec.model,
+        })
+        local center = rec.model:GetPivot().Position
+        local radius = tonumber(kind.field_radius) or 28
+        local mag = tonumber(kind.magnitude) or 0
+        local dur = tonumber(kind.duration) or 8
+        local tick = math.max(tonumber(kind.hot_tick) or 2, 0.5)
+        task.spawn(function()
+            local elapsed = 0
+            while elapsed < dur and rec.model and rec.model.Parent do
+                for _, pet in ipairs(self:_teamPets(rec)) do
+                    local okP, pivot = pcall(pet.GetPivot, pet)
+                    if okP and (pivot.Position - center).Magnitude <= radius then
+                        CombatApplication.ApplyPowerHeal(pet, mag, {
+                            resource = "pet_endurance",
+                            minimumTaken = ResSickness.floorFor(pet:GetAttributes(), os.time()),
+                            fxUntil = os.time() + 2,
+                            source = rec.name,
+                            kind = "power_heal",
+                        })
+                    end
+                end
+                task.wait(tick)
+                elapsed += tick
+            end
+        end)
+    else
+        self:_log(
+            "Warn",
+            "NPC cast: unhandled family",
+            { power = powerId, family = tostring(family) }
+        )
+    end
+    self:_log("Info", "NPC cast", { npc = rec.name, power = powerId })
 end
 
 -- Follow the summoner + expire. Pet mining/combat is NOT here — PetFollowService owns that.
@@ -558,6 +758,9 @@ function NpcPrincipalService:_step(now)
                 end
             elseif not (owner and owner.Parent) then
                 self:Despawn(name) -- summoner left
+            end
+            if self._active[name] then
+                self:_castStep(rec, now)
             end
         end
     end

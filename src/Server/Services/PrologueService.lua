@@ -200,6 +200,13 @@ function PrologueService:Begin(player, opts)
     character:PivotTo(target)
 
     local rec = { startedAt = os.clock() }
+    -- XP SNAPSHOT (Jason: "you're gonna have to wipe out XP when you go out of the trial —
+    -- I've leveled up like three times in there"). The battle pays real combat XP; the
+    -- preview must not. Restore the pre-prologue numbers at the cut.
+    if self._dataService and self._dataService.GetStat then
+        rec.xpSnapshot = tonumber(self._dataService:GetStat(player, "Experience")) or 0
+        rec.claimSnapshot = tonumber(self._dataService:GetStat(player, "ClaimedLevel")) or 1
+    end
     self._active[player] = rec
     player:SetAttribute("InPrologue", true)
     self:_grantGhostSquad(player, target)
@@ -235,6 +242,18 @@ function PrologueService:Finish(player)
         end
     end
     player:SetAttribute("InPrologue", nil)
+    -- Wipe the preview's XP: put the snapshot back and republish the level attributes
+    -- (earned level derives from Experience, so restoring the stat restores the ring).
+    if rec and rec.xpSnapshot ~= nil and self._dataService and self._dataService.SetStat then
+        self._dataService:SetStat(player, "Experience", rec.xpSnapshot)
+        self._dataService:SetStat(player, "ClaimedLevel", rec.claimSnapshot or 1)
+        local prog = self._modules and self._modules.PlayerProgressionService
+        if prog and prog._publish then
+            pcall(function()
+                prog:_publish(player)
+            end)
+        end
+    end
     local data = self._dataService and self._dataService:GetData(player)
     if data and type(data.Prologue) == "table" then
         data.Prologue.completed = true

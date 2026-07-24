@@ -81,5 +81,17 @@ return {
             enabled = true,
             radius = 90, -- matches teaming pack.engaged_radius
         },
+
+        -- THE ROTATION (Jason: "Colorado should be casting several powers... Healing Field.
+        -- Mirage Veil. Simoom. And then probably Genie of the Dunes"). His real sandwalker
+        -- kit — magnitudes/durations come from configs/powers.lua at cast time (SSOT), the
+        -- clocks here are cadence only. `first` staggers the opens so tells read one at a
+        -- time; genie is the once-a-summon showpiece.
+        powers = {
+            { id = "simoom", every = 12, first = 4 },
+            { id = "mirage_veil", every = 14, first = 7 },
+            { id = "healing_field", every = 16, first = 10 },
+            { id = "genie_dunes", every = 120, first = 13 },
+        },
     },
 }
