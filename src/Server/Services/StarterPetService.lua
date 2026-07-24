@@ -69,6 +69,32 @@ function StarterPetService:_push(player, extra)
         end)
         return
     end
+    -- THE PROLOGUE COMES FIRST (docs/PROLOGUE.md). The cold open shows the player their own
+    -- future — apex pets, level 50 — and the starter chooser is meant to land as the first
+    -- step TOWARD that, not as a competing modal on top of it. Without this gate the chooser
+    -- fires the moment the profile loads and races the prologue (Jason caught it live: he
+    -- spawned straight to "Choose Your First Companion").
+    -- Re-pushed when PrologueService clears the attribute at warp-out.
+    if player:GetAttribute("InPrologue") then
+        if not self._prologueWaiters then
+            self._prologueWaiters = {}
+        end
+        if not self._prologueWaiters[player] then
+            self._prologueWaiters[player] = true
+            local conn
+            conn = player:GetAttributeChangedSignal("InPrologue"):Connect(function()
+                if player:GetAttribute("InPrologue") == nil then
+                    conn:Disconnect()
+                    self._prologueWaiters[player] = nil
+                    if player.Parent then
+                        self:_push(player, extra)
+                    end
+                end
+            end)
+        end
+        return
+    end
+
     local data = self._dataService:GetData(player)
     if not data then
         return
