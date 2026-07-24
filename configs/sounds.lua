@@ -319,6 +319,12 @@ return {
         hell = { "hell_combat_a", "hell_combat_b", "combat_1" },
     },
 
+    -- THE PROLOGUE's battle pool (Jason: "we're in a battle and we didn't have battle
+    -- music"): the generic combat_1 sat in the hell pool and could win the random pick,
+    -- reading as not-battle under the cold open. The prologue draws ONLY the dedicated
+    -- hell tracks.
+    prologue_combat_music = { "hell_combat_a", "hell_combat_b" },
+
     -- SAFETY NET: if an area track's ASSET fails to load (still moderating at publish time, or taken
     -- down by Roblox after approval), AreaMusicController swaps to this track so the area is never
     -- silent. Must be a long-stable, guaranteed-approved key in `music` (awe = the original hub theme,

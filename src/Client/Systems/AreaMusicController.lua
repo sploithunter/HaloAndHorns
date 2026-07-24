@@ -54,8 +54,11 @@ function AreaMusicController.start()
     local function combatPool()
         -- THE PROLOGUE fights hell adversaries wherever the room floats (Jason: "start with
         -- the hell music") — the hell pool wins outright while the cold open runs.
-        if localPlayer:GetAttribute("InPrologue") == true and combatByRealm.hell then
-            return combatByRealm.hell
+        if localPlayer:GetAttribute("InPrologue") == true then
+            local pool = sounds.prologue_combat_music or combatByRealm.hell
+            if pool then
+                return pool
+            end
         end
         local realm = tostring(localPlayer:GetAttribute("CurrentRealm") or "")
         if realm == "heaven" and combatByRealm.heaven then
