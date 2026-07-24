@@ -118,6 +118,11 @@ Note this is a **bigger primitive than a guardian** (an NPC that owns a squad an
 buff-aura model). The prologue is its second consumer, not its driver — so prologue scheduling
 depends on that spec landing.
 
+**Sequencing DECIDED (Jason 2026-07-24): principal first, full build.** An earlier draft here
+proposed a throwaway `PrologueLevel` branch to ship sooner; that is dead. It would have left
+the ally with no squad, no powers, and no real alliance — losing the exact team moment the
+prologue exists to create. See the sequencing section of `CREATOR_SUMMON.md`.
+
 ### Ghost pets — RESOLVED: the world folder is the interface
 
 The prologue runs **before** the starter-pet choice, so the player owns nothing. Jason asked

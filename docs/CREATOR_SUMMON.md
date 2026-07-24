@@ -144,11 +144,27 @@ the prologue as its second consumer. Nothing is throwaway and the prologue is th
 on day one. Risk: the ad run either waits or goes out without the cold open, and a teaming
 refactor lands right before/during the traffic spike.
 
-**Recommendation: A.** Not because B is wrong — B is the better architecture and should
-happen — but because the prologue's *whole purpose* is to be measured against D1, the flag is
-50/50 anyway, and a 10-line branch is a cheap option to buy while the expensive thing gets
-built properly. Refactoring live teaming code the week ads start is the risk I'd least like
-to take.
+**DECIDED: B (Jason, 2026-07-24).** The recommendation above was A; Jason overruled it and
+was right. Recorded here with the reasoning, because the error is instructive:
+
+> "We're just getting above 75% is a Band-Aid on a broken problem. We need to fix the
+> problem. This is the fix. Implement it fully. Your own logic is contradictory."
+
+It was. Three specific faults in the case for A:
+
+1. **Same species of band-aid.** The argument against friend-voting the rating was "treat the
+   cause, not the symptom." Shipping a degraded prologue to hit a date is the same move.
+2. **It protected a schedule that isn't real.** The stated risk was "refactoring live teaming
+   during a traffic spike" — but the ad run is returning ~4 plays per 16 credits. There is no
+   spike. And the same analysis recommended *throttling* the spend, which frees exactly the
+   time A was trying to save. Optimizing for a deadline while arguing to remove the deadline
+   is incoherent.
+3. **A isn't just internal debt.** Without the principal, the prologue ally has no squad, no
+   powers, and can't anchor a real alliance — so no Simoom moment and no team feeling. That
+   *is* the hook. A degrades the product, not only the code.
+
+Build order is therefore: principal → Creator summon → prologue, with the ad spend throttled
+until the cold open is in and the A/B can buy comparisons instead of anecdotes.
 
 ## Open questions
 
