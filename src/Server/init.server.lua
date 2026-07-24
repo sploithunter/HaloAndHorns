@@ -247,6 +247,14 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.SummonService,
     { "Logger", "ConfigLoader", "EnemyService" }
 )
+-- NpcPrincipalService (docs/CREATOR_SUMMON.md): summonable NPC PRINCIPALS — allies that own a
+-- squad and anchor a real TEMPORARY ALLIANCE, so nearby low players sidekick UP to them.
+-- Distinct from SummonService's guardians (single buff-aura models, no squad, no anchor).
+loader:RegisterModule(
+    "NpcPrincipalService",
+    ServerScriptService.Server.Services.NpcPrincipalService,
+    { "Logger", "ConfigLoader" }
+)
 loader:RegisterModule(
     "PlayerEffectsService",
     ServerScriptService.Server.Services.PlayerEffectsService,

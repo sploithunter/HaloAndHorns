@@ -52,6 +52,9 @@ local SCHEMAS = {
         level_up = "table",
     }),
     gems = schema({ meshes = "table", textures = "table", default_color = "string" }),
+    -- NPC principals (docs/CREATOR_SUMMON.md): summonable allies that own a squad and anchor
+    -- a real alliance. Distinct from `guardians` above — those are buff-aura models.
+    creator = schema({ enabled = "boolean", creator = "table" }),
     guardians = schema({ model_asset = "table", colossus = "table", djinn = "table" }),
     hotbar = schema({ slot_count = "number", bind_types = "table", tactical_commands = "table" }),
     layers = schema({

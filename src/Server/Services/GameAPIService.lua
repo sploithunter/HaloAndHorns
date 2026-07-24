@@ -1017,6 +1017,35 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("admin.summonCreator", {
+        description = "[admin] Summon the Creator NPC principal beside you: his squad spawns, and nearby lower unteamed players sidekick UP to him via a real temporary alliance. {seconds=} overrides the window, {despawn=true} clears it.",
+        validate = function(args)
+            return Validators.fields(args, {
+                seconds = { type = "number", optional = true },
+                despawn = { type = "boolean", optional = true },
+            })
+        end,
+        handler = function(context, args)
+            local isAdmin = context.isTest
+                or (context.player and context.player:GetAttribute("IsAdmin") == true)
+            if not isAdmin then
+                return { ok = false, reason = "not_admin" }
+            end
+            local svc = _G.RBXTemplateServices and _G.RBXTemplateServices:Get("NpcPrincipalService")
+            if not svc then
+                return { ok = false, reason = "npc_principal_service_unavailable" }
+            end
+            if args.despawn then
+                return { ok = svc:Despawn("Colorado") }
+            end
+            local ok, info = svc:Summon(context.player, "creator", { duration = args.seconds })
+            if not ok then
+                return { ok = false, reason = tostring(info) }
+            end
+            return { ok = true, summon = info }
+        end,
+    })
+
     bus:register("egg_item.hatch", {
         description = "Hatch one held egg ITEM from the eggs inventory bucket (e.g. a Meet-The-Creator egg).",
         validate = function(args)

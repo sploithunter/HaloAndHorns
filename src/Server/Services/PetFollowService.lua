@@ -26,6 +26,15 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local PetFormation = require(ReplicatedStorage.Shared.Game.PetFormation)
+local Principal = require(ReplicatedStorage.Shared.Game.Principal)
+-- Lookup surface for Principal (injected so the module headless-specs). Level is nil here on
+-- purpose: the tick only needs identity + pet folder, and resolving every player's earned
+-- level 4x/sec would be pure waste — the anchor path in PlayerProgressionService does that.
+local PRINCIPAL_CTX = {
+    players = function()
+        return Players:GetPlayers()
+    end,
+}
 local CombatMath = require(ReplicatedStorage.Shared.Game.CombatMath)
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
 local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
@@ -1167,11 +1176,20 @@ function PetFollowService:_squadDiversity(player)
     return result.mult
 end
 
-function PetFollowService:_tickPlayer(player)
-    local character = player.Character
+-- Drive one PRINCIPAL's squad. Takes a principal (docs/CREATOR_SUMMON.md), not a Player: a
+-- summoned Creator NPC owns a pet folder exactly like a player does, and without this its
+-- pets would never move, mine, or fight — nothing was iterating them.
+-- `player` here is the principal's `.instance` for the many downstream calls still keyed on
+-- a Player; those migrate one at a time behind the same contract.
+function PetFollowService:_tickPrincipal(principal)
+    local player = principal.instance
+    if not player then
+        return
+    end
+    local character = principal.character or player.Character
     local hrp = character and character:FindFirstChild("HumanoidRootPart")
     local petsFolder = Workspace:FindFirstChild("PlayerPets")
-        and Workspace.PlayerPets:FindFirstChild(player.Name)
+        and Workspace.PlayerPets:FindFirstChild(Principal.petFolderName(principal))
     if not hrp or not petsFolder then
         return
     end
@@ -1203,8 +1221,11 @@ function PetFollowService:_tickPlayer(player)
 end
 
 function PetFollowService:_tick()
-    for _, player in ipairs(Players:GetPlayers()) do
-        self:_tickPlayer(player)
+    -- Principals, not Players: live players PLUS registered NPC principals (the Creator
+    -- summon). Player principals resolve to the same Player objects with the same levels,
+    -- so this is behaviour-identical for everyone who was already being ticked.
+    for _, principal in ipairs(Principal.all(PRINCIPAL_CTX)) do
+        self:_tickPrincipal(principal)
     end
 end
 

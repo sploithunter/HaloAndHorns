@@ -17,6 +17,7 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local VeteranTrack = require(ReplicatedStorage.Shared.Game.VeteranTrack)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
+local Principal = require(ReplicatedStorage.Shared.Game.Principal)
 
 local PlayerProgressionService = {}
 PlayerProgressionService.__index = PlayerProgressionService
@@ -214,11 +215,22 @@ function PlayerProgressionService:GetEffectiveLevel(player)
     -- spawn trigger anchors to the (higher) triggerer via the AllianceAnchor attribute that
     -- BaddieSpawnerService stamps for the encounter. SIDEKICK-UP ONLY — AllianceRules never
     -- lowers anyone. Formal teams above take precedence (the branch only runs unteamed).
+    -- The anchor resolves as a PRINCIPAL, not a Player (docs/CREATOR_SUMMON.md): a summoned
+    -- level-50 Creator NPC anchors a real alliance, so a nearby low player sidekicks up to it
+    -- on this exact path. Players resolve identically to the old Players:FindFirstChild +
+    -- GetEarnedLevel pair, so player behaviour is unchanged.
     local allyName = player:GetAttribute("AllianceAnchor")
     if type(allyName) == "string" and allyName ~= "" then
-        local anchor = Players:FindFirstChild(allyName)
+        local anchor = Principal.resolve(allyName, {
+            findPlayer = function(name)
+                return Players:FindFirstChild(name)
+            end,
+            earnedLevel = function(p)
+                return self:GetEarnedLevel(p)
+            end,
+        })
         if anchor then
-            local anchorLevel = self:GetEarnedLevel(anchor)
+            local anchorLevel = Principal.levelOf(anchor)
             if anchorLevel and anchorLevel > 0 then
                 local offset = -1
                 pcall(function()
