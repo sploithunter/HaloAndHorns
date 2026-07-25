@@ -758,6 +758,28 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("retention.dashboard", {
+        description = "[admin] Read the external-player daily retention counter dashboard.",
+        validate = function(args)
+            return Validators.fields(args, {
+                dateUtc = { type = "string", optional = true },
+            })
+        end,
+        handler = function(context, args)
+            local isAdmin = context.isTest
+                or (context.player and context.player:GetAttribute("IsAdmin") == true)
+                or RunService:IsStudio()
+            if not isAdmin then
+                return { ok = false, reason = "not_admin" }
+            end
+            local svc = self:_service("RetentionService")
+            if not svc then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return svc:GetDashboard(args.dateUtc)
+        end,
+    })
+
     bus:register("retention.context", {
         description = "Record a whitelisted client environment snapshot for retention analysis.",
         validate = function(args)
