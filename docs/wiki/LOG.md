@@ -1674,7 +1674,8 @@ reused.
 
 The compact quest/mission tracker now borrows its own existing progress and text layers for a
 10-second gameplay tip once per minute, then restores the still-live objective state. A config-owned
-86-tip library covers hidden potion, enhancement, pet-role, mining, hatching, power, teaming, and
+87-tip library covers hidden potion, enhancement, pet-role, mining, hatching, power, teaming, and
 travel mechanics; copy length and required learning points are headless-tested. Each session uses a
 shuffled no-repeat deck instead of replaying the same opening order. Settings exposes a persisted
-`Display Tips` opt-out, default-on for new players.
+`Display Tips` opt-out, default-on for new players. The power guidance now explicitly teaches that
+long-pressing on touch or right-clicking on desktop toggles a hotbar power's auto-cast lock.

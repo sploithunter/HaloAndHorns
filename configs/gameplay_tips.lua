@@ -71,6 +71,7 @@ return {
         "Farm Near sends idle pets to nearby crystals.",
         "Edit your hotbar to place powers where your fingers expect them.",
         "Hover a power in the hotbar editor to read what it does.",
+        "Long-press or right-click a power to toggle auto-cast.",
         "Power tooltips show which enhancements actually improve that power.",
         "Hasten cuts the recharge time of all your other powers in half.",
         "Pick a heal or shield power early if your squad needs survivability.",
