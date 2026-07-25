@@ -53,6 +53,9 @@ return function()
                 true
             )
             expect(string.find(all, "hasten cuts the recharge time", 1, true) ~= nil).to.equal(true)
+            expect(string.find(all, "long-press or right-click a power", 1, true) ~= nil).to.equal(
+                true
+            )
             expect(string.find(all, "levels 8, 15, 22, 29, 36, 43", 1, true) ~= nil).to.equal(true)
             expect(string.find(all, "heaven trial gate", 1, true) ~= nil).to.equal(true)
             expect(string.find(all, "hell trial gate", 1, true) ~= nil).to.equal(true)
