@@ -1688,3 +1688,12 @@ long-pressing on touch or right-clicking on desktop toggles a hotbar power's aut
 - Registered Overheat as a raw-fraction source on the shared `pet_damage` axis, so live pet damage,
   the server-published `Eff_Attack` stat, the player toggle badge, and pet status badges agree.
 - The initial badge uses the lava/fist fallback; dedicated Overheat art is still pending.
+
+## 2026-07-25 — Dedicated Overheat icon
+
+- Normalized the supplied blue flaming-paw disc from an RGB black-background PNG into true RGBA
+  transparency, then generated the standard blue, green, red, yellow, purple, and white variants.
+- Uploaded all six variants to project group `15872767`, resolved each Decal to its wrapped Image,
+  merged the IDs into `scripts/asset_manifest.json`, and regenerated
+  `configs/power_icons_assets.lua`.
+- Overheat now uses its dedicated red/lava icon on the power badge and pet status badge.

@@ -107,6 +107,7 @@ the original 10 are uploaded.
 | `portal` | **teleport** (figures + platform, NO egg) | 🎨 art made | World Travel — teleport to a world/zone |
 | `pet_transfer` | **Recall** (teleport WITH an egg behind) | 🎨 art made | Recall — return to your egg / saved spot |
 | `user_desk` | **deploy / claim** (arrow up out of a box) | ⬜ art only | *open / unbox / claim — NOT a desk* |
+| `overheat` | **Overheat / always-on pet damage** | ✅ | Pyromancer Overheat toggle |
 
 ### A.4 Filenames that mislead (game meaning wins)
 
