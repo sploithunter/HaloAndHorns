@@ -158,6 +158,7 @@ return {
                 "critical_strike",
                 "scorch",
                 "fire_nova",
+                "overheat",
                 -- signatures (cataclysm = capstone)
                 "wildfire",
                 "firestorm",

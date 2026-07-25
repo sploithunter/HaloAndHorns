@@ -98,6 +98,7 @@ wrapped ("Capacitor" art) · **Fear** = flee.
 | 9 | Critical Strike | Team Buff (crit) | |
 | 12 | Scorch | Targeted Debuff (−def) | ✚ new |
 | 12 | Fire Nova | `player_field` (burn AoE) | ✚ new |
+| 12 | Overheat | Always-on team damage | +30% pet damage in combat and mining; 1 Focus/s |
 | 15 | Wildfire | AoE DoT (spreads) | sig |
 | 22 | Firestorm | AoE Damage | ↻ was L20 |
 | 30 | Inferno Brand | Targeted Damage | ↻ was L28 |

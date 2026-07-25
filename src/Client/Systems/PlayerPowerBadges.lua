@@ -25,6 +25,7 @@ local localPlayer = Players.LocalPlayer
 -- The player self-power buffs to surface, in display order. label = short tag under the icon.
 local BUFFS = {
     { attr = "PetDamageBuff", label = "DMG" }, -- Mountain's Strength
+    { attr = "OverheatDamageBuff", label = "HEAT", toggleable = true }, -- Pyromancer Overheat
     { attr = "CritBuff", label = "CRIT" }, -- Critical Strike
     { attr = "CoinYieldPower", label = "CRYS" }, -- Prospector (coin_yield axis) — "Crystals" display
     { attr = "DropRateBuff", label = "DROP" }, -- Windfall (drop_rate axis — +loot-table chance)

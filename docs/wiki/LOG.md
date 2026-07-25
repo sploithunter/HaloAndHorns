@@ -1679,3 +1679,12 @@ travel mechanics; copy length and required learning points are headless-tested. 
 shuffled no-repeat deck instead of replaying the same opening order. Settings exposes a persisted
 `Display Tips` opt-out, default-on for new players. The power guidance now explicitly teaches that
 long-pressing on touch or right-clicking on desktop toggles a hotbar power's auto-cast lock.
+
+## 2026-07-25 — Pyromancer Overheat
+
+- Added **Overheat** as a level-12 Pyromancer-only always-on power: +30% pet damage in both combat
+  and mining for 1 Focus/sec. It uses the existing owned-toggle lifecycle (default on, player
+  toggleable, automatic shutdown on Focus crash) and accepts Damage, Potency, and Focus enhancements.
+- Registered Overheat as a raw-fraction source on the shared `pet_damage` axis, so live pet damage,
+  the server-published `Eff_Attack` stat, the player toggle badge, and pet status badges agree.
+- The initial badge uses the lava/fist fallback; dedicated Overheat art is still pending.

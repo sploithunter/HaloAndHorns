@@ -41,6 +41,7 @@ local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
 local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView)
 local BuffStack = require(ReplicatedStorage.Shared.Game.BuffStack)
+local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- cast-Rage HP-inverse math (SSOT)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance) -- live pet HP fraction for Rage
 local DamageOverTime = require(ReplicatedStorage.Shared.Game.DamageOverTime)
@@ -660,24 +661,13 @@ function PetFollowService:_mine(player, pet, breakable)
     -- Support-power modifiers (Feature 14): the player's active damage buff and the
     -- target's vulnerability both scale pet damage (os.time-gated, set by PowerService).
     local nowT = os.time()
-    -- pet_damage axis: the activated damage power (PetDamageBuff) and the Lava offense aura
-    -- (PetTeamDamageBuff) are the SAME axis, so they ADD (BuffStack), not compound — 1.5 + 1.25
-    -- => x1.75, never x1.875. Stored as multipliers; fraction = mult - 1. Clamped to the axis cap.
-    local petDmgSources = {
-        {
-            fraction = (player:GetAttribute("PetDamageBuff") or 1) - 1,
-            expiry = player:GetAttribute("PetDamageBuffUntil") or 0,
-        },
-        {
-            -- Berserk POTION (its own source, so it ADDS to the damage power instead of clobbering
-            -- it). Stored as a RAW fraction (magnitude), so no -1 here — see PotionService._applyMeter.
-            fraction = player:GetAttribute("PetDamageBuffPotion") or 0,
-            expiry = player:GetAttribute("PetDamageBuffPotionUntil") or 0,
-        },
-        {
-            fraction = (player:GetAttribute("PetTeamDamageBuff") or 1) - 1,
-            expiry = player:GetAttribute("PetTeamDamageBuffUntil") or 0,
-        },
+    -- PLAYER-LEVEL pet_damage sources come from THE registry (EffectiveStats): activated damage
+    -- powers, potion, offense aura, and Overheat all ADD on the same capped axis. This is the same
+    -- source list EffectiveStatsService publishes as Eff_Attack, so gameplay and the HUD cannot drift.
+    local petDmgSources = EffectiveStats.AXES.pet_damage.sources(function(name)
+        return player:GetAttribute(name)
+    end)
+    local petSpecificSources = {
         {
             -- RAGE (inherent self power, e.g. bear — pet_roles support_auras kind
             -- "rage"): a per-PET stamp from EnemyService:_supportPass while the pet is
@@ -719,6 +709,9 @@ function PetFollowService:_mine(player, pet, breakable)
             expiry = pet:GetAttribute("EmpowerDamageBuffUntil") or 0,
         },
     }
+    for _, source in ipairs(petSpecificSources) do
+        petDmgSources[#petDmgSources + 1] = source
+    end
     dmg = dmg
         * BuffStack.multiplier(
             petDmgSources,

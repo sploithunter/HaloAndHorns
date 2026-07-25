@@ -50,6 +50,8 @@ EffectiveStats.AXES = {
             "PetTeamDamageBuffUntil",
             "PetDamageBuffPotion",
             "PetDamageBuffPotionUntil",
+            "OverheatDamageBuff",
+            "OverheatDamageBuffUntil",
         },
         sources = function(get)
             return {
@@ -61,6 +63,10 @@ EffectiveStats.AXES = {
                 {
                     fraction = frac(get, "PetDamageBuffPotion"),
                     expiry = frac(get, "PetDamageBuffPotionUntil"),
+                },
+                {
+                    fraction = frac(get, "OverheatDamageBuff"),
+                    expiry = frac(get, "OverheatDamageBuffUntil"),
                 },
             }
         end,
