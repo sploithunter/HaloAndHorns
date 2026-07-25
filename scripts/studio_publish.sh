@@ -21,16 +21,47 @@
 # Exit:  0 published, 1 setup/permission error, 2 clicked but no confirmation.
 
 set -euo pipefail
+cd "$(dirname "$0")/.."
 
 PROC="RobloxStudio"
 MENU="File"
 ITEM="Publish to Roblox" # use "Publish to Roblox As" to choose/create a place
+ROJO_PORT="${ROJO_PORT:-34872}"
+ROJO_SYNC_WAIT_SECONDS="${ROJO_SYNC_WAIT_SECONDS:-3}"
+
+# Keep direct invocation just as safe as `mise run publish-studio`.
+bash scripts/stamp_build.sh
+bash scripts/verify_build_stamp.sh
 
 # Preflight: is Studio running?
 running=$(osascript -e "tell application \"System Events\" to (name of processes) contains \"$PROC\"" 2>/dev/null || echo false)
 if [ "$running" != "true" ]; then
     echo "ERROR: Roblox Studio ($PROC) is not running. Open the target place first." >&2
     exit 1
+fi
+
+# A fresh file on disk is not enough: Studio must have an active Rojo client,
+# and the plugin needs a moment to apply the generated module before Publish.
+if ! curl --silent --show-error --fail \
+    "http://127.0.0.1:${ROJO_PORT}/api/rojo" >/dev/null; then
+    echo "ERROR: Rojo is not serving on port ${ROJO_PORT}." >&2
+    echo "  Start it with: mise run serve" >&2
+    exit 1
+fi
+if ! lsof -nP -iTCP:"${ROJO_PORT}" -sTCP:ESTABLISHED 2>/dev/null \
+    | grep -q '[Rr]obloxStu'; then
+    echo "ERROR: Roblox Studio is not connected to Rojo on port ${ROJO_PORT}." >&2
+    echo "  Connect the Rojo Studio plugin, then retry." >&2
+    exit 1
+fi
+
+echo "Waiting ${ROJO_SYNC_WAIT_SECONDS}s for Studio to receive the fresh build stamp ..."
+sleep "$ROJO_SYNC_WAIT_SECONDS"
+bash scripts/verify_build_stamp.sh
+
+if [ -n "${PUBLISH_PREFLIGHT_ONLY:-}" ]; then
+    echo "OK: publish preflight passed; no publish requested."
+    exit 0
 fi
 
 echo "Publishing the open Studio place via $MENU → $ITEM ..."

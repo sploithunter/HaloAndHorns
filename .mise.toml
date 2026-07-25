@@ -30,8 +30,8 @@ run = [
 ]
 
 [tasks.serve]
-description = "Start Rojo file sync server"
-run = "rojo serve"
+description = "Start Rojo file sync server and keep the build stamp current for manual Studio publishes"
+run = "bash scripts/serve_with_stamp.sh"
 
 [tasks.stamp]
 description = "Stamp configs/build_info.lua from git + Mountain Time (shown on the load screen). Run before publishing; rojo syncs it into Studio."
@@ -47,7 +47,7 @@ run = ["bash scripts/stamp_build.sh", "bash scripts/release.sh"]
 
 [tasks.publish-studio]
 description = "Publish the place open in Roblox Studio via File -> Publish (AppleScript; macOS; needs Accessibility). Preserves the authored map, no Open Cloud key. Works for a headless agent."
-run = ["bash scripts/stamp_build.sh", "bash scripts/studio_publish.sh"]
+run = "bash scripts/studio_publish.sh"
 
 [tasks.gen-icons]
 description = "Generate configs/power_icons_assets.lua from scripts/asset_manifest.json (icon registry)"

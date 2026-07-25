@@ -17,7 +17,8 @@
   },
   "src/Client/Systems/AreaMusicController.lua": {
    "cooldown": 1,
-   "deadline": 1
+   "deadline": 1,
+   "retry_backoff": 1
   },
   "src/Client/Systems/AudioPrefs.lua": {
    "deadline": 1,
@@ -62,6 +63,9 @@
   },
   "src/Client/Systems/PowerFXProbe.lua": {
    "simulation": 1
+  },
+  "src/Client/Systems/PrologueCinematics.lua": {
+   "animation": 4
   },
   "src/Client/Systems/QuestTrackerStyle.lua": {
    "retry_backoff": 1
@@ -127,7 +131,9 @@
    "watchdog": 1
   },
   "src/ReplicatedFirst/BootLoader.client.lua": {
-   "deadline": 1
+   "animation": 1,
+   "deadline": 1,
+   "retry_backoff": 1
   },
   "src/Server/Diagnostics/HeapTrace.lua": {
    "periodic": 1
@@ -137,6 +143,9 @@
   },
   "src/Server/Services/AssetPreloadService.lua": {
    "frame_budget": 1
+  },
+  "src/Server/Services/AdminToolsService.lua": {
+   "deadline": 1
   },
   "src/Server/Services/AutoTargetService.lua": {
    "debounce": 1
@@ -199,6 +208,9 @@
    "frame_budget": 1,
    "periodic": 3
   },
+  "src/Server/Services/NpcPrincipalService.lua": {
+   "periodic": 2
+  },
   "src/Server/Services/PetCharacterAttachments.server.lua": {
    "periodic": 1
   },
@@ -213,6 +225,11 @@
   "src/Server/Services/PowerService.lua": {
    "animation": 4,
    "periodic": 6
+  },
+  "src/Server/Services/PrologueService.lua": {
+   "animation": 1,
+   "periodic": 1,
+   "retry_backoff": 1
   },
   "src/Server/Services/RateLimitService.lua": {
    "periodic": 1

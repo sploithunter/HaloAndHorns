@@ -152,6 +152,18 @@ automation, not vision-based "computer use." It publishes the open session (code
   Security → Accessibility); without it, System Events errors `-1719`.
 - It's **UI-dependent** (menu item name "Publish to Roblox"), so it can need
   re-tuning across Studio versions — less robust than the Open Cloud API.
+- The script stamps internally even when invoked directly, refuses to publish
+  unless the marker matches `HEAD`, requires an established Studio ↔ Rojo
+  connection, and waits briefly for Rojo to apply the generated module before
+  clicking Publish. `PUBLISH_PREFLIGHT_ONLY=1 mise run publish-studio` exercises
+  those checks without publishing.
+
+`mise run serve` is the supported Rojo command for this repository. Its companion
+watcher refreshes `configs/build_info.lua` whenever the branch, `HEAD`, or working
+tree changes. This closes the manual-publish gap: using Studio's own File →
+Publish no longer depends on remembering `mise run stamp`. The main-branch CI
+stamp remains a fallback for checked-out copies and only advances after the fast
+gate is green.
 
 **Why an MCP-only agent should prefer the AppleScript lane over Open Cloud:** the
 Open Cloud path requires **closing the place in Studio** (to avoid the `Conflict`
@@ -227,6 +239,9 @@ mise run format             # stylua (write)
 mise run test-headless      # lune pure-logic tests
 mise run build              # rojo build --output game.rbxl
 mise run architecture-check # architecture guard unit tests + repository scan
+
+# Live Studio sync + continuously refreshed build stamp
+mise run serve
 
 # Studio integration (needs open Studio + Rojo connected; driven via MCP)
 #   The agent calls GameAPIService:Execute(...) through execute_luau and runs

@@ -1637,3 +1637,17 @@ the final row to extend below the screen.
 Added the five prepared transparent PNG labels under `assets/ad_labels/`: Choose Heaven, Choose
 Hell, Hatch Pets, Take Them to Battle, and Halo and Horns. A portable manifest records the complete
 asset set for future advertising-composition work.
+
+## 2026-07-25 — Build-stamp freshness repair
+
+- Retention analysis exposed that production telemetry still reported `da8fbea`
+  while `main` had advanced 26 commits. Two paths allowed the marker to go stale:
+  normal Studio File → Publish bypassed the stamp task, and the CI stamp job was
+  skipped because newly added, intentional runtime waits had not been classified,
+  so the fast gate failed on every push.
+- Rojo now runs through a stamp-watching wrapper (`mise run serve`) that refreshes
+  `configs/build_info.lua` when `HEAD`, branch, or working-tree state changes.
+  Studio publishing stamps and verifies internally, requires an established Rojo
+  connection, then waits for sync before clicking Publish. The reviewed prologue,
+  music, boot, admin, and NPC timers are classified by purpose, restoring the
+  architecture gate and allowing the main-branch CI stamper to run again.
