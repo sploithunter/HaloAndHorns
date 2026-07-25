@@ -2303,7 +2303,8 @@ function BaseUI:_bindQuestTracker()
         end
         self._trackedQuestId = q.id
         if self._questClaimBtn then
-            self._questClaimBtn.Visible = q.claimable == true
+            local tips = require(script.Parent.Parent.Systems.QuestTrackerStyle)
+            self._questClaimBtn.Visible = q.claimable == true and not tips.isTipActive()
         end
         local cur = math.floor((q.progress and q.progress.current) or 0)
         local tgt = math.floor((q.progress and q.progress.target) or 1)
@@ -2353,6 +2354,11 @@ function BaseUI:_bindQuestTracker()
             sz.MaxTextSize = 14
             sz.Parent = tip
             pane.MouseEnter:Connect(function()
+                if
+                    require(script.Parent.Parent.Systems.QuestTrackerStyle).isTipActive()
+                then
+                    return
+                end
                 local body = self._trackedQuestBody
                 if type(body) == "string" and body ~= "" then
                     tip.Text = body

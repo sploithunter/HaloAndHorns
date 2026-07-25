@@ -1,0 +1,57 @@
+--[[
+    GameplayTipRotation — pure helpers for the quest-tracker tip carousel.
+
+    Runtime timing and rendering stay client-owned. This module keeps selection and config
+    validation headless-testable so the compact UI cannot silently receive unusable copy.
+]]
+
+local GameplayTipRotation = {}
+
+function GameplayTipRotation.nextIndex(currentIndex, tipCount)
+    tipCount = math.max(0, math.floor(tonumber(tipCount) or 0))
+    if tipCount == 0 then
+        return nil
+    end
+    currentIndex = math.floor(tonumber(currentIndex) or 0)
+    return (currentIndex % tipCount) + 1
+end
+
+function GameplayTipRotation.validate(config)
+    if type(config) ~= "table" then
+        return false, "config must be a table"
+    end
+
+    local interval = tonumber(config.interval_seconds)
+    local display = tonumber(config.display_seconds)
+    local maxCharacters = math.floor(tonumber(config.max_characters) or 0)
+    if not interval or interval <= 0 then
+        return false, "interval_seconds must be positive"
+    end
+    if not display or display <= 0 or display >= interval then
+        return false, "display_seconds must be positive and shorter than interval_seconds"
+    end
+    if maxCharacters <= 0 then
+        return false, "max_characters must be positive"
+    end
+    if type(config.tips) ~= "table" or #config.tips == 0 then
+        return false, "tips must be a non-empty array"
+    end
+
+    local seen = {}
+    for index, tip in ipairs(config.tips) do
+        if type(tip) ~= "string" or tip == "" then
+            return false, ("tip %d must be a non-empty string"):format(index)
+        end
+        if #tip > maxCharacters then
+            return false, ("tip %d exceeds max_characters"):format(index)
+        end
+        if seen[tip] then
+            return false, ("tip %d duplicates an earlier tip"):format(index)
+        end
+        seen[tip] = true
+    end
+
+    return true
+end
+
+return GameplayTipRotation

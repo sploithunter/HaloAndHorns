@@ -487,6 +487,7 @@ end
 do
     local ok, err = pcall(function()
         require(script.Systems.QuestTrackerStyle).start()
+        require(script.Systems.GameplayTips).start()
     end)
     if not ok then
         Logger:Warn("Failed to start QuestTrackerStyle", { error = tostring(err) })

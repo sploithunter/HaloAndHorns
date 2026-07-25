@@ -24,6 +24,7 @@ local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local AudioPrefs = require(script.Parent.Parent.Parent.Systems.AudioPrefs)
+local GameplayTips = require(script.Parent.Parent.Parent.Systems.GameplayTips)
 -- THE shared panel exterior + pill helpers (window shell, area theming, entry pills).
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 -- THE capsule widget used by the currency HUD + ADMIN button (Jason: ON/OFF toggles use this exact pill).
@@ -197,7 +198,7 @@ function SettingsPanel.new()
         ui = {
             scale = 1.0,
             theme = "dark", -- dark, light
-            showTooltips = true,
+            displayTips = true,
             compactMode = false,
         },
         accessibility = {
@@ -760,8 +761,10 @@ function SettingsPanel:_createUISettings()
         -- Apply UI scaling
     end)
 
-    self:_createToggleSetting("Show Tooltips", self.settings.ui.showTooltips, 22, function(value)
-        self.settings.ui.showTooltips = value
+    self.settings.ui.displayTips = GameplayTips.isEnabled()
+    self:_createToggleSetting("Display Tips", self.settings.ui.displayTips, 22, function(value)
+        self.settings.ui.displayTips = value
+        GameplayTips.setEnabled(value)
     end)
 
     self:_createToggleSetting("Compact Mode", self.settings.ui.compactMode, 23, function(value)

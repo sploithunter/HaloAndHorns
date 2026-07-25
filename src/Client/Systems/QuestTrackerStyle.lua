@@ -13,6 +13,9 @@ local QuestTrackerStyle = {}
 local started = false
 QuestTrackerStyle._pane = nil
 QuestTrackerStyle._dismissed = false
+QuestTrackerStyle._tipActive = false
+QuestTrackerStyle._tipProgress = nil
+QuestTrackerStyle._tipDescription = nil
 
 -- The tracker's visibility is a pure function of the dismissed flag — set by the X, cleared when the
 -- Quest menu opens or a quest becomes claimable (Jason: it's in the way when idle, esp. on mobile).
@@ -26,6 +29,121 @@ end
 function QuestTrackerStyle.show()
     QuestTrackerStyle._dismissed = false
     applyVisibility()
+end
+
+local function ensureTipOverlay()
+    local pane = QuestTrackerStyle._pane
+    if not pane then
+        return false
+    end
+    if QuestTrackerStyle._tipProgress and QuestTrackerStyle._tipDescription then
+        return true
+    end
+
+    local originalProgress = pane:FindFirstChild("ProgressBackground")
+    local originalDescription = pane:FindFirstChild("QuestDescription")
+    if not originalProgress or not originalDescription then
+        return false
+    end
+
+    -- Clone the already-restyled quest layers so tips use the exact same capsule, geometry, font,
+    -- outline, and fill treatment. The live quest controls keep updating underneath while hidden.
+    local tipProgress = originalProgress:Clone()
+    tipProgress.Name = "TipProgressBackground"
+    tipProgress.ZIndex = 40
+    tipProgress.Visible = false
+    local tipFill = tipProgress:FindFirstChild("Fill")
+    if tipFill then
+        tipFill.Size = UDim2.new(1, 0, 1, 0)
+        tipFill.ZIndex = 41
+    end
+    local tipProgressText = tipProgress:FindFirstChild("ProgressText")
+    if tipProgressText then
+        tipProgressText.Text = "TIP"
+        tipProgressText.ZIndex = 42
+    end
+    tipProgress.Parent = pane
+
+    local tipDescription = originalDescription:Clone()
+    tipDescription.Name = "TipDescription"
+    tipDescription.Text = ""
+    tipDescription.ZIndex = 42
+    tipDescription.Visible = false
+    tipDescription.Parent = pane
+
+    QuestTrackerStyle._tipProgress = tipProgress
+    QuestTrackerStyle._tipDescription = tipDescription
+    return true
+end
+
+function QuestTrackerStyle.isTipActive()
+    return QuestTrackerStyle._tipActive == true
+end
+
+function QuestTrackerStyle.showTip(text)
+    if
+        QuestTrackerStyle._dismissed
+        or type(text) ~= "string"
+        or text == ""
+        or not ensureTipOverlay()
+    then
+        return false
+    end
+
+    local pane = QuestTrackerStyle._pane
+    local originalProgress = pane:FindFirstChild("ProgressBackground")
+    local originalDescription = pane:FindFirstChild("QuestDescription")
+    if originalProgress then
+        originalProgress.Visible = false
+    end
+    if originalDescription then
+        originalDescription.Visible = false
+    end
+    local hover = pane:FindFirstChild("QuestHoverTip")
+    if hover then
+        hover.Visible = false
+    end
+    local claim = pane:FindFirstChild("QuestClaimButton")
+    if claim then
+        claim.Visible = false
+    end
+
+    QuestTrackerStyle._tipDescription.Text = text
+    QuestTrackerStyle._tipProgress.Visible = true
+    QuestTrackerStyle._tipDescription.Visible = true
+    QuestTrackerStyle._tipActive = true
+    QuestTrackerStyle.setTipProgress(1)
+    return true
+end
+
+function QuestTrackerStyle.setTipProgress(fraction)
+    local progress = QuestTrackerStyle._tipProgress
+    local fill = progress and progress:FindFirstChild("Fill")
+    if fill then
+        fill.Size = UDim2.new(math.clamp(tonumber(fraction) or 0, 0, 1), 0, 1, 0)
+    end
+end
+
+function QuestTrackerStyle.hideTip()
+    QuestTrackerStyle._tipActive = false
+    if QuestTrackerStyle._tipProgress then
+        QuestTrackerStyle._tipProgress.Visible = false
+    end
+    if QuestTrackerStyle._tipDescription then
+        QuestTrackerStyle._tipDescription.Visible = false
+    end
+
+    local pane = QuestTrackerStyle._pane
+    if pane then
+        local originalProgress = pane:FindFirstChild("ProgressBackground")
+        local originalDescription = pane:FindFirstChild("QuestDescription")
+        if originalProgress then
+            originalProgress.Visible = true
+        end
+        if originalDescription then
+            originalDescription.Visible = true
+        end
+    end
 end
 
 local function corner(p, r)
@@ -168,6 +286,7 @@ function QuestTrackerStyle.start()
         end
 
         QuestTrackerStyle._pane = pane
+        ensureTipOverlay()
         applyVisibility()
     end)
 end
