@@ -746,6 +746,7 @@ function RetentionService:GetDashboard(dateUtc)
     local failures = {}
     local completed = 0
     local failureCount = 0
+    local readsCompleted = Instance.new("BindableEvent")
     for bucket = 0, bucketCount - 1 do
         task.spawn(function()
             local key = RetentionLogic.dashboardBucketKey(dateUtc, bucket)
@@ -764,11 +765,15 @@ function RetentionService:GetDashboard(dateUtc)
                 failureCount += 1
             end
             completed += 1
+            if completed == bucketCount then
+                readsCompleted:Fire()
+            end
         end)
     end
-    while completed < bucketCount do
-        task.wait()
+    if completed < bucketCount then
+        readsCompleted.Event:Wait()
     end
+    readsCompleted:Destroy()
 
     local counters = {}
     local builds = {}
