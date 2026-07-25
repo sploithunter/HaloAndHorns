@@ -45,6 +45,11 @@ ordered events. Writes flush every 15 seconds, at 100 pending events, on player 
 server shutdown. Partitioning keeps the dataset in one inspectable store without putting every
 player behind one 4 MB key or one per-key write bottleneck.
 
+The server envelope includes Roblox's `placeVersion` as the authoritative
+published-build boundary. It increments on every Roblox publish independently of
+Rojo or the generated git label; `buildCommit` remains the source-code mapping
+when the stamp is available.
+
 The same store contains mergeable daily counter shards:
 
 `aYYYYMMDD/j<serverJobId>`

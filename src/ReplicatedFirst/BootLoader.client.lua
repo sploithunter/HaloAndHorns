@@ -118,10 +118,11 @@ Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
 -- ---- build/version stamp ----------------------------------------------
 -- Jason: show what version this is + when it was built (Mountain Time) so a
 -- published build is identifiable — "if something's not working I can tell if
--- it actually updated." Source: configs/build_info.lua, regenerated from git by
--- scripts/stamp_build.sh on every build/publish. Falls back to "dev build" when
--- unstamped (a live rojo Studio session). Bottom-center, dim — informational.
-local versionText = "dev build"
+-- it actually updated." Roblox's PlaceVersion is the authoritative publish
+-- boundary and increments without relying on Rojo; configs/build_info.lua adds
+-- the source commit when its generated stamp synced successfully.
+local placeVersion = math.max(0, math.floor(tonumber(game.PlaceVersion) or 0))
+local versionText = placeVersion > 0 and string.format("place v%d", placeVersion) or "dev build"
 do
     local ok, info = pcall(function()
         local configs = ReplicatedStorage:WaitForChild("Configs", 10)
@@ -132,6 +133,9 @@ do
         versionText = string.format("v%s · %s", info.version or "?", info.commit)
         if info.dirty then
             versionText = versionText .. "*"
+        end
+        if placeVersion > 0 then
+            versionText = versionText .. string.format("  ·  place v%d", placeVersion)
         end
         if info.built_at then
             versionText = versionText .. "  ·  updated " .. info.built_at
