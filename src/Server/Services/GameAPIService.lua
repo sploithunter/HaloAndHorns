@@ -695,7 +695,7 @@ function GameAPIService:_registerCommands()
     })
 
     bus:register("settings.get", {
-        description = "The player's persisted client prefs (audio sliders etc.).",
+        description = "The player's persisted client preferences.",
         handler = function(context)
             local dataSvc = self:_service("DataService")
             local data = dataSvc and dataSvc:GetData(context.player)
@@ -703,14 +703,21 @@ function GameAPIService:_registerCommands()
                 return { ok = false, reason = "data_not_loaded" }
             end
             local prefs = type(data.Settings) == "table" and data.Settings.ClientPrefs or nil
-            return { ok = true, audio = prefs and prefs.audio or nil }
+            return {
+                ok = true,
+                audio = prefs and prefs.audio or nil,
+                displayTips = not prefs or prefs.displayTips ~= false,
+            }
         end,
     })
 
     bus:register("settings.set", {
-        description = "Persist client prefs (audio sliders) into the profile.",
+        description = "Persist whitelisted client preferences into the profile.",
         validate = function(args)
-            return Validators.fields(args, { audio = { type = "table", optional = true } })
+            return Validators.fields(args, {
+                audio = { type = "table", optional = true },
+                displayTips = { type = "boolean", optional = true },
+            })
         end,
         handler = function(context, args)
             local dataSvc = self:_service("DataService")
@@ -730,6 +737,9 @@ function GameAPIService:_registerCommands()
                     musicVolume = math.clamp(tonumber(args.audio.musicVolume) or 1, 0, 1),
                     uiSoundsEnabled = args.audio.uiSoundsEnabled ~= false,
                 }
+            end
+            if type(args.displayTips) == "boolean" then
+                data.Settings.ClientPrefs.displayTips = args.displayTips
             end
             dataSvc:RequestSave(context.player, "client_prefs")
             return { ok = true }

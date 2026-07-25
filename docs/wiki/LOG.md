@@ -1669,3 +1669,11 @@ exit, sessions/time, levels, unlocks, quests, and per-`placeVersion` populations
 API read and a fixed-key Open Cloud CLI. Evaluated the official GameAnalytics Roblox integration
 used by Colorful Clickers as an optional free-core external mirror; no old embedded credentials were
 reused.
+
+## 2026-07-25 — Rotating quest-tracker gameplay tips
+
+The compact quest/mission tracker now borrows its own existing progress and text layers for a
+10-second gameplay tip once per minute, then restores the still-live objective state. A config-owned
+85-tip library covers hidden potion, enhancement, pet-role, mining, hatching, power, teaming, and
+travel mechanics; copy length and required learning points are headless-tested. Settings now exposes
+a persisted `Display Tips` opt-out, default-on for new players.

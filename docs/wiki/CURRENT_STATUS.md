@@ -103,6 +103,11 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Admin control panel opens and includes event/effects testing commands.
 - Global event support has started, including scheduled event concepts and a UTC event clock.
 - `ConfigLoader` validates every loaded config at startup. Complex gameplay configs retain focused cross-reference validators; the remaining configs use the revisioned `ConfigSchemas` registry for required top-level key types. Unknown configs fail closed, and the architecture guard rejects configs without an explicit schema.
+- The compact quest/mission tracker doubles as a rotating learning surface: once per minute it
+  overlays one config-owned gameplay tip for 10 seconds, including potion, enhancement, pet-role,
+  mining, hatching, power, teaming, and travel mechanics. The live objective continues updating
+  underneath and is restored exactly afterward. `Settings → Display Tips` persists the player's
+  opt-out under `Settings.ClientPrefs.displayTips`; new players default to tips on.
 - Phase 0 foundation services are in place for profile schema versioning, stat counters, modifier resolution, currency ledger aggregation, deterministic UTC day/seed behavior, and feature flags.
 - Reward bundle currencies now flow through `EconomyService` rather than writing profile balances directly.
 - Realm token earnings and paid layer traversal also flow through `EconomyService`; failed debits no longer move the player.

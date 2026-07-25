@@ -28,6 +28,16 @@ return function()
             expect(string.find(all, "dual-origin", 1, true) ~= nil).to.equal(true)
             expect(string.find(all, "lumen dove", 1, true) ~= nil).to.equal(true)
             expect(string.find(all, "focus enhancements", 1, true) ~= nil).to.equal(true)
+            expect(string.find(all, "grass pets are stronger in desert", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(all, "hell guards will fight any pet", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(all, "hasten cuts the recharge time", 1, true) ~= nil).to.equal(true)
+            expect(string.find(all, "levels 8, 15, 22, 29, 36, 43", 1, true) ~= nil).to.equal(true)
+            expect(string.find(all, "heaven trial gate", 1, true) ~= nil).to.equal(true)
+            expect(string.find(all, "hell trial gate", 1, true) ~= nil).to.equal(true)
         end)
     end)
 end
