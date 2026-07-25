@@ -106,8 +106,9 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - The compact quest/mission tracker doubles as a rotating learning surface: once per minute it
   overlays one config-owned gameplay tip for 10 seconds, including potion, enhancement, pet-role,
   mining, hatching, power, teaming, and travel mechanics. The live objective continues updating
-  underneath and is restored exactly afterward. `Settings → Display Tips` persists the player's
-  opt-out under `Settings.ClientPrefs.displayTips`; new players default to tips on.
+  underneath and is restored exactly afterward. Each session shuffles a no-repeat deck so players
+  do not always see the same early tips. `Settings → Display Tips` persists the player's opt-out
+  under `Settings.ClientPrefs.displayTips`; new players default to tips on.
 - Phase 0 foundation services are in place for profile schema versioning, stat counters, modifier resolution, currency ledger aggregation, deterministic UTC day/seed behavior, and feature flags.
 - Reward bundle currencies now flow through `EconomyService` rather than writing profile balances directly.
 - Realm token earnings and paid layer traversal also flow through `EconomyService`; failed debits no longer move the player.

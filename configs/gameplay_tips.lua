@@ -50,6 +50,7 @@ return {
         "Pets must reach a crystal before their mining damage starts.",
         "Ranged pets can begin mining from farther away.",
         "Stronger areas reward more, but their crystals are tougher.",
+        "Combat earns XP faster than mining.",
         "Mine with a team to share the work and earn team bonuses.",
 
         "Luck improves hatch results while the luck meter is active.",

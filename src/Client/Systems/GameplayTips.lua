@@ -21,7 +21,10 @@ local loadResolved = false
 local loadBusy = false
 local loadAttempts = 0
 local nextLoadAttemptAt = 0
-local currentIndex = 0
+local random = Random.new()
+local tipOrder = {}
+local tipCursor = 0
+local lastTipIndex = nil
 local cycleElapsed = 0
 local tipElapsed = 0
 local tipActive = false
@@ -57,6 +60,22 @@ local function applyEnabled(value)
     if not enabled then
         hideTip()
     end
+end
+
+local function nextTip()
+    if tipCursor >= #tipOrder then
+        tipOrder = GameplayTipRotation.shuffledIndices(#config.tips, function(minimum, maximum)
+            return random:NextInteger(minimum, maximum)
+        end)
+        -- A deck boundary should not repeat the tip that just finished the prior deck.
+        if #tipOrder > 1 and tipOrder[1] == lastTipIndex then
+            tipOrder[1], tipOrder[2] = tipOrder[2], tipOrder[1]
+        end
+        tipCursor = 0
+    end
+    tipCursor += 1
+    lastTipIndex = tipOrder[tipCursor]
+    return lastTipIndex and config.tips[lastTipIndex] or nil
 end
 
 local function requestLoad()
@@ -123,8 +142,7 @@ function GameplayTips.start()
         local intervalSeconds = tonumber(config.interval_seconds) or 60
         if not tipActive and cycleElapsed >= intervalSeconds then
             cycleElapsed %= intervalSeconds
-            currentIndex = GameplayTipRotation.nextIndex(currentIndex, #config.tips) or 0
-            local tip = config.tips[currentIndex]
+            local tip = nextTip()
             if tip and QuestTrackerStyle.showTip(tip) then
                 tipActive = true
                 tipElapsed = 0

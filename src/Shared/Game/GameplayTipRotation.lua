@@ -16,6 +16,23 @@ function GameplayTipRotation.nextIndex(currentIndex, tipCount)
     return (currentIndex % tipCount) + 1
 end
 
+-- Fisher-Yates shuffled deck. `nextInteger(min, max)` is injected so the permutation stays
+-- deterministic in headless tests while the client supplies a session-local Random instance.
+function GameplayTipRotation.shuffledIndices(tipCount, nextInteger)
+    tipCount = math.max(0, math.floor(tonumber(tipCount) or 0))
+    local order = {}
+    for index = 1, tipCount do
+        order[index] = index
+    end
+
+    nextInteger = nextInteger or math.random
+    for index = tipCount, 2, -1 do
+        local swapIndex = math.clamp(math.floor(tonumber(nextInteger(1, index)) or index), 1, index)
+        order[index], order[swapIndex] = order[swapIndex], order[index]
+    end
+    return order
+end
+
 function GameplayTipRotation.validate(config)
     if type(config) ~= "table" then
         return false, "config must be a table"
