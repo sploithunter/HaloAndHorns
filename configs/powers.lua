@@ -173,6 +173,11 @@ return {
         -- offensive team buff in the game, beating the glass cannon's crit. x1.3 keeps geo a solid
         -- buffer without owning the damage class's job.
         damage_buff = { family = "buff", magnitude = 1.3, duration = 8 },
+        -- Overheat (Pyromancer): always-on pet damage for BOTH combat and mining. Magnitude is a
+        -- RAW fraction on the shared pet_damage axis (+0.30 = +30%), unlike damage_buff's x1.3
+        -- multiplier representation. PowerService stamps it while the toggle is running; Focus
+        -- upkeep automatically shuts every active toggle down when the player crashes.
+        overheat = { family = "pet_damage_toggle", magnitude = 0.3, passive = true },
         -- Critical Strike (Pyromancer): +crit CHANCE (fraction, additive) on the squad's hits for a
         -- duration — boosts crit on both combat AND mining. Crit damage stays at the roll's crit_mult.
         -- 0.25 -> 0.35 (balance audit): the damage archetype's team buff should feel spicy.
@@ -971,6 +976,18 @@ return {
             element = "lava",
             target = "player_field",
             glyph = "burst",
+            unlock_level = 12,
+        },
+        overheat = {
+            archetype = "pyromancer",
+            focus_upkeep = 1,
+            effect = "overheat",
+            display_name = "Overheat",
+            subtitle = "Always-On Pet Damage",
+            role = "buff",
+            element = "lava",
+            target = "team_aoe",
+            glyph = "buff",
             unlock_level = 12,
         },
 

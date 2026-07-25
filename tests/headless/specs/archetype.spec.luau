@@ -36,6 +36,13 @@ return function()
             expect(ArchetypeLogic.hasPower("geomancer", "mark_of_flame", config)).to.equal(false)
         end)
 
+        it("offers Overheat only to Pyromancers", function()
+            expect(ArchetypeLogic.hasPower("pyromancer", "overheat", config)).to.equal(true)
+            expect(ArchetypeLogic.hasPower("geomancer", "overheat", config)).to.equal(false)
+            expect(ArchetypeLogic.hasPower("cryomancer", "overheat", config)).to.equal(false)
+            expect(ArchetypeLogic.hasPower("sandwalker", "overheat", config)).to.equal(false)
+        end)
+
         it("falls back to JUST the generic pool for a nil/invalid archetype", function()
             -- NATURAL powers are pickable before the L5 origin choice, so no origin = generic only
             local genericCount = #(config.generic_pool or {})

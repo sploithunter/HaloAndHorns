@@ -156,6 +156,25 @@ return function()
             expect((Enhancements.compatibleWith(cfg, "recharge", swift, kinds))).to.equal(false)
             expect((Enhancements.compatibleWith(cfg, "focus", swift, kinds))).to.equal(true)
         end)
+
+        it(
+            "Overheat accepts damage, potency, and focus—but no dead timing/range slots",
+            function()
+                local overheat = powersCfg.powers.overheat
+                expect((Enhancements.compatibleWith(cfg, "damage", overheat, kinds))).to.equal(true)
+                expect((Enhancements.compatibleWith(cfg, "potency", overheat, kinds))).to.equal(
+                    true
+                )
+                expect((Enhancements.compatibleWith(cfg, "focus", overheat, kinds))).to.equal(true)
+                expect((Enhancements.compatibleWith(cfg, "recharge", overheat, kinds))).to.equal(
+                    false
+                )
+                expect((Enhancements.compatibleWith(cfg, "duration", overheat, kinds))).to.equal(
+                    false
+                )
+                expect((Enhancements.compatibleWith(cfg, "range", overheat, kinds))).to.equal(false)
+            end
+        )
     end)
 
     describe("Aggregation (per-axis additive)", function()

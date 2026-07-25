@@ -177,6 +177,7 @@ end
 local PASSIVE_ATTR = {
     magnet = "MagnetBuff",
     move_speed = "MoveSpeedBuff",
+    pet_damage_toggle = "OverheatDamageBuff",
     xp = "XpBuff",
 }
 local PASSIVE_UNTIL = 4102444800 -- year 2100 — "always on" (same sentinel as the toggle buffs)

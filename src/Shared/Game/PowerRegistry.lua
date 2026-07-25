@@ -22,6 +22,7 @@ local PowerRegistry = {}
 local FAMILY_CATEGORY = {
     heal = "heal",
     buff = "buff",
+    pet_damage_toggle = "buff",
     damage_buff = "buff",
     vulnerable = "debuff",
     accuracy_mark = "debuff",
@@ -91,6 +92,7 @@ local function deriveKind(power, ek, enemyFamilies)
     elseif
         family == "heal"
         or family == "buff"
+        or family == "pet_damage_toggle"
         or family == "damage_buff"
         or family == "absorb"
         or family == "team_shield"

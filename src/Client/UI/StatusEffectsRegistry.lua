@@ -32,6 +32,16 @@ local PET_EFFECTS = {
         label = "DMG",
         icon = POWER_ICONS.status.damage,
     },
+    {
+        key = "overheat",
+        source = "player",
+        untilAttr = "OverheatDamageBuffUntil",
+        powerIdAttr = "OverheatDamageBuffPowerId",
+        steady = true,
+        color = Color3.fromRGB(255, 105, 45),
+        label = "HEAT",
+        icon = POWER_ICONS.discFor("lava", "fist"),
+    },
     -- Swift buffs PET speed too (self+pets by design) — pets consume the player's
     -- MoveSpeedBuff in the follow loop, so every card wears the badge (Jason: "there's
     -- an icon for speed for me but none for the pets"). steady: Swift is a permanent

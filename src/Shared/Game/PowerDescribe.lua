@@ -69,6 +69,9 @@ local FAMILY_TEXT = {
     buff = function(kind, target)
         return ("%s deals +%s damage."):format(target, multPct(kind.magnitude))
     end,
+    pet_damage_toggle = function(kind)
+        return ("Your pets deal +%s damage in combat and mining."):format(pct(kind.magnitude))
+    end,
     crit = function(kind, target)
         return ("+%s crit chance for %s."):format(pct(kind.magnitude), target)
     end,
@@ -217,7 +220,11 @@ function PowerDescribe.describe(powersCfg, powerId)
     local lines = {}
     local passive = kind.passive == true or kind.toggle == true
     if passive then
-        lines[#lines + 1] = "Always on while owned"
+        lines[#lines + 1] = "Always on while active"
+        local upkeep = tonumber(def.focus_upkeep) or 0
+        if upkeep > 0 then
+            lines[#lines + 1] = ("Upkeep %g Focus/s"):format(upkeep)
+        end
     else
         if (tonumber(kind.duration) or 0) > 0 then
             lines[#lines + 1] = "Lasts " .. span(kind.duration)

@@ -48,6 +48,7 @@ return {
             families = {
                 vulnerable = true,
                 buff = true,
+                pet_damage_toggle = true,
                 rage = true,
                 amplified_burst = true,
                 burn_spread = true,
@@ -147,6 +148,7 @@ return {
             axis = "magnitude",
             families = {
                 buff = true,
+                pet_damage_toggle = true,
                 coin_yield = true,
                 crit = true,
                 farm_boost = true, -- Resonance: pump the Boost added per cast (magnitude)
@@ -239,6 +241,7 @@ return {
     damage_as_magnitude_families = {
         vulnerable = true, -- Sandstorm / Mark of Flame / Sunder / … (+% enemies take)
         buff = true, -- Mountain's Strength (+% pet damage)
+        pet_damage_toggle = true, -- Overheat (always-on +% combat/mining pet damage)
         rage = true, -- Rage (HP-inverse pet damage)
         amplified_burst = true, -- Cataclysm (burst = squad-attack × magnitude)
         team_cleave = true, -- Firestorm (cleave splash × magnitude)

@@ -147,6 +147,7 @@ local M = {
         team_shield = { symbol = "armor_chest", target = "self" }, -- Bulwark squad defense
         dodge = { symbol = "eye_hidden", target = "self" }, -- evasion (mirage_step)
         damage_buff = { symbol = "fist", target = "self" }, -- Mountain's Strength (fist = damage BUFF)
+        overheat = { symbol = "fist", target = "self" }, -- temporary fallback until dedicated art lands
         crit_up = { symbol = "critical_hit", target = "self" }, -- Critical Strike (+crit chance, squad) -> crit reticle
         root = { symbol = "user_desk", target = "enemy_aoe" }, -- frost_bind (user_desk = ROOT)
         quicksand = { symbol = "user_desk", target = "enemy_aoe" }, -- Quicksand (desert root; generic root icon for now)

@@ -97,20 +97,13 @@ return function()
             end
         end)
 
-        it("passives say always-on and hide cast costs", function()
-            -- any passive kind power (Swift/Hasten/Magnet/XP Surge)
-            local id
-            for pid, def in pairs(powersCfg.powers) do
-                local kind = powersCfg.effect_kinds[def.effect]
-                if kind and kind.passive then
-                    id = pid
-                    break
-                end
-            end
-            expect(id ~= nil).to.equal(true)
-            local d = PowerDescribe.describe(powersCfg, id)
-            expect(d.lines[1]).to.equal("Always on while owned")
-            expect(#d.lines).to.equal(1)
+        it("Overheat explains its full effect and continuous Focus upkeep", function()
+            local d = PowerDescribe.describe(powersCfg, "overheat")
+            expect(d.summary:find("+30%%") ~= nil).to.equal(true)
+            expect(d.summary:find("combat and mining", 1, true) ~= nil).to.equal(true)
+            expect(d.lines[1]).to.equal("Always on while active")
+            expect(d.lines[2]).to.equal("Upkeep 1 Focus/s")
+            expect(#d.lines).to.equal(2)
         end)
 
         it("hand-written def.description overrides the derived summary", function()

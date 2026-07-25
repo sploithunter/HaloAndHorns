@@ -46,6 +46,15 @@ return function()
             expect(math.abs(m - 2.5) < 1e-9).to.equal(true)
         end)
 
+        it("adds Overheat's raw fraction to combat and mining pet damage", function()
+            local get = getter({
+                OverheatDamageBuff = 0.3,
+                OverheatDamageBuffUntil = NOW + 60,
+            })
+            local m = EffectiveStats.multiplier("pet_damage", get, NOW, { cap = 5 })
+            expect(math.abs(m - 1.3) < 1e-9).to.equal(true)
+        end)
+
         it("unknown axis is a neutral x1", function()
             expect(EffectiveStats.multiplier("nope", getter({}), NOW, nil)).to.equal(1)
         end)
