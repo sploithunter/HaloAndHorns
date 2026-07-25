@@ -160,6 +160,104 @@ return function()
             expect(#key <= 50).to.equal(true)
         end)
 
+        it("excludes configured internal username prefixes case-insensitively", function()
+            local prefixes = retention.dashboard.excluded_name_prefixes
+            expect(RetentionLogic.isExcludedPlayerName("ColoradoPlays", prefixes)).to.equal(true)
+            expect(RetentionLogic.isExcludedPlayerName("WAXILLIUM_alt", prefixes)).to.equal(true)
+            expect(RetentionLogic.isExcludedPlayerName("waxiliumLegacy", prefixes)).to.equal(true)
+            expect(RetentionLogic.isExcludedPlayerName("sploitdm1", prefixes)).to.equal(true)
+            expect(RetentionLogic.isExcludedPlayerName("MacrosTester", prefixes)).to.equal(true)
+            expect(RetentionLogic.isExcludedPlayerName("StrangerPlayer", prefixes)).to.equal(false)
+        end)
+
+        it("uses a deterministic bounded key for dashboard buckets", function()
+            local bucket = RetentionLogic.dashboardBucketIndex("server-job-123", 16)
+            expect(bucket >= 0 and bucket < 16).to.equal(true)
+            expect(RetentionLogic.dashboardBucketIndex("server-job-123", 16)).to.equal(bucket)
+            expect(RetentionLogic.dashboardBucketKey("2026-07-25", bucket)).to.equal(
+                string.format("d20260725/b%02d", bucket)
+            )
+        end)
+
+        it("uses Roblox place version as the authoritative dashboard build key", function()
+            expect(RetentionLogic.dashboardBuildKey({
+                placeVersion = 42,
+                buildCommit = "abc123",
+            })).to.equal("place:42")
+            expect(RetentionLogic.dashboardBuildKey({ buildCommit = "abc-123" })).to.equal(
+                "commit:abc123"
+            )
+            expect(RetentionLogic.dashboardBuildKey({})).to.equal("unknown")
+        end)
+
+        it("replaces one server contribution without double counting", function()
+            local first = RetentionLogic.replaceDashboardContribution(nil, {
+                jobId = "server-a",
+                dateUtc = "20260725",
+                bucket = 3,
+                bucketCount = 16,
+                updatedAt = 10,
+                counters = {
+                    newPlayers = 2,
+                    starterChoice = { selected = 1, byPet = { kitty = 1 } },
+                },
+            })
+            local second = RetentionLogic.replaceDashboardContribution(first, {
+                jobId = "server-b",
+                dateUtc = "20260725",
+                bucket = 3,
+                bucketCount = 16,
+                updatedAt = 11,
+                counters = {
+                    newPlayers = 3,
+                    starterChoice = { selected = 2, byPet = { doggy = 2 } },
+                },
+            })
+            expect(second.counters.newPlayers).to.equal(5)
+            expect(second.counters.starterChoice.selected).to.equal(3)
+            expect(second.counters.starterChoice.byPet.kitty).to.equal(1)
+            expect(second.counters.starterChoice.byPet.doggy).to.equal(2)
+
+            local replacement = RetentionLogic.replaceDashboardContribution(second, {
+                jobId = "server-a",
+                dateUtc = "20260725",
+                bucket = 3,
+                bucketCount = 16,
+                updatedAt = 12,
+                counters = {
+                    newPlayers = 4,
+                    starterChoice = { selected = 3, byPet = { bear = 3 } },
+                },
+            })
+            expect(replacement.counters.newPlayers).to.equal(7)
+            expect(replacement.counters.starterChoice.selected).to.equal(5)
+            expect(replacement.counters.starterChoice.byPet.kitty).to.equal(nil)
+            expect(replacement.counters.starterChoice.byPet.bear).to.equal(3)
+        end)
+
+        it("derives decision-ready dashboard rates from counters", function()
+            local summary = RetentionLogic.dashboardSummary({
+                sessionsStarted = 10,
+                sessionsEnded = 8,
+                totalSessionSeconds = 800,
+                newPlayers = 5,
+                newPlayerSessionsEnded = 4,
+                newPlayerTotalSessionSeconds = 200,
+                newPlayerTutorialCompleted = 3,
+                exitedBeforeEarnedLevel2 = 2,
+                starterChoice = {
+                    shown = 5,
+                    selected = 4,
+                    totalSecondsToSelect = 40,
+                },
+            })
+            expect(summary.averageCompletedSessionSeconds).to.equal(100)
+            expect(summary.newPlayerTutorialCompletionRate).to.equal(0.6)
+            expect(summary.exitedBeforeEarnedLevel2Rate).to.equal(0.5)
+            expect(summary.starterChoiceConversionRate).to.equal(0.8)
+            expect(summary.averageStarterChoiceSeconds).to.equal(10)
+        end)
+
         it(
             "decides first-session eligibility when a reconciled template is still undecided",
             function()

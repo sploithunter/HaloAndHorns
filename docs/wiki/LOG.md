@@ -1657,3 +1657,15 @@ asset set for future advertising-composition work.
   immutable, automatically incremented publish number. Build cohorts therefore
   retain a trustworthy release boundary even when the human-readable git label
   is stale; the git commit remains the source mapping rather than the sole key.
+
+## 2026-07-25 — Fixed-key external-player retention dashboard
+
+Added `RetentionDashboard_v1`, an idempotent counters-only projection over the existing raw
+retention stream. Sixteen known daily bucket keys replace the prior launch-read dependency on
+listing server shards or downloading 100-event chunks. Internal account families beginning with
+Colorado, waxillium/waxilium, sploit, or Macros are screened before dashboard counting; raw events
+remain intact for forensics. The projection covers starter choice, first-session tutorial reach and
+exit, sessions/time, levels, unlocks, quests, and per-`placeVersion` populations, with an admin Game
+API read and a fixed-key Open Cloud CLI. Evaluated the official GameAnalytics Roblox integration
+used by Colorful Clickers as an optional free-core external mirror; no old embedded credentials were
+reused.

@@ -90,7 +90,9 @@ function RetentionService:Init()
     self._pendingClientContext = {}
     self._rawFlushElapsed = 0
     self._eventConfig = self._config.event_store or {}
+    self._dashboardConfig = self._config.dashboard or {}
     self._rawStore = nil
+    self._dashboardStore = nil
 
     if
         self._eventConfig.enabled ~= false
@@ -105,6 +107,26 @@ function RetentionService:Init()
             self._logger:Warn("Retention event store unavailable", {
                 context = "RetentionService",
                 store = self._eventConfig.name or "RetentionEvents_v1",
+                error = tostring(storeOrError),
+            })
+        end
+    end
+
+    if
+        self._dashboardConfig.enabled ~= false
+        and (not RunService:IsStudio() or self._dashboardConfig.write_in_studio == true)
+    then
+        local ok, storeOrError = pcall(function()
+            return DataStoreService:GetDataStore(
+                self._dashboardConfig.name or "RetentionDashboard_v1"
+            )
+        end)
+        if ok then
+            self._dashboardStore = storeOrError
+        elseif self._logger then
+            self._logger:Warn("Retention dashboard store unavailable", {
+                context = "RetentionService",
+                store = self._dashboardConfig.name or "RetentionDashboard_v1",
                 error = tostring(storeOrError),
             })
         end
@@ -196,6 +218,11 @@ function RetentionService:_beginRawSession(player)
         endQueued = false,
         firstSession = sessionNumber == 1,
         aggregateSeen = {},
+        dashboardEligible = not RetentionLogic.isExcludedPlayerName(
+            player.Name,
+            self._dashboardConfig.excluded_name_prefixes
+        ),
+        dashboardSeen = {},
         server = {
             jobId = game.JobId,
             placeId = game.PlaceId,
@@ -241,13 +268,20 @@ function RetentionService:_aggregateFor(session)
     if aggregate then
         return aggregate
     end
+    local bucketCount = math.max(1, math.floor(tonumber(self._dashboardConfig.bucket_count) or 16))
+    local dashboardBucket = RetentionLogic.dashboardBucketIndex(game.JobId, bucketCount)
     aggregate = {
         key = RetentionLogic.aggregateKey(cohortDate, game.JobId),
+        dashboardKey = RetentionLogic.dashboardBucketKey(cohortDate, dashboardBucket),
+        dashboardBucket = dashboardBucket,
+        dashboardBucketCount = bucketCount,
         cohortDate = cohortDate,
         server = session.server,
         definitions = { tutorialSteps = self:_tutorialDefinitions() },
         counters = RetentionLogic.newAggregate(),
+        dashboardCounters = RetentionLogic.newAggregate(),
         dirty = false,
+        dashboardDirty = false,
         flushing = false,
         closing = false,
     }
@@ -259,6 +293,10 @@ function RetentionService:_aggregateSessionStarted(session)
     local aggregate = self:_aggregateFor(session)
     RetentionLogic.aggregateSessionStarted(aggregate.counters, session.firstSession)
     aggregate.dirty = true
+    if session.dashboardEligible then
+        RetentionLogic.aggregateSessionStarted(aggregate.dashboardCounters, session.firstSession)
+        aggregate.dashboardDirty = true
+    end
 end
 
 function RetentionService:_aggregateEvent(player, name, context)
@@ -276,6 +314,17 @@ function RetentionService:_aggregateEvent(player, name, context)
         session.firstSession
     )
     aggregate.dirty = true
+    if session.dashboardEligible then
+        RetentionLogic.aggregateEvent(
+            aggregate.dashboardCounters,
+            session.dashboardSeen,
+            name,
+            context,
+            os.clock() - (self._sessionStarted[player] or os.clock()),
+            session.firstSession
+        )
+        aggregate.dashboardDirty = true
+    end
 end
 
 function RetentionService:_currentTutorialStep(data)
@@ -302,15 +351,21 @@ function RetentionService:_queueSessionEnd(player, reason)
         reason = reason,
         progression = progression,
     })
-    RetentionLogic.aggregateSessionEnded(self:_aggregateFor(session).counters, {
+    local aggregate = self:_aggregateFor(session)
+    local summary = {
         durationSeconds = os.clock() - (self._sessionStarted[player] or os.clock()),
         firstSession = session.firstSession,
         earnedLevel = progression.level,
         claimedLevel = progression.claimedLevel,
         tutorialDone = tutorialDone,
         currentTutorialStep = currentTutorialStep,
-    })
-    self:_aggregateFor(session).dirty = true
+    }
+    RetentionLogic.aggregateSessionEnded(aggregate.counters, summary)
+    aggregate.dirty = true
+    if session.dashboardEligible then
+        RetentionLogic.aggregateSessionEnded(aggregate.dashboardCounters, summary)
+        aggregate.dashboardDirty = true
+    end
     session.endQueued = true
 end
 
@@ -363,13 +418,38 @@ function RetentionService:_aggregatePayload(aggregate)
     }, self._eventConfig)
 end
 
+function RetentionService:_dashboardContribution(aggregate)
+    return {
+        schemaVersion = math.max(
+            1,
+            math.floor(tonumber(self._dashboardConfig.schema_version) or 1)
+        ),
+        dateUtc = aggregate.cohortDate,
+        bucket = aggregate.dashboardBucket,
+        bucketCount = aggregate.dashboardBucketCount,
+        jobId = game.JobId,
+        updatedAt = os.time(),
+        server = aggregate.server,
+        definitions = aggregate.definitions,
+        exclusions = {
+            playerNamePrefixes = self._dashboardConfig.excluded_name_prefixes,
+        },
+        counters = RetentionLogic.sanitize(aggregate.dashboardCounters, self._eventConfig),
+    }
+end
+
 function RetentionService:_flushAggregate(cohortDate)
     local aggregate = self._aggregates[cohortDate]
-    if not aggregate or aggregate.flushing or not aggregate.dirty then
+    if
+        not aggregate
+        or aggregate.flushing
+        or (not aggregate.dirty and not aggregate.dashboardDirty)
+    then
         return
     end
     aggregate.flushing = true
-    repeat
+
+    if aggregate.dirty and self._rawStore then
         aggregate.dirty = false
         local payload = self:_aggregatePayload(aggregate)
         local ok, err = pcall(function()
@@ -384,15 +464,39 @@ function RetentionService:_flushAggregate(cohortDate)
                     error = tostring(err),
                 })
             end
-            break
         end
-    until not aggregate.closing or not aggregate.dirty
+    end
+
+    if aggregate.dashboardDirty and self._dashboardStore then
+        aggregate.dashboardDirty = false
+        local contribution = self:_dashboardContribution(aggregate)
+        local ok, err = pcall(function()
+            self._dashboardStore:UpdateAsync(aggregate.dashboardKey, function(current)
+                return RetentionLogic.replaceDashboardContribution(current, contribution)
+            end)
+        end)
+        if not ok then
+            aggregate.dashboardDirty = true
+            if self._logger then
+                self._logger:Warn("Retention dashboard counter save failed", {
+                    context = "RetentionService",
+                    key = aggregate.dashboardKey,
+                    error = tostring(err),
+                })
+            end
+        end
+    end
+
     aggregate.flushing = false
 end
 
 function RetentionService:_scheduleAggregateFlush(cohortDate)
     local aggregate = self._aggregates[cohortDate]
-    if not aggregate or aggregate.flushing or not aggregate.dirty then
+    if
+        not aggregate
+        or aggregate.flushing
+        or (not aggregate.dirty and not aggregate.dashboardDirty)
+    then
         return
     end
     task.spawn(function()
@@ -614,7 +718,111 @@ function RetentionService:GetSnapshot(player)
         aggregateKey = aggregate and aggregate.key or nil,
         aggregateDirty = aggregate and aggregate.dirty or false,
     }
+    snapshot.dashboardStore = {
+        enabled = self._dashboardStore ~= nil,
+        name = self._dashboardConfig.name or "RetentionDashboard_v1",
+        eligible = rawSession and rawSession.dashboardEligible or false,
+        key = aggregate and aggregate.dashboardKey or nil,
+        dirty = aggregate and aggregate.dashboardDirty or false,
+    }
     return snapshot
+end
+
+function RetentionService:GetDashboard(dateUtc)
+    if not self._dashboardStore then
+        return { ok = false, reason = "dashboard_store_unavailable" }
+    end
+    dateUtc = tostring(dateUtc or utcDate(os.time())):gsub("[^%d]", "")
+    if #dateUtc ~= 8 then
+        return { ok = false, reason = "invalid_date" }
+    end
+
+    if self._aggregates[dateUtc] then
+        self:_flushAggregate(dateUtc)
+    end
+
+    local bucketCount = math.max(1, math.floor(tonumber(self._dashboardConfig.bucket_count) or 16))
+    local buckets = {}
+    local failures = {}
+    local completed = 0
+    local failureCount = 0
+    local readsCompleted = Instance.new("BindableEvent")
+    for bucket = 0, bucketCount - 1 do
+        task.spawn(function()
+            local key = RetentionLogic.dashboardBucketKey(dateUtc, bucket)
+            local ok, value = pcall(function()
+                return self._dashboardStore:GetAsync(key)
+            end)
+            if ok then
+                if type(value) == "table" then
+                    buckets[bucket + 1] = value
+                end
+            else
+                failures[bucket + 1] = {
+                    key = key,
+                    error = tostring(value),
+                }
+                failureCount += 1
+            end
+            completed += 1
+            if completed == bucketCount then
+                readsCompleted:Fire()
+            end
+        end)
+    end
+    if completed < bucketCount then
+        readsCompleted.Event:Wait()
+    end
+    readsCompleted:Destroy()
+
+    local counters = {}
+    local builds = {}
+    local updatedAt = 0
+    local bucketsPresent = 0
+    for _, bucket in pairs(buckets) do
+        RetentionLogic.mergeNumeric(counters, bucket.counters)
+        updatedAt = math.max(updatedAt, tonumber(bucket.updatedAt) or 0)
+        bucketsPresent += 1
+        for _, contribution in
+            pairs(type(bucket.contributions) == "table" and bucket.contributions or {})
+        do
+            local buildKey = RetentionLogic.dashboardBuildKey(contribution.server)
+            local build = builds[buildKey]
+            if not build then
+                build = {
+                    server = contribution.server,
+                    contributors = 0,
+                    counters = {},
+                }
+                builds[buildKey] = build
+            end
+            build.contributors += 1
+            RetentionLogic.mergeNumeric(build.counters, contribution.counters)
+        end
+    end
+    for _, build in pairs(builds) do
+        build.summary = RetentionLogic.dashboardSummary(build.counters)
+    end
+
+    return {
+        ok = failureCount == 0,
+        partial = failureCount > 0,
+        dateUtc = dateUtc,
+        store = self._dashboardConfig.name or "RetentionDashboard_v1",
+        bucketCount = bucketCount,
+        bucketsPresent = bucketsPresent,
+        readFailures = failures,
+        updatedAt = updatedAt,
+        exclusions = {
+            playerNamePrefixes = self._dashboardConfig.excluded_name_prefixes,
+        },
+        definitions = {
+            tutorialSteps = self:_tutorialDefinitions(),
+        },
+        builds = builds,
+        summary = RetentionLogic.dashboardSummary(counters),
+        counters = counters,
+    }
 end
 
 return RetentionService

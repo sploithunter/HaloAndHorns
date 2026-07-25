@@ -54,6 +54,8 @@ The source-of-truth implementation is documented in
   First Steps completion, and first area unlock.
 - Player profiles persist one-time milestone timestamps and session numbers.
 - `RetentionEvents_v1` stores partitioned raw event chunks and server-sharded daily aggregates.
+- `RetentionDashboard_v1` condenses external-player launch counters into 16 fixed daily keys for a
+  no-list, no-event-download operational read while preserving per-place-version contributions.
 - Session start/end events include progression snapshots.
 - A whitelisted client-context event captures device class, viewport, locale, and input modes.
 - `tools/export_retention.py` exports JSONL/CSV events, aggregate summaries, tutorial funnel,

@@ -247,6 +247,147 @@ function RetentionLogic.aggregateKey(cohortDate, jobId)
     return string.format("a%s/j%s", date, shard)
 end
 
+local function normalizedDate(value)
+    local date = tostring(value or ""):gsub("[^%d]", "")
+    if #date ~= 8 then
+        return "00000000"
+    end
+    return date
+end
+
+function RetentionLogic.isExcludedPlayerName(playerName, prefixes)
+    local name = string.lower(tostring(playerName or ""))
+    for _, prefix in ipairs(type(prefixes) == "table" and prefixes or {}) do
+        local normalized = string.lower(tostring(prefix or ""))
+        if normalized ~= "" and string.sub(name, 1, #normalized) == normalized then
+            return true
+        end
+    end
+    return false
+end
+
+function RetentionLogic.dashboardBucketIndex(jobId, bucketCount)
+    bucketCount = math.max(1, math.floor(tonumber(bucketCount) or 1))
+    local hash = 0
+    local value = tostring(jobId or "")
+    for index = 1, #value do
+        hash = (hash * 31 + string.byte(value, index)) % 2147483647
+    end
+    return hash % bucketCount
+end
+
+function RetentionLogic.dashboardBucketKey(dateUtc, bucketIndex)
+    return string.format(
+        "d%s/b%02d",
+        normalizedDate(dateUtc),
+        math.max(0, math.floor(tonumber(bucketIndex) or 0))
+    )
+end
+
+function RetentionLogic.dashboardContributionId(jobId)
+    local id = tostring(jobId or ""):gsub("[^%w]", "")
+    if id == "" then
+        id = "unknown"
+    end
+    return string.sub(id, 1, 32)
+end
+
+function RetentionLogic.dashboardBuildKey(server)
+    server = type(server) == "table" and server or {}
+    local placeVersion = math.floor(tonumber(server.placeVersion) or 0)
+    if placeVersion > 0 then
+        return "place:" .. tostring(placeVersion)
+    end
+    local commit = tostring(server.buildCommit or ""):gsub("[^%w]", "")
+    if commit ~= "" then
+        return "commit:" .. string.sub(commit, 1, 40)
+    end
+    return "unknown"
+end
+
+function RetentionLogic.mergeNumeric(target, source)
+    target = type(target) == "table" and target or {}
+    for key, value in pairs(type(source) == "table" and source or {}) do
+        if type(value) == "number" then
+            target[key] = (tonumber(target[key]) or 0) + value
+        elseif type(value) == "table" then
+            target[key] = RetentionLogic.mergeNumeric(target[key], value)
+        end
+    end
+    return target
+end
+
+function RetentionLogic.replaceDashboardContribution(current, contribution)
+    contribution = type(contribution) == "table" and contribution or {}
+    local payload = type(current) == "table" and current or {}
+    local contributions = type(payload.contributions) == "table" and payload.contributions or {}
+    local contributionId = RetentionLogic.dashboardContributionId(contribution.jobId)
+    contributions[contributionId] = {
+        updatedAt = math.max(0, math.floor(tonumber(contribution.updatedAt) or 0)),
+        server = contribution.server,
+        counters = type(contribution.counters) == "table" and contribution.counters or {},
+    }
+
+    local counters = {}
+    local updatedAt = 0
+    for _, serverContribution in pairs(contributions) do
+        RetentionLogic.mergeNumeric(counters, serverContribution.counters)
+        updatedAt = math.max(updatedAt, tonumber(serverContribution.updatedAt) or 0)
+    end
+
+    return {
+        kind = "dashboard",
+        schemaVersion = math.max(1, math.floor(tonumber(contribution.schemaVersion) or 1)),
+        dateUtc = normalizedDate(contribution.dateUtc),
+        bucket = math.max(0, math.floor(tonumber(contribution.bucket) or 0)),
+        bucketCount = math.max(1, math.floor(tonumber(contribution.bucketCount) or 1)),
+        updatedAt = updatedAt,
+        definitions = contribution.definitions,
+        exclusions = contribution.exclusions,
+        contributions = contributions,
+        counters = counters,
+    }
+end
+
+local function ratio(numerator, denominator)
+    denominator = tonumber(denominator) or 0
+    if denominator <= 0 then
+        return nil
+    end
+    return (tonumber(numerator) or 0) / denominator
+end
+
+function RetentionLogic.dashboardSummary(counters)
+    counters = type(counters) == "table" and counters or {}
+    local ended = tonumber(counters.sessionsEnded) or 0
+    local newPlayers = tonumber(counters.newPlayers) or 0
+    local newEnded = tonumber(counters.newPlayerSessionsEnded) or 0
+    local starterChoice = type(counters.starterChoice) == "table" and counters.starterChoice or {}
+    local choices = tonumber(starterChoice.selected) or 0
+    return {
+        sessionsStarted = tonumber(counters.sessionsStarted) or 0,
+        sessionsEnded = ended,
+        averageCompletedSessionSeconds = ratio(counters.totalSessionSeconds, ended),
+        newPlayers = newPlayers,
+        newPlayerSessionsEnded = newEnded,
+        averageCompletedNewPlayerSessionSeconds = ratio(
+            counters.newPlayerTotalSessionSeconds,
+            newEnded
+        ),
+        tutorialCompleted = tonumber(counters.tutorialCompleted) or 0,
+        newPlayerTutorialCompleted = tonumber(counters.newPlayerTutorialCompleted) or 0,
+        newPlayerTutorialCompletionRate = ratio(counters.newPlayerTutorialCompleted, newPlayers),
+        exitedBeforeEarnedLevel2 = tonumber(counters.exitedBeforeEarnedLevel2) or 0,
+        exitedBeforeEarnedLevel2Rate = ratio(counters.exitedBeforeEarnedLevel2, newEnded),
+        exitedBeforeClaimedLevel2 = tonumber(counters.exitedBeforeClaimedLevel2) or 0,
+        exitedBeforeClaimedLevel2Rate = ratio(counters.exitedBeforeClaimedLevel2, newEnded),
+        starterChoiceShown = tonumber(starterChoice.shown) or 0,
+        starterChoiceSelected = choices,
+        starterChoiceConversionRate = ratio(choices, starterChoice.shown),
+        averageStarterChoiceSeconds = ratio(starterChoice.totalSecondsToSelect, choices),
+    }
+end
+
 local function matches(step, eventName, ctx)
     if type(step) ~= "table" or step.event ~= eventName then
         return false

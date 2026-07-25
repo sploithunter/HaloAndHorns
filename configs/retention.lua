@@ -110,4 +110,25 @@ return {
         max_table_items = 200,
         max_string_length = 256,
     },
+    dashboard = {
+        enabled = true,
+        name = "RetentionDashboard_v1",
+        schema_version = 1,
+        write_in_studio = false,
+
+        -- A small, fixed key set is intentionally used instead of one global hot key or a
+        -- ListKeysAsync scan. Each server replaces its absolute contribution in one deterministic
+        -- bucket; an admin read merges these 16 known keys.
+        bucket_count = 16,
+
+        -- Quick launch reads exclude internal/test accounts before counters are incremented. Raw
+        -- RetentionEvents_v1 records remain available for forensic work.
+        excluded_name_prefixes = {
+            "colorado",
+            "waxillium",
+            "waxilium", -- Protect the spelling used by the older test-account family too.
+            "sploit",
+            "macros",
+        },
+    },
 }

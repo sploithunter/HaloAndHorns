@@ -60,6 +60,45 @@ tutorial exits by active step, quest/area completions, level events, and earned/
 exit, plus the starter-choice microfunnel and pet split. The raw events remain the source of truth for medians, quantiles, segmentation, and metric
 recomputation; shard sums provide an immediate launch readout.
 
+## External-player quick dashboard
+
+`RetentionDashboard_v1` is the operational projection for daily launch reads. It is a second
+DataStore containing counters only; `RetentionEvents_v1` remains the forensic source of truth.
+The dashboard uses exactly 16 known daily keys:
+
+`dYYYYMMDD/b00` through `dYYYYMMDD/b15`
+
+Each production server hashes its job id into one bucket and uses `UpdateAsync` to replace its
+absolute contribution. Repeated flushes are therefore idempotent rather than additive, while the
+fixed buckets avoid one globally contended key. A read never calls `ListKeysAsync` and never
+downloads event chunks.
+
+The quick dashboard excludes player names beginning with `Colorado`, `waxillium` (and the historical
+`waxilium` spelling), `sploit`, or `Macros`, case-insensitively, before its counters are incremented.
+This filter affects only the operational dashboard; internal traces remain in the raw store for
+testing and diagnosis.
+
+Counters include sessions and completed-session time, new players, the starter-choice shown/selected
+microfunnel and pet split, every first-session tutorial step with time-to-step and active-step exits,
+tutorial completion, quest completion, area unlocks, earned/claimed levels, and first-session exit
+levels. Every server contribution retains `placeVersion` and the generated git build fields, so a
+same-day read exposes build populations instead of silently blending a pre-publish and post-publish
+cohort.
+
+After the build containing this feature is published, the quick CLI read is:
+
+```bash
+export ROBLOX_API_KEY='...'
+python3 tools/read_retention_dashboard.py \
+  --universe-id 10307183003 \
+  --date 20260725 \
+  --json-output retention-dashboard-20260725.json
+```
+
+The same read is available to an authorized live admin through
+`retention.dashboard { dateUtc = "YYYYMMDD" }`. Neither path backfills dates from before this
+instrumentation was published.
+
 Canonical launch definitions:
 
 - Average completed session time = total ended-session seconds / ended sessions.
@@ -91,6 +130,9 @@ environment and is never written to an output file.
 
 - Aggregate: Creator Dashboard → Analytics → Funnels / Explore. The custom event is
   `RetentionMilestone`, broken down by category and milestone id.
+- Daily operational dashboard: `RetentionDashboard_v1`, the fixed-key
+  `tools/read_retention_dashboard.py` reader, or the admin-only `retention.dashboard` Game API
+  command.
 - Individual live player: `retention.get` on the server Game API returns the ordered funnel and
   full milestone list.
 - Full launch dataset: Creator Hub Data Stores Manager can inspect `RetentionEvents_v1`; the
@@ -146,3 +188,17 @@ selected UTC date and the manifest records that distinction. The active producti
 `10307183003` (place `77766176054993`). A stale local universe id can successfully authenticate but
 list a different set of DataStores, so verify the universe before treating a missing
 `RetentionEvents_v1` store as a telemetry failure.
+
+## Optional external analytics
+
+The 2026-07-25 evaluation found that the old Colorful Clickers place used the official
+GameAnalytics Roblox SDK. GameAnalytics currently advertises its core realtime reporting, custom
+events, funnels, cohorts, retention, and custom dashboards as free with no MAU limit; paid features
+add hourly granularity, deeper user analysis, scheduled reports, API access, and raw-data pipelines.
+It is the lowest-friction optional mirror because it has a maintained Roblox SDK and the existing
+semantic `FireGameEvent` bus is already one server-side integration point.
+
+Do not make a third-party dashboard the only retention record. If enabled later, create fresh
+Halo & Horns credentials, keep the secret server-side, send only the bounded launch events/counters,
+and retain the internal dashboard plus raw archive. The extracted Colorful Clickers SDK contains
+old embedded credentials and must not be copied or treated as reusable.
