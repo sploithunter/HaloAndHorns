@@ -199,6 +199,7 @@ function RetentionService:_beginRawSession(player)
         server = {
             jobId = game.JobId,
             placeId = game.PlaceId,
+            placeVersion = game.PlaceVersion,
             universeId = game.GameId,
             privateServer = game.PrivateServerId ~= "",
             buildVersion = self._buildInfo.version,

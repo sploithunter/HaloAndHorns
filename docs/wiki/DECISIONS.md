@@ -165,17 +165,20 @@ updated." Implemented as a git-stamped build info shown on the BootLoader:
 - `scripts/stamp_build.sh` (`mise run stamp`) — regenerates `configs/build_info.lua`
   from git (short SHA, branch, committer date) + the current time, all in Mountain
   Time (`TZ=America/Denver`, DST-correct). Stamps a `dirty` flag for uncommitted changes.
-- The build/release/publish-studio mise tasks run the stamp FIRST, so every publish
-  path re-stamps; rojo syncs the file into Studio for the live-publish workflow.
+- `mise run serve` watches `HEAD`, branch, and working-tree changes and refreshes
+  the stamp continuously. The build/release/publish-studio tasks also stamp
+  internally; Studio publish requires an active Rojo connection and pauses for sync.
 - `src/ReplicatedFirst/BootLoader.client.lua` reads `configs/build_info.lua` and shows
-  `v<version> · <sha>[*]  ·  updated <Mountain Time>` at the bottom of the load screen.
-  Falls back to "dev build" when unstamped (a live rojo Studio session with no stamp).
+  `v<version> · <sha>[*] · place v<Roblox version> · updated <Mountain Time>` at the
+  bottom of the load screen. `game.PlaceVersion` is the authoritative publish boundary:
+  Roblox increments it on every publish even if a local git stamp failed to sync.
 - `configs/build_info.lua` is COMMITTED (with the last stamp) so dev/CI/fresh-clone have
   a valid value; publishes overwrite it. Shape pinned by tests/headless/specs/build_info.spec.luau.
 
-**Publish workflow:** run a publish task (`mise run publish-studio` / `release`) which
-stamps automatically; or if publishing manually from Studio, run `mise run stamp` first
-so rojo-serve syncs the fresh stamp before File → Publish.
+**Publish workflow:** keep Rojo running through `mise run serve`. A publish task
+(`mise run publish-studio` / `release`) stamps automatically; an ordinary manual
+Studio File → Publish receives continuously refreshed source while PlaceVersion
+still supplies a server-authoritative build boundary.
 
 ## Biome Naming: "Earth" is canonical (2026-06-13)
 

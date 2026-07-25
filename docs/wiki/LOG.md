@@ -1651,3 +1651,9 @@ asset set for future advertising-composition work.
   connection, then waits for sync before clicking Publish. The reviewed prologue,
   music, boot, admin, and NPC timers are classified by purpose, restoring the
   architecture gate and allowing the main-branch CI stamper to run again.
+- Live verification then proved that an established Rojo socket still cannot by
+  itself guarantee Studio has applied the latest ModuleScript source. Retention
+  envelopes and the loading marker now also carry `game.PlaceVersion`, Roblox's
+  immutable, automatically incremented publish number. Build cohorts therefore
+  retain a trustworthy release boundary even when the human-readable git label
+  is stale; the git commit remains the source mapping rather than the sole key.

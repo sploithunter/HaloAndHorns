@@ -78,6 +78,7 @@ Add the following fields to the raw session/chunk and aggregate envelope:
 | `buildCommit` | Exact Git commit published to Roblox |
 | `buildBranch` | Expected to be `main` for production |
 | `builtAt` | Published build stamp |
+| `placeVersion` | Roblox-assigned place version; immutable and incremented on every publish |
 | `analyticsSchemaVersion` | Event/envelope schema, incremented when meaning changes |
 | `contentVersion` | Optional stable content/balance identifier |
 
@@ -167,7 +168,7 @@ rehearsal therefore requires genuine published sessions:
 | First-session cohort | Stranger new players with `sessionNumber = 1` |
 | Completed session | A session with a recorded `session_ended` event |
 | Mature D1 cohort | A Roblox new-player cohort whose D1 observation window has closed |
-| Build cohort | Stranger sessions whose server-stamped `buildCommit` is identical |
+| Build cohort | Stranger sessions whose server-stamped `placeVersion` is identical; use `buildCommit` to map that publish to source when available |
 | Campaign cohort | Stranger sessions linked to one allowlisted campaign, reconciled to Ads Manager |
 | Activated new player | Tutorial complete and `fs_boost` first quest complete in the first session |
 
