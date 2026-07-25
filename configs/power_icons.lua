@@ -18,8 +18,8 @@ end
 
 -- Disc + ring IMAGE ids are GENERATED from scripts/asset_manifest.json into power_icons_assets.lua
 -- (single source of truth — never hand-edit ids). Re-run `mise run gen-icons` after uploading icons.
--- discs[element][symbol] covers all 5 colors (earth/fire/desert/ice + neutral=white generic) × 31
--- symbols; rings[shape] = the 5 targeting frames.
+-- discs[element][symbol] covers the origin sets (earth/fire/desert/ice + neutral=purple generic);
+-- the source/manifest also retains a white set for future use. rings[shape] = targeting frames.
 local Assets = require(script.Parent:WaitForChild("power_icons_assets"))
 
 local M = {
@@ -147,7 +147,7 @@ local M = {
         team_shield = { symbol = "armor_chest", target = "self" }, -- Bulwark squad defense
         dodge = { symbol = "eye_hidden", target = "self" }, -- evasion (mirage_step)
         damage_buff = { symbol = "fist", target = "self" }, -- Mountain's Strength (fist = damage BUFF)
-        overheat = { symbol = "fist", target = "self" }, -- temporary fallback until dedicated art lands
+        overheat = { symbol = "overheat", target = "self" }, -- flaming paw: always-on pet damage
         crit_up = { symbol = "critical_hit", target = "self" }, -- Critical Strike (+crit chance, squad) -> crit reticle
         root = { symbol = "user_desk", target = "enemy_aoe" }, -- frost_bind (user_desk = ROOT)
         quicksand = { symbol = "user_desk", target = "enemy_aoe" }, -- Quicksand (desert root; generic root icon for now)

@@ -1,5 +1,5 @@
 assets_dir: /Users/jason/Documents/HaloAndHorns/assets/ui/blue_icons
-icon_count: 55
+icon_count: 56
 
 armor_chest.png
 arrow_right.png
@@ -33,6 +33,7 @@ impact_burst.png
 knockback.png
 magnet.png
 nuke.png
+overheat.png
 pet.png
 pet_transfer.png
 plus.png

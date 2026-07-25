@@ -40,7 +40,7 @@ local PET_EFFECTS = {
         steady = true,
         color = Color3.fromRGB(255, 105, 45),
         label = "HEAT",
-        icon = POWER_ICONS.discFor("lava", "fist"),
+        icon = POWER_ICONS.discFor("lava", "overheat"),
     },
     -- Swift buffs PET speed too (self+pets by design) — pets consume the player's
     -- MoveSpeedBuff in the follow loop, so every card wears the badge (Jason: "there's
