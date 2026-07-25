@@ -51,6 +51,12 @@ local SCHEMAS = {
         power_cast_failed = "table",
         level_up = "table",
     }),
+    gameplay_tips = schema({
+        interval_seconds = "number",
+        display_seconds = "number",
+        max_characters = "number",
+        tips = "table",
+    }),
     gems = schema({ meshes = "table", textures = "table", default_color = "string" }),
     -- NPC principals (docs/CREATOR_SUMMON.md): summonable allies that own a squad and anchor
     -- a real alliance. Distinct from `guardians` above — those are buff-aura models.
