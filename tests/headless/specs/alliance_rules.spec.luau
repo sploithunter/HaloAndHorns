@@ -26,9 +26,28 @@ return function()
             expect(AllianceRules.pickHighest({})).to.equal(nil)
         end)
 
-        it("is wired into the Home cave spawner", function()
-            local source = readFile("src/Server/Services/BaddieSpawnerService.lua")
-            expect(source:find("AllianceRules.pickHighest(vetCandidates", 1, true) ~= nil).to.equal(
+        it("selects Colorado's level and difficulty for the reported Hell 2 patrol", function()
+            local sploit = { level = 19, offset = 0, userId = 20 }
+            local colorado = { level = 50, offset = 3, userId = 30 }
+            local tuner = AllianceRules.pickHighest({ sploit, colorado })
+            expect(tuner).to.equal(colorado)
+            expect(tuner.level + tuner.offset).to.equal(53)
+        end)
+
+        it("is wired into both Home and realm cave spawners", function()
+            local homeSource = readFile("src/Server/Services/BaddieSpawnerService.lua")
+            expect(homeSource:find("AllianceRules.pickHighest(vetCandidates", 1, true) ~= nil).to.equal(
+                true
+            )
+
+            local realmSource = readFile("src/Server/Services/EnemyService.lua")
+            expect(realmSource:find("function EnemyService:_patrolTuner", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(realmSource:find("AllianceRules.pickHighest(candidates", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(realmSource:find("self:_applyTunedEnemyLevel(entry.model", 1, true) ~= nil).to.equal(
                 true
             )
         end)

@@ -1706,3 +1706,14 @@ an apparent double teleport back to Home. Zone spawn safety now waits for the re
 decision and declines placement while the prologue is active; resolved returning-player and
 fail-open paths retain normal realm placement. The decision is isolated in a headless-tested pure
 module so the unresolved, active, absent-service, and resolved cases cannot drift independently.
+
+## 2026-07-26 — Realm patrols tune to the highest player
+
+Fixed Heaven/Hell patrol spawning retaining Roblox's first arbitrary player as the tuning
+representative for an entire realm. EnemyService now retains all players in each active realm and
+uses the shared deterministic highest-nearby rule at each cave, matching Home caves and
+RealmAllianceService. Ambient patrols that predate a cave approach may retune while still
+unengaged, but a running fight never changes level. The selected player's existing
+team-lead/effective-level and `EnemyLevelOffset` path remains the single difficulty authority: an
+unteamed level-50 player at +3 now fields standard level-53 patrol enemies even when a level-19
+player entered the realm first.
