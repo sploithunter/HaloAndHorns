@@ -244,7 +244,10 @@ Later polish:
 - Area-specific currencies/materials for eggs.
 - Egg mastery or hatch milestones.
 - Pity/mercy counters if desired for event/secret balancing.
-- Public hatch announcements for rare tiers.
+- Public hatch announcements shipped 2026-07-26: every effective Mythical/Secret/Exclusive
+  hatch posts a rarity-colored system line to the current server's standard Roblox chat;
+  every Huge hatch also relays across live servers through MessagingService. The source server
+  displays first and de-duplicates its own relay, so a relay failure never hides the local win.
 - Party/shared hatch visibility.
 - Premium/event eggs with stricter odds disclosure and no hidden client-side luck drift.
 

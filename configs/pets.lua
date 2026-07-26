@@ -383,6 +383,19 @@ local petConfig = {
             particle_effects = true,
         },
     },
+    -- Ordered once for every threshold/ranking consumer (hatch luck, chat announcements,
+    -- inventory sorting). Do not infer tier order from pairs(rarities).
+    rarity_order = {
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary",
+        "mythic",
+        "secret",
+        "exclusive",
+        "huge",
+    },
 
     -- === VARIANT TYPES ===
     variants = {
@@ -6486,17 +6499,10 @@ end
 -- Simulate egg hatching with gamepass/luck modifiers.
 -- Ranks two hatch outcomes so the DEVLUCK best-of-N path can keep the rarer one. Higher = rarer:
 -- a huge dominates everything, then species rarity tier, then variant (rainbow > golden > basic).
-local HATCH_RARITY_RANK = {
-    common = 1,
-    uncommon = 2,
-    rare = 3,
-    epic = 4,
-    legendary = 5,
-    mythic = 6,
-    secret = 7,
-    exclusive = 8,
-    huge = 9,
-}
+local HATCH_RARITY_RANK = {}
+for rank, rarityId in ipairs(petConfig.rarity_order) do
+    HATCH_RARITY_RANK[rarityId] = rank
+end
 local HATCH_VARIANT_RANK = { basic = 0, golden = 1, rainbow = 2 }
 local function hatchResultRank(result)
     if not result then

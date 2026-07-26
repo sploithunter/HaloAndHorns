@@ -19,6 +19,8 @@ function PartyService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._layerService = self._modules and self._modules.LayerService
+    self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
+    self._chatAnnouncementService = self._modules and self._modules.ChatAnnouncementService
     self._config = self._configLoader:LoadConfig("party")
     local combat = self._configLoader:LoadConfig("combat")
     self._perExtra = (combat and combat.group_scaling and combat.group_scaling.per_extra_player)
@@ -78,14 +80,14 @@ function PartyService:Join(player, partyId)
         return { ok = false, reason = "party_not_found" }
     end
     if party.members[player.UserId] then
-        return { ok = true, partyId = partyId }
+        return { ok = true, partyId = partyId, joined = false }
     end
     if not PartyMath.canJoin(partySize(party), self._config.max_size) then
         return { ok = false, reason = "party_full" }
     end
     party.members[player.UserId] = true
     self._playerParty[player.UserId] = partyId
-    return { ok = true, partyId = partyId, size = partySize(party) }
+    return { ok = true, partyId = partyId, size = partySize(party), joined = true }
 end
 
 function PartyService:Leave(player)
@@ -166,6 +168,20 @@ function PartyService:Accept(player)
     local joined = self:Join(player, invite.partyId)
     if joined.ok then
         self:_publish(invite.partyId)
+        local party = self._parties[invite.partyId]
+        local lead = party and party.lead and Players:GetPlayerByUserId(party.lead)
+        local progression = self._playerProgressionService
+        if joined.joined and lead and progression and self._chatAnnouncementService then
+            local earnedLevel = progression:GetEarnedLevel(player)
+            local effectiveLevel = progression:GetEffectiveLevel(player)
+            player:SetAttribute("EffectiveLevel", effectiveLevel)
+            self._chatAnnouncementService:AnnounceSidekick(
+                player,
+                lead,
+                earnedLevel,
+                effectiveLevel
+            )
+        end
     end
     return joined
 end

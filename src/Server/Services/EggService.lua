@@ -347,6 +347,9 @@ function EggService:RecordHatchSuccess(player, request, response)
         -- The apex: grandest fireworks + the dedicated huge_fireworks sound. Once per batch.
         fireGameEvent(player, "egg_hatch_huge", { count = hugeCount })
     end
+    if self._chatAnnouncementService then
+        self._chatAnnouncementService:AnnounceHatches(player, response.results)
+    end
     return self:RecordHatchHistory(player, {
         ok = true,
         success = true,
@@ -1715,6 +1718,7 @@ function EggService:Initialize(moduleLoader)
         self._hatchEntitlementService = getModule("HatchEntitlementService")
         self._petIndexService = getModule("PetIndexService")
         self._playerProgressionService = getModule("PlayerProgressionService")
+        self._chatAnnouncementService = getModule("ChatAnnouncementService")
 
         if self._inventoryService then
             Logger:Info("EggService: InventoryService connection established")

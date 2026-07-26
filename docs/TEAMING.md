@@ -173,6 +173,10 @@ All slices landed plus everything the verify shook out:
   requires_level vs EffectiveLevel) then LayerService:UseLayer, landing at the realm entry as
   if the follower touched the portal. Never a same-layer teleport, so the teleport POWER idea
   above keeps its value; knobs in configs/teaming.lua `follow{}`.
+- SIDEKICK CHAT MOMENT (2026-07-26): accepting a formal team invite now posts a cyan system
+  message to the server only when the new member is actually raised above their earned combat
+  level, naming the lead and the resulting EffectiveLevel. Same-level joins, duplicate accepts,
+  and exemplar-down joins stay silent.
 
 ## The Farming Pass (2026-07-09)
 
