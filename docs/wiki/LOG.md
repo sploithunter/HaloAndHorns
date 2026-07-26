@@ -1697,3 +1697,12 @@ long-pressing on touch or right-clicking on desktop toggles a hotbar power's aut
   merged the IDs into `scripts/asset_manifest.json`, and regenerated
   `configs/power_icons_assets.lua`.
 - Overheat now uses its dedicated red/lava icon on the power badge and pet status badge.
+
+## 2026-07-25 — New-player prologue placement race
+
+Fixed a second owner of first-character placement: ZoneService's delayed Home spawn safety could
+run after PrologueService streamed and moved a genuinely new player into the battle room, producing
+an apparent double teleport back to Home. Zone spawn safety now waits for the replicated prologue
+decision and declines placement while the prologue is active; resolved returning-player and
+fail-open paths retain normal realm placement. The decision is isolated in a headless-tested pure
+module so the unresolved, active, absent-service, and resolved cases cannot drift independently.

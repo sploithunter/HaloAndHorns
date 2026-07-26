@@ -10,6 +10,7 @@ local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local PrologueSpawnGate = require(ReplicatedStorage.Shared.Game.PrologueSpawnGate)
 local WorldContext = require(ReplicatedStorage.Shared.Game.WorldContext)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
@@ -314,6 +315,9 @@ function ZoneService:_connectCharacterSpawnSafety(player)
     player.CharacterAdded:Connect(function()
         task.defer(function()
             task.wait(0.2)
+            if not self:_awaitSpawnSafetyDecision(player) then
+                return
+            end
             self:PlacePlayerAtZoneSpawn(
                 player,
                 self._worldBindingService:GetActiveArea(player) or DEFAULT_START_AREA
@@ -323,12 +327,64 @@ function ZoneService:_connectCharacterSpawnSafety(player)
 
     if player.Character then
         task.defer(function()
+            if not self:_awaitSpawnSafetyDecision(player) then
+                return
+            end
             self:PlacePlayerAtZoneSpawn(
                 player,
                 self._worldBindingService:GetActiveArea(player) or DEFAULT_START_AREA
             )
         end)
     end
+end
+
+-- ZoneService and PrologueService both observe CharacterAdded. The prologue decision can yield on
+-- profile/model readiness and streaming, so a fixed delay here is not ordering: the normal Home
+-- placement can land after the battle-room pivot and win the race. Wait on the replicated gate
+-- event instead. An active prologue owns placement; every resolved non-active path falls through
+-- to the normal spawn-safety move.
+function ZoneService:_awaitSpawnSafetyDecision(player)
+    while player.Parent do
+        local action = PrologueSpawnGate.action(
+            workspace:GetAttribute("PrologueServiceInit") == true,
+            player:GetAttribute("InPrologue") == true,
+            player:GetAttribute("PrologueGate")
+        )
+        if action == "place" then
+            return true
+        elseif action == "skip" then
+            return false
+        end
+
+        local changed = Instance.new("BindableEvent")
+        local connections = {
+            player:GetAttributeChangedSignal("InPrologue"):Connect(function()
+                changed:Fire()
+            end),
+            player:GetAttributeChangedSignal("PrologueGate"):Connect(function()
+                changed:Fire()
+            end),
+            player.AncestryChanged:Connect(function()
+                changed:Fire()
+            end),
+        }
+
+        -- Re-check after connecting so a decision that resolved between the first read and the
+        -- subscriptions cannot leave this task waiting for an event that already happened.
+        action = PrologueSpawnGate.action(
+            workspace:GetAttribute("PrologueServiceInit") == true,
+            player:GetAttribute("InPrologue") == true,
+            player:GetAttribute("PrologueGate")
+        )
+        if action == "wait" and player.Parent then
+            changed.Event:Wait()
+        end
+        for _, connection in ipairs(connections) do
+            connection:Disconnect()
+        end
+        changed:Destroy()
+    end
+    return false
 end
 
 function ZoneService:PlacePlayerAtZoneSpawn(player, zoneId)
