@@ -109,6 +109,10 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
   underneath and is restored exactly afterward. Each session shuffles a no-repeat deck so players
   do not always see the same early tips. `Settings → Display Tips` persists the player's opt-out
   under `Settings.ClientPrefs.displayTips`; new players default to tips on.
+- Rarity hatch and team-sidekick announcements use the standard Roblox chat window and default on.
+  `Settings → Chat Announcements` immediately suppresses only these game-authored notices and
+  persists the opt-out under `Settings.ClientPrefs.displayChatAnnouncements`; ordinary player and
+  Roblox system chat remain unchanged.
 - Phase 0 foundation services are in place for profile schema versioning, stat counters, modifier resolution, currency ledger aggregation, deterministic UTC day/seed behavior, and feature flags.
 - Reward bundle currencies now flow through `EconomyService` rather than writing profile balances directly.
 - Realm token earnings and paid layer traversal also flow through `EconomyService`; failed debits no longer move the player.

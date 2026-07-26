@@ -142,5 +142,37 @@ return function()
                 ) ~= nil
             ).to.equal(true)
         end)
+
+        it("persists a default-on client opt-out and exposes it in Settings", function()
+            local client = readFile("src/Client/Systems/ChatAnnouncements.lua")
+            local gameApi = readFile("src/Server/Services/GameAPIService.lua")
+            local settingsPanel = readFile("src/Client/UI/Menus/SettingsPanel.lua")
+
+            expect(string.find(client, "result.displayChatAnnouncements ~= false", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(
+                string.find(
+                    client,
+                    'callBus("settings.set", { displayChatAnnouncements = enabled })',
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(string.find(client, "if enabled then", 1, true) ~= nil).to.equal(true)
+            expect(string.find(gameApi, "prefs.displayChatAnnouncements ~= false", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(
+                string.find(gameApi, "data.Settings.ClientPrefs.displayChatAnnouncements", 1, true)
+                    ~= nil
+            ).to.equal(true)
+            expect(string.find(settingsPanel, '"Chat Announcements"', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(
+                string.find(settingsPanel, "ChatAnnouncements.setEnabled(value)", 1, true) ~= nil
+            ).to.equal(true)
+        end)
     end)
 end

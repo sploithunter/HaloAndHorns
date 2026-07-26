@@ -1693,6 +1693,7 @@ long-pressing on touch or right-clicking on desktop toggles a hotbar power's aut
 
 - Normalized the supplied blue flaming-paw disc from an RGB black-background PNG into true RGBA
   transparency, then generated the standard blue, green, red, yellow, purple, and white variants.
+
 - Uploaded all six variants to project group `15872767`, resolved each Decal to its wrapped Image,
   merged the IDs into `scripts/asset_manifest.json`, and regenerated
   `configs/power_icons_assets.lua`.
@@ -1730,3 +1731,9 @@ rarity order is now an explicit validated configuration list shared by hatch ran
 announcement threshold. Presentation supports both the place's current LegacyChatService
 frontend and the modern TextChatService channel, so a future chat migration needs no feature
 rewrite.
+
+## 2026-07-26 — Chat-announcement preference
+
+- Added a default-on, profile-backed `Settings → Chat Announcements` toggle for Halo & Horns hatch
+  and team-sidekick notices. Turning it off suppresses the game-authored notices immediately without
+  changing player chat or Roblox system messages.

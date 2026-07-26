@@ -1,12 +1,36 @@
 -- Server-authored, rarity-colored system messages in Roblox's standard chat window.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local TextChatService = game:GetService("TextChatService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local ChatAnnouncements = {}
+local enabled = true
+local preferenceResolved = false
+local userChanged = false
+local pendingPayloads = {}
+local MAX_PENDING_PAYLOADS = 20
+local loadBusy = false
+local loadAttempts = 0
+local nextLoadAttemptAt = 0
+local loadConnection = nil
+
+local function callBus(name, args)
+    local remote = ReplicatedStorage:FindFirstChild("GameAPICommand")
+    if not remote then
+        return nil
+    end
+    local ok, envelope = pcall(function()
+        return remote:InvokeServer(name, args or {})
+    end)
+    if not ok or type(envelope) ~= "table" then
+        return nil
+    end
+    return envelope.result or envelope.data or envelope
+end
 
 local function escapeRichText(text)
     return tostring(text)
@@ -79,10 +103,85 @@ local function display(payload)
     )
 end
 
+local function flushPending()
+    local payloads = pendingPayloads
+    pendingPayloads = {}
+    if not enabled then
+        return
+    end
+    for _, payload in ipairs(payloads) do
+        task.spawn(display, payload)
+    end
+end
+
+local function resolvePreference(value)
+    if not userChanged then
+        enabled = value ~= false
+    end
+    preferenceResolved = true
+    if loadConnection then
+        loadConnection:Disconnect()
+        loadConnection = nil
+    end
+    flushPending()
+end
+
+local function requestPreference()
+    if preferenceResolved or loadBusy then
+        return
+    end
+    if loadAttempts >= 30 then
+        -- Preserve the default-on behavior if settings never become available.
+        resolvePreference(true)
+        return
+    end
+
+    loadBusy = true
+    loadAttempts += 1
+    task.spawn(function()
+        local result = callBus("settings.get")
+        loadBusy = false
+        if type(result) == "table" and result.ok ~= false then
+            resolvePreference(result.displayChatAnnouncements ~= false)
+            return
+        end
+
+        nextLoadAttemptAt = os.clock() + (loadAttempts <= 5 and 0.5 or 2)
+    end)
+end
+
+function ChatAnnouncements.isEnabled()
+    return enabled
+end
+
+function ChatAnnouncements.setEnabled(value)
+    userChanged = true
+    enabled = value ~= false
+    preferenceResolved = true
+    flushPending()
+    task.spawn(function()
+        callBus("settings.set", { displayChatAnnouncements = enabled })
+    end)
+end
+
 function ChatAnnouncements.start()
     Signals.ChatAnnouncement.OnClientEvent:Connect(function(payload)
-        task.spawn(display, payload)
+        if not preferenceResolved then
+            if #pendingPayloads < MAX_PENDING_PAYLOADS then
+                table.insert(pendingPayloads, payload)
+            end
+            return
+        end
+        if enabled then
+            task.spawn(display, payload)
+        end
     end)
+    loadConnection = RunService.Heartbeat:Connect(function()
+        if not preferenceResolved and not loadBusy and os.clock() >= nextLoadAttemptAt then
+            requestPreference()
+        end
+    end)
+    requestPreference()
 end
 
 return ChatAnnouncements
