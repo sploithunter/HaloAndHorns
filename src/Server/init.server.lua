@@ -113,6 +113,11 @@ end
 loader:RegisterModule("Logger", ReplicatedStorage.Shared.Utils.Logger)
 loader:RegisterModule("ConfigLoader", ReplicatedStorage.Shared.ConfigLoader, { "Logger" })
 loader:RegisterModule(
+    "ChatAnnouncementService",
+    ServerScriptService.Server.Services.ChatAnnouncementService,
+    { "Logger", "ConfigLoader" }
+)
+loader:RegisterModule(
     "ServerClockService",
     ServerScriptService.Server.Services.ServerClockService,
     { "Logger" }
@@ -574,7 +579,11 @@ loader:RegisterModule(
 loader:RegisterModule(
     "PartyService",
     ServerScriptService.Server.Services.PartyService,
-    { "Logger", "ConfigLoader", "LayerService" }
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "LayerService", "ChatAnnouncementService" },
+        "player_progression",
+        "PlayerProgressionService"
+    )
 )
 -- TradeService: Halo & Horns trading (Feature 19) — session offers, both-confirm
 -- gate, atomic swap, and the trade-history audit log.
@@ -816,6 +825,7 @@ local eggServiceDependencies = {
     "EventService",
     "PetGrantService",
     "HatchEntitlementService",
+    "ChatAnnouncementService",
 }
 appendIfEnabled(eggServiceDependencies, "stats", "StatsService")
 appendIfEnabled(eggServiceDependencies, "modifiers", "ModifierService")
@@ -1031,6 +1041,7 @@ local requiredModules = {
     "SettingsService",
     "HatchEntitlementService",
     "DiagnosticsService",
+    "ChatAnnouncementService",
 }
 appendIfEnabled(requiredModules, "stats", "StatsService")
 appendIfEnabled(requiredModules, "modifiers", "ModifierService")

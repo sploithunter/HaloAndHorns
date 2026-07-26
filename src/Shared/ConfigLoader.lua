@@ -1890,11 +1890,46 @@ function ConfigLoader:_validatePetsConfig(config)
         return ok, err
     end
 
-    for _, key in ipairs({ "version", "rarities", "variants", "pets", "abilities", "egg_sources" }) do
+    for _, key in ipairs({
+        "version",
+        "rarities",
+        "rarity_order",
+        "variants",
+        "pets",
+        "abilities",
+        "egg_sources",
+    }) do
         local expectedType = key == "version" and "string" or "table"
         ok, err = self:_requireType("pets", config[key], expectedType, key)
         if not ok then
             return ok, err
+        end
+    end
+    if not isArray(config.rarity_order) then
+        return self:_configError("pets", "rarity_order", "expected array")
+    end
+    local seenRarities = {}
+    for index, rarityId in ipairs(config.rarity_order) do
+        if
+            type(rarityId) ~= "string"
+            or not config.rarities[rarityId]
+            or seenRarities[rarityId]
+        then
+            return self:_configError(
+                "pets",
+                "rarity_order[" .. index .. "]",
+                "must reference each rarity exactly once"
+            )
+        end
+        seenRarities[rarityId] = true
+    end
+    for rarityId in pairs(config.rarities) do
+        if not seenRarities[rarityId] then
+            return self:_configError(
+                "pets",
+                "rarity_order",
+                "must include rarity " .. tostring(rarityId)
+            )
         end
     end
 

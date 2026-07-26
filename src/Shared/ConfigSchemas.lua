@@ -27,6 +27,12 @@ local SCHEMAS = {
     build_info = schema({ version = "string", commit = "string", branch = "string" }),
     combat = schema({ auto_target = "string", group_scaling = "table" }),
     combat_fx = schema({ origin = "table", reskins = "table", attached = "table" }),
+    chat_announcements = schema({
+        version = "number",
+        hatch = "table",
+        team = "table",
+        limits = "table",
+    }),
     controls = schema({ keybinds = "table", enemy_cycle = "table" }),
     creators = schema({ creators = "table", server_luck = "table", meet = "table" }),
     daily = schema({ max_gap_days = "number", cycle_length = "number", calendar = "table" }),

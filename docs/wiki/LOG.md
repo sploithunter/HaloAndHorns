@@ -1717,3 +1717,16 @@ unengaged, but a running fight never changes level. The selected player's existi
 team-lead/effective-level and `EnemyLevelOffset` path remains the single difficulty authority: an
 unteamed level-50 player at +3 now fields standard level-53 patrol enemies even when a level-19
 player entered the realm first.
+
+## 2026-07-26 — Rarity and sidekick chat announcements
+
+Added a server-authored announcement spine into Roblox's standard TextChatService window.
+Mythical, Secret, and Exclusive hatches are rarity-colored within the current server; Huge
+hatches display locally first and then relay to all live experience servers through the official
+MessagingService global-announcement path with message-id de-duplication and strict payload
+validation. Formal team accepts also announce when the joining player is sidekicked upward,
+naming the lead and resulting EffectiveLevel; ordinary and exemplar joins remain quiet. Pet
+rarity order is now an explicit validated configuration list shared by hatch ranking and the
+announcement threshold. Presentation supports both the place's current LegacyChatService
+frontend and the modern TextChatService channel, so a future chat migration needs no feature
+rewrite.

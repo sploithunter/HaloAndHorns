@@ -1505,6 +1505,21 @@ return {
                 },
             },
         },
+        ChatAnnouncement = {
+            name = "ChatAnnouncement",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "broadcast",
+            topic = "chat.system_announcement",
+            schema = {
+                kind = "tuple",
+                arguments = {
+                    { name = "announcement", type = "table" },
+                },
+            },
+        },
         PlayerDebugInfo = {
             name = "PlayerDebugInfo",
             transport = "reliable_event",
