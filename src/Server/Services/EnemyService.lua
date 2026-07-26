@@ -37,6 +37,7 @@ local EnemyAI = require(ReplicatedStorage.Shared.Game.EnemyAI)
 local PetMeander = require(ReplicatedStorage.Shared.Game.PetMeander)
 local RingSeparate = require(ReplicatedStorage.Shared.Game.RingSeparate)
 local AggroTable = require(ReplicatedStorage.Shared.Game.AggroTable)
+local AllianceRules = require(ReplicatedStorage.Shared.Game.AllianceRules)
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale) -- team-scaled patrol bands
 local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath) -- team-scaled enemy HP
 local Allegiance = require(ReplicatedStorage.Shared.Game.Allegiance)
@@ -5883,6 +5884,29 @@ function EnemyService:_pickPatrolBand(cfg, part)
     return specs, label, scary
 end
 
+-- The realm patrol tuner uses the same proximity radius as the realm alliance. Prefer the
+-- highest player actually at this cave; if nobody is near yet, keep the ambient patrol alive by
+-- falling back to the highest player anywhere in the active realm. The next approach can retune an
+-- unengaged group before combat starts.
+function EnemyService:_patrolTuner(part, folderPlayers)
+    local teamingCfg = self:_teamingConfig()
+    local packCfg = teamingCfg.pack or {}
+    local radius = tonumber(packCfg.patrol_engaged_radius) or tonumber(packCfg.engaged_radius) or 90
+    local nearby = {}
+    for _, candidate in ipairs(folderPlayers or {}) do
+        local hrp = candidate.Character and candidate.Character:FindFirstChild("HumanoidRootPart")
+        if hrp and (hrp.Position - part.Position).Magnitude <= radius then
+            nearby[#nearby + 1] = candidate
+        end
+    end
+    local candidates = #nearby > 0 and nearby or folderPlayers
+    return AllianceRules.pickHighest(candidates, function(candidate)
+        return candidate:GetAttribute("Level")
+    end, function(candidate)
+        return candidate.UserId
+    end)
+end
+
 -- How many crystals have spawned into a zone's ore folder. The patrol gates group spawning on this
 -- (Jason: "make sure the crystals respond into the environment prior to spawning any baddies") — no
 -- ore yet means no patrol route and no baddies, so bands follow the world in rather than precede it.
@@ -5957,6 +5981,30 @@ function EnemyService:_updateBand(part, player, cfg, now, dt)
     end
     band.members = alive
 
+    -- Patrols are ambient and may have spawned before anyone reached this cave. Until the first
+    -- enemy actually engages, let the then-highest nearby player become the tuner. Once combat has
+    -- started the encounter is stable: a late high-level arrival never rewrites a running fight.
+    local tunerSignature = self:_enemyTunerSignature(player)
+    if #band.members > 0 and band.tunerSignature ~= tunerSignature then
+        local engaged = false
+        for _, id in ipairs(band.members) do
+            local entry = self._enemies[id]
+            if entry and entry.aggroPlayerName then
+                engaged = true
+                break
+            end
+        end
+        if not engaged then
+            for _, id in ipairs(band.members) do
+                local entry = self._enemies[id]
+                if entry and entry.model and entry.model.Parent then
+                    self:_applyTunedEnemyLevel(entry.model, entry.def, player)
+                end
+            end
+            band.tunerSignature = tunerSignature
+        end
+    end
+
     -- ONE GROUP AT A TIME (Jason: "despawn a group prior to spawning another so there's only one
     -- group"). We do NOT trickle-refill losses — that read as a second group spawning from the cave
     -- mid-fight. A fresh FULL group is fielded only once the previous one is entirely gone, after a
@@ -6006,6 +6054,7 @@ function EnemyService:_updateBand(part, player, cfg, now, dt)
                     end
                 end
             end
+            band.tunerSignature = self:_enemyTunerSignature(player)
             band.respawnAt = 0 -- group fielded; clock re-arms when this group is wiped
         end
     end
@@ -6106,8 +6155,9 @@ function EnemyService:_patrolTick(now, dt)
     if not maps then
         return
     end
-    -- realm folders that currently hold a player (one representative player per folder = the
-    -- SpawnEnemy anchor; spawn-on-presence avoids the no-player spawn + bounds enemy count)
+    -- Realm folders that currently hold players. Keep every candidate until the spawn boundary:
+    -- Players:GetPlayers() has no level ordering, and retaining only its first member made every
+    -- cave in a shared realm tune to whichever player Roblox happened to return first.
     local activeFolders = {}
     for _, player in ipairs(Players:GetPlayers()) do
         local layer = player:GetAttribute("CurrentLayer")
@@ -6117,19 +6167,24 @@ function EnemyService:_patrolTick(now, dt)
                 local folderName = layer:sub(1, 1):upper() .. layer:sub(2) -- hell_1 -> Hell_1
                 local folder = maps:FindFirstChild(folderName)
                 if folder and player.Character then
-                    activeFolders[folder] = activeFolders[folder] or player
+                    activeFolders[folder] = activeFolders[folder] or {}
+                    table.insert(activeFolders[folder], player)
                 end
             end
         end
     end
-    for folder, player in pairs(activeFolders) do
+    for folder, folderPlayers in pairs(activeFolders) do
         for _, part in ipairs(folder:GetChildren()) do
             if part:IsA("BasePart") and part.Name:match("^BaddieSpawner") then
+                -- Same deterministic highest-nearby rule as Home caves and
+                -- RealmAllianceService. The selected player's EffectiveLevel/TeamLead and
+                -- EnemyLevelOffset remain authoritative inside SpawnEnemy.
+                local tuner = self:_patrolTuner(part, folderPlayers)
                 -- DEBUG spawn isolation: skip caves outside _G.EnemySpawnOnly (layer + cave origin,
                 -- e.g. "Hell_2 Grass"). No-op unless the flag is set.
                 local ctx = folder.Name .. " " .. (self:_caveOrigin(part) or part.Name)
-                if spawnGateAllows(ctx) then
-                    self:_updateBand(part, player, cfg, now, dt)
+                if tuner and spawnGateAllows(ctx) then
+                    self:_updateBand(part, tuner, cfg, now, dt)
                 end
             end
         end
@@ -6308,6 +6363,43 @@ function EnemyService:Start()
     end
 end
 
+function EnemyService:_resolveEnemyTuner(player)
+    local tuner = player
+    local leadName = player:GetAttribute("TeamLead")
+    if type(leadName) == "string" and leadName ~= "" and leadName ~= player.Name then
+        local lead = Players:FindFirstChild(leadName)
+        if lead then
+            tuner = lead
+        end
+    end
+    return tuner
+end
+
+function EnemyService:_enemyTunerSignature(player)
+    local tuner = self:_resolveEnemyTuner(player)
+    return table.concat({
+        tostring(tuner.UserId),
+        tostring(tuner:GetAttribute("EffectiveLevel")),
+        tostring(tuner:GetAttribute("Level")),
+        tostring(tuner:GetAttribute("EnemyLevelOffset")),
+    }, ":")
+end
+
+function EnemyService:_applyTunedEnemyLevel(model, def, player)
+    local tuner = self:_resolveEnemyTuner(player)
+    local playerLevel = tuner:GetAttribute("EffectiveLevel") or tuner:GetAttribute("Level") or 1
+    local rankOff = (
+        self._levelingConfig.rank_offset and self._levelingConfig.rank_offset[def.tier]
+    ) or 0
+    local lvlOffset = math.clamp(tonumber(tuner:GetAttribute("EnemyLevelOffset")) or 0, -3, 3)
+    local baseLevel = math.max(1, (def.level or playerLevel) + lvlOffset)
+    local level = LevelScale.effectiveLevel(baseLevel, rankOff)
+    if model:GetAttribute("Level") ~= level then
+        model:SetAttribute("Level", level)
+    end
+    return level
+end
+
 -- Public: spawn a stationary enemy near the player and engage their pets.
 -- opts (optional, for test spreads): { forward = studs, right = studs } offsets the spawn in the
 -- player's local frame, on top of the base spawn distance.
@@ -6438,23 +6530,9 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     -- and the ±3 difficulty knob come from the TEAM LEAD — the lead's settings define the
     -- team's content (lead 50 at +2 ⇒ level-52 packs, whoever trips the spawner). Solo
     -- players tune to themselves; EffectiveLevel keeps a solo-triggering sidekick correct.
-    local tuner = player
-    local leadName = player:GetAttribute("TeamLead")
-    if type(leadName) == "string" and leadName ~= "" and leadName ~= player.Name then
-        local lead = Players:FindFirstChild(leadName)
-        if lead then
-            tuner = lead
-        end
-    end
-    local playerLevel = tuner:GetAttribute("EffectiveLevel") or tuner:GetAttribute("Level") or 1
-    local rankOff = (
-        self._levelingConfig.rank_offset and self._levelingConfig.rank_offset[def.tier]
-    ) or 0
-    -- Difficulty knob (SettingsService EnemyLevelOffset, -3..+3) — the tuner's, i.e. the
-    -- LEAD's when teamed. Clamped here as a guard; floored at 1.
-    local lvlOffset = math.clamp(tonumber(tuner:GetAttribute("EnemyLevelOffset")) or 0, -3, 3)
-    local baseLevel = math.max(1, (def.level or playerLevel) + lvlOffset)
-    model:SetAttribute("Level", LevelScale.effectiveLevel(baseLevel, rankOff))
+    -- Difficulty knob (SettingsService EnemyLevelOffset, -3..+3) and team-lead resolution
+    -- are centralized here so initial spawns and pre-engagement patrol retunes cannot diverge.
+    self:_applyTunedEnemyLevel(model, def, player)
     -- TEAM HP (docs/TEAMING.md — PartyMath.scaledHp, finally wired): packs facing an engaged
     -- TEAM are meatier as well as more numerous. HP × (1 + per_extra × (engaged−1)), toggled
     -- by teaming pack.hp_scaling; applies to EVERY tier (bosses scale hp-only by design).
