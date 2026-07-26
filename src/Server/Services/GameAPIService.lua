@@ -707,6 +707,7 @@ function GameAPIService:_registerCommands()
                 ok = true,
                 audio = prefs and prefs.audio or nil,
                 displayTips = not prefs or prefs.displayTips ~= false,
+                displayChatAnnouncements = not prefs or prefs.displayChatAnnouncements ~= false,
             }
         end,
     })
@@ -717,6 +718,7 @@ function GameAPIService:_registerCommands()
             return Validators.fields(args, {
                 audio = { type = "table", optional = true },
                 displayTips = { type = "boolean", optional = true },
+                displayChatAnnouncements = { type = "boolean", optional = true },
             })
         end,
         handler = function(context, args)
@@ -740,6 +742,9 @@ function GameAPIService:_registerCommands()
             end
             if type(args.displayTips) == "boolean" then
                 data.Settings.ClientPrefs.displayTips = args.displayTips
+            end
+            if type(args.displayChatAnnouncements) == "boolean" then
+                data.Settings.ClientPrefs.displayChatAnnouncements = args.displayChatAnnouncements
             end
             dataSvc:RequestSave(context.player, "client_prefs")
             return { ok = true }

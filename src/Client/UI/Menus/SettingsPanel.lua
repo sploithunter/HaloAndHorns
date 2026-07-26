@@ -25,6 +25,7 @@ local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local AudioPrefs = require(script.Parent.Parent.Parent.Systems.AudioPrefs)
 local GameplayTips = require(script.Parent.Parent.Parent.Systems.GameplayTips)
+local ChatAnnouncements = require(script.Parent.Parent.Parent.Systems.ChatAnnouncements)
 -- THE shared panel exterior + pill helpers (window shell, area theming, entry pills).
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 -- THE capsule widget used by the currency HUD + ADMIN button (Jason: ON/OFF toggles use this exact pill).
@@ -199,6 +200,7 @@ function SettingsPanel.new()
             scale = 1.0,
             theme = "dark", -- dark, light
             displayTips = true,
+            displayChatAnnouncements = true,
             compactMode = false,
         },
         accessibility = {
@@ -767,7 +769,18 @@ function SettingsPanel:_createUISettings()
         GameplayTips.setEnabled(value)
     end)
 
-    self:_createToggleSetting("Compact Mode", self.settings.ui.compactMode, 23, function(value)
+    self.settings.ui.displayChatAnnouncements = ChatAnnouncements.isEnabled()
+    self:_createToggleSetting(
+        "Chat Announcements",
+        self.settings.ui.displayChatAnnouncements,
+        23,
+        function(value)
+            self.settings.ui.displayChatAnnouncements = value
+            ChatAnnouncements.setEnabled(value)
+        end
+    )
+
+    self:_createToggleSetting("Compact Mode", self.settings.ui.compactMode, 24, function(value)
         self.settings.ui.compactMode = value
     end)
 
@@ -776,7 +789,7 @@ function SettingsPanel:_createUISettings()
     self:_createToggleSetting(
         "Target Highlight",
         Players.LocalPlayer:GetAttribute("TargetHighlightOn") ~= false,
-        24,
+        25,
         function(value)
             Players.LocalPlayer:SetAttribute("TargetHighlightOn", value)
         end
