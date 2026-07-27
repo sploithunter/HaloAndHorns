@@ -1852,3 +1852,10 @@ rewrite.
   server ledger records remain intact for anti-replay and analytics, while repeatable quests and
   any reward that has not been claimed remain visible. When every available quest is complete, the
   menu shows a compact completion message instead of a level-50 wall of claimed cards.
+
+## 2026-07-27 — Hatchery capstone pacing
+
+- Raised the final active Hatchery quest from 250 to 1,000 newly hatched eggs. Its legacy
+  `hatch_250` ID remains stable so previously claimed players are not reissued the quest and active
+  baselines remain valid. The passive lifetime Egg Hatchery achievement ladder continues through
+  10,000 and 25,000 eggs, keeping two substantial milestones beyond the active quest.

@@ -66,6 +66,29 @@ return function()
             end
         end)
 
+        it(
+            "keeps lifetime hatching achievements well beyond the active Hatchery capstone",
+            function()
+                local quests = loadModule("configs/quests.lua")
+                local achievements = loadModule("configs/achievements.lua")
+                local capstone = quests.defs.hatch_250
+                local target = capstone.condition.value
+                local tiersBeyond = 0
+                local maximum = 0
+
+                expect(target).to.equal(1000)
+                expect(capstone.name).to.equal("Hatch 1,000 Eggs")
+                for _, tier in ipairs(achievements.achievements.eggs_hatched.tiers) do
+                    maximum = math.max(maximum, tier.goal)
+                    if tier.goal > target then
+                        tiersBeyond += 1
+                    end
+                end
+                expect(tiersBeyond >= 2).to.equal(true)
+                expect(maximum >= 25000).to.equal(true)
+            end
+        )
+
         it("passes the quest reward family through the progression choke point", function()
             local source = readFile("src/Server/Services/RewardService.lua")
             expect(source:find('source:match("^([^:]+)")', 1, true)).to.be.ok()
