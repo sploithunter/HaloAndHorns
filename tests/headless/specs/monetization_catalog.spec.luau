@@ -3,6 +3,10 @@ local MonetizationCatalog = loadModule("src/Shared/Game/MonetizationCatalog.lua"
 return function()
     describe("MonetizationCatalog", function()
         local config = {
+            creator_entitlements = {
+                grant_all_passes = true,
+                user_ids = { 101, "202" },
+            },
             product_id_mapping = {
                 vip = 101,
                 speed = 202,
@@ -42,6 +46,34 @@ return function()
             expect(owned.vip).to.equal(true)
             expect(owned.speed).to.equal(true)
             expect(owned.invalid).to.equal(nil)
+        end)
+
+        it("grants the complete catalog only to configured creator accounts", function()
+            expect(MonetizationCatalog.creatorOwnsAllPasses(config, 101)).to.equal(true)
+            expect(MonetizationCatalog.creatorOwnsAllPasses(config, 202)).to.equal(true)
+            expect(MonetizationCatalog.creatorOwnsAllPasses(config, 303)).to.equal(false)
+            expect(MonetizationCatalog.creatorOwnsAllPasses({
+                creator_entitlements = { grant_all_passes = false, user_ids = { 101 } },
+            }, 101)).to.equal(false)
+        end)
+
+        it("ships creator pass entitlement for both production creator accounts", function()
+            local shipped = loadModule("configs/monetization.lua")
+            expect(MonetizationCatalog.creatorOwnsAllPasses(shipped, 3200870803)).to.equal(true)
+            expect(MonetizationCatalog.creatorOwnsAllPasses(shipped, 864785140)).to.equal(true)
+            expect(MonetizationCatalog.creatorOwnsAllPasses(shipped, -1)).to.equal(false)
+        end)
+
+        it("routes creator entitlement through the production pass check", function()
+            local source = readFile("src/Server/Services/MonetizationService.lua")
+            expect(source:find("CreatorOwnsAllPasses(player.UserId)", 1, true)).to.be.ok()
+            expect(
+                source:find(
+                    "if creatorOwnsAll or (self._testMode and passConfig.test_mode_enabled) then",
+                    1,
+                    true
+                )
+            ).to.be.ok()
         end)
     end)
 end

@@ -385,14 +385,19 @@ end
 function MonetizationService:CheckPlayerPasses(player)
     local passes = self._productIdMapper:GetAllPasses()
     local ownedPasses = {}
+    local creatorOwnsAll = self._productIdMapper.CreatorOwnsAllPasses
+        and self._productIdMapper:CreatorOwnsAllPasses(player.UserId)
 
     for _, passConfig in ipairs(passes) do
         local passId = self._productIdMapper:GetProductId(passConfig.id)
         if passId then
             local ownsPass = false
 
-            if self._testMode and passConfig.test_mode_enabled then
-                -- In test mode, grant all test-enabled passes
+            if creatorOwnsAll or (self._testMode and passConfig.test_mode_enabled) then
+                -- Production creator entitlement: do not ask MarketplaceService whether the owner
+                -- bought their own experience's passes. Studio's test mode remains the broader
+                -- grant-all path for every test player. Both still travel through the exact normal
+                -- benefit/persistence path below.
                 ownsPass = true
             else
                 -- Check actual ownership
@@ -434,6 +439,7 @@ function MonetizationService:CheckPlayerPasses(player)
         player = player.Name,
         ownedCount = #ownedPasses,
         passes = ownedPasses,
+        creatorEntitlement = creatorOwnsAll == true,
     })
 end
 

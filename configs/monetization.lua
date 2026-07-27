@@ -17,6 +17,17 @@
 -- breaks the rule above.
 
 return {
+    -- Creator accounts receive the complete permanent-pass catalog without having to buy their
+    -- own experience's passes. Keep this separate from configs/creators.lua: that registry owns
+    -- the Meet-The-Creator egg/species contract, while this list is only a monetization entitlement.
+    creator_entitlements = {
+        grant_all_passes = true,
+        user_ids = {
+            3200870803, -- coloradoplays
+            864785140, -- sploithunter
+        },
+    },
+
     -- Product ID Mapping (ConfigID -> Roblox Product ID)
     -- IMPORTANT: create these on the platform (group-owned) and replace ids.
     product_id_mapping = {

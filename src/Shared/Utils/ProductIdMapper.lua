@@ -13,6 +13,7 @@
 ]]
 
 local RunService = game:GetService("RunService")
+local MonetizationCatalog = require(script.Parent.Parent.Game.MonetizationCatalog)
 
 local ProductIdMapper = {}
 ProductIdMapper.__index = ProductIdMapper
@@ -200,6 +201,15 @@ function ProductIdMapper:GetAllPasses()
     end
 
     return monetizationConfig and monetizationConfig.passes or {}
+end
+
+-- Creator accounts own the authored pass catalog in every environment. Studio's broader test mode
+-- remains separate: it grants test-enabled passes to every Studio player.
+function ProductIdMapper:CreatorOwnsAllPasses(userId)
+    if not monetizationConfig then
+        self:_loadConfig()
+    end
+    return MonetizationCatalog.creatorOwnsAllPasses(monetizationConfig, userId)
 end
 
 -- Get premium benefits configuration

@@ -456,6 +456,9 @@ return {
             focus_cost = 20,
             cooldown_seconds = 10,
             effect = "resonance",
+            -- The enhancement gate reads the POWER target, while the effect kind owns the radius.
+            -- Keep both halves explicit so Range is offered and the resolved radius reaches casts.
+            target = "targeted_aoe",
             unlock_level = 1, -- sorts to the TOP of NATURAL (above Magnet's L2) — your first power
             subtitle = "Innate · Farming",
         },
