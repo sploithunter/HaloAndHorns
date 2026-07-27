@@ -55,6 +55,22 @@ return function()
             expect(math.abs(m - 1.3) < 1e-9).to.equal(true)
         end)
 
+        it("adds both creator-owned speed passes and caps Swift at 2x", function()
+            local passOnly = getter({
+                MoveSpeedBuffPass = 0.75, -- VIP +25% plus Speed Boost +50%
+            })
+            expect(EffectiveStats.multiplier("move_speed", passOnly, NOW, { cap = 1 })).to.equal(
+                1.75
+            )
+
+            local withSwift = getter({
+                MoveSpeedBuffPass = 0.75,
+                MoveSpeedBuff = 0.4,
+                MoveSpeedBuffUntil = NOW + 60,
+            })
+            expect(EffectiveStats.multiplier("move_speed", withSwift, NOW, { cap = 1 })).to.equal(2)
+        end)
+
         it("unknown axis is a neutral x1", function()
             expect(EffectiveStats.multiplier("nope", getter({}), NOW, nil)).to.equal(1)
         end)

@@ -7,6 +7,9 @@
 
 local powers = loadModule("configs/powers.lua")
 local enh = loadModule("configs/enhancements.lua")
+local Enhancements = loadModule("src/Shared/Game/Enhancements.lua")
+local PowerRegistry = loadModule("src/Shared/Game/PowerRegistry.lua")
+local PowerStats = loadModule("src/Shared/Game/PowerStats.lua")
 
 return function()
     describe("Resonance innate power", function()
@@ -44,6 +47,30 @@ return function()
             expect(types.focus.families).to.equal("*")
             -- radius is a REAL field, NOT the magnet magnitude-fold (so range scales radiusBase)
             expect((enh.radius_families or {}).farm_boost).never.to.be.ok()
+        end)
+
+        it("accepts Range end to end and widens its live cast radius", function()
+            expect(def.target).to.equal("targeted_aoe")
+            expect((Enhancements.compatibleWith(enh, "range", def, powers.effect_kinds))).to.equal(
+                true
+            )
+
+            local slots = {
+                {
+                    enh = {
+                        type = "range",
+                        origins = {},
+                        level = 10,
+                    },
+                },
+            }
+            local axes = Enhancements.aggregate(enh, slots, 10)
+            local record = PowerRegistry.record("resonance", powers)
+            local effective = PowerStats.resolveEffective(record, {
+                casterLevel = 10,
+                enhancements = axes,
+            })
+            expect(effective.radius).to.near(34.5, 0.001) -- 30 studs × (1 + 15% natural Range)
         end)
     end)
 end

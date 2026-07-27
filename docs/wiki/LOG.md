@@ -1859,3 +1859,14 @@ rewrite.
   `hatch_250` ID remains stable so previously claimed players are not reissued the quest and active
   baselines remain valid. The passive lifetime Egg Hatchery achievement ladder continues through
   10,000 and 25,000 eggs, keeping two substantial milestones beyond the active quest.
+
+## 2026-07-27 — Production creator passes and Resonance Range
+
+- Added an explicit monetization entitlement for `coloradoplays` and `sploithunter`: both accounts
+  now own the complete permanent-pass catalog in production and apply it through the same persisted
+  benefit path as Marketplace ownership. This closes the Studio/production split where Studio's
+  grant-all test mode hid the missing creator path.
+- The expected creator movement totals are pinned at 1.75× from VIP + Speed Boost, and 2.00× with
+  Swift because the movement axis caps at +100%.
+- Restored Resonance's missing power-level `targeted_aoe` declaration. The enhancement gate can now
+  offer Range, and an end-to-end spec proves a natural Range enhancement expands 30 studs to 34.5.

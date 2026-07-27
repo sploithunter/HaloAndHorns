@@ -1118,3 +1118,15 @@ Last checked: 2026-07-27
 - The active Hatchery chain ends at 1,000 newly hatched eggs (25 → 100 → 1,000). Passive lifetime
   hatching achievements continue at 10,000 and 25,000 eggs beyond that capstone. The final quest's
   internal legacy ID remains unchanged to preserve existing claims and activation baselines.
+
+## Creator pass entitlement and Resonance Range
+
+Last checked: 2026-07-27
+
+- Production creator accounts `coloradoplays` (`3200870803`) and `sploithunter` (`864785140`)
+  receive every authored permanent game pass through the normal benefit/persistence path. This is
+  independent of Studio's grant-all test mode and of the Meet-The-Creator egg registry.
+- VIP (+25%) and Speed Boost (+50%) therefore publish `Eff_Speed = 1.75` with Swift off; Swift's
+  +40% reaches the movement-axis ceiling and publishes `2.00`.
+- Resonance declares `targeted_aoe` on both its power and effect-kind contracts. A natural Range
+  enhancement expands its 30-stud pulse to 34.5 studs; stronger grades expand it further.

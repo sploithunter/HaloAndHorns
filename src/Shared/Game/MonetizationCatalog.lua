@@ -46,4 +46,20 @@ function MonetizationCatalog.ownedSet(snapshot)
     return owned
 end
 
+-- Server-authoritative creator entitlement. This deliberately lives in the monetization config,
+-- not the Meet-The-Creator registry: a creator account may need owner benefits without authoring a
+-- public meet egg/species. Numeric/string IDs compare identically so config serialization is safe.
+function MonetizationCatalog.creatorOwnsAllPasses(config, userId)
+    local entitlement = config and config.creator_entitlements
+    if not (entitlement and entitlement.grant_all_passes == true) then
+        return false
+    end
+    for _, configuredId in ipairs(entitlement.user_ids or {}) do
+        if tostring(configuredId) == tostring(userId) then
+            return true
+        end
+    end
+    return false
+end
+
 return MonetizationCatalog
