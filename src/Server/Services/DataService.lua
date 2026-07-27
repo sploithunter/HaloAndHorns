@@ -39,7 +39,7 @@ local DEFAULT_SAVE_DEBOUNCE_SECONDS = 15
 local CRITICAL_SAVE_DEBOUNCE_SECONDS = 1
 local PERIODIC_SAVE_SECONDS = 60
 local SAVE_CONFIRM_TIMEOUT_SECONDS = 10
-local CURRENT_SCHEMA_VERSION = 11
+local CURRENT_SCHEMA_VERSION = 12
 
 local function countInventoryItems(inventory)
     local counts = {}
@@ -131,6 +131,9 @@ local function generateProfileTemplate(configLoader)
             SFXEnabled = true,
             GraphicsQuality = "Auto",
             TrialGroupScale = 1.0,
+            -- Listed creator accounts may deliberately suppress every game-pass benefit for
+            -- production balance testing. Missing/legacy values default ON.
+            CreatorGamePassesEnabled = true,
             -- Display preferences for UI elements
             DisplayPreferences = {
                 inventory = "images",
@@ -518,6 +521,17 @@ SchemaMigrations[10] = function(self, data)
     local migrations = self:_migratePetsToStorageV2(data)
     data.SchemaVersion = 11
     return migrations + 1
+end
+
+-- v11 -> v12: persisted creator-only balance-test gate. Existing creator profiles keep their
+-- current all-passes behavior; the admin control can subsequently store false.
+SchemaMigrations[11] = function(_self, data)
+    data.Settings = data.Settings or {}
+    if data.Settings.CreatorGamePassesEnabled == nil then
+        data.Settings.CreatorGamePassesEnabled = true
+    end
+    data.SchemaVersion = 12
+    return 1
 end
 
 function DataService:Init()

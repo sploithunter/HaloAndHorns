@@ -34,6 +34,7 @@ return {
         giveItems = true, -- Can give items to players
         unlockZones = true, -- Can unlock configured areas/zones for testing
         manageHatchEntitlements = true, -- Can toggle hatch unlock/shop-stub attributes
+        manageCreatorPassBenefits = true, -- Listed creators may toggle their own pass test gate
         resetData = true, -- Can reset player data
         forceSaveData = true, -- Can force-save own profile during testing
         manageEffects = true, -- Can start/stop effects

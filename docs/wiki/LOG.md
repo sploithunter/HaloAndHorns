@@ -1870,3 +1870,13 @@ rewrite.
   Swift because the movement axis caps at +100%.
 - Restored Resonance's missing power-level `targeted_aoe` declaration. The enhancement gate can now
   offer Range, and an end-to-end spec proves a natural Range enhancement expands 30 studs to 34.5.
+
+## 2026-07-27 — Creator game-pass balance gate
+
+- Added a listed-creator-only `Game Passes: ON/OFF` toggle to the production admin panel. Its
+  `Settings.CreatorGamePassesEnabled` save field (schema v12) persists across rejoins and defaults
+  ON for existing profiles.
+- OFF forces a trustworthy no-pass balance state even when the creator grant or Marketplace says a
+  pass is owned. Reconciliation clears every authored pass channel (multipliers, features, perks,
+  permanent effects, speed, auto-collector range, owned-pass shop state) and refreshes pet capacity
+  immediately; ON recalculates the full creator catalog. Roblox Premium remains independent.

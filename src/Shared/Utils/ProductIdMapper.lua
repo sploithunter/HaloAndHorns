@@ -212,6 +212,13 @@ function ProductIdMapper:CreatorOwnsAllPasses(userId)
     return MonetizationCatalog.creatorOwnsAllPasses(monetizationConfig, userId)
 end
 
+function ProductIdMapper:GetCreatorPassGateState(userId, settings)
+    if not monetizationConfig then
+        self:_loadConfig()
+    end
+    return MonetizationCatalog.creatorPassGateState(monetizationConfig, userId, settings)
+end
+
 -- Get premium benefits configuration
 function ProductIdMapper:GetPremiumBenefits()
     if not monetizationConfig then

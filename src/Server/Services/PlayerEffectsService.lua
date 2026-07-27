@@ -363,6 +363,39 @@ function PlayerEffectsService:ApplyPermanentEffect(player, effectId, stats)
     return success
 end
 
+-- Remove one permanent pass/premium effect without disturbing earned/timed effects. Permanent
+-- custom effects do not live in rate_limit.effectModifiers, so RemoveEffect cannot recover their
+-- stat deltas; the caller supplies the same authored stats used at application time.
+function PlayerEffectsService:RemovePermanentEffect(player, effectId, stats)
+    local permanentEffectId = "permanent_" .. tostring(effectId)
+    local timedBoosts = player:FindFirstChild("TimedBoosts")
+    local effectFolder = timedBoosts and timedBoosts:FindFirstChild(permanentEffectId)
+    local removed = false
+
+    if effectFolder then
+        self:_applyStatModifiers(player, { statModifiers = stats or {} }, -1)
+        effectFolder:Destroy()
+        removed = true
+    end
+
+    local data = self._dataService:GetData(player)
+    if data and data.ActiveEffects and data.ActiveEffects[permanentEffectId] ~= nil then
+        data.ActiveEffects[permanentEffectId] = nil
+        removed = true
+    end
+
+    if removed then
+        self:_sendUnifiedEffectsUpdate(player, self:GetActiveEffects(player))
+        self._logger:Info("Permanent effect removed", {
+            player = player.Name,
+            effectId = effectId,
+            permanentId = permanentEffectId,
+        })
+    end
+
+    return removed
+end
+
 -- Clear all effects for a player
 function PlayerEffectsService:ClearAllEffects(player)
     local timedBoosts = player:FindFirstChild("TimedBoosts")

@@ -1126,6 +1126,11 @@ Last checked: 2026-07-27
 - Production creator accounts `coloradoplays` (`3200870803`) and `sploithunter` (`864785140`)
   receive every authored permanent game pass through the normal benefit/persistence path. This is
   independent of Studio's grant-all test mode and of the Meet-The-Creator egg registry.
+- Listed creators now see a persisted `Game Passes: ON/OFF` control in the production admin panel.
+  OFF is a deliberate true no-pass balance-test state: it ignores both creator grants and real
+  Marketplace ownership, clears pass multipliers/features/perks/effects/runtime attributes
+  immediately, refreshes equip capacity and shop ownership, and survives rejoin. ON recomputes and
+  restores the full creator catalog. Non-creators cannot use the override; Premium remains separate.
 - VIP (+25%) and Speed Boost (+50%) therefore publish `Eff_Speed = 1.75` with Swift off; Swift's
   +40% reaches the movement-axis ceiling and publishes `2.00`.
 - Resonance declares `targeted_aoe` on both its power and effect-kind contracts. A natural Range

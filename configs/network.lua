@@ -886,6 +886,17 @@ return {
             handler = "AdminToolsService.SetHatchEntitlement",
             schema = { kind = "tuple", arguments = { { name = "request", type = "table" } } },
         },
+        Admin_SetCreatorPassBenefits = {
+            name = "Admin_SetCreatorPassBenefits",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "admin",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 10,
+            handler = "AdminToolsService.SetCreatorPassBenefits",
+            schema = { kind = "tuple", arguments = { { name = "request", type = "table" } } },
+        },
         Admin_SpawnEnemy = {
             name = "Admin_SpawnEnemy",
             transport = "reliable_event",

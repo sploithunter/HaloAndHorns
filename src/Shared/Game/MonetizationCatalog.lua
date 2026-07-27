@@ -62,4 +62,14 @@ function MonetizationCatalog.creatorOwnsAllPasses(config, userId)
     return false
 end
 
+-- Creator-only production balance gate. Non-creators are not eligible for this override; their
+-- real Marketplace ownership is always authoritative. Legacy creator profiles default ON.
+function MonetizationCatalog.creatorPassGateState(config, userId, settings)
+    local eligible = MonetizationCatalog.creatorOwnsAllPasses(config, userId)
+    return {
+        eligible = eligible,
+        enabled = eligible and not (settings and settings.CreatorGamePassesEnabled == false),
+    }
+end
+
 return MonetizationCatalog

@@ -102,6 +102,9 @@ return function()
             expect(#networkConfig.packets.Admin_GrantAreaPowers.schema.arguments).to.equal(0)
             expect(networkConfig.packets.Admin_CastPower.rate_limit).to.equal(120)
             expect(networkConfig.packets.Admin_RequestHatchSimulation.delivery).to.equal("request")
+            expect(networkConfig.packets.Admin_SetCreatorPassBenefits.authorization).to.equal(
+                "admin"
+            )
             expect(networkConfig.packets.Admin_EventCommand.name).to.equal("Admin_EventCommand")
             expect(networkConfig.packets.ShopItemsRequest.direction).to.equal("client_to_server")
             expect(networkConfig.packets.ShopItems.direction).to.equal("server_to_client")
@@ -230,6 +233,9 @@ return function()
             expect(signals.Admin_ResetToBeginning.name).to.equal("Admin_ResetToBeginning")
             expect(signals.Admin_SetZoneLock.name).to.equal("Admin_SetZoneLock")
             expect(signals.Admin_SetHatchEntitlement.name).to.equal("Admin_SetHatchEntitlement")
+            expect(signals.Admin_SetCreatorPassBenefits.name).to.equal(
+                "Admin_SetCreatorPassBenefits"
+            )
             expect(signals.Admin_SpawnEnemy.name).to.equal("Admin_SpawnEnemy")
             expect(signals.Squad_AdminKill.name).to.equal("Squad_AdminKill")
             expect(signals.Admin_SetArea.name).to.equal("Admin_SetArea")
@@ -285,7 +291,7 @@ return function()
             expect(signals.GameEvent.name).to.equal("GameEvent")
             expect(signals.ChatAnnouncement.name).to.equal("ChatAnnouncement")
             expect(signals.PlayerDebugInfo.name).to.equal("PlayerDebugInfo")
-            expect(#created).to.equal(117)
+            expect(#created).to.equal(118)
         end)
 
         it("omits Studio-only packets from a production registry", function()

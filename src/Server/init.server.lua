@@ -925,6 +925,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 EnhancementService = modules:Get("EnhancementService"),
                 HotbarService = modules:Get("HotbarService"),
                 FutureCallService = modules:Get("FutureCallService"),
+                MonetizationService = modules:Get("MonetizationService"),
                 PrologueService = modules:Get("PrologueService"),
                 StarterPetService = modules:Get("StarterPetService"),
             })

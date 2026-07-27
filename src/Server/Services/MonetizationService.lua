@@ -382,43 +382,116 @@ function MonetizationService:_handleGamePassPurchase(player, gamePassId)
 end
 
 -- Check game passes for a player
+function MonetizationService:GetCreatorPassGateState(player)
+    local data = self._dataService:GetData(player)
+    local settings = data and data.Settings or nil
+    local state = self._productIdMapper:GetCreatorPassGateState(player.UserId, settings)
+    state.active = state.eligible and state.enabled
+    return state
+end
+
+-- Pass ownership is recomputed, so clear every authored pass channel first. This makes the creator
+-- balance gate immediate and also prevents stale pass benefits when Marketplace ownership changes.
+-- Premium keys are separately prefixed and earned/timed effects are not touched.
+function MonetizationService:_clearPassBenefits(player, passes)
+    for _, passConfig in ipairs(passes or {}) do
+        local benefits = passConfig.benefits or {}
+
+        for stat in pairs(benefits.multipliers or {}) do
+            self._dataService:SetMultiplier(player, stat, nil)
+        end
+        for feature in pairs(benefits.features or {}) do
+            self._dataService:SetFeature(player, feature, nil)
+        end
+        for perk in pairs(benefits.perks or {}) do
+            self._dataService:SetPerk(player, perk, nil)
+        end
+
+        local effect = benefits.effects
+        if effect and effect.permanent and self._playerEffectsService.RemovePermanentEffect then
+            self._playerEffectsService:RemovePermanentEffect(player, effect.id, effect.stats)
+        end
+    end
+
+    self._speedPassApplied = self._speedPassApplied or {}
+    self._speedPassApplied[player.UserId] = {}
+    player:SetAttribute("MoveSpeedBuffPass", 0)
+    player:SetAttribute("AutoCollectRange", nil)
+end
+
+-- Persisted creator-only switch used for production balancing. Disabled means a true no-pass state:
+-- even real Marketplace ownership is ignored until the listed creator turns the gate back on.
+function MonetizationService:SetCreatorPassBenefitsEnabled(player, enabled)
+    local state = self:GetCreatorPassGateState(player)
+    if not state.eligible then
+        return false, "Only listed creator accounts can use the game-pass test gate", state
+    end
+
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false, "Player profile is not loaded", state
+    end
+
+    data.Settings = data.Settings or {}
+    data.Settings.CreatorGamePassesEnabled = enabled == true
+    self._dataService:RequestSave(player, "creator_game_pass_gate", { critical = true })
+
+    self:CheckPlayerPasses(player)
+    self:CheckPremiumStatus(player)
+    self:_sendOwnedPasses(player)
+
+    state = self:GetCreatorPassGateState(player)
+    self._logger:Info("Creator game-pass benefits toggled", {
+        player = player.Name,
+        userId = player.UserId,
+        enabled = state.enabled,
+    })
+    return true,
+        state.enabled and "Creator game-pass benefits ON" or "Creator game-pass benefits OFF",
+        state
+end
+
 function MonetizationService:CheckPlayerPasses(player)
     local passes = self._productIdMapper:GetAllPasses()
     local ownedPasses = {}
-    local creatorOwnsAll = self._productIdMapper.CreatorOwnsAllPasses
-        and self._productIdMapper:CreatorOwnsAllPasses(player.UserId)
+    local creatorGate = self:GetCreatorPassGateState(player)
+    local creatorOwnsAll = creatorGate.active
+    local forceNoPasses = creatorGate.eligible and not creatorGate.enabled
 
-    for _, passConfig in ipairs(passes) do
-        local passId = self._productIdMapper:GetProductId(passConfig.id)
-        if passId then
-            local ownsPass = false
+    self:_clearPassBenefits(player, passes)
 
-            if creatorOwnsAll or (self._testMode and passConfig.test_mode_enabled) then
-                -- Production creator entitlement: do not ask MarketplaceService whether the owner
-                -- bought their own experience's passes. Studio's test mode remains the broader
-                -- grant-all path for every test player. Both still travel through the exact normal
-                -- benefit/persistence path below.
-                ownsPass = true
-            else
-                -- Check actual ownership
-                local success, result = pcall(function()
-                    return MarketplaceService:UserOwnsGamePassAsync(player.UserId, passId)
-                end)
+    if not forceNoPasses then
+        for _, passConfig in ipairs(passes) do
+            local passId = self._productIdMapper:GetProductId(passConfig.id)
+            if passId then
+                local ownsPass = false
 
-                if success then
-                    ownsPass = result
+                if creatorOwnsAll or (self._testMode and passConfig.test_mode_enabled) then
+                    -- Production creator entitlement: do not ask MarketplaceService whether the
+                    -- owner bought their own experience's passes. Studio's test mode remains the
+                    -- broader grant-all path, except when a listed creator deliberately gates passes
+                    -- OFF for balance testing.
+                    ownsPass = true
                 else
-                    self._logger:Error("Failed to check game pass ownership", {
-                        player = player.Name,
-                        pass = passConfig.id,
-                        error = result,
-                    })
-                end
-            end
+                    local success, result = pcall(function()
+                        return MarketplaceService:UserOwnsGamePassAsync(player.UserId, passId)
+                    end)
 
-            if ownsPass then
-                table.insert(ownedPasses, passConfig.id)
-                self:_applyPassBenefits(player, passConfig)
+                    if success then
+                        ownsPass = result
+                    else
+                        self._logger:Error("Failed to check game pass ownership", {
+                            player = player.Name,
+                            pass = passConfig.id,
+                            error = result,
+                        })
+                    end
+                end
+
+                if ownsPass then
+                    table.insert(ownedPasses, passConfig.id)
+                    self:_applyPassBenefits(player, passConfig)
+                end
             end
         end
     end
@@ -440,6 +513,8 @@ function MonetizationService:CheckPlayerPasses(player)
         ownedCount = #ownedPasses,
         passes = ownedPasses,
         creatorEntitlement = creatorOwnsAll == true,
+        creatorGateEnabled = creatorGate.enabled,
+        forcedNoPasses = forceNoPasses,
     })
 end
 
