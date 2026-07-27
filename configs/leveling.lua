@@ -32,6 +32,7 @@ return {
         xp_mult_by_source = {
             mining = 2.5,
             combat = 2.5,
+            quest = 1.0, -- quest bundles are authored completion lumps; never multiply them again
         },
         crystal_mult = 1.5,
     },

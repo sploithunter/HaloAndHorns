@@ -23,6 +23,19 @@
 local TRIALS_UNLOCK_LEVEL = 14
 
 return {
+    -- Every claimed quest pays a moderate XP completion bump unless its reward authors an explicit
+    -- amount. The bump follows the player's CURRENT level-bar step so it stays meaningful without
+    -- becoming the primary leveling source; later quests in a chain pay a little more.
+    claim_experience = {
+        enabled = true,
+        base_step_fraction = 0.08, -- first quest in a track
+        per_order_fraction = 0.02,
+        max_step_fraction = 0.18,
+        minimum_xp = 50,
+        fallback_xp = 100,
+        round_to = 10,
+    },
+
     -- Track metadata: id -> { title, order, unlock_level }. order = display priority; unlock_level =
     -- the earned Level at which the track appears (hidden below it). first_steps auto-activates.
     tracks = {
@@ -80,7 +93,7 @@ return {
                 value = 3,
                 since_start = true,
             },
-            reward = { currencies = { gems = 5 } },
+            reward = { experience = 50, currencies = { gems = 5 } },
         },
         fs_mine = {
             track = "first_steps",
@@ -93,7 +106,7 @@ return {
                 value = 20, -- was 30 (Jason 2026-07-13: tighten the onramp pacing)
                 since_start = true,
             },
-            reward = { currencies = { gems = 10 } },
+            reward = { experience = 100, currencies = { gems = 10 } },
         },
         fs_grow = {
             track = "first_steps",
@@ -106,7 +119,7 @@ return {
                 value = 10,
                 since_start = true,
             },
-            reward = { currencies = { gems = 10 } },
+            reward = { experience = 100, currencies = { gems = 10 } },
         },
         fs_coffers = {
             track = "first_steps",
@@ -119,7 +132,7 @@ return {
                 value = 1500,
                 since_start = true,
             },
-            reward = { currencies = { gems = 10 } },
+            reward = { experience = 150, currencies = { gems = 10 } },
         },
         -- id CHANGED fs_welcome -> fs_cave with the combat retune: since_start
         -- baselines persist BY QUEST ID, so the old id carried a breakables
@@ -139,10 +152,11 @@ return {
                 value = 5,
                 since_start = true,
             },
-            -- Onramp capstone: a guaranteed jump to Level 2 (700 XP = the full L2 bar) + a head start on
-            -- the first area gate (Meadow = 2000 grass_coins) + gems.
+            -- First Steps pays exactly 700 authored XP ACROSS its five claims. The capstone supplies
+            -- the final 300 plus a head start on the first area gate and gems; distributing the same
+            -- total makes every claim feel rewarding without accelerating the onramp.
             reward = {
-                experience = 700,
+                experience = 300,
                 currencies = { gems = 15, area_coins = 1500 },
             },
         },
