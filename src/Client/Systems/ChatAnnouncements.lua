@@ -54,8 +54,8 @@ local function colorFromHex(colorHex)
 end
 
 local function displayLegacy(text, colorHex)
-    -- This place currently runs LegacyChatService. SetCore can race CoreScripts at join,
-    -- so retry briefly instead of losing the first announcement of the session.
+    -- SetCore can race CoreScripts at join, so retry briefly instead of losing the first
+    -- announcement on clients that still expose only the legacy renderer.
     local function attempt(remaining)
         local ok = pcall(StarterGui.SetCore, StarterGui, "ChatMakeSystemMessage", {
             Text = text,
@@ -73,6 +73,30 @@ local function displayLegacy(text, colorHex)
     attempt(5)
 end
 
+local function displayTextChannel(payload, colorHex)
+    -- ChatVersion is not a reliable renderer probe. Roblox can report LegacyChatService while the
+    -- visible chat window is backed by RBXGeneral (observed in Studio and production-compatible
+    -- clients). Prefer the live TextChannel whenever it exists, then fall back to SetCore.
+    local channels = TextChatService:WaitForChild("TextChannels", 5)
+    if not channels then
+        return false
+    end
+    local channel = channels:FindFirstChild("RBXGeneral") or channels:FindFirstChild("RBXSystem")
+    if not channel or not channel:IsA("TextChannel") then
+        return false
+    end
+    local richText = ('<font color="%s"><b>%s</b></font>'):format(
+        colorHex,
+        escapeRichText(payload.text)
+    )
+    return pcall(function()
+        channel:DisplaySystemMessage(
+            richText,
+            ("HaloAndHorns:%s:%s"):format(tostring(payload.kind), tostring(payload.scope))
+        )
+    end)
+end
+
 local function display(payload)
     if type(payload) ~= "table" or type(payload.text) ~= "string" then
         return
@@ -81,26 +105,10 @@ local function display(payload)
             and payload.colorHex:match("^#%x%x%x%x%x%x$")
             and payload.colorHex
         or "#FFFFFF"
-    if TextChatService.ChatVersion ~= Enum.ChatVersion.TextChatService then
-        displayLegacy(payload.text, colorHex)
+    if displayTextChannel(payload, colorHex) then
         return
     end
-    local channels = TextChatService:WaitForChild("TextChannels", 5)
-    if not channels then
-        return
-    end
-    local channel = channels:FindFirstChild("RBXGeneral") or channels:FindFirstChild("RBXSystem")
-    if not channel or not channel:IsA("TextChannel") then
-        return
-    end
-    local richText = ('<font color="%s"><b>%s</b></font>'):format(
-        colorHex,
-        escapeRichText(payload.text)
-    )
-    channel:DisplaySystemMessage(
-        richText,
-        ("HaloAndHorns:%s:%s"):format(tostring(payload.kind), tostring(payload.scope))
-    )
+    displayLegacy(payload.text, colorHex)
 end
 
 local function flushPending()
