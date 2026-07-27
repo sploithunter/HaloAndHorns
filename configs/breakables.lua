@@ -1265,7 +1265,9 @@ end
 
 -- Active-mining BOOST (rewards active players over passive). Clicking the node you're mining
 -- builds its Boost (server-side, in BreakableSpawner); higher Boost amplifies YOUR pets' damage
--- on that node (applied in PetFollowService) — firewall-clean: the player amplifies, pets deal.
+-- on that node (applied in PetFollowService) and its currency + mining XP payout at break.
+-- This makes active clicking and Resonance improve both throughput and yield.
+-- Firewall-clean: the player amplifies, pets deal.
 -- Small nodes die in one hit so boost only matters on big/substantial targets (by design — not
 -- a clicker game). Boost decays when you stop, so sustained focus is required.
 M.boost = {
@@ -1273,6 +1275,7 @@ M.boost = {
     decay_per_sec = 1, -- Boost lost per second when not clicking (must be < clicks/sec to build)
     max = 100, -- MaxBoost
     max_damage_bonus = 1.0, -- at full Boost, pet damage on the node is x(1 + this) = +100%
+    max_reward_bonus = 1.0, -- at full Boost, node currency and mining XP are also +100% (2x)
 }
 
 return M

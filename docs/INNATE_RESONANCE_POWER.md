@@ -1,6 +1,7 @@
 # Innate Power — "Resonance" (working name)
 
-**Status:** spec / design (not built). Working id `resonance`; rename freely.
+**Status:** built and shipping. Runtime tuning lives in `configs/powers.lua` and
+`configs/breakables.lua`.
 
 ## Concept
 
@@ -19,8 +20,10 @@ level 5**, and it is the power the tutorial's "cast your power" step fires off.
 - **Reuses the existing Boost SSOT** — no new effect. `configs/breakables.lua` `M.boost` already
   defines a per-node `Boost` attribute (0→`max`=100): clicking a node you're mining builds Boost,
   it decays when you stop, and higher Boost amplifies YOUR pets' damage on that node (up to
-  `max_damage_bonus` = +100% at full). Resonance is a **mass-click in an AoE** — it sets/adds Boost
-  on every breakable in range; the existing pet-damage amplification + decay do the rest.
+  `max_damage_bonus` = +100% at full). The same visible meter also scales the node's currency and
+  mining XP through `max_reward_bonus` (+100% at full): +50 Boost pays 1.5× and full Boost pays 2×.
+  Resonance is a **mass-click in an AoE** — it sets/adds Boost on every breakable in range; the
+  existing pet-damage amplification, reward interpolation, and decay do the rest.
 
 ## Mechanic
 

@@ -41,6 +41,7 @@ local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
 local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView)
 local BuffStack = require(ReplicatedStorage.Shared.Game.BuffStack)
+local BreakableBoost = require(ReplicatedStorage.Shared.Game.BreakableBoost)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- cast-Rage HP-inverse math (SSOT)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance) -- live pet HP fraction for Rage
@@ -790,13 +791,12 @@ function PetFollowService:_mine(player, pet, breakable)
     -- Active-mining boost: the player builds a node's Boost by clicking it (BreakableSpawner),
     -- which amplifies their pets' damage on that node — rewards active over passive play.
     -- Firewall-clean: the player amplifies, the pets still deal. Decays when they stop clicking.
-    local maxBoost = tonumber(breakable:GetAttribute("MaxBoost")) or 0
-    local curBoost = tonumber(breakable:GetAttribute("Boost")) or 0
-    if maxBoost > 0 and curBoost > 0 then
-        local frac = math.clamp(curBoost / maxBoost, 0, 1)
-        local bonus = tonumber(breakable:GetAttribute("BoostDamageBonus")) or 0
-        dmg = dmg * (1 + frac * bonus)
-    end
+    dmg = dmg
+        * BreakableBoost.multiplier(
+            breakable:GetAttribute("Boost"),
+            breakable:GetAttribute("MaxBoost"),
+            breakable:GetAttribute("BoostDamageBonus")
+        )
 
     dmg = math.floor(dmg + 0.5)
 

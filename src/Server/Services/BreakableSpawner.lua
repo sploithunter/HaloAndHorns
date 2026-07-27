@@ -31,6 +31,7 @@ local Players = game:GetService("Players")
 local CollectionService = game:GetService("CollectionService")
 
 local XpReward = require(ReplicatedStorage.Shared.Game.XpReward)
+local BreakableBoost = require(ReplicatedStorage.Shared.Game.BreakableBoost)
 local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
 local BuffStack = require(ReplicatedStorage.Shared.Game.BuffStack)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
@@ -1807,6 +1808,12 @@ function BreakableSpawner:_trySpawnOne(
             "BoostDamageBonus",
             (breakablesConfig.boost and breakablesConfig.boost.max_damage_bonus) or 1.0
         )
+        -- Currency + mining XP use the same visible Boost meter as damage. At the
+        -- shipped +100% maximum, a half Resonance pulse pays 1.5x and full Boost pays 2x.
+        model:SetAttribute(
+            "BoostRewardBonus",
+            (breakablesConfig.boost and breakablesConfig.boost.max_reward_bonus) or 0
+        )
 
         -- Optional self-glow (Pet Realm zone ore). config: crystalCfg.glow =
         -- { color = {r,g,b}, brightness = 0.75, range = 16 }. Shadows off (cheap; a colored
@@ -2093,6 +2100,17 @@ function BreakableSpawner:_trySpawnOne(
         -- Compute awards based on contributions
         local currencyType = tostring(model:GetAttribute("Currency") or "coins")
         local valueAmount = tonumber(model:GetAttribute("Value") or 0)
+        local boostRewardMultiplier = BreakableBoost.multiplier(
+            model:GetAttribute("Boost"),
+            model:GetAttribute("MaxBoost"),
+            model:GetAttribute("BoostRewardBonus")
+        )
+        local function boostReward(amount)
+            return math.max(
+                0,
+                math.floor((tonumber(amount) or 0) * boostRewardMultiplier + 0.5)
+            )
+        end
         local economy = (self._moduleLoader and self._moduleLoader:Get("EconomyService"))
             or (self._modules and self._modules.EconomyService)
         local progression = self._moduleLoader
@@ -2312,7 +2330,8 @@ function BreakableSpawner:_trySpawnOne(
                         end
                         local plr = Players:GetPlayerByUserId(tonumber(v.Name))
                         if plr and share > 0 then
-                            local resolvedShare = resolvePlayerAward(plr, share)
+                            local boostedShare = boostReward(share)
+                            local resolvedShare = resolvePlayerAward(plr, boostedShare)
                             -- level-vs-payout seam — NEUTRAL today (x1; Jason: coins fund
                             -- hatching), the lever lives in leveling.payout_level_scale
                             resolvedShare = math.floor(
@@ -2348,7 +2367,8 @@ function BreakableSpawner:_trySpawnOne(
                                 -- currency above). AddExperience publishes the XP attribute -> the
                                 -- HUD level bar ticks live.
                                 if progression and progression.AddExperience then
-                                    local xp = XpReward.fromValue(share, xpRewardsConfig.mining)
+                                    local xp =
+                                        XpReward.fromValue(boostedShare, xpRewardsConfig.mining)
                                     -- DIMINISHING XP vs out-leveled crystals (Jason: no
                                     -- overnight auto-click leveling; -3 levels ~ not worth it).
                                     -- REALM RESCALE: the player's current realm depth lifts the
@@ -2400,7 +2420,8 @@ function BreakableSpawner:_trySpawnOne(
                 if remainder > 0 and topUserId then
                     local topPlayer = Players:GetPlayerByUserId(topUserId)
                     if topPlayer then
-                        local resolvedRemainder = resolvePlayerAward(topPlayer, remainder)
+                        local resolvedRemainder =
+                            resolvePlayerAward(topPlayer, boostReward(remainder))
                         pcall(function()
                             creditCoins(topPlayer, resolvedRemainder, "crystal_break_remainder")
                         end)
