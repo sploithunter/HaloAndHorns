@@ -1880,3 +1880,11 @@ rewrite.
   pass is owned. Reconciliation clears every authored pass channel (multipliers, features, perks,
   permanent effects, speed, auto-collector range, owned-pass shop state) and refreshes pet capacity
   immediately; ON recalculates the full creator catalog. Roblox Premium remains independent.
+
+## 2026-07-27 — Kade developer pet model
+
+- Registered Kade as a regular Exclusive developer-reward pet through the same packaged-model,
+  ranged fire-blaster, heal/luck, scripted-rainbow, and huge-scaling path as regular Colorado.
+  Normal/rainbow use Roblox Model `107161152905013`; golden uses `139643909402590`.
+- Added basic, golden, rainbow, and huge-rainbow admin grants for visual verification. No Kade egg,
+  hatch table, or acquisition rule was invented; those remain pending the authored egg.

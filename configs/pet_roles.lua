@@ -55,6 +55,7 @@ return {
         dragon = "ranged", -- Jason: it flies and breathes fire — the rare early ranged chase
         bird = "ranged",
         colorado = "ranged",
+        kade = "ranged",
         colorado_creator = "ranged", -- the apex is a BLASTER like its species twin (the
         -- two-species split missed this map and it fell to default=melee — Jason caught it)
         -- One BUFFER (support archetype) per zone — trades attack for a team aura. Their
@@ -295,6 +296,12 @@ return {
             -- Heal on a long 15s cycle (was 1.5s): a 20%-pool heal every 1.5s let Colorado
             -- out-heal incoming damage and never go down — essentially invulnerable. 15s makes
             -- the heal a meaningful clutch, not passive immortality. (Tuning starting point.)
+            { kind = "heal", interval = 15, fraction = 0.2 },
+            { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 },
+        },
+        -- Kade is the second regular developer reward and follows Colorado's two-aura
+        -- balance contract (not the all-buff Creator Colorado apex).
+        kade = {
             { kind = "heal", interval = 15, fraction = 0.2 },
             { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 },
         },

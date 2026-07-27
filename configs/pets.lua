@@ -3379,6 +3379,55 @@ local petConfig = {
             },
         },
 
+        -- Kade follows the regular Colorado developer-pet contract: an Exclusive, ranged
+        -- creator reward that uses packaged Roblox Model assets. The future Kade egg is
+        -- intentionally not authored here yet; its art, rarity odds, and acquisition rules
+        -- remain pending.
+        kade = {
+            display_name = "Kade",
+            category = "creator",
+            origin = "creator",
+            rarity = "exclusive",
+            base_power = 50,
+            base_health = 500,
+
+            asset_transform = {
+                scale = 1,
+                huge_scale = 3,
+                orientation = { x = 0, y = 0, z = 0 },
+            },
+
+            camera = {
+                distance = 4,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+
+            variants = {
+                basic = {
+                    asset_id = "rbxassetid://107161152905013",
+                    image_id = "rbxassetid://0",
+                    display_name = "Kade",
+                    abilities = { "creator_wave" },
+                },
+                golden = {
+                    asset_id = "rbxassetid://139643909402590",
+                    image_id = "rbxassetid://0",
+                    display_name = "Golden Kade",
+                    abilities = { "creator_wave", "coin_magnet" },
+                },
+                rainbow = {
+                    -- Rainbow is the standard runtime treatment over the normal model.
+                    asset_id = "rbxassetid://107161152905013",
+                    image_id = "rbxassetid://0",
+                    display_name = "Rainbow Kade",
+                    abilities = { "creator_wave", "luck_aura" },
+                },
+            },
+        },
+
         colorado_creator = {
             display_name = "Creator Colorado",
             category = "creator",

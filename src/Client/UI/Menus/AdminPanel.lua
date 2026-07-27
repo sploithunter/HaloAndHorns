@@ -221,6 +221,10 @@ local TEST_CATEGORIES = {
             { name = "🌈 Grant Rainbow Colorado", action = "grant_colorado_rainbow" },
             { name = "⬆ Grant Huge Rainbow Colorado", action = "grant_colorado_huge" },
             { name = "👑 Grant CREATOR Colorado (apex)", action = "grant_colorado_creator" },
+            { name = "👤 Grant Kade", action = "grant_kade_basic" },
+            { name = "👑 Grant Golden Kade", action = "grant_kade_golden" },
+            { name = "🌈 Grant Rainbow Kade", action = "grant_kade_rainbow" },
+            { name = "⬆ Grant Huge Rainbow Kade", action = "grant_kade_huge" },
             { name = "🔮 Grant 3 Future Call Tokens", action = "grant_future_call_tokens" },
             { name = "🗺️ Toggle Meadow Lock", action = "toggle_zone_meadow" },
             { name = "🗺️ Lock Meadow", action = "lock_zone_meadow" },
@@ -1460,6 +1464,15 @@ function AdminPanel:_executePetGrantAction(action)
             quantity = 1,
             huge = true,
             creator = true,
+        },
+        grant_kade_basic = { petType = "kade", variant = "basic", quantity = 1 },
+        grant_kade_golden = { petType = "kade", variant = "golden", quantity = 1 },
+        grant_kade_rainbow = { petType = "kade", variant = "rainbow", quantity = 1 },
+        grant_kade_huge = {
+            petType = "kade",
+            variant = "rainbow",
+            quantity = 1,
+            huge = true,
         },
     }
 
