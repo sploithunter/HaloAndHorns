@@ -1888,3 +1888,17 @@ rewrite.
   Normal/rainbow use Roblox Model `107161152905013`; golden uses `139643909402590`.
 - Added basic, golden, rainbow, and huge-rainbow admin grants for visual verification. No Kade egg,
   hatch table, or acquisition rule was invented; those remain pending the authored egg.
+
+## 2026-07-27 — Kade meet-the-creator egg
+
+- Processed the supplied Kade egg concept through the blue-screen transparency pipeline and the
+  supplied Meshy GLB through the Roblox 10k-triangle exporter. The model needed no decimation
+  (4,400 triangles); the embedded 4096px UV texture and 1024px transparent inventory icon were
+  uploaded under Open Simulator Group and resolved in Studio.
+- Added `kade_egg` as a non-purchasable, fixed-odds inventory egg matching Colorado's current
+  creator-egg contract: Kade only, 5% Golden, 0.5% Rainbow, and 1% Huge. The runtime combines mesh
+  `103492246635387` with texture `137761201042755`, uses flat icon `75293308801530`, and retains
+  Model `121017090267088` as a fallback.
+- Registered immutable Roblox user ID `536245038` (formerly `KadeDevRBLX`, now `KadeDevLux`) in the
+  creator registry, so meeting Kade grants this egg once per player. Studio boot verification
+  confirmed the textured model in `ReplicatedStorage.Assets.Models.Eggs.kade_egg`.

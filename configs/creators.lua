@@ -29,6 +29,16 @@ return {
             -- golden/rainbow channels + slim huge chance — normal mechanics, luck
             -- applies; this registry only names the egg.
         },
+        -- KadeDevRBLX was renamed to KadeDevLux; the immutable user id keeps the
+        -- meet reward working across username changes.
+        ["536245038"] = {
+            name = "Kade",
+            pet = "kade",
+            egg_id = "kade_egg",
+            egg_name = "Kade Egg",
+            egg_icon = "rbxassetid://75293308801530",
+            egg_model_asset = 121017090267088,
+        },
     },
 
     -- LUCKY SERVER (Jason): while a registered creator is in the server, EVERYONE
