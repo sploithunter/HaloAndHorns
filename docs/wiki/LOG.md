@@ -1845,3 +1845,10 @@ rewrite.
   target selection, and `InCombat` publication. An attacked pet now drafts every Future Self squad
   owned by the real team, including summons created while their owners are already in a real party;
   combat membership no longer depends on the temporary team-HUD roster stamp.
+
+## 2026-07-27 — Completed quest menu cleanup
+
+- Claimed, non-repeatable quests no longer occupy rows or branch tabs in the Quest menu. Their
+  server ledger records remain intact for anti-replay and analytics, while repeatable quests and
+  any reward that has not been claimed remain visible. When every available quest is complete, the
+  menu shows a compact completion message instead of a level-50 wall of claimed cards.

@@ -157,14 +157,26 @@ function QuestPanel:_createUI(parent)
     self:_animateEntrance()
 end
 
--- Sort rank for the cross-branch "All" view: claimable first, then in-progress, then done.
+-- Completed non-repeatable quests remain in the server ledger for anti-replay and analytics, but
+-- stop consuming menu space. Repeatables stay visible after a claim because they can be earned
+-- again; anything unclaimed (including a met-but-not-yet-claimed reward) also stays visible.
+local function menuQuests(quests)
+    local visible = {}
+    for _, quest in ipairs(quests or {}) do
+        local completed = (quest.claimedCount or 0) > 0 and quest.repeatable ~= true
+        if not completed then
+            table.insert(visible, quest)
+        end
+    end
+    return visible
+end
+
+-- Sort rank for the cross-branch "All" view: claimable first, then in-progress.
 local function claimRank(q)
     if q.claimable then
         return 0
-    elseif not q.progress or not q.progress.met then
-        return 1
     end
-    return 2
+    return 1
 end
 
 -- Horizontal branch-tab bar between the header and the list (Achievements geometry: relative, the
@@ -320,7 +332,9 @@ function QuestPanel:_renderRows()
         end
     end
     if #filtered == 0 then
-        self:_emptyState("No quests in this branch yet.")
+        self:_emptyState(
+            self._allQuestsComplete and "All quests complete!" or "No quests in this branch yet."
+        )
         return
     end
 
@@ -454,9 +468,10 @@ function QuestPanel:_refresh()
         self:_emptyState("Couldn't load quests.")
         return
     end
-    self.quests = quests
+    self.quests = menuQuests(quests)
+    self._allQuestsComplete = #quests > 0 and #self.quests == 0
     self.focusTrack = result.activeTrack -- which branch is currently counting (may be nil)
-    self:_buildTabs(quests)
+    self:_buildTabs(self.quests)
     self:_renderRows()
 end
 
