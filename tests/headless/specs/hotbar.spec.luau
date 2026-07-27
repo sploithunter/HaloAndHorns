@@ -210,4 +210,29 @@ return function()
             expect(HotbarLogic.potionAutoBindSlot(hotbar, "berserk_brew", config)).to.equal(nil)
         end)
     end)
+
+    describe("HotbarLogic.tokenAutoBindSlot", function()
+        it("fills the top row from the left without replacing Rally", function()
+            local hotbar = {
+                ["11"] = { type = "tactical", target = "rally" },
+                ["20"] = { type = "potion", target = "fortune_flask" },
+            }
+            expect(HotbarLogic.tokenAutoBindSlot(hotbar, "future_call_token", config)).to.equal(12)
+        end)
+
+        it("does not duplicate an existing token binding", function()
+            local hotbar = {
+                ["12"] = { type = "token", target = "future_call_token" },
+            }
+            expect(HotbarLogic.tokenAutoBindSlot(hotbar, "future_call_token", config)).to.equal(nil)
+        end)
+
+        it("does not spill into the power row when the top row is full", function()
+            local hotbar = {}
+            for slot = 11, 20 do
+                hotbar[tostring(slot)] = { type = "tactical", target = "filled_" .. slot }
+            end
+            expect(HotbarLogic.tokenAutoBindSlot(hotbar, "future_call_token", config)).to.equal(nil)
+        end)
+    end)
 end

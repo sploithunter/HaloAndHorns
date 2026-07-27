@@ -94,6 +94,13 @@ return function()
     end)
 
     describe("Principal.register / unregister", function()
+        it("preserves the real reward owner for an NPC squad", function()
+            Principal.reset()
+            local owner = fakePlayer("Alice")
+            local rec = Principal.register({ name = "Future Alice", level = 10, owner = owner })
+            expect(rec.owner).to.equal(owner)
+        end)
+
         it("defaults the pet folder to the principal's own name (player convention)", function()
             Principal.reset()
             local rec = Principal.register({ name = "Colorado", level = 50 })

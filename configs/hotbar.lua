@@ -9,7 +9,7 @@
 
 return {
     slot_count = 20,
-    bind_types = { "power", "roster", "pet", "tactical", "potion" },
+    bind_types = { "power", "roster", "pet", "tactical", "potion", "token" },
     tactical_commands = { "scatter", "focus_fire", "regroup", "retreat", "rally" },
     -- Exact bar used for a brand-new profile and the admin "Reset to Beginning" test path.
     -- Keep this authored separately from archetype defaults: a beginning player has no origin or

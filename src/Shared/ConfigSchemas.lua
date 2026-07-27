@@ -52,6 +52,12 @@ local SCHEMAS = {
     flash_effects = schema({ default_effect = "string", sound = "table", effects = "table" }),
     focus = schema({ focus_max = "number", regen_per_second = "number" }),
     fusion = schema({ output_element = "string", required_elements = "table", recipes = "table" }),
+    future_call = schema({
+        enabled = "boolean",
+        entitlement = "table",
+        token = "table",
+        principal = "table",
+    }),
     game_events = schema({
         toggle_crash = "table",
         power_cast_failed = "table",

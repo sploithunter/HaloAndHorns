@@ -13,6 +13,7 @@
       bindAt(hotbar, index)                            -> bind or nil
       ensureBindAt(hotbar, index, bind, config)        -> { ok, changed, movedFrom?, movedTo? }
       potionAutoBindSlot(hotbar, potionId, config)     -> slot or nil
+      tokenAutoBindSlot(hotbar, tokenId, config)       -> slot or nil
 ]]
 
 local HotbarLogic = {}
@@ -212,6 +213,29 @@ function HotbarLogic.potionAutoBindSlot(hotbar, potionId, config)
     end
     local topRowStart = math.floor(slotCount / 2) + 1
     for i = slotCount, topRowStart, -1 do
+        if HotbarLogic.bindAt(hotbar, i) == nil then
+            return i
+        end
+    end
+    return nil
+end
+
+-- Progression tokens fill the top row from LEFT to right. This keeps the authored
+-- Rally button at slot 11, then places the Level-5 Future Call in slot 12 on an
+-- untouched bar. Returning nil means the token is already bound or the row is full.
+function HotbarLogic.tokenAutoBindSlot(hotbar, tokenId, config)
+    if type(hotbar) ~= "table" or type(tokenId) ~= "string" or tokenId == "" then
+        return nil
+    end
+    local slotCount = math.max(0, math.floor(tonumber(config and config.slot_count) or 0))
+    for i = 1, slotCount do
+        local bind = HotbarLogic.bindAt(hotbar, i)
+        if type(bind) == "table" and bind.type == "token" and bind.target == tokenId then
+            return nil
+        end
+    end
+    local topRowStart = math.floor(slotCount / 2) + 1
+    for i = topRowStart, slotCount do
         if HotbarLogic.bindAt(hotbar, i) == nil then
             return i
         end

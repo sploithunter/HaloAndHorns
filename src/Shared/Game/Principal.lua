@@ -39,7 +39,7 @@ Principal.KIND_NPC = "npc"
 
 local npcs = {}
 
--- rec = { name, level, character?, petFolderName? }
+-- rec = { name, level, character?, petFolderName?, owner? }
 -- `petFolderName` defaults to `name` — the same convention players use
 -- (workspace.PlayerPets/<name>), so the folder-owner lookups stay uniform.
 function Principal.register(rec)
@@ -62,6 +62,7 @@ function Principal.register(rec)
         character = rec.character,
         petFolderName = tostring(rec.petFolderName or name),
         instance = rec.character, -- parity with the player principal's `.instance`
+        owner = rec.owner, -- real Player that receives rewards for this manifested squad
     }
     return npcs[name]
 end
