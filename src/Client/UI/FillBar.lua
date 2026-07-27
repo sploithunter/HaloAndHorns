@@ -8,11 +8,15 @@
             fillColor = Color3.fromRGB(80, 200, 120), fraction = 0.4 })
         FillBar.set(bar, 0.75)               -- update the fill (0..1)
         FillBar.set(bar, 0.2, Color3.new(1,0,0))  -- update + recolour
+        FillBar.setAnimated(bar, 1, 0.25)    -- retargetable smooth update
 
     Structure is fixed so any updater can find the fill: <root>.Fill.
 ]]
 
+local TweenService = game:GetService("TweenService")
+
 local FillBar = {}
+local activeTweens = setmetatable({}, { __mode = "k" })
 
 local DEFAULT_BG = Color3.fromRGB(35, 35, 40)
 local DEFAULT_FILL = Color3.fromRGB(90, 200, 130)
@@ -77,10 +81,48 @@ function FillBar.set(root, frac, color)
     if not fill then
         return
     end
+    local active = activeTweens[fill]
+    if active then
+        active:Cancel()
+        activeTweens[fill] = nil
+    end
     fill.Size = UDim2.new(math.clamp(frac or 0, 0, 1), 0, 1, 0)
     if color then
         fill.BackgroundColor3 = color
     end
+end
+
+-- Smoothly retarget a live bar. A newer update cancels the prior tween and begins from the fill's
+-- current rendered size, so rapid quest ticks never queue animations or jump backward first.
+function FillBar.setAnimated(root, frac, duration, color)
+    local fill = FillBar.fillOf(root)
+    if not fill then
+        return
+    end
+    duration = math.max(0, tonumber(duration) or 0.25)
+    if duration == 0 then
+        FillBar.set(root, frac, color)
+        return
+    end
+    local active = activeTweens[fill]
+    if active then
+        active:Cancel()
+    end
+    if color then
+        fill.BackgroundColor3 = color
+    end
+    local tween = TweenService:Create(
+        fill,
+        TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Size = UDim2.new(math.clamp(frac or 0, 0, 1), 0, 1, 0) }
+    )
+    activeTweens[fill] = tween
+    tween.Completed:Connect(function()
+        if activeTweens[fill] == tween then
+            activeTweens[fill] = nil
+        end
+    end)
+    tween:Play()
 end
 
 return FillBar

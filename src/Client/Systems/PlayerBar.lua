@@ -20,6 +20,8 @@ local PlayerBar = {}
 local started = false
 
 local SEGMENTS = 10
+local XP_GLIDE_RESPONSE = 10
+local XP_SNAP_EPSILON = 0.005
 -- "Ready to level up" accent. PURPLE (matches the ASCEND nudge) so it contrasts with EVERY area
 -- theme — gold would vanish into the Desert/citrine (yellow) palette.
 local READY = Color3.fromRGB(150, 85, 225)
@@ -324,12 +326,83 @@ function PlayerBar.start()
     Theme.bind(player, applyTheme)
 
     local blinkOn = true
+    -- XP animates in "segment units" (0..10), not only as one 0..1 fill. Crossing each whole unit
+    -- lights that ring segment and starts the bar's next lap, so a large award visibly advances
+    -- through every side segment instead of popping several on in one frame.
+    local xpShownUnits = nil
+    local xpTargetUnits = 0
+    local xpTrackKey = nil
+    local xpState = nil
     -- Focus bar is smoothed every frame toward these (the server value updates in 1s / +5 steps).
     local fxShown, fxTarget, fxMaxV = 0, 0, 0
+    local function renderXp()
+        if not xpState or xpShownUnits == nil then
+            return
+        end
+        local units = math.clamp(xpShownUnits, 0, SEGMENTS)
+        local visuallyReady = xpState.ready and units >= SEGMENTS - XP_SNAP_EPSILON
+        local lit = visuallyReady and SEGMENTS or math.min(SEGMENTS - 1, math.floor(units))
+        local within = visuallyReady and 1 or (units - math.floor(units))
+        local segColor = visuallyReady and READY or lighten(palette.primary, 25)
+
+        for i = 1, SEGMENTS do
+            local on = i <= lit
+            segs[i].BackgroundColor3 = on and segColor or SEG_DIM
+            local glow = segs[i]:FindFirstChild("Glow")
+            if glow then
+                glow.Color = segColor
+                glow.Transparency = on and 0.35 or 1
+            end
+        end
+        fill.Size = UDim2.new(math.clamp(within, visuallyReady and 1 or 0.02, 1), 0, 1, 0)
+        if visuallyReady then
+            fill.BackgroundColor3 = READY
+            fillGrad.Color = ColorSequence.new(lighten(READY, 40), READY)
+        else
+            -- caught up: restore the themed (area-colour) fill — the gold was set with no reset, so
+            -- the bar stayed gold after ascending even once PendingLevels hit 0.
+            fill.BackgroundColor3 = palette.fill
+            fillGrad.Color = ColorSequence.new(lighten(palette.fill, 80), palette.fill)
+        end
+        local shownXp = xpState.need > 0
+                and math.clamp((units / SEGMENTS) * xpState.need, 0, xpState.need)
+            or 0
+        if xpState.atCapVet then
+            xpText.Text = string.format(
+                "VET %d · %d / %d XP",
+                xpState.vetLevel,
+                math.floor(shownXp + 0.5),
+                xpState.need
+            )
+        else
+            xpText.Text = xpState.need > 0
+                    and string.format("%d / %d XP", math.floor(shownXp + 0.5), xpState.need)
+                or ""
+        end
+        -- SIDEKICK/EXEMPLAR (docs/TEAMING.md): while teamed, the disc shows the COMBAT level
+        -- (EffectiveLevel, anchored to the team lead) tinted so the sync reads at a glance —
+        -- green = sidekicked up, orange = exemplared down. The XP bar + pending stay on the
+        -- real progression, and the number reverts the moment the team dissolves.
+        local eff = tonumber(player:GetAttribute("EffectiveLevel")) or xpState.level
+        local synced = eff ~= xpState.level
+        local SIDEKICK_UP = Color3.fromRGB(120, 235, 130)
+        local EXEMPLAR_DOWN = Color3.fromRGB(255, 170, 80)
+        levelText.Text = (visuallyReady and not blinkOn) and "▲"
+            or tostring(synced and eff or xpState.level)
+        if visuallyReady then
+            levelText.TextColor3 = READY
+        elseif synced then
+            levelText.TextColor3 = eff > xpState.level and SIDEKICK_UP or EXEMPLAR_DOWN
+        else
+            levelText.TextColor3 = Color3.fromRGB(245, 248, 255)
+        end
+    end
+
     local function refresh()
         local level = tonumber(player:GetAttribute("Level"))
             or tonumber(player:GetAttribute("ClaimedLevel"))
             or 1
+        local claimed = tonumber(player:GetAttribute("ClaimedLevel")) or level
         local xp = tonumber(player:GetAttribute("XP")) or 0
         local need = tonumber(player:GetAttribute("XPForNext")) or 0
         -- VETERAN track (docs/VETERAN_LEVELS.md): at the cap the level bar pegs (need=0) — it
@@ -349,50 +422,24 @@ function PlayerBar.start()
         local pending = tonumber(player:GetAttribute("PendingLevels")) or 0
         local progress = need > 0 and math.clamp(xp / need, 0, 1) or 0
         local ready = pending > 0 or (progress >= 1 and not atCapVet)
-        local lit = ready and SEGMENTS or math.floor(progress * SEGMENTS)
-        local within = ready and 1 or (progress * SEGMENTS - lit)
-        local segColor = ready and READY or lighten(palette.primary, 25)
-
-        for i = 1, SEGMENTS do
-            local on = i <= lit
-            segs[i].BackgroundColor3 = on and segColor or SEG_DIM
-            local glow = segs[i]:FindFirstChild("Glow")
-            if glow then
-                glow.Color = segColor
-                glow.Transparency = on and 0.35 or 1
-            end
+        local nextTarget = progress * SEGMENTS
+        local nextTrackKey = atCapVet and ("vet:" .. tostring(vetLevel))
+            or ("level:" .. tostring(claimed))
+        xpState = {
+            level = level,
+            need = need,
+            ready = ready,
+            atCapVet = atCapVet,
+            vetLevel = vetLevel,
+        }
+        -- Loading, changing progression tracks, claiming a level, or an admin/reset decrease snaps
+        -- to the new baseline. Ordinary gains only move forward and receive the timed glide.
+        if xpShownUnits == nil or nextTrackKey ~= xpTrackKey or nextTarget < xpShownUnits then
+            xpShownUnits = nextTarget
         end
-        fill.Size = UDim2.new(math.clamp(within, ready and 1 or 0.02, 1), 0, 1, 0)
-        if ready then
-            fill.BackgroundColor3 = READY
-            fillGrad.Color = ColorSequence.new(lighten(READY, 40), READY)
-        else
-            -- caught up: restore the themed (area-colour) fill — the gold was set with no reset, so
-            -- the bar stayed gold after ascending even once PendingLevels hit 0.
-            fill.BackgroundColor3 = palette.fill
-            fillGrad.Color = ColorSequence.new(lighten(palette.fill, 80), palette.fill)
-        end
-        if atCapVet then
-            xpText.Text = string.format("VET %d · %d / %d XP", vetLevel, math.floor(xp), need)
-        else
-            xpText.Text = need > 0 and string.format("%d / %d XP", math.floor(xp), need) or ""
-        end
-        -- SIDEKICK/EXEMPLAR (docs/TEAMING.md): while teamed, the disc shows the COMBAT level
-        -- (EffectiveLevel, anchored to the team lead) tinted so the sync reads at a glance —
-        -- green = sidekicked up, orange = exemplared down. The XP bar + pending stay on the
-        -- real progression, and the number reverts the moment the team dissolves.
-        local eff = tonumber(player:GetAttribute("EffectiveLevel")) or level
-        local synced = eff ~= level
-        local SIDEKICK_UP = Color3.fromRGB(120, 235, 130)
-        local EXEMPLAR_DOWN = Color3.fromRGB(255, 170, 80)
-        levelText.Text = (ready and not blinkOn) and "▲" or tostring(synced and eff or level)
-        if ready then
-            levelText.TextColor3 = READY
-        elseif synced then
-            levelText.TextColor3 = eff > level and SIDEKICK_UP or EXEMPLAR_DOWN
-        else
-            levelText.TextColor3 = Color3.fromRGB(245, 248, 255)
-        end
+        xpTrackKey = nextTrackKey
+        xpTargetUnits = nextTarget
+        renderXp()
 
         -- Focus pool (mana spent to cast) — replicated by FocusService via Focus / FocusMax.
         -- Stash the server value; the Heartbeat below glides the bar toward it so the +5/sec regen
@@ -418,6 +465,15 @@ function PlayerBar.start()
         if accum >= 0.2 then
             accum = 0
             refresh()
+        end
+        -- Retargetable XP glide. Since the animated value spans all ten segment units, large awards
+        -- fill/reset the blue lap and light each side segment in order.
+        if xpShownUnits ~= nil and math.abs(xpTargetUnits - xpShownUnits) > XP_SNAP_EPSILON then
+            xpShownUnits += (xpTargetUnits - xpShownUnits) * math.min(1, dt * XP_GLIDE_RESPONSE)
+            if math.abs(xpTargetUnits - xpShownUnits) <= XP_SNAP_EPSILON then
+                xpShownUnits = xpTargetUnits
+            end
+            renderXp()
         end
         -- Glide the Focus bar toward the server value every frame (the server pushes Focus on spend +
         -- once a second on regen), so it animates smoothly instead of stepping in 5s.

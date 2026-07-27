@@ -1806,3 +1806,12 @@ rewrite.
   spawns, for every player inside that cave's trigger radius. The hook lives in the proximity-wave
   spawner that already excludes realm patrol caves, so persistent Heaven/Hell patrols cannot recall
   farming pets merely by existing.
+
+## 2026-07-27 — Smooth HUD progress
+
+- Player XP presentation now glides through its ten segment units: large awards visibly fill and
+  reset the blue lap while lighting each level-disc segment in sequence. The replicated XP remains
+  authoritative and immediate; only the client display is interpolated.
+- The compact quest tracker and mission-objective override now use a short, retargetable shared
+  `FillBar` tween for updates on the same objective. New objectives snap to their own baseline so
+  switching quests never appears to drain the previous quest's bar.
