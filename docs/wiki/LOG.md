@@ -1763,3 +1763,10 @@ rewrite.
   on each 0.3-second poll. Farm Near and Farm High now preserve each pet's live unfinished crystal,
   then select again only after that target is gone. Combat continues to outrank mining, while an
   explicit crystal click can still redirect pets away from a long-running target.
+
+## 2026-07-27 — Future Call level scaling
+
+- Replaced Future Call's fixed Level-10 principal with the caller's current earned level +5, capped
+  by the authoritative Level-50 progression ceiling. Temporary team/alliance level lifts do not
+  inflate the summon. The two-minute duration and authored four-pet squad remain unchanged at every
+  caller level.

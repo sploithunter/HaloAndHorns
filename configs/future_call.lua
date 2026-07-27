@@ -1,7 +1,9 @@
 --[[
     Future Call — the Level-5 progression consumable.
 
-    The token manifests an authored Level-10 version of the player for two minutes.
+    The token manifests an authored future version of the player for two minutes.
+    Its combat level is the caller's current earned level plus five, capped by the
+    game's progression level cap.
     It is deliberately a consumable rather than a power: Level 5 already asks the
     player to choose an Origin and place two enhancement slots, while the first
     Origin power remains the Level-6 reward.
@@ -20,7 +22,7 @@ return {
         id = "future_call_token",
         display_name = "Future Call",
         type = "Summon token",
-        description = "Call your Level-10 future self and four powered-up pets for 2 minutes.",
+        description = "Call your future self 5 levels ahead with four powered-up pets for 2 minutes.",
         duration = 120,
         icon_power = "world_travel",
     },
@@ -29,7 +31,7 @@ return {
         name_format = "%s's Future Self",
         display_name_format = "%s's Future Self",
         avatar_owner = true,
-        level = 10,
+        level_offset = 5,
         duration = 120,
         walk_speed = 24,
         follow_offset = { x = -8, y = 0, z = 6 },

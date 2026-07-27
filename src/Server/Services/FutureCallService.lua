@@ -8,7 +8,8 @@
 
     Activation:
       • spends one token only after the NPC principal successfully spawns;
-      • manifests the config-authored Level-10 future-self squad for 120 seconds;
+      • manifests a future self five levels above the caller, capped at the game level cap;
+      • always uses the same config-authored four-pet squad for 120 seconds;
       • a second activation while that player's future self is active is rejected.
 ]]
 
@@ -30,6 +31,7 @@ function FutureCallService:Init()
     self._progressionService = self._modules and self._modules.PlayerProgressionService
     self._npcPrincipalService = self._modules and self._modules.NpcPrincipalService
     self._config = self._configLoader:LoadConfig("future_call")
+    self._progressionConfig = self._configLoader:LoadConfig("player_progression")
     self._connections = setmetatable({}, { __mode = "k" })
 end
 
@@ -240,8 +242,14 @@ function FutureCallService:Use(player, tokenId)
         return { ok = false, reason = "already_active" }
     end
 
+    local currentLevel = self._progressionService:GetEarnedLevel(player)
+    local summonLevel =
+        FutureCallLogic.summonLevel(currentLevel, self._config, self._progressionConfig)
+    local definition = table.clone(self._config.principal)
+    definition.level = summonLevel
+
     local ok, info = self._npcPrincipalService:Summon(player, "future_self", {
-        definition = self._config.principal,
+        definition = definition,
         duration = tonumber(self._config.token and self._config.token.duration) or 120,
     })
     if not ok then
@@ -258,7 +266,11 @@ function FutureCallService:Use(player, tokenId)
     fireGameEvent(player, "future_call_used", {
         name = "🔮 Your future squad answered the call!",
         seconds = tonumber(self._config.token and self._config.token.duration) or 120,
+        level = summonLevel,
     })
+    if type(info) == "table" then
+        info.level = summonLevel
+    end
     return {
         ok = true,
         type = "token",
