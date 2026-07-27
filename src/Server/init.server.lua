@@ -719,6 +719,7 @@ loader:RegisterModule(
         "Logger",
         "ConfigLoader",
         "EnemyService",
+        "PetFollowService",
         "PlayerProgressionService",
         "StatsService",
     }

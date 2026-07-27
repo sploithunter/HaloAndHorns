@@ -1794,3 +1794,15 @@ rewrite.
 - Each milestone has its own idempotent reconciliation marker. Profiles holding the original
   `level5_v1` marker receive a two-token Level-5 top-up rather than duplicating the full grant;
   existing higher-level profiles receive every other unclaimed milestone in one safe batch.
+
+## 2026-07-27 — Retained mining-target leash
+
+- Kept Farm Near/High's finish-the-current-crystal behavior, but made the existing auto-target
+  acquisition radius its retention leash too. When the owner moves beyond the configured 120-stud
+  boundary, server authority clears each pet's mining target so it returns to the player or accepts
+  nearby work on the next poll. Entering combat also clears retained mining immediately, so pets
+  answer the fight even when the old crystal remains close. Existing combat targets are unchanged.
+- Home cave encounter spawning now performs the same mining recall once, after a group actually
+  spawns, for every player inside that cave's trigger radius. The hook lives in the proximity-wave
+  spawner that already excludes realm patrol caves, so persistent Heaven/Hell patrols cannot recall
+  farming pets merely by existing.

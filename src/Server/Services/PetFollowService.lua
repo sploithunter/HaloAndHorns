@@ -52,6 +52,7 @@ local VulnMark = require(ReplicatedStorage.Shared.Game.VulnMark) -- additive vul
 local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local FocusFire = require(ReplicatedStorage.Shared.Game.FocusFire)
 local SquadDiversity = require(ReplicatedStorage.Shared.Game.SquadDiversity)
+local FarmTargetRetention = require(ReplicatedStorage.Shared.Game.FarmTargetRetention)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
 
@@ -65,6 +66,7 @@ function PetFollowService:Init()
     self._enemyServiceInstance = nil
     self._config = self._configLoader:LoadConfig("pet_follow")
     self._combatConfig = self._configLoader:LoadConfig("combat")
+    self._autoSystemsConfig = self._configLoader:LoadConfig("auto_systems")
     self._petRoles = self._configLoader:LoadConfig("pet_roles")
     self._levelingConfig = self._configLoader:LoadConfig("leveling")
     self._buffsConfig = self._configLoader:LoadConfig("buffs") or {}
@@ -86,6 +88,44 @@ end
 function PetFollowService:BindPeerServices(services)
     self._combatServiceInstance = services.CombatService
     self._enemyServiceInstance = services.EnemyService
+end
+
+-- Encounter handoff: proximity-triggered cave waves call this once after a real group spawns.
+-- Clear only mining work; a pet already assigned to an enemy remains untouched. Include manifested
+-- NPC principals owned by the player (Future Self) so the whole authored squad answers the cave.
+function PetFollowService:ReleaseMiningTargets(player)
+    if not player then
+        return 0
+    end
+    local root = Workspace:FindFirstChild("PlayerPets")
+    if not root then
+        return 0
+    end
+    local cleared = 0
+    local visited = {}
+    for _, principal in ipairs(Principal.all(PRINCIPAL_CTX)) do
+        if principal.instance == player or principal.owner == player then
+            local folderName = Principal.petFolderName(principal)
+            if folderName and not visited[folderName] then
+                visited[folderName] = true
+                local folder = root:FindFirstChild(folderName)
+                for _, pet in ipairs(folder and folder:GetChildren() or {}) do
+                    local targetType = pet:FindFirstChild("TargetType")
+                    local targetId = pet:FindFirstChild("TargetID")
+                    if
+                        targetType
+                        and string.lower(tostring(targetType.Value)) == "crystals"
+                        and targetId
+                        and targetId.Value ~= 0
+                    then
+                        targetId.Value = 0
+                        cleared += 1
+                    end
+                end
+            end
+        end
+    end
+    return cleared
 end
 
 -- Load model_asset ids referenced by ranged_bolt (rock + projectile themes) and stash a
@@ -335,6 +375,19 @@ function PetFollowService:_findBreakable(targetType, world, id)
         end
     end
     return nil
+end
+
+function PetFollowService:_releaseMiningTarget(player, breakable)
+    local character = player and player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local targetPos = targetPosition(breakable)
+    local autoTarget = self._autoSystemsConfig and self._autoSystemsConfig.auto_target or {}
+    local distance = root and targetPos and (root.Position - targetPos).Magnitude or nil
+    return FarmTargetRetention.shouldRelease({
+        inCombat = player and player:GetAttribute("InCombat") == true,
+        distance = distance,
+        maxDistance = autoTarget.max_target_distance,
+    })
 end
 
 -- A pet's effective attack range (mining-gate distance), by combat role: PetRole attr
@@ -1209,8 +1262,15 @@ function PetFollowService:_tickPrincipal(principal)
                 -- legacy script — never on distance. AutoTargetService owns target
                 -- selection + range; a distance leash here fought it and made the
                 -- pet flicker between attack and follow during auto-mining.
-                if not breakable then
-                    targetId.Value = 0 -- target gone -> follow until AutoTargetService reassigns
+                local releaseMining = breakable
+                    and targetType
+                    and string.lower(tostring(targetType.Value)) == "crystals"
+                    and self:_releaseMiningTarget(rewardPlayer, breakable)
+                if not breakable or releaseMining then
+                    -- A missing target follows immediately. Finishing an assigned crystal is
+                    -- sticky only while the owner remains outside combat and inside the
+                    -- acquisition radius; a fight or walking away also releases the pet.
+                    targetId.Value = 0
                 else
                     -- An NPC principal's folder remains visually/behaviorally owned by
                     -- its manifested character, but rewards and contribution belong to

@@ -30,6 +30,7 @@ end
 function BaddieSpawnerService:Init()
     self._logger = self._modules.Logger
     self._enemyService = self._modules.EnemyService
+    self._petFollowService = self._modules.PetFollowService
     self._playerProgressionService = self._modules.PlayerProgressionService
     self._statsService = self._modules.StatsService
     local configLoader = self._modules.ConfigLoader
@@ -249,6 +250,7 @@ function BaddieSpawnerService:_trigger(part, player, rng)
         -- team wave: nothing else may spawn here until this model is destroyed/despawned.
         cap = 1
     end
+    local spawned = 0
     for _, unit in ipairs(wave.units or {}) do
         for _ = 1, (onramp and 1 or PackScale.count(unit.count, engaged, nil, teamingCfg)) do
             if #state.alive >= cap then
@@ -306,14 +308,27 @@ function BaddieSpawnerService:_trigger(part, player, rng)
                 })
                 if r and r.ok and r.model then
                     table.insert(state.alive, r.model)
+                    spawned += 1
                 end
             end)
+        end
+    end
+    if spawned > 0 and self._petFollowService and self._petFollowService.ReleaseMiningTargets then
+        -- This is encounter-specific—not "enemies exist." Home cave waves call it exactly when
+        -- their owned group successfully spawns; ambient Heaven/Hell patrols bypass this service.
+        local radius = tonumber(self._config.radius) or 50
+        for _, nearby in ipairs(Players:GetPlayers()) do
+            local hrp = nearby.Character
+                and nearby.Character:FindFirstChild("HumanoidRootPart")
+            if hrp and (hrp.Position - part.Position).Magnitude <= radius then
+                self._petFollowService:ReleaseMiningTargets(nearby)
+            end
         end
     end
     self._logger:Info("Baddie wave spawned", {
         spawner = part.Name,
         player = player.Name,
-        units = #(wave.units or {}),
+        units = spawned,
     })
 end
 
