@@ -1826,3 +1826,11 @@ rewrite.
   instead of adding new onramp XP. Quest reward bundles now identify their source family as
   `quest`, explicitly neutralizing the generic early-game multiplier so the authored total remains
   exact.
+
+## 2026-07-27 — One-bar-per-second XP presentation
+
+- Replaced the XP bar's fixed-response exponential easing (which made every award finish in roughly
+  the same brief interval) with a constant presentation rate of one complete horizontal-bar sweep
+  per second. A 10% fill takes 0.1 seconds; a multi-bar award visibly takes one second per full bar.
+  Incoming gains extend the target without accelerating the fill, while authoritative XP remains
+  immediate on the server.
