@@ -13,6 +13,7 @@ local Condition = require(ReplicatedStorage.Shared.Game.Condition)
 local ClaimLogic = require(ReplicatedStorage.Shared.Game.ClaimLogic)
 local QuestChain = require(ReplicatedStorage.Shared.Game.QuestChain)
 local QuestActivation = require(ReplicatedStorage.Shared.Game.QuestActivation)
+local QuestReward = require(ReplicatedStorage.Shared.Game.QuestReward)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 
 local QuestService = {}
@@ -88,6 +89,14 @@ local function forwardAdjusted(def, questId, snapshot, bases, bank)
     local counters = table.clone(snapshot.counters or {})
     counters[counter] = QuestActivation.forward(bank[questId], bases[questId], cur)
     return { counters = counters, level = snapshot.level, currencies = snapshot.currencies }
+end
+
+function QuestService:_rewardFor(player, def)
+    local step = tonumber(player and player:GetAttribute("XPForNext")) or 0
+    if step <= 0 then
+        step = tonumber(player and player:GetAttribute("VetXPForNext")) or 0
+    end
+    return QuestReward.resolve(def and def.reward, def, self._config.claim_experience, step)
 end
 
 -- The active HEAD of each track (first unlocked, unclaimed mission), as { track -> questId }.
@@ -312,7 +321,7 @@ function QuestService:List(player)
                 name = def.name,
                 description = def.description,
                 mission = def.mission, -- gate-steering branch: activation deals this trial
-                reward = def.reward, -- so the panel can summarize the prize (read-only)
+                reward = self:_rewardFor(player, def), -- calculated XP + authored prizes (read-only)
                 claimedCount = ledger[id] or 0,
                 repeatable = def.repeatable == true,
             })
@@ -408,7 +417,7 @@ function QuestService:Claim(player, questId)
     local rewards = self._rewardService
     local granted
     if rewards then
-        granted = rewards:Grant(player, def.reward, "quest:" .. questId)
+        granted = rewards:Grant(player, self:_rewardFor(player, def), "quest:" .. questId)
     end
     ledger[questId] = (ledger[questId] or 0) + 1
     -- PERSISTENT UNLOCK (def.unlock = "<flag>"): quests can gate game

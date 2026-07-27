@@ -479,8 +479,11 @@ function QuestPanel:_emptyState(text)
 end
 
 local function rewardSummary(reward)
-    -- reward = { currencies = { coins = 100 }, items = {...}, pets = {...} }
+    -- reward = { experience = 100, currencies = { coins = 100 }, items = {...}, pets = {...} }
     local parts = {}
+    if (tonumber(reward and reward.experience) or 0) > 0 then
+        table.insert(parts, string.format("%d XP", reward.experience))
+    end
     for currency, amount in pairs((reward and reward.currencies) or {}) do
         table.insert(parts, string.format("%d %s", amount, currency))
     end

@@ -43,13 +43,17 @@ level fires the "New quests available!" announce.
 
 ### First Steps (auto-activated, count-from-activation, → Level 2)
 
+Every claim pays XP. First Steps distributes its existing **700 XP total** across the chain rather
+than adding more onramp XP: 50 / 100 / 100 / 150 / 300. Later tracks calculate a moderate claim
+bonus from the player's current level step (8% for the first quest, +2 percentage points per chain
+position, capped at 18%) while the task's mining/combat/hatching remains the primary XP source.
+
 1. **Boost the Patch** — pulse Resonance near crystals **3×** (from activation, so tutorial casts
-   don't pre-complete it). Reward: 5 gems.
-2. **Deploy your squad** — have 3 pets active. Reward: 5 gems.
-3. **Mine the patch** — break **25** crystals. Reward: 10 gems.
-4. **Grow your collection** — hatch **10** eggs. Reward: 10 gems.
-5. **Welcome to the Realm** — earn **1,500** area coins (toward the Meadow gate). Reward: **700 XP
-   (→ Level 2)** + 15 gems.
+   don't pre-complete it). Reward: 50 XP + 5 gems.
+2. **Work the Vein** — break **20** crystals. Reward: 100 XP + 10 gems.
+3. **Grow Your Collection** — hatch **10** eggs. Reward: 100 XP + 10 gems.
+4. **Fill Your Coffers** — earn **1,500** area coins. Reward: 150 XP + 10 gems.
+5. **Answer the Cave** — defeat **5** enemies. Reward: 300 XP + 15 gems + 1,500 area coins.
 
 ---
 

@@ -1815,3 +1815,14 @@ rewrite.
 - The compact quest tracker and mission-objective override now use a short, retargetable shared
   `FillBar` tween for updates on the same objective. New objectives snap to their own baseline so
   switching quests never appears to drain the previous quest's bar.
+
+## 2026-07-27 — Quest-claim XP
+
+- Every quest claim now resolves a visible XP reward. Non-authored quests pay a moderate,
+  progression-relative completion bump: 8% of the current level step on chain order 1, +2 points
+  per order, capped at 18%, rounded to 10 XP with safe minimum/fallback values. Activity XP remains
+  the primary source.
+- First Steps redistributes its existing 700-XP total across all five claims (50/100/100/150/300)
+  instead of adding new onramp XP. Quest reward bundles now identify their source family as
+  `quest`, explicitly neutralizing the generic early-game multiplier so the authored total remains
+  exact.

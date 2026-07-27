@@ -131,7 +131,11 @@ function RewardService:Grant(player, bundle, source)
     if (b.experience or 0) > 0 then
         local progression = self._playerProgressionService
         if progression and progression.AddExperience then
-            progression:AddExperience(player, b.experience)
+            -- Preserve the reward family for source-aware leveling knobs. `quest:mine_break_500`
+            -- becomes `quest`, so authored quest lumps do not accidentally receive the generic
+            -- early-game activity multiplier.
+            local xpSource = type(source) == "string" and source:match("^([^:]+)") or nil
+            progression:AddExperience(player, b.experience, xpSource)
         end
         granted.experience = b.experience
     end
