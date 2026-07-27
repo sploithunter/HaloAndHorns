@@ -349,6 +349,26 @@ function EnemyService:_engagesCombat(player)
     return (player:GetAttribute("Level") or 1) >= minLvl
 end
 
+-- Resolve a pet folder to the REAL player whose combat state, territory, team, and rewards it
+-- follows. Ordinary folders are named after their Player. Manifested-principal folders are named
+-- after the NPC instead, so every player-keyed combat seam must follow NpcOwner explicitly.
+function EnemyService:_playerForPetFolder(folder)
+    if not folder then
+        return nil
+    end
+    local player = Players:FindFirstChild(folder.Name)
+    if player then
+        return player
+    end
+    if folder:GetAttribute("NpcSquad") == true then
+        local ownerName = tostring(folder:GetAttribute("NpcOwner") or "")
+        if ownerName ~= "" then
+            return Players:FindFirstChild(ownerName)
+        end
+    end
+    return nil
+end
+
 -- The area id at a world position (Spawn/Meadow/Lava/Ice/Desert), or nil outside every area. Same
 -- resolver + bounds as the player CurrentArea SSOT, so the two ids compare 1:1.
 function EnemyService:_areaAt(pos)
@@ -617,7 +637,7 @@ function EnemyService:_acquireFromAttacker(entry, key)
     if entry.aggroPlayerName or typeof(key) ~= "Instance" or not key.Parent then
         return
     end
-    local owner = Players:FindFirstChild(key.Parent.Name)
+    local owner = self:_playerForPetFolder(key.Parent)
     -- NO onramp gate here (Jason, level-3 vs an Ember Moth: "my pets are just
     -- sitting there"): a pet hitting an enemy is the OWNER's deliberate act —
     -- damage acquires the fight at ANY level. The onramp only governs whether
@@ -760,7 +780,7 @@ function EnemyService:_petAggroPass(now, dt, cfg)
     local decayRate = AggroModel.decayRate(cfg, "pet", 1)
     local seed = AggroModel.seedThreat(cfg, "pet", dt)
     for _, folder in ipairs(pf:GetChildren()) do
-        local player = Players:FindFirstChild(folder.Name)
+        local player = self:_playerForPetFolder(folder)
         for _, pet in ipairs(folder:GetChildren()) do
             if pet:IsA("Model") and pet.PrimaryPart and not pet:GetAttribute("CombatDowned") then
                 local tbl = self:_petAggroTable(pet)
@@ -1396,13 +1416,22 @@ function EnemyService:_petPosition(pet, pfs)
             return cf.Position
         end
     end
-    -- ROBUST FALLBACK: pets are client-moved, so their server pivot sits at world ORIGIN (0,0,0)
-    -- until a position report lands. NEVER gate combat off origin — that strands the squad 500+
-    -- studs from every enemy (pets "do nothing" while a foe is on top of you). Pets cluster around
-    -- their owner, so fall back to the OWNER's position: an adjacent enemy is then in range and the
-    -- squad engages even if the report hiccups. Only with no owner do we use the (origin) pivot.
-    local ownerName = pet.Parent and pet.Parent.Name
-    local owner = ownerName and Players:FindFirstChild(ownerName)
+    -- ROBUST FALLBACK: pets are client-moved, so their server pivot sits at its spawn point until a
+    -- position report lands. The owning client reports ordinary pets, but NPC-principal pets are
+    -- deliberately not client-authoritative. Their manifested character IS server-moved, so use
+    -- that anchor first. This is the intermittent Future Self fix: once the player walked away from
+    -- the summon point, combat used the stale pet pivots and found no in-range candidates even while
+    -- the client correctly showed the future squad beside the NPC.
+    local folder = pet.Parent
+    if folder and folder:GetAttribute("NpcSquad") == true then
+        local npc = Workspace:FindFirstChild(folder.Name)
+        local npcRoot = npc and npc:FindFirstChild("HumanoidRootPart")
+        if npcRoot then
+            return npcRoot.Position
+        end
+    end
+    -- Ordinary report hiccup, or an NPC model still loading: pets cluster around their real owner.
+    local owner = self:_playerForPetFolder(folder)
     local char = owner and owner.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -4382,14 +4411,9 @@ function EnemyService:_assignPetTargets(eng)
     local pfs = self:_petFollowService()
     local aggroRange = eng.aggro_range or 45
     for _, folder in ipairs(playerPets:GetChildren()) do
-        local player = Players:FindFirstChild(folder.Name)
-        -- NPC PRINCIPAL squads (Jason: "are Colorado's own pets not fighting? that might
-        -- explain some things" — they weren't; this loop skipped folders with no Player).
-        -- The squad fights AS ITS OWNER: same territory/allegiance/team/assist gates, and
-        -- the alliance-anchored owner passes the onramp the same way their own pets do.
-        if not player and folder:GetAttribute("NpcSquad") then
-            player = Players:FindFirstChild(tostring(folder:GetAttribute("NpcOwner") or ""))
-        end
+        -- NPC PRINCIPAL squads fight AS THEIR OWNER: same territory/allegiance/team/assist gates,
+        -- including the reactive rule that one attacked owner pet drafts the entire future squad.
+        local player = self:_playerForPetFolder(folder)
         local assist = player and player:GetAttribute("CombatAssistTarget")
         -- TRANSIENT focus: a directed assist target lapses after assist_seconds so the squad is never
         -- stranded on an unreachable/stale focus — it reverts to normal auto-targeting (re-click to
@@ -5644,25 +5668,39 @@ end
 function EnemyService:_teamSquads(player)
     local pp = Workspace:FindFirstChild("PlayerPets")
     local squads = {}
-    local function add(p)
-        local folder = p and pp and pp:FindFirstChild(p.Name)
-        if folder then
+    local added = {}
+    local owners = {}
+    local function addFolder(p, folder)
+        if folder and not added[folder] then
+            added[folder] = true
             squads[#squads + 1] = { player = p, folder = folder }
         end
     end
-    add(player)
+    local function addPlayer(p)
+        if p then
+            owners[p.Name] = p
+        end
+        local folder = p and pp and pp:FindFirstChild(p.Name)
+        addFolder(p, folder)
+    end
+    addPlayer(player)
     local members = player and player:GetAttribute("TeamMembers")
     if type(members) == "string" and members ~= "" then
         for name in members:gmatch("[^,]+") do
             if name ~= player.Name then
-                add(Players:FindFirstChild(name))
-                -- NPC PRINCIPAL teammate (Colorado): no Player exists, but the squad folder
-                -- does — attribute it to the querying player so enemies treat his pets as
-                -- part of this team's fight (threat, attacks, team-battle join).
-                local folder = pp and pp:FindFirstChild(name)
-                if folder and folder:GetAttribute("NpcSquad") then
-                    squads[#squads + 1] = { player = player, folder = folder }
-                end
+                addPlayer(Players:FindFirstChild(name))
+            end
+        end
+    end
+    -- Manifested squads are combat members by OWNERSHIP, even when the owner is already in a real
+    -- party. NpcPrincipalService deliberately does not overwrite a real TeamMembers roster merely
+    -- to show Future Self in the HUD; combat cannot therefore depend on that cosmetic roster stamp.
+    -- If any real teammate's pet is attacked, every manifested squad owned by that team is drafted.
+    for _, folder in ipairs(pp and pp:GetChildren() or {}) do
+        if folder:GetAttribute("NpcSquad") == true then
+            local owner = owners[tostring(folder:GetAttribute("NpcOwner") or "")]
+            if owner then
+                addFolder(owner, folder)
             end
         end
     end
@@ -6306,7 +6344,12 @@ function EnemyService:_combatTick(dt)
                         -- down — the recompute skips it), so one pet downing can't latch the squad in
                         -- combat and pause farming.
                         if pc and pc.engaged and not pet:GetAttribute("CombatDowned") then
-                            fighting[folder.Name] = true
+                            -- A Future Self squad carries the summoner's combat stance. Otherwise
+                            -- its threat was filed under the NPC folder name and never reached the
+                            -- real Player's InCombat attribute, allowing farming to restart in the
+                            -- middle of the shared fight.
+                            local combatPlayer = self:_playerForPetFolder(folder)
+                            fighting[(combatPlayer and combatPlayer.Name) or folder.Name] = true
                             break
                         end
                     end

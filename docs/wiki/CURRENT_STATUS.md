@@ -1086,6 +1086,11 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
 - The manifested squad fights first and farms the nearest crystal while combat is absent. It retains
   a live mining target instead of retargeting on every scan, and every reward/contribution is credited
   to the summoning player.
+- Future Self is a full combat member by ownership, not merely by the temporary team-HUD roster:
+  aggression against any real teammate's pet drafts every manifested squad owned by that team,
+  including when the owner was already in a real party before summoning. Server combat positions
+  Future Self pets from the live manifested character (owner fallback), never their stale spawn
+  pivots, so walking away from the summon point cannot strand the visible squad out of combat.
 - The admin panel's **Grant 3 Future Call Tokens** action exercises the real inventory, auto-bind,
   banner, and activation path without consuming the one-time progression marker.
 
