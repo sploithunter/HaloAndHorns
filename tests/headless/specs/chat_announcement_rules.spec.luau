@@ -143,6 +143,17 @@ return function()
             ).to.equal(true)
         end)
 
+        it("prefers a live TextChannel even when ChatVersion claims legacy", function()
+            local client = readFile("src/Client/Systems/ChatAnnouncements.lua")
+            expect(string.find(client, "ChatVersion ~=", 1, true)).to.equal(nil)
+            expect(
+                string.find(client, "if displayTextChannel(payload, colorHex) then", 1, true) ~= nil
+            ).to.equal(true)
+            expect(string.find(client, "displayLegacy(payload.text, colorHex)", 1, true) ~= nil).to.equal(
+                true
+            )
+        end)
+
         it("persists a default-on client opt-out and exposes it in Settings", function()
             local client = readFile("src/Client/Systems/ChatAnnouncements.lua")
             local gameApi = readFile("src/Server/Services/GameAPIService.lua")

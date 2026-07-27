@@ -1737,3 +1737,9 @@ rewrite.
 - Added a default-on, profile-backed `Settings → Chat Announcements` toggle for Halo & Horns hatch
   and team-sidekick notices. Turning it off suppresses the game-authored notices immediately without
   changing player chat or Roblox system messages.
+
+## 2026-07-27 — Hybrid-chat announcement rendering
+
+- Fixed Mythical+ hatch and team-sidekick notices disappearing when Roblox reports
+  `LegacyChatService` while its visible chat window is actually backed by `RBXGeneral`. The client
+  now attempts the live TextChannel first and uses legacy `ChatMakeSystemMessage` only as fallback.

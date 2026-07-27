@@ -112,7 +112,9 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Rarity hatch and team-sidekick announcements use the standard Roblox chat window and default on.
   `Settings → Chat Announcements` immediately suppresses only these game-authored notices and
   persists the opt-out under `Settings.ClientPrefs.displayChatAnnouncements`; ordinary player and
-  Roblox system chat remain unchanged.
+  Roblox system chat remain unchanged. Presentation probes the live `RBXGeneral`/`RBXSystem`
+  TextChannel rather than trusting `ChatVersion`, because Roblox can report `LegacyChatService`
+  while rendering the modern channel; legacy `SetCore` remains the fallback.
 - Phase 0 foundation services are in place for profile schema versioning, stat counters, modifier resolution, currency ledger aggregation, deterministic UTC day/seed behavior, and feature flags.
 - Reward bundle currencies now flow through `EconomyService` rather than writing profile balances directly.
 - Realm token earnings and paid layer traversal also flow through `EconomyService`; failed debits no longer move the player.
