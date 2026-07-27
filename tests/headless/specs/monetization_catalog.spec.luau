@@ -64,9 +64,27 @@ return function()
             expect(MonetizationCatalog.creatorOwnsAllPasses(shipped, -1)).to.equal(false)
         end)
 
+        it("defaults creator benefits on and persists an explicit off gate", function()
+            local defaultState = MonetizationCatalog.creatorPassGateState(config, 101, {})
+            expect(defaultState.eligible).to.equal(true)
+            expect(defaultState.enabled).to.equal(true)
+
+            local disabled = MonetizationCatalog.creatorPassGateState(config, 101, {
+                CreatorGamePassesEnabled = false,
+            })
+            expect(disabled.eligible).to.equal(true)
+            expect(disabled.enabled).to.equal(false)
+
+            local nonCreator = MonetizationCatalog.creatorPassGateState(config, 303, {
+                CreatorGamePassesEnabled = false,
+            })
+            expect(nonCreator.eligible).to.equal(false)
+            expect(nonCreator.enabled).to.equal(false)
+        end)
+
         it("routes creator entitlement through the production pass check", function()
             local source = readFile("src/Server/Services/MonetizationService.lua")
-            expect(source:find("CreatorOwnsAllPasses(player.UserId)", 1, true)).to.be.ok()
+            expect(source:find("self:GetCreatorPassGateState(player)", 1, true)).to.be.ok()
             expect(
                 source:find(
                     "if creatorOwnsAll or (self._testMode and passConfig.test_mode_enabled) then",
@@ -74,6 +92,22 @@ return function()
                     true
                 )
             ).to.be.ok()
+            expect(source:find("if not forceNoPasses then", 1, true)).to.be.ok()
+            expect(source:find("self:_clearPassBenefits(player, passes)", 1, true)).to.be.ok()
+            expect(source:find('player:SetAttribute("MoveSpeedBuffPass", 0)', 1, true)).to.be.ok()
+            expect(source:find('player:SetAttribute("AutoCollectRange", nil)', 1, true)).to.be.ok()
+        end)
+
+        it("wires the creator-only persisted admin gate", function()
+            local dataSource = readFile("src/Server/Services/DataService.lua")
+            local adminSource = readFile("src/Server/Services/AdminToolsService.lua")
+            local panelSource = readFile("src/Client/UI/Menus/AdminPanel.lua")
+
+            expect(dataSource:find("CreatorGamePassesEnabled = true", 1, true)).to.be.ok()
+            expect(dataSource:find("SchemaMigrations[11]", 1, true)).to.be.ok()
+            expect(adminSource:find("SetCreatorPassBenefitsEnabled(adminPlayer, enabled)", 1, true)).to.be.ok()
+            expect(panelSource:find("Game Passes: ON (tap to disable)", 1, true)).to.be.ok()
+            expect(panelSource:find("creatorOnly = true", 1, true)).to.be.ok()
         end)
     end)
 end

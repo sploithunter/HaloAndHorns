@@ -19,6 +19,7 @@ function AdminToolsService.new()
     self._petGrantService = nil
     self._hatchEntitlementService = nil
     self._starterPetService = nil
+    self._monetizationService = nil
     self._petsConfig = nil
     self._inventoryConfig = nil
     self._eggSystemConfig = nil
@@ -72,6 +73,10 @@ function AdminToolsService:Init()
         self:_handleSetHatchEntitlement(player, data)
     end)
 
+    Signals.Admin_SetCreatorPassBenefits.OnServerEvent:Connect(function(player, data)
+        self:_handleSetCreatorPassBenefits(player, data)
+    end)
+
     Signals.Admin_SpawnEnemy.OnServerEvent:Connect(function(player, data)
         self:_handleSpawnEnemy(player, data)
     end)
@@ -101,6 +106,7 @@ function AdminToolsService:BindPeerServices(services)
     self._hotbarService = services.HotbarService
     self._futureCallService = services.FutureCallService
     self._starterPetService = services.StarterPetService
+    self._monetizationService = services.MonetizationService
     self._prologueService = services.PrologueService
 end
 
@@ -276,6 +282,9 @@ function AdminToolsService:_buildSnapshot(targetPlayer)
         equippedPetLimit = self:_getPetEquipLimit(targetPlayer),
         extraPetSlots = playerData and playerData.Perks and playerData.Perks.extra_pet_slots or 0,
         hatchEntitlements = self:_buildHatchEntitlementSnapshot(targetPlayer),
+        creatorPassBenefits = self._monetizationService
+                and self._monetizationService:GetCreatorPassGateState(targetPlayer)
+            or { eligible = false, enabled = false, active = false },
         autoTarget = {
             low = freeTarget and freeTarget.Value == true or false,
             high = paidTarget and paidTarget.Value == true or false,
@@ -373,6 +382,58 @@ function AdminToolsService:_handleSetHatchEntitlement(adminPlayer, data)
         message = table.concat(messages, "; "),
         hatchEntitlements = self:_buildHatchEntitlementSnapshot(targetPlayer),
         snapshot = self:_buildSnapshot(targetPlayer),
+    })
+end
+
+function AdminToolsService:_handleSetCreatorPassBenefits(adminPlayer, data)
+    local authorized, reason = self._adminService:ValidateAdminAction(
+        adminPlayer,
+        "manageCreatorPassBenefits",
+        {},
+        "client"
+    )
+    if not authorized then
+        self:_sendResult(adminPlayer, {
+            kind = "creator_pass_benefits",
+            success = false,
+            message = reason or "Not authorized",
+        })
+        return
+    end
+
+    if not self._monetizationService then
+        self:_sendResult(adminPlayer, {
+            kind = "creator_pass_benefits",
+            success = false,
+            message = "MonetizationService unavailable",
+        })
+        return
+    end
+
+    data = type(data) == "table" and data or {}
+    local mode = tostring(data.mode or "status")
+    local state = self._monetizationService:GetCreatorPassGateState(adminPlayer)
+    local success = true
+    local message
+
+    if not state.eligible then
+        success = false
+        message = "Only listed creator accounts can use the game-pass test gate"
+    elseif mode == "status" then
+        message = state.enabled and "Creator game-pass benefits ON"
+            or "Creator game-pass benefits OFF"
+    else
+        local enabled = mode == "enable" or (mode == "toggle" and not state.enabled)
+        success, message, state =
+            self._monetizationService:SetCreatorPassBenefitsEnabled(adminPlayer, enabled)
+    end
+
+    self:_sendResult(adminPlayer, {
+        kind = "creator_pass_benefits",
+        success = success,
+        message = message,
+        creatorPassBenefits = state,
+        snapshot = self:_buildSnapshot(adminPlayer),
     })
 end
 

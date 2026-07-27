@@ -25,6 +25,9 @@ local Locations = require(ReplicatedStorage.Shared.Locations)
 
 -- New Net Signals
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local MonetizationCatalog = require(ReplicatedStorage.Shared.Game.MonetizationCatalog)
+local monetizationConfig =
+    require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("monetization"))
 -- THE shared panel exterior (window + outer pill + header + close X + section/button pill helpers).
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 
@@ -193,6 +196,11 @@ local TEST_CATEGORIES = {
         tests = {
             { name = "📋 Snapshot Target Player", action = "admin_snapshot" },
             { name = "💾 Force Save Target Player", action = "admin_force_save" },
+            {
+                name = "🎫 Game Passes: checking…",
+                action = "toggle_creator_game_passes",
+                creatorOnly = true,
+            },
             { name = "🗑️ Reset Pets (Target)", action = "admin_reset_pets" },
             -- label says what the guard actually protects: ALL unique pets (per-uid
             -- records — huges, secrets/dragons, exclusives), not just huges (Jason
@@ -384,6 +392,9 @@ function AdminPanel.new()
     self.playerDropdown = nil
     self.targetPlayerLabel = nil
     self.resultLabel = nil
+    self.creatorPassToggleButton = nil
+    self.isCreatorPassTester =
+        MonetizationCatalog.creatorOwnsAllPasses(monetizationConfig, Players.LocalPlayer.UserId)
 
     self:_initializeNetworking()
 
@@ -475,6 +486,10 @@ function AdminPanel:_createUI(parent)
     -- Create test category sections
     self:_createTestCategories()
 
+    if self.isCreatorPassTester then
+        Signals.Admin_SetCreatorPassBenefits:FireServer({ mode = "status" })
+    end
+
     -- Load player list on panel open
     self:_refreshPlayerList()
 end
@@ -492,9 +507,15 @@ function AdminPanel:_createCategorySection(title, categoryData, layoutOrder)
     local theme = uiConfig.helpers.get_theme(uiConfig)
     local tests = categoryData.tests or categoryData -- Support both old format and new format
     local customInputs = categoryData.customInputs or {}
+    local visibleTests = {}
+    for _, test in ipairs(tests) do
+        if not test.creatorOnly or self.isCreatorPassTester then
+            table.insert(visibleTests, test)
+        end
+    end
 
     -- Calculate total height needed
-    local totalItems = #tests + (#customInputs * 2) -- Custom inputs take 2 rows each (label + input)
+    local totalItems = #visibleTests + (#customInputs * 2) -- Custom inputs take 2 rows each
     local containerHeight = totalItems * 45 + 10
 
     -- Category header — shared area-themed section band.
@@ -529,7 +550,7 @@ function AdminPanel:_createCategorySection(title, categoryData, layoutOrder)
     local currentLayoutOrder = 1
 
     -- Create test buttons
-    for _, test in ipairs(tests) do
+    for _, test in ipairs(visibleTests) do
         self:_createTestButton(test.name, test.action, currentLayoutOrder, testsContainer)
         currentLayoutOrder = currentLayoutOrder + 1
     end
@@ -555,6 +576,9 @@ function AdminPanel:_createTestButton(testName, action, layoutOrder, parent)
     button.Font = Enum.Font.Gotham
     button.LayoutOrder = layoutOrder
     button.Parent = parent
+    if action == "toggle_creator_game_passes" then
+        self.creatorPassToggleButton = button
+    end
 
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(0, 6)
@@ -763,6 +787,9 @@ function AdminPanel:_executeTestAction(action, _testName)
         self:_requestPlayerSnapshot()
     elseif action == "admin_force_save" then
         self:_requestForceSave()
+    elseif action == "toggle_creator_game_passes" then
+        Signals.Admin_SetCreatorPassBenefits:FireServer({ mode = "toggle" })
+        self:_showAdminResult("Changing creator game-pass benefits...", true)
     elseif action == "admin_reset_pets" then
         self:_requestResetPets()
     elseif action == "admin_reset_to_beginning" then
@@ -1695,9 +1722,12 @@ function AdminPanel:_formatSnapshot(snapshot)
     end
     table.sort(hatchParts)
     local hatchSummary = #hatchParts > 0 and table.concat(hatchParts, ", ") or "none"
+    local creatorPasses = snapshot.creatorPassBenefits or {}
+    local creatorPassSummary = creatorPasses.eligible and (creatorPasses.enabled and "ON" or "OFF")
+        or "n/a"
 
     return string.format(
-        "%s | Coins %s, Gems %s, Crystals %s | Pets %d (%d entries), Equipped %d/%d | Hatch %s | Auto low=%s high=%s | Data %s/%s | Save dirty=%s scheduled=%s inFlight=%s reason=%s",
+        "%s | Coins %s, Gems %s, Crystals %s | Pets %d (%d entries), Equipped %d/%d | Creator passes %s | Hatch %s | Auto low=%s high=%s | Data %s/%s | Save dirty=%s scheduled=%s inFlight=%s reason=%s",
         snapshot.name or "Player",
         tostring(currencies.coins or 0),
         tostring(currencies.gems or 0),
@@ -1706,6 +1736,7 @@ function AdminPanel:_formatSnapshot(snapshot)
         snapshot.petEntryCount or 0,
         snapshot.equippedPetCount or 0,
         snapshot.equippedPetLimit or 0,
+        creatorPassSummary,
         hatchSummary,
         tostring(autoTarget.low == true),
         tostring(autoTarget.high == true),
@@ -1740,6 +1771,12 @@ function AdminPanel:_handleAdminToolResult(result)
             if #modifierParts > 0 then
                 message ..= "\nModifiers: " .. table.concat(modifierParts, ", ")
             end
+        end
+    elseif result.kind == "creator_pass_benefits" and result.creatorPassBenefits then
+        local enabled = result.creatorPassBenefits.enabled == true
+        if self.creatorPassToggleButton then
+            self.creatorPassToggleButton.Text = enabled and "🎫 Game Passes: ON (tap to disable)"
+                or "🎫 Game Passes: OFF (tap to enable)"
         end
     elseif result.kind == "hatch_entitlement" and result.hatchEntitlements then
         local entitlementParts = {}
