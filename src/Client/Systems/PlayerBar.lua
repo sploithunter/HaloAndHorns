@@ -15,12 +15,13 @@
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local XpGlide = require(script.Parent.XpGlide)
 
 local PlayerBar = {}
 local started = false
 
 local SEGMENTS = 10
-local XP_GLIDE_RESPONSE = 10
+local XP_BARS_PER_SECOND = 1
 local XP_SNAP_EPSILON = 0.005
 -- "Ready to level up" accent. PURPLE (matches the ASCEND nudge) so it contrasts with EVERY area
 -- theme — gold would vanish into the Desert/citrine (yellow) palette.
@@ -466,10 +467,12 @@ function PlayerBar.start()
             accum = 0
             refresh()
         end
-        -- Retargetable XP glide. Since the animated value spans all ten segment units, large awards
-        -- fill/reset the blue lap and light each side segment in order.
+        -- Retargetable XP glide. One segment unit is one COMPLETE horizontal-bar sweep, so a
+        -- constant one-unit-per-second rate gives large awards their earned City-of-Heroes-style
+        -- fill time: 10% of a bar = 0.1s, three bars = 3s. New gains extend the target without
+        -- accelerating the presentation.
         if xpShownUnits ~= nil and math.abs(xpTargetUnits - xpShownUnits) > XP_SNAP_EPSILON then
-            xpShownUnits += (xpTargetUnits - xpShownUnits) * math.min(1, dt * XP_GLIDE_RESPONSE)
+            xpShownUnits = XpGlide.advance(xpShownUnits, xpTargetUnits, dt, XP_BARS_PER_SECOND)
             if math.abs(xpTargetUnits - xpShownUnits) <= XP_SNAP_EPSILON then
                 xpShownUnits = xpTargetUnits
             end
