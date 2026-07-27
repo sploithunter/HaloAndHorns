@@ -1,5 +1,5 @@
 --[[
-    Future Call — one-time Level-5 entitlement rules.
+    Future Call — reconciliation-safe Level 5–9 entitlement rules.
 ]]
 
 local FutureCallLogic = loadModule("src/Shared/Game/FutureCallLogic.lua")
@@ -9,15 +9,47 @@ local progressionConfig = loadModule("configs/player_progression.lua")
 return function()
     describe("FutureCallLogic entitlement", function()
         it("waits until claimed level 5", function()
-            expect(FutureCallLogic.shouldGrant({}, 4, config)).to.equal(false)
-            expect(FutureCallLogic.shouldGrant({}, 5, config)).to.equal(true)
+            expect(FutureCallLogic.pendingGrants({}, 4, config).total).to.equal(0)
+            expect(FutureCallLogic.pendingGrants({}, 5, config).total).to.equal(5)
         end)
 
-        it("reconciles an existing higher-level profile exactly once", function()
+        it("grants the descending Level 5-9 schedule exactly once", function()
             local gameData = {}
-            expect(FutureCallLogic.shouldGrant(gameData, 29, config)).to.equal(true)
-            FutureCallLogic.markGranted(gameData, config)
-            expect(FutureCallLogic.shouldGrant(gameData, 29, config)).to.equal(false)
+            local level5 = FutureCallLogic.pendingGrants(gameData, 5, config)
+            expect(level5.total).to.equal(5)
+            FutureCallLogic.markPending(gameData, level5)
+
+            local level6 = FutureCallLogic.pendingGrants(gameData, 6, config)
+            expect(level6.total).to.equal(4)
+            FutureCallLogic.markPending(gameData, level6)
+
+            local level9 = FutureCallLogic.pendingGrants(gameData, 9, config)
+            expect(level9.total).to.equal(6)
+            FutureCallLogic.markPending(gameData, level9)
+            expect(FutureCallLogic.pendingGrants(gameData, 29, config).total).to.equal(0)
+        end)
+
+        it("reconciles a fresh existing Level-9 profile for all 15 tokens", function()
+            local pending = FutureCallLogic.pendingGrants({}, 9, config)
+            expect(pending.total).to.equal(15)
+            expect(#pending.grants).to.equal(5)
+        end)
+
+        it("tops an original Level-5 recipient up by two tokens", function()
+            local gameData = { FutureCall = { level5_v1 = true } }
+            expect(FutureCallLogic.pendingGrants(gameData, 5, config).total).to.equal(2)
+            expect(FutureCallLogic.pendingGrants(gameData, 9, config).total).to.equal(12)
+        end)
+
+        it("restores milestone markers when inventory mutation fails", function()
+            local gameData = { FutureCall = { level5_v2 = false } }
+            local pending = FutureCallLogic.pendingGrants(gameData, 6, config)
+            FutureCallLogic.markPending(gameData, pending)
+            expect(gameData.FutureCall.level5_v2).to.equal(true)
+            expect(gameData.FutureCall.level6_v1).to.equal(true)
+            FutureCallLogic.restorePending(gameData, pending)
+            expect(gameData.FutureCall.level5_v2).to.equal(false)
+            expect(gameData.FutureCall.level6_v1).to.equal(nil)
         end)
 
         it("derives a unique, username-impossible NPC principal name", function()

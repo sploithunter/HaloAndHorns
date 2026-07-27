@@ -1073,10 +1073,12 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
   A hold landing during a capital-enemy slam wind-up cancels the impact, and intentional long holds
   do not feed the chase-stuck despawn timer. There is no hold-break power yet.
 
-## 2026-07-27 — Level-5 Future Call
+## 2026-07-27 — Level 5–9 Future Call
 
-- Claiming level 5 grants three **Future Call** consumable tokens exactly once. Existing profiles at
-  or above level 5 reconcile through the same marker-backed path; Reset to Beginning re-arms it.
+- Claiming Levels 5/6/7/8/9 grants 5/4/3/2/1 **Future Call** consumable tokens, respectively,
+  for 15 total. Existing profiles reconcile every missing marker-backed milestone. Profiles that
+  received the original three-token Level-5 grant receive only its two-token top-up; Reset to
+  Beginning re-arms the full schedule.
 - A token auto-binds to the first free top-row hotbar slot without overwriting player bindings and
   uses the World Travel icon. Activation manifests the player's future self for two minutes at the
   caller's earned level +5, capped by the game's Level-50 ceiling. Every use keeps the same authored

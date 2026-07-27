@@ -2,8 +2,8 @@
     FutureCallService — Level-5 consumable entitlement and activation.
 
     Progression grant:
-      • three tokens when ClaimedLevel first reaches 5;
-      • existing level-5+ profiles reconcile once through a named marker;
+      • five/four/three/two/one tokens when ClaimedLevel reaches 5/6/7/8/9;
+      • existing profiles reconcile every missing milestone through named markers;
       • the token auto-binds into the first free top-row slot, left to right.
 
     Activation:
@@ -119,8 +119,11 @@ end
 
 function FutureCallService:_announceGrant(player, count, reason)
     local name
-    if reason == "level5" then
-        name = ("🔮 FUTURE CALL UNLOCKED!\nYou received %d summon tokens."):format(count)
+    if reason == "progression" then
+        name = ("🔮 FUTURE CALL TOKENS!\nYou received %d summon token%s."):format(
+            count,
+            count == 1 and "" or "s"
+        )
     else
         name = ("🔮 %d Future Call token%s granted!"):format(count, count == 1 and "" or "s")
     end
@@ -160,20 +163,18 @@ function FutureCallService:Reconcile(player)
     end
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     local claimed = self._progressionService:GetClaimedLevel(player)
-    if not FutureCallLogic.shouldGrant(data.GameData, claimed, self._config) then
+    local pending = FutureCallLogic.pendingGrants(data.GameData, claimed, self._config)
+    if #pending.grants == 0 then
         return { ok = true, granted = 0, reconciled = false }
     end
 
-    -- Mark before inventory mutation: AddItem saves the whole shared profile. If the
-    -- add fails, roll the marker back before any successful save can make it durable.
-    local marker = FutureCallLogic.markGranted(data.GameData, self._config, true)
-    local count = math.max(
-        1,
-        math.floor(tonumber(self._config.entitlement and self._config.entitlement.grant_count) or 3)
-    )
-    local ok, err = self:_addTokens(player, count)
+    -- Mark every due milestone before inventory mutation: AddItem saves the whole shared
+    -- profile. If the add fails, restore each prior marker value before any successful save
+    -- can make the markers durable.
+    FutureCallLogic.markPending(data.GameData, pending)
+    local ok, err = self:_addTokens(player, pending.total)
     if not ok then
-        data.GameData.FutureCall[marker] = nil
+        FutureCallLogic.restorePending(data.GameData, pending)
         self:_log("Warn", "Future Call entitlement grant failed", {
             player = player.Name,
             reason = tostring(err),
@@ -181,14 +182,20 @@ function FutureCallService:Reconcile(player)
         return { ok = false, reason = err }
     end
 
-    self._dataService:RequestSave(player, "future_call_level5_entitlement", { critical = true })
-    self:_announceGrant(player, count, "level5")
+    self._dataService:RequestSave(player, "future_call_milestone_entitlement", { critical = true })
+    self:_announceGrant(player, pending.total, "progression")
     self:_log("Info", "Future Call entitlement granted", {
         player = player.Name,
         claimedLevel = claimed,
-        count = count,
+        count = pending.total,
+        milestones = #pending.grants,
     })
-    return { ok = true, granted = count, reconciled = true }
+    return {
+        ok = true,
+        granted = pending.total,
+        milestones = #pending.grants,
+        reconciled = true,
+    }
 end
 
 -- Admin testing uses the real inventory + auto-bind + banner path, but deliberately
