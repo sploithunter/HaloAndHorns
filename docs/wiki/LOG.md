@@ -1756,3 +1756,10 @@ rewrite.
 - Added an admin grant that runs through the same inventory/hotbar/banner path, plus Reset to
   Beginning cleanup and entitlement re-arming. The NPC principal seam now preserves a real reward
   owner for manifested squads.
+
+## 2026-07-27 — Farm Near target retention
+
+- Fixed the normal player auto-farm path reassigning every healthy pet to the newly nearest crystal
+  on each 0.3-second poll. Farm Near and Farm High now preserve each pet's live unfinished crystal,
+  then select again only after that target is gone. Combat continues to outrank mining, while an
+  explicit crystal click can still redirect pets away from a long-running target.

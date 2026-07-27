@@ -762,6 +762,10 @@ function AutoTargetService:RequestAutoTargetAttack(player)
         breakableService:Attack(player, {
             id = info.id,
             damage = 0,
+            -- Polling discovers the next target, but a pet already mining a live
+            -- crystal finishes it. Manual clicks omit this server-only flag and
+            -- can always redirect a pet away from a long-running node.
+            automatic = true,
         })
     end
 
