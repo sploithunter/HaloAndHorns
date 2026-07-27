@@ -1,6 +1,6 @@
 # Pet Catalog by Area
 
-_Generated from configs/pets.lua — 100 realm pets + 2 other. repo art under assets/source/pets/ (gitignored)._
+_Generated from configs/pets.lua — 110 realm pets + 3 other. repo art under assets/source/pets/ (gitignored)._
 
 ## Base
 
@@ -8,11 +8,11 @@ _Generated from configs/pets.lua — 100 realm pets + 2 other. repo art under as
 
 | Pet | Rarity | Repo art (basic) | Roblox mesh (basic) |
 | --- | --- | --- | --- |
-| Bear (`bear`) | common | assets/source/pets/bear_basic.glb | rbxassetid://102676279378350 |
-| Bunny (`bunny`) | common | — | rbxassetid://119448221139567 |
-| Doggy (`doggy`) | common | — | rbxassetid://95584496209726 |
-| Dragon (`dragon`) | secret | — | rbxassetid://71645322477288 |
-| Kitty (`kitty`) | legendary | — | rbxassetid://73405612786363 |
+| Bear (`bear`) | uncommon | assets/source/pets/bear_basic.glb | rbxassetid://133536425144853 |
+| Bunny (`bunny`) | common | assets/source/pets/bunny_basic.glb | rbxassetid://82125034029803 |
+| Doggy (`doggy`) | uncommon | assets/source/pets/doggy_basic.glb | rbxassetid://112015302170996 |
+| Dragon (`dragon`) | secret | assets/source/pets/dragon_basic.glb | rbxassetid://136769550943735 |
+| Kitty (`kitty`) | legendary | assets/source/pets/kitty_basic.glb | rbxassetid://102876972452299 |
 
 ### lava (5)
 
@@ -130,6 +130,7 @@ _Generated from configs/pets.lua — 100 realm pets + 2 other. repo art under as
 
 ## Other (no realm/area)
 
-### creator (2)
+### creator (3)
 - Colorado (`colorado`) — no repo art
 - Creator Colorado (`colorado_creator`) — no repo art
+- Kade (`kade`) — no repo art

@@ -52,6 +52,31 @@
           "golden",
           "rainbow"
         ]
+      },
+      {
+        "base_health": 500,
+        "base_power": 50,
+        "display_name": "Kade",
+        "has_repo_art": false,
+        "key": "kade",
+        "rarity": "exclusive",
+        "repo_assets": {},
+        "roblox_assets": {
+          "basic": {
+            "asset_id": "rbxassetid://107161152905013"
+          },
+          "golden": {
+            "asset_id": "rbxassetid://139643909402590"
+          },
+          "rainbow": {
+            "asset_id": "rbxassetid://107161152905013"
+          }
+        },
+        "variants": [
+          "basic",
+          "golden",
+          "rainbow"
+        ]
       }
     ]
   },
@@ -191,23 +216,35 @@
           "display_name": "Bear",
           "has_repo_art": true,
           "key": "bear",
-          "rarity": "common",
+          "rarity": "uncommon",
           "repo_assets": {
             "basic": {
+              "export_dir": "assets/exports/pets/bear_basic",
               "source_files": [
-                "assets/source/pets/bear_basic.glb"
+                "assets/source/pets/bear_basic.glb",
+                "assets/source/pets/bear_basic.fbx"
+              ]
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/bear_gold",
+              "source_files": [
+                "assets/source/pets/bear_gold.glb",
+                "assets/source/pets/bear_gold.fbx"
               ]
             }
           },
           "roblox_assets": {
             "basic": {
-              "asset_id": "rbxassetid://102676279378350"
+              "mesh_asset": "rbxassetid://133536425144853",
+              "texture_asset": "rbxassetid://84442074169129"
             },
             "golden": {
-              "asset_id": "rbxassetid://107758879638540"
+              "mesh_asset": "rbxassetid://87363912630069",
+              "texture_asset": "rbxassetid://108884590012437"
             },
             "rainbow": {
-              "asset_id": "rbxassetid://92437511216136"
+              "mesh_asset": "rbxassetid://133536425144853",
+              "texture_asset": "rbxassetid://84442074169129"
             }
           },
           "variants": [
@@ -220,19 +257,37 @@
           "base_health": 120,
           "base_power": 8,
           "display_name": "Bunny",
-          "has_repo_art": false,
+          "has_repo_art": true,
           "key": "bunny",
           "rarity": "common",
-          "repo_assets": {},
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/bunny_basic",
+              "source_files": [
+                "assets/source/pets/bunny_basic.glb",
+                "assets/source/pets/bunny_basic.fbx"
+              ]
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/bunny_gold",
+              "source_files": [
+                "assets/source/pets/bunny_gold.glb",
+                "assets/source/pets/bunny_gold.fbx"
+              ]
+            }
+          },
           "roblox_assets": {
             "basic": {
-              "asset_id": "rbxassetid://119448221139567"
+              "mesh_asset": "rbxassetid://82125034029803",
+              "texture_asset": "rbxassetid://71468779539283"
             },
             "golden": {
-              "asset_id": "rbxassetid://133150464787030"
+              "mesh_asset": "rbxassetid://104487535980339",
+              "texture_asset": "rbxassetid://70991171666859"
             },
             "rainbow": {
-              "asset_id": "rbxassetid://113112612195316"
+              "mesh_asset": "rbxassetid://82125034029803",
+              "texture_asset": "rbxassetid://71468779539283"
             }
           },
           "variants": [
@@ -245,19 +300,37 @@
           "base_health": 140,
           "base_power": 12,
           "display_name": "Doggy",
-          "has_repo_art": false,
+          "has_repo_art": true,
           "key": "doggy",
-          "rarity": "common",
-          "repo_assets": {},
+          "rarity": "uncommon",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/doggy_basic",
+              "source_files": [
+                "assets/source/pets/doggy_basic.glb",
+                "assets/source/pets/doggy_basic.fbx"
+              ]
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/doggy_gold",
+              "source_files": [
+                "assets/source/pets/doggy_gold.glb",
+                "assets/source/pets/doggy_gold.fbx"
+              ]
+            }
+          },
           "roblox_assets": {
             "basic": {
-              "asset_id": "rbxassetid://95584496209726"
+              "mesh_asset": "rbxassetid://112015302170996",
+              "texture_asset": "rbxassetid://122469325720894"
             },
             "golden": {
-              "asset_id": "rbxassetid://97337398672225"
+              "mesh_asset": "rbxassetid://75516117278305",
+              "texture_asset": "rbxassetid://108981069156200"
             },
             "rainbow": {
-              "asset_id": "rbxassetid://139772169909973"
+              "mesh_asset": "rbxassetid://112015302170996",
+              "texture_asset": "rbxassetid://122469325720894"
             }
           },
           "variants": [
@@ -270,19 +343,37 @@
           "base_health": 240,
           "base_power": 46,
           "display_name": "Dragon",
-          "has_repo_art": false,
+          "has_repo_art": true,
           "key": "dragon",
           "rarity": "secret",
-          "repo_assets": {},
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/dragon_basic",
+              "source_files": [
+                "assets/source/pets/dragon_basic.glb",
+                "assets/source/pets/dragon_basic.fbx"
+              ]
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/dragon_gold",
+              "source_files": [
+                "assets/source/pets/dragon_gold.glb",
+                "assets/source/pets/dragon_gold.fbx"
+              ]
+            }
+          },
           "roblox_assets": {
             "basic": {
-              "asset_id": "rbxassetid://71645322477288"
+              "mesh_asset": "rbxassetid://136769550943735",
+              "texture_asset": "rbxassetid://113540978797107"
             },
             "golden": {
-              "asset_id": "rbxassetid://91261941530299"
+              "mesh_asset": "rbxassetid://137902863642024",
+              "texture_asset": "rbxassetid://111720576430272"
             },
             "rainbow": {
-              "asset_id": "rbxassetid://120821607721730"
+              "mesh_asset": "rbxassetid://136769550943735",
+              "texture_asset": "rbxassetid://113540978797107"
             }
           },
           "variants": [
@@ -295,19 +386,37 @@
           "base_health": 110,
           "base_power": 14,
           "display_name": "Kitty",
-          "has_repo_art": false,
+          "has_repo_art": true,
           "key": "kitty",
           "rarity": "legendary",
-          "repo_assets": {},
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/kitty_basic",
+              "source_files": [
+                "assets/source/pets/kitty_basic.glb",
+                "assets/source/pets/kitty_basic.fbx"
+              ]
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/kitty_gold",
+              "source_files": [
+                "assets/source/pets/kitty_gold.glb",
+                "assets/source/pets/kitty_gold.fbx"
+              ]
+            }
+          },
           "roblox_assets": {
             "basic": {
-              "asset_id": "rbxassetid://73405612786363"
+              "mesh_asset": "rbxassetid://102876972452299",
+              "texture_asset": "rbxassetid://107470584206079"
             },
             "golden": {
-              "asset_id": "rbxassetid://131968646516737"
+              "mesh_asset": "rbxassetid://124827770454459",
+              "texture_asset": "rbxassetid://111506677857460"
             },
             "rainbow": {
-              "asset_id": "rbxassetid://124744079930917"
+              "mesh_asset": "rbxassetid://102876972452299",
+              "texture_asset": "rbxassetid://107470584206079"
             }
           },
           "variants": [
@@ -573,6 +682,193 @@
       ]
     },
     "heaven": {
+      "creator": [
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Archon Spark",
+          "has_repo_art": true,
+          "key": "archon_spark",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/archon_spark_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/archon_spark_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://93189741205956",
+              "texture_asset": "rbxassetid://137898062681591"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://99275533577851",
+              "texture_asset": "rbxassetid://70711387738345"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://93189741205956",
+              "texture_asset": "rbxassetid://137898062681591"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        },
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Cloudling",
+          "has_repo_art": true,
+          "key": "cloudling",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/cloudling_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/cloudling_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://134209207790632",
+              "texture_asset": "rbxassetid://105951905552756"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://81019803621580",
+              "texture_asset": "rbxassetid://80462693334860"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://134209207790632",
+              "texture_asset": "rbxassetid://105951905552756"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        },
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Halo Fawn",
+          "has_repo_art": true,
+          "key": "halo_fawn",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/halo_fawn_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/halo_fawn_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://126871912174347",
+              "texture_asset": "rbxassetid://128075896029068"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://94983371696933",
+              "texture_asset": "rbxassetid://132622647009636"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://126871912174347",
+              "texture_asset": "rbxassetid://128075896029068"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        },
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Lumen Dove",
+          "has_repo_art": true,
+          "key": "lumen_dove",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/lumen_dove_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/lumen_dove_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://79184571863862",
+              "texture_asset": "rbxassetid://82909257143780"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://126048392488808",
+              "texture_asset": "rbxassetid://95806483683768"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://79184571863862",
+              "texture_asset": "rbxassetid://82909257143780"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        },
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Seraph Kit",
+          "has_repo_art": true,
+          "key": "seraph_kit",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/seraph_kit_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/seraph_kit_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://73420498134615",
+              "texture_asset": "rbxassetid://90991863197497"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://123489412886241",
+              "texture_asset": "rbxassetid://115919038955433"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://73420498134615",
+              "texture_asset": "rbxassetid://90991863197497"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        }
+      ],
       "desert": [
         {
           "base_health": 160,
@@ -2393,6 +2689,193 @@
       ]
     },
     "hell": {
+      "creator": [
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Ashwing",
+          "has_repo_art": true,
+          "key": "ashwing",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/ashwing_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/ashwing_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://111080176264724",
+              "texture_asset": "rbxassetid://115853068473987"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://76737608008714",
+              "texture_asset": "rbxassetid://99947285722078"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://111080176264724",
+              "texture_asset": "rbxassetid://115853068473987"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        },
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Cerberus Pup",
+          "has_repo_art": true,
+          "key": "cerberus_pup",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/cerberus_pup_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/cerberus_pup_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://112534979758403",
+              "texture_asset": "rbxassetid://94382401393895"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://74589771574883",
+              "texture_asset": "rbxassetid://79612299746718"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://112534979758403",
+              "texture_asset": "rbxassetid://94382401393895"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        },
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Cinder Golemite",
+          "has_repo_art": true,
+          "key": "cinder_golemite",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/cinder_golemite_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/cinder_golemite_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://83271366919008",
+              "texture_asset": "rbxassetid://117265727136114"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://103201395324726",
+              "texture_asset": "rbxassetid://85418760225132"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://83271366919008",
+              "texture_asset": "rbxassetid://117265727136114"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        },
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Obsidian Hound",
+          "has_repo_art": true,
+          "key": "obsidian_hound",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/obsidian_hound_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/obsidian_hound_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://111823971624151",
+              "texture_asset": "rbxassetid://94418281243184"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://116631243953526",
+              "texture_asset": "rbxassetid://71221980185741"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://111823971624151",
+              "texture_asset": "rbxassetid://94418281243184"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        },
+        {
+          "base_health": 500,
+          "base_power": 48,
+          "display_name": "Wyrmling",
+          "has_repo_art": true,
+          "key": "wyrmling",
+          "rarity": "exclusive",
+          "repo_assets": {
+            "basic": {
+              "export_dir": "assets/exports/pets/wyrmling_basic",
+              "source_files": {}
+            },
+            "gold": {
+              "export_dir": "assets/exports/pets/wyrmling_gold",
+              "source_files": {}
+            }
+          },
+          "roblox_assets": {
+            "basic": {
+              "mesh_asset": "rbxassetid://105727775999667",
+              "texture_asset": "rbxassetid://76247607016792"
+            },
+            "golden": {
+              "mesh_asset": "rbxassetid://75183700861646",
+              "texture_asset": "rbxassetid://118619569006935"
+            },
+            "rainbow": {
+              "mesh_asset": "rbxassetid://105727775999667",
+              "texture_asset": "rbxassetid://76247607016792"
+            }
+          },
+          "variants": [
+            "basic",
+            "golden",
+            "rainbow"
+          ]
+        }
+      ],
       "desert": [
         {
           "base_health": 160,
@@ -4214,7 +4697,7 @@
     }
   },
   "totals": {
-    "other_pets": 2,
-    "realm_pets": 100
+    "other_pets": 3,
+    "realm_pets": 110
   }
 }

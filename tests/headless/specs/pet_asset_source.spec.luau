@@ -46,10 +46,25 @@ return function()
             end
         end)
 
-        it("keeps the creator Colorado on its packaged model source", function()
-            local basic = pets.pets.colorado.variants.basic
-            expect(basic.mesh_asset).to.equal(nil)
-            expect(type(basic.asset_id)).to.equal("string")
+        it("keeps developer pets on packaged model sources", function()
+            local expected = {
+                colorado = {
+                    basic = "100466492312776",
+                    golden = "121192248833075",
+                },
+                kade = {
+                    basic = "107161152905013",
+                    golden = "139643909402590",
+                },
+            }
+
+            for petId, ids in pairs(expected) do
+                local variants = pets.pets[petId].variants
+                expect(variants.basic.mesh_asset).to.equal(nil)
+                expect(variants.basic.asset_id).to.equal("rbxassetid://" .. ids.basic)
+                expect(variants.golden.asset_id).to.equal("rbxassetid://" .. ids.golden)
+                expect(variants.rainbow.asset_id).to.equal(variants.basic.asset_id)
+            end
         end)
 
         it("keeps Meshy families on mesh-plus-texture assembly", function()

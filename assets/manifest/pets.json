@@ -442,6 +442,76 @@
       "notes": "Creator reward pet. This variant intentionally shares the normal model asset and relies on runtime Rainbow treatment."
     },
     {
+      "key": "kade.basic",
+      "pet": "kade",
+      "variant": "basic",
+      "display_name": "Kade",
+      "status": "needs_source",
+      "prompt": "cute low-poly Roblox developer avatar pet companion, friendly face, compact toy-like proportions, game-ready pet simulator style",
+      "reference_image": "",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/kade_basic.glb",
+        "source_fbx": "assets/source/pets/kade_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://107161152905013",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Developer reward pet. Runtime uses the supplied packaged Roblox Model; source model file and egg art are pending."
+    },
+    {
+      "key": "kade.golden",
+      "pet": "kade",
+      "variant": "golden",
+      "display_name": "Golden Kade",
+      "status": "needs_source",
+      "prompt": "golden cute low-poly Roblox developer avatar pet companion, golden accents, friendly face, compact pet simulator proportions",
+      "reference_image": "",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": ""
+      },
+      "files": {
+        "source_glb": "assets/source/pets/kade_golden.glb",
+        "source_fbx": "assets/source/pets/kade_golden.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://139643909402590",
+        "image_asset_id": "rbxassetid://0"
+      },
+      "notes": "Developer reward pet. Runtime uses the supplied packaged Roblox Model; source model file and egg art are pending."
+    },
+    {
+      "key": "kade.rainbow",
+      "pet": "kade",
+      "variant": "rainbow",
+      "display_name": "Rainbow Kade",
+      "status": "needs_source",
+      "prompt": "rainbow cute low-poly Roblox developer avatar pet companion, colorful magical accents, friendly face, compact pet simulator proportions",
+      "reference_image": "",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": "Runtime intentionally reuses the normal Kade model and applies Rainbow visual treatment in code."
+      },
+      "files": {
+        "source_glb": "assets/source/pets/kade_basic.glb",
+        "source_fbx": "assets/source/pets/kade_basic.fbx"
+      },
+      "roblox": {
+        "model_asset_id": "rbxassetid://107161152905013",
+        "image_asset_id": "rbxassetid://0",
+        "shares_model_asset_with": "kade.basic"
+      },
+      "notes": "Developer reward pet. This variant intentionally shares the normal model asset and relies on runtime Rainbow treatment."
+    },
+    {
       "key": "cobra.basic",
       "pet": "cobra",
       "variant": "basic",
