@@ -9,6 +9,26 @@
 
 local FarmTargetRetention = {}
 
+-- The acquisition radius is also the retention leash: a pet may finish its current crystal
+-- until the owner moves beyond the same distance at which auto-farm could have selected it.
+-- Missing position data fails open so a respawn/streaming gap cannot discard valid work.
+function FarmTargetRetention.withinLeash(distance, maxDistance)
+    distance = tonumber(distance)
+    maxDistance = tonumber(maxDistance)
+    if distance == nil or maxDistance == nil or maxDistance <= 0 then
+        return true
+    end
+    return distance <= maxDistance
+end
+
+function FarmTargetRetention.shouldRelease(args)
+    args = type(args) == "table" and args or {}
+    if args.inCombat == true then
+        return true
+    end
+    return not FarmTargetRetention.withinLeash(args.distance, args.maxDistance)
+end
+
 function FarmTargetRetention.shouldKeep(args)
     args = type(args) == "table" and args or {}
     if args.automatic ~= true then

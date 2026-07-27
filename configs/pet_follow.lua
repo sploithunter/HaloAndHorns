@@ -115,8 +115,9 @@ return {
     -- live-switchable via the PetAttackStyle attribute.
     --   "orbit" (ring spins) | "static_ring" | "lunge" (jab in) | "spiral" (vortex) |
     --   "pincer" (two arcs squeeze) | "firing_line" (row, recoil volley) | "swarm" (jitter cloud)
-    -- (No distance leash: AutoTargetService owns target selection + range; the pet clears its
-    --  target only when the breakable is mined out, like the legacy.)
+    -- AutoTargetService owns the acquisition/retention range: pets keep an unfinished mining
+    -- target until it breaks, the owner enters combat, OR the owner moves beyond
+    -- auto_systems.auto_target.max_target_distance.
     attack = {
         style = "orbit", -- the TEAM style: used when `mode` (below) is "team", and as fallback
         -- mode = how the squad arranges, per target type (PetFormation.resolveStyle):
