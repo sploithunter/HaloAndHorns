@@ -2105,10 +2105,10 @@ function BreakableSpawner:_trySpawnOne(
             model:GetAttribute("MaxBoost"),
             model:GetAttribute("BoostRewardBonus")
         )
-        local function boostReward(amount)
+        local function scaledReward(amount, multiplier)
             return math.max(
                 0,
-                math.floor((tonumber(amount) or 0) * boostRewardMultiplier + 0.5)
+                math.floor((tonumber(amount) or 0) * (tonumber(multiplier) or 1) + 0.5)
             )
         end
         local economy = (self._moduleLoader and self._moduleLoader:Get("EconomyService"))
@@ -2330,7 +2330,7 @@ function BreakableSpawner:_trySpawnOne(
                         end
                         local plr = Players:GetPlayerByUserId(tonumber(v.Name))
                         if plr and share > 0 then
-                            local boostedShare = boostReward(share)
+                            local boostedShare = scaledReward(share, boostRewardMultiplier)
                             local resolvedShare = resolvePlayerAward(plr, boostedShare)
                             -- level-vs-payout seam — NEUTRAL today (x1; Jason: coins fund
                             -- hatching), the lever lives in leveling.payout_level_scale
@@ -2367,8 +2367,17 @@ function BreakableSpawner:_trySpawnOne(
                                 -- currency above). AddExperience publishes the XP attribute -> the
                                 -- HUD level bar ticks live.
                                 if progression and progression.AddExperience then
-                                    local xp =
-                                        XpReward.fromValue(boostedShare, xpRewardsConfig.mining)
+                                    local xpBoostMultiplier =
+                                        BreakableBoost.levelGatedMultiplier(
+                                            model:GetAttribute("Boost"),
+                                            model:GetAttribute("MaxBoost"),
+                                            model:GetAttribute("BoostRewardBonus"),
+                                            plr:GetAttribute("Level"),
+                                            breakablesConfig.boost
+                                                and breakablesConfig.boost.reward_xp_min_level
+                                        )
+                                    local xpShare = scaledReward(share, xpBoostMultiplier)
+                                    local xp = XpReward.fromValue(xpShare, xpRewardsConfig.mining)
                                     -- DIMINISHING XP vs out-leveled crystals (Jason: no
                                     -- overnight auto-click leveling; -3 levels ~ not worth it).
                                     -- REALM RESCALE: the player's current realm depth lifts the
@@ -2421,7 +2430,10 @@ function BreakableSpawner:_trySpawnOne(
                     local topPlayer = Players:GetPlayerByUserId(topUserId)
                     if topPlayer then
                         local resolvedRemainder =
-                            resolvePlayerAward(topPlayer, boostReward(remainder))
+                            resolvePlayerAward(
+                                topPlayer,
+                                scaledReward(remainder, boostRewardMultiplier)
+                            )
                         pcall(function()
                             creditCoins(topPlayer, resolvedRemainder, "crystal_break_remainder")
                         end)

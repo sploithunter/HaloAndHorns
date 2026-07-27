@@ -58,9 +58,9 @@ return function()
             local largeOre = XpReward.fromValue(400, leveling.xp_rewards.mining)
             local evenMinion = XpReward.fromEnemyLevel(3, leveling.combat_xp.xp_per_level, 1)
 
-            expect(XpReward.applyOnramp(smallOre, 3, leveling.onramp, "mining")).to.equal(5)
-            expect(XpReward.applyOnramp(mediumOre, 3, leveling.onramp, "mining")).to.equal(25)
-            expect(XpReward.applyOnramp(largeOre, 3, leveling.onramp, "mining")).to.equal(100)
+            expect(XpReward.applyOnramp(smallOre, 3, leveling.onramp, "mining")).to.equal(3)
+            expect(XpReward.applyOnramp(mediumOre, 3, leveling.onramp, "mining")).to.equal(13)
+            expect(XpReward.applyOnramp(largeOre, 3, leveling.onramp, "mining")).to.equal(50)
             expect(XpReward.applyOnramp(evenMinion, 3, leveling.onramp, "combat")).to.equal(15)
         end)
 

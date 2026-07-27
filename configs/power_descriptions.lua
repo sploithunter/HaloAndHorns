@@ -66,7 +66,7 @@ return {
     inferno_brand = "Signature: a ramping burning brand.",
 
     -- Innate (every player owns it from spawn) — the early-game farming cast
-    resonance = "Boost nearby crystals so they break faster and pay more currency and XP.",
+    resonance = "Boost crystals so they break faster and pay more currency; after Level 5, more XP too.",
 
     -- Generic (white) — farming / luck / utility, any archetype
     prospector = "+crystal yield for a duration.",

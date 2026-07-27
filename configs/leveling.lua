@@ -24,13 +24,13 @@ return {
     -- award still flows through PlayerProgressionService:AddExperience. Mining needs the largest
     -- lift because integer conversion made a 20-coin small node worth only 1 raw XP; combat keeps
     -- a smaller risk premium. xp_mult remains the fallback for eggs/rewards/unknown sources.
-    -- At level 3 with no other buffs: S/M/L ore = 5/25/100 XP, even-level trash = 15 XP.
+    -- At level 3 with no other buffs: S/M/L ore = 3/13/50 XP, even-level trash = 15 XP.
     -- Scoped to the 1-to-5 climb only — at 5 the world opens and normal rates resume.
     onramp = {
         below_level = 5,
         xp_mult = 1.5,
         xp_mult_by_source = {
-            mining = 5.0,
+            mining = 2.5,
             combat = 2.5,
         },
         crystal_mult = 1.5,

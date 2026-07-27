@@ -1275,7 +1275,8 @@ M.boost = {
     decay_per_sec = 1, -- Boost lost per second when not clicking (must be < clicks/sec to build)
     max = 100, -- MaxBoost
     max_damage_bonus = 1.0, -- at full Boost, pet damage on the node is x(1 + this) = +100%
-    max_reward_bonus = 1.0, -- at full Boost, node currency and mining XP are also +100% (2x)
+    max_reward_bonus = 1.0, -- at full Boost, currency and eligible mining XP are +100% (2x)
+    reward_xp_min_level = 5, -- preserve the tightly tuned L1-4 Answer-the-Cave graduation
 }
 
 return M

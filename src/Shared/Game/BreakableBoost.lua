@@ -21,4 +21,13 @@ function BreakableBoost.multiplier(boost, maxBoost, maxBonus)
     return 1 + BreakableBoost.fraction(boost, maxBoost) * bonus
 end
 
+function BreakableBoost.levelGatedMultiplier(boost, maxBoost, maxBonus, playerLevel, minimumLevel)
+    local level = math.max(1, math.floor(tonumber(playerLevel) or 1))
+    local minimum = math.max(1, math.floor(tonumber(minimumLevel) or 1))
+    if level < minimum then
+        return 1
+    end
+    return BreakableBoost.multiplier(boost, maxBoost, maxBonus)
+end
+
 return BreakableBoost
