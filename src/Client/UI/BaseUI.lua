@@ -2201,6 +2201,7 @@ function BaseUI:_createQuestTrackerElement(config, parent)
 
     -- Keep the tracker live from the real quest list (replaces the hardcoded placeholder).
     self._questDesc = description
+    self._questProgressBar = progressBG
     self._questFill = FillBar.fillOf(progressBG)
     self._questText = progressText
     self:_bindQuestTracker()
@@ -2297,10 +2298,11 @@ function BaseUI:_bindQuestTracker()
                     or "No active branch"
             end
             if self._questFill then
-                self._questFill.Size = UDim2.new(1, 0, 1, 0)
+                FillBar.set(self._questProgressBar, 1)
             end
             return
         end
+        local sameQuest = self._trackedQuestId == q.id
         self._trackedQuestId = q.id
         if self._questClaimBtn then
             local tips = require(script.Parent.Parent.Systems.QuestTrackerStyle)
@@ -2316,8 +2318,14 @@ function BaseUI:_bindQuestTracker()
         if self._questText then
             self._questText.Text = q.claimable and "✓ Claim!" or (cur .. "/" .. tgt)
         end
-        if self._questFill then
-            self._questFill.Size = UDim2.new(frac, 0, 1, 0)
+        if self._questProgressBar then
+            -- Initial display / a newly selected quest snaps to its own baseline. Progress on the
+            -- same quest glides quickly, and repeated polls retarget rather than queue.
+            if sameQuest then
+                FillBar.setAnimated(self._questProgressBar, frac, 0.28)
+            else
+                FillBar.set(self._questProgressBar, frac)
+            end
         end
     end
 
@@ -2354,9 +2362,7 @@ function BaseUI:_bindQuestTracker()
             sz.MaxTextSize = 14
             sz.Parent = tip
             pane.MouseEnter:Connect(function()
-                if
-                    require(script.Parent.Parent.Systems.QuestTrackerStyle).isTipActive()
-                then
+                if require(script.Parent.Parent.Systems.QuestTrackerStyle).isTipActive() then
                     return
                 end
                 local body = self._trackedQuestBody
@@ -2392,9 +2398,15 @@ function BaseUI:_bindQuestTracker()
             if self._questText then
                 self._questText.Text = tostring(player:GetAttribute("MissionObjectiveCount") or "")
             end
-            if self._questFill then
+            if self._questProgressBar then
                 local frac = tonumber(player:GetAttribute("MissionObjectiveFraction")) or 0
-                self._questFill.Size = UDim2.new(math.clamp(frac, 0, 1), 0, 1, 0)
+                local sameObjective = self._trackedMissionObjective == text
+                self._trackedMissionObjective = text
+                if sameObjective then
+                    FillBar.setAnimated(self._questProgressBar, frac, 0.28)
+                else
+                    FillBar.set(self._questProgressBar, frac)
+                end
             end
             return true
         end
