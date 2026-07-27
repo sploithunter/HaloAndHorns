@@ -1834,3 +1834,14 @@ rewrite.
   per second. A 10% fill takes 0.1 seconds; a multi-bar award visibly takes one second per full bar.
   Incoming gains extend the target without accelerating the fill, while authoritative XP remains
   immediate on the server.
+
+## 2026-07-27 — Future Self whole-team combat handoff
+
+- Fixed intermittent idle Future Self squads after the summoner moved away from the activation
+  point. NPC pets are client-presented but intentionally do not send authoritative position
+  reports; combat had fallen back to each anchored pet's stale spawn pivot. Enemy targeting now
+  falls back to the live server-moved NPC character, then the real owner's character.
+- Centralized NPC-pet-folder → real-player resolution for threat seeding, reactive acquisition,
+  target selection, and `InCombat` publication. An attacked pet now drafts every Future Self squad
+  owned by the real team, including summons created while their owners are already in a real party;
+  combat membership no longer depends on the temporary team-HUD roster stamp.

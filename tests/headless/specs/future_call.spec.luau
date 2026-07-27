@@ -82,5 +82,28 @@ return function()
             expect(config.principal.squad[4].pet).to.equal("snowleopard")
             expect(config.principal.squad[4].variant).to.equal("rainbow")
         end)
+
+        it("wires manifested squads into their owner's whole-team combat", function()
+            local enemySource = readFile("src/Server/Services/EnemyService.lua")
+            expect(enemySource:find("function EnemyService:_playerForPetFolder", 1, true)).to.be.ok()
+            expect(enemySource:find("local player = self:_playerForPetFolder(folder)", 1, true)).to.be.ok()
+            expect(enemySource:find("local owner = self:_playerForPetFolder(key.Parent)", 1, true)).to.be.ok()
+            expect(
+                enemySource:find("local combatPlayer = self:_playerForPetFolder(folder)", 1, true)
+            ).to.be.ok()
+            expect(
+                enemySource:find(
+                    'local owner = owners[tostring(folder:GetAttribute("NpcOwner") or "")]',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+        end)
+
+        it("uses the live NPC anchor instead of its pets' stale server pivots", function()
+            local enemySource = readFile("src/Server/Services/EnemyService.lua")
+            expect(enemySource:find("local npc = Workspace:FindFirstChild(folder.Name)", 1, true)).to.be.ok()
+            expect(enemySource:find('npc:FindFirstChild("HumanoidRootPart")', 1, true)).to.be.ok()
+        end)
     end)
 end

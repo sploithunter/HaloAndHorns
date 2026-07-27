@@ -553,8 +553,9 @@ function PetFollowController.start()
         -- follow Colorado... they should just have the regular movement and regular
         -- formations." attrs = whoever owns the formation/speed attributes (the local
         -- player, or the NPC model — whose nil attributes fall through to defaults).
-        -- isLocal gates the position report: only the player's own pets report to the
-        -- server (the mining gate); NPC pets are read via their world pivots.
+        -- isLocal gates the position report: only the player's own pets report to the server.
+        -- NPC pets are intentionally never client-authoritative; EnemyService resolves their
+        -- server-side combat position through the manifested NPC character, then the real owner.
         local function driveAnchor(anchorChar, petsFolder, attrs, anchorKey, isLocal)
             local char = anchorChar
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
