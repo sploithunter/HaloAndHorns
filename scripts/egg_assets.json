@@ -330,5 +330,19 @@
    "texture": "assets/exports/eggs/platinum_obsidian_egg/platinum_obsidian_egg.png"
   },
   "uploadedBy": "upload_eggs.js 2026-07-09"
+ },
+ "kade_egg": {
+  "icon_decal": "102105385996187",
+  "icon_image": "75293308801530",
+  "model_asset": "121017090267088",
+  "mesh_id": "rbxassetid://103492246635387",
+  "mesh_image": "rbxassetid://137761201042755",
+  "creator": "Open Simulator Group (15872767)",
+  "sources": {
+   "icon": "assets/source/eggs/kade_egg.png",
+   "fbx": "assets/exports/eggs/kade_egg/kade_egg_10k.fbx",
+   "texture": "assets/exports/eggs/kade_egg/kade_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-07-27"
  }
 }

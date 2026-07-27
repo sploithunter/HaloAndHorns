@@ -36,6 +36,19 @@ Blank/template maps still need to run without authored art. In `map.mode = "auto
 
 When any authored contract hook is present on a real map, the engine should avoid generating duplicate visible fallback content. That keeps imported maps from getting an extra baseplate, default eggs, or placeholder props on top of the builder's world.
 
+## Meet-The-Creator Inventory Eggs
+
+Creator eggs are deliberately not world stands. Register the creator's immutable Roblox user ID,
+egg id, icon, and model fallback in `configs/creators.lua`; define the matching non-purchasable,
+fixed-odds egg under `configs/pets.lua` `egg_sources`. `MeetCreatorService` grants that egg once per
+player/creator pair and hatches it through the normal variant and huge channels.
+
+Kade (`536245038`, formerly `KadeDevRBLX`, now `KadeDevLux`) mirrors Colorado's player-facing
+contract through `kade_egg`: one Kade species, 5% Golden, 0.5% Rainbow, and 1% Huge. Its Open Cloud
+FBX is untextured, so runtime assembly uses the resolved `mesh_asset` and `texture_asset`; the
+packaged Model remains a fallback. Heavy local source/export art remains gitignored after upload,
+while `scripts/egg_assets.json` is the durable asset manifest.
+
 ## Proximity And Anchoring
 
 The hatch UI and server validation both use `configs/egg_system.lua`:

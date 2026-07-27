@@ -3380,9 +3380,8 @@ local petConfig = {
         },
 
         -- Kade follows the regular Colorado developer-pet contract: an Exclusive, ranged
-        -- creator reward that uses packaged Roblox Model assets. The future Kade egg is
-        -- intentionally not authored here yet; its art, rarity odds, and acquisition rules
-        -- remain pending.
+        -- creator reward that uses packaged Roblox Model assets and is acquired from the
+        -- once-per-player Kade meet egg below.
         kade = {
             display_name = "Kade",
             category = "creator",
@@ -6093,6 +6092,51 @@ local petConfig = {
             rarity_rates = {
                 golden_chance = 0.05, -- standard
                 rainbow_chance = 0.005, -- standard
+            },
+            variant_rolls = {
+                enabled = true,
+                allow_basic = true,
+                allow_golden = true,
+                allow_rainbow = true,
+                cost_multiplier = 20,
+            },
+            modifier_support = {
+                supports_luck_gamepass = true,
+                supports_golden_gamepass = true,
+                supports_rainbow_gamepass = true,
+                max_luck_multiplier = 10.0,
+            },
+            hatching_time = 3,
+            guaranteed_shiny_chance = 0,
+            bonus_xp = 0,
+        },
+
+        -- MEET-THE-CREATOR egg for Kade. This intentionally mirrors colorado_egg:
+        -- inventory-only, fixed stated odds, one creator species, standard variant
+        -- channels, and a 1% huge jackpot.
+        kade_egg = {
+            name = "Kade Egg",
+            description = "A gift from Kade himself. Hatches a Kade!",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            fixed_odds = true,
+            huge = { chance = 0.01, pets = { kade = 1 } },
+            -- Open Cloud FBX model uploads are untextured. Assemble the resolved mesh
+            -- and texture like modern authored eggs; retain the packaged Model as a
+            -- fallback if either component is temporarily unavailable.
+            mesh_asset = "rbxassetid://103492246635387",
+            texture_asset = "rbxassetid://137761201042755",
+            asset_id = "rbxassetid://121017090267088",
+            image_id = "rbxassetid://75293308801530",
+            unlock_requirement = nil,
+
+            pet_weights = {
+                kade = 1,
+            },
+            rarity_rates = {
+                golden_chance = 0.05,
+                rainbow_chance = 0.005,
             },
             variant_rolls = {
                 enabled = true,
