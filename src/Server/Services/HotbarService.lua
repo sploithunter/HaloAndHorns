@@ -23,6 +23,7 @@ function HotbarService:Init()
     self._potionService = self._modules and self._modules.PotionService
     self._enemyService = self._modules and self._modules.EnemyService
     self._powerService = self._modules and self._modules.PowerService
+    self._futureCallService = self._modules and self._modules.FutureCallService
     self._config = self._configLoader:LoadConfig("hotbar")
     self._archetypesConfig = self._configLoader:LoadConfig("archetypes")
     self._powersConfig = self._configLoader:LoadConfig("powers") -- innate powers are bindable but not in data.Powers
@@ -156,11 +157,22 @@ function HotbarService:_assignablePalette(player)
             potions = st.potions -- { { id, count, meter, icon, name } }
         end
     end
+    local tokens = {}
+    local futureCall = self._futureCallService
+    if futureCall and futureCall.GetState then
+        local ok, st = pcall(function()
+            return futureCall:GetState(player)
+        end)
+        if ok and type(st) == "table" and type(st.tokens) == "table" then
+            tokens = st.tokens
+        end
+    end
 
     return {
         powers = powers,
         tacticals = self._config.tactical_commands or {},
         potions = potions,
+        tokens = tokens,
     }
 end
 
@@ -175,6 +187,10 @@ function HotbarService:_pushState(player)
         slot_count = state.slot_count,
         available = self:_assignablePalette(player),
     })
+end
+
+function HotbarService:PushState(player)
+    self:_pushState(player)
 end
 
 local function isEmptyMap(t)
@@ -334,6 +350,28 @@ function HotbarService:AutoBindPotion(player, potionId)
     return { ok = true, slot = slot }
 end
 
+-- Progression tokens fill the top row from LEFT to right (Rally remains at 11,
+-- so Future Call naturally lands at 12 on a fresh bar). Never overwrite or
+-- rearrange a player's authored bindings.
+function HotbarService:AutoBindToken(player, tokenId)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    local hotbar = self:_ensureDefaults(data)
+    local slot = HotbarLogic.tokenAutoBindSlot(hotbar, tokenId, self._config)
+    if not slot then
+        self:_pushState(player)
+        return { ok = false, reason = "already_bound_or_top_row_full" }
+    end
+    local result = self:Rebind(player, slot, { type = "token", target = tokenId })
+    if not result.ok then
+        return result
+    end
+    self:_pushState(player)
+    return { ok = true, slot = slot }
+end
+
 -- Fire the bind on a hotbar slot. `payload` is the slot index (1-20) or { slot = n }.
 -- Authoritative: we read the player's own binding and dispatch by type. Tactical
 -- commands run on the squad now; power/roster/pet effects land when those systems do.
@@ -383,6 +421,14 @@ function HotbarService:Activate(player, payload)
             return result
         end
         return { ok = false, reason = "potion_unavailable" }
+    elseif bind.type == "token" then
+        local futureCall = self._futureCallService
+        if futureCall and futureCall.Use then
+            local result = futureCall:Use(player, bind.target)
+            self:_pushState(player)
+            return result
+        end
+        return { ok = false, reason = "token_unavailable" }
     end
 
     -- roster: deploy effects not wired yet.

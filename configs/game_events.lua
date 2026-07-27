@@ -127,6 +127,22 @@ return {
         float = { color = { 255, 215, 0 }, prefix = "👑 ", size = 200 },
     },
 
+    -- Level-5 Future Call entitlement and explicit admin grants. The banner carries
+    -- the granted count; the purple burst makes the new hotbar consumable hard to miss.
+    future_call_awarded = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 145, 95, 255 }, count = 24 },
+        banner = { seconds = 8, color = { 145, 95, 255 } },
+    },
+
+    -- Token activation is a shorter confirmation: the authored future squad is the
+    -- persistent world visual for the two-minute effect.
+    future_call_used = {
+        sound = "power_up_stronger",
+        vfx = { kind = "burst", color = { 90, 190, 255 }, count = 18 },
+        banner = { seconds = 4, color = { 90, 190, 255 } },
+    },
+
     achievement_completed = {
         sound = "celebratory_jingle", -- (loudness fixed at the SOURCE: sounds.lua base volume)
         vfx = { kind = "burst", color = { 255, 120, 220 } }, -- magenta

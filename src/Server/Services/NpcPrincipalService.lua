@@ -49,6 +49,10 @@ function NpcPrincipalService:Init()
     self._active = {} -- name -> { model, folder, expireAt, owner, allied = {player,...} }
 end
 
+function NpcPrincipalService:BindPeerServices(services)
+    self._autoTargetService = services and services.AutoTargetService
+end
+
 function NpcPrincipalService:Start()
     task.spawn(function()
         while true do
@@ -344,6 +348,19 @@ function NpcPrincipalService:_spawnSquad(def, originCf)
     for i, entry in ipairs(def.squad or {}) do
         local model = self:_clonePet(entry.pet, entry.variant)
         if model then
+            model.Name = ("%s_%d"):format(entry.pet, i)
+            local positionNumber = model:FindFirstChild("PositionNumber")
+                or Instance.new("IntValue")
+            positionNumber.Name = "PositionNumber"
+            positionNumber.Value = i
+            positionNumber.Parent = model
+            model:SetAttribute("PetType", entry.pet)
+            model:SetAttribute("PetVariant", entry.variant or "basic")
+            model:SetAttribute("Variant", entry.variant or "basic")
+            model:SetAttribute("PrincipalLevel", tonumber(def.level) or 1)
+            if entry.role then
+                model:SetAttribute("PetRole", entry.role)
+            end
             model:PivotTo(originCf * CFrame.new(i * 4 - 6, 0, 4))
             model.Parent = folder
             spawned += 1
@@ -443,15 +460,28 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
     if self._config.enabled == false then
         return false, "npc principals disabled"
     end
-    local def = self._config[npcId or "creator"]
-    if type(def) ~= "table" then
-        return false, "unknown npc principal: " .. tostring(npcId)
-    end
     local hrp = owner and owner.Character and owner.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then
         return false, "owner has no character"
     end
-
+    local sourceDef = opts.definition or self._config[npcId or "creator"]
+    local def = type(sourceDef) == "table" and table.clone(sourceDef) or nil
+    if type(def) ~= "table" then
+        return false, "unknown npc principal: " .. tostring(npcId)
+    end
+    if def.name_format then
+        def.name = string.format(tostring(def.name_format), owner.Name)
+    end
+    if def.display_name_format then
+        def.display_name =
+            string.format(tostring(def.display_name_format), owner.DisplayName or owner.Name)
+    end
+    if def.avatar_owner == true then
+        def.avatar_user_id = owner.UserId
+    end
+    if type(def.name) ~= "string" or def.name == "" then
+        return false, "npc principal needs a name"
+    end
     self:Despawn(def.name) -- re-summon replaces
 
     local off = def.follow_offset or {}
@@ -484,6 +514,7 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
         level = def.level,
         character = model,
         petFolderName = def.name,
+        owner = owner,
     })
 
     local rec = {
@@ -525,6 +556,11 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
         allied = #rec.allied,
     })
     return true, { name = def.name, pets = spawned, allied = #rec.allied }
+end
+
+function NpcPrincipalService:IsActive(name)
+    local rec = self._active[tostring(name or "")]
+    return rec ~= nil and rec.model ~= nil and rec.model.Parent ~= nil
 end
 
 function NpcPrincipalService:Despawn(name)
@@ -718,6 +754,70 @@ function NpcPrincipalService:_castPower(rec, powerId)
     self:_log("Info", "NPC cast", { npc = rec.name, power = powerId })
 end
 
+local function setValue(parent, name, className, value)
+    local current = parent:FindFirstChild(name)
+    if not current or current.ClassName ~= className then
+        if current then
+            current:Destroy()
+        end
+        current = Instance.new(className)
+        current.Name = name
+        current.Parent = parent
+    end
+    current.Value = value
+end
+
+-- Future Call pets fight through EnemyService whenever combat exists. Outside
+-- combat, only otherwise-idle pets are assigned to the nearest crystal; a pet
+-- already mining a live target is never yanked away merely because something
+-- closer spawned.
+function NpcPrincipalService:_autoFarmStep(rec, now)
+    local cfg = rec.def and rec.def.auto_farm or {}
+    if
+        cfg.enabled ~= true
+        or not self._autoTargetService
+        or not rec.owner
+        or not rec.owner.Parent
+        or not rec.folder
+        or not rec.folder.Parent
+    then
+        return
+    end
+    if now < (rec.nextAutoFarmAt or 0) then
+        return
+    end
+    rec.nextAutoFarmAt = now + math.max(0.2, tonumber(cfg.retarget_seconds) or 0.5)
+
+    local idle = {}
+    for _, pet in ipairs(rec.folder:GetChildren()) do
+        if pet:IsA("Model") and not pet:GetAttribute("CombatDowned") then
+            local targetId = pet:FindFirstChild("TargetID")
+            local targetType = pet:FindFirstChild("TargetType")
+            local id = targetId and tonumber(targetId.Value) or 0
+            if id ~= 0 and targetType and string.lower(tostring(targetType.Value)) == "enemy" then
+                return -- combat always outranks farming for the whole future squad
+            end
+            if id == 0 then
+                idle[#idle + 1] = pet
+            end
+        end
+    end
+    if #idle == 0 or rec.owner:GetAttribute("InCombat") == true then
+        return
+    end
+
+    local target, info =
+        self._autoTargetService:SelectTarget(rec.owner, tostring(cfg.mode or "nearest"))
+    if not target or not (info and info.ok) then
+        return
+    end
+    for _, pet in ipairs(idle) do
+        setValue(pet, "TargetType", "StringValue", "Crystals")
+        setValue(pet, "TargetWorld", "StringValue", tostring(info.world or "Spawn"))
+        setValue(pet, "TargetID", "NumberValue", tonumber(info.id) or 0)
+    end
+end
+
 -- Follow the summoner + expire. Pet mining/combat is NOT here — PetFollowService owns that.
 function NpcPrincipalService:_step(now)
     for name, rec in pairs(self._active) do
@@ -765,6 +865,7 @@ function NpcPrincipalService:_step(now)
             end
             if self._active[name] then
                 self:_castStep(rec, now)
+                self:_autoFarmStep(rec, now)
             end
         end
     end

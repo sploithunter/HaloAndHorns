@@ -213,6 +213,7 @@ local TEST_CATEGORIES = {
             { name = "🌈 Grant Rainbow Colorado", action = "grant_colorado_rainbow" },
             { name = "⬆ Grant Huge Rainbow Colorado", action = "grant_colorado_huge" },
             { name = "👑 Grant CREATOR Colorado (apex)", action = "grant_colorado_creator" },
+            { name = "🔮 Grant 3 Future Call Tokens", action = "grant_future_call_tokens" },
             { name = "🗺️ Toggle Meadow Lock", action = "toggle_zone_meadow" },
             { name = "🗺️ Lock Meadow", action = "lock_zone_meadow" },
             { name = "🗺️ Unlock Meadow", action = "unlock_zone_meadow" },
@@ -780,6 +781,27 @@ function AdminPanel:_executeTestAction(action, _testName)
             self:_showAdminResult(
                 ("Granted %s random area enhancements"):format(tostring(r and r.granted or "?")),
                 r and r.ok == true
+            )
+        end)
+    elseif action == "grant_future_call_tokens" then
+        task.spawn(function()
+            local remote = game:GetService("ReplicatedStorage"):WaitForChild("GameAPICommand", 5)
+            if not remote then
+                self:_showAdminResult("GameAPICommand remote missing", false)
+                return
+            end
+            local envelope = remote:InvokeServer("futureCall.grant", { count = 3 })
+            local result = type(envelope) == "table"
+                    and (envelope.result or envelope.data or envelope)
+                or nil
+            self:_showAdminResult(
+                result
+                        and result.ok
+                        and ("Granted 3 Future Call tokens (now %s)"):format(
+                            tostring(result.count or "?")
+                        )
+                    or ("Future Call grant failed: " .. tostring(result and result.reason)),
+                result and result.ok == true
             )
         end)
     elseif action:find("^spawn_pack_") then

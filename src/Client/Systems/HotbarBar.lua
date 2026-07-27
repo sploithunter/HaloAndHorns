@@ -24,6 +24,7 @@ local PILL = require(ReplicatedStorage.Configs:WaitForChild("pill_ui"))
 local POWERS = require(ReplicatedStorage.Configs:WaitForChild("powers"))
 local POWER_DESC = require(ReplicatedStorage.Configs:WaitForChild("power_descriptions"))
 local POTIONS = require(ReplicatedStorage.Configs:WaitForChild("potions"))
+local FUTURE_CALL = require(ReplicatedStorage.Configs:WaitForChild("future_call"))
 local HOTBAR_CONFIG = require(ReplicatedStorage.Configs:WaitForChild("hotbar"))
 -- Derived-description SSOT (the same source the powers menu uses). The hotbar tooltip used to read
 -- the hardcoded POWER_DESC table, which only covered some powers — new ones (Taunt etc.) fell to
@@ -68,6 +69,7 @@ local TYPE_COLOR = {
     roster = Color3.fromRGB(70, 170, 230),
     pet = Color3.fromRGB(90, 200, 120),
     potion = Color3.fromRGB(150, 80, 200), -- potion slot tint (overridden per-meter axis colour)
+    token = Color3.fromRGB(90, 175, 255),
 }
 -- Authored disc icons for tactical commands (rendered like a power disc but with NO targeting ring).
 -- element = disc colour tier (neutral = the purple "generic command" disc). Add rows as art lands.
@@ -211,6 +213,17 @@ local function describeBind(bind)
                     or TYPE_COLOR.potion,
             }
         end
+    elseif bind.type == "token" then
+        local token = FUTURE_CALL.token or {}
+        local badge = PetBadge.forPower(token.icon_power or "world_travel")
+        return {
+            name = token.display_name or (id:gsub("_", " ")),
+            typeText = token.type or "Summon token",
+            description = token.description or "Call your future squad for a limited time.",
+            badge = badge,
+            color = (badge and POWER_ICONS.elementColor3(badge.element, "bright"))
+                or TYPE_COLOR.token,
+        }
     elseif bind.type == "tactical" then
         local d = (HOTBAR_CONFIG.tactical_details or {})[id] or {}
         local badge = TACTICAL_BADGE[id]
@@ -299,7 +312,7 @@ function HotbarBar.start()
 
     -- Assignment (edit) state: the palette pushed by the server + a forward-declared
     -- picker opener so a slot click can open it while in edit mode.
-    local available = { powers = {}, tacticals = {}, potions = {} }
+    local available = { powers = {}, tacticals = {}, potions = {}, tokens = {} }
     local editMode = false
     local openPicker
     local editHint -- the "pick a slot" arrow over slot 1; dismissed once a slot is clicked (openPicker)
@@ -310,6 +323,7 @@ function HotbarBar.start()
     -- potion slot's draining radial-clock reads smoothly (reusing the power-cooldown edge clock).
     local potionMeters = {} -- meterId -> { charge, drain_seconds, color }
     local potionByPotion = {} -- potionId -> { meter, icon, count, name }
+    local tokenById = {} -- tokenId -> { count, icon_power, name, description }
     local potionPushClock = os.clock()
     local function potionLiveCharge(meterId)
         local m = potionMeters[meterId]
@@ -457,7 +471,13 @@ function HotbarBar.start()
             return
         end
         local card = cards[slot]
-        if not (card and card.bindObj) then
+        if
+            not (
+                card
+                and card.bindObj
+                and (card.bindObj.type == "power" or card.bindObj.type == "potion")
+            )
+        then
             return
         end
         locked[slot] = not locked[slot] or nil
@@ -748,6 +768,12 @@ function HotbarBar.start()
         end
         if type(state.available) == "table" then
             available = state.available
+            tokenById = {}
+            for _, token in ipairs(available.tokens or {}) do
+                if token.id then
+                    tokenById[token.id] = token
+                end
+            end
         end
         for slot = 1, 20 do
             local card = cards[slot]
@@ -758,10 +784,43 @@ function HotbarBar.start()
                 if not bind and locked[slot] then
                     locked[slot] = nil
                 end
+                if bind and bind.type ~= "power" and bind.type ~= "potion" then
+                    locked[slot] = nil
+                end
                 if card.lock then
                     card.lock.Visible = locked[slot] == true
                 end
-                if bind and bind.type == "potion" then
+                if bind and bind.type == "token" then
+                    local token = tokenById[bind.target] or FUTURE_CALL.token or {}
+                    local badge = PetBadge.forPower(token.icon_power or "world_travel")
+                    local discImg = badge and POWER_ICONS.discFor(badge.element, badge.symbol)
+                        or nil
+                    ensurePotionChrome(card)
+                    card.potMeter = nil
+                    card.potGlyph.Visible = false
+                    card.potCount.Visible = true
+                    card.potCount.Text = "×" .. tostring(token.count or 0)
+                    if discImg then
+                        card.icon.Image = discImg
+                        card.icon.Size = UDim2.fromScale(0.82, 0.82)
+                        card.ring.Image = POWER_ICONS.rings[badge.ring] or POWER_ICONS.rings.aura
+                        card.ring.ImageColor3 = POWER_ICONS.elementColor3(badge.element, "dark")
+                        local off = POWER_ICONS.ringCentering(badge.ring)
+                        card.ring.Position = UDim2.new(0.5 + (off.x or 0), 0, 0.5 + (off.y or 0), 0)
+                        card.ring.Size = UDim2.fromScale(off.scale or 1, off.scale or 1)
+                        card.ring.Visible = true
+                        card.bind.Visible = false
+                        card.frame.BackgroundTransparency = 1
+                    else
+                        card.icon.Image = ""
+                        card.ring.Visible = false
+                        card.bind.Visible = true
+                        card.bind.Text = bindLabel(bind)
+                        card.frame.BackgroundTransparency = 0.05
+                    end
+                    card.frame.BackgroundColor3 = Color3.fromRGB(26, 28, 38)
+                    continue
+                elseif bind and bind.type == "potion" then
                     -- Potion slot: the SAME unified badge a power uses — element disc + a directional
                     -- targeting ring (who the buff hits: team-AoE for all-pet buffs, aura for self/luck,
                     -- single for the enemy throw), resolved via PetBadge.forPower("potion_<meter>"). Plus
@@ -1290,6 +1349,21 @@ function HotbarBar.start()
             header("Potions")
             for _, pot in ipairs(potionList) do
                 entry({ type = "potion", target = pot.id }, "  ×" .. tostring(pot.count or 0))
+            end
+        end
+        local tokenList = {}
+        for _, token in ipairs(available.tokens or {}) do
+            if token.id and (tonumber(token.count) or 0) > 0 then
+                tokenList[#tokenList + 1] = token
+            end
+        end
+        table.sort(tokenList, function(a, b)
+            return tostring(a.id) < tostring(b.id)
+        end)
+        if #tokenList > 0 then
+            header("Tokens")
+            for _, token in ipairs(tokenList) do
+                entry({ type = "token", target = token.id }, "  ×" .. tostring(token.count or 0))
             end
         end
         header("Slot")

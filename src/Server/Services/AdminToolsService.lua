@@ -99,6 +99,7 @@ function AdminToolsService:BindPeerServices(services)
     self._tutorialService = services.TutorialService
     self._enhancementService = services.EnhancementService
     self._hotbarService = services.HotbarService
+    self._futureCallService = services.FutureCallService
     self._starterPetService = services.StarterPetService
     self._prologueService = services.PrologueService
 end
@@ -635,6 +636,11 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.GameData.UnlockedAreas = { "Spawn" }
     playerData.GameData.LastHatchedEggId = ""
     playerData.GameData.LastHatchedEggOffset = {}
+    if self._futureCallService and self._futureCallService.ResetForBeginning then
+        pcall(function()
+            self._futureCallService:ResetForBeginning(targetPlayer)
+        end)
+    end
     if self._zoneService and self._zoneService._getUnlockSet then
         pcall(function()
             self._zoneService:_getUnlockSet(targetPlayer)

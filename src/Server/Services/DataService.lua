@@ -120,6 +120,9 @@ local function generateProfileTemplate(configLoader)
             -- Player root position in the egg anchor's local space. This reproduces the safe side of
             -- the hatcher where the player stood without fossilizing a world coordinate.
             LastHatchedEggOffset = {},
+            -- Named progression entitlements reconcile existing profiles without coupling
+            -- content grants to the schema version or replaying the Level-5 claim sequence.
+            FutureCall = {},
         },
 
         -- Settings
