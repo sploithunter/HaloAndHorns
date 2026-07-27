@@ -4,6 +4,7 @@
 
 local FutureCallLogic = loadModule("src/Shared/Game/FutureCallLogic.lua")
 local config = loadModule("configs/future_call.lua")
+local progressionConfig = loadModule("configs/player_progression.lua")
 
 return function()
     describe("FutureCallLogic entitlement", function()
@@ -25,9 +26,20 @@ return function()
             )
         end)
 
-        it("keeps the authored two-minute Level-10 four-pet squad", function()
+        it("sets the future self five levels above the caller", function()
+            expect(FutureCallLogic.summonLevel(1, config, progressionConfig)).to.equal(6)
+            expect(FutureCallLogic.summonLevel(20, config, progressionConfig)).to.equal(25)
+            expect(FutureCallLogic.summonLevel(45, config, progressionConfig)).to.equal(50)
+        end)
+
+        it("caps the future self at the game's level cap", function()
+            expect(FutureCallLogic.summonLevel(46, config, progressionConfig)).to.equal(50)
+            expect(FutureCallLogic.summonLevel(50, config, progressionConfig)).to.equal(50)
+        end)
+
+        it("keeps the authored two-minute four-pet squad at every caller level", function()
             expect(config.token.duration).to.equal(120)
-            expect(config.principal.level).to.equal(10)
+            expect(config.principal.level_offset).to.equal(5)
             expect(#config.principal.squad).to.equal(4)
             expect(config.principal.squad[1].pet).to.equal("polarbear")
             expect(config.principal.squad[1].variant).to.equal("rainbow")

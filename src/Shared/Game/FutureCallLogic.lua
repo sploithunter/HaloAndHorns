@@ -36,4 +36,16 @@ function FutureCallLogic.principalName(playerName, config)
     return string.format(formatString, tostring(playerName or "Player"))
 end
 
+-- The future self follows the caller's real earned level, not a temporary team/alliance
+-- EffectiveLevel. The cap comes from player_progression so Future Call cannot drift from
+-- the game's authoritative level ceiling.
+function FutureCallLogic.summonLevel(currentLevel, config, progressionConfig)
+    local principal = config and config.principal or {}
+    local xp = progressionConfig and progressionConfig.xp or {}
+    local level = math.max(1, math.floor(tonumber(currentLevel) or 1))
+    local offset = math.max(0, math.floor(tonumber(principal.level_offset) or 5))
+    local cap = math.max(1, math.floor(tonumber(xp.max_level) or 50))
+    return math.min(level + offset, cap)
+end
+
 return FutureCallLogic

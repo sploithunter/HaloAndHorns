@@ -1078,9 +1078,9 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
 - Claiming level 5 grants three **Future Call** consumable tokens exactly once. Existing profiles at
   or above level 5 reconcile through the same marker-backed path; Reset to Beginning re-arms it.
 - A token auto-binds to the first free top-row hotbar slot without overwriting player bindings and
-  uses the World Travel icon. Activation manifests the player's Level-10 future self for two minutes
-  with an authored four-pet squad: rainbow Polar Bear, golden Dragon, rainbow Penguin, and rainbow
-  Snow Leopard.
+  uses the World Travel icon. Activation manifests the player's future self for two minutes at the
+  caller's earned level +5, capped by the game's Level-50 ceiling. Every use keeps the same authored
+  four-pet squad: rainbow Polar Bear, golden Dragon, rainbow Penguin, and rainbow Snow Leopard.
 - The manifested squad fights first and farms the nearest crystal while combat is absent. It retains
   a live mining target instead of retargeting on every scan, and every reward/contribution is credited
   to the summoning player.

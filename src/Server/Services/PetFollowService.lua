@@ -743,8 +743,8 @@ function PetFollowService:_mine(player, pet, breakable)
     local hitChance
     if breakable:GetAttribute("EnemyId") then
         -- Manifested-principal pets fight at the authored principal level for BOTH halves of
-        -- level scaling. Using it for damage but not accuracy made a Level-10 Future Call
-        -- squad retain its Level-5 summoner's miss chance.
+        -- level scaling. Using it for damage but not accuracy made a manifested Future Call
+        -- squad retain its lower-level summoner's miss chance.
         local atkLevel = pet:GetAttribute("PrincipalLevel")
             or player:GetAttribute("EffectiveLevel")
             or pet:GetAttribute("Level")
