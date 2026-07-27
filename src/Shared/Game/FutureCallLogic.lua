@@ -1,33 +1,78 @@
 --[[
     FutureCallLogic — Roblox-free entitlement and identity rules.
 
-    Existing profiles at or above the configured claimed level receive the
-    starter grant once. Admin grants never write this marker, so they cannot
+    Existing profiles receive every configured level grant they qualify for,
+    exactly once. Admin grants never write progression markers, so they cannot
     accidentally consume the real progression entitlement.
 ]]
 
 local FutureCallLogic = {}
 
-function FutureCallLogic.shouldGrant(gameData, claimedLevel, config)
+local function configuredGrants(config)
     local entitlement = config and config.entitlement or {}
-    local requiredLevel = math.max(1, math.floor(tonumber(entitlement.claimed_level) or 5))
-    if math.floor(tonumber(claimedLevel) or 0) < requiredLevel then
-        return false
+    if type(entitlement.grants) == "table" then
+        return entitlement.grants
     end
-    local state = type(gameData) == "table" and gameData.FutureCall or nil
-    local marker = tostring(entitlement.marker or "level5_v1")
-    return not (type(state) == "table" and state[marker] == true)
+    -- Backward-compatible shape for an older config or a partially synced Studio.
+    return { entitlement }
 end
 
-function FutureCallLogic.markGranted(gameData, config, value)
+function FutureCallLogic.pendingGrants(gameData, claimedLevel, config)
+    local level = math.max(0, math.floor(tonumber(claimedLevel) or 0))
+    local state = type(gameData) == "table" and gameData.FutureCall or nil
+    state = type(state) == "table" and state or {}
+    local pending = {
+        total = 0,
+        grants = {},
+    }
+
+    for index, grant in ipairs(configuredGrants(config)) do
+        if type(grant) == "table" then
+            local requiredLevel = math.max(1, math.floor(tonumber(grant.claimed_level) or 5))
+            local marker = tostring(grant.marker or ("level" .. requiredLevel .. "_v1"))
+            if level >= requiredLevel and state[marker] ~= true then
+                local amount = math.max(0, math.floor(tonumber(grant.grant_count) or 0))
+                local legacy = grant.legacy
+                if type(legacy) == "table" and state[tostring(legacy.marker or "")] == true then
+                    amount = math.max(
+                        0,
+                        amount - math.max(0, math.floor(tonumber(legacy.granted_count) or 0))
+                    )
+                end
+                pending.total += amount
+                pending.grants[#pending.grants + 1] = {
+                    index = index,
+                    level = requiredLevel,
+                    marker = marker,
+                    amount = amount,
+                    previous = state[marker],
+                }
+            end
+        end
+    end
+
+    return pending
+end
+
+function FutureCallLogic.markPending(gameData, pending)
     if type(gameData) ~= "table" then
-        return nil
+        return false
     end
     gameData.FutureCall = type(gameData.FutureCall) == "table" and gameData.FutureCall or {}
-    local marker =
-        tostring((config and config.entitlement and config.entitlement.marker) or "level5_v1")
-    gameData.FutureCall[marker] = value ~= false
-    return marker
+    for _, grant in ipairs(type(pending) == "table" and pending.grants or {}) do
+        gameData.FutureCall[grant.marker] = true
+    end
+    return true
+end
+
+function FutureCallLogic.restorePending(gameData, pending)
+    local state = type(gameData) == "table" and gameData.FutureCall or nil
+    if type(state) ~= "table" then
+        return
+    end
+    for _, grant in ipairs(type(pending) == "table" and pending.grants or {}) do
+        state[grant.marker] = grant.previous
+    end
 end
 
 function FutureCallLogic.principalName(playerName, config)

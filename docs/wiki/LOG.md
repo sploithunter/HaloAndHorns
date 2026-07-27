@@ -1786,3 +1786,11 @@ rewrite.
   waits until the level where the mining/hatching progression bridge is needed.
 - Reduced the existing Level 1–4 mining XP onramp from 5× to 2.5× so mining and combat share the
   same early multiplier and the tutorial quest has more room to finish before Level 5.
+
+## 2026-07-27 — Future Call Level 5–9 supply
+
+- Replaced the single three-token Level-5 Future Call entitlement with descending milestone grants:
+  5 tokens at Level 5, 4 at Level 6, 3 at Level 7, 2 at Level 8, and 1 at Level 9.
+- Each milestone has its own idempotent reconciliation marker. Profiles holding the original
+  `level5_v1` marker receive a two-token Level-5 top-up rather than duplicating the full grant;
+  existing higher-level profiles receive every other unclaimed milestone in one safe batch.

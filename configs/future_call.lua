@@ -13,9 +13,20 @@ return {
     enabled = true,
 
     entitlement = {
-        claimed_level = 5,
-        grant_count = 3,
-        marker = "level5_v1",
+        grants = {
+            {
+                claimed_level = 5,
+                grant_count = 5,
+                marker = "level5_v2",
+                -- Profiles that received the original three-token Level-5 grant get
+                -- only the two-token difference when this schedule reconciles.
+                legacy = { marker = "level5_v1", granted_count = 3 },
+            },
+            { claimed_level = 6, grant_count = 4, marker = "level6_v1" },
+            { claimed_level = 7, grant_count = 3, marker = "level7_v1" },
+            { claimed_level = 8, grant_count = 2, marker = "level8_v1" },
+            { claimed_level = 9, grant_count = 1, marker = "level9_v1" },
+        },
     },
 
     token = {
