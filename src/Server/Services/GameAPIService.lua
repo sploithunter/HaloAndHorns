@@ -1087,6 +1087,27 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("futureCall.grant", {
+        description = "[admin] Grant Future Call tokens through the real inventory, hotbar, and award-banner path.",
+        validate = function(args)
+            return Validators.fields(args, {
+                count = { type = "int", min = 1, max = 20, optional = true },
+            })
+        end,
+        handler = function(context, args)
+            local isAdmin = context.isTest
+                or (context.player and context.player:GetAttribute("IsAdmin") == true)
+            if not isAdmin then
+                return { ok = false, reason = "not_admin" }
+            end
+            local svc = self:_service("FutureCallService")
+            if not svc then
+                return { ok = false, reason = "future_call_service_unavailable" }
+            end
+            return svc:AdminGrant(context.player, args.count or 3)
+        end,
+    })
+
     bus:register("admin.replayPrologue", {
         description = "[admin] Clear the one-time prologue record and play the cold open again right now. The dedicated replay path — the full Reset to Beginning is heavier and its clear proved unreliable to confirm.",
         validate = function(args)

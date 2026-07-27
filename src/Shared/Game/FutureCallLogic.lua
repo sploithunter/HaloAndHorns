@@ -24,15 +24,14 @@ function FutureCallLogic.markGranted(gameData, config, value)
         return nil
     end
     gameData.FutureCall = type(gameData.FutureCall) == "table" and gameData.FutureCall or {}
-    local marker = tostring((config and config.entitlement and config.entitlement.marker) or "level5_v1")
+    local marker =
+        tostring((config and config.entitlement and config.entitlement.marker) or "level5_v1")
     gameData.FutureCall[marker] = value ~= false
     return marker
 end
 
 function FutureCallLogic.principalName(playerName, config)
-    local formatString = config
-        and config.principal
-        and config.principal.name_format
+    local formatString = config and config.principal and config.principal.name_format
         or "%s's Future Self"
     return string.format(formatString, tostring(playerName or "Player"))
 end

@@ -652,7 +652,8 @@ function PetFollowService:_mine(player, pet, breakable)
     if breakable:GetAttribute("EnemyId") then
         -- Attacker fights at the owner's EFFECTIVE level (the teaming seam) — same value the
         -- accuracy curve below uses, so hit + damage scale together.
-        local petLevel = player:GetAttribute("EffectiveLevel")
+        local petLevel = pet:GetAttribute("PrincipalLevel")
+            or player:GetAttribute("EffectiveLevel")
             or pet:GetAttribute("Level")
             or (player:GetAttribute("Level") or 1)
         local enemyLevel = breakable:GetAttribute("Level") or petLevel
@@ -741,7 +742,11 @@ function PetFollowService:_mine(player, pet, breakable)
         and self._combatConfig.engagement.rolls.pet_attack
     local hitChance
     if breakable:GetAttribute("EnemyId") then
-        local atkLevel = player:GetAttribute("EffectiveLevel")
+        -- Manifested-principal pets fight at the authored principal level for BOTH halves of
+        -- level scaling. Using it for damage but not accuracy made a Level-10 Future Call
+        -- squad retain its Level-5 summoner's miss chance.
+        local atkLevel = pet:GetAttribute("PrincipalLevel")
+            or player:GetAttribute("EffectiveLevel")
             or pet:GetAttribute("Level")
             or (player:GetAttribute("Level") or 1)
         local enemyLevel = breakable:GetAttribute("Level") or atkLevel
@@ -1175,11 +1180,12 @@ end
 -- `player` here is the principal's `.instance` for the many downstream calls still keyed on
 -- a Player; those migrate one at a time behind the same contract.
 function PetFollowService:_tickPrincipal(principal)
-    local player = principal.instance
-    if not player then
+    local principalInstance = principal.instance
+    local rewardPlayer = principal.owner or principalInstance
+    if not principalInstance or not rewardPlayer then
         return
     end
-    local character = principal.character or player.Character
+    local character = principal.character or principalInstance.Character
     local hrp = character and character:FindFirstChild("HumanoidRootPart")
     local petsFolder = Workspace:FindFirstChild("PlayerPets")
         and Workspace.PlayerPets:FindFirstChild(Principal.petFolderName(principal))
@@ -1206,7 +1212,10 @@ function PetFollowService:_tickPrincipal(principal)
                 if not breakable then
                     targetId.Value = 0 -- target gone -> follow until AutoTargetService reassigns
                 else
-                    self:_mine(player, pet, breakable)
+                    -- An NPC principal's folder remains visually/behaviorally owned by
+                    -- its manifested character, but rewards and contribution belong to
+                    -- the real player who spent the token.
+                    self:_mine(rewardPlayer, pet, breakable)
                 end
             end
         end

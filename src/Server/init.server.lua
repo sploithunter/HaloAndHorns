@@ -534,6 +534,16 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.PotionService,
     { "Logger", "ConfigLoader", "DataService", "InventoryService" }
 )
+-- FutureCallService: the one-time Level-5 token grant and authored Level-10
+-- future-self summon. Hotbar is bound after initialization to avoid a service cycle.
+loader:RegisterModule("FutureCallService", ServerScriptService.Server.Services.FutureCallService, {
+    "Logger",
+    "ConfigLoader",
+    "DataService",
+    "InventoryService",
+    "PlayerProgressionService",
+    "NpcPrincipalService",
+})
 -- PotionShopService: authored-tent prompts + authoritative 5-gem buy / 2-gem sell boundary.
 loader:RegisterModule("PotionShopService", ServerScriptService.Server.Services.PotionShopService, {
     "Logger",
@@ -563,11 +573,15 @@ loader:RegisterModule(
     { "Logger", "ConfigLoader", "DataService" }
 )
 -- HotbarService: Halo & Horns hotbar / command bar (Feature 16).
-loader:RegisterModule(
-    "HotbarService",
-    ServerScriptService.Server.Services.HotbarService,
-    { "Logger", "ConfigLoader", "DataService", "PotionService", "EnemyService", "PowerService" }
-)
+loader:RegisterModule("HotbarService", ServerScriptService.Server.Services.HotbarService, {
+    "Logger",
+    "ConfigLoader",
+    "DataService",
+    "PotionService",
+    "EnemyService",
+    "PowerService",
+    "FutureCallService",
+})
 -- RosterService: Halo & Horns named rosters + injury-rule deploy (Feature 17).
 -- Resolves SpiritFormService at runtime for pet readiness.
 loader:RegisterModule(
@@ -909,6 +923,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 TutorialService = modules:Get("TutorialService"),
                 EnhancementService = modules:Get("EnhancementService"),
                 HotbarService = modules:Get("HotbarService"),
+                FutureCallService = modules:Get("FutureCallService"),
                 PrologueService = modules:Get("PrologueService"),
                 StarterPetService = modules:Get("StarterPetService"),
             })
@@ -935,6 +950,14 @@ local loadSuccess, loadOrderOrError = pcall(function()
             HotbarService = modules:Get("HotbarService"),
             EnemyService = modules:Get("EnemyService"),
         })
+        modules:Get("FutureCallService"):BindPeerServices({
+            HotbarService = modules:Get("HotbarService"),
+        })
+        modules:Get("NpcPrincipalService"):BindPeerServices({
+            AutoTargetService = isFeatureEnabled("auto_target") and modules:Get(
+                "AutoTargetService"
+            ) or nil,
+        })
         modules:Get("GameAPIService"):BindServices({
             AchievementsService = isFeatureEnabled("achievements") and modules:Get(
                 "AchievementsService"
@@ -952,6 +975,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
             EnhancementShopService = modules:Get("EnhancementShopService"),
             FocusService = modules:Get("FocusService"),
             FusionService = modules:Get("FusionService"),
+            FutureCallService = modules:Get("FutureCallService"),
             HotbarService = modules:Get("HotbarService"),
             InventoryService = modules:Get("InventoryService"),
             LayerService = modules:Get("LayerService"),
@@ -1069,6 +1093,7 @@ table.insert(requiredModules, "AugmentationService")
 table.insert(requiredModules, "EnhancementService")
 table.insert(requiredModules, "EnhancementShopService")
 table.insert(requiredModules, "PotionService")
+table.insert(requiredModules, "FutureCallService")
 table.insert(requiredModules, "PotionShopService")
 table.insert(requiredModules, "TutorialService")
 table.insert(requiredModules, "RetentionService")

@@ -1743,3 +1743,16 @@ rewrite.
 - Fixed Mythical+ hatch and team-sidekick notices disappearing when Roblox reports
   `LegacyChatService` while its visible chat window is actually backed by `RBXGeneral`. The client
   now attempts the live TextChannel first and uses legacy `ChatMakeSystemMessage` only as fallback.
+
+## 2026-07-27 — Level-5 Future Call tokens
+
+- Added a one-time, reconciliation-safe grant of three Future Call tokens at claimed level 5 without
+  moving the existing Origin, power-slot, or level-6 power rewards. Tokens use the World Travel icon,
+  auto-bind into the first free top-row hotbar slot, and announce with a full award banner.
+- Each token calls a two-minute Level-10 future-self NPC principal with a rainbow Polar Bear tank,
+  golden Dragon blaster, rainbow Penguin armor support, and rainbow Snow Leopard melee pet. The
+  squad prioritizes combat, otherwise farms nearest crystals without abandoning a live mining
+  target, and attributes all rewards to the summoning player.
+- Added an admin grant that runs through the same inventory/hotbar/banner path, plus Reset to
+  Beginning cleanup and entitlement re-arming. The NPC principal seam now preserves a real reward
+  owner for manifested squads.

@@ -1,6 +1,8 @@
-# Summon the Creator — an allied NPC principal (design spec, DRAFT)
+# Summon the Creator — an allied NPC principal
 
-**Status:** proposed, not built. Jason 2026-07-24.
+**Status:** principal runtime built 2026-07-24; reused by the Level-5 Future Call token
+2026-07-27. This page preserves the original design reasoning and therefore still describes
+some implementation work in the future tense.
 
 > "It summons essentially an NPC version of me with all of my best pets. All of my powers.
 > Let's give it a 1,000-second recharge."
