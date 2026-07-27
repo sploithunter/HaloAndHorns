@@ -230,14 +230,16 @@ return {
             reward = { currencies = { gems = 20 } },
         },
         hatch_250 = {
+            -- Stable legacy ID: changing it would reissue the quest to players who already claimed
+            -- the former 250-egg version and discard in-progress activation baselines.
             track = "hatchery",
             order = 3,
-            name = "Hatch 250 Eggs",
-            description = "A real hatchery now. Luck powers make every egg count.",
+            name = "Hatch 1,000 Eggs",
+            description = "Master the hatchery. Luck powers make every egg count.",
             condition = {
                 type = "counter_at_least",
                 counter = "eggs_hatched",
-                value = 250,
+                value = 1000,
                 since_start = true,
             },
             reward = { currencies = { gems = 40 } },

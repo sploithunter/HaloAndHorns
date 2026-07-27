@@ -1110,3 +1110,11 @@ Last checked: 2026-07-27
 - The Quest menu filters claimed, non-repeatable quests out of both its rows and branch tabs, while
   the server continues returning and retaining the full claim ledger. Repeatable quests and all
   unclaimed rewards remain visible; an all-complete player sees a concise completion state.
+
+## Hatchery quest and achievement pacing
+
+Last checked: 2026-07-27
+
+- The active Hatchery chain ends at 1,000 newly hatched eggs (25 → 100 → 1,000). Passive lifetime
+  hatching achievements continue at 10,000 and 25,000 eggs beyond that capstone. The final quest's
+  internal legacy ID remains unchanged to preserve existing claims and activation baselines.
