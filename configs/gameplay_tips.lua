@@ -43,7 +43,7 @@ return {
         "Pet roles change combat behavior, not just card badges.",
 
         "Clicking a crystal boosts it, making it easier for your pets to mine.",
-        "Boosted crystals break faster and pay more currency and XP. Use Resonance!",
+        "Boosted crystals break faster and pay more currency. At Level 5+, they also pay more XP!",
         "Pet damage buffs also increase mining damage.",
         "A crystal's health bar shows how close it is to breaking.",
         "The boost bar shows the extra mining power you built up.",

@@ -1777,3 +1777,12 @@ rewrite.
   damage. The standard +50 Resonance pulse pays 1.5× while it remains on the node; full 100 Boost
   pays 2×. Damage and rewards share one pure interpolation helper, with independent config caps,
   so active clicking, Resonance, and Potency-enhanced Resonance all use the same visible state.
+
+## 2026-07-27 — Preserve the Level 1–4 graduation
+
+- Gated boosted-crystal **XP** to Level 5+ after a live Level-4 run showed only about 511 XP of
+  headroom between completing the remaining `Answer the Cave` enemies/reward and reaching Level 5.
+  Boosted pet damage and crystal currency remain active from Level 1; only the new XP multiplier
+  waits until the level where the mining/hatching progression bridge is needed.
+- Reduced the existing Level 1–4 mining XP onramp from 5× to 2.5× so mining and combat share the
+  same early multiplier and the tutorial quest has more room to finish before Level 5.

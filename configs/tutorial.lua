@@ -114,7 +114,7 @@ return {
         {
             id = "cast_power",
             title = "Use Resonance",
-            body = "Now press that slot (or its number key) near crystals — Resonance makes them break faster and pay more currency and XP.",
+            body = "Now press that slot (or its number key) near crystals — Resonance makes them break faster and pay more currency.",
             target = { kind = "none" },
             complete_on = { event = "power_cast" },
         },
