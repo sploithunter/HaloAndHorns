@@ -1102,3 +1102,11 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
 - [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md)
 - [Map Marker Reference](../MAP_MARKER_REFERENCE.md)
 - [Implementation Plan](../IMPLEMENTATION_PLAN.md)
+
+## Quest menu completion cleanup
+
+Last checked: 2026-07-27
+
+- The Quest menu filters claimed, non-repeatable quests out of both its rows and branch tabs, while
+  the server continues returning and retaining the full claim ledger. Repeatable quests and all
+  unclaimed rewards remain visible; an all-complete player sees a concise completion state.
