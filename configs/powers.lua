@@ -220,8 +220,8 @@ return {
 
         -- INNATE farming cast (Resonance, docs/INNATE_RESONANCE_POWER.md): an AoE boost-pulse. On
         -- cast, every breakable within `radius` of the player gets its Boost attribute bumped toward
-        -- max — reusing the configs/breakables.lua M.boost SSOT + its pet-damage amplification (no new
-        -- effect). `farm_boost` is a bespoke family handled directly in PowerService:_applyEffect.
+        -- max — reusing the configs/breakables.lua M.boost SSOT + its pet-damage and reward
+        -- amplification (no new effect). `farm_boost` is handled directly in PowerService:_applyEffect.
         -- magnitude = Boost added per cast; radius = AoE (range-enhanceable via radiusBase).
         -- 50 base → ×1.99 with 3 SO potencies (single=0.33 ea) ≈ 99.5 ≈ full slam (MaxBoost 100);
         -- unslotted +50/cast ≈ 2 casts to full against the −1/sec decay. (Jason-tuned balance.)

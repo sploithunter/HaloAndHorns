@@ -1770,3 +1770,10 @@ rewrite.
   by the authoritative Level-50 progression ceiling. Temporary team/alliance level lifts do not
   inflate the summon. The two-minute duration and authored four-pet squad remain unchanged at every
   caller level.
+
+## 2026-07-27 — Boosted-crystal yield
+
+- The existing crystal Boost meter now raises node currency and mining XP linearly alongside pet
+  damage. The standard +50 Resonance pulse pays 1.5× while it remains on the node; full 100 Boost
+  pays 2×. Damage and rewards share one pure interpolation helper, with independent config caps,
+  so active clicking, Resonance, and Potency-enhanced Resonance all use the same visible state.

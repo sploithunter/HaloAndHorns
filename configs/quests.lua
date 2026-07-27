@@ -73,7 +73,7 @@ return {
             track = "first_steps",
             order = 1,
             name = "Boost the Patch",
-            description = "Pulse Resonance near crystals — your pets mine the whole patch harder.",
+            description = "Pulse Resonance near crystals — they break faster and pay more.",
             condition = {
                 type = "counter_at_least",
                 counter = "powers_cast",

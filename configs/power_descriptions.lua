@@ -66,7 +66,7 @@ return {
     inferno_brand = "Signature: a ramping burning brand.",
 
     -- Innate (every player owns it from spawn) — the early-game farming cast
-    resonance = "Pulse a boost over nearby crystals so your pets mine the whole patch harder.",
+    resonance = "Boost nearby crystals so they break faster and pay more currency and XP.",
 
     -- Generic (white) — farming / luck / utility, any archetype
     prospector = "+crystal yield for a duration.",

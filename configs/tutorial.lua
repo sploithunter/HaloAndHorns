@@ -114,7 +114,7 @@ return {
         {
             id = "cast_power",
             title = "Use Resonance",
-            body = "Now press that slot (or its number key) to pulse Resonance near some crystals — it super-charges them so your pets mine way harder.",
+            body = "Now press that slot (or its number key) near crystals — Resonance makes them break faster and pay more currency and XP.",
             target = { kind = "none" },
             complete_on = { event = "power_cast" },
         },
@@ -129,7 +129,7 @@ return {
                 enhancements = { { type = "potency", origins = {}, level = 3, count = 1 } },
                 ensure_slot = "resonance",
             },
-            body = "You earned a Potency enhancement! Open POWERS, tap Resonance, and drop the Potency into a slot — every pulse will hit even harder.",
+            body = "You earned a Potency enhancement! Open POWERS, tap Resonance, and drop it into a slot — stronger pulses mean faster, richer crystals.",
             target = { kind = "ui", name = "PowersButton" },
             complete_on = { event = "enhancement_slotted" },
         },
