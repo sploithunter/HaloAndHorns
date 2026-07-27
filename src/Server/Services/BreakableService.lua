@@ -11,6 +11,7 @@ BreakableService.__index = BreakableService
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
+local FarmTargetRetention = require(ReplicatedStorage.Shared.Game.FarmTargetRetention)
 
 local logger
 local configLoader
@@ -66,17 +67,18 @@ local function petLockedOnLiveEnemy(petInst)
     return false
 end
 
-local function assignPlayerPetsToTarget(player, breakableModel)
+local function assignPlayerPetsToTarget(player, breakableModel, opts)
     if not player or not breakableModel then
-        return
+        return 0
     end
+    opts = opts or {}
     local petInstancesFolder = workspace:FindFirstChild("PlayerPets")
     if not petInstancesFolder then
-        return
+        return 0
     end
     local playerPets = petInstancesFolder:FindFirstChild(player.Name)
     if not playerPets then
-        return
+        return 0
     end
 
     -- Determine world name from ancestry: ...Breakables/<Type>/<World>/Items/<Model>
@@ -90,20 +92,47 @@ local function assignPlayerPetsToTarget(player, breakableModel)
     local targetId = breakableModel:FindFirstChild("BreakableID")
             and breakableModel.BreakableID.Value
         or 0
+    local currentTargetCache = {}
+    local assigned = 0
     for _, petInst in ipairs(playerPets:GetChildren()) do
         local petIdVal = petInst:FindFirstChild("PetID")
         local targetIdVal = petInst:FindFirstChild("TargetID")
         local targetTypeVal = petInst:FindFirstChild("TargetType")
         local targetWorldVal = petInst:FindFirstChild("TargetWorld")
         if petIdVal and targetIdVal and targetTypeVal and targetWorldVal then
+            local currentId = tonumber(targetIdVal.Value) or 0
+            local currentTarget
+            if currentId ~= 0 and targetTypeVal.Value == "Crystals" then
+                if currentTargetCache[currentId] == nil then
+                    currentTargetCache[currentId] = findBreakableById(currentId) or false
+                end
+                currentTarget = currentTargetCache[currentId] or nil
+            end
+            local keepCurrent = FarmTargetRetention.shouldKeep({
+                automatic = opts.automatic == true,
+                targetType = targetTypeVal.Value,
+                targetId = currentId,
+                targetHp = currentTarget and currentTarget:GetAttribute("HP") or 0,
+            })
             -- Skip pets locked on a live enemy (attack back) AND downed pets
-            -- (they are out healing — must not be pulled into mining).
-            if not petLockedOnLiveEnemy(petInst) and not petInst:GetAttribute("CombatDowned") then
+            -- (they are out healing — must not be pulled into mining). Automatic
+            -- farming also preserves a live unfinished crystal; explicit player
+            -- clicks remain free to redirect even a long-running/huge target.
+            if
+                not keepCurrent
+                and not petLockedOnLiveEnemy(petInst)
+                and not petInst:GetAttribute("CombatDowned")
+            then
                 targetTypeVal.Value = "Crystals"
                 targetWorldVal.Value = worldName
                 targetIdVal.Value = targetId
+                assigned += 1
             end
         end
+    end
+
+    if assigned == 0 then
+        return 0
     end
 
     -- Mirror MCP: add an entry to crystal's Pets folder (optional, helpful for effects)
@@ -119,6 +148,7 @@ local function assignPlayerPetsToTarget(player, breakableModel)
         existing.Value = 1
         existing.Parent = petsFolder
     end
+    return assigned
 end
 
 function BreakableService:Init()
@@ -167,7 +197,9 @@ function BreakableService:_onAttack(player, payload)
     end
 
     -- Ensure pets are assigned to this target for follow/damage behavior
-    assignPlayerPetsToTarget(player, target)
+    assignPlayerPetsToTarget(player, target, {
+        automatic = payload.automatic == true,
+    })
 
     -- The client path is sanitized to zero damage above; any future server-owned direct strike still
     -- uses the authoritative damage + contribution + combat-result contract.
