@@ -54,6 +54,7 @@ local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local TargetPriority = require(ReplicatedStorage.Shared.Game.TargetPriority)
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura)
 local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView) -- effective combat power (empower carry pick)
+local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 local DamageOverTime = require(ReplicatedStorage.Shared.Game.DamageOverTime) -- DoT burn ticks
 local OnHitEffects = require(ReplicatedStorage.Shared.Game.OnHitEffects) -- slow/shred on-hit math
 local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
@@ -167,6 +168,7 @@ function EnemyService:Init()
     self._combatConfig = self._configLoader:LoadConfig("combat")
     self._squadConfig = self._configLoader:LoadConfig("squad")
     self._petRoles = self._configLoader:LoadConfig("pet_roles")
+    self._petsConfig = self._configLoader:LoadConfig("pets")
     self._levelingConfig = self._configLoader:LoadConfig("leveling")
     self._originConfig = (self._configLoader:LoadConfig("combat_fx") or {}).origin or {}
     self._powersConfig = self._configLoader:LoadConfig("powers") -- combat_vfx.on_hit (e.g. dodge pops)
@@ -186,6 +188,7 @@ function EnemyService:Init()
     -- flag, and the slot CooldownUntil all live as replicated attributes on the pet so
     -- the squad HUD reads them directly; this table is just server-only hit timing.
     self._petCombat = setmetatable({}, { __mode = "k" })
+    self._abilityProfiles = setmetatable({}, { __mode = "k" })
 
     -- Squad management: recall a pet (short slot cooldown) / re-summon a recovered one.
     Signals.Squad_Recall.OnServerEvent:Connect(function(player, payload)
@@ -1407,6 +1410,19 @@ function EnemyService:_petPower(pet)
     return p
 end
 
+function EnemyService:_petAbilityProfile(pet)
+    local profile = self._abilityProfiles[pet]
+    if not profile then
+        profile = PetAbilityRuntime.resolve(
+            self._petsConfig,
+            pet:GetAttribute("PetType"),
+            pet:GetAttribute("PetVariant") or "basic"
+        )
+        self._abilityProfiles[pet] = profile
+    end
+    return profile
+end
+
 -- Pet position: the owning client reports it (anchored pets are client-moved, so
 -- the server's own pivot is stale). Fall back to the pivot if no fresh report.
 function EnemyService:_petPosition(pet, pfs)
@@ -1845,15 +1861,18 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     -- %-mitigation armor: while EvadeUntil is live, roll EvadeChance to AVOID this hit ENTIRELY. Placed
     -- AFTER threat is credited (above) so a dodging tank still holds aggro, but BEFORE any damage. On a
     -- successful roll: zero damage + pop a floating "Dodge!" (DodgeTick, same VFX the absorb-skin used).
+    local abilityDodge = tonumber(self:_petAbilityProfile(pet).passive.dodge_chance) or 0
+    local timedDodge = 0
     if (pet:GetAttribute("EvadeUntil") or 0) > os.time() then
-        if Evasion.evaded(pet:GetAttribute("EvadeChance"), math.random()) then
-            CombatApplication.ApplyHit(pet, {
-                outcome = "dodge",
-                source = enemyModel,
-                kind = "enemy_attack",
-            })
-            return -- avoided the hit entirely
-        end
+        timedDodge = tonumber(pet:GetAttribute("EvadeChance")) or 0
+    end
+    if Evasion.evaded(math.max(abilityDodge, timedDodge), math.random()) then
+        CombatApplication.ApplyHit(pet, {
+            outcome = "dodge",
+            source = enemyModel,
+            kind = "enemy_attack",
+        })
+        return -- avoided the hit entirely
     end
     -- Defensive stat: the pet's Defense (its own + any active DefenseBuff from a power
     -- like Bulwark) mitigates the hit on the armor curve. A real tank survives longer.
@@ -1998,7 +2017,30 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
         )
     end
     if downedNow then
-        self:_downPet(pet, now, eng, "down")
+        local passive = self:_petAbilityProfile(pet).passive or {}
+        local maxRevives = passive.revive_on_death == true
+                and math.max(0, math.floor(tonumber(passive.max_revives) or 0))
+            or 0
+        local usedRevives =
+            math.max(0, math.floor(tonumber(pet:GetAttribute("AbilityRevivesUsed")) or 0))
+        if usedRevives < maxRevives then
+            pet:SetAttribute("AbilityRevivesUsed", usedRevives + 1)
+            CombatApplication.ApplyPowerHeal(pet, taken, {
+                resource = "pet_endurance",
+                source = pet,
+                kind = "pet_ability_revive",
+            })
+            self:_updateEnduranceBar(pet, 0, power, factor)
+            local reviveOwner = pet.Parent and Players:FindFirstChild(pet.Parent.Name)
+            if reviveOwner then
+                fireGameEvent(reviveOwner, "pet_revive", {
+                    pet = pet:GetAttribute("PetType"),
+                    remaining = maxRevives - usedRevives - 1,
+                })
+            end
+        else
+            self:_downPet(pet, now, eng, "down")
+        end
     end
 end
 

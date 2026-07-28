@@ -8,6 +8,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PetElement = require(ReplicatedStorage.Shared.Game.PetElement)
+local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 
 local PetGrantService = {}
 PetGrantService.__index = PetGrantService
@@ -152,6 +153,12 @@ function PetGrantService:BuildPetData(request, player)
         theme = grant.theme,
         unique = grant.unique or nil,
     }
+    -- Infinite Loyalty is literal ownership behavior: a pet carrying it is
+    -- minted locked, so delete/trade paths cannot make it abandon its owner.
+    local abilityProfile = PetAbilityRuntime.resolve(self._petsConfig, grant.petType, grant.variant)
+    if abilityProfile.passive.never_abandons_owner == true then
+        petData.locked = true
+    end
 
     -- Element at hatch (Feature 5): from the layer the hatch happens on
     -- (base -> neutral; Heaven -> light; Hell -> shadow once LayerService exists).

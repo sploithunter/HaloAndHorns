@@ -55,7 +55,7 @@ return {
         dragon = "ranged", -- Jason: it flies and breathes fire — the rare early ranged chase
         bird = "ranged",
         colorado = "ranged",
-        kade = "ranged",
+        kade = "tank",
         colorado_creator = "ranged", -- the apex is a BLASTER like its species twin (the
         -- two-species split missed this map and it fell to default=melee — Jason caught it)
         -- One BUFFER (support archetype) per zone — trades attack for a team aura. Their

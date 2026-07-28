@@ -1884,7 +1884,7 @@ rewrite.
 ## 2026-07-27 — Kade developer pet model
 
 - Registered Kade as a regular Exclusive developer-reward pet through the same packaged-model,
-  ranged fire-blaster, heal/luck, scripted-rainbow, and huge-scaling path as regular Colorado.
+  Grass tank, heal/luck, scripted-rainbow, and huge-scaling path as regular Colorado.
   Normal/rainbow use Roblox Model `107161152905013`; golden uses `139643909402590`.
 - Added basic, golden, rainbow, and huge-rainbow admin grants for visual verification. No Kade egg,
   hatch table, or acquisition rule was invented; those remain pending the authored egg.
@@ -1902,3 +1902,16 @@ rewrite.
 - Registered immutable Roblox user ID `536245038` (formerly `KadeDevRBLX`, now `KadeDevLux`) in the
   creator registry, so meeting Kade grants this egg once per player. Studio boot verification
   confirmed the textured model in `ReplicatedStorage.Assets.Models.Eggs.kade_egg`.
+
+## 2026-07-27 — Pet abilities and unique hatch enchants made authoritative
+
+- Added `PetAbilityRuntime` and `PetAbilityService`, converting all configured variant abilities
+  from card-only metadata into live combat, movement, defense/revival, luck/economy, collection,
+  and drop behavior. An exhaustive headless contract now rejects any configured ability property
+  without a runtime executor. Kade is a Grass tank whose authored heal and luck support remain live.
+- Guaranteed at least one enchant for every newly hatched unique pet with an available first slot,
+  even when its rarity's chance roll misses. This is forward-only; existing records are unchanged.
+- Raised the weaker enchant coefficients while retaining `configs/enchants.lua` as the behavior
+  single source of truth. Verified every configured enchant modifier kind has a live consumer, and
+  fixed Coin Finder to match every live biome coin payout instead of only the literal legacy
+  `coins` key; its duplicate Crystal Finder label was corrected at the same time.

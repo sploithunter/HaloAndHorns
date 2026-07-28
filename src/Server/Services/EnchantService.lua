@@ -12,6 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime)
 
 local EnchantService = {}
 EnchantService.__index = EnchantService
@@ -463,6 +464,19 @@ function EnchantService:RollInitialEnchantments(player, petData, petConfig, sour
                 excludedEffects[enchant.id] = true
                 added += 1
             end
+        end
+    end
+
+    -- UNIQUE HATCH CONTRACT: every newly minted enchantable pet leaves the
+    -- hatch transaction with at least one working enchant. Profile chance may
+    -- still govern additional starting slots, but it may never produce a blank
+    -- unique card. Existing accounts are intentionally not reconciled here.
+    if added == 0 and existing == 0 and availableSlots > 0 then
+        local enchant = self:RollEnchant(rarityId, excludedEffects)
+        if enchant then
+            enchant.source = source or petData.grant_source or "pet_grant"
+            table.insert(petData.enchantments, enchant)
+            added = 1
         end
     end
 
@@ -1079,16 +1093,7 @@ function EnchantService:RerollPetEnchant(player, payload)
 end
 
 function EnchantService:_matchesModifierContext(modifier, context)
-    if type(modifier) ~= "table" or type(context) ~= "table" then
-        return false
-    end
-    if modifier.kind ~= nil and modifier.kind ~= context.kind then
-        return false
-    end
-    if modifier.currency ~= nil and modifier.currency ~= context.currency then
-        return false
-    end
-    return true
+    return EnchantRuntime.matchesModifierContext(modifier, context)
 end
 
 function EnchantService:_getEquippedUniquePets(player)

@@ -53,6 +53,7 @@ local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local FocusFire = require(ReplicatedStorage.Shared.Game.FocusFire)
 local SquadDiversity = require(ReplicatedStorage.Shared.Game.SquadDiversity)
 local FarmTargetRetention = require(ReplicatedStorage.Shared.Game.FarmTargetRetention)
+local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
 
@@ -68,12 +69,15 @@ function PetFollowService:Init()
     self._combatConfig = self._configLoader:LoadConfig("combat")
     self._autoSystemsConfig = self._configLoader:LoadConfig("auto_systems")
     self._petRoles = self._configLoader:LoadConfig("pet_roles")
+    self._petsConfig = self._configLoader:LoadConfig("pets")
     self._levelingConfig = self._configLoader:LoadConfig("leveling")
     self._buffsConfig = self._configLoader:LoadConfig("buffs") or {}
     self._squadDiversityConfig = self._configLoader:LoadConfig("squad_diversity") or {}
     self._diversityCache = setmetatable({}, { __mode = "k" }) -- [player]={mult,t}; weak so leavers GC
     self._nextHit = {} -- pet model -> os.clock() of next allowed mining hit
     self._petPos = setmetatable({}, { __mode = "k" }) -- pet model -> { pos, t } (weak: dead pets GC)
+    self._abilityProfiles = setmetatable({}, { __mode = "k" })
+    self._abilityNext = setmetatable({}, { __mode = "k" })
 
     -- Owning client reports its pet positions; we use them to gate mining on distance to target.
     Signals.PetReportPositions.OnServerEvent:Connect(function(player, report)
@@ -420,6 +424,33 @@ function PetFollowService:_kites(pet)
     return def ~= nil and (def.kite == true or (tonumber(def.standoff) or 0) > 0)
 end
 
+function PetFollowService:_abilityProfile(pet)
+    local profile = self._abilityProfiles[pet]
+    if not profile then
+        profile = PetAbilityRuntime.resolve(
+            self._petsConfig,
+            pet:GetAttribute("PetType"),
+            pet:GetAttribute("PetVariant") or "basic"
+        )
+        self._abilityProfiles[pet] = profile
+    end
+    return profile
+end
+
+-- Pack Leader is a squad passive. Multiple leaders do not multiply without
+-- bound; the strongest equipped leader supplies the aura.
+function PetFollowService:_packLeaderMult(pet)
+    local best = 1
+    local folder = pet and pet.Parent
+    for _, ally in ipairs(folder and folder:GetChildren() or {}) do
+        if not ally:GetAttribute("CombatDowned") then
+            local passive = self:_abilityProfile(ally).passive or {}
+            best = math.max(best, tonumber(passive.nearby_pet_damage) or 1)
+        end
+    end
+    return best
+end
+
 -- One mining hit on the pet's current target (server-authoritative damage).
 
 -- ZONE GATE (Jason's alt-account find: "unlocking from a single player perspective
@@ -665,6 +696,12 @@ function PetFollowService:_mine(player, pet, breakable)
         return -- pet is reported far from the target — hasn't arrived yet
     end
 
+    local abilityProfile = self:_abilityProfile(pet)
+    local abilityProc
+    abilityProc, self._abilityNext[pet] =
+        PetAbilityRuntime.activate(abilityProfile, self._abilityNext[pet], now)
+    local abilityPassive = abilityProfile.passive or {}
+
     local powerNV = pet:FindFirstChild("Power")
     local ctx = {
         power = tonumber(powerNV and powerNV.Value) or 1,
@@ -692,6 +729,16 @@ function PetFollowService:_mine(player, pet, breakable)
     })
     local dmg = breakable:GetAttribute("EnemyId") and profile.combatEffective
         or profile.miningEffective
+    -- Configured variant abilities are real swing procs, not card decoration.
+    -- Passives (loyalty/all-bonus/pack-leader) stay live on every relevant hit;
+    -- cooldown abilities apply only when PetAbilityRuntime activates them.
+    dmg = dmg * (tonumber(abilityPassive.all_bonus) or 1) * self:_packLeaderMult(pet)
+    if breakable:GetAttribute("EnemyId") then
+        dmg = dmg * (tonumber(abilityPassive.damage_to_owner_enemies) or 1)
+    end
+    if abilityProc then
+        dmg = dmg * (tonumber(abilityProc.damage_multiplier) or 1)
+    end
     -- AURA SPLIT (Jason "hit = hit - aura"): an aura pet's SINGLE-TARGET hit is reduced by the aura
     -- fraction, because its focus ALSO sits in the field and takes the aura tick — so the focus nets
     -- the full hit ((1-f) from the swing + f from the field), neighbors get the f as bonus AoE, and
@@ -783,7 +830,8 @@ function PetFollowService:_mine(player, pet, breakable)
     local postVulnerabilityDmg = dmg
     -- Defensive stat: an enemy's Armor mitigates pet damage on the armor curve
     -- (crystals have no Armor -> unchanged). Vulnerability above counteracts it.
-    local armor = breakable:GetAttribute("Armor") or 0
+    local armorIgnore = math.clamp(tonumber(abilityProc and abilityProc.armor_ignore) or 0, 0, 1)
+    local armor = (breakable:GetAttribute("Armor") or 0) * (1 - armorIgnore)
     if armor > 0 then
         dmg = CombatMath.mitigate(dmg, armor, self._combatConfig.armor_curve_k or 100)
     end
@@ -827,7 +875,10 @@ function PetFollowService:_mine(player, pet, breakable)
     if (player:GetAttribute("CritAuraUntil") or 0) > nowT then
         critAdd = critAdd + (player:GetAttribute("CritAura") or 0)
     end
-    critChance = math.min(critChance + critAdd, 0.9)
+    critChance = math.min(
+        critChance + critAdd + (tonumber(abilityProc and abilityProc.crit_chance) or 0),
+        0.9
+    )
     local roll = CombatRoll.resolve({
         hit_chance = hitChance,
         crit_chance = critChance,
@@ -949,6 +1000,16 @@ function PetFollowService:_mine(player, pet, breakable)
     -- continuously-hit primary almost never reached it (Jason: "1 in 20"); the spread pass zeroes
     -- ContagionSpreadAt after it fires, so a later hit re-arms it for the next hop.
     local burn = burnProfile(pet, self._combatConfig.pet_contagion)
+    if not burn and abilityProc and abilityProc.damage_over_time == true then
+        local abilityDot = self._combatConfig.pet_ability_runtime
+                and self._combatConfig.pet_ability_runtime.reality_burn
+            or {}
+        burn = {
+            fraction = tonumber(abilityDot.fraction) or 0.2,
+            interval = tonumber(abilityDot.interval) or 1,
+            duration = tonumber(abilityDot.duration) or 4,
+        }
+    end
     if breakable:GetAttribute("EnemyId") and applied.contributed > 0 and burn then
         local perTick = DamageOverTime.perTick(applied.contributed, burn.fraction)
         self:_ensureResonanceConfigs()
@@ -967,6 +1028,13 @@ function PetFollowService:_mine(player, pet, breakable)
     -- On-hit control/shred (orthogonal to the burn) on the primary target.
     if breakable:GetAttribute("EnemyId") and applied.contributed > 0 then
         applyOnHit(breakable, pet, nowT)
+        local stun = tonumber(abilityProc and abilityProc.stun_duration) or 0
+        if stun > 0 then
+            breakable:SetAttribute(
+                "HeldUntil",
+                math.max(tonumber(breakable:GetAttribute("HeldUntil")) or 0, nowT + stun)
+            )
+        end
     end
 
     -- PET AoE (PetTargeting attack_targeting = "aoe" / "targeted_aoe"): an AoE pet's swing splashes
@@ -976,7 +1044,14 @@ function PetFollowService:_mine(player, pet, breakable)
     -- primary's container (enemies→enemies, crystals→crystals). Credited to the pet (Contrib) so
     -- kills/payouts count; silent like the cleave (the HP drops are the AoE tell).
     local atkScope = pet:GetAttribute("AttackTargeting") or "single"
-    if dmg > 0 and (atkScope == "aoe" or atkScope == "targeted_aoe") then
+    if
+        dmg > 0
+        and (
+            atkScope == "aoe"
+            or atkScope == "targeted_aoe"
+            or (abilityProc and abilityProc.area_damage == true)
+        )
+    then
         local aoeCfg = self._combatConfig.pet_aoe or {}
         -- Per-pet AoE override (attack_aoe, stamped at spawn) wins over the global pet_aoe default —
         -- the knob board for a wider/harder-splash pet. A stamped 0 means "unset → use the default".

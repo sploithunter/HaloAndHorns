@@ -428,6 +428,7 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
     if (player:GetAttribute("DropRateBuffUntil") or 0) > os.time() then
         chance = chance * (1 + (tonumber(player:GetAttribute("DropRateBuff")) or 0))
     end
+    chance = chance * (1 + (tonumber(player:GetAttribute("PetAbilityDropRate")) or 0))
     -- Showering Saturday (drop_rate global event): same axis, server-wide.
     local eventService = self._moduleLoader and self._moduleLoader:Get("EventService")
     if eventService then
@@ -599,6 +600,7 @@ function DropService:TrySpawnPotionDrop(player, source, position)
     if (player:GetAttribute("DropRateBuffUntil") or 0) > os.time() then
         chance = chance * (1 + (tonumber(player:GetAttribute("DropRateBuff")) or 0))
     end
+    chance = chance * (1 + (tonumber(player:GetAttribute("PetAbilityDropRate")) or 0))
     -- drop_rate global event (e.g. Showering Saturday): same axis, server-wide.
     local eventService = self._moduleLoader and self._moduleLoader:Get("EventService")
     if eventService then
@@ -882,6 +884,9 @@ function DropService:_effectiveCollectRadius(plr, baseR, nowT)
         r += tonumber(plr:GetAttribute("MagnetBuff")) or 0
     end
     r += tonumber(plr:GetAttribute("AutoCollectRange")) or 0
+    -- Variant pet magnet abilities publish an absolute attraction range. It
+    -- shares this one collection-radius SSOT rather than adding a parallel pull.
+    r = math.max(r, tonumber(plr:GetAttribute("PetAbilityCollectRange")) or 0)
     if plr:GetAttribute("CollectRadius") ~= r then
         plr:SetAttribute("CollectRadius", r)
     end
@@ -924,7 +929,8 @@ function DropService:_step()
                 -- chest is opened, so magnet can't steal anything early)
                 -- magnetImmune (exclusive EGG drops): the find is the moment —
                 -- walk to it; base collect radius still applies up close
-                local radius = rec.magnetImmune and baseR
+                local rarePull = plr:GetAttribute("PetAbilityRareDropPull") == true
+                local radius = rec.magnetImmune and not rarePull and baseR
                     or self:_effectiveCollectRadius(plr, baseR, nowT)
                 local dist = (rec.part.Position - rootPos).Magnitude
                 if dist <= pullR then
