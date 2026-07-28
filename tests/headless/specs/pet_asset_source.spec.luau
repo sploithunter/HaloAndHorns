@@ -78,6 +78,14 @@ return function()
             expect(source:find("cf * visualOrientation(model)", 1, true) ~= nil).to.equal(true)
         end)
 
+        it("preserves imported orientation in cached and lazy inventory cards", function()
+            local preload = readFile("src/Server/Services/AssetPreloadService.lua")
+            local inventory = readFile("src/Client/UI/Menus/InventoryPanel.lua")
+            local call = "ViewportModelPlacement.centerPreservingOrientation(modelClone)"
+            expect(preload:find(call, 1, true) ~= nil).to.equal(true)
+            expect(inventory:find(call, 1, true) ~= nil).to.equal(true)
+        end)
+
         it("keeps Meshy families on mesh-plus-texture assembly", function()
             local basic = pets.pets.wyrmling.variants.basic
             expect(type(basic.mesh_asset)).to.equal("string")

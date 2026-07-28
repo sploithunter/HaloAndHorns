@@ -1945,3 +1945,10 @@ rewrite.
   unlocked slots, refreshes the affected cards, and requests a save only when a repair occurred.
 - Restored regular Colorado's Lava support badges and supplied neutral-disc fallbacks for Creator
   support symbols that do not yet have authored flag-disc art.
+
+## 2026-07-28 — Inventory viewport orientation preservation
+
+- Cached pet-card generation and the client lazy-viewport fallback now center cloned models without
+  resetting their authored rotation. This carries the same declarative `asset_transform.orientation`
+  used by deployed pets into inventory cards, fixing Kade's edge-on card while keeping one shared
+  path for future imported pets with nonstandard forward axes.
