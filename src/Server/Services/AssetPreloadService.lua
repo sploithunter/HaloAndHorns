@@ -26,6 +26,7 @@ local MeshAssembly = require(ReplicatedStorage.Shared.Assets.MeshAssembly)
 local AssetReport = require(ReplicatedStorage.Shared.Game.AssetReport)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
+local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
 
 -- Record one model/mesh load attempt into the consolidated boot AssetReport. `kind` is inferred
 -- from the target folder (Pets -> pet_model, etc.) so failures read as "what + where" in one log.
@@ -1435,25 +1436,12 @@ function AssetPreloadService:GenerateImageFromModel(
             PetVariantVisuals.ApplyServerMetadata(modelClone, itemType, variant)
             PetVariantVisuals.ApplyStaticVisuals(modelClone)
         end
-        local modelCFrame, modelSize = modelClone:GetBoundingBox()
+        local _, modelSize = modelClone:GetBoundingBox()
 
-        -- Always reset to identity CFrame (0,0,0 position + no rotation)
-        if modelClone.PrimaryPart then
-            modelClone:SetPrimaryPartCFrame(CFrame.identity)
-        else
-            -- For models without PrimaryPart, manually set each part to origin with no rotation
-            local modelCenter = modelClone:GetBoundingBox()
-
-            -- Set each part to identity CFrame (0,0,0 position, no rotation)
-            for _, part in pairs(modelClone:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    -- Calculate offset from model center
-                    local offset = part.Position - modelCenter.Position
-                    -- Set to origin plus offset, with no rotation
-                    part.CFrame = CFrame.new(offset)
-                end
-            end
-        end
+        -- Move the visual to the viewport origin while retaining the asset
+        -- transform already baked into the cached model. Resetting the clone's
+        -- PrimaryPart to identity erased Kade's authored -90° forward-axis fix.
+        ViewportModelPlacement.centerPreservingOrientation(modelClone)
 
         -- Calculate camera position based on configuration using proper spherical coordinates
         local angleYRad = math.rad(cameraConfig.angle_y) -- Horizontal rotation (around Y-axis)

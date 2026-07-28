@@ -98,6 +98,7 @@ local InventoryCategories = require(ReplicatedStorage.Shared.Game.InventoryCateg
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
+local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local PetBadge = require(script.Parent.Parent.PetBadge)
@@ -3955,13 +3956,10 @@ function InventoryPanel:_load3DPetModel(viewport, camera, item)
                 end
             end
 
-            -- Position model in viewport
-            local modelCFrame = CFrame.new(0, 0, 0)
-            if modelClone.PrimaryPart then
-                modelClone:SetPrimaryPartCFrame(modelCFrame)
-            else
-                modelClone:MoveTo(modelCFrame.Position)
-            end
+            -- Position the model without erasing its configured asset orientation.
+            -- This path is the lazy 3D fallback for failed/missing flat thumbnails,
+            -- so it must match the cached server-generated card.
+            ViewportModelPlacement.centerPreservingOrientation(modelClone)
 
             modelClone.Parent = viewport
 
