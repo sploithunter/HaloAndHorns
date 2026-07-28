@@ -22,7 +22,7 @@ Pets are the stars: each has a two-number profile (⛏ mining vs ⚔ combat), an
 
 ## Current Checkpoint
 
-The game is built in two stacked tracks, both well past their core milestones, with an active polish/content lane on top. **Newest layer (2026-07-08/09): the Trials endgame** — City-of-Heroes-style door missions with deterministic procgen interiors (everyone's trial #N is the same map), a 2-realm × 4-element trial matrix fought against pet-model enemies on a minion→lieutenant→boss→Titan rank ladder, quest chains that steer which trial the realm gates deal, and claim-once **Platinum egg** century chases (100 trials + level 50). Beneath it, **the combat endgame (2026-07-02)** — a symmetric threat-table aggro game (taunt / fear-as-negative-aggro / rage tipping points), a boss→arch-villain encounter ladder with config-driven AoE kits, an honest fully-implemented power roster, post-50 **Veteran Levels**, and the Genie of the Dunes resurrection capstone. All live-verified; details in [`docs/wiki/CURRENT_STATUS.md`](docs/wiki/CURRENT_STATUS.md) and [`docs/MISSION_WORLDGEN.md`](docs/MISSION_WORLDGEN.md).
+The game is built in two stacked tracks, both well past their core milestones, with an active polish/content lane on top. **The Trials endgame (2026-07-08/09)** provides City-of-Heroes-style door missions with deterministic procgen interiors (everyone's trial #N is the same map), a 2-realm × 4-element trial matrix fought against pet-model enemies on a minion→lieutenant→boss→Titan rank ladder, quest chains that steer which trial the realm gates deal, and claim-once **Platinum egg** century chases (100 trials + level 50). **The combat endgame (2026-07-02 onward)** is a symmetric threat-table aggro game (taunt / fear-as-negative-aggro / rage tipping points), a boss→arch-villain encounter ladder with config-driven AoE kits, an honest fully-implemented power roster, post-50 **Veteran Levels**, and the Genie of the Dunes resurrection capstone. Recent live-game work adds starter-pet role choice, retention telemetry, realm/world travel, formal and temporary teaming, Future Self catch-up summons, rotating learning tips, Roblox-chat hatch/team announcements, and production-grade Meet-the-Creator rewards. Details live in [`docs/wiki/CURRENT_STATUS.md`](docs/wiki/CURRENT_STATUS.md) and [`docs/MISSION_WORLDGEN.md`](docs/MISSION_WORLDGEN.md).
 
 **Template baseline — Phases 0–11 complete** (the config-as-code foundation):
 - P0 data spine · P1 map integration contract · P2 economy depth · P3 stats/achievements/leaderboards · P4 progression & enchants · P5 auto-systems · …through P11 the SSOT pet-inventory model.
@@ -69,25 +69,34 @@ The game is built in two stacked tracks, both well past their core milestones, w
 - **The trial matrix**: hell/heaven × lava/ice/grass/desert, fought against pet-model enemies (minion / lieutenant with splash + warcry / boss / Titan). Activating a trial's quest branch points the realm gates at it — the E-prompt names the deal ("Hell Lava Trial #4"); nothing active means random base trials.
 - **Century chases**: 100 completions per combo through 5 quest layers, capped by a claim-once, level-50-gated Century paying a **Platinum egg** (stated 15% huge). Trial bosses and first-clears also roll 0.5% exclusive boss eggs — physical drops, magnet-friendly, hatched at any hatcher.
 
+**Realms, teams & social progression**
+- The Heaven/Hell realm axis is playable through layered, level/Soul/token-gated destinations. World Travel lists only unlocked realms and origins, while Recall returns to the last valid egg.
+- Formal team invites use lead-anchored sidekick/exemplar combat levels. Temporary cave alliances lift nearby lower-level, unteamed players without pulling veterans down; home-biome caves and Heaven/Hell patrol encounters share deterministic highest-first anchoring.
+- Team scaling, enemy levels, con colors, portal guest access, XP credit, and the squad HUD all consume the same effective-level seam.
+- Creator-class pets, Huge/Shiny traits, and normal-class Exclusive Meet-the-Creator rewards are distinct, config-driven identities. Colorado and Kade reward eggs use the same inventory, hatch, enchant, and eternal-scaling paths as other special pets.
+- Mythical+ hatches and sidekick events announce through Roblox chat, with Huge hatches broadcast globally and a player setting to suppress game-authored announcements.
+
 **HUD & UX**
 - CoH-style **squad HUD** (right edge): one card per pet — element/role chip, health bar, status-buff badges, recharge/lockout timers, click-to-select assist targeting.
 - Matching **enemy HUD** (left edge): the foes aggro'd onto your squad, with the indirect target (selected pet → enemy) bordered — built from the same shared `HudCard` chrome.
 - Center player bar (XP pill + level ring + level-up arrow), area-themed tray/currency/quest panels, a buff-stats readout (effective attack/defense/coin/luck multipliers), floating coin payouts, daily-streak / shop / quest panels, and a viewport-relative mobile scale pass.
-- A **tutorial** (objective capsule + egg beacon + UI pulse) and an early ordered **mission chain**, with derived power tooltips.
+- A **tutorial** (objective capsule + egg beacon + UI pulse), starter companion role choice, and an early ordered **mission chain**, with derived power tooltips and first-time funnel instrumentation.
+- Five-to-nine progression grants **Future Call** tokens that summon a level-scaled Future Self and its authored four-pet team for two minutes; the summon fights, farms, and credits all rewards to the player.
+- The compact objective capsule rotates randomized ten-second gameplay tips once per minute and restores the live objective afterward; tips can be disabled in Settings.
 - A boot loader / loading screen that gates play until data is ready and stamps the build version + Mountain-Time update timestamp.
 
 **Foundation (template baseline)**
 - ProfileStore-backed persistence with schema versioning and migrations; a stat-counter + modifier-pipeline + currency-ledger spine; deterministic UTC day/seed; feature flags.
+- A compact global retention-counter store records starter choice, tutorial steps, level/unlock milestones, session totals, and build-stamped cohorts for quick launch-funnel reads; per-player event chunks remain available for forensic follow-up.
 - `ConfigLoader` validates every config at startup, with focused validators for core gameplay configs.
 - Achievements, a pet index, and live leaderboards over shared stats; permanent upgrades; admin tooling and Studio MCP smoke-test bridges.
 
 ## In Process / Planned
 
-- **World S3** — the heaven/hell realm axis as a *non-terminal* endgame (token earning loop, traversal-sink knob, depth-as-desirability via Eternal pets) rather than a dead-end ring terminus.
-- **Teaming S4** — guest pass + lead-anchored sidekick/exemplar (power axis only).
-- **Creator S5** — Creator class (dev-only, untradeable apex) + Meet-the-Creator + shiny pets.
-- Earning-rate enemy pressure (anti-cheat), support-pet targeted buff/debuff, PetPower display=dealt, a Power S2b balance rebase, and an overnight memory-leak investigation.
-- Authored realm geometry + portals (art) for the stacked heaven/hell layers; enhancement trading + natural-conversion sink; a full mobile-input audit; ongoing balance tuning from real playtesting.
+- Launch retention analysis and early-level combat/mining/economy tuning from real player cohorts.
+- Earning-rate enemy pressure (anti-cheat plus endgame challenge) and further support-pet interaction/balance refinement.
+- Authored realm geometry/art polish, enhancement trading + a natural-conversion sink, a full mobile-input audit, and durable hard-crash escrow recovery.
+- Replace the legacy cloned pet follow/mining script with a service-owned work loop, while preserving the shipped Farm Near target commitment, leash, combat recall, and Future Self behavior.
 
 ## Configuration As Code
 
@@ -158,7 +167,7 @@ Testing methodology (the pyramid): **pure logic → server-side command-bus inte
 
 ## Verification Baseline
 
-- `mise run ci` (fast gate): green — architecture guard clean, selene 0 errors, StyLua clean on owned paths, `rojo build` passes, **headless 1,263/1,263 across 114 specs**. GitHub Actions runs the same gate on every push.
+- `mise run ci` (fast gate): green — architecture guard clean, selene 0 errors, StyLua clean on owned paths, `rojo build` passes, **headless 1,653/1,653 across 170 specs**. GitHub Actions runs the same gate on every push.
 - Live in *Halo & Horns* (Rojo connected): the server-side `AutomationSuite` covers the alignment chain, pets/power/element resonance, layer access, party core (Spirit Form / stack pool / squad), combat & focus, and the Phase-5 build-depth systems. Studio `Phase*Smoke` + game smoke runners cover the egg system, progression, and zone/economy paths.
 - Game-layer features (combat, HUD, powers, enhancements, tutorial) are iterated live in Studio play sessions and verified through the MCP + in-session play.
 
@@ -166,4 +175,4 @@ See `docs/wiki/CURRENT_STATUS.md` for detailed verification history and `docs/PE
 
 ## Next Work
 
-The active lane is the **Pet Realm game layer**: the heaven/hell realm axis as a non-terminal endgame (World S3), teaming (S4), the Creator apex (S5), earning-rate enemy pressure, and ongoing combat/economy balance from real playtesting. Authored realm geometry/art and the legacy pet-follow service refactor are the parked map/foundation lanes.
+The active lane is **launch retention and live balance**: shorten weak progression stretches, keep the mining/hatching and combat paths both viable, and use build-stamped funnel counters plus forensic events to evaluate each release. Next system work is earning-rate enemy pressure, support-pet interaction polish, mobile input/layout QA, realm art/content refinement, durable trade recovery, and the service-owned replacement for the legacy pet follow/mining clone.

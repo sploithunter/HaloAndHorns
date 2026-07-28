@@ -1952,3 +1952,16 @@ rewrite.
   resetting their authored rotation. This carries the same declarative `asset_transform.orientation`
   used by deployed pets into inventory cards, fixing Kade's edge-on card while keeping one shared
   path for future imported pets with nonstandard forward axes.
+
+## 2026-07-28 — README shipped-state reconciliation
+
+- Refreshed the repository front page so realm travel, formal/temporary teaming, effective-level
+  scaling, Creator/Meet-pet identities, Future Call, retention counters, learning tips, and chat
+  announcements are described as shipped rather than future work. The remaining-work section now
+  reflects launch retention/balance, earning-rate pressure, mobile/realm polish, durable trade
+  recovery, and replacement of the legacy cloned pet work loop.
+- Audited a single 651 ms Studio server-heartbeat warning after it disappeared on process restart.
+  The monitor samples one Heartbeat every 30 seconds; recent Kade card placement is non-periodic and
+  Huge-enchant repair is join-time/fill-only. No new recurring hot loop was found, so the isolated
+  warning remains attributed to the degraded Studio session unless it reproduces with sustained
+  memory/frame growth.
