@@ -3393,7 +3393,9 @@ local petConfig = {
             asset_transform = {
                 scale = 1,
                 huge_scale = 3,
-                orientation = { x = 0, y = 0, z = 0 },
+                -- This packaged rig's authored forward axis points out its right arm.
+                -- Rotate the visual left around Y so its face follows the clean movement heading.
+                orientation = { x = 0, y = -90, z = 0 },
             },
 
             camera = {
