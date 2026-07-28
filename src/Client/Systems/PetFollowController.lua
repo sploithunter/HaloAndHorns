@@ -782,6 +782,19 @@ function PetFollowController.start()
                 )
                 local cur = baseCF[model] or model:GetPivot()
                 local curPos = cur.Position
+                -- Shadow Step: a pet carrying the configured teleport passive
+                -- blinks to a distant combat target instead of spending the
+                -- whole encounter travelling. `anim` is present only on an
+                -- attack placement, so ordinary follow/catch-up is unchanged.
+                if
+                    anim
+                    and model:GetAttribute("AbilityTeleportToEnemies") == true
+                    and (curPos - goalPos).Magnitude > 18
+                then
+                    local face = (restDir and restDir.Magnitude > 1e-4) and restDir.Unit or upFwd
+                    applyMotion(model, CFrame.lookAt(goalPos, goalPos + face), 0, anim)
+                    return
+                end
                 if PetFormation.shouldSnap((curPos - goalPos).Magnitude, catchupDist) then
                     local face = (restDir and restDir.Magnitude > 1e-4) and restDir.Unit or upFwd
                     applyMotion(model, CFrame.lookAt(goalPos, goalPos + face), 0, anim) -- teleport
@@ -1038,7 +1051,9 @@ function PetFollowController.start()
                     -- Rigged pets instead plant on the map via the ground ray, like when following.
                     local target = g.center
                         + Vector3.new(off.x, off.y + floatTouchup(pet, config), off.z)
-                    if PetAnimator.isRigged(pet) then
+                    if pet:GetAttribute("AbilityCanFly") == true then
+                        target += Vector3.new(0, 3, 0)
+                    elseif PetAnimator.isRigged(pet) then
                         target = Vector3.new(
                             target.X,
                             groundedY(pet, target.X, target.Z, target.Y),
@@ -1051,7 +1066,11 @@ function PetFollowController.start()
                     -- the exact "pets do nothing" bug). Pets don't collide, so instead walk the goal
                     -- back along pet->target to the nearest CLEAR point: the pet still advances as far
                     -- as it can and gets into range. Only if the entire approach is blocked do we hold.
-                    if g.isEnemy and slotBlocked(target, mapExclude) then
+                    if
+                        g.isEnemy
+                        and pet:GetAttribute("AbilityPhaseThroughWalls") ~= true
+                        and slotBlocked(target, mapExclude)
+                    then
                         local from = (baseCF[pet] and baseCF[pet].Position)
                             or pet:GetPivot().Position
                         local cleared

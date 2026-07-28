@@ -3379,13 +3379,13 @@ local petConfig = {
             },
         },
 
-        -- Kade follows the regular Colorado developer-pet contract: an Exclusive, ranged
-        -- creator reward that uses packaged Roblox Model assets and is acquired from the
-        -- once-per-player Kade meet egg below.
+        -- Kade is the Grass developer tank: an Exclusive creator reward with
+        -- the tank stun line plus its authored healing + luck auras
+        -- (pet_roles.support_auras.kade).
         kade = {
             display_name = "Kade",
             category = "creator",
-            origin = "creator",
+            origin = "grass",
             rarity = "exclusive",
             base_power = 50,
             base_health = 500,
@@ -3409,20 +3409,20 @@ local petConfig = {
                     asset_id = "rbxassetid://107161152905013",
                     image_id = "rbxassetid://0",
                     display_name = "Kade",
-                    abilities = { "creator_wave" },
+                    abilities = { "bark_stun" },
                 },
                 golden = {
                     asset_id = "rbxassetid://139643909402590",
                     image_id = "rbxassetid://0",
                     display_name = "Golden Kade",
-                    abilities = { "creator_wave", "coin_magnet" },
+                    abilities = { "golden_bark", "coin_magnet" },
                 },
                 rainbow = {
                     -- Rainbow is the standard runtime treatment over the normal model.
                     asset_id = "rbxassetid://107161152905013",
                     image_id = "rbxassetid://0",
                     display_name = "Rainbow Kade",
-                    abilities = { "creator_wave", "luck_aura" },
+                    abilities = { "rainbow_bark", "luck_aura" },
                 },
             },
         },

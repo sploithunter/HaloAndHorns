@@ -335,6 +335,11 @@ loader:RegisterModule(
     { "Logger", "ConfigLoader", "ModifierService" }
 )
 loader:RegisterModule(
+    "PetAbilityService",
+    ServerScriptService.Server.Services.PetAbilityService,
+    { "Logger", "ConfigLoader", "ModifierService" }
+)
+loader:RegisterModule(
     "MonetizationService",
     ServerScriptService.Server.Services.MonetizationService,
     -- InventoryService: capacity refresh after async pass benefits (paid slot)
@@ -1094,6 +1099,7 @@ table.insert(requiredModules, "PowerService")
 table.insert(requiredModules, "AugmentationService")
 table.insert(requiredModules, "EnhancementService")
 table.insert(requiredModules, "EnhancementShopService")
+table.insert(requiredModules, "PetAbilityService")
 table.insert(requiredModules, "PotionService")
 table.insert(requiredModules, "FutureCallService")
 table.insert(requiredModules, "PotionShopService")

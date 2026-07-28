@@ -212,7 +212,7 @@ return {
                 stage = "enchants",
                 kind = "breakable_reward",
                 combine = "multiply",
-                amount_per_strength = 0.02,
+                amount_per_strength = 0.025,
             },
         },
         efficiency = {
@@ -223,7 +223,7 @@ return {
                 stage = "enchants",
                 kind = "pet_efficiency",
                 combine = "add",
-                amount_per_strength = 0.01,
+                amount_per_strength = 0.02,
             },
         },
         tactics = {
@@ -234,7 +234,7 @@ return {
                 stage = "enchants",
                 kind = "pet_damage",
                 combine = "multiply",
-                amount_per_strength = 0.015,
+                amount_per_strength = 0.025,
             },
         },
         leadership = {
@@ -245,7 +245,7 @@ return {
                 stage = "enchants",
                 kind = "team_power",
                 combine = "multiply",
-                amount_per_strength = 0.015,
+                amount_per_strength = 0.025,
             },
         },
         luck = {
@@ -256,7 +256,7 @@ return {
                 stage = "enchants",
                 kind = "hatch_luck",
                 combine = "add",
-                amount_per_strength = 0.01,
+                amount_per_strength = 0.025,
             },
         },
         secret_luck = {
@@ -267,7 +267,7 @@ return {
                 stage = "enchants",
                 kind = "secret_hatch_luck",
                 combine = "add",
-                amount_per_strength = 0.005,
+                amount_per_strength = 0.01,
             },
         },
         crystal_finder = {
@@ -279,12 +279,12 @@ return {
                 kind = "breakable_reward",
                 currency = "crystals",
                 combine = "multiply",
-                amount_per_strength = 0.015,
+                amount_per_strength = 0.03,
             },
         },
         coin_finder = {
-            display_name = "Crystal Finder",
-            description = "Increases crystal rewards from breakables.",
+            display_name = "Coin Finder",
+            description = "Increases every biome coin reward from breakables.",
             roll = { low = 1, high = 5, scale = 2 },
             modifier = {
                 stage = "enchants",
@@ -304,7 +304,7 @@ return {
                 stage = "enchants",
                 kind = "pet_xp",
                 combine = "multiply",
-                amount_per_strength = 0.02,
+                amount_per_strength = 0.03,
             },
         },
     },
