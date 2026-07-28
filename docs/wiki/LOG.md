@@ -1965,3 +1965,12 @@ rewrite.
   Huge-enchant repair is join-time/fill-only. No new recurring hot loop was found, so the isolated
   warning remains attributed to the degraded Studio session unless it reproduces with sustained
   memory/frame growth.
+
+## 2026-07-28 — Rejected Hell combat audio removed
+
+- Roblox Open Cloud confirmed that group-owned `hell_combat_a` (`105132281703189`) was rejected by
+  moderation, not blocked by experience permissions. Removed the rejected id from the runtime
+  catalog and audio manifest; Hell combat now draws from approved `hell_combat_b`,
+  `iron_gates_b`, and `combat_1`, while the prologue uses the first two only.
+- Added headless sound-catalog coverage for every combat pool and a regression guard preventing the
+  rejected upload from returning to `configs/sounds.lua`.
