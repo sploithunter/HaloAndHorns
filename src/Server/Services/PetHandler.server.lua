@@ -322,6 +322,21 @@ local function isHugePetFolder(petFolder)
     return false
 end
 
+local function isCreatorPetFolder(petFolder)
+    if not petFolder then
+        return false
+    end
+
+    for _, name in ipairs({ "creator", "Creator" }) do
+        local value = petFolder:FindFirstChild(name)
+        if value and value:IsA("BoolValue") then
+            return value.Value == true
+        end
+    end
+
+    return false
+end
+
 local function getValueObjectNumber(parent, names)
     if not parent then
         return nil
@@ -396,16 +411,16 @@ local function applyVariantEternalScale(percent, petVariantName)
 end
 
 local function getRawPetFolderEternalPercent(petFolder, petIdName, petVariantName)
-    -- Huge pets always scale at the configurable huge percent (e.g. 120% of the
-    -- eternal power base), overriding any per-pet eternal config. EXCEPTION: a huge
-    -- CREATOR-species pet pins at eternal.creator_power_percent (130) — Jason: the
-    -- apex must ALWAYS be the strongest pet in the game (scaling reference).
+    -- Creator CLASS is a saved record trait, never a species category. Meet-the-Creator
+    -- Exclusives (Colorado/Kade) are normal class and may roll Huge; only an explicitly
+    -- creator-granted apex receives the creator pin.
+    if isCreatorPetFolder(petFolder) then
+        local eternalCfg = petsConfig and petsConfig.eternal
+        return (eternalCfg and tonumber(eternalCfg.creator_power_percent)) or 130
+    end
+
+    -- Huge normal-class pets always use the configurable Huge percentage.
     if isHugePetFolder(petFolder) then
-        local species = petsConfig and petsConfig.pets and petsConfig.pets[petIdName]
-        if species and species.category == "creator" then
-            local eternalCfg = petsConfig and petsConfig.eternal
-            return (eternalCfg and tonumber(eternalCfg.creator_power_percent)) or 130
-        end
         return getHugeEternalPercent()
     end
 

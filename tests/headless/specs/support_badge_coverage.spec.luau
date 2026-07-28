@@ -3,6 +3,7 @@
 
 local rolesConfig = loadModule("configs/pet_roles.lua")
 local iconsConfig = loadModule("configs/power_icons.lua")
+local combatFxConfig = loadModule("configs/combat_fx.lua")
 
 local function auraList(entry)
     if type(entry) ~= "table" then
@@ -19,6 +20,10 @@ describe("support badge coverage", function()
             for petType, entry in pairs(rolesConfig.support_auras or {}) do
                 for _, aura in ipairs(auraList(entry)) do
                     local badge = (iconsConfig.support_badge or {})[aura.kind]
+                    local origin = combatFxConfig.origin or {}
+                    local badgeElement = (origin.badge_element or {})[petType]
+                        or (origin.pettype_element or {})[petType]
+                        or "neutral"
                     if
                         type(badge) ~= "table"
                         or type(badge.label) ~= "string"
@@ -27,7 +32,7 @@ describe("support badge coverage", function()
                         or badge.symbol == ""
                         or type(badge.tooltip) ~= "string"
                         or badge.tooltip == ""
-                        or iconsConfig.discFor("exclusive", badge.symbol) == nil
+                        or iconsConfig.discFor(badgeElement, badge.symbol) == nil
                     then
                         table.insert(missing, petType .. ":" .. tostring(aura.kind))
                     end

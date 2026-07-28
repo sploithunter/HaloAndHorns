@@ -65,7 +65,7 @@ return {
     -- highly-tradeable tier. Future top classes (titan/colossal) add their flag here.
     permanent = {
         huge = true, -- the huge TRAIT on the record, not a rarity
-        categories = { creator = true }, -- species categories that also lock
+        creator = true, -- the Creator CLASS trait on the record, not Meet-the-Creator source
     },
 
     -- STACKABLE ENCHANTS (Storage v2 D2-D4, Jason): rarities here roll ONE effect at

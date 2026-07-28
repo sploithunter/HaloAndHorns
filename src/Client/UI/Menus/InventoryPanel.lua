@@ -2827,15 +2827,13 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
         return percent * (m or 1)
     end
 
-    local function getConfiguredEternalPercent(pdata, isHuge, variantName)
+    local function getConfiguredEternalPercent(pdata, isHuge, isCreator, variantName)
         local eternalCfg = (petConfig and petConfig.eternal) or {}
         local pct = 0
-        if isHuge then
-            if pdata and pdata.category == "creator" then
-                pct = tonumber(eternalCfg.creator_power_percent) or 130
-            else
-                pct = tonumber(eternalCfg.huge_power_percent) or 120
-            end
+        if isCreator then
+            pct = tonumber(eternalCfg.creator_power_percent) or 130
+        elseif isHuge then
+            pct = tonumber(eternalCfg.huge_power_percent) or 120
         elseif type(pdata and pdata.eternal) == "table" and pdata.eternal.enabled == true then
             pct = tonumber(pdata.eternal.power_percent) or 0
         else
@@ -2997,7 +2995,7 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                         .. " "
                         .. petType:gsub("^%l", string.upper)
                     if pdata then
-                        eternalPercent = getConfiguredEternalPercent(pdata, false, variant)
+                        eternalPercent = getConfiguredEternalPercent(pdata, false, false, variant)
                         rarityId = pdata.rarity_id or variant
                         displayName = pdata.name or displayName
                     end
@@ -3063,6 +3061,11 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                     local isHuge = hugeValue
                         and hugeValue:IsA("BoolValue")
                         and hugeValue.Value == true
+                    local creatorValue = uidFolder:FindFirstChild("creator")
+                        or uidFolder:FindFirstChild("Creator")
+                    local isCreator = creatorValue
+                        and creatorValue:IsA("BoolValue")
+                        and creatorValue.Value == true
                     local serialValue = uidFolder:FindFirstChild("serial")
                         or uidFolder:FindFirstChild("Serial")
                     local serial = serialValue and serialValue.Value or nil
@@ -3129,8 +3132,9 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                     -- stored record percent (pre-pin reissues carry stale eternal_percent
                     -- values, e.g. the apex's 120); stored only applies to non-huge records.
                     local eternalPercent
-                    if isHuge then
-                        eternalPercent = getConfiguredEternalPercent(pdata, true, variant)
+                    if isHuge or isCreator then
+                        eternalPercent =
+                            getConfiguredEternalPercent(pdata, isHuge, isCreator, variant)
                     else
                         local stored = readNumberValue(
                             uidFolder,
@@ -3139,7 +3143,8 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                         if stored > 0 then
                             eternalPercent = applyVariantEternalScale(stored, variant)
                         else
-                            eternalPercent = getConfiguredEternalPercent(pdata, false, variant)
+                            eternalPercent =
+                                getConfiguredEternalPercent(pdata, false, false, variant)
                         end
                     end
                     local eternalBaselinePower = tonumber(
@@ -3177,6 +3182,7 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                         eternalPercent = eternalPercent,
                         level = level,
                         huge = isHuge,
+                        creator = isCreator,
                         serial = serial,
                         serialSource = serialSource,
                         grantSource = grantSource,

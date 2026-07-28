@@ -210,7 +210,6 @@ function PetProgressionService:AddPetExperience(player, petUid, amount, reason, 
 
     petData.level = level
     petData.exp = exp
-    local prevEnchantCount = #(petData.enchantments or {})
     self:ApplyProgression(petData, petConfig)
 
     -- PERMANENT-class pets (huge+/creator) auto-roll any slot this level-up just
@@ -220,21 +219,30 @@ function PetProgressionService:AddPetExperience(player, petUid, amount, reason, 
     local enchantService = self._enchantService
     local enchantChanged = false
     if enchantService and enchantService.FillPermanentSlots then
-        local added
-        pcall(function()
-            added = enchantService:FillPermanentSlots(player, petData)
+        local added, addedSlots
+        local ok, err = pcall(function()
+            added, addedSlots = enchantService:FillPermanentSlots(player, petData)
         end)
+        if not ok then
+            self._logger:Error("Permanent enchant awakening failed", {
+                context = "PetProgressionService",
+                player = player.Name,
+                petUid = petUid,
+                pet = petData.id,
+                level = petData.level,
+                error = tostring(err),
+            })
+        end
         if added then
             enchantChanged = #added > 0
-            for _, enchant in ipairs(added) do
+            for index, enchant in ipairs(added) do
                 fireGameEvent(player, "enchant_awakened", {
                     pet = petData.id,
                     petUid = petUid,
                     enchant = enchant.id,
                     strength = enchant.strength,
-                    slot = prevEnchantCount + 1,
+                    slot = addedSlots and addedSlots[index] or index,
                 })
-                prevEnchantCount += 1
             end
         end
     end

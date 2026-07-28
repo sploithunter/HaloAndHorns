@@ -434,7 +434,7 @@ local petConfig = {
         -- (docs/MISSION_WORLDGEN.md §11). One mesh per VARIANT (see golden note).
         wyrmling = {
             display_name = "Wyrmling",
-            category = "creator",
+            category = "exclusive",
             realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -476,7 +476,7 @@ local petConfig = {
         },
         obsidian_hound = {
             display_name = "Obsidian Hound",
-            category = "creator",
+            category = "exclusive",
             realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -518,7 +518,7 @@ local petConfig = {
         },
         cinder_golemite = {
             display_name = "Cinder Golemite",
-            category = "creator",
+            category = "exclusive",
             realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -570,7 +570,7 @@ local petConfig = {
             -- EMBER GLOW: hell's lantern — dimmer and redder than the Lumen
             -- Dove's inner light BY DESIGN (the dove stays the premium light).
             body_light = { brightness = 1.6, range = 26, color = { 255, 120, 60 } },
-            category = "creator",
+            category = "exclusive",
             realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -612,7 +612,7 @@ local petConfig = {
         },
         cerberus_pup = {
             display_name = "Cerberus Pup",
-            category = "creator",
+            category = "exclusive",
             realm = "hell", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -654,7 +654,7 @@ local petConfig = {
         },
         lumen_dove = {
             display_name = "Lumen Dove",
-            category = "creator",
+            category = "exclusive",
             realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -700,7 +700,7 @@ local petConfig = {
         },
         archon_spark = {
             display_name = "Archon Spark",
-            category = "creator",
+            category = "exclusive",
             realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -742,7 +742,7 @@ local petConfig = {
         },
         cloudling = {
             display_name = "Cloudling",
-            category = "creator",
+            category = "exclusive",
             realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -784,7 +784,7 @@ local petConfig = {
         },
         halo_fawn = {
             display_name = "Halo Fawn",
-            category = "creator",
+            category = "exclusive",
             realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -826,7 +826,7 @@ local petConfig = {
         },
         seraph_kit = {
             display_name = "Seraph Kit",
-            category = "creator",
+            category = "exclusive",
             realm = "heaven", -- light/shadow resonance: 1.5x opposing realm, 0.8x home
             origin = "creator", -- exclusive: matchup-neutral, never in world egg pools
             rarity = "exclusive",
@@ -3330,7 +3330,7 @@ local petConfig = {
         -- buff + eternal) are different species that share the same 3D assets.
         colorado = {
             display_name = "Colorado",
-            category = "creator",
+            category = "exclusive",
             origin = "creator", -- exclusive (colorado_egg): own identity, matchup-neutral (no resonance row)
             rarity = "exclusive",
             -- Premium exclusive, ~1.2x the normal ceiling (42) — the best ROLLABLE pet, not a god.
@@ -3379,12 +3379,13 @@ local petConfig = {
             },
         },
 
-        -- Kade is the Grass developer tank: an Exclusive creator reward with
+        -- Kade is the Grass developer tank: an Exclusive Meet-the-Creator reward with
         -- the tank stun line plus its authored healing + luck auras
-        -- (pet_roles.support_auras.kade).
+        -- (pet_roles.support_auras.kade). Kade's future Creator-class apex is a
+        -- separate species; this player-facing meet pet is normal class.
         kade = {
             display_name = "Kade",
-            category = "creator",
+            category = "exclusive",
             origin = "grass",
             rarity = "exclusive",
             base_power = 50,
@@ -3444,8 +3445,8 @@ local petConfig = {
             -- for 4s, ticking via DamageOverTime. Composes with the targeted_aoe above, so the
             -- splashed cluster catches fire too. Tune freely; remove the block for no burn.
             attack_dot = { fraction = 0.25, tick = 1.0, duration = 4 },
-            -- eternal via the EXCLUSIVE rarity default (no one-off block — Jason);
-            -- the HUGE apex pins at eternal.creator_power_percent via its category
+            -- Eternal through the Creator record trait (no species-category inference);
+            -- the apex pins at eternal.creator_power_percent when granted as Creator class.
 
             asset_transform = {
                 scale = 1,

@@ -383,6 +383,18 @@ end
 -- their own PURPLE ring tint via elements.exclusive above.
 M.discs.exclusive = M.discs.neutral
 
+-- Creator art currently has dedicated flag-themed ROLE discs only. Creator pets
+-- can also carry support auras whose symbols are outside that five-role set
+-- (heal, luck, yield, and so on). Keep the authored Creator discs where present
+-- and fill only missing symbols from the neutral set so those working auras
+-- never disappear from cards while retaining the Creator white ring.
+M.discs.creator = M.discs.creator or {}
+for symbol, image in pairs(M.discs.neutral or {}) do
+    if M.discs.creator[symbol] == nil then
+        M.discs.creator[symbol] = image
+    end
+end
+
 -- Auto-register every colored disc at a slight inset: they're full-bleed (no transparent border
 -- to crop), so the 1.25 border-zoom would overflow a clipping frame (status badges) and cut their
 -- edges. Any scaleFor() consumer gets ~0.92 for a disc unless explicitly overridden above.
