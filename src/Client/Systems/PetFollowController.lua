@@ -122,6 +122,18 @@ local PetFollowController = {}
 
 local localPlayer = Players.LocalPlayer
 
+-- Imported assets are not guaranteed to share Roblox's -Z forward axis. AssetPreloadService
+-- preserves the configured correction as model attributes, but every runtime PivotTo replaces the
+-- model pivot. Compose the correction at the FINAL rendered pivot so following, attacking, gait,
+-- hit-react, and remote-player smoothing cannot turn an authored pet sideways again.
+local function visualOrientation(model)
+    return CFrame.Angles(
+        math.rad(tonumber(model:GetAttribute("OrientationX")) or 0),
+        math.rad(tonumber(model:GetAttribute("OrientationY")) or 0),
+        math.rad(tonumber(model:GetAttribute("OrientationZ")) or 0)
+    )
+end
+
 -- Per-pet footprint (studs) for size-aware formations — the model's larger XZ extent, so huge
 -- pets read bigger. Measured ONCE and stamped on the pet (an attribute persists for the model's
 -- life), then QUANTIZED to 0.1 studs. Both matter: pet idle animations make GetExtentsSize
@@ -500,7 +512,7 @@ function PetFollowController.start()
 
                 if PetAnimator.isRigged(pet) then
                     PetAnimator.update(pet, dt > 0 and step / dt or 0)
-                    pet:PivotTo(nextClean)
+                    pet:PivotTo(nextClean * visualOrientation(pet))
                 else
                     local st = gaitState[pet]
                     if not st then
@@ -509,7 +521,12 @@ function PetFollowController.start()
                     end
                     local gait = resolveGait(pet:GetAttribute("PetType"))
                     local bob, roll, yaw = Gait.advance(st, gait, step, dt)
-                    pet:PivotTo(CFrame.new(0, bob, 0) * nextClean * CFrame.Angles(0, yaw, roll))
+                    pet:PivotTo(
+                        CFrame.new(0, bob, 0)
+                            * nextClean
+                            * CFrame.Angles(0, yaw, roll)
+                            * visualOrientation(pet)
+                    )
                 end
             else
                 remoteTargets[pet] = nil
@@ -761,7 +778,7 @@ function PetFollowController.start()
                         cf = (cf + Vector3.new(fx, 0, fz)) * CFrame.Angles(0, fyaw, 0)
                     end
                 end
-                model:PivotTo(cf)
+                model:PivotTo(cf * visualOrientation(model))
             end
 
             -- Move a pet toward goalPos (Vector3), facing its heading while moving / restDir at

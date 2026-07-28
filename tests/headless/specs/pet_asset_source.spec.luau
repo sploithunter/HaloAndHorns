@@ -65,6 +65,17 @@ return function()
                 expect(variants.golden.asset_id).to.equal("rbxassetid://" .. ids.golden)
                 expect(variants.rainbow.asset_id).to.equal(variants.basic.asset_id)
             end
+
+            -- Kade's packaged rig is authored with its face perpendicular to Roblox's -Z
+            -- movement heading. This must stay declarative so every model consumer can share it.
+            expect(pets.pets.kade.asset_transform.orientation.y).to.equal(-90)
+        end)
+
+        it("applies imported orientation at the final pet render pivot", function()
+            local source = readFile("src/Client/Systems/PetFollowController.lua")
+            expect(source:find("local function visualOrientation", 1, true) ~= nil).to.equal(true)
+            expect(source:find("nextClean * visualOrientation(pet)", 1, true) ~= nil).to.equal(true)
+            expect(source:find("cf * visualOrientation(model)", 1, true) ~= nil).to.equal(true)
         end)
 
         it("keeps Meshy families on mesh-plus-texture assembly", function()

@@ -1923,3 +1923,9 @@ rewrite.
   permanent pass effect could previously raise during player boot before monetization finished.
   Folder-backed effect state remains authoritative; the signal only refreshes existing client
   effect surfaces immediately.
+
+## 2026-07-28 — Kade forward-axis correction
+
+- Corrected Kade's packaged-rig forward axis by declaring a -90° Y asset orientation.
+- Pet follow rendering now composes stamped asset orientation at the final pivot for both the
+  owner's pets and remote players' pets, so movement/gait no longer overwrites model-facing fixes.
