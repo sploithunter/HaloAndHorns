@@ -278,8 +278,9 @@ return {
         ember_menace_d = { id = "rbxassetid://107886863616166", volume = 0.45 },
         iron_gates_a = { id = "rbxassetid://91517043316329", volume = 0.45 },
         iron_gates_b = { id = "rbxassetid://93100824732439", volume = 0.45 },
-        -- Realm combat (join combat_music_by_realm pools below):
-        hell_combat_a = { id = "rbxassetid://105132281703189", volume = 0.5 },
+        -- Realm combat (join combat_music_by_realm pools below). The original
+        -- hell_combat_a upload (105132281703189) was rejected by Roblox moderation
+        -- and must not be restored to the runtime catalog.
         hell_combat_b = { id = "rbxassetid://112291597299425", volume = 0.5 },
         heaven_combat_a = { id = "rbxassetid://83644271705531", volume = 0.5 },
         -- Overworld upgrades (Grass and Lava get their OWN tracks; spa is
@@ -316,14 +317,14 @@ return {
     -- default combat_music trio; heaven_combat_a stays uploaded if ever
     -- wanted back.)
     combat_music_by_realm = {
-        hell = { "hell_combat_a", "hell_combat_b", "combat_1" },
+        hell = { "hell_combat_b", "iron_gates_b", "combat_1" },
     },
 
     -- THE PROLOGUE's battle pool (Jason: "we're in a battle and we didn't have battle
     -- music"): the generic combat_1 sat in the hell pool and could win the random pick,
     -- reading as not-battle under the cold open. The prologue draws ONLY the dedicated
-    -- hell tracks.
-    prologue_combat_music = { "hell_combat_a", "hell_combat_b" },
+    -- hell tracks. iron_gates_b replaces the rejected hell_combat_a upload.
+    prologue_combat_music = { "hell_combat_b", "iron_gates_b" },
 
     -- SAFETY NET: if an area track's ASSET fails to load (still moderating at publish time, or taken
     -- down by Roblox after approval), AreaMusicController swaps to this track so the area is never
