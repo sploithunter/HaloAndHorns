@@ -1915,3 +1915,11 @@ rewrite.
   single source of truth. Verified every configured enchant modifier kind has a live consumer, and
   fixed Coin Finder to match every live biome coin payout instead of only the literal legacy
   `coins` key; its duplicate Crystal Finder label was corrected at the same time.
+
+## 2026-07-27 — Player effect removal boot regression
+
+- Restored the missing `PlayerEffectsService:_sendUnifiedEffectsUpdate` compatibility broadcaster.
+  Creator game-pass reconciliation and ordinary effect removal both called this method, so a saved
+  permanent pass effect could previously raise during player boot before monetization finished.
+  Folder-backed effect state remains authoritative; the signal only refreshes existing client
+  effect surfaces immediately.

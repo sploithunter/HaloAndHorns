@@ -2,16 +2,19 @@
     PlayerEffectsService - Manages player effects using native Roblox folder structure
     
     Simple, reliable architecture:
-    - No network calls (uses built-in replication)
+    - Native folders are the authoritative replicated effect state
+    - A compatibility signal refreshes the existing Effects UI immediately
     - Player/TimedBoosts/effect_name/values structure
     - Configuration-driven display and logic
     - Real-time updates via Changed events
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Logger = require(game.ReplicatedStorage.Shared.Utils.Logger)
+local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local PlayerEffectsService = {}
 PlayerEffectsService.__index = PlayerEffectsService
@@ -293,6 +296,29 @@ function PlayerEffectsService:ApplyEffect(player, effectId, duration, customEffe
     })
 
     return true
+end
+
+-- Keep the legacy Effects surfaces current when a folder-backed effect changes.
+-- RateLimitService owns a separate rate-limit effect table but publishes the
+-- same packet shape; EffectsPanel deliberately merges these player-only updates
+-- with the last global-event payload.
+function PlayerEffectsService:_sendUnifiedEffectsUpdate(player, activeEffects)
+    local success, sendError = pcall(function()
+        Signals.ActiveEffects:FireClient(player, {
+            effects = activeEffects or {},
+            timestamp = self._serverClock:GetServerTime(),
+            playerClock = true,
+        })
+    end)
+
+    if not success then
+        self._logger:Error("Failed to send player effects update", {
+            player = player.Name,
+            error = sendError,
+        })
+    end
+
+    return success
 end
 
 -- Remove an effect from a player
