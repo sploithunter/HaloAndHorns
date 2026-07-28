@@ -1974,3 +1974,12 @@ rewrite.
   `iron_gates_b`, and `combat_1`, while the prologue uses the first two only.
 - Added headless sound-catalog coverage for every combat pool and a regression guard preventing the
   rejected upload from returning to `configs/sounds.lua`.
+
+## 2026-07-28 — Lumen Dove illumination restored
+
+- Live inspection found every Lumen Dove source variant intentionally arrived without an authored
+  `PrimaryPart`. PetHandler repaired the clone to use `Body`, but its configured `body_light` had
+  already been skipped by the earlier pre-repair check, leaving deployed doves with no PointLight.
+- Configured pet body lights now attach after runtime PrimaryPart repair. A synced Studio restart
+  verified Lumen Dove's enabled `BodyLight` on `Body` at brightness 2.5 and range 40; headless
+  coverage locks both the authored light values and the required setup order.

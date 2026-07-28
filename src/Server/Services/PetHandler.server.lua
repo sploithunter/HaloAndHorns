@@ -101,6 +101,37 @@ local function normalizeRuntimePetPart(part)
     part.Massless = true
 end
 
+local function applyConfiguredBodyLight(model, petId)
+    local rawDef = petsConfig and petsConfig.pets and petsConfig.pets[petId]
+    local lightCfg = rawDef and rawDef.body_light
+    local host = model and model.PrimaryPart
+    if not lightCfg or not host then
+        return
+    end
+
+    -- Imported/rebuilt pet assets are not required to author a PrimaryPart. PetHandler chooses
+    -- one below after cloning, so body-light setup must happen after that repair rather than
+    -- silently skipping Lumen Dove and other illuminated pets.
+    local light = model:FindFirstChild("BodyLight", true)
+    if light and not light:IsA("PointLight") then
+        light:Destroy()
+        light = nil
+    end
+    if not light then
+        light = Instance.new("PointLight")
+        light.Name = "BodyLight"
+    end
+    light.Brightness = tonumber(lightCfg.brightness) or 2
+    light.Range = tonumber(lightCfg.range) or 30
+    local color = lightCfg.color
+    if type(color) == "table" then
+        light.Color = Color3.fromRGB(color[1] or 255, color[2] or 255, color[3] or 255)
+    end
+    light.Enabled = true
+    light.Shadows = false
+    light.Parent = host
+end
+
 -- Utility functions from original
 function GetPointOnCircle(CircleRadius, Degrees)
     return Vector3.new(
@@ -1372,26 +1403,6 @@ function loadEquipped(Player)
                                     effectiveVariantName
                                 )
                                 PetVariantVisuals.ApplyStaticVisuals(PetModel)
-                                -- BODY LIGHT (pets.lua `body_light`): the pet IS a
-                                -- light source (Lumen Dove's inner light — dark-
-                                -- mission utility; rides the client-pivoted model)
-                                local rawDef = petsConfig
-                                    and petsConfig.pets
-                                    and petsConfig.pets[effectiveIdName]
-                                local lightCfg = rawDef and rawDef.body_light
-                                if lightCfg and PetModel.PrimaryPart then
-                                    local light = Instance.new("PointLight")
-                                    light.Name = "BodyLight"
-                                    light.Brightness = tonumber(lightCfg.brightness) or 2
-                                    light.Range = tonumber(lightCfg.range) or 30
-                                    local c = lightCfg.color
-                                    if type(c) == "table" then
-                                        light.Color =
-                                            Color3.fromRGB(c[1] or 255, c[2] or 255, c[3] or 255)
-                                    end
-                                    light.Shadows = false
-                                    light.Parent = PetModel.PrimaryPart
-                                end
                                 local isHuge = isHugePetFolder(petFolder)
                                 if isHuge then
                                     applyHugePetScale(PetModel)
@@ -1548,6 +1559,10 @@ function loadEquipped(Player)
                         .. tostring(PetModel.Name)
                 )
             end
+            -- BODY LIGHT (pets.lua `body_light`): the pet IS a light source. This deliberately
+            -- follows PrimaryPart repair so imported assets without an authored PrimaryPart still
+            -- illuminate dark missions (Lumen Dove's Inner Light).
+            applyConfiguredBodyLight(PetModel, effectiveIdName)
             -- Ensure attachmentPet exists on PrimaryPart for follow constraints
             if not PetModel.PrimaryPart:FindFirstChild("attachmentPet") then
                 local ap = Instance.new("Attachment")
