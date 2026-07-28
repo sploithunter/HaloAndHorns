@@ -1136,3 +1136,20 @@ Last checked: 2026-07-27
   +40% reaches the movement-axis ceiling and publishes `2.00`.
 - Resonance declares `targeted_aoe` on both its power and effect-kind contracts. A natural Range
   enhancement expands its 30-stud pulse to 34.5 studs; stronger grades expand it further.
+
+## Meet pets, Creator class, and Huge enchants
+
+Last checked: 2026-07-28
+
+- Meet-the-Creator rewards such as regular Colorado and Kade are normal-class Exclusive pets.
+  Kade's eventual Creator-class apex will be a separate species; meeting Kade does not grant it.
+  The same split already exists between `colorado` and `colorado_creator`.
+- Runtime Creator pinning and permanent Creator enchants read the saved per-copy `creator` trait,
+  not the species category. Runtime Huge pinning and permanent Huge enchants similarly read the
+  saved `huge` trait, so a Huge from any egg/source receives the same contract.
+- Every Huge has three fated, non-rerollable enchant slots: slot 1 at hatch, slot 2 auto-rolls at
+  pet level 50, and slot 3 auto-rolls at pet level 100. The level-up path refreshes the projected
+  inventory and requests persistence after filling newly unlocked slots.
+- On every profile load, the server recalculates each Huge's unlocked slots from its saved level and
+  fills only missing/invalid unlocked slots. Existing valid enchants—including later slots around a
+  gap—are never rerolled or replaced; repaired records are projected and saved immediately.

@@ -1929,3 +1929,19 @@ rewrite.
 - Corrected Kade's packaged-rig forward axis by declaring a -90° Y asset orientation.
 - Pet follow rendering now composes stamped asset orientation at the final pivot for both the
   owner's pets and remote players' pets, so movement/gait no longer overwrites model-facing fixes.
+
+## 2026-07-28 — Meet pets separated from Creator class
+
+- Reconciled the source with the formal five-axis pet model: regular Colorado, Kade, and boss-egg
+  Exclusives are normal-class Exclusive species. Only the explicit `colorado_creator` apex species
+  is Creator category, and Creator runtime benefits now key from the saved `creator` record trait
+  instead of inferring class from species.
+- Huge is likewise a saved per-copy trait regardless of acquisition source. Huge pets retain three
+  permanent enchants: one at hatch, one auto-rolled at pet level 50, and one auto-rolled at level
+  100. Added regression coverage for the thresholds, auto-fill path, persistence request, class
+  separation, and support-badge rendering.
+- Player join now reconciles every saved Huge against those level thresholds. The repair is
+  idempotent and slot-specific: it preserves every valid existing enchant, fills only missing
+  unlocked slots, refreshes the affected cards, and requests a save only when a repair occurred.
+- Restored regular Colorado's Lava support badges and supplied neutral-disc fallbacks for Creator
+  support symbols that do not yet have authored flag-disc art.

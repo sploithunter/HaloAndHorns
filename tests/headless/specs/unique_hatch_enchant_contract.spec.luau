@@ -2,6 +2,48 @@ local EnchantRuntime = loadModule("src/Shared/Game/EnchantRuntime.lua")
 
 return function()
     describe("unique hatch enchant contract", function()
+        it("keeps Huge pets unique, enchantable, and fated regardless of source", function()
+            local pets = loadModule("configs/pets.lua")
+            local enchants = loadModule("configs/enchants.lua")
+            local progression = loadModule("configs/pet_progression.lua")
+            expect(pets.enchanting.max_enchantments_by_rarity.huge).to.equal(3)
+            expect(enchants.permanent.huge).to.equal(true)
+
+            local hugeUnlocks = progression.enchant_slots.unlocks_by_rarity.huge
+            expect(#hugeUnlocks).to.equal(3)
+            expect(hugeUnlocks[1].level).to.equal(1)
+            expect(hugeUnlocks[1].slots).to.equal(1)
+            expect(hugeUnlocks[2].level).to.equal(50)
+            expect(hugeUnlocks[2].slots).to.equal(2)
+            expect(hugeUnlocks[3].level).to.equal(100)
+            expect(hugeUnlocks[3].slots).to.equal(3)
+
+            local grantSource = readFile("src/Server/Services/PetGrantService.lua")
+            expect(
+                grantSource:find(
+                    'petData.rarity_id = grant.creator and "creator" or "huge"',
+                    1,
+                    true
+                )
+            ).never.to.equal(nil)
+            expect(grantSource:find("RollInitialEnchantments", 1, true)).never.to.equal(nil)
+
+            local progressionSource = readFile("src/Server/Services/PetProgressionService.lua")
+            expect(progressionSource:find("self:ApplyProgression(petData, petConfig)", 1, true)).never.to.equal(
+                nil
+            )
+            expect(
+                progressionSource:find(
+                    "enchantService:FillPermanentSlots(player, petData)",
+                    1,
+                    true
+                )
+            ).never.to.equal(nil)
+            expect(progressionSource:find('RequestSave(player, "pet_progression_"', 1, true)).never.to.equal(
+                nil
+            )
+        end)
+
         it("guarantees a first enchant after chance-based rolls miss", function()
             local source = readFile("src/Server/Services/EnchantService.lua")
             expect(source:find("UNIQUE HATCH CONTRACT", 1, true)).never.to.equal(nil)

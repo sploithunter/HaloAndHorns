@@ -166,8 +166,14 @@ class** (decoupled from size math).
 - **Meet-the-Creator pet** (the player memento, kept from Colorful Hatchers):
   - Granted **once ever per player** (a profile flag) when an allowlisted **creator joins the
     server**; auto-hatches.
+  - It is an **Exclusive normal-class pet**, not that creator's Creator-class apex. Kade's future
+    Creator pet is therefore a separate species from the Kade meet pet, just as Creator Colorado
+    is separate from regular Colorado.
   - **Normal odds** (the regular egg config) — can roll **huge / golden / rainbow** like any pet
     (a huge-rainbow MtC is its own grail).
+  - If it rolls **Huge**, the individual Huge trait—not its egg or species source—makes its
+    enchants fated and permanent: slot 1 at hatch, slot 2 auto-rolls at pet level 50, and slot 3
+    auto-rolls at pet level 100.
   - **Always shiny** (its defining exclusive trait), and **tradeable** — a circulating prestige
     collectible whose supply is throttled by how often creators actually show up.
 - **Shiny** = a new **5th orthogonal trait**, **power-neutral** (sparkle/VFX only). `base_chance =

@@ -11,7 +11,9 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local PermanentEnchantSlots = require(ReplicatedStorage.Shared.Game.PermanentEnchantSlots)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local PetProjectionPolicy = require(ReplicatedStorage.Shared.Inventory.PetProjectionPolicy)
 local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime)
 
 local EnchantService = {}
@@ -51,6 +53,7 @@ function EnchantService.new()
     self._stationAccessByPlayer = {}
     self._stationTouchCounts = {}
     self._stationTouchDebounce = {}
+    self._playerDataLoadedConnections = {}
     return self
 end
 
@@ -140,6 +143,14 @@ end
 
 function EnchantService:Start()
     self._signals = require(game:GetService("ReplicatedStorage").Shared.Network.Signals)
+
+    Players.PlayerAdded:Connect(function(player)
+        self:_scheduleHugeEnchantReconciliation(player)
+    end)
+    for _, player in ipairs(Players:GetPlayers()) do
+        self:_scheduleHugeEnchantReconciliation(player)
+    end
+
     -- aggregate heartbeat (cheap: equips change rarely; 5s keeps the HUD honest)
     task.spawn(function()
         local Players = game:GetService("Players")
@@ -178,6 +189,11 @@ function EnchantService:Start()
 
     self:_connectEnchanterStations()
     Players.PlayerRemoving:Connect(function(player)
+        local connection = self._playerDataLoadedConnections[player]
+        if connection then
+            connection:Disconnect()
+            self._playerDataLoadedConnections[player] = nil
+        end
         self._stationAccessByPlayer[player] = nil
         self._stationTouchDebounce[player] = nil
     end)
@@ -353,8 +369,9 @@ function EnchantService:RollEnchant(rarityId, excludedEffects)
     return enchant
 end
 
--- PERMANENT ENCHANTS (Jason): huge trait or creator-category species — fated rolls,
--- no station access, ever.
+-- PERMANENT ENCHANTS (Jason): Huge or Creator CLASS record traits — fated rolls,
+-- no station access, ever. Meet-the-Creator is only an acquisition source and never
+-- makes an ordinary Exclusive permanent unless that individual pet also rolled Huge.
 function EnchantService:IsPermanentEnchantPet(petData)
     local perm = self._config and self._config.permanent
     if type(perm) ~= "table" or type(petData) ~= "table" then
@@ -363,12 +380,8 @@ function EnchantService:IsPermanentEnchantPet(petData)
     if perm.huge == true and petData.huge == true then
         return true
     end
-    local cats = perm.categories
-    if type(cats) == "table" then
-        local cfg = self:_getPetConfigForRecord(petData)
-        if cfg and cfg.category and cats[cfg.category] == true then
-            return true
-        end
+    if perm.creator == true and petData.creator == true then
+        return true
     end
     return false
 end
@@ -382,18 +395,20 @@ function EnchantService:FillPermanentSlots(player, petData)
     end
     local unlocked = math.max(0, math.floor(tonumber(petData.unlocked_enchant_slots) or 0))
     petData.enchantments = petData.enchantments or {}
-    if #petData.enchantments >= unlocked then
+    local missingSlots = PermanentEnchantSlots.missing(petData.enchantments, unlocked)
+    if #missingSlots == 0 then
         return nil
     end
     local rarityId = petData.rarity_id
     local excluded = {}
-    for _, e in ipairs(petData.enchantments) do
-        if e.id then
+    for _, e in pairs(petData.enchantments) do
+        if type(e) == "table" and e.id then
             excluded[e.id] = true
         end
     end
     local added = {}
-    while #petData.enchantments < unlocked do
+    local addedSlots = {}
+    for _, slot in ipairs(missingSlots) do
         local enchant = self:RollEnchant(rarityId, excluded)
         if not enchant then
             break
@@ -401,10 +416,108 @@ function EnchantService:FillPermanentSlots(player, petData)
         if enchant.id then
             excluded[enchant.id] = true
         end
-        table.insert(petData.enchantments, enchant)
+        petData.enchantments[slot] = enchant
         table.insert(added, enchant)
+        table.insert(addedSlots, slot)
     end
-    return #added > 0 and added or nil
+    if #added == 0 then
+        return nil
+    end
+    return added, addedSlots
+end
+
+-- Join-time self-heal for permanent Huge enchants. This is deliberately
+-- idempotent and fill-only: it recalculates how many slots the saved level has
+-- unlocked, preserves every valid existing enchant, and rolls only missing
+-- unlocked slots.
+function EnchantService:_reconcileHugeEnchantSlots(player)
+    local data = self._dataService and self._dataService:GetData(player)
+    local items = data and data.Inventory and data.Inventory.pets and data.Inventory.pets.items
+    if type(items) ~= "table" then
+        return
+    end
+
+    local repairedKeys = {}
+    local repairedSlots = {}
+    for recordKey, petData in pairs(items) do
+        if type(petData) == "table" and petData.huge == true then
+            self:_normalizePetEnchantMetadata(petData)
+            local added, slots = self:FillPermanentSlots(player, petData)
+            if added then
+                table.insert(repairedKeys, recordKey)
+                for index, enchant in ipairs(added) do
+                    table.insert(repairedSlots, {
+                        petUid = recordKey,
+                        pet = petData.id,
+                        slot = slots and slots[index] or nil,
+                        enchant = enchant.id,
+                    })
+                end
+            end
+        end
+    end
+
+    if #repairedKeys == 0 then
+        return
+    end
+
+    if self._inventoryService and self._inventoryService.RefreshPetRecords then
+        self._inventoryService:RefreshPetRecords(player, repairedKeys, PetProjectionPolicy.VISUAL)
+    elseif self._inventoryService and self._inventoryService.RefreshPetInventory then
+        self._inventoryService:RefreshPetInventory(player)
+    end
+    self._dataService:RequestSave(player, "huge_enchant_slot_reconciliation")
+    self._logger:Info("Repaired missing Huge enchant slots", {
+        context = "EnchantService",
+        player = player.Name,
+        repairs = repairedSlots,
+    })
+end
+
+function EnchantService:_scheduleHugeEnchantReconciliation(player)
+    if not player or self._playerDataLoadedConnections[player] then
+        return
+    end
+
+    local function reconcileDeferred()
+        task.defer(function()
+            if not player.Parent then
+                return
+            end
+            local ok, err = pcall(function()
+                self:_reconcileHugeEnchantSlots(player)
+            end)
+            if not ok then
+                self._logger:Error("Huge enchant reconciliation failed", {
+                    context = "EnchantService",
+                    player = player.Name,
+                    error = tostring(err),
+                })
+            end
+        end)
+    end
+
+    if self._dataService:IsDataLoaded(player) then
+        reconcileDeferred()
+        return
+    end
+
+    local connection
+    connection = player:GetAttributeChangedSignal("DataLoaded"):Connect(function()
+        if not self._dataService:IsDataLoaded(player) then
+            return
+        end
+        connection:Disconnect()
+        self._playerDataLoadedConnections[player] = nil
+        reconcileDeferred()
+    end)
+    self._playerDataLoadedConnections[player] = connection
+
+    if self._dataService:IsDataLoaded(player) then
+        connection:Disconnect()
+        self._playerDataLoadedConnections[player] = nil
+        reconcileDeferred()
+    end
 end
 
 function EnchantService:RollInitialEnchantments(player, petData, petConfig, source)
@@ -542,17 +655,23 @@ function EnchantService:_normalizePetEnchantMetadata(petData)
     end
 
     local petConfig = self:_getPetConfigForRecord(petData)
-    local rarityId = petData.huge == true and "huge"
+    local rarityId = petData.creator == true and "creator"
+        or petData.huge == true and "huge"
         or petData.rarity_id
         or petData.rarity_override
         or (petConfig and petConfig.rarity_id)
-    if type(rarityId) == "string" and rarityId ~= "" and petData.rarity_id == nil then
+    if
+        type(rarityId) == "string"
+        and rarityId ~= ""
+        and (petData.rarity_id == nil or petData.huge == true or petData.creator == true)
+    then
         petData.rarity_id = rarityId
     end
 
     local maxEnchantments = math.max(0, math.floor(tonumber(petData.max_enchantments) or 0))
-    if maxEnchantments <= 0 then
-        maxEnchantments = self:_getMaxEnchantmentsForRarity(rarityId)
+    local configuredMax = self:_getMaxEnchantmentsForRarity(rarityId)
+    if maxEnchantments <= 0 or petData.huge == true or petData.creator == true then
+        maxEnchantments = math.max(maxEnchantments, configuredMax)
     end
     if maxEnchantments <= 0 then
         return

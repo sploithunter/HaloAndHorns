@@ -31,11 +31,10 @@ return {
             sandwalker = "desert",
         },
 
-        -- DISC-ONLY override (PetBadge.elementForPetType): creator-egg-origin pets wear the Colorado
-        -- flag disc + white ring, independent of their COMBAT element (pettype_element below stays
-        -- lava so their VFX/resonance are unchanged — Colorado is a fire blaster).
+        -- DISC-ONLY override (PetBadge.elementForPetType): the Creator-CLASS apex wears the Colorado
+        -- flag disc + white ring, independent of its COMBAT element. The regular Meet-the-Creator
+        -- Colorado is normal-class Exclusive and therefore keeps its real Lava badge below.
         badge_element = {
-            colorado = "creator",
             colorado_creator = "creator",
             -- boss-egg exclusives (obsidian + celestial): no biome origin, so
             -- their role badge wears the EXCLUSIVE purple disc (Jason). The
