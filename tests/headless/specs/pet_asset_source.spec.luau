@@ -86,6 +86,27 @@ return function()
             expect(inventory:find(call, 1, true) ~= nil).to.equal(true)
         end)
 
+        it("attaches configured body lights after runtime PrimaryPart repair", function()
+            local doveLight = pets.pets.lumen_dove.body_light
+            expect(doveLight.brightness).to.equal(2.5)
+            expect(doveLight.range).to.equal(40)
+
+            local source = readFile("src/Server/Services/PetHandler.server.lua")
+            local primaryRepair = source:find("PetModel.PrimaryPart = candidate", 1, true)
+            local bodyLight = source:find(
+                "applyConfiguredBodyLight(PetModel, effectiveIdName)",
+                primaryRepair,
+                true
+            )
+            local followAttachment =
+                source:find("-- Ensure attachmentPet exists on PrimaryPart", primaryRepair, true)
+            expect(primaryRepair ~= nil).to.equal(true)
+            expect(bodyLight ~= nil).to.equal(true)
+            expect(followAttachment ~= nil).to.equal(true)
+            expect(primaryRepair < bodyLight).to.equal(true)
+            expect(bodyLight < followAttachment).to.equal(true)
+        end)
+
         it("keeps Meshy families on mesh-plus-texture assembly", function()
             local basic = pets.pets.wyrmling.variants.basic
             expect(type(basic.mesh_asset)).to.equal("string")
