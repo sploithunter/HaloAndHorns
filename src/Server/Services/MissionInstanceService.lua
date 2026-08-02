@@ -28,6 +28,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local CollectionService = game:GetService("CollectionService")
+local HttpService = game:GetService("HttpService")
 
 local MissionSeed = require(ReplicatedStorage.Shared.Worldgen.MissionSeed)
 local MissionPopulation = require(ReplicatedStorage.Shared.Worldgen.MissionPopulation)
@@ -41,6 +42,7 @@ local MissionStamper = require(ServerScriptService.Server.World.MissionStamper)
 
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local Sounds = require(ReplicatedStorage.Configs:WaitForChild("sounds"))
+local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local PROMPT_NAME = "MissionDoorPrompt"
 -- streaming-safe warp caps (see _safeWarp)
@@ -74,6 +76,7 @@ function MissionInstanceService.new()
     self._kitFolders = {} -- [kitId] = Folder (built once, cached)
     self._catalogs = {} -- [kitId] = TileCatalog
     self._nextInstance = 0
+    self._streamPending = {} -- [Player] = { token, instanceId, ready }
     return self
 end
 
@@ -107,10 +110,38 @@ function MissionInstanceService:BindPeerServices(services)
     self._enhancementService = services.EnhancementService
 end
 
+function MissionInstanceService:_cancelStream(player)
+    local pending = self._streamPending[player]
+    if not pending then
+        return
+    end
+    self._streamPending[player] = nil
+    pending.done = true
+    pending.signal:Fire()
+end
+
 function MissionInstanceService:Start()
     if not self._config then
         return
     end
+    Signals.MissionStreamReady.OnServerEvent:Connect(function(player, response)
+        if type(response) ~= "table" or type(response.token) ~= "string" then
+            return
+        end
+        local pending = self._streamPending[player]
+        if not pending or pending.token ~= response.token then
+            return
+        end
+        if response.instanceId ~= pending.instanceId then
+            return
+        end
+        pending.ready = true
+        pending.done = true
+        pending.signal:Fire()
+    end)
+    Players.PlayerRemoving:Connect(function(player)
+        self:_cancelStream(player)
+    end)
     -- CandleStand self-heal: re-assert the flame truth table against
     -- whatever the MissionProps rbxm shipped (see CANDLE_FLAME_POINTS).
     task.spawn(function()
@@ -410,6 +441,10 @@ function MissionInstanceService:Open(player, missionId, opts)
         instanceId = instanceId,
         yieldEvery = 25,
     })
+    -- A procedural mission is private, temporary, and finite. Keep its complete geometry on each
+    -- party member's client for the life of this run so individual atomic tiles cannot stream out
+    -- at a seam while the player crosses it. Other players still see the model as Atomic.
+    container.ModelStreamingMode = Enum.ModelStreamingMode.PersistentPerPlayer
     container:SetAttribute("MissionId", missionId)
     container:SetAttribute("MissionSeed", seed)
     if sequenceN then
@@ -446,15 +481,22 @@ function MissionInstanceService:Open(player, missionId, opts)
         local character = member.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
         if root and spawnPad then
+            container:AddPersistentPlayer(member)
             returnCFrames[member.UserId] = root.CFrame
+            -- Publish the run marker before its asynchronous stream request begins.
+            member:SetAttribute("InMission", instanceId)
             -- async: each member streams the interior in parallel and warps
             -- when THEIR client has the floor (see _safeWarp)
             task.spawn(function()
-                self:_safeWarp(member, CFrame.new(spawnPad.Position + Vector3.new(0, 4, 0)))
+                self:_safeWarp(
+                    member,
+                    CFrame.new(spawnPad.Position + Vector3.new(0, 4, 0)),
+                    instanceId,
+                    spawnPad
+                )
             end)
             -- in-mission marker: DropService kills the magnet on it (walk to
             -- your loot); generally useful for any per-mission gating
-            member:SetAttribute("InMission", instanceId)
             member:SetAttribute("MissionTheme", mission.theme or "earth")
             -- pseudo-area key: element trials brand drops + biome RPS via
             -- their own zone (mission.area, default = theme)
@@ -1223,6 +1265,8 @@ function MissionInstanceService:_close(instanceId, reason)
     -- HUD state and restore their camera zoom
     local warping = 0
     for _, member in ipairs(membersOf(record.teamKey)) do
+        -- Cancel an entry request that is still waiting before replacing it with the return warp.
+        self:_cancelStream(member)
         local back = record.returnCFrames[member.UserId]
         local character = member.Character
         if back and character and character:FindFirstChild("HumanoidRootPart") then
@@ -2486,36 +2530,77 @@ end
 
 -- ---- door binding --------------------------------------------------------------
 
--- Streaming-safe warp (2026-07-08: fell through the heaven-trial floor).
+-- Streaming-safe warp (2026-07-08: fell through the heaven-trial floor;
+-- hardened 2026-08-02 after a production Hell Ice Trial #2 fall-through).
 -- With StreamingEnabled the freshly-stamped interior hasn't reached the
 -- client when we pivot, and the CLIENT owns character physics — so it falls
--- through geometry only the server has. Order of operations:
---   1. yield until the destination region has been SENT to this client
---      (the wait happens while they still stand on solid ground at the
---      portal — reads as the portal charging, not a hang)
---   2. pivot
---   3. brief anchored tail as the safety net for any remaining content;
---      the second stream request returns ~instantly when step 1 already
---      delivered everything, so the anchor is usually imperceptible.
-function MissionInstanceService:_safeWarp(member, targetCF)
+-- through geometry only the server has. The place-level integrity setting remains defense in
+-- depth; the actual release gate is now a client-observed collidable floor from the expected map.
+function MissionInstanceService:_safeWarp(member, targetCF, expectedInstanceId, focusPart)
     local character = member.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
     if not root then
-        return
+        return false
     end
-    -- PREFETCH ONLY, never a readiness gate (Jason: "no timeout shenanigans —
-    -- this is an event-based game"): correctness is the PLACE property
-    -- Workspace.StreamingIntegrityMode = PauseOutsideLoadedArea — the
-    -- client's physics freezes in an unstreamed region and resumes the
-    -- instant the floor arrives. This request just warms the destination so
-    -- the pause is usually invisible.
-    pcall(function()
-        member:RequestStreamAroundAsync(targetCF.Position, STREAM_WAIT)
+
+    -- RequestStreamAroundAsync has no success result: returning after its timeout is not proof
+    -- that a production client owns the floor. Keep an additional replication focus on the
+    -- destination and wait for MissionStreamGuard's client-side floor raycast instead.
+    if focusPart and focusPart.Parent then
+        pcall(function()
+            member:AddReplicationFocus(focusPart)
+        end)
+    end
+
+    local pending = {
+        token = HttpService:GenerateGUID(false),
+        instanceId = expectedInstanceId,
+        ready = false,
+        done = false,
+        signal = Instance.new("BindableEvent"),
+    }
+    self._streamPending[member] = pending
+    Signals.MissionStreamRequest:FireClient(member, {
+        token = pending.token,
+        instanceId = expectedInstanceId,
+        x = targetCF.Position.X,
+        y = targetCF.Position.Y,
+        z = targetCF.Position.Z,
+    })
+
+    -- Server-side prefetch remains useful, but it is not the readiness gate. Run it in parallel;
+    -- the BindableEvent below is fired only by the client floor acknowledgement or cancellation.
+    task.spawn(function()
+        pcall(function()
+            member:RequestStreamAroundAsync(targetCF.Position, STREAM_WAIT)
+        end)
     end)
-    if not root.Parent then
-        return -- died/left while streaming
+
+    if not pending.done then
+        pending.signal.Event:Wait()
+    end
+
+    if self._streamPending[member] == pending then
+        self._streamPending[member] = nil
+    end
+    pending.signal:Destroy()
+    if focusPart then
+        pcall(function()
+            member:RemoveReplicationFocus(focusPart)
+        end)
+    end
+    if not pending.ready or not member.Parent then
+        return false
+    end
+
+    -- Re-resolve after the yield: a respawn may have replaced the character while streaming.
+    character = member.Character
+    root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then
+        return false
     end
     character:PivotTo(targetCF)
+    return true
 end
 
 -- The realm gates are quest-aware, so WHICH trial the E-prompt opens is

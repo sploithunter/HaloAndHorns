@@ -1983,3 +1983,18 @@ rewrite.
 - Configured pet body lights now attach after runtime PrimaryPart repair. A synced Studio restart
   verified Lumen Dove's enabled `BodyLight` on `Body` at brightness 2.5 and range 40; headless
   coverage locks both the authored light values and the required setup order.
+
+## 2026-08-02 — Procedural trial floor streaming hardened
+
+- A production fall through Hell Ice Trial #2 exposed that mission entry treated a timed
+  `RequestStreamAroundAsync` return as sufficient and relied on the published place retaining
+  `PauseOutsideLoadedArea`. The API has no success result, so its timeout could not prove that a
+  slow client actually had collision geometry.
+- Active mission containers are now `PersistentPerPlayer` only for their party, preventing an
+  individual atomic floor tile from streaming out at an internal seam. Entry also holds an
+  additional destination replication focus and uses a tokenized client/server handshake; the
+  server leaves the character safely at the source until that client raycasts a collidable floor
+  belonging to the exact mission. There is no elapsed-time release path.
+- Added manifest and streaming-contract coverage for the two new packets, per-party persistence,
+  mission ownership validation, and the client-observed floor gate. `PauseOutsideLoadedArea`
+  remains recommended defense in depth rather than the sole correctness mechanism.

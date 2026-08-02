@@ -286,9 +286,13 @@ Slot pool + lifecycle owner.
 - **API (server):**
   - `Open(teamId, missionId) → instanceId | err` — gate (one live instance
     per team, global concurrency cap), resolve seed, solve (pure), stamp,
-    register dynamic hooks, then teleport the party:
-    `RequestStreamAroundAsync(slotOrigin)` per player → fade →
-    `PivotTo` characters onto the entrance `PlayerSpawn`.
+    register dynamic hooks, then make the temporary container
+    `PersistentPerPlayer` for that party. Entry uses an additional replication
+    focus plus `RequestStreamAroundAsync`; the server does not `PivotTo` until
+    `MissionStreamGuard` has raycast a collidable floor belonging to that exact
+    mission on the destination client. A request timeout never counts as floor
+    readiness. This is the hard guarantee; `PauseOutsideLoadedArea` remains
+    place-level defense in depth.
   - `Complete(instanceId)` / `Abandon(instanceId)` — return party to the
     door, unregister hooks, `container:Destroy()`, release slot.
   - TTL sweep: instances older than `max_lifetime` are abandoned (leak
@@ -297,6 +301,11 @@ Slot pool + lifecycle owner.
 - **Doors:** binds `MissionDoor`-tagged authored parts with
   ProximityPrompts (RealmPortalService pattern). Team comes from the
   shipped teaming system; solo = team of one.
+- **Streaming handshake:** `MissionStreamRequest` (server → client) carries a
+  one-use token, destination, and expected instance id;
+  `MissionStreamReady` (client → server) is accepted only for the pending token
+  after the client sees the destination floor. Closing a run or removing the
+  player cancels the pending event wait.
 
 ### 5.3 Known integration gaps (owned by this feature, not the solver)
 
