@@ -731,6 +731,33 @@ return {
                 arguments = { { name = "result", type = "table" } },
             },
         },
+        MissionStreamRequest = {
+            name = "MissionStreamRequest",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "missions.stream_request",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
+            },
+        },
+        MissionStreamReady = {
+            name = "MissionStreamReady",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 20,
+            handler = "MissionInstanceService.StreamReady",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "response", type = "table" } },
+            },
+        },
         Combat_SetAssist = {
             name = "Combat_SetAssist",
             transport = "reliable_event",

@@ -264,6 +264,17 @@ do
     end
 end
 
+-- Procedural mission warps are released only after this client can raycast the actual landing
+-- floor. The mission remains at its source portal while a slow device streams the private map.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MissionStreamGuard).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MissionStreamGuard", { error = tostring(err) })
+    end
+end
+
 -- Admin-only power test bar (replaces the hotbar while ADMIN mode is on). Self-gates to admins.
 do
     local ok, err = pcall(function()
