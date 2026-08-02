@@ -2008,3 +2008,12 @@ rewrite.
   in Play that the boundary disappeared while the real `SpawnZone` remained.
 - Renamed the Rojo project identity to `HaloAndHorns` and added exact-name server/ReplicatedFirst
   quarantine guards for the map project's roots. The guards do not alter tags or authored geometry.
+
+## 2026-08-02 — Trial gate streaming handshake unblocked
+
+- The client-observed floor safety ray introduced for trial streaming could hit the invisible,
+  non-collidable `SpawnPad` first because ordinary raycasts respect `CanQuery`. The mission opened
+  and its UI appeared, but the server correctly refused to teleport without a positive floor ack.
+- Mission entry now raycasts against `CanCollide`, and generated arrival pads are non-queryable.
+  The handshake still requires collision geometry from the exact expected mission; no timeout or
+  unsafe fallback was added.

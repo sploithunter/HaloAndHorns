@@ -573,6 +573,7 @@ function GrayBoxKit.parts(tile)
             pos = { 0, 0.2, 0 },
             color = { 255, 255, 255 },
             canCollide = false,
+            canQuery = false,
             tags = { "PlayerSpawn" },
             attrs = { AreaId = "$MISSION" },
         })

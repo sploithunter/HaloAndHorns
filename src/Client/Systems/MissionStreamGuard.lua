@@ -42,6 +42,11 @@ local function destinationFloorIsReady(position, expectedInstanceId)
     params.FilterDescendantsInstances = if localPlayer.Character
         then { localPlayer.Character }
         else {}
+    -- SpawnPad is an invisible, non-collidable marker directly above the real floor. Ordinary
+    -- raycasts respect CanQuery, so that marker can be returned first and leave entry waiting
+    -- forever even though safe collision geometry is already present beneath it. This readiness
+    -- check is specifically about character-supporting geometry, so ray against CanCollide.
+    params.RespectCanCollide = true
 
     local result = workspace:Raycast(
         position + Vector3.new(0, RAY_HEIGHT, 0),
