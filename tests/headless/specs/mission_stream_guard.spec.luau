@@ -22,8 +22,16 @@ return function()
             )
             expect(server:find("pending.ready", 1, true) ~= nil).to.equal(true)
             expect(client:find("workspace:Raycast", 1, true) ~= nil).to.equal(true)
+            expect(client:find("params.RespectCanCollide = true", 1, true) ~= nil).to.equal(true)
             expect(client:find("belongsToMission", 1, true) ~= nil).to.equal(true)
             expect(client:find("MissionStreamReady:FireServer", 1, true) ~= nil).to.equal(true)
+        end)
+
+        it("keeps the invisible arrival marker out of readiness raycasts", function()
+            local kit = readFile("src/Shared/Worldgen/GrayBoxKit.lua")
+            local spawnPad = kit:match('name = "SpawnPad",(.-)tags = { "PlayerSpawn" }') or ""
+            expect(spawnPad:find("canCollide = false", 1, true) ~= nil).to.equal(true)
+            expect(spawnPad:find("canQuery = false", 1, true) ~= nil).to.equal(true)
         end)
 
         it("does not convert the streaming timeout into permission to warp", function()

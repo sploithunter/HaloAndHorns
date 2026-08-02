@@ -290,9 +290,10 @@ Slot pool + lifecycle owner.
     `PersistentPerPlayer` for that party. Entry uses an additional replication
     focus plus `RequestStreamAroundAsync`; the server does not `PivotTo` until
     `MissionStreamGuard` has raycast a collidable floor belonging to that exact
-    mission on the destination client. A request timeout never counts as floor
-    readiness. This is the hard guarantee; `PauseOutsideLoadedArea` remains
-    place-level defense in depth.
+    mission on the destination client. The raycast respects `CanCollide` rather
+    than `CanQuery`, so invisible arrival markers cannot mask the supporting
+    floor. A request timeout never counts as floor readiness. This is the hard
+    guarantee; `PauseOutsideLoadedArea` remains place-level defense in depth.
   - `Complete(instanceId)` / `Abandon(instanceId)` — return party to the
     door, unregister hooks, `container:Destroy()`, release slot.
   - TTL sweep: instances older than `max_lifetime` are abandoned (leak
