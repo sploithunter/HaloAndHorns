@@ -1998,3 +1998,13 @@ rewrite.
 - Added manifest and streaming-contract coverage for the two new packets, per-party persistence,
   mission ownership validation, and the client-observed floor gate. `PauseOutsideLoadedArea`
   remains recommended defense in depth rather than the sole correctness mechanism.
+
+## 2026-08-02 — Foreign map-maker boundary visual removed
+
+- Traced the moving white dotted line in Home to `RobloxGenerateMap`'s client effects script, which
+  had been left in the Halo and Horns place after the wrong same-port Rojo project was connected.
+  That script interpreted Halo's legitimate `SpawnZone` farming surfaces as map-maker play bounds.
+- Removed the foreign `GenMap` and `GenMapClient` roots from the authored Studio place and verified
+  in Play that the boundary disappeared while the real `SpawnZone` remained.
+- Renamed the Rojo project identity to `HaloAndHorns` and added exact-name server/ReplicatedFirst
+  quarantine guards for the map project's roots. The guards do not alter tags or authored geometry.

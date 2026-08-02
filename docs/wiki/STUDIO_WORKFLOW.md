@@ -22,7 +22,8 @@ Codex-side MCP command:
 codex mcp add Roblox_Studio -- /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP
 ```
 
-The current working Studio instance is `RBX-Template`.
+The current working Studio instance is `Halo and Horns`. The Rojo connection must identify its
+project as `HaloAndHorns` on port `34872`.
 
 ## Rojo Sync Gotchas
 
@@ -37,6 +38,27 @@ Recovery checklist:
 3. If Studio source is stale, disconnect and reconnect the Rojo plugin to the current server.
 4. If source is current but behavior is stale, restart Play to clear the Luau VM/module cache.
 5. Only debug gameplay after the source and runtime agree.
+
+### Cross-project Rojo contamination
+
+The separate `RobloxGenerateMap` project also uses port `34872`. Its client draws moving white
+dashes around every `SpawnZone` tag to show map-maker spawn/play bounds. Halo and Horns uses that
+same tag legitimately for authored farming and combat areas, but must never include the map-maker
+visualizer.
+
+Before accepting a Rojo connection, confirm its project name is `HaloAndHorns`, not
+`RobloxGenerateMap`. Connecting the map project can leave sibling instances behind even after the
+correct project reconnects because both projects preserve unknown instances. The foreign roots are:
+
+- `ReplicatedStorage.GenMap`
+- `ServerScriptService.GenMapBoot`
+- `StarterPlayer.StarterPlayerScripts.GenMapClient`
+- runtime-only `Workspace.GenMapClientFX`
+
+These exact roots are not Halo and Horns content. The server and ReplicatedFirst guards remove them
+if they are inserted again; they deliberately leave `SpawnZone` tags and game geometry untouched.
+After cleaning an affected place, save it in Edit mode and restart Play. A clean client has no
+`GenMapClientFX` and no instances tagged `SpawnDash`.
 
 ## Studio MCP Reset Gotchas
 
@@ -64,7 +86,7 @@ Agents can use Studio MCP to:
 - execute Luau for diagnostics;
 - read and edit Studio scripts when needed.
 
-Before modifying a live Studio session, always list Studio instances and confirm the active instance is `RBX-Template`.
+Before modifying a live Studio session, always list Studio instances and confirm the active instance is `Halo and Horns`.
 
 ## Authored Reference Map
 

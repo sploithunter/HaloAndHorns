@@ -1,5 +1,5 @@
 {
-  "name": "game-template",
+  "name": "HaloAndHorns",
   "servePort": 34872,
   "globIgnorePaths": [
     "Packages/**/*.project.json"
