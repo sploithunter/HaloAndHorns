@@ -2026,3 +2026,6 @@ rewrite.
 - Added an idempotent Studio wiring pass that canonicalizes the replacement under `Maps.Home`,
   transfers the complete `NativeFX` assembly by old-host-to-new-host transform, tags only the new
   host for `AscensionAltarService`, and leaves the buried model as an inactive visual reference.
+- Follow-up Play testing exposed that the imported visual MeshPart was not guaranteed anchored,
+  allowing it to separate from the anchored beam/host. The wiring pass now anchors every BasePart
+  in the replacement assembly while preserving the mesh's authored collision settings.
