@@ -494,6 +494,41 @@ function PlayerProgressionService:AddExperience(player, amount, source)
     return self:GetProgress(player)
 end
 
+-- Raise a player's EARNED level to at least `level` by adding only the exact missing XP.
+-- Unlike AddExperience, this is a guarantee rather than an activity payout, so XP buffs,
+-- game passes, global events, and the early-game onramp do not multiply it. Existing XP is
+-- never removed and repeated calls are harmless. Training levels still follow the normal
+-- claim flow: level 2 is earned here, then claimed at the Ascension Altar for its power pick.
+function PlayerProgressionService:EnsureEarnedLevel(player, level)
+    if not player or not self._dataService then
+        return {
+            targetLevel = 1,
+            xpAdded = 0,
+            progress = self:GetProgress(player),
+        }
+    end
+
+    local maxLevel = math.floor(tonumber(self._xpConfig.max_level) or 0)
+    local target = math.max(1, math.floor(tonumber(level) or 1))
+    if maxLevel > 0 then
+        target = math.min(target, maxLevel)
+    end
+
+    local currentXp = self:GetExperience(player)
+    local xpAdded = LevelCurve.xpNeededForLevel(currentXp, target, self._xpConfig)
+    if xpAdded > 0 then
+        self._dataService:SetStat(player, "Experience", currentXp + xpAdded)
+        self:_publish(player)
+        self:_advanceAuto(player)
+    end
+
+    return {
+        targetLevel = target,
+        xpAdded = xpAdded,
+        progress = self:GetProgress(player),
+    }
+end
+
 -- Set the player to exactly `level` by writing the curve's threshold XP (used by the
 -- test override + any admin grant). Level stays a pure function of XP.
 function PlayerProgressionService:SetLevel(player, level)

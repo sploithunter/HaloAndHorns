@@ -352,6 +352,8 @@ return {
     --                   add an error blip here if/when one is uploaded)
     --   level_claimed — a level was CLAIMED, server truth {level} (client level_up owns the juice;
     --                   this one exists for server consumers — the tutorial taps it)
+    --   tutorial_level_awarded — tutorial completion guarantee processed {level, xpAdded}; raw
+    --                            analytics only, including a zero top-up if already earned
     --   power_selected — a power pick committed {power} (PowerService:Select)
     --   power_cast    — a power cast succeeded {power} (PowerService:Cast; frequent — keep silent)
     --   power_bound   — a POWER was bound to a hotbar slot {power, slot} (HotbarService:Rebind; the

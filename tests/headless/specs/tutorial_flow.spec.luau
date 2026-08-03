@@ -22,12 +22,21 @@ return function()
     describe("config shape", function()
         it("has ordered steps with events", function()
             expect(#cfg.steps >= 3).to.equal(true) -- 4 since the quest-chain handoff (Jason)
-            expect(type(cfg.completion)).to.equal("table") -- the QUESTS UNLOCKED card
+            expect(type(cfg.completion)).to.equal("table") -- the level-2 completion card
+            expect(cfg.completion.grant_earned_level).to.equal(2)
             for _, step in ipairs(cfg.steps) do
                 expect(type(step.id)).to.equal("string")
                 expect(type(step.title)).to.equal("string")
                 expect(type(step.complete_on.event)).to.equal("string")
             end
+        end)
+
+        it("wires a retryable, once-only level guarantee to genuine completion", function()
+            local source = readFile("src/Server/Services/TutorialService.lua")
+            expect(source:find("data.Tutorial.completionLevelTarget = target", 1, true)).to.be.ok()
+            expect(source:find("progression:EnsureEarnedLevel(player, target)", 1, true)).to.be.ok()
+            expect(source:find("tutorial.completionLevelGranted = true", 1, true)).to.be.ok()
+            expect(source:find('fireGameEvent(player, "tutorial_level_awarded"', 1, true)).to.be.ok()
         end)
     end)
 
