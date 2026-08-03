@@ -2029,3 +2029,13 @@ rewrite.
 - Follow-up Play testing exposed that the imported visual MeshPart was not guaranteed anchored,
   allowing it to separate from the anchored beam/host. The wiring pass now anchors every BasePart
   in the replacement assembly while preserving the mesh's authored collision settings.
+
+## 2026-08-03 — Tutorial completion guarantees earned level 2
+
+- The ten-step tutorial now records a genuine-completion-only target and tops the player up by the
+  exact XP still needed for earned level 2. The guarantee is monotonic, multiplier-proof,
+  idempotent, and retryable after a transient progression-service failure; veteran skips do not
+  receive it.
+- Level 2 still goes through the authored Ascension Altar claim and power-choice sequence. Updated
+  the completion card to celebrate Level 2 and direct the player to the altar, and added the raw
+  `tutorial_level_awarded` event with target level and actual XP added. Headless: 1665/1665.

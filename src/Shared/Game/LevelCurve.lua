@@ -8,6 +8,7 @@
 
       stepCost(n, cfg)        -> XP to advance FROM level n TO n+1
       xpForLevel(level, cfg)  -> total XP required to REACH `level` (invertible w/ levelForXp)
+      xpNeededForLevel(xp, level, cfg) -> exact non-negative XP shortfall to reach `level`
       levelForXp(totalXp,cfg) -> level for a given total XP (>= 1)
       progress(totalXp, cfg)  -> { level, totalXp, xpIntoLevel, xpForNext, fraction }
 ]]
@@ -36,6 +37,14 @@ function LevelCurve.xpForLevel(level, cfg)
         total += stepCost(n, cfg)
     end
     return total
+end
+
+-- Exact top-up needed to reach a level threshold. This deliberately does not apply activity,
+-- event, buff, or game-pass multipliers: callers use it for guarantees (for example, tutorial
+-- completion must land at level 2 whether the player arrives with 0 XP or 699 XP).
+function LevelCurve.xpNeededForLevel(totalXp, level, cfg)
+    totalXp = math.max(0, math.floor(tonumber(totalXp) or 0))
+    return math.max(0, LevelCurve.xpForLevel(level, cfg) - totalXp)
 end
 
 function LevelCurve.levelForXp(totalXp, cfg)

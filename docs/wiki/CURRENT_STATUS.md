@@ -1153,3 +1153,18 @@ Last checked: 2026-07-28
 - On every profile load, the server recalculates each Huge's unlocked slots from its saved level and
   fills only missing/invalid unlocked slots. Existing valid enchants—including later slots around a
   gap—are never rerolled or replaced; repaired records are projected and saved immediately.
+
+## Tutorial completion guarantees earned level 2
+
+Last checked: 2026-08-03
+
+- Completing the live ten-step tutorial now tops the player up to exactly the XP threshold for
+  **earned level 2**. The award preserves XP already earned and bypasses activity/game-pass/event
+  multipliers, so every finisher lands at the same guaranteed threshold without losing progress or
+  overshooting because a boost happened to be active.
+- The eligibility marker is written only by genuine tutorial completion, not veteran skipping.
+  Granting is retryable across a state pull or rejoin and carries a once-only ledger; the raw event
+  `tutorial_level_awarded` records the target and actual XP added.
+- Level 2 remains a normal training level: it is earned immediately, then claimed at the Ascension
+  Altar for the existing power-choice flow. The completion card now celebrates Level 2 and points
+  the player to the altar.

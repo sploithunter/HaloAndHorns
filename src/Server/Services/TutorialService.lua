@@ -44,6 +44,7 @@ function TutorialService:Start()
         if self._dataService:IsDataLoaded(player) then
             local data = self:_ensureProgress(player)
             self:_applyStepGrant(player, data)
+            self:_applyCompletionLevelGrant(player, data)
             self:_push(player)
         end
     end)
@@ -63,6 +64,7 @@ function TutorialService:_waitForDataAndPush(player)
     if Readiness.awaitAttribute(player, "DataLoaded", true, 20) and player.Parent then
         local data = self:_ensureProgress(player)
         self:_applyStepGrant(player, data)
+        self:_applyCompletionLevelGrant(player, data)
         self:_push(player)
     end
 end
@@ -103,8 +105,19 @@ function TutorialService:_onEvent(player, name, ctx)
         return
     end
     data.Tutorial = progress
+    if progress.done then
+        -- Record eligibility before applying the top-up. This separates genuine live tutorial
+        -- completion from veteran-skip saves (which are also `done`) and gives a failed/transient
+        -- progression call a durable retry marker for the next pull or join.
+        local completion = self._config.completion or {}
+        local target = math.floor(tonumber(completion.grant_earned_level) or 0)
+        if target > 1 then
+            data.Tutorial.completionLevelTarget = target
+        end
+    end
     self._dataService:RequestSave(player, "tutorial_step")
     self:_applyStepGrant(player, data) -- reward on ENTER (e.g. slot step grants potency + a slot)
+    self:_applyCompletionLevelGrant(player, data)
     self:_push(player)
     if completedStep and (progress.done or progress.step ~= completedIndex) then
         -- One semantic completion event keeps cross-cutting consumers independent from the
@@ -125,6 +138,56 @@ function TutorialService:_onEvent(player, name, ctx)
             done = progress.done,
         })
     end
+end
+
+-- A genuine tutorial completion guarantees its configured EARNED level. The durable target marker
+-- is written only by the live completion path above, so veteran skips do not receive a retroactive
+-- award. `EnsureEarnedLevel` is exact and monotonic, while this once-only ledger makes the semantic
+-- analytics event idempotent. If the progression peer is temporarily unavailable, the marker stays
+-- pending and the next TutorialState pull/rejoin retries it.
+function TutorialService:_applyCompletionLevelGrant(player, data)
+    local tutorial = data and data.Tutorial
+    if not (tutorial and tutorial.done) or tutorial.completionLevelGranted then
+        return
+    end
+
+    local target = math.floor(tonumber(tutorial.completionLevelTarget) or 0)
+    if target <= 1 then
+        return
+    end
+
+    local progression = self._playerProgressionService
+    if not (progression and progression.EnsureEarnedLevel) then
+        if self._logger then
+            self._logger:Warn("tutorial completion level grant deferred", {
+                player = player.Name,
+                targetLevel = target,
+                reason = "PlayerProgressionService unavailable",
+            })
+        end
+        return
+    end
+
+    local ok, result = pcall(function()
+        return progression:EnsureEarnedLevel(player, target)
+    end)
+    if not ok or type(result) ~= "table" then
+        if self._logger then
+            self._logger:Warn("tutorial completion level grant failed", {
+                player = player.Name,
+                targetLevel = target,
+                error = tostring(result),
+            })
+        end
+        return
+    end
+
+    tutorial.completionLevelGranted = true
+    fireGameEvent(player, "tutorial_level_awarded", {
+        level = result.targetLevel or target,
+        xpAdded = result.xpAdded or 0,
+    })
+    self._dataService:RequestSave(player, "tutorial_completion_level", { critical = true })
 end
 
 -- On ENTERING a step that carries a `grant`, apply it ONCE (idempotent via data.Tutorial.granted).

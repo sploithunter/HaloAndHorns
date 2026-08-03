@@ -139,8 +139,11 @@ return {
     -- tutorial ends here — leveling is a grind away, and that's the QUEST chain's job).
     -- After this card, the quest tracker takes the HUD spot and carries the player on.
     completion = {
-        title = "🎉 QUESTS UNLOCKED!",
-        body = "Your missions are in the tracker up top — claim your first rewards and climb to Level 2!",
+        -- Finishing the guided loop guarantees EARNED level 2. TutorialService adds only the
+        -- missing XP, then the normal Ascension Altar flow claims level 2 and its power choice.
+        grant_earned_level = 2,
+        title = "🎉 TUTORIAL COMPLETE — LEVEL 2!",
+        body = "You earned Level 2! Visit the Ascension Altar to choose your next power, then follow your missions.",
         show_seconds = 8,
     },
 }
