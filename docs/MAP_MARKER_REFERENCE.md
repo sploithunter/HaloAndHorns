@@ -14,6 +14,7 @@ This project treats Studio-authored maps as geometry plus invisible gameplay hoo
 | `Portal` | `ZoneId`, `TargetZoneId` | none | World/island travel hook. |
 | `EggStand` | `EggId` | `AreaId`, `SpawnId`, `AuthoredVisual`, `SpawnMode` | Egg interaction/placement hook. Builder-authored visible eggs should tag the actual interaction anchor part, such as the egg/rock inside a larger decorative hatcher, with `AuthoredVisual = true` and `SpawnMode = "authored"`. Invisible template spawn points can use `SpawnMode = "spawn_model"` to let the template spawn placeholder egg visuals. The legacy egg spawner also accepts a part named `EggSpawnPoint`. |
 | `EnchanterStation` | `EnchanterId` | `AreaId`, `TouchPartName`, `AnimationRootName` | Map-built pet enchant/reroll station. `EnchanterId` references `configs/enchants.lua` `stations`; `TouchPartName` points at the child part players touch/prompt against. |
+| `AscensionAltar` | none | `LabelHeight` | Invisible `AscensionAltarHost` inside an authored altar. `AscensionAltarService` attaches the `AscendPrompt` and level-training UI to every tagged host. Home's replacement altar is wired by `scripts/studio/wire_home_ascension_altar.luau`; the script transfers the buried old altar's `NativeFX` host-relative and removes the old host's tag. |
 | `PODPodium` | none | `AreaId`, `Slot` | Pet-of-the-day display anchor. |
 | `ChaseableRegion` | `AreaId`, `ChaseableId` | none | Future chaseable spawn region. |
 | `ShopAnchor` | `AnchorId` | `AreaId` | Shop or UI world anchor. |

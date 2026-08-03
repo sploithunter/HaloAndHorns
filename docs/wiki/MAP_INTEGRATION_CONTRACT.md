@@ -115,6 +115,13 @@ proximity authorization, inventory mutation, and currency mutation remain config
 
 Builder-authored egg visuals are map fixtures too. A visible model can have any builder-friendly name, then a setup pass stamps the intended interaction anchor part with `EggStand`, `EggId`/`EggType`, optional `AreaId`/`SpawnId`, `AuthoredVisual = true`, and `SpawnMode = "authored"`. For large hatchers, tag the egg/rock part players approach rather than the full decorative container so proximity distance and billboards attach to the right spot. `scripts/studio/audit_authored_map_candidates.luau` lists likely imported objects, and `scripts/studio/stamp_authored_egg_stands.luau` is the current repeatable helper for the assisted mapping pass. Blank/template maps still use synthetic invisible egg hooks and spawned placeholder egg models.
 
+Ascension altars use an invisible child part named `AscensionAltarHost`, tagged
+`AscensionAltar`, as their interaction contract. `AscensionAltarService` creates the prompt and
+level-training behavior at that host; altar meshes and `NativeFX` remain Studio-owned. Home's
+replacement altar is normalized by `scripts/studio/wire_home_ascension_altar.luau`, which maps the
+buried old altar's complete effect assembly into the replacement host's coordinate space and
+removes the gameplay tag from the buried host. Reimports must preserve the host and `NativeFX`.
+
 For the NewWorld migration, `Workspace.Maps.Home.LegacyEggHatchers.BasicEarth.EggModel` is the authored `basic_egg` stand. Golden hatching is not modeled as a separate default egg stand; it is controlled by `egg_sources.<id>.variant_rolls` and `rarity_rates`. Egg previews always show the first-stage pet roll in basic form; golden/rainbow is a second hidden variant roll. Premium/no-basic egg settings can use `variant_rolls.allow_basic = false` and optional `variant_rolls.cost_multiplier` to price the hidden variant mode from the base egg cost.
 
 For NewWorld breakables, `Workspace.Maps.Home.Grass` is stamped as the authored `Spawn` crystal `SpawnZone`. It uses surface raycasting plus `ClearanceMode = "ray_samples"` so crystals/coins appear on playable grass and avoid the hatcher, sidewalks, trees, rocks, portals, and other map art without letting oversized imported mesh bounds falsely block open grass.

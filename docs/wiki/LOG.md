@@ -2017,3 +2017,12 @@ rewrite.
 - Mission entry now raycasts against `CanCollide`, and generated arrival pads are non-queryable.
   The handshake still requires collision geometry from the exact expected mission; no timeout or
   unsafe fallback was added.
+
+## 2026-08-02 — Home ascension altar replacement wired
+
+- The new authored Home altar arrived as `Workspace.AscensionAlter` with its correctly placed
+  `AscensionAltarHost`, while the old tagged altar and all beam/brazier effects had been moved below
+  the map as `Maps.Home.AscensionAltar_old`.
+- Added an idempotent Studio wiring pass that canonicalizes the replacement under `Maps.Home`,
+  transfers the complete `NativeFX` assembly by old-host-to-new-host transform, tags only the new
+  host for `AscensionAltarService`, and leaves the buried model as an inactive visual reference.
