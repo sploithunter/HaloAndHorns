@@ -6,6 +6,7 @@
     visual reference, but it must not remain a live station. This script:
 
       * moves the replacement under Workspace.Maps.Home and canonicalizes its name;
+      * anchors every BasePart in the replacement assembly so the mesh cannot drift from its FX;
       * keeps its authored AscensionAltarHost placement;
       * clones NativeFX from the old altar and maps every effect part host-relative;
       * gives the replacement host the AscensionAltar tag used by AscensionAltarService; and
@@ -59,6 +60,22 @@ ChangeHistoryService:SetWaypoint("Before Home ascension altar wiring")
 target.Parent = home
 target.Name = "AscensionAltar"
 
+local function anchorAssembly(root)
+    local anchored = 0
+    for _, descendant in ipairs(root:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            descendant.Anchored = true
+            anchored += 1
+        end
+    end
+    return anchored
+end
+
+-- Imported MeshParts are not guaranteed to be anchored. The host and NativeFX use world-space
+-- placement, so allowing the visible mesh to enter physics makes a correctly centered beam appear
+-- offset as soon as Play starts. Preserve authored collision settings; normalize only Anchored.
+local anchoredParts = anchorAssembly(target)
+
 targetHost.Anchored = true
 targetHost.CanCollide = false
 targetHost.CanTouch = false
@@ -98,16 +115,20 @@ else
     targetFX.Parent = target
 end
 
+-- Also covers cloned NativeFX on the first run and any later effect parts added by the builder.
+anchoredParts = anchorAssembly(target)
+
 target:SetAttribute("AscensionAltarWired", true)
 target:SetAttribute("AscensionFXSource", FX_SOURCE_VALUE)
 ChangeHistoryService:SetWaypoint("Home ascension altar wired")
 
 print(
     string.format(
-        "ASCENSION ALTAR WIRED target=%s host=%s fx=%d oldHostActive=%s",
+        "ASCENSION ALTAR WIRED target=%s host=%s fx=%d anchored=%d oldHostActive=%s",
         target:GetFullName(),
         tostring(targetHost.Position),
         #targetFX:GetDescendants(),
+        anchoredParts,
         tostring(CollectionService:HasTag(oldHost, ALTAR_TAG))
     )
 )

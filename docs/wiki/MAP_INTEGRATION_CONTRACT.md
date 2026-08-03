@@ -120,7 +120,9 @@ Ascension altars use an invisible child part named `AscensionAltarHost`, tagged
 level-training behavior at that host; altar meshes and `NativeFX` remain Studio-owned. Home's
 replacement altar is normalized by `scripts/studio/wire_home_ascension_altar.luau`, which maps the
 buried old altar's complete effect assembly into the replacement host's coordinate space and
-removes the gameplay tag from the buried host. Reimports must preserve the host and `NativeFX`.
+removes the gameplay tag from the buried host. The wiring pass anchors every replacement BasePart
+so the visible imported mesh cannot enter physics and drift away from the world-space beam. It
+preserves authored collision settings. Reimports must preserve the host and `NativeFX`.
 
 For the NewWorld migration, `Workspace.Maps.Home.LegacyEggHatchers.BasicEarth.EggModel` is the authored `basic_egg` stand. Golden hatching is not modeled as a separate default egg stand; it is controlled by `egg_sources.<id>.variant_rolls` and `rarity_rates`. Egg previews always show the first-stage pet roll in basic form; golden/rainbow is a second hidden variant roll. Premium/no-basic egg settings can use `variant_rolls.allow_basic = false` and optional `variant_rolls.cost_multiplier` to price the hidden variant mode from the base egg cost.
 

@@ -21,5 +21,14 @@ return function()
                 source:find("descendant.CFrame = hostTransform * descendant.CFrame", 1, true) ~= nil
             ).to.equal(true)
         end)
+
+        it("anchors the complete replacement assembly without changing mesh collision", function()
+            local source = readFile("scripts/studio/wire_home_ascension_altar.luau")
+            expect(source:find("local function anchorAssembly(root)", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(source:find("descendant.Anchored = true", 1, true) ~= nil).to.equal(true)
+            expect(source:find("normalize only Anchored", 1, true) ~= nil).to.equal(true)
+        end)
     end)
 end
