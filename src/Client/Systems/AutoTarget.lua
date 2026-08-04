@@ -33,11 +33,9 @@ function AutoTarget.new()
         self.status.mode = s.mode or self.status.mode
     end)
 
-    -- The server normally sends status after profile load. Request one more copy in case the
-    -- client subscribed after that packet; never toggle persisted gameplay state just to sync UI.
-    task.delay(0.5, function()
-        Signals.AutoTarget_RequestStatus:FireServer()
-    end)
+    -- The server normally sends status after profile load. Request one more copy after subscribing
+    -- in case that packet already passed; never toggle persisted gameplay state just to sync UI.
+    Signals.AutoTarget_RequestStatus:FireServer()
 
     AutoTarget._singleton = self
     return AutoTarget._singleton

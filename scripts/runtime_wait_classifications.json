@@ -24,9 +24,6 @@
    "deadline": 1,
    "retry_backoff": 1
   },
-  "src/Client/Systems/AutoTarget.lua": {
-   "debounce": 2
-  },
   "src/Client/Systems/CombatAuraController.lua": {
    "cooldown": 5
   },
