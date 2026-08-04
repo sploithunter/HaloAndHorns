@@ -33,12 +33,9 @@ function AutoTarget.new()
         self.status.mode = s.mode or self.status.mode
     end)
 
-    -- Request initial status on start (server sends status on PlayerAdded, but ensure sync)
-    task.delay(0.5, function()
-        Signals.AutoTarget_ToggleFree:FireServer() -- noop flip to get a status echo if needed
-        task.wait(0.1)
-        Signals.AutoTarget_ToggleFree:FireServer() -- flip back
-    end)
+    -- The server normally sends status after profile load. Request one more copy after subscribing
+    -- in case that packet already passed; never toggle persisted gameplay state just to sync UI.
+    Signals.AutoTarget_RequestStatus:FireServer()
 
     AutoTarget._singleton = self
     return AutoTarget._singleton
