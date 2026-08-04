@@ -200,7 +200,9 @@ return {
             count_step = 1,
             count_large_step = 10,
             default_selected_count = 1,
-            default_action_mode = "single",
+            -- New players should get the strongest first impression from each hatch press.
+            -- "max" follows their live level/entitlement ceiling; it does not start auto hatch.
+            default_action_mode = "max",
             -- BUTTONS are primary input (Jason, after mobile playtest: "no way to
             -- click it... couldn't hatch an egg"); keyboard E/M/T remain as shortcuts
             show_inline_controls = true,

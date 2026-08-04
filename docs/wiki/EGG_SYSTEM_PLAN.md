@@ -58,6 +58,7 @@ Implemented so far:
 - Hatch auto-delete filters now have a durable replicated UI contract. `SettingsService`/`AutoTargetService` publish `Player.Settings.AutoSystems.AutoDelete.Enabled`, `Rarities`, `PetTypes`, and `Variants`; `EggInteractionService` live-binds those folders so saved filter choices survive missed status packets and drawer rebuilds.
 - Hatch auto-delete education now includes a config-owned header summary for saved filter counts, including the important off-but-filters-saved state.
 - The near-egg hatch surface is now compact by default and uses only the original `EggCurrentTarget` proximity UI. A persisted `Settings.AutoSystems.hatch.action_mode` setting controls whether pressing E performs single hatch, max hatch, or auto hatch; the billboard displays the matching prompt plus total cost/per-egg/max/affordability detail. The separate lower `EggHatchPanel` screen was removed to avoid duplicate proximity UI, and the Settings menu owns the first player-facing controls for action mode plus Show/Silent hatch presentation preferences.
+- New profiles default `Settings.AutoSystems.hatch.action_mode` to `max`, so the first hatch press requests the player's live level/entitlement ceiling while still leaving the repeating `auto` loop opt-in. Explicit existing player choices remain unchanged.
 - Egg billboard prompt style is developer-configured through `egg_system.ui.interaction_prompt.mode`: `clean` follows the selected E-key action, while `advertised_hotkeys` shows the legacy E/R/T shortcut hint for games that want the noisier onboarding surface.
 - A successful hatch now persists `GameData.LastHatchedEggId` for the Natural Recall power. Recall
   resolves that id against the live `EggStand` registry at cast time instead of saving coordinates;
@@ -166,7 +167,7 @@ Config:
 
 - Add `egg_system.hatching.max_count = 99`.
 - Add `egg_system.hatching.allow_partial = true`.
-- Add `egg_system.hatching.default_requested_count = 1`; per-player selected-count persistence now lives under `Settings.AutoSystems.hatch.selected_count`.
+- Add `egg_system.hatching.default_requested_count = 1`; per-player selected-count persistence now lives under `Settings.AutoSystems.hatch.selected_count`, while the default `max` action resolves the live entitlement ceiling at hatch time.
 - Add `egg_system.hatching.cooldown_seconds`, `lock_release_policy`, and `auto_loop_delay`.
 - Add `egg_system.hatching.compat_purchase_types` for temporary `"Single"`, `"Triple"`, and `"Auto"` mapping during migration.
 - Add `egg_system.ui.hatch_controls` for button visibility, labels, count selector, and hotkeys.
@@ -263,7 +264,7 @@ Later polish:
 
 ## Open Questions
 
-- Should the default selected count be `1`, player preference, or max affordable/storable up to max allowed?
+- Resolved: new players default to the `max` hatch action (bounded by entitlement, currency, and storage); auto hatch remains opt-in and explicit existing choices persist.
 - Should multi-hatch count entitlement default to `99` during template development, then be tuned later by game-specific config/shop?
 - Resolved: Golden and Charged mode have first-pass config/server/client/test paths. Balance values remain template defaults.
 - Resolved: Skip Hatch is specifically an animation-suppression preference for auto-hatching and should not be overridden by special hatch outcomes. Special hatches can still carry reveal metadata and stronger effects when animations are enabled.

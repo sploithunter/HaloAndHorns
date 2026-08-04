@@ -2039,3 +2039,4 @@ rewrite.
 - Level 2 still goes through the authored Ascension Altar claim and power-choice sequence. Updated
   the completion card to celebrate Level 2 and direct the player to the altar, and added the raw
   `tutorial_level_awarded` event with target level and actual XP added. Headless: 1665/1665.
+2026-08-04 — New-player hatching now defaults to the dynamic Max Hatch action while Auto Hatch remains opt-in. Profile generation/migration persists the configured action mode, and headless config coverage guards the funnel default.
