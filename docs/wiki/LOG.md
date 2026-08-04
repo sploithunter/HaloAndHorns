@@ -2090,3 +2090,10 @@ rewrite.
   Call with the same blue banner presentation as its arrival: **“See you—or be you—soon 😉”**.
   The callback fires once after teardown; reset, rollback, replacement, and owner-leave paths stay
   silent so only a completed two-minute summon gets the farewell.
+
+## 2026-08-04 — Manual hatch cooldown teaching card
+
+- Paired **Please wait before hatching again** with a responsive adjacent blue card teaching
+  **Hatch Fast with Auto Hatch in the Pets Menu**. The contextual card shares the error timer and
+  slide animation, appears only for hatch re-entry, and rapid presses replace the prior notice
+  instead of stacking several cards over the hatch reveal.
