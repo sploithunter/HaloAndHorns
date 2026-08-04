@@ -162,6 +162,16 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
     local tier = def.tier or enemyTier or "trash_mob"
     local loot = CombatMath.resolveLoot(def.drop_table or {})
     for currency, amount in pairs(loot) do
+        if self._modifierService and self._modifierService.Resolve then
+            amount = self._modifierService:Resolve(amount, {
+                player = player,
+                kind = "earned_currency",
+                currency = currency,
+                source = "CombatService",
+            })
+            amount = math.max(0, math.floor((tonumber(amount) or 0) + 0.5))
+            loot[currency] = amount
+        end
         self._economyService:AddCurrency(player, currency, amount, "combat_loot") -- coins unchanged
     end
     -- COIN FALLBACK for def-less kills (Jason: "you should drill coins also"). A pet-invader
@@ -184,6 +194,15 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
                 and rewardService._resolveAreaCoin
                 and rewardService:_resolveAreaCoin(player)
             ) or "grass_coins"
+            if self._modifierService and self._modifierService.Resolve then
+                coins = self._modifierService:Resolve(coins, {
+                    player = player,
+                    kind = "earned_currency",
+                    currency = currency,
+                    source = "CombatService",
+                })
+                coins = math.max(0, math.floor((tonumber(coins) or 0) + 0.5))
+            end
             self._economyService:AddCurrency(player, currency, coins, "combat_loot_realm")
             loot[currency] = (loot[currency] or 0) + coins
         end

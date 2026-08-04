@@ -1201,3 +1201,19 @@ Last checked: 2026-08-04
 - Per-component completion markers make the grant retry-safe. Opening the Quest menu reconciles
   older profiles that already claimed Answer the Cave before this reward existed, while Reset to
   Beginning clears those markers with the quest ledger for a faithful new-player test.
+
+## Launch Friend Boost and pet-slot celebrations
+
+Last checked: 2026-08-04
+
+- The launch social promotion counts up to four Roblox friends in the same server. Each counted
+  friend grants +20% additive hatch luck, +10% XP, and +10% earned biome coins; four friends grant
+  +80% luck and +40% XP/coins. Mining and combat coins both participate, while gems, realm tokens,
+  fixed grants, refunds, trades, and purchases do not.
+- The promotion is an always-active Events-panel card and uses the same eight-second floating
+  celebration banner as a Future Call token award. Its dynamic banner reports the player's live
+  friend count and exact totals; raw analytics receive `friend_boost_active` with the same context.
+- `configs/friend_boost.lua` records the 10,000-public-play launch target and owns the later reduced
+  phase as one explicit switch. Hatch Luck Hour remains an independent global event.
+- Claiming a level-derived deployable pet slot now produces its own matching banner. The existing
+  configuration remains authoritative: level 8, then every seven levels through 50.

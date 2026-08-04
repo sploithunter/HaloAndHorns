@@ -59,6 +59,13 @@ local SCHEMAS = {
         token = "table",
         principal = "table",
     }),
+    friend_boost = schema({
+        enabled = "boolean",
+        active_phase = "string",
+        launch_play_target = "number",
+        max_friends = "number",
+        phases = "table",
+    }),
     game_events = schema({
         toggle_crash = "table",
         power_cast_failed = "table",

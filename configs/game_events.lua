@@ -135,6 +135,21 @@ return {
         banner = { seconds = 8, color = { 145, 95, 255 } },
     },
 
+    -- Launch social event. Uses the same large floating celebration pattern as
+    -- Future Call tokens; ctx.name contains either the invitation or live totals.
+    friend_boost_active = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 80, 210, 255 }, count = 24 },
+        banner = { seconds = 8, color = { 80, 210, 255 } },
+    },
+
+    -- Level-derived deploy capacity (L8, then every seven levels through L50).
+    pet_slot_awarded = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 95, 235, 145 }, count = 24 },
+        banner = { seconds = 8, color = { 95, 235, 145 } },
+    },
+
     -- Token activation is a shorter confirmation: the authored future squad is the
     -- persistent world visual for the two-minute effect.
     future_call_used = {
