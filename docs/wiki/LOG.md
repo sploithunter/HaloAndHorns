@@ -2041,3 +2041,10 @@ rewrite.
   `tutorial_level_awarded` event with target level and actual XP added. Headless: 1665/1665.
 2026-08-04 — New-player hatching now defaults to the dynamic Max Hatch action while Auto Hatch remains opt-in. Profile generation/migration persists the configured action mode, and headless config coverage guards the funnel default.
 2026-08-04 — Inventory now temporarily suppresses Roblox's PlayerList CoreGui while open and restores its captured enabled state through the shared Hide/Destroy lifecycle. A pure state-guard spec covers enabled, already-disabled, duplicate-suppress, and failed-restore retry paths.
+
+## 2026-08-04 — Farm Near default hardened
+
+- Confirmed `configs/auto_systems.lua` keeps Farm Near (`nearest`) enabled for new profiles, aligned
+  the profile generator's static fallback with that default, and replaced the client's startup
+  off/on toggle handshake with a read-only status request. Existing explicit player choices remain
+  persisted; startup synchronization can no longer transiently disable farming or enqueue a save.

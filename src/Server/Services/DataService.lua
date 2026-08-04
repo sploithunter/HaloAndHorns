@@ -142,7 +142,10 @@ local function generateProfileTemplate(configLoader)
             },
             AutoSystems = {
                 auto_target = {
-                    enabled = false,
+                    -- Keep the static fallback aligned with configs/auto_systems.lua. The
+                    -- config-driven pass below normally replaces this table, but a config-load
+                    -- failure must not silently turn Farm Near off for a brand-new profile.
+                    enabled = true,
                     mode = "nearest",
                     selected_currency = "crystals",
                 },

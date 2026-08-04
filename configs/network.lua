@@ -379,6 +379,17 @@ return {
             handler = "AutoTargetService.TogglePaid",
             schema = { kind = "tuple", arguments = {} },
         },
+        AutoTarget_RequestStatus = {
+            name = "AutoTarget_RequestStatus",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 10,
+            handler = "AutoTargetService.RequestStatus",
+            schema = { kind = "tuple", arguments = {} },
+        },
         AutoTarget_SetMode = {
             name = "AutoTarget_SetMode",
             transport = "reliable_event",

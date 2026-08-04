@@ -189,6 +189,9 @@ function AutoTargetService:Init()
     Signals.AutoTarget_TogglePaid.OnServerEvent:Connect(function(player)
         self:_toggleCompatibilityMode(player, "paid")
     end)
+    Signals.AutoTarget_RequestStatus.OnServerEvent:Connect(function(player)
+        self:RequestStatus(player)
+    end)
     Signals.AutoTarget_SetMode.OnServerEvent:Connect(function(player, payload)
         self:SetAutoTargetMode(player, payload)
     end)
@@ -352,6 +355,11 @@ function AutoTargetService:_sendStatus(player)
             variants = deleteSettings.variants or {},
         },
     })
+end
+
+function AutoTargetService:RequestStatus(player)
+    self:_syncCompatibilityFlags(player)
+    self:_sendStatus(player)
 end
 
 function AutoTargetService:_replicateAutoDeleteSettings(player, deleteSettings)

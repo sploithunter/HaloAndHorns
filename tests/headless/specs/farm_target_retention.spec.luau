@@ -1,6 +1,27 @@
 local FarmTargetRetention = loadModule("src/Shared/Game/FarmTargetRetention.lua")
+local autoSystemsConfig = loadModule("configs/auto_systems.lua")
 
 return function()
+    describe("Farm Near defaults", function()
+        it("starts new players farming the nearest target", function()
+            expect(autoSystemsConfig.auto_target.default_enabled).to.equal(true)
+            expect(autoSystemsConfig.auto_target.default_mode).to.equal("nearest")
+        end)
+
+        it("requests startup status without toggling the saved choice", function()
+            local client = readFile("src/Client/Systems/AutoTarget.lua")
+            expect(client:find("AutoTarget_RequestStatus:FireServer", 1, true)).to.be.ok()
+            expect(client:find("noop flip", 1, true)).never.to.be.ok()
+        end)
+
+        it("keeps the profile fallback on when config loading is unavailable", function()
+            local dataService = readFile("src/Server/Services/DataService.lua")
+            local fallback = dataService:match("AutoSystems%s*=%s*{(.-)auto_delete%s*=")
+            expect(fallback).to.be.ok()
+            expect(fallback:find("enabled = true", 1, true)).to.be.ok()
+        end)
+    end)
+
     describe("FarmTargetRetention.withinLeash", function()
         it("keeps the target through the configured boundary", function()
             expect(FarmTargetRetention.withinLeash(119.9, 120)).to.equal(true)
