@@ -105,6 +105,7 @@ local UPGRADE_COLOR = Color3.fromRGB(92, 176, 205)
 local LEVEL_COLOR = Color3.fromRGB(120, 205, 130)
 local RESET_COLOR = Color3.fromRGB(150, 120, 200)
 local STAGED_GLOW = Color3.fromRGB(235, 200, 90)
+local STAGED_GLOW_THICKNESS = 6 -- remains unmistakable after the menu scales down on phones
 local makeChip -- forward declaration: upgrade confirmation uses the shared pill builder below
 
 -- selection levels -> set, for O(1) "is this a power level?"
@@ -1821,8 +1822,9 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
         if glowColor then
             local glow = Instance.new("UIStroke")
             glow.Color = glowColor
-            glow.Thickness = hasStaged and 2.5 or 2
+            glow.Thickness = hasStaged and STAGED_GLOW_THICKNESS or 2
             glow.Transparency = hasStaged and 0 or 0.15
+            glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
             local bar = wrap:FindFirstChild("PowerRow") and wrap.PowerRow:FindFirstChild("Bar")
             if bar then
                 glow.Parent = bar
