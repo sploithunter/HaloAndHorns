@@ -24,11 +24,13 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local Workspace = game:GetService("Workspace")
+local StarterGui = game:GetService("StarterGui")
 
 -- #179 down-lockout: pill ring assets (white = available, red = locked) for the equipped view.
 local PILL_UI = require(ReplicatedStorage.Configs:WaitForChild("pill_ui"))
 -- Shared panel exterior (outer pill) + the currency-HUD capsule treatment for header/action buttons.
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
+local CoreGuiStateGuard = require(script.Parent.Parent.CoreGuiStateGuard)
 
 -- Capsule treatment on an existing button: full pill corner + the game pill BORDER (neon 9-slice
 -- ring, area-themed). The fill keeps its state color and the intrinsic text stays untinted — the
@@ -431,6 +433,11 @@ function InventoryPanel.new()
     local self = setmetatable({}, InventoryPanel)
 
     self.logger = LoggerWrapper.new("InventoryPanel")
+    self._playerListGuard = CoreGuiStateGuard.new(function()
+        return StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.PlayerList)
+    end, function(enabled)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, enabled)
+    end)
 
     -- Load inventory configuration
     local success, result = pcall(function()
@@ -637,6 +644,13 @@ function InventoryPanel:Show(parent)
     self:_setupEquippedFolderListeners() -- Listen for equipped changes
     self:SetupRealTimeUpdates() -- Listen for inventory changes (pets)
     self:_setupBucketListeners() -- Live-update the open non-pet bucket (enhancements/etc.)
+
+    local suppressed, suppressError = self._playerListGuard:Suppress()
+    if not suppressed then
+        self.logger:warn("Could not temporarily hide Roblox player list", {
+            error = tostring(suppressError),
+        })
+    end
 
     self.isVisible = true
     -- #179: tick the availability rings / red counts while the window is open (timers count down).
@@ -942,6 +956,13 @@ function InventoryPanel:_refreshLockoutVisuals()
 end
 
 function InventoryPanel:Hide()
+    local restored, restoreError = self._playerListGuard:Restore()
+    if not restored then
+        self.logger:warn("Could not restore Roblox player list", {
+            error = tostring(restoreError),
+        })
+    end
+
     if not self.isVisible then
         return
     end
