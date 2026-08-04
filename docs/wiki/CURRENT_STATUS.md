@@ -1106,6 +1106,10 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
   pivots, so walking away from the summon point cannot strand the visible squad out of combat.
 - The admin panel's **Grant 3 Future Call Tokens** action exercises the real inventory, auto-bind,
   banner, and activation path without consuming the one-time progression marker.
+- A successful Future Self visit now closes with the matching blue
+  **“See you—or be you—soon 😉”** banner when its two-minute lifetime naturally expires. The
+  lifecycle callback is reasoned, so admin resets, activation rollback, replacement, and the owner
+  leaving do not produce a misleading farewell.
 
 ## Links
 

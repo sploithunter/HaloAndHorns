@@ -241,7 +241,7 @@ function FutureCallService:ResetForBeginning(player)
         end
     end
     local principalName = FutureCallLogic.principalName(player.Name, self._config)
-    self._npcPrincipalService:Despawn(principalName)
+    self._npcPrincipalService:Despawn(principalName, "reset")
     self:_pushHotbar(player)
     return { ok = true, removed = count }
 end
@@ -270,6 +270,13 @@ function FutureCallService:Use(player, tokenId)
     local ok, info = self._npcPrincipalService:Summon(player, "future_self", {
         definition = definition,
         duration = tonumber(self._config.token and self._config.token.duration) or 120,
+        onDespawn = function(reason)
+            if reason == "expired" and player.Parent then
+                fireGameEvent(player, "future_call_departed", {
+                    name = "🔮 See you—or be you—soon 😉",
+                })
+            end
+        end,
     })
     if not ok then
         return { ok = false, reason = tostring(info) }
@@ -278,7 +285,7 @@ function FutureCallService:Use(player, tokenId)
     local removed, err =
         self._inventoryService:RemoveItem(player, "consumables", self:_tokenId(), 1)
     if not removed then
-        self._npcPrincipalService:Despawn(principalName)
+        self._npcPrincipalService:Despawn(principalName, "activation_rollback")
         return { ok = false, reason = err or "consume_failed" }
     end
     self:_pushHotbar(player)

@@ -143,6 +143,13 @@ return {
         banner = { seconds = 4, color = { 90, 190, 255 } },
     },
 
+    -- The matching closing beat when a successful Future Call naturally reaches the end of its
+    -- two-minute visit. Deliberately banner-only: the disappearing world squad is already the
+    -- visual transition, and admin resets / failed activations do not fire this farewell.
+    future_call_departed = {
+        banner = { seconds = 4, color = { 90, 190, 255 } },
+    },
+
     achievement_completed = {
         sound = "celebratory_jingle", -- (loudness fixed at the SOURCE: sounds.lua base volume)
         vfx = { kind = "burst", color = { 255, 120, 220 } }, -- magenta

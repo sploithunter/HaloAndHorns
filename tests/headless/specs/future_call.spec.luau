@@ -83,6 +83,18 @@ return function()
             expect(config.principal.squad[4].variant).to.equal("rainbow")
         end)
 
+        it("shows one farewell banner only after a natural Future Self expiry", function()
+            local futureCallSource = readFile("src/Server/Services/FutureCallService.lua")
+            local principalSource = readFile("src/Server/Services/NpcPrincipalService.lua")
+            local gameEvents = loadModule("configs/game_events.lua")
+
+            expect(futureCallSource:find('if reason == "expired"', 1, true)).to.be.ok()
+            expect(futureCallSource:find('fireGameEvent(player, "future_call_departed"', 1, true)).to.be.ok()
+            expect(futureCallSource:find("See you—or be you—soon", 1, true)).to.be.ok()
+            expect(principalSource:find('self:Despawn(name, "expired")', 1, true)).to.be.ok()
+            expect(type(gameEvents.future_call_departed.banner)).to.equal("table")
+        end)
+
         it("wires manifested squads into their owner's whole-team combat", function()
             local enemySource = readFile("src/Server/Services/EnemyService.lua")
             expect(enemySource:find("function EnemyService:_playerForPetFolder", 1, true)).to.be.ok()

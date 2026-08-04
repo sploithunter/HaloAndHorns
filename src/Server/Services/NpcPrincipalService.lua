@@ -482,7 +482,7 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
     if type(def.name) ~= "string" or def.name == "" then
         return false, "npc principal needs a name"
     end
-    self:Despawn(def.name) -- re-summon replaces
+    self:Despawn(def.name, "replaced") -- re-summon replaces
 
     local off = def.follow_offset or {}
     local cf = hrp.CFrame
@@ -525,6 +525,7 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
         owner = owner,
         expireAt = os.clock() + (tonumber(opts.duration) or tonumber(def.duration) or 20),
         allied = {},
+        onDespawn = type(opts.onDespawn) == "function" and opts.onDespawn or nil,
     }
     self._active[def.name] = rec
 
@@ -563,7 +564,7 @@ function NpcPrincipalService:IsActive(name)
     return rec ~= nil and rec.model ~= nil and rec.model.Parent ~= nil
 end
 
-function NpcPrincipalService:Despawn(name)
+function NpcPrincipalService:Despawn(name, reason)
     local rec = self._active[name]
     if not rec then
         return false
@@ -585,7 +586,18 @@ function NpcPrincipalService:Despawn(name)
         rec.model:Destroy()
     end
     self._active[name] = nil
-    self:_log("Info", "NPC principal despawned", { npc = name })
+    reason = tostring(reason or "requested")
+    if rec.onDespawn then
+        local ok, err = pcall(rec.onDespawn, reason)
+        if not ok then
+            self:_log("Warn", "NPC principal despawn callback failed", {
+                npc = name,
+                reason = reason,
+                error = tostring(err),
+            })
+        end
+    end
+    self:_log("Info", "NPC principal despawned", { npc = name, reason = reason })
     return true
 end
 
@@ -832,7 +844,7 @@ function NpcPrincipalService:_step(now)
             rec.expireAt = now + 30 -- keep a rolling grace window
         end
         if now >= rec.expireAt then
-            self:Despawn(name)
+            self:Despawn(name, "expired")
         else
             local owner = rec.owner
             local hrp = owner
@@ -861,7 +873,7 @@ function NpcPrincipalService:_step(now)
                     rec.model:PivotTo(goal) -- placeholder rig has no locomotion
                 end
             elseif not (owner and owner.Parent) then
-                self:Despawn(name) -- summoner left
+                self:Despawn(name, "owner_left") -- summoner left
             end
             if self._active[name] then
                 self:_castStep(rec, now)
