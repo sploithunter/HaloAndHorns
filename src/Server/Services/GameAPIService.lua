@@ -1289,6 +1289,45 @@ function GameAPIService:_registerCommands()
         end,
     })
 
+    bus:register("respec.getState", {
+        description = "Full-respec replay state for the calling player.",
+        handler = function(context)
+            local service = self:_service("RespecService")
+            if not service then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return service:GetState(context.player)
+        end,
+    })
+
+    bus:register("respec.begin", {
+        description = "[admin] Refund installed enhancements and replay Ascension from Level 1.",
+        validate = function(args)
+            return Validators.fields(args, {
+                targetPlayerId = { type = "int", min = 1, optional = true },
+            })
+        end,
+        handler = function(context, args)
+            local isAdmin = context.isTest
+                or (context.player and context.player:GetAttribute("IsAdmin") == true)
+            if not isAdmin then
+                return { ok = false, reason = "not_admin" }
+            end
+            local target = context.player
+            if args.targetPlayerId then
+                target = game:GetService("Players"):GetPlayerByUserId(args.targetPlayerId)
+            end
+            if not target then
+                return { ok = false, reason = "target_not_found" }
+            end
+            local service = self:_service("RespecService")
+            if not service then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return service:Begin(target)
+        end,
+    })
+
     bus:register("levelup.claim", {
         description = "Claim ONE pending level (advances ClaimedLevel, pays rewards, fires sequence).",
         validate = function(args)

@@ -2064,3 +2064,15 @@ rewrite.
   needed for earned Level 4 and grants two Future Call tokens through the canonical auto-bind/banner
   path. Durable per-component markers reconcile preexisting claimers and prevent token duplication;
   the Level 5–9 Future Call milestone schedule remains independent.
+
+## 2026-08-04 — Full origin/power respec via Ascension replay
+
+- Added a server-authoritative full respec that preserves exact XP, pets, currencies, quests,
+  unlocks, and one-time reward ledgers while clearing only origin, powers, augmentation slots, and
+  the hotbar. Installed enhancements are transactionally returned intact to inventory.
+- The player's old claimed level is persisted as a replay boundary. The existing Ascension Altar
+  walks every choice again in historical order; replayed claims suppress rewards, events, and
+  `levels_gained`, then automatically return to normal progression at the boundary. Enhancement
+  placement is blocked during the replay.
+- Added an admin-panel Full Respec action (including target-player support) for live testing. Final
+  player-facing ritual/cost is intentionally deferred. CI: 1688/1688 headless tests, full gate green.

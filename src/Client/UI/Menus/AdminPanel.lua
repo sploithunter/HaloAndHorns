@@ -213,6 +213,10 @@ local TEST_CATEGORIES = {
                 name = "🔎 Reset to Beginning — PREVIEW",
                 action = "admin_reset_to_beginning_preview",
             },
+            {
+                name = "♻️ Full Respec (refund enhancements)",
+                action = "admin_full_respec",
+            },
             { name = "🐻 Grant Bear Basic", action = "grant_bear_basic" },
             { name = "🐉 Grant Dragon Basic", action = "grant_dragon_basic" },
             { name = "🐻 Grant Golden Bear", action = "grant_bear_golden" },
@@ -800,6 +804,8 @@ function AdminPanel:_executeTestAction(action, _testName)
         self:_requestResetToBeginning(false)
     elseif action == "admin_reset_to_beginning_preview" then
         self:_requestResetToBeginning(true)
+    elseif action == "admin_full_respec" then
+        self:_requestFullRespec()
     elseif action == "grant_enhancements_100" then
         task.spawn(function()
             local remote = game:GetService("ReplicatedStorage"):WaitForChild("GameAPICommand", 5)
@@ -1441,6 +1447,37 @@ function AdminPanel:_requestResetToBeginning(dryRun)
             or "Reset to beginning (keep HUGE) requested...",
         true
     )
+end
+
+function AdminPanel:_requestFullRespec()
+    task.spawn(function()
+        local remote = game:GetService("ReplicatedStorage"):WaitForChild("GameAPICommand", 5)
+        if not remote then
+            self:_showAdminResult("GameAPICommand remote missing", false)
+            return
+        end
+        local args = {}
+        if self.selectedTargetPlayerId then
+            args.targetPlayerId = self.selectedTargetPlayerId
+        end
+        local response = remote:InvokeServer("respec.begin", args)
+        local result = type(response) == "table" and (response.result or response.data or response)
+            or response
+        if result and result.ok then
+            self:_showAdminResult(
+                ("Full respec started: replay to L%d; %d enhancements returned"):format(
+                    tonumber(result.targetClaimedLevel) or 1,
+                    tonumber(result.enhancementsReturned) or 0
+                ),
+                true
+            )
+        else
+            self:_showAdminResult(
+                "Full respec failed: " .. tostring(result and result.reason or "no response"),
+                false
+            )
+        end
+    end)
 end
 
 function AdminPanel:_executePetGrantAction(action)

@@ -520,6 +520,19 @@ loader:RegisterModule(
         "StatsService"
     )
 )
+-- Full build respec: exact-XP Ascension replay with installed-enhancement refunds.
+loader:RegisterModule(
+    "RespecService",
+    ServerScriptService.Server.Services.RespecService,
+    appendIfEnabled({
+        "Logger",
+        "DataService",
+        "ArchetypeService",
+        "EnhancementService",
+        "PowerService",
+        "InventoryService",
+    }, "player_progression", "PlayerProgressionService")
+)
 -- EnhancementShopService: buy/sell enhancements for gems (configs/enhancements.lua shop).
 loader:RegisterModule(
     "EnhancementShopService",
@@ -1000,6 +1013,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
             PowerService = modules:Get("PowerService"),
             QuestService = modules:Get("QuestService"),
             RetentionService = modules:Get("RetentionService"),
+            RespecService = modules:Get("RespecService"),
             RewardService = modules:Get("RewardService"),
             RosterService = modules:Get("RosterService"),
             ShopService = modules:Get("ShopService"),
@@ -1098,6 +1112,7 @@ table.insert(requiredModules, "ArchetypeService")
 table.insert(requiredModules, "PowerService")
 table.insert(requiredModules, "AugmentationService")
 table.insert(requiredModules, "EnhancementService")
+table.insert(requiredModules, "RespecService")
 table.insert(requiredModules, "EnhancementShopService")
 table.insert(requiredModules, "PetAbilityService")
 table.insert(requiredModules, "PotionService")

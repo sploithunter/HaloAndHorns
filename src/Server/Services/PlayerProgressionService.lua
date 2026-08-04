@@ -341,6 +341,14 @@ function PlayerProgressionService:_publish(player)
     end
     player:SetAttribute("PendingLevels", pending)
     player:SetAttribute("PendingTraining", self:GetPendingTraining(player))
+    local data = self._dataService and self._dataService:GetData(player)
+    local replay = data and data.RespecReplay
+    local replayActive = type(replay) == "table" and replay.active == true
+    player:SetAttribute("RespecReplayActive", replayActive)
+    player:SetAttribute(
+        "RespecReplayTarget",
+        replayActive and tonumber(replay.targetClaimedLevel) or nil
+    )
     player:SetAttribute("XP", prog.xpIntoLevel)
     player:SetAttribute("XPForNext", prog.xpForNext)
     -- Total lifetime XP (monotonic; KEEPS growing past the level cap since AddExperience always
@@ -604,6 +612,8 @@ function PlayerProgressionService:GetClaimState(player)
     local earned = self:GetEarnedLevel(player)
     local r = LevelTrack.resolve(claimed, earned, self._levelTrack)
     local nextEntry = r.nextLevel and LevelTrack.entryForLevel(r.nextLevel, self._levelTrack) or nil
+    local data = self._dataService and self._dataService:GetData(player)
+    local replay = data and data.RespecReplay
     return {
         claimedLevel = claimed,
         earnedLevel = earned,
@@ -615,6 +625,8 @@ function PlayerProgressionService:GetClaimState(player)
         atMax = r.atMax,
         maxLevel = r.maxLevel,
         nextEntry = nextEntry,
+        respecReplay = type(replay) == "table" and replay.active == true,
+        respecTargetLevel = type(replay) == "table" and replay.targetClaimedLevel or nil,
     }
 end
 
@@ -640,15 +652,23 @@ end
 -- `auto` distinguishes a field auto-claim (filler -> client toast) from an altar claim (training
 -- -> client reveal modal). Shared by _advanceAuto and ClaimLevel.
 function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent, skipProjection)
+    local data = self._dataService:GetData(player)
+    local replay = data and data.RespecReplay
+    local replaying = type(replay) == "table"
+        and replay.active == true
+        and newLevel <= (tonumber(replay.targetClaimedLevel) or 0)
     self._dataService:SetStat(player, "ClaimedLevel", newLevel)
     local entry = LevelTrack.entryForLevel(newLevel, self._levelTrack)
     -- Gate-then-pay with a REVERT (2026-07-07 transaction audit): ClaimedLevel advanced first,
     -- so a throw inside the reward grant used to eat the level's bundle permanently (marked
     -- claimed, never paid, unreachable). A failed grant now rolls the gate back — the level
     -- stays claimable and the retry pays it.
-    local okGrant, grantErr = pcall(function()
-        self:_grantLevelRewards(player, entry)
-    end)
+    local okGrant, grantErr = true, nil
+    if not replaying then
+        okGrant, grantErr = pcall(function()
+            self:_grantLevelRewards(player, entry)
+        end)
+    end
     if not okGrant then
         self._dataService:SetStat(player, "ClaimedLevel", newLevel - 1)
         if self._logger then
@@ -684,7 +704,21 @@ function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent, sk
         auto = auto == true,
         pendingLevels = self:GetPendingLevels(player),
         pendingTraining = self:GetPendingTraining(player),
+        respecReplay = replaying,
     }
+    if replaying and newLevel >= (tonumber(replay.targetClaimedLevel) or math.huge) then
+        data.RespecReplay = nil
+        player:SetAttribute("RespecReplayActive", false)
+        player:SetAttribute("RespecReplayTarget", nil)
+        self._dataService:RequestSave(player, "full_respec_complete", { critical = true })
+        payload.respecComplete = true
+        if self._logger then
+            self._logger:Info("Full respec replay completed", {
+                player = player.Name,
+                claimedLevel = newLevel,
+            })
+        end
+    end
     if not silent then
         pcall(function()
             Signals.LevelUp_Claimed:FireClient(player, payload)
@@ -760,15 +794,17 @@ function PlayerProgressionService:ClaimLevel(player, expectedLevel, silent)
     end
 
     local newLevel = claimed + 1
-    local entry = self:_applyLevel(player, newLevel, false, silent)
+    local entry, payload = self:_applyLevel(player, newLevel, false, silent)
     if not entry then -- grant failed, gate reverted: the level is still claimable
         return { ok = false, reason = "grant_failed", claimedLevel = self:GetClaimedLevel(player) }
     end
     self:_advanceAuto(player) -- auto-claim any filler that follows the trained level
     -- bus source (no default reactions — the client LevelUpController owns the level_up juice;
     -- this is the SERVER-truth signal consumers like the tutorial need)
-    fireGameEvent(player, "level_claimed", { level = self:GetClaimedLevel(player) })
-    if self._statsService then -- mission counter (Origin Story "Reach Level N")
+    if not (payload and payload.respecReplay) then
+        fireGameEvent(player, "level_claimed", { level = self:GetClaimedLevel(player) })
+    end
+    if self._statsService and not (payload and payload.respecReplay) then -- mission counter (Origin Story "Reach Level N")
         pcall(function()
             self._statsService:Increment(player, "levels_gained", 1)
         end)
@@ -781,6 +817,12 @@ function PlayerProgressionService:ClaimLevel(player, expectedLevel, silent)
         pendingTraining = self:GetPendingTraining(player),
         entry = entry,
     }
+end
+
+-- Public refresh seam for authoritative build rewinds (full respec). Experience remains the XP
+-- source of truth; this only republishes claimed/pending entitlements and replay state.
+function PlayerProgressionService:RefreshPublishedState(player)
+    self:_publish(player)
 end
 
 function PlayerProgressionService:_getMilestoneCount(level, rewardConfig)
