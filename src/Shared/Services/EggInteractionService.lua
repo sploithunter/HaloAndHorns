@@ -2063,18 +2063,41 @@ end
 function EggInteractionService:ShowErrorMessage(errorMessage)
     self:SetPanelStatus(errorMessage, true)
 
-    -- Create simple error notification
+    -- Replace an earlier egg error instead of letting rapid input stack cards over the reveal.
+    local existing = player.PlayerGui:FindFirstChild("EggError")
+    if existing then
+        existing:Destroy()
+    end
+
+    local showAutoHatchTip = errorMessage == "Please wait before hatching again"
+
+    -- Error card plus a contextual Auto Hatch teaching card for manual re-entry only.
     local errorGui = Instance.new("ScreenGui")
     errorGui.Name = "EggError"
     errorGui.ResetOnSpawn = false
     errorGui.Parent = player.PlayerGui
 
+    local root = Instance.new("Frame")
+    root.Name = "Cards"
+    root.AnchorPoint = Vector2.new(0.5, 0.5)
+    root.Size = showAutoHatchTip and UDim2.new(0.88, 0, 0, 80) or UDim2.fromOffset(300, 80)
+    root.Position = UDim2.new(0.5, 0, 1, 0)
+    root.BackgroundTransparency = 1
+    root.Parent = errorGui
+
+    if showAutoHatchTip then
+        local sizeConstraint = Instance.new("UISizeConstraint")
+        sizeConstraint.MaxSize = Vector2.new(700, 80)
+        sizeConstraint.Parent = root
+    end
+
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 300, 0, 80)
-    frame.Position = UDim2.new(0.5, -150, 0.8, -40)
+    frame.Name = "ErrorCard"
+    frame.Size = showAutoHatchTip and UDim2.new(0.44, -6, 1, 0) or UDim2.fromScale(1, 1)
+    frame.Position = UDim2.fromScale(0, 0)
     frame.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
     frame.BorderSizePixel = 0
-    frame.Parent = errorGui
+    frame.Parent = root
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 12)
@@ -2090,13 +2113,43 @@ function EggInteractionService:ShowErrorMessage(errorMessage)
     label.Font = Enum.Font.Gotham
     label.Parent = frame
 
+    if showAutoHatchTip then
+        local tip = Instance.new("Frame")
+        tip.Name = "AutoHatchTip"
+        tip.Size = UDim2.new(0.56, -6, 1, 0)
+        tip.Position = UDim2.new(0.44, 6, 0, 0)
+        tip.BackgroundColor3 = Color3.fromRGB(38, 111, 181)
+        tip.BorderSizePixel = 0
+        tip.Parent = root
+
+        local tipCorner = Instance.new("UICorner")
+        tipCorner.CornerRadius = UDim.new(0, 12)
+        tipCorner.Parent = tip
+
+        local tipStroke = Instance.new("UIStroke")
+        tipStroke.Color = Color3.fromRGB(120, 205, 255)
+        tipStroke.Thickness = 2
+        tipStroke.Parent = tip
+
+        local tipLabel = Instance.new("TextLabel")
+        tipLabel.Name = "Message"
+        tipLabel.Size = UDim2.new(1, -20, 1, -10)
+        tipLabel.Position = UDim2.fromOffset(10, 5)
+        tipLabel.BackgroundTransparency = 1
+        tipLabel.Text = "⚡ Hatch Fast with Auto Hatch in the Pets Menu"
+        tipLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        tipLabel.TextScaled = true
+        tipLabel.TextWrapped = true
+        tipLabel.Font = Enum.Font.GothamBold
+        tipLabel.Parent = tip
+    end
+
     -- Slide in animation
-    frame.Position = UDim2.new(0.5, -150, 1, 0)
     local tween = TweenService:Create(
-        frame,
+        root,
         TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
         {
-            Position = UDim2.new(0.5, -150, 0.8, -40),
+            Position = UDim2.new(0.5, 0, 0.8, 0),
         }
     )
     tween:Play()
