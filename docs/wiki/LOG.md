@@ -2097,3 +2097,14 @@ rewrite.
   **Hatch Fast with Auto Hatch in the Pets Menu**. The contextual card shares the error timer and
   slide animation, appears only for hatch re-entry, and rapid presses replace the prior notice
   instead of stacking several cards over the hatch reveal.
+
+## 2026-08-04 — Launch Friend Boost and pet-slot banners
+
+- Added a server-authoritative same-server friend bonus: each of up to four Roblox friends grants
+  +20% hatch luck, +10% XP, and +10% earned biome coins during the launch phase. The linear totals
+  feed the hatch modifier pipeline, the universal XP choke point, and mining/combat coin paths.
+- Surfaced the promotion as an always-active Events card plus the Future-Call-style floating banner,
+  with dynamic live totals and raw analytics context. Reserved Hatch Luck Hour as its own event and
+  recorded a one-switch post-10,000-play reduced phase.
+- Added the same celebration treatment when the configured level-derived pet slot cadence pays at
+  levels 8, 15, 22, 29, 36, 43, and 50. Headless: 1701/1701.

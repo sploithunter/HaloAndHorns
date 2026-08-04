@@ -59,6 +59,18 @@ return {
     },
 
     global_events = {
+        friend_boost_launch = {
+            display_name = "Launch Friend Boost",
+            description = "Play with up to four Roblox friends for bonus Hatch Luck, XP, and coins!",
+            duration_seconds = -1,
+            stacking = "reset",
+            icon = "FRIENDS",
+            -- Player-specific friendship bonuses are supplied by FriendBoostService;
+            -- keeping this event free of global modifiers preserves Hatch Luck Hour
+            -- as an independently schedulable event.
+            modifiers = {},
+        },
+
         hatch_luck_hour = {
             display_name = "Hatch Luck Hour",
             description = "Improves golden and rainbow hatch odds for everyone.",
@@ -232,6 +244,10 @@ return {
     -- All schedules are MOUNTAIN time (America/Denver, DST-aware) — EventService converts the
     -- UTC server clock via Shared/Game/MountainTime. weekdays: 1=Sun .. 7=Sat.
     scheduled_global_events = {
+        friend_boost_launch = {
+            event_id = "friend_boost_launch",
+            reason = "Launch celebration through 10,000 plays",
+        },
         mineral_monday = {
             event_id = "mineral_monday",
             weekdays = { 2 },

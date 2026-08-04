@@ -469,6 +469,15 @@ function PlayerProgressionService:AddExperience(player, amount, source)
             amount = math.floor(amount * (1 + m) + 0.5)
         end
     end
+    -- Launch Friend Boost: every Roblox friend present in this server contributes
+    -- a linear XP fraction. FriendBoostService owns friendship checks and stamps
+    -- the authoritative aggregate; no reward site re-counts friends.
+    do
+        local friendBonus = math.max(0, tonumber(player:GetAttribute("FriendXPBonus")) or 0)
+        if friendBonus > 0 then
+            amount = math.floor(amount * (1 + friendBonus) + 0.5)
+        end
+    end
     -- VIP pass (profile multiplier, monetization.lua benefits.multipliers.xp):
     -- same choke point as every other XP fold. Was WRITTEN by the pass grant
     -- but never read until the 2026-07-16 gamepass audit.
@@ -724,6 +733,22 @@ function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent, sk
         pcall(function()
             self._chatAnnouncementService:AnnounceLevel(player, newLevel)
         end)
+    end
+    if not replaying then
+        local rewards = self._config.level_rewards or {}
+        local petSlots = (rewards.equip_slots or {}).pets or {}
+        local previous = self:_getMilestoneCount(newLevel - 1, petSlots)
+        local current = self:_getMilestoneCount(newLevel, petSlots)
+        local granted = math.max(0, current - previous)
+            * math.max(0, math.floor(tonumber(petSlots.slots_per_milestone) or 0))
+        if granted > 0 then
+            fireGameEvent(player, "pet_slot_awarded", {
+                name = granted == 1 and "🐾 EXTRA PET SLOT UNLOCKED! Your squad just got bigger!"
+                    or string.format("🐾 %d EXTRA PET SLOTS UNLOCKED!", granted),
+                level = newLevel,
+                slots = granted,
+            })
+        end
     end
     if not silent then
         pcall(function()

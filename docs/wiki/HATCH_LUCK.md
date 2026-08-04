@@ -91,6 +91,20 @@ luck products against the bunny rows, not the no-bunny ones.
    Kitty is Legendary, and Dragon is Secret. The first-hatch luck rule still operates
    on that same table rather than maintaining a second odds table.
 
+## Launch Friend Boost (through 10,000 public plays)
+
+`configs/friend_boost.lua` is the SSOT. During the `launch` phase, each Roblox friend present in
+the same server adds **+20% additive hatch luck**, **+10% XP**, and **+10% earned biome coins**.
+Only four friends are counted, but the counted friends scale linearly with no diminishing return:
+four friends yield +80% hatch luck and +40% XP/coins. Friendship is checked server-side and stamped
+once as player attributes; hatching, XP, mining, and combat consume that authoritative aggregate.
+
+The platform visit count remains the truth for the 10,000-play transition. At that point change the
+single `active_phase` switch to `post_launch` (+2.5% luck and +5% XP/coins per friend). Do not infer
+the threshold from incomplete per-server retention sessions. The always-visible Launch Friend Boost
+event advertises the promotion, while **Hatch Luck Hour remains a separate event** and can run or be
+scheduled independently.
+
 ## The simulator
 
 `mise exec -- lune run scripts/hatch_progression.luau` — runs the REAL

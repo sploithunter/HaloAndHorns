@@ -224,6 +224,11 @@ registerFeatureModule(
     )
 )
 loader:RegisterModule(
+    "FriendBoostService",
+    ServerScriptService.Server.Services.FriendBoostService,
+    { "Logger", "ConfigLoader", "ModifierService" }
+)
+loader:RegisterModule(
     "BreakableSpawner",
     ServerScriptService.Server.Services.BreakableSpawner,
     appendIfEnabled(
@@ -1091,6 +1096,7 @@ local requiredModules = {
     "HatchEntitlementService",
     "DiagnosticsService",
     "ChatAnnouncementService",
+    "FriendBoostService",
 }
 appendIfEnabled(requiredModules, "stats", "StatsService")
 appendIfEnabled(requiredModules, "modifiers", "ModifierService")
