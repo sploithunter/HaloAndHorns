@@ -109,6 +109,9 @@ return {
         max_distance = 18, -- a bit larger so you don't have to stand dead-center on a building
         hold_duration = 0,
         key = "E",
+        -- Mount Roblox's native proximity prompt below the FX host so it does not overlap the
+        -- quest HUD or ASCEND nudge. World studs scale naturally across phones/tablets/desktop.
+        prompt_world_offset = { 0, -8, 0 },
         -- Floating label above the station ("" to hide).
         label_text = "Ascend", -- matches the ASCEND button language (building is placeholder)
         label_color = { 255, 230, 140 },

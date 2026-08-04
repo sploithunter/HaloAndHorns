@@ -30,5 +30,17 @@ return function()
             expect(source:find("descendant.Anchored = true", 1, true) ~= nil).to.equal(true)
             expect(source:find("normalize only Anchored", 1, true) ~= nil).to.equal(true)
         end)
+
+        it("mounts the native interaction prompt below the authored FX host", function()
+            local service = readFile("src/Server/Services/AscensionAltarService.lua")
+            local config = readFile("configs/level_track.lua")
+            expect(
+                service:find('PROMPT_ATTACHMENT_NAME = "AscendPromptAttachment"', 1, true) ~= nil
+            ).to.equal(true)
+            expect(
+                service:find("attachment.Position = vec(cfg.prompt_world_offset", 1, true) ~= nil
+            ).to.equal(true)
+            expect(config:find("prompt_world_offset = { 0, -8, 0 }", 1, true) ~= nil).to.equal(true)
+        end)
     end)
 end

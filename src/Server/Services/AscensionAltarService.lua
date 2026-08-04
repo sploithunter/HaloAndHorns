@@ -20,6 +20,7 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local ALTAR_TAG = "AscensionAltar"
 local PROMPT_NAME = "AscendPrompt"
+local PROMPT_ATTACHMENT_NAME = "AscendPromptAttachment"
 
 local AscensionAltarService = {}
 AscensionAltarService.__index = AscensionAltarService
@@ -128,7 +129,23 @@ end
 
 function AscensionAltarService:_ensurePrompt(part)
     local cfg = self._altarConfig or {}
-    local prompt = part:FindFirstChild(PROMPT_NAME)
+    local attachment = part:FindFirstChild(PROMPT_ATTACHMENT_NAME)
+    if attachment and not attachment:IsA("Attachment") then
+        return
+    end
+    if not attachment then
+        attachment = Instance.new("Attachment")
+        attachment.Name = PROMPT_ATTACHMENT_NAME
+        attachment.Parent = part
+    end
+    attachment.Position = vec(cfg.prompt_world_offset, Vector3.new(0, 0, 0))
+
+    local prompt = attachment:FindFirstChild(PROMPT_NAME)
+    local legacyPrompt = part:FindFirstChild(PROMPT_NAME)
+    if not prompt and legacyPrompt and legacyPrompt:IsA("ProximityPrompt") then
+        prompt = legacyPrompt
+        prompt.Parent = attachment
+    end
     if prompt and not prompt:IsA("ProximityPrompt") then
         return
     end
@@ -136,7 +153,7 @@ function AscensionAltarService:_ensurePrompt(part)
         prompt = Instance.new("ProximityPrompt")
         prompt.Name = PROMPT_NAME
         prompt.RequiresLineOfSight = false
-        prompt.Parent = part
+        prompt.Parent = attachment
     end
     local keyName = cfg.key or "E"
     prompt.KeyboardKeyCode = Enum.KeyCode[keyName] or Enum.KeyCode.E
