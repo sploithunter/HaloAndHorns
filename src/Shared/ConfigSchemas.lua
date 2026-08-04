@@ -31,6 +31,7 @@ local SCHEMAS = {
         version = "number",
         hatch = "table",
         team = "table",
+        level_up = "table",
         limits = "table",
     }),
     controls = schema({ keybinds = "table", enemy_cycle = "table" }),

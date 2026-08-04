@@ -171,7 +171,11 @@ registerFeatureModule(
     "PlayerProgressionService",
     ServerScriptService.Server.Services.PlayerProgressionService,
     appendIfEnabled(
-        appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "modifiers", "ModifierService"),
+        appendIfEnabled(
+            { "Logger", "ConfigLoader", "DataService", "ChatAnnouncementService" },
+            "modifiers",
+            "ModifierService"
+        ),
         "stats",
         "StatsService"
     )

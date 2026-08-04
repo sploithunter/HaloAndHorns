@@ -49,6 +49,7 @@ function PlayerProgressionService:Init()
     self._dataService = self._modules.DataService
     self._modifierService = self._modules.ModifierService
     self._statsService = self._modules.StatsService
+    self._chatAnnouncementService = self._modules.ChatAnnouncementService
     self._inventoryService = nil
     self._rewardService = nil
     self._enhancementService = nil
@@ -718,6 +719,11 @@ function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent, sk
                 claimedLevel = newLevel,
             })
         end
+    end
+    if not replaying and self._chatAnnouncementService then
+        pcall(function()
+            self._chatAnnouncementService:AnnounceLevel(player, newLevel)
+        end)
     end
     if not silent then
         pcall(function()

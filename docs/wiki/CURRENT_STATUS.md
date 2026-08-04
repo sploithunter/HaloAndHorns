@@ -109,7 +109,9 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
   underneath and is restored exactly afterward. Each session shuffles a no-repeat deck so players
   do not always see the same early tips. `Settings → Display Tips` persists the player's opt-out
   under `Settings.ClientPrefs.displayTips`; new players default to tips on.
-- Rarity hatch and team-sidekick announcements use the standard Roblox chat window and default on.
+- Rarity hatch, genuine claimed-level congratulations, and team-sidekick announcements use the
+  standard Roblox chat window and default on. Level messages randomize among **Grats**,
+  **Congratulations**, and **GG**, use the player's display name, and never fire for respec replays.
   `Settings → Chat Announcements` immediately suppresses only these game-authored notices and
   persists the opt-out under `Settings.ClientPrefs.displayChatAnnouncements`; ordinary player and
   Roblox system chat remain unchanged. Presentation probes the live `RBXGeneral`/`RBXSystem`
