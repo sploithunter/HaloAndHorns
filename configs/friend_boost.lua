@@ -6,7 +6,6 @@ return {
     active_phase = "launch",
     launch_play_target = 10000,
     max_friends = 4,
-    banner_delay_seconds = 3,
 
     phases = {
         launch = {

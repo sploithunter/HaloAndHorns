@@ -22,6 +22,7 @@ function FriendBoostService:Init()
     self._pairStatus = {}
     self._pairUsers = {}
     self._pairPending = {}
+    self._readinessConnections = {}
 
     if self._modifierService and self._modifierService.RegisterProvider then
         self._modifierService:RegisterProvider("boosts", function(context)
@@ -97,11 +98,25 @@ function FriendBoostService:_announce(player, bonuses, delayed)
             })
         end
     end
-    if delayed then
-        task.delay(math.max(0, tonumber(self._config.banner_delay_seconds) or 3), send)
-    else
+    if not delayed or player:GetAttribute("DataLoaded") == true then
         send()
+        return
     end
+
+    local oldConnection = self._readinessConnections[player]
+    if oldConnection then
+        oldConnection:Disconnect()
+    end
+    local connection
+    connection = player:GetAttributeChangedSignal("DataLoaded"):Connect(function()
+        if player:GetAttribute("DataLoaded") ~= true then
+            return
+        end
+        connection:Disconnect()
+        self._readinessConnections[player] = nil
+        task.defer(send)
+    end)
+    self._readinessConnections[player] = connection
 end
 
 function FriendBoostService:_setPair(a, b, areFriends)
@@ -188,6 +203,11 @@ function FriendBoostService:_playerAdded(player)
 end
 
 function FriendBoostService:_playerRemoving(player)
+    local readinessConnection = self._readinessConnections[player]
+    if readinessConnection then
+        readinessConnection:Disconnect()
+        self._readinessConnections[player] = nil
+    end
     for other in pairs(self._friends[player] or {}) do
         if self._friends[other] then
             self._friends[other][player] = nil
