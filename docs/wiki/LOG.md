@@ -2048,3 +2048,10 @@ rewrite.
   the profile generator's static fallback with that default, and replaced the client's startup
   off/on toggle handshake with a read-only status request. Existing explicit player choices remain
   persisted; startup synchronization can no longer transiently disable farming or enqueue a save.
+
+## 2026-08-04 — Top-row hotbar keyboard activation
+
+- Restored `Shift+1` through `Shift+0` activation for hotbar slots 11–20. The client now recognizes
+  both digit and shifted-punctuation key codes and permits the shifted chord when Roblox CoreGui
+  marks it handled (for example, Shift Lock), while still suppressing casts during text entry or
+  while the Roblox menu is open.
