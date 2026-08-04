@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
 local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local POWER_ICONS = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("power_icons"))
@@ -35,6 +36,7 @@ local PotionDescribe = require(ReplicatedStorage.Shared.Game.PotionDescribe)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local UITheme = require(script.Parent.Parent.UI.UITheme)
 local PanelChrome = require(script.Parent.Parent.UI.Components.PanelChrome)
+local HotbarKeyboard = require(script.Parent.HotbarKeyboard)
 
 -- Tint a pill ImageLabel to the player's area palette (frames are keyed by colour name —
 -- sapphire/citrine/ruby/emerald/neutral — same keys UITheme returns), re-applying when the area
@@ -48,20 +50,6 @@ end
 local HotbarBar = {}
 
 local localPlayer = Players.LocalPlayer
-
--- KeyCode -> base digit slot (1..10). Shift adds 10 (slots 11..20).
-local DIGIT_SLOT = {
-    [Enum.KeyCode.One] = 1,
-    [Enum.KeyCode.Two] = 2,
-    [Enum.KeyCode.Three] = 3,
-    [Enum.KeyCode.Four] = 4,
-    [Enum.KeyCode.Five] = 5,
-    [Enum.KeyCode.Six] = 6,
-    [Enum.KeyCode.Seven] = 7,
-    [Enum.KeyCode.Eight] = 8,
-    [Enum.KeyCode.Nine] = 9,
-    [Enum.KeyCode.Zero] = 10,
-}
 
 local TYPE_COLOR = {
     power = Color3.fromRGB(150, 110, 235),
@@ -1023,14 +1011,16 @@ function HotbarBar.start()
 
     -- Number-key activation: digit -> slot (bottom row), Shift+digit -> +10 (top row).
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then
-            return
-        end
-        local base = DIGIT_SLOT[input.KeyCode]
-        if base then
-            local shift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)
-                or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
-            local slot = shift and (base + 10) or base
+        local shift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)
+            or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
+        local slot = HotbarKeyboard.resolve(
+            input.KeyCode.Name,
+            shift,
+            gameProcessed,
+            UserInputService:GetFocusedTextBox() ~= nil,
+            GuiService.MenuIsOpen
+        )
+        if slot then
             Signals.Hotbar_Activate:FireServer({ slot = slot })
         end
     end)
