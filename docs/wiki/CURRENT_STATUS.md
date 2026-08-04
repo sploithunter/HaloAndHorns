@@ -966,6 +966,15 @@ filler levels auto-claim in the field; power/slot/milestone levels train at the 
 equipped pets + 10 power picks**; +1 egg-hatch per claimed level. Dev XP reads a monotonic `XPTotal`
 attribute (keeps accruing past the cap).
 
+**Full build respec (admin-tested flow).** `RespecService` preserves exact lifetime XP and all
+non-build progression, returns every installed enhancement instance to the stack inventory, clears
+origin/powers/augmentation slots/hotbar, and rewinds only `ClaimedLevel` to 1. The ordinary
+Ascension Altar then replays each historical choice through the prior claimed-level boundary.
+Replay claims never repay level rewards or increment progression counters; normal claims resume
+after the boundary. Enhancement placement is server-blocked until the replay completes. The admin
+panel exposes **Full Respec (refund enhancements)** for production testing; final player cost and
+ritual access remain a later product decision.
+
 **Dev tooling.** Studio-only metrics overlay (rolling-1-min DPS / Coins-s / Pet-speed / XP-min bars).
 Admin panel "Add 100k Area Coins" funds all biome currencies. Audio Effects/Music/UI volume controls
 work (SoundGroups).

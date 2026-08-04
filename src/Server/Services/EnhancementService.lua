@@ -306,6 +306,9 @@ function EnhancementService:Slot(player, powerId, slotIndex, uid)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
     end
+    if type(data.RespecReplay) == "table" and data.RespecReplay.active == true then
+        return { ok = false, reason = "respec_replay_active" }
+    end
     self:_migrateLegacy(player, data)
     local invSvc = self:_inventoryService()
     local rec = invSvc and invSvc:GetItem(player, BUCKET, uid)
@@ -376,6 +379,91 @@ function EnhancementService:Slot(player, powerId, slotIndex, uid)
         slotIndex = slotIndex,
         name = Enhancements.displayName(self._config, slot.enh),
     }
+end
+
+-- Prepare the respec-only refund of every installed enhancement. This deliberately does NOT use
+-- Grant: a refund is not a new discovery/drop and must not increment acquisition counters or the
+-- enhancement index. The returned transaction remains unflushed until the caller has cleared the
+-- old build, preventing a save from ever containing the same enhancement in inventory AND a slot.
+function EnhancementService:PrepareRespecRefund(player)
+    local data = self._dataService:GetData(player)
+    local invSvc = self:_inventoryService()
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    if not invSvc then
+        return { ok = false, reason = "service_unavailable" }
+    end
+
+    local receipts = {}
+    local returned = 0
+    for _, slots in pairs(data.Slots or {}) do
+        if type(slots) == "table" then
+            for _, slot in ipairs(slots) do
+                local rec = type(slot) == "table" and slot.enh or nil
+                if rec then
+                    if not Enhancements.isValid(self._config, rec) then
+                        for i = #receipts, 1, -1 do
+                            invSvc:RollbackRecordInsert(receipts[i], { deferFlush = true })
+                        end
+                        return { ok = false, reason = "invalid_slotted_enhancement" }
+                    end
+                    local level = math.max(1, math.floor(tonumber(rec.level) or 1))
+                    local origins = table.clone(rec.origins or {})
+                    local stackId = ("enh_%s_%s_L%d"):format(
+                        rec.type,
+                        #origins > 0 and table.concat(origins, "+") or "natural",
+                        level
+                    )
+                    local receipt, err = invSvc:InsertRecordSnapshot(player, BUCKET, stackId, {
+                        id = stackId,
+                        type = rec.type,
+                        origins = origins,
+                        origins_csv = table.concat(origins, ","),
+                        level = level,
+                        name = Enhancements.displayName(self._config, rec),
+                        quantity = 1,
+                    }, { deferFlush = true })
+                    if not receipt then
+                        for i = #receipts, 1, -1 do
+                            invSvc:RollbackRecordInsert(receipts[i], { deferFlush = true })
+                        end
+                        return { ok = false, reason = err or "refund_failed" }
+                    end
+                    receipts[#receipts + 1] = receipt
+                    returned += 1
+                end
+            end
+        end
+    end
+    return { ok = true, player = player, receipts = receipts, returned = returned }
+end
+
+function EnhancementService:CommitRespecRefund(transaction)
+    if type(transaction) ~= "table" or transaction.ok ~= true or not transaction.player then
+        return false
+    end
+    local invSvc = self:_inventoryService()
+    if not invSvc then
+        return false
+    end
+    for _, receipt in ipairs(transaction.receipts or {}) do
+        invSvc:FinalizeRecordInsert(receipt)
+    end
+    invSvc:FlushBucket(transaction.player, BUCKET, "respec_enhancement_refund")
+    return true
+end
+
+function EnhancementService:RollbackRespecRefund(transaction)
+    local invSvc = self:_inventoryService()
+    if not invSvc or type(transaction) ~= "table" then
+        return false
+    end
+    for i = #(transaction.receipts or {}), 1, -1 do
+        invSvc:RollbackRecordInsert(transaction.receipts[i], { deferFlush = true })
+    end
+    invSvc:FlushBucket(transaction.player, BUCKET, "respec_enhancement_refund_rollback")
+    return true
 end
 
 -- Roll a random drop record (type by weight). Origins: primary = the area's own origin

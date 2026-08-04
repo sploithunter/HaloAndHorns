@@ -46,6 +46,13 @@ function ArchetypeService:_applyThemeAttrs(player, archetype)
     player:SetAttribute("HomeArea", self:_homeAreaFor(archetype)) -- nil clears
 end
 
+function ArchetypeService:RefreshAttributes(player)
+    local data = self._dataService:GetData(player)
+    if data then
+        self:_applyThemeAttrs(player, data.Archetype)
+    end
+end
+
 function ArchetypeService:Start()
     -- Re-stamp the origin theme attributes from saved data on join (returning players).
     local function stampSoon(player)
@@ -101,7 +108,7 @@ end
 
 -- Respec ritual: reset powers + augmentation slots, and (optionally) pick a new
 -- archetype. Without newArchetype, clears the selection so the player re-picks.
-function ArchetypeService:Respec(player, newArchetype)
+function ArchetypeService:Respec(player, newArchetype, opts)
     local data = self._dataService:GetData(player)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
@@ -114,7 +121,9 @@ function ArchetypeService:Respec(player, newArchetype)
     data.Hotbar = {} -- fresh hotbar for the new archetype (re-defaults on next read)
     data.Archetype = newArchetype -- nil => must re-select
     self:_applyThemeAttrs(player, newArchetype) -- re-theme (or clear -> falls back to CurrentArea)
-    self._dataService:RequestSave(player, "archetype_respec", { critical = true })
+    if not (opts and opts.deferSave) then
+        self._dataService:RequestSave(player, "archetype_respec", { critical = true })
+    end
     return { ok = true, archetype = data.Archetype }
 end
 
