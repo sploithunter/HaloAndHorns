@@ -154,6 +154,7 @@ local function generateProfileTemplate(configLoader)
                 },
                 hatch = {
                     selected_count = 1,
+                    action_mode = "max",
                     modes = {},
                 },
             },
@@ -330,6 +331,7 @@ local function generateProfileTemplate(configLoader)
             local autoTarget = autoConfig.auto_target or {}
             local autoDelete = autoConfig.auto_delete or {}
             local selectedHatchCount = 1
+            local hatchActionMode = "max"
             local eggSuccess, eggConfig = pcall(function()
                 return configLoader:LoadConfig("egg_system")
             end)
@@ -339,6 +341,7 @@ local function generateProfileTemplate(configLoader)
                 selectedHatchCount = tonumber(panel.default_selected_count)
                     or tonumber(hatching.default_requested_count)
                     or selectedHatchCount
+                hatchActionMode = tostring(panel.default_action_mode or hatchActionMode):lower()
             end
             template.Settings.AutoSystems = {
                 auto_target = {
@@ -354,6 +357,7 @@ local function generateProfileTemplate(configLoader)
                 },
                 hatch = {
                     selected_count = math.max(1, math.floor(tonumber(selectedHatchCount) or 1)),
+                    action_mode = hatchActionMode,
                     modes = {},
                 },
             }
@@ -1864,6 +1868,11 @@ function DataService:_migrateAutoSystemSettings(data)
         or tonumber(hatchingConfig.default_requested_count)
         or 1
     local maxHatchCount = math.max(1, math.floor(tonumber(hatchingConfig.max_count) or 99))
+    local validHatchActionModes = { single = true, max = true, auto = true }
+    local defaultHatchActionMode = tostring(panelConfig.default_action_mode or "single"):lower()
+    if not validHatchActionModes[defaultHatchActionMode] then
+        defaultHatchActionMode = "single"
+    end
 
     local autoSystems = data.Settings.AutoSystems
     if type(autoSystems.auto_target) ~= "table" then
@@ -1914,6 +1923,14 @@ function DataService:_migrateAutoSystemSettings(data)
     selectedCount = math.clamp(selectedCount, 1, maxHatchCount)
     if autoSystems.hatch.selected_count ~= selectedCount then
         autoSystems.hatch.selected_count = selectedCount
+        migrations += 1
+    end
+    local actionMode = tostring(autoSystems.hatch.action_mode or defaultHatchActionMode):lower()
+    if not validHatchActionModes[actionMode] then
+        actionMode = defaultHatchActionMode
+    end
+    if autoSystems.hatch.action_mode ~= actionMode then
+        autoSystems.hatch.action_mode = actionMode
         migrations += 1
     end
     if type(autoSystems.hatch.modes) ~= "table" then
