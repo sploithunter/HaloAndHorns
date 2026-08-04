@@ -2083,3 +2083,10 @@ rewrite.
   announcement path, randomized between **Grats**, **Congratulations**, and **GG** and naming the
   player's display name plus new level. Full-respec replay claims remain silent, and the existing
   default-on `Chat Announcements` preference suppresses these notices with the hatch/team notices.
+
+## 2026-08-04 — Future Self farewell banner
+
+- Added a reasoned NPC-principal despawn callback and used it to close a naturally expired Future
+  Call with the same blue banner presentation as its arrival: **“See you—or be you—soon 😉”**.
+  The callback fires once after teardown; reset, rollback, replacement, and owner-leave paths stay
+  silent so only a completed two-minute summon gets the farewell.
