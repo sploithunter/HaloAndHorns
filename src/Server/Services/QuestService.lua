@@ -26,6 +26,7 @@ function QuestService:Init()
     self._statsService = self._modules and self._modules.StatsService
     self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
     self._rewardService = self._modules and self._modules.RewardService
+    self._futureCallService = self._modules and self._modules.FutureCallService
     self._config = self._configLoader:LoadConfig("quests")
 end
 
@@ -50,6 +51,91 @@ local function claims(data)
         data.QuestClaims = {}
     end
     return data.QuestClaims
+end
+
+-- Durable, per-component completion markers let newly claimed and older already-claimed quests use
+-- the same retry-safe reconciliation path. In particular, a transient inventory failure can never
+-- permanently consume Answer the Cave's Future Call reward, and a retry cannot duplicate it.
+local function completionRewards(data)
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    if type(data.GameData.QuestCompletionRewards) ~= "table" then
+        data.GameData.QuestCompletionRewards = {}
+    end
+    return data.GameData.QuestCompletionRewards
+end
+
+function QuestService:_reconcileCompletionReward(player, questId, def, data)
+    local ledger = claims(data)
+    if (ledger[questId] or 0) <= 0 then
+        return { changed = false }
+    end
+
+    local reward = (def and def.reward) or {}
+    local allMarkers = completionRewards(data)
+    local markers = allMarkers[questId]
+    if type(markers) ~= "table" then
+        markers = {}
+        allMarkers[questId] = markers
+    end
+    local result = { changed = false }
+
+    local targetLevel = math.max(0, math.floor(tonumber(reward.ensure_earned_level) or 0))
+    if targetLevel > 0 and markers.earned_level ~= true then
+        local progression = self._playerProgressionService
+        if progression and progression.EnsureEarnedLevel then
+            local grant = progression:EnsureEarnedLevel(player, targetLevel)
+            markers.earned_level = true
+            result.changed = true
+            result.targetLevel = (grant and grant.targetLevel) or targetLevel
+            result.xpAdded = (grant and grant.xpAdded) or 0
+        end
+    end
+
+    local tokenCount = math.max(0, math.floor(tonumber(reward.future_call_tokens) or 0))
+    if tokenCount > 0 and markers.future_call ~= true then
+        local futureCall = self._futureCallService
+        if futureCall and futureCall.GrantTokens then
+            -- Stamp before AddItem: that service saves the shared profile, so the marker and tokens
+            -- become durable together. Restore on failure so List/rejoin can retry later.
+            markers.future_call = true
+            local grant = futureCall:GrantTokens(player, tokenCount, "quest")
+            if grant and grant.ok then
+                result.changed = true
+                result.futureCallTokens = grant.granted or tokenCount
+            else
+                markers.future_call = nil
+                result.futureCallError = (grant and grant.reason) or "grant_failed"
+                if self._logger and self._logger.Warn then
+                    self._logger:Warn("Quest Future Call reward will retry", {
+                        player = player.Name,
+                        quest = questId,
+                        reason = result.futureCallError,
+                    })
+                end
+            end
+        end
+    end
+
+    if result.changed then
+        self._dataService:RequestSave(player, "quest_completion_reward", { critical = true })
+    end
+    return result
+end
+
+function QuestService:_reconcileClaimedCompletionRewards(player, data)
+    local ledger = claims(data)
+    for id, def in pairs(self._config.defs or {}) do
+        local reward = def.reward or {}
+        if
+            (ledger[id] or 0) > 0
+            and (
+                (tonumber(reward.ensure_earned_level) or 0) > 0
+                or (tonumber(reward.future_call_tokens) or 0) > 0
+            )
+        then
+            self:_reconcileCompletionReward(player, id, def, data)
+        end
+    end
 end
 
 -- QuestBaselines[id] = the counter value at the start of the quest's CURRENT open window (the
@@ -264,6 +350,9 @@ function QuestService:List(player)
         -- report no quests rather than erroring (the panel just shows an empty list briefly).
         return { ok = true, quests = {}, activeTrack = nil }
     end
+    -- Reconciles both a just-finished capstone after a transient grant failure and existing players
+    -- who claimed the quest before its completion guarantee was authored.
+    self:_reconcileClaimedCompletionRewards(player, data)
     self:_reconcile(player) -- keep the single open window honest before reading
     -- republish quest-granted unlock flags (idempotent; List runs on every
     -- panel refresh so rejoining players get their Unlock_* attrs back)
@@ -420,6 +509,9 @@ function QuestService:Claim(player, questId)
         granted = rewards:Grant(player, self:_rewardFor(player, def), "quest:" .. questId)
     end
     ledger[questId] = (ledger[questId] or 0) + 1
+    -- Apply authored XP first, then top up only the exact missing amount to the guaranteed level.
+    -- Component markers make the token grant retry-safe and preserve the independent L5–L9 schedule.
+    local completion = self:_reconcileCompletionReward(player, questId, def, data)
     -- PERSISTENT UNLOCK (def.unlock = "<flag>"): quests can gate game
     -- features (first use: random_missions door). Profile is the SSOT;
     -- the Unlock_<flag> attribute is a published mirror for client UI.
@@ -443,8 +535,18 @@ function QuestService:Claim(player, questId)
         end
     end
     self._dataService:RequestSave(player, "quest_claim", { critical = true })
-    fireGameEvent(player, "quest_complete", { quest = questId }) -- config-driven fanfare
-    return { ok = true, quest = questId, reward = granted and granted.granted }
+    fireGameEvent(player, "quest_complete", {
+        quest = questId,
+        targetLevel = completion.targetLevel,
+        xpAdded = completion.xpAdded,
+        futureCallTokens = completion.futureCallTokens,
+    }) -- config-driven fanfare
+    return {
+        ok = true,
+        quest = questId,
+        reward = granted and granted.granted,
+        completion = completion,
+    }
 end
 
 function QuestService:Pending(player)

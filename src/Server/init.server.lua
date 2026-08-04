@@ -646,7 +646,7 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.QuestService,
     appendIfEnabled(
         appendIfEnabled(
-            { "Logger", "ConfigLoader", "DataService", "RewardService" },
+            { "Logger", "ConfigLoader", "DataService", "RewardService", "FutureCallService" },
             "player_progression",
             "PlayerProgressionService"
         ),
