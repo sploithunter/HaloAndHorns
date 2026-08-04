@@ -56,6 +56,13 @@ return function()
             expect(total).to.equal(700)
         end)
 
+        it("guarantees Level 4 and two Future Call tokens at the First Steps capstone", function()
+            local quests = loadModule("configs/quests.lua")
+            local reward = quests.defs.fs_cave.reward
+            expect(reward.ensure_earned_level).to.equal(4)
+            expect(reward.future_call_tokens).to.equal(2)
+        end)
+
         it("resolves positive XP for every configured quest", function()
             local quests = loadModule("configs/quests.lua")
             for id, def in pairs(quests.defs) do
@@ -94,6 +101,30 @@ return function()
             expect(source:find('source:match("^([^:]+)")', 1, true)).to.be.ok()
             expect(source:find("AddExperience(player, b.experience, xpSource)", 1, true)).to.be.ok()
             expect(loadModule("configs/leveling.lua").onramp.xp_mult_by_source.quest).to.equal(1)
+        end)
+
+        it(
+            "applies capstone XP before the exact level guarantee and canonical token grant",
+            function()
+                local source = readFile("src/Server/Services/QuestService.lua")
+                local ordinary = source:find("rewards:Grant(player", 1, true)
+                local special = source:find(
+                    "self:_reconcileCompletionReward(player, questId, def, data)",
+                    ordinary,
+                    true
+                )
+                expect(ordinary).to.be.ok()
+                expect(special).to.be.ok()
+                expect(special > ordinary).to.equal(true)
+                expect(source:find("progression:EnsureEarnedLevel", 1, true)).to.be.ok()
+                expect(source:find('futureCall:GrantTokens(player, tokenCount, "quest")', 1, true)).to.be.ok()
+            end
+        )
+
+        it("previews both special capstone rewards in the Quest menu", function()
+            local source = readFile("src/Client/UI/Menus/QuestPanel.lua")
+            expect(source:find("L%d guarantee", 1, true)).to.be.ok()
+            expect(source:find("%dx Future Call", 1, true)).to.be.ok()
         end)
     end)
 end

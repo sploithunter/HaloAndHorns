@@ -1,9 +1,10 @@
 --[[
-    FutureCallService — Level-5 consumable entitlement and activation.
+    FutureCallService — Future Call consumable grants and activation.
 
-    Progression grant:
+    Grants:
       • five/four/three/two/one tokens when ClaimedLevel reaches 5/6/7/8/9;
       • existing profiles reconcile every missing milestone through named markers;
+      • quest/admin rewards share a public non-milestone grant path;
       • the token auto-binds into the first free top-row slot, left to right.
 
     Activation:
@@ -152,6 +153,24 @@ function FutureCallService:_addTokens(player, count)
     return true
 end
 
+-- Canonical non-milestone grant path. Quest rewards and admin testing use the same inventory,
+-- auto-bind, hotbar refresh, persistence, and banner behavior as progression entitlements without
+-- consuming any of the Level 5–9 milestone markers.
+function FutureCallService:GrantTokens(player, count, reason)
+    count = math.floor(tonumber(count) or 0)
+    if count <= 0 then
+        return { ok = false, reason = "invalid_count" }
+    end
+    count = math.clamp(count, 1, 99)
+    local ok, err = self:_addTokens(player, count)
+    if not ok then
+        return { ok = false, reason = err }
+    end
+    self._dataService:RequestSave(player, "future_call_grant", { critical = true })
+    self:_announceGrant(player, count, reason or "reward")
+    return { ok = true, granted = count, count = self:_count(player) }
+end
+
 -- Existing and newly-claimed profiles take this same idempotent path.
 function FutureCallService:Reconcile(player)
     if self._config.enabled == false or not (player and player.Parent) then
@@ -172,18 +191,16 @@ function FutureCallService:Reconcile(player)
     -- profile. If the add fails, restore each prior marker value before any successful save
     -- can make the markers durable.
     FutureCallLogic.markPending(data.GameData, pending)
-    local ok, err = self:_addTokens(player, pending.total)
-    if not ok then
+    local result = self:GrantTokens(player, pending.total, "progression")
+    if not result.ok then
         FutureCallLogic.restorePending(data.GameData, pending)
         self:_log("Warn", "Future Call entitlement grant failed", {
             player = player.Name,
-            reason = tostring(err),
+            reason = tostring(result.reason),
         })
-        return { ok = false, reason = err }
+        return { ok = false, reason = result.reason }
     end
 
-    self._dataService:RequestSave(player, "future_call_milestone_entitlement", { critical = true })
-    self:_announceGrant(player, pending.total, "progression")
     self:_log("Info", "Future Call entitlement granted", {
         player = player.Name,
         claimedLevel = claimed,
@@ -202,12 +219,7 @@ end
 -- does not stamp the Level-5 marker. A low-level test account still earns its grant.
 function FutureCallService:AdminGrant(player, count)
     count = math.clamp(math.floor(tonumber(count) or 3), 1, 20)
-    local ok, err = self:_addTokens(player, count)
-    if not ok then
-        return { ok = false, reason = err }
-    end
-    self:_announceGrant(player, count, "admin")
-    return { ok = true, granted = count, count = self:_count(player) }
+    return self:GrantTokens(player, count, "admin")
 end
 
 -- The explicit admin "Reset to Beginning" is a reproducible new-player run, so

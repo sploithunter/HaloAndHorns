@@ -499,6 +499,12 @@ local function rewardSummary(reward)
     if (tonumber(reward and reward.experience) or 0) > 0 then
         table.insert(parts, string.format("%d XP", reward.experience))
     end
+    if (tonumber(reward and reward.ensure_earned_level) or 0) > 0 then
+        table.insert(parts, string.format("L%d guarantee", reward.ensure_earned_level))
+    end
+    if (tonumber(reward and reward.future_call_tokens) or 0) > 0 then
+        table.insert(parts, string.format("%dx Future Call", reward.future_call_tokens))
+    end
     for currency, amount in pairs((reward and reward.currencies) or {}) do
         table.insert(parts, string.format("%d %s", amount, currency))
     end

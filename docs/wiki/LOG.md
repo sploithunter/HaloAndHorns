@@ -2057,3 +2057,10 @@ rewrite.
   both digit and shifted-punctuation key codes and permits the shifted chord when Roblox CoreGui
   marks it handled (for example, Shift Lock), while still suppressing casts during text entry or
   while the Roblox menu is open.
+
+## 2026-08-04 — First Steps capstone guarantees earned level 4
+
+- `Answer the Cave` now applies its ordinary 300-XP claim reward, then tops up only the exact XP
+  needed for earned Level 4 and grants two Future Call tokens through the canonical auto-bind/banner
+  path. Durable per-component markers reconcile preexisting claimers and prevent token duplication;
+  the Level 5–9 Future Call milestone schedule remains independent.

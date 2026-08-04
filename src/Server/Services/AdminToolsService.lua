@@ -782,6 +782,9 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         end
     end)
     playerData.QuestClaims = {}
+    if type(playerData.GameData) == "table" then
+        playerData.GameData.QuestCompletionRewards = nil
+    end
     -- Grind quests (condition.since_start) measure FORWARD progress = banked + (counter - baseline).
     -- Wiping QuestClaims + the counter isn't enough: stale QuestBaselines/QuestBanked windows make the
     -- bar read full, so "Hatch 500 Eggs" was instantly claimable after a reset (Jason). Clear the

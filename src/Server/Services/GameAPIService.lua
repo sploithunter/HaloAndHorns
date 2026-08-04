@@ -2740,6 +2740,9 @@ function GameAPIService:_registerTestCommands()
             end
             local profile = data:GetData(context.player)
             profile.QuestClaims = {}
+            if type(profile.GameData) == "table" then
+                profile.GameData.QuestCompletionRewards = nil
+            end
             profile.Daily = { lastDay = nil, streak = 0 }
             profile.ShopPurchases = {}
             return { ok = true }

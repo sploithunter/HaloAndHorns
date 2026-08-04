@@ -78,10 +78,10 @@ return {
     },
 
     defs = {
-        -- ===================== FIRST STEPS (auto-activated onramp → Level 2) =====================
+        -- ===================== FIRST STEPS (auto-activated onramp → Level 4) =====================
         -- Picks up where the tutorial ends. since_start so tutorial casts/breaks can't pre-complete it
         -- (Jason hit "Boost the Patch" 5/3 from tutorial casts). Teaches the core loop: power → mine →
-        -- hatch → earn, capstone grants the full L2 bar.
+        -- hatch → earn → fight, then the capstone guarantees earned Level 4.
         fs_boost = {
             track = "first_steps",
             order = 1,
@@ -152,12 +152,15 @@ return {
                 value = 5,
                 since_start = true,
             },
-            -- First Steps pays exactly 700 authored XP ACROSS its five claims. The capstone supplies
-            -- the final 300 plus a head start on the first area gate and gems; distributing the same
-            -- total makes every claim feel rewarding without accelerating the onramp.
+            -- First Steps pays exactly 700 authored XP ACROSS its five claims. After that ordinary
+            -- payout, the capstone guarantees the exact remaining XP for earned Level 4 and grants
+            -- two Future Call tokens. These declarative special fields are applied/reconciled by
+            -- QuestService; RewardService deliberately ignores unknown bundle fields.
             reward = {
                 experience = 300,
                 currencies = { gems = 15, area_coins = 1500 },
+                ensure_earned_level = 4,
+                future_call_tokens = 2,
             },
         },
 

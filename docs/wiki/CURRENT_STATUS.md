@@ -1169,3 +1169,17 @@ Last checked: 2026-08-03
 - Level 2 remains a normal training level: it is earned immediately, then claimed at the Ascension
   Altar for the existing power-choice flow. The completion card now celebrates Level 2 and points
   the player to the altar.
+
+## First Steps completion guarantees earned level 4
+
+Last checked: 2026-08-04
+
+- Claiming **Answer the Cave**, the fifth and final First Steps mission, first applies its authored
+  300 XP and then adds only the exact XP still missing for **earned level 4**. The top-up bypasses
+  boosts/multipliers and never removes progress or overshoots an already-higher player.
+- The same capstone grants **two Future Call tokens** through the canonical inventory path, including
+  auto-bind, hotbar refresh, persistence, and the existing award banner. This reward is independent
+  of, and does not consume, the marker-backed Level 5–9 token schedule.
+- Per-component completion markers make the grant retry-safe. Opening the Quest menu reconciles
+  older profiles that already claimed Answer the Cave before this reward existed, while Reset to
+  Beginning clears those markers with the quest ledger for a faithful new-player test.
