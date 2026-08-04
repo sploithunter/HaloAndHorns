@@ -34,6 +34,10 @@ local pets = {
 local config = {
     hatch = { minimum_rarity = "mythic", global_rarity = "huge" },
     team = { color_hex = "#62D8FF" },
+    level_up = {
+        color_hex = "#FFD95A",
+        prefixes = { "Grats", "Congratulations", "GG" },
+    },
 }
 
 return function()
@@ -100,6 +104,20 @@ return function()
         end)
     end)
 
+    describe("ChatAnnouncementRules level up", function()
+        it("uses the display name, claimed level, and configured congratulations", function()
+            expect(Rules.levelUp("Sploit Hunter", 8, config, 1).text).to.equal(
+                "🎉 Grats to Sploit Hunter on making level 8!"
+            )
+            expect(Rules.levelUp("Colorado Plays", 50, config, 2).text).to.equal(
+                "🎉 Congratulations to Colorado Plays on making level 50!"
+            )
+            expect(Rules.levelUp("Waxillium", 4, config, 3).text).to.equal(
+                "🎉 GG to Waxillium on making level 4!"
+            )
+        end)
+    end)
+
     describe("runtime wiring", function()
         it("connects hatch, team, global relay, and TextChatService presentation", function()
             expect(
@@ -114,6 +132,14 @@ return function()
                 string.find(
                     readFile("src/Server/Services/PartyService.lua"),
                     "self._chatAnnouncementService:AnnounceSidekick",
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(
+                string.find(
+                    readFile("src/Server/Services/PlayerProgressionService.lua"),
+                    "self._chatAnnouncementService:AnnounceLevel",
                     1,
                     true
                 ) ~= nil

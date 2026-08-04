@@ -1,7 +1,7 @@
 --[[
     Authoritative system-message spine for the Roblox chat window.
 
-    Local Mythical+ hatch and sidekick notices travel over ChatAnnouncement. Huge hatch
+    Local Mythical+ hatch, level-up, and sidekick notices travel over ChatAnnouncement. Huge hatch
     notices additionally relay through MessagingService so every live server sees them.
     Cross-server delivery is best-effort; the source server always displays the notice first.
 ]]
@@ -25,6 +25,7 @@ function ChatAnnouncementService:Init()
     self._configLoader = self._modules.ConfigLoader
     self._config = self._configLoader:LoadConfig("chat_announcements")
     self._petsConfig = self._configLoader:LoadConfig("pets")
+    self._random = Random.new()
     self._seen = {}
     self._seenOrder = {}
 end
@@ -137,6 +138,25 @@ function ChatAnnouncementService:AnnounceSidekick(player, lead, earnedLevel, eff
     if not payload then
         return
     end
+    payload.version = self._config.version
+    payload.announcementId = ("%s:%s"):format(game.JobId or "", HttpService:GenerateGUID(false))
+    payload.createdAt = os.time()
+    self:_remember(payload.announcementId)
+    self:_broadcast(payload)
+end
+
+function ChatAnnouncementService:AnnounceLevel(player, level)
+    if not player then
+        return
+    end
+    local prefixes = self._config.level_up and self._config.level_up.prefixes or {}
+    local prefixIndex = #prefixes > 0 and self._random:NextInteger(1, #prefixes) or 1
+    local payload = Rules.levelUp(
+        player.DisplayName or player.Name,
+        level,
+        self._config,
+        prefixIndex
+    )
     payload.version = self._config.version
     payload.announcementId = ("%s:%s"):format(game.JobId or "", HttpService:GenerateGUID(false))
     payload.createdAt = os.time()

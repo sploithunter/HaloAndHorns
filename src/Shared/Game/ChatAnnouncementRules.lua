@@ -7,6 +7,8 @@
 
 local ChatAnnouncementRules = {}
 
+local DEFAULT_LEVEL_PREFIXES = { "Grats", "Congratulations", "GG" }
+
 local DEFAULT_RARITY_ORDER = {
     "common",
     "uncommon",
@@ -137,6 +139,28 @@ function ChatAnnouncementRules.teamSidekick(
             boundedString(joiningName, "A player"),
             boundedString(leadName, "their team leader"),
             effective
+        ),
+    }
+end
+
+function ChatAnnouncementRules.levelUp(playerName, level, announcementConfig, prefixIndex)
+    local numericLevel = math.max(1, math.floor(tonumber(level) or 1))
+    local levelConfig = announcementConfig and announcementConfig.level_up or {}
+    local prefixes = type(levelConfig.prefixes) == "table" and levelConfig.prefixes
+        or DEFAULT_LEVEL_PREFIXES
+    if #prefixes == 0 then
+        prefixes = DEFAULT_LEVEL_PREFIXES
+    end
+    local index = math.clamp(math.floor(tonumber(prefixIndex) or 1), 1, #prefixes)
+    local prefix = boundedString(prefixes[index], DEFAULT_LEVEL_PREFIXES[1])
+    return {
+        kind = "level_up",
+        scope = "server",
+        colorHex = levelConfig.color_hex or "#FFD95A",
+        text = ("🎉 %s to %s on making level %d!"):format(
+            prefix,
+            boundedString(playerName, "A player"),
+            numericLevel
         ),
     }
 end

@@ -2076,3 +2076,10 @@ rewrite.
   placement is blocked during the replay.
 - Added an admin-panel Full Respec action (including target-player support) for live testing. Final
   player-facing ritual/cost is intentionally deferred. CI: 1688/1688 headless tests, full gate green.
+
+## 2026-08-04 — Level-up congratulations in chat
+
+- Genuine claimed levels now broadcast a gold congratulations through the existing standard-chat
+  announcement path, randomized between **Grats**, **Congratulations**, and **GG** and naming the
+  player's display name plus new level. Full-respec replay claims remain silent, and the existing
+  default-on `Chat Announcements` preference suppresses these notices with the hatch/team notices.

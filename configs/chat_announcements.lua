@@ -16,6 +16,10 @@ return {
     team = {
         color_hex = "#62D8FF",
     },
+    level_up = {
+        color_hex = "#FFD95A",
+        prefixes = { "Grats", "Congratulations", "GG" },
+    },
     limits = {
         text_characters = 240,
         id_characters = 128,
