@@ -2042,6 +2042,8 @@ rewrite.
 2026-08-04 — New-player hatching now defaults to the dynamic Max Hatch action while Auto Hatch remains opt-in. Profile generation/migration persists the configured action mode, and headless config coverage guards the funnel default.
 2026-08-04 — Inventory now temporarily suppresses Roblox's PlayerList CoreGui while open and restores its captured enabled state through the shared Hide/Destroy lifecycle. A pure state-guard spec covers enabled, already-disabled, duplicate-suppress, and failed-restore retry paths.
 
+2026-08-04 — The Ascension Altar's native proximity prompt now mounts to a runtime Attachment eight world studs below the FX host, keeping the E/Ascend control below the quest banner and ASCEND nudge without screen-dependent pixel offsets or disturbing the authored beam.
+
 ## 2026-08-04 — Farm Near default hardened
 
 - Confirmed `configs/auto_systems.lua` keeps Farm Near (`nearest`) enabled for new profiles, aligned
