@@ -488,6 +488,9 @@ function MonetizationService:CheckPlayerPasses(player)
     local passes = self._productIdMapper:GetAllPasses()
     local creatorGate = self:GetCreatorPassGateState(player)
     local creatorOwnsAll = creatorGate.active
+    -- OFF suppresses automatic Marketplace/creator/Studio sources. A deliberately selected
+    -- Founder benefit remains, allowing test accounts to evaluate exactly one choice at a time;
+    -- Admin Reset clears that choice and restores a true no-pass baseline.
     local forceNoPasses = creatorGate.eligible and not creatorGate.enabled
     local sourceSets = {
         marketplace = {},
@@ -903,6 +906,7 @@ function MonetizationService:_foundersClientState(player, show, errorMessage)
         eligible = state.eligible == true,
         eligibilityDecided = state.eligibilityDecided == true,
         claimNumber = state.claimNumber,
+        testReservation = self._foundersChoiceService:IsTestUser(player.UserId),
         selectedPassId = state.selectedPassId,
         canChoose = FoundersChoice.canChoose(state),
         show = show == true,

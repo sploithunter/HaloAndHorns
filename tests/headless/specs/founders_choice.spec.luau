@@ -4,6 +4,7 @@ return function()
     local config = {
         founders_choice = {
             eligible_passes = { "speed_boost", "pet_slot_pass" },
+            test_user_ids = { 864785140, 913292269 },
         },
     }
     local passes = {
@@ -37,12 +38,22 @@ return function()
             expect(sources.pet_slot_pass.founder).to.equal(true)
         end)
 
-        it("supports the creator no-pass balance gate", function()
-            local effective = FoundersChoice.effectivePasses(passes, {
-                marketplace = { speed_boost = true },
-            }, "pet_slot_pass", true)
-            expect(#effective).to.equal(0)
-        end)
+        it(
+            "the creator gate suppresses automatic passes but retains one selected Founder benefit",
+            function()
+                local effective, sources = FoundersChoice.effectivePasses(passes, {
+                    marketplace = { speed_boost = true },
+                }, "pet_slot_pass", true)
+                expect(#effective).to.equal(1)
+                expect(effective[1]).to.equal("pet_slot_pass")
+                expect(sources.pet_slot_pass.founder).to.equal(true)
+
+                local reset = FoundersChoice.effectivePasses(passes, {
+                    marketplace = { speed_boost = true },
+                }, "", true)
+                expect(#reset).to.equal(0)
+            end
+        )
 
         it("normalizes legacy and corrupt profile state", function()
             local state = FoundersChoice.normalizeState({
@@ -56,6 +67,22 @@ return function()
             expect(FoundersChoice.canChoose(state)).to.equal(true)
         end)
 
+        it("uses explicit immutable IDs for test reservations", function()
+            expect(FoundersChoice.isTestUser(config, 864785140)).to.equal(true)
+            expect(FoundersChoice.isTestUser(config, "913292269")).to.equal(true)
+            expect(FoundersChoice.isTestUser(config, 123)).to.equal(false)
+        end)
+
+        it("re-arms a test choice without carrying a cohort number or entitlement", function()
+            local state = FoundersChoice.resetTestState("launch_10k")
+            expect(state.cohortId).to.equal("launch_10k")
+            expect(state.eligibilityDecided).to.equal(false)
+            expect(state.eligible).to.equal(false)
+            expect(state.claimNumber).to.equal(0)
+            expect(state.selectedPassId).to.equal("")
+            expect(FoundersChoice.canChoose(state)).to.equal(false)
+        end)
+
         it("ships the exact first-10k allowlist without bundled VIP", function()
             local shipped = loadModule("configs/monetization.lua")
             local feature = shipped.founders_choice
@@ -63,15 +90,28 @@ return function()
             expect(#feature.eligible_passes).to.equal(7)
             expect(FoundersChoice.isEligiblePass(shipped, "vip_pass")).to.equal(false)
             expect(FoundersChoice.isEligiblePass(shipped, "pet_slot_pass")).to.equal(true)
+            expect(FoundersChoice.isTestUser(shipped, 3200870803)).to.equal(true)
+            expect(FoundersChoice.isTestUser(shipped, 873359641)).to.equal(true)
+            expect(FoundersChoice.isTestUser(shipped, 864785140)).to.equal(true)
+            expect(FoundersChoice.isTestUser(shipped, 913292269)).to.equal(true)
         end)
 
         it("wires profile state, purchase reconciliation, and the chooser", function()
             local data = readFile("src/Server/Services/DataService.lua")
             local server = readFile("src/Server/Services/MonetizationService.lua")
             local cohort = readFile("src/Server/Services/FoundersChoiceService.lua")
+            local bootstrap = readFile("src/Server/init.server.lua")
             local client = readFile("src/Client/Systems/FoundersChoiceController.lua")
             expect(data:find("CURRENT_SCHEMA_VERSION = 13", 1, true)).to.be.ok()
             expect(cohort:find("UpdateAsync", 1, true)).to.be.ok()
+            expect(cohort:find("ResetForAdminTesting", 1, true)).to.be.ok()
+            expect(
+                bootstrap:find(
+                    'FoundersChoiceService = modules:Get("FoundersChoiceService")',
+                    1,
+                    true
+                )
+            ).to.be.ok()
             expect(server:find("ReleaseForMarketplaceOwnership", 1, true)).to.be.ok()
             expect(server:find("FoundersChoice.effectivePasses", 1, true)).to.be.ok()
             expect(server:find('Readiness.awaitAttribute(player, "DataLoaded", true, 30)', 1, true)).to.be.ok()
@@ -81,6 +121,7 @@ return function()
             expect(client:find('closeButton.Text = "✕"', 1, true)).to.equal(nil)
             expect(client:find("choose.ZIndex = 107", 1, true)).to.be.ok()
             expect(client:find("scroll.ClipsDescendants = true", 1, true)).to.be.ok()
+            expect(client:find("Launch Founder Test", 1, true)).to.be.ok()
             expect(client:find("R$", 1, true)).to.equal(nil)
         end)
     end)
