@@ -89,6 +89,14 @@ function EventService:_registerModifierProvider()
                     })
                 end
             end
+        elseif context.kind == "golden_hatch_luck" or context.kind == "rainbow_hatch_luck" then
+            local multiplier = self:GetModifier(context.kind, 1) or 1
+            if multiplier ~= 1 then
+                table.insert(contributions, {
+                    label = "global_" .. context.kind,
+                    amount = multiplier,
+                })
+            end
         end
 
         return contributions

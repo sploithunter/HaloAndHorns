@@ -90,6 +90,11 @@ luck products against the bunny rows, not the no-bunny ones.
    references those values directly: Bunny is Common, Bear and Doggy are Uncommon,
    Kitty is Legendary, and Dragon is Secret. The first-hatch luck rule still operates
    on that same table rather than maintaining a second odds table.
+6. **Wishful Wednesday is a direct 2x variant event.** It supplies neutral-base
+   multipliers of 2 to the separate `golden_hatch_luck` and `rainbow_hatch_luck`
+   channels, producing 10% golden and 1% rainbow from the standard 5% / 0.5% egg
+   rates before player-specific variant boosts. It does not add general `egg_luck`,
+   so species odds do not move and variant damping cannot weaken the advertised 2x.
 
 ## Launch Friend Boost (through 10,000 public plays)
 
