@@ -349,6 +349,11 @@ loader:RegisterModule(
     { "Logger", "ConfigLoader", "ModifierService" }
 )
 loader:RegisterModule(
+    "FoundersChoiceService",
+    ServerScriptService.Server.Services.FoundersChoiceService,
+    { "Logger", "ConfigLoader", "DataService" }
+)
+loader:RegisterModule(
     "MonetizationService",
     ServerScriptService.Server.Services.MonetizationService,
     -- InventoryService: capacity refresh after async pass benefits (paid slot)
@@ -359,6 +364,7 @@ loader:RegisterModule(
         "ProductIdMapper",
         "PlayerEffectsService",
         "InventoryService",
+        "FoundersChoiceService",
     }
 )
 loader:RegisterModule(
@@ -1086,6 +1092,7 @@ local requiredModules = {
     "GlobalEffectsService",
     "EconomyService",
     "ProductIdMapper",
+    "FoundersChoiceService",
     "MonetizationService",
     "InventoryService",
     "PetSerialService",

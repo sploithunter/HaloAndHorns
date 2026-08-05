@@ -569,6 +569,34 @@ return {
                 arguments = { { name = "request", type = "table" } },
             },
         },
+        FoundersChoiceStateRequest = {
+            name = "FoundersChoiceStateRequest",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 20,
+            handler = "MonetizationService.GetFoundersChoiceState",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
+            },
+        },
+        FoundersChoiceSelect = {
+            name = "FoundersChoiceSelect",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 5,
+            handler = "MonetizationService.SelectFoundersChoice",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
+            },
+        },
         GetOwnedPasses = {
             name = "GetOwnedPasses",
             transport = "reliable_event",
@@ -618,6 +646,19 @@ return {
             schema = {
                 kind = "tuple",
                 arguments = { { name = "snapshot", type = "table" } },
+            },
+        },
+        FoundersChoiceState = {
+            name = "FoundersChoiceState",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "monetization.founders_choice",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "state", type = "table" } },
             },
         },
         ProductInfo = {
@@ -1862,6 +1903,18 @@ return {
                     },
                     handler = "MonetizationService.InitiatePurchase",
                 },
+                FoundersChoiceStateRequest = {
+                    rateLimit = 20,
+                    direction = "client_to_server",
+                    validation = { open = "boolean" },
+                    handler = "MonetizationService.GetFoundersChoiceState",
+                },
+                FoundersChoiceSelect = {
+                    rateLimit = 5,
+                    direction = "client_to_server",
+                    validation = { passId = "string" },
+                    handler = "MonetizationService.SelectFoundersChoice",
+                },
                 GetOwnedPasses = {
                     rateLimit = 30, -- 30 checks per minute
                     direction = "client_to_server",
@@ -1901,6 +1954,15 @@ return {
                         passes = "table",
                     },
                     handler = "client.updateOwnedPasses",
+                },
+                FoundersChoiceState = {
+                    rateLimit = 10,
+                    direction = "server_to_client",
+                    validation = {
+                        eligible = "boolean",
+                        canChoose = "boolean",
+                    },
+                    handler = "client.updateFoundersChoice",
                 },
                 ProductInfo = {
                     rateLimit = 10,

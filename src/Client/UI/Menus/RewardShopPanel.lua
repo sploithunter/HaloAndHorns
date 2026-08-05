@@ -60,14 +60,23 @@ function RewardShopPanel.new()
     self.tabs = {}
     self.selectedTab = "passes"
     self.ownedPasses = {}
+    self.founderPasses = {}
+    self.foundersChoice = nil
     self.livePasses = MonetizationCatalog.livePasses(monetization)
     self.liveProducts = MonetizationCatalog.liveProducts(monetization)
     self._areaKey, self._areaColor = PanelChrome.areaPill()
     self.connections = {
         Signals.OwnedPasses.OnClientEvent:Connect(function(snapshot)
             self.ownedPasses = MonetizationCatalog.ownedSet(snapshot)
+            self.founderPasses = MonetizationCatalog.sourceSet(snapshot, "founder")
             if self.isVisible and self.selectedTab == "passes" then
                 self:_refresh()
+            end
+        end),
+        Signals.FoundersChoiceState.OnClientEvent:Connect(function(state)
+            self.foundersChoice = state
+            if self.isVisible then
+                self:_createTabs()
             end
         end),
         Signals.PurchaseSuccess.OnClientEvent:Connect(function(data)
@@ -103,6 +112,7 @@ function RewardShopPanel:Show(parent)
     self:_createUI(parent)
     self.isVisible = true
     Signals.GetOwnedPasses:FireServer()
+    Signals.FoundersChoiceStateRequest:FireServer({ open = false })
     self:_refresh()
 end
 
@@ -222,6 +232,11 @@ function RewardShopPanel:_createHeader()
 end
 
 function RewardShopPanel:_createTabs()
+    local old = self.frame and self.frame:FindFirstChild("Tabs")
+    if old then
+        old:Destroy()
+    end
+    self.tabs = {}
     local bar = Instance.new("Frame")
     bar.Name = "Tabs"
     bar.Size = UDim2.new(1, -24, 0, 46)
@@ -242,6 +257,13 @@ function RewardShopPanel:_createTabs()
     }
     if #self.liveProducts > 0 then
         definitions[#definitions + 1] = { id = "products", text = "BOOSTS" }
+    end
+    if self.foundersChoice and self.foundersChoice.canChoose == true then
+        definitions[#definitions + 1] = {
+            id = "founder",
+            text = "🎁 FOUNDER'S GIFT",
+            action = true,
+        }
     end
 
     for order, definition in ipairs(definitions) do
@@ -269,7 +291,11 @@ function RewardShopPanel:_createTabs()
         constrain(label, 15, 8)
 
         button.Activated:Connect(function()
-            self:_selectTab(definition.id)
+            if definition.action then
+                Signals.FoundersChoiceStateRequest:FireServer({ open = true })
+            else
+                self:_selectTab(definition.id)
+            end
         end)
         self.tabs[definition.id] = button
     end
@@ -330,7 +356,7 @@ end
 
 function RewardShopPanel:_updateTabStyle()
     for id, button in pairs(self.tabs) do
-        local selected = id == self.selectedTab
+        local selected = id == self.selectedTab and id ~= "founder"
         local pillKey = selected and "citrine" or (self._areaKey or "sapphire")
         for _, child in ipairs(button:GetChildren()) do
             if child.Name == "PillPanel" or child.Name == "PillBorder" then
@@ -385,6 +411,7 @@ end
 function RewardShopPanel:_createMarketplaceCard(entry)
     local item = entry.config
     local owned = entry.kind == "gamepass" and self.ownedPasses[entry.id] == true
+    local founderBenefit = entry.kind == "gamepass" and self.founderPasses[entry.id] == true
 
     local card = Instance.new("Frame")
     card.Name = "Marketplace_" .. entry.id
@@ -411,7 +438,8 @@ function RewardShopPanel:_createMarketplaceCard(entry)
     badge.Position = UDim2.new(0, 8, 0, 8)
     badge.BackgroundColor3 = owned and COLORS.owned or COLORS.header
     badge.BorderSizePixel = 0
-    badge.Text = owned and "OWNED" or (entry.kind == "gamepass" and "PERMANENT" or "CONSUMABLE")
+    badge.Text = founderBenefit and "FOUNDER BENEFIT"
+        or (owned and "OWNED" or (entry.kind == "gamepass" and "PERMANENT" or "CONSUMABLE"))
     badge.TextColor3 = COLORS.text
     badge.TextScaled = true
     badge.Font = Enum.Font.GothamBold
@@ -509,7 +537,7 @@ function RewardShopPanel:_createMarketplaceCard(entry)
     buyLabel.Name = "Label"
     buyLabel.Size = UDim2.fromScale(1, 1)
     buyLabel.BackgroundTransparency = 1
-    buyLabel.Text = owned and "Owned ✓" or "Buy"
+    buyLabel.Text = founderBenefit and "Founder Benefit ✓" or (owned and "Owned ✓" or "Buy")
     buyLabel.TextColor3 = COLORS.text
     buyLabel.TextScaled = true
     buyLabel.Font = Enum.Font.GothamBold

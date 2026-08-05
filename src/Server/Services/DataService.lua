@@ -39,7 +39,7 @@ local DEFAULT_SAVE_DEBOUNCE_SECONDS = 15
 local CRITICAL_SAVE_DEBOUNCE_SECONDS = 1
 local PERIODIC_SAVE_SECONDS = 60
 local SAVE_CONFIRM_TIMEOUT_SECONDS = 10
-local CURRENT_SCHEMA_VERSION = 12
+local CURRENT_SCHEMA_VERSION = 13
 
 local function countInventoryItems(inventory)
     local counts = {}
@@ -123,6 +123,9 @@ local function generateProfileTemplate(configLoader)
             -- Named progression entitlements reconcile existing profiles without coupling
             -- content grants to the schema version or replaying the Level-5 claim sequence.
             FutureCall = {},
+            -- Launch cohort reservation + one permanent promotional pass BENEFIT. This remains
+            -- separate from Marketplace ownership so the reward never impersonates a Roblox pass.
+            FoundersChoice = {},
         },
 
         -- Settings
@@ -198,7 +201,7 @@ local function generateProfileTemplate(configLoader)
         -- Game Pass Perks
         Perks = {},
 
-        -- Owned Game Passes
+        -- Effective pass benefits (Marketplace/creator/test + Founder's Choice, deduplicated).
         OwnedPasses = {},
 
         -- Purchase History
@@ -538,6 +541,17 @@ SchemaMigrations[11] = function(_self, data)
         data.Settings.CreatorGamePassesEnabled = true
     end
     data.SchemaVersion = 12
+    return 1
+end
+
+-- v12 -> v13: source-separated Founder's Choice profile state. Reconcile normally adds this field,
+-- but the explicit migration makes the durable contract visible and repairs non-table corruption.
+SchemaMigrations[12] = function(_self, data)
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    if type(data.GameData.FoundersChoice) ~= "table" then
+        data.GameData.FoundersChoice = {}
+    end
+    data.SchemaVersion = 13
     return 1
 end
 

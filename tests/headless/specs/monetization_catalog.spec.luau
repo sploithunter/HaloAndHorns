@@ -48,6 +48,17 @@ return function()
             expect(owned.invalid).to.equal(nil)
         end)
 
+        it("preserves honest entitlement sources for shop labels", function()
+            local founders = MonetizationCatalog.sourceSet({
+                passes = {
+                    { id = "speed", sources = { founder = true, test = true } },
+                    { id = "vip", sources = { marketplace = true } },
+                },
+            }, "founder")
+            expect(founders.speed).to.equal(true)
+            expect(founders.vip).to.equal(nil)
+        end)
+
         it("grants the complete catalog only to configured creator accounts", function()
             expect(MonetizationCatalog.creatorOwnsAllPasses(config, 101)).to.equal(true)
             expect(MonetizationCatalog.creatorOwnsAllPasses(config, 202)).to.equal(true)
@@ -85,13 +96,8 @@ return function()
         it("routes creator entitlement through the production pass check", function()
             local source = readFile("src/Server/Services/MonetizationService.lua")
             expect(source:find("self:GetCreatorPassGateState(player)", 1, true)).to.be.ok()
-            expect(
-                source:find(
-                    "if creatorOwnsAll or (self._testMode and passConfig.test_mode_enabled) then",
-                    1,
-                    true
-                )
-            ).to.be.ok()
+            expect(source:find("sourceSets.creator[passConfig.id] = true", 1, true)).to.be.ok()
+            expect(source:find("sourceSets.test[passConfig.id] = true", 1, true)).to.be.ok()
             expect(source:find("if not forceNoPasses then", 1, true)).to.be.ok()
             expect(source:find("self:_clearPassBenefits(player, passes)", 1, true)).to.be.ok()
             expect(source:find('player:SetAttribute("MoveSpeedBuffPass", 0)', 1, true)).to.be.ok()

@@ -1038,6 +1038,47 @@ function ConfigLoader:_validateMonetizationConfig(config)
         end
     end
 
+    local founders = config.founders_choice
+    if type(founders) ~= "table" then
+        return false, "Missing or invalid founders_choice section"
+    end
+    if type(founders.enabled) ~= "boolean" then
+        return false, "founders_choice.enabled must be boolean"
+    end
+    if type(founders.cohort_id) ~= "string" or founders.cohort_id == "" then
+        return false, "founders_choice.cohort_id must be a non-empty string"
+    end
+    if
+        type(founders.player_limit) ~= "number"
+        or founders.player_limit < 1
+        or founders.player_limit % 1 ~= 0
+    then
+        return false, "founders_choice.player_limit must be a positive integer"
+    end
+    for _, key in ipairs({ "data_store_name", "data_store_key" }) do
+        if type(founders[key]) ~= "string" or founders[key] == "" then
+            return false, "founders_choice." .. key .. " must be a non-empty string"
+        end
+    end
+    if type(founders.eligible_passes) ~= "table" or #founders.eligible_passes == 0 then
+        return false, "founders_choice.eligible_passes must be a non-empty array"
+    end
+    local passIds = {}
+    for _, pass in ipairs(config.passes) do
+        passIds[pass.id] = true
+    end
+    local founderIds = {}
+    for index, passId in ipairs(founders.eligible_passes) do
+        if type(passId) ~= "string" or not passIds[passId] then
+            return false,
+                "founders_choice.eligible_passes[" .. index .. "] must reference an authored pass"
+        end
+        if founderIds[passId] then
+            return false, "founders_choice.eligible_passes contains duplicate " .. passId
+        end
+        founderIds[passId] = true
+    end
+
     -- Validate product ID mapping
     if type(config.product_id_mapping) ~= "table" then
         return false, "Product ID mapping must be a table"

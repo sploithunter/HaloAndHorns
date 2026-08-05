@@ -46,6 +46,21 @@ function MonetizationCatalog.ownedSet(snapshot)
     return owned
 end
 
+function MonetizationCatalog.sourceSet(snapshot, sourceName)
+    local result = {}
+    for _, entry in ipairs((snapshot and snapshot.passes) or {}) do
+        if
+            type(entry) == "table"
+            and type(entry.id) == "string"
+            and type(entry.sources) == "table"
+            and entry.sources[sourceName] == true
+        then
+            result[entry.id] = true
+        end
+    end
+    return result
+end
+
 -- Server-authoritative creator entitlement. This deliberately lives in the monetization config,
 -- not the Meet-The-Creator registry: a creator account may need owner benefits without authoring a
 -- public meet egg/species. Numeric/string IDs compare identically so config serialization is safe.

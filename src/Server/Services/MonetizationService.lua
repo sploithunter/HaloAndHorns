@@ -21,6 +21,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Libraries = ReplicatedStorage.Shared.Libraries
 local Signal = require(Libraries.Signal)
+local FoundersChoice = require(ReplicatedStorage.Shared.Game.FoundersChoice)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
@@ -39,6 +40,8 @@ function MonetizationService:Init()
     self._productIdMapper = self._modules.ProductIdMapper
     self._playerEffectsService = self._modules.PlayerEffectsService
     self._inventoryService = self._modules.InventoryService -- capacity refresh after async pass apply
+    self._foundersChoiceService = self._modules.FoundersChoiceService
+    self._passSources = {}
     -- NetworkConfig removed - using Signals instead
 
     -- Validate dependencies
@@ -71,6 +74,14 @@ function MonetizationService:Init()
 
     -- Set up MarketplaceService callbacks
     self:_setupMarketplaceCallbacks()
+
+    self._foundersChoiceService.StateChanged:Connect(function(player, reason)
+        self:_sendFoundersChoiceState(
+            player,
+            reason == "eligibility" or reason == "reselection",
+            nil
+        )
+    end)
 
     -- Track test mode
     self._testMode = self._productIdMapper:IsTestMode()
@@ -114,6 +125,7 @@ function MonetizationService:Start()
         if self._speedPassApplied then
             self._speedPassApplied[player.UserId] = nil
         end
+        self._passSources[player.UserId] = nil
     end)
 
     self._logger:Info("MonetizationService started")
@@ -131,6 +143,14 @@ function MonetizationService:_setupNetworking()
 
     Signals.GetOwnedPasses.OnServerEvent:Connect(function(player)
         self:_sendOwnedPasses(player)
+    end)
+
+    Signals.FoundersChoiceStateRequest.OnServerEvent:Connect(function(player, request)
+        self:GetFoundersChoiceState(player, request)
+    end)
+
+    Signals.FoundersChoiceSelect.OnServerEvent:Connect(function(player, request)
+        self:SelectFoundersChoice(player, request)
     end)
 
     Signals.GetProductInfo.OnServerEvent:Connect(function(player, data)
@@ -327,15 +347,27 @@ function MonetizationService:_handleGamePassPurchase(player, gamePassId)
         return false
     end
 
-    local ownedPasses = self._dataService:GetOwnedPasses(player) or {}
-    if table.find(ownedPasses, passConfig.id) then
+    local passSources = self._passSources[player.UserId] or {}
+    local existingSources = passSources[passConfig.id] or {}
+    if existingSources.marketplace == true then
         self:_sendOwnedPasses(player)
         return true
     end
 
+    -- A real purchase supersedes the promotional source, but never removes the
+    -- benefit. Return the Founder's Choice immediately so it can be spent on a
+    -- different pass, and mark this pass as Marketplace-owned for this session.
+    self._foundersChoiceService:ReleaseForMarketplaceOwnership(player, passConfig.id)
+    existingSources.marketplace = true
+    passSources[passConfig.id] = existingSources
+    self._passSources[player.UserId] = passSources
+
     local firstPurchase = self:_isFirstPurchase(player)
-    self:_applyPassBenefits(player, passConfig)
-    table.insert(ownedPasses, passConfig.id)
+    local ownedPasses = self._dataService:GetOwnedPasses(player) or {}
+    if not table.find(ownedPasses, passConfig.id) then
+        self:_applyPassBenefits(player, passConfig)
+        table.insert(ownedPasses, passConfig.id)
+    end
     if not self._dataService:SetOwnedPasses(player, ownedPasses) then
         self._logger:Error("Failed to persist purchased game pass", {
             player = player.Name,
@@ -372,6 +404,7 @@ function MonetizationService:_handleGamePassPurchase(player, gamePassId)
         id = passConfig.id,
     })
     self:_sendOwnedPasses(player)
+    self:_sendFoundersChoiceState(player, true, nil)
 
     self._logger:Info("Game pass purchase processed", {
         player = player.Name,
@@ -453,50 +486,68 @@ end
 
 function MonetizationService:CheckPlayerPasses(player)
     local passes = self._productIdMapper:GetAllPasses()
-    local ownedPasses = {}
     local creatorGate = self:GetCreatorPassGateState(player)
     local creatorOwnsAll = creatorGate.active
     local forceNoPasses = creatorGate.eligible and not creatorGate.enabled
-
-    self:_clearPassBenefits(player, passes)
+    local sourceSets = {
+        marketplace = {},
+        creator = {},
+        test = {},
+    }
 
     if not forceNoPasses then
         for _, passConfig in ipairs(passes) do
             local passId = self._productIdMapper:GetProductId(passConfig.id)
             if passId then
-                local ownsPass = false
-
-                if creatorOwnsAll or (self._testMode and passConfig.test_mode_enabled) then
-                    -- Production creator entitlement: do not ask MarketplaceService whether the
-                    -- owner bought their own experience's passes. Studio's test mode remains the
-                    -- broader grant-all path, except when a listed creator deliberately gates passes
-                    -- OFF for balance testing.
-                    ownsPass = true
-                else
+                -- Marketplace is the only source that can displace an identical Founder benefit.
+                -- Studio test grants and creator ownership are runtime privileges, not purchases.
+                if not self._testMode then
                     local success, result = pcall(function()
                         return MarketplaceService:UserOwnsGamePassAsync(player.UserId, passId)
                     end)
-
-                    if success then
-                        ownsPass = result
+                    if success and result == true then
+                        sourceSets.marketplace[passConfig.id] = true
                     else
-                        self._logger:Error("Failed to check game pass ownership", {
-                            player = player.Name,
-                            pass = passConfig.id,
-                            error = result,
-                        })
+                        if not success then
+                            self._logger:Error("Failed to check game pass ownership", {
+                                player = player.Name,
+                                pass = passConfig.id,
+                                error = result,
+                            })
+                        end
                     end
                 end
-
-                if ownsPass then
-                    table.insert(ownedPasses, passConfig.id)
-                    self:_applyPassBenefits(player, passConfig)
+                if creatorOwnsAll then
+                    sourceSets.creator[passConfig.id] = true
+                elseif self._testMode and passConfig.test_mode_enabled then
+                    sourceSets.test[passConfig.id] = true
                 end
             end
         end
     end
 
-    -- Store owned passes
+    local founderState = self._foundersChoiceService:GetState(player)
+    local founderPassId = founderState and founderState.selectedPassId or ""
+    if sourceSets.marketplace[founderPassId] then
+        self._foundersChoiceService:ReleaseForMarketplaceOwnership(player, founderPassId)
+        founderPassId = ""
+    end
+    if not self._foundersChoiceService:IsEligiblePass(founderPassId) then
+        founderPassId = ""
+    end
+
+    local ownedPasses, passSources =
+        FoundersChoice.effectivePasses(passes, sourceSets, founderPassId, forceNoPasses)
+
+    self:_clearPassBenefits(player, passes)
+    for _, passId in ipairs(ownedPasses) do
+        local passConfig = self._productIdMapper:GetPassConfig(passId)
+        if passConfig then
+            self:_applyPassBenefits(player, passConfig)
+        end
+    end
+
+    self._passSources[player.UserId] = passSources
     self._dataService:SetOwnedPasses(player, ownedPasses)
 
     -- Pass benefits land AFTER the join-time equip restore (ownership checks
@@ -515,7 +566,9 @@ function MonetizationService:CheckPlayerPasses(player)
         creatorEntitlement = creatorOwnsAll == true,
         creatorGateEnabled = creatorGate.enabled,
         forcedNoPasses = forceNoPasses,
+        foundersPass = founderPassId ~= "" and founderPassId or nil,
     })
+    self:_sendOwnedPasses(player)
 end
 
 -- Apply game pass benefits
@@ -803,9 +856,99 @@ end
 
 function MonetizationService:_sendOwnedPasses(player)
     local ownedPasses = self._dataService:GetOwnedPasses(player) or {}
+    local sources = self._passSources[player.UserId] or {}
+    local passDetails = {}
+    for _, passId in ipairs(ownedPasses) do
+        local passConfig = self._productIdMapper:GetPassConfig(passId)
+        passDetails[#passDetails + 1] = {
+            id = passId,
+            name = passConfig and passConfig.name or passId,
+            description = passConfig and passConfig.description or "",
+            benefits = passConfig and passConfig.benefits or {},
+            sources = sources[passId] or {},
+        }
+    end
     self._signals.OwnedPasses:FireClient(player, {
-        passes = ownedPasses,
+        passes = passDetails,
+        count = #passDetails,
     })
+end
+
+function MonetizationService:_foundersClientState(player, show, errorMessage)
+    local state = self._foundersChoiceService:GetState(player) or FoundersChoice.normalizeState(nil)
+    local unavailable = {}
+    for passId, sources in pairs(self._passSources[player.UserId] or {}) do
+        -- Creator/Studio grants are testing sources, not purchases. They must not
+        -- consume or visually disable a player's one promotional selection.
+        if type(sources) == "table" and sources.marketplace == true then
+            unavailable[passId] = true
+        end
+    end
+
+    local choices = {}
+    for _, passId in ipairs(self._foundersChoiceService:GetEligiblePassIds()) do
+        local config = self._productIdMapper:GetPassConfig(passId)
+        if config then
+            choices[#choices + 1] = {
+                id = passId,
+                name = config.name,
+                description = config.description,
+                icon = config.icon,
+                unavailable = unavailable[passId] == true,
+            }
+        end
+    end
+
+    return {
+        eligible = state.eligible == true,
+        eligibilityDecided = state.eligibilityDecided == true,
+        claimNumber = state.claimNumber,
+        selectedPassId = state.selectedPassId,
+        canChoose = FoundersChoice.canChoose(state),
+        show = show == true,
+        error = errorMessage,
+        choices = choices,
+    }
+end
+
+function MonetizationService:_sendFoundersChoiceState(player, show, errorMessage)
+    self._signals.FoundersChoiceState:FireClient(
+        player,
+        self:_foundersClientState(player, show, errorMessage)
+    )
+end
+
+function MonetizationService:GetFoundersChoiceState(player, request)
+    self._foundersChoiceService:QueueEligibility(player, false)
+    local state = self._foundersChoiceService:GetState(player)
+    local wantsOpen = type(request) == "table" and request.open == true
+    self:_sendFoundersChoiceState(player, wantsOpen or FoundersChoice.canChoose(state), nil)
+end
+
+function MonetizationService:SelectFoundersChoice(player, request)
+    local passId = type(request) == "table" and request.passId or nil
+    if type(passId) ~= "string" then
+        self:_sendFoundersChoiceState(player, true, "Choose a benefit first.")
+        return
+    end
+
+    if not self._passSources[player.UserId] then
+        self:CheckPlayerPasses(player)
+    end
+    local unavailable = {}
+    for ownedId, sources in pairs(self._passSources[player.UserId] or {}) do
+        if type(sources) == "table" and sources.marketplace == true then
+            unavailable[ownedId] = true
+        end
+    end
+    local ok, reason = self._foundersChoiceService:Select(player, passId, unavailable)
+    if not ok then
+        self:_sendFoundersChoiceState(player, true, reason)
+        return
+    end
+
+    self:CheckPlayerPasses(player)
+    self:_sendFoundersChoiceState(player, false, nil)
 end
 
 function MonetizationService:_sendProductInfo(player, data)
@@ -854,25 +997,7 @@ function MonetizationService:GetOwnedPasses(player, data)
         player = player.Name,
     })
 
-    local ownedPasses = self._dataService:GetOwnedPasses(player)
-    local passDetails = {}
-
-    for _, passId in ipairs(ownedPasses) do
-        local passConfig = self._productIdMapper:GetPassConfig(passId)
-        if passConfig then
-            table.insert(passDetails, {
-                id = passId,
-                name = passConfig.name,
-                description = passConfig.description,
-                benefits = passConfig.benefits,
-            })
-        end
-    end
-
-    self._signals.OwnedPasses:FireClient(player, {
-        passes = passDetails,
-        count = #passDetails,
-    })
+    self:_sendOwnedPasses(player)
 end
 
 return MonetizationService

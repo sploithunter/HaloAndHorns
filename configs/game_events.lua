@@ -143,6 +143,24 @@ return {
         banner = { seconds = 8, color = { 80, 210, 255 } },
     },
 
+    -- First-10,000-player permanent benefit. The availability beat is intentionally as prominent
+    -- as Future Call tokens; selection is a shorter confirmation after the dedicated chooser.
+    founders_choice_available = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 255, 198, 55 }, count = 28 },
+        banner = { seconds = 9, color = { 255, 198, 55 } },
+    },
+
+    founders_choice_selected = {
+        sound = "power_up_stronger",
+        vfx = { kind = "burst", color = { 126, 90, 225 }, count = 20 },
+        banner = { seconds = 5, color = { 126, 90, 225 } },
+    },
+
+    founders_choice_reselection = {
+        banner = { seconds = 7, color = { 255, 198, 55 } },
+    },
+
     -- Level-derived deploy capacity (L8, then every seven levels through L50).
     pet_slot_awarded = {
         sound = "celebratory_jingle",
