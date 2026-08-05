@@ -308,6 +308,15 @@ return {
         data_store_key = "launch_10k",
         require_tutorial = true,
         studio_unlimited = true,
+        -- Explicit IDs only: usernames/display names are mutable and must never control a
+        -- valuable entitlement. These production test accounts receive ordinal 0, never touch
+        -- the 10,000-player roster, and may re-arm their selection through Admin Reset.
+        test_user_ids = {
+            3200870803, -- coloradoplays
+            873359641, -- MacrosGodOfMagic
+            864785140, -- sploithunter
+            913292269, -- sploitgiver
+        },
         eligible_passes = {
             "auto_collect",
             "speed_boost",

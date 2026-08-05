@@ -20,6 +20,7 @@ function AdminToolsService.new()
     self._hatchEntitlementService = nil
     self._starterPetService = nil
     self._monetizationService = nil
+    self._foundersChoiceService = nil
     self._petsConfig = nil
     self._inventoryConfig = nil
     self._eggSystemConfig = nil
@@ -107,6 +108,7 @@ function AdminToolsService:BindPeerServices(services)
     self._futureCallService = services.FutureCallService
     self._starterPetService = services.StarterPetService
     self._monetizationService = services.MonetizationService
+    self._foundersChoiceService = services.FoundersChoiceService
     self._prologueService = services.PrologueService
 end
 
@@ -837,6 +839,17 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         end)
     end
 
+    -- Explicit production test accounts (plus every Studio player) may replay every Founder
+    -- benefit. Re-arm only their profile-side choice; FoundersChoiceService deliberately never
+    -- mutates the production cohort roster, and these accounts use ordinal 0 on requalification.
+    local founderChoiceReset = false
+    if self._foundersChoiceService and self._foundersChoiceService.ResetForAdminTesting then
+        local ok, reset = pcall(function()
+            return self._foundersChoiceService:ResetForAdminTesting(targetPlayer)
+        end)
+        founderChoiceReset = ok and reset == true
+    end
+
     -- 6) Re-replicate pet projections (drops stale equips + despawns removed follow models) + save.
     if self._inventoryService and self._inventoryService.RebuildPetProjections then
         self._inventoryService:RebuildPetProjections(targetPlayer)
@@ -846,6 +859,11 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         "admin_reset_to_beginning",
         { critical = true, debounceSeconds = 0 }
     )
+    if founderChoiceReset and self._monetizationService then
+        -- Remove the previously selected Founder entitlement immediately. The tutorial-complete
+        -- event will reserve ordinal 0 again and open the chooser for the next test selection.
+        self._monetizationService:CheckPlayerPasses(targetPlayer)
+    end
     -- FARM NEAR back to the new-player default (Jason: "for game quality, start with
     -- farming near ON for all players" — it IS the default, but a tester's old Farm-Off
     -- toggle persisted through resets and read as a bad first-run). "Reset to beginning"

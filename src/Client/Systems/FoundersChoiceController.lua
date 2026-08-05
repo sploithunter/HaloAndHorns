@@ -163,11 +163,11 @@ local function show(state)
     content.ZIndex = 101
     content.Parent = panel
 
+    local founderLabel = state.testReservation == true and "Launch Founder Test"
+        or ("Launch Founder #" .. tostring(state.claimNumber or "—"))
     local subtitle = label(
         content,
-        "Launch Founder #"
-            .. tostring(state.claimNumber or "—")
-            .. " • Pick one permanent benefit",
+        founderLabel .. " • Pick one permanent benefit",
         UDim2.new(1, -32, 0, 34),
         UDim2.fromOffset(16, 2),
         Enum.Font.GothamMedium,

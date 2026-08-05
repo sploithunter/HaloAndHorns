@@ -101,6 +101,11 @@ function FoundersChoiceService:GetEligiblePassIds()
     return result
 end
 
+function FoundersChoiceService:IsTestUser(userId)
+    return (RunService:IsStudio() and self._config.studio_unlimited == true)
+        or FoundersChoice.isTestUser(self._monetization, userId)
+end
+
 function FoundersChoiceService:_hasQualified(data, genuineCompletion)
     if self._config.require_tutorial ~= true then
         return true
@@ -125,8 +130,8 @@ end
 
 function FoundersChoiceService:_reserve(userId)
     local limit = math.max(1, math.floor(tonumber(self._config.player_limit) or 10000))
-    if RunService:IsStudio() and self._config.studio_unlimited == true then
-        return true, 0, "studio"
+    if self:IsTestUser(userId) then
+        return true, 0, "test"
     end
     if not self._cohortStore then
         return false, 0, "store_unavailable"
@@ -159,6 +164,20 @@ function FoundersChoiceService:_reserve(userId)
     return true, ordinal, nil
 end
 
+function FoundersChoiceService:ResetForAdminTesting(player)
+    if not player or not self:IsTestUser(player.UserId) then
+        return false, "not_test_user"
+    end
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false, "profile_not_loaded"
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    data.GameData.FoundersChoice = FoundersChoice.resetTestState(self._config.cohort_id)
+    self.StateChanged:Fire(player, "test_reset")
+    return true, nil
+end
+
 function FoundersChoiceService:QueueEligibility(player, genuineCompletion)
     if
         self._config.enabled == false
@@ -169,11 +188,7 @@ function FoundersChoiceService:QueueEligibility(player, genuineCompletion)
         return
     end
     local data, state = self:_profileState(player)
-    if
-        not data
-        or state.eligibilityDecided
-        or not self:_hasQualified(data, genuineCompletion)
-    then
+    if not data or state.eligibilityDecided or not self:_hasQualified(data, genuineCompletion) then
         return
     end
 

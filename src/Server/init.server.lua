@@ -959,6 +959,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 HotbarService = modules:Get("HotbarService"),
                 FutureCallService = modules:Get("FutureCallService"),
                 MonetizationService = modules:Get("MonetizationService"),
+                FoundersChoiceService = modules:Get("FoundersChoiceService"),
                 PrologueService = modules:Get("PrologueService"),
                 StarterPetService = modules:Get("StarterPetService"),
             })

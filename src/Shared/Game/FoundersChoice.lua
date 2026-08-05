@@ -23,6 +23,17 @@ function FoundersChoice.isEligiblePass(config, passId)
     return type(passId) == "string" and FoundersChoice.eligibleSet(config)[passId] == true
 end
 
+function FoundersChoice.isTestUser(config, userId)
+    local feature = config and config.founders_choice or {}
+    userId = tonumber(userId)
+    for _, configuredId in ipairs(feature.test_user_ids or {}) do
+        if userId and tonumber(configuredId) == userId then
+            return true
+        end
+    end
+    return false
+end
+
 function FoundersChoice.normalizeState(raw, cohortId)
     raw = type(raw) == "table" and raw or {}
     return {
@@ -36,7 +47,12 @@ function FoundersChoice.normalizeState(raw, cohortId)
     }
 end
 
-function FoundersChoice.effectivePasses(configuredPasses, sourceSets, founderPassId, suppressAll)
+function FoundersChoice.effectivePasses(
+    configuredPasses,
+    sourceSets,
+    founderPassId,
+    suppressNonFounder
+)
     local result = {}
     local sources = {}
     sourceSets = type(sourceSets) == "table" and sourceSets or {}
@@ -45,15 +61,18 @@ function FoundersChoice.effectivePasses(configuredPasses, sourceSets, founderPas
         local passId = type(pass) == "table" and pass.id or nil
         if type(passId) == "string" then
             local passSources = {}
-            if not suppressAll then
+            if not suppressNonFounder then
                 for sourceName, owned in pairs(sourceSets) do
                     if type(owned) == "table" and owned[passId] == true then
                         passSources[sourceName] = true
                     end
                 end
-                if passId == founderPassId then
-                    passSources.founder = true
-                end
+            end
+            -- The creator/test pass gate suppresses Marketplace, creator, and Studio test grants,
+            -- but the explicitly selected Founder benefit remains. This is the repeatable test
+            -- workflow: Admin Reset = no passes; choose once = exactly that one benefit.
+            if passId == founderPassId then
+                passSources.founder = true
             end
             if next(passSources) ~= nil then
                 result[#result + 1] = passId
@@ -68,6 +87,20 @@ end
 function FoundersChoice.canChoose(state)
     state = FoundersChoice.normalizeState(state)
     return state.eligible and state.selectedPassId == ""
+end
+
+-- Re-arm only the profile-side choice. The production cohort roster is deliberately untouched;
+-- explicit test accounts reserve ordinal 0 and can replay eligibility after tutorial completion.
+function FoundersChoice.resetTestState(cohortId)
+    return FoundersChoice.normalizeState({
+        cohortId = cohortId,
+        eligibilityDecided = false,
+        eligible = false,
+        claimNumber = 0,
+        selectedPassId = "",
+        selectedAt = 0,
+        reselections = 0,
+    }, cohortId)
 end
 
 return FoundersChoice

@@ -2125,3 +2125,14 @@ rewrite.
 - Replaced Wishful Wednesday's damped general-luck bonus with direct 2x golden and
   rainbow hatch channels: standard eggs now begin Wednesday at 10% golden and 1%
   rainbow, before player-specific boosts, without changing species odds.
+
+## 2026-08-05 — Repeatable Founder's Choice testing without cohort consumption
+
+- Added an explicit user-ID allowlist for Colorado, Macros, SploitHunter, and SploitGiver. These
+  production test accounts use ordinal 0 and do not touch the first-10,000 roster.
+- Admin Reset to Beginning now clears and reapplies the effective Founder entitlement for Studio or
+  allowlisted test accounts, then reopens eligibility on tutorial completion; real player choices
+  remain permanent and the global cohort roster is never decremented or renumbered.
+- Resolved the Studio test-pass conflict: the creator gate OFF state suppresses automatic pass
+  sources but retains an explicit Founder selection, so reset tests no passes and each subsequent
+  choice tests exactly one benefit.

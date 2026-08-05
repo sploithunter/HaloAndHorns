@@ -1063,6 +1063,20 @@ function ConfigLoader:_validateMonetizationConfig(config)
     if type(founders.eligible_passes) ~= "table" or #founders.eligible_passes == 0 then
         return false, "founders_choice.eligible_passes must be a non-empty array"
     end
+    if founders.test_user_ids ~= nil and type(founders.test_user_ids) ~= "table" then
+        return false, "founders_choice.test_user_ids must be an array"
+    end
+    local testUserIds = {}
+    for index, userId in ipairs(founders.test_user_ids or {}) do
+        if type(userId) ~= "number" or userId < 1 or userId % 1 ~= 0 then
+            return false,
+                "founders_choice.test_user_ids[" .. index .. "] must be a positive integer"
+        end
+        if testUserIds[userId] then
+            return false, "founders_choice.test_user_ids contains duplicate " .. tostring(userId)
+        end
+        testUserIds[userId] = true
+    end
     local passIds = {}
     for _, pass in ipairs(config.passes) do
         passIds[pass.id] = true
