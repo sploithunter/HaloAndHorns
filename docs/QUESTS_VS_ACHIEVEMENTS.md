@@ -6,8 +6,10 @@ The two systems were conflated: "quests" included passive milestones ("Reach Lev
 ## The principle
 
 **A QUEST is an ACTIVE TASK you are doing right now.**
-- Every quest counts **from when it activates** (`since_start`) — never lifetime. "Hatch 100 eggs"
-  means **100 NEW eggs from now**, even if you've hatched thousands before. Do it again each time.
+- Repeatable actions count **from when the quest activates** (`since_start`). "Hatch 100 eggs" means
+  **100 NEW eggs from now**, even if you've hatched thousands before. Finite, irreversible journey
+  actions (unlock an area, first Heaven/Hell visit) read their reconciled lifetime state so a player
+  cannot miss a quest forever by completing the action before its track opens.
 - **Nothing passive lives in quests.** No "reach level N", no lifetime totals.
 - **One exception:** a passive condition may **UNLOCK** a quest track (e.g. reaching Level 5 unlocks
   The Warpath). The level is the *gate*, never a quest goal you stare at.
@@ -33,10 +35,10 @@ level fires the "New quests available!" announce.
 |---|---|---|
 | **First Steps** | L1 (auto) | onramp → Level 2 (see below; more elaborate) |
 | **Deep Mining** | L2 | Break 100 crystals · Earn 3,000 crystals · Break 500 crystals |
-| **The Hatchery** | L3 | Hatch 25 eggs · Hatch 100 eggs · Own a 6-pet squad |
+| **The Hatchery** | L3 | Hatch 25 eggs · Hatch 100 eggs · Hatch 1,000 eggs |
 | **The Collector** | L4 | Find an enhancement · Slot an enhancement · Find 10 enhancements |
 | **The Warpath** | L5 | Cast 20 powers · Defeat 25 enemies · Defeat 100 enemies |
-| **Trailblazer** | L8 | Unlock the next area · Unlock 3 areas · Meet 3 Creators |
+| **Trailblazer** | L8 | Unlock the next area · Unlock 3 areas · Unlock 4 areas |
 | **The Crossing** | L12 | Visit Heaven · Visit Hell · Unlock a realm area |
 
 *(Open question for you: exact unlock levels + which active goals per track. Above is my proposal.)*
@@ -69,7 +71,8 @@ tiers some of these — we extend it and flip the service from auto-grant to **c
 | **Combat** | Enemies defeated: 10 / 100 / 1k / 10k · Powers cast: 100 / 1k |
 | **Collection** | Distinct pets: 25 / 75 · Enhancements found: 10 / 50 |
 | **Progression** | Reach Level: 5 / 10 / 15 / 20 / 30 / 50 · Rebirths: 1 / 3 |
-| **Exploration** | Areas unlocked: 3 / 6 · Realms visited (Heaven+Hell) · Creators met: 5 · Secrets: 5 |
+| **Exploration** | Areas unlocked: 3 / 6 · Realms visited (Heaven+Hell) · Creators met: 1 / 2 · Secrets: 5 |
+| **Trials** | Random Trials completed: 1,000 / 10,000 (gems + permanent titles) |
 
 Capstone pets (the rainbow bear rewards) move onto the top achievement tier in each category.
 
@@ -86,8 +89,10 @@ Capstone pets (the rainbow bear rewards) move onto the top achievement tier in e
 - **ascension** → **entirely Achievements** (all reach-level milestones — pure passive). Removed as
   a quest track.
 - **crossing** → Quests keeps visit-Heaven/Hell + unlock-a-realm-area (active); deeper → Achievements.
-- **trailblazer** → Quests keeps unlock-next-area/3-areas/meet-3-creators; rebirths + 6-areas +
-  secrets → **Achievements**.
+- **trailblazer** → Quests keeps unlock-next-area/3-areas/4-areas. Creator meetings are passive,
+  reachable **Achievements** (1 / 2 creators); rebirths + 6-areas + secrets remain Achievements.
+- **trials** → Quests ends at 100 active completions. The 1,000/10,000 career totals are passive
+  **Achievements**; old quest claims migrate without duplicating gems.
 
 ---
 

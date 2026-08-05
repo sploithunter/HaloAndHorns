@@ -158,7 +158,7 @@ return {
             -- QuestService; RewardService deliberately ignores unknown bundle fields.
             reward = {
                 experience = 300,
-                currencies = { gems = 15, area_coins = 1500 },
+                currencies = { gems = 15, grass_coins = 1500 },
                 ensure_earned_level = 4,
                 future_call_tokens = 2,
             },
@@ -245,7 +245,10 @@ return {
                 value = 1000,
                 since_start = true,
             },
-            reward = { currencies = { gems = 40 } },
+            reward = {
+                currencies = { gems = 40 },
+                items = { { id = "fortune_flask", qty = 5, bucket = "potions" } },
+            },
         },
 
         -- ===================== THE COLLECTOR (unlocks L4) =====================
@@ -342,7 +345,6 @@ return {
                 type = "counter_at_least",
                 counter = "areas_unlocked",
                 value = 1,
-                since_start = true,
             },
             reward = { currencies = { gems = 15 } },
         },
@@ -355,22 +357,22 @@ return {
                 type = "counter_at_least",
                 counter = "areas_unlocked",
                 value = 3,
-                since_start = true,
             },
             reward = { currencies = { gems = 30 } },
         },
+        -- Stable legacy id: this was the impossible "Meet 3 Creators" quest. Creator meetings are
+        -- passive achievements now; retaining the id prevents reissuing order 3 to old profiles.
         path_creators = {
             track = "trailblazer",
             order = 3,
-            name = "Meet 3 Creators",
-            description = "Track down the Creators scattered across the realms.",
+            name = "Unlock 4 Areas",
+            description = "Keep exploring — open four paid areas across your journey.",
             condition = {
                 type = "counter_at_least",
-                counter = "creators_met",
-                value = 3,
-                since_start = true,
+                counter = "areas_unlocked",
+                value = 4,
             },
-            reward = { currencies = { gems = 25 } },
+            reward = { currencies = { gems = 40 } },
         },
 
         -- ===================== THE CROSSING (unlocks L12 — heaven/hell) =====================
@@ -383,7 +385,6 @@ return {
                 type = "counter_at_least",
                 counter = "heaven_visits",
                 value = 1,
-                since_start = true,
             },
             reward = { currencies = { gems = 20 } },
         },
@@ -396,7 +397,6 @@ return {
                 type = "counter_at_least",
                 counter = "hell_visits",
                 value = 1,
-                since_start = true,
             },
             reward = { currencies = { gems = 20 } },
         },
@@ -407,9 +407,8 @@ return {
             description = "Stake your claim above or below — unlock any Heaven or Hell zone.",
             condition = {
                 type = "counter_at_least",
-                counter = "heaven_areas_unlocked",
+                counter = "realm_areas_unlocked",
                 value = 1,
-                since_start = true,
             },
             reward = { currencies = { gems = 60 } },
         },
@@ -466,30 +465,6 @@ return {
                 value = 100,
             },
             reward = { currencies = { gems = 150 } },
-        },
-        tr_random_1000 = {
-            track = "trials",
-            order = 5,
-            name = "The Thousand-Door March",
-            description = "Complete 1,000 trials.",
-            condition = {
-                type = "counter_at_least",
-                counter = "missions_completed",
-                value = 1000,
-            },
-            reward = { currencies = { gems = 500 } },
-        },
-        tr_random_10000 = {
-            track = "trials",
-            order = 6,
-            name = "Legend of the Infinite Halls",
-            description = "Complete 10,000 trials. Yes, really.",
-            condition = {
-                type = "counter_at_least",
-                counter = "missions_completed",
-                value = 10000,
-            },
-            reward = { currencies = { gems = 2500 } },
         },
         -- ===================== THE MATRIX TRIALS (8 tracks, Platinum centuries) =====================
         hell_lava_10 = {

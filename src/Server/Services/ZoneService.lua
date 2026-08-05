@@ -74,6 +74,7 @@ function ZoneService:Init()
     self._dataService = self._modules.DataService
     self._economyService = self._modules.EconomyService
     self._worldBindingService = self._modules.WorldBindingService
+    self._statsService = self._modules.StatsService
     self._areasConfig = self._configLoader:LoadConfig("areas")
     self._touchDebounce = {}
 end
@@ -212,6 +213,49 @@ function ZoneService:GetUnlockedZones(player)
         return {}
     end
     return setToSortedArray(unlockSet)
+end
+
+-- Reconstruct finite exploration counters from the persisted unlock set. Older profiles could
+-- unlock zones before the event-counter bridge existed (or while it was unavailable), which made
+-- one-time exploration quests permanently impossible. Reconciliation only moves lifetime totals
+-- upward; it never fabricates unlocks or erases historical progress.
+function ZoneService:_reconcileUnlockCounters(player, unlockSet)
+    local stats = self._statsService
+    if not (stats and type(unlockSet) == "table") then
+        return
+    end
+
+    local areas = 0
+    local heaven = 0
+    local hell = 0
+    for zoneId, unlocked in pairs(unlockSet) do
+        local zone = unlocked and self:_getZone(zoneId)
+        if
+            zone
+            and zone.kind == "area"
+            and not (zone.unlock and zone.unlock.unlocked_by_default == true)
+        then
+            areas += 1
+            local realm = WorldContext.realmOfZoneId(zoneId)
+            if realm == "heaven" then
+                heaven += 1
+            elseif realm == "hell" then
+                hell += 1
+            end
+        end
+    end
+
+    local values = {
+        areas_unlocked = areas,
+        heaven_areas_unlocked = heaven,
+        hell_areas_unlocked = hell,
+        realm_areas_unlocked = heaven + hell,
+    }
+    for counterId, value in pairs(values) do
+        if value > stats:Get(player, counterId) then
+            stats:Set(player, counterId, value)
+        end
+    end
 end
 
 -- The NEXT gate the player can buy: the lowest-order LOCKED area whose required_zone is already
@@ -510,8 +554,10 @@ function ZoneService:UnlockZone(player, zoneId, options)
     fireGameEvent(player, "area_unlocked", { zoneId = zoneId, areaId = areaId, realm = realm })
     if realm == "heaven" then
         fireGameEvent(player, "heaven_area_unlocked", { zoneId = zoneId, areaId = areaId })
+        fireGameEvent(player, "realm_area_unlocked", { zoneId = zoneId, areaId = areaId })
     elseif realm == "hell" then
         fireGameEvent(player, "hell_area_unlocked", { zoneId = zoneId, areaId = areaId })
+        fireGameEvent(player, "realm_area_unlocked", { zoneId = zoneId, areaId = areaId })
     end
 
     return {
@@ -564,7 +610,10 @@ end
 function ZoneService:_syncUnlocksWhenDataLoads(player)
     task.spawn(function()
         if Readiness.awaitAttribute(player, "DataLoaded", true, 30) and player.Parent then
-            self:GetUnlockedZones(player)
+            local unlockSet = self:_getUnlockSet(player)
+            if unlockSet then
+                self:_reconcileUnlockCounters(player, unlockSet)
+            end
         end
     end)
 end

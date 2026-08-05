@@ -759,7 +759,7 @@ bump Counters → Conditions decide what's Claimable → a Claim grants a Reward
 
 Pure cores (headless-tested, `src/Shared/Game/`):
 - **RewardBundle** — the universal "what you get" (currencies/pets/items/effects/
-  slots): `normalize`, `merge`, `isEmpty`. Everything terminates here.
+  titles/slots): `normalize`, `merge`, `isEmpty`. Everything terminates here.
 - **Condition** — the universal gate: `isMet` / `progress` over a snapshot
   (counters/level/currency). Types: counter_at_least, level_at_least,
   currency_at_least, all_of, any_of. `progress()` feeds UI bars.
@@ -784,6 +784,26 @@ Services:
 Bus: `quest.list/claim`, `daily.status/claim`, `shop.list/purchase`,
 `rewards.summary` (the menu-badge aggregator) + test `reward.grant/simulate/log`,
 `test.setCounter/setLevel`, `claim.reset`. Configs: `rewards/quests/daily/shop.lua`.
+
+## Quest reward and finite-counter audit
+
+Last checked: 2026-08-05
+
+- **Answer the Cave** explicitly pays 1,500 Grass Crystals instead of resolving a movable
+  `area_coins` token; **Hatch 1,000 Eggs** adds five Fortune Flasks; **Defeat 100 Enemies** still
+  awards three Health Potions, which are now real common consumables that heal 25% of maximum
+  endurance on every deployed, living pet (without reviving downed pets or bypassing resurrection
+  sickness).
+- Trailblazer's impossible **Meet 3 Creators** task is now **Unlock 4 Areas** under the stable legacy
+  quest ID. Creator meetings are passive Socialite achievements at one and two creators.
+- One-time area unlock and realm-visit quests read lifetime state. ZoneService reconstructs the
+  area/Heaven/Hell/combined-realm counters from persisted unlocks on join, and MeetCreatorService
+  reconstructs `creators_met` from its once-ever stamps, so events predating the counters are not
+  lost.
+- The general Trial quest chain ends at 100. The 1,000/10,000 career totals live in a dedicated
+  Achievements category and award their existing gems plus permanent titles. Prior quest claims are
+  migrated into the achievement ledger without a second gem grant; those players receive only the
+  new title.
 
 Verification: headless `mise run test-headless` **282/282 across 33 specs**;
 `mise run ci` green; live `AutomationSuite` **113/113** in Halo & Horns (reward

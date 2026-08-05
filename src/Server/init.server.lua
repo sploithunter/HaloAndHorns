@@ -205,7 +205,14 @@ registerFeatureModule(
     "map_binding",
     "ZoneService",
     ServerScriptService.Server.Services.ZoneService,
-    { "Logger", "ConfigLoader", "DataService", "EconomyService", "WorldBindingService" }
+    {
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "EconomyService",
+        "WorldBindingService",
+        "StatsService",
+    }
 )
 registerFeatureModule(
     "map_binding",
@@ -426,11 +433,14 @@ loader:RegisterModule(
         "PetProgressionService"
     )
 )
-loader:RegisterModule(
-    "StarterPetService",
-    ServerScriptService.Server.Services.StarterPetService,
-    { "Logger", "ConfigLoader", "DataService", "InventoryService", "PetGrantService" }
-)
+loader:RegisterModule("StarterPetService", ServerScriptService.Server.Services.StarterPetService, {
+    "Logger",
+    "ConfigLoader",
+    "DataService",
+    "InventoryService",
+    "PetGrantService",
+    "StatsService",
+})
 loader:RegisterModule(
     "SettingsService",
     ServerScriptService.Server.Services.SettingsService,
@@ -1185,6 +1195,7 @@ local EconomyService = loader:Get("EconomyService")
 -- Set up cross-references to avoid circular dependencies
 DataService:SetPlayerEffectsService(PlayerEffectsService)
 EconomyService:SetInventoryService(InventoryService)
+loader:Get("RewardService"):SetPotionService(loader:Get("PotionService"))
 
 -- Legacy network handler connection removed - using Signals directly
 

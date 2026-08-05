@@ -27,6 +27,14 @@ function PetEndurance.maxEndurance(petPower, factor)
     return ceiling
 end
 
+-- Convert a fraction of a pet's endurance pool into an absolute heal amount. This is used by
+-- percentage-based squad consumables so a tank and a glass cannon each recover the same share of
+-- their own bar rather than the same flat number.
+function PetEndurance.fractionalHeal(petPower, factor, fraction)
+    local clamped = math.max(0, math.min(1, tonumber(fraction) or 0))
+    return PetEndurance.maxEndurance(petPower, factor) * clamped
+end
+
 -- Accumulate one enemy hit. Never negative.
 function PetEndurance.applyHit(damageTaken, hitDamage)
     local d = (damageTaken or 0) + (hitDamage or 0)

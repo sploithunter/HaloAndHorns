@@ -16,20 +16,29 @@ return function()
             local b = RewardBundle.normalize({ currencies = { coins = 100 } })
             expect(b.currencies.coins).to.equal(100)
             expect(#b.pets).to.equal(0)
+            expect(#b.titles).to.equal(0)
             expect(next(b.slots)).to.equal(nil)
         end)
         it("merges: currencies/slots sum, lists concatenate", function()
-            local m = RewardBundle.merge(
-                { currencies = { coins = 100 }, items = { { id = "a" } } },
-                { currencies = { coins = 50, gems = 2 }, items = { { id = "b" } } }
-            )
+            local m = RewardBundle.merge({
+                currencies = { coins = 100 },
+                items = { { id = "a" } },
+                titles = { "One" },
+            }, {
+                currencies = { coins = 50, gems = 2 },
+                items = { { id = "b" } },
+                titles = { "Two" },
+            })
             expect(m.currencies.coins).to.equal(150)
             expect(m.currencies.gems).to.equal(2)
             expect(#m.items).to.equal(2)
+            expect(m.titles[1]).to.equal("One")
+            expect(m.titles[2]).to.equal("Two")
         end)
         it("detects an empty bundle", function()
             expect(RewardBundle.isEmpty({})).to.equal(true)
             expect(RewardBundle.isEmpty({ currencies = { coins = 1 } })).to.equal(false)
+            expect(RewardBundle.isEmpty({ titles = { "Veteran" } })).to.equal(false)
         end)
         it("carries and sums experience", function()
             expect(RewardBundle.normalize({ experience = 250 }).experience).to.equal(250)

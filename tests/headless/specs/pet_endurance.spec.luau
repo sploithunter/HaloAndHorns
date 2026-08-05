@@ -30,6 +30,18 @@ return function()
         end)
     end)
 
+    describe("PetEndurance.fractionalHeal", function()
+        it("heals the same fraction of each pet's own endurance pool", function()
+            expect(PetEndurance.fractionalHeal(100, 10, 0.25)).to.equal(250)
+            expect(PetEndurance.fractionalHeal(40, 10, 0.25)).to.equal(100)
+        end)
+
+        it("clamps invalid fractions to the zero-to-one range", function()
+            expect(PetEndurance.fractionalHeal(100, 10, -1)).to.equal(0)
+            expect(PetEndurance.fractionalHeal(100, 10, 2)).to.equal(1000)
+        end)
+    end)
+
     describe("PetEndurance.isDowned", function()
         it("is false below the ceiling and true at/above it", function()
             -- power 100, factor 1.0 -> ceiling 100

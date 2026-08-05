@@ -16,9 +16,13 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local CurrencyTransaction = require(ReplicatedStorage.Shared.Game.CurrencyTransaction)
+local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
+local ResSickness = require(ReplicatedStorage.Shared.Game.ResSickness)
+local CombatApplication = require(script.Parent.Parent.CombatApplication)
 local MarketplaceService = game:GetService("MarketplaceService")
 
 local Libraries = ReplicatedStorage.Shared.Libraries
@@ -40,6 +44,7 @@ function EconomyService:Init()
     self._statsService = self._modules.StatsService
     self._modifierService = self._modules.ModifierService
     self._economyConfig = self:_loadEconomyConfig()
+    self._combatConfig = self._configLoader:LoadConfig("combat")
     -- Backward-compatibility alias so existing effect code can reuse old variable names
     self._rateLimitService = self._playerEffectsService
 
@@ -536,6 +541,77 @@ function EconomyService:ConvertCurrency(player, data)
     return true, message
 end
 
+function EconomyService:_resolveConsumable(player, itemId, requestedUid)
+    local inventory = self._inventoryService
+    local bucket = inventory and inventory:GetInventory(player, "consumables")
+    if not (bucket and type(bucket.items) == "table") then
+        return nil, nil
+    end
+
+    if type(requestedUid) == "string" then
+        local requested = bucket.items[requestedUid]
+        if requested and requested.id == itemId and (tonumber(requested.quantity) or 1) > 0 then
+            return requestedUid, requested
+        end
+    end
+
+    -- Folder mirrors can transiently lag a stack merge. Resolve by authored id as a safe fallback;
+    -- the authoritative bucket still decides whether anything is consumed.
+    for uid, record in pairs(bucket.items) do
+        if record.id == itemId and (tonumber(record.quantity) or 1) > 0 then
+            return uid, record
+        end
+    end
+    return nil, nil
+end
+
+function EconomyService:_squadHealTargets(player)
+    local root = Workspace:FindFirstChild("PlayerPets")
+    local folder = root and root:FindFirstChild(player.Name)
+    local targets = {}
+    for _, pet in ipairs((folder and folder:GetChildren()) or {}) do
+        if
+            pet:IsA("Model")
+            and pet:GetAttribute("CombatDowned") ~= true
+            and (tonumber(pet:GetAttribute("CombatDamageTaken")) or 0) > 0
+        then
+            table.insert(targets, pet)
+        end
+    end
+    return targets
+end
+
+function EconomyService:_applySquadHealthPotion(player, fraction, targets)
+    local factor = tonumber(self._combatConfig and self._combatConfig.pet_down_threshold_factor)
+        or 1
+    local healedPets = 0
+    local healedTotal = 0
+    for _, pet in ipairs(targets or self:_squadHealTargets(player)) do
+        if pet.Parent and pet:GetAttribute("CombatDowned") ~= true then
+            local powerValue = pet:FindFirstChild("Power")
+            local power = (powerValue and tonumber(powerValue.Value))
+                or tonumber(pet:GetAttribute("Power"))
+                or 0
+            local result = CombatApplication.ApplyPowerHeal(
+                pet,
+                PetEndurance.fractionalHeal(power, factor, fraction),
+                {
+                    resource = "pet_endurance",
+                    minimumTaken = ResSickness.floorFor(pet:GetAttributes(), os.time()),
+                    fxSeconds = 3,
+                    sourcePlayer = player,
+                    kind = "health_potion",
+                }
+            )
+            if (result.amount or 0) > 0 then
+                healedPets += 1
+                healedTotal += result.amount
+            end
+        end
+    end
+    return healedPets, healedTotal
+end
+
 -- Use an item from inventory (for consumables with effects)
 function EconomyService:UseItem(player, data)
     local itemId = data.itemId
@@ -549,8 +625,8 @@ function EconomyService:UseItem(player, data)
         return false
     end
 
-    -- Check if player has the item
-    if not self._dataService:HasItem(player, itemId, 1) then
+    local itemUid = self:_resolveConsumable(player, itemId, data.itemUid)
+    if not itemUid then
         self:_sendError(player, "Item not found in inventory")
         return false
     end
@@ -568,15 +644,35 @@ function EconomyService:UseItem(player, data)
         return false
     end
 
-    -- Remove item from inventory
-    if not self._dataService:RemoveFromInventory(player, itemId, 1) then
+    local squadHealFraction =
+        tonumber(itemConfig.effects and itemConfig.effects.squad_health_restore_fraction)
+    local squadTargets
+    if squadHealFraction and squadHealFraction > 0 then
+        squadTargets = self:_squadHealTargets(player)
+        if #squadTargets == 0 then
+            self:_sendError(player, "All deployed pets are already healthy")
+            return false
+        end
+    end
+
+    -- InventoryService is the structured inventory authority. The old flat DataService path could
+    -- never see modern consumable stacks, which made Health Potions appear usable but do nothing.
+    if not self._inventoryService:RemoveItem(player, "consumables", itemUid, 1) then
         self:_sendError(player, "Failed to consume item")
         return false
     end
 
     -- Apply item effects
     if itemConfig.effects then
-        if itemConfig.effects.rate_effect then
+        if squadHealFraction and squadHealFraction > 0 then
+            local healedPets, healedTotal =
+                self:_applySquadHealthPotion(player, squadHealFraction, squadTargets)
+            fireGameEvent(player, "health_potion_used", {
+                healedPets = healedPets,
+                healedTotal = healedTotal,
+                fraction = squadHealFraction,
+            })
+        elseif itemConfig.effects.rate_effect then
             self:_applyItemEffect(player, itemConfig)
         elseif itemConfig.effects.global_effect then
             self:_applyGlobalEffect(player, itemConfig)

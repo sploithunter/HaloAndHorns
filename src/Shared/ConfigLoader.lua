@@ -3621,8 +3621,7 @@ function ConfigLoader:_validateReward(configName, reward, path)
     end
 
     -- BUNDLE shape ({ bundle = { currencies = {...}, pets = {...}, items = {...} } }) — routed through
-    -- the reward spine (RewardService:Grant), so achievements can award PETS (capstones), not just
-    -- currency. Validate the currencies map + that pets/items are tables; the spine handles the rest.
+    -- the reward spine (RewardService:Grant), so achievements can award any supported bundle field.
     if type(reward.bundle) == "table" then
         local b = reward.bundle
         if b.currencies ~= nil then
@@ -3651,6 +3650,30 @@ function ConfigLoader:_validateReward(configName, reward, path)
         end
         if b.pets ~= nil then
             ok, err = self:_requireType(configName, b.pets, "table", path .. ".bundle.pets")
+            if not ok then
+                return ok, err
+            end
+        end
+        for _, field in ipairs({ "items", "effects", "titles" }) do
+            if b[field] ~= nil then
+                ok, err =
+                    self:_requireType(configName, b[field], "table", path .. ".bundle." .. field)
+                if not ok then
+                    return ok, err
+                end
+            end
+        end
+        for index, title in ipairs(b.titles or {}) do
+            if type(title) ~= "string" or title == "" then
+                return self:_configError(
+                    configName,
+                    path .. ".bundle.titles[" .. index .. "]",
+                    "expected non-empty string"
+                )
+            end
+        end
+        if b.slots ~= nil then
+            ok, err = self:_requireType(configName, b.slots, "table", path .. ".bundle.slots")
             if not ok then
                 return ok, err
             end

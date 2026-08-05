@@ -63,10 +63,11 @@ return {
         name = "Health Potion",
         type = "consumable",
         rarity = "common",
-        description = "Restores 50 health points",
+        description = "Restores 25% endurance to every deployed, living pet.",
         effects = {
-            health_restore = 50,
+            squad_health_restore_fraction = 0.25,
         },
+        consumable = true,
         price = {
             currency = "coins",
             amount = 25,
