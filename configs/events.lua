@@ -12,6 +12,16 @@ return {
             display_name = "Egg Luck",
             base = 0,
         },
+        -- Variant-only multipliers. Event entries are additive deltas over the neutral
+        -- base of 1, so a configured value of 1 produces a true 2x channel.
+        golden_hatch_luck = {
+            display_name = "Golden Hatch Luck",
+            base = 1,
+        },
+        rainbow_hatch_luck = {
+            display_name = "Rainbow Hatch Luck",
+            base = 1,
+        },
         breakable_reward_multiplier = {
             display_name = "Breakable Reward Multiplier",
             base = 1,
@@ -153,12 +163,13 @@ return {
 
         wishful_wednesday = {
             display_name = "Wishful Wednesday",
-            description = "Golden and rainbow hatch odds get a big lift, all day.",
+            description = "Double golden and rainbow hatch odds, all day.",
             duration_seconds = -1,
             stacking = "reset",
             icon = "LUCK",
             modifiers = {
-                egg_luck = 0.5,
+                golden_hatch_luck = 1, -- neutral 1 + 1 = 2x (5% -> 10% baseline)
+                rainbow_hatch_luck = 1, -- neutral 1 + 1 = 2x (0.5% -> 1% baseline)
             },
         },
 

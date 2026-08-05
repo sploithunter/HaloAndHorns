@@ -2119,3 +2119,9 @@ rewrite.
   purchase, and is returned for reselection if the matching pass is later purchased externally.
 - Added the responsive seven-benefit chooser, confirmation, large launch banner, honest Founder
   Benefit shop state, and Founder's Gift reopen pill. VIP remains excluded by server allowlist.
+
+## 2026-08-05 — Wishful Wednesday true 2x variant odds
+
+- Replaced Wishful Wednesday's damped general-luck bonus with direct 2x golden and
+  rainbow hatch channels: standard eggs now begin Wednesday at 10% golden and 1%
+  rainbow, before player-specific boosts, without changing species odds.

@@ -10,6 +10,7 @@
 ]]
 
 local pets = loadModule("configs/pets.lua")
+local events = loadModule("configs/events.lua")
 
 -- simulateHatch rolls randomly but returns the DETERMINISTIC luckMultiplier it used.
 local function luckFor(playerData)
@@ -137,6 +138,22 @@ return function()
             )
             -- but the species channel DID get the bonus
             expect(withPass.luckMultiplier > without.luckMultiplier).to.equal(true)
+        end)
+
+        it("Wishful Wednesday directly doubles golden and rainbow odds", function()
+            local wishful = events.global_events.wishful_wednesday
+            expect(wishful.modifiers.egg_luck).to.equal(nil)
+            expect(wishful.modifiers.golden_hatch_luck).to.equal(1)
+            expect(wishful.modifiers.rainbow_hatch_luck).to.equal(1)
+
+            local result = pets.simulateHatch("grass_egg", {
+                level = 0,
+                indexCompletion = 0,
+                goldenLuckBoost = 2,
+                rainbowLuckBoost = 2,
+            })
+            expect(near(result.finalGoldenChance, 0.1, 1e-9)).to.equal(true)
+            expect(near(result.finalRainbowChance, 0.01, 1e-9)).to.equal(true)
         end)
     end)
 
