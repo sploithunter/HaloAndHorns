@@ -294,6 +294,31 @@ return {
         },
     },
 
+    -- LAUNCH FOUNDER'S CHOICE — the first 10,000 unique qualifying profiles may choose one
+    -- permanent PASS BENEFIT. This is deliberately not Roblox Marketplace ownership: the choice
+    -- lives in the player profile and is merged into the effective entitlement set at runtime.
+    -- If the player later buys that same Roblox pass externally, the choice is returned so they
+    -- can select a different unowned benefit. VIP is excluded because it bundles several passes'
+    -- worth of value; the eligible list below is the public offer and the server allowlist.
+    founders_choice = {
+        enabled = true,
+        cohort_id = "launch_10k",
+        player_limit = 10000,
+        data_store_name = "FoundersChoiceCohort_v1",
+        data_store_key = "launch_10k",
+        require_tutorial = true,
+        studio_unlimited = true,
+        eligible_passes = {
+            "auto_collect",
+            "speed_boost",
+            "golden_luck_pass",
+            "rainbow_luck_pass",
+            "huge_luck_pass",
+            "pet_slot_pass",
+            "second_wind",
+        },
+    },
+
     -- Premium (Roblox Premium) Benefits — engagement payouts are the zero-
     -- compliance revenue stream; keep Premium players happy. RATE multipliers
     -- and perks only (no currency dailies — same rating rule as VIP).

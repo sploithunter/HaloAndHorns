@@ -102,6 +102,10 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Rainbow pet visual effect exists and applies to models such as Rainbow Bear.
 - Admin control panel opens and includes event/effects testing commands.
 - Global event support has started, including scheduled event concepts and a UTC event clock.
+- The launch **Founder's Choice** promotion reserves an exact, retry-safe first-10,000-player cohort
+  after tutorial completion. Eligible players choose one of seven permanent single-purpose pass
+  benefits in a confirmation modal; the Robux shop blocks the identical purchase, labels the source
+  honestly, and returns the choice if Marketplace ownership later supersedes it.
 - `ConfigLoader` validates every loaded config at startup. Complex gameplay configs retain focused cross-reference validators; the remaining configs use the revisioned `ConfigSchemas` registry for required top-level key types. Unknown configs fail closed, and the architecture guard rejects configs without an explicit schema.
 - The compact quest/mission tracker doubles as a rotating learning surface: once per minute it
   overlays one config-owned gameplay tip for 10 seconds, including potion, enhancement, pet-role,

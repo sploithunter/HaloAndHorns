@@ -2108,3 +2108,14 @@ rewrite.
   recorded a one-switch post-10,000-play reduced phase.
 - Added the same celebration treatment when the configured level-derived pet slot cadence pays at
   levels 8, 15, 22, 29, 36, 43, and 50. Headless: 1701/1701.
+
+## 2026-08-04 — Founder's Choice launch entitlement
+
+- Added an exact atomic first-10,000-user launch cohort, qualified after tutorial completion (with
+  veteran parity), and durable schema-v13 selection state. Reservations are idempotent across resets,
+  retries, and interrupted saves; Studio never consumes the production roster.
+- Added a source-aware Marketplace/founder/creator/test entitlement union. The selected benefit is
+  permanent but never impersonates Roblox ownership, never stacks twice, blocks the matching in-game
+  purchase, and is returned for reselection if the matching pass is later purchased externally.
+- Added the responsive seven-benefit chooser, confirmation, large launch banner, honest Founder
+  Benefit shop state, and Founder's Gift reopen pill. VIP remains excluded by server allowlist.
