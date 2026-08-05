@@ -31,10 +31,27 @@ function MeetCreatorService:Init()
     self._dataService = self._modules.DataService
     self._inventoryService = self._modules.InventoryService
     self._petGrantService = self._modules.PetGrantService
+    self._statsService = self._modules.StatsService
     local ok, cfg = pcall(function()
         return self._configLoader:LoadConfig("creators")
     end)
     self._config = (ok and cfg) or { creators = {}, meet = { enabled = false } }
+end
+
+function MeetCreatorService:_reconcileCreatorCounter(player, data)
+    local stats = self._statsService
+    if not (stats and type(data) == "table") then
+        return
+    end
+    local count = 0
+    for _, metAt in pairs(data.MetCreators or {}) do
+        if metAt then
+            count += 1
+        end
+    end
+    if count > stats:Get(player, "creators_met") then
+        stats:Set(player, "creators_met", count)
+    end
 end
 
 function MeetCreatorService:_creatorFor(userId)
@@ -51,6 +68,7 @@ function MeetCreatorService:_tryMeet(player, creatorUserId, creatorDef)
     end
     local data = dataService:GetData(player)
     data.MetCreators = data.MetCreators or {}
+    self:_reconcileCreatorCounter(player, data)
     if data.MetCreators[tostring(creatorUserId)] then
         return -- once, ever
     end
@@ -84,6 +102,10 @@ end
 
 -- Scan: for `player`, check every registered creator present in this server.
 function MeetCreatorService:_scanFor(player)
+    local data = self._dataService and self._dataService:GetData(player)
+    if data then
+        self:_reconcileCreatorCounter(player, data)
+    end
     for creatorId, def in pairs(self._config.creators or {}) do
         local creatorPlayer = Players:GetPlayerByUserId(tonumber(creatorId))
         if creatorPlayer then -- including the creator themselves
@@ -198,6 +220,9 @@ function MeetCreatorService:ResetMeets(player)
         count += 1
     end
     data.MetCreators = {}
+    if self._statsService then
+        self._statsService:Set(player, "creators_met", 0)
+    end
     dataService:RequestSave(player, "meet_reset", { critical = true })
     self._logger:Warn("MetCreators reset (admin)", { player = player.Name, cleared = count })
     -- re-scan NOW (the join-scan already ran) so the meet re-fires without a rejoin

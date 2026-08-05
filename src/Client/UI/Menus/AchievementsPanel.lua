@@ -38,6 +38,30 @@ local COLORS = {
 local AchievementsPanel = {}
 AchievementsPanel.__index = AchievementsPanel
 
+local function rewardHint(tier)
+    local reward = tier and tier.reward
+    if type(reward) ~= "table" then
+        return nil
+    end
+    if reward.amount then
+        return "💎 " .. tostring(reward.amount)
+    end
+    local bundle = reward.bundle
+    if type(bundle) ~= "table" then
+        return nil
+    end
+    local gems = bundle.currencies and bundle.currencies.gems
+    local hasTitle = type(bundle.titles) == "table" and #bundle.titles > 0
+    if gems and hasTitle then
+        return "💎 " .. tostring(gems) .. " + Title"
+    elseif gems then
+        return "💎 " .. tostring(gems)
+    elseif hasTitle then
+        return "🏷 Title"
+    end
+    return "Special Reward"
+end
+
 function AchievementsPanel.new()
     local self = setmetatable({}, AchievementsPanel)
     self.isVisible = false
@@ -309,14 +333,14 @@ function AchievementsPanel:_makeRow(entry, order)
     fcn.Parent = fill
 
     -- right side: Claim button (reached) / "✓ Claimed" (maxed) / reward hint
-    local rewardAmt = tier and tier.reward and tier.reward.amount
+    local hint = rewardHint(tier)
     if reached then
         local claim = Instance.new("TextButton")
         claim.Size = UDim2.new(0, 120, 0, 56)
         claim.Position = UDim2.new(1, -132, 0.5, 0)
         claim.AnchorPoint = Vector2.new(0, 0.5)
         claim.BackgroundColor3 = COLORS.claimable
-        claim.Text = rewardAmt and ("Claim\n💎 " .. rewardAmt) or "Claim"
+        claim.Text = hint and ("Claim\n" .. hint) or "Claim"
         claim.TextColor3 = COLORS.text
         claim.TextScaled = true
         claim.Font = Enum.Font.GothamBold
@@ -341,7 +365,7 @@ function AchievementsPanel:_makeRow(entry, order)
         side.Position = UDim2.new(1, -132, 0.5, 0)
         side.AnchorPoint = Vector2.new(0, 0.5)
         side.BackgroundTransparency = 1
-        side.Text = tier and (rewardAmt and ("Reward\n💎 " .. rewardAmt) or "") or "✓ Done"
+        side.Text = tier and (hint and ("Reward\n" .. hint) or "") or "✓ Done"
         side.TextColor3 = tier and COLORS.subtext or COLORS.claimed
         side.TextScaled = true
         side.Font = Enum.Font.GothamBold

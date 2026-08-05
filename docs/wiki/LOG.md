@@ -2136,3 +2136,14 @@ rewrite.
 - Resolved the Studio test-pass conflict: the creator gate OFF state suppresses automatic pass
   sources but retains an explicit Founder selection, so reset tests no passes and each subsequent
   choice tests exactly one benefit.
+
+## 2026-08-05 — Quest rewards, achievements, and Health Potions
+
+- Completed the quest reward audit: explicit Grass payout for First Steps, five Fortune Flasks at
+  the 1,000-hatch capstone, reachable four-area Trailblazer finale, combined-realm Crossing counter,
+  and lifetime reconciliation for finite unlock/creator actions.
+- Moved the 1,000/10,000 general Trial career milestones from the active quest chain to claimable
+  achievements with gems and permanent titles, including no-double-pay migration from old claims.
+- Made the common Health Potion functional through the structured inventory path: one potion heals
+  25% of each deployed living pet's own endurance pool, respects resurrection sickness, never
+  revives a downed pet, and is not consumed when the squad is already healthy.

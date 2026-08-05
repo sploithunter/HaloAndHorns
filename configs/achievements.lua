@@ -10,8 +10,8 @@
     AchievementsService owns the reached/claimed/progress state; `category` groups them in the panel.
 
     Each achievement tracks ONE stat counter (configs/stats.lua) across ascending `tiers`
-    (goal strictly increases). Rewards are currency-only (the schema's shape). Capstone PET rewards
-    are a follow-up (needs a reward-schema extension).
+    (goal strictly increases). Rewards use the unified RewardBundle and may include currency, pets,
+    items, effects, capacity, or permanent titles.
 ]]
 
 return {
@@ -25,6 +25,7 @@ return {
         collection = { title = "Collection", order = 4, icon = "🐾" },
         progression = { title = "Progression", order = 5, icon = "⭐" },
         exploration = { title = "Exploration", order = 6, icon = "🧭" },
+        trials = { title = "Trials", order = 7, icon = "🚪" },
     },
 
     achievements = {
@@ -376,8 +377,13 @@ return {
             stat = "creators_met",
             tiers = {
                 {
-                    id = "creators_5",
-                    goal = 5,
+                    id = "creators_1",
+                    goal = 1,
+                    reward = { type = "currency", currency = "gems", amount = 15 },
+                },
+                {
+                    id = "creators_2",
+                    goal = 2,
                     reward = { type = "currency", currency = "gems", amount = 25 },
                 },
             },
@@ -418,6 +424,42 @@ return {
                     id = "hell_1",
                     goal = 1,
                     reward = { type = "currency", currency = "gems", amount = 20 },
+                },
+            },
+        },
+
+        -- The extreme random-Trial milestones are passive career accomplishments, not active
+        -- quest-chain blockers. Their legacy quest claims migrate without duplicating gems; prior
+        -- claimants receive only the new permanent title.
+        missions_completed = {
+            id = "missions_completed",
+            category = "trials",
+            display_name = "Infinite Halls",
+            stat = "missions_completed",
+            tiers = {
+                {
+                    id = "trials_1k",
+                    goal = 1000,
+                    legacy_quest_claim = "tr_random_1000",
+                    legacy_claim_reward = { titles = { "Thousand-Door Veteran" } },
+                    reward = {
+                        bundle = {
+                            currencies = { gems = 500 },
+                            titles = { "Thousand-Door Veteran" },
+                        },
+                    },
+                },
+                {
+                    id = "trials_10k",
+                    goal = 10000,
+                    legacy_quest_claim = "tr_random_10000",
+                    legacy_claim_reward = { titles = { "Legend of the Infinite Halls" } },
+                    reward = {
+                        bundle = {
+                            currencies = { gems = 2500 },
+                            titles = { "Legend of the Infinite Halls" },
+                        },
+                    },
                 },
             },
         },

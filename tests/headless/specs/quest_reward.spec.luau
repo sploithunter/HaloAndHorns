@@ -61,6 +61,58 @@ return function()
             local reward = quests.defs.fs_cave.reward
             expect(reward.ensure_earned_level).to.equal(4)
             expect(reward.future_call_tokens).to.equal(2)
+            expect(reward.currencies.grass_coins).to.equal(1500)
+            expect(reward.currencies.area_coins).to.equal(nil)
+        end)
+
+        it("makes the Hatchery capstone thematic with five Fortune Flasks", function()
+            local reward = loadModule("configs/quests.lua").defs.hatch_250.reward
+            expect(reward.items[1].id).to.equal("fortune_flask")
+            expect(reward.items[1].qty).to.equal(5)
+            expect(reward.items[1].bucket).to.equal("potions")
+        end)
+
+        it("keeps finite exploration actions lifetime-backed and reachable", function()
+            local defs = loadModule("configs/quests.lua").defs
+            expect(defs.path_next_area.condition.since_start).to.equal(nil)
+            expect(defs.path_3_areas.condition.since_start).to.equal(nil)
+            expect(defs.path_creators.name).to.equal("Unlock 4 Areas")
+            expect(defs.path_creators.condition.counter).to.equal("areas_unlocked")
+            expect(defs.path_creators.condition.value).to.equal(4)
+            expect(defs.realm_settler.condition.counter).to.equal("realm_areas_unlocked")
+        end)
+
+        it("moves extreme Trial milestones into achievements without losing rewards", function()
+            local quests = loadModule("configs/quests.lua")
+            local achievements = loadModule("configs/achievements.lua")
+            expect(quests.defs.tr_random_1000).to.equal(nil)
+            expect(quests.defs.tr_random_10000).to.equal(nil)
+            local tiers = achievements.achievements.missions_completed.tiers
+            expect(tiers[1].goal).to.equal(1000)
+            expect(tiers[1].legacy_quest_claim).to.equal("tr_random_1000")
+            expect(tiers[1].reward.bundle.currencies.gems).to.equal(500)
+            expect(tiers[1].reward.bundle.titles[1]).to.equal("Thousand-Door Veteran")
+            expect(tiers[2].goal).to.equal(10000)
+        end)
+
+        it("tracks creator meetings as achievable one- and two-creator achievements", function()
+            local tiers = loadModule("configs/achievements.lua").achievements.creators_met.tiers
+            expect(tiers[1].goal).to.equal(1)
+            expect(tiers[2].goal).to.equal(2)
+        end)
+
+        it("defines Health Potion as a 25-percent deployed-squad heal", function()
+            local items = loadModule("configs/items.lua")
+            local health
+            for _, item in ipairs(items) do
+                if item.id == "health_potion" then
+                    health = item
+                    break
+                end
+            end
+            expect(health).to.be.ok()
+            expect(health.consumable).to.equal(true)
+            expect(health.effects.squad_health_restore_fraction).to.equal(0.25)
         end)
 
         it("resolves positive XP for every configured quest", function()

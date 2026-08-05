@@ -11,6 +11,7 @@
         pets       = { { id = "bear", variant = "golden", element = "light" } },
         items      = { { id = "health_potion", qty = 3, bucket = "consumables" } },
         effects    = { { id = "speed_boost", seconds = 600, modifiers = {...} } },
+        titles     = { "Thousand-Door Veteran" },
         slots      = { pet_equip_slots = 1 },   -- permanent capacity (upgrade levels)
       }
 ]]
@@ -41,6 +42,7 @@ function RewardBundle.normalize(bundle)
         pets = copyList(bundle.pets),
         items = copyList(bundle.items),
         effects = copyList(bundle.effects),
+        titles = copyList(bundle.titles),
         slots = copyMap(bundle.slots),
         experience = tonumber(bundle.experience) or 0,
     }
@@ -66,6 +68,9 @@ function RewardBundle.merge(a, b)
     for _, e in ipairs(nb.effects) do
         table.insert(out.effects, e)
     end
+    for _, title in ipairs(nb.titles) do
+        table.insert(out.titles, title)
+    end
     out.experience = (out.experience or 0) + (nb.experience or 0)
     return out
 end
@@ -76,6 +81,7 @@ function RewardBundle.isEmpty(bundle)
         and #n.pets == 0
         and #n.items == 0
         and #n.effects == 0
+        and #n.titles == 0
         and next(n.slots) == nil
         and (n.experience or 0) == 0
 end

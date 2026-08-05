@@ -48,6 +48,46 @@ function AchievementsService:_ensureAchievements(data)
     return data.Achievements
 end
 
+-- The 1k/10k Trial milestones used to be quest-chain entries. Carry their claim ledger into the
+-- passive achievement ledger so an existing player cannot collect the same gem reward twice.
+-- A small migration-only bundle may still grant the newly introduced permanent title.
+function AchievementsService:_reconcileLegacyQuestClaims(player, data)
+    local claims = type(data.QuestClaims) == "table" and data.QuestClaims or {}
+    local state = self:_ensureAchievements(data)
+    local changed = false
+    for _, achievement in pairs(self._config.achievements or {}) do
+        state.Completed[achievement.id] = state.Completed[achievement.id] or {}
+        for _, tier in ipairs(achievement.tiers or {}) do
+            local legacyId = tier.legacy_quest_claim
+            if
+                legacyId
+                and (tonumber(claims[legacyId]) or 0) > 0
+                and not state.Completed[achievement.id][tier.id]
+            then
+                local migrationReward = tier.legacy_claim_reward
+                if type(migrationReward) == "table" and self._rewardService then
+                    self._rewardService:Grant(
+                        player,
+                        migrationReward,
+                        "achievement_migration_" .. achievement.id .. "_" .. tier.id
+                    )
+                end
+                state.Completed[achievement.id][tier.id] = {
+                    completed_at = os.time(),
+                    stat = achievement.stat,
+                    goal = tier.goal,
+                    value = self._statsService:Get(player, achievement.stat),
+                    migrated_from_quest = legacyId,
+                }
+                changed = true
+            end
+        end
+    end
+    if changed then
+        self._dataService:RequestSave(player, "achievement_quest_migration", { critical = true })
+    end
+end
+
 -- Translate an achievement tier reward into a RewardBundle. Supports the legacy
 -- currency shape ({ type="currency", currency, amount }) and a forward-looking full
 -- bundle ({ bundle = { currencies/pets/items/effects/slots } }) so achievements can
@@ -180,6 +220,9 @@ end
 
 function AchievementsService:GetAchievements(player)
     local data = self._dataService:GetData(player)
+    if data then
+        self:_reconcileLegacyQuestClaims(player, data)
+    end
     local state = data and self:_ensureAchievements(data) or { Completed = {} }
     local result = {}
 
@@ -225,6 +268,7 @@ function AchievementsService:Claim(player, achievementId, tierId)
     if type(data) ~= "table" then
         return { ok = false, reason = "no_data" }
     end
+    self:_reconcileLegacyQuestClaims(player, data)
     local state = self:_ensureAchievements(data)
     if state.Completed[achievementId] and state.Completed[achievementId][tierId] then
         return { ok = false, reason = "already_claimed" }

@@ -126,6 +126,11 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        realm_areas_unlocked = {
+            display_name = "Heaven or Hell Areas Unlocked",
+            scope = "lifetime",
+            default = 0,
+        },
         -- TRADER TRACK (Jason: "a leaderboard for prolific traders... not the
         -- billboard now, but let's start capturing the data"). Kept fully separate
         -- from the *_earned_lifetime environment counters.
@@ -259,5 +264,6 @@ return {
         entered_hell = "hell_visits",
         heaven_area_unlocked = "heaven_areas_unlocked",
         hell_area_unlocked = "hell_areas_unlocked",
+        realm_area_unlocked = "realm_areas_unlocked",
     },
 }

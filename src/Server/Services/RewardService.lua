@@ -27,6 +27,7 @@ function RewardService:Init()
     self._inventoryService = self._modules and self._modules.InventoryService
     self._petGrantService = self._modules and self._modules.PetGrantService
     self._playerEffectsService = self._modules and self._modules.PlayerEffectsService
+    self._potionService = nil
     self._playerProgressionService = nil
     self._config = self._configLoader:LoadConfig("rewards")
     self._grantLog = {} -- append-only, capped at config.grant_log_limit
@@ -34,6 +35,10 @@ end
 
 function RewardService:SetPlayerProgressionService(service)
     self._playerProgressionService = service
+end
+
+function RewardService:SetPotionService(service)
+    self._potionService = service
 end
 
 -- Per-player override for the "area_coins" token, consumed for the duration of a
@@ -65,7 +70,14 @@ end
 -- ("quest:crystal_crusher", "daily:3", "shop:starter_pack").
 function RewardService:Grant(player, bundle, source)
     local b = RewardBundle.normalize(bundle)
-    local granted = { currencies = {}, items = {}, pets = {}, effects = {}, slots = {} }
+    local granted = {
+        currencies = {},
+        items = {},
+        pets = {},
+        effects = {},
+        titles = {},
+        slots = {},
+    }
 
     -- Currencies. "area_coins" is a TOKEN, not a currency: it resolves to the mining
     -- coin of the player's CURRENT area (Jason: rewards should pay the coin of the
@@ -85,15 +97,27 @@ function RewardService:Grant(player, bundle, source)
     local inventory = self._inventoryService
     for _, item in ipairs(b.items) do
         local bucket = item.bucket or self._config.default_item_bucket or "consumables"
-        if inventory then
+        local quantity = item.qty or item.quantity or 1
+        if bucket == "potions" and self._potionService then
+            local result = self._potionService:Grant(player, item.id, quantity)
+            table.insert(granted.items, {
+                id = item.id,
+                qty = quantity,
+                bucket = bucket,
+                ok = result and result.ok == true,
+            })
+        elseif inventory then
             local uid = inventory:AddItem(player, bucket, {
                 id = item.id,
                 variant = item.variant or "basic",
-                quantity = item.qty or item.quantity or 1,
+                quantity = quantity,
             })
-            table.insert(granted.items, { id = item.id, qty = item.qty or 1, uid = uid })
+            table.insert(
+                granted.items,
+                { id = item.id, qty = quantity, uid = uid, bucket = bucket }
+            )
         else
-            table.insert(granted.items, { id = item.id, qty = item.qty or 1 })
+            table.insert(granted.items, { id = item.id, qty = quantity, bucket = bucket })
         end
     end
 
@@ -125,6 +149,16 @@ function RewardService:Grant(player, bundle, source)
             end)
         end
         table.insert(granted.effects, { id = effect.id, seconds = effect.seconds })
+    end
+
+    -- Permanent profile titles. GrantTitle is idempotent, so migration and retry paths are safe.
+    if self._dataService then
+        for _, title in ipairs(b.titles) do
+            if type(title) == "string" and title ~= "" then
+                local ok = self._dataService:GrantTitle(player, title)
+                table.insert(granted.titles, { title = title, ok = ok == true })
+            end
+        end
     end
 
     -- Experience (drives the derived player level via PlayerProgressionService).
