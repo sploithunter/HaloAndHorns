@@ -919,6 +919,24 @@ function MonetizationService:_sendFoundersChoiceState(player, show, errorMessage
 end
 
 function MonetizationService:GetFoundersChoiceState(player, request)
+    -- The client UI becomes ready before profile persistence necessarily does. On a first-time
+    -- reservation, FoundersChoiceService later emits StateChanged; on a rejoin with an already
+    -- decided (but still unclaimed) choice there is no new eligibility transition to emit. Reading
+    -- before DataLoaded therefore hid the chooser for the whole session. Always answer from the
+    -- loaded profile so dismissing/rejoining never forfeits or strands an unclaimed choice.
+    if not Readiness.awaitAttribute(player, "DataLoaded", true, 30) then
+        if player.Parent then
+            self:_sendFoundersChoiceState(
+                player,
+                type(request) == "table" and request.open == true,
+                "Your profile is still loading. Please try again."
+            )
+        end
+        return
+    end
+    if not player.Parent then
+        return
+    end
     self._foundersChoiceService:QueueEligibility(player, false)
     local state = self._foundersChoiceService:GetState(player)
     local wantsOpen = type(request) == "table" and request.open == true
