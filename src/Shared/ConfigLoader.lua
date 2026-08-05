@@ -2480,12 +2480,14 @@ function ConfigLoader:_validateEventsConfig(config)
                 )
             end
             -- weekdays = MOUNTAIN weekdays (1=Sun..7=Sat); weekdays_utc kept as a legacy alias.
+            -- No weekday field is intentional: EventService treats it as every day, which is how
+            -- launch promotions stay continuously active without duplicating all seven weekdays.
             local weekdays = schedule.weekdays or schedule.weekdays_utc
             local field = schedule.weekdays ~= nil and "weekdays" or "weekdays_utc"
-            if not isArray(weekdays) then
+            if weekdays ~= nil and not isArray(weekdays) then
                 return self:_configError("events", path .. "." .. field, "expected array")
             end
-            for index, weekday in ipairs(weekdays) do
+            for index, weekday in ipairs(weekdays or {}) do
                 if type(weekday) ~= "number" or weekday < 1 or weekday > 7 or weekday % 1 ~= 0 then
                     return self:_configError(
                         "events",
