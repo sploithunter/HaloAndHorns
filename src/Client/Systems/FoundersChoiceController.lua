@@ -17,12 +17,9 @@ local gui
 local COLORS = {
     dim = Color3.fromRGB(7, 9, 16),
     panel = Color3.fromRGB(22, 24, 35),
-    header = Color3.fromRGB(53, 37, 102),
     card = Color3.fromRGB(39, 43, 58),
     white = Color3.fromRGB(248, 249, 253),
     body = Color3.fromRGB(205, 211, 226),
-    gold = Color3.fromRGB(255, 198, 55),
-    green = Color3.fromRGB(38, 192, 106),
     red = Color3.fromRGB(255, 110, 110),
 }
 
@@ -43,6 +40,7 @@ local function label(parent, text, size, position, font, color, textSize)
     value.TextSize = textSize or 18
     value.TextWrapped = true
     value.TextXAlignment = Enum.TextXAlignment.Left
+    value.ZIndex = math.max(2, parent.ZIndex + 1)
     value.Parent = parent
     return value
 end
@@ -60,7 +58,7 @@ local function confirmation(parent, choice)
     blocker.Size = UDim2.fromScale(1, 1)
     blocker.BackgroundColor3 = COLORS.dim
     blocker.BackgroundTransparency = 0.12
-    blocker.ZIndex = 30
+    blocker.ZIndex = 140
     blocker.Parent = parent
 
     local box = Instance.new("Frame")
@@ -68,10 +66,10 @@ local function confirmation(parent, choice)
     box.Position = UDim2.fromScale(0.5, 0.5)
     box.Size = UDim2.fromOffset(570, 255)
     box.BackgroundColor3 = COLORS.panel
-    box.ZIndex = 31
+    box.ZIndex = 141
     box.Parent = blocker
     corner(box, 18)
-    PanelChrome.pillBorder(box, "citrine", 34, 0)
+    PanelChrome.pillBorder(box, "citrine", 145, 0, 0.07)
 
     local title = label(
         box,
@@ -102,10 +100,10 @@ local function confirmation(parent, choice)
     cancel.TextColor3 = COLORS.white
     cancel.TextSize = 18
     cancel.Font = Enum.Font.GothamBold
-    cancel.ZIndex = 33
+    cancel.ZIndex = 144
     cancel.Parent = box
-    PanelChrome.pillPanel(cancel, "sapphire", 32)
-    PanelChrome.pillBorder(cancel, "sapphire", 34, 0)
+    PanelChrome.pillPanel(cancel, "sapphire", 142)
+    PanelChrome.pillBorder(cancel, "sapphire", 143, 0, 0.08)
     cancel.Activated:Connect(function()
         blocker:Destroy()
     end)
@@ -118,10 +116,10 @@ local function confirmation(parent, choice)
     confirm.TextColor3 = Color3.fromRGB(23, 58, 28)
     confirm.TextSize = 18
     confirm.Font = Enum.Font.GothamBold
-    confirm.ZIndex = 33
+    confirm.ZIndex = 144
     confirm.Parent = box
-    PanelChrome.pillPanel(confirm, "emerald", 32)
-    PanelChrome.pillBorder(confirm, "emerald", 34, 0)
+    PanelChrome.pillPanel(confirm, "emerald", 142)
+    PanelChrome.pillBorder(confirm, "emerald", 143, 0, 0.08)
     confirm.Activated:Connect(function()
         confirm.Active = false
         confirm.Text = "CLAIMING…"
@@ -143,80 +141,69 @@ local function show(state)
     dim.BackgroundTransparency = 0.15
     dim.Parent = gui
 
-    local panel = Instance.new("Frame")
-    panel.AnchorPoint = Vector2.new(0.5, 0.5)
-    panel.Position = UDim2.fromScale(0.5, 0.5)
-    panel.Size = UDim2.fromOffset(980, 650)
-    panel.BackgroundColor3 = COLORS.panel
-    panel.Parent = gui
-    corner(panel, 20)
-    PanelChrome.pillBorder(panel, "citrine", 4, 0)
+    -- Use the same shell as the rest of the game's menus. This supplies the standard thin
+    -- area-colored border, covered corners, and the image-backed X offset over the top-right corner.
+    local shell = PanelChrome.build(gui, {
+        name = "FoundersChoicePanel",
+        title = "🎁 FOUNDER'S CHOICE",
+        size = UDim2.fromOffset(980, 650),
+        onClose = close,
+    })
+    local panel = shell.frame
     UIViewportScale.attach(panel, { min = 0.34 })
 
-    local header = Instance.new("Frame")
-    header.Size = UDim2.new(1, 0, 0, 112)
-    header.BackgroundColor3 = COLORS.header
-    header.Parent = panel
-    corner(header, 18)
-    local title = label(
-        header,
-        "🎁 FOUNDER'S CHOICE",
-        UDim2.new(1, -120, 0, 48),
-        UDim2.fromOffset(24, 12),
-        Enum.Font.GothamBlack,
-        COLORS.white,
-        34
-    )
-    title.TextXAlignment = Enum.TextXAlignment.Center
+    -- Clip every scrolling/status child inside the shared chrome so no footer copy can leak through
+    -- the bottom pill border. The shell's close button remains outside this clipped content frame.
+    local content = Instance.new("Frame")
+    content.Name = "Content"
+    content.Size = UDim2.new(1, -28, 0.88, -10)
+    content.Position = UDim2.new(0, 14, 0.11, 0)
+    content.BackgroundTransparency = 1
+    content.ClipsDescendants = true
+    content.ZIndex = 101
+    content.Parent = panel
+
     local subtitle = label(
-        header,
+        content,
         "Launch Founder #"
             .. tostring(state.claimNumber or "—")
             .. " • Pick one permanent benefit",
-        UDim2.new(1, -120, 0, 34),
-        UDim2.fromOffset(24, 62),
+        UDim2.new(1, -32, 0, 34),
+        UDim2.fromOffset(16, 2),
         Enum.Font.GothamMedium,
         Color3.fromRGB(226, 218, 255),
         19
     )
     subtitle.TextXAlignment = Enum.TextXAlignment.Center
 
-    local closeButton = Instance.new("TextButton")
-    closeButton.Size = UDim2.fromOffset(48, 48)
-    closeButton.Position = UDim2.new(1, -62, 0, 15)
-    closeButton.BackgroundTransparency = 1
-    closeButton.Text = "✕"
-    closeButton.TextColor3 = COLORS.white
-    closeButton.TextSize = 28
-    closeButton.Font = Enum.Font.GothamBlack
-    closeButton.ZIndex = 6
-    closeButton.Parent = header
-    PanelChrome.pillPanel(closeButton, "ruby", 5)
-    PanelChrome.pillBorder(closeButton, "ruby", 7, 0)
-    closeButton.Activated:Connect(close)
-
     local note = label(
-        panel,
+        content,
         "No Robux price. Benefits do not stack with the same pass, and the shop will block duplicate purchases.",
-        UDim2.new(1, -40, 0, 36),
-        UDim2.fromOffset(20, 118),
+        UDim2.new(1, -32, 0, 32),
+        UDim2.fromOffset(16, 38),
         Enum.Font.GothamMedium,
-        COLORS.body,
+        state.error and COLORS.red or COLORS.body,
         16
     )
+    if state.error then
+        note.Text = tostring(state.error)
+    end
     note.TextXAlignment = Enum.TextXAlignment.Center
 
     local scroll = Instance.new("ScrollingFrame")
-    scroll.Size = UDim2.new(1, -34, 1, -206)
-    scroll.Position = UDim2.fromOffset(17, 158)
+    scroll.Name = "Choices"
+    scroll.Size = UDim2.new(1, -18, 1, -82)
+    scroll.Position = UDim2.fromOffset(9, 76)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 7
     scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
     scroll.CanvasSize = UDim2.new()
-    scroll.Parent = panel
+    scroll.ClipsDescendants = true
+    scroll.ZIndex = 102
+    scroll.Parent = content
     local grid = Instance.new("UIGridLayout")
-    grid.CellSize = UDim2.fromOffset(290, 220)
+    grid.CellSize = UDim2.fromOffset(290, 214)
     grid.CellPadding = UDim2.fromOffset(14, 14)
     grid.HorizontalAlignment = Enum.HorizontalAlignment.Center
     grid.SortOrder = Enum.SortOrder.LayoutOrder
@@ -227,6 +214,8 @@ local function show(state)
         card.Name = "Choice_" .. tostring(choice.id)
         card.LayoutOrder = order
         card.BackgroundColor3 = COLORS.card
+        card.BorderSizePixel = 0
+        card.ZIndex = 103
         card.Parent = scroll
         corner(card, 14)
 
@@ -236,6 +225,7 @@ local function show(state)
         icon.BackgroundTransparency = 1
         icon.Image = tostring(choice.icon or "")
         icon.ScaleType = Enum.ScaleType.Fit
+        icon.ZIndex = 104
         icon.Parent = card
 
         label(
@@ -267,10 +257,14 @@ local function show(state)
         choose.TextSize = 17
         choose.Font = Enum.Font.GothamBold
         choose.Active = not choice.unavailable
+        choose.AutoButtonColor = false
+        choose.ZIndex = 107
         choose.Parent = card
         local key = choice.unavailable and "amethyst" or "emerald"
-        PanelChrome.pillPanel(choose, key, 2)
-        PanelChrome.pillBorder(choose, key, 4, 0)
+        -- The TextButton must sit above both 9-slice images; the previous ordering put the opaque
+        -- green panel over the TextButton's own text, which produced the blank buttons in live UI.
+        PanelChrome.pillPanel(choose, key, 105)
+        PanelChrome.pillBorder(choose, key, 106, 0, 0.08)
         if not choice.unavailable then
             choose.Activated:Connect(function()
                 confirmation(panel, choice)
@@ -278,16 +272,6 @@ local function show(state)
         end
     end
 
-    local status = label(
-        panel,
-        state.error and tostring(state.error) or "You can close this and return from the Pet Shop.",
-        UDim2.new(1, -40, 0, 34),
-        UDim2.new(0, 20, 1, -40),
-        Enum.Font.GothamBold,
-        state.error and COLORS.red or COLORS.gold,
-        16
-    )
-    status.TextXAlignment = Enum.TextXAlignment.Center
     gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
