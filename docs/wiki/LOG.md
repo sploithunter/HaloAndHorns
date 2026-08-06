@@ -2217,3 +2217,16 @@ rewrite.
   configured +25% Huge Fortune rather than showing the unscaled Basic +17% value.
 - Normalized variant names and retained a Basic fallback for legacy records/models, with headless
   coverage for Basic, Golden, Rainbow, mixed-case, and missing variants.
+
+## 2026-08-06 — Enchant HUD and effective-stat reconciliation
+
+- Unified rarity/Huge-scaled enchant magnitude through `EnchantRuntime` so gameplay, inventory
+  tooltips, and the enchanter report the same percentage (for example Exclusive Silver Tactics is
+  +15%, not the unscaled +7.5%).
+- Replaced the partial generic enchant badges with one config-driven player-bar badge per equipped
+  effect, including Tactics, Efficiency, Home World, and Crystal Finder.
+- Composed modifier-pipeline values into Active Buffs: Tactics updates Attack, Efficiency updates Pet
+  Speed, Home World/Coin Finder update Coin, and Home World/Crystal Finder update a distinct Crystal
+  rewards row. A stable revision channel handles equal-value enchant swaps without polling churn.
+- Recorded that Home World's current implementation is globally active; its described
+  current-world/usefulness gate still needs a precise game rule before changing balance behavior.

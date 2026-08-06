@@ -52,6 +52,8 @@ EffectiveStats.AXES = {
             "PetDamageBuffPotionUntil",
             "OverheatDamageBuff",
             "OverheatDamageBuffUntil",
+            "EnchantPetDamage",
+            "EnchantRevision",
         },
         sources = function(get)
             return {
@@ -79,6 +81,7 @@ EffectiveStats.AXES = {
             "CoinYieldPower",
             "CoinYieldPowerUntil",
             "EnchantCoinBonus",
+            "EnchantRevision",
         },
         sources = function(get)
             return {
@@ -112,6 +115,8 @@ EffectiveStats.AXES = {
             "LuckBuffPotionUntil",
             "HatchLuckBuff",
             "HatchLuckBuffUntil",
+            "EnchantHatchLuck",
+            "EnchantRevision",
         },
         sources = function(get)
             return {
@@ -160,6 +165,24 @@ EffectiveStats.AXES = {
             return {
                 { fraction = frac(get, "RechargeBuff"), expiry = frac(get, "RechargeBuffUntil") },
             }
+        end,
+    },
+    pet_efficiency = {
+        attr = "Eff_Efficiency",
+        -- EnchantEfficiency is resolved through the ModifierService pipeline; it is watched here
+        -- so the publisher refreshes immediately when the equipped enchanted squad changes.
+        watch = { "EnchantEfficiency", "EnchantRevision" },
+        sources = function(_get)
+            return {}
+        end,
+    },
+    crystal_yield = {
+        attr = "Eff_Crystals",
+        -- Home World and Crystal Finder both resolve through breakable_reward. The revision is the
+        -- reliable trigger when the equipped effect identity changes but its aggregate value does not.
+        watch = { "EnchantCoinBonus", "EnchantRevision" },
+        sources = function(_get)
+            return {}
         end,
     },
     xp = {

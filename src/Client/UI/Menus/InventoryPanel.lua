@@ -105,6 +105,7 @@ local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModel
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- shared variant-scaled aura math
+local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime) -- effective type-scaled enchant math
 local PetBadge = require(script.Parent.Parent.PetBadge)
 -- Two-number card display (⛏ mining / ⚔ combat) — assembles the PetPower profile from config.
 local petPowerViewOk, PetPowerView = pcall(function()
@@ -5976,11 +5977,12 @@ function InventoryPanel:_showItemTooltip(item, sourceFrame)
                     value = value .. " · " .. tier.name
                 end
                 local effect = enchCfg.effects and enchant.id and enchCfg.effects[enchant.id]
-                local per = effect
-                    and effect.modifier
-                    and tonumber(effect.modifier.amount_per_strength)
-                if per then
-                    value = value .. (" (+%.1f%%)"):format(strength * per * 100)
+                if effect and effect.modifier then
+                    local magnitude = EnchantRuntime.magnitude(enchant, {
+                        huge = item.huge,
+                        rarity_id = item.rarityId,
+                    }, enchCfg)
+                    value = value .. (" (+%.1f%%)"):format(magnitude * 100)
                 else
                     value = value .. " +" .. self:_formatNumber(strength)
                 end

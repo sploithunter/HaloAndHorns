@@ -16,6 +16,8 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
+local ENCHANTS_CONFIG = require(ReplicatedStorage.Configs:WaitForChild("enchants"))
+local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
@@ -110,32 +112,28 @@ local BUFFS = {
     { attr = "RechargeBuff", label = "RCH" }, -- Hasten (TIMED self-buff now → countdown, not a toggle)
     { attr = "XpBuff", label = "XP", toggleable = true }, -- XP Surge
     { attr = "MagnetBuff", label = "MAG", toggleable = true }, -- Magnet (drop pull radius, #167)
-    -- ENCHANT aggregates (Jason: "I do have the buff... [but] not buffed visually on my
-    -- player bar"): EnchantService stamps <Attr>+Until while any equipped pet carries the
-    -- matching enchant. Neutral (purple) disc = the enchant system's color, same as the
-    -- card badges. Provided by an equipped PET (the enchant lives on it) -> "PET", not "ON".
-    {
-        attr = "EnchantCoinBonus",
-        label = "COIN",
-        fixed = { element = "neutral", symbol = "coins_up" },
-        steady = true,
-        petSource = true,
-    },
-    {
-        attr = "EnchantPetXpBonus",
-        label = "XP",
-        fixed = { element = "neutral", symbol = "xp_up" },
-        steady = true,
-        petSource = true,
-    },
-    {
-        attr = "EnchantHatchLuck",
-        label = "LUCK",
-        fixed = { element = "neutral", symbol = "clover_lucky" },
-        steady = true,
-        petSource = true,
-    },
 }
+
+-- Every enchant gets its own replicated effect channel and therefore its own correct badge. The
+-- previous hardcoded three-entry subset omitted Tactics/Efficiency/Leadership/Secret Luck and
+-- collapsed Home World, Coin Finder, and Crystal Finder into one misleading coin icon.
+local enchantIds = {}
+for effectId in pairs(ENCHANTS_CONFIG.effects or {}) do
+    enchantIds[#enchantIds + 1] = effectId
+end
+table.sort(enchantIds)
+for _, effectId in ipairs(enchantIds) do
+    table.insert(BUFFS, {
+        attr = EnchantRuntime.effectAttribute(effectId),
+        label = string.upper(effectId),
+        fixed = {
+            element = "neutral",
+            symbol = (ENCHANTS_CONFIG.display.symbols or {})[effectId] or "star_sparkle",
+        },
+        steady = true,
+        petSource = true,
+    })
+end
 
 local BLINK_LEAD = 5 -- seconds: blink in the final stretch
 local BLINK_PERIOD = 0.5

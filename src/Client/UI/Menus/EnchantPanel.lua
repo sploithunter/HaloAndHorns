@@ -7,6 +7,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime)
 
 local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 local Locations = require(ReplicatedStorage.Shared.Locations)
@@ -844,7 +845,10 @@ function EnchantPanel:_formatSelectedEnchantDescription(pet)
     local modifier = config and config.modifier
     local strength = tonumber(enchant.strength) or 0
     if type(modifier) == "table" and strength > 0 then
-        local amount = strength * (tonumber(modifier.amount_per_strength) or 0)
+        local amount = EnchantRuntime.magnitude(enchant, {
+            huge = pet.huge,
+            rarity_id = pet.rarityId,
+        }, self.enchantConfig)
         local percent = math.floor(amount * 1000 + 0.5) / 10
         local suffix = string.format(" (+%.1f%%)", percent)
         return tostring(description or "Configured enchant effect.") .. suffix
