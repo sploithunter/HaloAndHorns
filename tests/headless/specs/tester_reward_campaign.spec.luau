@@ -56,6 +56,28 @@ return function()
             expect(record.variant).to.equal("rainbow")
         end)
 
+        it("upgrades a Huge award in place without replacing its identity or serial", function()
+            local record = {
+                id = "beta_pet",
+                awarded_to_user_id = 42,
+                award_tier = "basic",
+                variant = "basic",
+                huge = true,
+                serial = 17,
+                serial_key = "huge:beta_pet:basic",
+            }
+
+            local changed, tier = Campaign.reconcileTier(record, 42, 5, definition)
+
+            expect(changed).to.equal(true)
+            expect(tier).to.equal("golden")
+            expect(record.id).to.equal("beta_pet")
+            expect(record.variant).to.equal("golden")
+            expect(record.huge).to.equal(true)
+            expect(record.serial).to.equal(17)
+            expect(record.serial_key).to.equal("huge:beta_pet:basic")
+        end)
+
         it(
             "validates a same-species 1-percent huge campaign without hardcoding a huge id",
             function()
@@ -93,6 +115,8 @@ return function()
             expect(betaByte.category).to.equal("exclusive")
             expect(betaByte.origin).to.equal("grass")
             expect(roles.by_type.beta_tester_bot).to.equal("melee")
+            expect(roles.support_auras.beta_tester_bot.kind).to.equal("xp")
+            expect(roles.support_auras.signal_seal.kind).to.equal("huge_luck")
             expect(testerEgg.huge.chance).to.equal(0.01)
             expect(testerEgg.huge.pets.beta_tester_bot).to.equal(1)
         end)

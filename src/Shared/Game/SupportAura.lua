@@ -13,6 +13,9 @@
       offense  — team +damage on the owner; boosts mining AND combat (Lava / emberimp).
       yield    — team +coin payout on mining (Desert / meerkat). { interval, mult, duration }
       luck     — hatch luck for the PLAYER (Grass / bunny).
+      xp       — all XP earned by the PLAYER (tester reward / XP Surge identity).
+      huge_luck— Huge hatch attempts for the PLAYER (tester reward / Huge Fortune identity).
+      drop_rate— premium-drop chance for the PLAYER (tester reward / Windfall identity).
       rage     — SELF damage buff while hurt (bear). { enrage_below, mult, interval, duration }
       hold     — CONTROL: pin one enemy (no move/attack) for `duration`s; targets the player's focus
                  (assist → most-targeted-by-pets → nearest). { interval = recharge, duration } (experimental)

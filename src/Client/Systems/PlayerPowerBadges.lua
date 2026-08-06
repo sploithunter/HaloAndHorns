@@ -40,6 +40,27 @@ local BUFFS = {
         steady = true, -- continuously refreshed aura: solid badge, no countdown/blink
         petSource = true, -- a PET grants this (free, not a toggle) -> labelled "PET" not "ON"
     },
+    {
+        attr = "PetXpAura",
+        label = "XP",
+        fixed = { element = "exclusive", symbol = "xp_up" },
+        steady = true,
+        petSource = true,
+    },
+    {
+        attr = "HugeLuckAura",
+        label = "HUGE",
+        fixed = { element = "exclusive", symbol = "clover_huge" },
+        steady = true,
+        petSource = true,
+    },
+    {
+        attr = "DropRateAura",
+        label = "DROP",
+        fixed = { element = "exclusive", symbol = "gift_up" },
+        steady = true,
+        petSource = true,
+    },
     -- LUCKY SERVER (creator presence): purple-tinted clover — color from
     -- configs/creators.lua server_luck.display so the styling stays one-sourced
     -- (Jason: not the green look; individually configurable)

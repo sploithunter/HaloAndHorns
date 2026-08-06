@@ -41,6 +41,30 @@ can resize the same species, but a campaign may name a distinct Huge species.
   and Rainbow at 10. The hatch has a 1% same-species Huge roll.
 - Regular and Golden use authored models/textures and transparent flat card art. Rainbow deliberately
   reuses regular assets plus the standard runtime Rainbow treatment.
+- Beta Byte has the deterministic **XP Surge** farming identity. While deployed it increases every
+  XP source through the same effective-stat axis as the Natural power: +16.67% Basic, +20.84%
+  Golden, +25% Rainbow. The aura stacks additively with the player's activated XP Surge and is
+  visible on both the pet card and player buff row.
 - The Admin panel can replace the current test copy with Basic, Golden, Rainbow, or forced-Huge
   Rainbow eggs while the campaign is closed. Admin Reset to Beginning removes any held/hatched
   tester award and clears its ledger so the full claim flow can be replayed.
+
+## Five-week farming identities
+
+Each tester exclusive carries exactly one authored player-facing Natural farming aura. It is part of
+the pet definition, never rolled randomly and never stored as an enchantment. The pet must be
+deployed and alive; multiple sources on the same axis add under the normal buff law. This preserves
+the five-week collection identity without making the reward a general combat carry.
+
+| Week pet | Deterministic identity | Runtime axis |
+|---|---|---|
+| Beta Byte | XP Surge | all player XP |
+| Signal Seal | Huge Fortune | Huge hatch attempts |
+| Future pet 3 | Luck | species/variant hatch luck |
+| Future pet 4 | Windfall | enhancement, potion, and premium-drop chance |
+| Future pet 5 | Prospector | currency earned from crystals |
+
+Signal Seal's identity is reserved in config before its campaign content lands. The final three
+assignments are reserved by power; bind each to the authored pet id as that week's pet is imported.
+Huge tester rewards retain `huge`, serial, identity, and award provenance when their campaign tier
+advances; only the variant/tier changes in place.

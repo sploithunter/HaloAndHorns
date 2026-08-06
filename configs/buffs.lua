@@ -20,6 +20,8 @@ return {
         mining = { cap = 5.0 }, -- mining throughput / ore
         pet_damage = { cap = 5.0 }, -- pet attack damage (power buff + offense aura, additive)
         xp = { cap = 3.0 }, -- xp gain
+        drop_rate = { cap = 5.0 }, -- enhancement/potion/premium-gem chance
+        huge_luck = { cap = 5.0 }, -- jackpot-attempt multiplier
         move_speed = { cap = 1.0 }, -- +100% move speed max
         recharge = { cap = 0.75 }, -- power recharge rate (+75% faster max)
         crit = { cap = 0.5 }, -- +crit CHANCE (FLAT add to the roll's crit_chance, not a multiplier); Critical Strike

@@ -22,7 +22,9 @@ local Workspace = game:GetService("Workspace")
 local MeshAssembly = require(ReplicatedStorage.Shared.Assets.MeshAssembly)
 
 local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
+local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
 
 local DropService = {}
 DropService.__index = DropService
@@ -424,10 +426,11 @@ function DropService:TrySpawnEnhancementDrop(player, source, position, opts)
                 * LevelDiffYield.payout(myLevel, tonumber(opts.enemy_level), drops.level_diff)
         end
     end
-    -- Windfall (drop_rate axis): an active drop-rate buff multiplies the loot chance.
-    if (player:GetAttribute("DropRateBuffUntil") or 0) > os.time() then
-        chance = chance * (1 + (tonumber(player:GetAttribute("DropRateBuff")) or 0))
-    end
+    -- Windfall power + deployed tester-pet aura share THE additive drop_rate axis.
+    chance = chance
+        * EffectiveStats.multiplier("drop_rate", function(name)
+            return player:GetAttribute(name)
+        end, os.time(), (buffsConfig.axes or {}).drop_rate)
     chance = chance * (1 + (tonumber(player:GetAttribute("PetAbilityDropRate")) or 0))
     -- Showering Saturday (drop_rate global event): same axis, server-wide.
     local eventService = self._moduleLoader and self._moduleLoader:Get("EventService")
@@ -596,10 +599,11 @@ function DropService:TrySpawnPotionDrop(player, source, position)
         return false
     end
     local chance = (source == "enemy" and drops.enemy_chance) or drops.breakable_chance or 0
-    -- Windfall (drop_rate axis): an active drop-rate buff multiplies the loot chance.
-    if (player:GetAttribute("DropRateBuffUntil") or 0) > os.time() then
-        chance = chance * (1 + (tonumber(player:GetAttribute("DropRateBuff")) or 0))
-    end
+    -- Windfall power + deployed tester-pet aura share THE additive drop_rate axis.
+    chance = chance
+        * EffectiveStats.multiplier("drop_rate", function(name)
+            return player:GetAttribute(name)
+        end, os.time(), (buffsConfig.axes or {}).drop_rate)
     chance = chance * (1 + (tonumber(player:GetAttribute("PetAbilityDropRate")) or 0))
     -- drop_rate global event (e.g. Showering Saturday): same axis, server-wide.
     local eventService = self._moduleLoader and self._moduleLoader:Get("EventService")
