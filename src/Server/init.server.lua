@@ -260,7 +260,7 @@ loader:RegisterModule(
     -- DataService: the enhancement-drop origin gate reads data.Archetype. The
     -- loader only injects DECLARED deps into self._modules, so without this here
     -- self._dataService stayed nil and every drop was forced natural (Jason).
-    { "Logger", "ConfigLoader", "DataService" }
+    appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "modifiers", "ModifierService")
 )
 -- SummonService (#178): capstone guardian summons (Gaia's Colossus / Genie of the Dunes).
 loader:RegisterModule(

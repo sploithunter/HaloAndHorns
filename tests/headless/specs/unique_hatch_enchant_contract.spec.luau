@@ -57,6 +57,7 @@ return function()
             local enchants = loadModule("configs/enchants.lua")
             local liveKinds = {
                 breakable_reward = true,
+                collect_radius = true,
                 pet_zone_resonance = true,
                 pet_xp = true,
                 hatch_luck = true,
@@ -68,6 +69,25 @@ return function()
             for _, effect in pairs(enchants.effects) do
                 expect(liveKinds[effect.modifier.kind]).to.equal(true)
             end
+        end)
+
+        it("routes the saved Crystal Finder identity into the live Magnet radius", function()
+            local enchants = loadModule("configs/enchants.lua")
+            local effect = enchants.effects.crystal_finder
+            expect(effect.display_name).to.equal("Magnet")
+            expect(effect.modifier.kind).to.equal("collect_radius")
+            expect(effect.modifier.currency).to.equal(nil)
+
+            local onyxExclusive = { id = "crystal_finder", strength = 5 }
+            local magnitude = EnchantRuntime.magnitude(onyxExclusive, {
+                rarity_id = "exclusive",
+            }, enchants)
+            expect(math.abs(magnitude - 0.30) < 1e-9).to.equal(true)
+
+            local dropSource = readFile("src/Server/Services/DropService.lua")
+            expect(dropSource:find('kind = "collect_radius"', 1, true)).never.to.equal(nil)
+            expect(dropSource:find("self._modifierService:Resolve(1", 1, true)).never.to.equal(nil)
+            expect(dropSource:find("MagnetRadius.resolve(", 1, true)).never.to.equal(nil)
         end)
 
         it("routes Coin Finder into every live biome coin payout", function()

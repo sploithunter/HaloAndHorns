@@ -88,6 +88,7 @@ end
 -- visible. Attribute per surfaced kind; only-on-change writes.
 local STAMPED_KINDS = {
     breakable_reward = "EnchantCoinBonus",
+    collect_radius = "EnchantCollectRadius",
     pet_zone_resonance = "EnchantHomeWorld",
     pet_xp = "EnchantPetXpBonus",
     hatch_luck = "EnchantHatchLuck",
@@ -161,7 +162,7 @@ function EnchantService:_stampAggregates(player)
         local stacks = effectCounts[effectId] or 0
         setIfChanged(attr .. "Stacks", stacks)
     end
-    -- A revision closes the equal-total swap case (for example Coin Finder -> Crystal Finder).
+    -- A revision closes the equal-total swap case (for example Coin Finder -> Magnet).
     -- The kind aggregate can remain numerically identical even though the modifier pipeline output
     -- changed; effective-stat publishers watch this revision and recompute the contextual result.
     if changed then
