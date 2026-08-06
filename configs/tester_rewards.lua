@@ -23,6 +23,9 @@ return {
             huge_chance = 0.01,
             claim = {
                 enabled = false,
+                -- Exercise the real reservation/grant path in Studio without opening the
+                -- production campaign before the advertised public window.
+                studio_enabled = true,
             },
         },
     },

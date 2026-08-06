@@ -30,6 +30,17 @@ return function()
             )
         end)
 
+        it("can open a closed public campaign in Studio only", function()
+            local studioDefinition = {
+                claim = {
+                    enabled = false,
+                    studio_enabled = true,
+                },
+            }
+            expect(Campaign.isClaimWindowOpen(studioDefinition, 150, false)).to.equal(false)
+            expect(Campaign.isClaimWindowOpen(studioDefinition, 150, true)).to.equal(true)
+        end)
+
         it("freezes with another owner and catches up when returned", function()
             local record = {
                 awarded_to_user_id = 42,
@@ -68,6 +79,7 @@ return function()
             expect(weekOne.egg_id).to.equal("beta_tester_egg")
             expect(weekOne.pet_id).to.equal("beta_tester_bot")
             expect(weekOne.claim.enabled).to.equal(false)
+            expect(weekOne.claim.studio_enabled).to.equal(true)
             expect(weekOne.claim_limit).to.equal(1)
             expect(weekOne.minimum_claim_level).to.equal(2)
             expect(weekOne.golden_level).to.equal(5)

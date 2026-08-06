@@ -2185,3 +2185,9 @@ rewrite.
   `beta_tester_bot` persistence id, one-award campaign contract, and 1% same-species Huge chance.
 - Classified Beta Byte as a Grass/Melee robot dog; Golden and Rainbow use the same identity and
   the Huge outcome remains the standard Huge treatment rather than a second species or reward.
+
+## 2026-08-06 — Studio-only Beta Byte campaign testing
+
+- Added a campaign-level `claim.studio_enabled` gate and enabled it for week one, allowing Studio
+  sessions to exercise the genuine eligibility, level-2 egg grant, and level-5/10 progression path
+  while `claim.enabled = false` continues to keep production distribution closed.

@@ -9,6 +9,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local TesterRewardCampaign = require(ReplicatedStorage.Shared.Game.TesterRewardCampaign)
@@ -246,7 +247,7 @@ function TesterRewardService:Reconcile(player, reason)
         local campaignState = self:_campaignState(root, awardId)
         if
             campaignState.eligible_at == nil
-            and TesterRewardCampaign.isClaimWindowOpen(campaign, now)
+            and TesterRewardCampaign.isClaimWindowOpen(campaign, now, RunService:IsStudio())
         then
             campaignState.eligible_at = now
             stateChanged = true
