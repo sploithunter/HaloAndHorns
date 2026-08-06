@@ -104,6 +104,7 @@ local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailRes
 local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
+local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- shared variant-scaled aura math
 local PetBadge = require(script.Parent.Parent.PetBadge)
 -- Two-number card display (⛏ mining / ⚔ combat) — assembles the PetPower profile from config.
 local petPowerViewOk, PetPowerView = pcall(function()
@@ -6014,11 +6015,14 @@ function InventoryPanel:_showItemTooltip(item, sourceFrame)
             local label = (meta and meta.label) or (tostring(aura.kind):gsub("^%l", string.upper))
             local mag = ""
             if aura.mult then
-                mag = (" +%d%%"):format((aura.mult - 1) * 100 + 0.5)
+                local scaled = SupportAura.scaleMultiplier(aura.mult, item.variant, PET_ROLES)
+                mag = (" +%d%%"):format((scaled - 1) * 100 + 0.5)
             elseif aura.amount then
-                mag = (" +%d"):format(aura.amount + 0.5)
+                local scaled = SupportAura.scaleMagnitude(aura.amount, item.variant, PET_ROLES)
+                mag = (" +%d"):format(scaled + 0.5)
             elseif aura.fraction then
-                mag = (" %d%%/%ds"):format(aura.fraction * 100 + 0.5, aura.interval or 2)
+                local scaled = SupportAura.scaleMagnitude(aura.fraction, item.variant, PET_ROLES)
+                mag = (" %d%%/%ds"):format(scaled * 100 + 0.5, aura.interval or 2)
             elseif aura.duration then
                 mag = (" %ds"):format(aura.duration)
             end

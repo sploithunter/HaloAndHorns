@@ -45,7 +45,8 @@ can resize the same species, but a campaign may name a distinct Huge species.
   Huge hatch odds through the same effective-stat axis as the Natural power: +16.67% Basic,
   +20.84% Golden, +25% Rainbow. This deliberately avoids XP and currency acceleration during the
   first balance-feedback round. The aura stacks additively with the player's activated Huge Fortune
-  and is visible on both the pet card and player buff row.
+  and is visible on both the pet card and player buff row. Live application and tooltip magnitudes
+  share `SupportAura`'s normalized variant calculation so Basic/Golden/Rainbow cannot drift.
 - The Admin panel can replace the current test copy with Basic, Golden, Rainbow, or forced-Huge
   Rainbow eggs while the campaign is closed. Admin Reset to Beginning removes any held/hatched
   tester award and clears its ledger so the full claim flow can be replayed.

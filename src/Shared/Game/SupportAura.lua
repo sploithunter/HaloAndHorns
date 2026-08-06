@@ -25,6 +25,9 @@
 
     SupportAura.forPet(petType, rolesConfig) -> aura table (with .kind) | nil
     SupportAura.isBuffer(petType, rolesConfig) -> boolean
+    SupportAura.variantEffectMultiplier(variantName, rolesConfig) -> number
+    SupportAura.scaleMagnitude(value, variantName, rolesConfig) -> number
+    SupportAura.scaleMultiplier(mult, variantName, rolesConfig) -> number
     SupportAura.isEnraged(aura, healthFraction) -> boolean
     SupportAura.rageMultiplier(aura, healthFraction, variantMult) -> mult >= 1 | nil
     SupportAura.rageFraction(auras, healthFraction, variantMult) -> additive fraction >= 0
@@ -64,6 +67,29 @@ end
 
 function SupportAura.isBuffer(petType, rolesConfig)
     return SupportAura.forPet(petType, rolesConfig) ~= nil
+end
+
+-- The ONE variant-effect resolver used by both live aura application and player-facing
+-- descriptions. Variant names are persistence/UI data, so normalize case and safely fall back to
+-- Basic when old records or models omit the field.
+function SupportAura.variantEffectMultiplier(variantName, rolesConfig)
+    local multipliers = type(rolesConfig) == "table" and rolesConfig.variant_effect_multipliers
+    local key = string.lower(tostring(variantName or "basic"))
+    return (type(multipliers) == "table" and tonumber(multipliers[key])) or 1
+end
+
+-- Flat/fractional aura magnitudes (heal fraction, defense amount, recharge fraction, etc.) scale
+-- directly by the variant effect multiplier.
+function SupportAura.scaleMagnitude(value, variantName, rolesConfig)
+    return (tonumber(value) or 0) * SupportAura.variantEffectMultiplier(variantName, rolesConfig)
+end
+
+-- Multiplier auras scale only their BONUS over 1.0. Example: 1.1667 at Rainbow 1.5 becomes
+-- 1 + 0.1667 * 1.5 = 1.25005, not 1.75005.
+function SupportAura.scaleMultiplier(mult, variantName, rolesConfig)
+    return 1
+        + ((tonumber(mult) or 1) - 1)
+            * SupportAura.variantEffectMultiplier(variantName, rolesConfig)
 end
 
 -- ── RAGE (kind = "rage") — the ONE implementation of the rage rules ──────────
