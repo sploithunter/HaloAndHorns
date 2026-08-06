@@ -2202,3 +2202,10 @@ rewrite.
   support curve yields +16.67% Basic, +20.84% Golden, and +25% Rainbow.
 - Added a regression proving a Huge tester reward keeps its Huge trait, stable identity, and serial
   across Basic/Golden/Rainbow campaign reconciliation.
+
+## 2026-08-06 — Tester farming rotation reordered for honest balance feedback
+
+- Reassigned Beta Byte to Huge Fortune and Signal Seal to Luck. Reserved Windfall for week three,
+  Prospector for week four, and XP Surge for week five.
+- The ordering deliberately withholds direct XP acceleration until the final round and crystal-yield
+  acceleration until the penultimate round, preserving baseline leveling/economy feedback early.
