@@ -13,6 +13,7 @@ Status: current
 ## Content And Pets
 
 - What exact balance magnitudes should each enchant have? Storage direction is decided: stacks stay stack-only, and pets that need enchant/progression state must be unique from grant/craft/reward time. Enchants live on unique pet instances and feed the `enchants` modifier pipeline stage. Capacity is now config-driven by rarity.
+- What is the exact `Home World` condition in Halo & Horns? The configured description says it applies while a pet is useful in the current world, but the live modifier currently boosts all breakable rewards because reward contexts do not carry a pet/world usefulness match. Preserve the global behavior until the intended condition is defined.
 - What should the first live pet XP sources be? The data/service foundation exists for unique pets, but breakable damage, breakable destroy, daycare/offline, and consumable XP items still need balancing decisions.
 - What player-level-to-team-power curve feels good in real play? The implementation is config-driven and active, but the current +1% per level / +1 equipped slot per 10 levels defaults are first-pass tuning values.
 - What should replace the legacy pet `Follow` mining script? Phase 4 now routes damage and cadence modifiers through it, but the long-term design should be a service-owned pet assignment/work loop.

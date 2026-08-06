@@ -151,5 +151,13 @@ return function()
                 expect(type(def.sources)).to.equal("function")
             end
         end)
+
+        it("publishes enchant-driven attack, cadence, luck, coin, and crystal axes", function()
+            expect(EffectiveStats.AXES.pet_damage.attr).to.equal("Eff_Attack")
+            expect(EffectiveStats.AXES.pet_efficiency.attr).to.equal("Eff_Efficiency")
+            expect(EffectiveStats.AXES.luck.attr).to.equal("Eff_Luck")
+            expect(EffectiveStats.AXES.coin_yield.attr).to.equal("Eff_Coin")
+            expect(EffectiveStats.AXES.crystal_yield.attr).to.equal("Eff_Crystals")
+        end)
     end)
 end

@@ -75,18 +75,43 @@ function EffectiveStatsService:_publish(player, axisId)
     else
         value = EffectiveStats.multiplier(axisId, get, now, self:_axisCfg(axisId))
     end
-    -- Eff_Coin: compose the enchant/pipeline contribution the payout path
-    -- applies via kind="breakable_reward" (EnchantService's coin_finder).
-    if axisId == "coin_yield" and self._modifierService and self._modifierService.Resolve then
-        local ok, resolved = pcall(function()
-            return self._modifierService:Resolve(1, {
-                player = player,
-                kind = "breakable_reward",
-                source = "EffectiveStatsService",
-            })
-        end)
-        if ok and tonumber(resolved) then
-            value = value * tonumber(resolved)
+    -- Compose pipeline-owned enchant modifiers with the attribute-owned buff axes exactly as their
+    -- gameplay folds do. Tactics multiplies pet damage; Efficiency publishes its cadence multiple;
+    -- hatch Luck adds to the boost fraction; breakable rewards multiply the coin payout.
+    if self._modifierService and self._modifierService.Resolve then
+        local pipelineKind
+        local base
+        local combine
+        local context = {}
+        if axisId == "coin_yield" then
+            pipelineKind, base, combine = "breakable_reward", 1, "multiply"
+            context.currency = "coins"
+        elseif axisId == "crystal_yield" then
+            pipelineKind, base, combine = "breakable_reward", 1, "replace"
+            context.currency = "crystals"
+        elseif axisId == "pet_damage" then
+            pipelineKind, base, combine = "pet_damage", 1, "multiply"
+        elseif axisId == "pet_efficiency" then
+            pipelineKind, base, combine = "pet_efficiency", 1, "replace"
+        elseif axisId == "luck" then
+            pipelineKind, base, combine = "hatch_luck", 0, "add"
+        end
+        if pipelineKind then
+            context.player = player
+            context.kind = pipelineKind
+            context.source = "EffectiveStatsService"
+            local ok, resolved = pcall(function()
+                return self._modifierService:Resolve(base, context)
+            end)
+            if ok and tonumber(resolved) then
+                if combine == "multiply" then
+                    value *= tonumber(resolved)
+                elseif combine == "add" then
+                    value += tonumber(resolved)
+                else
+                    value = tonumber(resolved)
+                end
+            end
         end
     end
     -- publish on change only (attribute writes replicate; don't spam)

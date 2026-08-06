@@ -94,5 +94,33 @@ return function()
                 currency = "crystals",
             })).to.equal(false)
         end)
+
+        it("uses one type-scaled magnitude for gameplay and enchant descriptions", function()
+            local enchants = loadModule("configs/enchants.lua")
+            local silverTactics = { id = "tactics", strength = 3 }
+            local exclusiveMagnitude = EnchantRuntime.magnitude(silverTactics, {
+                rarity_id = "exclusive",
+            }, enchants)
+            expect(math.abs(exclusiveMagnitude - 0.15) < 1e-9).to.equal(true)
+            local hugeMagnitude = EnchantRuntime.magnitude(silverTactics, {
+                huge = true,
+                rarity_id = "exclusive",
+            }, enchants)
+            expect(math.abs(hugeMagnitude - 0.1875) < 1e-9).to.equal(true)
+            expect(EnchantRuntime.effectAttribute("home_world")).to.equal(
+                "EnchantEffect_home_world"
+            )
+        end)
+
+        it("publishes every configured enchant as its own player HUD badge", function()
+            local badgeSource = readFile("src/Client/Systems/PlayerPowerBadges.lua")
+            local serviceSource = readFile("src/Server/Services/EnchantService.lua")
+            expect(
+                badgeSource:find("for effectId in pairs(ENCHANTS_CONFIG.effects or {}) do", 1, true)
+            ).never.to.equal(nil)
+            expect(serviceSource:find("EnchantRuntime.effectAttribute(effectId)", 1, true)).never.to.equal(
+                nil
+            )
+        end)
     end)
 end

@@ -19,6 +19,8 @@ return {
         coin_yield = { cap = 5.0 }, -- coins per pickup/mine
         mining = { cap = 5.0 }, -- mining throughput / ore
         pet_damage = { cap = 5.0 }, -- pet attack damage (power buff + offense aura, additive)
+        pet_efficiency = { cap = 5.0 }, -- pet attack-cadence multiplier (enchants/abilities)
+        crystal_yield = { cap = 5.0 }, -- contextual crystal reward multiplier (enchants)
         xp = { cap = 3.0 }, -- xp gain
         drop_rate = { cap = 5.0 }, -- enhancement/potion/premium-gem chance
         huge_luck = { cap = 5.0 }, -- jackpot-attempt multiplier

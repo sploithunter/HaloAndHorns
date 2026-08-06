@@ -96,18 +96,29 @@ local STAMPED_KINDS = {
     pet_efficiency = "EnchantEfficiency",
 }
 
+local PERMANENT_UNTIL = 2147483647
+
 function EnchantService:_stampAggregates(player)
+    local changed = false
+    local function setIfChanged(attribute, value)
+        if (player:GetAttribute(attribute) or 0) ~= value then
+            player:SetAttribute(attribute, value)
+            changed = true
+        end
+    end
     local totals = {}
+    local effectTotals = {}
+    local effectCounts = {}
     for _, pet in ipairs(self:_getEquippedUniquePets(player)) do
         for _, enchant in ipairs(pet.data.enchantments or {}) do
             local enchantConfig = self._config.effects and self._config.effects[enchant.id]
             local modifier = enchantConfig and enchantConfig.modifier
             local kind = modifier and modifier.kind
             if kind and STAMPED_KINDS[kind] then
-                local strength = tonumber(enchant.strength or enchant.value) or 0
-                local typeMult = self:_typeMultiplier(self:_petTierId(pet.data))
-                totals[kind] = (totals[kind] or 0)
-                    + strength * (tonumber(modifier.amount_per_strength) or 0) * typeMult
+                local magnitude = EnchantRuntime.magnitude(enchant, pet.data, self._config)
+                totals[kind] = (totals[kind] or 0) + magnitude
+                effectTotals[enchant.id] = (effectTotals[enchant.id] or 0) + magnitude
+                effectCounts[enchant.id] = (effectCounts[enchant.id] or 0) + 1
             end
         end
     end
@@ -120,24 +131,40 @@ function EnchantService:_stampAggregates(player)
         local modifier = enchantConfig and enchantConfig.modifier
         local kind = modifier and modifier.kind
         if kind and STAMPED_KINDS[kind] then
-            totals[kind] = (totals[kind] or 0)
-                + stackStrength
-                    * (tonumber(modifier.amount_per_strength) or 0)
-                    * self:_typeMultiplier(s.rarity)
+            local stackEnchant = { id = s.effect, strength = stackStrength }
+            local stackPet = { rarity_id = s.rarity }
+            local magnitude = EnchantRuntime.magnitude(stackEnchant, stackPet, self._config)
+            totals[kind] = (totals[kind] or 0) + magnitude
+            effectTotals[s.effect] = (effectTotals[s.effect] or 0) + magnitude
+            effectCounts[s.effect] = (effectCounts[s.effect] or 0) + 1
         end
     end
     for kind, attr in pairs(STAMPED_KINDS) do
         local value = totals[kind] or 0
-        if (player:GetAttribute(attr) or 0) ~= value then
-            player:SetAttribute(attr, value)
-        end
+        setIfChanged(attr, value)
         -- `Until` sentinel drives the player-bar badge pile (PlayerPowerBadges shows a
         -- buff only while <Attr>Until > now): far-future while active -> permanent "ON"
         -- badge, 0 when the last enchanted pet is unequipped.
-        local untilValue = value > 0 and (os.time() + 86400 * 3650) or 0
-        if (player:GetAttribute(attr .. "Until") or 0) ~= untilValue then
-            player:SetAttribute(attr .. "Until", untilValue)
-        end
+        local untilValue = value > 0 and PERMANENT_UNTIL or 0
+        setIfChanged(attr .. "Until", untilValue)
+    end
+    -- Effect-specific channels drive the correct card-language icon on the player's top HUD.
+    -- Keep the kind aggregates above for effective-stat publication; these are the visual identity
+    -- layer (Home World remains a portal, Crystal Finder remains a magnet, etc.).
+    for effectId in pairs(self._config.effects or {}) do
+        local attr = EnchantRuntime.effectAttribute(effectId)
+        local value = effectTotals[effectId] or 0
+        local untilValue = value > 0 and PERMANENT_UNTIL or 0
+        setIfChanged(attr, value)
+        setIfChanged(attr .. "Until", untilValue)
+        local stacks = effectCounts[effectId] or 0
+        setIfChanged(attr .. "Stacks", stacks)
+    end
+    -- A revision closes the equal-total swap case (for example Coin Finder -> Crystal Finder).
+    -- The kind aggregate can remain numerically identical even though the modifier pipeline output
+    -- changed; effective-stat publishers watch this revision and recompute the contextual result.
+    if changed then
+        player:SetAttribute("EnchantRevision", (player:GetAttribute("EnchantRevision") or 0) + 1)
     end
 end
 
@@ -226,29 +253,6 @@ function EnchantService:_chooseWeighted(entries)
     end
 
     return entries[#entries]
-end
-
--- TYPE multiplier (Jason "base * type multiplier — no shift"): a pet's TIER scales every enchant's
--- per-strength base at READ time. Tier = the huge/titanic/colossal size trait if present, else the
--- pet's rarity (mirrors _getMaxEnchantmentsForRarity's huge-first resolution). Never stored on the
--- record, so a traded pet re-resolves on the new owner. Unknown tier -> 1.0 (legendary-equivalent).
-function EnchantService:_petTierId(petData)
-    if type(petData) ~= "table" then
-        return nil
-    end
-    if petData.huge == true then
-        return "huge"
-    end
-    -- (titanic/colossal size traits resolve here too once those tiers ship)
-    return petData.rarity_id or petData.rarity_override
-end
-
-function EnchantService:_typeMultiplier(tier)
-    local mults = self._config and self._config.type_multipliers
-    if type(mults) ~= "table" or type(tier) ~= "string" then
-        return 1
-    end
-    return tonumber(mults[tier]) or 1
 end
 
 function EnchantService:_getRollProfileForRarity(rarityId)
@@ -1281,9 +1285,7 @@ function EnchantService:_getModifierContributions(context)
             local enchantConfig = self._config.effects and self._config.effects[enchant.id]
             local modifier = enchantConfig and enchantConfig.modifier
             if self:_matchesModifierContext(modifier, context) then
-                local strength = tonumber(enchant.strength or enchant.value) or 0
-                local typeMult = self:_typeMultiplier(self:_petTierId(pet.data))
-                local value = strength * (tonumber(modifier.amount_per_strength) or 0) * typeMult
+                local value = EnchantRuntime.magnitude(enchant, pet.data, self._config)
                 local combine = modifier.combine or "add"
                 local amount = value
                 if combine == "multiply" then
@@ -1306,9 +1308,10 @@ function EnchantService:_getModifierContributions(context)
         local enchantConfig = self._config.effects and self._config.effects[s.effect]
         local modifier = enchantConfig and enchantConfig.modifier
         if modifier and self:_matchesModifierContext(modifier, context) then
-            local value = stackStrength
-                * (tonumber(modifier.amount_per_strength) or 0)
-                * self:_typeMultiplier(s.rarity)
+            local value = EnchantRuntime.magnitude({
+                id = s.effect,
+                strength = stackStrength,
+            }, { rarity_id = s.rarity }, self._config)
             local combine = modifier.combine or "add"
             table.insert(contributions, {
                 id = tostring(s.key) .. ":" .. tostring(s.effect),

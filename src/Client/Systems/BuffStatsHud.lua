@@ -318,10 +318,12 @@ function BuffStatsHud:_build()
             { row = row, fill = fill, text = text, pip = pip, label = label, color = color }
     end
     makeRow("attack", "⚔ Attack", Color3.fromRGB(225, 90, 80), 1)
-    makeRow("defense", "🛡 Defense", Color3.fromRGB(120, 170, 235), 2)
-    makeRow("coin", "💰 Coin", Color3.fromRGB(240, 200, 70), 3)
-    makeRow("mining", "⛏ Mining", Color3.fromRGB(180, 150, 110), 4)
-    makeRow("luck", "🍀 Luck", Color3.fromRGB(110, 210, 130), 5)
+    makeRow("efficiency", "⏱ Pet Speed", Color3.fromRGB(235, 155, 80), 2)
+    makeRow("defense", "🛡 Defense", Color3.fromRGB(120, 170, 235), 3)
+    makeRow("coin", "💰 Coin", Color3.fromRGB(240, 200, 70), 4)
+    makeRow("crystals", "💎 Crystals", Color3.fromRGB(100, 220, 235), 5)
+    makeRow("mining", "⛏ Mining", Color3.fromRGB(180, 150, 110), 6)
+    makeRow("luck", "🍀 Luck", Color3.fromRGB(110, 210, 130), 7)
     -- targeted hatch-luck CHANNELS: rows exist but stay HIDDEN unless non-neutral
     -- (Jason: split them out, but "we're getting pretty cluttered" — conditional rows)
     makeRow("golden_luck", "🟡 Gold Luck", Color3.fromRGB(240, 200, 70), 51)
@@ -349,25 +351,25 @@ function BuffStatsHud:_build()
                 { key = "presence_creator", attr = d.attr }
         end
     end
-    makeRow("speed", "🐾 Speed", Color3.fromRGB(95, 180, 235), 6)
-    makeRow("recharge", "⚡ Recharge", Color3.fromRGB(160, 130, 240), 7)
-    makeRow("xp", "✨ XP", Color3.fromRGB(150, 110, 235), 8)
-    makeRow("magnet", "🧲 Magnet", Color3.fromRGB(120, 200, 235), 9)
+    makeRow("speed", "🐾 Speed", Color3.fromRGB(95, 180, 235), 8)
+    makeRow("recharge", "⚡ Recharge", Color3.fromRGB(160, 130, 240), 9)
+    makeRow("xp", "✨ XP", Color3.fromRGB(150, 110, 235), 10)
+    makeRow("magnet", "🧲 Magnet", Color3.fromRGB(120, 200, 235), 11)
     -- Σ TEAM POWER (Jason's buffer-balance instrument): the dealt-chain ⛏/⚔ sums over the
     -- deployed squad in three layers — intrinsic, × zone resonance, × buffs (_teamPower).
-    makeRow("team", "👥 Team Power", Color3.fromRGB(235, 235, 245), 10)
-    makeRow("team_area", "🌍 In Area", Color3.fromRGB(120, 220, 160), 11)
-    makeRow("team_buffed", "🌍 With Buffs", Color3.fromRGB(255, 170, 80), 12)
+    makeRow("team", "👥 Team Power", Color3.fromRGB(235, 235, 245), 12)
+    makeRow("team_area", "🌍 In Area", Color3.fromRGB(120, 220, 160), 13)
+    makeRow("team_buffed", "🌍 With Buffs", Color3.fromRGB(255, 170, 80), 14)
     -- EV row: accuracy + crit folded in (vs an even-level enemy — the dummy candle).
-    makeRow("team_ev", "🎲 EV / Swing", Color3.fromRGB(200, 160, 255), 13)
+    makeRow("team_ev", "🎲 EV / Swing", Color3.fromRGB(200, 160, 255), 15)
     -- Team effective HP: endurance pools × armor curve (+ flat shields when buffed).
-    makeRow("tough", "🛡 Toughness", Color3.fromRGB(140, 185, 240), 14)
-    makeRow("tough_buffed", "🛡 With Buffs", Color3.fromRGB(95, 215, 230), 15)
+    makeRow("tough", "🛡 Toughness", Color3.fromRGB(140, 185, 240), 16)
+    makeRow("tough_buffed", "🛡 With Buffs", Color3.fromRGB(95, 215, 230), 17)
     -- The PACING rows: expected battle clock vs each dev-candle matchup (config-driven:
     -- combat.dev_candle.matchups — one row per entry, add/remove scenarios in config).
     self._matchups = (CombatConfig.dev_candle and CombatConfig.dev_candle.matchups) or {}
     for i, m in ipairs(self._matchups) do
-        makeRow("battle_" .. i, "⏱ " .. (m.label or "?"), Color3.fromRGB(235, 90, 80), 15 + i)
+        makeRow("battle_" .. i, "⏱ " .. (m.label or "?"), Color3.fromRGB(235, 90, 80), 17 + i)
     end
 end
 
@@ -379,7 +381,9 @@ function BuffStatsHud:_connect()
     -- heartbeat tick below survives ONLY for countdown text + blink cadence.
     for _, attrName in ipairs({
         "Eff_Attack",
+        "Eff_Efficiency",
         "Eff_Coin",
+        "Eff_Crystals",
         "Eff_Mining",
         "Eff_Luck",
         "Eff_Speed",
@@ -462,6 +466,11 @@ function BuffStatsHud:_refresh()
         soonestRemaining(p, { "PetDamageBuffUntil", "PetDamageBuffPotionUntil" }, now)
     )
 
+    -- ⏱ Pet attack cadence: SERVER-PUBLISHED pipeline result. Efficiency enchants add here;
+    -- gameplay divides attack interval by the same multiplier.
+    local efficiency = tonumber(p:GetAttribute("Eff_Efficiency")) or 1
+    self:_setMult("efficiency", efficiency, axis("pet_efficiency").cap, nil)
+
     -- 🛡 Defense (per-pet flat -> armor-curve mitigation %).
     local defFlat, defRem = self:_defenseFlat(now)
     self:_setDefense("defense", defFlat, defRem)
@@ -477,6 +486,11 @@ function BuffStatsHud:_refresh()
         axis("coin_yield").cap,
         soonestRemaining(p, { "CoinYieldPowerUntil" }, now)
     )
+
+    -- 💎 Crystal rewards: Home World + Crystal Finder through the same breakable pipeline used by
+    -- payouts. This is deliberately separate from the physical pickup-radius Magnet row below.
+    local crystals = tonumber(p:GetAttribute("Eff_Crystals")) or 1
+    self:_setMult("crystals", crystals, axis("crystal_yield").cap, nil)
 
     -- ⛏ Mining: SERVER-PUBLISHED (Eff_Mining) — display verbatim.
     local mining = tonumber(p:GetAttribute("Eff_Mining")) or 1
