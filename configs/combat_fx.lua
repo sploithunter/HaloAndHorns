@@ -36,6 +36,7 @@ return {
         -- Colorado is normal-class Exclusive and therefore keeps its real Lava badge below.
         badge_element = {
             colorado_creator = "creator",
+            beta_tester_bot = "exclusive",
             -- boss-egg exclusives (obsidian + celestial): no biome origin, so
             -- their role badge wears the EXCLUSIVE purple disc (Jason). The
             -- flag disc stays Colorado-only.
@@ -130,6 +131,7 @@ return {
             dragon = "grass", -- home dragon's origin SSOT (pets.lua) is grass; align the VFX element
             colorado = "lava",
             kade = "grass", -- developer reward: Grass tank with healing + luck support
+            beta_tester_bot = "grass", -- week-one tester exclusive: neutral badge, grass combat FX
             colorado_creator = "lava", -- the Creator apex is a FIRE blaster (bolt + AoE fire-ring)
             -- Ember family = lava origin (RPS / element stats / VFX).
             emberling = "lava",

@@ -1868,5 +1868,26 @@
     "origin": "grass",
     "variant": "gold",
     "uploadedBy": "upload_pets.js 2026-07-21"
+  },
+  "beta_tester_bot_basic": {
+    "modelAssetId": "96462203743685",
+    "textureDecalId": "101949979750438",
+    "meshId": "rbxassetid://75694030620160",
+    "imageId": "rbxassetid://120291846356693",
+    "realm": "neutral",
+    "origin": "creator",
+    "variant": "basic",
+    "uploadedBy": "upload_pets.js 2026-08-06"
+  },
+  "beta_tester_bot_gold": {
+    "modelAssetId": "96462203743685",
+    "textureDecalId": "99090695696521",
+    "meshId": "rbxassetid://75694030620160",
+    "imageId": "rbxassetid://127096091280108",
+    "realm": "neutral",
+    "origin": "creator",
+    "variant": "gold",
+    "sharedMeshFrom": "beta_tester_bot_basic",
+    "uploadedBy": "upload_pets.js 2026-08-06"
   }
 }

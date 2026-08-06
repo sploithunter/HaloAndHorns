@@ -344,5 +344,21 @@
    "texture": "assets/exports/eggs/kade_egg/kade_egg.png"
   },
   "uploadedBy": "upload_eggs.js 2026-07-27"
+ },
+ "beta_tester_egg": {
+  "icon_decal": "132253075522806",
+  "icon_image": "103749843546782",
+  "model_asset": "94949247610297",
+  "mesh_id": "rbxassetid://88693571117741",
+  "mesh_image": "rbxassetid://81021338465059",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "neutral",
+  "origin": "creator",
+  "sources": {
+   "icon": "assets/source/eggs/beta_tester_egg.png",
+   "fbx": "assets/exports/eggs/beta_tester_egg/beta_tester_egg_10k.fbx",
+   "texture": "assets/exports/eggs/beta_tester_egg/beta_tester_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-06"
  }
 }

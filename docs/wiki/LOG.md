@@ -2169,3 +2169,12 @@ rewrite.
   closes an Activate-and-close flow until confirmation; timeouts and rejections remain retryable.
 - Added pure coverage for empty squads, distinct enchanted stacks, duplicate uniques, over-owned
   stack copies, and over-cap requests, plus manifest coverage for the acknowledgement signal.
+
+## 2026-08-06 — Week-one Beta Tester Bot content and pre-launch testing
+
+- Imported and uploaded the regular/Golden Beta Tester Bot and its egg, resolved group-owned mesh,
+  texture, model, and icon assets, and cleaned the three supplied UI renders to transparent PNGs.
+- Wired one fixed-odds campaign egg at level 2, Golden at 5, Rainbow at 10, with a 1% same-species
+  Huge roll. Public claiming remains disabled until the advertised Friday/Saturday window.
+- Added authenticated admin Basic/Golden/Rainbow/forced-Huge egg grants. Admin Reset to Beginning
+  now deletes both held and hatched tester awards and clears their campaign ledger for repeat tests.

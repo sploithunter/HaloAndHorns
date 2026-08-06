@@ -21,6 +21,7 @@ function AdminToolsService.new()
     self._starterPetService = nil
     self._monetizationService = nil
     self._foundersChoiceService = nil
+    self._testerRewardService = nil
     self._petsConfig = nil
     self._inventoryConfig = nil
     self._eggSystemConfig = nil
@@ -109,6 +110,7 @@ function AdminToolsService:BindPeerServices(services)
     self._starterPetService = services.StarterPetService
     self._monetizationService = services.MonetizationService
     self._foundersChoiceService = services.FoundersChoiceService
+    self._testerRewardService = services.TesterRewardService
     self._prologueService = services.PrologueService
 end
 
@@ -642,6 +644,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         -- Every other unique/huge retains the normal never-delete protection.
         if
             rec.grant_source ~= "starter_choice"
+            and rec.award_id == nil
             and PetInventoryView.isProtectedFromReset(rec, capability)
         then
             kept[#kept + 1] = describe(rec)
@@ -673,6 +676,23 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     pets.items = keptKeys
     pets.used_slots = #kept
 
+    -- Limited testing rewards are explicitly replayable under Admin Reset. Remove an unhatched
+    -- award egg as well as the hatched pet above, then clear eligibility/grant state so the same
+    -- account can test the campaign again without affecting real-player reset semantics.
+    local eggs = playerData.Inventory and playerData.Inventory.eggs
+    if type(eggs) == "table" and type(eggs.items) == "table" then
+        for recordKey, record in pairs(eggs.items) do
+            if type(record) == "table" and record.award_id ~= nil then
+                eggs.items[recordKey] = nil
+            end
+        end
+        local eggSlots = 0
+        for _ in pairs(eggs.items) do
+            eggSlots += 1
+        end
+        eggs.used_slots = eggSlots
+    end
+
     -- 1b) DEPLOYED SQUAD: a true new player has nothing deployed. Clear the equip projection so the
     --     reset can't leave slots pointing at the just-deleted pets — those orphaned slots ("Bridge:
     --     skipping orphaned equip slot ... stack|meerkat:rainbow|3") are a dev-only artifact that can
@@ -699,6 +719,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.GameData.UnlockedAreas = { "Spawn" }
     playerData.GameData.LastHatchedEggId = ""
     playerData.GameData.LastHatchedEggOffset = {}
+    playerData.GameData.TesterRewards = { campaigns = {} }
     if self._futureCallService and self._futureCallService.ResetForBeginning then
         pcall(function()
             self._futureCallService:ResetForBeginning(targetPlayer)
@@ -1006,6 +1027,39 @@ function AdminToolsService:_handleGrantPet(adminPlayer, data)
             kind = "grant_pet",
             success = false,
             message = errorMessage,
+        })
+        return
+    end
+
+    data = type(data) == "table" and data or {}
+    if data.testerAwardId ~= nil then
+        if not self._testerRewardService then
+            self:_sendResult(adminPlayer, {
+                kind = "grant_pet",
+                success = false,
+                message = "TesterRewardService unavailable",
+            })
+            return
+        end
+        local result = self._testerRewardService:AdminGrantTestEgg(
+            targetPlayer,
+            tostring(data.testerAwardId),
+            tostring(data.testerTier or "basic"),
+            data.testerForceHuge == true
+        )
+        local success = type(result) == "table" and result.ok == true
+        self:_sendResult(adminPlayer, {
+            kind = "grant_pet",
+            success = success,
+            message = success and string.format(
+                "Granted %s%s tester egg to %s",
+                tostring(result.tier),
+                result.huge and " forced-Huge" or "",
+                targetPlayer.Name
+            ) or ("Tester egg grant failed: " .. tostring(
+                result and result.reason or "unknown"
+            )),
+            snapshot = self:_buildSnapshot(targetPlayer),
         })
         return
     end
