@@ -1,7 +1,7 @@
 # Beta Tester Reward Campaigns
 
-Status: week-one Beta Byte content is wired and public claiming remains disabled pending the
-advertised Friday/Saturday UTC window.
+Status: week-one Beta Byte content is wired. The real claim flow is enabled in Studio while public
+claiming remains disabled pending the advertised Friday/Saturday UTC window.
 
 ## Player contract
 
@@ -34,6 +34,8 @@ can resize the same species, but a campaign may name a distinct Huge species.
 ## Week one: Beta Byte
 
 - Campaign id: `beta_week_1_2026`; public `claim.enabled = false` until the advertised session.
+- `claim.studio_enabled = true` opens the same reservation and level-gated grant flow only when
+  `RunService:IsStudio()` is true; it never opens production claiming.
 - One Beta Tester Egg at claimed level 2 hatches the exclusive Grass/Melee robot dog **Beta Byte**;
   the same held egg or resulting pet becomes Golden at 5
   and Rainbow at 10. The hatch has a 1% same-species Huge roll.

@@ -61,9 +61,15 @@ function TesterRewardCampaign.reconcileTier(record, ownerUserId, claimedLevel, c
     return true, desired
 end
 
-function TesterRewardCampaign.isClaimWindowOpen(campaign, now)
+function TesterRewardCampaign.isClaimWindowOpen(campaign, now, isStudio)
     local claim = type(campaign) == "table" and campaign.claim or nil
-    if type(claim) ~= "table" or claim.enabled ~= true then
+    if type(claim) ~= "table" then
+        return false
+    end
+    if isStudio == true and claim.studio_enabled == true then
+        return true
+    end
+    if claim.enabled ~= true then
         return false
     end
     now = tonumber(now) or os.time()
@@ -140,6 +146,12 @@ function TesterRewardCampaign.validate(config, petsConfig)
         end
         if type(campaign.claim) ~= "table" or type(campaign.claim.enabled) ~= "boolean" then
             return false, path .. ".claim.enabled must be boolean"
+        end
+        if
+            campaign.claim.studio_enabled ~= nil
+            and type(campaign.claim.studio_enabled) ~= "boolean"
+        then
+            return false, path .. ".claim.studio_enabled must be boolean when provided"
         end
         if campaign.claim.enabled then
             if not tonumber(campaign.claim.starts_at) or not tonumber(campaign.claim.ends_at) then
