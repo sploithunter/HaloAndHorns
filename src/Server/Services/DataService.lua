@@ -126,6 +126,9 @@ local function generateProfileTemplate(configLoader)
             -- Launch cohort reservation + one permanent promotional pass BENEFIT. This remains
             -- separate from Marketplace ownership so the reward never impersonates a Roblox pass.
             FoundersChoice = {},
+            -- One-entry-per-campaign eligibility/grant ledger. The held egg or resulting pet
+            -- carries immutable award provenance; this ledger prevents a second mint.
+            TesterRewards = { campaigns = {} },
         },
 
         -- Settings

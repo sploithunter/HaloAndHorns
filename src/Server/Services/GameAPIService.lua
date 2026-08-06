@@ -1750,6 +1750,15 @@ function GameAPIService:_registerCommands()
             return s:AddEnhancement(player, args.uid)
         end),
     })
+    bus:register("trade.addEgg", {
+        description = "Offer one held egg (moves its complete record into escrow).",
+        validate = function(args)
+            return Validators.fields(args, { uid = "string" })
+        end,
+        handler = tradeAction(function(s, player, args)
+            return s:AddEgg(player, args.uid)
+        end),
+    })
     bus:register("trade.remove", {
         description = "Pull a pet back out of your offer (returns it from escrow).",
         validate = function(args)
@@ -1787,6 +1796,12 @@ function GameAPIService:_registerCommands()
         description = "The player's tradeable enhancements (for the offer picker).",
         handler = tradeAction(function(s, player)
             return s:ListMyEnhancements(player)
+        end),
+    })
+    bus:register("trade.myEggs", {
+        description = "The player's tradeable held eggs (for the offer picker).",
+        handler = tradeAction(function(s, player)
+            return s:ListMyEggs(player)
         end),
     })
 

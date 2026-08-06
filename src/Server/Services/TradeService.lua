@@ -29,6 +29,7 @@ TradeService.__index = TradeService
 
 local PETS_BUCKET = "pets"
 local ENH_BUCKET = "enhancements" -- matches EnhancementService's InventoryService bucket
+local EGGS_BUCKET = "eggs"
 local GEM_CURRENCY = "gems" -- the only tradeable currency (configs/trade.lua tradeable_currencies)
 
 function TradeService:Init()
@@ -41,6 +42,7 @@ function TradeService:Init()
     self._rosterService = self._modules and self._modules.RosterService
     self._statsService = self._modules and self._modules.StatsService
     self._enhancementService = self._modules and self._modules.EnhancementService
+    self._testerRewardService = self._modules and self._modules.TesterRewardService
     self._config = self._configLoader:LoadConfig("trade")
     self._sessions = {} -- sessionId -> session
     self._playerSession = {} -- userId -> sessionId
@@ -272,6 +274,9 @@ function TradeService:Add(player, uid)
             TradeLogic.canAddItem("pets", { id = rec.id, locked = rec.locked }, self._config)
         if not verdict.ok then
             return verdict
+        end
+        if self._testerRewardService then
+            self._testerRewardService:ReconcileRecordBeforeTrade(player, rec)
         end
         -- Escrow lock: drop references, remove the record (anti-dup), then despawn the model.
         self:_detachPet(player, target.uid, rec)
@@ -562,6 +567,50 @@ function TradeService:AddEnhancement(player, uid)
     return { ok = true, count = #offer.items }
 end
 
+-- Held eggs are transferred as exact records. Tester-reward provenance and the frozen earned
+-- variant therefore survive escrow and never merge into an ordinary egg stack.
+function TradeService:AddEgg(player, uid)
+    local session = self:_sessionOf(player.UserId)
+    if not session then
+        return { ok = false, reason = "no_trade" }
+    end
+    local inventory = self._inventoryService
+    local bucket = inventory and inventory:GetInventory(player, EGGS_BUCKET)
+    local rec = bucket and bucket.items and bucket.items[uid]
+    if not rec then
+        return { ok = false, reason = "egg_not_found" }
+    end
+    local verdict = TradeLogic.canAddItem("eggs", { id = rec.id }, self._config)
+    if not verdict.ok then
+        return verdict
+    end
+    local offer = session.offers[player.UserId]
+    if #offer.items >= (self._config.max_offer_items or 10) then
+        return { ok = false, reason = "offer_full" }
+    end
+    if self._testerRewardService then
+        self._testerRewardService:ReconcileRecordBeforeTrade(player, rec)
+    end
+    local copy = deepCopy(rec)
+    copy.quantity = 1
+    inventory:RemoveItem(player, EGGS_BUCKET, uid, 1)
+    local descriptor = {
+        uid = nextOfferId(),
+        category = "eggs",
+        id = copy.id,
+        variant = copy.award_tier or copy.variant or "basic",
+        recordKey = uid,
+        record = copy,
+        name = copy.name,
+    }
+    session.escrow[player.UserId][descriptor.uid] = descriptor
+    table.insert(offer.items, descriptor)
+    session.offers[session.a].confirmed = false
+    session.offers[session.b].confirmed = false
+    self:_push(session, "updated")
+    return { ok = true, count = #offer.items }
+end
+
 -- Pull a pet back out of the offer and return it to the owner's inventory.
 function TradeService:Remove(player, uid)
     local session = self:_sessionOf(player.UserId)
@@ -638,11 +687,11 @@ function TradeService:_grantDescriptor(player, descriptor)
     if not inventory then
         return false
     end
-    if category == "enhancements" then
+    if category == "enhancements" or category == "eggs" then
         if descriptor.record and descriptor.recordKey then
             local inventoryReceipt = inventory:InsertRecordSnapshot(
                 player,
-                ENH_BUCKET,
+                category == "eggs" and EGGS_BUCKET or ENH_BUCKET,
                 descriptor.recordKey,
                 descriptor.record,
                 { deferFlush = true }
@@ -688,6 +737,7 @@ end
 
 function TradeService:_commitReceipts(receipts)
     local flushes = {}
+    local rewardRecipients = {}
     for _, receipt in ipairs(receipts or {}) do
         local inventoryReceipt = receipt.inventoryReceipt
         if inventoryReceipt then
@@ -696,6 +746,7 @@ function TradeService:_commitReceipts(receipts)
                 .. ":"
                 .. inventoryReceipt.bucketName
             flushes[key] = inventoryReceipt
+            rewardRecipients[inventoryReceipt.player] = true
         end
     end
     for _, inventoryReceipt in pairs(flushes) do
@@ -704,6 +755,13 @@ function TradeService:_commitReceipts(receipts)
             inventoryReceipt.bucketName,
             "trade_record_transfer"
         )
+    end
+    if self._testerRewardService then
+        for player in pairs(rewardRecipients) do
+            task.defer(function()
+                self._testerRewardService:Reconcile(player, "trade_received")
+            end)
+        end
     end
 end
 
@@ -925,6 +983,27 @@ function TradeService:ListMyEnhancements(player)
         }
     end
     return { ok = true, enhancements = out }
+end
+
+function TradeService:ListMyEggs(player)
+    local inventory = self._inventoryService
+    local bucket = inventory and inventory:GetInventory(player, EGGS_BUCKET)
+    if not bucket then
+        return { ok = false, reason = "service_unavailable" }
+    end
+    local out = {}
+    for uid, item in pairs(bucket.items or {}) do
+        out[#out + 1] = {
+            uid = uid,
+            category = "eggs",
+            id = item.id,
+            name = item.name,
+            variant = item.award_tier or item.variant or "basic",
+            quantity = tonumber(item.quantity) or 1,
+            award_id = item.award_id,
+        }
+    end
+    return { ok = true, eggs = out }
 end
 
 function TradeService:GetState(player)

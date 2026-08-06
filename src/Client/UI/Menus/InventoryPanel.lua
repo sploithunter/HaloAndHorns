@@ -3523,10 +3523,14 @@ function InventoryPanel:_loadEggsFromFolder(eggsFolder)
                 local eggDef = okPets
                     and petsConfig.egg_sources
                     and petsConfig.egg_sources[itemData.id]
+                local tier = tostring(itemData.variant or "basic"):lower()
+                local baseName = (eggDef and eggDef.name)
+                    or itemData.id:gsub("_", " "):gsub("^%l", string.upper)
                 local displayData = {
                     id = itemFolder.Name,
-                    name = (eggDef and eggDef.name)
-                        or itemData.id:gsub("_", " "):gsub("^%l", string.upper),
+                    name = tier ~= "basic"
+                            and ((tier:gsub("^%l", string.upper)) .. " " .. baseName)
+                        or baseName,
                     icon = "🥚",
                     image = eggDef and eggDef.image_id, -- real egg art (group-owned)
                     rarity = "Exclusive",
@@ -3535,6 +3539,7 @@ function InventoryPanel:_loadEggsFromFolder(eggsFolder)
                     count = itemData.quantity or 1,
                     uid = itemFolder.Name,
                     egg_def = eggDef, -- odds tooltip + hatch button read this
+                    variant = tier,
                     folder_source = "eggs",
                 }
                 table.insert(self.inventoryData, displayData)
@@ -3629,6 +3634,7 @@ function InventoryPanel:_extractEggDataFromFolder(itemFolder)
 
     local itemId = itemFolder:FindFirstChild("ItemId")
     local quantity = itemFolder:FindFirstChild("Quantity")
+    local variant = itemFolder:FindFirstChild("variant")
 
     if not itemId then
         return nil
@@ -3636,6 +3642,7 @@ function InventoryPanel:_extractEggDataFromFolder(itemFolder)
 
     itemData.id = itemId.Value
     itemData.quantity = quantity and quantity.Value or 1
+    itemData.variant = variant and variant.Value or "basic"
 
     return itemData
 end

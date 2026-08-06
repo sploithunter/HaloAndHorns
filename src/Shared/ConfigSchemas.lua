@@ -145,6 +145,7 @@ local SCHEMAS = {
     squad_diversity = schema({ archetype = "table", origin = "table", max_mult = "number" }),
     stack_pool = schema({ recharge_per_instance_seconds = "number", contribution_curve = "string" }),
     theme_utility = schema({ passives = "table" }),
+    tester_rewards = schema({ version = "number", defaults = "table", campaigns = "table" }),
     trade = schema({
         tradeable = "table",
         tradeable_currencies = "table",
