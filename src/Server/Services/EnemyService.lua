@@ -4225,7 +4225,6 @@ function EnemyService:_supportPass(now)
         -- (2 meerkats => 2x the coin-yield contribution, clamped by the axis cap downstream).
         -- count = # contributing buffers (badge piles); weight = variant-scaled units
         -- (basic 1.0 / golden 1.25 / rainbow 1.5 — the math multiplier downstream)
-        local vmults = self._petRoles and self._petRoles.variant_effect_multipliers or {}
         local counts, weights, rep = {}, {}, {}
         for _, pet in ipairs(folder:GetChildren()) do
             -- MEZ (#269): a HELD buffer is severed from the support graph — its auras stop
@@ -4236,7 +4235,8 @@ function EnemyService:_supportPass(now)
                 and not pet:GetAttribute("CombatDowned")
                 and CrowdControl.canAct(pet:GetAttribute("PetHeldUntil"), now)
             then
-                local vmult = tonumber(vmults[pet:GetAttribute("PetVariant")]) or 1
+                local variant = pet:GetAttribute("PetVariant") or pet:GetAttribute("Variant")
+                local vmult = SupportAura.variantEffectMultiplier(variant, self._petRoles)
                 for _, aura in ipairs(self:_petAuras(pet) or {}) do
                     if aura.kind then
                         counts[aura.kind] = (counts[aura.kind] or 0) + 1
@@ -4395,7 +4395,10 @@ function EnemyService:_supportPass(now)
                                 self:_petPower(ally),
                                 factor
                             )
-                            local vmult = tonumber(vmults[ally:GetAttribute("PetVariant")]) or 1
+                            local allyVariant = ally:GetAttribute("PetVariant")
+                                or ally:GetAttribute("Variant")
+                            local vmult =
+                                SupportAura.variantEffectMultiplier(allyVariant, self._petRoles)
                             local rageF =
                                 SupportAura.rageFraction(self:_petAuras(ally), frac, vmult)
                             if rageF > 0 then

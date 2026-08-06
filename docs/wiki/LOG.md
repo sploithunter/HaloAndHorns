@@ -2209,3 +2209,11 @@ rewrite.
   Prospector for week four, and XP Surge for week five.
 - The ordering deliberately withholds direct XP acceleration until the final round and crystal-yield
   acceleration until the penultimate round, preserving baseline leveling/economy feedback early.
+
+## 2026-08-06 — Variant-scaled support aura single source of truth
+
+- Unified support-aura variant scaling in the shared `SupportAura` module and routed both deployed
+  runtime buffs and inventory tooltips through it. Rainbow Beta Byte now displays and applies its
+  configured +25% Huge Fortune rather than showing the unscaled Basic +17% value.
+- Normalized variant names and retained a Basic fallback for legacy records/models, with headless
+  coverage for Basic, Golden, Rainbow, mixed-case, and missing variants.

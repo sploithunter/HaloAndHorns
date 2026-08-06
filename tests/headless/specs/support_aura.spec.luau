@@ -7,6 +7,7 @@ local SupportAura = loadModule("src/Shared/Game/SupportAura.lua")
 
 local ROLES = {
     by_type = { bunny = "support", penguin = "support", doggy = "melee" },
+    variant_effect_multipliers = { basic = 1, golden = 1.25, rainbow = 1.5 },
     support_auras = {
         bunny = { kind = "heal", interval = 1.5, fraction = 0.3 },
         penguin = { kind = "defense", interval = 2.0, amount = 80, duration = 3 },
@@ -46,6 +47,34 @@ return function()
             expect(SupportAura.isBuffer("bunny", ROLES)).to.equal(true)
             expect(SupportAura.isBuffer("meerkat", ROLES)).to.equal(true)
             expect(SupportAura.isBuffer("doggy", ROLES)).to.equal(false)
+        end)
+    end)
+
+    describe("SupportAura variant scaling", function()
+        it("normalizes variant names and safely defaults missing variants to basic", function()
+            expect(SupportAura.variantEffectMultiplier("basic", ROLES)).to.equal(1)
+            expect(SupportAura.variantEffectMultiplier("Golden", ROLES)).to.equal(1.25)
+            expect(SupportAura.variantEffectMultiplier("RAINBOW", ROLES)).to.equal(1.5)
+            expect(SupportAura.variantEffectMultiplier(nil, ROLES)).to.equal(1)
+            expect(SupportAura.variantEffectMultiplier("future", ROLES)).to.equal(1)
+        end)
+
+        it("scales flat magnitudes directly", function()
+            expect(SupportAura.scaleMagnitude(80, "golden", ROLES)).to.equal(100)
+            expect(math.abs(SupportAura.scaleMagnitude(0.3, "rainbow", ROLES) - 0.45) < 1e-9).to.equal(
+                true
+            )
+        end)
+
+        it("scales only the bonus portion of multiplier auras", function()
+            local base = 1.1667
+            expect(SupportAura.scaleMultiplier(base, "basic", ROLES)).to.equal(1.1667)
+            expect(math.abs(SupportAura.scaleMultiplier(base, "golden", ROLES) - 1.208375) < 1e-9).to.equal(
+                true
+            )
+            expect(math.abs(SupportAura.scaleMultiplier(base, "rainbow", ROLES) - 1.25005) < 1e-9).to.equal(
+                true
+            )
         end)
     end)
 
