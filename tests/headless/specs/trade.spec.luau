@@ -45,6 +45,11 @@ return function()
             local r = TradeLogic.canAddItem("enhancements", { id = "enh_anvil_fire_L1" }, config)
             expect(r.ok).to.equal(true)
         end)
+
+        it("allows held eggs so complete tester provenance can move through escrow", function()
+            local r = TradeLogic.canAddItem("eggs", { id = "beta_egg" }, config)
+            expect(r.ok).to.equal(true)
+        end)
     end)
 
     describe("TradeLogic.canExecute (both-confirm gate)", function()

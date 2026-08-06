@@ -732,6 +732,8 @@ function ConfigLoader:ValidateConfig(configName, config)
         return self:_validateAnimationsConfig(config)
     elseif configName == "teaming" then
         return self:_validateTeamingConfig(config)
+    elseif configName == "tester_rewards" then
+        return self:_validateTesterRewardsConfig(config)
     elseif configName == "capital_baddies" then
         return self:_validateCapitalBaddiesConfig(config)
     elseif configName == "missions" then
@@ -741,6 +743,16 @@ function ConfigLoader:ValidateConfig(configName, config)
     end
 
     return ConfigSchemas.validate(configName, config)
+end
+
+function ConfigLoader:_validateTesterRewardsConfig(config)
+    local TesterRewardCampaign = require(script.Parent.Game.TesterRewardCampaign)
+    local pets = self:_rawConfig("pets")
+    local ok, err = TesterRewardCampaign.validate(config, pets)
+    if not ok then
+        return self:_configError("tester_rewards", err, "")
+    end
+    return true
 end
 
 function ConfigLoader:_validateNetworkConfig(config)

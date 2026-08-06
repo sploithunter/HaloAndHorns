@@ -17,6 +17,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Retention Analytics](RETENTION_ANALYTICS.md) — onboarding funnel, player milestones, and admin access.
 - [Founder's Choice](FOUNDERS_CHOICE.md) — exact first-10,000 cohort reservation, permanent
   pass-benefit selection, entitlement-source union, purchase reconciliation, and shop UX.
+- [Beta Tester Rewards](TESTER_REWARDS.md) — one-egg campaign grants, level-based Golden/Rainbow
+  progression, immutable award provenance, and trade-safe freezing/catch-up.
 - [Beta Analytics & Release Plan](BETA_ANALYTICS_RELEASE_PLAN.md) — provisional three-wave launch
   calendar, KPI definitions, data-quality gates, ad-credit budget, and rollback runbook.
 - [Template vs Game](TEMPLATE_VS_GAME.md) — which systems are reusable template (trading, hatching, rewards…), which are Pet-Realm reference examples, which are game-only content. The pick-list for a future template extraction.

@@ -1,5 +1,16 @@
 # Log
 
+## 2026-08-06 — Config-driven beta tester reward campaigns
+
+- Added a reusable, initially disabled tester-reward campaign system: join-window eligibility,
+  exactly one held egg at claimed level 2, Golden at 5, Rainbow at 10, and configurable 1% Huge.
+- Award recipient provenance is independent of hatch provenance. Egg and pet progress only for the
+  originally awarded Roblox user; trading is allowed, freezes progress, and returning catches up.
+- Full award records survive inventory egg hatching and trade escrow. Campaign definitions remain
+  after distribution closes so existing rewards continue to reconcile.
+- Added headless policy/contracts for one-grant limits, tier thresholds, ownership freeze/catch-up,
+  disabled shipped state, and hatch/trade provenance wiring.
+
 ## 2026-07-21 — Homeworld grass pet replacements (basic + gold)
 
 - Dropped bunny/doggy/kitty/bear/dragon GLBs into `assets/source/pets/`

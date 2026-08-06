@@ -31,7 +31,9 @@ function MeetCreatorService:Init()
     self._dataService = self._modules.DataService
     self._inventoryService = self._modules.InventoryService
     self._petGrantService = self._modules.PetGrantService
+    self._testerRewardService = self._modules.TesterRewardService
     self._statsService = self._modules.StatsService
+    self._eggHatchLocks = setmetatable({}, { __mode = "k" })
     local ok, cfg = pcall(function()
         return self._configLoader:LoadConfig("creators")
     end)
@@ -232,11 +234,19 @@ function MeetCreatorService:ResetMeets(player)
     return { ok = true, cleared = count }
 end
 
-function MeetCreatorService:HatchEggItem(player, eggItemId)
+function MeetCreatorService:_hatchEggItemUnlocked(player, eggItemId)
+    local invSvc = self._inventoryService
+    local rec = invSvc and invSvc:GetItem(player, "eggs", eggItemId)
+    if not rec or (tonumber(rec.quantity) or 0) < 1 then
+        return { ok = false, reason = "no_egg" }
+    end
+    -- The inventory key is an instance selector. Limited tester eggs deliberately use a unique
+    -- key so provenance cannot merge; their authored egg id remains on the record.
+    local baseEggId = tostring(rec.id or eggItemId)
     -- find which creator this egg belongs to
     local def
     for _, c in pairs(self._config.creators or {}) do
-        if c.egg_id == eggItemId then
+        if c.egg_id == baseEggId then
             def = c
             break
         end
@@ -249,16 +259,11 @@ function MeetCreatorService:HatchEggItem(player, eggItemId)
         -- stated-odds eggs may live in inventory (Roblox paid-egg policy).
         local okCfg, eggDef = pcall(function()
             local petsConfig = require(ReplicatedStorage.Configs:WaitForChild("pets"))
-            return petsConfig.egg_sources and petsConfig.egg_sources[eggItemId]
+            return petsConfig.egg_sources and petsConfig.egg_sources[baseEggId]
         end)
         if not (okCfg and type(eggDef) == "table" and eggDef.fixed_odds == true) then
             return { ok = false, reason = "unknown_egg" }
         end
-    end
-    local invSvc = self._inventoryService
-    local rec = invSvc and invSvc:GetItem(player, "eggs", eggItemId)
-    if not rec or (tonumber(rec.quantity) or 0) < 1 then
-        return { ok = false, reason = "no_egg" }
     end
     -- NORMAL hatch mechanics (Jason): the creator egg is a REAL egg definition in
     -- configs/pets.lua — simulateHatch runs the standard pipeline (species, the
@@ -266,9 +271,19 @@ function MeetCreatorService:HatchEggItem(player, eggItemId)
     local dataService = self._dataService
     local playerData = dataService and dataService:GetData(player)
     local petsConfig = require(ReplicatedStorage.Configs:WaitForChild("pets"))
-    local okSim, hatch = pcall(function()
-        return petsConfig.simulateHatch(eggItemId, playerData)
-    end)
+    local hatch
+    if self._testerRewardService then
+        hatch = self._testerRewardService:ResolveHatch(player, rec)
+        if hatch and hatch.ok == false then
+            return hatch
+        end
+    end
+    local okSim = true
+    if not hatch then
+        okSim, hatch = pcall(function()
+            return petsConfig.simulateHatch(baseEggId, playerData)
+        end)
+    end
     if not okSim or type(hatch) ~= "table" or not hatch.pet then
         return { ok = false, reason = "hatch_failed" }
     end
@@ -281,7 +296,13 @@ function MeetCreatorService:HatchEggItem(player, eggItemId)
         variant = hatch.variant,
         huge = hatch.huge == true,
         quantity = 1,
-        source = "creator_egg:" .. eggItemId,
+        source = hatch.award_id and ("tester_reward_egg:" .. hatch.award_id)
+            or ("creator_egg:" .. baseEggId),
+        unique = hatch.award_id ~= nil,
+        award_id = hatch.award_id,
+        awarded_to_user_id = hatch.awarded_to_user_id,
+        award_tier = hatch.award_tier,
+        award_version = hatch.award_version,
     })
     if not result or result.ok == false then
         return { ok = false, reason = "grant_failed" }
@@ -295,6 +316,28 @@ function MeetCreatorService:HatchEggItem(player, eggItemId)
         huge = hatch.huge == true,
     })
     return { ok = true, pet = hatch.pet, variant = hatch.variant, huge = hatch.huge == true }
+end
+
+-- Held eggs are valuable one-shot records. Serialize each player's hatch requests so two client
+-- invokes cannot both observe the same egg before the first call consumes it.
+function MeetCreatorService:HatchEggItem(player, eggItemId)
+    if self._eggHatchLocks[player] then
+        return { ok = false, reason = "hatch_busy" }
+    end
+    self._eggHatchLocks[player] = true
+    local ok, result = pcall(function()
+        return self:_hatchEggItemUnlocked(player, eggItemId)
+    end)
+    self._eggHatchLocks[player] = nil
+    if not ok then
+        self._logger:Error("Held egg hatch failed", {
+            player = player and player.Name,
+            egg = eggItemId,
+            error = tostring(result),
+        })
+        return { ok = false, reason = "hatch_failed" }
+    end
+    return result
 end
 
 return MeetCreatorService

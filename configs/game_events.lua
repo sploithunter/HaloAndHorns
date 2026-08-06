@@ -135,6 +135,18 @@ return {
         banner = { seconds = 8, color = { 145, 95, 255 } },
     },
 
+    tester_reward_awarded = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 70, 210, 255 }, count = 28 },
+        banner = { seconds = 9, color = { 70, 210, 255 } },
+    },
+
+    tester_reward_upgraded = {
+        sound = "power_up_stronger",
+        vfx = { kind = "burst", color = { 255, 190, 55 }, count = 24 },
+        banner = { seconds = 7, color = { 255, 190, 55 } },
+    },
+
     -- Launch social event. Uses the same large floating celebration pattern as
     -- Future Call tokens; ctx.name contains either the invitation or live totals.
     friend_boost_active = {

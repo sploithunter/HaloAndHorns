@@ -595,6 +595,8 @@ function TradePanel:_renderWindow(state)
             return "cur|" .. tostring(it.id)
         elseif cat == "enhancements" then
             return "enh|" .. tostring(it.id)
+        elseif cat == "eggs" then
+            return "egg|" .. tostring(it.award_id or it.uid or it.id)
         end
         return tostring(it.id)
             .. "|"
@@ -659,6 +661,9 @@ function TradePanel:_renderWindow(state)
     if self._sourceTab == "enhancements" then
         local r = self:_callBus("trade.myEnhancements", {})
         sourceItems = (r and r.enhancements) or {}
+    elseif self._sourceTab == "eggs" then
+        local r = self:_callBus("trade.myEggs", {})
+        sourceItems = (r and r.eggs) or {}
     else
         local r = self:_callBus("trade.myPets", {})
         sourceItems = (r and r.pets) or {}
@@ -692,6 +697,14 @@ function TradePanel:_renderWindow(state)
                     reRender()
                 end,
             },
+            {
+                label = "Eggs",
+                active = self._sourceTab == "eggs",
+                onClick = function()
+                    self._sourceTab = "eggs"
+                    reRender()
+                end,
+            },
         },
         gemBar = {
             mode = "input",
@@ -702,6 +715,10 @@ function TradePanel:_renderWindow(state)
         onClick = function(item)
             if item.category == "enhancements" then
                 self:_callBus("trade.addEnhancement", { uid = item.uid })
+                return
+            end
+            if item.category == "eggs" then
+                self:_callBus("trade.addEgg", { uid = item.uid })
                 return
             end
             -- A stack (>1) opens the slider; a single copy / special goes straight in.
@@ -739,7 +756,7 @@ function TradePanel:_renderWindow(state)
             size = UDim2.new(colW, -16, 1, -156),
             tint = COLORS.you,
             confirmed = state.you.confirmed,
-            emptyText = "Add pets, enhancements, or gems",
+            emptyText = "Add pets, eggs, enhancements, or gems",
             gemBar = { mode = "readout", amount = gemTotal(state.you.items) },
             onClick = function(item)
                 local uid = item.uids and item.uids[#item.uids] or item.uid
@@ -830,7 +847,8 @@ function TradePanel:_petColumn(parent, titleText, items, opts)
         local tx = 8
         for _, t in ipairs(opts.tabs) do
             local tb = Instance.new("TextButton")
-            tb.Size = UDim2.fromOffset(t.label == "Pets" and 64 or 116, 26)
+            local tabWidth = (t.label == "Enhancements") and 112 or 58
+            tb.Size = UDim2.fromOffset(tabWidth, 26)
             tb.Position = UDim2.fromOffset(tx, 32)
             tb.BackgroundColor3 = t.active and COLORS.tabOn or COLORS.tabOff
             tb.Text = t.label
@@ -890,9 +908,57 @@ function TradePanel:_petColumn(parent, titleText, items, opts)
     for i, pet in ipairs(items or {}) do
         if pet.category == "enhancements" then
             self:_enhCard(grid, pet, i, opts)
+        elseif pet.category == "eggs" then
+            self:_eggCard(grid, pet, i, opts)
         else
             self:_petCard(grid, pet, i, opts) -- UNCHANGED unified pet card (PetCardStyle chrome)
         end
+    end
+end
+
+function TradePanel:_eggCard(parent, item, order, opts)
+    local clickable = opts.onClick ~= nil
+    local card = Instance.new("TextButton")
+    card.Text = ""
+    card.Size = UDim2.fromOffset(88, 96)
+    card.LayoutOrder = order
+    card.BackgroundColor3 = Color3.fromRGB(35, 38, 50)
+    card.AutoButtonColor = clickable
+    card.Active = clickable
+    card.ZIndex = 103
+    card.Parent = parent
+    corner(card, 12)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = VARIANT_COLORS[tostring(item.variant or "basic")] or COLORS.rowStroke
+    stroke.Thickness = 2
+    stroke.Parent = card
+
+    local icon = label(
+        card,
+        "🥚",
+        UDim2.new(1, 0, 0, 54),
+        UDim2.new(0, 0, 0, 4),
+        COLORS.text,
+        Enum.Font.GothamBold
+    )
+    icon.ZIndex = 104
+    local name = label(
+        card,
+        tostring(item.name or item.id or "Egg"),
+        UDim2.new(1, -6, 0, 34),
+        UDim2.new(0, 3, 1, -37),
+        COLORS.text,
+        Enum.Font.GothamBold
+    )
+    name.TextWrapped = true
+    name.ZIndex = 104
+    local constraint = Instance.new("UITextSizeConstraint")
+    constraint.MaxTextSize = 12
+    constraint.Parent = name
+    if clickable then
+        card.Activated:Connect(function()
+            opts.onClick(item)
+        end)
     end
 end
 

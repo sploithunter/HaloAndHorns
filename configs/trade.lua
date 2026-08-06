@@ -13,6 +13,7 @@ return {
         currencies = false, -- gems are the exception, via tradeable_currencies below
         cosmetics = true,
         enhancements = true, -- all enhancements are tradeable (Jason)
+        eggs = true, -- held tester/creator eggs preserve their complete provenance record
     },
     -- Per-currency trade allowlist (Pet Realm): the four biome coins are soulbound;
     -- gems are the only tradeable currency. Anything not listed here is non-tradeable.

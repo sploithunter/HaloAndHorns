@@ -126,6 +126,10 @@ function PetGrantService:_normalizeGrant(request)
         element = request.element and tostring(request.element):lower() or nil,
         theme = request.theme,
         unique = request.unique == true,
+        award_id = request.award_id,
+        awarded_to_user_id = request.awarded_to_user_id,
+        award_tier = request.award_tier,
+        award_version = request.award_version,
     }
 end
 
@@ -152,6 +156,10 @@ function PetGrantService:BuildPetData(request, player)
         grant_source = grant.source,
         theme = grant.theme,
         unique = grant.unique or nil,
+        award_id = grant.award_id,
+        awarded_to_user_id = grant.awarded_to_user_id,
+        award_tier = grant.award_tier,
+        award_version = grant.award_version,
     }
     -- Infinite Loyalty is literal ownership behavior: a pet carrying it is
     -- minted locked, so delete/trade paths cannot make it abandon its owner.

@@ -442,6 +442,18 @@ loader:RegisterModule("StarterPetService", ServerScriptService.Server.Services.S
     "StatsService",
 })
 loader:RegisterModule(
+    "TesterRewardService",
+    ServerScriptService.Server.Services.TesterRewardService,
+    {
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "InventoryService",
+        "PlayerProgressionService",
+        "PetProgressionService",
+    }
+)
+loader:RegisterModule(
     "SettingsService",
     ServerScriptService.Server.Services.SettingsService,
     { "Logger", "DataService", "ConfigLoader" }
@@ -661,6 +673,7 @@ loader:RegisterModule(
         "PetTransferService",
         "RosterService",
         "EnhancementService",
+        "TesterRewardService",
     }, "stats", "StatsService")
 )
 -- FusionService: Halo & Horns Chaotic fusion (Feature 20) — Light + Shadow -> Chaotic.
@@ -772,7 +785,14 @@ loader:RegisterModule(
 loader:RegisterModule(
     "MeetCreatorService",
     ServerScriptService.Server.Services.MeetCreatorService,
-    { "Logger", "ConfigLoader", "DataService", "InventoryService", "PetGrantService" }
+    {
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "InventoryService",
+        "PetGrantService",
+        "TesterRewardService",
+    }
 )
 -- RealmPortalService: binds named workspace portals (Portal_Halo1/Portal_Horn1) to a
 -- ProximityPrompt that toggles the player into a heaven/hell realm via LayerService (World S3
