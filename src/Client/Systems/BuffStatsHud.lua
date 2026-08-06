@@ -142,7 +142,7 @@ end)
 -- Zone-resonance multiplier for a pet type RIGHT NOW — the same resolution the inventory
 -- card and the server damage path use (ElementResonance.biomeMultiplier), so the team sum
 -- changes when the player crosses a zone border, exactly like the cards do.
-local function zoneResonanceFor(player, petType)
+local function zoneResonanceFor(player, petType, homeWorldBonus)
     if not (elementsOk and ElementsConfig) then
         return 1
     end
@@ -153,7 +153,12 @@ local function zoneResonanceFor(player, petType)
         and CombatFxConfig.origin.pettype_element[petType]
     local zones = areasOk and AreasConfig and AreasConfig.zones
     local zone = zones and zones[tostring(player:GetAttribute("CurrentArea"))]
-    return ElementResonance.biomeMultiplier(petElement, zone and zone.element, ElementsConfig)
+    return ElementResonance.biomeMultiplierWithFloor(
+        petElement,
+        zone and zone.element,
+        ElementsConfig,
+        homeWorldBonus
+    )
 end
 
 local REFRESH = 0.25 -- readout cadence (s)
@@ -786,7 +791,13 @@ function BuffStatsHud:_teamPower()
                     petType = petType,
                     variant = m:GetAttribute("PetVariant"),
                     role = m:GetAttribute("PetRole"),
-                    context = { zone = zoneResonanceFor(self.player, petType) },
+                    context = {
+                        zone = zoneResonanceFor(
+                            self.player,
+                            petType,
+                            m:GetAttribute("HomeWorldBonus")
+                        ),
+                    },
                 })
             end)
             if ok and profile then

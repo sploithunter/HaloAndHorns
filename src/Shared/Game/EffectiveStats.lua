@@ -178,8 +178,8 @@ EffectiveStats.AXES = {
     },
     crystal_yield = {
         attr = "Eff_Crystals",
-        -- Home World and Crystal Finder both resolve through breakable_reward. The revision is the
-        -- reliable trigger when the equipped effect identity changes but its aggregate value does not.
+        -- Crystal Finder resolves through breakable_reward. Home World is intentionally absent:
+        -- it is a per-pet Home-biome resonance floor, not a squad-wide payout multiplier.
         watch = { "EnchantCoinBonus", "EnchantRevision" },
         sources = function(_get)
             return {}

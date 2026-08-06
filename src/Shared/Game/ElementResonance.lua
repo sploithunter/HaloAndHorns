@@ -51,4 +51,23 @@ function ElementResonance.biomeMultiplier(petElement, zoneElement, cfg)
     return 1
 end
 
+-- Home World enchant: preserve the ordinary biome RPS result unless the pet's rolled,
+-- type-scaled enchant is better. The floor is intentionally limited to the four authored Home
+-- biome ids (the keys of `biome.beats`), so Heaven/Hell and special zones retain their normal realm
+-- behavior. Examples for an Exclusive pet: Copper +5%, Silver +15%, Onyx +25%.
+function ElementResonance.biomeMultiplierWithFloor(petElement, zoneElement, cfg, homeWorldBonus)
+    local normal = ElementResonance.biomeMultiplier(petElement, zoneElement, cfg)
+    local biome = cfg and cfg.biome
+    local beats = biome and biome.beats
+    local bonus = math.max(0, tonumber(homeWorldBonus) or 0)
+    if type(beats) ~= "table" or bonus <= 0 then
+        return normal
+    end
+    zoneElement = tostring(zoneElement or "")
+    if beats[zoneElement] == nil then
+        return normal
+    end
+    return math.max(normal, 1 + bonus)
+end
+
 return ElementResonance

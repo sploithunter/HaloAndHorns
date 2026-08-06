@@ -65,6 +65,45 @@ function EnchantRuntime.magnitude(enchant, petData, enchantsConfig)
     return strength * per * EnchantRuntime.typeMultiplier(tier, enchantsConfig)
 end
 
+-- Resolve one effect on one pet. Unique pets carry an `enchantments` list; stack pets carry the
+-- effect id directly in `enchant` and use the config-owned flat stack strength. Returning the
+-- strongest matching slot is deliberate: duplicate effects are normally prohibited, and malformed
+-- legacy data must never multiply a per-pet floor by duplicating the same enchant.
+function EnchantRuntime.effectMagnitude(effectId, petData, enchantsConfig)
+    if type(effectId) ~= "string" or type(petData) ~= "table" then
+        return 0
+    end
+
+    local strongest = 0
+    for _, enchant in pairs(petData.enchantments or {}) do
+        if type(enchant) == "table" and enchant.id == effectId then
+            strongest =
+                math.max(strongest, EnchantRuntime.magnitude(enchant, petData, enchantsConfig))
+        end
+    end
+
+    local stackEffect = petData.enchant
+    if type(stackEffect) == "table" then
+        stackEffect = stackEffect.id
+    end
+    if stackEffect == effectId then
+        local stackStrength = type(enchantsConfig) == "table"
+                and type(enchantsConfig.stack_enchants) == "table"
+                and tonumber(enchantsConfig.stack_enchants.strength)
+            or 0
+        strongest = math.max(
+            strongest,
+            EnchantRuntime.magnitude(
+                { id = effectId, strength = stackStrength },
+                petData,
+                enchantsConfig
+            )
+        )
+    end
+
+    return strongest
+end
+
 -- Stable replicated attribute for one configured enchant identity. Effect ids are authored
 -- snake_case; sanitize anyway so future content cannot create an invalid attribute name.
 function EnchantRuntime.effectAttribute(effectId)

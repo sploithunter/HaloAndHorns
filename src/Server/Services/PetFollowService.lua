@@ -65,6 +65,7 @@ function PetFollowService:Init()
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._combatServiceInstance = nil
     self._enemyServiceInstance = nil
+    self._enchantServiceInstance = nil
     self._config = self._configLoader:LoadConfig("pet_follow")
     self._combatConfig = self._configLoader:LoadConfig("combat")
     self._autoSystemsConfig = self._configLoader:LoadConfig("auto_systems")
@@ -92,6 +93,7 @@ end
 function PetFollowService:BindPeerServices(services)
     self._combatServiceInstance = services.CombatService
     self._enemyServiceInstance = services.EnemyService
+    self._enchantServiceInstance = services.EnchantService
 end
 
 -- Encounter handoff: proximity-triggered cave waves call this once after a real group spawns.
@@ -1243,7 +1245,23 @@ function PetFollowService:_zoneResonance(player, pet)
     local petElement = self._petElementMap[pet:GetAttribute("PetType")]
     local zone = self._zonesConfig[tostring(player:GetAttribute("CurrentArea"))]
     local zoneElement = zone and zone.element
-    return ElementResonance.biomeMultiplier(petElement, zoneElement, self._elementsConfig)
+    local homeWorldBonus = 0
+    if self._enchantServiceInstance then
+        homeWorldBonus = self._enchantServiceInstance:GetPetEffectMagnitude(
+            player,
+            pet:GetAttribute("PetRecordKey"),
+            "home_world"
+        )
+    end
+    if (pet:GetAttribute("HomeWorldBonus") or 0) ~= homeWorldBonus then
+        pet:SetAttribute("HomeWorldBonus", homeWorldBonus)
+    end
+    return ElementResonance.biomeMultiplierWithFloor(
+        petElement,
+        zoneElement,
+        self._elementsConfig,
+        homeWorldBonus
+    )
 end
 
 -- Cross-realm resonance: a pet's ALIGNMENT (light = Heaven species, shadow = Hell species, else

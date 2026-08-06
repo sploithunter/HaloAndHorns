@@ -33,6 +33,33 @@ return function()
             expect(ElementResonance.biomeMultiplier(nil, "grass", biomeCfg)).to.equal(1)
             expect(ElementResonance.biomeMultiplier("lava", "grass", nil)).to.equal(1)
         end)
+
+        it("uses a tier-scaled Home World floor without reducing the normal matchup", function()
+            -- Grass normally beats Desert (+25), is neutral in Grass/Ice, and is weak in Lava.
+            -- A Silver Exclusive Home World enchant is +15%, so it raises neutral/weak zones to
+            -- 1.15 while preserving the better natural 1.25 Desert matchup.
+            expect(ElementResonance.biomeMultiplierWithFloor("grass", "desert", biomeCfg, 0.15)).to.equal(
+                1.25
+            )
+            expect(ElementResonance.biomeMultiplierWithFloor("grass", "grass", biomeCfg, 0.15)).to.equal(
+                1.15
+            )
+            expect(ElementResonance.biomeMultiplierWithFloor("grass", "lava", biomeCfg, 0.15)).to.equal(
+                1.15
+            )
+        end)
+
+        it("does not apply the Home World floor to Heaven, Hell, or special zones", function()
+            expect(ElementResonance.biomeMultiplierWithFloor("grass", "heaven_2", biomeCfg, 0.25)).to.equal(
+                1
+            )
+            expect(ElementResonance.biomeMultiplierWithFloor("grass", "hell_1", biomeCfg, 0.25)).to.equal(
+                1
+            )
+            expect(
+                ElementResonance.biomeMultiplierWithFloor("grass", "mission_void", biomeCfg, 0.25)
+            ).to.equal(1)
+        end)
     end)
 
     describe("ElementResonance.multiplier", function()

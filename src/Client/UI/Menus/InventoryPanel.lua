@@ -148,6 +148,14 @@ if not areasOk then
     AREAS_CONFIG = nil
 end
 local ElementResonance = require(ReplicatedStorage.Shared.Game.ElementResonance)
+-- Enchant display + per-pet Home World resonance floor. One config powers both the numeric
+-- tooltip and the card's effective damage calculation.
+local enchantsOk, ENCHANTS_CONFIG = pcall(function()
+    return require(ReplicatedStorage.Configs:WaitForChild("enchants"))
+end)
+if not enchantsOk then
+    ENCHANTS_CONFIG = nil
+end
 -- Pet defs (for the species realm -> light/shadow alignment used by the cross-realm resonance).
 local petsCfgOk, PETS_CONFIG = pcall(function()
     return require(ReplicatedStorage.Configs:WaitForChild("pets"))
@@ -181,8 +189,9 @@ local function realmResonanceFor(petType)
     return ElementResonance.petRealmMultiplier(def and def.realm, playerRealm, ELEMENTS_CONFIG)
 end
 
--- Current zone resonance multiplier for a pet type (1.0 when neutral/unknown).
-local function zoneResonanceFor(petType)
+-- Current zone resonance multiplier for one pet (1.0 when neutral/unknown). Home World is a
+-- per-pet floor, so the item record must travel with the pet type through every display path.
+local function zoneResonanceFor(petType, petData)
     if not (ELEMENTS_CONFIG and PetBadge) then
         return 1
     end
@@ -195,7 +204,14 @@ local function zoneResonanceFor(petType)
     -- grass pets silently read NEUTRAL on cards/sort/tooltips while ice/desert (alias =
     -- identity) worked. Jason's catch: Ember Lion card 63 in Spawn while it dealt 83.
     local petElement = PetBadge.biomeElementForPetType(petType)
-    return ElementResonance.biomeMultiplier(petElement, zoneElement, ELEMENTS_CONFIG)
+    local homeWorldBonus =
+        EnchantRuntime.effectMagnitude("home_world", petData or {}, ENCHANTS_CONFIG)
+    return ElementResonance.biomeMultiplierWithFloor(
+        petElement,
+        zoneElement,
+        ELEMENTS_CONFIG,
+        homeWorldBonus
+    )
 end
 
 -- SORT KEY = the displayed number, exactly: full profile chain (element x variant x
@@ -206,7 +222,7 @@ end
 -- server resolves dealt damage. The displayed ⛏/⚔ text AND the sort key both call this, so they can
 -- never diverge (Jason: "they should have a single source of truth"). Returns the profile, or nil if
 -- PetPowerView is unavailable.
-local function resolvePetProfile(power, petType, variant, isCreator)
+local function resolvePetProfile(power, petType, variant, isCreator, petData)
     if not (petPowerViewOk and PetPowerView) then
         return nil
     end
@@ -217,7 +233,7 @@ local function resolvePetProfile(power, petType, variant, isCreator)
             variant = variant,
             creator = isCreator == true,
             context = {
-                zone = zoneResonanceFor(petType), -- biome RPS (pet element vs zone)
+                zone = zoneResonanceFor(petType, petData), -- biome RPS + Home World floor
                 realm = realmResonanceFor(petType), -- cross-realm light/shadow vs current realm
             },
         })
@@ -225,21 +241,13 @@ local function resolvePetProfile(power, petType, variant, isCreator)
     return ok and profile or nil
 end
 
-local function displaySortPower(power, petType, variant, isCreator)
-    local profile = resolvePetProfile(power, petType, variant, isCreator)
+local function displaySortPower(power, petType, variant, isCreator, petData)
+    local profile = resolvePetProfile(power, petType, variant, isCreator, petData)
     if profile then
         return math.max(profile.miningEffective or 0, profile.combatEffective or 0)
     end
     -- Fallback (PetPowerView missing): raw power x both context multipliers.
-    return (tonumber(power) or 0) * zoneResonanceFor(petType) * realmResonanceFor(petType)
-end
-
--- Enchant display (metal ring tiers + per-effect %) for badges + readable tooltips.
-local enchantsOk, ENCHANTS_CONFIG = pcall(function()
-    return require(ReplicatedStorage.Configs:WaitForChild("enchants"))
-end)
-if not enchantsOk then
-    ENCHANTS_CONFIG = nil
+    return (tonumber(power) or 0) * zoneResonanceFor(petType, petData) * realmResonanceFor(petType)
 end
 local PetCardStyle = require(script.Parent.Parent.PetCardStyle)
 -- shared amount-picker popover (delete: how many of a stack; same widget trade uses)
@@ -3099,7 +3107,7 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                     end
                     -- Always cache stack display data so ghost cards can render even at quantity 0
                     self._stackDataByKey = self._stackDataByKey or {}
-                    self._stackDataByKey[stackFolder.Name] = {
+                    local item = {
                         id = "stack|" .. stackFolder.Name,
                         name = displayName,
                         icon = petIcons[petType] or "🐾",
@@ -3112,8 +3120,6 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                         -- if equip settles before the panel's refresh listener attaches.
                         _quantityValue = qtyValue,
                         power = power,
-                        -- zone-aware SORT key = the displayed number (full profile chain)
-                        zonePower = displaySortPower(power, petType, variant),
                         basePower = power,
                         effectivePower = power,
                         eternalPercent = eternalPercent,
@@ -3131,6 +3137,10 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                         enchant = stackEnchant,
                         use3DModel = true,
                     }
+                    -- Zone-aware SORT key = the displayed number (full profile chain, including
+                    -- this stack's Home World enchant rather than a squad-wide aggregate).
+                    item.zonePower = displaySortPower(power, petType, variant, false, item)
+                    self._stackDataByKey[stackFolder.Name] = item
                     -- Only create a visible inventory card when count > 0
                     if (qtyValue.Value or 0) > 0 then
                         table.insert(self.inventoryData, self._stackDataByKey[stackFolder.Name])
@@ -3273,7 +3283,6 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                         category = "Pets",
                         count = 1,
                         power = power,
-                        zonePower = displaySortPower(power, petType, variant),
                         basePower = basePower,
                         effectivePower = effectivePower,
                         eternalBaselinePower = eternalBaselinePower,
@@ -3299,6 +3308,7 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
                         variant = variant,
                         use3DModel = true,
                     }
+                    item.zonePower = displaySortPower(power, petType, variant, isCreator, item)
                     table.insert(self.inventoryData, item)
                 end
             end
@@ -5018,7 +5028,8 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
         powerText = item.origins_label -- "Geo/Cryo" under the type name, in the rarity color
     end
     if PetPowerView and item.category == "Pets" and item.petType and item.power then
-        local profile = resolvePetProfile(item.power, item.petType, item.variant, item.creator)
+        local profile =
+            resolvePetProfile(item.power, item.petType, item.variant, item.creator, item)
         if profile then
             local okEhp, ehp = pcall(function()
                 return PetPowerView.survivability(item.power, item.petType, item.role)
@@ -5889,7 +5900,8 @@ function InventoryPanel:_showItemTooltip(item, sourceFrame)
         -- effectivePower == power, so nothing changes for them.
         local basePower = item.effectivePower or item.power or item.basePower
         if PetPowerView and basePower then
-            local profile = resolvePetProfile(basePower, item.petType, item.variant, item.creator)
+            local profile =
+                resolvePetProfile(basePower, item.petType, item.variant, item.creator, item)
             if profile then
                 table.insert(lines, {
                     label = "Damage",
@@ -5998,7 +6010,7 @@ function InventoryPanel:_showItemTooltip(item, sourceFrame)
     end
     if item.category == "Pets" and item.petType then
         -- Zone ALWAYS shows now (Jason: it blinked in/out before) — Neutral when no resonance.
-        local mult = zoneResonanceFor(item.petType)
+        local mult = zoneResonanceFor(item.petType, item)
         local zoneVal
         if mult > 1.001 then
             zoneVal = ("Strong here (+%d%%)"):format((mult - 1) * 100 + 0.5)

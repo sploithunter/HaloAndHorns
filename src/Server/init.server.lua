@@ -954,6 +954,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
         modules:Get("PetFollowService"):BindPeerServices({
             CombatService = modules:Get("CombatService"),
             EnemyService = modules:Get("EnemyService"),
+            EnchantService = isFeatureEnabled("enchants") and modules:Get("EnchantService") or nil,
         })
         modules:Get("EnemyService"):BindPeerServices({
             CombatService = modules:Get("CombatService"),

@@ -1645,6 +1645,12 @@ function loadEquipped(Player)
                 PetModel:SetAttribute("EffectivePower", effectivePower)
                 PetModel:SetAttribute("PetType", petIdName)
                 PetModel:SetAttribute("PetVariant", petVariantName)
+                local stackKey = petFolder:FindFirstChild("StackKey")
+                PetModel:SetAttribute(
+                    "PetRecordKey",
+                    stackKey and stackKey:IsA("StringValue") and stackKey.Value or petFolder.Name
+                )
+                PetModel:SetAttribute("PetRecordKind", stackKey and "stack" or "special")
                 PetModel:SetAttribute("EternalPercent", eternalPercent)
                 PetModel:SetAttribute(
                     "EternalBaselinePower",
