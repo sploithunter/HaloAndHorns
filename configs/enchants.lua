@@ -11,7 +11,7 @@
 -- For an effect to be live, a gameplay system must consume its modifier kind.
 -- Most are ModifierService contexts; per-pet kinds may have a dedicated shared resolver.
 -- Current live kinds include
--- `breakable_reward`, `pet_zone_resonance`, `pet_xp`, `hatch_luck`,
+-- `breakable_reward`, `collect_radius`, `pet_zone_resonance`, `pet_xp`, `hatch_luck`,
 -- `secret_hatch_luck`, `pet_damage`, `team_power`, and `pet_efficiency`.
 
 return {
@@ -273,13 +273,14 @@ return {
             },
         },
         crystal_finder = {
-            display_name = "Crystal Finder",
-            description = "Increases crystal rewards from breakables.",
+            -- Keep the stable id for existing saved pets. Player-facing identity and live behavior
+            -- are Magnet: widen the complete collection radius after power/pass/pet-ability reach.
+            display_name = "Magnet",
+            description = "Increases your total pickup radius while this pet is equipped.",
             roll = { low = 1, high = 5, scale = 2 },
             modifier = {
                 stage = "enchants",
-                kind = "breakable_reward",
-                currency = "crystals",
+                kind = "collect_radius",
                 combine = "multiply",
                 amount_per_strength = 0.03,
             },

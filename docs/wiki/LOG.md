@@ -2240,3 +2240,13 @@ rewrite.
   +5/+10/+15/+20/+25%; rarity/Huge type multipliers remain meaningful.
 - Routed the shared result through authoritative mining/combat damage, card power/sorting/tooltips,
   and the Studio team-power HUD. Heaven/Hell and special zones remain unchanged.
+
+## 2026-08-06 — Magnet enchant reaches the physical collection radius
+
+- Kept the persisted `crystal_finder` id compatible while correcting its player-facing identity and
+  live behavior to Magnet. It no longer increases crystal payout value.
+- Added a pure collection-radius resolver: flat base/power/pass reach first, larger pet-ability reach
+  second, then the configured combined Magnet-enchant factor. `DropService` uses and republishes that exact
+  value as `CollectRadius`, so gameplay and Active Buffs cannot diverge.
+- Added regression coverage for the reported Onyx Exclusive case: the 71-stud Magnet power plus
+  Auto Collector setup receives +30% and resolves to 92.3 studs.

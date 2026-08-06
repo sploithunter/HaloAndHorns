@@ -289,6 +289,15 @@ Exclusive pet therefore floors at +5/+10/+15/+20/+25% from Copper through Onyx. 
 special zones do not receive this floor, so the cross-realm trade game remains unchanged. Server
 damage, inventory cards/sorting/tooltips, and the Studio stats HUD must use the shared resolver.
 
+## Magnet Enchant Scales the Complete Pickup Radius (2026-08-06)
+
+The historical saved effect id `crystal_finder` remains stable, but its player-facing and runtime
+identity is **Magnet**, not a crystal-payout bonus. Resolve flat collection sources first
+(`base + Magnet power + Auto Collector`), take any larger absolute pet-ability reach, then multiply
+that useful radius by the configured combined equipped Magnet-enchant factor. `DropService` publishes the
+result as `CollectRadius`; clients display that server value verbatim. This makes metal/type scaling
+meaningful without introducing a second collection formula or migrating existing pet records.
+
 ## Designated Powers Are the Differentiation Unit (2026-06-17)
 
 A pet stops being a reskin when it carries a designated power, not just different stats. Archetype lines

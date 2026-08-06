@@ -492,8 +492,8 @@ function BuffStatsHud:_refresh()
         soonestRemaining(p, { "CoinYieldPowerUntil" }, now)
     )
 
-    -- 💎 Crystal rewards: Home World + Crystal Finder through the same breakable pipeline used by
-    -- payouts. This is deliberately separate from the physical pickup-radius Magnet row below.
+    -- 💎 Crystal rewards: payout multipliers only. Magnet is deliberately represented by the
+    -- physical pickup-radius row below rather than pretending to increase crystal value.
     local crystals = tonumber(p:GetAttribute("Eff_Crystals")) or 1
     self:_setMult("crystals", crystals, axis("crystal_yield").cap, nil)
 
@@ -566,7 +566,7 @@ function BuffStatsHud:_refresh()
 
     -- 🧲 Magnet collect radius: DISPLAY ONLY — the server publishes the ONE
     -- authoritative number (CollectRadius, computed + used by DropService's
-    -- collect loop). No formula here, so this row can never drift from what
+    -- collect loop, including equipped Magnet enchants). No formula here, so this row can never drift from what
     -- the server actually collects with (Jason's SSOT rule, 2026-07-14).
     local magBase = tonumber(DropsConfig.collect_radius) or 11
     local magTotal = tonumber(p:GetAttribute("CollectRadius")) or magBase

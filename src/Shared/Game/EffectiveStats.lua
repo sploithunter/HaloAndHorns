@@ -178,8 +178,8 @@ EffectiveStats.AXES = {
     },
     crystal_yield = {
         attr = "Eff_Crystals",
-        -- Crystal Finder resolves through breakable_reward. Home World is intentionally absent:
-        -- it is a per-pet Home-biome resonance floor, not a squad-wide payout multiplier.
+        -- Magnet and Home World are intentionally absent: Magnet changes physical collection
+        -- radius; Home World is a per-pet Home-biome resonance floor.
         watch = { "EnchantCoinBonus", "EnchantRevision" },
         sources = function(_get)
             return {}

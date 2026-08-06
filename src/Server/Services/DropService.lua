@@ -23,6 +23,7 @@ local MeshAssembly = require(ReplicatedStorage.Shared.Assets.MeshAssembly)
 
 local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
+local MagnetRadius = require(ReplicatedStorage.Shared.Game.MagnetRadius)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
 
@@ -43,6 +44,7 @@ function DropService:Init()
     -- missing dependency declaration can never silently nil this out again.
     self._dataService = (self._modules and self._modules.DataService)
         or (self._moduleLoader and self._moduleLoader:Get("DataService"))
+    self._modifierService = self._modules and self._modules.ModifierService
     self._config = (self._configLoader and self._configLoader:LoadConfig("drops"))
         or require(ReplicatedStorage.Configs:WaitForChild("drops"))
     self._gems = (self._configLoader and self._configLoader:LoadConfig("gems"))
@@ -51,6 +53,7 @@ function DropService:Init()
     self._active = {} -- live drop records
     self._pool = {} -- recycled gem models, keyed "color|form" (or "ball")
     self._templates = {} -- built gem model templates, keyed "color|form"
+    self._collectRadiusEnchantCache = setmetatable({}, { __mode = "k" })
 
     if not self._config.enabled then
         return -- inert: BreakableSpawner credits instantly when SpawnCoinDrop returns false
@@ -77,6 +80,36 @@ function DropService:Init()
     self._conn = RunService.Heartbeat:Connect(function()
         self:_step()
     end)
+end
+
+-- Resolve the equipped Magnet enchants through their authoritative modifier provider, but never do
+-- a profile/equip walk once per physical drop. A short cache keeps live equip/reroll response crisp
+-- while bounding the work to four resolutions per second per player during active loot.
+function DropService:_collectRadiusEnchantBonus(plr)
+    local now = os.clock()
+    local cached = self._collectRadiusEnchantCache[plr]
+    if cached and cached.expiresAt > now then
+        return cached.bonus
+    end
+
+    local bonus = tonumber(plr:GetAttribute("EnchantCollectRadius")) or 0
+    if self._modifierService and self._modifierService.Resolve then
+        local ok, factor = pcall(function()
+            return self._modifierService:Resolve(1, {
+                player = plr,
+                kind = "collect_radius",
+                source = "DropService",
+            })
+        end)
+        if ok and tonumber(factor) then
+            bonus = math.max(0, tonumber(factor) - 1)
+        end
+    end
+    self._collectRadiusEnchantCache[plr] = {
+        bonus = bonus,
+        expiresAt = now + 0.25,
+    }
+    return bonus
 end
 
 function DropService:IsEnabled()
@@ -877,20 +910,22 @@ end
 
 -- THE collect radius — ONE source of truth (Jason 2026-07-14: "we should
 -- have one source of truth... and only ever reference that variable"). This
--- is the ONLY place the formula lives: base + the Magnet power's timed buff
--- + the Auto Collector pass's permanent extension. The result is PUBLISHED
+-- is the ONLY server consumer of the shared formula: base + Magnet power + Auto Collector,
+-- floored by pet-ability reach, then multiplied by equipped Magnet enchants. The result is PUBLISHED
 -- as the CollectRadius attribute; the Active Buffs HUD (and anything else)
 -- displays that attribute VERBATIM — no client-side re-derivation, so the
 -- display can never drift from what the server actually collects with.
 function DropService:_effectiveCollectRadius(plr, baseR, nowT)
-    local r = baseR
-    if (plr:GetAttribute("MagnetBuffUntil") or 0) > nowT then
-        r += tonumber(plr:GetAttribute("MagnetBuff")) or 0
-    end
-    r += tonumber(plr:GetAttribute("AutoCollectRange")) or 0
-    -- Variant pet magnet abilities publish an absolute attraction range. It
-    -- shares this one collection-radius SSOT rather than adding a parallel pull.
-    r = math.max(r, tonumber(plr:GetAttribute("PetAbilityCollectRange")) or 0)
+    local magnetBonus = (plr:GetAttribute("MagnetBuffUntil") or 0) > nowT
+            and (tonumber(plr:GetAttribute("MagnetBuff")) or 0)
+        or 0
+    local r = MagnetRadius.resolve(
+        baseR,
+        magnetBonus,
+        plr:GetAttribute("AutoCollectRange"),
+        plr:GetAttribute("PetAbilityCollectRange"),
+        self:_collectRadiusEnchantBonus(plr)
+    )
     if plr:GetAttribute("CollectRadius") ~= r then
         plr:SetAttribute("CollectRadius", r)
     end
