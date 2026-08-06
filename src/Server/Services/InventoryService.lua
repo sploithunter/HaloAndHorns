@@ -1924,7 +1924,8 @@ function InventoryService:_setupNetworkSignals()
     -- Draft commit: replace the whole equipped squad at once (the team-draft Activate). One
     -- RebuildPetProjections → one deploy, atomic — no per-pet toggle race. See task #240.
     Signals.SetEquippedPets.OnServerEvent:Connect(function(player, data)
-        self:_handleSetEquippedPets(player, data)
+        local result = self:_handleSetEquippedPets(player, data)
+        Signals.SetEquippedPetsResult:FireClient(player, result)
     end)
 
     -- Tool equipping
@@ -2424,51 +2425,58 @@ end
 -- Commit a draft squad: replace Equipped.pets with `data.refs` (clear + set) in one shot, then ONE
 -- RebuildPetProjections → one atomic deploy (no per-pet toggle race). Each ref is the equipped-layer
 -- format: "stack|<stackKey>" for a common copy, or a unique uid for a special. Ownership, stack
--- quantity, and the slot cap are validated via _resolvePetTarget; unknown/over-quantity refs drop.
+-- quantity, uniqueness, and the slot cap are validated as one transaction; any invalid ref rejects
+-- the whole draft, while an empty ref list deliberately commits an empty squad.
 function InventoryService:_handleSetEquippedPets(player, data)
     local refs = data and data.refs
+    local requestId = data and data.requestId
     if type(refs) ~= "table" then
-        return
+        return { ok = false, requestId = requestId, reason = "invalid_refs" }
     end
     local playerData = self._dataService:GetData(player)
     if not playerData or not playerData.Inventory or not playerData.Inventory.pets then
-        return
+        return { ok = false, requestId = requestId, reason = "profile_unavailable" }
     end
     local items = playerData.Inventory.pets.items
     local petSlots = self._inventoryConfig.equipped.pets
     local maxSlots = self:_getMaxEquippedSlots(player, "pets", petSlots.slots)
     playerData.Equipped = playerData.Equipped or {}
 
-    local newEquipped = {}
-    local slot = 1
-    local usedByKey = {}
-    for _, ref in ipairs(refs) do
-        if slot > maxSlots then
-            break
-        end
-        local target = self:_resolvePetTarget(player, ref)
-        if target then
-            if target.kind == "special" then
-                newEquipped["slot_" .. slot] = target.uid
-                slot += 1
-            else
-                local stack = items[target.stackKey]
-                local owned = stack and (tonumber(stack.quantity) or 0) or 0
-                local used = usedByKey[target.stackKey] or 0
-                if used < owned then
-                    newEquipped["slot_" .. slot] = "stack|" .. target.stackKey
-                    usedByKey[target.stackKey] = used + 1
-                    slot += 1
-                end
-            end
-        end
+    local newEquipped, summary = PetInventoryView.buildEquipped(items, refs, maxSlots)
+    if summary.rejected > 0 then
+        self._logger:Warn("❌ Draft squad rejected atomically", {
+            player = player.Name,
+            accepted = summary.accepted,
+            rejected = summary.rejected,
+            requested = summary.requested,
+            maxSlots = summary.maxSlots,
+        })
+        return {
+            ok = false,
+            requestId = requestId,
+            reason = "invalid_squad",
+            accepted = summary.accepted,
+            rejected = summary.rejected,
+        }
     end
 
     playerData.Equipped.pets = newEquipped
     self:RebuildPetProjections(player)
-    fireGameEvent(player, "pet_equipped", { action = "equipped" })
+    fireGameEvent(player, "pet_equipped", {
+        action = summary.accepted > 0 and "equipped" or "unequipped",
+    })
     self._dataService:RequestSave(player, "squad_set", { critical = true })
-    self._logger:Info("✅ Draft squad committed", { player = player.Name, count = slot - 1 })
+    self._logger:Info("✅ Draft squad committed", {
+        player = player.Name,
+        count = summary.accepted,
+        rejected = summary.rejected,
+    })
+    return {
+        ok = true,
+        requestId = requestId,
+        count = summary.accepted,
+        rejected = summary.rejected,
+    }
 end
 
 function InventoryService:_handleToggleToolEquipped(player, data)

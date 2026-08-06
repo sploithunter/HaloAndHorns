@@ -53,6 +53,9 @@ return function()
             expect(networkConfig.packets.SetEquippedPets.handler).to.equal(
                 "InventoryService.SetEquippedPets"
             )
+            expect(networkConfig.packets.SetEquippedPetsResult.topic).to.equal(
+                "inventory.squad_commit_result"
+            )
             expect(networkConfig.packets.ToggleToolEquipped.delivery).to.equal("request")
             expect(networkConfig.packets.EnchantPetRequest.handler).to.equal(
                 "EnchantService.RerollPetEnchant"
@@ -187,6 +190,7 @@ return function()
             expect(signals.CleanOrphanedBuckets.name).to.equal("CleanOrphanedBuckets")
             expect(signals.TogglePetEquipped.name).to.equal("TogglePetEquipped")
             expect(signals.SetEquippedPets.name).to.equal("SetEquippedPets")
+            expect(signals.SetEquippedPetsResult.name).to.equal("SetEquippedPetsResult")
             expect(signals.ToggleToolEquipped.name).to.equal("ToggleToolEquipped")
             expect(signals.EnchantPetRequest.name).to.equal("EnchantPetRequest")
             expect(signals.SaveDisplayPreferences.name).to.equal("SaveDisplayPreferences")
@@ -298,7 +302,7 @@ return function()
             expect(signals.FoundersChoiceStateRequest.name).to.equal("FoundersChoiceStateRequest")
             expect(signals.FoundersChoiceSelect.name).to.equal("FoundersChoiceSelect")
             expect(signals.FoundersChoiceState.name).to.equal("FoundersChoiceState")
-            expect(#created).to.equal(124)
+            expect(#created).to.equal(125)
         end)
 
         it("omits Studio-only packets from a production registry", function()

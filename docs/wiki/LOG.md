@@ -2147,3 +2147,14 @@ rewrite.
 - Made the common Health Potion functional through the structured inventory path: one potion heals
   25% of each deployed living pet's own endurance pool, respects resurrection sickness, never
   revives a downed pet, and is not consumed when the squad is already healthy.
+
+## 2026-08-06 — Atomic, acknowledged squad clearing
+
+- Hardened the inventory squad editor after a production Founder extra-slot report: draft cards now
+  remove their exact enchant-specific equipped reference, with ambiguous legacy-prefix matches
+  refused instead of guessed.
+- `SetEquippedPets` now validates the complete replacement atomically, explicitly accepts an empty
+  squad, and returns a correlated server acknowledgement. The client no longer marks a draft live or
+  closes an Activate-and-close flow until confirmation; timeouts and rejections remain retryable.
+- Added pure coverage for empty squads, distinct enchanted stacks, duplicate uniques, over-owned
+  stack copies, and over-cap requests, plus manifest coverage for the acknowledgement signal.

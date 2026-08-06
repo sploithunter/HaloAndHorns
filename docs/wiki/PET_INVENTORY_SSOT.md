@@ -79,7 +79,8 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
 - **Add** (hatch): commons increment the stack; specials mint a uid record.
 - **Remove / delete / trade**: change ownership only; the equip layer is re-validated afterward.
 - **Equip toggle**: mutates `Equipped.pets` (guards: already-equipped? enough unequipped stock?).
-- **Projection** replicates the SSOT to the client as a stable folder view — `Stacks/<id:variant>`
+- **Projection** replicates the SSOT to the client as a stable folder view —
+  `Stacks/<id:variant:enchant>`
   (Quantity = *unequipped* count), `Special/<uid>`, and the `Equipped` slot folder. This is the
   intended replication layer, not legacy debt. The client renders these folders; equipped commons
   show as "ghost" cards from the equipped folder. `ResolvePetTarget` maps client identifiers back
@@ -90,6 +91,11 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   metadata for quantity-zero stacks and reads the stable `Quantity` value object live (not a possibly
   pre-projection cached count), so removing the only deployed copy immediately returns its card to
   the inventory grid before Activate commits the draft.
+- **Squad-draft commits are acknowledged and atomic.** The client keeps the draft dirty and shows
+  `Deploying…` until `SetEquippedPetsResult` confirms the server replacement. Empty squads are valid;
+  duplicate uniques, over-owned stacks, unknown refs, and over-cap drafts reject the whole request.
+  Rendered draft cards carry their exact saved reference so enchant-specific stacks cannot be
+  confused by legacy-prefix fallback. A missing acknowledgement times out to an editable retry state.
 
 ### Rebuild tiers (do NOT re-validate equip on every mutation)
 
