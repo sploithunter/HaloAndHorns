@@ -2156,9 +2156,10 @@ function BreakableSpawner:_trySpawnOne(
             -- Windfall (drop_rate axis): an active drop-rate buff multiplies the premium-
             -- gem chance too (the same loot burst as enhancement drops).
             local gemChance = tonumber(cfg.chance) or 0
-            if (plr:GetAttribute("DropRateBuffUntil") or 0) > os.time() then
-                gemChance = gemChance * (1 + (tonumber(plr:GetAttribute("DropRateBuff")) or 0))
-            end
+            gemChance = gemChance
+                * EffectiveStats.multiplier("drop_rate", function(name)
+                    return plr:GetAttribute(name)
+                end, os.time())
             if math.random() >= gemChance then
                 return
             end

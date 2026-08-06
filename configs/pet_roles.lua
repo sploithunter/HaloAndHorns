@@ -193,6 +193,9 @@ return {
         defense = "aura",
         yield = "aura",
         luck = "aura",
+        xp = "aura",
+        huge_luck = "aura",
+        drop_rate = "aura",
         buff = "aura",
     },
 
@@ -306,6 +309,14 @@ return {
             { kind = "heal", interval = 15, fraction = 0.2 },
             { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 },
         },
+        -- Limited tester rewards each carry ONE deterministic Natural farming identity.
+        -- They are player-facing support auras, not random enchants: the pet must be deployed,
+        -- multiple providers stack additively, and variant scaling makes Basic/Golden/Rainbow
+        -- worth +16.67% / +20.84% / +25% respectively.
+        beta_tester_bot = { kind = "xp", interval = 2.0, mult = 1.1667, duration = 6 },
+        -- Week two is reserved before its pet definition lands so the five-week rotation cannot
+        -- drift: Signal Seal owns Huge Fortune; later pets take Luck, Windfall, Prospector.
+        signal_seal = { kind = "huge_luck", interval = 2.0, mult = 1.1667, duration = 6 },
         -- The colorado_creator SPECIES (the apex — different pet, same model): every
         -- buffer at once — the creator's testing/scaling tool.
         -- (the apex is a rainbow record, so x1.5 puts it at the old full values)

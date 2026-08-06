@@ -385,6 +385,7 @@ function BuffStatsHud:_connect()
         "Eff_Speed",
         "Eff_Recharge",
         "Eff_XP",
+        "Eff_HugeLuck",
         "CollectRadius",
     }) do
         self.player:GetAttributeChangedSignal(attrName):Connect(function()
@@ -501,19 +502,22 @@ function BuffStatsHud:_refresh()
     local channels = {
         golden_luck = "GoldenLuckBuff",
         rainbow_luck = "RainbowLuckBuff",
-        huge_luck = "HugeLuckBuff",
+        huge_luck = "Eff_HugeLuck",
     }
     for _, pb in ipairs(self._presenceBuffs or {}) do
         channels[pb.key] = pb.attr
     end
     for key, attr in pairs(channels) do
-        local untilT = p:GetAttribute(attr .. "Until") or 0
-        local mult = (untilT > now) and (tonumber(p:GetAttribute(attr)) or 1) or 1
+        local effective = string.sub(attr, 1, 4) == "Eff_"
+        local untilT = effective and math.huge or (p:GetAttribute(attr .. "Until") or 0)
+        local mult = effective and (tonumber(p:GetAttribute(attr)) or 1)
+            or ((untilT > now) and (tonumber(p:GetAttribute(attr)) or 1) or 1)
         local row = self.rows[key]
         if row then
             row.row.Visible = mult > 1.0001
             if mult > 1.0001 then
-                self:_setMult(key, mult, 4, math.max(0, untilT - now))
+                local cap = effective and axis("huge_luck").cap or 4
+                self:_setMult(key, mult, cap, effective and nil or math.max(0, untilT - now))
             end
         end
     end

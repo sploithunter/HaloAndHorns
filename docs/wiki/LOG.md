@@ -2191,3 +2191,14 @@ rewrite.
 - Added a campaign-level `claim.studio_enabled` gate and enabled it for week one, allowing Studio
   sessions to exercise the genuine eligibility, level-2 egg grant, and level-5/10 progression path
   while `claim.enabled = false` continues to keep production distribution closed.
+
+## 2026-08-06 — Deterministic tester-pet farming identities
+
+- Assigned one fixed Natural farming identity per weekly tester exclusive: Beta Byte = XP Surge,
+  Signal Seal = Huge Fortune, with Luck, Windfall, and Prospector reserved for weeks three through
+  five. These are deploy-time player auras, never random enchants.
+- Added shared effective-stat channels for pet XP, Huge-luck, and drop-rate auras so they stack
+  additively with the matching Natural powers and publish authoritative HUD values. The established
+  support curve yields +16.67% Basic, +20.84% Golden, and +25% Rainbow.
+- Added a regression proving a Huge tester reward keeps its Huge trait, stable identity, and serial
+  across Basic/Golden/Rainbow campaign reconciliation.

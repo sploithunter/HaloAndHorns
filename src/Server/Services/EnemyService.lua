@@ -4305,6 +4305,12 @@ function EnemyService:_supportPass(now)
                 elseif kind == "yield" then
                     self:_auraPlayerBuff(folder, "CoinYieldBuff", aura, count, weight)
                     self:_stampAuraFx(folder, "YieldFxUntil", aura, count)
+                elseif kind == "xp" then
+                    self:_auraPlayerBuff(folder, "PetXpAura", aura, count, weight)
+                elseif kind == "huge_luck" then
+                    self:_auraPlayerBuff(folder, "HugeLuckAura", aura, count, weight)
+                elseif kind == "drop_rate" then
+                    self:_auraPlayerBuff(folder, "DropRateAura", aura, count, weight)
                 elseif kind == "recharge" then
                     -- EMBER TEMPO (Ashwing): power-cooldown shave for the OWNER on
                     -- its own additive seam (RechargeAura) — stacks with Hasten's

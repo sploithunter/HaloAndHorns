@@ -52,6 +52,8 @@ local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
 local RecallTarget = require(ReplicatedStorage.Shared.Game.RecallTarget)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
+local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
 local OpsAlert = require(script.Parent.Parent.OpsAlert)
 local HatchTiming = require(ReplicatedStorage.Shared.Game.HatchTiming)
 local HttpService = game:GetService("HttpService")
@@ -934,9 +936,12 @@ function EggService:BuildPlayerHatchData(player, eggType, eggData, hatchOptions)
             source = "EggService",
         })
         local hugeMult = tonumber(hugeLuck) or 1
-        if (player:GetAttribute("HugeLuckBuffUntil") or 0) > os.time() then
-            hugeMult = hugeMult * (tonumber(player:GetAttribute("HugeLuckBuff")) or 1)
-        end
+        -- Huge Fortune power + deployed tester-pet aura add their bonuses. The modifier pipeline
+        -- remains a whole-account multiplier and composes outside this player-level axis.
+        local playerHugeMult = EffectiveStats.multiplier("huge_luck", function(name)
+            return player:GetAttribute(name)
+        end, os.time(), (buffsConfig.axes or {}).huge_luck)
+        hugeMult = hugeMult * playerHugeMult
         playerData.hugeLuckBoost = hugeMult
     end
 

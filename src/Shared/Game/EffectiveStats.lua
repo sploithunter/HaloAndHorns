@@ -164,10 +164,43 @@ EffectiveStats.AXES = {
     },
     xp = {
         attr = "Eff_XP",
-        watch = { "XpBuff", "XpBuffUntil" },
+        watch = { "XpBuff", "XpBuffUntil", "PetXpAura", "PetXpAuraUntil" },
         sources = function(get)
             return {
                 { fraction = frac(get, "XpBuff"), expiry = frac(get, "XpBuffUntil") },
+                {
+                    fraction = math.max(0, mult(get, "PetXpAura")),
+                    expiry = frac(get, "PetXpAuraUntil"),
+                },
+            }
+        end,
+    },
+    drop_rate = {
+        attr = "Eff_DropRate",
+        watch = { "DropRateBuff", "DropRateBuffUntil", "DropRateAura", "DropRateAuraUntil" },
+        sources = function(get)
+            return {
+                { fraction = frac(get, "DropRateBuff"), expiry = frac(get, "DropRateBuffUntil") },
+                {
+                    fraction = math.max(0, mult(get, "DropRateAura")),
+                    expiry = frac(get, "DropRateAuraUntil"),
+                },
+            }
+        end,
+    },
+    huge_luck = {
+        attr = "Eff_HugeLuck",
+        watch = { "HugeLuckBuff", "HugeLuckBuffUntil", "HugeLuckAura", "HugeLuckAuraUntil" },
+        sources = function(get)
+            return {
+                {
+                    fraction = math.max(0, mult(get, "HugeLuckBuff")),
+                    expiry = frac(get, "HugeLuckBuffUntil"),
+                },
+                {
+                    fraction = math.max(0, mult(get, "HugeLuckAura")),
+                    expiry = frac(get, "HugeLuckAuraUntil"),
+                },
             }
         end,
     },

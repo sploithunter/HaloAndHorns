@@ -55,6 +55,26 @@ return function()
             expect(math.abs(m - 1.3) < 1e-9).to.equal(true)
         end)
 
+        it("stacks tester-pet farming auras with their matching Natural powers", function()
+            local get = getter({
+                XpBuff = 0.5,
+                XpBuffUntil = NOW + 60,
+                PetXpAura = 1.25,
+                PetXpAuraUntil = NOW + 60,
+                DropRateBuff = 2,
+                DropRateBuffUntil = NOW + 60,
+                DropRateAura = 1.25,
+                DropRateAuraUntil = NOW + 60,
+                HugeLuckBuff = 3,
+                HugeLuckBuffUntil = NOW + 60,
+                HugeLuckAura = 1.25,
+                HugeLuckAuraUntil = NOW + 60,
+            })
+            expect(EffectiveStats.multiplier("xp", get, NOW, { cap = 3 })).to.equal(1.75)
+            expect(EffectiveStats.multiplier("drop_rate", get, NOW, { cap = 5 })).to.equal(3.25)
+            expect(EffectiveStats.multiplier("huge_luck", get, NOW, { cap = 5 })).to.equal(3.25)
+        end)
+
         it("adds both creator-owned speed passes and caps Swift at 2x", function()
             local passOnly = getter({
                 MoveSpeedBuffPass = 0.75, -- VIP +25% plus Speed Boost +50%

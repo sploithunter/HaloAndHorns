@@ -217,6 +217,21 @@ local M = {
             label = "Luck",
             tooltip = "Improves hatch luck while this pet is deployed.",
         },
+        xp = {
+            symbol = "xp_up",
+            label = "XP Surge",
+            tooltip = "Increases all XP earned while this pet is deployed.",
+        },
+        huge_luck = {
+            symbol = "clover_huge",
+            label = "Huge Fortune",
+            tooltip = "Improves Huge hatch odds while this pet is deployed.",
+        },
+        drop_rate = {
+            symbol = "gift_up",
+            label = "Windfall",
+            tooltip = "Improves enhancement, potion, and premium-drop odds while deployed.",
+        },
         hold = {
             symbol = "capacitor",
             label = "Hold",
