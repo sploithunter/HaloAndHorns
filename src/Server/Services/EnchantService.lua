@@ -88,6 +88,7 @@ end
 -- visible. Attribute per surfaced kind; only-on-change writes.
 local STAMPED_KINDS = {
     breakable_reward = "EnchantCoinBonus",
+    pet_zone_resonance = "EnchantHomeWorld",
     pet_xp = "EnchantPetXpBonus",
     hatch_luck = "EnchantHatchLuck",
     secret_hatch_luck = "EnchantSecretLuck",
@@ -166,6 +167,48 @@ function EnchantService:_stampAggregates(player)
     if changed then
         player:SetAttribute("EnchantRevision", (player:GetAttribute("EnchantRevision") or 0) + 1)
     end
+
+    -- Per-pet mirror for client HUDs. Gameplay resolves from the authoritative inventory record,
+    -- not this attribute; this is only the replicated "shown = dealt" view. Stack copies share a
+    -- record key and therefore the same configured enchant.
+    local petsRoot = workspace:FindFirstChild("PlayerPets")
+    local deployed = petsRoot and petsRoot:FindFirstChild(player.Name)
+    for _, model in ipairs(deployed and deployed:GetChildren() or {}) do
+        if model:IsA("Model") then
+            local magnitude =
+                self:GetPetEffectMagnitude(player, model:GetAttribute("PetRecordKey"), "home_world")
+            if (model:GetAttribute("HomeWorldBonus") or 0) ~= magnitude then
+                model:SetAttribute("HomeWorldBonus", magnitude)
+            end
+        end
+    end
+end
+
+-- Authoritative per-record enchant lookup used by per-pet mechanics. This deliberately does not
+-- aggregate the whole squad: Home World belongs to the pet that rolled it.
+function EnchantService:GetPetEffectMagnitude(player, recordKey, effectId)
+    if not player or type(recordKey) ~= "string" or recordKey == "" then
+        return 0
+    end
+    local data = self._dataService and self._dataService:GetData(player)
+    local items = data and data.Inventory and data.Inventory.pets and data.Inventory.pets.items
+    local record = items and items[recordKey]
+    if type(record) ~= "table" then
+        return 0
+    end
+
+    local petConfig = self._petsConfig
+        and self._petsConfig.pets
+        and record.id
+        and self._petsConfig.pets[record.id]
+    return EnchantRuntime.effectMagnitude(effectId, {
+        enchantments = record.enchantments,
+        enchant = record.enchant,
+        huge = record.huge == true,
+        rarity_id = record.rarity_id
+            or record.rarity_override
+            or (petConfig and petConfig.rarity_id),
+    }, self._config)
 end
 
 function EnchantService:Start()

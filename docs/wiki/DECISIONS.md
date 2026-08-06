@@ -279,6 +279,16 @@ construction. Resonance is **weak-at-home / strong-abroad** (own-realm 0.8, oppo
 deliberately pushing cross-realm trading; alignment is derived from the pet's SPECIES realm, no per-pet
 storage.
 
+## Home World Enchant Is a Tier-Scaled Resonance Floor (2026-08-06)
+
+`Home World` belongs to the individual pet that rolled it; it is not a global coin/crystal or squad
+modifier. In the four Home biomes, resolve the pet's zone multiplier as
+`max(normal biome RPS, 1 + rolled/type-scaled enchant magnitude)`. This preserves the ordinary
+strong/neutral/weak matchup whenever it is better while making every metal tier meaningful. An
+Exclusive pet therefore floors at +5/+10/+15/+20/+25% from Copper through Onyx. Heaven, Hell, and
+special zones do not receive this floor, so the cross-realm trade game remains unchanged. Server
+damage, inventory cards/sorting/tooltips, and the Studio stats HUD must use the shared resolver.
+
 ## Designated Powers Are the Differentiation Unit (2026-06-17)
 
 A pet stops being a reskin when it carries a designated power, not just different stats. Archetype lines

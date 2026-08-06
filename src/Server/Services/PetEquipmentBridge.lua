@@ -58,6 +58,14 @@ local function ensureEquipFolder(petsFolder, stackKey, eph)
         equipFolder.Parent = petsFolder
     end
 
+    local stackKeyValue = equipFolder:FindFirstChild("StackKey")
+    if not stackKeyValue then
+        stackKeyValue = Instance.new("StringValue")
+        stackKeyValue.Name = "StackKey"
+        stackKeyValue.Parent = equipFolder
+    end
+    stackKeyValue.Value = stackKey
+
     local equipped = equipFolder:FindFirstChild("Equipped")
     if not equipped then
         equipped = Instance.new("BoolValue")

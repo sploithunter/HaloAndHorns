@@ -8,10 +8,11 @@
 -- strength = 2 }`. Do not put enchant behavior on pet configs or individual pet
 -- records. To rebalance or redefine an enchant, edit `effects` below.
 --
--- For an effect to be live, some gameplay system must resolve the matching
--- modifier context through ModifierService. Current live contexts include
--- `breakable_reward`, `pet_xp`, `hatch_luck`, `secret_hatch_luck`,
--- `pet_damage`, `team_power`, and `pet_efficiency`.
+-- For an effect to be live, a gameplay system must consume its modifier kind.
+-- Most are ModifierService contexts; per-pet kinds may have a dedicated shared resolver.
+-- Current live kinds include
+-- `breakable_reward`, `pet_zone_resonance`, `pet_xp`, `hatch_luck`,
+-- `secret_hatch_luck`, `pet_damage`, `team_power`, and `pet_efficiency`.
 
 return {
     version = "1.0.0",
@@ -207,12 +208,12 @@ return {
     effects = {
         home_world = {
             display_name = "Home World",
-            description = "Increases breakable rewards while the pet is useful in the current world.",
+            description = "Sets a tier-scaled minimum strength for this pet in every Home biome.",
             roll = { low = 1, high = 5, scale = 2 },
             modifier = {
                 stage = "enchants",
-                kind = "breakable_reward",
-                combine = "multiply",
+                kind = "pet_zone_resonance",
+                combine = "add",
                 amount_per_strength = 0.025,
             },
         },

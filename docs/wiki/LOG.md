@@ -2230,3 +2230,13 @@ rewrite.
   rewards row. A stable revision channel handles equal-value enchant swaps without polling churn.
 - Recorded that Home World's current implementation is globally active; its described
   current-world/usefulness gate still needs a precise game rule before changing balance behavior.
+
+## 2026-08-06 — Home World becomes a per-pet, tier-scaled resonance floor
+
+- Removed Home World from the global breakable-reward pipeline. It now affects only the pet that
+  owns the enchant and only in the four Home biomes.
+- Locked the rule as `max(normal biome matchup, 1 + scaled enchant magnitude)`, preserving a better
+  natural matchup. Exclusive Copper/Bronze/Silver/Gold/Onyx floors are
+  +5/+10/+15/+20/+25%; rarity/Huge type multipliers remain meaningful.
+- Routed the shared result through authoritative mining/combat damage, card power/sorting/tooltips,
+  and the Studio team-power HUD. Heaven/Hell and special zones remain unchanged.

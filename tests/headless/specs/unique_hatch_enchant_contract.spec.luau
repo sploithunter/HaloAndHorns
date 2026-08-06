@@ -57,6 +57,7 @@ return function()
             local enchants = loadModule("configs/enchants.lua")
             local liveKinds = {
                 breakable_reward = true,
+                pet_zone_resonance = true,
                 pet_xp = true,
                 hatch_luck = true,
                 secret_hatch_luck = true,
@@ -110,6 +111,44 @@ return function()
             expect(EnchantRuntime.effectAttribute("home_world")).to.equal(
                 "EnchantEffect_home_world"
             )
+        end)
+
+        it("resolves Home World per pet at the rolled and type-scaled magnitude", function()
+            local enchants = loadModule("configs/enchants.lua")
+            local exclusive = {
+                rarity_id = "exclusive",
+                enchantments = { { id = "home_world", strength = 3 } },
+            }
+            expect(
+                math.abs(EnchantRuntime.effectMagnitude("home_world", exclusive, enchants) - 0.15)
+                    < 1e-9
+            ).to.equal(true)
+
+            -- Duplicate effects are invalid authored data; if legacy data contains them, a pet
+            -- receives the best floor rather than multiplying the same enchant twice.
+            local malformedDuplicate = {
+                rarity_id = "exclusive",
+                enchantments = {
+                    { id = "home_world", strength = 1 },
+                    { id = "home_world", strength = 5 },
+                },
+            }
+            expect(
+                math.abs(
+                    EnchantRuntime.effectMagnitude("home_world", malformedDuplicate, enchants)
+                        - 0.25
+                ) < 1e-9
+            ).to.equal(true)
+        end)
+
+        it("keeps Home World off the global breakable reward pipeline", function()
+            local enchants = loadModule("configs/enchants.lua")
+            expect(enchants.effects.home_world.modifier.kind).to.equal("pet_zone_resonance")
+
+            local followSource = readFile("src/Server/Services/PetFollowService.lua")
+            expect(followSource:find("GetPetEffectMagnitude(", 1, true)).never.to.equal(nil)
+            expect(followSource:find('"home_world"', 1, true)).never.to.equal(nil)
+            expect(followSource:find("biomeMultiplierWithFloor", 1, true)).never.to.equal(nil)
         end)
 
         it("publishes every configured enchant as its own player HUD badge", function()
