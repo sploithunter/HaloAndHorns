@@ -313,10 +313,11 @@ return {
         -- They are player-facing support auras, not random enchants: the pet must be deployed,
         -- multiple providers stack additively, and variant scaling makes Basic/Golden/Rainbow
         -- worth +16.67% / +20.84% / +25% respectively.
-        beta_tester_bot = { kind = "xp", interval = 2.0, mult = 1.1667, duration = 6 },
+        -- Week one deliberately avoids XP/coin acceleration so its balance feedback stays honest.
+        beta_tester_bot = { kind = "huge_luck", interval = 2.0, mult = 1.1667, duration = 6 },
         -- Week two is reserved before its pet definition lands so the five-week rotation cannot
-        -- drift: Signal Seal owns Huge Fortune; later pets take Luck, Windfall, Prospector.
-        signal_seal = { kind = "huge_luck", interval = 2.0, mult = 1.1667, duration = 6 },
+        -- drift. XP Surge is held for week five; Prospector is held for week four.
+        signal_seal = { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 },
         -- The colorado_creator SPECIES (the apex — different pet, same model): every
         -- buffer at once — the creator's testing/scaling tool.
         -- (the apex is a rainbow record, so x1.5 puts it at the old full values)

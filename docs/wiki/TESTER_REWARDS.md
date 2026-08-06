@@ -41,10 +41,11 @@ can resize the same species, but a campaign may name a distinct Huge species.
   and Rainbow at 10. The hatch has a 1% same-species Huge roll.
 - Regular and Golden use authored models/textures and transparent flat card art. Rainbow deliberately
   reuses regular assets plus the standard runtime Rainbow treatment.
-- Beta Byte has the deterministic **XP Surge** farming identity. While deployed it increases every
-  XP source through the same effective-stat axis as the Natural power: +16.67% Basic, +20.84%
-  Golden, +25% Rainbow. The aura stacks additively with the player's activated XP Surge and is
-  visible on both the pet card and player buff row.
+- Beta Byte has the deterministic **Huge Fortune** farming identity. While deployed it improves
+  Huge hatch odds through the same effective-stat axis as the Natural power: +16.67% Basic,
+  +20.84% Golden, +25% Rainbow. This deliberately avoids XP and currency acceleration during the
+  first balance-feedback round. The aura stacks additively with the player's activated Huge Fortune
+  and is visible on both the pet card and player buff row.
 - The Admin panel can replace the current test copy with Basic, Golden, Rainbow, or forced-Huge
   Rainbow eggs while the campaign is closed. Admin Reset to Beginning removes any held/hatched
   tester award and clears its ledger so the full claim flow can be replayed.
@@ -58,13 +59,15 @@ the five-week collection identity without making the reward a general combat car
 
 | Week pet | Deterministic identity | Runtime axis |
 |---|---|---|
-| Beta Byte | XP Surge | all player XP |
-| Signal Seal | Huge Fortune | Huge hatch attempts |
-| Future pet 3 | Luck | species/variant hatch luck |
-| Future pet 4 | Windfall | enhancement, potion, and premium-drop chance |
-| Future pet 5 | Prospector | currency earned from crystals |
+| Beta Byte | Huge Fortune | Huge hatch attempts |
+| Signal Seal | Luck | species/variant hatch luck |
+| Future pet 3 | Windfall | enhancement, potion, and premium-drop chance |
+| Future pet 4 | Prospector | currency earned from crystals |
+| Future pet 5 | XP Surge | all player XP |
 
 Signal Seal's identity is reserved in config before its campaign content lands. The final three
 assignments are reserved by power; bind each to the authored pet id as that week's pet is imported.
+XP Surge is intentionally last and Prospector second-to-last so early tester rounds assess baseline
+leveling and crystal-income balance rather than a reward-modified economy.
 Huge tester rewards retain `huge`, serial, identity, and award provenance when their campaign tier
 advances; only the variant/tier changes in place.
