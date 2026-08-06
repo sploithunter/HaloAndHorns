@@ -2178,3 +2178,10 @@ rewrite.
   Huge roll. Public claiming remains disabled until the advertised Friday/Saturday window.
 - Added authenticated admin Basic/Golden/Rainbow/forced-Huge egg grants. Admin Reset to Beginning
   now deletes both held and hatched tester awards and clears their campaign ledger for repeat tests.
+
+## 2026-08-06 — Beta Byte identity locked
+
+- Named the week-one tester exclusive **Beta Byte** while preserving its stable
+  `beta_tester_bot` persistence id, one-award campaign contract, and 1% same-species Huge chance.
+- Classified Beta Byte as a Grass/Melee robot dog; Golden and Rainbow use the same identity and
+  the Huge outcome remains the standard Huge treatment rather than a second species or reward.

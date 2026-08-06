@@ -1,6 +1,6 @@
 # Beta Tester Reward Campaigns
 
-Status: week-one Beta Tester Bot content is wired and public claiming remains disabled pending the
+Status: week-one Beta Byte content is wired and public claiming remains disabled pending the
 advertised Friday/Saturday UTC window.
 
 ## Player contract
@@ -31,10 +31,11 @@ Do not enable a campaign until its egg source and pet variants exist in `configs
 validation rejects dangling content ids. `huge_pet_id` is optional because the normal Huge treatment
 can resize the same species, but a campaign may name a distinct Huge species.
 
-## Week one: Beta Tester Bot
+## Week one: Beta Byte
 
 - Campaign id: `beta_week_1_2026`; public `claim.enabled = false` until the advertised session.
-- One Beta Tester Egg at claimed level 2; the same held egg or resulting pet becomes Golden at 5
+- One Beta Tester Egg at claimed level 2 hatches the exclusive Grass/Melee robot dog **Beta Byte**;
+  the same held egg or resulting pet becomes Golden at 5
   and Rainbow at 10. The hatch has a 1% same-species Huge roll.
 - Regular and Golden use authored models/textures and transparent flat card art. Rainbow deliberately
   reuses regular assets plus the standard runtime Rainbow treatment.
