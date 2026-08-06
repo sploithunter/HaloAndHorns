@@ -107,7 +107,14 @@ function TesterRewardService:_findOwnedAwardRecord(player, awardId, preferredEgg
     return nil
 end
 
-function TesterRewardService:_grantEgg(player, awardId, campaign, campaignState, claimedLevel)
+function TesterRewardService:_grantEgg(
+    player,
+    awardId,
+    campaign,
+    campaignState,
+    claimedLevel,
+    testOptions
+)
     local inventory = self._inventoryService
     local recordKey = TesterRewardCampaign.recordKey(awardId, player.UserId)
     local existing, existingKey = self:_findOwnedAwardRecord(player, awardId, recordKey)
@@ -120,7 +127,11 @@ function TesterRewardService:_grantEgg(player, awardId, campaign, campaignState,
     end
 
     local eggDef = self._petsConfig.egg_sources[campaign.egg_id]
-    local tier = TesterRewardCampaign.tierForLevel(claimedLevel, campaign)
+    testOptions = type(testOptions) == "table" and testOptions or {}
+    local tier = tostring(testOptions.tier or ""):lower()
+    if tier ~= "basic" and tier ~= "golden" and tier ~= "rainbow" then
+        tier = TesterRewardCampaign.tierForLevel(claimedLevel, campaign)
+    end
     local record = {
         id = campaign.egg_id,
         quantity = 1,
@@ -132,6 +143,9 @@ function TesterRewardService:_grantEgg(player, awardId, campaign, campaignState,
         award_tier = tier,
         award_version = math.max(1, math.floor(tonumber(campaign.version) or 1)),
         variant = tier,
+        -- Admin-only deterministic Huge coverage. The flag lives only on the held test egg and is
+        -- consumed with it; public campaign grants never write it.
+        tester_force_huge = testOptions.forceHuge == true or nil,
     }
     local receipt, err = inventory:InsertRecordSnapshot(player, "eggs", recordKey, record)
     if not receipt then
@@ -272,7 +286,8 @@ function TesterRewardService:ResolveHatch(player, record)
         return { ok = false, reason = "award_campaign_missing" }
     end
     TesterRewardCampaign.reconcileTier(record, player.UserId, self:_claimedLevel(player), campaign)
-    local huge = math.random() < (tonumber(campaign.huge_chance) or 0)
+    local huge = record.tester_force_huge == true
+        or math.random() < (tonumber(campaign.huge_chance) or 0)
     return {
         ok = true,
         pet = huge and (campaign.huge_pet_id or campaign.pet_id) or campaign.pet_id,
@@ -282,6 +297,77 @@ function TesterRewardService:ResolveHatch(player, record)
         awarded_to_user_id = record.awarded_to_user_id,
         award_tier = record.award_tier,
         award_version = record.award_version,
+    }
+end
+
+-- Authenticated AdminToolsService entry point for pre-launch coverage while the public claim window
+-- remains closed. Replaces the target's copy of this campaign so Basic/Golden/Rainbow/Huge can be
+-- replayed repeatedly without consuming a launch entitlement or waiting for real levels.
+function TesterRewardService:AdminGrantTestEgg(player, awardId, tier, forceHuge)
+    if not player or not player.Parent or not self._dataService:IsDataLoaded(player) then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    local campaign = self._config.campaigns[tostring(awardId or "")]
+    if not campaign then
+        return { ok = false, reason = "campaign_missing" }
+    end
+    tier = tostring(tier or "basic"):lower()
+    if tier ~= "basic" and tier ~= "golden" and tier ~= "rainbow" then
+        return { ok = false, reason = "invalid_tier" }
+    end
+
+    local data = self._dataService:GetData(player)
+    local inventory = data and data.Inventory
+    if not inventory then
+        return { ok = false, reason = "inventory_missing" }
+    end
+
+    -- Replace any prior test copy, egg or hatched pet. This is deliberately scoped to one
+    -- campaign id and is reachable only through the authenticated admin action.
+    for _, bucketName in ipairs({ "eggs", "pets" }) do
+        local bucket = inventory[bucketName]
+        if type(bucket) == "table" and type(bucket.items) == "table" then
+            for recordKey, record in pairs(bucket.items) do
+                if type(record) == "table" and record.award_id == awardId then
+                    bucket.items[recordKey] = nil
+                end
+            end
+            local used = 0
+            for _ in pairs(bucket.items) do
+                used += 1
+            end
+            bucket.used_slots = used
+        end
+    end
+    if type(data.Equipped) == "table" then
+        -- Test replacement is a full scenario boundary; do not leave an equipped ref to the
+        -- deleted award pet.
+        data.Equipped.pets = {}
+    end
+
+    local root = self:_rootState(data)
+    root.campaigns[awardId] = nil
+    local campaignState = self:_campaignState(root, awardId)
+    campaignState.eligible_at = os.time()
+    local didGrant, ledgerOk = self:_grantEgg(player, awardId, campaign, campaignState, 1, {
+        tier = tier,
+        forceHuge = forceHuge == true,
+    })
+    if not ledgerOk then
+        return { ok = false, reason = "grant_failed" }
+    end
+
+    self._inventoryService:FlushBucket(player, "eggs", "admin_tester_reward")
+    self._inventoryService:RebuildPetProjections(player)
+    self._dataService:RequestSave(player, "admin_tester_reward", {
+        critical = true,
+        debounceSeconds = 0,
+    })
+    return {
+        ok = didGrant == true,
+        awardId = awardId,
+        tier = tier,
+        huge = forceHuge == true,
     }
 end
 

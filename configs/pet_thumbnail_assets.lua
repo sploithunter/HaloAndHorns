@@ -59,6 +59,11 @@ return {
             ["golden"] = id(110568698023011),
             ["rainbow"] = id(72116634639213),
         },
+        ["beta_tester_bot"] = {
+            ["basic"] = id(120704677743815),
+            ["golden"] = id(98558928660074),
+            ["rainbow"] = id(120704677743815),
+        },
         ["black_ice_leviathan"] = {
             ["basic"] = id(75529001594380),
             ["golden"] = id(109718682132004),

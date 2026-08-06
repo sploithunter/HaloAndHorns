@@ -512,6 +512,91 @@
       "notes": "Developer reward pet. This variant intentionally shares the normal model asset and relies on runtime Rainbow treatment."
     },
     {
+      "key": "beta_tester_bot.basic",
+      "pet": "beta_tester_bot",
+      "variant": "basic",
+      "display_name": "Beta Tester Bot",
+      "status": "verified",
+      "prompt": "limited beta tester robot pet companion, compact four-legged toy robot, game-ready Roblox pet simulator style",
+      "reference_image": "assets/source/references/pets/beta_tester_bot_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": "User-supplied Meshy GLB on 2026-08-06."
+      },
+      "files": {
+        "source_glb": "assets/source/pets/beta_tester_bot_basic.glb",
+        "source_fbx": "assets/exports/pets/beta_tester_bot_basic/beta_tester_bot_basic_10k.fbx",
+        "texture_image": "assets/exports/pets/beta_tester_bot_basic/beta_tester_bot_basic.png",
+        "icon_image": "assets/exports/pets/basic/beta_tester_bot_basic.png"
+      },
+      "roblox": {
+        "source_model_asset_id": "rbxassetid://96462203743685",
+        "mesh_asset_id": "rbxassetid://75694030620160",
+        "texture_decal_asset_id": "rbxassetid://101949979750438",
+        "texture_image_asset_id": "rbxassetid://120291846356693",
+        "image_asset_id": "rbxassetid://120704677743815"
+      },
+      "notes": "Week-one tester reward. Runtime uses resolved mesh+texture and the cleaned transparent card image."
+    },
+    {
+      "key": "beta_tester_bot.golden",
+      "pet": "beta_tester_bot",
+      "variant": "golden",
+      "display_name": "Golden Beta Tester Bot",
+      "status": "verified",
+      "prompt": "golden limited beta tester robot pet companion, compact four-legged toy robot, game-ready Roblox pet simulator style",
+      "reference_image": "assets/source/references/pets/beta_tester_bot_gold.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": "User-supplied golden Meshy GLB on 2026-08-06; geometry matches the normal model."
+      },
+      "files": {
+        "source_glb": "assets/source/pets/beta_tester_bot_gold.glb",
+        "source_fbx": "assets/exports/pets/beta_tester_bot_gold/beta_tester_bot_gold_10k.fbx",
+        "texture_image": "assets/exports/pets/beta_tester_bot_gold/beta_tester_bot_gold.png",
+        "icon_image": "assets/exports/pets/gold/beta_tester_bot_gold.png"
+      },
+      "roblox": {
+        "source_model_asset_id": "rbxassetid://96462203743685",
+        "mesh_asset_id": "rbxassetid://75694030620160",
+        "texture_decal_asset_id": "rbxassetid://99090695696521",
+        "texture_image_asset_id": "rbxassetid://127096091280108",
+        "image_asset_id": "rbxassetid://98558928660074",
+        "shares_model_asset_with": "beta_tester_bot.basic"
+      },
+      "notes": "Golden tester reward reuses the verified normal mesh with its authored golden texture and cleaned transparent card image."
+    },
+    {
+      "key": "beta_tester_bot.rainbow",
+      "pet": "beta_tester_bot",
+      "variant": "rainbow",
+      "display_name": "Rainbow Beta Tester Bot",
+      "status": "verified",
+      "prompt": "rainbow limited beta tester robot pet companion, compact four-legged toy robot, runtime rainbow treatment",
+      "reference_image": "assets/source/references/pets/beta_tester_bot_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": "Intentionally reuses the normal model and art; Rainbow is applied by the standard runtime script."
+      },
+      "files": {
+        "source_glb": "assets/source/pets/beta_tester_bot_basic.glb",
+        "source_fbx": "assets/exports/pets/beta_tester_bot_basic/beta_tester_bot_basic_10k.fbx",
+        "texture_image": "assets/exports/pets/beta_tester_bot_basic/beta_tester_bot_basic.png",
+        "icon_image": "assets/exports/pets/basic/beta_tester_bot_basic.png"
+      },
+      "roblox": {
+        "source_model_asset_id": "rbxassetid://96462203743685",
+        "mesh_asset_id": "rbxassetid://75694030620160",
+        "texture_image_asset_id": "rbxassetid://120291846356693",
+        "image_asset_id": "rbxassetid://120704677743815",
+        "shares_model_asset_with": "beta_tester_bot.basic"
+      },
+      "notes": "Rainbow tester reward intentionally shares the normal assets and relies on runtime Rainbow treatment."
+    },
+    {
       "key": "cobra.basic",
       "pet": "cobra",
       "variant": "basic",

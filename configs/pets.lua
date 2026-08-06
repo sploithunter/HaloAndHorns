@@ -3430,6 +3430,58 @@ local petConfig = {
             },
         },
 
+        -- LIMITED BETA TESTER REWARD (week one). The one awarded egg and the one pet it can
+        -- become retain immutable award provenance through trades. Golden/Rainbow are determined
+        -- by the original tester's configured level thresholds, not by ordinary variant rolls.
+        beta_tester_bot = {
+            display_name = "Beta Tester Bot",
+            category = "exclusive",
+            origin = "creator",
+            rarity = "exclusive",
+            base_power = 50,
+            base_health = 500,
+
+            asset_transform = {
+                -- Authored mesh is roughly one stud tall; match the established Home-pet scale.
+                scale = 3.2,
+                huge_scale = 3,
+                orientation = { x = 0, y = 0, z = 0 },
+            },
+
+            camera = {
+                distance = 4,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://75694030620160",
+                    texture_asset = "rbxassetid://120291846356693",
+                    image_id = "rbxassetid://120704677743815",
+                    display_name = "Beta Tester Bot",
+                    abilities = {},
+                },
+                golden = {
+                    mesh_asset = "rbxassetid://75694030620160",
+                    texture_asset = "rbxassetid://127096091280108",
+                    image_id = "rbxassetid://98558928660074",
+                    display_name = "Golden Beta Tester Bot",
+                    abilities = {},
+                },
+                rainbow = {
+                    -- Rainbow uses the normal model/art plus the standard runtime treatment.
+                    mesh_asset = "rbxassetid://75694030620160",
+                    texture_asset = "rbxassetid://120291846356693",
+                    image_id = "rbxassetid://120704677743815",
+                    display_name = "Rainbow Beta Tester Bot",
+                    abilities = {},
+                },
+            },
+        },
+
         colorado_creator = {
             display_name = "Creator Colorado",
             category = "creator",
@@ -6153,6 +6205,48 @@ local petConfig = {
                 supports_golden_gamepass = true,
                 supports_rainbow_gamepass = true,
                 max_luck_multiplier = 10.0,
+            },
+            hatching_time = 3,
+            guaranteed_shiny_chance = 0,
+            bonus_xp = 0,
+        },
+
+        -- LIMITED TESTER CAMPAIGN egg. This is inventory-only and cannot be purchased or placed
+        -- in the world. TesterRewardService owns its guaranteed tier and 1% Huge roll; ordinary
+        -- hatch luck and game-pass variant rolls never alter the published campaign contract.
+        beta_tester_egg = {
+            name = "Beta Tester Egg",
+            description = "A limited reward for helping test Halo and Horns.",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            fixed_odds = true,
+            huge = { chance = 0.01, pets = { beta_tester_bot = 1 } },
+            mesh_asset = "rbxassetid://88693571117741",
+            texture_asset = "rbxassetid://81021338465059",
+            asset_id = "rbxassetid://94949247610297",
+            image_id = "rbxassetid://103749843546782",
+            unlock_requirement = nil,
+
+            pet_weights = {
+                beta_tester_bot = 1,
+            },
+            rarity_rates = {
+                golden_chance = 0,
+                rainbow_chance = 0,
+            },
+            variant_rolls = {
+                enabled = false,
+                allow_basic = true,
+                allow_golden = false,
+                allow_rainbow = false,
+                cost_multiplier = 1,
+            },
+            modifier_support = {
+                supports_luck_gamepass = false,
+                supports_golden_gamepass = false,
+                supports_rainbow_gamepass = false,
+                max_luck_multiplier = 1,
             },
             hatching_time = 3,
             guaranteed_shiny_chance = 0,

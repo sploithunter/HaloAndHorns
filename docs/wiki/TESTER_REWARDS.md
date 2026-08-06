@@ -1,6 +1,7 @@
 # Beta Tester Reward Campaigns
 
-Status: infrastructure shipped disabled; week-one content assets are still required.
+Status: week-one Beta Tester Bot content is wired and public claiming remains disabled pending the
+advertised Friday/Saturday UTC window.
 
 ## Player contract
 
@@ -29,3 +30,14 @@ the normal egg config and hatch UI. Egg and pet records carry `award_id`, `award
 Do not enable a campaign until its egg source and pet variants exist in `configs/pets.lua`; config
 validation rejects dangling content ids. `huge_pet_id` is optional because the normal Huge treatment
 can resize the same species, but a campaign may name a distinct Huge species.
+
+## Week one: Beta Tester Bot
+
+- Campaign id: `beta_week_1_2026`; public `claim.enabled = false` until the advertised session.
+- One Beta Tester Egg at claimed level 2; the same held egg or resulting pet becomes Golden at 5
+  and Rainbow at 10. The hatch has a 1% same-species Huge roll.
+- Regular and Golden use authored models/textures and transparent flat card art. Rainbow deliberately
+  reuses regular assets plus the standard runtime Rainbow treatment.
+- The Admin panel can replace the current test copy with Basic, Golden, Rainbow, or forced-Huge
+  Rainbow eggs while the campaign is closed. Admin Reset to Beginning removes any held/hatched
+  tester award and clears its ledger so the full claim flow can be replayed.

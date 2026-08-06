@@ -1,5 +1,9 @@
-# Pet viewport renders from FBX (2026-06-28)
+# Pet viewport renders from FBX (2026-08-06)
 # Blender: /Applications/Blender.app/Contents/MacOS/Blender
-# views: front,hero  size: 1024  crop: False
+# views: front,hero  size: 512  crop: True
 
 view	stem	fbx	texture	output
+front	beta_tester_bot_basic	assets/exports/pets/beta_tester_bot_basic/beta_tester_bot_basic_10k.fbx	assets/exports/pets/beta_tester_bot_basic/beta_tester_bot_basic.png	assets/exports/pets/model_renders/front/basic/beta_tester_bot_basic.png
+hero	beta_tester_bot_basic	assets/exports/pets/beta_tester_bot_basic/beta_tester_bot_basic_10k.fbx	assets/exports/pets/beta_tester_bot_basic/beta_tester_bot_basic.png	assets/exports/pets/model_renders/hero/basic/beta_tester_bot_basic.png
+front	beta_tester_bot_gold	assets/exports/pets/beta_tester_bot_gold/beta_tester_bot_gold_10k.fbx	assets/exports/pets/beta_tester_bot_gold/beta_tester_bot_gold.png	assets/exports/pets/model_renders/front/gold/beta_tester_bot_gold.png
+hero	beta_tester_bot_gold	assets/exports/pets/beta_tester_bot_gold/beta_tester_bot_gold_10k.fbx	assets/exports/pets/beta_tester_bot_gold/beta_tester_bot_gold.png	assets/exports/pets/model_renders/hero/gold/beta_tester_bot_gold.png

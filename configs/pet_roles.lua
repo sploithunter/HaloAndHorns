@@ -56,6 +56,7 @@ return {
         bird = "ranged",
         colorado = "ranged",
         kade = "tank",
+        beta_tester_bot = "tank",
         colorado_creator = "ranged", -- the apex is a BLASTER like its species twin (the
         -- two-species split missed this map and it fell to default=melee — Jason caught it)
         -- One BUFFER (support archetype) per zone — trades attack for a team aura. Their

@@ -229,6 +229,10 @@ local TEST_CATEGORIES = {
             { name = "👑 Grant Golden Kade", action = "grant_kade_golden" },
             { name = "🌈 Grant Rainbow Kade", action = "grant_kade_rainbow" },
             { name = "⬆ Grant Huge Rainbow Kade", action = "grant_kade_huge" },
+            { name = "🥚 Test Beta Egg — Basic", action = "grant_beta_egg_basic" },
+            { name = "🥚 Test Beta Egg — Golden", action = "grant_beta_egg_golden" },
+            { name = "🥚 Test Beta Egg — Rainbow", action = "grant_beta_egg_rainbow" },
+            { name = "🥚 Test Beta Egg — Huge Rainbow", action = "grant_beta_egg_huge" },
             { name = "🔮 Grant 3 Future Call Tokens", action = "grant_future_call_tokens" },
             { name = "🗺️ Toggle Meadow Lock", action = "toggle_zone_meadow" },
             { name = "🗺️ Lock Meadow", action = "lock_zone_meadow" },
@@ -1511,6 +1515,23 @@ function AdminPanel:_executePetGrantAction(action)
             quantity = 1,
             huge = true,
         },
+        grant_beta_egg_basic = {
+            testerAwardId = "beta_week_1_2026",
+            testerTier = "basic",
+        },
+        grant_beta_egg_golden = {
+            testerAwardId = "beta_week_1_2026",
+            testerTier = "golden",
+        },
+        grant_beta_egg_rainbow = {
+            testerAwardId = "beta_week_1_2026",
+            testerTier = "rainbow",
+        },
+        grant_beta_egg_huge = {
+            testerAwardId = "beta_week_1_2026",
+            testerTier = "rainbow",
+            testerForceHuge = true,
+        },
     }
 
     local grantData = quickGrants[action]
@@ -1521,7 +1542,8 @@ function AdminPanel:_executePetGrantAction(action)
 
     Signals.Admin_GrantPet:FireServer(self:_getAdminActionData(grantData))
     self:_showAdminResult(
-        "Pet grant requested: " .. grantData.petType .. ":" .. grantData.variant,
+        grantData.testerAwardId and ("Tester egg requested: " .. grantData.testerTier)
+            or ("Pet grant requested: " .. grantData.petType .. ":" .. grantData.variant),
         true
     )
 end
