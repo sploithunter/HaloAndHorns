@@ -60,7 +60,11 @@ return function()
 
         it("ships the authored week-one campaign with public claiming disabled", function()
             local config = loadModule("configs/tester_rewards.lua")
+            local pets = loadModule("configs/pets.lua")
+            local roles = loadModule("configs/pet_roles.lua")
             local weekOne = config.campaigns.beta_week_1_2026
+            local betaByte = pets.pets.beta_tester_bot
+            local testerEgg = pets.egg_sources.beta_tester_egg
             expect(weekOne.egg_id).to.equal("beta_tester_egg")
             expect(weekOne.pet_id).to.equal("beta_tester_bot")
             expect(weekOne.claim.enabled).to.equal(false)
@@ -73,6 +77,12 @@ return function()
             expect(config.defaults.golden_level).to.equal(5)
             expect(config.defaults.rainbow_level).to.equal(10)
             expect(config.defaults.huge_chance).to.equal(0.01)
+            expect(betaByte.display_name).to.equal("Beta Byte")
+            expect(betaByte.category).to.equal("exclusive")
+            expect(betaByte.origin).to.equal("grass")
+            expect(roles.by_type.beta_tester_bot).to.equal("melee")
+            expect(testerEgg.huge.chance).to.equal(0.01)
+            expect(testerEgg.huge.pets.beta_tester_bot).to.equal(1)
         end)
 
         it("preserves provenance through hatching and trade escrow", function()

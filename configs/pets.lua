@@ -3434,9 +3434,11 @@ local petConfig = {
         -- become retain immutable award provenance through trades. Golden/Rainbow are determined
         -- by the original tester's configured level thresholds, not by ordinary variant rolls.
         beta_tester_bot = {
-            display_name = "Beta Tester Bot",
+            -- Keep the stable internal id for already-issued awards; Beta Byte is the
+            -- player-facing identity for this exclusive Grass melee robot dog.
+            display_name = "Beta Byte",
             category = "exclusive",
-            origin = "creator",
+            origin = "grass",
             rarity = "exclusive",
             base_power = 50,
             base_health = 500,
@@ -3461,14 +3463,14 @@ local petConfig = {
                     mesh_asset = "rbxassetid://75694030620160",
                     texture_asset = "rbxassetid://120291846356693",
                     image_id = "rbxassetid://120704677743815",
-                    display_name = "Beta Tester Bot",
+                    display_name = "Beta Byte",
                     abilities = {},
                 },
                 golden = {
                     mesh_asset = "rbxassetid://75694030620160",
                     texture_asset = "rbxassetid://127096091280108",
                     image_id = "rbxassetid://98558928660074",
-                    display_name = "Golden Beta Tester Bot",
+                    display_name = "Golden Beta Byte",
                     abilities = {},
                 },
                 rainbow = {
@@ -3476,7 +3478,7 @@ local petConfig = {
                     mesh_asset = "rbxassetid://75694030620160",
                     texture_asset = "rbxassetid://120291846356693",
                     image_id = "rbxassetid://120704677743815",
-                    display_name = "Rainbow Beta Tester Bot",
+                    display_name = "Rainbow Beta Byte",
                     abilities = {},
                 },
             },
@@ -6216,7 +6218,7 @@ local petConfig = {
         -- hatch luck and game-pass variant rolls never alter the published campaign contract.
         beta_tester_egg = {
             name = "Beta Tester Egg",
-            description = "A limited reward for helping test Halo and Horns.",
+            description = "Hatches the exclusive Beta Byte, with a 1% chance to be Huge.",
             cost = 0,
             currency = "coins",
             purchasable = false,
