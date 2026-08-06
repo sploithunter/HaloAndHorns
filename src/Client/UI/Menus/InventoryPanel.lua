@@ -20,6 +20,7 @@ local Players = game:GetService("Players")
 local AssetFetch = require(game:GetService("ReplicatedStorage").Shared.Utils.AssetFetch)
 local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
@@ -1791,11 +1792,18 @@ function InventoryPanel:_stackDataForRef(ref)
     end
     local pref = self:_stackPrefix(ref)
     if pref then
+        local match = nil
         for k, data in pairs(self._stackDataByKey) do
             if self:_stackPrefix("stack|" .. k) == pref then
-                return data
+                if match ~= nil then
+                    -- Current stack keys include enchantment. A broad legacy prefix that matches two
+                    -- enchanted stacks is ambiguous and must never choose one arbitrarily.
+                    return nil
+                end
+                match = data
             end
         end
+        return match
     end
     return nil
 end
@@ -1876,8 +1884,12 @@ function InventoryPanel:_seedDraftFromEquipped()
             if r then
                 byExact[r] = r
                 local p = self:_stackPrefix(r)
-                if p and byPrefix[p] == nil then
-                    byPrefix[p] = r
+                if p then
+                    if byPrefix[p] == nil then
+                        byPrefix[p] = r
+                    elseif byPrefix[p] ~= r then
+                        byPrefix[p] = false -- ambiguous across enchant-specific stacks
+                    end
                 end
             end
         end
@@ -1915,6 +1927,12 @@ end
 
 -- The equipped-layer ref for an inventory pet item ("stack|<stackKey>" or a unique uid).
 function InventoryPanel:_draftRefForItem(item)
+    -- A card rendered in the squad strip is bound to the exact draft entry it represents. This is
+    -- stronger than reconstructing the ref from display data (which can normalize a legacy key) and
+    -- avoids ever conflating two stacks that differ only by enchantment.
+    if type(item) == "table" and type(item._draftRefOverride) == "string" then
+        return item._draftRefOverride
+    end
     local stackKey = self:_getPetStackKey(item)
     if stackKey then
         return "stack|" .. stackKey
@@ -2047,14 +2065,73 @@ function InventoryPanel:_setActivatePulse(on)
     end
 end
 
--- Commit the working draft to the field: one atomic server call (clear + set Equipped.pets).
-function InventoryPanel:_commitDraft()
-    if self.signals and self.signals.SetEquippedPets then
-        self.signals.SetEquippedPets:FireServer({ refs = self._draftRefs or {} })
+function InventoryPanel:_setDraftCommitPending(pending)
+    local btn = self._activateButton
+    if not btn then
+        return
     end
-    -- The draft now matches what's being deployed — flip the label to "deployed/live".
-    self._draftDirty = false
+    btn.Active = not pending
+    btn.AutoButtonColor = not pending
+    btn.Text = pending and "Deploying…" or "✓ Activate"
+end
+
+function InventoryPanel:_finishDraftCommit(requestId, result)
+    if self._draftCommitRequestId ~= requestId then
+        return
+    end
+    self._draftCommitRequestId = nil
+    if self._draftCommitTimeoutConnection then
+        self._draftCommitTimeoutConnection:Disconnect()
+        self._draftCommitTimeoutConnection = nil
+    end
+    self:_setDraftCommitPending(false)
+
+    if result and result.ok == true then
+        self._draftDirty = false
+        local after = self._draftCommitAfter
+        self._draftCommitAfter = nil
+        self:_updateItemsDisplay()
+        if after then
+            after()
+        end
+        return
+    end
+
+    self._draftCommitAfter = nil
+    self._draftDirty = true
+    self.logger:warn("Squad deploy was not confirmed; draft remains editable", {
+        reason = result and result.reason or "no_response",
+    })
     self:_updateItemsDisplay()
+end
+
+-- Commit the working draft to the field. The UI stays dirty until the server acknowledges that the
+-- full replacement (including a deliberately empty squad) was validated, saved, and projected.
+function InventoryPanel:_commitDraft(after)
+    if self._draftCommitRequestId then
+        return
+    end
+    if not (self.signals and self.signals.SetEquippedPets) then
+        self.logger:warn("Squad deploy unavailable: SetEquippedPets signal is missing")
+        return
+    end
+
+    local requestId = HttpService:GenerateGUID(false)
+    self._draftCommitRequestId = requestId
+    self._draftCommitAfter = after
+    self:_setActivatePulse(false)
+    self:_setDraftCommitPending(true)
+    self.signals.SetEquippedPets:FireServer({
+        refs = table.clone(self._draftRefs or {}),
+        requestId = requestId,
+    })
+
+    local deadline = os.clock() + 6
+    self._draftCommitTimeoutConnection = RunService.Heartbeat:Connect(function()
+        if os.clock() >= deadline then
+            self:_finishDraftCommit(requestId, { ok = false, reason = "timeout" })
+        end
+    end)
 end
 
 -- Close request from a user-facing close control. If the squad draft has un-deployed edits, confirm
@@ -2165,10 +2242,7 @@ function InventoryPanel:_showDeployGuard(after)
 
     activateBtn.Activated:Connect(function()
         dismiss()
-        self:_commitDraft()
-        if after then
-            after()
-        end
+        self:_commitDraft(after)
     end)
     closeBtn.Activated:Connect(function()
         dismiss()
@@ -4501,8 +4575,12 @@ function InventoryPanel:_updateItemsDisplay()
                 if type(ref) == "string" and byRef[ref] == nil then
                     byRef[ref] = item
                     local p = self:_stackPrefix(ref)
-                    if p and byPrefix[p] == nil then
-                        byPrefix[p] = item
+                    if p then
+                        if byPrefix[p] == nil then
+                            byPrefix[p] = item
+                        elseif byPrefix[p] ~= item then
+                            byPrefix[p] = false -- never guess between different enchants
+                        end
                     end
                 end
             end
@@ -4517,9 +4595,9 @@ function InventoryPanel:_updateItemsDisplay()
             if item then
                 -- A draft SLOT is one pet, not the whole stack: clone + count 1 so the card shows a
                 -- single pet (no "x5" stack badge), like the live equipped ghost cards do.
-                local card = item
+                local card = table.clone(item)
+                card._draftRefOverride = ref
                 if string.sub(ref, 1, 6) == "stack|" then
-                    card = table.clone(item)
                     card.count = 1
                     card.quantity = 1
                 end
@@ -7814,6 +7892,15 @@ function InventoryPanel:_initializeNetworking()
 
     if success and signals then
         self.signals = signals
+        if signals.SetEquippedPetsResult then
+            self._draftCommitConnection = signals.SetEquippedPetsResult.OnClientEvent:Connect(
+                function(result)
+                    if type(result) == "table" then
+                        self:_finishDraftCommit(result.requestId, result)
+                    end
+                end
+            )
+        end
         self.logger:info("✅ Signals initialized for inventory")
     else
         self.logger:warn("❌ Failed to get Signals module:", signals)
@@ -8282,6 +8369,14 @@ end
 
 function InventoryPanel:Destroy()
     self:Hide()
+    if self._draftCommitConnection then
+        self._draftCommitConnection:Disconnect()
+        self._draftCommitConnection = nil
+    end
+    if self._draftCommitTimeoutConnection then
+        self._draftCommitTimeoutConnection:Disconnect()
+        self._draftCommitTimeoutConnection = nil
+    end
     self.logger:info("Professional inventory panel destroyed")
 end
 

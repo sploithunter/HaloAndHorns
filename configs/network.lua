@@ -287,6 +287,19 @@ return {
                 arguments = { { name = "request", type = "table" } },
             },
         },
+        SetEquippedPetsResult = {
+            name = "SetEquippedPetsResult",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "inventory.squad_commit_result",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "result", type = "table" } },
+            },
+        },
         ToggleToolEquipped = {
             name = "ToggleToolEquipped",
             transport = "reliable_event",

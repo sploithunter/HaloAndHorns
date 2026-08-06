@@ -179,6 +179,58 @@ return function()
         end)
     end)
 
+    describe("PetInventoryView.buildEquipped", function()
+        local items = map({
+            ["bunny:golden:luck"] = {
+                id = "bunny",
+                variant = "golden",
+                enchant = "luck",
+                quantity = 1,
+            },
+            ["bunny:golden:leadership"] = {
+                id = "bunny",
+                variant = "golden",
+                enchant = "leadership",
+                quantity = 2,
+            },
+            huge_1 = { uid = "huge_1", id = "dragon", variant = "rainbow", huge = true },
+        })
+
+        it("accepts an intentionally empty squad", function()
+            local equipped, summary = View.buildEquipped(items, {}, 5)
+            expect(next(equipped)).to.equal(nil)
+            expect(summary.requested).to.equal(0)
+            expect(summary.accepted).to.equal(0)
+            expect(summary.rejected).to.equal(0)
+        end)
+
+        it("keeps enchanted stack identities distinct", function()
+            local equipped, summary = View.buildEquipped(items, {
+                "stack|bunny:golden:luck",
+                "stack|bunny:golden:leadership",
+                "huge_1",
+            }, 5)
+            expect(summary.accepted).to.equal(3)
+            expect(summary.rejected).to.equal(0)
+            expect(equipped.slot_1).to.equal("stack|bunny:golden:luck")
+            expect(equipped.slot_2).to.equal("stack|bunny:golden:leadership")
+            expect(equipped.slot_3).to.equal("huge_1")
+        end)
+
+        it("rejects duplicate uniques, over-owned stacks, and over-cap drafts", function()
+            local _, summary = View.buildEquipped(items, {
+                "huge_1",
+                "huge_1",
+                "stack|bunny:golden:luck",
+                "stack|bunny:golden:luck",
+                "stack|bunny:golden:leadership",
+                "stack|bunny:golden:leadership",
+            }, 3)
+            expect(summary.accepted).to.equal(3)
+            expect(summary.rejected).to.equal(3)
+        end)
+    end)
+
     describe("PetInventoryView capability gating", function()
         it("treats an explicitly unique fused pet as a per-instance record", function()
             expect(View.isSpecial({ id = "bear", variant = "basic", unique = true }, CAP)).to.equal(

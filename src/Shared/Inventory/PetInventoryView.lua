@@ -30,6 +30,7 @@
       normalize(items)                           -> items (pure-ownership canonical fixups)
       parseRef(ref)                              -> { kind="special"|"stack", uid?|stackKey? }
       resolveEquipped(items, equipped, maxSlots) -> slotMap {[n]=desc}, equippedByKey {key=n}
+      buildEquipped(items, refs, maxSlots)       -> validated slot refs + commit summary
       groups(items, config, capability, equippedByKey?) ->
             { {key,total,equippedCount,unequippedCount,isSpecial,sampleRecord,uids} }
       usedSlots(items, config, capability)       -> integer
@@ -228,6 +229,62 @@ function PetInventoryView.resolveEquipped(items, equipped, maxSlots)
         end
     end
     return slotMap, equippedByKey
+end
+
+-- Validate an ordered squad draft against ownership and build the exact Equipped.pets map that may
+-- be committed atomically. An empty refs array is intentionally valid: players may deploy no pets.
+-- Invalid, duplicate, over-owned, and over-cap references are rejected instead of becoming phantom
+-- slots. PURE so the full-clear path and its edge cases stay headless-tested.
+function PetInventoryView.buildEquipped(items, refs, maxSlots)
+    items = items or {}
+    refs = type(refs) == "table" and refs or {}
+    maxSlots = math.max(0, math.floor(tonumber(maxSlots) or 0))
+
+    local equipped = {}
+    local usedUid, usedStack = {}, {}
+    local accepted, rejected = 0, 0
+
+    for _, ref in ipairs(refs) do
+        if accepted >= maxSlots then
+            rejected += 1
+        else
+            local desc = PetInventoryView.parseRef(ref)
+            if desc and desc.kind == "special" then
+                local rec = items[desc.uid]
+                if rec and not isStackEntry(rec, desc.uid) and not usedUid[desc.uid] then
+                    accepted += 1
+                    usedUid[desc.uid] = true
+                    equipped["slot_" .. accepted] = desc.uid
+                else
+                    rejected += 1
+                end
+            elseif desc and desc.kind == "stack" then
+                local rec = items[desc.stackKey]
+                local used = usedStack[desc.stackKey] or 0
+                local owned = rec
+                        and isStackEntry(rec, desc.stackKey)
+                        and math.max(0, math.floor(tonumber(rec.quantity) or 0))
+                    or 0
+                if used < owned then
+                    accepted += 1
+                    usedStack[desc.stackKey] = used + 1
+                    equipped["slot_" .. accepted] = "stack|" .. desc.stackKey
+                else
+                    rejected += 1
+                end
+            else
+                rejected += 1
+            end
+        end
+    end
+
+    return equipped,
+        {
+            accepted = accepted,
+            rejected = rejected,
+            requested = #refs,
+            maxSlots = maxSlots,
+        }
 end
 
 -- Ordered display groups (deterministic by obtained_at then key). Ownership only; pass
