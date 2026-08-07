@@ -26,6 +26,9 @@ local REMOTE_NAME = "GameAPICommand"
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
+local gameEventsOk, GameEvents = pcall(function()
+    return require(script.Parent.Parent.Parent.Systems.GameEvents)
+end)
 
 local petThumbsOk, PET_THUMBNAILS = pcall(function()
     return require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
@@ -471,13 +474,24 @@ function TradePanel:_onEvent(payload)
         self:_toast("Trade cancelled.")
         self:_closeWindow()
     elseif payload.type == "declined" then
-        self:_toast("Trade request declined.")
+        self:_statusBanner("trade_request_declined", "🤝 Trade request declined.")
     elseif payload.type == "timed_out" then
-        self:_toast("Trade request timed out.")
+        self:_statusBanner("trade_request_timed_out", "⌛ Trade request timed out.")
     elseif payload.type == "request_expired" then
         self:_closeRequestPopup()
         self:_toast("Trade request expired.")
     end
+end
+
+-- Request outcomes are decisions the asker is actively waiting on, so they use the same prominent
+-- floating banner pathway as awards and progression grants. Keep the local toast as a defensive
+-- fallback if GameEvents failed to load; a response must never become silent again.
+function TradePanel:_statusBanner(eventName, text)
+    if gameEventsOk and GameEvents and GameEvents.fire then
+        GameEvents.fire(eventName, { name = text })
+        return
+    end
+    self:_toast(text)
 end
 
 function TradePanel:_showRequestPopup(fromUserId, fromName)

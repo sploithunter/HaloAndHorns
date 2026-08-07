@@ -2287,3 +2287,10 @@ rewrite.
 - The `TradeUpdate` listener now attaches synchronously and remains alive after that menu closes.
   Its live notification layer sits above normal menus, so decline and timeout messages sent by the
   server can no longer be hidden behind the trade picker or another menu.
+
+## 2026-08-07 — Trade request outcomes use floating banners
+
+- Requester-side decline and 30-second timeout responses now use the shared `GameEvents.banner`
+  presentation used by awards and progression grants instead of the compact top-screen trade toast.
+- Declines render as a red five-second floating banner; timeouts use amber. The old trade toast
+  remains only as a defensive fallback if the shared event presenter cannot load.
