@@ -8,7 +8,7 @@
 
       ⚔ Attack    pet_damage : PetDamageBuff + PetTeamDamageBuff (multipliers) ADD -> x, cap 5.0
       🛡 Defense   per-pet    : DefenseBuff + TeamDefenseBuff (flat) on the selected/best pet -> +N (M%)
-      💰 Coin      coin_yield : CoinYieldBuff (mult) + CoinYieldPower (fraction) ADD -> x, cap 5.0
+      💰 $         coin_yield : CoinYieldBuff (mult) + CoinYieldPower (fraction) ADD -> x, cap 5.0
       ⛏ Mining    mining     : 1 + MiningBuff (fraction) -> x, cap 5.0
       🍀 Luck      luck       : 1 + LuckBuff (fraction) -> x, cap 3.0
       🐾 Speed     move_speed : 1 + MoveSpeedBuff (fraction) -> x, cap 1.0
@@ -325,8 +325,8 @@ function BuffStatsHud:_build()
     makeRow("attack", "⚔ Attack", Color3.fromRGB(225, 90, 80), 1)
     makeRow("efficiency", "⏱ Pet Speed", Color3.fromRGB(235, 155, 80), 2)
     makeRow("defense", "🛡 Defense", Color3.fromRGB(120, 170, 235), 3)
-    makeRow("coin", "💰 Coin", Color3.fromRGB(240, 200, 70), 4)
-    makeRow("crystals", "💎 Crystals", Color3.fromRGB(100, 220, 235), 5)
+    makeRow("coin", "💰 $", Color3.fromRGB(240, 200, 70), 4)
+    makeRow("crystals", "💎 Gems", Color3.fromRGB(100, 220, 235), 5)
     makeRow("mining", "⛏ Mining", Color3.fromRGB(180, 150, 110), 6)
     makeRow("luck", "🍀 Luck", Color3.fromRGB(110, 210, 130), 7)
     -- targeted hatch-luck CHANNELS: rows exist but stay HIDDEN unless non-neutral
@@ -480,7 +480,7 @@ function BuffStatsHud:_refresh()
     local defFlat, defRem = self:_defenseFlat(now)
     self:_setDefense("defense", defFlat, defRem)
 
-    -- 💰 Coin: SERVER-PUBLISHED (Eff_Coin = buff axis x the breakable_reward
+    -- 💰 $ (origin crystals): SERVER-PUBLISHED (Eff_Coin = buff axis x the breakable_reward
     -- pipeline incl. enchant coin_finder) — display verbatim.
     local coin = tonumber(p:GetAttribute("Eff_Coin")) or 1
     -- Timer counts down only the TIMED power (CoinYieldPower); the yield AURA (CoinYieldBuff) is
@@ -492,7 +492,7 @@ function BuffStatsHud:_refresh()
         soonestRemaining(p, { "CoinYieldPowerUntil" }, now)
     )
 
-    -- 💎 Crystal rewards: payout multipliers only. Magnet is deliberately represented by the
+    -- 💎 Gem rewards: payout multipliers only. Magnet is deliberately represented by the
     -- physical pickup-radius row below rather than pretending to increase crystal value.
     local crystals = tonumber(p:GetAttribute("Eff_Crystals")) or 1
     self:_setMult("crystals", crystals, axis("crystal_yield").cap, nil)
