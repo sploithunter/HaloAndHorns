@@ -25,7 +25,25 @@ return function()
             local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
             expect(string.find(panel, "self:_closeSelectionPanel()", 1, true) ~= nil).to.equal(true)
             expect(string.find(panel, "gui.DisplayOrder = 160", 1, true) ~= nil).to.equal(true)
-            expect(string.find(panel, 'self:_toast("Trade request declined.")', 1, true) ~= nil).to.equal(
+            expect(
+                string.find(
+                    panel,
+                    'self:_statusBanner("trade_request_declined", "🤝 Trade request declined.")',
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(
+                string.find(
+                    panel,
+                    'self:_statusBanner("trade_request_timed_out", "⌛ Trade request timed out.")',
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            local events = readFile("configs/game_events.lua")
+            expect(string.find(events, "trade_request_declined = {", 1, true) ~= nil).to.equal(true)
+            expect(string.find(events, "trade_request_timed_out = {", 1, true) ~= nil).to.equal(
                 true
             )
             expect(

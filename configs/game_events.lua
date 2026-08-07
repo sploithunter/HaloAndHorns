@@ -195,6 +195,17 @@ return {
         banner = { seconds = 4, color = { 90, 190, 255 } },
     },
 
+    -- Trade invitations close the player picker as soon as they are sent. The asker is waiting for
+    -- one of these terminal responses, so use the shared award-style floating banner instead of the
+    -- compact top-screen toast (which is easy to miss beside the Roblox player bar).
+    trade_request_declined = {
+        banner = { seconds = 5, color = { 235, 95, 95 } },
+    },
+
+    trade_request_timed_out = {
+        banner = { seconds = 5, color = { 255, 190, 75 } },
+    },
+
     achievement_completed = {
         sound = "celebratory_jingle", -- (loudness fixed at the SOURCE: sounds.lua base volume)
         vfx = { kind = "burst", color = { 255, 120, 220 } }, -- magenta
