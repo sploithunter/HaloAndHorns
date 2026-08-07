@@ -453,6 +453,11 @@ function TradePanel:_onEvent(payload)
         self:_closeWindow()
     elseif payload.type == "declined" then
         self:_toast("Trade request declined.")
+    elseif payload.type == "timed_out" then
+        self:_toast("Trade request timed out.")
+    elseif payload.type == "request_expired" then
+        self:_closeRequestPopup()
+        self:_toast("Trade request expired.")
     end
 end
 

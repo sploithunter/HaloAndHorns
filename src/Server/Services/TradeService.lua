@@ -19,6 +19,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local TradeLogic = require(ReplicatedStorage.Shared.Game.TradeLogic)
 local TradeDeliveryTransaction = require(ReplicatedStorage.Shared.Game.TradeDeliveryTransaction)
@@ -46,7 +47,8 @@ function TradeService:Init()
     self._config = self._configLoader:LoadConfig("trade")
     self._sessions = {} -- sessionId -> session
     self._playerSession = {} -- userId -> sessionId
-    self._invites = {} -- targetUserId -> { from = userId }
+    self._invites = {} -- targetUserId -> TradeLogic invite record
+    self._inviteSweepElapsed = 0
     self._nextId = 0
     self._auditLog = {} -- append-only, capped
 
@@ -56,6 +58,13 @@ end
 function TradeService:Start()
     self._dataService:RegisterBeforeProfileRelease(function(player)
         self:_onLeave(player)
+    end)
+    self._inviteConnection = RunService.Heartbeat:Connect(function(deltaTime)
+        self._inviteSweepElapsed += deltaTime
+        if self._inviteSweepElapsed >= 0.5 then
+            self._inviteSweepElapsed %= 0.5
+            self:_expireInvites(os.clock())
+        end
     end)
 end
 
@@ -111,6 +120,24 @@ function TradeService:_notify(player, payload)
     end
 end
 
+function TradeService:_expireInvite(targetUserId, invite)
+    if self._invites[targetUserId] ~= invite then
+        return false
+    end
+    self._invites[targetUserId] = nil
+    self:_notify(playerById(invite.from), { type = "timed_out", targetUserId = targetUserId })
+    self:_notify(playerById(targetUserId), { type = "request_expired", fromUserId = invite.from })
+    return true
+end
+
+function TradeService:_expireInvites(now)
+    for targetUserId, invite in pairs(self._invites) do
+        if TradeLogic.inviteExpired(invite, now) then
+            self:_expireInvite(targetUserId, invite)
+        end
+    end
+end
+
 ----------------------------------------------------------------------
 -- Online-player list + invite handshake
 ----------------------------------------------------------------------
@@ -140,13 +167,27 @@ function TradeService:Request(player, targetUserId)
     if self._playerSession[player.UserId] or self._playerSession[targetUserId] then
         return { ok = false, reason = "already_trading" }
     end
-    self._invites[targetUserId] = { from = player.UserId }
+    local now = os.clock()
+    local existing = self._invites[targetUserId]
+    if existing and TradeLogic.inviteExpired(existing, now) then
+        self:_expireInvite(targetUserId, existing)
+        existing = nil
+    end
+    if existing then
+        return { ok = false, reason = "invite_pending" }
+    end
+    self._invites[targetUserId] =
+        TradeLogic.newInvite(player.UserId, now, self._config.invite_timeout_seconds)
     self:_notify(target, { type = "request", fromUserId = player.UserId, fromName = player.Name })
     return { ok = true, pending = true }
 end
 
 function TradeService:Respond(player, fromUserId, accept)
     local invite = self._invites[player.UserId]
+    if invite and TradeLogic.inviteExpired(invite, os.clock()) then
+        self:_expireInvite(player.UserId, invite)
+        invite = nil
+    end
     if not invite or invite.from ~= fromUserId then
         return { ok = false, reason = "no_invite" }
     end
@@ -903,10 +944,17 @@ end
 
 function TradeService:_onLeave(player)
     -- Clear any invite addressed to or from the leaving player.
-    self._invites[player.UserId] = nil
+    local incoming = self._invites[player.UserId]
+    if incoming then
+        self:_expireInvite(player.UserId, incoming)
+    end
     for target, invite in pairs(self._invites) do
         if invite.from == player.UserId then
             self._invites[target] = nil
+            self:_notify(
+                playerById(target),
+                { type = "request_expired", fromUserId = player.UserId }
+            )
         end
     end
     local session = self:_sessionOf(player.UserId)
@@ -1037,6 +1085,13 @@ function TradeService:GetAuditLog(userId)
         end
     end
     return { ok = true, records = out }
+end
+
+function TradeService:Destroy()
+    if self._inviteConnection then
+        self._inviteConnection:Disconnect()
+        self._inviteConnection = nil
+    end
 end
 
 -- Rules + execute-gate + audit-record logic without two live players.
