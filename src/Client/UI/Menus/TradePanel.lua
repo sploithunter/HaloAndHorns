@@ -69,15 +69,14 @@ function TradePanel.new()
     self.window = nil
     self.requestPopup = nil
     self.state = nil
-    -- Listen for server pushes regardless of whether the menu is open.
-    task.spawn(function()
-        local remote = Signals.TradeUpdate
-        if remote then
-            remote.OnClientEvent:Connect(function(payload)
-                self:_onEvent(payload)
-            end)
-        end
-    end)
+    -- Listen synchronously so a fast response cannot race panel construction. This connection
+    -- stays live when the player picker closes, allowing decline/timeout/opened pushes to arrive.
+    local remote = Signals.TradeUpdate
+    if remote then
+        self._tradeUpdateConnection = remote.OnClientEvent:Connect(function(payload)
+            self:_onEvent(payload)
+        end)
+    end
     return self
 end
 
@@ -288,6 +287,19 @@ end
 
 function TradePanel:Destroy()
     self:Hide()
+    if self._tradeUpdateConnection then
+        self._tradeUpdateConnection:Disconnect()
+        self._tradeUpdateConnection = nil
+    end
+end
+
+function TradePanel:_closeSelectionPanel()
+    local menuManager = _G.MenuManager
+    if menuManager and menuManager:GetCurrentPanel() == self then
+        menuManager:CloseCurrentPanel("fade")
+    else
+        self:Hide()
+    end
 end
 
 -- baseZ keeps the header above its parent frame on high-ZIndex surfaces (the pet
@@ -410,7 +422,12 @@ function TradePanel:_playerRow(p, order)
     if not p.busy then
         btn.Activated:Connect(function()
             local res = self:_callBus("trade.request", { targetUserId = p.userId })
-            setPillText(btn, (res and res.ok) and "Sent ✓" or "Failed")
+            if res and res.ok then
+                setPillText(btn, "Sent ✓")
+                self:_closeSelectionPanel()
+            else
+                setPillText(btn, "Failed")
+            end
             btn.Active = false
             btn.AutoButtonColor = false
         end)
@@ -430,7 +447,9 @@ function TradePanel:_ensureLiveGui()
     gui.Name = "TradeLive"
     gui.ResetOnSpawn = false
     gui.IgnoreGuiInset = true
-    gui.DisplayOrder = 50
+    -- Above MenuOverlay (120) and the inventory's viewport fallback (150): server responses must
+    -- remain visible even if another normal menu opens while a request is pending.
+    gui.DisplayOrder = 160
     gui.Parent = pg
     self.liveGui = gui
     return gui
