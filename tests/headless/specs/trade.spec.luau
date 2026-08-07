@@ -20,6 +20,23 @@ return function()
             expect(TradeLogic.inviteExpired({}, 1)).to.equal(true)
             expect(TradeLogic.inviteExpired(nil, 1)).to.equal(true)
         end)
+
+        it("keeps requester decline notices live after closing the player picker", function()
+            local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
+            expect(string.find(panel, "self:_closeSelectionPanel()", 1, true) ~= nil).to.equal(true)
+            expect(string.find(panel, "gui.DisplayOrder = 160", 1, true) ~= nil).to.equal(true)
+            expect(string.find(panel, 'self:_toast("Trade request declined.")', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(
+                string.find(
+                    panel,
+                    "self._tradeUpdateConnection = remote.OnClientEvent:Connect",
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+        end)
     end)
 
     describe("TradeLogic.canAddItem", function()

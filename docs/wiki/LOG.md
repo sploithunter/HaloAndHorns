@@ -2279,3 +2279,11 @@ rewrite.
   sees `Trade request timed out.`; the recipient's request popup closes and reports expiration.
 - Late accepts are rejected, and a second invitation cannot silently overwrite an active invitation
   already awaiting the same player.
+
+## 2026-08-07 — Trade requester responses remain visible
+
+- A successfully sent trade request now closes the player-selection menu because one player can
+  have only one active trade flow at a time.
+- The `TradeUpdate` listener now attaches synchronously and remains alive after that menu closes.
+  Its live notification layer sits above normal menus, so decline and timeout messages sent by the
+  server can no longer be hidden behind the trade picker or another menu.
