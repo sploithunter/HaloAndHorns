@@ -38,6 +38,7 @@ local config = {
         color_hex = "#FFD95A",
         prefixes = { "Grats", "Congratulations", "GG" },
     },
+    creator_luck = { color_hex = "#AA5AFF" },
 }
 
 return function()
@@ -118,6 +119,16 @@ return function()
         end)
     end)
 
+    describe("ChatAnnouncementRules creator luck", function()
+        it("uses the activating creator and exact 2x launch copy", function()
+            local payload = Rules.creatorLuck("Colorado Plays", 2, config)
+            expect(payload.kind).to.equal("creator_luck")
+            expect(payload.scope).to.equal("server")
+            expect(payload.colorHex).to.equal("#AA5AFF")
+            expect(payload.text).to.equal("🍀 Colorado Plays joined! Hatch luck is now 2x!!!")
+        end)
+    end)
+
     describe("runtime wiring", function()
         it("connects hatch, team, global relay, and TextChatService presentation", function()
             expect(
@@ -140,6 +151,14 @@ return function()
                 string.find(
                     readFile("src/Server/Services/PlayerProgressionService.lua"),
                     "self._chatAnnouncementService:AnnounceLevel",
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(
+                string.find(
+                    readFile("src/Server/Services/MeetCreatorService.lua"),
+                    "self._chatAnnouncementService:AnnounceCreatorLuck",
                     1,
                     true
                 ) ~= nil

@@ -2265,3 +2265,10 @@ rewrite.
   variant with different enchants.
 - Retained equipped-slot suffix normalization and added a regression using two Rainbow Radiant
   Sprite enchant stacks.
+
+## 2026-08-07 — Creator Luck activation announces in chat
+
+- The first registered creator who changes a server from normal luck to Creator Luck now produces
+  the server-chat notice `🍀 <DisplayName> joined! Hatch luck is now 2x!!!`.
+- The gameplay boost and notice are immediate. Further creator joins do not duplicate the notice
+  while luck is active.

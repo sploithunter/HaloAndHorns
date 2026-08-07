@@ -792,6 +792,7 @@ loader:RegisterModule(
         "InventoryService",
         "PetGrantService",
         "TesterRewardService",
+        "ChatAnnouncementService",
     }
 )
 -- RealmPortalService: binds named workspace portals (Portal_Halo1/Portal_Horn1) to a
