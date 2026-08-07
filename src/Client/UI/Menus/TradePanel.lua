@@ -26,6 +26,7 @@ local REMOTE_NAME = "GameAPICommand"
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
+local TradeReveal = require(ReplicatedStorage.Shared.Game.TradeReveal)
 local gameEventsOk, GameEvents = pcall(function()
     return require(script.Parent.Parent.Parent.Systems.GameEvents)
 end)
@@ -468,8 +469,11 @@ function TradePanel:_onEvent(payload)
         self.state = payload.state
         self:_renderWindow(payload.state)
     elseif payload.type == "completed" then
-        self:_toast("Trade complete!")
         self:_closeWindow()
+        local receivedItems = payload.state and payload.state.them and payload.state.them.items
+        if not self:_showReceivedPetReveal(receivedItems) then
+            self:_toast("Trade complete!")
+        end
     elseif payload.type == "cancelled" then
         self:_toast("Trade cancelled.")
         self:_closeWindow()
@@ -481,6 +485,29 @@ function TradePanel:_onEvent(payload)
         self:_closeRequestPopup()
         self:_toast("Trade request expired.")
     end
+end
+
+-- A completed packet is sent after the atomic delivery and is recipient-relative, so
+-- state.them.items is the authoritative set of pets this player just received. Reuse the hatch
+-- result presenter (without an egg phase) and fall back to the normal toast if a real hatch is
+-- already using that presenter.
+function TradePanel:_showReceivedPetReveal(items)
+    local prepared = TradeReveal.receivedPets(items, TradeReveal.MAX_PETS)
+    if #prepared.pets == 0 then
+        return false
+    end
+
+    local ok, hatchingService = pcall(function()
+        return require(ReplicatedStorage.Shared.Services.EggHatchingService)
+    end)
+    if not ok or not hatchingService or not hatchingService:IsHatchReady() then
+        return false
+    end
+
+    local started, result = pcall(function()
+        return hatchingService:StartPetRevealAnimation(prepared.pets)
+    end)
+    return started and result ~= nil
 end
 
 -- Request outcomes are decisions the asker is actively waiting on, so they use the same prominent

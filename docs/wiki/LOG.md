@@ -2294,3 +2294,12 @@ rewrite.
   presentation used by awards and progression grants instead of the compact top-screen trade toast.
 - Declines render as a red five-second floating banner; timeouts use amber. The old trade toast
   remains only as a defensive fallback if the shared event presenter cannot load.
+
+## 2026-08-07 — Completed trades reveal received pets
+
+- After atomic delivery succeeds, each player now sees only the pets they received using the
+  existing hatch result grid, rarity treatment, and duplicate consolidation, without showing or
+  shaking an egg. The visual is capped at 99 pets.
+- The committed recipient-relative packet (`state.them.items`) is the source of truth. If a real
+  hatch already owns the presenter, or the trade contains no received pets, the normal
+  `Trade complete!` toast remains the fallback.

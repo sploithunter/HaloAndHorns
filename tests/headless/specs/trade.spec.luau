@@ -4,6 +4,7 @@
 ]]
 
 local TradeLogic = loadModule("src/Shared/Game/TradeLogic.lua")
+local TradeReveal = loadModule("src/Shared/Game/TradeReveal.lua")
 local config = loadModule("configs/trade.lua")
 
 return function()
@@ -54,6 +55,50 @@ return function()
                     true
                 ) ~= nil
             ).to.equal(true)
+        end)
+    end)
+
+    describe("post-trade received pet reveal", function()
+        it("filters the partner offer to pets and preserves reveal identity", function()
+            local result = TradeReveal.receivedPets({
+                { category = "currencies", id = "gems", quantity = 100 },
+                {
+                    category = "pets",
+                    id = "radiant_sprite",
+                    variant = "rainbow",
+                    record = { rarity_id = "legendary", huge = true },
+                },
+                { category = "enhancements", id = "range_L1" },
+            })
+
+            expect(result.total).to.equal(1)
+            expect(#result.pets).to.equal(1)
+            expect(result.pets[1].petType).to.equal("radiant_sprite")
+            expect(result.pets[1].variant).to.equal("rainbow")
+            expect(result.pets[1].rarityId).to.equal("legendary")
+            expect(result.pets[1].huge).to.equal(true)
+            expect(result.truncated).to.equal(false)
+        end)
+
+        it("caps a completed trade reveal at 99 pets", function()
+            local items = {}
+            for i = 1, 100 do
+                items[i] = { category = "pets", id = "pet_" .. tostring(i) }
+            end
+
+            local result = TradeReveal.receivedPets(items)
+            expect(result.total).to.equal(100)
+            expect(#result.pets).to.equal(99)
+            expect(result.truncated).to.equal(true)
+        end)
+
+        it("wires completed trade packets to the reveal-only hatch presenter", function()
+            local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
+            local hatch = readFile("src/Shared/Services/EggHatchingService.lua")
+            expect(string.find(panel, "payload.state.them.items", 1, true) ~= nil).to.equal(true)
+            expect(string.find(panel, "TradeReveal.receivedPets", 1, true) ~= nil).to.equal(true)
+            expect(string.find(hatch, "StartPetRevealAnimation", 1, true) ~= nil).to.equal(true)
+            expect(string.find(hatch, "revealOnly = true", 1, true) ~= nil).to.equal(true)
         end)
     end)
 
