@@ -27,7 +27,9 @@ Every term is additive into `earned`; **nothing multiplies over the player's gri
 The **lucky-server / creator-presence "devluck"** (`ServerLuckBuff`) is the exception that DOES
 multiply: it's not folded into `earned` — `simulateHatch` rolls the whole hatch `devLuck` times
 (fractional attempts: 2.5 = 2 rolls + a 50% chance of a 3rd) and keeps the rarest. Skips fixed-odds
-eggs.
+eggs. The inactive-to-active transition announces the activating creator in server chat:
+`🍀 <DisplayName> joined! Hatch luck is now 2x!!!`. Additional creators
+joining while the boost is already active do not repeat the activation notice.
 
 ## Why the index bonus is curved (exponent 2.5)
 

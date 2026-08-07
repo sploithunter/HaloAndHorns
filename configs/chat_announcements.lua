@@ -20,6 +20,9 @@ return {
         color_hex = "#FFD95A",
         prefixes = { "Grats", "Congratulations", "GG" },
     },
+    creator_luck = {
+        color_hex = "#AA5AFF",
+    },
     limits = {
         text_characters = 240,
         id_characters = 128,

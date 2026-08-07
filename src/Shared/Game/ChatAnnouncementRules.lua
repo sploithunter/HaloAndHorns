@@ -165,4 +165,18 @@ function ChatAnnouncementRules.levelUp(playerName, level, announcementConfig, pr
     }
 end
 
+function ChatAnnouncementRules.creatorLuck(playerName, multiplier, announcementConfig)
+    local luckConfig = announcementConfig and announcementConfig.creator_luck or {}
+    local activeMultiplier = math.max(1, tonumber(multiplier) or 2)
+    return {
+        kind = "creator_luck",
+        scope = "server",
+        colorHex = luckConfig.color_hex or "#AA5AFF",
+        text = ("🍀 %s joined! Hatch luck is now %gx!!!"):format(
+            boundedString(playerName, "A creator"),
+            activeMultiplier
+        ),
+    }
+end
+
 return ChatAnnouncementRules

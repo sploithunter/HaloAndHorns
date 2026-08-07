@@ -33,7 +33,9 @@ function MeetCreatorService:Init()
     self._petGrantService = self._modules.PetGrantService
     self._testerRewardService = self._modules.TesterRewardService
     self._statsService = self._modules.StatsService
+    self._chatAnnouncementService = self._modules.ChatAnnouncementService
     self._eggHatchLocks = setmetatable({}, { __mode = "k" })
+    self._serverLuckActive = false
     local ok, cfg = pcall(function()
         return self._configLoader:LoadConfig("creators")
     end)
@@ -146,8 +148,8 @@ function MeetCreatorService:Start()
 
     -- lucky-server presence tracking (joins stamp immediately — no meet delay needed;
     -- leaves re-evaluate so the buff drops when the last creator goes)
-    Players.PlayerAdded:Connect(function()
-        self:_refreshServerLuck()
+    Players.PlayerAdded:Connect(function(joiner)
+        self:_refreshServerLuck(joiner)
     end)
     Players.PlayerRemoving:Connect(function(leaving)
         task.defer(function()
@@ -185,14 +187,16 @@ function MeetCreatorService:_isCreator(player)
     return false
 end
 
-function MeetCreatorService:_refreshServerLuck()
+function MeetCreatorService:_refreshServerLuck(joiner)
     local cfg = self._config.server_luck
     local enabled = cfg and cfg.enabled == true
     local creatorPresent = false
+    local presentCreator = nil
     if enabled then
         for _, p in ipairs(Players:GetPlayers()) do
             if self:_isCreator(p) then
                 creatorPresent = true
+                presentCreator = p
                 break
             end
         end
@@ -206,6 +210,26 @@ function MeetCreatorService:_refreshServerLuck()
             p:SetAttribute("ServerLuckBuff", nil)
             p:SetAttribute("ServerLuckBuffUntil", nil)
         end
+    end
+
+    local wasActive = self._serverLuckActive == true
+    self._serverLuckActive = creatorPresent
+    if wasActive == creatorPresent then
+        return
+    end
+
+    if not creatorPresent then
+        return
+    end
+
+    -- Prefer the creator whose join caused this inactive -> active transition.
+    -- On a late service start, fall back to the creator already present.
+    local activatingCreator = joiner and self:_isCreator(joiner) and joiner or presentCreator
+    if activatingCreator and self._chatAnnouncementService then
+        self._chatAnnouncementService:AnnounceCreatorLuck(
+            activatingCreator,
+            tonumber(cfg.mult) or 2
+        )
     end
 end
 
