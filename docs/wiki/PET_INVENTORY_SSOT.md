@@ -121,6 +121,9 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   context. `CurrentArea` and `CurrentRealm` changes therefore coalesce into one full client inventory
   refresh/re-sort after the transition; this contextual rebuild is intentional even when no pet
   ownership record changed.
+- Card badges and tooltips resolve enchant display records through `PetEnchantView`: unique pets use
+  their per-instance `enchantments` list, while stack pets project their saved `enchant` id at the
+  config-owned stack strength. The two surfaces must never disagree about whether a pet is enchanted.
 
 ## Invariants to preserve when extending
 
