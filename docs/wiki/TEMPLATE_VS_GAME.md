@@ -59,7 +59,7 @@ These are the "applies to multiple games" systems you called out (trading, hatch
 
 | System | Pure core(s) | Service / UI | Notes |
 |---|---|---|---|
-| **Trading** | `TradeLogic` | `TradeService`, trade UI | Atomic escrow + audit. Fully generic. |
+| **Trading** | `TradeLogic`, `TradeReveal` | `TradeService`, trade UI | Atomic escrow + audit; committed received pets reuse the hatch result grid/consolidation (no egg), capped at 99. Fully generic. |
 | **Egg hatching** | `HatchTiming` | `EggService`, `EggHatchingService`, `EggWorldQuery` | Hatch lock + count-scaled server cooldown (the SSOT). Generic gacha/hatch engine. |
 | **Inventory SSOT** | `PetInventoryView` (+ pet migrations ⚠️) | `InventoryService` | Ownership-vs-equip SSOT *pattern* is core; pet flavoring is Reference. See [PET_INVENTORY_SSOT](PET_INVENTORY_SSOT.md). |
 | **Rewards/Quests/Daily/Shop** | `RewardResolver`, `RewardBundle`, `ShopLogic`, `DailyStreak`, `ClaimLogic` | `RewardService`, `QuestService`, `DailyService`, `ShopService` | Live-ops spine. |

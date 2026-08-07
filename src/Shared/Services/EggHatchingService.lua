@@ -200,24 +200,27 @@ end
 
 local function resolveAnimationTiming(hatchOptions)
     hatchOptions = type(hatchOptions) == "table" and hatchOptions or {}
+    local revealOnly = hatchOptions.revealOnly == true
     local fastHatch = hatchOptions.fastHatch == true
     local showHatch = hatchOptions.showHatch ~= false
     local skipHatch = hatchOptions.skipHatch == true or showHatch == false
     local speedScale = fastHatch and getFastHatchSpeedScale() or 1
-    local doStagger = true
+    local doStagger = not revealOnly
     if hatchingConfig.advanced and hatchingConfig.advanced.batch_reveal_mode == "simultaneous" then
         doStagger = false
     end
 
     return {
         showHatch = showHatch,
+        revealOnly = revealOnly,
         fastHatch = fastHatch,
-        silentHatch = hatchOptions.silentHatch == true,
+        silentHatch = hatchOptions.silentHatch == true or revealOnly,
         skipHatch = skipHatch,
         speedScale = speedScale,
         preset = hatchingConfig.current_preset,
         presetSpeedMultiplier = hatchingConfig.helpers.get_speed_multiplier(),
-        shakeDuration = hatchingConfig.helpers.get_adjusted_timing("shake_duration") * speedScale,
+        shakeDuration = revealOnly and 0
+            or hatchingConfig.helpers.get_adjusted_timing("shake_duration") * speedScale,
         shakeWaitDuration = hatchingConfig.helpers.get_adjusted_timing("shake_wait_duration")
             * speedScale,
         flashDuration = hatchingConfig.helpers.get_adjusted_timing("flash_duration") * speedScale,
@@ -495,6 +498,7 @@ function EggHatchingService:CreateEggFrame(position, eggData)
     eggImage.BorderSizePixel = 0
 
     eggImage.Parent = frame
+    eggImage.Visible = eggData.revealOnly ~= true
 
     -- Flash effect container (will be populated by flash effect system)
     local flashContainer = Instance.new("Frame")
@@ -1334,7 +1338,8 @@ function EggHatchingService:AnimateReveal(eggComponents, petImageId, petData, du
         if not petReveal:IsA("ViewportFrame") then
             -- First reveal on these components: swap the empty ImageLabel for the resolved flat
             -- image or legacy generated viewport.
-            local generatedImage = self:GetGeneratedPetImage(petData.petType, petData.variant)
+            local generatedImage =
+                self:GetGeneratedPetImage(petData.petType, petData.variant, petData.huge == true)
             if generatedImage then
                 petReveal:Destroy()
                 petReveal = generatedImage
@@ -1506,6 +1511,7 @@ function EggHatchingService:StartHatchingAnimation(eggsData)
         timingDebug.presetSpeedMultiplier
     )
     self._persistentGui:SetAttribute("TimingFastHatch", timingDebug.fastHatch)
+    self._persistentGui:SetAttribute("TimingRevealOnly", timingDebug.revealOnly)
     self._persistentGui:SetAttribute("TimingSilentHatch", timingDebug.silentHatch)
     self._persistentGui:SetAttribute("TimingShowHatch", timingDebug.showHatch)
     self._persistentGui:SetAttribute("TimingSkipHatch", timingDebug.skipHatch)
@@ -1687,6 +1693,52 @@ function EggHatchingService:StartHatchingAnimation(eggsData)
     return cleanupResult
 end
 
+-- Present already-owned pets with the hatch result grid and its consolidation pass, without
+-- implying that another egg was opened. Used after a committed trade. The caller must supply
+-- only the pets received by the local player.
+function EggHatchingService:StartPetRevealAnimation(petsData)
+    if not self:IsHatchReady() then
+        return nil
+    end
+
+    local revealData = {}
+    local entries = type(petsData) == "table" and petsData or {}
+    for i = 1, math.min(#entries, 99) do
+        local entry = entries[i]
+        if type(entry) == "table" and entry.petType then
+            local variant = entry.variant or "basic"
+            local configured = petConfig.getPet(entry.petType, variant)
+            local revealPetData = configured or entry.petData or {}
+            revealPetData.petType = entry.petType
+            revealPetData.variant = variant
+            revealPetData.huge = entry.huge == true
+            revealData[#revealData + 1] = {
+                imageId = "",
+                petImageId = entry.petImageId or "generated_image",
+                petType = entry.petType,
+                variant = variant,
+                rarityId = entry.rarityId
+                    or entry.rarity_id
+                    or (configured and configured.rarity_id),
+                huge = entry.huge == true,
+                petData = revealPetData,
+                revealOnly = true,
+                hatchOptions = {
+                    revealOnly = true,
+                    silentHatch = true,
+                    fastHatch = true,
+                },
+            }
+        end
+    end
+
+    if #revealData == 0 then
+        return nil
+    end
+
+    return self:StartHatchingAnimation(revealData)
+end
+
 function EggHatchingService:ExecuteHatchingSequence(
     eggComponents,
     eggsData,
@@ -1700,26 +1752,29 @@ function EggHatchingService:ExecuteHatchingSequence(
     local hatchOptions = eggsData[1] and eggsData[1].hatchOptions or {}
     timingDebug = timingDebug or resolveAnimationTiming(hatchOptions)
     local silentHatch = timingDebug.silentHatch == true
+    local revealOnly = timingDebug.revealOnly == true
     local shakeDuration = timingDebug.shakeDuration
     local flashDuration = timingDebug.flashDuration
     local revealDuration = timingDebug.revealDuration
     local staggerDelay = timingDebug.staggerDelay
     local doStagger = timingDebug.doStagger == true
     -- PHASE 1: All eggs shake simultaneously
-    local shakeCompletion = CompletionGroup.new(eggCount)
-    table.insert(completionGroups, shakeCompletion)
-    for index, components in ipairs(eggComponents) do
-        task.spawn(function()
-            local ok, err = pcall(self.AnimateShake, self, components, shakeDuration)
-            if not ok then
-                warn("[EggHatchingService] shake failed: " .. tostring(err))
-            end
-            shakeCompletion:Resolve(index)
-        end)
-    end
-    local shakeComplete = shakeCompletion:Await()
-    if not shakeComplete then
-        return false
+    if not revealOnly then
+        local shakeCompletion = CompletionGroup.new(eggCount)
+        table.insert(completionGroups, shakeCompletion)
+        for index, components in ipairs(eggComponents) do
+            task.spawn(function()
+                local ok, err = pcall(self.AnimateShake, self, components, shakeDuration)
+                if not ok then
+                    warn("[EggHatchingService] shake failed: " .. tostring(err))
+                end
+                shakeCompletion:Resolve(index)
+            end)
+        end
+        local shakeComplete = shakeCompletion:Await()
+        if not shakeComplete then
+            return false
+        end
     end
 
     -- PHASE 2: Staggered flash and reveal
@@ -1737,8 +1792,11 @@ function EggHatchingService:ExecuteHatchingSequence(
                 tonumber(animationPolicy.special_reveal_min_duration) or 0
             )
         end
-        local allowWorldFX = not silentHatch
-            or (specialHatch and animationPolicy.respect_silent_for_special == false)
+        local allowWorldFX = not revealOnly
+            and (
+                not silentHatch
+                or (specialHatch and animationPolicy.respect_silent_for_special == false)
+            )
 
         -- Optional stagger between eggs
         if doStagger and i > 1 then
@@ -2620,12 +2678,15 @@ end
 
 -- Note: Bear debug function removed - no longer needed
 
-function EggHatchingService:GetGeneratedPetImage(petType, variant)
+function EggHatchingService:GetGeneratedPetImage(petType, variant, huge)
     local success, image = pcall(function()
         local flatId = thumbnailRegistry
             and thumbnailRegistry.pets
             and thumbnailRegistry.pets[petType]
-            and thumbnailRegistry.pets[petType][variant]
+            and (
+                (huge == true and thumbnailRegistry.pets[petType][variant .. "__huge"])
+                or thumbnailRegistry.pets[petType][variant]
+            )
         if flatId then
             local flatImage = Instance.new("ImageLabel")
             flatImage.Name = "PetFlatThumbnail"
