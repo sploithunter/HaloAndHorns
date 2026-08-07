@@ -8,6 +8,9 @@
 ]]
 
 return {
+    -- Pending invitations are intentionally short-lived: unanswered prompts clear on both clients,
+    -- the server rejects late responses, and the requester receives a timeout notice.
+    invite_timeout_seconds = 30,
     tradeable = {
         pets = true,
         currencies = false, -- gems are the exception, via tradeable_currencies below

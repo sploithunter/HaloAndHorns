@@ -2272,3 +2272,10 @@ rewrite.
   the server-chat notice `🍀 <DisplayName> joined! Hatch luck is now 2x!!!`.
 - The gameplay boost and notice are immediate. Further creator joins do not duplicate the notice
   while luck is active.
+
+## 2026-08-07 — Trade invitations expire after 30 seconds
+
+- Unanswered trade invitations now expire server-authoritatively after 30 seconds. The requester
+  sees `Trade request timed out.`; the recipient's request popup closes and reports expiration.
+- Late accepts are rejected, and a second invitation cannot silently overwrite an active invitation
+  already awaiting the same player.

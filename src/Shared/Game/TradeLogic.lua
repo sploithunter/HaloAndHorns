@@ -14,6 +14,20 @@
 
 local TradeLogic = {}
 
+function TradeLogic.newInvite(fromUserId, requestedAt, timeoutSeconds)
+    local startedAt = tonumber(requestedAt) or 0
+    local duration = math.max(1, tonumber(timeoutSeconds) or 30)
+    return {
+        from = fromUserId,
+        requestedAt = startedAt,
+        expiresAt = startedAt + duration,
+    }
+end
+
+function TradeLogic.inviteExpired(invite, now)
+    return type(invite) ~= "table" or (tonumber(now) or 0) >= (tonumber(invite.expiresAt) or 0)
+end
+
 function TradeLogic.canAddItem(category, item, config)
     local tradeable = config and config.tradeable or {}
     -- Currencies are non-tradeable EXCEPT an explicit per-currency allowlist
