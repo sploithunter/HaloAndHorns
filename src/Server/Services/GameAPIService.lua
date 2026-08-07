@@ -1147,6 +1147,7 @@ function GameAPIService:_registerCommands()
         validate = function(args)
             return Validators.fields(args, {
                 egg = { type = "string" },
+                confirmProgression = { type = "boolean", optional = true },
             })
         end,
         handler = function(context, args)
@@ -1154,7 +1155,7 @@ function GameAPIService:_registerCommands()
             if not svc then
                 return { ok = false, reason = "service_unavailable" }
             end
-            return svc:HatchEggItem(context.player, args.egg)
+            return svc:HatchEggItem(context.player, args.egg, args.confirmProgression == true)
         end,
     })
 

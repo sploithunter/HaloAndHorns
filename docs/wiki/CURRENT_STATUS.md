@@ -2,10 +2,10 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
-## Trials Endgame (landed 2026-07-08/09, all live-verified)
+## Trials Endgame (landed 2026-07-08/09; rewards revised 2026-08-07)
 
 CoH-style DOOR MISSIONS ("Trials") are the shipped endgame: deterministic procgen interiors,
-a 2-realm × 4-element trial matrix, quest-chain gate steering, and Platinum-egg century chases.
+a 2-realm × 4-element trial matrix, quest-chain gate steering, and evolving-egg century chases.
 SSOT = `docs/MISSION_WORLDGEN.md` (§13 = the shipped contract).
 
 - **Worldgen**: authored `MissionDoor` → instance slot → seeded tile-kit map (pure LayoutSolver,
@@ -24,9 +24,10 @@ SSOT = `docs/MISSION_WORLDGEN.md` (§13 = the shipped contract).
 - **Selection = quest activation**: realm gates are `MissionId="auto"` — the active quest track's
   mission binding deals the trial; nothing active = random from the FOUR base trials only (matrix
   counters move exclusively via activation). QuestPanel: "▶ Activate — realm gates will deal this
-  trial"; the green banner taps to DEACTIVATE. Chains = 5 layers per combo (10/25/50/90/100); the
-  Century = claim-once + level-50 claim gate → **Platinum egg** (same 5 exclusive pets as the
-  0.5% boss/first-clear eggs, stated 15% huge — fixed_odds policy binds odds per egg).
+  trial"; the green banner taps to DEACTIVATE. Chains = 5 layers per combo (10/25/50/90/100). One
+  held Celestial/Obsidian egg per track evolves Basic → Golden → Rainbow → 10%-Huge Rainbow →
+  guaranteed Huge Egg; the Century retains its level-50 claim gate. Hatching is final, and trading
+  freezes evolution unless the same canonical egg returns to its award recipient.
 - **Gate UX**: Trials tracks unlock at level 14 with the first reachable mission doors in Heaven 2 /
   Hell 2. Per-player `NextTrialLabel` is stamped locally onto the door E-prompt ("Hell Lava
   Trial #4" / "Random Trial"); back-to-back heaven/hell portals side-gated client-side
@@ -34,8 +35,8 @@ SSOT = `docs/MISSION_WORLDGEN.md` (§13 = the shipped contract).
 - **Ops**: `admin.setCounter` = the sanctioned counter override (`test.*` is unreachable from
   network origin by design, even in Studio); `MissionSchema`/`ZoneSchema` pure validators run at
   config load AND in CI (`config_validation.spec`) — loud failures, orange-Warn fall-throughs.
-- **Owed**: skip/replay UI buttons (map panel), lieutenant warcry live verdict, Platinum hatch
-  test, duo pass, MissionProps.rbxm export.
+- **Owed**: skip/replay UI buttons (map panel), lieutenant warcry live verdict, evolving-egg Studio
+  and trade-return verification, duo pass, MissionProps.rbxm export.
 
 ## Combat Endgame (landed 2026-07-02, all live-verified)
 

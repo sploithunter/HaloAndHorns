@@ -532,9 +532,9 @@ missions/quest lines per origin.
 **Achievements**: per-trial counters (<missionId>s_completed, auto-derived in
 _close, declared in stats.lua) make "complete 100 ice trials" a config row.
 
-## 13. Trials endgame lattice — SHIPPED (2026-07-09, live-verified)
+## 13. Trials endgame lattice — SHIPPED (2026-07-09; rewards revised 2026-08-07)
 
-The full matrix + quest + Platinum-egg endgame is live. This section records the
+The full matrix + quest + evolving-egg endgame is live. This section records the
 shipped contract; the design sketches in §10–§12 stand as history.
 
 **Matrix trials (8)**: `<realm>_<element>_trial` for hell/heaven × lava/ice/
@@ -557,17 +557,19 @@ branches get "▶ Activate — realm gates will deal this trial"; the green acti
 banner is a BUTTON — tap to deactivate (`SetActiveTrack(nil)`) and gates revert
 to random. Per-mission sequence heads keep your place across switches.
 
-**Quest chains**: 5 sequential layers per combo — 10/25/50/90/100 (gems
-30/60/120/250; the Century pays 500 + the Platinum egg). The Century condition
-is `all_of(counter ≥ 100, level ≥ 50)` — the claim-once ledger + the level-50
-CLAIM gate are the anti-alt teeth (sub-50 can play past 90 but can't claim).
+**Quest chains and evolving eggs**: 5 sequential layers per combo — 10/25/50/90/100
+(30/60/120/250/500 gems). Claiming 10 awards one provenance-bound Celestial or Obsidian egg.
+While that exact egg remains unhatched and is owned by its award recipient, claims evolve it to
+Golden at 25, Rainbow at 50, Rainbow with 10% Huge odds at 90, and a guaranteed Huge Egg at 100.
+The Century condition remains `all_of(counter ≥ 100, level ≥ 50)`. Hatching is final: the pet never
+evolves. Trading preserves the exact record but freezes evolution for another owner; returning it
+to the award recipient catches it up. The old Platinum egg definitions remain readable for legacy
+inventory compatibility, but quests no longer mint them.
 
-**Platinum eggs**: `platinum_obsidian_egg` / `platinum_celestial_egg` — same
-5 exclusive pets as the boss eggs, `fixed_odds` with stated 15% huge (policy:
-odds bind per EGG; a different egg may state different odds). Real shells
-wired (85c6c95). Granted via quest `reward.items` with `bucket = "eggs"`
-(RewardService pass-through), hatched at any hatcher via the generalized
-`egg_item.hatch` path.
+The anti-duplication identity is the inventory record key
+`trial_reward|<award_id>|<awarded_to_user_id>`. The per-track claim ledger grants at most one egg;
+only that canonical key can evolve or hatch through the trial-reward path. Copied metadata under a
+different key is rejected.
 
 **Gate UX**: the door E-prompt names the deal — MissionInstanceService
 publishes per-player `NextTrialLabel` ("Hell Lava Trial #4" / "Random Trial";

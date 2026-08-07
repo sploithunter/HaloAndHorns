@@ -454,6 +454,11 @@ loader:RegisterModule(
     }
 )
 loader:RegisterModule(
+    "TrialEggRewardService",
+    ServerScriptService.Server.Services.TrialEggRewardService,
+    { "Logger", "ConfigLoader", "DataService", "InventoryService" }
+)
+loader:RegisterModule(
     "SettingsService",
     ServerScriptService.Server.Services.SettingsService,
     { "Logger", "DataService", "ConfigLoader" }
@@ -674,6 +679,7 @@ loader:RegisterModule(
         "RosterService",
         "EnhancementService",
         "TesterRewardService",
+        "TrialEggRewardService",
     }, "stats", "StatsService")
 )
 -- FusionService: Halo & Horns Chaotic fusion (Feature 20) — Light + Shadow -> Chaotic.
@@ -696,11 +702,14 @@ loader:RegisterModule(
     "QuestService",
     ServerScriptService.Server.Services.QuestService,
     appendIfEnabled(
-        appendIfEnabled(
-            { "Logger", "ConfigLoader", "DataService", "RewardService", "FutureCallService" },
-            "player_progression",
-            "PlayerProgressionService"
-        ),
+        appendIfEnabled({
+            "Logger",
+            "ConfigLoader",
+            "DataService",
+            "RewardService",
+            "FutureCallService",
+            "TrialEggRewardService",
+        }, "player_progression", "PlayerProgressionService"),
         "stats",
         "StatsService"
     )
@@ -792,6 +801,7 @@ loader:RegisterModule(
         "InventoryService",
         "PetGrantService",
         "TesterRewardService",
+        "TrialEggRewardService",
         "ChatAnnouncementService",
     }
 )
@@ -1137,6 +1147,7 @@ local requiredModules = {
     "DiagnosticsService",
     "ChatAnnouncementService",
     "FriendBoostService",
+    "TrialEggRewardService",
 }
 appendIfEnabled(requiredModules, "stats", "StatsService")
 appendIfEnabled(requiredModules, "modifiers", "ModifierService")

@@ -2303,3 +2303,13 @@ rewrite.
 - The committed recipient-relative packet (`state.them.items`) is the source of truth. If a real
   hatch already owns the presenter, or the trade contains no received pets, the normal
   `Trade complete!` toast remains the fallback.
+
+## 2026-08-07 — Named trials award one provenance-bound evolving egg
+
+- Each Heaven/Hell × origin trial track now awards one Celestial/Obsidian egg at its claimed
+  10-clear quest, evolving the same held record at 25/50/90/100 instead of minting Platinum eggs.
+- The ladder is Basic 5% Huge → Golden 5% → Rainbow 5% → Rainbow 10% → guaranteed Huge Egg at
+  100 plus Level 50. The Huge Egg still independently rolls the normal 5% Golden/0.5% Rainbow.
+- Canonical award keys and the per-track ledger prevent repeat grants and copied-record upgrades.
+  Trading freezes progress for another owner; returning the exact egg catches it up. Hatching is
+  final and uses a hold-confirmation warning while more stages remain.

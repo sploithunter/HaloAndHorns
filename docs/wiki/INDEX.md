@@ -19,6 +19,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
   pass-benefit selection, entitlement-source union, purchase reconciliation, and shop UX.
 - [Beta Tester Rewards](TESTER_REWARDS.md) — one-egg campaign grants, level-based Golden/Rainbow
   progression, immutable award provenance, and trade-safe freezing/catch-up.
+- [Trial Egg Rewards](TRIAL_EGG_REWARDS.md) — one evolving Celestial/Obsidian egg per named-trial
+  track, milestone odds, canonical award identity, permanent hatching, and trade behavior.
 - [Beta Analytics & Release Plan](BETA_ANALYTICS_RELEASE_PLAN.md) — provisional three-wave launch
   calendar, KPI definitions, data-quality gates, ad-credit budget, and rollback runbook.
 - [Template vs Game](TEMPLATE_VS_GAME.md) — which systems are reusable template (trading, hatching, rewards…), which are Pet-Realm reference examples, which are game-only content. The pick-list for a future template extraction.
@@ -29,7 +31,7 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md) — how Rojo systems bind to Studio-authored worlds.
 - [Marketing Plan](../MARKETING_PLAN.md) — the 50k-Robux test plan (creative screening → funnel gate → scale), icon/thumbnail prompt matrix, capture shot list, KPI cheat sheet, and the 500-engaged-players unlock strategy.
 - [Map Builder's Kit](../MAP_BUILDERS_KIT.md) — the production-world commissioning spec: hub-and-spoke layout, the 11-layer heaven/hell ladder (one layout, eleven skins), the full marker/binding contract, per-layer art briefs, phased delivery + acceptance checks.
-- [Mission Worldgen](../MISSION_WORLDGEN.md) — the Trials endgame SSOT: CoH door missions, deterministic tile-kit procgen, shared sequences, the 8-trial matrix, quest-steered gates, Platinum centuries (§13 = shipped contract).
+- [Mission Worldgen](../MISSION_WORLDGEN.md) — the Trials endgame SSOT: CoH door missions, deterministic tile-kit procgen, shared sequences, the 8-trial matrix, quest-steered gates, and evolving-egg centuries (§13 = shipped contract).
 - [Area Bounds & Movement Leash](AREA_BOUNDS_LEASH.md) — the pure union clamp (`EnemyLeash`) that walls enemies inside their spawn area (sourced from live map parts; GrassSpawn = Grass ∪ SpawnCircle), plus the recorded possibility of reusing it to confine the player (flying-power containment).
 - [Egg System Plan](EGG_SYSTEM_PLAN.md) — planned hatch modes, auto hatch, multi hatch, animation, and egg config architecture.
 - [Hatch Luck & Pacing](HATCH_LUCK.md) — the staged luck channels (species/variant/huge), the curved index bonus and how it was fit, locked balance baselines (endgame = bunnies equipped), paid-luck rules (additive, species-only), and the off-Roblox progression simulator.

@@ -720,6 +720,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.GameData.LastHatchedEggId = ""
     playerData.GameData.LastHatchedEggOffset = {}
     playerData.GameData.TesterRewards = { campaigns = {} }
+    playerData.GameData.TrialEggRewards = { tracks = {} }
     if self._futureCallService and self._futureCallService.ResetForBeginning then
         pcall(function()
             self._futureCallService:ResetForBeginning(targetPlayer)

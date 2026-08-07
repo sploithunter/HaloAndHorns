@@ -734,6 +734,8 @@ function ConfigLoader:ValidateConfig(configName, config)
         return self:_validateTeamingConfig(config)
     elseif configName == "tester_rewards" then
         return self:_validateTesterRewardsConfig(config)
+    elseif configName == "trial_rewards" then
+        return self:_validateTrialRewardsConfig(config)
     elseif configName == "capital_baddies" then
         return self:_validateCapitalBaddiesConfig(config)
     elseif configName == "missions" then
@@ -751,6 +753,17 @@ function ConfigLoader:_validateTesterRewardsConfig(config)
     local ok, err = TesterRewardCampaign.validate(config, pets)
     if not ok then
         return self:_configError("tester_rewards", err, "")
+    end
+    return true
+end
+
+function ConfigLoader:_validateTrialRewardsConfig(config)
+    local TrialEggRewardLadder = require(script.Parent.Game.TrialEggRewardLadder)
+    local pets = self:_rawConfig("pets")
+    local quests = self:_rawConfig("quests")
+    local ok, err = TrialEggRewardLadder.validate(config, pets, quests)
+    if not ok then
+        return self:_configError("trial_rewards", err, "")
     end
     return true
 end
