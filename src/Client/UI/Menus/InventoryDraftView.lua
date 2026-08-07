@@ -38,11 +38,10 @@ function InventoryDraftView.refsMatch(a, b)
     if not left or not right then
         return false
     end
-    if left == right then
-        return true
-    end
-    local leftPrefix = InventoryDraftView.stackPrefix(left)
-    return leftPrefix ~= nil and leftPrefix == InventoryDraftView.stackPrefix(right)
+    -- The complete stack key is the identity: id:variant:enchant. Matching only
+    -- id:variant makes every enchant-specific sibling look like the same stack,
+    -- so drafting one pet incorrectly decrements every sibling card.
+    return left == right
 end
 
 function InventoryDraftView.countMatching(ref, refs)

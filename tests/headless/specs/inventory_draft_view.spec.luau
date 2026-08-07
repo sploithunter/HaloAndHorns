@@ -43,12 +43,21 @@ return function()
             expect(removed.available).to.equal(3)
         end)
 
-        it("matches an equipped stack when only its area suffix drifted", function()
-            local cardRef = "stack|bunny:rainbow:grass"
-            local deployedRef = "stack|bunny:rainbow:spawn|1"
+        it("normalizes the equipped slot suffix without dropping stack identity", function()
+            local cardRef = "stack|bunny:rainbow:luck_copper"
+            local deployedRef = "stack|bunny:rainbow:luck_copper|1"
             local counts = View.stackCounts(0, cardRef, { deployedRef }, {})
             expect(counts.deployed).to.equal(1)
             expect(counts.available).to.equal(1)
+        end)
+
+        it("does not decrement sibling stacks with different enchants", function()
+            local tactics = "stack|radiant_sprite:rainbow:tactics_silver"
+            local luck = "stack|radiant_sprite:rainbow:luck_copper"
+            local counts = View.stackCounts(2, tactics, {}, { luck })
+            expect(counts.drafted).to.equal(0)
+            expect(counts.owned).to.equal(2)
+            expect(counts.available).to.equal(2)
         end)
     end)
 end

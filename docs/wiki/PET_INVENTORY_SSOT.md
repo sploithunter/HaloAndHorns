@@ -11,9 +11,12 @@ template, so this is intentionally strict. Read this before touching anything un
 
 ### Ownership (`Inventory.pets.items`) — two entry shapes
 
-- **Common (fungible)** — one entry per kind, keyed by the stack key `"id:variant"`:
+- **Common (fungible)** — one entry per kind and enchant, keyed by the stack key
+  `"id:variant:enchant"` (the final component is empty when unenchanted):
   ```
-  items["bear:basic"] = { id = "bear", variant = "basic", quantity = N, obtained_at = … }
+  items["bear:basic:luck_copper"] = {
+    id = "bear", variant = "basic", enchant = "luck_copper", quantity = N, obtained_at = …
+  }
   ```
   One entry regardless of count → storage is O(distinct kinds), not O(total pets). A player can
   own millions of a common and it stays one entry (no datastore explosion).
@@ -31,7 +34,8 @@ variant; the following Earth Egg remains a separate normal hatch. Admin Reset to
 only this reproducible starter special and re-arms the selector while retaining all other protected
 unique/huge pets.
 
-Discriminator: an entry is a **common stack** iff its key is exactly `id:variant` (contains `:`);
+Discriminator: an entry is a **common stack** iff its key is the configured colon-delimited stack
+key (currently `id:variant:enchant`);
 a **special** is keyed by its uid (never contains `:`). There is **no `_kind` field**, **no
 `equipped_slot`/`equipped_slots` on records**, and a common never carries per-instance state.
 
@@ -39,7 +43,7 @@ a **special** is keyed by its uid (never contains `:`). There is **no `_kind` fi
 
 ```
 Equipped.pets["slot_1"] = "<uid>"             -- a special
-Equipped.pets["slot_2"] = "stack|id:variant"  -- one copy of a common (several slots may
+Equipped.pets["slot_2"] = "stack|id:variant:enchant" -- one copy of a common (several slots may
                                               --   reference the same kind)
 ```
 
@@ -90,7 +94,9 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   its working-grid availability is that total minus working-draft copies. The client retains display
   metadata for quantity-zero stacks and reads the stable `Quantity` value object live (not a possibly
   pre-projection cached count), so removing the only deployed copy immediately returns its card to
-  the inventory grid before Activate commits the draft.
+  the inventory grid before Activate commits the draft. Draft accounting matches the complete
+  `id:variant:enchant` key (after removing only the equipped-slot suffix); stacks that differ by
+  enchant are separate ownership rows and selecting one must never decrement the others.
 - **Squad-draft commits are acknowledged and atomic.** The client keeps the draft dirty and shows
   `Deploying…` until `SetEquippedPetsResult` confirms the server replacement. Empty squads are valid;
   duplicate uniques, over-owned stacks, unknown refs, and over-cap drafts reject the whole request.
