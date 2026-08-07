@@ -129,6 +129,9 @@ local function generateProfileTemplate(configLoader)
             -- One-entry-per-campaign eligibility/grant ledger. The held egg or resulting pet
             -- carries immutable award provenance; this ledger prevents a second mint.
             TesterRewards = { campaigns = {} },
+            -- One provenance-bound evolving egg per named-trial quest track. The ledger is
+            -- separate from QuestClaims so a traded or hatched egg can never be minted again.
+            TrialEggRewards = { tracks = {} },
         },
 
         -- Settings

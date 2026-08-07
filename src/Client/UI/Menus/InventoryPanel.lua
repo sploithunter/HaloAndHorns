@@ -3536,6 +3536,11 @@ function InventoryPanel:_loadEggsFromFolder(eggsFolder)
                 local eggDef = okPets
                     and petsConfig.egg_sources
                     and petsConfig.egg_sources[itemData.id]
+                if eggDef and itemData.trial_reward_huge_chance ~= nil then
+                    eggDef = table.clone(eggDef)
+                    eggDef.huge = table.clone(eggDef.huge or {})
+                    eggDef.huge.chance = itemData.trial_reward_huge_chance
+                end
                 local tier = tostring(itemData.variant or "basic"):lower()
                 local baseName = (eggDef and eggDef.name)
                     or itemData.id:gsub("_", " "):gsub("^%l", string.upper)
@@ -3553,6 +3558,12 @@ function InventoryPanel:_loadEggsFromFolder(eggsFolder)
                     uid = itemFolder.Name,
                     egg_def = eggDef, -- odds tooltip + hatch button read this
                     variant = tier,
+                    award_kind = itemData.award_kind,
+                    award_id = itemData.award_id,
+                    awarded_to_user_id = itemData.awarded_to_user_id,
+                    trial_reward_stage = itemData.trial_reward_stage,
+                    trial_reward_huge_chance = itemData.trial_reward_huge_chance,
+                    icon_zoom = eggDef and eggDef.icon_zoom,
                     folder_source = "eggs",
                 }
                 table.insert(self.inventoryData, displayData)
@@ -3656,6 +3667,16 @@ function InventoryPanel:_extractEggDataFromFolder(itemFolder)
     itemData.id = itemId.Value
     itemData.quantity = quantity and quantity.Value or 1
     itemData.variant = variant and variant.Value or "basic"
+
+    local function value(name)
+        local child = itemFolder:FindFirstChild(name)
+        return child and child.Value or nil
+    end
+    itemData.award_kind = value("award_kind")
+    itemData.award_id = value("award_id")
+    itemData.awarded_to_user_id = value("awarded_to_user_id")
+    itemData.trial_reward_stage = value("trial_reward_stage")
+    itemData.trial_reward_huge_chance = value("trial_reward_huge_chance")
 
     return itemData
 end
@@ -4866,7 +4887,8 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
     elseif item.image then
         -- flat image icon (egg items: real uploaded art instead of the emoji)
         local img = Instance.new("ImageLabel")
-        img.Size = UDim2.fromScale(0.92, 0.92)
+        local iconZoom = math.clamp(tonumber(item.icon_zoom) or 1, 0.5, 1.35)
+        img.Size = UDim2.fromScale(0.92 * iconZoom, 0.92 * iconZoom)
         img.AnchorPoint = Vector2.new(0.5, 0.5)
         img.Position = UDim2.fromScale(0.5, 0.5)
         img.BackgroundTransparency = 1
@@ -6353,10 +6375,153 @@ function InventoryPanel:_addItemInteractions(itemFrame, item)
     end)
 end
 
+function InventoryPanel:_showTrialEggHatchWarning(item)
+    self:Hide()
+    local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+    local old = playerGui:FindFirstChild("HatchConfirm")
+    if old then
+        old:Destroy()
+    end
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "HatchConfirm"
+    gui.DisplayOrder = 150
+    gui.IgnoreGuiInset = true
+    gui.Parent = playerGui
+
+    local shell = PanelChrome.build(gui, {
+        name = "TrialEggWarning",
+        title = "⚠️ Hatching Ends This Egg's Progression",
+        size = UDim2.fromScale(0.82, 0.64),
+        onClose = function()
+            gui:Destroy()
+        end,
+    })
+    local frame = shell.frame
+    local constraint = Instance.new("UISizeConstraint")
+    constraint.MinSize = Vector2.new(340, 330)
+    constraint.MaxSize = Vector2.new(680, 460)
+    constraint.Parent = frame
+
+    if item.image then
+        local img = Instance.new("ImageLabel")
+        img.Size = UDim2.fromOffset(112, 112)
+        img.Position = UDim2.new(0, 24, 0, 74)
+        img.BackgroundTransparency = 1
+        img.ScaleType = Enum.ScaleType.Fit
+        img.Image = item.image
+        img.ZIndex = 110
+        img.Parent = frame
+    end
+
+    local warning = Instance.new("TextLabel")
+    warning.Size = UDim2.new(1, -176, 0, 176)
+    warning.Position = UDim2.new(0, 156, 0, 65)
+    warning.BackgroundTransparency = 1
+    warning.Text =
+        "This Trial Egg improves as you complete more trials. If you hatch it now, the pet will never receive later upgrades.\n\nAt 100 clears, the unhatched egg becomes a guaranteed Huge Egg."
+    warning.TextColor3 = Color3.fromRGB(245, 238, 220)
+    warning.TextSize = 18
+    warning.Font = Enum.Font.Gotham
+    warning.TextWrapped = true
+    warning.TextXAlignment = Enum.TextXAlignment.Left
+    warning.TextYAlignment = Enum.TextYAlignment.Center
+    warning.ZIndex = 110
+    warning.Parent = frame
+
+    local odds = Instance.new("TextLabel")
+    odds.Size = UDim2.new(1, -48, 0, 58)
+    odds.Position = UDim2.new(0, 24, 1, -150)
+    odds.BackgroundTransparency = 1
+    odds.Text = table.concat(self:_eggOddsLines(item.egg_def), "  •  ")
+    odds.TextColor3 = Color3.fromRGB(160, 205, 255)
+    odds.TextSize = 13
+    odds.Font = Enum.Font.GothamBold
+    odds.TextWrapped = true
+    odds.ZIndex = 110
+    odds.Parent = frame
+
+    local keep = Instance.new("TextButton")
+    keep.Size = UDim2.new(0.43, 0, 0, 48)
+    keep.Position = UDim2.new(0.04, 0, 1, -70)
+    keep.BackgroundColor3 = Color3.fromRGB(50, 110, 180)
+    keep.Text = "KEEP EVOLVING"
+    keep.TextColor3 = Color3.new(1, 1, 1)
+    keep.TextSize = 16
+    keep.Font = Enum.Font.GothamBold
+    keep.ZIndex = 111
+    keep.Parent = frame
+    pillify(keep)
+
+    local hatch = Instance.new("TextButton")
+    hatch.Size = UDim2.new(0.43, 0, 0, 48)
+    hatch.Position = UDim2.new(0.53, 0, 1, -70)
+    hatch.BackgroundColor3 = Color3.fromRGB(184, 75, 48)
+    hatch.Text = "HOLD TO HATCH PERMANENTLY"
+    hatch.TextColor3 = Color3.new(1, 1, 1)
+    hatch.TextSize = 14
+    hatch.TextWrapped = true
+    hatch.Font = Enum.Font.GothamBold
+    hatch.ZIndex = 111
+    hatch.Parent = frame
+    pillify(hatch)
+
+    keep.Activated:Connect(function()
+        gui:Destroy()
+    end)
+
+    local holding = false
+    local completed = false
+    local holdConnection
+    local function stopHolding()
+        holding = false
+        if holdConnection then
+            holdConnection:Disconnect()
+            holdConnection = nil
+        end
+    end
+    hatch.InputBegan:Connect(function(input)
+        if
+            input.UserInputType ~= Enum.UserInputType.MouseButton1
+            and input.UserInputType ~= Enum.UserInputType.Touch
+        then
+            return
+        end
+        holding = true
+        hatch.Text = "KEEP HOLDING…"
+        local startedAt = os.clock()
+        stopHolding()
+        holding = true
+        holdConnection = RunService.Heartbeat:Connect(function()
+            if completed or not holding or not gui.Parent or os.clock() - startedAt < 0.8 then
+                return
+            end
+            completed = true
+            stopHolding()
+            gui:Destroy()
+            self:_hatchEggItem(item, true)
+        end)
+    end)
+    hatch.InputEnded:Connect(function(input)
+        if
+            input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch
+        then
+            stopHolding()
+            if not completed then
+                hatch.Text = "HOLD TO HATCH PERMANENTLY"
+            end
+        end
+    end)
+end
+
 -- Click egg -> the inventory CLOSES and a standalone confirm menu appears (Jason:
 -- "you click the egg, it closes the window, brings up the separate hatch menu; yes ->
 -- menu goes away, run the animation and hatch"). Own ScreenGui because the panel is gone.
 function InventoryPanel:_showHatchConfirmation(item)
+    if item.award_kind == "trial_egg" and item.trial_reward_stage ~= "huge" then
+        self:_showTrialEggHatchWarning(item)
+        return
+    end
     self:Hide()
 
     local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -6452,14 +6617,17 @@ function InventoryPanel:_showHatchConfirmation(item)
 end
 
 -- Bus hatch + the SAME reveal animation world eggs use (one presentation path).
-function InventoryPanel:_hatchEggItem(item)
+function InventoryPanel:_hatchEggItem(item, confirmProgression)
     task.spawn(function()
         local remote = ReplicatedStorage:WaitForChild("GameAPICommand", 5)
         if not remote then
             return
         end
         local okInvoke, res = pcall(function()
-            return remote:InvokeServer("egg_item.hatch", { egg = item.id })
+            return remote:InvokeServer("egg_item.hatch", {
+                egg = item.id,
+                confirmProgression = confirmProgression == true,
+            })
         end)
         local r = okInvoke and type(res) == "table" and (res.result or res) or {}
         self.logger:info("🥚 HATCH", { egg = item.id, ok = r.ok, pet = r.pet, huge = r.huge })

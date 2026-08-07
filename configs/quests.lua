@@ -49,8 +49,8 @@ return {
         -- Door missions: the trials + Jason's random-mission ladder ("scale it
         -- up to something ridiculous... always be on a random quest").
         trials = { title = "The Trials", order = 7, unlock_level = TRIALS_UNLOCK_LEVEL },
-        -- THE MATRIX (2 realms x 4 elements): every quest in a track BINDS
-        -- the auto gates to its trial (def.mission); 100-clear = Platinum egg
+        -- THE MATRIX (2 realms x 4 elements): every quest in a track BINDS the auto gates to its
+        -- trial (def.mission). A single held reward egg evolves at 10/25/50/90/100 claims.
         hell_lava = { title = "Hell Lava Trials", order = 8, unlock_level = TRIALS_UNLOCK_LEVEL },
         heaven_lava = {
             title = "Heaven Lava Trials",
@@ -466,7 +466,7 @@ return {
             },
             reward = { currencies = { gems = 150 } },
         },
-        -- ===================== THE MATRIX TRIALS (8 tracks, Platinum centuries) =====================
+        -- ===================== THE MATRIX TRIALS (8 evolving-egg tracks) =====================
         hell_lava_10 = {
             track = "hell_lava",
             order = 1,
@@ -523,7 +523,7 @@ return {
             track = "hell_lava",
             order = 5,
             name = "Hell Lava: The Century",
-            description = "Complete 100 Hell Lava Trials. Requires Level 50. The Platinum egg awaits.",
+            description = "Complete 100 Hell Lava Trials. Requires Level 50. Your unhatched reward becomes a guaranteed Huge Obsidian Egg.",
             mission = "hell_lava_trial",
             -- ANTI-ALT (Jason): the century itself demands a leveled account —
             -- alts can grind 90 but can't CLAIM without hitting 50
@@ -540,7 +540,6 @@ return {
             },
             reward = {
                 currencies = { gems = 500 },
-                items = { { id = "platinum_obsidian_egg", bucket = "eggs", qty = 1 } },
             },
         },
         heaven_lava_10 = {
@@ -599,7 +598,7 @@ return {
             track = "heaven_lava",
             order = 5,
             name = "Heaven Lava: The Century",
-            description = "Complete 100 Heaven Lava Trials. Requires Level 50. The Platinum egg awaits.",
+            description = "Complete 100 Heaven Lava Trials. Requires Level 50. Your unhatched reward becomes a guaranteed Huge Celestial Egg.",
             mission = "heaven_lava_trial",
             -- ANTI-ALT (Jason): the century itself demands a leveled account —
             -- alts can grind 90 but can't CLAIM without hitting 50
@@ -616,7 +615,6 @@ return {
             },
             reward = {
                 currencies = { gems = 500 },
-                items = { { id = "platinum_celestial_egg", bucket = "eggs", qty = 1 } },
             },
         },
         hell_ice_10 = {
@@ -675,7 +673,7 @@ return {
             track = "hell_ice",
             order = 5,
             name = "Hell Ice: The Century",
-            description = "Complete 100 Hell Ice Trials. Requires Level 50. The Platinum egg awaits.",
+            description = "Complete 100 Hell Ice Trials. Requires Level 50. Your unhatched reward becomes a guaranteed Huge Obsidian Egg.",
             mission = "hell_ice_trial",
             -- ANTI-ALT (Jason): the century itself demands a leveled account —
             -- alts can grind 90 but can't CLAIM without hitting 50
@@ -692,7 +690,6 @@ return {
             },
             reward = {
                 currencies = { gems = 500 },
-                items = { { id = "platinum_obsidian_egg", bucket = "eggs", qty = 1 } },
             },
         },
         heaven_ice_10 = {
@@ -751,7 +748,7 @@ return {
             track = "heaven_ice",
             order = 5,
             name = "Heaven Ice: The Century",
-            description = "Complete 100 Heaven Ice Trials. Requires Level 50. The Platinum egg awaits.",
+            description = "Complete 100 Heaven Ice Trials. Requires Level 50. Your unhatched reward becomes a guaranteed Huge Celestial Egg.",
             mission = "heaven_ice_trial",
             -- ANTI-ALT (Jason): the century itself demands a leveled account —
             -- alts can grind 90 but can't CLAIM without hitting 50
@@ -768,7 +765,6 @@ return {
             },
             reward = {
                 currencies = { gems = 500 },
-                items = { { id = "platinum_celestial_egg", bucket = "eggs", qty = 1 } },
             },
         },
         hell_grass_10 = {
@@ -827,7 +823,7 @@ return {
             track = "hell_grass",
             order = 5,
             name = "Hell Grass: The Century",
-            description = "Complete 100 Hell Grass Trials. Requires Level 50. The Platinum egg awaits.",
+            description = "Complete 100 Hell Grass Trials. Requires Level 50. Your unhatched reward becomes a guaranteed Huge Obsidian Egg.",
             mission = "hell_grass_trial",
             -- ANTI-ALT (Jason): the century itself demands a leveled account —
             -- alts can grind 90 but can't CLAIM without hitting 50
@@ -844,7 +840,6 @@ return {
             },
             reward = {
                 currencies = { gems = 500 },
-                items = { { id = "platinum_obsidian_egg", bucket = "eggs", qty = 1 } },
             },
         },
         heaven_grass_10 = {
@@ -903,7 +898,7 @@ return {
             track = "heaven_grass",
             order = 5,
             name = "Heaven Grass: The Century",
-            description = "Complete 100 Heaven Grass Trials. Requires Level 50. The Platinum egg awaits.",
+            description = "Complete 100 Heaven Grass Trials. Requires Level 50. Your unhatched reward becomes a guaranteed Huge Celestial Egg.",
             mission = "heaven_grass_trial",
             -- ANTI-ALT (Jason): the century itself demands a leveled account —
             -- alts can grind 90 but can't CLAIM without hitting 50
@@ -920,7 +915,6 @@ return {
             },
             reward = {
                 currencies = { gems = 500 },
-                items = { { id = "platinum_celestial_egg", bucket = "eggs", qty = 1 } },
             },
         },
         hell_desert_10 = {
@@ -979,7 +973,7 @@ return {
             track = "hell_desert",
             order = 5,
             name = "Hell Desert: The Century",
-            description = "Complete 100 Hell Desert Trials. Requires Level 50. The Platinum egg awaits.",
+            description = "Complete 100 Hell Desert Trials. Requires Level 50. Your unhatched reward becomes a guaranteed Huge Obsidian Egg.",
             mission = "hell_desert_trial",
             -- ANTI-ALT (Jason): the century itself demands a leveled account —
             -- alts can grind 90 but can't CLAIM without hitting 50
@@ -996,7 +990,6 @@ return {
             },
             reward = {
                 currencies = { gems = 500 },
-                items = { { id = "platinum_obsidian_egg", bucket = "eggs", qty = 1 } },
             },
         },
         heaven_desert_10 = {
@@ -1055,7 +1048,7 @@ return {
             track = "heaven_desert",
             order = 5,
             name = "Heaven Desert: The Century",
-            description = "Complete 100 Heaven Desert Trials. Requires Level 50. The Platinum egg awaits.",
+            description = "Complete 100 Heaven Desert Trials. Requires Level 50. Your unhatched reward becomes a guaranteed Huge Celestial Egg.",
             mission = "heaven_desert_trial",
             -- ANTI-ALT (Jason): the century itself demands a leveled account —
             -- alts can grind 90 but can't CLAIM without hitting 50
@@ -1072,7 +1065,6 @@ return {
             },
             reward = {
                 currencies = { gems = 500 },
-                items = { { id = "platinum_celestial_egg", bucket = "eggs", qty = 1 } },
             },
         },
     },

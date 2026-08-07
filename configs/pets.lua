@@ -6046,11 +6046,73 @@ local petConfig = {
             },
         },
 
-        -- PLATINUM PLATINUM OBSIDIAN EGG (the 100-clear quest reward, docs §12 lattice):
-        -- SAME five pets, HIGHER stated huge chance — policy-clean because
-        -- fixed_odds binds PER EGG (a different egg states different odds).
-        -- PLACEHOLDER assets = the base egg's (Jason ships platinum reskins;
-        -- swap asset_id/image_id/mesh_asset/texture_asset then).
+        -- Final form of an unhatched 100-clear named-trial reward. It deliberately reuses the
+        -- authored Celestial shell/model; `icon_zoom` makes the inventory art read as a distinct
+        -- Huge Egg. Huge is orthogonal to the ordinary 5% Golden / 0.5% Rainbow variant roll.
+        huge_celestial_egg = {
+            name = "Huge Celestial Egg",
+            description = "A hundred heavenly trials guarantee that its hatch will be Huge.",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            fixed_odds = true,
+            huge = { chance = 1, any_pet = true },
+            asset_id = "rbxassetid://75458974543354",
+            mesh_asset = "rbxassetid://76403285913824",
+            texture_asset = "rbxassetid://93310785554801",
+            image_id = "rbxassetid://90833713444650",
+            icon_zoom = 1.18,
+            unlock_requirement = nil,
+            pet_weights = {
+                lumen_dove = 30,
+                archon_spark = 25,
+                cloudling = 20,
+                halo_fawn = 15,
+                seraph_kit = 10,
+            },
+            rarity_rates = { golden_chance = 0.05, rainbow_chance = 0.005 },
+            variant_rolls = {
+                enabled = true,
+                allow_basic = true,
+                allow_golden = true,
+                allow_rainbow = true,
+                cost_multiplier = 20,
+            },
+        },
+
+        huge_obsidian_egg = {
+            name = "Huge Obsidian Egg",
+            description = "A hundred hellish trials guarantee that its hatch will be Huge.",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            fixed_odds = true,
+            huge = { chance = 1, any_pet = true },
+            asset_id = "rbxassetid://70381184616429",
+            mesh_asset = "rbxassetid://97161362566193",
+            texture_asset = "rbxassetid://126932530566414",
+            image_id = "rbxassetid://97839482817366",
+            icon_zoom = 1.18,
+            unlock_requirement = nil,
+            pet_weights = {
+                wyrmling = 30,
+                obsidian_hound = 25,
+                cinder_golemite = 20,
+                ashwing = 15,
+                cerberus_pup = 10,
+            },
+            rarity_rates = { golden_chance = 0.05, rainbow_chance = 0.005 },
+            variant_rolls = {
+                enabled = true,
+                allow_basic = true,
+                allow_golden = true,
+                allow_rainbow = true,
+                cost_multiplier = 20,
+            },
+        },
+
+        -- LEGACY PLATINUM OBSIDIAN EGG: retained so existing inventory records remain readable.
+        -- Named-trial quests no longer mint this egg; their canonical held egg evolves instead.
         platinum_obsidian_egg = {
             name = "Platinum Obsidian Egg",
             description = "Forged from a hundred trials. The huge within stirs far more often.",
@@ -6085,11 +6147,8 @@ local petConfig = {
             },
         },
 
-        -- PLATINUM PLATINUM CELESTIAL EGG (the 100-clear quest reward, docs §12 lattice):
-        -- SAME five pets, HIGHER stated huge chance — policy-clean because
-        -- fixed_odds binds PER EGG (a different egg states different odds).
-        -- PLACEHOLDER assets = the base egg's (Jason ships platinum reskins;
-        -- swap asset_id/image_id/mesh_asset/texture_asset then).
+        -- LEGACY PLATINUM CELESTIAL EGG: retained so existing inventory records remain readable.
+        -- Named-trial quests no longer mint this egg; their canonical held egg evolves instead.
         platinum_celestial_egg = {
             name = "Platinum Celestial Egg",
             description = "Forged from a hundred trials. The huge within stirs far more often.",
@@ -6808,6 +6867,18 @@ function petConfig.simulateHatch(eggType, playerData, _innerRoll)
             end
         end
         selectedPet = selectedPet or next(fixedWeights)
+        -- Variant and Huge are independent properties. Roll the stated variant first so a Huge
+        -- fixed-odds hatch can still be Golden or Rainbow (especially the 100-clear Huge Egg).
+        local rates = eggData.rarity_rates or {}
+        local g = tonumber(rates.golden_chance) or 0
+        local r = tonumber(rates.rainbow_chance) or 0
+        local vroll = math.random()
+        local variant = "basic"
+        if vroll < r then
+            variant = "rainbow"
+        elseif vroll < r + g then
+            variant = "golden"
+        end
         -- huge stage at the flat stated chance (any_pet: the rolled species goes huge —
         -- this is how a purchasable exclusive egg can carry a STATED huge chance)
         local hugeData = eggData.huge
@@ -6820,25 +6891,14 @@ function petConfig.simulateHatch(eggType, playerData, _innerRoll)
             if hp then
                 return {
                     pet = hp,
-                    variant = "basic",
+                    variant = variant,
                     huge = true,
-                    finalGoldenChance = 0,
-                    finalRainbowChance = 0,
+                    finalGoldenChance = g,
+                    finalRainbowChance = r,
                     luckMultiplier = 1,
-                    petData = petConfig.getPet(hp, "basic"),
+                    petData = petConfig.getPet(hp, variant),
                 }
             end
-        end
-        -- variant at the flat stated channel rates
-        local rates = eggData.rarity_rates or {}
-        local g = tonumber(rates.golden_chance) or 0
-        local r = tonumber(rates.rainbow_chance) or 0
-        local vroll = math.random()
-        local variant = "basic"
-        if vroll < r then
-            variant = "rainbow"
-        elseif vroll < r + g then
-            variant = "golden"
         end
         return {
             pet = selectedPet,

@@ -146,6 +146,7 @@ local SCHEMAS = {
     stack_pool = schema({ recharge_per_instance_seconds = "number", contribution_curve = "string" }),
     theme_utility = schema({ passives = "table" }),
     tester_rewards = schema({ version = "number", defaults = "table", campaigns = "table" }),
+    trial_rewards = schema({ version = "number", tracks = "table" }),
     trade = schema({
         tradeable = "table",
         tradeable_currencies = "table",

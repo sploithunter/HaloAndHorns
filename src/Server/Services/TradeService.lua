@@ -44,6 +44,7 @@ function TradeService:Init()
     self._statsService = self._modules and self._modules.StatsService
     self._enhancementService = self._modules and self._modules.EnhancementService
     self._testerRewardService = self._modules and self._modules.TesterRewardService
+    self._trialEggRewardService = self._modules and self._modules.TrialEggRewardService
     self._config = self._configLoader:LoadConfig("trade")
     self._sessions = {} -- sessionId -> session
     self._playerSession = {} -- userId -> sessionId
@@ -632,6 +633,9 @@ function TradeService:AddEgg(player, uid)
     if self._testerRewardService then
         self._testerRewardService:ReconcileRecordBeforeTrade(player, rec)
     end
+    if self._trialEggRewardService then
+        self._trialEggRewardService:ReconcileRecordBeforeTrade(player, uid, rec)
+    end
     local copy = deepCopy(rec)
     copy.quantity = 1
     inventory:RemoveItem(player, EGGS_BUCKET, uid, 1)
@@ -801,6 +805,13 @@ function TradeService:_commitReceipts(receipts)
         for player in pairs(rewardRecipients) do
             task.defer(function()
                 self._testerRewardService:Reconcile(player, "trade_received")
+            end)
+        end
+    end
+    if self._trialEggRewardService then
+        for player in pairs(rewardRecipients) do
+            task.defer(function()
+                self._trialEggRewardService:Reconcile(player, "trade_received")
             end)
         end
     end

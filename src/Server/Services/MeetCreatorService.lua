@@ -32,6 +32,7 @@ function MeetCreatorService:Init()
     self._inventoryService = self._modules.InventoryService
     self._petGrantService = self._modules.PetGrantService
     self._testerRewardService = self._modules.TesterRewardService
+    self._trialEggRewardService = self._modules.TrialEggRewardService
     self._statsService = self._modules.StatsService
     self._chatAnnouncementService = self._modules.ChatAnnouncementService
     self._eggHatchLocks = setmetatable({}, { __mode = "k" })
@@ -258,7 +259,7 @@ function MeetCreatorService:ResetMeets(player)
     return { ok = true, cleared = count }
 end
 
-function MeetCreatorService:_hatchEggItemUnlocked(player, eggItemId)
+function MeetCreatorService:_hatchEggItemUnlocked(player, eggItemId, confirmedPermanent)
     local invSvc = self._inventoryService
     local rec = invSvc and invSvc:GetItem(player, "eggs", eggItemId)
     if not rec or (tonumber(rec.quantity) or 0) < 1 then
@@ -296,8 +297,14 @@ function MeetCreatorService:_hatchEggItemUnlocked(player, eggItemId)
     local playerData = dataService and dataService:GetData(player)
     local petsConfig = require(ReplicatedStorage.Configs:WaitForChild("pets"))
     local hatch
+    if self._trialEggRewardService then
+        hatch = self._trialEggRewardService:ResolveHatch(player, eggItemId, rec, confirmedPermanent)
+        if hatch and hatch.ok == false then
+            return hatch
+        end
+    end
     if self._testerRewardService then
-        hatch = self._testerRewardService:ResolveHatch(player, rec)
+        hatch = hatch or self._testerRewardService:ResolveHatch(player, rec)
         if hatch and hatch.ok == false then
             return hatch
         end
@@ -320,16 +327,21 @@ function MeetCreatorService:_hatchEggItemUnlocked(player, eggItemId)
         variant = hatch.variant,
         huge = hatch.huge == true,
         quantity = 1,
-        source = hatch.award_id and ("tester_reward_egg:" .. hatch.award_id)
+        source = hatch.award_id
+                and ((hatch.award_kind or "tester_reward_egg") .. ":" .. hatch.award_id)
             or ("creator_egg:" .. baseEggId),
         unique = hatch.award_id ~= nil,
         award_id = hatch.award_id,
         awarded_to_user_id = hatch.awarded_to_user_id,
         award_tier = hatch.award_tier,
         award_version = hatch.award_version,
+        award_kind = hatch.award_kind,
     })
     if not result or result.ok == false then
         return { ok = false, reason = "grant_failed" }
+    end
+    if self._trialEggRewardService then
+        self._trialEggRewardService:MarkHatched(player, eggItemId, rec)
     end
     invSvc:RemoveItem(player, "eggs", eggItemId, 1)
     self._logger:Info("Creator egg hatched", {
@@ -344,13 +356,13 @@ end
 
 -- Held eggs are valuable one-shot records. Serialize each player's hatch requests so two client
 -- invokes cannot both observe the same egg before the first call consumes it.
-function MeetCreatorService:HatchEggItem(player, eggItemId)
+function MeetCreatorService:HatchEggItem(player, eggItemId, confirmedPermanent)
     if self._eggHatchLocks[player] then
         return { ok = false, reason = "hatch_busy" }
     end
     self._eggHatchLocks[player] = true
     local ok, result = pcall(function()
-        return self:_hatchEggItemUnlocked(player, eggItemId)
+        return self:_hatchEggItemUnlocked(player, eggItemId, confirmedPermanent)
     end)
     self._eggHatchLocks[player] = nil
     if not ok then

@@ -27,6 +27,7 @@ function QuestService:Init()
     self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
     self._rewardService = self._modules and self._modules.RewardService
     self._futureCallService = self._modules and self._modules.FutureCallService
+    self._trialEggRewardService = self._modules and self._modules.TrialEggRewardService
     self._config = self._configLoader:LoadConfig("quests")
 end
 
@@ -135,6 +136,9 @@ function QuestService:_reconcileClaimedCompletionRewards(player, data)
         then
             self:_reconcileCompletionReward(player, id, def, data)
         end
+    end
+    if self._trialEggRewardService then
+        self._trialEggRewardService:Reconcile(player, "quest_reconcile")
     end
 end
 
@@ -512,6 +516,9 @@ function QuestService:Claim(player, questId)
     -- Apply authored XP first, then top up only the exact missing amount to the guaranteed level.
     -- Component markers make the token grant retry-safe and preserve the independent L5–L9 schedule.
     local completion = self:_reconcileCompletionReward(player, questId, def, data)
+    if self._trialEggRewardService then
+        self._trialEggRewardService:Reconcile(player, "quest_claim")
+    end
     -- PERSISTENT UNLOCK (def.unlock = "<flag>"): quests can gate game
     -- features (first use: random_missions door). Profile is the SSOT;
     -- the Unlock_<flag> attribute is a published mirror for client UI.

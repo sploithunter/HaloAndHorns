@@ -24,7 +24,7 @@ changes the rules of the world.
    everything. Deep hell is literally dark; you bring a lantern pet.
 3. **The Trials.** Procedurally-generated dungeon runs — everyone's Trial #N is
    the same map, so "Trial 28 was great" is a thing you can say to a friend.
-4. **The chase.** Boss-drop exclusive eggs (0.5%), Platinum century chains
+4. **The chase.** Boss-drop exclusive eggs (0.5%), evolving named-trial egg chains
    (100 trials + level 50), secrets at 1-in-4000, tradeable everything.
 5. **Duo everything.** Shared kill credit, shared chest loot, team mining bonus,
    sidekick leveling — built to be played with a friend.
