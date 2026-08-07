@@ -106,6 +106,7 @@ local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure dra
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- shared variant-scaled aura math
 local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime) -- effective type-scaled enchant math
+local PetEnchantView = require(ReplicatedStorage.Shared.Game.PetEnchantView) -- stack + unique display SSOT
 local PetBadge = require(script.Parent.Parent.PetBadge)
 -- Two-number card display (⛏ mining / ⚔ combat) — assembles the PetPower profile from config.
 local petPowerViewOk, PetPowerView = pcall(function()
@@ -5246,22 +5247,10 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
     -- the aura pile. Same PetBadge alphabet as every other badge surface.
     -- Storage v2: an enchant-keyed STACK shows its one effect as a badge at the flat
     -- "Mythic Strength" (resolved from config at render — never stored on the stack).
-    if
-        PetBadge
-        and item.category == "Pets"
-        and item.enchant
-        and type(item.enchantments) ~= "table"
-    then
-        local stackStrength = (
-            ENCHANTS_CONFIG
-            and ENCHANTS_CONFIG.stack_enchants
-            and tonumber(ENCHANTS_CONFIG.stack_enchants.strength)
-        ) or 1
-        item.enchantments = { { id = item.enchant, strength = stackStrength } }
-    end
-    if PetBadge and item.category == "Pets" and type(item.enchantments) == "table" then
+    local displayEnchantments = PetEnchantView.records(item, ENCHANTS_CONFIG)
+    if PetBadge and item.category == "Pets" then
         local shownEnch = 0
-        for _, enchant in ipairs(item.enchantments) do
+        for _, enchant in ipairs(displayEnchantments) do
             if enchant.id and shownEnch < 3 then
                 local holder = PetBadge.createEnchantBadge(itemFrame, {
                     enchantId = enchant.id,
@@ -5961,10 +5950,13 @@ function InventoryPanel:_showItemTooltip(item, sourceFrame)
     elseif item.serial then
         table.insert(lines, { label = "Serial", value = "#" .. tostring(item.serial) })
     end
+    local displayEnchantments = PetEnchantView.records(item, ENCHANTS_CONFIG)
+    local displayedEnchantCount = #displayEnchantments
     if item.enchantable then
         local maxEnchantments = tonumber(item.maxEnchantments) or 0
         local unlockedEnchantSlots = tonumber(item.unlockedEnchantSlots) or maxEnchantments
-        local enchantmentCount = tonumber(item.enchantmentCount) or 0
+        local enchantmentCount =
+            math.max(tonumber(item.enchantmentCount) or 0, displayedEnchantCount)
         local value = tostring(enchantmentCount)
         if unlockedEnchantSlots > 0 then
             value = value .. "/" .. tostring(unlockedEnchantSlots)
@@ -5975,7 +5967,13 @@ function InventoryPanel:_showItemTooltip(item, sourceFrame)
             value = value .. "/0 (max " .. tostring(maxEnchantments) .. ")"
         end
         table.insert(lines, { label = "Enchants", value = value })
-        for index, enchant in ipairs(item.enchantments or {}) do
+    elseif displayedEnchantCount > 0 then
+        table.insert(lines, { label = "Enchants", value = tostring(displayedEnchantCount) })
+    else
+        table.insert(lines, { label = "Enchants", value = "None" })
+    end
+    if displayedEnchantCount > 0 then
+        for index, enchant in ipairs(displayEnchantments) do
             -- readable identity line (Jason: players can't price a trade on opaque
             -- integers): "Coin Finder · Silver (+4.5%)" — metal from display.ring_tiers,
             -- percent from the effect's amount_per_strength
@@ -6003,10 +6001,6 @@ function InventoryPanel:_showItemTooltip(item, sourceFrame)
             end
             table.insert(lines, { label = "Enchant " .. tostring(index), value = value })
         end
-    elseif item.enchantmentCount and item.enchantmentCount > 0 then
-        table.insert(lines, { label = "Enchants", value = tostring(item.enchantmentCount) })
-    else
-        table.insert(lines, { label = "Enchants", value = "None" })
     end
     if item.category == "Pets" and item.petType then
         -- Zone ALWAYS shows now (Jason: it blinked in/out before) — Neutral when no resonance.

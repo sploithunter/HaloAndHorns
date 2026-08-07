@@ -2250,3 +2250,10 @@ rewrite.
   value as `CollectRadius`, so gameplay and Active Buffs cannot diverge.
 - Added regression coverage for the reported Onyx Exclusive case: the 71-stud Magnet power plus
   Auto Collector setup receives +30% and resolves to 92.3 studs.
+
+## 2026-08-07 — Stack-pet enchant tooltips match their badges
+
+- Added `PetEnchantView` as the shared client display projection for unique enchant lists and
+  Storage-v2 stack enchant ids.
+- Inventory cards and hover tooltips now consume the same projection, so an enchanted Legendary
+  stack such as Radiant Sprite shows its effect, metal tier, and magnitude instead of `Enchants: None`.
