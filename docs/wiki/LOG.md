@@ -2257,3 +2257,11 @@ rewrite.
   Storage-v2 stack enchant ids.
 - Inventory cards and hover tooltips now consume the same projection, so an enchanted Legendary
   stack such as Radiant Sprite shows its effect, metal tier, and magnitude instead of `Enchants: None`.
+
+## 2026-08-07 — Squad drafts preserve enchant-stack identity
+
+- Corrected draft availability accounting to match the complete `id:variant:enchant` stack key.
+  Equipping one enchanted stack no longer reduces or hides sibling cards for the same pet and
+  variant with different enchants.
+- Retained equipped-slot suffix normalization and added a regression using two Rainbow Radiant
+  Sprite enchant stacks.
