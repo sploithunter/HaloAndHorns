@@ -206,6 +206,15 @@ function EventService:_isScheduleActive(schedule, now)
         return false
     end
 
+    -- Optional absolute campaign bounds use Unix timestamps and an exclusive end. They compose
+    -- with the recurring Mountain weekday/hour rules below, so one-off promotions cannot remain
+    -- visible after their advertised window.
+    local startsAt = tonumber(schedule.starts_at)
+    local endsAt = tonumber(schedule.ends_at)
+    if (startsAt and now < startsAt) or (endsAt and now >= endsAt) then
+        return false
+    end
+
     local current = MountainTime.fromUtc(now)
     return self:_weekdayMatches(schedule, current.wday)
         and self:_hourMatches(schedule, current.hour)

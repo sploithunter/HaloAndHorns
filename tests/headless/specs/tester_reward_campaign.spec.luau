@@ -91,7 +91,7 @@ return function()
             end
         )
 
-        it("ships the authored week-one campaign with public claiming disabled", function()
+        it("ships the authored week-one campaign with public claiming enabled", function()
             local config = loadModule("configs/tester_rewards.lua")
             local pets = loadModule("configs/pets.lua")
             local roles = loadModule("configs/pet_roles.lua")
@@ -100,8 +100,10 @@ return function()
             local testerEgg = pets.egg_sources.beta_tester_egg
             expect(weekOne.egg_id).to.equal("beta_tester_egg")
             expect(weekOne.pet_id).to.equal("beta_tester_bot")
-            expect(weekOne.claim.enabled).to.equal(false)
+            expect(weekOne.claim.enabled).to.equal(true)
             expect(weekOne.claim.studio_enabled).to.equal(true)
+            expect(weekOne.claim.starts_at).to.equal(1786168800)
+            expect(weekOne.claim.ends_at).to.equal(1786773600)
             expect(weekOne.claim_limit).to.equal(1)
             expect(weekOne.minimum_claim_level).to.equal(2)
             expect(weekOne.golden_level).to.equal(5)
@@ -121,6 +123,24 @@ return function()
             expect(testerEgg.huge.pets.beta_tester_bot).to.equal(1)
         end)
 
+        it(
+            "shows the public campaign in Events for the same Saturday-to-Saturday window",
+            function()
+                local events = loadModule("configs/events.lua")
+                local event = events.global_events.beta_test_week_one
+                local schedule = events.scheduled_global_events.beta_test_week_one
+                local eventService = readFile("src/Server/Services/EventService.lua")
+
+                expect(event.display_name).to.equal("Beta Test Week One")
+                expect(next(event.modifiers)).to.equal(nil)
+                expect(schedule.event_id).to.equal("beta_test_week_one")
+                expect(schedule.starts_at).to.equal(1786168800)
+                expect(schedule.ends_at).to.equal(1786773600)
+                expect(eventService:find("now < startsAt", 1, true)).to.be.ok()
+                expect(eventService:find("now >= endsAt", 1, true)).to.be.ok()
+            end
+        )
+
         it("preserves provenance through hatching and trade escrow", function()
             local grant = readFile("src/Server/Services/PetGrantService.lua")
             local hatch = readFile("src/Server/Services/MeetCreatorService.lua")
@@ -132,7 +152,7 @@ return function()
             expect(trade:find("ReconcileRecordBeforeTrade", 1, true)).to.be.ok()
         end)
 
-        it("provides deterministic admin egg variants without opening public claims", function()
+        it("provides deterministic admin egg variants independently of public claims", function()
             local service = readFile("src/Server/Services/TesterRewardService.lua")
             local admin = readFile("src/Server/Services/AdminToolsService.lua")
             expect(service:find("AdminGrantTestEgg", 1, true)).to.be.ok()

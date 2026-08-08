@@ -1,5 +1,17 @@
 # Log
 
+## 2026-08-08 — Beta Byte public campaign opened
+
+- Enabled production eligibility for `beta_week_1_2026` for the advertised beta-testing run.
+- Added the modifier-free **Beta Test Week One** Events card and aligned both it and reward
+  eligibility to the same Saturday 2026-08-08 through Saturday 2026-08-15 Mountain-time window.
+- Scheduled Events now accept optional absolute `starts_at`/`ends_at` Unix bounds in addition to
+  recurring Mountain weekday/hour rules; the end timestamp is exclusive.
+- Preserved the tested one-egg contract: reserve during the open campaign, grant at claimed level 2,
+  Golden at 5, Rainbow at 10, 1% Huge, and award-owner-gated progression through trades.
+- Public claiming remains a deliberate config gate; closing it after the run does not invalidate
+  reservations or existing awards.
+
 ## 2026-08-06 — Config-driven beta tester reward campaigns
 
 - Added a reusable, initially disabled tester-reward campaign system: join-window eligibility,

@@ -2535,6 +2535,17 @@ function ConfigLoader:_validateEventsConfig(config)
                     )
                 end
             end
+            local startsAt = schedule.starts_at
+            local endsAt = schedule.ends_at
+            if startsAt ~= nil and type(startsAt) ~= "number" then
+                return self:_configError("events", path .. ".starts_at", "expected number")
+            end
+            if endsAt ~= nil and type(endsAt) ~= "number" then
+                return self:_configError("events", path .. ".ends_at", "expected number")
+            end
+            if startsAt ~= nil and endsAt ~= nil and endsAt <= startsAt then
+                return self:_configError("events", path .. ".ends_at", "must exceed starts_at")
+            end
         end
     end
 

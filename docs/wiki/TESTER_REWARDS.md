@@ -1,7 +1,9 @@
 # Beta Tester Reward Campaigns
 
-Status: week-one Beta Byte content is wired. The real claim flow is enabled in Studio while public
-claiming remains disabled pending the advertised Friday/Saturday UTC window.
+Status: week-one Beta Byte content is wired and public claiming is enabled for the first advertised
+beta-testing run, Saturday 2026-08-08 00:00 through Saturday 2026-08-15 00:00 Mountain time. The
+Events panel shows the same explicit window as **Beta Test Week One**. Already-reserved and granted
+awards continue to reconcile after public claiming closes.
 
 ## Player contract
 
@@ -33,7 +35,8 @@ can resize the same species, but a campaign may name a distinct Huge species.
 
 ## Week one: Beta Byte
 
-- Campaign id: `beta_week_1_2026`; public `claim.enabled = false` until the advertised session.
+- Campaign id: `beta_week_1_2026`; public `claim.enabled = true` with the Saturday-to-Saturday
+  `starts_at`/`ends_at` window above. The end is exclusive so week two can take over cleanly.
 - `claim.studio_enabled = true` opens the same reservation and level-gated grant flow only when
   `RunService:IsStudio()` is true; it never opens production claiming.
 - One Beta Tester Egg at claimed level 2 hatches the exclusive Grass/Melee robot dog **Beta Byte**;
