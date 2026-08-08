@@ -69,6 +69,17 @@ return {
     },
 
     global_events = {
+        beta_test_week_one = {
+            display_name = "Beta Test Week One",
+            description = "Reach level 2 this week to earn Beta Byte: Golden at 5, Rainbow at 10!",
+            duration_seconds = -1,
+            stacking = "reset",
+            icon = "BETA",
+            -- This is a player-facing campaign card. Reward eligibility remains authoritative in
+            -- tester_rewards.lua; the event intentionally changes no economy modifier.
+            modifiers = {},
+        },
+
         friend_boost_launch = {
             display_name = "Launch Friend Boost",
             description = "Play with up to four Roblox friends for bonus Hatch Luck, XP, and coins!",
@@ -255,6 +266,13 @@ return {
     -- All schedules are MOUNTAIN time (America/Denver, DST-aware) — EventService converts the
     -- UTC server clock via Shared/Game/MountainTime. weekdays: 1=Sun .. 7=Sat.
     scheduled_global_events = {
+        beta_test_week_one = {
+            event_id = "beta_test_week_one",
+            -- Saturday 2026-08-08 00:00 through Saturday 2026-08-15 00:00 Mountain.
+            starts_at = 1786168800,
+            ends_at = 1786773600,
+            reason = "Beta Test Week One",
+        },
         friend_boost_launch = {
             event_id = "friend_boost_launch",
             reason = "Launch celebration through 10,000 plays",
