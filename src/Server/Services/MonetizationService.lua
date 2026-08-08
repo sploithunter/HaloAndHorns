@@ -76,6 +76,18 @@ function MonetizationService:Init()
     self:_setupMarketplaceCallbacks()
 
     self._foundersChoiceService.StateChanged:Connect(function(player, reason)
+        if reason == "eligibility" then
+            -- Marketplace ownership may have resolved before the cohort reservation. Re-run once
+            -- the player is officially a Founder so an all-pass owner receives Legacy instead of
+            -- a chooser full of unavailable cards.
+            task.defer(function()
+                if player.Parent then
+                    self:CheckPlayerPasses(player)
+                    self:_sendFoundersChoiceState(player, true, nil)
+                end
+            end)
+            return
+        end
         self:_sendFoundersChoiceState(
             player,
             reason == "eligibility" or reason == "reselection",
@@ -539,6 +551,25 @@ function MonetizationService:CheckPlayerPasses(player)
         founderPassId = ""
     end
 
+    -- Founder’s Legacy is earned from REAL Marketplace ownership in production. Studio may use
+    -- effective creator/test grants so the flow remains testable; the existing creator pass gate
+    -- disables those sources and restores the ordinary one-choice test path.
+    local legacyOwned = {}
+    for passId in pairs(sourceSets.marketplace) do
+        legacyOwned[passId] = true
+    end
+    if RunService:IsStudio() and not forceNoPasses then
+        for _, sourceName in ipairs({ "creator", "test" }) do
+            for passId in pairs(sourceSets[sourceName]) do
+                legacyOwned[passId] = true
+            end
+        end
+    end
+    local legacyActive, legacyNew = self._foundersChoiceService:TryUnlockLegacy(player, legacyOwned)
+    if legacyActive then
+        founderPassId = ""
+    end
+
     local ownedPasses, passSources =
         FoundersChoice.effectivePasses(passes, sourceSets, founderPassId, forceNoPasses)
 
@@ -570,6 +601,8 @@ function MonetizationService:CheckPlayerPasses(player)
         creatorGateEnabled = creatorGate.enabled,
         forcedNoPasses = forceNoPasses,
         foundersPass = founderPassId ~= "" and founderPassId or nil,
+        foundersLegacy = legacyActive == true,
+        foundersLegacyNew = legacyNew == true,
     })
     self:_sendOwnedPasses(player)
 end
@@ -908,6 +941,8 @@ function MonetizationService:_foundersClientState(player, show, errorMessage)
         claimNumber = state.claimNumber,
         testReservation = self._foundersChoiceService:IsTestUser(player.UserId),
         selectedPassId = state.selectedPassId,
+        legacyUnlocked = state.legacyUnlocked == true,
+        legacyCatalogVersion = state.legacyCatalogVersion,
         canChoose = FoundersChoice.canChoose(state),
         show = show == true,
         error = errorMessage,

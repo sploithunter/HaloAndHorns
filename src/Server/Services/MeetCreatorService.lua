@@ -17,6 +17,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local ServerLuck = require(ReplicatedStorage.Shared.Game.ServerLuck)
 
 local MeetCreatorService = {}
 MeetCreatorService.__index = MeetCreatorService
@@ -36,11 +37,20 @@ function MeetCreatorService:Init()
     self._statsService = self._modules.StatsService
     self._chatAnnouncementService = self._modules.ChatAnnouncementService
     self._eggHatchLocks = setmetatable({}, { __mode = "k" })
-    self._serverLuckActive = false
+    self._serverLuckState = { creator = false, founder = false }
+    self._serverLuckConnections = setmetatable({}, { __mode = "k" })
     local ok, cfg = pcall(function()
         return self._configLoader:LoadConfig("creators")
     end)
     self._config = (ok and cfg) or { creators = {}, meet = { enabled = false } }
+    local monetizationOk, monetization = pcall(function()
+        return self._configLoader:LoadConfig("monetization")
+    end)
+    self._founderLegacyConfig = monetizationOk
+            and monetization
+            and monetization.founders_choice
+            and monetization.founders_choice.legacy
+        or {}
 end
 
 function MeetCreatorService:_reconcileCreatorCounter(player, data)
@@ -120,39 +130,57 @@ function MeetCreatorService:_scanFor(player)
 end
 
 function MeetCreatorService:Start()
-    if not (self._config.meet and self._config.meet.enabled) then
-        return
-    end
-    local delay = tonumber(self._config.meet.check_delay) or 8
-    local function onJoin(joiner)
-        task.delay(delay, function()
-            if not joiner.Parent then
-                return
-            end
-            -- the joiner might be meeting creators already here
-            self:_scanFor(joiner)
-            -- ...or the joiner IS a creator everyone else now meets
-            if self:_creatorFor(joiner.UserId) then
-                local def = self:_creatorFor(joiner.UserId)
-                for _, other in ipairs(Players:GetPlayers()) do
-                    if other ~= joiner then
-                        self:_tryMeet(other, joiner.UserId, def)
+    local meetEnabled = self._config.meet and self._config.meet.enabled
+    local delay = tonumber(self._config.meet and self._config.meet.check_delay) or 8
+    local function scanJoin(joiner)
+        if meetEnabled then
+            task.delay(delay, function()
+                if not joiner.Parent then
+                    return
+                end
+                -- the joiner might be meeting creators already here
+                self:_scanFor(joiner)
+                -- ...or the joiner IS a creator everyone else now meets
+                if self:_creatorFor(joiner.UserId) then
+                    local def = self:_creatorFor(joiner.UserId)
+                    for _, other in ipairs(Players:GetPlayers()) do
+                        if other ~= joiner then
+                            self:_tryMeet(other, joiner.UserId, def)
+                        end
                     end
                 end
-            end
-        end)
-    end
-    Players.PlayerAdded:Connect(onJoin)
-    for _, p in ipairs(Players:GetPlayers()) do
-        onJoin(p)
+            end)
+        end
     end
 
-    -- lucky-server presence tracking (joins stamp immediately — no meet delay needed;
-    -- leaves re-evaluate so the buff drops when the last creator goes)
-    Players.PlayerAdded:Connect(function(joiner)
+    local function watchLuck(joiner)
+        local old = self._serverLuckConnections[joiner]
+        if old then
+            old:Disconnect()
+        end
+        self._serverLuckConnections[joiner] = joiner
+            :GetAttributeChangedSignal("FounderLegacyActive")
+            :Connect(function()
+                self:_refreshServerLuck(joiner)
+            end)
         self:_refreshServerLuck(joiner)
+    end
+
+    Players.PlayerAdded:Connect(function(joiner)
+        scanJoin(joiner)
+        watchLuck(joiner)
     end)
+    for _, p in ipairs(Players:GetPlayers()) do
+        scanJoin(p)
+        watchLuck(p)
+    end
+
     Players.PlayerRemoving:Connect(function(leaving)
+        local connection = self._serverLuckConnections[leaving]
+        if connection then
+            connection:Disconnect()
+            self._serverLuckConnections[leaving] = nil
+        end
         task.defer(function()
             self:_refreshServerLuck()
             -- defer runs before the player is gone from GetPlayers in some orders;
@@ -167,9 +195,8 @@ end
 
 -- Hatch one held egg item: consume it, roll the variant, grant the SPECIES pet
 -- (plain grant — never huge, never creator class).
--- LUCKY SERVER: while any registered creator is present, every NON-creator player
--- wears ServerLuckBuff (folded into hatch luck by EggService, same convention as
--- the bunny aura). Creators stay baseline so their playtesting reads true balance.
+-- LUCKY SERVER: registered creators supply 2x to non-creators; Founder’s Legacy supplies 1.5x
+-- to everyone. Presence sources never multiply: each player receives the strongest eligible aura.
 function MeetCreatorService:_isCreator(player)
     if (self._config.creators or {})[tostring(player.UserId)] ~= nil then
         return true
@@ -188,49 +215,99 @@ function MeetCreatorService:_isCreator(player)
     return false
 end
 
-function MeetCreatorService:_refreshServerLuck(joiner)
+function MeetCreatorService:_isLegacyFounder(player)
+    return player and player:GetAttribute("FounderLegacyActive") == true
+end
+
+function MeetCreatorService:_refreshServerLuck(triggerPlayer)
     local cfg = self._config.server_luck
-    local enabled = cfg and cfg.enabled == true
+    local creatorEnabled = cfg and cfg.enabled == true
+    local founderCfg = self._founderLegacyConfig or {}
+    local founderLuckCfg = founderCfg.server_luck or {}
+    local founderEnabled = founderCfg.enabled == true
     local creatorPresent = false
     local presentCreator = nil
-    if enabled then
-        for _, p in ipairs(Players:GetPlayers()) do
-            if self:_isCreator(p) then
+    local founderPresent = false
+    local presentFounder = nil
+    for _, p in ipairs(Players:GetPlayers()) do
+        if creatorEnabled and self:_isCreator(p) then
+            if not creatorPresent then
                 creatorPresent = true
                 presentCreator = p
-                break
+            end
+        end
+        if founderEnabled and self:_isLegacyFounder(p) then
+            if not founderPresent then
+                founderPresent = true
+                presentFounder = p
             end
         end
     end
+
+    local creatorMultiplier = tonumber(cfg and cfg.mult) or 1
+    local founderMultiplier = tonumber(founderLuckCfg.mult) or 1
+    local now = os.time()
     for _, p in ipairs(Players:GetPlayers()) do
-        if creatorPresent and not self:_isCreator(p) then
-            p:SetAttribute("ServerLuckBuff", tonumber(cfg.mult) or 1.25)
+        local multiplier, source = ServerLuck.resolveForPlayer({
+            creatorPresent = creatorPresent,
+            founderPresent = founderPresent,
+            playerIsCreator = self:_isCreator(p),
+            creatorMultiplier = creatorMultiplier,
+            founderMultiplier = founderMultiplier,
+        })
+        if multiplier > 1 then
+            p:SetAttribute("ServerLuckBuff", multiplier)
             -- refreshed on every join/leave; horizon just needs to outlive sessions
-            p:SetAttribute("ServerLuckBuffUntil", os.time() + 86400)
+            p:SetAttribute("ServerLuckBuffUntil", now + 86400)
+            p:SetAttribute("ServerLuckSource", source)
         else
             p:SetAttribute("ServerLuckBuff", nil)
             p:SetAttribute("ServerLuckBuffUntil", nil)
+            p:SetAttribute("ServerLuckSource", nil)
+        end
+        p:SetAttribute("CreatorServerLuckBuff", source == "creator" and multiplier or nil)
+        p:SetAttribute("CreatorServerLuckBuffUntil", source == "creator" and (now + 86400) or nil)
+        p:SetAttribute("FounderServerLuckBuff", source == "founder" and multiplier or nil)
+        p:SetAttribute("FounderServerLuckBuffUntil", source == "founder" and (now + 86400) or nil)
+    end
+
+    local previous = self._serverLuckState or { creator = false, founder = false }
+    self._serverLuckState = { creator = creatorPresent, founder = founderPresent }
+
+    if creatorPresent and not previous.creator then
+        -- Prefer the creator whose join caused this inactive -> active transition.
+        -- On a late service start, fall back to the creator already present.
+        local activatingCreator = triggerPlayer and self:_isCreator(triggerPlayer) and triggerPlayer
+            or presentCreator
+        if activatingCreator and self._chatAnnouncementService then
+            self._chatAnnouncementService:AnnounceCreatorLuck(activatingCreator, creatorMultiplier)
         end
     end
 
-    local wasActive = self._serverLuckActive == true
-    self._serverLuckActive = creatorPresent
-    if wasActive == creatorPresent then
-        return
-    end
-
-    if not creatorPresent then
-        return
-    end
-
-    -- Prefer the creator whose join caused this inactive -> active transition.
-    -- On a late service start, fall back to the creator already present.
-    local activatingCreator = joiner and self:_isCreator(joiner) and joiner or presentCreator
-    if activatingCreator and self._chatAnnouncementService then
-        self._chatAnnouncementService:AnnounceCreatorLuck(
-            activatingCreator,
-            tonumber(cfg.mult) or 2
-        )
+    if founderPresent and not previous.founder then
+        local activatingFounder = triggerPlayer
+                and self:_isLegacyFounder(triggerPlayer)
+                and triggerPlayer
+            or presentFounder
+        if activatingFounder and self._chatAnnouncementService then
+            self._chatAnnouncementService:AnnounceFounderLegacy(
+                activatingFounder,
+                founderMultiplier
+            )
+        end
+        if activatingFounder then
+            local displayName = activatingFounder.DisplayName or activatingFounder.Name
+            for _, recipient in ipairs(Players:GetPlayers()) do
+                fireGameEvent(recipient, "founders_legacy_active", {
+                    name = ("👑 %s entered with Founder's Legacy — %.1fx hatch luck!"):format(
+                        displayName,
+                        founderMultiplier
+                    ),
+                    founderUserId = activatingFounder.UserId,
+                    multiplier = founderMultiplier,
+                })
+            end
+        end
     end
 end
 

@@ -106,7 +106,10 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - The launch **Founder's Choice** promotion reserves an exact, retry-safe first-10,000-player cohort
   after tutorial completion. Eligible players choose one of seven permanent single-purpose pass
   benefits in a confirmation modal; the Robux shop blocks the identical purchase, labels the source
-  honestly, and returns the choice if Marketplace ownership later supersedes it.
+  honestly, and returns the choice if Marketplace ownership later supersedes it. A Founder who already
+  Marketplace-owns the complete choice catalog receives the hidden, permanent **Founder’s Legacy**
+  instead: their presence supplies a non-stacking 1.5x whole-hatch retry aura to the server, announced
+  through gold chat/banner treatment and a truthful source-specific HUD badge.
 - `ConfigLoader` validates every loaded config at startup. Complex gameplay configs retain focused cross-reference validators; the remaining configs use the revisioned `ConfigSchemas` registry for required top-level key types. Unknown configs fail closed, and the architecture guard rejects configs without an explicit schema.
 - The compact quest/mission tracker doubles as a rotating learning surface: once per minute it
   overlays one config-owned gameplay tip for 10 seconds, including potion, enhancement, pet-role,

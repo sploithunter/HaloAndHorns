@@ -185,6 +185,15 @@ return {
         banner = { seconds = 7, color = { 255, 198, 55 } },
     },
 
+    -- A Founder who already owned every public choice receives the hidden Legacy entitlement.
+    -- Their first presence transition turns on the non-stacking 1.5x server hatch aura; every
+    -- player receives this large gold notice in addition to the chat announcement.
+    founders_legacy_active = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 255, 198, 55 }, count = 24 },
+        banner = { seconds = 8, color = { 255, 198, 55 } },
+    },
+
     -- Level-derived deploy capacity (L8, then every seven levels through L50).
     pet_slot_awarded = {
         sound = "celebratory_jingle",

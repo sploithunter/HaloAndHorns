@@ -24,12 +24,16 @@ huge           : hugeLuckBoost only                  -- fractional attempts, sep
 Every term is additive into `earned`; **nothing multiplies over the player's grind**
 (the only multiplicative path left is the dev-only `test_mode.super_luck`).
 
-The **lucky-server / creator-presence "devluck"** (`ServerLuckBuff`) is the exception that DOES
-multiply: it's not folded into `earned` — `simulateHatch` rolls the whole hatch `devLuck` times
-(fractional attempts: 2.5 = 2 rolls + a 50% chance of a 3rd) and keeps the rarest. Skips fixed-odds
-eggs. The inactive-to-active transition announces the activating creator in server chat:
-`🍀 <DisplayName> joined! Hatch luck is now 2x!!!`. Additional creators
-joining while the boost is already active do not repeat the activation notice.
+The **presence-luck "devluck"** (`ServerLuckBuff`) is the exception that DOES multiply: it is not
+folded into `earned` — `simulateHatch` rolls the whole hatch `devLuck` times (fractional attempts:
+1.5 = one roll + a 50% chance of a second) and keeps the rarest. It skips fixed-odds eggs.
+
+There are two server-presence sources. Creator presence supplies **2x** to non-creators and announces
+`🍀 <DisplayName> joined! Hatch luck is now 2x!!!`. Founder’s Legacy presence supplies **1.5x** to
+everyone and uses its own gold chat/banner treatment. The sources never multiply; each player receives
+the strongest eligible source. Thus ordinary players in a creator+Founder server receive 2x, while a
+creator carrying Legacy receives 1.5x because creators remain excluded from their own 2x aura for
+balance testing. Announcements fire only on each source's inactive-to-active transition.
 
 ## Why the index bonus is curved (exponent 2.5)
 

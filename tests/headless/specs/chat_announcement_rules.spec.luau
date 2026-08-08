@@ -39,6 +39,7 @@ local config = {
         prefixes = { "Grats", "Congratulations", "GG" },
     },
     creator_luck = { color_hex = "#AA5AFF" },
+    founders_legacy = { color_hex = "#FFC637" },
 }
 
 return function()
@@ -126,6 +127,18 @@ return function()
             expect(payload.scope).to.equal("server")
             expect(payload.colorHex).to.equal("#AA5AFF")
             expect(payload.text).to.equal("🍀 Colorado Plays joined! Hatch luck is now 2x!!!")
+        end)
+    end)
+
+    describe("ChatAnnouncementRules Founder’s Legacy", function()
+        it("announces the rare founder and exact server aura", function()
+            local payload = Rules.foundersLegacy("Colorado Plays", 1.5, config)
+            expect(payload.kind).to.equal("founders_legacy")
+            expect(payload.scope).to.equal("server")
+            expect(payload.colorHex).to.equal("#FFC637")
+            expect(payload.text).to.equal(
+                "👑 Colorado Plays entered with Founder's Legacy! A 1.5x hatch-luck aura is active!"
+            )
         end)
     end)
 

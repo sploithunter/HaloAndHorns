@@ -279,7 +279,11 @@ local function apply(state)
     if type(state) ~= "table" then
         return
     end
-    if (state.selectedPassId and state.selectedPassId ~= "") or state.eligible ~= true then
+    if
+        state.legacyUnlocked == true
+        or (state.selectedPassId and state.selectedPassId ~= "")
+        or state.eligible ~= true
+    then
         close()
     elseif (state.canChoose == true and state.show == true) or (state.error and gui) then
         show(state)

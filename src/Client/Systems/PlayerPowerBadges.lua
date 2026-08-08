@@ -63,12 +63,11 @@ local BUFFS = {
         steady = true,
         petSource = true,
     },
-    -- LUCKY SERVER (creator presence): purple-tinted clover — color from
-    -- configs/creators.lua server_luck.display so the styling stays one-sourced
-    -- (Jason: not the green look; individually configurable)
+    -- LUCKY SERVER presence sources arbitrate server-side and never stack. Separate replicated
+    -- attrs preserve truthful source styling even though EggService consumes one ServerLuckBuff.
     {
-        attr = "ServerLuckBuff",
-        label = "LUCKY",
+        attr = "CreatorServerLuckBuff",
+        label = "2X",
         fixed = { element = "neutral", symbol = "clover_lucky" },
         steady = true,
         tint = (function()
@@ -79,6 +78,28 @@ local BUFFS = {
             end)
             local c = ok and creators and creators.server_luck and creators.server_luck.display
             c = c and c.color or { 170, 90, 255 }
+            return Color3.fromRGB(c[1], c[2], c[3])
+        end)(),
+    },
+    {
+        attr = "FounderServerLuckBuff",
+        label = "1.5X",
+        fixed = { element = "neutral", symbol = "clover_lucky" },
+        steady = true,
+        tint = (function()
+            local ok, monetization = pcall(function()
+                return require(
+                    game:GetService("ReplicatedStorage").Configs:WaitForChild("monetization")
+                )
+            end)
+            local c = ok
+                    and monetization
+                    and monetization.founders_choice
+                    and monetization.founders_choice.legacy
+                    and monetization.founders_choice.legacy.server_luck
+                    and monetization.founders_choice.legacy.server_luck.display
+                    and monetization.founders_choice.legacy.server_luck.display.color
+                or { 255, 198, 55 }
             return Color3.fromRGB(c[1], c[2], c[3])
         end)(),
     },

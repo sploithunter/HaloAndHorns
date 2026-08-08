@@ -1117,6 +1117,36 @@ function ConfigLoader:_validateMonetizationConfig(config)
         end
         founderIds[passId] = true
     end
+    local legacy = founders.legacy
+    if type(legacy) ~= "table" or type(legacy.enabled) ~= "boolean" then
+        return false, "founders_choice.legacy must define enabled"
+    end
+    if
+        type(legacy.catalog_version) ~= "number"
+        or legacy.catalog_version < 1
+        or legacy.catalog_version % 1 ~= 0
+    then
+        return false, "founders_choice.legacy.catalog_version must be a positive integer"
+    end
+    if type(legacy.name) ~= "string" or legacy.name == "" then
+        return false, "founders_choice.legacy.name must be a non-empty string"
+    end
+    local legacyLuck = legacy.server_luck
+    if type(legacyLuck) ~= "table" or type(legacyLuck.mult) ~= "number" or legacyLuck.mult <= 1 then
+        return false, "founders_choice.legacy.server_luck.mult must be greater than 1"
+    end
+    local legacyDisplay = legacyLuck.display
+    if
+        type(legacyDisplay) ~= "table"
+        or type(legacyDisplay.attr) ~= "string"
+        or legacyDisplay.attr == ""
+        or type(legacyDisplay.label) ~= "string"
+        or legacyDisplay.label == ""
+        or type(legacyDisplay.color) ~= "table"
+        or #legacyDisplay.color ~= 3
+    then
+        return false, "founders_choice.legacy.server_luck.display is invalid"
+    end
 
     -- Validate product ID mapping
     if type(config.product_id_mapping) ~= "table" then

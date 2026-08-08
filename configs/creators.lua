@@ -56,7 +56,7 @@ return {
         -- the clover green (Jason: "creator luck auras should not be the green look").
         -- Future presence mechanics follow this same shape (attr/label/color).
         display = {
-            attr = "ServerLuckBuff",
+            attr = "CreatorServerLuckBuff",
             label = "👑 Creator Luck",
             color = { 170, 90, 255 },
         },

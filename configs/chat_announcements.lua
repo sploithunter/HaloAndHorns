@@ -23,6 +23,9 @@ return {
     creator_luck = {
         color_hex = "#AA5AFF",
     },
+    founders_legacy = {
+        color_hex = "#FFC637",
+    },
     limits = {
         text_characters = 240,
         id_characters = 128,

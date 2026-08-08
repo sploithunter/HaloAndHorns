@@ -340,21 +340,38 @@ function BuffStatsHud:_build()
     -- this mechanic to other things").
     self._presenceBuffs = {}
     do
+        local function addPresence(key, display, order)
+            if not (display and display.attr) then
+                return
+            end
+            local c = display.color or { 170, 90, 255 }
+            makeRow(
+                key,
+                display.label or "👑 Server Luck",
+                Color3.fromRGB(c[1], c[2], c[3]),
+                order
+            )
+            self._presenceBuffs[#self._presenceBuffs + 1] = { key = key, attr = display.attr }
+        end
         local ok, creators = pcall(function()
             return require(game:GetService("ReplicatedStorage").Configs:WaitForChild("creators"))
         end)
         local d = ok and creators and creators.server_luck and creators.server_luck.display
-        if d and d.attr then
-            local c = d.color or { 170, 90, 255 }
-            makeRow(
-                "presence_creator",
-                d.label or "👑 Creator Luck",
-                Color3.fromRGB(c[1], c[2], c[3]),
-                54
+        addPresence("presence_creator", d, 54)
+
+        local monetizationOk, monetization = pcall(function()
+            return require(
+                game:GetService("ReplicatedStorage").Configs:WaitForChild("monetization")
             )
-            self._presenceBuffs[#self._presenceBuffs + 1] =
-                { key = "presence_creator", attr = d.attr }
-        end
+        end)
+        local legacyDisplay = monetizationOk
+                and monetization
+                and monetization.founders_choice
+                and monetization.founders_choice.legacy
+                and monetization.founders_choice.legacy.server_luck
+                and monetization.founders_choice.legacy.server_luck.display
+            or nil
+        addPresence("presence_founder", legacyDisplay, 55)
     end
     makeRow("speed", "🐾 Speed", Color3.fromRGB(95, 180, 235), 8)
     makeRow("recharge", "⚡ Recharge", Color3.fromRGB(160, 130, 240), 9)
