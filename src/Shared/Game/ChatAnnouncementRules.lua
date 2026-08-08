@@ -179,4 +179,18 @@ function ChatAnnouncementRules.creatorLuck(playerName, multiplier, announcementC
     }
 end
 
+function ChatAnnouncementRules.foundersLegacy(playerName, multiplier, announcementConfig)
+    local legacyConfig = announcementConfig and announcementConfig.founders_legacy or {}
+    local activeMultiplier = math.max(1, tonumber(multiplier) or 1.5)
+    return {
+        kind = "founders_legacy",
+        scope = "server",
+        colorHex = legacyConfig.color_hex or "#FFC637",
+        text = ("👑 %s entered with Founder's Legacy! A %gx hatch-luck aura is active!"):format(
+            boundedString(playerName, "A Founder"),
+            activeMultiplier
+        ),
+    }
+end
+
 return ChatAnnouncementRules

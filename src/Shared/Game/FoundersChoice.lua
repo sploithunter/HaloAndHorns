@@ -44,7 +44,33 @@ function FoundersChoice.normalizeState(raw, cohortId)
         selectedPassId = type(raw.selectedPassId) == "string" and raw.selectedPassId or "",
         selectedAt = math.max(0, math.floor(tonumber(raw.selectedAt) or 0)),
         reselections = math.max(0, math.floor(tonumber(raw.reselections) or 0)),
+        legacyUnlocked = raw.legacyUnlocked == true,
+        legacyUnlockedAt = math.max(0, math.floor(tonumber(raw.legacyUnlockedAt) or 0)),
+        legacyCatalogVersion = math.max(0, math.floor(tonumber(raw.legacyCatalogVersion) or 0)),
     }
+end
+
+function FoundersChoice.ownsEveryEligiblePass(config, ownedPasses)
+    ownedPasses = type(ownedPasses) == "table" and ownedPasses or {}
+    local feature = config and config.founders_choice or {}
+    local count = 0
+    for _, passId in ipairs(feature.eligible_passes or {}) do
+        count += 1
+        if ownedPasses[passId] ~= true then
+            return false
+        end
+    end
+    return count > 0
+end
+
+function FoundersChoice.canUnlockLegacy(config, state, ownedPasses)
+    local feature = config and config.founders_choice or {}
+    local legacy = feature.legacy or {}
+    state = FoundersChoice.normalizeState(state, feature.cohort_id)
+    return legacy.enabled == true
+        and state.eligible == true
+        and state.legacyUnlocked ~= true
+        and FoundersChoice.ownsEveryEligiblePass(config, ownedPasses)
 end
 
 function FoundersChoice.effectivePasses(
@@ -86,7 +112,7 @@ end
 
 function FoundersChoice.canChoose(state)
     state = FoundersChoice.normalizeState(state)
-    return state.eligible and state.selectedPassId == ""
+    return state.eligible and not state.legacyUnlocked and state.selectedPassId == ""
 end
 
 -- Re-arm only the profile-side choice. The production cohort roster is deliberately untouched;
@@ -100,6 +126,9 @@ function FoundersChoice.resetTestState(cohortId)
         selectedPassId = "",
         selectedAt = 0,
         reselections = 0,
+        legacyUnlocked = false,
+        legacyUnlockedAt = 0,
+        legacyCatalogVersion = 0,
     }, cohortId)
 end
 

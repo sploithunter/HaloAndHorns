@@ -172,6 +172,19 @@ function ChatAnnouncementService:AnnounceCreatorLuck(player, multiplier)
     self:_broadcast(payload)
 end
 
+function ChatAnnouncementService:AnnounceFounderLegacy(player, multiplier)
+    if not player then
+        return
+    end
+    local payload =
+        Rules.foundersLegacy(player.DisplayName or player.Name, multiplier, self._config)
+    payload.version = self._config.version
+    payload.announcementId = ("%s:%s"):format(game.JobId or "", HttpService:GenerateGUID(false))
+    payload.createdAt = os.time()
+    self:_remember(payload.announcementId)
+    self:_broadcast(payload)
+end
+
 function ChatAnnouncementService:Destroy()
     if self._subscription then
         self._subscription:Disconnect()

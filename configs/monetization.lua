@@ -326,6 +326,23 @@ return {
             "pet_slot_pass",
             "second_wind",
         },
+        -- If a qualifying Founder already owns every pass in the catalog above, replace the
+        -- otherwise-useless chooser with a hidden permanent entitlement. The catalog version is
+        -- stamped at unlock time: later additions never revoke an earned Legacy. Its presence
+        -- supplies one non-stacking whole-hatch retry aura to the server.
+        legacy = {
+            enabled = true,
+            catalog_version = 1,
+            name = "Founder's Legacy",
+            server_luck = {
+                mult = 1.5,
+                display = {
+                    attr = "FounderServerLuckBuff",
+                    label = "👑 Founder's Legacy",
+                    color = { 255, 198, 55 },
+                },
+            },
+        },
     },
 
     -- Premium (Roblox Premium) Benefits — engagement payouts are the zero-

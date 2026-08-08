@@ -39,7 +39,7 @@ local DEFAULT_SAVE_DEBOUNCE_SECONDS = 15
 local CRITICAL_SAVE_DEBOUNCE_SECONDS = 1
 local PERIODIC_SAVE_SECONDS = 60
 local SAVE_CONFIRM_TIMEOUT_SECONDS = 10
-local CURRENT_SCHEMA_VERSION = 13
+local CURRENT_SCHEMA_VERSION = 14
 
 local function countInventoryItems(inventory)
     local counts = {}
@@ -558,6 +558,18 @@ SchemaMigrations[12] = function(_self, data)
         data.GameData.FoundersChoice = {}
     end
     data.SchemaVersion = 13
+    return 1
+end
+
+-- v13 -> v14: Founder profiles can permanently earn the catalog-versioned Founder’s Legacy
+-- fallback when every launch-choice pass is already Marketplace-owned. Normalization performs the
+-- field repair; this explicit step makes the durable entitlement contract visible.
+SchemaMigrations[13] = function(_self, data)
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    data.GameData.FoundersChoice = type(data.GameData.FoundersChoice) == "table"
+            and data.GameData.FoundersChoice
+        or {}
+    data.SchemaVersion = 14
     return 1
 end
 

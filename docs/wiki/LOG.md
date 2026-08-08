@@ -2325,3 +2325,14 @@ rewrite.
 - Canonical award keys and the per-track ledger prevent repeat grants and copied-record upgrades.
   Trading freezes progress for another owner; returning the exact egg catches it up. Hatching is
   final and uses a hold-confirmation warning while more stages remain.
+
+## 2026-08-08 — Founder’s Legacy rewards an all-pass Founder
+
+- A qualifying Founder who already Marketplace-owns all seven Founder’s Choice passes now receives a
+  permanent, catalog-versioned Founder’s Legacy entitlement instead of an unusable choice modal.
+- While a Legacy Founder is present, the server receives a 1.5x whole-hatch retry aura with gold chat,
+  floating-banner, Active Buffs, and power-badge presentation. It never multiplies with creator luck;
+  ordinary players use the stronger 2x creator aura when both are present.
+- Production qualification uses real Marketplace ownership. Studio creator/test ownership may exercise
+  the fallback while the creator pass gate is on; gate-off and Admin Reset preserve repeatable ordinary
+  chooser testing.

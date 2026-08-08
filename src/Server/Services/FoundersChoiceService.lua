@@ -81,7 +81,20 @@ function FoundersChoiceService:_profileState(player)
     local state =
         FoundersChoice.normalizeState(data.GameData.FoundersChoice, self._config.cohort_id)
     data.GameData.FoundersChoice = state
+    self:_syncLegacyAttribute(player, state)
     return data, state
+end
+
+function FoundersChoiceService:_syncLegacyAttribute(player, state)
+    if not player then
+        return
+    end
+    state = FoundersChoice.normalizeState(state, self._config.cohort_id)
+    player:SetAttribute("FounderLegacyActive", state.legacyUnlocked == true)
+    player:SetAttribute(
+        "FounderLegacyCatalogVersion",
+        state.legacyUnlocked and state.legacyCatalogVersion or nil
+    )
 end
 
 function FoundersChoiceService:GetState(player)
@@ -174,8 +187,45 @@ function FoundersChoiceService:ResetForAdminTesting(player)
     end
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     data.GameData.FoundersChoice = FoundersChoice.resetTestState(self._config.cohort_id)
+    self:_syncLegacyAttribute(player, data.GameData.FoundersChoice)
     self.StateChanged:Fire(player, "test_reset")
     return true, nil
+end
+
+function FoundersChoiceService:TryUnlockLegacy(player, ownedPasses)
+    local data, state = self:_profileState(player)
+    if not data then
+        return false, false, "profile_not_loaded"
+    end
+    if state.legacyUnlocked then
+        self:_syncLegacyAttribute(player, state)
+        return true, false, nil
+    end
+    if not FoundersChoice.canUnlockLegacy(self._monetization, state, ownedPasses) then
+        return false, false, "requirements_not_met"
+    end
+
+    local legacy = self._config.legacy or {}
+    state.legacyUnlocked = true
+    state.legacyUnlockedAt = os.time()
+    state.legacyCatalogVersion = math.max(1, math.floor(tonumber(legacy.catalog_version) or 1))
+    -- A Legacy replaces the chooser; it never impersonates or adds another Marketplace pass.
+    state.selectedPassId = ""
+    state.selectedAt = 0
+    data.GameData.FoundersChoice = state
+    self:_syncLegacyAttribute(player, state)
+    self._dataService:RequestSave(player, "founders_legacy_unlocked", {
+        critical = true,
+        debounceSeconds = 0,
+    })
+    self.StateChanged:Fire(player, "legacy_unlocked")
+    self._logger:Info("Founder's Legacy unlocked", {
+        player = player.Name,
+        userId = player.UserId,
+        claimNumber = state.claimNumber,
+        catalogVersion = state.legacyCatalogVersion,
+    })
+    return true, true, nil
 end
 
 function FoundersChoiceService:QueueEligibility(player, genuineCompletion)
