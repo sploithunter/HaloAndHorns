@@ -20,7 +20,8 @@
     },
     "ReplicatedStorage": {
       "Assets": {
-        "$className": "Folder"
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true
       },
       "Shared": {
         "$path": "src/Shared"
