@@ -29,6 +29,24 @@ return function()
             expect(doggy.depth >= 3).to.equal(true)
             expect(doggy.recoil >= 0.5).to.equal(true)
             expect(doggy.duration >= 0.5).to.equal(true)
+            expect(doggy.sidestep_degrees).to.near(10, 1e-6)
+        end)
+    end)
+
+    describe("PetAttackMotion.advanceSidestep", function()
+        it("advances odd and even equip slots ten degrees in opposite directions", function()
+            local profile = { sidestep_degrees = 10 }
+            local clockwise = PetAttackMotion.advanceSidestep(0, profile, 1)
+            local counter = PetAttackMotion.advanceSidestep(0, profile, 2)
+            expect(clockwise).to.near(math.rad(10), 1e-6)
+            expect(counter).to.near(math.rad(350), 1e-6)
+        end)
+
+        it("accumulates completed strikes and leaves non-sidestep roles planted", function()
+            local profile = { sidestep_degrees = 10 }
+            local angle = PetAttackMotion.advanceSidestep(math.rad(10), profile, 1)
+            expect(angle).to.near(math.rad(20), 1e-6)
+            expect(PetAttackMotion.advanceSidestep(angle, {}, 1)).to.near(angle, 1e-6)
         end)
     end)
 

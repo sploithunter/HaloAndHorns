@@ -160,7 +160,7 @@ function PetFormation.attackOffset(index, count, phase, attack)
     end
 
     -- ring family: orbit (rotates) / static_ring / lunge (jabs in)
-    local angle = (i / n) * 2 * math.pi
+    local angle = (i / n) * 2 * math.pi + (tonumber(attack.angle_offset) or 0)
     if style == "orbit" then
         angle = angle + phase * (attack.orbit_speed or 0)
     end

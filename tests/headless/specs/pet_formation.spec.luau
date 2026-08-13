@@ -425,4 +425,16 @@ return function()
             expect(PetFormation.resolveStyle(nil, "tank", true)).to.equal("orbit")
         end)
     end)
+
+    describe("PetFormation ring sidestep", function()
+        it("rotates a planted ring slot by the supplied post-hit angle", function()
+            local off = PetFormation.attackOffset(1, 1, 0, {
+                style = "static_ring",
+                ring_radius = 6,
+                angle_offset = math.rad(10),
+            })
+            expect(off.x).to.near(6 * math.cos(math.rad(10)), 1e-6)
+            expect(off.z).to.near(6 * math.sin(math.rad(10)), 1e-6)
+        end)
+    end)
 end

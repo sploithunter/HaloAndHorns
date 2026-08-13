@@ -319,6 +319,8 @@ function PetFollowController.start()
     local strikeCfg = (config.attack and config.attack.strike_motion) or {}
     local strikeProfiles = {}
     local strikeState = setmetatable({}, { __mode = "k" })
+    local strikeAngle = setmetatable({}, { __mode = "k" }) -- pet -> accumulated ring sidestep
+    local strikeTarget = setmetatable({}, { __mode = "k" }) -- pet -> target whose ring is advanced
     local function strikeProfile(pet)
         local roleId = petRoleId(pet)
         local petType = pet:GetAttribute("PetType")
@@ -330,10 +332,10 @@ function PetFollowController.start()
         end
         return profile
     end
-    local function startStrike(pet)
+    local function startStrike(pet, target)
         local profile = strikeProfile(pet)
         if profile.enabled then
-            strikeState[pet] = { profile = profile, startedAt = os.clock() }
+            strikeState[pet] = { profile = profile, startedAt = os.clock(), target = target }
         end
     end
     local function layerStrike(pet, cf)
@@ -343,6 +345,11 @@ function PetFollowController.start()
         end
         local motion, active = PetAttackMotion.sample(state.profile, os.clock() - state.startedAt)
         if not active then
+            -- Do not carry an old enemy's finishing step into a newly acquired target.
+            if strikeTarget[pet] == state.target then
+                strikeAngle[pet] =
+                    PetAttackMotion.advanceSidestep(strikeAngle[pet], state.profile, petSlot(pet))
+            end
             strikeState[pet] = nil
             return cf
         end
@@ -475,7 +482,7 @@ function PetFollowController.start()
         -- Splash neighbors reuse the source pet in their result packets; only the primary swing
         -- should restart its body motion. The shared area eruption already presents splash hits.
         if not data.splash then
-            startStrike(pet)
+            startStrike(pet, target)
         end
         -- Rigged pets swing their published attack clip on the REAL hit (replaces the spin/face
         -- flourish suppressed in applyMotion) — the punch lines up with the damage number.
@@ -944,6 +951,8 @@ function PetFollowController.start()
                     end
                     table.insert(g.pets, pet)
                 else
+                    strikeAngle[pet] = nil
+                    strikeTarget[pet] = nil
                     table.insert(followers, { pet = pet, index = index })
                 end
             end
@@ -1066,6 +1075,12 @@ function PetFollowController.start()
                 end)
                 local gcount = #g.pets
                 for gi, pet in ipairs(g.pets) do
+                    -- A sidestep belongs to one fight. New target = reset to its authored ring slot;
+                    -- completed Doggy hits then walk that resting slot around this target by 10°.
+                    if strikeTarget[pet] ~= g.model then
+                        strikeTarget[pet] = g.model
+                        strikeAngle[pet] = 0
+                    end
                     -- per-pet style: role-driven in "individual" mode, team-shared otherwise (g.isEnemy
                     -- picks the combat vs mining mode lane). Mutating .style is cheap — no per-frame alloc.
                     attackCfg.style = PetFormation.resolveStyle(
@@ -1074,6 +1089,7 @@ function PetFollowController.start()
                         g.isEnemy,
                         styleOverride
                     )
+                    attackCfg.angle_offset = g.isEnemy and (strikeAngle[pet] or 0) or 0
                     local off = PetFormation.attackOffset(gi, gcount, phase, attackCfg)
                     -- Role standoff: ranged/support hold further out (push the slot radially
                     -- away from the target) so melee crowds in and ranged kites at distance.

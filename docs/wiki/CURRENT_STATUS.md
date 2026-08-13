@@ -602,7 +602,9 @@ casts/hops. Damage, hit cadence, targeting, and result text remain server-author
 motion state is weak-keyed and sampled inside the existing RenderStepped pass—no new per-pet loop
 or network packet. Imported orientation corrections remain the final CFrame composition. Melee
 pets hold stable combat slots between swings rather than continuously orbiting, so Doggy's
-server-timed contact and recovery cannot disappear inside unrelated circling motion.
+server-timed contact and recovery cannot disappear inside unrelated circling motion. After each
+completed Doggy strike its resting slot advances 10 degrees around the current enemy; odd/even
+equip slots rotate opposite ways and a new target resets the accumulated offset.
 
 **Current approach (working, pending user confirmation).** After an earlier
 service-movement attempt let pets fall off the map (it dropped the legacy
