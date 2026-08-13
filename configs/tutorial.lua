@@ -20,31 +20,35 @@
 ]]
 
 return {
+    -- v2 removes the redundant manual-equip gate and teaches squad management after two guided
+    -- hatches. TutorialFlow migrates persisted numeric progress with legacy_step_migration below.
+    version = 2,
+    legacy_step_migration = {
+        [1] = { step = 1 },
+        [2] = { step = 2 },
+        [3] = { step = 2, preserve_count = true },
+        [4] = { step = 3 },
+        [5] = { step = 5 },
+        [6] = { step = 6 },
+        [7] = { step = 7 },
+        [8] = { step = 8 },
+        [9] = { step = 9 },
+        [10] = { step = 10 },
+    },
     veteran_skip = { min_claimed_level = 3 },
 
     steps = {
         {
             id = "hatch_first_egg",
-            title = "Hatch your first pet",
-            body = "Walk to the glowing egg and hatch it — pets do everything for you here.",
+            title = "Hatch your first egg",
+            body = "Your companion needs a squadmate. Follow the trail to the Earth Egg and hatch one.",
             target = { kind = "egg", prefer = "Grass" },
             complete_on = { event = "egg_hatch" },
         },
         {
-            id = "equip_pet",
-            title = "Deploy your pet",
-            -- DRAFT-DEPLOY: clicking a pet only stages it; the squad isn't live until ✓ Activate. New
-            -- players stall here, so the copy spells out Activate and the panel pulses the button while
-            -- the draft is un-deployed (InventoryPanel:_setActivatePulse). Step completes on the commit
-            -- (pet_equipped fires from the Activate path, not the draft edit).
-            body = "Open the Pets menu, click your new pet to add it to your squad — then press ✓ Activate to send it out! Squad pets follow you and mine. New players can run 3.",
-            target = { kind = "ui", name = "PetsButton" },
-            complete_on = { event = "pet_equipped" },
-        },
-        {
             id = "farm_crystals",
             title = "Mine some crystals",
-            body = "Pets mine nearby crystals when Farm Near is ON — click a crystal to BOOST it, scoop up the coins. Earn 100 coins so you can afford your next egg!",
+            body = "Your squad mines nearby crystals when Farm Near is ON—click a small crystal to BOOST it, then earn 100 coins for another egg!",
             -- trail + MINE beacon to the nearest SMALL crystal (fast first break), and
             -- the Farm button still pulses as the secondary cue
             target = { kind = "crystal", ui = "Farming" },
@@ -55,10 +59,18 @@ return {
         },
         {
             id = "hatch_another",
-            title = "Grow your team",
+            title = "Grow your squad",
             body = "Spend those coins on another egg — more pets means faster mining.",
             target = { kind = "egg", prefer = "Grass" },
             complete_on = { event = "egg_hatch" },
+        },
+        {
+            id = "build_squad",
+            title = "Build your squad",
+            body = "This is where you choose which pets fight beside you. Open Pets and take a look—you can keep your current squad.",
+            body_with_unequipped = "You have more pets to choose from now. Open Pets and choose who fights beside you. Swap someone if you want—or keep your current squad.",
+            target = { kind = "ui", name = "PetsButton" },
+            complete_on = { event = "tutorial_squad_reviewed" },
         },
         -- THE FIRST FIGHT (Jason: "introduce combat in the first five minutes —
         -- we can't out-cute the other pet sims, we out-GAME them"): right after

@@ -2161,12 +2161,45 @@ function EggInteractionService:ShowErrorMessage(errorMessage)
     end)
 end
 
+local function showTutorialSquadAssist(summary)
+    if type(summary) ~= "table" then
+        return
+    end
+
+    local joined = type(summary.names) == "table"
+            and #summary.names > 0
+            and table.concat(summary.names, " + ")
+        or string.format(
+            "%d %s",
+            tonumber(summary.added) or 0,
+            tonumber(summary.added) == 1 and "PET" or "PETS"
+        )
+    local clientScript = player.PlayerScripts:FindFirstChild("Client")
+    local systems = clientScript and clientScript:FindFirstChild("Systems")
+    local gameEventsModule = systems and systems:FindFirstChild("GameEvents")
+    if not gameEventsModule then
+        return
+    end
+    local ok, gameEvents = pcall(require, gameEventsModule)
+    if ok and gameEvents and gameEvents.fire then
+        gameEvents.fire("tutorial_squad_autofill", {
+            name = string.format(
+                "%s JOINED YOUR SQUAD!\nSquad %d/%d · Manage your squad anytime from Pets.",
+                string.upper(joined),
+                tonumber(summary.total) or 0,
+                tonumber(summary.maxSlots) or 0
+            ),
+        })
+    end
+end
+
 function EggInteractionService:ShowHatchingResults(result)
     if
         type(result) == "table"
         and result.options
         and (result.options.skipHatch == true or result.options.showHatch == false)
     then
+        showTutorialSquadAssist(result.tutorialSquadAssist)
         return
     end
 
@@ -2220,7 +2253,9 @@ function EggInteractionService:ShowHatchingResults(result)
                 { pet = result.Pet, variant = result.Type, hatchCount = #eggsData }
             )
         end
-        hatchingService:StartHatchingAnimation(eggsData)
+        hatchingService:StartHatchingAnimation(eggsData, function()
+            showTutorialSquadAssist(result.tutorialSquadAssist)
+        end)
         if activeLogger and activeLogger.Info then
             activeLogger:Info("Hatching animation started (persistent GUI)")
         end
@@ -2228,6 +2263,7 @@ function EggInteractionService:ShowHatchingResults(result)
         -- Fallback to simple notification if animation service fails
         warn("Failed to load EggHatchingService, falling back to simple notification")
         self:ShowSimpleHatchingNotification(result)
+        showTutorialSquadAssist(result.tutorialSquadAssist)
     end
 end
 

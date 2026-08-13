@@ -292,7 +292,8 @@ Fire through `RetentionService`:
 | `prologue_skip` | with the beat index they bailed at |
 | `prologue_complete` | reached the warp-out |
 
-Then the existing funnel continues (`hatch_first_egg`, `equip_pet`, …) so the prologue's
+Then the existing funnel continues (`hatch_first_egg`, `farm_crystals`, `hatch_another`,
+`build_squad`, …) so the prologue's
 effect on *downstream* steps is directly readable.
 
 ## Ship it behind a flag

@@ -1136,6 +1136,20 @@ return {
                 arguments = { { name = "state", type = "table" } },
             },
         },
+        TutorialSquadReviewed = {
+            name = "TutorialSquadReviewed",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 5,
+            handler = "TutorialService.SquadReviewed",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "action", type = "string" } },
+            },
+        },
         StarterPetStateRequest = {
             name = "StarterPetStateRequest",
             transport = "reliable_event",

@@ -622,6 +622,7 @@ loader:RegisterModule(
         "ConfigLoader",
         "DataService",
         "EnhancementService",
+        "InventoryService",
         "PotionService",
         "HotbarService",
     }, "player_progression", "PlayerProgressionService")
@@ -698,6 +699,20 @@ loader:RegisterModule("RewardService", ServerScriptService.Server.Services.Rewar
     "PetGrantService",
     "PlayerEffectsService",
 })
+loader:RegisterModule(
+    "PromoCodeService",
+    ServerScriptService.Server.Services.PromoCodeService,
+    appendIfEnabled(
+        appendIfEnabled({
+            "Logger",
+            "ConfigLoader",
+            "DataService",
+            "RewardService",
+        }, "player_progression", "PlayerProgressionService"),
+        "stats",
+        "StatsService"
+    )
+)
 loader:RegisterModule(
     "QuestService",
     ServerScriptService.Server.Services.QuestService,
@@ -1073,6 +1088,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
             RetentionService = modules:Get("RetentionService"),
             RespecService = modules:Get("RespecService"),
             RewardService = modules:Get("RewardService"),
+            PromoCodeService = modules:Get("PromoCodeService"),
             RosterService = modules:Get("RosterService"),
             ShopService = modules:Get("ShopService"),
             SpiritFormService = modules:Get("SpiritFormService"),
@@ -1187,6 +1203,7 @@ table.insert(requiredModules, "PartyService")
 table.insert(requiredModules, "TradeService")
 table.insert(requiredModules, "FusionService")
 table.insert(requiredModules, "RewardService")
+table.insert(requiredModules, "PromoCodeService")
 table.insert(requiredModules, "QuestService")
 table.insert(requiredModules, "DailyService")
 table.insert(requiredModules, "ShopService")

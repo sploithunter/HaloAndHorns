@@ -38,6 +38,23 @@ return function()
             expect(source:find("tutorial.completionLevelGranted = true", 1, true)).to.be.ok()
             expect(source:find('fireGameEvent(player, "tutorial_level_awarded"', 1, true)).to.be.ok()
         end)
+
+        it("keeps guided auto-fill and squad review on server-authoritative seams", function()
+            local egg = readFile("src/Server/Services/EggService.lua")
+            local fillAt =
+                egg:find("response.tutorialSquadAssist = self:ApplyTutorialSquadAssist", 1, true)
+            local eventAt = egg:find("self:RecordHatchSuccess(player, request, response)", 1, true)
+            expect(fillAt ~= nil and eventAt ~= nil and fillAt < eventAt).to.equal(true)
+
+            local server = readFile("src/Server/Services/TutorialService.lua")
+            expect(server:find('action == "opened"', 1, true)).to.be.ok()
+            expect(server:find("self._squadReviewOpened[player]", 1, true)).to.be.ok()
+
+            local client = readFile("src/Client/UI/Menus/InventoryPanel.lua")
+            expect(client:find('FireServer("opened")', 1, true)).to.be.ok()
+            expect(client:find("self:_commitDraft(closeAndReport)", 1, true)).to.be.ok()
+            expect(client:find('FireServer("reviewed")', 1, true)).to.be.ok()
+        end)
     end)
 
     describe("advance (the whole new-player path)", function()
@@ -45,6 +62,10 @@ return function()
             local step, idx = TutorialFlow.current(cfg, nil)
             expect(idx).to.equal(1)
             expect(step.id).to.equal("hatch_first_egg")
+            expect(step.title).to.equal("Hatch your first egg")
+            expect(step.body).to.equal(
+                "Your companion needs a squadmate. Follow the trail to the Earth Egg and hatch one."
+            )
         end)
 
         it("ignores non-matching events", function()
@@ -54,12 +75,12 @@ return function()
         end)
 
         it("accumulates COINS on the farm step (sum_ctx) — Jason's 100-coin gate", function()
-            local p = feed(nil, { "egg_hatch", "pet_equipped" }) -- now on farm_crystals
+            local p = feed(nil, { "egg_hatch" }) -- now on farm_crystals
             local step = TutorialFlow.current(cfg, p)
             expect(step.id).to.equal("farm_crystals")
             p = TutorialFlow.advance(cfg, p, "coin_payout", { amount = 40 })
             expect(p.count).to.equal(40) -- coins earned, not payout count
-            expect(p.step).to.equal(3) -- still there
+            expect(p.step).to.equal(2) -- still there
             p = TutorialFlow.advance(cfg, p, "coin_payout") -- amount-less payout: no credit
             expect(p.count).to.equal(40)
             p = feed(p, { { "coin_payout", { amount = 60 } } }) -- 100 total
@@ -70,10 +91,10 @@ return function()
         it("runs the full path to done", function()
             local p = feed(nil, {
                 "egg_hatch", -- hatch_first_egg
-                "pet_equipped", -- equip_pet (Activate commit)
                 { "coin_payout", { amount = 60 } },
                 { "coin_payout", { amount = 60 } }, -- farm_crystals (100 coins)
                 "egg_hatch", -- hatch_another
+                "tutorial_squad_reviewed", -- build_squad (Pets panel reviewed + server commit)
                 "enemy_defeated", -- first_fight (the Earth-cave onramp creature)
                 "potion_used", -- battle_brew (drink from the top-right slot)
                 "rally_used", -- rally_call (the flag at the top-left, slot 11)
@@ -89,14 +110,33 @@ return function()
             expect(p2.done).to.equal(true)
         end)
 
-        it("egg_hatch does NOT skip two egg steps at once (different positions)", function()
+        it("egg_hatch does NOT skip the mining gate between two hatch steps", function()
             local p = feed(nil, { "egg_hatch", "egg_hatch", "egg_hatch" })
-            -- only step 1 consumed the first; the others hit equip_pet and were ignored
-            expect(TutorialFlow.current(cfg, p).id).to.equal("equip_pet")
+            expect(TutorialFlow.current(cfg, p).id).to.equal("farm_crystals")
         end)
     end)
 
     describe("resilience", function()
+        it("migrates active v1 progress through the reordered steps", function()
+            local farm, changed = TutorialFlow.migrateProgress(cfg, {
+                step = 3,
+                count = 72,
+                done = false,
+            })
+            expect(changed).to.equal(true)
+            expect(farm.version).to.equal(2)
+            expect(farm.step).to.equal(2)
+            expect(farm.count).to.equal(72)
+
+            local fighter = TutorialFlow.migrateProgress(cfg, {
+                version = 1,
+                step = 5,
+                count = 0,
+                done = false,
+            })
+            expect(fighter.step).to.equal(5) -- does not force the new review on past players
+        end)
+
         it("normalizes nil/corrupt progress", function()
             local p = TutorialFlow.normalizeProgress({ step = "x", count = -5 })
             expect(p.step).to.equal(1)
@@ -123,11 +163,11 @@ return function()
 
     describe("stateFor (the wire view)", function()
         it("active step view carries index/total/target/count", function()
-            local p = feed(nil, { "egg_hatch", "pet_equipped", { "coin_payout", { amount = 40 } } })
+            local p = feed(nil, { "egg_hatch", { "coin_payout", { amount = 40 } } })
             local s = TutorialFlow.stateFor(cfg, p)
             expect(s.done).to.equal(false)
             expect(s.id).to.equal("farm_crystals")
-            expect(s.index).to.equal(3)
+            expect(s.index).to.equal(2)
             expect(s.total).to.equal(#cfg.steps)
             expect(s.count).to.equal(40)
             expect(s.need).to.equal(100)
@@ -138,6 +178,17 @@ return function()
             expect(TutorialFlow.stateFor(cfg, { step = 1, count = 0, done = true }).done).to.equal(
                 true
             )
+        end)
+
+        it("uses contextual squad-review copy without changing progression", function()
+            local p = { version = 2, step = 4, count = 0, done = false }
+            local full = TutorialFlow.stateFor(cfg, p, { hasUnequippedPets = false })
+            local alternatives = TutorialFlow.stateFor(cfg, p, { hasUnequippedPets = true })
+            expect(string.find(full.body, "take a look", 1, true) ~= nil).to.equal(true)
+            expect(string.find(alternatives.body, "more pets to choose from", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(alternatives.id).to.equal("build_squad")
         end)
     end)
 end

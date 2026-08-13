@@ -190,6 +190,68 @@ return {
             mining = { style = "pounce", pounce_depth = 1.5, pounce_period = 0.5 },
             combat = { style = "none" }, -- enemies: face them for now; pounce/etc. later
         },
+
+        -- REAL-HIT choreography (src/Shared/Game/PetAttackMotion.lua). Unlike `anim` above, this
+        -- envelope starts only when the server broadcasts Combat_PetHit, so owners and spectators
+        -- see the same role-readable contact/recovery without changing authoritative damage.
+        -- Role defaults cover the full roster; starter overrides make the FTUE quartet immediately
+        -- distinct: Doggy lunges, Bear body-slams, Kitty recoils, Bunny casts/hops.
+        strike_motion = {
+            enabled = true,
+            roles = {
+                melee = {
+                    style = "lunge",
+                    duration = 0.34,
+                    depth = 1.7,
+                    recoil = 0.25,
+                    height = 0.16,
+                    pitch = 0.10,
+                    roll = 0.08,
+                },
+                tank = {
+                    style = "slam",
+                    duration = 0.48,
+                    depth = 1.05,
+                    recoil = 0.12,
+                    height = 0.35,
+                    drop = 0.42,
+                    pitch = 0.20,
+                    roll = 0.04,
+                },
+                ranged = {
+                    style = "recoil",
+                    duration = 0.38,
+                    recoil = 0.78,
+                    height = 0.18,
+                    pitch = 0.14,
+                    roll = 0.07,
+                },
+                support = {
+                    style = "cast",
+                    duration = 0.50,
+                    depth = 0.30,
+                    height = 0.72,
+                    pitch = 0.08,
+                    yaw = 0.20,
+                    roll = 0.14,
+                },
+                control = {
+                    style = "cast",
+                    duration = 0.44,
+                    depth = 0.42,
+                    height = 0.40,
+                    pitch = 0.08,
+                    yaw = 0.28,
+                    roll = 0.12,
+                },
+            },
+            by_type = {
+                doggy = { depth = 2.15, duration = 0.32, roll = 0.12 },
+                bear = { depth = 1.35, drop = 0.56, height = 0.48, duration = 0.52 },
+                kitty = { recoil = 1.05, height = 0.24, pitch = 0.18 },
+                bunny = { height = 0.92, yaw = 0.28, roll = 0.18 },
+            },
+        },
     },
 
     -- Client movement smoothing (frame-rate-independent exponential approach;

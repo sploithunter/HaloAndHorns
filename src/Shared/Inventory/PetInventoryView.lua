@@ -31,6 +31,8 @@
       parseRef(ref)                              -> { kind="special"|"stack", uid?|stackKey? }
       resolveEquipped(items, equipped, maxSlots) -> slotMap {[n]=desc}, equippedByKey {key=n}
       buildEquipped(items, refs, maxSlots)       -> validated slot refs + commit summary
+      fillEmptySlots(items, equipped, refs, maxSlots) -> equipped + fill-only summary
+      hasUnequipped(items, equipped, maxSlots)   -> boolean
       groups(items, config, capability, equippedByKey?) ->
             { {key,total,equippedCount,unequippedCount,isSpecial,sampleRecord,uids} }
       usedSlots(items, config, capability)       -> integer
@@ -285,6 +287,115 @@ function PetInventoryView.buildEquipped(items, refs, maxSlots)
             requested = #refs,
             maxSlots = maxSlots,
         }
+end
+
+-- Tutorial hatch assist: add newly hatched pets to the first genuinely empty slots without
+-- displacing or compacting the player's existing squad. `refs` are in hatch-result order, so a
+-- multi-hatch produces the same deterministic squad order the reveal showed. Invalid/auto-deleted
+-- results are ignored; stack copies are capped by owned quantity and specials remain unique.
+function PetInventoryView.fillEmptySlots(items, equipped, refs, maxSlots)
+    items = items or {}
+    refs = type(refs) == "table" and refs or {}
+    maxSlots = math.max(0, math.floor(tonumber(maxSlots) or 0))
+
+    local slotMap, equippedByKey = PetInventoryView.resolveEquipped(items, equipped, maxSlots)
+    local result = {}
+    local occupied = 0
+    for slot = 1, maxSlots do
+        local desc = slotMap[slot]
+        if desc then
+            occupied += 1
+            result["slot_" .. slot] = desc.kind == "stack" and ("stack|" .. desc.stackKey)
+                or desc.uid
+        end
+    end
+
+    local added, rejected = 0, 0
+    local addedRefs = {}
+    for _, ref in ipairs(refs) do
+        local emptySlot
+        for slot = 1, maxSlots do
+            if result["slot_" .. slot] == nil then
+                emptySlot = slot
+                break
+            end
+        end
+        if not emptySlot then
+            break
+        end
+
+        -- GrantPet returns a raw storage key for common stacks and a raw uid for specials. Accept
+        -- those raw stack keys here in addition to the equipped-layer `stack|...` representation.
+        local desc = PetInventoryView.parseRef(ref)
+        if desc and desc.kind == "special" then
+            local raw = tostring(desc.uid)
+            local rawRecord = items[raw]
+            if rawRecord and isStackEntry(rawRecord, raw) then
+                desc = { kind = "stack", stackKey = raw }
+            end
+        end
+
+        local acceptedRef, key
+        if desc and desc.kind == "special" then
+            local rec = items[desc.uid]
+            key = "uid:" .. tostring(desc.uid)
+            if rec and not isStackEntry(rec, desc.uid) and (equippedByKey[key] or 0) == 0 then
+                acceptedRef = desc.uid
+            end
+        elseif desc and desc.kind == "stack" then
+            local rec = items[desc.stackKey]
+            key = desc.stackKey
+            local owned = rec
+                    and isStackEntry(rec, desc.stackKey)
+                    and math.max(0, math.floor(tonumber(rec.quantity) or 0))
+                or 0
+            if (equippedByKey[key] or 0) < owned then
+                acceptedRef = "stack|" .. desc.stackKey
+            end
+        end
+
+        if acceptedRef then
+            result["slot_" .. emptySlot] = acceptedRef
+            equippedByKey[key] = (equippedByKey[key] or 0) + 1
+            added += 1
+            addedRefs[#addedRefs + 1] = ref
+        else
+            rejected += 1
+        end
+    end
+
+    return result,
+        {
+            added = added,
+            rejected = rejected,
+            before = occupied,
+            total = occupied + added,
+            maxSlots = maxSlots,
+            addedRefs = addedRefs,
+        }
+end
+
+-- True when at least one owned pet copy is not represented in the validated active squad.
+-- This powers tutorial copy only; it does not rank pets or imply that an alternative is stronger.
+function PetInventoryView.hasUnequipped(items, equipped, maxSlots)
+    items = items or {}
+    local _, equippedByKey = PetInventoryView.resolveEquipped(items, equipped, maxSlots)
+    for key, record in pairs(items) do
+        if type(record) == "table" then
+            if isStackEntry(record, key) then
+                local owned = math.max(0, math.floor(tonumber(record.quantity) or 0))
+                if owned > (equippedByKey[key] or 0) then
+                    return true
+                end
+            else
+                local uid = tostring(record.uid or key)
+                if (equippedByKey["uid:" .. uid] or 0) == 0 then
+                    return true
+                end
+            end
+        end
+    end
+    return false
 end
 
 -- Ordered display groups (deterministic by obtained_at then key). Ownership only; pass

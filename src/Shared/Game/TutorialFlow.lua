@@ -1,7 +1,7 @@
 --[[
     TutorialFlow — pure step machine for the event-driven tutorial (configs/tutorial.lua).
 
-    Progress record (persisted in profile.Tutorial): { step = n, count = m, done = bool }.
+    Progress record (persisted in profile.Tutorial): { version, step, count, done, ...ledgers }.
     advance() is the ONLY mutator: feed it every bus event; it returns a NEW progress record
     plus whether anything changed (so the service knows when to save/push). No services, no
     Instances — headless-testable.
@@ -9,21 +9,64 @@
 
 local TutorialFlow = {}
 
-local function freshProgress()
-    return { step = 1, count = 0, done = false }
+local function freshProgress(version)
+    return {
+        version = math.max(1, math.floor(tonumber(version) or 1)),
+        step = 1,
+        count = 0,
+        done = false,
+    }
 end
 
 -- Coerce whatever was persisted into a sane record (nil/partial/corrupt -> fresh).
-function TutorialFlow.normalizeProgress(progress)
+function TutorialFlow.normalizeProgress(progress, version)
     if type(progress) ~= "table" then
-        return freshProgress()
+        return freshProgress(version)
     end
     local step = math.max(1, math.floor(tonumber(progress.step) or 1))
-    return {
+    local normalized = {
+        version = math.max(1, math.floor(tonumber(progress.version) or tonumber(version) or 1)),
         step = step,
         count = math.max(0, math.floor(tonumber(progress.count) or 0)),
         done = progress.done == true,
     }
+    -- These ledgers make grants retryable/idempotent. Normalization must not silently discard
+    -- them every time a step advances.
+    if type(progress.granted) == "table" then
+        normalized.granted = progress.granted
+    end
+    if tonumber(progress.completionLevelTarget) then
+        normalized.completionLevelTarget = tonumber(progress.completionLevelTarget)
+    end
+    if progress.completionLevelGranted == true then
+        normalized.completionLevelGranted = true
+    end
+    return normalized
+end
+
+function TutorialFlow.fresh(config)
+    return freshProgress(config and config.version)
+end
+
+-- Numeric tutorial steps existed before stable version metadata. Translate those saves once so a
+-- reorder cannot send active players backward or credit an unrelated event. Returns progress,
+-- changed. Completed players remain completed; live v1 progress uses the config's explicit map.
+function TutorialFlow.migrateProgress(config, progress)
+    local targetVersion = math.max(1, math.floor(tonumber(config and config.version) or 1))
+    local normalized = TutorialFlow.normalizeProgress(progress)
+    if normalized.version >= targetVersion then
+        return normalized, false
+    end
+    if not normalized.done then
+        local mapping = config and config.legacy_step_migration
+        local rule = mapping and mapping[normalized.step]
+        normalized.step = math.max(1, math.floor(tonumber(rule and rule.step) or normalized.step))
+        if not (rule and rule.preserve_count == true) then
+            normalized.count = 0
+        end
+    end
+    normalized.version = targetVersion
+    return normalized, true
 end
 
 function TutorialFlow.total(config)
@@ -41,7 +84,7 @@ end
 
 -- The active step record (+ its index), or nil when the tutorial is finished.
 function TutorialFlow.current(config, progress)
-    progress = TutorialFlow.normalizeProgress(progress)
+    progress = TutorialFlow.normalizeProgress(progress, config and config.version)
     if progress.done then
         return nil
     end
@@ -54,7 +97,7 @@ end
 
 -- Feed one bus event. Returns (newProgress, changed).
 function TutorialFlow.advance(config, progress, eventName, ctx)
-    progress = TutorialFlow.normalizeProgress(progress)
+    progress = TutorialFlow.normalizeProgress(progress, config and config.version)
     if progress.done then
         return progress, false
     end
@@ -90,8 +133,8 @@ function TutorialFlow.advance(config, progress, eventName, ctx)
 end
 
 -- The client-facing view the service pushes (no config tables leak to the wire).
-function TutorialFlow.stateFor(config, progress)
-    progress = TutorialFlow.normalizeProgress(progress)
+function TutorialFlow.stateFor(config, progress, context)
+    progress = TutorialFlow.normalizeProgress(progress, config and config.version)
     if progress.done then
         return { done = true }
     end
@@ -106,7 +149,7 @@ function TutorialFlow.stateFor(config, progress)
         total = TutorialFlow.total(config),
         id = step.id,
         title = step.title,
-        body = step.body,
+        body = context and context.hasUnequippedPets and step.body_with_unequipped or step.body,
         target = step.target or { kind = "none" },
         count = progress.count,
         need = need,

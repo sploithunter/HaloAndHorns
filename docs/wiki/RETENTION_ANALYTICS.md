@@ -28,6 +28,14 @@ These are first-session distinct counts, so the selector's conversion, average d
 role preference are available without downloading raw chunks. They deliberately do not alter the
 already-live Roblox onboarding funnel step order.
 
+Tutorial definition v2 is the 2026-08-10 FTUE reorder boundary. It replaces the redundant
+`tutorial_equip_pet` milestone with `tutorial_build_squad`; the canonical opening is now first egg,
+mine, second egg, contextual squad review, then combat. Existing raw events and dated dashboard
+shards remain historical truth under their original step ids. Persisted active v1 tutorial progress
+is explicitly migrated, while players already at the fight or later are not sent backward to the
+new review lesson. Cohort comparisons across this boundary must use `placeVersion`/build fields and
+must not interpret the two step names as the same action.
+
 ## Raw launch dataset
 
 `RetentionEvents_v1` is the single standard DataStore for event-level launch analysis. It contains
@@ -94,6 +102,21 @@ python3 tools/read_retention_dashboard.py \
   --date 20260725 \
   --json-output retention-dashboard-20260725.json
 ```
+
+For the routine acquisition/retention read, `tools/read_live_metrics.py` loads the active universe
+and read key from the gitignored `.env.local`, pulls the current partial UTC day, and compares the
+last seven complete UTC days with the preceding seven:
+
+```bash
+python3 tools/read_live_metrics.py \
+  --json-output /tmp/hnh-live-metrics.json
+```
+
+Use `--days 1` for the quickest day-over-day spot check. The report treats `newPlayers` as internal
+acquisition and labels `sessionsStarted - newPlayers` as **repeat-session volume**, not unique D1
+retention. Canonical Roblox D1 and paid impressions/clicks/attributed plays still come from Creator
+Hub or the Analytics Query API. Quest completion counters are all-session one-time events, so their
+ratio to daily new players is directional rather than a strict first-session cohort rate.
 
 The same read is available to an authorized live admin through
 `retention.dashboard { dateUtc = "YYYYMMDD" }`. Neither path backfills dates from before this

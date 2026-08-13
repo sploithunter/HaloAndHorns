@@ -30,7 +30,9 @@ function TutorialService:Init()
     self._enhancementService = self._modules and self._modules.EnhancementService
     self._potionService = self._modules and self._modules.PotionService
     self._hotbarService = self._modules and self._modules.HotbarService
+    self._inventoryService = self._modules and self._modules.InventoryService
     self._config = self._configLoader:LoadConfig("tutorial")
+    self._squadReviewOpened = setmetatable({}, { __mode = "k" })
 
     fireGameEvent.tap(function(player, name, ctx)
         self:_onEvent(player, name, ctx)
@@ -46,6 +48,23 @@ function TutorialService:Start()
             self:_applyStepGrant(player, data)
             self:_applyCompletionLevelGrant(player, data)
             self:_push(player)
+        end
+    end)
+    Signals.TutorialSquadReviewed.OnServerEvent:Connect(function(player, action)
+        if not self._dataService:IsDataLoaded(player) then
+            return
+        end
+        local data = self:_ensureProgress(player)
+        local step = data and TutorialFlow.current(self._config, data.Tutorial)
+        if not (step and step.id == "build_squad") then
+            self._squadReviewOpened[player] = nil
+            return
+        end
+        if action == "opened" then
+            self._squadReviewOpened[player] = true
+        elseif action == "reviewed" and self._squadReviewOpened[player] then
+            self._squadReviewOpened[player] = nil
+            fireGameEvent(player, "tutorial_squad_reviewed", { source = "pets_panel" })
         end
     end)
     Players.PlayerAdded:Connect(function(player)
@@ -72,7 +91,15 @@ end
 -- First sight of a save decides veteran-vs-new ONCE; after that only advance() mutates.
 function TutorialService:_ensureProgress(player)
     local data = self._dataService:GetData(player)
-    if not data or type(data.Tutorial) == "table" then
+    if not data then
+        return data
+    end
+    if type(data.Tutorial) == "table" then
+        local migrated, changed = TutorialFlow.migrateProgress(self._config, data.Tutorial)
+        data.Tutorial = migrated
+        if changed then
+            self._dataService:RequestSave(player, "tutorial_version_migration")
+        end
         return data
     end
     local claimed = 0
@@ -82,9 +109,10 @@ function TutorialService:_ensureProgress(player)
     end)
     local hasProgress = type(data.Powers) == "table" and #data.Powers > 0
     if TutorialFlow.isVeteran(self._config, claimed, hasProgress) then
-        data.Tutorial = { step = 1, count = 0, done = true }
+        data.Tutorial = TutorialFlow.fresh(self._config)
+        data.Tutorial.done = true
     else
-        data.Tutorial = TutorialFlow.normalizeProgress(nil)
+        data.Tutorial = TutorialFlow.fresh(self._config)
     end
     self._dataService:RequestSave(player, "tutorial_init")
     return data
@@ -336,7 +364,14 @@ function TutorialService:_push(player)
         return
     end
     pcall(function()
-        Signals.TutorialState:FireClient(player, TutorialFlow.stateFor(self._config, data.Tutorial))
+        local context = {}
+        if self._inventoryService and self._inventoryService.HasUnequippedPet then
+            context.hasUnequippedPets = self._inventoryService:HasUnequippedPet(player)
+        end
+        Signals.TutorialState:FireClient(
+            player,
+            TutorialFlow.stateFor(self._config, data.Tutorial, context)
+        )
     end)
 end
 
@@ -346,7 +381,7 @@ function TutorialService:Reset(player)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
     end
-    data.Tutorial = TutorialFlow.normalizeProgress(nil)
+    data.Tutorial = TutorialFlow.fresh(self._config)
     self._dataService:RequestSave(player, "tutorial_reset")
     self:_push(player)
     return { ok = true }

@@ -129,6 +129,13 @@ function RetentionLogic.newAggregate()
         areasUnlocked = {},
         earnedLevels = {},
         claimedLevels = {},
+        promoCodes = {
+            attributed = 0,
+            redeemed = 0,
+            byCode = {},
+            byCampaign = {},
+            attributedByCampaign = {},
+        },
         exitEarnedLevels = {},
         exitClaimedLevels = {},
         newPlayerExitEarnedLevels = {},
@@ -162,6 +169,27 @@ function RetentionLogic.aggregateEvent(counters, seen, name, ctx, seconds, first
         increment(counters.earnedLevels, math.floor(ctx.level))
     elseif name == "level_claimed" and tonumber(ctx.level) then
         increment(counters.claimedLevels, math.floor(ctx.level))
+    elseif name == "promo_link_attributed" then
+        counters.promoCodes = type(counters.promoCodes) == "table" and counters.promoCodes
+            or { attributed = 0, redeemed = 0, byCode = {}, byCampaign = {} }
+        counters.promoCodes.attributed = (tonumber(counters.promoCodes.attributed) or 0) + 1
+        counters.promoCodes.attributedByCampaign = type(counters.promoCodes.attributedByCampaign)
+                    == "table"
+                and counters.promoCodes.attributedByCampaign
+            or {}
+        increment(counters.promoCodes.attributedByCampaign, ctx.campaign)
+    elseif name == "promo_code_redeemed" then
+        counters.promoCodes = type(counters.promoCodes) == "table" and counters.promoCodes
+            or { redeemed = 0, byCode = {}, byCampaign = {} }
+        counters.promoCodes.redeemed = (tonumber(counters.promoCodes.redeemed) or 0) + 1
+        counters.promoCodes.byCode = type(counters.promoCodes.byCode) == "table"
+                and counters.promoCodes.byCode
+            or {}
+        counters.promoCodes.byCampaign = type(counters.promoCodes.byCampaign) == "table"
+                and counters.promoCodes.byCampaign
+            or {}
+        increment(counters.promoCodes.byCode, ctx.codeId)
+        increment(counters.promoCodes.byCampaign, ctx.campaign)
     end
 
     if name == "tutorial_complete" and not seen.tutorialComplete then
@@ -364,6 +392,7 @@ function RetentionLogic.dashboardSummary(counters)
     local newEnded = tonumber(counters.newPlayerSessionsEnded) or 0
     local starterChoice = type(counters.starterChoice) == "table" and counters.starterChoice or {}
     local choices = tonumber(starterChoice.selected) or 0
+    local promoCodes = type(counters.promoCodes) == "table" and counters.promoCodes or {}
     return {
         sessionsStarted = tonumber(counters.sessionsStarted) or 0,
         sessionsEnded = ended,
@@ -385,6 +414,8 @@ function RetentionLogic.dashboardSummary(counters)
         starterChoiceSelected = choices,
         starterChoiceConversionRate = ratio(choices, starterChoice.shown),
         averageStarterChoiceSeconds = ratio(starterChoice.totalSecondsToSelect, choices),
+        promoCodeAttributed = tonumber(promoCodes.attributed) or 0,
+        promoCodesRedeemed = tonumber(promoCodes.redeemed) or 0,
     }
 end
 

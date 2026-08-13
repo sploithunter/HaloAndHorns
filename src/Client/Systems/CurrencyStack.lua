@@ -13,7 +13,11 @@
 ]]
 
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
+
+local HudLayoutState = require(script.Parent.HudLayoutState)
 
 local CurrencyStack = {}
 local started = false
@@ -26,6 +30,25 @@ local PANES = {
     "lava_coins_pane",
     "ice_coins_pane",
 }
+
+local ORIGIN_PANE = {
+    grass = "grass_coins_pane",
+    desert = "desert_coins_pane",
+    lava = "lava_coins_pane",
+    ice = "ice_coins_pane",
+}
+
+local function currentOriginPane(player)
+    local area = tostring(
+        player:GetAttribute("CurrentArea") or player:GetAttribute("HomeArea") or ""
+    ):lower()
+    for origin, paneName in pairs(ORIGIN_PANE) do
+        if area:find(origin, 1, true) then
+            return paneName
+        end
+    end
+    return ORIGIN_PANE.grass
+end
 
 function CurrencyStack.start()
     if started then
@@ -69,6 +92,7 @@ function CurrencyStack.start()
         scaler.Size = UDim2.fromOffset(140, 0)
         scaler.AutomaticSize = Enum.AutomaticSize.Y
         scaler.BackgroundTransparency = 1
+        scaler.Active = true
         scaler.Parent = stack
         local layout = Instance.new("UIListLayout")
         layout.FillDirection = Enum.FillDirection.Vertical
@@ -78,6 +102,24 @@ function CurrencyStack.start()
         layout.Parent = scaler
         -- ONE scale for the pills: pills + gaps shrink together (tight at any size)
         require(script.Parent.Parent.UI.UIViewportScale).attach(scaler)
+
+        local panes = {}
+        local expanded = false
+        local function applyCompactState()
+            local compact = HudLayoutState.isCompact()
+            stack.Visible = not (compact and player:GetAttribute("CompactMenuExpanded") == true)
+            local originPane = currentOriginPane(player)
+            for order, name in ipairs(PANES) do
+                local pane = panes[name]
+                if pane then
+                    pane.LayoutOrder = order
+                    pane.Visible = not compact
+                        or expanded
+                        or name == "gems_pane"
+                        or name == originPane
+                end
+            end
+        end
 
         for order, name in ipairs(PANES) do
             task.spawn(function()
@@ -92,8 +134,63 @@ function CurrencyStack.start()
                 end
                 pane.LayoutOrder = order
                 pane.Parent = scaler
+                panes[name] = pane
+                applyCompactState()
             end)
         end
+
+        -- The resting mobile view shows only gems + the current origin. Press-and-hold anywhere
+        -- on that compact stack fans the remaining origin currencies open; releasing collapses it.
+        -- Mouse support is intentional so the exact interaction is testable in Studio.
+        local holdSerial = 0
+        local holding = false
+        local holdStartedAt = 0
+        scaler.InputBegan:Connect(function(input)
+            if
+                input.UserInputType ~= Enum.UserInputType.Touch
+                and input.UserInputType ~= Enum.UserInputType.MouseButton1
+            then
+                return
+            end
+            holding = true
+            holdSerial += 1
+            holdStartedAt = os.clock()
+        end)
+        RunService.RenderStepped:Connect(function()
+            if
+                holding
+                and not expanded
+                and os.clock() - holdStartedAt >= 0.28
+                and HudLayoutState.isCompact()
+            then
+                expanded = true
+                applyCompactState()
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(input)
+            if
+                input.UserInputType ~= Enum.UserInputType.Touch
+                and input.UserInputType ~= Enum.UserInputType.MouseButton1
+            then
+                return
+            end
+            holding = false
+            holdSerial += 1
+            if expanded then
+                expanded = false
+                applyCompactState()
+            end
+        end)
+        player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(function()
+            expanded = false
+            applyCompactState()
+        end)
+        player:GetAttributeChangedSignal("CompactMenuExpanded"):Connect(function()
+            expanded = false
+            applyCompactState()
+        end)
+        player:GetAttributeChangedSignal("CurrentArea"):Connect(applyCompactState)
+        player:GetAttributeChangedSignal("HomeArea"):Connect(applyCompactState)
 
         -- Sit money's bottom just ABOVE the lower-left menu buttons. `stack` is unscaled and lives in
         -- MainContainer (which spans the whole screen, only inset-shifted), so a measured pixel offset
@@ -103,13 +200,19 @@ function CurrencyStack.start()
         -- recomputing GuiObject.AbsolutePosition. Reflowing only from the camera event can therefore
         -- write the old portrait button Y into the new landscape canvas, leaving this stack below the
         -- screen until the next rotation. Absolute geometry changes are the authoritative layout signal.
-        local menu = mc:FindFirstChild("menu_buttons_pane")
-            or mc:FindFirstChild("SettingsButton", true)
-        local function reflowAboveButtons()
-            if not (menu and menu.Parent) then
-                menu = mc:FindFirstChild("menu_buttons_pane")
-                    or mc:FindFirstChild("SettingsButton", true)
+        local function activeMenuAnchor()
+            if HudLayoutState.isCompact() then
+                local compact = mc:FindFirstChild("CompactMenuButton")
+                if compact and compact.Visible then
+                    return compact
+                end
             end
+            return mc:FindFirstChild("menu_buttons_pane")
+                or mc:FindFirstChild("SettingsButton", true)
+        end
+        local menu = activeMenuAnchor()
+        local function reflowAboveButtons()
+            menu = activeMenuAnchor()
             local buttonsTop = menu and menu.AbsoluteSize.Y > 0 and menu.AbsolutePosition.Y
                 or (mc.AbsolutePosition.Y + mc.AbsoluteSize.Y * 0.63)
             local posY = (buttonsTop - 8) - mc.AbsolutePosition.Y -- MainContainer maps 1:1 (only shifted)
@@ -132,6 +235,14 @@ function CurrencyStack.start()
 
         mc:GetPropertyChangedSignal("AbsolutePosition"):Connect(scheduleReflow)
         mc:GetPropertyChangedSignal("AbsoluteSize"):Connect(scheduleReflow)
+        player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(scheduleReflow)
+        mc.ChildAdded:Connect(function(child)
+            if child.Name == "CompactMenuButton" then
+                child:GetPropertyChangedSignal("AbsolutePosition"):Connect(scheduleReflow)
+                child:GetPropertyChangedSignal("AbsoluteSize"):Connect(scheduleReflow)
+                scheduleReflow()
+            end
+        end)
         if menu then
             menu:GetPropertyChangedSignal("AbsolutePosition"):Connect(scheduleReflow)
             menu:GetPropertyChangedSignal("AbsoluteSize"):Connect(scheduleReflow)

@@ -470,6 +470,7 @@ local function apply(state)
     stepToken += 1
     clearGuidance()
     if type(state) ~= "table" or state.done then
+        Players.LocalPlayer:SetAttribute("TutorialStepId", nil)
         local wasActive = tutorialActive
         tutorialActive = false
         if wasActive and capsule then
@@ -496,6 +497,7 @@ local function apply(state)
         syncQuestPane() -- hand the spot back to quests
         return
     end
+    Players.LocalPlayer:SetAttribute("TutorialStepId", state.id)
     tutorialActive = true
     syncQuestPane()
     stepLabel.Text = ("TUTORIAL  %d / %d"):format(state.index or 1, state.total or 1)

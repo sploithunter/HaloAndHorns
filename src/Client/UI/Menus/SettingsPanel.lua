@@ -26,6 +26,9 @@ local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local AudioPrefs = require(script.Parent.Parent.Parent.Systems.AudioPrefs)
 local GameplayTips = require(script.Parent.Parent.Parent.Systems.GameplayTips)
 local ChatAnnouncements = require(script.Parent.Parent.Parent.Systems.ChatAnnouncements)
+local HudLayoutState = require(script.Parent.Parent.Parent.Systems.HudLayoutState)
+local SquadDisplayState = require(script.Parent.Parent.Parent.Systems.SquadDisplayState)
+local QuestDisplayState = require(script.Parent.Parent.Parent.Systems.QuestDisplayState)
 -- THE shared panel exterior + pill helpers (window shell, area theming, entry pills).
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 -- THE capsule widget used by the currency HUD + ADMIN button (Jason: ON/OFF toggles use this exact pill).
@@ -202,6 +205,9 @@ function SettingsPanel.new()
             displayTips = true,
             displayChatAnnouncements = true,
             compactMode = false,
+            hudLayout = "auto",
+            squadDisplayMode = "classic",
+            questDisplayMode = "full",
         },
         accessibility = {
             highContrast = false,
@@ -274,6 +280,7 @@ function SettingsPanel:_createUI(parent)
     self:_createPetSettings()
     self:_createHatchSettings()
     self:_createCombatSettings()
+    self:_createPromoCodeSettings()
 
     -- (Admin Tools section removed — the tray's dedicated Admin button + performance-monitor button
     -- already cover this; no need to duplicate it inside Settings. Jason.)
@@ -461,22 +468,17 @@ function SettingsPanel:_createButtonSetting(name, buttonText, layoutOrder, callb
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = settingFrame
 
-    -- Action button
-    local actionButton = Instance.new("TextButton")
-    actionButton.Size = UDim2.new(0, 120, 0, 25)
-    actionButton.Position = UDim2.new(1, -135, 0.5, -12.5)
-    actionButton.BackgroundColor3 = theme.button and theme.button.primary
-        or Color3.fromRGB(0, 120, 180)
-    actionButton.BorderSizePixel = 0
-    actionButton.Text = buttonText
-    actionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    actionButton.TextSize = 12
-    actionButton.Font = Enum.Font.Gotham
-    actionButton.Parent = settingFrame
-
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 6)
-    buttonCorner.Parent = actionButton
+    -- Action button uses the shared glossy capsule path (no one-off rectangular buttons).
+    local actionButton = Pill.button({
+        parent = settingFrame,
+        color = theme.button and theme.button.primary or Color3.fromRGB(0, 120, 180),
+        size = UDim2.new(0, 120, 0, 28),
+        position = UDim2.new(1, -135, 0.5, 0),
+        anchorPoint = Vector2.new(0, 0.5),
+        text = buttonText,
+        textSize = 12,
+        zIndex = 106,
+    })
 
     actionButton.Activated:Connect(function()
         if callback then
@@ -780,16 +782,60 @@ function SettingsPanel:_createUISettings()
         end
     )
 
-    self:_createToggleSetting("Compact Mode", self.settings.ui.compactMode, 24, function(value)
-        self.settings.ui.compactMode = value
-    end)
+    self.settings.ui.hudLayout = HudLayoutState.getPreference()
+    self:_createDropdownSetting(
+        "HUD Layout",
+        self.settings.ui.hudLayout,
+        {
+            { value = "auto", display = "Auto (Device)" },
+            { value = "compact", display = "Compact" },
+            { value = "classic", display = "Classic" },
+        },
+        24,
+        function(value)
+            self.settings.ui.hudLayout = value
+            HudLayoutState.setPreference(value)
+        end
+    )
+
+    self.settings.ui.squadDisplayMode = SquadDisplayState.getPreference()
+    self:_createDropdownSetting(
+        "Squad Display",
+        self.settings.ui.squadDisplayMode,
+        {
+            { value = "classic", display = "Classic" },
+            { value = "bar", display = "Bar" },
+            { value = "circle", display = "Circle" },
+        },
+        25,
+        function(value)
+            self.settings.ui.squadDisplayMode = value
+            SquadDisplayState.setPreference(value)
+        end
+    )
+
+    self.settings.ui.questDisplayMode = QuestDisplayState.getPreference()
+    self:_createDropdownSetting(
+        "Quest Display",
+        self.settings.ui.questDisplayMode,
+        {
+            { value = "full", display = "Full Bar" },
+            { value = "pill", display = "Compact Pill" },
+            { value = "ring", display = "Progress Ring" },
+        },
+        26,
+        function(value)
+            self.settings.ui.questDisplayMode = value
+            QuestDisplayState.setPreference(value)
+        end
+    )
 
     -- Target Highlight: outline the enemy/crystal the SELECTED pet is fighting (SquadHud reads the
     -- TargetHighlightOn attribute). On by default at startup; this just lets you turn it off.
     self:_createToggleSetting(
         "Target Highlight",
         Players.LocalPlayer:GetAttribute("TargetHighlightOn") ~= false,
-        25,
+        27,
         function(value)
             Players.LocalPlayer:SetAttribute("TargetHighlightOn", value)
         end
@@ -975,6 +1021,15 @@ function SettingsPanel:_createCombatSettings()
     )
 end
 
+function SettingsPanel:_createPromoCodeSettings()
+    self:_createSectionHeader("🎁 Rewards", 40)
+    self:_createButtonSetting("Weekly & Creator Codes", "Redeem Code", 41, function()
+        if self.onPromoCodesPanelRequested then
+            self.onPromoCodesPanelRequested()
+        end
+    end)
+end
+
 function SettingsPanel:_openAdminPanel()
     self.logger:info("Opening admin panel")
 
@@ -999,6 +1054,10 @@ end
 -- Set callback for admin panel requests
 function SettingsPanel:SetAdminPanelCallback(callback)
     self.onAdminPanelRequested = callback
+end
+
+function SettingsPanel:SetPromoCodesPanelCallback(callback)
+    self.onPromoCodesPanelRequested = callback
 end
 
 -- Public interface methods
