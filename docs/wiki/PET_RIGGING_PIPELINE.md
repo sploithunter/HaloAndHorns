@@ -78,13 +78,35 @@ A rest-pose render can look "fine" while weights are wrong.
 
 ## Animation sources
 
-- Marketplace animal packs (Unity Asset Store / Sketchfab: bite, pounce, swipe, hit-react, death)
-  are compatible via a **one-time retarget per pack** (Rokoko Blender add-on or Auto-Rig Pro remap)
-  onto the canonical skeleton — after which every clip plays on every pet. Alternative still open:
-  adopt a chosen pack's skeleton *as* the canonical rig before anything is locked in.
+- **VALIDATED (2026-08-13): pack retargeting works.** The Quaternius
+  [Ultimate Animated Animal Pack](https://quaternius.com/packs/ultimateanimatedanimals.html)
+  (CC0, 12 quadrupeds × 12+ clips incl. Attack / Death / HitReact L+R / Gallop / Walk / Idles) was
+  retargeted onto the canonical rig with
+  [tools/rigging/retarget_clip.py](../../tools/rigging/retarget_clip.py): map the pack's bones to
+  canonical bones (chains compressed, e.g. Torso2/3→Spine1/Chest, 8 tail bones→2), copy
+  rest-relative local rotations (`matrix_basis`) per frame plus height-scaled Body root motion.
+  The Wolf's Attack, Gallop, and HitReact play cleanly on the auto-skinned Meshy doggy with no
+  axis corrections. Usage:
+  `blender --background --python tools/rigging/retarget_clip.py -- <pet>.blend <pack>.fbx <ClipName> <out>`
+- The same machinery applies to paid Unity Asset Store packs (e.g. Dogs Big Pack, 74 clips) —
+  `.unitypackage` files are tar.gz archives, so FBX extraction needs no Unity install. One bone-map
+  dict per pack vendor.
+- Sitters use the same bone names via the sitter-variant fit
+  ([tools/rigging/rig_bunny.py](../../tools/rigging/rig_bunny.py)) but want their own clip set —
+  quadruped paw swipes read as face-blocking "bunny boxing" from a sitting rest pose.
 - Anything World ($50/mo, 300 credits; 5/rig + 5/animate) remains an untested comparison for
   rig quality and library breadth — free-tier credits reserved (site was down 2026-08-13; the
   upload-ready dragon GLB sits in the scratch area).
+
+## Planned: vision-annotated landmark stage
+
+Landmark heuristics are the pipeline's weak point (kitty head bone, bunny neck — both were
+landmark failures). Next architecture: render calibrated orthographic side+front views, have a
+vision model place labeled joint markers (Meshy-marker style: chin/shoulders/waist/buttocks/tail/
+forearm/hand/shin/foot) as pixel-coordinate JSON, unproject to 3D (side=(y,z), front=(x,z)), and
+build the skeleton pose-agnostically. Annotator is pluggable — Claude in-session, or a cheap batch
+model (e.g. Grok) for ~100-model runs; the marker JSON schema is the contract, and measured
+verification (dominant-bone regions, vertex displacement) stays as the referee.
 
 ## Roblox integration (next step)
 
