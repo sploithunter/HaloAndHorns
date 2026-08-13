@@ -206,12 +206,11 @@ PetBadge.element_alias.** This entry exists so we stop re-litigating it.
 Pet *attack positioning* is a deliberate combat layer, not just visuals:
 
 - **Per-role attack styles** (`configs/pet_follow.lua attack.role_styles`, resolved by
-  `PetFormation.resolveStyle`). In COMBAT the squad runs "individual" mode — each pet
-  fights in character (tank=static_ring/planted, melee=orbit/weaving, ranged=firing_line,
-  support=orbit, control=pincer). While MINING it runs "team" mode (everyone shares the
-  player's saved formation). **Combat overrides saved settings** (Jason: "during combat
-  all saved settings get overridden and it goes into combat mode"); the player's
-  `PetAttackStyle` is a MINING pref and is ignored in a fight. May revisit later.
+  `PetFormation.resolveStyle`). COMBAT and MINING both run "individual" mode so pets attack
+  crystals with the same readable role language used against enemies: tank=static_ring/planted,
+  melee=planted lunge plus post-hit sidestep, ranged=firing_line/recoil, support=orbit/cast,
+  control=pincer/cast. The old saved `PetAttackStyle` remains readable in existing profile data
+  for compatibility but is no longer exposed or used by the live controller. (Revised 2026-08-13.)
 - **Ring orientation = a herding pole** (`attack.combat_ring_zero`). The attack wheel's
   angle-0 points either `toward_player` (default — pets interpose and PEEL/SHOVE enemies
   away from you) or `away_from_player` (pets take the far side and DRAW enemies toward

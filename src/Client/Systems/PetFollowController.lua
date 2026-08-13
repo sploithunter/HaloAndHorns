@@ -7,8 +7,8 @@
     lerping toward a moving target (momentum feel; frame-rate independent).
 
     Follow:  pets hold a config formation behind the player.
-    Attack:  pets SURROUND the target in an animated ring (orbit/static_ring/lunge).
-             Switch live with localPlayer:SetAttribute("PetAttackStyle", "lunge").
+    Attack:  pets use role-authored formations plus server-hit choreography for both
+             crystals and enemies. Ranged pets preserve their formation-snipe/standoff kite.
 
     Damage + target assignment are server-side; this is pure visualisation. The
     owner reports clean, gait-free transforms through the server; every other
@@ -307,10 +307,9 @@ function PetFollowController.start()
     local flinchState = setmetatable({}, { __mode = "k" })
     local lastDmg = setmetatable({}, { __mode = "k" })
 
-    -- Attack flourishes (layered like the gait): one per target type, resolved once.
-    -- mining = breakables/ore (spin), combat = enemies (face for now). See AttackAnim.
+    -- Legacy continuous attack flourishes are resolved for backward-compatible config loading,
+    -- but shipped mining/combat blocks are both `none`. Real-hit packets own visible attacks.
     local animCfg = (config.attack and config.attack.anim) or {}
-    local miningAnim = AttackAnim.resolve(animCfg.mining)
     local combatAnim = AttackAnim.resolve(animCfg.combat)
 
     -- Real-hit choreography: Combat_PetHit starts one short, role-specific motion envelope. The
@@ -890,11 +889,10 @@ function PetFollowController.start()
                 applyMotion(model, cleanPivot, stepDist, anim)
             end
 
-            -- Full attack config (so every style's params reach attackOffset). The per-pet STYLE is
-            -- resolved in the group loop below (role-driven in "individual" combat mode, shared in
-            -- team/mining mode). PetAttackStyle is a saved FARM formation and is ignored in combat.
+            -- Full attack config (so every style's params reach attackOffset). Mining and combat
+            -- both use authored role choreography; the old saved farm style is retained in profile
+            -- data for compatibility but no longer drives the live target formation.
             local attackCfg = table.clone(config.attack)
-            local styleOverride = attrs:GetAttribute("PetAttackStyle")
 
             local groups = {} -- id -> { center, pets = {} }   (melee/tank: orbit the target)
             local followers = {}
@@ -932,7 +930,12 @@ function PetFollowController.start()
                         Vector3.new(cf.Position.X - c.X, 0, cf.Position.Z - c.Z).Magnitude
                     local formationDepth =
                         Vector3.new(petPos.X - cf.Position.X, 0, petPos.Z - cf.Position.Z).Magnitude
-                    kiteSnipe = (playerToTarget + formationDepth) <= attackRangeOf(pet)
+                    kiteSnipe = PetFormation.canSnipeFromFormation(
+                        playerToTarget,
+                        formationDepth,
+                        attackRangeOf(pet),
+                        true
+                    )
                 end
                 if kiteSnipe then
                     -- Ranged in range: hold the player formation and fire, facing the target.
@@ -1081,15 +1084,11 @@ function PetFollowController.start()
                         strikeTarget[pet] = g.model
                         strikeAngle[pet] = 0
                     end
-                    -- per-pet style: role-driven in "individual" mode, team-shared otherwise (g.isEnemy
-                    -- picks the combat vs mining mode lane). Mutating .style is cheap — no per-frame alloc.
-                    attackCfg.style = PetFormation.resolveStyle(
-                        config.attack,
-                        petRoleId(pet),
-                        g.isEnemy,
-                        styleOverride
-                    )
-                    attackCfg.angle_offset = g.isEnemy and (strikeAngle[pet] or 0) or 0
+                    -- Universal target choreography: crystals use the same role formation as enemies.
+                    -- Mutating .style is cheap — no per-frame allocation.
+                    attackCfg.style =
+                        PetFormation.resolveStyle(config.attack, petRoleId(pet), g.isEnemy)
+                    attackCfg.angle_offset = strikeAngle[pet] or 0
                     local off = PetFormation.attackOffset(gi, gcount, phase, attackCfg)
                     -- Role standoff: ranged/support hold further out (push the slot radially
                     -- away from the target) so melee crowds in and ranged kites at distance.
@@ -1165,10 +1164,8 @@ function PetFollowController.start()
                     end
                     local toC = Vector3.new(g.center.X - target.X, 0, g.center.Z - target.Z)
                     local dir = toC.Magnitude > 0.01 and toC.Unit or upFwd
-                    -- Mining (breakables) spins; combat (enemies) faces the target. The flourish
-                    -- layers on the facing — a spinning pet still orients to its prey underneath.
-                    local anim = g.isEnemy and combatAnim or miningAnim
-                    moveToward(pet, target, dir, attackRate, anim)
+                    -- Both mining and combat remain planted between real server-hit envelopes.
+                    moveToward(pet, target, dir, attackRate, combatAnim)
                 end
 
                 -- Mining impact FX: play a library impact at the ore on cadence (test bed + visual).

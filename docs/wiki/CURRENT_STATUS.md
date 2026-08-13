@@ -603,8 +603,13 @@ motion state is weak-keyed and sampled inside the existing RenderStepped pass—
 or network packet. Imported orientation corrections remain the final CFrame composition. Melee
 pets hold stable combat slots between swings rather than continuously orbiting, so Doggy's
 server-timed contact and recovery cannot disappear inside unrelated circling motion. After each
-completed Doggy strike its resting slot advances 10 degrees around the current enemy; odd/even
-equip slots rotate opposite ways and a new target resets the accumulated offset.
+completed melee strike its resting slot advances 10 degrees around the current target; odd/even
+equip slots rotate opposite ways and a new target resets the accumulated offset. Tanks, ranged,
+support, and control pets retain their distinct slam, recoil, cast, and control choreography.
+Crystal work now uses that same role formation, authoritative-hit envelope, and sidestep path.
+The old saved mining orbit and continuous pounce flourish no longer drive live pet motion.
+Blaster kiting is explicitly preserved: a ranged pet already in range fires from its player-relative
+formation slot; one outside range still advances to its authored standoff before firing.
 
 **Current approach (working, pending user confirmation).** After an earlier
 service-movement attempt let pets fall off the map (it dropped the legacy
@@ -612,9 +617,9 @@ teleport-watchdog), the retry sidesteps the whole physics-fall class: the server
 **anchors** each pet (anchored parts can't fall/drift), and the client
 `PetFollowController` sets each pet's CFrame every RenderStepped (smooth,
 frame-rate-independent lerp). Follow = config formation; **attack = surround the
-target in an animated ring** (orbit / static_ring / lunge — `PetFormation.attackOffset`,
-headless-tested; the saved `PetAttackStyle` switches farming formation while role choreography
-owns combat).
+target with its authored role formation and real-hit motion — `PetFormation.attackOffset` plus
+`PetAttackMotion`, headless-tested. Mining and combat share that role language; old saved
+`PetAttackStyle` values remain profile-compatible but no longer drive or appear in the live UI.
 Server keeps damage (`CombatService:ResolvePetDamage`) + target leash. Verified
 live: pets stable + upright + on-map across 35s, following in formation; mining
 works (AutomationSuite 69/69). **Open follow-up:** multiplayer position replication

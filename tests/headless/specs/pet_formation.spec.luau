@@ -399,10 +399,25 @@ return function()
             expect(PetFormation.resolveStyle(attack, "control", true)).to.equal("orbit")
         end)
 
-        it("player override applies while MINING (their saved farm formation)", function()
-            expect(PetFormation.resolveStyle(attack, "ranged", false, "swarm")).to.equal("swarm")
-            expect(PetFormation.resolveStyle(attack, "tank", false, "swarm")).to.equal("swarm")
+        it("individual mining ignores a legacy saved override and stays role-readable", function()
+            attack.mode.mining = "individual"
+            expect(PetFormation.resolveStyle(attack, "ranged", false, "swarm")).to.equal(
+                "firing_line"
+            )
+            expect(PetFormation.resolveStyle(attack, "tank", false, "swarm")).to.equal(
+                "static_ring"
+            )
         end)
+
+        it(
+            "retains legacy mining overrides only when config explicitly selects team mode",
+            function()
+                attack.mode.mining = "team"
+                expect(PetFormation.resolveStyle(attack, "ranged", false, "swarm")).to.equal(
+                    "swarm"
+                )
+            end
+        )
 
         it("player override is IGNORED in combat (combat mode owns it -> per-role)", function()
             -- a saved "swarm" mining pref does not leak into a fight; the tank still plants
@@ -423,6 +438,20 @@ return function()
 
         it("defaults to orbit with no config", function()
             expect(PetFormation.resolveStyle(nil, "tank", true)).to.equal("orbit")
+        end)
+    end)
+
+    describe("PetFormation.canSnipeFromFormation (protected blaster kiting)", function()
+        it("holds a ranged pet in player formation when its slot is already in range", function()
+            expect(PetFormation.canSnipeFromFormation(18, 7, 28, true)).to.equal(true)
+        end)
+
+        it("advances the ranged pet when its formation slot is outside attack range", function()
+            expect(PetFormation.canSnipeFromFormation(22, 7, 28, true)).to.equal(false)
+        end)
+
+        it("never applies the ranged hold to a non-kiting pet", function()
+            expect(PetFormation.canSnipeFromFormation(5, 1, 28, false)).to.equal(false)
         end)
     end)
 

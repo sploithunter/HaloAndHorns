@@ -67,6 +67,19 @@ function PetFormation.targetPosition(frame, index, count, formation)
     }
 end
 
+-- A ranged/support/control pet may keep its normal player-relative formation slot and attack from
+-- there when that slot is already in range. This is the pure contract behind the controller's
+-- kiting seam: otherwise it advances into the target group and holds at its authored standoff.
+function PetFormation.canSnipeFromFormation(playerToTarget, formationDepth, attackRange, canKite)
+    if canKite ~= true then
+        return false
+    end
+    local targetDistance = math.max(0, tonumber(playerToTarget) or 0)
+    local depth = math.max(0, tonumber(formationDepth) or 0)
+    local range = math.max(0, tonumber(attackRange) or 0)
+    return (targetDistance + depth) <= range
+end
+
 -- Attack offset RELATIVE TO the target center, so multiple pets attacking the same thing
 -- arrange around it instead of stacking on one point. `phase` (elapsed seconds) drives the
 -- animation. Returns { x, y, z } to add to the target's world position. 1-based index.
@@ -79,21 +92,18 @@ end
 --   "firing_line" — a row on one side facing the target, staggered recoil (a volley)
 --   "swarm"       — a deterministic jitter cloud buzzing around the target
 -- Resolve which attack STYLE a single pet uses.
---   COMBAT enters its own "combat mode": the player's SAVED settings (their PetAttackStyle /
---   mining-formation pick) are OVERRIDDEN, and the squad runs the per-role styles — tank plants,
---   blaster lines up, melee plants between real-hit lunges (attack.role_styles[role], with a
---   per-species exception). Jason:
---   "during combat all saved settings get overridden and it goes into combat mode." (We may later
---   let saved prefs drive combat too; for now combat owns it.)
---   FARMING uses the player's pick: their saved PetAttackStyle is their mining formation, falling
---   back to the team style.
+--   In shipped config BOTH combat and mining use "individual" mode: the squad runs the per-role
+--   styles — tank plants, blaster lines up, melee plants between real-hit lunges. This gives
+--   crystals and enemies one attack language. A legacy player override is consulted only when a
+--   future config explicitly puts that lane back in team mode.
 -- `isCombat` picks the lane (attack.mode.combat vs attack.mode.mining). Pure.
 function PetFormation.resolveStyle(attack, role, isCombat, playerOverride, speciesStyle)
     attack = attack or {}
     local modeKey = isCombat and "combat" or "mining"
     local mode = (attack.mode and attack.mode[modeKey]) or "team"
-    -- Mining only: the player's saved formation pick wins (ignored in combat — see above).
-    if not isCombat and playerOverride and playerOverride ~= "" then
+    -- Legacy mining preference only applies to a team-style lane. Individual mode is authored,
+    -- role-readable choreography and therefore cannot be overridden per player.
+    if mode ~= "individual" and not isCombat and playerOverride and playerOverride ~= "" then
         return playerOverride
     end
     if mode == "individual" then
