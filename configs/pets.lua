@@ -2453,6 +2453,9 @@ local petConfig = {
         },
         -- BEAR FAMILY
         bear = {
+            -- Rigged 2026-08-13: Meshy re-rig (conveyor batch 1), rig asset 78950714401323;
+            -- walk minted via the direct converter (see PET_RIGGING_PIPELINE.md).
+            rig_class = "quadruped",
             origin = "grass", -- backfilled from egg SSOT (egg_sources.pet_weights + realm_area_eggs)
             display_name = "Bear",
             category = "forest",
@@ -3224,6 +3227,9 @@ local petConfig = {
 
         -- DRAGON FAMILY
         dragon = {
+            -- Rigged 2026-08-13: Meshy re-rig (conveyor batch 1), rig asset 135346027250599;
+            -- walk minted via the direct converter (see PET_RIGGING_PIPELINE.md).
+            rig_class = "quadruped",
             origin = "grass", -- backfilled from egg SSOT (egg_sources.pet_weights + realm_area_eggs)
             display_name = "Dragon",
             category = "mythical",
@@ -3279,6 +3285,9 @@ local petConfig = {
 
         -- KITTY FAMILY
         kitty = {
+            -- Rigged 2026-08-13: Meshy re-rig (conveyor batch 1), rig asset 108956356647779;
+            -- walk minted via the direct converter (see PET_RIGGING_PIPELINE.md).
+            rig_class = "quadruped",
             huge_face = { y = 0.1, dist = 1.3 }, -- HUGE inventory close-up (dialed live via viewport capture)
             origin = "grass", -- backfilled from egg SSOT (egg_sources.pet_weights + realm_area_eggs)
             display_name = "Kitty",

@@ -71,6 +71,21 @@
       "rig_asset": "107365459502482",
       "skeleton": "quadruped",
       "prebaked": false
+    },
+    "dragon": {
+      "rig_asset": "135346027250599",
+      "skeleton": "quadruped",
+      "prebaked": false
+    },
+    "bear": {
+      "rig_asset": "78950714401323",
+      "skeleton": "quadruped",
+      "prebaked": false
+    },
+    "kitty": {
+      "rig_asset": "108956356647779",
+      "skeleton": "quadruped",
+      "prebaked": false
     }
   },
   "zips": {

@@ -105,6 +105,10 @@ return {
             attack = "rbxassetid://72325480360761",
             run = "rbxassetid://115727517942095",
         },
+        -- Conveyor batch 1 (2026-08-13): each pinned to its own direct-converter walk.
+        bear = { walk = "rbxassetid://78543048164211" },
+        kitty = { walk = "rbxassetid://123311784869667" },
+        dragon = { walk = "rbxassetid://78019637212851" },
     },
 
     -- Per-class playback knobs (kept OUT of rig_classes so clip tables stay pure ids).

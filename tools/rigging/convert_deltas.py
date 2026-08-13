@@ -5,8 +5,8 @@ Usage: python3 convert_deltas.py <deltas.json> <out.json>
 import json, math, sys
 
 S = "/private/tmp/claude-501/-Users-jason-Documents-HaloAndHorns/35c99d45-e986-4baa-9686-67954732ee42/scratchpad"
-L = json.load(open(f"{S}/blender_rests.json"))
-C = json.load(open(f"{S}/roblox_rests.json"))
+L = json.load(open(sys.argv[4] if len(sys.argv) > 4 else f"{S}/blender_rests.json"))
+C = json.load(open(sys.argv[5] if len(sys.argv) > 5 else f"{S}/roblox_rests.json"))
 DD = json.load(open(sys.argv[1]))
 
 def qmul(a, b):
