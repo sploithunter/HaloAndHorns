@@ -3171,6 +3171,9 @@ local petConfig = {
         doggy = {
             huge_face = { y = 0.06, dist = 0.95 }, -- HUGE inventory close-up (dialed live via viewport capture)
             origin = "grass", -- backfilled from egg SSOT (egg_sources.pet_weights + realm_area_eggs)
+            -- Rigged 2026-08-13: Meshy re-rig (also replaces the holed static neck), rig asset
+            -- 107365459502482, walk clip 137922526797653; source Meshy_AI_model_Animation_Walking_withSkin.glb.
+            rig_class = "quadruped",
             display_name = "Doggy",
             category = "domestic",
             rarity = "uncommon",

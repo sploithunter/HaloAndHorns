@@ -56,6 +56,8 @@ local RIGS: { [string]: { rig: number, height: number, tex: string? } } = {
 	cinder_golemite = { rig = 104860498147921, height = 2.40, tex = "rbxassetid://117265727136114" },
 	cinderling_imp = { rig = 111624221245800, height = 2.66 },
 	camel = { rig = 90279769761323, height = 2.62 },
+	-- doggy = { rig = 107365459502482, height = MEASURE_ME }, -- Meshy re-rig 2026-08-13; measure the
+	-- static prebake bbox Y in Studio first (runbook step 6), then uncomment with the real height.
 }
 
 for petName, spec in pairs(RIGS) do

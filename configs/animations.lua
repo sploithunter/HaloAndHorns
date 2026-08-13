@@ -62,20 +62,26 @@ return {
         },
         quadruped = {
             -- Meshy's quadruped library ships ONE clip (walking); the rig is what matters.
-            -- Walk doubles as run at class_knobs.quadruped.run_speed_mult tempo. No idle
-            -- (standing pose) or attack clips yet — richer sets can come from any source,
-            -- the skeleton is standardized (verified: lion + bear diff = identical 27 bones).
+            -- The rest of the set is retargeted from the CC0 Quaternius Ultimate Animated
+            -- Animal Pack onto the standardized Meshy quadruped skeleton (verified: lion +
+            -- bear diff = identical 27 bones) via tools/rigging (2026-08-13, in-place,
+            -- rotations only — code owns locomotion/lunge translation).
+            idle = {
+                "rbxassetid://124699506786927", -- quadruped_idle_wolfpack
+                "rbxassetid://94787731028108", -- quadruped_idle2_wolfpack
+            },
             walk = {
                 "rbxassetid://91206058452622", -- quadruped_walk (ashmane lion)
                 "rbxassetid://96781308918926", -- quadruped_walk_nightdrake
                 "rbxassetid://87604652590062", -- quadruped_walk_lioncub
                 "rbxassetid://100017650497490", -- quadruped_walk_camel (GLB zip -> rig_glb_to_fbx lane)
+                "rbxassetid://137922526797653", -- quadruped_walking_doggy (Meshy re-rig)
             },
-            run = {
-                "rbxassetid://91206058452622",
-                "rbxassetid://96781308918926",
-                "rbxassetid://87604652590062",
-            },
+            run = "rbxassetid://107135954760401", -- quadruped_gallop_wolfpack (real gallop)
+            attack = "rbxassetid://113602789817726", -- quadruped_attack_wolfpack (bite lunge)
+            -- Banked, unwired until hit-react playback lands in PetAnimator:
+            -- quadruped_hitreact_left_wolfpack 137119350893721,
+            -- quadruped_hitreact_right_wolfpack 135965019918340.
         },
     },
 
@@ -92,7 +98,9 @@ return {
     -- Per-class playback knobs (kept OUT of rig_classes so clip tables stay pure ids).
     class_knobs = {
         quadruped = {
-            run_speed_mult = 1.6, -- the walk clip played at run tempo
+            -- Was 1.6 when run reused the walk clip at tempo; the wired run is now a
+            -- real gallop cycle, so play it at authored speed.
+            run_speed_mult = 1.0,
         },
     },
 

@@ -18,5 +18,12 @@
   "quadruped_walk_lioncub": "87604652590062",
   "biped_walk_molten_sentinel": "139269964220454",
   "biped_walk_cinderling_imp": "107700051813744",
-  "quadruped_walk_camel": "100017650497490"
+  "quadruped_walk_camel": "100017650497490",
+  "quadruped_walking_doggy": "137922526797653",
+  "quadruped_attack_wolfpack": "113602789817726",
+  "quadruped_gallop_wolfpack": "107135954760401",
+  "quadruped_hitreact_left_wolfpack": "137119350893721",
+  "quadruped_hitreact_right_wolfpack": "135965019918340",
+  "quadruped_idle2_wolfpack": "94787731028108",
+  "quadruped_idle_wolfpack": "124699506786927"
 }
