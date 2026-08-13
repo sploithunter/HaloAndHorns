@@ -884,8 +884,8 @@ function PetFollowController.start()
             end
 
             -- Full attack config (so every style's params reach attackOffset). The per-pet STYLE is
-            -- resolved in the group loop below (role-driven in "individual" mode, shared in "team");
-            -- a PetAttackStyle attribute still force-overrides the whole squad for live testing.
+            -- resolved in the group loop below (role-driven in "individual" combat mode, shared in
+            -- team/mining mode). PetAttackStyle is a saved FARM formation and is ignored in combat.
             local attackCfg = table.clone(config.attack)
             local styleOverride = attrs:GetAttribute("PetAttackStyle")
 

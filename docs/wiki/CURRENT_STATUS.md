@@ -600,7 +600,9 @@ owner and nearby observers. Role defaults cover the roster; the FTUE quartet is 
 distinct: Doggy lunges, Bear body-slams, Kitty recoils with its existing projectile, and Bunny
 casts/hops. Damage, hit cadence, targeting, and result text remain server-authoritative. The
 motion state is weak-keyed and sampled inside the existing RenderStepped pass—no new per-pet loop
-or network packet. Imported orientation corrections remain the final CFrame composition.
+or network packet. Imported orientation corrections remain the final CFrame composition. Melee
+pets hold stable combat slots between swings rather than continuously orbiting, so Doggy's
+server-timed contact and recovery cannot disappear inside unrelated circling motion.
 
 **Current approach (working, pending user confirmation).** After an earlier
 service-movement attempt let pets fall off the map (it dropped the legacy
@@ -609,7 +611,8 @@ teleport-watchdog), the retry sidesteps the whole physics-fall class: the server
 `PetFollowController` sets each pet's CFrame every RenderStepped (smooth,
 frame-rate-independent lerp). Follow = config formation; **attack = surround the
 target in an animated ring** (orbit / static_ring / lunge — `PetFormation.attackOffset`,
-headless-tested; live style switch via `localPlayer:SetAttribute("PetAttackStyle", …)`).
+headless-tested; the saved `PetAttackStyle` switches farming formation while role choreography
+owns combat).
 Server keeps damage (`CombatService:ResolvePetDamage`) + target leash. Verified
 live: pets stable + upright + on-map across 35s, following in formation; mining
 works (AutomationSuite 69/69). **Open follow-up:** multiplayer position replication

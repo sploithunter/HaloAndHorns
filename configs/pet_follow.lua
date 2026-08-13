@@ -126,13 +126,13 @@ return {
         -- Starting split (Jason): farm as a team cluster, then break into role positions in a fight.
         mode = { mining = "team", combat = "individual" },
         -- Per-role attack styles for "individual" mode. Role = PetRole / pet_roles.by_type.
-        -- (A per-species override + the PetAttackStyle player attribute both still win over this.)
+        -- (A per-species override still wins over this. The saved PetAttackStyle is deliberately
+        -- mining-only: combat choreography must stay role-readable.)
         role_styles = {
             tank = "static_ring", -- a wall holds the line, doesn't pirouette
-            -- melee = orbit (not lunge): the constant circling reads as DODGING/weaving — an agile,
-            -- never-still melee (superhero feel) — where lunge read as a telegraphed brute. One pet
-            -- circling its OWN target is "slippery", not the whole-team swirl that was the problem.
-            melee = "orbit",
+            -- Real-hit motion supplies the action. Holding a stable slot between swings makes the
+            -- actual lunge readable; continuous orbit visually swallowed it and looked unchanged.
+            melee = "static_ring",
             ranged = "firing_line", -- stands back and volleys (blaster)
             support = "orbit", -- weaves around the squad
             control = "pincer", -- flanks to set up debuffs
@@ -246,7 +246,16 @@ return {
                 },
             },
             by_type = {
-                doggy = { depth = 2.15, duration = 0.32, roll = 0.12 },
+                -- Doggy is the first melee lesson, so exaggerate its contact/rebound enough to
+                -- survive mobile scale: plant -> snap forward on the real hit -> visibly recover.
+                doggy = {
+                    depth = 3.15,
+                    recoil = 0.62,
+                    height = 0.38,
+                    pitch = 0.20,
+                    roll = 0.18,
+                    duration = 0.58,
+                },
                 bear = { depth = 1.35, drop = 0.56, height = 0.48, duration = 0.52 },
                 kitty = { recoil = 1.05, height = 0.24, pitch = 0.18 },
                 bunny = { height = 0.92, yaw = 0.28, roll = 0.18 },

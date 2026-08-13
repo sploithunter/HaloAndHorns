@@ -10,6 +10,9 @@
   the client, and splash neighbors do not restart the source pet's swing.
 - Layered strike motion into the existing local and remote render passes, including rigged pets,
   while preserving imported model orientation at the final pivot. Added headless curve coverage.
+- Live dummy review caught continuous melee orbit masking the hit envelope. Melee now holds a
+  stable combat slot between authoritative swings, and Doggy's contact/rebound is deliberately
+  larger and longer so the first melee lesson reads at mobile scale.
 
 ## 2026-08-08 — Beta Byte public campaign opened
 

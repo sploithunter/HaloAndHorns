@@ -1,6 +1,7 @@
 -- Real-hit pet attack choreography: role resolution, starter overrides, and clean settling.
 
 local PetAttackMotion = loadModule("src/Shared/Game/PetAttackMotion.lua")
+local shippedConfig = loadModule("configs/pet_follow.lua")
 
 local CONFIG = {
     enabled = true,
@@ -17,6 +18,20 @@ local CONFIG = {
 }
 
 return function()
+    describe("shipped attack choreography", function()
+        it("plants melee pets so real-hit motion is not hidden by continuous orbit", function()
+            expect(shippedConfig.attack.role_styles.melee).to.equal("static_ring")
+        end)
+
+        it("gives Doggy a mobile-readable hit and recovery envelope", function()
+            local doggy =
+                PetAttackMotion.resolve(shippedConfig.attack.strike_motion, "melee", "doggy")
+            expect(doggy.depth >= 3).to.equal(true)
+            expect(doggy.recoil >= 0.5).to.equal(true)
+            expect(doggy.duration >= 0.5).to.equal(true)
+        end)
+    end)
+
     describe("PetAttackMotion.resolve", function()
         it("uses a role profile and lets a starter species override it", function()
             local generic = PetAttackMotion.resolve(CONFIG, "melee", "other")

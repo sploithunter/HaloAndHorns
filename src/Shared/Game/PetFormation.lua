@@ -81,7 +81,8 @@ end
 -- Resolve which attack STYLE a single pet uses.
 --   COMBAT enters its own "combat mode": the player's SAVED settings (their PetAttackStyle /
 --   mining-formation pick) are OVERRIDDEN, and the squad runs the per-role styles — tank plants,
---   blaster lines up, melee weaves (attack.role_styles[role], with a per-species exception). Jason:
+--   blaster lines up, melee plants between real-hit lunges (attack.role_styles[role], with a
+--   per-species exception). Jason:
 --   "during combat all saved settings get overridden and it goes into combat mode." (We may later
 --   let saved prefs drive combat too; for now combat owns it.)
 --   FARMING uses the player's pick: their saved PetAttackStyle is their mining formation, falling
