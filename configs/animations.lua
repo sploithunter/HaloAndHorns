@@ -66,22 +66,26 @@ return {
             -- Animal Pack onto the standardized Meshy quadruped skeleton (verified: lion +
             -- bear diff = identical 27 bones) via tools/rigging (2026-08-13, in-place,
             -- rotations only — code owns locomotion/lunge translation).
+            -- Direct-converter clips (tools/rigging, live-verified lineup 2026-08-13).
+            -- Retarget-lane clips use the pitch-inverted formula; Meshy-authored
+            -- clips (walks) use the base formula — see PET_RIGGING_PIPELINE.md.
             idle = {
-                "rbxassetid://124699506786927", -- quadruped_idle_wolfpack
-                "rbxassetid://94787731028108", -- quadruped_idle2_wolfpack
+                "rbxassetid://120395367179101", -- quadruped_idle (weight shifts)
+                "rbxassetid://115550781975626", -- quadruped_idle2 (head-low sniff)
             },
             walk = {
                 "rbxassetid://91206058452622", -- quadruped_walk (ashmane lion)
                 "rbxassetid://96781308918926", -- quadruped_walk_nightdrake
                 "rbxassetid://87604652590062", -- quadruped_walk_lioncub
                 "rbxassetid://100017650497490", -- quadruped_walk_camel (GLB zip -> rig_glb_to_fbx lane)
-                "rbxassetid://137922526797653", -- quadruped_walking_doggy (Meshy re-rig)
+                "rbxassetid://75670337695139", -- quadruped_walking_doggy (direct converter, live-verified)
             },
-            run = "rbxassetid://107135954760401", -- quadruped_gallop_wolfpack (real gallop)
-            attack = "rbxassetid://113602789817726", -- quadruped_attack_wolfpack (bite lunge)
+            run = "rbxassetid://128064023011880", -- quadruped_gallop (wolf source)
+            attack = "rbxassetid://111937572695311", -- quadruped_attack (wolf bite lunge, in place)
             -- Banked, unwired until hit-react playback lands in PetAnimator:
-            -- quadruped_hitreact_left_wolfpack 137119350893721,
-            -- quadruped_hitreact_right_wolfpack 135965019918340.
+            -- quadruped_hitreact_left 111085424878340,
+            -- quadruped_hitreact_right 76199902341988.
+            -- Flavor bank: quadruped_headbutt_stag 81713302701738 (hooved pets).
         },
     },
 
@@ -92,6 +96,14 @@ return {
     clip_overrides = {
         cinderling_imp = {
             idle = "rbxassetid://135125543047142", -- MeshyLazyIdle (no lift)
+        },
+        doggy = {
+            -- pin to its own Meshy walk (direct converter); pool clips from the July
+            -- anim2rbx lane read mirrored on this rig (Blender 5.1 conversion diff)
+            walk = "rbxassetid://75670337695139",
+            -- dog-flavored combat (ShibaInu source) over the wolf class defaults
+            attack = "rbxassetid://72325480360761",
+            run = "rbxassetid://115727517942095",
         },
     },
 

@@ -65,6 +65,35 @@ Pose checks are **measured, not eyeballed**: dominant-bone counts per region and
 vertex displacement (e.g. kitty ear tip must travel ~0.4 units during the head-shake segment).
 A rest-pose render can look "fine" while weights are wrong.
 
+## The clip converter (2026-08-13, replaces anim2rbx for new clips)
+
+Blender-5.1 FBX exports broke the July anim2rbx+180°Y lane: clips played with scrambled
+per-bone motion axes (gait phases fine, vertical amplitude ~6×; diagnosed by tracing foot
+positions against a Blender ground-truth render — never eyeball-debug this class of bug).
+Replacement: **direct KeyframeSequence export**, no FBX/anim2rbx in the clip path:
+
+1. [tools/rigging/export_pose_deltas.py](../../tools/rigging/export_pose_deltas.py) /
+   [mint_clips_direct.py](../../tools/rigging/mint_clips_direct.py) (Blender) — dump per-frame
+   bone-local pose deltas; the mint variant first world-delta-retargets a Quaternius clip onto
+   the Meshy rig (`SRC_FBX` + `CLIP_SPEC` env vars select source/clips).
+2. [tools/rigging/convert_deltas.py](../../tools/rigging/convert_deltas.py) — the verified
+   formula: world-space rotation deltas, conjugated by `Ry(180)·Rx(-90)`, vertical-axis
+   component negated, applied onto the Roblox rig's rest world frames, **rotations only**
+   (engine multiplies Pose translations by the rig's ScaleTo factor — a 632×-scaled prebake
+   turned half-stud offsets into a map-sized dog). Requires the rig's bone rest dumps
+   (blender_rests / roblox_rests JSONs, one pair per rig class).
+   **Two lanes, two signs**: Meshy-authored clips (walk) use the base formula; Quaternius-
+   retargeted clips additionally need the pitch axis negated (`invpitch` arg) — live-verified
+   both ways, cause of the sign split not fully explained, the in-game lineup is the oracle.
+3. [tools/rigging/build_keyframes.luau](../../tools/rigging/build_keyframes.luau) (lune) —
+   poses JSON → KeyframeSequence rbxm → `scripts/upload_animations.js`.
+
+Wired set (all live-verified in a 7-dog lineup): idle ×2, walk (doggy-pinned), gallop,
+attack, hit-reacts banked; class defaults are wolf-sourced, doggy overrides use ShibaInu
+dog-flavored attack/gallop. Flavor plan: the 12 Quaternius animals share one skeleton, so
+per-species sets (horse for hooved, headbutt/kick for stag/goat/camel — stag headbutt already
+banked) are one `CLIP_SPEC` run each, assigned via `clip_overrides`.
+
 ## Gotchas learned
 
 - **Meshy origin is the mesh center, not the feet** (feet ≈ −H/2). Ground planes, and eventually
