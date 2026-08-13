@@ -45,6 +45,16 @@ for denied in $ROJO_UPLOAD_DENYLIST; do
     fi
 done
 
+# Prebake guard: while the Models.rbxm mapping is disabled for the rigged-pet
+# migration, a rojo-upload would ship an EMPTY Assets.Models (no prebakes, no
+# rigs). Re-capture + re-enable per assets/place/PREBAKE_MAPPING_DISABLED.md.
+if [ -f "assets/place/PREBAKE_MAPPING_DISABLED.md" ]; then
+    echo "ERROR: refusing to rojo-upload: the Models.rbxm prebake mapping is disabled." >&2
+    echo "  See assets/place/PREBAKE_MAPPING_DISABLED.md for the re-enable checklist," >&2
+    echo "  or publish the game place with:  mise run publish-studio" >&2
+    exit 1
+fi
+
 echo "Release target: universe ${ROBLOX_UNIVERSE_ID}, place ${ROBLOX_PLACE_ID} (Open Cloud)"
 
 if [ -n "${DRY_RUN:-}" ]; then

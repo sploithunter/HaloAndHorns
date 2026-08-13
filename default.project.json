@@ -20,10 +20,7 @@
     },
     "ReplicatedStorage": {
       "Assets": {
-        "$className": "Folder",
-        "Models": {
-          "$path": "assets/place/Models.rbxm"
-        }
+        "$className": "Folder"
       },
       "Shared": {
         "$path": "src/Shared"

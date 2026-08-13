@@ -1,5 +1,15 @@
 # Log
 
+## 2026-08-13 — Prebake mapping disabled for the rigged-pet migration
+
+- Removed the `assets/place/Models.rbxm` mapping from `default.project.json` so Studio owns
+  `Assets.Models` while dozens of rigged pets are onboarded — Rojo re-serves can no longer clobber
+  hand-dropped rigged prebakes with the stale snapshot (the documented ASSET_PREBAKE post-mortem).
+- Guardrails: `assets/place/PREBAKE_MAPPING_DISABLED.md` carries the re-enable checklist, and
+  `scripts/release.sh` refuses rojo-upload while that marker exists (game-place publishing already
+  goes through `mise run publish-studio`, which preserves Studio-owned prebakes). CI fast-gate
+  `rojo build` verified green with the mapping removed.
+
 ## 2026-08-13 — Canonical quadruped rig: shared attack clips across pets
 
 - Built the headless-Blender pet rigging pipeline (`tools/rigging/rig_pet.py`): one command welds a
