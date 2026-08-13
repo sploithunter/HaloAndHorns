@@ -13,9 +13,13 @@
 - Live dummy review caught continuous melee orbit masking the hit envelope. Melee now holds a
   stable combat slot between authoritative swings, and Doggy's contact/rebound is deliberately
   larger and longer so the first melee lesson reads at mobile scale.
-- Doggy now follows each completed lunge with a discrete 10-degree ring sidestep. Odd/even squad
+- Melee pets now follow each completed lunge with a discrete 10-degree ring sidestep. Odd/even squad
   slots choose opposite rotation directions, the offset accumulates only during that fight, and
   changing targets resets it—agile repositioning without restoring continuous orbit.
+- Unified crystal and enemy attack presentation: mining now uses the same role formation,
+  server-hit lunge/recovery, and post-hit sidestep as combat. Removed the separate continuous
+  orbit/pounce layer that made pets jitter around unfinished crystals. Extracted and tested the
+  existing blaster kiting decision so in-range sniping and advance-to-standoff remain unchanged.
 
 ## 2026-08-08 — Beta Byte public campaign opened
 

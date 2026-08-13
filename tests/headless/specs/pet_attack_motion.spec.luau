@@ -23,13 +23,30 @@ return function()
             expect(shippedConfig.attack.role_styles.melee).to.equal("static_ring")
         end)
 
-        it("gives Doggy a mobile-readable hit and recovery envelope", function()
+        it("gives the whole melee role a sidestep and Doggy a readable envelope", function()
+            local generic =
+                PetAttackMotion.resolve(shippedConfig.attack.strike_motion, "melee", "other")
             local doggy =
                 PetAttackMotion.resolve(shippedConfig.attack.strike_motion, "melee", "doggy")
+            expect(generic.sidestep_degrees).to.near(10, 1e-6)
             expect(doggy.depth >= 3).to.equal(true)
             expect(doggy.recoil >= 0.5).to.equal(true)
             expect(doggy.duration >= 0.5).to.equal(true)
             expect(doggy.sidestep_degrees).to.near(10, 1e-6)
+        end)
+
+        it("preserves blaster firing-line, recoil, and zero sidestep", function()
+            local ranged =
+                PetAttackMotion.resolve(shippedConfig.attack.strike_motion, "ranged", "kitty")
+            expect(shippedConfig.attack.role_styles.ranged).to.equal("firing_line")
+            expect(ranged.style).to.equal("recoil")
+            expect(ranged.recoil > 0).to.equal(true)
+            expect(ranged.sidestep_degrees).to.equal(0)
+        end)
+
+        it("uses role choreography and no continuous flourish for mining", function()
+            expect(shippedConfig.attack.mode.mining).to.equal("individual")
+            expect(shippedConfig.attack.anim.mining.style).to.equal("none")
         end)
     end)
 

@@ -111,8 +111,8 @@ return {
     },
 
     -- Attack mode: pets arrange around the target while attacking (client-driven, purely
-    -- visual). `style` is the default; players override it with a saved PetAttackStyle setting,
-    -- live-switchable via the PetAttackStyle attribute.
+    -- visual). Mining and combat deliberately share the same role-readable choreography;
+    -- server-authoritative real-hit packets supply the actual contact/recovery motion.
     --   "orbit" (ring spins) | "static_ring" | "lunge" (jab in) | "spiral" (vortex) |
     --   "pincer" (two arcs squeeze) | "firing_line" (row, recoil volley) | "swarm" (jitter cloud)
     -- AutoTargetService owns the acquisition/retention range: pets keep an unfinished mining
@@ -123,11 +123,10 @@ return {
         -- mode = how the squad arranges, per target type (PetFormation.resolveStyle):
         --   "team"       — every pet shares `style` (one shared formation, the classic look)
         --   "individual" — each pet uses its ROLE's style from `role_styles` (fights in character)
-        -- Starting split (Jason): farm as a team cluster, then break into role positions in a fight.
-        mode = { mining = "team", combat = "individual" },
+        -- One visual language for every target: crystals are attacked exactly like enemies.
+        mode = { mining = "individual", combat = "individual" },
         -- Per-role attack styles for "individual" mode. Role = PetRole / pet_roles.by_type.
-        -- (A per-species override still wins over this. The saved PetAttackStyle is deliberately
-        -- mining-only: combat choreography must stay role-readable.)
+        -- (A per-species override still wins over this.)
         role_styles = {
             tank = "static_ring", -- a wall holds the line, doesn't pirouette
             -- Real-hit motion supplies the action. Holding a stable slot between swings makes the
@@ -176,9 +175,9 @@ return {
         swarm_speed = 3,
         swarm_bob = 1.2,
 
-        -- Attack FLOURISH layered on the base pivot while engaged (src/Shared/Game/AttackAnim.lua),
-        -- the time-driven companion to the walk gait. Chosen by target type: `mining` plays on
-        -- breakables/ore, `combat` on enemies. Styles:
+        -- Legacy continuous attack flourishes are disabled. They made mining orbit/pounce between
+        -- authoritative hits and visually fought the real-hit choreography below. Keep these inert
+        -- compatibility blocks until the saved attack-style seam is removed from old profiles.
         --   "pounce" — periodic jab toward the target + recoil (looks like striking it)
         --   "peck"   — repeated downward dip toward the target (headbutt/pickaxe); peck_speed,
         --              bob_height set the rhythm + dip depth
@@ -187,8 +186,8 @@ return {
         -- More styles drop into AttackAnim.STYLES; add a config block here. Swap mining.style
         -- below to "peck" or "none" to taste.
         anim = {
-            mining = { style = "pounce", pounce_depth = 1.5, pounce_period = 0.5 },
-            combat = { style = "none" }, -- enemies: face them for now; pounce/etc. later
+            mining = { style = "none" },
+            combat = { style = "none" },
         },
 
         -- REAL-HIT choreography (src/Shared/Game/PetAttackMotion.lua). Unlike `anim` above, this
@@ -207,6 +206,7 @@ return {
                     height = 0.16,
                     pitch = 0.10,
                     roll = 0.08,
+                    sidestep_degrees = 10,
                 },
                 tank = {
                     style = "slam",
@@ -255,7 +255,6 @@ return {
                     pitch = 0.20,
                     roll = 0.18,
                     duration = 0.58,
-                    sidestep_degrees = 10,
                 },
                 bear = { depth = 1.35, drop = 0.56, height = 0.48, duration = 0.52 },
                 kitty = { recoil = 1.05, height = 0.24, pitch = 0.18 },
