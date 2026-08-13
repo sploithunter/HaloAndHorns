@@ -26,6 +26,7 @@ local DEFAULTS = {
     pitch = 0,
     yaw = 0,
     roll = 0,
+    sidestep_degrees = 0,
 }
 
 local function copyInto(out, source)
@@ -136,6 +137,20 @@ function PetAttackMotion.sample(profile, elapsed)
         roll = roll,
     },
         true
+end
+
+-- A completed agile strike may advance its resting slot around the target. Odd/even equip slots
+-- take opposite directions so two melee pets peel apart instead of stacking on one flank. The
+-- angle is wrapped to one turn because it is consumed by PetFormation's ring math.
+function PetAttackMotion.advanceSidestep(currentAngle, profile, equipSlot)
+    local degrees = profile and tonumber(profile.sidestep_degrees) or 0
+    if not degrees or degrees == 0 then
+        return tonumber(currentAngle) or 0
+    end
+    degrees = math.clamp(degrees, -45, 45)
+    local slot = math.max(1, math.floor(tonumber(equipSlot) or 1))
+    local direction = (slot % 2 == 1) and 1 or -1
+    return ((tonumber(currentAngle) or 0) + math.rad(degrees) * direction) % TWO_PI
 end
 
 return PetAttackMotion

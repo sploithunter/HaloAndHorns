@@ -255,6 +255,7 @@ return {
                     pitch = 0.20,
                     roll = 0.18,
                     duration = 0.58,
+                    sidestep_degrees = 10,
                 },
                 bear = { depth = 1.35, drop = 0.56, height = 0.48, duration = 0.52 },
                 kitty = { recoil = 1.05, height = 0.24, pitch = 0.18 },
