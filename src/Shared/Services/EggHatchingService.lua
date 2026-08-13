@@ -1484,7 +1484,7 @@ end
 -- MAIN HATCHING INTERFACE
 -- ═══════════════════════════════════════════════════════════════════════════════════
 
-function EggHatchingService:StartHatchingAnimation(eggsData)
+function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
     local eggCount = #eggsData
 
     for _, group in ipairs(self._activeCompletionGroups or {}) do
@@ -1666,6 +1666,15 @@ function EggHatchingService:StartHatchingAnimation(eggsData)
         end
 
         self:RestoreScreen(animatedElements)
+        if type(onRevealComplete) == "function" then
+            local callbackOk, callbackError = pcall(onRevealComplete)
+            if not callbackOk then
+                warn(
+                    "[EggHatchingService] reveal completion callback failed: "
+                        .. tostring(callbackError)
+                )
+            end
+        end
 
         -- PHASE 5: Auto cleanup after a short delay - just disable the GUI
         local cleanupPauseTime = hatchingConfig.helpers.get_adjusted_timing("cleanup_pause_time")

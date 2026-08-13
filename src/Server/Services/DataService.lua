@@ -39,7 +39,7 @@ local DEFAULT_SAVE_DEBOUNCE_SECONDS = 15
 local CRITICAL_SAVE_DEBOUNCE_SECONDS = 1
 local PERIODIC_SAVE_SECONDS = 60
 local SAVE_CONFIRM_TIMEOUT_SECONDS = 10
-local CURRENT_SCHEMA_VERSION = 14
+local CURRENT_SCHEMA_VERSION = 15
 
 local function countInventoryItems(inventory)
     local counts = {}
@@ -132,6 +132,8 @@ local function generateProfileTemplate(configLoader)
             -- One provenance-bound evolving egg per named-trial quest track. The ledger is
             -- separate from QuestClaims so a traded or hatched egg can never be minted again.
             TrialEggRewards = { tracks = {} },
+            -- Server-authoritative promo-code claims and launch-link campaign attribution.
+            PromoCodes = { claims = {}, attribution = {} },
         },
 
         -- Settings
@@ -570,6 +572,23 @@ SchemaMigrations[13] = function(_self, data)
             and data.GameData.FoundersChoice
         or {}
     data.SchemaVersion = 14
+    return 1
+end
+
+-- v14 -> v15: stable per-code claim ledger + campaign attribution. Rewards and this ledger share
+-- one ProfileStore profile so their save is atomic; public code spellings are never the identity.
+SchemaMigrations[14] = function(_self, data)
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    data.GameData.PromoCodes = type(data.GameData.PromoCodes) == "table"
+            and data.GameData.PromoCodes
+        or {}
+    data.GameData.PromoCodes.claims = type(data.GameData.PromoCodes.claims) == "table"
+            and data.GameData.PromoCodes.claims
+        or {}
+    data.GameData.PromoCodes.attribution = type(data.GameData.PromoCodes.attribution) == "table"
+            and data.GameData.PromoCodes.attribution
+        or {}
+    data.SchemaVersion = 15
     return 1
 end
 

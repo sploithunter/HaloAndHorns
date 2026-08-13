@@ -302,7 +302,7 @@ return function()
             expect(signals.FoundersChoiceStateRequest.name).to.equal("FoundersChoiceStateRequest")
             expect(signals.FoundersChoiceSelect.name).to.equal("FoundersChoiceSelect")
             expect(signals.FoundersChoiceState.name).to.equal("FoundersChoiceState")
-            expect(#created).to.equal(125)
+            expect(#created).to.equal(126)
         end)
 
         it("omits Studio-only packets from a production registry", function()

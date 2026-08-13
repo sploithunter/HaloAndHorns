@@ -141,6 +141,22 @@ return {
         banner = { seconds = 9, color = { 70, 210, 255 } },
     },
 
+    -- Weekly/creator/event code reward. The server supplies the authored success message as
+    -- ctx.name, while this shared reaction path supplies the standard reward fanfare.
+    promo_code_redeemed = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 75, 225, 145 }, count = 24 },
+        banner = { seconds = 8, color = { 75, 225, 145 } },
+    },
+
+    -- Guided-hatch squad auto-fill. EggService delays this until the reveal sequence finishes so
+    -- the summary reads as the consequence of what the player just saw, not an overlapping popup.
+    tutorial_squad_autofill = {
+        sound = "power_up_stronger",
+        vfx = { kind = "burst", color = { 80, 225, 125 }, count = 18 },
+        banner = { seconds = 5, color = { 80, 225, 125 } },
+    },
+
     tester_reward_upgraded = {
         sound = "power_up_stronger",
         vfx = { kind = "burst", color = { 255, 190, 55 }, count = 24 },

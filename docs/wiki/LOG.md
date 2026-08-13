@@ -1,5 +1,19 @@
 # Log
 
+## 2026-08-13 — Real-hit role-based pet attack choreography
+
+- Added pure, config-driven `PetAttackMotion` contact/recovery curves for melee, tank, ranged,
+  support, and control roles; starter overrides make Doggy lunge, Bear slam, Kitty recoil, and
+  Bunny cast/hop.
+- Reused the server-authoritative `Combat_PetHit` broadcast to trigger the same animation for pet
+  owners and nearby spectators. No damage, targeting, cadence, or result-text authority moved to
+  the client, and splash neighbors do not restart the source pet's swing.
+- Layered strike motion into the existing local and remote render passes, including rigged pets,
+  while preserving imported model orientation at the final pivot. Added headless curve coverage.
+- Live dummy review caught continuous melee orbit masking the hit envelope. Melee now holds a
+  stable combat slot between authoritative swings, and Doggy's contact/rebound is deliberately
+  larger and longer so the first melee lesson reads at mobile scale.
+
 ## 2026-08-08 — Beta Byte public campaign opened
 
 - Enabled production eligibility for `beta_week_1_2026` for the advertised beta-testing run.
@@ -2336,3 +2350,56 @@ rewrite.
 - Production qualification uses real Marketplace ownership. Studio creator/test ownership may exercise
   the fallback while the creator pass gate is on; gate-off and Admin Reset preserve repeatable ordinary
   chooser testing.
+
+## 2026-08-10 — Compact mobile HUD first playable pass
+
+- Added a persisted Auto/Compact/Classic HUD preference; Auto selects the compact presentation on
+  touch-first phones and tablets while preserving the established desktop HUD.
+- Compact currency rests on gems plus the current-origin wallet and hold-expands to all currencies.
+  Compact squad rests on one small handle and hold-expands to a vertical pet-thumbnail rail with the
+  inventory archetype badge plus segmented endurance/shield rings.
+- The compact hotbar now docks against the bottom edge. The real runtime HUD was inspected through
+  Studio MCP at a 749×367 viewport so remaining polish can be made visually and read back into code.
+- Split squad presentation into its own persisted `Classic`/`Bar`/`Circle` setting, with Classic as
+  the safe default. Bar and Circle now tap-open and tap-close so visible pets remain selectable;
+  combat or damage can still open the roster automatically. Bar mode collapses from the portrait next
+  to `MY TEAM`.
+- Reconciled visible roster capacity independently of equipped pets. All three presentations show
+  explicit hollow/empty positions through the current pet-slot entitlement, and empty rows omit the
+  misleading plus glyph.
+- Added a separately persisted quest presentation setting: `Full Bar` remains the default, while
+  `Compact Pill` and `Progress Ring` tap-expand into the full readable tracker. Compact trackers also
+  auto-expand for four seconds on a new objective and 2.5 seconds after progress; the segmented ring
+  follows the existing FillBar tween for a smooth clockwise fill.
+## 2026-08-10 — One-command live acquisition and retention read
+
+Added `tools/read_live_metrics.py`, which loads the gitignored Open Cloud credentials, reads only
+the 16 fixed `RetentionDashboard_v1` keys per UTC day, separates the current partial day, and
+compares recent complete-day acquisition, session volume, session duration, level-2 reach, and the
+tutorial funnel with the immediately preceding window. The output explicitly distinguishes
+repeat-session volume from canonical Roblox D1 retention and all-session quest counters from strict
+first-session cohort rates.
+
+## 2026-08-10 — FTUE v2: hatch, use, then manage the squad
+
+- Reordered the ten-step tutorial to remove the immediate manual-equip gate: first egg now fills
+  only genuinely empty squad slots in canonical multi-hatch result order, followed immediately by
+  mining; the second guided hatch may fill remaining empty slots without replacing any pet.
+- Added dynamic post-reveal squad feedback and moved roster education to step 4. `Build your squad`
+  uses contextual copy, accepts keeping the current squad, and completes only after Pets was opened
+  during that step and then user-closed in a valid committed state. Dirty drafts still wait for the
+  normal server acknowledgement before closing or advancing.
+- Versioned and migrated persisted tutorial progress, replaced the retention milestone with
+  `tutorial_build_squad`, and preserved historical analytics as a documented v1/v2 boundary.
+
+## 2026-08-10 — Server-authoritative weekly and partner reward codes
+
+- Added a shared-chrome Redeem Code menu in Settings and a server-authoritative PromoCodeService
+  supporting case-insensitive spellings/aliases, level and UTC windows, per-player limits, rate
+  limiting, standard RewardBundles, success banners, and Admin Reset testing.
+- Stable definition IDs persist claim state independently of public spellings. Roblox LaunchData can
+  prefill a code and records first-touch campaign attribution without silently redeeming it.
+- RetentionDashboard now aggregates attributed launch-link joins and successful redemptions by
+  stable code and campaign, exposing partner-link conversion without raw event scans. The only
+  authored code is the Studio-only `CODETEST` smoke reward; production campaigns are added when
+  announced so future public spellings are not leaked through replicated configs.

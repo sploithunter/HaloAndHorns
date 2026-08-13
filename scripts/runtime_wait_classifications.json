@@ -64,9 +64,6 @@
   "src/Client/Systems/PrologueCinematics.lua": {
    "animation": 4
   },
-  "src/Client/Systems/QuestTrackerStyle.lua": {
-   "retry_backoff": 1
-  },
   "src/Client/Systems/RealmAtmosphere.lua": {
    "animation": 1
   },

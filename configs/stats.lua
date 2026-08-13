@@ -93,6 +93,11 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        promo_codes_redeemed = {
+            display_name = "Promo Codes Redeemed",
+            scope = "lifetime",
+            default = 0,
+        },
         levels_earned = {
             display_name = "Levels Earned",
             scope = "lifetime",

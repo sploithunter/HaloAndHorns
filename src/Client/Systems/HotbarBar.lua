@@ -264,6 +264,16 @@ function HotbarBar.start()
     root.BackgroundTransparency = 1
     root.Parent = gui
 
+    -- Compact mobile HUD docks the bar against the usable bottom edge. Classic keeps the breathing
+    -- room of the established desktop layout. Position is attribute-driven so Studio edits can be
+    -- compared in either mode without rebuilding the UI.
+    local function applyHudLayout()
+        local compact = localPlayer:GetAttribute("HudLayoutResolved") == "compact"
+        root.Position = UDim2.new(0.5, 0, 1, compact and -16 or -20)
+    end
+    localPlayer:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyHudLayout)
+    applyHudLayout()
+
     -- Blue neon pill_frame wrapping the whole bar (9-slice so the wide bar keeps proper corners;
     -- transparent inside AND outside, so the game shows through and the slots sit on top).
     local barFrame = Instance.new("ImageLabel")

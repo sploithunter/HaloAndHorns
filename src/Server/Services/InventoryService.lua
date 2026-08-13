@@ -2479,6 +2479,60 @@ function InventoryService:_handleSetEquippedPets(player, data)
     }
 end
 
+-- Guided-hatch convenience only: fill empty squad slots from server-minted pet refs in reveal
+-- order. This deliberately cannot replace an existing pet. All ownership/quantity validation is
+-- delegated to the same pure PetInventoryView authority used by normal squad commits.
+function InventoryService:FillEmptyPetSlots(player, refs, saveTag)
+    local playerData = self._dataService:GetData(player)
+    local pets = playerData and playerData.Inventory and playerData.Inventory.pets
+    if not (pets and type(pets.items) == "table") then
+        return { ok = false, reason = "profile_unavailable", added = 0 }
+    end
+
+    playerData.Equipped = playerData.Equipped or {}
+    local configured = self._inventoryConfig.equipped and self._inventoryConfig.equipped.pets
+    local maxSlots = self:_getMaxEquippedSlots(player, "pets", configured and configured.slots or 1)
+    local nextEquipped, summary =
+        PetInventoryView.fillEmptySlots(pets.items, playerData.Equipped.pets, refs, maxSlots)
+    if summary.added <= 0 then
+        summary.ok = true
+        return summary
+    end
+
+    playerData.Equipped.pets = nextEquipped
+    self:RebuildPetProjections(player)
+    fireGameEvent(player, "pet_equipped", {
+        action = "tutorial_auto_fill",
+        count = summary.added,
+    })
+    self._dataService:RequestSave(player, saveTag or "tutorial_hatch_auto_fill", {
+        critical = true,
+    })
+    summary.ok = true
+    self._logger:Info("Guided hatch filled empty squad slots", {
+        player = player.Name,
+        added = summary.added,
+        total = summary.total,
+        maxSlots = summary.maxSlots,
+    })
+    return summary
+end
+
+function InventoryService:HasUnequippedPet(player)
+    local playerData = self._dataService:GetData(player)
+    local pets = playerData and playerData.Inventory and playerData.Inventory.pets
+    if not (pets and type(pets.items) == "table") then
+        return false
+    end
+    local configured = self._inventoryConfig.equipped and self._inventoryConfig.equipped.pets
+    local maxSlots = self:_getMaxEquippedSlots(player, "pets", configured and configured.slots or 1)
+    return PetInventoryView.hasUnequipped(
+        pets.items,
+        playerData.Equipped and playerData.Equipped.pets,
+        maxSlots
+    )
+end
+
 function InventoryService:_handleToggleToolEquipped(player, data)
     self._logger:Info("🔧 TOOL EQUIP REQUEST", {
         player = player.Name,

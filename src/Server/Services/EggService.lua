@@ -56,6 +56,8 @@ local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
 local OpsAlert = require(script.Parent.Parent.OpsAlert)
 local HatchTiming = require(ReplicatedStorage.Shared.Game.HatchTiming)
+local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
+local tutorialConfig = require(ReplicatedStorage.Configs:WaitForChild("tutorial"))
 local HttpService = game:GetService("HttpService")
 -- Area config for the zone-unlock hatch gate: a gated area's egg stand can only be hatched once the
 -- AREA is unlocked (same gate as its crystals). Mirrors ZoneService/ZoneUnlockPrompt membership.
@@ -383,6 +385,56 @@ function EggService:RecordHatchSuccess(player, request, response)
             specialRevealCount = response.animation and response.animation.specialRevealCount or 0,
         },
     })
+end
+
+-- The two guided hatch steps teach momentum, not inventory bookkeeping. Newly minted pets fill
+-- only empty squad slots, in reveal order, before `egg_hatch` advances the tutorial. Existing
+-- occupants are never displaced and auto-deleted results never become candidates.
+function EggService:ApplyTutorialSquadAssist(player, resultEntries)
+    if not (self._dataService and self._inventoryService) then
+        return nil
+    end
+    local data = self._dataService:GetData(player)
+    local progress = data and data.Tutorial
+    local migrated = progress and TutorialFlow.migrateProgress(tutorialConfig, progress)
+    local step = migrated and TutorialFlow.current(tutorialConfig, migrated)
+    if not step or (step.id ~= "hatch_first_egg" and step.id ~= "hatch_another") then
+        return nil
+    end
+
+    local refs = {}
+    for _, entry in ipairs(resultEntries or {}) do
+        if entry.AutoDeleted ~= true and type(entry.uid) == "string" and entry.uid ~= "" then
+            refs[#refs + 1] = entry.uid
+        end
+    end
+    if #refs == 0 then
+        return nil
+    end
+    local summary =
+        self._inventoryService:FillEmptyPetSlots(player, refs, "tutorial_hatch_auto_fill")
+    if not (summary and summary.ok and summary.added > 0) then
+        return nil
+    end
+    local matched = {}
+    local names = {}
+    for _, ref in ipairs(summary.addedRefs or {}) do
+        for index, entry in ipairs(resultEntries or {}) do
+            if not matched[index] and entry.uid == ref then
+                matched[index] = true
+                local petId = entry.Pet or entry.pet
+                local variant = entry.Type or entry.variant or "basic"
+                local petDef = petConfig and petConfig.pets and petConfig.pets[petId]
+                local variantDef = petDef and petDef.variants and petDef.variants[variant]
+                names[#names + 1] = (variantDef and variantDef.display_name)
+                    or (petDef and petDef.display_name)
+                    or tostring(petId or "Pet")
+                break
+            end
+        end
+    end
+    summary.names = names
+    return summary
 end
 
 function EggService:GetHatchHistory(player, limit)
@@ -1611,6 +1663,10 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
         autoSessionId = request.autoSessionId,
         animation = animationPayload,
     }
+
+    -- Must precede RecordHatchSuccess: its `egg_hatch` event advances the tutorial, so checking
+    -- afterward would no longer know this was one of the two guided hatches.
+    response.tutorialSquadAssist = self:ApplyTutorialSquadAssist(player, resultEntries)
 
     Logger:Info("Egg hatch transaction complete", {
         player = player.Name,

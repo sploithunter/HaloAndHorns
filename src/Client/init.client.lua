@@ -92,6 +92,19 @@ Logger:Info("Client initialized", {
     userId = localPlayer.UserId,
 })
 
+-- Resolve Auto / Compact / Classic before HUD systems construct their presentation. Auto selects
+-- the compact layout on touch-first phones/tablets and preserves the existing HUD elsewhere.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.HudLayoutState).start()
+        require(script.Systems.SquadDisplayState).start()
+        require(script.Systems.QuestDisplayState).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start HUD preference state", { error = tostring(err) })
+    end
+end
+
 -- Initialize Matter ECS World for client
 local world = Matter.World.new()
 local loop = Matter.Loop.new(world)
@@ -1267,6 +1280,9 @@ do
         buildPanel("PowerChoice", function()
             return require(script.UI.Menus.PowerChoiceMenu).new()
         end)
+        buildPanel("PromoCodes", function()
+            return require(script.UI.Menus.PromoCodePanel).new()
+        end)
         -- Admin panel is registered client-side so late admin attribute replication cannot strand
         -- the UI. Server-side AdminService remains the authority for privileged actions.
         buildPanel("Admin", function()
@@ -1281,6 +1297,9 @@ do
                 menuManager:RegisterPanel("Settings", settingsPanel)
                 settingsPanel:SetAdminPanelCallback(function()
                     menuManager:OpenAdminPanel("bounce_in")
+                end)
+                settingsPanel:SetPromoCodesPanelCallback(function()
+                    menuManager:OpenPanel("PromoCodes", "bounce_in")
                 end)
             end)
             if ok then

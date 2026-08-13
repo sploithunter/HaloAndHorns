@@ -540,3 +540,24 @@ A landed hold against an innately `HoldImmune` enemy has a fixed 25% chance to p
 caster's mark is active. This exception does not penetrate `HoldResistUntil`: the temporary resistance
 earned by a boss breakout remains absolute. Ordinary accuracy resolves before immunity penetration, so
 combat feedback distinguishes `Miss` from `Immune`.
+
+## Mobile HUD Uses Independent Persisted Presentations (2026-08-10)
+
+HUD density and squad presentation are separate persisted preferences. HUD layout retains its
+device-aware `Auto`/`Compact`/`Classic` choice, while squad presentation is explicitly
+`Classic` (the default), `Bar`, or `Circle`. Experimental squad layouts therefore never replace the
+established player experience until selected in Settings.
+
+Quest presentation is independently persisted as `Full Bar` (the default), `Compact Pill`, or
+`Progress Ring`. Pill and Ring are resting states, not separate trackers: both reuse the live quest
+description, count, and tweened FillBar. Pressing either compact presentation expands the readable
+full bar and pressing again collapses it. A new objective opens it for four seconds and real progress
+opens it for 2.5 seconds, so compact mode does not hide context when the objective changes.
+
+Compact currency rests on gems plus the current origin; pressing it reveals every origin balance.
+The squad handle is also press-to-toggle rather than hold-to-peek, because an open roster must remain
+interactive for pet targeting. Combat or pet damage may open a compact roster automatically. In Bar
+mode, pressing the player portrait beside `MY TEAM` collapses it again; the Circle presentation uses
+the central handle. Every presentation renders explicit empty positions through the player's current
+pet capacity, without a plus glyph that would falsely imply an action. Pet rows reuse canonical
+thumbnails and archetype/status information, and all presentations consume the same live pet state.

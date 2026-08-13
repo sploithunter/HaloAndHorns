@@ -75,7 +75,9 @@ return function()
             local source = readFile("src/Client/Systems/PetFollowController.lua")
             expect(source:find("local function visualOrientation", 1, true) ~= nil).to.equal(true)
             expect(source:find("nextClean * visualOrientation(pet)", 1, true) ~= nil).to.equal(true)
-            expect(source:find("cf * visualOrientation(model)", 1, true) ~= nil).to.equal(true)
+            expect(
+                source:find("model:PivotTo(renderedCF * visualOrientation(model))", 1, true) ~= nil
+            ).to.equal(true)
         end)
 
         it("preserves imported orientation in cached and lazy inventory cards", function()

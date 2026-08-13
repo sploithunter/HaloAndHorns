@@ -592,7 +592,17 @@ Deferred — needs the user's hands (authored map) or a decision:
 
 ## Pet movement (issue #4) — service movement restored (anchored + client-driven)
 
-Last checked: 2026-05-30
+Last checked: 2026-08-13
+
+**Real-hit role choreography is live in source.** `Combat_PetHit` now starts a short procedural
+contact/recovery envelope in `PetAttackMotion`, layered at the final render pivot for both the
+owner and nearby observers. Role defaults cover the roster; the FTUE quartet is deliberately
+distinct: Doggy lunges, Bear body-slams, Kitty recoils with its existing projectile, and Bunny
+casts/hops. Damage, hit cadence, targeting, and result text remain server-authoritative. The
+motion state is weak-keyed and sampled inside the existing RenderStepped pass—no new per-pet loop
+or network packet. Imported orientation corrections remain the final CFrame composition. Melee
+pets hold stable combat slots between swings rather than continuously orbiting, so Doggy's
+server-timed contact and recovery cannot disappear inside unrelated circling motion.
 
 **Current approach (working, pending user confirmation).** After an earlier
 service-movement attempt let pets fall off the map (it dropped the legacy
@@ -601,7 +611,8 @@ teleport-watchdog), the retry sidesteps the whole physics-fall class: the server
 `PetFollowController` sets each pet's CFrame every RenderStepped (smooth,
 frame-rate-independent lerp). Follow = config formation; **attack = surround the
 target in an animated ring** (orbit / static_ring / lunge — `PetFormation.attackOffset`,
-headless-tested; live style switch via `localPlayer:SetAttribute("PetAttackStyle", …)`).
+headless-tested; the saved `PetAttackStyle` switches farming formation while role choreography
+owns combat).
 Server keeps damage (`CombatService:ResolvePetDamage`) + target leash. Verified
 live: pets stable + upright + on-map across 35s, following in formation; mining
 works (AutomationSuite 69/69). **Open follow-up:** multiplayer position replication
@@ -782,6 +793,10 @@ Services:
   becomes real: fans out to DataService (currencies), InventoryService (items),
   PetGrantService (pets), PlayerEffectsService (timed effects), Upgrades (capacity),
   and writes a capped, source-keyed grant-history audit log (`reward.log`).
+- **PromoCodeService** — config-driven weekly/creator/event codes now gate and grant standard
+  RewardBundles server-side, persist one-per-player claims under a stable code ID, accept optional
+  launch-link prefills, and aggregate redemptions by code and campaign in the retention dashboard.
+  The styled Redeem Code menu is available from Settings; `CODETEST` is Studio-only.
 - **QuestService** — condition-gated claims; ledger `profile.QuestClaims`; `List`
   (progress + claimable), `Claim`, `Pending` (the badge count).
 - **DailyService** — cadence-gated claims; state `profile.Daily`; `Status` / `Claim`.

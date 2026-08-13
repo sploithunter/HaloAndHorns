@@ -113,6 +113,17 @@ function AdminController.start()
     stroke.Parent = chip
     chip.Parent = gui
     local chipLabel = whiteLabel(chip, "🛠 ADMIN: OFF", 13)
+    local compactAdmin = false
+
+    local function refreshChipLabel(on)
+        if compactAdmin then
+            chipLabel.Text = on and "ADMIN ON" or "ADMIN OFF"
+            chipLabel.TextSize = 9
+        else
+            chipLabel.Text = on and "🛠 ADMIN: ON" or "🛠 ADMIN: OFF"
+            chipLabel.TextSize = 13
+        end
+    end
 
     -- Area-cycle button (shown only when admin mode is ON): rotate CurrentArea/HomeArea for testing
     -- the area theme + play feel.
@@ -293,7 +304,7 @@ function AdminController.start()
         repeatBtn.Visible = on
         powerChoiceBtn.Visible = on
         xpBtn.Visible = on
-        chipLabel.Text = on and "🛠 ADMIN: ON" or "🛠 ADMIN: OFF"
+        refreshChipLabel(on)
         chip.BackgroundColor3 = on and Color3.fromRGB(45, 140, 80) or Color3.fromRGB(90, 55, 160)
         chipGrad.Color = on
                 and ColorSequence.new(Color3.fromRGB(95, 220, 125), Color3.fromRGB(45, 140, 80))
@@ -306,6 +317,48 @@ function AdminController.start()
     chip.Activated:Connect(function()
         on = not on
         apply()
+    end)
+
+    -- On compact HUDs, dock the creator-only toggle directly above Powers at the same width. It is
+    -- deliberately not part of the normal utility popup: regular players never see it, while a
+    -- tester can still find it beside the controls it affects. Classic mode restores the established
+    -- bottom-right capsule.
+    task.spawn(function()
+        local hotbarGui = pg:WaitForChild("HotbarBar")
+        local bar = hotbarGui and hotbarGui:WaitForChild("Bar", 10)
+        local powers = bar and bar:WaitForChild("PowersButton", 20)
+        if not (bar and powers) then
+            return
+        end
+        local originalParent = chip.Parent
+        local originalPosition = chip.Position
+        local originalSize = chip.Size
+        local originalAnchor = chip.AnchorPoint
+
+        local function applyLayout()
+            compactAdmin = player:GetAttribute("HudLayoutResolved") == "compact"
+            if compactAdmin then
+                local ownScale = chip:FindFirstChild("ViewportScale")
+                if ownScale then
+                    ownScale:Destroy()
+                end
+                chip.Parent = bar
+                chip.AnchorPoint = Vector2.new(0, 1)
+                chip.Position = UDim2.new(1, 26, 0.5, -35)
+                chip.Size = UDim2.fromOffset(62, 22)
+            else
+                chip.Parent = originalParent
+                chip.AnchorPoint = originalAnchor
+                chip.Position = originalPosition
+                chip.Size = originalSize
+                if not chip:FindFirstChild("ViewportScale") then
+                    require(script.Parent.Parent.UI.UIViewportScale).attach(chip)
+                end
+            end
+            refreshChipLabel(on)
+        end
+        player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyLayout)
+        applyLayout()
     end)
 
     -- The overlays may not exist at this instant (they start in their own pcall blocks); apply a few

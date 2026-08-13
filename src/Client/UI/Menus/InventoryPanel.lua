@@ -665,6 +665,13 @@ function InventoryPanel:Show(parent)
     end
 
     self.isVisible = true
+    -- The FTUE's squad lesson is an inspection lesson, not a forced edit. Remember that the panel
+    -- was explicitly opened during this step; only a user-facing close request may complete it.
+    self._tutorialReviewOpened = Players.LocalPlayer:GetAttribute("TutorialStepId") == "build_squad"
+    self._tutorialReviewReported = false
+    if self._tutorialReviewOpened and self.signals and self.signals.TutorialSquadReviewed then
+        self.signals.TutorialSquadReviewed:FireServer("opened")
+    end
     -- #179: tick the availability rings / red counts while the window is open (timers count down).
     task.spawn(function()
         while self.isVisible do
@@ -1003,6 +1010,7 @@ function InventoryPanel:Hide()
         self.frame = nil
     end
     self._cardScaleButton = nil -- lived in the destroyed header
+    self._tutorialReviewOpened = false
 
     -- delete-mode chrome lived in the destroyed frame/header; reset to idle so a
     -- re-open starts clean (no stale selection or armed pill)
@@ -1738,7 +1746,11 @@ function InventoryPanel:_createTeamBar(searchContainer)
     activate.Parent = bar
     self._activateButton = activate
     activate.Activated:Connect(function()
-        self:_commitDraft()
+        if self._tutorialReviewOpened and not self._tutorialReviewReported then
+            self:_requestClose()
+        else
+            self:_commitDraft()
+        end
     end)
 end
 
@@ -2151,6 +2163,23 @@ end
 function InventoryPanel:_requestClose(after)
     after = after or function()
         self:Hide()
+    end
+    if self._tutorialReviewOpened and not self._tutorialReviewReported then
+        local closeAndReport = function()
+            after()
+            self._tutorialReviewReported = true
+            if self.signals and self.signals.TutorialSquadReviewed then
+                self.signals.TutorialSquadReviewed:FireServer("reviewed")
+            end
+        end
+        -- During the lesson, closing a dirty draft means Activate-and-close. The server ack drives
+        -- `_commitDraft`'s callback, so the tutorial cannot complete on a rejected squad.
+        if self._draftDirty then
+            self:_commitDraft(closeAndReport)
+        else
+            closeAndReport()
+        end
+        return
     end
     if self._draftDirty then
         self:_showDeployGuard(after)

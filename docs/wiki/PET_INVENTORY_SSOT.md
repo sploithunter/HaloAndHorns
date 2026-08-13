@@ -102,6 +102,11 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   duplicate uniques, over-owned stacks, unknown refs, and over-cap drafts reject the whole request.
   Rendered draft cards carry their exact saved reference so enchant-specific stacks cannot be
   confused by legacy-prefix fallback. A missing acknowledgement times out to an editable retry state.
+- **Guided hatches may fill empty slots, never replace them.** During the two configured FTUE hatch
+  steps, the server takes successfully minted, non-auto-deleted result refs in canonical reveal
+  order and asks `InventoryService` to fill only validated empty squad slots. Excess results remain
+  ordinary inventory ownership. Existing occupants are never ranked, moved, or displaced, and the
+  full projection/save path runs after any accepted fill.
 
 ### Rebuild tiers (do NOT re-validate equip on every mutation)
 

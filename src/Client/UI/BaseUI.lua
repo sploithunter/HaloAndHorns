@@ -2286,6 +2286,7 @@ function BaseUI:_bindQuestTracker()
             -- branches done). Opening the Quests panel and hitting "Activate" sets the focus.
             self._trackedQuestId = nil
             if self._questClaimBtn then
+                self._questClaimBtn:SetAttribute("Available", false)
                 self._questClaimBtn.Visible = false
             end
             if self._questDesc then
@@ -2300,12 +2301,19 @@ function BaseUI:_bindQuestTracker()
             if self._questFill then
                 FillBar.set(self._questProgressBar, 1)
             end
+            pcall(function()
+                require(script.Parent.Parent.Systems.QuestTrackerStyle).notifyObjective(
+                    res.activeTrack and "quest:all_caught_up" or "quest:no_active_branch",
+                    1
+                )
+            end)
             return
         end
         local sameQuest = self._trackedQuestId == q.id
         self._trackedQuestId = q.id
         if self._questClaimBtn then
             local tips = require(script.Parent.Parent.Systems.QuestTrackerStyle)
+            self._questClaimBtn:SetAttribute("Available", q.claimable == true)
             self._questClaimBtn.Visible = q.claimable == true and not tips.isTipActive()
         end
         local cur = math.floor((q.progress and q.progress.current) or 0)
@@ -2327,6 +2335,12 @@ function BaseUI:_bindQuestTracker()
                 FillBar.set(self._questProgressBar, frac)
             end
         end
+        pcall(function()
+            require(script.Parent.Parent.Systems.QuestTrackerStyle).notifyObjective(
+                "quest:" .. tostring(q.id),
+                frac
+            )
+        end)
     end
 
     -- HOVER TOOLTIP (Jason: "hover over Welcome to the Realm and other quests
@@ -2390,6 +2404,7 @@ function BaseUI:_bindQuestTracker()
                 return false
             end
             if self._questClaimBtn then
+                self._questClaimBtn:SetAttribute("Available", false)
                 self._questClaimBtn.Visible = false
             end
             if self._questDesc then
@@ -2407,6 +2422,12 @@ function BaseUI:_bindQuestTracker()
                 else
                     FillBar.set(self._questProgressBar, frac)
                 end
+                pcall(function()
+                    require(script.Parent.Parent.Systems.QuestTrackerStyle).notifyObjective(
+                        "mission:" .. text,
+                        frac
+                    )
+                end)
             end
             return true
         end
@@ -2448,6 +2469,7 @@ function BaseUI:_bindQuestTracker()
         btn.Font = Enum.Font.GothamBlack
         btn.ZIndex = 30
         btn.Visible = false
+        btn:SetAttribute("Available", false)
         local c = Instance.new("UICorner")
         c.CornerRadius = UDim.new(1, 0)
         c.Parent = btn

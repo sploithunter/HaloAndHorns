@@ -26,6 +26,7 @@ local PetMeander = require(ReplicatedStorage.Shared.Game.PetMeander)
 local Gait = require(ReplicatedStorage.Shared.Game.Gait)
 local HitReact = require(ReplicatedStorage.Shared.Game.HitReact)
 local AttackAnim = require(ReplicatedStorage.Shared.Game.AttackAnim)
+local PetAttackMotion = require(ReplicatedStorage.Shared.Game.PetAttackMotion)
 local CrowdControl = require(ReplicatedStorage.Shared.Game.CrowdControl)
 local PetAnimator = require(script.Parent.PetAnimator)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
@@ -312,6 +313,45 @@ function PetFollowController.start()
     local miningAnim = AttackAnim.resolve(animCfg.mining)
     local combatAnim = AttackAnim.resolve(animCfg.combat)
 
+    -- Real-hit choreography: Combat_PetHit starts one short, role-specific motion envelope. The
+    -- packet is already broadcast to the owner and nearby spectators, so this weak-key state is
+    -- observer-local presentation of the same authoritative swing (zero new remotes/loops).
+    local strikeCfg = (config.attack and config.attack.strike_motion) or {}
+    local strikeProfiles = {}
+    local strikeState = setmetatable({}, { __mode = "k" })
+    local function strikeProfile(pet)
+        local roleId = petRoleId(pet)
+        local petType = pet:GetAttribute("PetType")
+        local key = tostring(roleId) .. ":" .. tostring(petType)
+        local profile = strikeProfiles[key]
+        if not profile then
+            profile = PetAttackMotion.resolve(strikeCfg, roleId, petType)
+            strikeProfiles[key] = profile
+        end
+        return profile
+    end
+    local function startStrike(pet)
+        local profile = strikeProfile(pet)
+        if profile.enabled then
+            strikeState[pet] = { profile = profile, startedAt = os.clock() }
+        end
+    end
+    local function layerStrike(pet, cf)
+        local state = strikeState[pet]
+        if not state then
+            return cf
+        end
+        local motion, active = PetAttackMotion.sample(state.profile, os.clock() - state.startedAt)
+        if not active then
+            strikeState[pet] = nil
+            return cf
+        end
+        return CFrame.new(0, motion.height, 0)
+            * cf
+            * CFrame.new(0, 0, -motion.forward)
+            * CFrame.Angles(motion.pitch, motion.yaw, motion.roll)
+    end
+
     -- Facing tuning: turn toward the heading when moving faster than this, else rest facing.
     local faceTurnRate = (config.movement and config.movement.face_turn_rate) or 12
     local faceMoveSpeed = (config.movement and config.movement.face_move_speed) or 2
@@ -432,6 +472,11 @@ function PetFollowController.start()
         local isCrit = data.crit == true
         local element = elementFor(pet)
         local ranged = roleKites(pet)
+        -- Splash neighbors reuse the source pet in their result packets; only the primary swing
+        -- should restart its body motion. The shared area eruption already presents splash hits.
+        if not data.splash then
+            startStrike(pet)
+        end
         -- Rigged pets swing their published attack clip on the REAL hit (replaces the spin/face
         -- flourish suppressed in applyMotion) — the punch lines up with the damage number.
         if PetAnimator.isRigged(pet) then
@@ -512,6 +557,7 @@ function PetFollowController.start()
 
                 if PetAnimator.isRigged(pet) then
                     PetAnimator.update(pet, dt > 0 and step / dt or 0)
+                    nextClean = layerStrike(pet, nextClean)
                     pet:PivotTo(nextClean * visualOrientation(pet))
                 else
                     local st = gaitState[pet]
@@ -521,12 +567,9 @@ function PetFollowController.start()
                     end
                     local gait = resolveGait(pet:GetAttribute("PetType"))
                     local bob, roll, yaw = Gait.advance(st, gait, step, dt)
-                    pet:PivotTo(
-                        CFrame.new(0, bob, 0)
-                            * nextClean
-                            * CFrame.Angles(0, yaw, roll)
-                            * visualOrientation(pet)
-                    )
+                    local rendered = CFrame.new(0, bob, 0) * nextClean * CFrame.Angles(0, yaw, roll)
+                    rendered = layerStrike(pet, rendered)
+                    pet:PivotTo(rendered * visualOrientation(pet))
                 end
             else
                 remoteTargets[pet] = nil
@@ -770,15 +813,19 @@ function PetFollowController.start()
                 end
                 lastDmg[model] = dmg
 
-                local cf = CFrame.new(0, bob + aBob, 0) * pivot * CFrame.Angles(0, yaw + aYaw, roll)
+                local renderedCF = CFrame.new(0, bob + aBob, 0)
+                    * pivot
+                    * CFrame.Angles(0, yaw + aYaw, roll)
+                renderedCF = layerStrike(model, renderedCF)
                 local fs = flinchState[model]
                 if fs then
                     local fx, fz, fyaw = HitReact.sample(fs, os.clock())
                     if fx ~= 0 or fz ~= 0 or fyaw ~= 0 then
-                        cf = (cf + Vector3.new(fx, 0, fz)) * CFrame.Angles(0, fyaw, 0)
+                        renderedCF = (renderedCF + Vector3.new(fx, 0, fz))
+                            * CFrame.Angles(0, fyaw, 0)
                     end
                 end
-                model:PivotTo(cf * visualOrientation(model))
+                model:PivotTo(renderedCF * visualOrientation(model)) -- final imported-asset correction
             end
 
             -- Move a pet toward goalPos (Vector3), facing its heading while moving / restDir at
@@ -837,8 +884,8 @@ function PetFollowController.start()
             end
 
             -- Full attack config (so every style's params reach attackOffset). The per-pet STYLE is
-            -- resolved in the group loop below (role-driven in "individual" mode, shared in "team");
-            -- a PetAttackStyle attribute still force-overrides the whole squad for live testing.
+            -- resolved in the group loop below (role-driven in "individual" combat mode, shared in
+            -- team/mining mode). PetAttackStyle is a saved FARM formation and is ignored in combat.
             local attackCfg = table.clone(config.attack)
             local styleOverride = attrs:GetAttribute("PetAttackStyle")
 

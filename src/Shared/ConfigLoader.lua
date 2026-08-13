@@ -736,6 +736,8 @@ function ConfigLoader:ValidateConfig(configName, config)
         return self:_validateTesterRewardsConfig(config)
     elseif configName == "trial_rewards" then
         return self:_validateTrialRewardsConfig(config)
+    elseif configName == "promo_codes" then
+        return self:_validatePromoCodesConfig(config)
     elseif configName == "capital_baddies" then
         return self:_validateCapitalBaddiesConfig(config)
     elseif configName == "missions" then
@@ -764,6 +766,25 @@ function ConfigLoader:_validateTrialRewardsConfig(config)
     local ok, err = TrialEggRewardLadder.validate(config, pets, quests)
     if not ok then
         return self:_configError("trial_rewards", err, "")
+    end
+    return true
+end
+
+function ConfigLoader:_validatePromoCodesConfig(config)
+    local PromoCodeLogic = require(script.Parent.Game.PromoCodeLogic)
+    local ok, err = PromoCodeLogic.validate(config)
+    if not ok then
+        return self:_configError("promo_codes", "<root>", err)
+    end
+    for id, definition in pairs(config.codes) do
+        ok, err = self:_validateReward(
+            "promo_codes",
+            { bundle = definition.reward },
+            "codes." .. id .. ".reward"
+        )
+        if not ok then
+            return ok, err
+        end
     end
     return true
 end

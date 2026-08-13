@@ -708,6 +708,9 @@ function GameAPIService:_registerCommands()
                 audio = prefs and prefs.audio or nil,
                 displayTips = not prefs or prefs.displayTips ~= false,
                 displayChatAnnouncements = not prefs or prefs.displayChatAnnouncements ~= false,
+                hudLayout = prefs and prefs.hudLayout or "auto",
+                squadDisplayMode = prefs and prefs.squadDisplayMode or "classic",
+                questDisplayMode = prefs and prefs.questDisplayMode or "full",
             }
         end,
     })
@@ -719,6 +722,21 @@ function GameAPIService:_registerCommands()
                 audio = { type = "table", optional = true },
                 displayTips = { type = "boolean", optional = true },
                 displayChatAnnouncements = { type = "boolean", optional = true },
+                hudLayout = {
+                    type = "string",
+                    optional = true,
+                    oneOf = { "auto", "compact", "classic" },
+                },
+                squadDisplayMode = {
+                    type = "string",
+                    optional = true,
+                    oneOf = { "classic", "bar", "circle" },
+                },
+                questDisplayMode = {
+                    type = "string",
+                    optional = true,
+                    oneOf = { "full", "pill", "ring" },
+                },
             })
         end,
         handler = function(context, args)
@@ -745,6 +763,15 @@ function GameAPIService:_registerCommands()
             end
             if type(args.displayChatAnnouncements) == "boolean" then
                 data.Settings.ClientPrefs.displayChatAnnouncements = args.displayChatAnnouncements
+            end
+            if type(args.hudLayout) == "string" then
+                data.Settings.ClientPrefs.hudLayout = args.hudLayout
+            end
+            if type(args.squadDisplayMode) == "string" then
+                data.Settings.ClientPrefs.squadDisplayMode = args.squadDisplayMode
+            end
+            if type(args.questDisplayMode) == "string" then
+                data.Settings.ClientPrefs.questDisplayMode = args.questDisplayMode
             end
             dataSvc:RequestSave(context.player, "client_prefs")
             return { ok = true }
@@ -2701,6 +2728,45 @@ function GameAPIService:_registerTestCommands()
                 return { ok = false, reason = "service_unavailable" }
             end
             return s:GetFusionLog(args.userId)
+        end,
+    })
+
+    -- Public weekly, creator, event, and launch-partner codes. Validation and durable
+    -- one-per-player claims remain server-authoritative in PromoCodeService.
+    self._bus:register("promo.status", {
+        description = "Get reward-code availability and launch-link prefill state.",
+        handler = function(context)
+            local service = self:_service("PromoCodeService")
+            if not service then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return service:GetStatus(context.player)
+        end,
+    })
+
+    self._bus:register("promo.redeem", {
+        description = "Redeem a public reward code once eligibility is satisfied.",
+        validate = function(args)
+            return Validators.fields(args, { code = { type = "string", min = 1 } })
+        end,
+        handler = function(context, args)
+            local service = self:_service("PromoCodeService")
+            if not service then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return service:Redeem(context.player, args.code)
+        end,
+    })
+
+    self._bus:register("promo.reset", {
+        description = "[test] Clear promo-code claims and first-touch attribution.",
+        testOnly = true,
+        handler = function(context)
+            local service = self:_service("PromoCodeService")
+            if not service then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return service:ResetForTesting(context.player)
         end,
     })
 

@@ -8,6 +8,10 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local QuestDisplayMode = require(ReplicatedStorage.Shared.Game.QuestDisplayMode)
 
 local QuestTrackerStyle = {}
 local started = false
@@ -16,12 +20,20 @@ QuestTrackerStyle._dismissed = false
 QuestTrackerStyle._tipActive = false
 QuestTrackerStyle._tipProgress = nil
 QuestTrackerStyle._tipDescription = nil
+QuestTrackerStyle._manuallyExpanded = false
+QuestTrackerStyle._autoExpandedUntil = 0
+QuestTrackerStyle._lastObjectiveKey = nil
+QuestTrackerStyle._lastObjectiveFraction = nil
+
+local applyPresentation = function() end
+local autoExpandGeneration = 0
 
 -- The tracker's visibility is a pure function of the dismissed flag — set by the X, cleared when the
 -- Quest menu opens or a quest becomes claimable (Jason: it's in the way when idle, esp. on mobile).
 local function applyVisibility()
     if QuestTrackerStyle._pane then
         QuestTrackerStyle._pane.Visible = not QuestTrackerStyle._dismissed
+        applyPresentation()
     end
 end
 
@@ -29,6 +41,50 @@ end
 function QuestTrackerStyle.show()
     QuestTrackerStyle._dismissed = false
     applyVisibility()
+end
+
+local function autoExpand(seconds)
+    autoExpandGeneration += 1
+    local generation = autoExpandGeneration
+    QuestTrackerStyle._autoExpandedUntil = os.clock() + seconds
+    applyPresentation()
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        if
+            generation ~= autoExpandGeneration
+            or os.clock() >= QuestTrackerStyle._autoExpandedUntil
+        then
+            connection:Disconnect()
+            if generation == autoExpandGeneration then
+                applyPresentation()
+            end
+        end
+    end)
+end
+
+-- Called by BaseUI at the authoritative quest/mission update seams. Compact presentations briefly
+-- borrow the readable full bar for a new objective or a real progress gain, then settle back down.
+function QuestTrackerStyle.notifyObjective(key, fraction)
+    key = tostring(key or "")
+    fraction = math.clamp(tonumber(fraction) or 0, 0, 1)
+    local previousKey = QuestTrackerStyle._lastObjectiveKey
+    local previousFraction = QuestTrackerStyle._lastObjectiveFraction
+    QuestTrackerStyle._lastObjectiveKey = key
+    QuestTrackerStyle._lastObjectiveFraction = fraction
+
+    if
+        QuestDisplayMode.normalize(Players.LocalPlayer:GetAttribute("QuestDisplayMode")) == "full"
+    then
+        applyPresentation()
+        return
+    end
+    if previousKey ~= key then
+        autoExpand(4)
+    elseif previousFraction ~= nil and fraction > previousFraction + 0.0001 then
+        autoExpand(2.5)
+    else
+        applyPresentation()
+    end
 end
 
 local function ensureTipOverlay()
@@ -113,6 +169,7 @@ function QuestTrackerStyle.showTip(text)
     QuestTrackerStyle._tipDescription.Visible = true
     QuestTrackerStyle._tipActive = true
     QuestTrackerStyle.setTipProgress(1)
+    applyPresentation()
     return true
 end
 
@@ -144,6 +201,7 @@ function QuestTrackerStyle.hideTip()
             originalDescription.Visible = true
         end
     end
+    applyPresentation()
 end
 
 local function corner(p, r)
@@ -187,7 +245,8 @@ function QuestTrackerStyle.start()
         local base = pg:WaitForChild("ProfessionalBaseUI", 20)
         local mc = base and base:WaitForChild("MainContainer", 10)
         local pane
-        for _ = 1, 30 do
+        local deadline = os.clock() + 15
+        while os.clock() < deadline do
             -- pg-wide recursive: TopHudStack may have adopted the pane into the PlayerBar
             -- capsule's stack before we got here (it is no longer under MainContainer)
             pane = (mc and mc:FindFirstChild("quest_tracker_pane"))
@@ -195,7 +254,7 @@ function QuestTrackerStyle.start()
             if pane then
                 break
             end
-            task.wait(0.5)
+            RunService.Heartbeat:Wait()
         end
         if not pane or pane:GetAttribute("Restyled") then
             return
@@ -284,6 +343,241 @@ function QuestTrackerStyle.start()
                 applyVisibility()
             end)
         end
+
+        -- Alternate compact presentations share the live description/count/fill above. The ring is
+        -- deliberately segmented: its lit segments follow the FillBar's tweened Size every frame,
+        -- producing a smooth clockwise sweep without a second progress model.
+        local compactGlyph = Instance.new("TextLabel")
+        compactGlyph.Name = "QuestCompactGlyph"
+        compactGlyph.BackgroundTransparency = 1
+        compactGlyph.Text = "◆"
+        compactGlyph.TextColor3 = Color3.fromRGB(125, 205, 255)
+        compactGlyph.Font = Enum.Font.GothamBlack
+        compactGlyph.TextSize = 15
+        compactGlyph.ZIndex = 12
+        compactGlyph.Visible = false
+        compactGlyph.Parent = pane
+
+        local compactCount = Instance.new("TextLabel")
+        compactCount.Name = "QuestCompactCount"
+        compactCount.BackgroundTransparency = 1
+        compactCount.TextColor3 = Color3.fromRGB(245, 248, 255)
+        compactCount.Font = Enum.Font.GothamBold
+        compactCount.TextSize = 11
+        compactCount.TextScaled = false
+        compactCount.ZIndex = 12
+        compactCount.Visible = false
+        outline(compactCount)
+        compactCount.Parent = pane
+
+        local ringSegments = {}
+        local segmentCount = 36
+        for index = 1, segmentCount do
+            local angle = ((index - 1) / segmentCount) * math.pi * 2 - (math.pi / 2)
+            local segment = Instance.new("Frame")
+            segment.Name = string.format("RingSegment%02d", index)
+            segment.AnchorPoint = Vector2.new(0.5, 0.5)
+            segment.Position =
+                UDim2.fromOffset(29 + math.cos(angle) * 25, 29 + math.sin(angle) * 25)
+            segment.Size = UDim2.fromOffset(3, 6)
+            segment.Rotation = math.deg(angle) + 90
+            segment.BackgroundColor3 = Color3.fromRGB(36, 42, 54)
+            segment.BorderSizePixel = 0
+            segment.ZIndex = 11
+            segment.Visible = false
+            corner(segment, 2)
+            segment.Parent = pane
+            ringSegments[index] = segment
+        end
+
+        local function compactCountText()
+            local raw = ptext and ptext.Text or ""
+            if raw == "✓ Claim!" then
+                return "CLAIM"
+            end
+            if raw:find("/", 1, true) then
+                return raw
+            end
+            return "★"
+        end
+
+        local function updateRing(fraction)
+            fraction = math.clamp(tonumber(fraction) or 0, 0, 1)
+            local lit = fraction * segmentCount
+            local activeColor = fill and fill.BackgroundColor3 or Color3.fromRGB(46, 204, 113)
+            for index, segment in ipairs(ringSegments) do
+                local coverage = math.clamp(lit - (index - 1), 0, 1)
+                segment.BackgroundColor3 =
+                    activeColor:Lerp(Color3.fromRGB(36, 42, 54), 1 - coverage)
+            end
+        end
+
+        local toggle = Instance.new("TextButton")
+        toggle.Name = "QuestDisplayToggle"
+        toggle.Size = UDim2.fromScale(1, 1)
+        toggle.BackgroundTransparency = 1
+        toggle.Text = ""
+        toggle.AutoButtonColor = false
+        toggle.ZIndex = 5
+        toggle.Visible = false
+        toggle.Parent = pane
+
+        applyPresentation = function()
+            if not QuestTrackerStyle._pane then
+                return
+            end
+            local mode = QuestDisplayMode.normalize(player:GetAttribute("QuestDisplayMode"))
+            local expanded = mode == "full"
+                or QuestTrackerStyle._manuallyExpanded
+                or QuestTrackerStyle._tipActive
+                or QuestTrackerStyle._autoExpandedUntil > os.clock()
+            local collapsedPill = mode == "pill" and not expanded
+            local collapsedRing = mode == "ring" and not expanded
+            local paneCorner = pane:FindFirstChildOfClass("UICorner")
+
+            compactCount.Text = compactCountText()
+            compactGlyph.Visible = collapsedPill or collapsedRing
+            compactCount.Visible = collapsedPill or collapsedRing
+            toggle.Visible = mode ~= "full"
+
+            for _, segment in ipairs(ringSegments) do
+                segment.Visible = collapsedRing
+            end
+
+            local tipProgress = QuestTrackerStyle._tipProgress
+            local tipDescription = QuestTrackerStyle._tipDescription
+            local dismiss = pane:FindFirstChild("DismissX")
+            local claim = pane:FindFirstChild("QuestClaimButton")
+
+            if collapsedRing then
+                pane.Size = UDim2.fromOffset(58, 58)
+                if paneCorner then
+                    paneCorner.CornerRadius = UDim.new(1, 0)
+                end
+                compactGlyph.Position = UDim2.fromOffset(17, 8)
+                compactGlyph.Size = UDim2.fromOffset(24, 18)
+                compactGlyph.TextSize = 14
+                compactCount.Position = UDim2.fromOffset(4, 28)
+                compactCount.Size = UDim2.fromOffset(50, 18)
+                compactCount.TextSize = 10
+                if pbg then
+                    pbg.Visible = false
+                end
+                if desc then
+                    desc.Visible = false
+                end
+            elseif collapsedPill then
+                pane.Size = UDim2.fromOffset(220, 34)
+                if paneCorner then
+                    paneCorner.CornerRadius = UDim.new(1, 0)
+                end
+                compactGlyph.Position = UDim2.fromOffset(8, 7)
+                compactGlyph.Size = UDim2.fromOffset(20, 20)
+                compactGlyph.TextSize = 13
+                compactCount.Position = UDim2.new(1, -44, 0, 6)
+                compactCount.Size = UDim2.fromOffset(38, 18)
+                compactCount.TextSize = 10
+                if desc then
+                    desc.AnchorPoint = Vector2.new(0, 0.5)
+                    desc.Position = UDim2.new(0, 31, 0.5, -1)
+                    desc.Size = UDim2.new(1, -78, 0, 20)
+                    desc.TextXAlignment = Enum.TextXAlignment.Left
+                    desc.TextTruncate = Enum.TextTruncate.AtEnd
+                    desc.TextWrapped = false
+                    desc.TextScaled = false
+                    desc.TextSize = 12
+                    desc.Visible = true
+                end
+                if pbg then
+                    pbg.AnchorPoint = Vector2.new(0, 1)
+                    pbg.Position = UDim2.new(0, 31, 1, -3)
+                    pbg.Size = UDim2.new(1, -79, 0, 3)
+                    pbg.Visible = true
+                end
+                if ptext then
+                    ptext.Visible = false
+                end
+            else
+                pane.Size = UDim2.fromOffset(360, 40)
+                if paneCorner then
+                    paneCorner.CornerRadius = UDim.new(0, 16)
+                end
+                if pbg then
+                    pbg.AnchorPoint = Vector2.new(0.5, 0)
+                    pbg.Position = UDim2.new(0.5, 0, 0, 5)
+                    pbg.Size = UDim2.fromOffset(300, 10)
+                    pbg.Visible = not QuestTrackerStyle._tipActive
+                end
+                if ptext then
+                    ptext.Visible = true
+                end
+                if desc then
+                    desc.AnchorPoint = Vector2.new(0.5, 1)
+                    desc.Position = UDim2.new(0.5, 0, 1, -4)
+                    desc.Size = UDim2.new(1, -20, 0, 18)
+                    desc.TextXAlignment = Enum.TextXAlignment.Center
+                    desc.TextTruncate = Enum.TextTruncate.None
+                    desc.TextWrapped = false
+                    desc.TextScaled = true
+                    desc.Visible = not QuestTrackerStyle._tipActive
+                end
+            end
+
+            if tipProgress then
+                tipProgress.AnchorPoint = Vector2.new(0.5, 0)
+                tipProgress.Position = UDim2.new(0.5, 0, 0, 5)
+                tipProgress.Size = UDim2.fromOffset(300, 10)
+                tipProgress.Visible = QuestTrackerStyle._tipActive
+            end
+            if tipDescription then
+                tipDescription.AnchorPoint = Vector2.new(0.5, 1)
+                tipDescription.Position = UDim2.new(0.5, 0, 1, -4)
+                tipDescription.Size = UDim2.new(1, -20, 0, 18)
+                tipDescription.TextXAlignment = Enum.TextXAlignment.Center
+                tipDescription.TextWrapped = false
+                tipDescription.TextScaled = true
+                tipDescription.Visible = QuestTrackerStyle._tipActive
+            end
+            if dismiss then
+                dismiss.Visible = expanded
+            end
+            if claim then
+                claim.Visible = expanded
+                    and not QuestTrackerStyle._tipActive
+                    and claim:GetAttribute("Available") == true
+            end
+        end
+
+        toggle.Activated:Connect(function()
+            local mode = QuestDisplayMode.normalize(player:GetAttribute("QuestDisplayMode"))
+            if mode == "full" then
+                return
+            end
+            local expanded = QuestTrackerStyle._manuallyExpanded
+                or QuestTrackerStyle._autoExpandedUntil > os.clock()
+            autoExpandGeneration += 1
+            QuestTrackerStyle._autoExpandedUntil = 0
+            QuestTrackerStyle._manuallyExpanded = not expanded
+            applyPresentation()
+        end)
+
+        if ptext then
+            ptext:GetPropertyChangedSignal("Text"):Connect(applyPresentation)
+        end
+        if fill then
+            local function syncRing()
+                updateRing(fill.Size.X.Scale)
+            end
+            fill:GetPropertyChangedSignal("Size"):Connect(syncRing)
+            fill:GetPropertyChangedSignal("BackgroundColor3"):Connect(syncRing)
+            syncRing()
+        end
+        player:GetAttributeChangedSignal("QuestDisplayMode"):Connect(function()
+            QuestTrackerStyle._manuallyExpanded = false
+            QuestTrackerStyle._autoExpandedUntil = 0
+            autoExpandGeneration += 1
+            applyPresentation()
+        end)
 
         QuestTrackerStyle._pane = pane
         ensureTipOverlay()

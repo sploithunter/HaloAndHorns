@@ -101,6 +101,35 @@ return function()
             expect(counters.newPlayerTutorialCompleted).to.equal(1)
         end)
 
+        it("aggregates code redemptions by stable code and campaign", function()
+            local counters = RetentionLogic.newAggregate()
+            RetentionLogic.aggregateEvent(counters, {}, "promo_link_attributed", {
+                codeId = "kade_week_one",
+                campaign = "kade_x_week_1",
+            }, 2, true)
+            RetentionLogic.aggregateEvent(counters, {}, "promo_code_redeemed", {
+                codeId = "kade_week_one",
+                campaign = "kade_x_week_1",
+            }, 20, false)
+            RetentionLogic.aggregateEvent(counters, {}, "promo_code_redeemed", {
+                codeId = "x_week_one",
+                campaign = "official_x_week_1",
+            }, 35, false)
+            RetentionLogic.aggregateEvent(counters, {}, "promo_code_redeemed", {
+                codeId = "kade_week_one",
+                campaign = "kade_x_week_1",
+            }, 40, false)
+
+            expect(counters.promoCodes.redeemed).to.equal(3)
+            expect(counters.promoCodes.attributed).to.equal(1)
+            expect(counters.promoCodes.attributedByCampaign.kade_x_week_1).to.equal(1)
+            expect(counters.promoCodes.byCode.kade_week_one).to.equal(2)
+            expect(counters.promoCodes.byCode.x_week_one).to.equal(1)
+            expect(counters.promoCodes.byCampaign.kade_x_week_1).to.equal(2)
+            expect(RetentionLogic.dashboardSummary(counters).promoCodesRedeemed).to.equal(3)
+            expect(RetentionLogic.dashboardSummary(counters).promoCodeAttributed).to.equal(1)
+        end)
+
         it("aggregates the starter choice microfunnel and selected role once", function()
             local counters = RetentionLogic.newAggregate()
             local seen = {}
@@ -305,7 +334,7 @@ return function()
         it("queues out-of-order achievements until the contiguous prefix exists", function()
             local state = RetentionLogic.ensure(nil, true, 100)
             RetentionLogic.record(state, "joined", "onboarding", { at = 100 })
-            RetentionLogic.record(state, "tutorial_equip_pet", "onboarding", { at = 102 })
+            RetentionLogic.record(state, "tutorial_farm_crystals", "onboarding", { at = 102 })
             local pending = RetentionLogic.pendingFunnelSteps(retention, state)
             expect(#pending).to.equal(1)
             expect(pending[1].id).to.equal("joined")
@@ -315,7 +344,7 @@ return function()
             pending = RetentionLogic.pendingFunnelSteps(retention, state)
             expect(#pending).to.equal(2)
             expect(pending[1].id).to.equal("tutorial_hatch_first_egg")
-            expect(pending[2].id).to.equal("tutorial_equip_pet")
+            expect(pending[2].id).to.equal("tutorial_farm_crystals")
         end)
 
         it("does not submit veteran profiles to the onboarding funnel", function()

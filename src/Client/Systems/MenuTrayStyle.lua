@@ -35,6 +35,19 @@ local TRAY_BUTTONS = {
     "AchievementsButton",
 }
 
+-- Compact Menu contains only the occasional utility actions. Pets/Powers remain permanent hotbar
+-- flank controls because the tutorial and the core play loop teach and use those exact locations.
+local COMPACT_MENU_BUTTONS = {
+    "AdminButton",
+    "RewardsButton",
+    "DailyButton",
+    "QuestButton",
+    "ShopButton",
+    "EffectsButton",
+    "SettingsButton",
+    "AchievementsButton",
+}
+
 local function pillKey(theme)
     local key = theme and theme.color
     if key == nil or key == "neutral" or not PILL.panels[key] then
@@ -140,6 +153,170 @@ function MenuTrayStyle.start()
                 task.wait(0.5)
             end
         end)
+
+        -- Mobile rests as ONE Menu pill. The original tray cannot be reused as the expanded view:
+        -- BaseUI owns its visibility/layout and may turn it back on after this post-process runs.
+        -- Instead, compact mode temporarily adopts the REAL buttons into a dedicated two-column
+        -- popup. Actions/badges stay canonical, while the popup gets geometry that is safe on a
+        -- short landscape phone. Classic mode restores every button to the original pane.
+        if pane then
+            local compactExpanded = false
+            local adopting = false
+            local adopted = {}
+
+            local popup = Instance.new("Frame")
+            popup.Name = "CompactMenuPopup"
+            popup.AnchorPoint = Vector2.new(0, 1)
+            popup.Position = UDim2.new(0, 15, 1, -88)
+            popup.Size = UDim2.fromOffset(140, 204)
+            popup.BackgroundTransparency = 1
+            popup.Visible = false
+            popup.ZIndex = 19
+            popup.Parent = mc
+            require(script.Parent.Parent.UI.UIViewportScale).attach(popup, { min = 0.78 })
+            local popupGrid = Instance.new("UIGridLayout")
+            popupGrid.CellSize = UDim2.fromOffset(66, 66)
+            popupGrid.CellPadding = UDim2.fromOffset(4, 3)
+            popupGrid.FillDirection = Enum.FillDirection.Horizontal
+            popupGrid.FillDirectionMaxCells = 2
+            popupGrid.HorizontalAlignment = Enum.HorizontalAlignment.Left
+            popupGrid.SortOrder = Enum.SortOrder.LayoutOrder
+            popupGrid.VerticalAlignment = Enum.VerticalAlignment.Bottom
+            popupGrid.Parent = popup
+
+            local compactMenu = Instance.new("TextButton")
+            compactMenu.Name = "CompactMenuButton"
+            compactMenu.AnchorPoint = Vector2.new(0, 1)
+            compactMenu.Position = UDim2.new(0, 15, 1, -15)
+            compactMenu.Size = UDim2.fromOffset(68, 68)
+            compactMenu.BackgroundTransparency = 1
+            compactMenu.AutoButtonColor = false
+            compactMenu.Text = ""
+            compactMenu.Visible = false
+            compactMenu.ZIndex = 20
+            compactMenu.Parent = mc
+            require(script.Parent.Parent.UI.UIViewportScale).attach(compactMenu, { min = 0.78 })
+
+            local menuIcon = Instance.new("TextLabel")
+            menuIcon.Name = "Icon"
+            menuIcon.BackgroundTransparency = 1
+            menuIcon.Position = UDim2.new(0, 0, 0, 5)
+            menuIcon.Size = UDim2.new(1, 0, 0.58, 0)
+            menuIcon.Font = Enum.Font.GothamBold
+            menuIcon.Text = "☰"
+            menuIcon.TextSize = 25
+            menuIcon.TextColor3 = Color3.fromRGB(245, 248, 255)
+            menuIcon.ZIndex = 22
+            menuIcon.Parent = compactMenu
+            local menuLabel = Instance.new("TextLabel")
+            menuLabel.Name = "Label"
+            menuLabel.BackgroundTransparency = 1
+            menuLabel.Position = UDim2.new(0, 0, 0.58, -2)
+            menuLabel.Size = UDim2.new(1, 0, 0.36, 0)
+            menuLabel.Font = Enum.Font.GothamBold
+            menuLabel.Text = "Menu"
+            menuLabel.TextSize = 13
+            menuLabel.TextColor3 = Color3.fromRGB(245, 248, 255)
+            menuLabel.ZIndex = 22
+            menuLabel.Parent = compactMenu
+            styleButton(compactMenu, pillKey(theme), styled)
+
+            local applyCompactTray
+
+            compactMenu.MouseButton1Click:Connect(function()
+                compactExpanded = not compactExpanded
+                applyCompactTray()
+            end)
+
+            local function rememberButton(btn)
+                if adopted[btn] or not btn:IsA("GuiButton") then
+                    return
+                end
+                styleButton(btn, pillKey(theme), styled)
+                adopted[btn] = {
+                    parent = pane,
+                    position = btn.Position,
+                    size = btn.Size,
+                    anchorPoint = btn.AnchorPoint,
+                    layoutOrder = btn.LayoutOrder,
+                    visible = btn.Visible,
+                }
+                btn.MouseButton1Click:Connect(function()
+                    if player:GetAttribute("HudLayoutResolved") == "compact" then
+                        compactExpanded = false
+                        applyCompactTray()
+                    end
+                end)
+            end
+
+            local function collectButtons()
+                for _, name in ipairs(COMPACT_MENU_BUTTONS) do
+                    local btn = pane:FindFirstChild(name)
+                    if btn then
+                        rememberButton(btn)
+                    end
+                end
+            end
+
+            applyCompactTray = function()
+                if adopting then
+                    return
+                end
+                adopting = true
+                collectButtons()
+                local compact = player:GetAttribute("HudLayoutResolved") == "compact"
+                compactMenu.Visible = compact
+                popup.Visible = compact and compactExpanded
+                player:SetAttribute("CompactMenuExpanded", compact and compactExpanded)
+
+                if compact then
+                    -- The old container remains hidden even if BaseUI tries to re-open it later.
+                    pane.Visible = false
+                    for btn, saved in pairs(adopted) do
+                        if btn.Parent ~= popup then
+                            saved.visible = btn.Visible
+                            btn.Parent = popup
+                        end
+                        btn.AnchorPoint = Vector2.zero
+                        btn.Size = UDim2.fromOffset(66, 66)
+                        btn.Visible = saved.visible
+                    end
+                else
+                    compactExpanded = false
+                    popup.Visible = false
+                    player:SetAttribute("CompactMenuExpanded", false)
+                    for btn, saved in pairs(adopted) do
+                        btn.Parent = saved.parent
+                        btn.Position = saved.position
+                        btn.Size = saved.size
+                        btn.AnchorPoint = saved.anchorPoint
+                        btn.LayoutOrder = saved.layoutOrder
+                        btn.Visible = saved.visible
+                    end
+                    pane.Visible = true
+                end
+                adopting = false
+            end
+
+            -- BaseUI can update the legacy pane after boot. Enforce the compact contract instead of
+            -- allowing six old buttons to leak back behind the single Menu control.
+            pane:GetPropertyChangedSignal("Visible"):Connect(function()
+                if
+                    not adopting
+                    and player:GetAttribute("HudLayoutResolved") == "compact"
+                    and pane.Visible
+                then
+                    applyCompactTray()
+                end
+            end)
+            pane.ChildAdded:Connect(function(child)
+                if table.find(COMPACT_MENU_BUTTONS, child.Name) then
+                    task.defer(applyCompactTray)
+                end
+            end)
+            player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyCompactTray)
+            applyCompactTray()
+        end
 
         -- ADMIN now stays IN the grid as the last cell (Jason: "just make the admin button last in
         -- the grid"). The grid fills bottom-to-top / left-to-right, so its high LayoutOrder lands it

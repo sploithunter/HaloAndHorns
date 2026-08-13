@@ -76,8 +76,33 @@ local function applyVariantName(label, displayName, variant, huge)
 end
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage scope → role-badge ring
+local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local HudCard = require(script.Parent.Parent.UI.HudCard)
 local StatusBadges = require(script.Parent.Parent.UI.StatusBadges)
+
+local thumbnailRegistry = {}
+pcall(function()
+    thumbnailRegistry = require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
+end)
+
+-- Compact cards prefer the same cheap uploaded art as inventory. A few exclusive/creator pets do
+-- not have a flat registry entry yet, but BootOrchestrator still bakes their ViewportFrame under
+-- Assets.Images.Pets. Clone that fallback only for those exceptional visible squad cards.
+local function cloneBakedPetThumbnail(petType, variant, huge)
+    local ok, viewport = pcall(function()
+        local assets = ReplicatedStorage:FindFirstChild("Assets")
+        local images = assets and assets:FindFirstChild("Images")
+        local pets = images and images:FindFirstChild("Pets")
+        local typeFolder = pets and pets:FindFirstChild(petType)
+        if not typeFolder then
+            return nil
+        end
+        local resolved = (huge and typeFolder:FindFirstChild(variant .. "__huge"))
+            or typeFolder:FindFirstChild(variant)
+        return resolved and resolved:IsA("ViewportFrame") and resolved:Clone() or nil
+    end)
+    return ok and viewport or nil
+end
 
 local SquadHud = {}
 
@@ -254,6 +279,153 @@ function SquadHud.start()
     layout.Padding = UDim.new(0, 4)
     layout.Parent = root
 
+    -- Compact mobile squad: a quiet circular player/count handle which reveals the equipped pets
+    -- around it while held. This radial wheel keeps the team readable without spending a permanent
+    -- vertical strip of the playfield. It is a SECOND presentation of the same live slot state;
+    -- classic named cards remain untouched for desktop and explicit Classic mode.
+    local compactRoot = Instance.new("Frame")
+    compactRoot.Name = "CompactStrip"
+    compactRoot.AnchorPoint = Vector2.new(1, 0.5)
+    compactRoot.Position = UDim2.new(1, -7, 0.5, 0)
+    compactRoot.Size = UDim2.fromOffset(220, 200)
+    compactRoot.BackgroundTransparency = 1
+    compactRoot.ClipsDescendants = false
+    compactRoot.Visible = false
+    compactRoot.Parent = gui
+    require(script.Parent.Parent.UI.UIViewportScale).attach(compactRoot, { min = 0.78 })
+
+    local compactHeader = Instance.new("TextButton")
+    compactHeader.Name = "TeamHandle"
+    compactHeader.AnchorPoint = Vector2.new(0.5, 0.5)
+    compactHeader.Position = UDim2.fromScale(0.5, 0.5)
+    compactHeader.Size = UDim2.fromOffset(58, 58)
+    compactHeader.BackgroundColor3 = Color3.fromRGB(28, 30, 40)
+    compactHeader.BackgroundTransparency = 0.08
+    compactHeader.BorderSizePixel = 0
+    compactHeader.AutoButtonColor = false
+    compactHeader.Text = ""
+    compactHeader.Active = true
+    compactHeader.ZIndex = 12
+    compactHeader.Parent = compactRoot
+    local compactHeaderCorner = Instance.new("UICorner")
+    compactHeaderCorner.CornerRadius = UDim.new(1, 0)
+    compactHeaderCorner.Parent = compactHeader
+    local compactHeaderStroke = Instance.new("UIStroke")
+    compactHeaderStroke.Color = Color3.fromRGB(95, 170, 235)
+    compactHeaderStroke.Thickness = 2
+    compactHeaderStroke.Transparency = 0.15
+    compactHeaderStroke.Parent = compactHeader
+    local compactAvatar = Instance.new("ImageLabel")
+    compactAvatar.Name = "Avatar"
+    compactAvatar.AnchorPoint = Vector2.new(0.5, 0.5)
+    compactAvatar.Position = UDim2.new(0.5, 0, 0.5, -5)
+    compactAvatar.Size = UDim2.fromOffset(42, 42)
+    compactAvatar.BackgroundTransparency = 1
+    compactAvatar.Image = "rbxthumb://type=AvatarHeadShot&id="
+        .. tostring(localPlayer.UserId)
+        .. "&w=150&h=150"
+    compactAvatar.ZIndex = 13
+    compactAvatar.Parent = compactHeader
+    local compactAvatarCorner = Instance.new("UICorner")
+    compactAvatarCorner.CornerRadius = UDim.new(1, 0)
+    compactAvatarCorner.Parent = compactAvatar
+    local compactCount = Instance.new("TextLabel")
+    compactCount.Name = "Count"
+    compactCount.BackgroundTransparency = 1
+    compactCount.AnchorPoint = Vector2.new(0.5, 1)
+    compactCount.Position = UDim2.new(0.5, 0, 1, -1)
+    compactCount.Size = UDim2.fromOffset(48, 18)
+    compactCount.Font = Enum.Font.GothamBold
+    compactCount.TextSize = 14
+    compactCount.TextColor3 = Color3.fromRGB(235, 240, 255)
+    compactCount.TextStrokeColor3 = Color3.fromRGB(12, 15, 25)
+    compactCount.TextStrokeTransparency = 0.15
+    compactCount.Text = "0/0"
+    compactCount.ZIndex = 14
+    compactCount.Parent = compactHeader
+
+    local compactList = Instance.new("Frame")
+    compactList.Name = "HeldPetWheel"
+    compactList.Position = UDim2.fromScale(0, 0)
+    compactList.Size = UDim2.fromScale(1, 1)
+    compactList.BackgroundTransparency = 1
+    compactList.ClipsDescendants = false
+    compactList.Visible = false
+    compactList.Parent = compactRoot
+
+    local compactCards = {}
+    local compactEmptyCards = {}
+    local function layoutCompactCards()
+        local ordered = {}
+        for slot, card in pairs(compactCards) do
+            table.insert(ordered, { slot = slot, card = card })
+        end
+        for slot, card in pairs(compactEmptyCards) do
+            table.insert(ordered, { slot = slot, card = card })
+        end
+        table.sort(ordered, function(a, b)
+            return a.slot < b.slot
+        end)
+        local count = #ordered
+        -- Six early-game pets retain one large, quiet ring. Seven through twelve use two staggered
+        -- six-position rings: the outer pets sit in the angular gaps between the inner pets. This
+        -- keeps the level-50 maximum (10 + extra-pet pass) legible and leaves room for one future
+        -- slot without collapsing the portraits or their status arcs into a crowded clock face.
+        local twoRings = count > 6
+        local scale = twoRings and 0.84 or 1
+        local innerRadius = twoRings and 60 or 62
+        local outerRadius = 86
+        -- Eleven is the shipped maximum (10 level slots + the extra-pet entitlement). Leave the
+        -- unoccupied twelfth position at 3 o'clock, then let that empty space absorb a small
+        -- rightward shift. A full twelve-pet wheel stays centred so its real rightmost node remains
+        -- inside the safe area.
+        local elevenOuterSlots = { 0, 2, 3, 4, 5 }
+        local centerXOffset = count == 11 and 32 or 0
+        compactHeader.Position = UDim2.new(0.5, centerXOffset, 0.5, 0)
+        for index, entry in ipairs(ordered) do
+            local ringIndex = twoRings and ((index - 1) % 6) or (index - 1)
+            local ringCount = twoRings and 6 or math.max(1, count)
+            local isOuter = twoRings and index > 6
+            if count == 11 and isOuter then
+                ringIndex = elevenOuterSlots[index - 6]
+            end
+            local stagger = isOuter and (math.pi / 6) or 0
+            local angle = -math.pi / 2 + stagger + (ringIndex / ringCount) * math.pi * 2
+            local radius = isOuter and outerRadius or innerRadius
+            entry.card.frame.Position = UDim2.new(
+                0.5,
+                centerXOffset + math.cos(angle) * radius,
+                0.5,
+                math.sin(angle) * radius
+            )
+            entry.card.scale.Scale = scale
+        end
+    end
+    local compactManuallyExpanded = false
+    local compactNeedsAttention = false
+    local compactAttentionDismissed = false
+    local function refreshPresentationVisibility()
+        local mode = localPlayer:GetAttribute("SquadDisplayMode") or "classic"
+        local expanded = compactManuallyExpanded
+            or (compactNeedsAttention and not compactAttentionDismissed)
+        root.Visible = mode == "classic" or (mode == "bar" and expanded)
+        compactRoot.Visible = mode ~= "classic"
+        compactHeader.Visible = mode == "circle" or (mode == "bar" and not expanded)
+        compactList.Visible = mode == "circle" and expanded
+        if mode == "bar" and not expanded then
+            compactHeader.Position = UDim2.fromScale(0.5, 0.5)
+        end
+    end
+
+    localPlayer:GetAttributeChangedSignal("SquadDisplayMode"):Connect(refreshPresentationVisibility)
+    localPlayer:GetAttributeChangedSignal("InCombat"):Connect(function()
+        if localPlayer:GetAttribute("InCombat") == true then
+            compactNeedsAttention = true
+        end
+        refreshPresentationVisibility()
+    end)
+    refreshPresentationVisibility()
+
     local selectedSlot = nil
     -- TEAM scope sentinel: selecting the top-of-strip TEAM header sets selectedSlot to this and tells
     -- the server CombatBuffTarget = -1, so a single_pet power (shield/heal/buff) lands on the WHOLE
@@ -322,6 +494,183 @@ function SquadHud.start()
         end
         -- keep the TEAM header lit only while team scope is the active pick (else a single pet is)
         refreshTeamHighlight()
+    end
+
+    -- Compact squad presentations stay open after a tap so individual pets remain selectable.
+    -- A second tap closes them. If combat/damage auto-opened the roster, closing it suppresses that
+    -- attention request until the squad returns to a calm/full-health state.
+    compactHeader.MouseButton1Click:Connect(function()
+        local expanded = compactManuallyExpanded
+            or (compactNeedsAttention and not compactAttentionDismissed)
+        if expanded then
+            compactManuallyExpanded = false
+            compactAttentionDismissed = compactNeedsAttention
+        else
+            compactManuallyExpanded = true
+            compactAttentionDismissed = false
+        end
+        refreshPresentationVisibility()
+    end)
+
+    -- Overlapping tangent segments make a visually continuous active arc. Empty segments are
+    -- hidden; a subtle circular stroke supplies the track, avoiding the dotted-line appearance.
+    local COMPACT_SEGMENTS = 24
+    local function makeSegmentRing(parent, radius, thickness, length, zindex)
+        local segments = {}
+        for i = 1, COMPACT_SEGMENTS do
+            local angle = ((i - 1) / COMPACT_SEGMENTS) * math.pi * 2 - math.pi / 2
+            local segment = Instance.new("Frame")
+            segment.Name = "Segment_" .. i
+            segment.AnchorPoint = Vector2.new(0.5, 0.5)
+            segment.Position =
+                UDim2.new(0.5, math.cos(angle) * radius, 0.5, math.sin(angle) * radius)
+            segment.Size = UDim2.fromOffset(length, thickness)
+            segment.Rotation = math.deg(angle) + 90
+            segment.BackgroundColor3 = Color3.fromRGB(48, 50, 60)
+            segment.BorderSizePixel = 0
+            segment.ZIndex = zindex
+            segment.Parent = parent
+            segments[i] = segment
+        end
+        return segments
+    end
+
+    local function paintSegmentRing(segments, fraction, color, hidden)
+        local active = math.ceil(math.clamp(fraction or 0, 0, 1) * #segments - 0.001)
+        for i, segment in ipairs(segments) do
+            segment.Visible = not hidden and i <= active
+            segment.BackgroundColor3 = color
+            segment.BackgroundTransparency = 0
+        end
+    end
+
+    local function makeCompactCard(slot)
+        local frame = Instance.new("TextButton")
+        frame.Name = "Pet_" .. slot
+        frame.AnchorPoint = Vector2.new(0.5, 0.5)
+        frame.Size = UDim2.fromOffset(48, 48)
+        frame.BackgroundColor3 = Color3.fromRGB(24, 26, 34)
+        frame.BackgroundTransparency = 0.08
+        frame.BorderSizePixel = 0
+        frame.AutoButtonColor = false
+        frame.Text = ""
+        frame.ClipsDescendants = false
+        frame.Parent = compactList
+        local scale = Instance.new("UIScale")
+        scale.Name = "PetScale"
+        scale.Parent = frame
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = frame
+        local stroke = Instance.new("UIStroke")
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        stroke.Color = HudCard.STROKE_IDLE
+        stroke.Thickness = 1.5
+        stroke.Transparency = 0.2
+        stroke.Parent = frame
+
+        local portrait = Instance.new("Frame")
+        portrait.Name = "Portrait"
+        portrait.AnchorPoint = Vector2.new(0.5, 0.5)
+        portrait.Position = UDim2.fromScale(0.5, 0.5)
+        portrait.Size = UDim2.fromOffset(36, 36)
+        portrait.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
+        portrait.BackgroundTransparency = 0.05
+        portrait.BorderSizePixel = 0
+        portrait.ZIndex = 2
+        portrait.Parent = frame
+        local portraitCorner = Instance.new("UICorner")
+        portraitCorner.CornerRadius = UDim.new(1, 0)
+        portraitCorner.Parent = portrait
+
+        local placeholder = Instance.new("TextLabel")
+        placeholder.Name = "ThumbnailFallback"
+        placeholder.Size = UDim2.fromScale(0.72, 0.72)
+        placeholder.AnchorPoint = Vector2.new(0.5, 0.5)
+        placeholder.Position = UDim2.fromScale(0.5, 0.5)
+        placeholder.BackgroundTransparency = 1
+        placeholder.Font = Enum.Font.GothamBold
+        placeholder.Text = "🐾"
+        placeholder.TextScaled = true
+        placeholder.TextColor3 = Color3.fromRGB(215, 225, 240)
+        placeholder.ZIndex = 2
+        placeholder.Visible = false
+        placeholder.Parent = portrait
+
+        local image = Instance.new("ImageLabel")
+        image.Name = "Thumbnail"
+        image.Size = UDim2.fromScale(1, 1)
+        image.BackgroundTransparency = 1
+        image.BorderSizePixel = 0
+        image.ScaleType = Enum.ScaleType.Fit
+        image.ZIndex = 3
+        image.Parent = portrait
+        local enduranceTrack = Instance.new("UIStroke")
+        enduranceTrack.Name = "EnduranceTrack"
+        enduranceTrack.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        enduranceTrack.Color = Color3.fromRGB(47, 50, 60)
+        enduranceTrack.Thickness = 3
+        enduranceTrack.Transparency = 0.15
+        enduranceTrack.Parent = portrait
+
+        -- Inner endurance ring and thinner outer shield ring. The active arcs hug the pet portrait;
+        -- the outer ring disappears completely when no shield is present.
+        local enduranceRing = makeSegmentRing(frame, 19, 3, 7, 4)
+        local shieldRing = makeSegmentRing(frame, 23, 2, 7, 3)
+
+        local badgeHost = Instance.new("Frame")
+        badgeHost.Name = "RoleBadge"
+        badgeHost.AnchorPoint = Vector2.new(0, 1)
+        badgeHost.Position = UDim2.new(0, -1, 1, 1)
+        badgeHost.Size = UDim2.fromOffset(19, 19)
+        badgeHost.BackgroundTransparency = 1
+        badgeHost.ZIndex = 8
+        badgeHost.Parent = frame
+        local badge = PetBadge.create(badgeHost, { zIndex = 8 })
+
+        frame.MouseButton1Click:Connect(function()
+            setSelected(slot)
+        end)
+        return {
+            frame = frame,
+            scale = scale,
+            stroke = stroke,
+            portrait = portrait,
+            image = image,
+            placeholder = placeholder,
+            viewport = nil,
+            enduranceRing = enduranceRing,
+            shieldRing = shieldRing,
+            badge = badge,
+            petType = nil,
+            variant = nil,
+            huge = nil,
+        }
+    end
+
+    local function makeCompactEmptyCard(slot)
+        local frame = Instance.new("Frame")
+        frame.Name = "EmptyPet_" .. slot
+        frame.AnchorPoint = Vector2.new(0.5, 0.5)
+        frame.Size = UDim2.fromOffset(48, 48)
+        frame.BackgroundColor3 = Color3.fromRGB(24, 26, 34)
+        frame.BackgroundTransparency = 0.18
+        frame.BorderSizePixel = 0
+        frame.ClipsDescendants = false
+        frame.Parent = compactList
+        local scale = Instance.new("UIScale")
+        scale.Name = "PetScale"
+        scale.Parent = frame
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = frame
+        local stroke = Instance.new("UIStroke")
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        stroke.Color = Color3.fromRGB(110, 116, 138)
+        stroke.Thickness = 2
+        stroke.Transparency = 0.18
+        stroke.Parent = frame
+        return { frame = frame, scale = scale }
     end
 
     -- Keep the target highlight on whatever the SELECTED pet is currently attacking/mining. Polled
@@ -462,6 +811,27 @@ function SquadHud.start()
         }
     end
 
+    local emptyCards = {}
+    local function makeEmptyCard(slot)
+        local card = HudCard.createCard(root, {
+            name = "EmptySlot_" .. slot,
+            layoutOrder = slot,
+        })
+        card.roleChip.BackgroundColor3 = Color3.fromRGB(48, 51, 64)
+        card.roleGlyph.Text = ""
+        card.roleGlyph.TextColor3 = Color3.fromRGB(170, 176, 196)
+        card.roleIcon.Visible = false
+        card.roleRing.Visible = false
+        card.fill.Size = UDim2.fromScale(0, 1)
+        card.fill.BackgroundColor3 = Color3.fromRGB(48, 51, 64)
+        card.name.Text = "Empty pet slot"
+        card.name.TextColor3 = Color3.fromRGB(170, 176, 196)
+        card.note.Text = tostring(slot)
+        card.note.TextColor3 = Color3.fromRGB(125, 132, 154)
+        card.frame.Active = false
+        return card
+    end
+
     -- TEAM HEADER (Jason): a player-icon card pinned to the TOP of the squad strip. Selecting it puts
     -- power targeting in TEAM scope — a single_pet buff/shield/heal then lands on the WHOLE squad, and
     -- it clears any single-pet pick (the reachable "select everyone" state we were missing). This is
@@ -489,13 +859,15 @@ function SquadHud.start()
         stroke.Parent = frame
         -- circular player HEADSHOT on the inner edge, poking off like the pet role chip. rbxthumb is a
         -- lazily-resolved content URL — no async thumbnail call.
-        local avatarChip = Instance.new("Frame")
+        local avatarChip = Instance.new("TextButton")
         avatarChip.Name = "Avatar"
         avatarChip.AnchorPoint = Vector2.new(HudCard.BADGE_OVERHANG, 0.5)
         avatarChip.Position = UDim2.new(0, 0, 0.5, 0)
         avatarChip.Size = UDim2.new(1, 0, 1, 0)
         avatarChip.BackgroundColor3 = Color3.fromRGB(55, 110, 190)
         avatarChip.BorderSizePixel = 0
+        avatarChip.AutoButtonColor = false
+        avatarChip.Text = ""
         avatarChip.Parent = frame
         local avAspect = Instance.new("UIAspectRatioConstraint")
         avAspect.AspectRatio = 1
@@ -517,6 +889,16 @@ function SquadHud.start()
         local hsCorner = Instance.new("UICorner")
         hsCorner.CornerRadius = UDim.new(1, 0)
         hsCorner.Parent = headshot
+        avatarChip.MouseButton1Click:Connect(function()
+            if localPlayer:GetAttribute("SquadDisplayMode") == "bar" then
+                compactManuallyExpanded = false
+                compactAttentionDismissed = compactNeedsAttention
+                refreshPresentationVisibility()
+            else
+                -- Preserve the classic header's TEAM-scope target when the portrait is tapped.
+                setSelected(selectedSlot == TEAM_SEL and nil or TEAM_SEL)
+            end
+        end)
         local lbl = Instance.new("TextLabel")
         lbl.Name = "Label"
         lbl.BackgroundTransparency = 1
@@ -1177,11 +1559,23 @@ function SquadHud.start()
         accum = 0
         local folder = petsFolder()
         local present = {}
+        local petCount = 0
+        local needsAttention = localPlayer:GetAttribute("InCombat") == true
         if folder then
             for _, pet in ipairs(folder:GetChildren()) do
                 if pet:IsA("Model") and pet.PrimaryPart then
                     local s = readSlot(pet, factor, thresholds)
+                    needsAttention = needsAttention or s.downed or s.healthFraction < 0.999
+                    petCount += 1
                     present[s.slot] = true
+                    if emptyCards[s.slot] then
+                        emptyCards[s.slot].frame:Destroy()
+                        emptyCards[s.slot] = nil
+                    end
+                    if compactEmptyCards[s.slot] then
+                        compactEmptyCards[s.slot].frame:Destroy()
+                        compactEmptyCards[s.slot] = nil
+                    end
                     local card = cards[s.slot]
                     if not card then
                         card = makeCard(s.slot)
@@ -1276,9 +1670,86 @@ function SquadHud.start()
                         card.shieldFill.Size = UDim2.fromScale(shieldF, 1)
                         card.shieldFill.BackgroundColor3 = SHIELD_BAR_COLOR
                     end
+
+                    local compactCard = compactCards[s.slot]
+                    if not compactCard then
+                        compactCard = makeCompactCard(s.slot)
+                        compactCards[s.slot] = compactCard
+                        layoutCompactCards()
+                    end
+                    local huge = pet:GetAttribute("Huge") == true
+                    if
+                        compactCard.petType ~= s.name
+                        or compactCard.variant ~= s.variant
+                        or compactCard.huge ~= huge
+                    then
+                        if compactCard.viewport then
+                            compactCard.viewport:Destroy()
+                            compactCard.viewport = nil
+                        end
+                        local thumbnail =
+                            PetThumbnailResolver.resolve(thumbnailRegistry, s.name, s.variant, huge)
+                        compactCard.image.Image = thumbnail or ""
+                        compactCard.image.Visible = thumbnail ~= nil
+                        compactCard.placeholder.Visible = false
+                        if not thumbnail then
+                            local viewport = cloneBakedPetThumbnail(s.name, s.variant, huge)
+                            if viewport then
+                                viewport.Name = "ThumbnailViewport"
+                                viewport.Size = UDim2.fromScale(1, 1)
+                                viewport.Position = UDim2.fromScale(0, 0)
+                                viewport.BackgroundTransparency = 1
+                                viewport.ZIndex = 3
+                                viewport.Parent = compactCard.portrait
+                                compactCard.viewport = viewport
+                            else
+                                compactCard.placeholder.Visible = true
+                            end
+                        end
+                        compactCard.petType = s.name
+                        compactCard.variant = s.variant
+                        compactCard.huge = huge
+                    end
+                    PetBadge.apply(
+                        compactCard.badge.disc,
+                        compactCard.badge.ring,
+                        element,
+                        roleId,
+                        { ring = POWER_ICONS.targeting_ring[atkScope] }
+                    )
+                    if s.downed then
+                        local petTotal = (s.special and lockoutDur.petSpecial) or lockoutDur.slot
+                        local recovery = petTotal > 0
+                                and math.clamp(1 - (s.cdRemaining / petTotal), 0, 1)
+                            or 0
+                        paintSegmentRing(
+                            compactCard.enduranceRing,
+                            recovery,
+                            STATE_COLOR.Recharging,
+                            false
+                        )
+                        paintSegmentRing(compactCard.shieldRing, 0, SHIELD_BAR_COLOR, true)
+                    else
+                        paintSegmentRing(
+                            compactCard.enduranceRing,
+                            s.healthFraction,
+                            healthColor(s.healthFraction),
+                            false
+                        )
+                        paintSegmentRing(
+                            compactCard.shieldRing,
+                            s.shieldFraction,
+                            SHIELD_BAR_COLOR,
+                            (s.shieldFraction or 0) <= 0
+                        )
+                    end
                     -- Selection = an OUTLINE only (the gems-pill look): the dark bar stays dark, just
                     -- the stroke pops to bright blue. No background colour change (that swamped it).
                     HudCard.applyHighlight(card, (selectedSlot == s.slot) and "select" or nil)
+                    HudCard.applyHighlight(
+                        compactCard,
+                        (selectedSlot == s.slot) and "select" or nil
+                    )
                     StatusBadges.update(
                         card,
                         StatusBadges.resolve("pet", { pet = pet, player = localPlayer }, os.time()),
@@ -1294,6 +1765,43 @@ function SquadHud.start()
                 cards[slot] = nil
             end
         end
+        for slot, card in pairs(compactCards) do
+            if not present[slot] then
+                card.frame:Destroy()
+                compactCards[slot] = nil
+            end
+        end
+        local configuredCapacity = tonumber(localPlayer:GetAttribute("PetEquipSlots")) or petCount
+        local petCapacity = math.max(petCount, math.floor(configuredCapacity))
+        for slot, card in pairs(emptyCards) do
+            if slot > petCapacity or present[slot] then
+                card.frame:Destroy()
+                emptyCards[slot] = nil
+            end
+        end
+        for slot, card in pairs(compactEmptyCards) do
+            if slot > petCapacity or present[slot] then
+                card.frame:Destroy()
+                compactEmptyCards[slot] = nil
+            end
+        end
+        for slot = 1, petCapacity do
+            if not present[slot] then
+                if not emptyCards[slot] then
+                    emptyCards[slot] = makeEmptyCard(slot)
+                end
+                if not compactEmptyCards[slot] then
+                    compactEmptyCards[slot] = makeCompactEmptyCard(slot)
+                end
+            end
+        end
+        layoutCompactCards()
+        compactNeedsAttention = needsAttention
+        if not compactNeedsAttention then
+            compactAttentionDismissed = false
+        end
+        refreshPresentationVisibility()
+        compactCount.Text = string.format("%d/%d", petCount, petCapacity)
         -- keep the world highlight tracking the selected pet's downed visibility
         if selectedSlot and worldHighlight.Adornee then
             worldHighlight.Enabled = not worldHighlight.Adornee:GetAttribute("CombatDowned")

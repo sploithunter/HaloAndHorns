@@ -11,22 +11,18 @@
 ]]
 
 return {
-    version = 1,
+    -- v2 is the FTUE reorder boundary (guided auto-fill + explicit squad review). Historical raw
+    -- events/dashboard dates remain intact; new cohorts use this aligned ten-step definition.
+    version = 2,
     onboarding = {
         enabled = true,
         steps = {
             { id = "joined", name = "Joined game", event = "retention_joined" },
             {
                 id = "tutorial_hatch_first_egg",
-                name = "Tutorial: Hatch first pet",
+                name = "Tutorial: Hatch first egg",
                 event = "tutorial_step_completed",
                 match = { stepId = "hatch_first_egg" },
-            },
-            {
-                id = "tutorial_equip_pet",
-                name = "Tutorial: Deploy pet",
-                event = "tutorial_step_completed",
-                match = { stepId = "equip_pet" },
             },
             {
                 id = "tutorial_farm_crystals",
@@ -39,6 +35,12 @@ return {
                 name = "Tutorial: Grow team",
                 event = "tutorial_step_completed",
                 match = { stepId = "hatch_another" },
+            },
+            {
+                id = "tutorial_build_squad",
+                name = "Tutorial: Build squad",
+                event = "tutorial_step_completed",
+                match = { stepId = "build_squad" },
             },
             {
                 id = "tutorial_first_fight",

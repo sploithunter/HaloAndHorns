@@ -106,6 +106,58 @@ return function()
         end)
     end)
 
+    describe("PetInventoryView.fillEmptySlots (guided multi-hatch)", function()
+        it("fills holes in reveal order without moving or replacing current pets", function()
+            local items = map({
+                ["bunny:basic"] = { id = "bunny", variant = "basic", quantity = 2 },
+                ["doggy:basic"] = { id = "doggy", variant = "basic", quantity = 1 },
+                h1 = { uid = "h1", id = "bear", variant = "golden", huge = true },
+            })
+            local equipped = { slot_1 = "h1", slot_3 = "stack|bunny:basic" }
+            local filled, summary = View.fillEmptySlots(
+                items,
+                equipped,
+                { "doggy:basic", "bunny:basic", "bunny:basic" },
+                4
+            )
+            expect(filled.slot_1).to.equal("h1")
+            expect(filled.slot_2).to.equal("stack|doggy:basic")
+            expect(filled.slot_3).to.equal("stack|bunny:basic")
+            expect(filled.slot_4).to.equal("stack|bunny:basic")
+            expect(summary.added).to.equal(2)
+            expect(summary.total).to.equal(4)
+            expect(summary.addedRefs[1]).to.equal("doggy:basic")
+            expect(summary.addedRefs[2]).to.equal("bunny:basic")
+        end)
+
+        it("leaves a full squad untouched", function()
+            local items = map({
+                ["bunny:basic"] = { id = "bunny", variant = "basic", quantity = 2 },
+            })
+            local equipped = {
+                slot_1 = "stack|bunny:basic",
+                slot_2 = "stack|bunny:basic",
+            }
+            local filled, summary = View.fillEmptySlots(items, equipped, { "bunny:basic" }, 2)
+            expect(filled.slot_1).to.equal(equipped.slot_1)
+            expect(filled.slot_2).to.equal(equipped.slot_2)
+            expect(summary.added).to.equal(0)
+        end)
+
+        it("detects whether the player has a legitimate roster alternative", function()
+            local items = map({
+                ["bunny:basic"] = { id = "bunny", variant = "basic", quantity = 2 },
+                h1 = { uid = "h1", id = "bear", variant = "golden", huge = true },
+            })
+            expect(View.hasUnequipped(items, { slot_1 = "h1" }, 3)).to.equal(true)
+            expect(View.hasUnequipped(items, {
+                slot_1 = "h1",
+                slot_2 = "stack|bunny:basic",
+                slot_3 = "stack|bunny:basic",
+            }, 3)).to.equal(false)
+        end)
+    end)
+
     describe("PetInventoryView.groups (ownership + equipped overlay)", function()
         local items = map({
             ["bear:basic"] = { id = "bear", variant = "basic", quantity = 80, obtained_at = 5 },
