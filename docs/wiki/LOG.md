@@ -2455,3 +2455,9 @@ first-session cohort rates.
 - Added a reusable tagged physical-board renderer and a one-time Studio installer for the four
   origin-skinned board fixtures. Current-state scores can decrease; lifetime counter scores remain
   monotonic.
+## 2026-08-14 — Console selection-image compatibility fix
+
+- Fixed a client-blocking `FocusNavigator` load error by assigning the shared gold selection
+  adornment through each focusable `GuiObject.SelectionImageObject`, rather than the nonexistent
+  `GuiService.SelectionImageObject` member.
+- Added a headless source contract so the invalid global API path cannot silently return.

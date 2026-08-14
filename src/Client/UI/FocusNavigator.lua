@@ -19,7 +19,6 @@ selectionStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 selectionStroke.Color = Color3.fromRGB(255, 220, 55)
 selectionStroke.Thickness = 4
 selectionStroke.Parent = selectionImage
-GuiService.SelectionImageObject = selectionImage
 
 local function focusables(root)
     local result = {}
@@ -29,6 +28,9 @@ local function focusables(root)
     for _, item in ipairs(root:GetDescendants()) do
         if item:IsA("GuiButton") and item.Visible and item.Active then
             item.Selectable = true
+            -- SelectionImageObject belongs to GuiObject, not GuiService. Assign the
+            -- shared adornment to each focusable control as it enters the modal.
+            item.SelectionImageObject = selectionImage
             result[#result + 1] = item
         end
     end
