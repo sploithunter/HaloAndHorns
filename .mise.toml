@@ -15,7 +15,7 @@
 stylua = "0.18.2"
 
 # Lune standalone Luau runtime for headless (no-Studio) pure-logic unit tests
-"github:lune-org/lune" = { version = "0.10.4", exe = "lune" }
+"github:lune-org/lune" = { version = "0.10.5", exe = "lune" }
 
 [env]
 # Environment variables for development

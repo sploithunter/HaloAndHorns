@@ -1377,8 +1377,20 @@ function loadEquipped(Player)
                     if petsFolder then
                         local petTypeFolder = petsFolder:FindFirstChild(effectiveIdName)
                         if petTypeFolder then
-                            local petVariantModel =
-                                petTypeFolder:FindFirstChild(effectiveVariantName)
+                            -- Rigged pets have one animated geometry source: their basic rig. Golden
+                            -- and Rainbow are runtime reskins of that rig, not separate static deployed
+                            -- meshes. An explicit deployed_variant_model remains available for a future
+                            -- non-standard override. This is intentionally deployment-only: inventory
+                            -- thumbnails and catalog/static variant templates remain untouched.
+                            local rawPetEntry = petsConfig
+                                and petsConfig.pets
+                                and petsConfig.pets[effectiveIdName]
+                            local modelVariantName = (
+                                rawPetEntry and rawPetEntry.deployed_variant_model
+                            )
+                                or (rawPetEntry and rawPetEntry.rig_class and "basic")
+                                or effectiveVariantName
+                            local petVariantModel = petTypeFolder:FindFirstChild(modelVariantName)
                             -- Fallback to basic variant if requested one doesn't exist on overridden type
                             if not petVariantModel then
                                 petVariantModel = petTypeFolder:FindFirstChild("basic")

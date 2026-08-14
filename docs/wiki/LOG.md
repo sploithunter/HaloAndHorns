@@ -2461,3 +2461,30 @@ first-session cohort rates.
   adornment through each focusable `GuiObject.SelectionImageObject`, rather than the nonexistent
   `GuiService.SelectionImageObject` member.
 - Added a headless source contract so the invalid global API path cannot silently return.
+
+## 2026-08-14 — Doggy replacement isolated to deployment
+
+- Kept the existing flat inventory-card images and static variant templates unchanged.
+- Added a deployment-only model-source override so basic, golden, and rainbow Doggy instances use
+  the unified no-hole animated rig while retaining their actual saved variant metadata and visuals.
+- Preserved the Basic-only rig prebake rule and added headless coverage preventing the override from
+  leaking into catalog or inventory asset generation.
+
+## 2026-08-14 — Large-inventory draft selection hang fixed
+
+- Traced a reproducible Studio main-thread hang during pet draft selection to `FocusNavigator`, not pet
+  artwork or deployment models. The console-support listener scheduled a full all-to-all directional
+  focus rebuild for every card created by the inventory redraw.
+- Dynamic GUI additions/removals now coalesce into one deferred rewire and directional work is skipped
+  entirely outside gamepad mode. Added a headless source contract to prevent the per-card regression.
+
+## 2026-08-14 — Animated-pet fast-load bake restored
+
+- Re-captured and restored the Rojo-served `Models.rbxm` fast-load snapshot after the rig migration:
+  482 materialized asset roots and 18 Basic rig roots validate with Bones plus AnimationController.
+- Added deterministic pre-bake sanitation for runtime `MissionTiles` and duplicate Studio copies;
+  folder duplicates merge unique static variants before newest-copy selection. Repeated rig rebuilds
+  now remove every stale Basic child instead of only the first.
+- All `rig_class` pets now deploy Golden/Rainbow variants as runtime reskins of their animated Basic
+  geometry while inventory images and static catalog variants remain unchanged. Lune was raised to
+  0.10.5 so current Studio RBXM properties can be validated headlessly.

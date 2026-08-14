@@ -21,7 +21,10 @@
     "ReplicatedStorage": {
       "Assets": {
         "$className": "Folder",
-        "$ignoreUnknownInstances": true
+        "$ignoreUnknownInstances": true,
+        "Models": {
+          "$path": "assets/place/Models.rbxm"
+        }
       },
       "Shared": {
         "$path": "src/Shared"

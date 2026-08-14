@@ -1,8 +1,19 @@
 # Pet Rigging Pipeline — Canonical Quadruped Skeleton
 
-**Status (2026-08-13):** WORKING, verified on doggy, bear, kitty — all three play the identical
-attack clip with zero manual weight painting. Pending: Roblox FBX import verification, marketplace
-animation-pack retarget, sitting-pose pets (bunny, aurora dragon).
+**Status (2026-08-14):** WORKING. The committed fast-load bake contains 18 validated basic rigs;
+every rigged pet deploys from its animated basic geometry and Golden/Rainbow remain runtime reskins.
+Doggy, bear, and kitty are live-verified on the shared attack clip. Pending: sitting-pose pets
+(bunny, aurora dragon).
+
+Animated geometry selection is deployment-only: every pet with `rig_class` clones its unified
+`basic` rig, then applies the pet's saved golden/rainbow treatment. Inventory cards keep using their
+existing flat images, and independent static variant templates remain intact. Do not replace every
+variant template with the rig; that couples unrelated catalog and runtime paths.
+
+The authoritative `assets/place/Models.rbxm` snapshot is sanitized and validated before Rojo serves
+it. It must contain no runtime `MissionTiles`, no duplicate asset paths, and each rigged root must
+have both Bones and an AnimationController. Re-running the Studio rig rebuild deletes *all* prior
+`basic` children first; deleting only the first duplicate makes runtime selection nondeterministic.
 
 ## Why
 
