@@ -177,6 +177,7 @@ function RealmPortalService:_ensurePrompt(part, def)
         return -- idempotent: rescans must not stack prompts
     end
     local prompt = Instance.new("ProximityPrompt")
+    prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
     prompt.Name = PROMPT_NAME
     prompt.ActionText = "Travel"
     prompt.ObjectText = layerDisplayName(def.layer)

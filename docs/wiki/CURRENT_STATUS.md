@@ -2,6 +2,20 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Console Support (landed 2026-08-13)
+
+- Controller gameplay has one semantic action layer: `X` world interaction, `LB`/`RB` hotbar
+  selection, `RT` cast/use, `LT` autocast, `Y` Farm mode, and D-pad shortcuts to Pets, Powers,
+  Quest, and Settings. `A` activates the selected control and `B` closes the top custom menu.
+- Custom menus now use contained geometric focus navigation, automatic scrolling, a strong selection
+  treatment, dynamic-control discovery, and opener-focus restoration. Core click handlers use
+  `Activated`, preserving one behavior path across mouse, touch, and gamepad.
+- Input mode and display class are independent. Ten-foot displays receive safe-edge positioning,
+  larger scaling, controller legends/tutorial text, and floating-banner mirrors for game
+  announcements without suppressing ordinary Roblox chat.
+- Pure headless specs cover input/display classification, glyph selection, and hotbar wrap/recovery.
+  See [Console Support](CONSOLE_SUPPORT.md) for the controller contract and physical-device QA matrix.
+
 ## Trials Endgame (landed 2026-07-08/09; rewards revised 2026-08-07)
 
 CoH-style DOOR MISSIONS ("Trials") are the shipped endgame: deterministic procgen interiors,

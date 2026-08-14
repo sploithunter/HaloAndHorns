@@ -459,6 +459,7 @@ function MissionInstanceService:Open(player, missionId, opts)
     -- instance's own team can trigger it.
     if spawnPad then
         local exitPrompt = Instance.new("ProximityPrompt")
+        exitPrompt.GamepadKeyCode = Enum.KeyCode.ButtonX
         exitPrompt.Name = "MissionExitPrompt"
         exitPrompt.ActionText = "Leave Mission"
         exitPrompt.ObjectText = mission.display or missionId
@@ -960,6 +961,7 @@ function MissionInstanceService:Open(player, missionId, opts)
         local beaconPrompts = {}
         for _, beacon in ipairs(beacons) do
             local bp = Instance.new("ProximityPrompt")
+            bp.GamepadKeyCode = Enum.KeyCode.ButtonX
             bp.Name = "MissionCompletePrompt"
             bp.ActionText = "Complete Mission"
             bp.ObjectText = mission.display or missionId
@@ -2407,6 +2409,7 @@ function MissionInstanceService:_placeTreasures(
         chest.Parent = container
 
         local prompt = Instance.new("ProximityPrompt")
+        prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
         prompt.Name = "TreasurePrompt"
         prompt.ActionText = "Open Treasure"
         prompt.ObjectText = "Chest"
@@ -2663,6 +2666,7 @@ function MissionInstanceService:_bindDoor(part)
     end
 
     local prompt = Instance.new("ProximityPrompt")
+    prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
     prompt.Name = PROMPT_NAME
     prompt.ActionText = "Enter " .. (mission.display or missionId)
     prompt.ObjectText = "Mission"

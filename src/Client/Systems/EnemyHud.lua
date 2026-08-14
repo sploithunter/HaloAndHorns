@@ -311,7 +311,7 @@ function EnemyHud.start()
         card.roleChip.BackgroundTransparency = 1
         card.roleGlyph.Visible = false
         -- Click an enemy card to direct the squad to focus it (same assist-target as a world click).
-        card.frame.MouseButton1Click:Connect(function()
+        card.frame.Activated:Connect(function()
             Signals.Combat_SetAssist:FireServer({ targetId = bid })
         end)
         return card

@@ -14,6 +14,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Current Status](CURRENT_STATUS.md) — what exists right now.
 - [Decisions](DECISIONS.md) — durable decisions and rationale.
 - [Architecture](ARCHITECTURE.md) — system shape and service boundaries.
+- [Console Support](CONSOLE_SUPPORT.md) — controller mapping, semantic input routing, modal focus,
+  ten-foot HUD behavior, and the console QA matrix.
 - [Retention Analytics](RETENTION_ANALYTICS.md) — onboarding funnel, player milestones, and admin access.
 - [Founder's Choice](FOUNDERS_CHOICE.md) — exact first-10,000 cohort reservation, permanent
   pass-benefit selection, entitlement-source union, purchase reconciliation, and shop UX.

@@ -157,6 +157,7 @@ function AscensionAltarService:_ensurePrompt(part)
     end
     local keyName = cfg.key or "E"
     prompt.KeyboardKeyCode = Enum.KeyCode[keyName] or Enum.KeyCode.E
+    prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
     prompt.ActionText = cfg.action_text or "Ascend"
     prompt.ObjectText = cfg.object_text or "Ascension Altar"
     prompt.MaxActivationDistance = tonumber(cfg.max_distance) or 14

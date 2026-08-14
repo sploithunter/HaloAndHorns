@@ -1408,7 +1408,7 @@ function InventoryPanel:_createUI(parent)
         end)
 
         -- Connect close functionality (guards an un-deployed squad draft before closing)
-        closeButton.MouseButton1Click:Connect(function()
+        closeButton.Activated:Connect(function()
             self:_requestClose()
         end)
     end
@@ -7777,8 +7777,8 @@ function InventoryPanel:_createContextMenuOption(parent, option, layoutOrder, it
     end)
 
     -- Also add debug for mouse events on the button
-    optionButton.MouseButton1Click:Connect(function()
-        print("🔘 BUTTON MouseButton1Click DETECTED:", option.text)
+    optionButton.Activated:Connect(function()
+        print("🔘 BUTTON ACTIVATED:", option.text)
     end)
 
     optionButton.MouseButton1Down:Connect(function()
