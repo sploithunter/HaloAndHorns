@@ -6,5 +6,20 @@ return function()
             expect(source:find("GuiService.SelectionImageObject", 1, true)).to.equal(nil)
             expect(source:find("item.SelectionImageObject = selectionImage", 1, true)).to.be.ok()
         end)
+
+        it("coalesces dynamic menu rebuilds and skips rewiring outside gamepad mode", function()
+            local source = readFile("src/Client/UI/FocusNavigator.lua")
+
+            expect(source:find("local function scheduleWire(root)", 1, true)).to.be.ok()
+            expect(
+                source:find(
+                    'if wireQueued or Players.LocalPlayer:GetAttribute("InputMode") ~= "gamepad"',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(source:find("DescendantAdded:Connect", 1, true)).to.be.ok()
+            expect(source:find("scheduleWire(root)", 1, true)).to.be.ok()
+        end)
     end)
 end

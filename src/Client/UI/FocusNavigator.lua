@@ -6,7 +6,9 @@ local Players = game:GetService("Players")
 local FocusNavigator = {}
 local previousSelection = nil
 local activeRoot = nil
-local descendantConnection = nil
+local descendantAddedConnection = nil
+local descendantRemovingConnection = nil
+local wireQueued = false
 
 local selectionImage = Instance.new("Frame")
 selectionImage.Name = "ConsoleSelection"
@@ -75,6 +77,27 @@ local function wire(root)
     return items
 end
 
+-- Inventory cards are rebuilt as one synchronous batch. Rewiring on every DescendantAdded used to
+-- schedule one O(buttons^2) pass PER card, which locked Studio on large inventories before a staged
+-- squad selection could even be activated. Coalesce the whole batch into one deferred pass, and do
+-- no directional-neighbor work at all while the player is using mouse/touch input.
+local function scheduleWire(root)
+    if wireQueued or Players.LocalPlayer:GetAttribute("InputMode") ~= "gamepad" then
+        return
+    end
+    wireQueued = true
+    task.defer(function()
+        wireQueued = false
+        if activeRoot ~= root or not root.Parent then
+            return
+        end
+        local refreshed = wire(root)
+        if #refreshed > 0 and GuiService.SelectedObject == nil then
+            GuiService.SelectedObject = refreshed[1]
+        end
+    end)
+end
+
 local function reveal(selected)
     local node = selected and selected.Parent
     while node and node ~= activeRoot do
@@ -100,28 +123,28 @@ end
 function FocusNavigator.open(root)
     previousSelection = GuiService.SelectedObject
     activeRoot = root
-    if descendantConnection then
-        descendantConnection:Disconnect()
+    if descendantAddedConnection then
+        descendantAddedConnection:Disconnect()
+    end
+    if descendantRemovingConnection then
+        descendantRemovingConnection:Disconnect()
     end
     pcall(function()
         root.SelectionGroup = true
     end)
-    local items = wire(root)
-    descendantConnection = root.DescendantAdded:Connect(function(item)
+    local gamepad = Players.LocalPlayer:GetAttribute("InputMode") == "gamepad"
+    local items = gamepad and wire(root) or {}
+    descendantAddedConnection = root.DescendantAdded:Connect(function(item)
         if item:IsA("GuiButton") then
-            task.defer(function()
-                local refreshed = wire(root)
-                if
-                    #refreshed > 0
-                    and Players.LocalPlayer:GetAttribute("InputMode") == "gamepad"
-                    and GuiService.SelectedObject == nil
-                then
-                    GuiService.SelectedObject = refreshed[1]
-                end
-            end)
+            scheduleWire(root)
         end
     end)
-    if #items > 0 and Players.LocalPlayer:GetAttribute("InputMode") == "gamepad" then
+    descendantRemovingConnection = root.DescendantRemoving:Connect(function(item)
+        if item:IsA("GuiButton") then
+            scheduleWire(root)
+        end
+    end)
+    if #items > 0 and gamepad then
         GuiService.SelectedObject = items[1]
     end
 end
@@ -138,11 +161,16 @@ Players.LocalPlayer:GetAttributeChangedSignal("InputMode"):Connect(function()
 end)
 
 function FocusNavigator.close()
-    if descendantConnection then
-        descendantConnection:Disconnect()
-        descendantConnection = nil
+    if descendantAddedConnection then
+        descendantAddedConnection:Disconnect()
+        descendantAddedConnection = nil
+    end
+    if descendantRemovingConnection then
+        descendantRemovingConnection:Disconnect()
+        descendantRemovingConnection = nil
     end
     activeRoot = nil
+    wireQueued = false
     if previousSelection and previousSelection.Parent then
         GuiService.SelectedObject = previousSelection
     else
@@ -153,7 +181,12 @@ end
 
 GuiService:GetPropertyChangedSignal("SelectedObject"):Connect(function()
     local selected = GuiService.SelectedObject
-    if activeRoot and selected and not selected:IsDescendantOf(activeRoot) then
+    if
+        activeRoot
+        and Players.LocalPlayer:GetAttribute("InputMode") == "gamepad"
+        and selected
+        and not selected:IsDescendantOf(activeRoot)
+    then
         local items = wire(activeRoot)
         GuiService.SelectedObject = items[1]
     else

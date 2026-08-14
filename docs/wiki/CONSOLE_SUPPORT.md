@@ -1,5 +1,12 @@
 # Console Support
 
+## Dynamic menu focus performance
+
+`FocusNavigator` must coalesce descendant changes before rebuilding directional neighbors. Inventory
+draft selection destroys and recreates many card buttons in one batch; rewiring once per added card is
+cubic work on large inventories and can hang Studio. Mouse/touch mode performs no directional-neighbor
+work. Gamepad mode schedules at most one deferred rewire for the batch.
+
 Status: implemented (2026-08-13). Console input is a first-class presentation of the same
 server-authoritative gameplay used by keyboard, mouse, and touch.
 

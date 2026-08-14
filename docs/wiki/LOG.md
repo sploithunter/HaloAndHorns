@@ -2469,3 +2469,11 @@ first-session cohort rates.
   the unified no-hole animated rig while retaining their actual saved variant metadata and visuals.
 - Preserved the Basic-only rig prebake rule and added headless coverage preventing the override from
   leaking into catalog or inventory asset generation.
+
+## 2026-08-14 — Large-inventory draft selection hang fixed
+
+- Traced a reproducible Studio main-thread hang during pet draft selection to `FocusNavigator`, not pet
+  artwork or deployment models. The console-support listener scheduled a full all-to-all directional
+  focus rebuild for every card created by the inventory redraw.
+- Dynamic GUI additions/removals now coalesce into one deferred rewire and directional work is skipped
+  entirely outside gamepad mode. Added a headless source contract to prevent the per-card regression.
