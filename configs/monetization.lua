@@ -156,7 +156,9 @@ return {
             id = "vip_pass",
             name = "👑 VIP Pass",
             description = "2x XP, faster earnings, +speed, VIP tag!",
-            price_robux = 499,
+            -- Dashboard baseline only. The shop resolves the player's current
+            -- managed/regional price from MarketplaceService at runtime.
+            price_robux = 49,
             benefits = {
                 -- NO currency dailies (rating rule) — RATE multipliers only:
                 -- VIPs EARN faster; they never receive currency for Robux.
@@ -188,7 +190,7 @@ return {
             id = "auto_collect",
             name = "🤖 Auto Collector",
             description = "Automatically collect resources near you!",
-            price_robux = 299,
+            price_robux = 29,
             benefits = {
                 -- CONTRACT (Jason 2026-07-14): base range MATCHES the magnet
                 -- power's magnitude (30) and they ADD — pass + magnet power
@@ -215,7 +217,7 @@ return {
             -- power picks, hard-capped at +100% total (2x): past 2x, enemy
             -- chase/leash logic and mission pacing break.
             description = "Move 50% faster forever!",
-            price_robux = 199,
+            price_robux = 19,
             benefits = {
                 effects = {
                     id = "speed_pass",
@@ -242,7 +244,7 @@ return {
             id = "golden_luck_pass",
             name = "✨ Golden Touch",
             description = "Golden pets hatch more often from coin eggs!",
-            price_robux = 349,
+            price_robux = 34,
             benefits = { features = { egg_golden_luck = true } },
             icon = "rbxassetid://134610056334126",
             test_mode_enabled = true,
@@ -251,7 +253,7 @@ return {
             id = "rainbow_luck_pass",
             name = "🌈 Rainbow Radiance",
             description = "Rainbow pets hatch more often from coin eggs!",
-            price_robux = 449,
+            price_robux = 44,
             benefits = { features = { egg_rainbow_luck = true } },
             icon = "rbxassetid://140134292222194",
             test_mode_enabled = true,
@@ -260,7 +262,7 @@ return {
             id = "huge_luck_pass",
             name = "\u{1F409} Huge Hunter",
             description = "HUGE pets hatch more often from coin eggs!",
-            price_robux = 549,
+            price_robux = 54,
             benefits = { features = { egg_huge_luck = true } },
             icon = "rbxassetid://106457794496527",
             test_mode_enabled = true,
@@ -269,7 +271,7 @@ return {
             id = "pet_slot_pass",
             name = "🐾 Deploy an Extra Pet",
             description = "Deploy one more pet than your current limit — 3 becomes 4, 10 becomes 11.",
-            price_robux = 399,
+            price_robux = 39,
             benefits = { features = { extra_equip_slots = 1 } },
             icon = "rbxassetid://93743165018355",
             test_mode_enabled = true,
@@ -278,7 +280,7 @@ return {
             id = "second_wind",
             name = "\u{1FA79} Second Wind",
             description = "Pets recover 3x faster when you're out of combat!",
-            price_robux = 279,
+            price_robux = 27,
             benefits = {
                 -- PAY FOR CONVENIENCE, never power (Jason 2026-07-14: "it
                 -- doesn't change the fight, it minimizes waiting between
