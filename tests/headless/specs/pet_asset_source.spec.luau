@@ -71,6 +71,22 @@ return function()
             expect(pets.pets.kade.asset_transform.orientation.y).to.equal(-90)
         end)
 
+        it("uses Doggy's replacement rig only when deploying saved variants", function()
+            expect(pets.pets.doggy.deployed_variant_model).to.equal("basic")
+
+            local source = readFile("src/Server/Services/PetHandler.server.lua")
+            expect(source:find("rawPetEntry.deployed_variant_model", 1, true) ~= nil).to.equal(true)
+            expect(source:find("petTypeFolder:FindFirstChild(modelVariantName)", 1, true) ~= nil).to.equal(
+                true
+            )
+
+            -- Catalog/static variants and their flat thumbnails remain independent. The
+            -- replacement must not broaden AssetPreloadService's rig-prebake exemption.
+            local preload = readFile("src/Server/Services/AssetPreloadService.lua")
+            expect(preload:find('variant == "basic"', 1, true) ~= nil).to.equal(true)
+            expect(preload:find('petType == "doggy"', 1, true)).to.equal(nil)
+        end)
+
         it("applies imported orientation at the final pet render pivot", function()
             local source = readFile("src/Client/Systems/PetFollowController.lua")
             expect(source:find("local function visualOrientation", 1, true) ~= nil).to.equal(true)

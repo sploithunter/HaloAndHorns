@@ -27,8 +27,8 @@
     height == the static prebake's height, pivot recentered to bbox CENTER
     (the 0.50 convention every working pet follows — PetFollowController
     measures pivot-to-feet from it), then replace <pet>.basic.
-    golden/rainbow variants stay static (code gait) until variant rigs are
-    minted.
+    golden/rainbow variants remain independent templates; pets that share
+    their rig across variants choose that basic template at deployment time.
 
     Rig assets come in UPRIGHT with the front on the pivot look axis — no
     rotation needed (the 2026-07-14 lying-down golemite was a hand-drop
@@ -56,7 +56,7 @@ local RIGS: { [string]: { rig: number, height: number, tex: string? } } = {
 	cinder_golemite = { rig = 104860498147921, height = 2.40, tex = "rbxassetid://117265727136114" },
 	cinderling_imp = { rig = 111624221245800, height = 2.66 },
 	camel = { rig = 90279769761323, height = 2.62 },
-	-- Meshy re-rig 2026-08-13; height = static model bbox 1.620 x the universal 1.6 asset scale
+	-- Replacement rig 2026-08-13; height = static model bbox 1.620 x the universal 1.6 asset scale
 	-- (calibrated against sunwell_camel 1.581->2.53 and frostdust_camel 1.750->2.80, both x1.600).
 	doggy = { rig = 107365459502482, height = 2.59 },
 	-- Conveyor batch 1 (2026-08-13): heights = live static prebake bbox (all 0.998 raw x 3.2 scale).

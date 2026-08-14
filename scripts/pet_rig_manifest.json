@@ -70,7 +70,8 @@
     "doggy": {
       "rig_asset": "107365459502482",
       "skeleton": "quadruped",
-      "prebaked": false
+      "prebaked": false,
+      "note": "Meshy animated replacement rig; its unified body replaces the separated-head July static geometry"
     },
     "dragon": {
       "rig_asset": "135346027250599",

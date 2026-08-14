@@ -1377,8 +1377,17 @@ function loadEquipped(Player)
                     if petsFolder then
                         local petTypeFolder = petsFolder:FindFirstChild(effectiveIdName)
                         if petTypeFolder then
-                            local petVariantModel =
-                                petTypeFolder:FindFirstChild(effectiveVariantName)
+                            -- A replacement rig can be the single deployed geometry source for all
+                            -- of a pet's variants. Variant visuals are still applied below using the
+                            -- pet's real saved variant. This is intentionally a deployment-only choice:
+                            -- inventory thumbnails and catalog/static variant templates are untouched.
+                            local rawPetEntry = petsConfig
+                                and petsConfig.pets
+                                and petsConfig.pets[effectiveIdName]
+                            local modelVariantName = (
+                                rawPetEntry and rawPetEntry.deployed_variant_model
+                            ) or effectiveVariantName
+                            local petVariantModel = petTypeFolder:FindFirstChild(modelVariantName)
                             -- Fallback to basic variant if requested one doesn't exist on overridden type
                             if not petVariantModel then
                                 petVariantModel = petTypeFolder:FindFirstChild("basic")

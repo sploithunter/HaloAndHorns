@@ -1,8 +1,13 @@
 # Pet Rigging Pipeline — Canonical Quadruped Skeleton
 
-**Status (2026-08-13):** WORKING, verified on doggy, bear, kitty — all three play the identical
+**Status (2026-08-14):** WORKING, verified on doggy, bear, kitty — all three play the identical
 attack clip with zero manual weight painting. Pending: Roblox FBX import verification, marketplace
 animation-pack retarget, sitting-pose pets (bunny, aurora dragon).
+
+Doggy's replacement is a deployment-only geometry override: every deployed Doggy variant clones
+the unified `basic` rig, then applies the pet's saved golden/rainbow treatment. Inventory cards keep
+using their existing flat images, and the independent static variant templates remain intact. Do
+not replace every variant template with the rig; that couples unrelated catalog and runtime paths.
 
 ## Why
 

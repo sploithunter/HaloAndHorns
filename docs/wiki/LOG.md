@@ -2461,3 +2461,11 @@ first-session cohort rates.
   adornment through each focusable `GuiObject.SelectionImageObject`, rather than the nonexistent
   `GuiService.SelectionImageObject` member.
 - Added a headless source contract so the invalid global API path cannot silently return.
+
+## 2026-08-14 — Doggy replacement isolated to deployment
+
+- Kept the existing flat inventory-card images and static variant templates unchanged.
+- Added a deployment-only model-source override so basic, golden, and rainbow Doggy instances use
+  the unified no-hole animated rig while retaining their actual saved variant metadata and visuals.
+- Preserved the Basic-only rig prebake rule and added headless coverage preventing the override from
+  leaking into catalog or inventory asset generation.
