@@ -2420,3 +2420,14 @@ first-session cohort rates.
 - Separated input method from display class and added ten-foot safe margins, scaling, hotbar legend,
   strong selected-slot treatment, and floating-banner mirrors for game announcements.
 - Added pure headless coverage for input classification, controller glyphs, and hotbar selection.
+
+## 2026-08-13 — Four scalable origin leaderboards
+
+- Added Grass `Most Dragons`, Desert `Crystal Crusher`, Lava `Enemies Defeated`, and Ice `Team
+  Power`, with creator/test accounts excluded by immutable user ID.
+- Replaced profile-enumeration risk with per-player event-driven publication: authoritative join,
+  relevant live-change, leave, and shutdown snapshots replace that player's OrderedDataStore key.
+  Servers cache the global top 100 and resolve/render only the top 10.
+- Added a reusable tagged physical-board renderer and a one-time Studio installer for the four
+  origin-skinned board fixtures. Current-state scores can decrease; lifetime counter scores remain
+  monotonic.
