@@ -56,6 +56,13 @@ local RIGS: { [string]: { rig: number, height: number, tex: string? } } = {
 	cinder_golemite = { rig = 104860498147921, height = 2.40, tex = "rbxassetid://117265727136114" },
 	cinderling_imp = { rig = 111624221245800, height = 2.66 },
 	camel = { rig = 90279769761323, height = 2.62 },
+	-- Meshy re-rig 2026-08-13; height = static model bbox 1.620 x the universal 1.6 asset scale
+	-- (calibrated against sunwell_camel 1.581->2.53 and frostdust_camel 1.750->2.80, both x1.600).
+	doggy = { rig = 107365459502482, height = 2.59 },
+	-- Conveyor batch 1 (2026-08-13): heights = live static prebake bbox (all 0.998 raw x 3.2 scale).
+	dragon = { rig = 135346027250599, height = 3.19 },
+	bear = { rig = 78950714401323, height = 3.19 },
+	kitty = { rig = 108956356647779, height = 3.19 },
 }
 
 for petName, spec in pairs(RIGS) do
@@ -81,6 +88,15 @@ for petName, spec in pairs(RIGS) do
 	rigModel.Parent = nil
 	asset:Destroy()
 
+	-- Meshy GLB exports smuggle a junk "Icosphere" helper mesh into the asset; it
+	-- inflates the bbox and wrecks the height scale (2026-08-13: doggy spawned at
+	-- 0.21 studs). Purge any non-skinned helper meshes before measuring.
+	for _, d in ipairs(rigModel:GetDescendants()) do
+		if d:IsA("MeshPart") and d.Name == "Icosphere" then
+			d:Destroy()
+		end
+	end
+
 	local mp = rigModel:FindFirstChildWhichIsA("MeshPart", true) :: MeshPart
 	rigModel.PrimaryPart = mp
 	mp.Anchored = true
@@ -98,12 +114,23 @@ for petName, spec in pairs(RIGS) do
 	end
 
 	-- GetBoundingBox is PIVOT-aligned, and some rigs (cinderling_imp) arrive
-	-- with a rotated char1 CFrame — normalize the pivot to world-identity
-	-- FIRST so the height measurement/scale run in world axes.
+	-- with a rotated char1 CFrame — normalize the pivot ORIENTATION to world
+	-- identity FIRST (position-only offsets keep the rotation!) so the height
+	-- measurement/scale run in world axes.
+	mp.PivotOffset = mp.CFrame:Inverse()
 	local cf0, _ = rigModel:GetBoundingBox()
 	mp.PivotOffset = mp.CFrame:Inverse() * CFrame.new(cf0.Position)
-	local _, size = rigModel:GetBoundingBox()
-	rigModel:ScaleTo(rigModel:GetScale() * (spec.height / size.Y))
+	-- ScaleTo clamps each call (~x100); GLB-lane rigs arrive ~0.004 tall and
+	-- need x600-900, so step up to the target (2026-08-13: single-call ScaleTo
+	-- silently left dragon/bear/kitty at 0.2-0.3 studs).
+	for _ = 1, 6 do
+		local _, size = rigModel:GetBoundingBox()
+		local f = spec.height / size.Y
+		if math.abs(f - 1) < 0.001 then
+			break
+		end
+		rigModel:ScaleTo(rigModel:GetScale() * math.min(f, 50))
+	end
 	local cf2, _ = rigModel:GetBoundingBox()
 	mp.PivotOffset = mp.CFrame:Inverse() * CFrame.new(cf2.Position)
 

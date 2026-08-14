@@ -66,6 +66,26 @@
       "skeleton": "quadruped",
       "prebaked": false,
       "note": "GLB zip (Meshy_AI_Blue_Eyed_Baby_Camel_quadruped) via rig_glb_to_fbx lane, textures embedded"
+    },
+    "doggy": {
+      "rig_asset": "107365459502482",
+      "skeleton": "quadruped",
+      "prebaked": false
+    },
+    "dragon": {
+      "rig_asset": "135346027250599",
+      "skeleton": "quadruped",
+      "prebaked": false
+    },
+    "bear": {
+      "rig_asset": "78950714401323",
+      "skeleton": "quadruped",
+      "prebaked": false
+    },
+    "kitty": {
+      "rig_asset": "108956356647779",
+      "skeleton": "quadruped",
+      "prebaked": false
     }
   },
   "zips": {

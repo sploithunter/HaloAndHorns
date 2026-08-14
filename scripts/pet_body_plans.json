@@ -1,0 +1,916 @@
+{
+ "abyssal_wyrm": {
+  "label": "other",
+  "subtype": "winged_quadruped",
+  "confidence": "high",
+  "note": "dragon on 4 legs, large wings spread",
+  "rigged": false,
+  "rig_class": null
+ },
+ "archon_spark": {
+  "label": "other",
+  "subtype": "floater",
+  "confidence": "medium",
+  "note": "no usable render (texture atlas only); classified from name \u2014 'spark' implies a small floating light/energy entity with no legs, heaven-side boss-egg exclusive",
+  "rigged": false,
+  "rig_class": null
+ },
+ "ash_roc": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "roc, wings spread mid-swoop, taloned feet",
+  "rigged": false,
+  "rig_class": null
+ },
+ "ashfeather_phoenix": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "phoenix mid-flight, wings spread, talons",
+  "rigged": false,
+  "rig_class": null
+ },
+ "ashmane_lion": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "lava lion, four-legged crouching stance",
+  "rigged": true,
+  "rig_class": "quadruped"
+ },
+ "ashwing": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "low",
+  "note": "no usable render (texture atlas only); classified from name+comment \u2014 'ash'+'wing', config comment explicitly compares its body_light to lumen_dove ('hell's lantern' vs the dove's light), suggesting a similar small flying/bird-type creature; could plausibly be a bat/imp instead",
+  "rigged": false,
+  "rig_class": null
+ },
+ "aurora_dove": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "medium",
+  "note": "texture atlas shows beak, feather/wing patterns; name = dove",
+  "rigged": false,
+  "rig_class": null
+ },
+ "aurora_dragon": {
+  "label": "other",
+  "subtype": "winged_quadruped",
+  "confidence": "high",
+  "note": "dragon on 4 legs, small wings",
+  "rigged": false,
+  "rig_class": null
+ },
+ "aurora_fox": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "fox standing on four legs, side profile",
+  "rigged": false,
+  "rig_class": null
+ },
+ "aurora_leviathan": {
+  "label": "other",
+  "subtype": "serpent",
+  "confidence": "medium",
+  "note": "serpentine crystal sea-dragon, tiny forelimbs, no hind legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "bear": {
+  "label": "other",
+  "subtype": "bust",
+  "confidence": "low",
+  "note": "chibi head-only render, no body/legs visible to judge stance",
+  "rigged": false,
+  "rig_class": null
+ },
+ "beta_tester_bot": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "robot texture atlas with paw-print icons, no clear stance visible",
+  "rigged": false,
+  "rig_class": null
+ },
+ "black_ice_leviathan": {
+  "label": "other",
+  "subtype": "serpent",
+  "confidence": "high",
+  "note": "coiled serpentine body, no legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "black_seraph": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "winged humanoid angel, arms/legs visible",
+  "rigged": false,
+  "rig_class": null
+ },
+ "blightlamb": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "corrupted lamb standing on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "bloomlamb": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "standing lamb, four legs, halo overhead",
+  "rigged": false,
+  "rig_class": null
+ },
+ "bloomspirit_lamb": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "wool/leaf texture atlas, standard sheep body, no stance visible",
+  "rigged": false,
+  "rig_class": null
+ },
+ "brimstone_salamander": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "lava salamander, 4 legs planted",
+  "rigged": false,
+  "rig_class": null
+ },
+ "bunny": {
+  "label": "other",
+  "subtype": "sitter",
+  "confidence": "medium",
+  "note": "render is a cropped chibi headshot only, no body/legs visible; classified from species (rabbit) per pipeline convention",
+  "rigged": false,
+  "rig_class": null
+ },
+ "camel": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "standard camel stance",
+  "rigged": true,
+  "rig_class": "quadruped"
+ },
+ "carrion_scarab": {
+  "label": "other",
+  "subtype": "insect",
+  "confidence": "high",
+  "note": "beetle, six clawed legs, domed shell",
+  "rigged": false,
+  "rig_class": null
+ },
+ "cerberus_pup": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "no usable render (texture atlas only); classified from name \u2014 puppy version of mythological Cerberus, a multi-headed but still four-legged dog",
+  "rigged": false,
+  "rig_class": null
+ },
+ "cinder_golemite": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "no usable render (texture atlas only), but pets.lua explicitly sets rig_class = \"biped\" (comment: rigged Meshy 'Molten Sentinel biped', 22-bone skinned rig)",
+  "rigged": true,
+  "rig_class": "biped"
+ },
+ "cinderling_imp": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "lava texture atlas only, no anatomy visible; imp family matches biped emberimp render",
+  "rigged": true,
+  "rig_class": "biped"
+ },
+ "cloudling": {
+  "label": "other",
+  "subtype": "floater",
+  "confidence": "high",
+  "note": "no usable render (texture atlas only); classified from name \u2014 'cloud'+'-ling' = a living cloud creature, canonical floater archetype",
+  "rigged": false,
+  "rig_class": null
+ },
+ "colorado": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "no local exports asset (docs: 'no repo art'); classified from config+docs \u2014 uses asset_id (not mesh_asset/texture_asset combine path) matching the Kade avatar-import pattern, and docs/CURRENT_STATUS.md confirms Colorado Plays / Kade are Meet-the-Creator reward pets built from imported Roblox player avatar (R15 humanoid) models",
+  "rigged": false,
+  "rig_class": null
+ },
+ "colorado_creator": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "no local exports asset (docs: 'no repo art'); classified from config \u2014 reuses the identical asset_id as 'colorado' (same avatar model, same asset_transform/camera), just the dev-only Creator-class apex variant",
+  "rigged": false,
+  "rig_class": null
+ },
+ "coronal_cherub": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "winged cherub standing upright on 2 legs, halo",
+  "rigged": false,
+  "rig_class": null
+ },
+ "crystalbark_stag": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "stag standing on four legs, antlers",
+  "rigged": false,
+  "rig_class": null
+ },
+ "dawn_camel": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "camel with halo, standing on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "dawnfire_phoenix": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "avian, large wings, halo crown",
+  "rigged": false,
+  "rig_class": null
+ },
+ "deadfire_phoenix": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "medium",
+  "note": "purple/black texture atlas with wing-shaped feather patterns; name = phoenix",
+  "rigged": false,
+  "rig_class": null
+ },
+ "desertiguana": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "iguana crouched on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "doggy": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "render is a cropped chibi headshot only (two leg stubs visible); classified from species (dog)",
+  "rigged": true,
+  "rig_class": "quadruped"
+ },
+ "dragon": {
+  "label": "other",
+  "subtype": "winged_quadruped",
+  "confidence": "medium",
+  "note": "small dragon on 4 legs, one wing visible tucked at side",
+  "rigged": false,
+  "rig_class": null
+ },
+ "dread_couatl": {
+  "label": "other",
+  "subtype": "serpent",
+  "confidence": "high",
+  "note": "legless coiled snake body with crest/mane",
+  "rigged": false,
+  "rig_class": null
+ },
+ "dread_fox": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "ghostly purple texture atlas with fur patches and ear tips, no full stance visible; standard fox body plan",
+  "rigged": false,
+  "rig_class": null
+ },
+ "dread_hare": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "hare crouched/prowling on all 4 legs, not sitting upright",
+  "rigged": false,
+  "rig_class": null
+ },
+ "dread_owl": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "owl, wings spread, talons extended",
+  "rigged": false,
+  "rig_class": null
+ },
+ "dust_camel": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "skeletal/dust camel standing on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "emberfox": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "standing fox, four legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "emberimp": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "clean render: chibi horned imp standing upright on two legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "emberling": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "lizard/salamander standing on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "emberling_cherub": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "chibi cherub standing on two legs, small wings and tail",
+  "rigged": false,
+  "rig_class": null
+ },
+ "emberlion": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "lion cub standing on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "emberowl": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "owl, bipedal bird stance with wings",
+  "rigged": false,
+  "rig_class": null
+ },
+ "empyreal_couatl": {
+  "label": "other",
+  "subtype": "serpent",
+  "confidence": "high",
+  "note": "pastel texture atlas shows ribbed coiling serpentine body and feathered wings; couatl = feathered serpent",
+  "rigged": false,
+  "rig_class": null
+ },
+ "empyrean_dragon": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "dragon standing upright on hind legs, wings, front paws off ground",
+  "rigged": false,
+  "rig_class": null
+ },
+ "fennec": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "fennec fox, four legs visible, seated/sphinx pose but clear quadruped body plan",
+  "rigged": false,
+  "rig_class": null
+ },
+ "frostblight_lamb": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "ice-corrupted lamb standing on 4 legs",
+  "rigged": true,
+  "rig_class": "quadruped"
+ },
+ "frostbrand_salamander": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "lizard/salamander stance, four legs plus tail",
+  "rigged": false,
+  "rig_class": null
+ },
+ "frostcinder_imp": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "blue crystal texture atlas only, no anatomy visible; imp family matches biped emberimp render",
+  "rigged": false,
+  "rig_class": null
+ },
+ "frostdust_camel": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "camel standing on 4 legs",
+  "rigged": true,
+  "rig_class": "quadruped"
+ },
+ "frostgrave_ent": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "ice/rock golem-ent standing on two legs with arms",
+  "rigged": true,
+  "rig_class": "biped"
+ },
+ "frostlight_doe": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "crystal deer standing on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "frostlight_hare": {
+  "label": "other",
+  "subtype": "sitter",
+  "confidence": "high",
+  "note": "rabbit sitting upright on haunches, paws tucked",
+  "rigged": false,
+  "rig_class": null
+ },
+ "gilded_sphinx": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "white texture atlas with only eyes/snout visible; sphinx traditionally lion-bodied quadruped",
+  "rigged": false,
+  "rig_class": null
+ },
+ "glacial_bear": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "bear cub on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "glacial_seraph": {
+  "label": "other",
+  "subtype": "floater",
+  "confidence": "medium",
+  "note": "chibi winged sprite, no legs visible, body tapers to a point with a detached floating shard below",
+  "rigged": false,
+  "rig_class": null
+ },
+ "glass_sphinx": {
+  "label": "other",
+  "subtype": "sitter",
+  "confidence": "high",
+  "note": "cat sitting upright on haunches, front legs straight",
+  "rigged": false,
+  "rig_class": null
+ },
+ "gloom_hare": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "zombie-style hare standing upright on two feet, arms at sides",
+  "rigged": true,
+  "rig_class": "biped"
+ },
+ "gloom_jackal": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "dark purple texture atlas with fur patches and glowing eyes; jackal = canine quadruped",
+  "rigged": false,
+  "rig_class": null
+ },
+ "goldleaf_stag": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "deer/stag standing on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "gravefrost_owl": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "owl standing on two clawed feet, wings folded",
+  "rigged": false,
+  "rig_class": null
+ },
+ "gravewood_ent": {
+  "label": "other",
+  "subtype": "floater",
+  "confidence": "high",
+  "note": "no legs visible, ghostly floating tree-spirit torso with clawed arms",
+  "rigged": false,
+  "rig_class": null
+ },
+ "halo_fawn": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "no usable render (texture atlas only); classified from name \u2014 'fawn' = baby deer, four-legged",
+  "rigged": false,
+  "rig_class": null
+ },
+ "halo_hare": {
+  "label": "other",
+  "subtype": "sitter",
+  "confidence": "high",
+  "note": "winged rabbit sitting upright on haunches, halo overhead",
+  "rigged": false,
+  "rig_class": null
+ },
+ "hoarfrost_phoenix": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "blue/white texture atlas clearly shows dark feather plumage clusters and eyes; phoenix = bird",
+  "rigged": false,
+  "rig_class": null
+ },
+ "icerot_stag": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "crystalline stag standing on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "kade": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "no usable local render; classified from config+docs \u2014 asset_id-based imported avatar model, config comment references its 'right arm' facing axis, and docs (EGG_AUTHORING_AND_ADMIN_TESTING.md) confirm Kade is a Meet-the-Creator reward modeled on a real Roblox player avatar (humanoid R15 rig)",
+  "rigged": false,
+  "rig_class": null
+ },
+ "kitty": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "render is a cropped chibi headshot only (two leg stubs visible); classified from species (cat)",
+  "rigged": false,
+  "rig_class": null
+ },
+ "lance_seraph": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "owl-like humanoid standing upright, wings + arms holding staff",
+  "rigged": false,
+  "rig_class": null
+ },
+ "lightleaf_hare": {
+  "label": "other",
+  "subtype": "winged_quadruped",
+  "confidence": "medium",
+  "note": "rabbit standing on four legs with prominent side wings",
+  "rigged": false,
+  "rig_class": null
+ },
+ "lumen_dove": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "no usable render (texture atlas only); classified from name \u2014 'dove' is explicit bird species, heaven-side light-bearing boss-egg exclusive",
+  "rigged": false,
+  "rig_class": null
+ },
+ "lumen_salamander": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "pastel crystal texture atlas, only face/eyes visible; salamander = low-slung quadruped",
+  "rigged": false,
+  "rig_class": null
+ },
+ "meerkat": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "meerkat standing upright on 2 legs, sentry pose, tail as prop",
+  "rigged": false,
+  "rig_class": null
+ },
+ "mirage_jackal": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "jackal standing on four legs, side profile",
+  "rigged": false,
+  "rig_class": null
+ },
+ "mirage_meerkat": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "meerkat standing upright sentry pose on hind legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "obsidian_hound": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "no usable render (texture atlas only); classified from name \u2014 'hound' = canine, strongly implies four-legged dog body",
+  "rigged": false,
+  "rig_class": null
+ },
+ "penguin": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "bipedal bird stance, flipper arms",
+  "rigged": false,
+  "rig_class": null
+ },
+ "phantom_jackal": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "dark red/black texture atlas with only glowing eyes visible; jackal = canine quadruped",
+  "rigged": false,
+  "rig_class": null
+ },
+ "polarbear": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "bear cub on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "prism_fox": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "fox standing on four legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "prism_lion": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "crystal lion cub standing on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "prism_scarab": {
+  "label": "other",
+  "subtype": "insect",
+  "confidence": "high",
+  "note": "beetle, six clawed legs, crystalline shell",
+  "rigged": false,
+  "rig_class": null
+ },
+ "radiant_salamander": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "gold/white texture atlas, only eyes/snout visible; salamander = low-slung quadruped",
+  "rigged": false,
+  "rig_class": null
+ },
+ "radiant_sprite": {
+  "label": "other",
+  "subtype": "floater",
+  "confidence": "high",
+  "note": "fairy-like sprite, floral lower body, no legs, floating/hovering",
+  "rigged": false,
+  "rig_class": null
+ },
+ "rime_scarab": {
+  "label": "other",
+  "subtype": "insect",
+  "confidence": "high",
+  "note": "armored beetle, round shell body, six clawed legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "rimegloom_hare": {
+  "label": "other",
+  "subtype": "sitter",
+  "confidence": "high",
+  "note": "hare sitting upright on haunches, ears up",
+  "rigged": true,
+  "rig_class": "quadruped",
+  "mismatch": true
+ },
+ "rimeguard_bear": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "ice-armored bear, four-legged stance",
+  "rigged": true,
+  "rig_class": "quadruped"
+ },
+ "rimelight_hare": {
+  "label": "other",
+  "subtype": "sitter",
+  "confidence": "low",
+  "note": "purple crystal texture atlas, no body visible; hares/rabbits in this pipeline classify as upright sitters",
+  "rigged": false,
+  "rig_class": null
+ },
+ "rimemane_lion": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "lion cub on 4 legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "rimewither_sprite": {
+  "label": "other",
+  "subtype": "floater",
+  "confidence": "high",
+  "note": "tattered wisp figure tapering to a point, no legs, floating debris around it",
+  "rigged": false,
+  "rig_class": null
+ },
+ "rimewraith_dragon": {
+  "label": "other",
+  "subtype": "winged_quadruped",
+  "confidence": "high",
+  "note": "armored dragon on 4 legs with prominent shoulder wings",
+  "rigged": true,
+  "rig_class": "quadruped",
+  "mismatch": true
+ },
+ "rimewraith_fox": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "crystalline fox, standing on four legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "rotleaf_stag": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "green/brown mossy texture atlas, no clear stance visible; stag = deer quadruped",
+  "rigged": false,
+  "rig_class": null
+ },
+ "scorpion": {
+  "label": "other",
+  "subtype": "arthropod",
+  "confidence": "high",
+  "note": "8-legged scorpion with pincers and curled tail",
+  "rigged": false,
+  "rig_class": null
+ },
+ "seraph_kit": {
+  "label": "other",
+  "subtype": "winged_quadruped",
+  "confidence": "low",
+  "note": "no usable render (texture atlas only); classified from name \u2014 'kit' = baby fox/cat (quadruped) + 'seraph' = angelic/winged descriptor, likely a small winged fox or cat; could alternatively be a sitter pose",
+  "rigged": false,
+  "rig_class": null
+ },
+ "seraph_owl": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "owl standing on two feet, halo, wings folded",
+  "rigged": false,
+  "rig_class": null
+ },
+ "snowflakeowl": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "round owl standing on 2 legs, wings folded at sides",
+  "rigged": false,
+  "rig_class": null
+ },
+ "snowfox": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "standing fox, four legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "snowleopard": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "clean render: spotted leopard cub standing on four legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "solar_phoenix": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "phoenix, wings spread, taloned bird feet",
+  "rigged": false,
+  "rig_class": null
+ },
+ "solar_roc": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "roc, wings spread, talons extended, tail feathers",
+  "rigged": false,
+  "rig_class": null
+ },
+ "starlight_owl": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "cosmic owl standing on 2 legs, wings folded at sides",
+  "rigged": false,
+  "rig_class": null
+ },
+ "sun_scarab": {
+  "label": "other",
+  "subtype": "insect",
+  "confidence": "high",
+  "note": "beetle, six clawed legs, domed shell",
+  "rigged": false,
+  "rig_class": null
+ },
+ "sunmane_lion": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "low",
+  "note": "white/gold texture atlas, only eyes visible; lion = standard quadruped",
+  "rigged": false,
+  "rig_class": null
+ },
+ "sunwell_camel": {
+  "label": "quadruped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "camel standing on 4 legs",
+  "rigged": true,
+  "rig_class": "quadruped"
+ },
+ "verdant_sprite": {
+  "label": "other",
+  "subtype": "floater",
+  "confidence": "high",
+  "note": "petal chibi sprite tapering to a point, no legs, floating shard debris",
+  "rigged": false,
+  "rig_class": null
+ },
+ "wither_sprite": {
+  "label": "other",
+  "subtype": "floater",
+  "confidence": "high",
+  "note": "no legs visible, floating ghostly leaf-sprite with clawed arms",
+  "rigged": false,
+  "rig_class": null
+ },
+ "worldbloom_ent": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "high",
+  "note": "tree giant, upright humanoid stance with arms and legs",
+  "rigged": true,
+  "rig_class": "biped"
+ },
+ "worldroot_ent": {
+  "label": "biped",
+  "subtype": null,
+  "confidence": "medium",
+  "note": "bark/wood-grain texture atlas with multiple eyes; ent/tree-person body plan is biped per convention",
+  "rigged": true,
+  "rig_class": "biped"
+ },
+ "wraith_dove": {
+  "label": "other",
+  "subtype": "bird",
+  "confidence": "high",
+  "note": "round owl/dove-like bird standing on 2 bird legs",
+  "rigged": false,
+  "rig_class": null
+ },
+ "wyrmling": {
+  "label": "other",
+  "subtype": "winged_quadruped",
+  "confidence": "low",
+  "note": "no usable render (only Meshy UV texture-atlas PNG found, not a shape render); classified from name \u2014 'wyrmling' = baby/whelp dragon, boss-egg hell exclusive alongside obsidian_hound/cerberus_pup",
+  "rigged": false,
+  "rig_class": null
+ }
+}

@@ -62,20 +62,30 @@ return {
         },
         quadruped = {
             -- Meshy's quadruped library ships ONE clip (walking); the rig is what matters.
-            -- Walk doubles as run at class_knobs.quadruped.run_speed_mult tempo. No idle
-            -- (standing pose) or attack clips yet — richer sets can come from any source,
-            -- the skeleton is standardized (verified: lion + bear diff = identical 27 bones).
+            -- The rest of the set is retargeted from the CC0 Quaternius Ultimate Animated
+            -- Animal Pack onto the standardized Meshy quadruped skeleton (verified: lion +
+            -- bear diff = identical 27 bones) via tools/rigging (2026-08-13, in-place,
+            -- rotations only — code owns locomotion/lunge translation).
+            -- Direct-converter clips (tools/rigging, live-verified lineup 2026-08-13).
+            -- Retarget-lane clips use the pitch-inverted formula; Meshy-authored
+            -- clips (walks) use the base formula — see PET_RIGGING_PIPELINE.md.
+            idle = {
+                "rbxassetid://120395367179101", -- quadruped_idle (weight shifts)
+                "rbxassetid://115550781975626", -- quadruped_idle2 (head-low sniff)
+            },
             walk = {
                 "rbxassetid://91206058452622", -- quadruped_walk (ashmane lion)
                 "rbxassetid://96781308918926", -- quadruped_walk_nightdrake
                 "rbxassetid://87604652590062", -- quadruped_walk_lioncub
                 "rbxassetid://100017650497490", -- quadruped_walk_camel (GLB zip -> rig_glb_to_fbx lane)
+                "rbxassetid://75670337695139", -- quadruped_walking_doggy (direct converter, live-verified)
             },
-            run = {
-                "rbxassetid://91206058452622",
-                "rbxassetid://96781308918926",
-                "rbxassetid://87604652590062",
-            },
+            run = "rbxassetid://128064023011880", -- quadruped_gallop (wolf source)
+            attack = "rbxassetid://111937572695311", -- quadruped_attack (wolf bite lunge, in place)
+            -- Banked, unwired until hit-react playback lands in PetAnimator:
+            -- quadruped_hitreact_left 111085424878340,
+            -- quadruped_hitreact_right 76199902341988.
+            -- Flavor bank: quadruped_headbutt_stag 81713302701738 (hooved pets).
         },
     },
 
@@ -87,12 +97,26 @@ return {
         cinderling_imp = {
             idle = "rbxassetid://135125543047142", -- MeshyLazyIdle (no lift)
         },
+        doggy = {
+            -- pin to its own Meshy walk (direct converter); pool clips from the July
+            -- anim2rbx lane read mirrored on this rig (Blender 5.1 conversion diff)
+            walk = "rbxassetid://75670337695139",
+            -- dog-flavored combat (ShibaInu source) over the wolf class defaults
+            attack = "rbxassetid://72325480360761",
+            run = "rbxassetid://115727517942095",
+        },
+        -- Conveyor batch 1 (2026-08-13): each pinned to its own direct-converter walk.
+        bear = { walk = "rbxassetid://78543048164211" },
+        kitty = { walk = "rbxassetid://123311784869667" },
+        dragon = { walk = "rbxassetid://78019637212851" },
     },
 
     -- Per-class playback knobs (kept OUT of rig_classes so clip tables stay pure ids).
     class_knobs = {
         quadruped = {
-            run_speed_mult = 1.6, -- the walk clip played at run tempo
+            -- Was 1.6 when run reused the walk clip at tempo; the wired run is now a
+            -- real gallop cycle, so play it at authored speed.
+            run_speed_mult = 1.0,
         },
     },
 

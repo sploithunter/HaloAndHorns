@@ -1,5 +1,29 @@
 # Log
 
+## 2026-08-13 — Prebake mapping disabled for the rigged-pet migration
+
+- Removed the `assets/place/Models.rbxm` mapping from `default.project.json` so Studio owns
+  `Assets.Models` while dozens of rigged pets are onboarded — Rojo re-serves can no longer clobber
+  hand-dropped rigged prebakes with the stale snapshot (the documented ASSET_PREBAKE post-mortem).
+- Guardrails: `assets/place/PREBAKE_MAPPING_DISABLED.md` carries the re-enable checklist, and
+  `scripts/release.sh` refuses rojo-upload while that marker exists (game-place publishing already
+  goes through `mise run publish-studio`, which preserves Studio-owned prebakes). CI fast-gate
+  `rojo build` verified green with the mapping removed.
+
+## 2026-08-13 — Canonical quadruped rig: shared attack clips across pets
+
+- Built the headless-Blender pet rigging pipeline (`tools/rigging/rig_pet.py`): one command welds a
+  Meshy GLB, auto-detects facing and body landmarks, fits the canonical 19-bone quadruped skeleton,
+  auto-skins with orphan-shell rescue and chibi-skull cleanup, applies the shared attack clip, and
+  exports a Roblox-ready FBX. Verified on doggy, bear, and kitty — all three play the identical
+  clip with zero manual weight painting.
+- Fixed by measurement, not eyeballing: kitty ears initially froze during the head shake because a
+  mis-fit Head bone let torso bones win the skull; verification now asserts dominant-bone regions
+  and evaluated vertex displacement. SSOT: [Pet Rigging Pipeline](PET_RIGGING_PIPELINE.md).
+- Sitting-pose meshes (bunny, aurora dragon) defeat standing-pose fitting and third-party
+  auto-riggers alike; they need regenerated standing meshes or a separate class. Pending: Roblox
+  FBX import verification, marketplace animation-pack retarget, Anything World free-tier comparison.
+
 ## 2026-08-13 — Real-hit role-based pet attack choreography
 
 - Added pure, config-driven `PetAttackMotion` contact/recovery curves for melee, tank, ranged,
