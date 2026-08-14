@@ -30,6 +30,8 @@ share one implementation.
   established menu and hotbar seams instead of duplicating gameplay logic.
 - `FocusNavigator` contains selection inside the active custom modal, computes geometric neighbors,
   scrolls the selected control into view, and restores the opener when the menu closes.
+  Custom focus artwork is assigned through each `GuiObject.SelectionImageObject`; `GuiService`
+  does not expose a global selection-image member in the live Studio/client API.
 - `InputGlyphs` is the single source for controller-facing labels and tutorial substitutions.
 - `ConsoleHotbar` is pure selection/wraparound logic, covered by headless tests including a binding
   disappearing while selected.
