@@ -505,7 +505,16 @@ local function apply(state)
             (state.need or 1) > 1 and ("   ·   %d / %d"):format(state.count or 0, state.need) or ""
         )
     titleLabel.Text = state.title or ""
-    bodyLabel.Text = state.body or ""
+    local body = state.body or ""
+    if Players.LocalPlayer:GetAttribute("InputMode") == "gamepad" then
+        for _, configuredStep in ipairs((TUTORIAL_CFG and TUTORIAL_CFG.steps) or {}) do
+            if configuredStep.id == state.id and configuredStep.body_gamepad then
+                body = configuredStep.body_gamepad
+                break
+            end
+        end
+    end
+    bodyLabel.Text = body
     capsule.Visible = true
 
     local target = state.target or {}
@@ -566,6 +575,11 @@ function TutorialController.start()
         end
         apply(state)
     end
+    me:GetAttributeChangedSignal("InputMode"):Connect(function()
+        if not inPrologue() then
+            Signals.TutorialStateRequest:FireServer()
+        end
+    end)
     me:GetAttributeChangedSignal("InPrologue"):Connect(function()
         if inPrologue() then
             clearGuidance()

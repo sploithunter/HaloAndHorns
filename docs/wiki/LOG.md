@@ -2410,3 +2410,13 @@ first-session cohort rates.
   stable code and campaign, exposing partner-link conversion without raw event scans. The only
   authored code is the Studio-only `CODETEST` smoke reward; production campaigns are added when
   announced so future public spellings are not leaked through replicated configs.
+
+## 2026-08-13 — Full controller and console support
+
+- Added a semantic controller action layer for world interaction, hotbar selection/casting/autocast,
+  Farm cycling, and direct core-menu access, with controller-aware tutorial copy and prompts.
+- Added contained modal focus navigation with geometric neighbors, scrolling, dynamic controls,
+  opener restoration, and shared `Activated` button behavior across mouse, touch, and gamepad.
+- Separated input method from display class and added ten-foot safe margins, scaling, hotbar legend,
+  strong selected-slot treatment, and floating-banner mirrors for game announcements.
+- Added pure headless coverage for input classification, controller glyphs, and hotbar selection.

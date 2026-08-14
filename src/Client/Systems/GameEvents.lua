@@ -260,6 +260,10 @@ REACTIONS.banner = function(spec, ctx)
     end)
 end
 
+function GameEvents.showBanner(text, spec)
+    REACTIONS.banner(spec or {}, { name = tostring(text or "") })
+end
+
 REACTIONS.float = function(spec, ctx)
     spec = type(spec) == "table" and spec or {}
     local text = (ctx and ctx.name) and tostring(ctx.name) or nil

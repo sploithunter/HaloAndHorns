@@ -6,6 +6,8 @@ local StarterGui = game:GetService("StarterGui")
 local TextChatService = game:GetService("TextChatService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local Players = game:GetService("Players")
+local GameEvents = require(script.Parent.GameEvents)
 
 local ChatAnnouncements = {}
 local enabled = true
@@ -105,6 +107,18 @@ local function display(payload)
             and payload.colorHex:match("^#%x%x%x%x%x%x$")
             and payload.colorHex
         or "#FFFFFF"
+    if Players.LocalPlayer:GetAttribute("DisplayClass") == "ten_foot" then
+        local color = colorFromHex(colorHex)
+        GameEvents.showBanner(payload.text, {
+            seconds = 6,
+            color = {
+                math.floor(color.R * 255),
+                math.floor(color.G * 255),
+                math.floor(color.B * 255),
+            },
+        })
+        return
+    end
     if displayTextChannel(payload, colorHex) then
         return
     end

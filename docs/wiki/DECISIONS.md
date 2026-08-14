@@ -560,3 +560,15 @@ mode, pressing the player portrait beside `MY TEAM` collapses it again; the Circ
 the central handle. Every presentation renders explicit empty positions through the player's current
 pet capacity, without a plus glyph that would falsely imply an action. Pet rows reuse canonical
 thumbnails and archetype/status information, and all presentations consume the same live pet state.
+
+## Console Input and Ten-Foot Layout Are Independent Axes (2026-08-13)
+
+Controller support is routed through semantic game actions, not duplicated controller-only gameplay
+code. Buttons use Roblox `Activated`; world interactions use `ProximityPrompt`; the controller router
+only selects and invokes the existing authoritative seams. Modal selection is contained by the
+active custom menu and returns to the opening control on close.
+
+The current input method and the physical display class are separate state. Connecting a controller
+to a desktop changes glyphs and navigation but not HUD scale; a console television keeps ten-foot
+safe margins even if another input device becomes most recent. This prevents the common failure where
+input switching causes the entire layout to jump between desktop and couch presentations.

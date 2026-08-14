@@ -777,7 +777,7 @@ function EggInteractionService:CreateButton(parent, name, text, size, position, 
     corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = button
 
-    button.MouseButton1Click:Connect(function()
+    button.Activated:Connect(function()
         if callback then
             callback()
         end

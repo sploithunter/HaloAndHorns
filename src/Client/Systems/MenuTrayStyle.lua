@@ -223,7 +223,7 @@ function MenuTrayStyle.start()
 
             local applyCompactTray
 
-            compactMenu.MouseButton1Click:Connect(function()
+            compactMenu.Activated:Connect(function()
                 compactExpanded = not compactExpanded
                 applyCompactTray()
             end)
@@ -241,7 +241,7 @@ function MenuTrayStyle.start()
                     layoutOrder = btn.LayoutOrder,
                     visible = btn.Visible,
                 }
-                btn.MouseButton1Click:Connect(function()
+                btn.Activated:Connect(function()
                     if player:GetAttribute("HudLayoutResolved") == "compact" then
                         compactExpanded = false
                         applyCompactTray()

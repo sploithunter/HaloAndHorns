@@ -144,7 +144,7 @@ function AdminPowerBar.start()
         local corner = Instance.new("UICorner")
         corner.CornerRadius = UDim.new(0, 6)
         corner.Parent = b
-        b.MouseButton1Click:Connect(function()
+        b.Activated:Connect(function()
             task.spawn(function()
                 local remote = ReplicatedStorage:FindFirstChild("GameAPICommand")
                 if remote then
