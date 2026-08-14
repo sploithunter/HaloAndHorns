@@ -80,6 +80,13 @@ Valuable pet provenance and internal grant audit tags are separate. `grant_sourc
 
 Pet index, achievements, and leaderboards should stay thin views over profile state and K1 stat counters. Pet index may persist compact first-discovery records because it is ownership history, but progress counters such as `distinct_pets`, `eggs_hatched`, and `breakables_broken` remain the shared source for achievements and leaderboards.
 
+Global leaderboards must scale by publishing one logged-in player's authoritative score, never by
+scanning `PlayerData`. Each server recalculates at join, coalesces relevant live changes, and forces a
+final replacement at leave/shutdown. OrderedDataStore retains/ranks the population; servers request
+only the top 100 and boards show 10. Derived current-state scores (owned dragon count and strongest
+legal squad) are allowed to fall after inventory changes, while lifetime crystal/enemy counters only
+rise. Immutable creator/test user IDs are excluded and any legacy ordered keys are removed.
+
 ## Studio AI Workflow
 
 Use Codex connected to Roblox Studio through the official Studio MCP server as the primary automated development workflow. Roblox Studio Assistant's external OpenAI/Anthropic/Google model settings currently require provider API keys; they do not replace Codex subscription access. Studio MCP plus Codex gives this project Output access, screenshots, play control, tree inspection, Luau execution, and script reads/edits without adding provider API keys inside Studio.
@@ -560,3 +567,15 @@ mode, pressing the player portrait beside `MY TEAM` collapses it again; the Circ
 the central handle. Every presentation renders explicit empty positions through the player's current
 pet capacity, without a plus glyph that would falsely imply an action. Pet rows reuse canonical
 thumbnails and archetype/status information, and all presentations consume the same live pet state.
+
+## Console Input and Ten-Foot Layout Are Independent Axes (2026-08-13)
+
+Controller support is routed through semantic game actions, not duplicated controller-only gameplay
+code. Buttons use Roblox `Activated`; world interactions use `ProximityPrompt`; the controller router
+only selects and invokes the existing authoritative seams. Modal selection is contained by the
+active custom menu and returns to the opening control on close.
+
+The current input method and the physical display class are separate state. Connecting a controller
+to a desktop changes glyphs and navigation but not HUD scale; a console television keeps ten-foot
+safe margins even if another input device becomes most recent. This prevents the common failure where
+input switching causes the entire layout to jump between desktop and couch presentations.

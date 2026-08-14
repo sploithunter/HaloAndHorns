@@ -40,6 +40,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- Get shared modules
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
+local FocusNavigator = require(script.Parent.FocusNavigator)
 
 -- Load Logger with wrapper (following the established pattern)
 local LoggerWrapper
@@ -179,6 +180,7 @@ function MenuManager:_createOverlay()
     scrim.Name = "Scrim"
     scrim.Text = ""
     scrim.AutoButtonColor = false
+    scrim.Selectable = false
     scrim.Size = UDim2.new(1, 0, 1, 0)
     scrim.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     scrim.BackgroundTransparency = 0.4
@@ -201,6 +203,9 @@ function MenuManager:_createOverlay()
             end
         end
         scrim.Visible = hasPanel
+        if not hasPanel then
+            FocusNavigator.close()
+        end
     end
     overlayGui.ChildAdded:Connect(updateScrim)
     overlayGui.ChildRemoved:Connect(updateScrim)
@@ -236,6 +241,7 @@ function MenuManager:_hideCurrentPanelForSwitch()
     end
 
     panelToClose:Hide()
+    FocusNavigator.close()
     self.logger:info("Switched away from panel:", panelName)
 end
 
@@ -269,6 +275,11 @@ function MenuManager:OpenPanel(panelName, transitionEffect)
     local panelFrame = panel:GetFrame()
     if panelFrame then
         self:_animateEntrance(panelFrame, transitionEffect)
+        task.defer(function()
+            if self.currentPanel == panel and panelFrame.Parent then
+                FocusNavigator.open(panelFrame)
+            end
+        end)
     end
 
     self.currentPanel = panel
@@ -302,6 +313,7 @@ function MenuManager:CloseCurrentPanel(transitionEffect)
     -- Clear current references immediately
     self.currentPanel = nil
     self.currentPanelName = nil
+    FocusNavigator.close()
 
     -- Disable ESC handling
     if self.escConnection then
@@ -559,7 +571,10 @@ function MenuManager:_setupEscapeHandling()
             return
         end
 
-        if input.KeyCode == Enum.KeyCode.Escape and self.currentPanel then
+        if
+            (input.KeyCode == Enum.KeyCode.Escape or input.KeyCode == Enum.KeyCode.ButtonB)
+            and self.currentPanel
+        then
             self:CloseCurrentPanel()
         end
     end)

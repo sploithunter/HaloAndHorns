@@ -96,12 +96,24 @@ Logger:Info("Client initialized", {
 -- the compact layout on touch-first phones/tablets and preserves the existing HUD elsewhere.
 do
     local ok, err = pcall(function()
+        require(script.Systems.InputContext).start()
         require(script.Systems.HudLayoutState).start()
         require(script.Systems.SquadDisplayState).start()
         require(script.Systems.QuestDisplayState).start()
     end)
     if not ok then
         Logger:Warn("Failed to start HUD preference state", { error = tostring(err) })
+    end
+end
+
+-- Semantic controller bindings are installed before the HUD so join-time prompts and gameplay
+-- never depend on a particular panel having finished constructing.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.ConsoleActionRouter).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start console action router", { error = tostring(err) })
     end
 end
 

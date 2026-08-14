@@ -753,6 +753,7 @@ function ZoneService:_ensureTravelPrompt(hook)
         prompt = Instance.new("ProximityPrompt")
         prompt.Name = TRAVEL_PROMPT_NAME
         prompt.KeyboardKeyCode = Enum.KeyCode.E
+        prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
         prompt.RequiresLineOfSight = false
         prompt.HoldDuration = 0
         prompt.MaxActivationDistance = 14

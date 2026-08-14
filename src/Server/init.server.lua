@@ -180,6 +180,12 @@ registerFeatureModule(
         "StatsService"
     )
 )
+registerFeatureModule(
+    "leaderboards",
+    "LeaderboardBoardService",
+    ServerScriptService.Server.Services.LeaderboardBoardService,
+    { "Logger", "ConfigLoader", "LeaderboardService" }
+)
 loader:RegisterModule(
     "AdminService",
     ServerScriptService.Server.Services.AdminService,
@@ -341,7 +347,11 @@ registerFeatureModule(
     "leaderboards",
     "LeaderboardService",
     ServerScriptService.Server.Services.LeaderboardService,
-    appendIfEnabled({ "Logger", "ConfigLoader", "DataService" }, "stats", "StatsService")
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService", "InventoryService" },
+        "stats",
+        "StatsService"
+    )
 )
 loader:RegisterModule(
     "EffectiveStatsService",

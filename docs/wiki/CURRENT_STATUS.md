@@ -2,6 +2,20 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Console Support (landed 2026-08-13)
+
+- Controller gameplay has one semantic action layer: `X` world interaction, `LB`/`RB` hotbar
+  selection, `RT` cast/use, `LT` autocast, `Y` Farm mode, and D-pad shortcuts to Pets, Powers,
+  Quest, and Settings. `A` activates the selected control and `B` closes the top custom menu.
+- Custom menus now use contained geometric focus navigation, automatic scrolling, a strong selection
+  treatment, dynamic-control discovery, and opener-focus restoration. Core click handlers use
+  `Activated`, preserving one behavior path across mouse, touch, and gamepad.
+- Input mode and display class are independent. Ten-foot displays receive safe-edge positioning,
+  larger scaling, controller legends/tutorial text, and floating-banner mirrors for game
+  announcements without suppressing ordinary Roblox chat.
+- Pure headless specs cover input/display classification, glyph selection, and hotbar wrap/recovery.
+  See [Console Support](CONSOLE_SUPPORT.md) for the controller contract and physical-device QA matrix.
+
 ## Trials Endgame (landed 2026-07-08/09; rewards revised 2026-08-07)
 
 CoH-style DOOR MISSIONS ("Trials") are the shipped endgame: deterministic procgen interiors,
@@ -164,7 +178,11 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Phase 3 configs are live: `configs/pet_index.lua`, `configs/achievements.lua`, and `configs/leaderboards.lua`.
 - `PetIndexService` records first-time pet/variant acquisition under `DataService.PetIndex`, increments/syncs `distinct_pets`, and grants index milestones once.
 - `AchievementsService` listens to `StatsService.CounterChanged`, evaluates config tiers over K1 counters, stores completed tiers under `DataService.Achievements.Completed`, and grants rewards once.
-- `LeaderboardService` builds in-server live boards from K1 counters and has a throttled OrderedDataStore path for global boards when config enables it.
+- Four global origin boards are configured: Grass `Most Dragons`, Desert `Crystal Crusher`, Lava
+  `Enemies Defeated`, and Ice `Team Power`. `LeaderboardService` publishes only loaded players on
+  join/relevant changes/leave, reads a top-100 cache, and exposes the first 10 to reusable tagged
+  physical boards; it never walks the profile DataStore. ColoradoPlays, MacrosGodOfMagic,
+  SploitHunter, and SploitGiver are excluded by immutable user ID.
 - Inventory now allows adding to an existing pet stack even when storage slots are full, because existing stacks do not consume new slots.
 - Admin tools now include zone lock testing controls. Developers can toggle, lock, paid-unlock, or bypass-unlock `Meadow` from the admin panel, and custom zone lock input supports future `zoneId:toggle|lock|unlock|bypass` testing.
 - Locked portal/pad travel now shows a player-facing notice with the target area's unlock cost instead of only logging `ZoneTravelResult`. Travel hooks also have `ZoneTravelPrompt` proximity prompts for paid locked gates, and the client hides those prompts once the local player owns the destination so unlocked travel stays touch-only.
@@ -301,7 +319,9 @@ Last checked: 2026-05-27
 - Targeted StyLua check/format for touched Phase 3 files: passes.
 - Targeted Selene for touched Phase 3 files/configs/tests: 0 errors, existing warnings only in older bootstrap/config/inventory/data files.
 - `ConfigLoader.spec` passes in Studio with `36` passed and `0` failed, including pet index, achievements, and leaderboard config validation.
-- `Phase3StatsSmoke` passes through MCP: adding bear/basic twice and bunny/basic records only `2` distinct pet entries, syncs `distinct_pets=2`, grants the first pet-index milestone once, grants the first egg achievement over `eggs_hatched`, updates the live eggs leaderboard, and restores the profile.
+- `Phase3StatsSmoke` covers adding bear/basic twice and bunny/basic as only `2` distinct pet
+  entries, syncing `distinct_pets=2`, the first pet-index milestone, the first `eggs_hatched`
+  achievement, the live Crystal Crusher board, and profile restoration.
 - Phase 2 regression smoke still passes after Phase 3 profile/inventory changes: `Phase2ProgressionSmoke`.
 - `EternalPowerSmoke` exists as a Studio runner for verifying cached eternal pet power after Rojo sync/restart.
 

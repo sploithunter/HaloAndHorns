@@ -529,7 +529,9 @@ function BaseUI:_getSemanticPosition(alignment, size, offset)
     offset.y = tonumber(offset.y) or 0
 
     -- Create cache key for this position calculation
-    local cacheKey = alignment .. "_" .. offset.x .. "_" .. offset.y
+    local tenFoot = Players.LocalPlayer:GetAttribute("DisplayClass") == "ten_foot"
+    local edge = tenFoot and 48 or 15
+    local cacheKey = alignment .. "_" .. offset.x .. "_" .. offset.y .. "_" .. tostring(edge)
 
     -- Return cached position if available
     if self.positionCache and self.positionCache[cacheKey] then
@@ -544,21 +546,21 @@ function BaseUI:_getSemanticPosition(alignment, size, offset)
     local positions = {
         -- Top alignments
         ["top-left"] = {
-            position = UDim2.new(0, 15 + offset.x, 0, 15 + offset.y),
+            position = UDim2.new(0, edge + offset.x, 0, edge + offset.y),
             anchorPoint = Vector2.new(0, 0),
         },
         ["top-center"] = {
-            position = UDim2.new(0.5, offset.x, 0, 15 + offset.y),
+            position = UDim2.new(0.5, offset.x, 0, edge + offset.y),
             anchorPoint = Vector2.new(0.5, 0),
         },
         ["top-right"] = {
-            position = UDim2.new(1, -15 + offset.x, 0, 15 + offset.y),
+            position = UDim2.new(1, -edge + offset.x, 0, edge + offset.y),
             anchorPoint = Vector2.new(1, 0),
         },
 
         -- Center alignments
         ["center-left"] = {
-            position = UDim2.new(0, 15 + offset.x, 0.5, offset.y),
+            position = UDim2.new(0, edge + offset.x, 0.5, offset.y),
             anchorPoint = Vector2.new(0, 0.5),
         },
         ["center"] = {
@@ -566,21 +568,21 @@ function BaseUI:_getSemanticPosition(alignment, size, offset)
             anchorPoint = Vector2.new(0.5, 0.5),
         },
         ["center-right"] = {
-            position = UDim2.new(1, -15 + offset.x, 0.5, offset.y),
+            position = UDim2.new(1, -edge + offset.x, 0.5, offset.y),
             anchorPoint = Vector2.new(1, 0.5),
         },
 
         -- Bottom alignments
         ["bottom-left"] = {
-            position = UDim2.new(0, 15 + offset.x, 1, -15 + offset.y),
+            position = UDim2.new(0, edge + offset.x, 1, -edge + offset.y),
             anchorPoint = Vector2.new(0, 1),
         },
         ["bottom-center"] = {
-            position = UDim2.new(0.5, offset.x, 1, -15 + offset.y),
+            position = UDim2.new(0.5, offset.x, 1, -edge + offset.y),
             anchorPoint = Vector2.new(0.5, 1),
         },
         ["bottom-right"] = {
-            position = UDim2.new(1, -15 + offset.x, 1, -15 + offset.y),
+            position = UDim2.new(1, -edge + offset.x, 1, -edge + offset.y),
             anchorPoint = Vector2.new(1, 1),
         },
     }

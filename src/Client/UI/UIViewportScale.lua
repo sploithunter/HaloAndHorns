@@ -16,6 +16,7 @@
 ]]
 
 local Workspace = game:GetService("Workspace")
+local GuiService = game:GetService("GuiService")
 
 local UIViewportScale = {}
 
@@ -28,7 +29,15 @@ local function factorFor(entry)
     local cam = Workspace.CurrentCamera
     local vp = cam and cam.ViewportSize or Vector2.new(BASE_X, BASE_Y)
     local f = math.min(vp.X / BASE_X, vp.Y / BASE_Y)
-    return math.clamp(f, entry.min, entry.max)
+    local tenFoot = false
+    pcall(function()
+        tenFoot = GuiService:IsTenFootInterface()
+    end)
+    local maxScale = entry.max
+    if tenFoot and not entry.explicitMax then
+        maxScale = 1.15
+    end
+    return math.clamp(f, entry.min, maxScale)
 end
 
 local function refreshAll()
@@ -71,6 +80,7 @@ function UIViewportScale.attach(guiObject, opts)
         scale = scale,
         min = tonumber(opts.min) or DEFAULT_MIN,
         max = tonumber(opts.max) or DEFAULT_MAX,
+        explicitMax = opts.max ~= nil,
     }
     attached[#attached + 1] = entry
     scale.Scale = factorFor(entry)

@@ -19,6 +19,7 @@ local Locations = require(ReplicatedStorage.Shared.Locations)
 local eggSystemConfig = Locations.getConfig("egg_system")
 local petConfig = Locations.getConfig("pets")
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
+local InputGlyphs = require(ReplicatedStorage.Shared.Game.InputGlyphs)
 
 -- Services
 local eggPetPreviewService = nil
@@ -80,7 +81,9 @@ end
 
 local function getHatchActionPrompt()
     local promptConfig = eggSystemConfig.ui.interaction_prompt or {}
-    local interactionKey = eggSystemConfig.proximity.interaction_key.Name
+    local inputMode = player:GetAttribute("InputMode")
+    local interactionKey = inputMode == "gamepad" and InputGlyphs.get(inputMode, "interact")
+        or eggSystemConfig.proximity.interaction_key.Name
     local maxKey = eggSystemConfig.proximity.hatch_max_key.Name
     local autoKey = eggSystemConfig.proximity.auto_hatch_key.Name
 

@@ -327,12 +327,13 @@ function SettingsPanel:_createSliderSetting(
     label.Parent = settingFrame
 
     -- Slider background
-    local sliderBG = Instance.new("Frame")
+    local sliderBG = Instance.new("TextButton")
+    sliderBG.Text = ""
+    sliderBG.AutoButtonColor = false
     sliderBG.Size = UDim2.new(0.35, 0, 0, 8)
     sliderBG.Position = UDim2.new(0.45, 0, 0.5, -4)
     sliderBG.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     sliderBG.BorderSizePixel = 0
-    sliderBG.Active = true -- Frames only receive pointer/touch input when active.
     sliderBG.Parent = settingFrame
 
     local sliderCorner = Instance.new("UICorner")
@@ -365,19 +366,15 @@ function SettingsPanel:_createSliderSetting(
     valueLabel.Parent = settingFrame
 
     -- Click handling for slider
-    local function updateSlider(input)
-        local percent = math.clamp(
-            (input.Position.X - sliderBG.AbsolutePosition.X) / sliderBG.AbsoluteSize.X,
-            0,
-            1
-        )
-        local newValue = minValue + (maxValue - minValue) * percent
+    local function setSliderValue(newValue)
+        local percent = math.clamp((newValue - minValue) / (maxValue - minValue), 0, 1)
         if tonumber(step) and step > 0 then
             newValue = math.floor(newValue / step + 0.5) * step
             newValue = math.floor(newValue * 1000000 + 0.5) / 1000000
             newValue = math.clamp(newValue, minValue, maxValue)
             percent = (newValue - minValue) / (maxValue - minValue)
         end
+        currentValue = newValue
 
         sliderFill.Size = UDim2.new(percent, 0, 1, 0)
         valueLabel.Text = tostring(math.floor(newValue * 100)) .. "%"
@@ -387,6 +384,15 @@ function SettingsPanel:_createSliderSetting(
         end
     end
 
+    local function updateSlider(input)
+        local percent = math.clamp(
+            (input.Position.X - sliderBG.AbsolutePosition.X) / sliderBG.AbsoluteSize.X,
+            0,
+            1
+        )
+        setSliderValue(minValue + (maxValue - minValue) * percent)
+    end
+
     sliderBG.InputBegan:Connect(function(input)
         if
             input.UserInputType == Enum.UserInputType.MouseButton1
@@ -394,6 +400,18 @@ function SettingsPanel:_createSliderSetting(
         then
             updateSlider(input)
         end
+    end)
+    -- Controller-accessible fallback: each A press advances one authored step and wraps.
+    sliderBG.Activated:Connect(function()
+        if Players.LocalPlayer:GetAttribute("InputMode") ~= "gamepad" then
+            return
+        end
+        local increment = tonumber(step) or (maxValue - minValue) / 10
+        currentValue += increment
+        if currentValue > maxValue + 1e-6 then
+            currentValue = minValue
+        end
+        setSliderValue(currentValue)
     end)
 end
 

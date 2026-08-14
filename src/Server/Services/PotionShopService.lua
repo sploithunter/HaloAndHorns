@@ -113,6 +113,7 @@ function PotionShopService:_bindModel(model)
     prompt.ActionText = interaction.action_text or "Browse Potions"
     prompt.ObjectText = interaction.object_text or "Potion Shop"
     prompt.KeyboardKeyCode = Enum.KeyCode[interaction.key or "E"] or Enum.KeyCode.E
+    prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
     prompt.MaxActivationDistance = tonumber(interaction.max_distance) or 14
     prompt.HoldDuration = tonumber(interaction.hold_duration) or 0
     prompt.RequiresLineOfSight = interaction.requires_line_of_sight == true

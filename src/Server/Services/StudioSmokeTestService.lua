@@ -2487,10 +2487,11 @@ function StudioSmokeTestService:_runPhase3StatsSmoke(player, payload)
             error("Expected eggs_hatched achievement tier eggs_1 to complete")
         end
 
+        statsService:Set(player, "breakables_broken", 1)
         leaderboardService:RefreshPlayer(player)
-        local board = leaderboardService:GetLiveLeaderboard("eggs_hatched", 10)
+        local board = leaderboardService:GetLiveLeaderboard("crystal_crusher", 10)
         if not board or #board == 0 then
-            error("Expected live eggs_hatched leaderboard entry")
+            error("Expected live Crystal Crusher leaderboard entry")
         end
 
         local foundPlayer = false
@@ -2501,7 +2502,7 @@ function StudioSmokeTestService:_runPhase3StatsSmoke(player, payload)
             end
         end
         if not foundPlayer then
-            error("Expected player to appear on eggs_hatched leaderboard with value 1")
+            error("Expected player to appear on Crystal Crusher leaderboard with value 1")
         end
 
         return {

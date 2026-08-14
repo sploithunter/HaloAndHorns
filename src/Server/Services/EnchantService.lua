@@ -905,6 +905,7 @@ function EnchantService:_ensureStationPrompt(station, touchPart, stationId, stat
     local keyName = promptConfig.key or "E"
     local keyCode = Enum.KeyCode[keyName] or Enum.KeyCode.E
     prompt.KeyboardKeyCode = keyCode
+    prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
     prompt.ActionText = promptConfig.action_text or "Enchant Pets"
     prompt.ObjectText = promptConfig.object_text or stationConfig.display_name or "Enchanter"
     prompt.MaxActivationDistance = tonumber(promptConfig.max_distance) or 14

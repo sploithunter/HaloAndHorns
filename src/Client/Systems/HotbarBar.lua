@@ -37,6 +37,8 @@ local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local UITheme = require(script.Parent.Parent.UI.UITheme)
 local PanelChrome = require(script.Parent.Parent.UI.Components.PanelChrome)
 local HotbarKeyboard = require(script.Parent.HotbarKeyboard)
+local ConsoleHotbar = require(ReplicatedStorage.Shared.Game.ConsoleHotbar)
+local InputGlyphs = require(ReplicatedStorage.Shared.Game.InputGlyphs)
 
 -- Tint a pill ImageLabel to the player's area palette (frames are keyed by colour name —
 -- sapphire/citrine/ruby/emerald/neutral — same keys UITheme returns), re-applying when the area
@@ -264,14 +266,37 @@ function HotbarBar.start()
     root.BackgroundTransparency = 1
     root.Parent = gui
 
+    local controllerLegend = Instance.new("TextLabel")
+    controllerLegend.Name = "ControllerLegend"
+    controllerLegend.AnchorPoint = Vector2.new(0.5, 1)
+    controllerLegend.Position = UDim2.new(0.5, 0, 0, -20)
+    controllerLegend.Size = UDim2.fromOffset(520, 24)
+    controllerLegend.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+    controllerLegend.BackgroundTransparency = 0.12
+    controllerLegend.BorderSizePixel = 0
+    controllerLegend.Font = Enum.Font.GothamBold
+    controllerLegend.TextColor3 = Color3.fromRGB(245, 225, 120)
+    controllerLegend.TextSize = 15
+    controllerLegend.Text = InputGlyphs.hotbarLegend("gamepad")
+    controllerLegend.Visible = localPlayer:GetAttribute("InputMode") == "gamepad"
+    controllerLegend.Parent = root
+    local legendCorner = Instance.new("UICorner")
+    legendCorner.CornerRadius = UDim.new(1, 0)
+    legendCorner.Parent = controllerLegend
+    localPlayer:GetAttributeChangedSignal("InputMode"):Connect(function()
+        controllerLegend.Visible = localPlayer:GetAttribute("InputMode") == "gamepad"
+    end)
+
     -- Compact mobile HUD docks the bar against the usable bottom edge. Classic keeps the breathing
     -- room of the established desktop layout. Position is attribute-driven so Studio edits can be
     -- compared in either mode without rebuilding the UI.
     local function applyHudLayout()
         local compact = localPlayer:GetAttribute("HudLayoutResolved") == "compact"
-        root.Position = UDim2.new(0.5, 0, 1, compact and -16 or -20)
+        local tenFoot = localPlayer:GetAttribute("DisplayClass") == "ten_foot"
+        root.Position = UDim2.new(0.5, 0, 1, tenFoot and -48 or (compact and -16 or -20))
     end
     localPlayer:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyHudLayout)
+    localPlayer:GetAttributeChangedSignal("DisplayClass"):Connect(applyHudLayout)
     applyHudLayout()
 
     -- Blue neon pill_frame wrapping the whole bar (9-slice so the wide bar keeps proper corners;
@@ -458,6 +483,9 @@ function HotbarBar.start()
 
     -- Two rows of 10 slots. Bottom row = slots 1-10, top row = 11-20.
     local cards = {}
+    local selectedSlot = nil
+    local currentHotbar = {}
+    local paintControllerSelection
     local locked = {} -- slot -> true when AUTO-CAST locked; re-fires on cooldown
     local lastAuto = {} -- slot -> os.clock() of the last auto-fire (bridges the fire->cooldown round-trip)
     local longPressConsumed = {} -- slot -> true: a long-press just toggled, so suppress the tap's activate
@@ -615,6 +643,13 @@ function HotbarBar.start()
             local c = Instance.new("UICorner")
             c.CornerRadius = UDim.new(1, 0) -- circular slot
             c.Parent = b
+            local selection = Instance.new("UIStroke")
+            selection.Name = "ControllerSelection"
+            selection.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            selection.Color = Color3.fromRGB(255, 220, 55)
+            selection.Thickness = 4
+            selection.Transparency = 1
+            selection.Parent = b
 
             local iconImg = Instance.new("ImageLabel")
             iconImg.Name = "Icon"
@@ -683,7 +718,7 @@ function HotbarBar.start()
 
             local cool = attachRadial(b)
 
-            b.MouseButton1Click:Connect(function()
+            b.Activated:Connect(function()
                 -- A long-press just toggled the lock on this slot; swallow the tap so it doesn't
                 -- also fire the power (mobile: a hold ends in a click event).
                 if longPressConsumed[slot] then
@@ -747,6 +782,7 @@ function HotbarBar.start()
                 icon = iconImg,
                 ring = ringImg,
                 lock = lockBadge, -- the auto-cast "⟳" badge; toggleAutoLock toggles its .Visible
+                selection = selection,
             }
         end
     end
@@ -761,6 +797,7 @@ function HotbarBar.start()
             return
         end
         lastHotbarState = state
+        currentHotbar = {}
         if next(state.hotbar) ~= nil then
             stateApplied = true
         end
@@ -777,6 +814,7 @@ function HotbarBar.start()
             local card = cards[slot]
             if card then
                 local bind = state.hotbar[tostring(slot)] or state.hotbar[slot]
+                currentHotbar[slot] = bind
                 card.bindObj = bind
                 -- An emptied/rebound slot drops its auto-cast lock so the badge can't linger.
                 if not bind and locked[slot] then
@@ -914,6 +952,14 @@ function HotbarBar.start()
                 -- With real art present, let it stand on a clear slot; keep the coloured
                 -- placeholder for text-only / empty slots so they're still legible.
                 card.frame.BackgroundTransparency = hasArt and 1 or (bind and 0.05 or 0.4)
+            end
+        end
+        if localPlayer:GetAttribute("InputMode") == "gamepad" then
+            if selectedSlot == nil or currentHotbar[selectedSlot] == nil then
+                selectedSlot = ConsoleHotbar.step(currentHotbar, nil, 1, 20)
+            end
+            if paintControllerSelection then
+                paintControllerSelection()
             end
         end
     end
@@ -1060,7 +1106,7 @@ function HotbarBar.start()
     end)
     paintFarm()
 
-    farmBtn.MouseButton1Click:Connect(function()
+    local function cycleFarm()
         -- next desired state
         local m = modeOf()
         local wantFree, wantPaid
@@ -1077,7 +1123,8 @@ function HotbarBar.start()
         if status.paid ~= wantPaid then
             Signals.AutoTarget_TogglePaid:FireServer()
         end
-    end)
+    end
+    farmBtn.Activated:Connect(cycleFarm)
 
     -- ===== Assignment: Edit toggle + per-slot picker =====
     local editBtn = Instance.new("TextButton")
@@ -1264,7 +1311,7 @@ function HotbarBar.start()
             selectionStroke.Thickness = 2
             selectionStroke.Transparency = bindMatches(currentBind, bind) and 0 or 0.75
             selectionStroke.Parent = e
-            e.MouseButton1Click:Connect(function()
+            e.Activated:Connect(function()
                 Signals.Hotbar_Rebind:FireServer({ slot = slot, bind = bind })
                 closePicker()
             end)
@@ -1464,13 +1511,48 @@ function HotbarBar.start()
             or Color3.fromRGB(60, 63, 76)
         setEditAttention(editMode)
     end
-    editBtn.MouseButton1Click:Connect(function()
+    editBtn.Activated:Connect(function()
         editMode = not editMode
         if not editMode then
             closePicker()
         end
         paintEdit()
     end)
+
+    paintControllerSelection = function()
+        local gamepad = localPlayer:GetAttribute("InputMode") == "gamepad"
+        for slot, card in pairs(cards) do
+            if card.selection then
+                card.selection.Transparency = gamepad and slot == selectedSlot and 0 or 1
+            end
+        end
+    end
+
+    local controller = {}
+    function controller:StepSelection(direction)
+        selectedSlot = ConsoleHotbar.step(currentHotbar, selectedSlot, direction, 20)
+        paintControllerSelection()
+    end
+    function controller:ActivateSelection()
+        if selectedSlot and currentHotbar[selectedSlot] then
+            Signals.Hotbar_Activate:FireServer({ slot = selectedSlot })
+        end
+    end
+    function controller:ToggleSelectionAutocast()
+        if selectedSlot then
+            toggleAutoLock(selectedSlot)
+        end
+    end
+    function controller:CycleFarm()
+        cycleFarm()
+    end
+    localPlayer:GetAttributeChangedSignal("InputMode"):Connect(function()
+        if localPlayer:GetAttribute("InputMode") == "gamepad" and selectedSlot == nil then
+            selectedSlot = ConsoleHotbar.step(currentHotbar, nil, 1, 20)
+        end
+        paintControllerSelection()
+    end)
+    _G.HotbarController = controller
 end
 
 return HotbarBar

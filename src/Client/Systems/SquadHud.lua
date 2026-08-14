@@ -272,6 +272,16 @@ function SquadHud.start()
     root.Parent = gui
     -- pixel-designed strip: shrink on small viewports (anchored right-center, stays docked)
     require(script.Parent.Parent.UI.UIViewportScale).attach(root)
+    local function applyDisplayClass()
+        root.Position = UDim2.new(
+            1,
+            localPlayer:GetAttribute("DisplayClass") == "ten_foot" and -48 or -8,
+            0.5,
+            0
+        )
+    end
+    localPlayer:GetAttributeChangedSignal("DisplayClass"):Connect(applyDisplayClass)
+    applyDisplayClass()
     local layout = Instance.new("UIListLayout")
     layout.FillDirection = Enum.FillDirection.Vertical
     layout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -499,7 +509,7 @@ function SquadHud.start()
     -- Compact squad presentations stay open after a tap so individual pets remain selectable.
     -- A second tap closes them. If combat/damage auto-opened the roster, closing it suppresses that
     -- attention request until the squad returns to a calm/full-health state.
-    compactHeader.MouseButton1Click:Connect(function()
+    compactHeader.Activated:Connect(function()
         local expanded = compactManuallyExpanded
             or (compactNeedsAttention and not compactAttentionDismissed)
         if expanded then
@@ -628,7 +638,7 @@ function SquadHud.start()
         badgeHost.Parent = frame
         local badge = PetBadge.create(badgeHost, { zIndex = 8 })
 
-        frame.MouseButton1Click:Connect(function()
+        frame.Activated:Connect(function()
             setSelected(slot)
         end)
         return {
@@ -782,7 +792,7 @@ function SquadHud.start()
             killBtn.Visible = localPlayer:GetAttribute("AdminOverlaysOn") == true
         end)
 
-        frame.MouseButton1Click:Connect(function()
+        frame.Activated:Connect(function()
             -- A downed pet whose cooldown has elapsed shows "Summon" — clicking the card
             -- re-summons it. Otherwise a click just selects the slot (assist target).
             local c = cards[slot]
@@ -889,7 +899,7 @@ function SquadHud.start()
         local hsCorner = Instance.new("UICorner")
         hsCorner.CornerRadius = UDim.new(1, 0)
         hsCorner.Parent = headshot
-        avatarChip.MouseButton1Click:Connect(function()
+        avatarChip.Activated:Connect(function()
             if localPlayer:GetAttribute("SquadDisplayMode") == "bar" then
                 compactManuallyExpanded = false
                 compactAttentionDismissed = compactNeedsAttention
@@ -930,14 +940,14 @@ function SquadHud.start()
         local tbCorner = Instance.new("UICorner")
         tbCorner.CornerRadius = UDim.new(1, 0)
         tbCorner.Parent = teamBtn
-        teamBtn.MouseButton1Click:Connect(function()
+        teamBtn.Activated:Connect(function()
             local mm = _G.MenuManager
             if mm then
                 mm:OpenPanel("Team", "slide_in_right")
             end
         end)
         teamCard = { frame = frame, stroke = stroke }
-        frame.MouseButton1Click:Connect(function()
+        frame.Activated:Connect(function()
             -- toggle: pick TEAM scope, or if it's already the pick, clear back to no selection
             setSelected(selectedSlot == TEAM_SEL and nil or TEAM_SEL)
         end)
@@ -1127,11 +1137,11 @@ function SquadHud.start()
             local fbCorner = Instance.new("UICorner")
             fbCorner.CornerRadius = UDim.new(1, 0)
             fbCorner.Parent = followBtn
-            followBtn.MouseButton1Click:Connect(function()
+            followBtn.Activated:Connect(function()
                 TeamFollow.toggle(name)
             end)
 
-            frame.MouseButton1Click:Connect(function()
+            frame.Activated:Connect(function()
                 local wasPicked = selectedMate == name
                 setSelected(nil) -- clears pet/TEAM pick + selectedMate; server clears both attrs
                 if not wasPicked then
@@ -1205,7 +1215,7 @@ function SquadHud.start()
                             -- click = select THIS teammate pet as the cast-through target
                             -- (slot + playerName → server stamps CombatBuffTarget +
                             -- CombatBuffTargetPlayer; a single-pet heal/shield lands on it)
-                            pc.frame.MouseButton1Click:Connect(function()
+                            pc.frame.Activated:Connect(function()
                                 local slot = petSlot(pet)
                                 local wasPicked = selectedMate == name and selectedMateSlot == slot
                                 setSelected(nil) -- clears every pick, client + server

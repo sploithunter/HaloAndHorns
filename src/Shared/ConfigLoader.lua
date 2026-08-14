@@ -5037,14 +5037,45 @@ function ConfigLoader:_validateLeaderboardsConfig(config)
         end
         seen[board.id] = true
 
-        if type(board.stat) ~= "string" or board.stat == "" then
-            return self:_configError("leaderboards", path .. ".stat", "expected non-empty string")
+        local score = board.score
+        if score == nil and type(board.stat) == "string" then
+            score = { kind = "counter", counter = board.stat } -- legacy config compatibility
         end
-        if not self:_counterExists(board.stat) then
+        if type(score) ~= "table" then
+            return self:_configError("leaderboards", path .. ".score", "expected score table")
+        end
+        if score.kind == "counter" then
+            if type(score.counter) ~= "string" or not self:_counterExists(score.counter) then
+                return self:_configError(
+                    "leaderboards",
+                    path .. ".score.counter",
+                    "must reference configs/stats.lua counters"
+                )
+            end
+        elseif score.kind == "inventory_taxonomy" then
+            if type(score.pet_ids) ~= "table" or #score.pet_ids == 0 then
+                return self:_configError(
+                    "leaderboards",
+                    path .. ".score.pet_ids",
+                    "expected non-empty array"
+                )
+            end
+            local petsConfig = self:_rawConfig("pets")
+            local configuredPets = type(petsConfig) == "table" and petsConfig.pets or {}
+            for petIndex, petId in ipairs(score.pet_ids) do
+                if type(petId) ~= "string" or configuredPets[petId] == nil then
+                    return self:_configError(
+                        "leaderboards",
+                        path .. ".score.pet_ids[" .. petIndex .. "]",
+                        "must reference a configured pet family"
+                    )
+                end
+            end
+        elseif score.kind ~= "strongest_squad" then
             return self:_configError(
                 "leaderboards",
-                path .. ".stat",
-                "must reference configs/stats.lua counters"
+                path .. ".score.kind",
+                "must be counter, inventory_taxonomy, or strongest_squad"
             )
         end
 
@@ -5080,14 +5111,6 @@ function ConfigLoader:_validateLeaderboardsConfig(config)
                         path .. ".global.ordered_store",
                         "expected non-empty string"
                     )
-                end
-                ok, err = self:_requirePositiveNumber(
-                    "leaderboards",
-                    board.global.refresh_seconds,
-                    path .. ".global.refresh_seconds"
-                )
-                if not ok then
-                    return ok, err
                 end
             end
         end

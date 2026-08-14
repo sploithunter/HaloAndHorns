@@ -98,6 +98,12 @@ function PlayerBar.start()
     cap.Size = UDim2.fromOffset(520, 64) -- name + matched-height XP + Focus bars, compact
     -- pixel-designed: shrink on small viewports (UIViewportScale, anchored — stays docked)
     require(script.Parent.Parent.UI.UIViewportScale).attach(cap)
+    local function applyDisplayClass()
+        cap.Position =
+            UDim2.new(0.5, 0, 0, player:GetAttribute("DisplayClass") == "ten_foot" and 48 or 14)
+    end
+    player:GetAttributeChangedSignal("DisplayClass"):Connect(applyDisplayClass)
+    applyDisplayClass()
     cap.BackgroundColor3 = Color3.fromRGB(120, 124, 132)
     corner(cap, 28)
     grad(cap, Color3.fromRGB(150, 154, 162), Color3.fromRGB(78, 82, 90))
