@@ -94,6 +94,7 @@ function InventoryService:Init()
     self._playerLevelConnections = {}
     self._playerDataLoadedConnections = {}
     self.EquipmentChanged = Signal.new()
+    self.PetsChanged = Signal.new()
 
     self._logger:Info("📦 InventoryService initializing", {
         enabledBuckets = self._inventoryConfig.enabled_buckets,
@@ -2637,6 +2638,7 @@ function InventoryService:RebuildPetProjections(player)
     self:_updateBucketFolders(player, "pets")
     self:_updateEquippedFolders(player, "pets")
     self.EquipmentChanged:Fire(player)
+    self.PetsChanged:Fire(player)
 end
 
 -- LIGHT refresh — use on ownership-only changes that CANNOT invalidate equip (add/hatch,
@@ -2645,6 +2647,7 @@ end
 function InventoryService:RefreshPetInventory(player)
     self:_recomputePetUsedSlots(player)
     self:_updateBucketFolders(player, "pets")
+    self.PetsChanged:Fire(player)
 end
 
 -- TARGETED refresh — progression/enchant mutations already know the exact unique record keys
@@ -2719,6 +2722,7 @@ function InventoryService:RefreshPetRecords(player, recordKeys, impact)
     end
 
     self:_publishPetProjection(player, impact)
+    self.PetsChanged:Fire(player)
 end
 
 -- The "re-equip from truth" pass: live equipped = Equipped ∩ inventory. Rewrites Equipped.pets

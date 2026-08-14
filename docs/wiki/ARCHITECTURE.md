@@ -122,7 +122,12 @@ filtered out of production registries.
   config IDs, rather than public spellings or aliases, key durable claim records and retention
   attribution; LaunchData may prefill a code but never silently redeems it. See
   [Promo / Reward Codes](PROMO_CODES.md).
-- `LeaderboardService` owns K1-backed live in-server leaderboard snapshots and optional throttled OrderedDataStore publication for global boards.
+- `LeaderboardService` owns event-driven leaderboard scoring and OrderedDataStore publication. It
+  never enumerates saved profiles: join, relevant counter/inventory changes, leave, and server
+  shutdown replace only the current player's key. Global reads cache the top 100 scores while
+  resolving/displaying only the top 10 names. Current-state boards may decrease; lifetime-counter
+  boards remain monotonic. `LeaderboardBoardService` binds one shared renderer to Studio-authored
+  models tagged `LeaderboardBoard` with a `BoardId` attribute.
 - `configs/network.lua.packets` is the incremental network manifest. `NetworkManifest` validates packet names, transport, direction, authorization, environments, delivery, schemas, and client-origin rate/handler metadata at boot and in headless CI. `SignalRegistry` is the sole manifest-to-transport constructor. Twenty-six exact-compatible notifications now use the manifest, including progression, economy, interaction, combat-presentation, player-status, gameplay-event, and debug packets; the legacy bridge table and remaining `Signals` declarations stay live until later compatibility slices remove them.
 - Phase 2 player actions use central `Signals` remotes: `PurchaseUpgrade`, `UpgradeResult`, `UnlockZoneRequest`, `ZoneUnlockResult`, and `ZoneTravelResult`. Admin test actions include `Admin_SetZoneLock`. Service methods remain the authority; remotes are thin request/result bridges for future UI.
 - `StudioSmokeTestService` is a Studio-only test bridge. It exposes controlled server-authoritative smoke-test actions to MCP/client runners and must remain disabled outside Studio.
