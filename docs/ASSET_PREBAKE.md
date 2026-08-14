@@ -39,12 +39,19 @@ the `AssetReport` lists loaded (not skipped) models — those are the ones missi
    → save as `Models.rbxm` (anywhere, e.g. `~/Documents`).
    - MCP `execute_luau` **cannot** write files, so this save is manual. (MCP can still *traverse* and
      *validate* — it just can't export.)
-3. Validate, then drop it in and commit:
+3. Sanitize runtime caches/duplicate Studio copies, validate, then drop it in and commit:
    ```sh
-   lune run scripts/prebake/summarize_prebake.luau ~/Documents/Models.rbxm   # expect EMPTY=0
-   cp ~/Documents/Models.rbxm assets/place/Models.rbxm
+   lune run scripts/prebake/sanitize_prebake.luau ~/Documents/Models.rbxm /tmp/Models-clean.rbxm
+   lune run scripts/prebake/summarize_prebake.luau /tmp/Models-clean.rbxm
+   # expect ASSET_ROOTS ... EMPTY=0 and RIGGED_ASSET_ROOTS ... invalid=0
+   cp /tmp/Models-clean.rbxm assets/place/Models.rbxm
    git add assets/place/Models.rbxm && git commit -m "chore(prebake): refresh Models cache"
    ```
+
+The sanitizer removes the runtime-generated `MissionTiles` cache and resolves duplicate asset paths
+left by repeated Studio rebuilds. When duplicate folders exist, it merges their unique children before
+keeping the newest copy, so static Golden/Rainbow catalog variants are not lost. The validator uses
+Lune 0.10.5 because current Studio exports contain properties older Lune versions cannot deserialize.
 
 ### Critical: a stale bake SILENTLY KILLS RIGGED PETS
 
@@ -64,8 +71,9 @@ from the uploaded rig assets (run via MCP in Edit, then capture).
 ### Critical: save from a FULLY-BOOTED RUNTIME, never Edit mode
 
 `InsertService:LoadAsset` content does **not** serialize through an Edit-mode place save — the models
-come out **empty** (`parts=0`). The validator flags this (`EMPTY=N`). Always capture the **running**
-game's `Assets.Models`, where geometry is materialized.
+come out **empty** (`parts=0`). The validator flags this under `ASSET_ROOTS ... EMPTY=N`; empty nested
+organizational models are informational. Always capture the **running** game's `Assets.Models`, where
+geometry is materialized.
 
 ## Images (thumbnails) — optional, same pattern
 

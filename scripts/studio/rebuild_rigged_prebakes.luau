@@ -42,123 +42,132 @@ local pets = game:GetService("ReplicatedStorage").Assets.Models.Pets
 -- prebake so gameplay footprint is unchanged), tex = TextureID override for
 -- rigs whose upload is untextured }
 local RIGS: { [string]: { rig: number, height: number, tex: string? } } = {
-	worldbloom_ent = { rig = 135208930872261, height = 4.49 },
-	worldroot_ent = { rig = 107519892318201, height = 4.56 },
-	ashmane_lion = { rig = 78366659327055, height = 2.35 },
-	rimeguard_bear = { rig = 83903219841691, height = 2.69 },
-	frostblight_lamb = { rig = 78432967884838, height = 2.72 },
-	frostdust_camel = { rig = 74000437914712, height = 2.80 },
-	frostgrave_ent = { rig = 132619230578005, height = 4.57 },
-	gloom_hare = { rig = 136066082092506, height = 3.05 },
-	rimegloom_hare = { rig = 99931014862135, height = 3.05 },
-	rimewraith_dragon = { rig = 91096733870190, height = 6.34 },
-	sunwell_camel = { rig = 132933270009914, height = 2.53 },
-	cinder_golemite = { rig = 104860498147921, height = 2.40, tex = "rbxassetid://117265727136114" },
-	cinderling_imp = { rig = 111624221245800, height = 2.66 },
-	camel = { rig = 90279769761323, height = 2.62 },
-	-- Replacement rig 2026-08-13; height = static model bbox 1.620 x the universal 1.6 asset scale
-	-- (calibrated against sunwell_camel 1.581->2.53 and frostdust_camel 1.750->2.80, both x1.600).
-	doggy = { rig = 107365459502482, height = 2.59 },
-	-- Conveyor batch 1 (2026-08-13): heights = live static prebake bbox (all 0.998 raw x 3.2 scale).
-	dragon = { rig = 135346027250599, height = 3.19 },
-	bear = { rig = 78950714401323, height = 3.19 },
-	kitty = { rig = 108956356647779, height = 3.19 },
+    worldbloom_ent = { rig = 135208930872261, height = 4.49 },
+    worldroot_ent = { rig = 107519892318201, height = 4.56 },
+    ashmane_lion = { rig = 78366659327055, height = 2.35 },
+    rimeguard_bear = { rig = 83903219841691, height = 2.69 },
+    frostblight_lamb = { rig = 78432967884838, height = 2.72 },
+    frostdust_camel = { rig = 74000437914712, height = 2.80 },
+    frostgrave_ent = { rig = 132619230578005, height = 4.57 },
+    gloom_hare = { rig = 136066082092506, height = 3.05 },
+    rimegloom_hare = { rig = 99931014862135, height = 3.05 },
+    rimewraith_dragon = { rig = 91096733870190, height = 6.34 },
+    sunwell_camel = { rig = 132933270009914, height = 2.53 },
+    cinder_golemite = { rig = 104860498147921, height = 2.40, tex = "rbxassetid://117265727136114" },
+    cinderling_imp = { rig = 111624221245800, height = 2.66 },
+    camel = { rig = 90279769761323, height = 2.62 },
+    -- Replacement rig 2026-08-13; height = static model bbox 1.620 x the universal 1.6 asset scale
+    -- (calibrated against sunwell_camel 1.581->2.53 and frostdust_camel 1.750->2.80, both x1.600).
+    doggy = { rig = 107365459502482, height = 2.59 },
+    -- Conveyor batch 1 (2026-08-13): heights = live static prebake bbox (all 0.998 raw x 3.2 scale).
+    dragon = { rig = 135346027250599, height = 3.19 },
+    bear = { rig = 78950714401323, height = 3.19 },
+    kitty = { rig = 108956356647779, height = 3.19 },
 }
 
 for petName, spec in pairs(RIGS) do
-	local ok, asset = pcall(function()
-		return InsertService:LoadAsset(spec.rig)
-	end)
-	if not ok or not asset then
-		warn(("[rebuild_rigged_prebakes] %s LOAD FAIL: %s"):format(petName, tostring(asset)))
-		continue
-	end
-	local rigModel: Model?
-	for _, c in ipairs(asset:GetChildren()) do
-		if c:IsA("Model") and c:FindFirstChildWhichIsA("MeshPart", true) then
-			rigModel = c
-			break
-		end
-	end
-	if not rigModel then
-		warn(("[rebuild_rigged_prebakes] %s: no Model in asset"):format(petName))
-		asset:Destroy()
-		continue
-	end
-	rigModel.Parent = nil
-	asset:Destroy()
+    local ok, asset = pcall(function()
+        return InsertService:LoadAsset(spec.rig)
+    end)
+    if not ok or not asset then
+        warn(("[rebuild_rigged_prebakes] %s LOAD FAIL: %s"):format(petName, tostring(asset)))
+        continue
+    end
+    local rigModel: Model?
+    for _, c in ipairs(asset:GetChildren()) do
+        if c:IsA("Model") and c:FindFirstChildWhichIsA("MeshPart", true) then
+            rigModel = c
+            break
+        end
+    end
+    if not rigModel then
+        warn(("[rebuild_rigged_prebakes] %s: no Model in asset"):format(petName))
+        asset:Destroy()
+        continue
+    end
+    rigModel.Parent = nil
+    asset:Destroy()
 
-	-- Meshy GLB exports smuggle a junk "Icosphere" helper mesh into the asset; it
-	-- inflates the bbox and wrecks the height scale (2026-08-13: doggy spawned at
-	-- 0.21 studs). Purge any non-skinned helper meshes before measuring.
-	for _, d in ipairs(rigModel:GetDescendants()) do
-		if d:IsA("MeshPart") and d.Name == "Icosphere" then
-			d:Destroy()
-		end
-	end
+    -- Meshy GLB exports smuggle a junk "Icosphere" helper mesh into the asset; it
+    -- inflates the bbox and wrecks the height scale (2026-08-13: doggy spawned at
+    -- 0.21 studs). Purge any non-skinned helper meshes before measuring.
+    for _, d in ipairs(rigModel:GetDescendants()) do
+        if d:IsA("MeshPart") and d.Name == "Icosphere" then
+            d:Destroy()
+        end
+    end
 
-	local mp = rigModel:FindFirstChildWhichIsA("MeshPart", true) :: MeshPart
-	rigModel.PrimaryPart = mp
-	mp.Anchored = true
-	if spec.tex then
-		mp.TextureID = spec.tex
-	end
-	local ac = rigModel:FindFirstChildWhichIsA("AnimationController", true)
-	if not ac then
-		ac = Instance.new("AnimationController")
-		ac.Parent = rigModel
-	end
-	if not ac:FindFirstChildOfClass("Animator") then
-		local animator = Instance.new("Animator")
-		animator.Parent = ac
-	end
+    local mp = rigModel:FindFirstChildWhichIsA("MeshPart", true) :: MeshPart
+    rigModel.PrimaryPart = mp
+    mp.Anchored = true
+    if spec.tex then
+        mp.TextureID = spec.tex
+    end
+    local ac = rigModel:FindFirstChildWhichIsA("AnimationController", true)
+    if not ac then
+        ac = Instance.new("AnimationController")
+        ac.Parent = rigModel
+    end
+    if not ac:FindFirstChildOfClass("Animator") then
+        local animator = Instance.new("Animator")
+        animator.Parent = ac
+    end
 
-	-- GetBoundingBox is PIVOT-aligned, and some rigs (cinderling_imp) arrive
-	-- with a rotated char1 CFrame — normalize the pivot ORIENTATION to world
-	-- identity FIRST (position-only offsets keep the rotation!) so the height
-	-- measurement/scale run in world axes.
-	mp.PivotOffset = mp.CFrame:Inverse()
-	local cf0, _ = rigModel:GetBoundingBox()
-	mp.PivotOffset = mp.CFrame:Inverse() * CFrame.new(cf0.Position)
-	-- ScaleTo clamps each call (~x100); GLB-lane rigs arrive ~0.004 tall and
-	-- need x600-900, so step up to the target (2026-08-13: single-call ScaleTo
-	-- silently left dragon/bear/kitty at 0.2-0.3 studs).
-	for _ = 1, 6 do
-		local _, size = rigModel:GetBoundingBox()
-		local f = spec.height / size.Y
-		if math.abs(f - 1) < 0.001 then
-			break
-		end
-		rigModel:ScaleTo(rigModel:GetScale() * math.min(f, 50))
-	end
-	local cf2, _ = rigModel:GetBoundingBox()
-	mp.PivotOffset = mp.CFrame:Inverse() * CFrame.new(cf2.Position)
+    -- GetBoundingBox is PIVOT-aligned, and some rigs (cinderling_imp) arrive
+    -- with a rotated char1 CFrame — normalize the pivot ORIENTATION to world
+    -- identity FIRST (position-only offsets keep the rotation!) so the height
+    -- measurement/scale run in world axes.
+    mp.PivotOffset = mp.CFrame:Inverse()
+    local cf0, _ = rigModel:GetBoundingBox()
+    mp.PivotOffset = mp.CFrame:Inverse() * CFrame.new(cf0.Position)
+    -- ScaleTo clamps each call (~x100); GLB-lane rigs arrive ~0.004 tall and
+    -- need x600-900, so step up to the target (2026-08-13: single-call ScaleTo
+    -- silently left dragon/bear/kitty at 0.2-0.3 studs).
+    for _ = 1, 6 do
+        local _, size = rigModel:GetBoundingBox()
+        local f = spec.height / size.Y
+        if math.abs(f - 1) < 0.001 then
+            break
+        end
+        rigModel:ScaleTo(rigModel:GetScale() * math.min(f, 50))
+    end
+    local cf2, _ = rigModel:GetBoundingBox()
+    mp.PivotOffset = mp.CFrame:Inverse() * CFrame.new(cf2.Position)
 
-	local folder = pets:FindFirstChild(petName)
-	if not folder then
-		folder = Instance.new("Folder")
-		folder.Name = petName
-		folder.Parent = pets
-	end
-	local old = folder:FindFirstChild("basic")
-	rigModel.Name = "basic"
-	rigModel.Parent = folder
-	if old then
-		old:Destroy()
-	end
+    local folder = pets:FindFirstChild(petName)
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = petName
+        folder.Parent = pets
+    end
+    -- A prior version removed only FindFirstChild("basic"). Re-running the script after a
+    -- duplicate had already entered Studio therefore left another stale copy behind, making
+    -- runtime FindFirstChild selection nondeterministic. Clear every prior basic before parenting
+    -- the freshly rebuilt rig.
+    for _, child in ipairs(folder:GetChildren()) do
+        if child.Name == "basic" then
+            child:Destroy()
+        end
+    end
+    rigModel.Name = "basic"
+    rigModel.Parent = folder
 
-	local bones = 0
-	for _, d in ipairs(rigModel:GetDescendants()) do
-		if d:IsA("Bone") then
-			bones += 1
-		end
-	end
-	print(("[rebuild_rigged_prebakes] %s: bones=%d height=%.2f tex=%s"):format(
-		petName,
-		bones,
-		spec.height,
-		mp.TextureID ~= "" and "yes" or "GREY"
-	))
+    local bones = 0
+    for _, d in ipairs(rigModel:GetDescendants()) do
+        if d:IsA("Bone") then
+            bones += 1
+        end
+    end
+    print(
+        ("[rebuild_rigged_prebakes] %s: bones=%d height=%.2f tex=%s"):format(
+            petName,
+            bones,
+            spec.height,
+            mp.TextureID ~= "" and "yes" or "GREY"
+        )
+    )
 end
 
-print("[rebuild_rigged_prebakes] done — now Play until booted and Save Assets.Models -> assets/place/Models.rbxm")
+print(
+    "[rebuild_rigged_prebakes] done — now Play until booted and Save Assets.Models -> assets/place/Models.rbxm"
+)

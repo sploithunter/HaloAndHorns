@@ -2477,3 +2477,14 @@ first-session cohort rates.
   focus rebuild for every card created by the inventory redraw.
 - Dynamic GUI additions/removals now coalesce into one deferred rewire and directional work is skipped
   entirely outside gamepad mode. Added a headless source contract to prevent the per-card regression.
+
+## 2026-08-14 — Animated-pet fast-load bake restored
+
+- Re-captured and restored the Rojo-served `Models.rbxm` fast-load snapshot after the rig migration:
+  482 materialized asset roots and 18 Basic rig roots validate with Bones plus AnimationController.
+- Added deterministic pre-bake sanitation for runtime `MissionTiles` and duplicate Studio copies;
+  folder duplicates merge unique static variants before newest-copy selection. Repeated rig rebuilds
+  now remove every stale Basic child instead of only the first.
+- All `rig_class` pets now deploy Golden/Rainbow variants as runtime reskins of their animated Basic
+  geometry while inventory images and static catalog variants remain unchanged. Lune was raised to
+  0.10.5 so current Studio RBXM properties can be validated headlessly.

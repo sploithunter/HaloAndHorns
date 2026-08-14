@@ -71,11 +71,13 @@ return function()
             expect(pets.pets.kade.asset_transform.orientation.y).to.equal(-90)
         end)
 
-        it("uses Doggy's replacement rig only when deploying saved variants", function()
+        it("deploys every rigged pet from its animated basic rig", function()
             expect(pets.pets.doggy.deployed_variant_model).to.equal("basic")
+            expect(pets.pets.dragon.rig_class).to.equal("quadruped")
 
             local source = readFile("src/Server/Services/PetHandler.server.lua")
             expect(source:find("rawPetEntry.deployed_variant_model", 1, true) ~= nil).to.equal(true)
+            expect(source:find('rawPetEntry.rig_class and "basic"', 1, true) ~= nil).to.equal(true)
             expect(source:find("petTypeFolder:FindFirstChild(modelVariantName)", 1, true) ~= nil).to.equal(
                 true
             )
