@@ -63,6 +63,15 @@ return function()
             expect(math.abs(m - 1.5) < 1e-9).to.equal(true)
         end)
 
+        it("adds the paid session-time Double Coins and Double XP channels", function()
+            local get = getter({
+                CoinProductBuff = 1.0,
+                XpProductBuff = 1.0,
+            })
+            expect(EffectiveStats.multiplier("coin_yield", get, NOW, { cap = 5 })).to.equal(2)
+            expect(EffectiveStats.multiplier("xp", get, NOW, { cap = 5 })).to.equal(2)
+        end)
+
         it("stacks tester-pet farming auras with their matching Natural powers", function()
             local get = getter({
                 XpBuff = 0.5,

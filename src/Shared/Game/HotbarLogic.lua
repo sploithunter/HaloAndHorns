@@ -220,9 +220,10 @@ function HotbarLogic.potionAutoBindSlot(hotbar, potionId, config)
     return nil
 end
 
--- Progression tokens fill the top row from LEFT to right. This keeps the authored
--- Rally button at slot 11, then places the Level-5 Future Call in slot 12 on an
--- untouched bar. Returning nil means the token is already bound or the row is full.
+-- Tokens prefer the top row from LEFT to right. This keeps the authored Rally
+-- button at slot 11, then places Future Call at slot 12 on an untouched bar.
+-- Paid tokens spill into the bottom row rather than remaining invisible when
+-- the top is full. Returning nil means duplicate binding or the whole bar is full.
 function HotbarLogic.tokenAutoBindSlot(hotbar, tokenId, config)
     if type(hotbar) ~= "table" or type(tokenId) ~= "string" or tokenId == "" then
         return nil
@@ -236,6 +237,11 @@ function HotbarLogic.tokenAutoBindSlot(hotbar, tokenId, config)
     end
     local topRowStart = math.floor(slotCount / 2) + 1
     for i = topRowStart, slotCount do
+        if HotbarLogic.bindAt(hotbar, i) == nil then
+            return i
+        end
+    end
+    for i = 1, topRowStart - 1 do
         if HotbarLogic.bindAt(hotbar, i) == nil then
             return i
         end

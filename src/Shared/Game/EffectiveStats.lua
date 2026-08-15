@@ -84,6 +84,7 @@ EffectiveStats.AXES = {
             "CoinYieldBuffUntil",
             "CoinYieldPower",
             "CoinYieldPowerUntil",
+            "CoinProductBuff",
             "EnchantCoinBonus",
             "EnchantRevision",
         },
@@ -94,6 +95,8 @@ EffectiveStats.AXES = {
                     fraction = frac(get, "CoinYieldPower"),
                     expiry = frac(get, "CoinYieldPowerUntil"),
                 },
+                -- Paid Double Coins token. PlayerEffectsService owns its session-time clock.
+                { fraction = frac(get, "CoinProductBuff") },
                 -- NOTE: EnchantCoinBonus is NOT in this stack — it folds into
                 -- payouts via the breakable_reward MODIFIER PIPELINE. The
                 -- publisher composes pipeline x stack for Eff_Coin (it's in
@@ -191,7 +194,13 @@ EffectiveStats.AXES = {
     },
     xp = {
         attr = "Eff_XP",
-        watch = { "XpBuff", "XpBuffUntil", "PetXpAura", "PetXpAuraUntil" },
+        watch = {
+            "XpBuff",
+            "XpBuffUntil",
+            "PetXpAura",
+            "PetXpAuraUntil",
+            "XpProductBuff",
+        },
         sources = function(get)
             return {
                 { fraction = frac(get, "XpBuff"), expiry = frac(get, "XpBuffUntil") },
@@ -199,6 +208,8 @@ EffectiveStats.AXES = {
                     fraction = math.max(0, mult(get, "PetXpAura")),
                     expiry = frac(get, "PetXpAuraUntil"),
                 },
+                -- Paid Double XP token. PlayerEffectsService owns its session-time clock.
+                { fraction = frac(get, "XpProductBuff") },
             }
         end,
     },

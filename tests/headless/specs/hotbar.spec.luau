@@ -227,9 +227,17 @@ return function()
             expect(HotbarLogic.tokenAutoBindSlot(hotbar, "future_call_token", config)).to.equal(nil)
         end)
 
-        it("does not spill into the power row when the top row is full", function()
+        it("spills into the first empty bottom-row slot when the top row is full", function()
             local hotbar = {}
             for slot = 11, 20 do
+                hotbar[tostring(slot)] = { type = "tactical", target = "filled_" .. slot }
+            end
+            expect(HotbarLogic.tokenAutoBindSlot(hotbar, "future_call_token", config)).to.equal(1)
+        end)
+
+        it("does not replace anything when all twenty slots are full", function()
+            local hotbar = {}
+            for slot = 1, 20 do
                 hotbar[tostring(slot)] = { type = "tactical", target = "filled_" .. slot }
             end
             expect(HotbarLogic.tokenAutoBindSlot(hotbar, "future_call_token", config)).to.equal(nil)

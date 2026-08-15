@@ -652,6 +652,8 @@ loader:RegisterModule("HotbarService", ServerScriptService.Server.Services.Hotba
     "EnemyService",
     "PowerService",
     "FutureCallService",
+    "InventoryService",
+    "EconomyService",
 })
 -- RosterService: Halo & Horns named rosters + injury-rule deploy (Feature 17).
 -- Resolves SpiritFormService at runtime for pet readiness.
@@ -1054,6 +1056,13 @@ local loadSuccess, loadOrderOrError = pcall(function()
             EnemyService = modules:Get("EnemyService"),
         })
         modules:Get("FutureCallService"):BindPeerServices({
+            HotbarService = modules:Get("HotbarService"),
+        })
+        modules:Get("EconomyService"):BindPeerServices({
+            FutureCallService = modules:Get("FutureCallService"),
+            HotbarService = modules:Get("HotbarService"),
+        })
+        modules:Get("MonetizationService"):BindPeerServices({
             HotbarService = modules:Get("HotbarService"),
         })
         modules:Get("NpcPrincipalService"):BindPeerServices({

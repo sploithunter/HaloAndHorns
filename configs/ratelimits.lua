@@ -110,6 +110,36 @@ return {
             },
         },
 
+        xp_hour = {
+            actions = {},
+            multiplier = 2.0,
+            duration = 3600,
+            maxUses = -1,
+            consumeOnUse = false,
+            description = "Double XP for one hour of play time",
+            displayName = "Double XP",
+            icon = "⭐",
+            stacking = "extend_duration",
+            playerAttributes = {
+                XpProductBuff = 1.0,
+            },
+        },
+
+        coin_hour = {
+            actions = {},
+            multiplier = 2.0,
+            duration = 3600,
+            maxUses = -1,
+            consumeOnUse = false,
+            description = "Double origin-crystal earnings for one hour of play time",
+            displayName = "Double Coins",
+            icon = "💰",
+            stacking = "extend_duration",
+            playerAttributes = {
+                CoinProductBuff = 1.0,
+            },
+        },
+
         -- Paid deterministic team transformation. This is deliberately a runtime visual/state
         -- effect, not a pet mutation: it never changes a pet's stored id, rarity, variant, serial,
         -- Huge trait, or attack scope. A PetRuntimeBridge rebuild applies/removes the scale once.

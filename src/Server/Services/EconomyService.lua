@@ -101,6 +101,11 @@ function EconomyService:SetInventoryService(inventoryService)
     self._inventoryService = inventoryService
 end
 
+function EconomyService:BindPeerServices(services)
+    self._futureCallService = services and services.FutureCallService
+    self._hotbarService = services and services.HotbarService
+end
+
 function EconomyService:ResolveRewardAmount(baseAmount, context)
     local amount = tonumber(baseAmount) or 0
     if not self._modifierService or not self._modifierService.Resolve then
@@ -644,6 +649,21 @@ function EconomyService:UseItem(player, data)
         return false
     end
 
+    -- Future Call performs validation and only consumes after its NPC summon
+    -- succeeds. Delegating before generic removal preserves that transaction.
+    if itemConfig.activation == "future_call" then
+        local futureCall = self._futureCallService
+        if not (futureCall and futureCall.Use) then
+            self:_sendError(player, "Future Call is unavailable")
+            return false
+        end
+        local result = futureCall:Use(player, itemId)
+        if not result.ok then
+            self:_sendError(player, tostring(result.reason or "Future Call failed"))
+        end
+        return result.ok == true
+    end
+
     local squadHealFraction =
         tonumber(itemConfig.effects and itemConfig.effects.squad_health_restore_fraction)
     local squadTargets
@@ -673,7 +693,22 @@ function EconomyService:UseItem(player, data)
                 fraction = squadHealFraction,
             })
         elseif itemConfig.effects.rate_effect then
-            self:_applyItemEffect(player, itemConfig)
+            if not self:_applyItemEffect(player, itemConfig) then
+                -- Never eat a paid/earned token when its configured runtime
+                -- effect is unavailable. Recreate the single consumed unit in
+                -- the same stackable authority and leave the player retryable.
+                self._inventoryService:AddItem(player, "consumables", {
+                    id = itemId,
+                    quantity = 1,
+                    obtained_at = os.time(),
+                    source = "effect_apply_refund",
+                })
+                self:_sendError(player, "Boost could not start; token restored")
+                if self._hotbarService and self._hotbarService.PushState then
+                    self._hotbarService:PushState(player)
+                end
+                return false
+            end
         elseif itemConfig.effects.global_effect then
             self:_applyGlobalEffect(player, itemConfig)
         elseif itemConfig.effects.special_effect then
@@ -686,6 +721,10 @@ function EconomyService:UseItem(player, data)
         itemId = itemId,
         effects = itemConfig.effects,
     })
+
+    if self._hotbarService and self._hotbarService.PushState then
+        self._hotbarService:PushState(player)
+    end
 
     return true
 end

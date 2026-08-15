@@ -953,15 +953,19 @@ Last checked: 2026-08-15
 - Game-pass purchase completion now maps the Roblox pass ID back to its authored
   config, applies the benefit, persists ownership, refreshes capacity, records
   analytics, and pushes the updated owned state to the client.
-- Developer products are deliberately omitted while their Roblox IDs are zero and
-  their grant handlers are placeholders. A **Boosts** tab appears automatically once
-  live mapped products exist, avoiding nonfunctional purchase buttons at launch.
-- **Titan Team** is the first live timed developer product (`3708227956`, 19 Robux):
-  for 20 in-session minutes, every deployed pet uses its authored Huge visual scale and
-  the player's full pet team receives an external +50% combat-and-mining power multiplier.
-  It never changes a pet's saved identity, Huge trait, serial, variant, or attack scope;
-  buying it again extends the remaining time. The shop obtains both its approved paw
-  thumbnail and each player's current price directly from Marketplace metadata.
+- Developer products are omitted while their Roblox IDs are zero. The **Boosts** tab
+  currently exposes three live 19-Robux products: Double XP (`3708216219`), Double Coins
+  (`3708216387`), and Titan Team (`3708227956`). A receipt grants one configured inventory
+  token and auto-binds it into an empty hotbar slot when available; it does not start the
+  timer. Every configured consumable is discovered dynamically by Inventory and the hotbar,
+  so new tokens do not require a client-side item-name list and remain usable directly from
+  Inventory even when the hotbar is full.
+- Double XP and Double Coins last one in-session hour and double their respective shared
+  stat axes. **Titan Team** lasts 20 in-session minutes: every deployed pet uses its authored
+  Huge visual scale and the player's full pet team receives an external +50% combat-and-mining
+  power multiplier. It never changes saved pet identity, Huge trait, serial, variant, or attack
+  scope. Repeat tokens extend remaining time. Titan uses the purple-paw badge consistently in
+  Inventory, the hotbar, and the active player HUD.
 - The pet-capacity pass is presented as **Deploy an Extra Pet** and adds one to the
   player's current deploy limit (3→4 immediately, up through 10→11 after progression);
   it is not a fixed unlock that jumps every buyer directly to eleven pets.

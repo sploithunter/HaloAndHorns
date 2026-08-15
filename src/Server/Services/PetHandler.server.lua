@@ -778,15 +778,24 @@ local function upsertNumberValue(parent, name, value)
     return numberValue
 end
 
-local function applyHugePetScale(petModel)
+local function resolvedHugeScale(petModel, configuredHugeScale)
+    local hugeScale = tonumber(petModel:GetAttribute("HugeScale"))
+        or tonumber(configuredHugeScale)
+        or 3
+    if hugeScale <= 1 then
+        -- Some prebaked/replacement starter models do not carry HugeScale metadata.
+        -- Titan Team must still be visibly Titan-sized instead of silently scaling by x1.
+        hugeScale = tonumber(configuredHugeScale) or 3
+    end
+    return math.max(1, hugeScale)
+end
+
+local function applyHugePetScale(petModel, configuredHugeScale)
     if not petModel or not petModel:IsA("Model") then
         return
     end
 
-    local hugeScale = tonumber(petModel:GetAttribute("HugeScale")) or 1
-    if hugeScale <= 0 then
-        hugeScale = 1
-    end
+    local hugeScale = resolvedHugeScale(petModel, configuredHugeScale)
 
     if math.abs(hugeScale - 1) <= 0.001 then
         return
@@ -810,7 +819,7 @@ end
 -- Titan Team borrows the authored HugeScale purely as a temporary presentation layer. Never set
 -- the Huge attribute here: true Huge identity controls serials, power, AoE rules, and inventory
 -- semantics. Real Huges are already the intended size and therefore are not scaled twice.
-local function applyTemporaryTitanScale(petModel)
+local function applyTemporaryTitanScale(petModel, configuredHugeScale)
     if not petModel or not petModel:IsA("Model") then
         return
     end
@@ -819,10 +828,7 @@ local function applyTemporaryTitanScale(petModel)
         return
     end
 
-    local hugeScale = tonumber(petModel:GetAttribute("HugeScale")) or 1
-    if hugeScale <= 0 then
-        hugeScale = 1
-    end
+    local hugeScale = resolvedHugeScale(petModel, configuredHugeScale)
     local ok, err = pcall(function()
         petModel:ScaleTo(petModel:GetScale() * hugeScale)
     end)
@@ -1442,8 +1448,14 @@ function loadEquipped(Player)
                                 )
                                 PetVariantVisuals.ApplyStaticVisuals(PetModel)
                                 local isHuge = isHugePetFolder(petFolder)
+                                local rawEntry = petsConfig
+                                    and petsConfig.pets
+                                    and petsConfig.pets[petIdName]
+                                local configuredHugeScale = rawEntry
+                                    and rawEntry.asset_transform
+                                    and rawEntry.asset_transform.huge_scale
                                 if isHuge then
-                                    applyHugePetScale(PetModel)
+                                    applyHugePetScale(PetModel, configuredHugeScale)
                                     -- HUGE-ONLY attack scope: a pet may gain a stronger attack
                                     -- targeting only in its huge form (the huge bear tank's earth
                                     -- AURA field — normal bears stay single-target). Config-driven
@@ -1454,9 +1466,6 @@ function loadEquipped(Player)
                                     -- and drops attack_targeting/huge_attack_targeting (the same
                                     -- reason AssetPreloadService reads petData.attack_targeting
                                     -- straight off the entry). getPet only surfaced huge_base_power.
-                                    local rawEntry = petsConfig
-                                        and petsConfig.pets
-                                        and petsConfig.pets[petIdName]
                                     local hugeTargeting = rawEntry
                                         and rawEntry.huge_attack_targeting
                                     if hugeTargeting then
@@ -1483,7 +1492,7 @@ function loadEquipped(Player)
                                 if
                                     (tonumber(Player:GetAttribute("TitanTeamDamageBuff")) or 0) > 0
                                 then
-                                    applyTemporaryTitanScale(PetModel)
+                                    applyTemporaryTitanScale(PetModel, configuredHugeScale)
                                 end
                                 -- Rigged (skeletal) pets: RigClass tells every client's PetAnimator
                                 -- to drive the published clip set (configs/animations.lua) instead
@@ -1491,9 +1500,6 @@ function loadEquipped(Player)
                                 -- Gated on the model ACTUALLY carrying a rig: variants that still
                                 -- use the static mesh (golden/rainbow) must keep the code gait.
                                 do
-                                    local rawEntry = petsConfig
-                                        and petsConfig.pets
-                                        and petsConfig.pets[petIdName]
                                     if
                                         rawEntry
                                         and rawEntry.rig_class

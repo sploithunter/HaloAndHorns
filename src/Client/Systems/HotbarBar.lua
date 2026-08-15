@@ -25,7 +25,7 @@ local PILL = require(ReplicatedStorage.Configs:WaitForChild("pill_ui"))
 local POWERS = require(ReplicatedStorage.Configs:WaitForChild("powers"))
 local POWER_DESC = require(ReplicatedStorage.Configs:WaitForChild("power_descriptions"))
 local POTIONS = require(ReplicatedStorage.Configs:WaitForChild("potions"))
-local FUTURE_CALL = require(ReplicatedStorage.Configs:WaitForChild("future_call"))
+local ITEMS = require(ReplicatedStorage.Configs:WaitForChild("items"))
 local HOTBAR_CONFIG = require(ReplicatedStorage.Configs:WaitForChild("hotbar"))
 -- Derived-description SSOT (the same source the powers menu uses). The hotbar tooltip used to read
 -- the hardcoded POWER_DESC table, which only covered some powers — new ones (Taunt etc.) fell to
@@ -52,6 +52,22 @@ end
 local HotbarBar = {}
 
 local localPlayer = Players.LocalPlayer
+
+local ITEM_BY_ID = {}
+for _, item in ipairs(ITEMS) do
+    ITEM_BY_ID[item.id] = item
+end
+
+local function tokenBadge(token)
+    if type(token.badge) == "table" and token.badge.symbol then
+        return {
+            element = token.badge.element or "neutral",
+            symbol = token.badge.symbol,
+            ring = token.badge.ring or "aura",
+        }
+    end
+    return PetBadge.forPower(token.icon_power or "world_travel")
+end
 
 local TYPE_COLOR = {
     power = Color3.fromRGB(150, 110, 235),
@@ -204,12 +220,12 @@ local function describeBind(bind)
             }
         end
     elseif bind.type == "token" then
-        local token = FUTURE_CALL.token or {}
-        local badge = PetBadge.forPower(token.icon_power or "world_travel")
+        local token = ITEM_BY_ID[id] or {}
+        local badge = tokenBadge(token)
         return {
-            name = token.display_name or (id:gsub("_", " ")),
-            typeText = token.type or "Summon token",
-            description = token.description or "Call your future squad for a limited time.",
+            name = token.name or (id:gsub("_", " ")),
+            typeText = token.type_label or "Boost token",
+            description = token.description or "Use this token when you are ready.",
             badge = badge,
             color = (badge and POWER_ICONS.elementColor3(badge.element, "bright"))
                 or TYPE_COLOR.token,
@@ -827,8 +843,15 @@ function HotbarBar.start()
                     card.lock.Visible = locked[slot] == true
                 end
                 if bind and bind.type == "token" then
-                    local token = tokenById[bind.target] or FUTURE_CALL.token or {}
-                    local badge = PetBadge.forPower(token.icon_power or "world_travel")
+                    local token = tokenById[bind.target] or ITEM_BY_ID[bind.target] or {}
+                    local authored = ITEM_BY_ID[bind.target] or {}
+                    if token.badge == nil then
+                        token.badge = authored.badge
+                    end
+                    if token.icon_power == nil then
+                        token.icon_power = authored.icon_power
+                    end
+                    local badge = tokenBadge(token)
                     local discImg = badge and POWER_ICONS.discFor(badge.element, badge.symbol)
                         or nil
                     ensurePotionChrome(card)

@@ -32,7 +32,8 @@ return {
     -- IMPORTANT: create these on the platform (group-owned) and replace ids.
     product_id_mapping = {
         -- Developer Products (deterministic consumables)
-        xp_hour = 0, -- REPLACE: "2x XP (1 Hour)" product
+        xp_hour = 3708216219, -- LIVE: "Double XP" (dashboard 2026-08-15)
+        coin_hour = 3708216387, -- LIVE: "Double Coins" (dashboard 2026-08-15)
         frenzy_burst = 0, -- REPLACE: "Personal Frenzy (30 min)" product
         supporter_pet = 0, -- REPLACE: "Supporter Pet" product
         focus_surge = 0, -- REPLACE: "Focus Surge (30 min)" product
@@ -58,17 +59,24 @@ return {
             id = "xp_hour",
             name = "⚡ 2x XP (1 Hour)",
             description = "Double XP from everything for one hour!",
-            price_robux = 99,
+            price_robux = 19,
             rewards = {
-                -- TODO(handler): timed-boost handler contract (Jason
-                -- 2026-07-14): boosts live in INVENTORY, remaining seconds
-                -- PERSIST in the profile, and the clock ticks ONLY while
-                -- in-session — logging out pauses it, logging in resumes.
-                -- Never wall-clock: a bedtime logout must not eat the hour.
-                boost = { axis = "xp", mult = 2.0, duration_minutes = 60 },
+                token = { item_id = "double_xp_token" },
             },
             category = "boosts",
             analytics_category = "boost_xp",
+            test_mode_enabled = true,
+        },
+        {
+            id = "coin_hour",
+            name = "💰 2x Coins (1 Hour)",
+            description = "Double origin-crystal earnings for one hour!",
+            price_robux = 19,
+            rewards = {
+                token = { item_id = "double_coins_token" },
+            },
+            category = "boosts",
+            analytics_category = "boost_coins",
             test_mode_enabled = true,
         },
         {
@@ -156,12 +164,7 @@ return {
             -- Dashboard fallback only. The shop resolves the current managed/regional price live.
             price_robux = 19,
             rewards = {
-                boost = {
-                    effect_id = "titan_team",
-                    axis = "pet_damage",
-                    mult = 1.5,
-                    duration_minutes = 20,
-                },
+                token = { item_id = "titan_team_token" },
             },
             category = "boosts",
             analytics_category = "boost_titan_team",
