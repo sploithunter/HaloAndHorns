@@ -892,6 +892,10 @@ end
 
 function MonetizationService:_sendOwnedPasses(player)
     local ownedPasses = self._dataService:GetOwnedPasses(player) or {}
+    -- Replicated entitlement marker for compact social UI such as the native People list.
+    -- This follows the effective owned-pass set, including marketplace ownership and the
+    -- creator/Studio testing gate, and therefore updates whenever this packet is republished.
+    player:SetAttribute("HasVIPPass", table.find(ownedPasses, "vip_pass") ~= nil)
     local sources = self._passSources[player.UserId] or {}
     local passDetails = {}
     for _, passId in ipairs(ownedPasses) do

@@ -18,6 +18,7 @@ local VeteranTrack = require(ReplicatedStorage.Shared.Game.VeteranTrack)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local Principal = require(ReplicatedStorage.Shared.Game.Principal)
+local PlayerListStatus = require(ReplicatedStorage.Shared.Game.PlayerListStatus)
 
 local PlayerProgressionService = {}
 PlayerProgressionService.__index = PlayerProgressionService
@@ -125,6 +126,27 @@ function PlayerProgressionService:Start()
         player:GetAttributeChangedSignal("TeamLead"):Connect(function()
             player:SetAttribute("EffectiveLevel", self:GetEffectiveLevel(player))
         end)
+        -- The compact native People list is live presentation, not saved data. Refresh it
+        -- whenever its authoritative attributes change so realm travel, trial entry, and
+        -- entitlement changes are visible without a rejoin.
+        for _, attribute in ipairs({
+            "CurrentArea",
+            "CurrentLayer",
+            "CurrentRealm",
+            "InMission",
+            "HasVIPPass",
+            "FounderLegacyActive",
+            "VetLevel",
+        }) do
+            player:GetAttributeChangedSignal(attribute):Connect(function()
+                if player.Parent then
+                    self:_publishNativePlayerList(
+                        player,
+                        tonumber(player:GetAttribute("Level")) or 1
+                    )
+                end
+            end)
+        end
     end
     Players.PlayerAdded:Connect(hook)
     for _, player in ipairs(Players:GetPlayers()) do
@@ -266,9 +288,9 @@ function PlayerProgressionService:_claimedProgress(player, claimed)
 end
 
 -- Roblox's built-in player list only displays values parented under a lowercase
--- `leaderstats` folder. Level remains derived from XP; this IntValue is a replicated
--- presentation mirror, never another persistence/source-of-truth field.
-function PlayerProgressionService:_publishNativeLevel(player, level)
+-- `leaderstats` folder. These compact values are replicated presentation mirrors,
+-- never persistence/source-of-truth fields.
+function PlayerProgressionService:_publishNativePlayerList(player, level)
     local leaderstats = player:FindFirstChild("leaderstats")
     if leaderstats and not leaderstats:IsA("Folder") then
         self._logger:Warn("Cannot publish native Level: leaderstats is not a Folder", {
@@ -284,22 +306,66 @@ function PlayerProgressionService:_publishNativeLevel(player, level)
         leaderstats.Parent = player
     end
 
-    local nativeLevel = leaderstats:FindFirstChild("Level")
-    if nativeLevel and not nativeLevel:IsA("IntValue") then
-        self._logger:Warn("Cannot publish native Level: existing value is not an IntValue", {
-            player = player.Name,
-            className = nativeLevel.ClassName,
-            context = "PlayerProgressionService",
-        })
-        return
+    -- This service formerly published a single IntValue called Level. Remove only that
+    -- legacy field before publishing the deliberate three-column layout.
+    local legacyLevel = leaderstats:FindFirstChild("Level")
+    if legacyLevel then
+        legacyLevel:Destroy()
     end
-    if not nativeLevel then
-        nativeLevel = Instance.new("IntValue")
-        nativeLevel.Name = "Level"
-        nativeLevel:SetAttribute("IsPrimary", true)
-        nativeLevel.Parent = leaderstats
+
+    local function ensureStringValue(name, priority, primary)
+        local value = leaderstats:FindFirstChild(name)
+        if value and not value:IsA("StringValue") then
+            value:Destroy()
+            value = nil
+        end
+        if not value then
+            value = Instance.new("StringValue")
+            value.Name = name
+            value.Parent = leaderstats
+        end
+
+        local priorityValue = value:FindFirstChild("Priority")
+        if not priorityValue or not priorityValue:IsA("NumberValue") then
+            if priorityValue then
+                priorityValue:Destroy()
+            end
+            priorityValue = Instance.new("NumberValue")
+            priorityValue.Name = "Priority"
+            priorityValue.Parent = value
+        end
+        priorityValue.Value = priority
+
+        local primaryValue = value:FindFirstChild("IsPrimary")
+        if primary and (not primaryValue or not primaryValue:IsA("BoolValue")) then
+            if primaryValue then
+                primaryValue:Destroy()
+            end
+            primaryValue = Instance.new("BoolValue")
+            primaryValue.Name = "IsPrimary"
+            primaryValue.Parent = value
+        end
+        if primaryValue and primaryValue:IsA("BoolValue") then
+            primaryValue.Value = primary == true
+        end
+        return value
     end
-    nativeLevel.Value = math.max(1, math.floor(tonumber(level) or 1))
+
+    local rank = ensureStringValue("Rank", 30, true)
+    local status = ensureStringValue("Status", 20, false)
+    local location = ensureStringValue("Location", 10, false)
+
+    rank.Value = PlayerListStatus.rank(level, player:GetAttribute("VetLevel"))
+    status.Value = PlayerListStatus.status({
+        vip = player:GetAttribute("HasVIPPass") == true,
+        founder = player:GetAttribute("FounderLegacyActive") == true,
+    })
+    location.Value = PlayerListStatus.location({
+        area = player:GetAttribute("CurrentArea"),
+        layer = player:GetAttribute("CurrentLayer"),
+        realm = player:GetAttribute("CurrentRealm"),
+        inMission = player:GetAttribute("InMission") ~= nil,
+    })
 end
 
 -- Mirror earned/claimed level + XP onto player attributes for the HUD.
@@ -327,7 +393,6 @@ function PlayerProgressionService:_publish(player)
     local pending = math.min(math.max(0, earned - claimed), remaining)
     local prog = self:_claimedProgress(player, claimed)
     player:SetAttribute("Level", earned)
-    self:_publishNativeLevel(player, earned)
     player:SetAttribute("ClaimedLevel", claimed)
     -- Combat level the level-diff curves read (Accuracy + LevelScale). = earned today; teaming
     -- will override this attribute to sync sidekicks/exemplars to the team lead.
@@ -368,7 +433,12 @@ function PlayerProgressionService:_publish(player)
         player:SetAttribute("VetXP", vet.into)
         player:SetAttribute("VetXPForNext", vet.step)
         self:_veteranPass(player, vet.level)
+    else
+        player:SetAttribute("VetLevel", 0)
+        player:SetAttribute("VetXP", 0)
+        player:SetAttribute("VetXPForNext", 0)
     end
+    self:_publishNativePlayerList(player, earned)
     -- +1 egg max-hatch per claimed level (climbs ~3 -> ~52). HatchEntitlementService reads this
     -- `MaxEggHatchCount` override (clamped to its hard cap). Synced off CLAIMED level so the bump
     -- is part of the level-up reward. (If a gamepass later also grants hatch count, combine via
