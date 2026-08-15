@@ -103,6 +103,13 @@ function MonetizationService:Init()
     })
 end
 
+-- Bound after the module graph is initialized: HotbarService already depends on
+-- monetization's lower-level inventory/economy services, so keeping this as a
+-- peer avoids a dependency cycle.
+function MonetizationService:BindPeerServices(services)
+    self._hotbarService = services and services.HotbarService
+end
+
 -- Pass benefits write PROFILE state (features, multipliers, owned passes) —
 -- checking before the profile loads silently no-ops all of them (live find
 -- 2026-07-14: coloradoplays owned +1 Pet Slot, feature never stored; only
@@ -279,6 +286,39 @@ end
 
 function MonetizationService:_processProductPurchase(player, productConfig, receiptInfo)
     local rewards = productConfig.rewards or {}
+
+    -- Paid boosts are inventory tokens first. The player decides when the
+    -- session-time clock begins, can use one directly from Inventory, and gets
+    -- an automatic hotbar bind when space exists.
+    if rewards.token then
+        local itemId = tostring(rewards.token.item_id or "")
+        if itemId == "" then
+            self._logger:Error("Product token reward is missing item_id", {
+                player = player.Name,
+                product = productConfig.id,
+            })
+            return false
+        end
+        local uid, addError = self._inventoryService:AddItem(player, "consumables", {
+            id = itemId,
+            quantity = 1,
+            obtained_at = os.time(),
+            source = "developer_product",
+        })
+        if not uid then
+            self._logger:Error("Failed to grant product token", {
+                player = player.Name,
+                product = productConfig.id,
+                item = itemId,
+                error = addError,
+            })
+            return false
+        end
+        local hotbar = self._hotbarService
+        if hotbar and hotbar.AutoBindToken then
+            hotbar:AutoBindToken(player, itemId)
+        end
+    end
 
     -- Grant currency rewards
     for currency, amount in pairs(rewards) do

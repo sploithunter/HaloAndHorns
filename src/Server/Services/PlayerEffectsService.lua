@@ -514,11 +514,17 @@ function PlayerEffectsService:GetActiveEffects(player)
         if effectFolder:IsA("Folder") then
             local multiplier = effectFolder:FindFirstChild("multiplier")
             local timeRemaining = effectFolder:FindFirstChild("timeRemaining")
+            local displayName = effectFolder:FindFirstChild("displayName")
+            local description = effectFolder:FindFirstChild("description")
+            local icon = effectFolder:FindFirstChild("icon")
 
             if timeRemaining and (timeRemaining.Value == -1 or timeRemaining.Value > 0) then
                 activeEffects[effectFolder.Name] = {
                     multiplier = multiplier and multiplier.Value or 1.0,
                     timeRemaining = timeRemaining.Value,
+                    displayName = displayName and displayName.Value or effectFolder.Name,
+                    description = description and description.Value or "",
+                    icon = icon and icon.Value or "",
                 }
             end
         end

@@ -64,6 +64,7 @@ return {
         type = "consumable",
         rarity = "common",
         description = "Restores 25% endurance to every deployed, living pet.",
+        badge = { element = "fire", symbol = "plus", ring = "target_aoe" },
         effects = {
             squad_health_restore_fraction = 0.25,
         },
@@ -74,6 +75,68 @@ return {
         },
         stackable = true,
         max_stack = 10,
+    },
+
+    -- Progression and paid boost tokens. These all live in the structured
+    -- consumables bucket, can be used from Inventory, and may be assigned to
+    -- the hotbar. Developer-product receipts grant the token; they never start
+    -- the timer while the purchase dialog is still open.
+    {
+        id = "future_call_token",
+        name = "Future Call Token",
+        type = "consumable",
+        type_label = "Summon token",
+        rarity = "special",
+        description = "Summon your future self and their four-pet squad for two minutes.",
+        icon_power = "world_travel",
+        activation = "future_call",
+        hotbar_type = "token",
+        consumable = true,
+        stackable = true,
+        max_stack = 99,
+    },
+    {
+        id = "double_xp_token",
+        name = "Double XP",
+        type = "consumable",
+        type_label = "1-hour boost token",
+        rarity = "exclusive",
+        description = "Double all XP earned for one hour of play time.",
+        icon_power = "xp_surge",
+        effects = { rate_effect = "xp_hour", duration = 3600 },
+        hotbar_type = "token",
+        consumable = true,
+        stackable = true,
+        max_stack = 99,
+    },
+    {
+        id = "double_coins_token",
+        name = "Double Coins",
+        type = "consumable",
+        type_label = "1-hour boost token",
+        rarity = "exclusive",
+        description = "Double origin-crystal earnings for one hour of play time.",
+        icon_power = "prospector",
+        effects = { rate_effect = "coin_hour", duration = 3600 },
+        hotbar_type = "token",
+        consumable = true,
+        stackable = true,
+        max_stack = 99,
+    },
+    {
+        id = "titan_team_token",
+        name = "Titan Team",
+        type = "consumable",
+        type_label = "20-minute team boost",
+        rarity = "exclusive",
+        description = "All deployed pets grow to Huge size and gain +50% power for 20 minutes.",
+        -- Purple paw everywhere: inventory, hotbar, and the active-effects HUD.
+        badge = { element = "exclusive", symbol = "pet", ring = "aura" },
+        effects = { rate_effect = "titan_team", duration = 1200 },
+        hotbar_type = "token",
+        consumable = true,
+        stackable = true,
+        max_stack = 99,
     },
 
     -- Tools (for simulators)

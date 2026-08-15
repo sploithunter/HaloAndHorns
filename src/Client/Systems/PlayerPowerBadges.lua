@@ -27,6 +27,25 @@ local localPlayer = Players.LocalPlayer
 -- The player self-power buffs to surface, in display order. label = short tag under the icon.
 local BUFFS = {
     { attr = "PetDamageBuff", label = "DMG" }, -- Mountain's Strength
+    {
+        attr = "TitanTeamDamageBuff",
+        label = "TITAN",
+        fixed = { element = "exclusive", symbol = "pet" },
+        steady = true,
+        valueActive = true,
+    },
+    {
+        attr = "CoinProductBuff",
+        label = "2X",
+        fixed = { element = "exclusive", symbol = "coins_up" },
+        valueActive = true,
+    },
+    {
+        attr = "XpProductBuff",
+        label = "2X",
+        fixed = { element = "exclusive", symbol = "xp_up" },
+        valueActive = true,
+    },
     { attr = "OverheatDamageBuff", label = "HEAT", toggleable = true }, -- Pyromancer Overheat
     { attr = "CritBuff", label = "CRIT" }, -- Critical Strike
     { attr = "CoinYieldPower", label = "CRYS" }, -- Prospector (coin_yield axis) — "Crystals" display
@@ -268,6 +287,7 @@ function PlayerPowerBadges.start()
         for i, def in ipairs(BUFFS) do
             local untilT = localPlayer:GetAttribute(def.attr .. "Until") or 0
             local active = untilT > now
+                or (def.valueActive and (tonumber(localPlayer:GetAttribute(def.attr)) or 0) > 0)
             -- toggleable always-on powers keep a (greyed) badge while OWNED but off, so the player can
             -- click to turn them back on. `<attr>Owned` carries the powerId; it persists across on/off.
             local owned = def.toggleable and localPlayer:GetAttribute(def.attr .. "Owned") or nil

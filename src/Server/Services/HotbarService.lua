@@ -24,9 +24,15 @@ function HotbarService:Init()
     self._enemyService = self._modules and self._modules.EnemyService
     self._powerService = self._modules and self._modules.PowerService
     self._futureCallService = self._modules and self._modules.FutureCallService
+    self._inventoryService = self._modules and self._modules.InventoryService
+    self._economyService = self._modules and self._modules.EconomyService
     self._config = self._configLoader:LoadConfig("hotbar")
     self._archetypesConfig = self._configLoader:LoadConfig("archetypes")
     self._powersConfig = self._configLoader:LoadConfig("powers") -- innate powers are bindable but not in data.Powers
+    self._itemsById = {}
+    for _, item in ipairs(self._configLoader:LoadConfig("items")) do
+        self._itemsById[item.id] = item
+    end
 
     -- Client fires a slot (1-20); we resolve the bind authoritatively + execute.
     Signals.Hotbar_Activate.OnServerEvent:Connect(function(player, payload)
@@ -158,15 +164,26 @@ function HotbarService:_assignablePalette(player)
         end
     end
     local tokens = {}
-    local futureCall = self._futureCallService
-    if futureCall and futureCall.GetState then
-        local ok, st = pcall(function()
-            return futureCall:GetState(player)
-        end)
-        if ok and type(st) == "table" and type(st.tokens) == "table" then
-            tokens = st.tokens
+    local bucket = self._inventoryService:GetInventory(player, "consumables")
+    for uid, record in pairs((bucket and bucket.items) or {}) do
+        local itemId = tostring(record.id or uid)
+        local def = self._itemsById[itemId]
+        local count = math.max(0, math.floor(tonumber(record.quantity) or 0))
+        if def and def.hotbar_type == "token" and count > 0 then
+            tokens[#tokens + 1] = {
+                id = itemId,
+                count = count,
+                name = def.name,
+                type = def.type_label or "Boost token",
+                description = def.description,
+                icon_power = def.icon_power,
+                badge = def.badge,
+            }
         end
     end
+    table.sort(tokens, function(a, b)
+        return a.id < b.id
+    end)
 
     return {
         powers = powers,
@@ -350,9 +367,9 @@ function HotbarService:AutoBindPotion(player, potionId)
     return { ok = true, slot = slot }
 end
 
--- Progression tokens fill the top row from LEFT to right (Rally remains at 11,
--- so Future Call naturally lands at 12 on a fresh bar). Never overwrite or
--- rearrange a player's authored bindings.
+-- Tokens fill the top row from LEFT to right (Rally remains at 11, so Future
+-- Call naturally lands at 12 on a fresh bar), then use the bottom row if it is
+-- the only free space. Never overwrite or rearrange authored bindings.
 function HotbarService:AutoBindToken(player, tokenId)
     local data = self._dataService:GetData(player)
     if not data then
@@ -362,7 +379,7 @@ function HotbarService:AutoBindToken(player, tokenId)
     local slot = HotbarLogic.tokenAutoBindSlot(hotbar, tokenId, self._config)
     if not slot then
         self:_pushState(player)
-        return { ok = false, reason = "already_bound_or_top_row_full" }
+        return { ok = false, reason = "already_bound_or_hotbar_full" }
     end
     local result = self:Rebind(player, slot, { type = "token", target = tokenId })
     if not result.ok then
@@ -422,11 +439,26 @@ function HotbarService:Activate(player, payload)
         end
         return { ok = false, reason = "potion_unavailable" }
     elseif bind.type == "token" then
-        local futureCall = self._futureCallService
-        if futureCall and futureCall.Use then
-            local result = futureCall:Use(player, bind.target)
+        local def = self._itemsById[bind.target]
+        if not def or def.hotbar_type ~= "token" then
+            return { ok = false, reason = "unknown_token" }
+        end
+        if def.activation == "future_call" then
+            local futureCall = self._futureCallService
+            if futureCall and futureCall.Use then
+                local result = futureCall:Use(player, bind.target)
+                self:_pushState(player)
+                return result
+            end
+        elseif self._economyService and self._economyService.UseItem then
+            local ok = self._economyService:UseItem(player, {
+                bucket = "consumables",
+                itemUid = bind.target,
+                itemId = bind.target,
+                quantity = 1,
+            })
             self:_pushState(player)
-            return result
+            return { ok = ok == true, type = "token", target = bind.target }
         end
         return { ok = false, reason = "token_unavailable" }
     end

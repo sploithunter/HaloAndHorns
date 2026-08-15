@@ -2534,3 +2534,17 @@ first-session cohort rates.
 - The Robux shop now resolves approved developer-product thumbnails as well as live
   managed/regional prices from `MarketplaceService`, so Titan Team uses its purple paw art
   without a duplicated asset id in game configuration.
+
+## 2026-08-15 — Dynamic consumable inventory and player-started boost tokens
+
+- Wired the live Double XP (`3708216219`), Double Coins (`3708216387`), and Titan Team
+  (`3708227956`) products as 19-Robux inventory-token grants. Receipts no longer start an
+  effect immediately; they grant exactly one token and fill a free hotbar slot when possible.
+- Removed Inventory's hard-coded consumable presentation list. Inventory Items and Hotbar Edit
+  now enumerate `configs/items.lua`, use the same authored names/descriptions/badges, and route
+  every token through the authoritative `EconomyService:UseItem` path. Direct Inventory use is
+  supported, and a failed timed-effect application restores the consumed token.
+- Added one-hour Double XP and Double Coins runtime effects to the shared stat registry. Titan
+  Team now falls back to the pet family's authored Huge scale for replacement meshes, rebuilds
+  deployed pets on start/expiry, applies +50% to the shared pet-damage axis, and publishes a
+  distinct purple-paw active badge rather than resembling Luck.

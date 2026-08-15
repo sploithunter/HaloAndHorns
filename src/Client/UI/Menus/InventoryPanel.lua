@@ -106,6 +106,12 @@ local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- shared
 local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime) -- effective type-scaled enchant math
 local PetEnchantView = require(ReplicatedStorage.Shared.Game.PetEnchantView) -- stack + unique display SSOT
 local PetBadge = require(script.Parent.Parent.PetBadge)
+local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
+local ITEMS_CONFIG = require(ReplicatedStorage.Configs:WaitForChild("items"))
+local ITEM_BY_ID = {}
+for _, item in ipairs(ITEMS_CONFIG) do
+    ITEM_BY_ID[item.id] = item
+end
 -- Two-number card display (⛏ mining / ⚔ combat) — assembles the PetPower profile from config.
 local petPowerViewOk, PetPowerView = pcall(function()
     return require(ReplicatedStorage.Shared.Game.PetPowerView)
@@ -3325,25 +3331,30 @@ function InventoryPanel:_loadPetsFromMixedFolders(stacksFolder, specialFolder)
 end
 
 function InventoryPanel:_loadConsumablesFromFolder(consumablesFolder)
-    -- Map item IDs to appropriate icons
-    local itemIcons = {
-        health_potion = "❤️",
-        speed_potion = "⚡",
-        trader_scroll = "📜",
-        premium_boost = "💎",
-        test_item = "🧪",
-    }
-
-    -- Iterate through all consumable items
+    -- Fully data-driven: the replicated folder provides ownership/counts and
+    -- configs/items.lua provides presentation/behavior for every item id.
     for _, itemFolder in pairs(consumablesFolder:GetChildren()) do
         if itemFolder:IsA("Folder") and itemFolder.Name ~= "Info" then
             local itemData = self:_extractConsumableDataFromFolder(itemFolder)
             if itemData then
+                local definition = ITEM_BY_ID[itemData.id] or {}
+                local badge = definition.badge
+                if not badge and definition.icon_power then
+                    badge = PetBadge.forPower(definition.icon_power)
+                end
+                local image = badge
+                        and badge.symbol
+                        and POWER_ICONS.discFor(badge.element or "neutral", badge.symbol)
+                    or nil
+                local rarity = definition.rarity or "common"
                 local displayData = {
-                    id = itemFolder.Name,
-                    name = itemData.id:gsub("_", " "):gsub("^%l", string.upper),
-                    icon = itemIcons[itemData.id] or "🧪", -- Item-specific icon or fallback
-                    rarity = "Common",
+                    id = itemData.id,
+                    name = definition.name or itemData.id:gsub("_", " "):gsub("^%l", string.upper),
+                    icon = definition.icon or "🧪", -- fallback only for unknown legacy records
+                    image = image,
+                    description = definition.description,
+                    rarity = rarity:gsub("^%l", string.upper),
+                    rarityId = rarity,
                     color = Color3.fromRGB(150, 150, 150),
                     category = "Items",
                     count = itemData.quantity or 1,
