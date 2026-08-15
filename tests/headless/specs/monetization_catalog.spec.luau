@@ -75,6 +75,38 @@ return function()
             expect(MonetizationCatalog.creatorOwnsAllPasses(shipped, -1)).to.equal(false)
         end)
 
+        it("ships Titan Team as the live 20-minute deterministic developer product", function()
+            local shipped = loadModule("configs/monetization.lua")
+            local products = MonetizationCatalog.liveProducts(shipped)
+            local titan = nil
+            for _, product in ipairs(products) do
+                if product.id == "titan_team" then
+                    titan = product
+                    break
+                end
+            end
+
+            expect(titan).never.to.equal(nil)
+            expect(titan.robloxId).to.equal(3708227956)
+            expect(titan.config.price_robux).to.equal(19)
+            expect(titan.config.rewards.boost.effect_id).to.equal("titan_team")
+            expect(titan.config.rewards.boost.mult).to.equal(1.5)
+            expect(titan.config.rewards.boost.duration_minutes).to.equal(20)
+        end)
+
+        it("routes deterministic product boosts into the persisted effects service", function()
+            local source = readFile("src/Server/Services/MonetizationService.lua")
+            expect(source:find("if rewards.boost then", 1, true)).to.be.ok()
+            expect(source:find("boost.effect_id or productConfig.id", 1, true)).to.be.ok()
+            expect(
+                source:find(
+                    "self._playerEffectsService:ApplyEffect(player, effectId, duration)",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+        end)
+
         it("defaults creator benefits on and persists an explicit off gate", function()
             local defaultState = MonetizationCatalog.creatorPassGateState(config, 101, {})
             expect(defaultState.eligible).to.equal(true)

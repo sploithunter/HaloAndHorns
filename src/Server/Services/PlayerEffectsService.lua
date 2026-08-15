@@ -15,6 +15,7 @@ local RunService = game:GetService("RunService")
 
 local Logger = require(game.ReplicatedStorage.Shared.Utils.Logger)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local PetRuntimeBridge = require(ReplicatedStorage.Shared.Services.PetRuntimeBridge)
 
 local PlayerEffectsService = {}
 PlayerEffectsService.__index = PlayerEffectsService
@@ -171,6 +172,23 @@ function PlayerEffectsService:_applyStatModifiers(player, effectConfig, sign)
     })
 end
 
+-- Apply effect-owned runtime attributes without persisting duplicate state. The TimedBoosts folder
+-- remains authoritative; these attributes are projections consumed by the shared stat registry and
+-- live pet renderer. Rebuilds are requested only on active/inactive transitions, never per frame.
+function PlayerEffectsService:_setRuntimeEffectState(player, effectConfig, active, rebuild)
+    for attributeName, activeValue in pairs(effectConfig.playerAttributes or {}) do
+        if active then
+            player:SetAttribute(attributeName, activeValue)
+        else
+            player:SetAttribute(attributeName, nil)
+        end
+    end
+
+    if rebuild and effectConfig.rebuildPets == true then
+        PetRuntimeBridge.RequestRebuild(player)
+    end
+end
+
 -- Apply an effect to a player
 function PlayerEffectsService:ApplyEffect(player, effectId, duration, customEffectConfig)
     -- Use custom config if provided, otherwise get from rate limit config
@@ -210,6 +228,13 @@ function PlayerEffectsService:ApplyEffect(player, effectId, duration, customEffe
                 addedDuration = duration,
                 newRemaining = currentTimeRemaining and currentTimeRemaining.Value or duration,
             })
+            self:_setRuntimeEffectState(player, effectConfig, true, false)
+            self:_updateEffectInProfile(
+                player,
+                effectId,
+                currentTimeRemaining and currentTimeRemaining.Value or duration
+            )
+            self:_sendUnifiedEffectsUpdate(player, self:GetActiveEffects(player))
             -- Note: Don't apply stat modifiers again since effect already exists
             return true
         end
@@ -237,6 +262,9 @@ function PlayerEffectsService:ApplyEffect(player, effectId, duration, customEffe
             effectId = effectId,
             newDuration = duration,
         })
+        self:_setRuntimeEffectState(player, effectConfig, true, false)
+        self:_updateEffectInProfile(player, effectId, duration)
+        self:_sendUnifiedEffectsUpdate(player, self:GetActiveEffects(player))
         return true
     end
 
@@ -284,6 +312,7 @@ function PlayerEffectsService:ApplyEffect(player, effectId, duration, customEffe
 
     -- Apply stat modifiers
     self:_applyStatModifiers(player, effectConfig, 1)
+    self:_setRuntimeEffectState(player, effectConfig, true, true)
 
     -- Save to ProfileStore for persistence (timeRemaining, not expiresAt)
     self:_saveEffectToProfile(player, effectId, duration, effectConfig)
@@ -294,6 +323,8 @@ function PlayerEffectsService:ApplyEffect(player, effectId, duration, customEffe
         duration = duration,
         description = effectConfig.description,
     })
+
+    self:_sendUnifiedEffectsUpdate(player, self:GetActiveEffects(player))
 
     return true
 end
@@ -336,6 +367,7 @@ function PlayerEffectsService:RemoveEffect(player, effectId)
         -- Remove stat modifiers before destroying folder
         if effectConfig then
             self:_applyStatModifiers(player, effectConfig, -1)
+            self:_setRuntimeEffectState(player, effectConfig, false, true)
         end
 
         effectFolder:Destroy()
@@ -439,6 +471,10 @@ function PlayerEffectsService:ClearAllEffects(player)
                 "Clearing effect folder",
                 { player = player.Name, effectId = effectFolder.Name }
             )
+            local effectConfig = self._rateLimitConfig.effectModifiers[effectFolder.Name]
+            if effectConfig then
+                self:_setRuntimeEffectState(player, effectConfig, false, true)
+            end
             effectFolder:Destroy()
             effectsCleared = effectsCleared + 1
         end
@@ -453,6 +489,8 @@ function PlayerEffectsService:ClearAllEffects(player)
         data.ActiveEffects = {}
         self._logger:Info("Cleared ProfileStore ActiveEffects", { player = player.Name })
     end
+
+    self:_sendUnifiedEffectsUpdate(player, {})
 
     self._logger:Info("All effects cleared successfully", {
         player = player.Name,

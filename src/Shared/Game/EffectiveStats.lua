@@ -52,6 +52,7 @@ EffectiveStats.AXES = {
             "PetDamageBuffPotionUntil",
             "OverheatDamageBuff",
             "OverheatDamageBuffUntil",
+            "TitanTeamDamageBuff",
             "EnchantPetDamage",
             "EnchantRevision",
         },
@@ -70,6 +71,9 @@ EffectiveStats.AXES = {
                     fraction = frac(get, "OverheatDamageBuff"),
                     expiry = frac(get, "OverheatDamageBuffUntil"),
                 },
+                -- PlayerEffectsService owns the session-time countdown and clears this attribute
+                -- at expiry, so this source intentionally has no wall-clock expiry field.
+                { fraction = frac(get, "TitanTeamDamageBuff") },
             }
         end,
     },

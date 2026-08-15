@@ -2522,3 +2522,15 @@ first-session cohort rates.
 
 - Moved native `PlayerList` suppression from `InventoryPanel` into the shared `MenuManager` overlay lifecycle. Any full menu now hides the expanded Roblox People list while present and restores the exact prior CoreGui state after the last menu closes, including direct-X closes, panel switches, and manager destruction.
 - Removed Inventory's independent guard so it cannot restore the People list over another menu, and added a headless source contract for central ownership and both overlay child-change paths.
+
+## 2026-08-15 — Titan Team timed developer product
+
+- Added the live 19-Robux Titan Team developer product (`3708227956`). Its 20-minute
+  session-time effect persists remaining time across rejoins and repeat purchases extend it.
+- While active, deployed pets use their authored Huge presentation scale and the player's
+  pet team receives an external +50% multiplier through the shared combat-and-mining pet
+  damage axis. Pet identity, Huge status, serials, variants, roles, and attack rules are
+  never mutated; a single runtime rebuild applies or removes the visual transformation.
+- The Robux shop now resolves approved developer-product thumbnails as well as live
+  managed/regional prices from `MarketplaceService`, so Titan Team uses its purple paw art
+  without a duplicated asset id in game configuration.

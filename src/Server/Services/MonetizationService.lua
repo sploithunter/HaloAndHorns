@@ -318,6 +318,33 @@ function MonetizationService:_processProductPurchase(player, productConfig, rece
         end
     end
 
+    -- Deterministic timed developer-product boost. Remaining seconds persist in the profile and
+    -- tick only while the player is in-session (PlayerEffectsService contract).
+    if rewards.boost then
+        local boost = rewards.boost
+        local effectId = boost.effect_id or productConfig.id
+        local duration = tonumber(boost.duration_seconds)
+            or ((tonumber(boost.duration_minutes) or 0) * 60)
+        if duration <= 0 then
+            self._logger:Error("Invalid product boost duration", {
+                player = player.Name,
+                product = productConfig.id,
+                effectId = effectId,
+                duration = duration,
+            })
+            return false
+        end
+        local success = self._playerEffectsService:ApplyEffect(player, effectId, duration)
+        if not success then
+            self._logger:Error("Failed to grant product boost", {
+                player = player.Name,
+                product = productConfig.id,
+                effectId = effectId,
+            })
+            return false
+        end
+    end
+
     -- Check for first purchase bonus
     if self:_isFirstPurchase(player) then
         self:_grantFirstPurchaseBonus(player)

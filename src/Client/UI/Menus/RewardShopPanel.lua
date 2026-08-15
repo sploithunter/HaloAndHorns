@@ -473,9 +473,10 @@ function RewardShopPanel:_createMarketplaceCard(entry)
     icon.Parent = iconBackground
     round(icon, 14)
 
+    local fallback = nil
     if icon.Image == "" or icon.Image == "rbxassetid://0" then
         icon.Visible = false
-        local fallback = Instance.new("TextLabel")
+        fallback = Instance.new("TextLabel")
         fallback.Size = UDim2.fromScale(1, 1)
         fallback.BackgroundTransparency = 1
         fallback.Text = entry.kind == "gamepass" and "🎫" or "⚡"
@@ -522,7 +523,7 @@ function RewardShopPanel:_createMarketplaceCard(entry)
     price.Parent = card
     constrain(price, 16, 9)
 
-    self:_loadMarketplacePrice(entry, price)
+    self:_loadMarketplaceInfo(entry, price, icon, fallback)
 
     local buy = Instance.new("TextButton")
     buy.Name = "BuyButton"
@@ -565,13 +566,22 @@ function RewardShopPanel:_createMarketplaceCard(entry)
     end
 end
 
-function RewardShopPanel:_loadMarketplacePrice(entry, label)
+function RewardShopPanel:_loadMarketplaceInfo(entry, label, icon, fallback)
     local cacheKey = entry.kind .. ":" .. tostring(entry.robloxId)
     local cached = self.marketplaceInfo[cacheKey]
     if cached then
         label.Text = cached.text
         label.TextColor3 = cached.available and COLORS.robux or COLORS.subtext
-        return
+        if cached.iconImage and icon and icon.Parent then
+            icon.Image = cached.iconImage
+            icon.Visible = true
+            if fallback and fallback.Parent then
+                fallback.Visible = false
+            end
+            return
+        end
+        -- Keep asking Roblox for a newly moderated product thumbnail. Price is already cached and
+        -- remains visible; only the missing icon is retried when the shop cards are rebuilt.
     end
 
     task.spawn(function()
@@ -588,6 +598,11 @@ function RewardShopPanel:_loadMarketplacePrice(entry, label)
             text = if available and type(info.PriceInRobux) == "number"
                 then "R$ " .. tostring(info.PriceInRobux)
                 else "See Roblox price",
+            iconImage = if ok
+                    and type(info) == "table"
+                    and (tonumber(info.IconImageAssetId) or 0) > 0
+                then "rbxassetid://" .. tostring(info.IconImageAssetId)
+                else nil,
         }
         self.marketplaceInfo[cacheKey] = resolved
 
@@ -596,6 +611,13 @@ function RewardShopPanel:_loadMarketplacePrice(entry, label)
         if label.Parent then
             label.Text = resolved.text
             label.TextColor3 = resolved.available and COLORS.robux or COLORS.subtext
+        end
+        if resolved.iconImage and icon and icon.Parent then
+            icon.Image = resolved.iconImage
+            icon.Visible = true
+            if fallback and fallback.Parent then
+                fallback.Visible = false
+            end
         end
     end)
 end
