@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local LeaderboardScoring = require(ReplicatedStorage.Shared.Game.LeaderboardScoring)
+local LeaderboardStatus = require(ReplicatedStorage.Shared.Game.LeaderboardStatus)
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
 local Signal = require(ReplicatedStorage.Shared.Libraries.Signal)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -274,8 +275,49 @@ end
 
 function LeaderboardService:_broadcast(boardId)
     local snapshot = self:GetSnapshot(boardId)
+    self:_refreshPlayerStatusTitles()
     Signals.LeaderboardUpdated:FireAllClients(snapshot)
     self.SnapshotChanged:Fire(boardId, snapshot)
+end
+
+function LeaderboardService:_statusEntries(board)
+    local global = board.global or {}
+    local usesGlobal = global.enabled == true
+        and (not RunService:IsStudio() or global.studio_enabled == true)
+    if usesGlobal then
+        return self._cachedGlobalTop100[board.id]
+    end
+    return self:GetLiveLeaderboard(
+        board.id,
+        positiveInteger((self._config.publication or {}).cache_entries, 100)
+    )
+end
+
+function LeaderboardService:_refreshPlayerStatusTitles()
+    local entriesByBoard = {}
+    for _, board in ipairs(self._config.boards or {}) do
+        local entries = self:_statusEntries(board)
+        if entries then
+            entriesByBoard[board.id] = entries
+        end
+    end
+
+    local rankLimit = positiveInteger((self._config.publication or {}).status_rank_limit, 10)
+    for _, player in ipairs(Players:GetPlayers()) do
+        local best = nil
+        if not self._excluded[player.UserId] then
+            best = LeaderboardStatus.bestForUser(
+                player.UserId,
+                self._config.boards,
+                entriesByBoard,
+                rankLimit
+            )
+        end
+        local title = best and best.title or nil
+        if player:GetAttribute("LeaderboardStatusTitle") ~= title then
+            player:SetAttribute("LeaderboardStatusTitle", title)
+        end
+    end
 end
 
 function LeaderboardService:_getGlobalStore(board)

@@ -136,6 +136,7 @@ function PlayerProgressionService:Start()
             "InMission",
             "HasVIPPass",
             "FounderLegacyActive",
+            "LeaderboardStatusTitle",
             "VetLevel",
         }) do
             player:GetAttributeChangedSignal(attribute):Connect(function()
@@ -360,6 +361,7 @@ function PlayerProgressionService:_publishNativePlayerList(player, level)
         level = level,
         vip = player:GetAttribute("HasVIPPass") == true,
         founder = player:GetAttribute("FounderLegacyActive") == true,
+        leaderboardTitle = player:GetAttribute("LeaderboardStatusTitle"),
     })
     location.Value = PlayerListStatus.location({
         area = player:GetAttribute("CurrentArea"),

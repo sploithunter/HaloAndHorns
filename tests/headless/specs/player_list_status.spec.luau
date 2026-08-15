@@ -32,6 +32,14 @@ return function()
                 "👑 ⭐ Noob"
             )
         end)
+
+        it("prefers an earned leaderboard title while retaining entitlement icons", function()
+            expect(PlayerListStatus.status({
+                level = 50,
+                vip = true,
+                leaderboardTitle = "Slayer",
+            })).to.equal("👑 Slayer")
+        end)
     end)
 
     describe("PlayerListStatus.location", function()

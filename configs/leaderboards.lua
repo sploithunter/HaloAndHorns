@@ -7,6 +7,7 @@ return {
     publication = {
         cache_entries = 100,
         display_entries = 10,
+        status_rank_limit = 100,
         refresh_seconds = 90,
         debounce_seconds = 20,
         derive_debounce_seconds = 1,
@@ -24,6 +25,7 @@ return {
     boards = {
         {
             id = "most_dragons",
+            status_title = "Dragonlord",
             display_name = "Most Dragons",
             subtitle = "Dragons currently owned",
             origin = "grass",
@@ -50,6 +52,7 @@ return {
         },
         {
             id = "crystal_crusher",
+            status_title = "Farmer",
             display_name = "Crystal Crusher",
             subtitle = "Lifetime crystals destroyed",
             origin = "desert",
@@ -66,6 +69,7 @@ return {
         },
         {
             id = "enemies_defeated",
+            status_title = "Slayer",
             display_name = "Enemies Defeated",
             subtitle = "Lifetime meaningful defeats",
             origin = "lava",
@@ -82,6 +86,7 @@ return {
         },
         {
             id = "team_power",
+            status_title = "Commander",
             display_name = "Team Power",
             subtitle = "Strongest legal squad",
             origin = "ice",
@@ -94,6 +99,23 @@ return {
                 enabled = true,
                 studio_enabled = false,
                 ordered_store = "LB_TeamPower_v1",
+            },
+        },
+        -- This ranking powers the social People-list title without adding a fifth physical board.
+        -- It uses the same bounded, event-driven OrderedDataStore pipeline as the four origin boards.
+        {
+            id = "eggs_hatched",
+            display_name = "Eggs Hatched",
+            subtitle = "Lifetime eggs hatched",
+            status_only = true,
+            status_title = "Hatcher",
+            score = { kind = "counter", counter = "eggs_hatched" },
+            sort = "desc",
+            max_entries = 10,
+            global = {
+                enabled = true,
+                studio_enabled = false,
+                ordered_store = "LB_EggsHatched_v1",
             },
         },
     },

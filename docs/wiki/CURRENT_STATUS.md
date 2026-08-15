@@ -187,6 +187,9 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
   join/relevant changes/leave, reads a top-100 cache, and exposes the first 10 to reusable tagged
   physical boards; it never walks the profile DataStore. ColoradoPlays, MacrosGodOfMagic,
   SploitHunter, and SploitGiver are excluded by immutable user ID.
+- Top-100 placement also feeds the native People-list `Status`: `Dragonlord`, `Farmer`, `Slayer`,
+  `Commander`, or `Hatcher`. The lowest rank wins for multi-board qualifiers. Eggs Hatched uses the
+  same bounded cache as a status-only ranking; the authored world still has exactly four boards.
 - Inventory now allows adding to an existing pet stack even when storage slots are full, because existing stacks do not consume new slots.
 - Admin tools now include zone lock testing controls. Developers can toggle, lock, paid-unlock, or bypass-unlock `Meadow` from the admin panel, and custom zone lock input supports future `zoneId:toggle|lock|unlock|bypass` testing.
 - Locked portal/pad travel now shows a player-facing notice with the target area's unlock cost instead of only logging `ZoneTravelResult`. Travel hooks also have `ZoneTravelPrompt` proximity prompts for paid locked gates, and the client hides those prompts once the local player owns the destination so unlocked travel stays touch-only.
