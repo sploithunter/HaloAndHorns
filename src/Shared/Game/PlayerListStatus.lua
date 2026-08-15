@@ -17,6 +17,18 @@ local ORIGIN_LABELS = {
     shadow = "Shadow",
 }
 
+-- Social progression labels keep the native People-list Status column useful for every player,
+-- including a brand-new account with no paid or founder entitlements. Rank remains the exact
+-- numeric progression column; these are deliberately broad, readable milestones.
+local STATUS_TITLES = {
+    { minLevel = 50, label = "Legend" },
+    { minLevel = 35, label = "Master" },
+    { minLevel = 20, label = "Hero" },
+    { minLevel = 10, label = "Adventurer" },
+    { minLevel = 5, label = "Novice" },
+    { minLevel = 1, label = "Noob" },
+}
+
 local function lower(value)
     return string.lower(tostring(value or ""))
 end
@@ -41,14 +53,22 @@ end
 
 function PlayerListStatus.status(state)
     state = state or {}
-    local icons = {}
+    local parts = {}
     if state.vip == true then
-        table.insert(icons, "👑")
+        table.insert(parts, "👑")
     end
     if state.founder == true then
-        table.insert(icons, "⭐")
+        table.insert(parts, "⭐")
     end
-    return table.concat(icons, " ")
+
+    local level = math.max(1, math.floor(tonumber(state.level) or 1))
+    for _, title in ipairs(STATUS_TITLES) do
+        if level >= title.minLevel then
+            table.insert(parts, title.label)
+            break
+        end
+    end
+    return table.concat(parts, " ")
 end
 
 function PlayerListStatus.location(state)

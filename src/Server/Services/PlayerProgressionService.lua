@@ -357,6 +357,7 @@ function PlayerProgressionService:_publishNativePlayerList(player, level)
 
     rank.Value = PlayerListStatus.rank(level, player:GetAttribute("VetLevel"))
     status.Value = PlayerListStatus.status({
+        level = level,
         vip = player:GetAttribute("HasVIPPass") == true,
         founder = player:GetAttribute("FounderLegacyActive") == true,
     })
