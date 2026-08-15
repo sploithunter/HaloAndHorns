@@ -2548,3 +2548,12 @@ first-session cohort rates.
   Team now falls back to the pet family's authored Huge scale for replacement meshes, rebuilds
   deployed pets on start/expiry, applies +50% to the shared pet-damage axis, and publishes a
   distinct purple-paw active badge rather than resembling Luck.
+
+## 2026-08-15 — Timed-token countdowns and effect-transfer choreography
+
+- Made the paid boost stacking policy explicit: repeated Double XP/Coins and Titan Team tokens
+  extend duration without multiplying strength, while Future Call refuses a repeat until its
+  current summon leaves. Future Self now publishes and clears a two-minute player-HUD countdown.
+- Added a config-driven consumable activation animation. The item/potion badge blooms at screen
+  center, then flies to the exact player effect, splits toward deployed pets for squad effects, or
+  lands on the selected enemy HUD for debuffs; mechanics remain immediate and non-blocking.

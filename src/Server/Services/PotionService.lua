@@ -96,10 +96,12 @@ function PotionService:_consumeOne(player, potionId)
     return false, "none_left"
 end
 
-function PotionService:_finishUse(player, potionId)
+function PotionService:_finishUse(player, potionId, context)
     self._lastDrink[player.UserId][potionId] = os.clock()
     self:_push(player)
-    fireGameEvent(player, "potion_used", { potion = potionId })
+    context = type(context) == "table" and context or {}
+    context.potion = potionId
+    fireGameEvent(player, "potion_used", context)
 end
 
 function PotionService:_potionCfg(potionId)
@@ -294,7 +296,11 @@ function PotionService:Drink(player, potionId)
     charge = BrewMeter.sip(charge, pcfg.sip_fraction)
     self._meters[uid][meterId] = charge
     self:_applyMeter(player, meterId, charge)
-    self:_finishUse(player, potionId)
+    local badgeTarget = m.badge and m.badge.target
+    self:_finishUse(player, potionId, {
+        targetScope = badgeTarget == "team_aoe" and "pets" or "player",
+        destinationAttr = m.buff_attr and (m.buff_attr .. "Potion") or nil,
+    })
     return { ok = true, charge = charge, count = self:Count(player, potionId) }
 end
 
@@ -353,7 +359,11 @@ function PotionService:Throw(player, potionId)
         caster = character,
         target = target,
     })
-    self:_finishUse(player, potionId)
+    local targetId = target:FindFirstChild("BreakableID")
+    self:_finishUse(player, potionId, {
+        targetScope = "enemy",
+        targetId = targetId and targetId.Value or nil,
+    })
     return {
         ok = true,
         charge = charge,

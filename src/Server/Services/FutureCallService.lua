@@ -242,6 +242,7 @@ function FutureCallService:ResetForBeginning(player)
     end
     local principalName = FutureCallLogic.principalName(player.Name, self._config)
     self._npcPrincipalService:Despawn(principalName, "reset")
+    player:SetAttribute("FutureCallUntil", 0)
     self:_pushHotbar(player)
     return { ok = true, removed = count }
 end
@@ -266,11 +267,15 @@ function FutureCallService:Use(player, tokenId)
         FutureCallLogic.summonLevel(currentLevel, self._config, self._progressionConfig)
     local definition = table.clone(self._config.principal)
     definition.level = summonLevel
+    local duration = tonumber(self._config.token and self._config.token.duration) or 120
 
     local ok, info = self._npcPrincipalService:Summon(player, "future_self", {
         definition = definition,
-        duration = tonumber(self._config.token and self._config.token.duration) or 120,
+        duration = duration,
         onDespawn = function(reason)
+            if player.Parent then
+                player:SetAttribute("FutureCallUntil", 0)
+            end
             if reason == "expired" and player.Parent then
                 fireGameEvent(player, "future_call_departed", {
                     name = "🔮 See you—or be you—soon 😉",
@@ -288,10 +293,14 @@ function FutureCallService:Use(player, tokenId)
         self._npcPrincipalService:Despawn(principalName, "activation_rollback")
         return { ok = false, reason = err or "consume_failed" }
     end
+    player:SetAttribute("FutureCallUntil", os.time() + duration)
     self:_pushHotbar(player)
     fireGameEvent(player, "future_call_used", {
         name = "🔮 Your future squad answered the call!",
-        seconds = tonumber(self._config.token and self._config.token.duration) or 120,
+        itemId = self:_tokenId(),
+        targetScope = "player",
+        destinationAttr = "FutureCall",
+        seconds = duration,
         level = summonLevel,
     })
     if type(info) == "table" then

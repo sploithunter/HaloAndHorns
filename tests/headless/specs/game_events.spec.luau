@@ -21,6 +21,7 @@ local KNOWN_KINDS = {
     world_sound = true, -- SERVER-side positional sound at the player (everyone nearby hears)
     world_sound_range = true, -- optional RollOffMaxDistance for world_sound (studs)
     fanfare = true, -- local non-interrupting world celebration around the player (sparkles + glow)
+    effect_transfer = true, -- consumable icon blooms center, then flies to its affected HUD target(s)
 }
 
 return function()
@@ -95,6 +96,32 @@ return function()
             expect(gameEvents.level_earned.world_sound).to.equal("level_up_epic")
             expect(gameEvents.level_up.sound).to.equal(nil)
             expect(gameEvents.level_up.world_sound).to.equal(nil)
+        end)
+
+        it("routes consumable activation visuals to the affected HUD surface", function()
+            local dispatcher = readFile("src/Client/Systems/GameEvents.lua")
+            local potionService = readFile("src/Server/Services/PotionService.lua")
+            local economyService = readFile("src/Server/Services/EconomyService.lua")
+            local items = loadModule("configs/items.lua")
+            local itemById = {}
+            for _, item in ipairs(items) do
+                itemById[item.id] = item
+            end
+
+            expect(type(gameEvents.potion_used.effect_transfer)).to.equal("table")
+            expect(type(gameEvents.future_call_used.effect_transfer)).to.equal("table")
+            expect(type(gameEvents.consumable_used.effect_transfer)).to.equal("table")
+            expect(type(gameEvents.health_potion_used.effect_transfer)).to.equal("table")
+            expect(dispatcher:find("REACTIONS.effect_transfer", 1, true)).to.be.ok()
+            expect(dispatcher:find('scope == "pets"', 1, true)).to.be.ok()
+            expect(dispatcher:find('scope == "enemy"', 1, true)).to.be.ok()
+            expect(potionService:find('targetScope = "enemy"', 1, true)).to.be.ok()
+            expect(economyService:find('fireGameEvent(player, "consumable_used"', 1, true)).to.be.ok()
+            expect(itemById.double_xp_token.use_feedback.destination_attr).to.equal("XpProductBuff")
+            expect(itemById.double_coins_token.use_feedback.destination_attr).to.equal(
+                "CoinProductBuff"
+            )
+            expect(itemById.titan_team_token.use_feedback.target_scope).to.equal("pets")
         end)
     end)
 end

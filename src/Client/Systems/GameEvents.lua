@@ -22,6 +22,10 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local sounds = require(ReplicatedStorage.Configs:WaitForChild("sounds"))
 local eventConfig = require(ReplicatedStorage.Configs:WaitForChild("game_events"))
+local items = require(ReplicatedStorage.Configs:WaitForChild("items"))
+local potions = require(ReplicatedStorage.Configs:WaitForChild("potions"))
+local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
+local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 
 local GameEvents = {}
 
@@ -326,6 +330,247 @@ REACTIONS.float = function(spec, ctx)
     task.delay(seconds + 0.1, function()
         bb:Destroy()
     end)
+end
+
+-- effect_transfer: make a consumable explain itself spatially. Its universal badge blooms at
+-- screen centre, then one or more copies fly to the HUD surface affected by the mechanic:
+-- player status row, deployed squad cards, or the selected enemy. This is presentation only;
+-- the server has already applied and persisted the effect before it fires the event.
+local itemById = {}
+for _, def in ipairs(items) do
+    if def.id then
+        itemById[def.id] = def
+    end
+end
+
+local function transferBadge(ctx)
+    ctx = type(ctx) == "table" and ctx or {}
+    if type(ctx.badge) == "table" then
+        return ctx.badge
+    end
+    if ctx.potion then
+        local potion = potions.potions and potions.potions[ctx.potion]
+        return potion and PetBadge.forPotion(potion.meter) or nil
+    end
+    local item = itemById[ctx.itemId]
+    if not item then
+        return nil
+    end
+    if type(item.badge) == "table" then
+        local raw = item.badge
+        local ring = POWER_ICONS.rings[raw.ring] and raw.ring
+            or POWER_ICONS.targeting_ring[raw.ring or raw.target or "none"]
+            or "aura"
+        return { element = raw.element, symbol = raw.symbol, ring = ring }
+    end
+    return item.icon_power and PetBadge.forPower(item.icon_power) or nil
+end
+
+local function actuallyVisible(guiObject)
+    if not (guiObject and guiObject:IsA("GuiObject")) then
+        return false
+    end
+    if guiObject.AbsoluteSize.X <= 0 or guiObject.AbsoluteSize.Y <= 0 then
+        return false
+    end
+    local node = guiObject
+    while node do
+        if node:IsA("GuiObject") and not node.Visible then
+            return false
+        end
+        if node:IsA("LayerCollector") and not node.Enabled then
+            return false
+        end
+        node = node.Parent
+    end
+    return true
+end
+
+local function guiCenter(guiObject)
+    if typeof(guiObject) == "Vector2" then
+        return guiObject
+    end
+    return guiObject.AbsolutePosition + guiObject.AbsoluteSize / 2
+end
+
+local function collectTransferTargets(ctx)
+    local playerGui = Players.LocalPlayer:FindFirstChild("PlayerGui")
+    if not playerGui then
+        return {}
+    end
+    local scope = tostring(ctx.targetScope or "player")
+    local targets = {}
+    if scope == "pets" then
+        -- Prefer the actual deployed companions: Berserk Brew visibly splits out through the world
+        -- to every pet it empowers. HUD cards remain the fallback when pets are off-camera.
+        local camera = Workspace.CurrentCamera
+        local petRoot = Workspace:FindFirstChild("PlayerPets")
+        local petFolder = petRoot and petRoot:FindFirstChild(Players.LocalPlayer.Name)
+        for _, pet in ipairs((petFolder and petFolder:GetChildren()) or {}) do
+            local part = pet:IsA("Model")
+                and (pet.PrimaryPart or pet:FindFirstChildWhichIsA("BasePart"))
+            if part and camera then
+                local screen, onScreen = camera:WorldToViewportPoint(part.Position)
+                if onScreen and screen.Z > 0 then
+                    targets[#targets + 1] = Vector2.new(screen.X, screen.Y)
+                    if #targets >= 12 then
+                        break
+                    end
+                end
+            end
+        end
+        if #targets > 0 then
+            return targets
+        end
+        local squad = playerGui:FindFirstChild("SquadHud")
+        local seen = {}
+        for _, obj in ipairs((squad and squad:GetDescendants()) or {}) do
+            if
+                obj:IsA("GuiObject")
+                and (obj.Name:match("^Slot_%d+$") or obj.Name:match("^Pet_%d+$"))
+                and actuallyVisible(obj)
+            then
+                local center = guiCenter(obj)
+                local key = math.floor(center.X / 8) .. ":" .. math.floor(center.Y / 8)
+                if not seen[key] then
+                    seen[key] = true
+                    targets[#targets + 1] = obj
+                    if #targets >= 12 then
+                        break
+                    end
+                end
+            end
+        end
+    elseif scope == "enemy" then
+        local enemyHud = playerGui:FindFirstChild("EnemyHud")
+        local exactName = ctx.targetId ~= nil and ("Enemy_" .. tostring(ctx.targetId)) or nil
+        local fallback
+        for _, obj in ipairs((enemyHud and enemyHud:GetDescendants()) or {}) do
+            if obj:IsA("GuiObject") and obj.Name:match("^Enemy_") and actuallyVisible(obj) then
+                if exactName and obj.Name == exactName then
+                    targets[1] = obj
+                    break
+                end
+                fallback = fallback or obj
+            end
+        end
+        if #targets == 0 and fallback then
+            targets[1] = fallback
+        end
+    else
+        local playerBar = playerGui:FindFirstChild("PlayerBar")
+        local capsule = playerBar and playerBar:FindFirstChild("Capsule", true)
+        local exact = ctx.destinationAttr
+            and capsule
+            and capsule:FindFirstChild("PBadge_" .. tostring(ctx.destinationAttr), true)
+        if exact and actuallyVisible(exact) then
+            targets[1] = exact
+        elseif capsule and actuallyVisible(capsule) then
+            targets[1] = capsule
+        end
+    end
+    return targets
+end
+
+local function createTransferIcon(parent, badge, size, zIndex)
+    local frame = Instance.new("Frame")
+    frame.Name = "EffectTransferIcon"
+    frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    frame.Size = UDim2.fromOffset(size, size)
+    frame.BackgroundTransparency = 1
+    frame.ZIndex = zIndex
+    frame.Parent = parent
+    PetBadge.create(frame, {
+        element = badge.element,
+        symbol = badge.symbol,
+        ring = badge.ring or "aura",
+        zIndex = zIndex,
+    })
+    return frame
+end
+
+REACTIONS.effect_transfer = function(_spec, ctx)
+    ctx = type(ctx) == "table" and ctx or {}
+    local badge = transferBadge(ctx)
+    local playerGui = Players.LocalPlayer:FindFirstChild("PlayerGui")
+    if not (badge and badge.symbol and playerGui) then
+        return
+    end
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "EffectTransfer"
+    gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = true
+    gui.DisplayOrder = 72
+    gui.Parent = playerGui
+
+    local viewport = Workspace.CurrentCamera and Workspace.CurrentCamera.ViewportSize
+        or Vector2.new(1280, 720)
+    local center = viewport * 0.5
+    local icon = createTransferIcon(gui, badge, 24, 30)
+    icon.Position = UDim2.fromOffset(center.X, center.Y)
+    local scale = Instance.new("UIScale")
+    scale.Scale = 0.15
+    scale.Parent = icon
+    local bloom = TweenService:Create(
+        scale,
+        TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        { Scale = 6.5 }
+    )
+
+    bloom.Completed:Once(function()
+        if not gui.Parent then
+            return
+        end
+        local targets = collectTransferTargets(ctx)
+        if #targets == 0 then
+            targets = collectTransferTargets({ targetScope = "player" })
+        end
+        local flightsRemaining = #targets
+        for i, target in ipairs(targets) do
+            local destination = guiCenter(target)
+            local flying = createTransferIcon(gui, badge, 112, 30 + i)
+            flying.Position = UDim2.fromOffset(center.X, center.Y)
+            local targetSize = typeof(target) == "Vector2" and 38
+                or math.clamp(math.min(target.AbsoluteSize.X, target.AbsoluteSize.Y), 28, 46)
+            local flight = TweenService:Create(
+                flying,
+                TweenInfo.new(0.58, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
+                {
+                    Position = UDim2.fromOffset(destination.X, destination.Y),
+                    Size = UDim2.fromOffset(targetSize, targetSize),
+                    Rotation = (i % 2 == 0) and 18 or -18,
+                }
+            )
+            flight.Completed:Once(function()
+                if flying.Parent then
+                    local settle = TweenService:Create(flying, TweenInfo.new(0.16), {
+                        Size = UDim2.fromOffset(4, 4),
+                    })
+                    settle.Completed:Once(function()
+                        flying:Destroy()
+                        flightsRemaining -= 1
+                        if flightsRemaining == 0 and gui.Parent then
+                            gui:Destroy()
+                        end
+                    end)
+                    settle:Play()
+                end
+            end)
+            flight:Play()
+        end
+        local flash = TweenService:Create(scale, TweenInfo.new(0.18), { Scale = 7.4 })
+        flash.Completed:Once(function()
+            if icon.Parent then
+                icon:Destroy()
+            end
+            if flightsRemaining == 0 and gui.Parent then
+                gui:Destroy()
+            end
+        end)
+        flash:Play()
+    end)
+    bloom:Play()
 end
 
 -- Fire a named event: apply every configured reaction. `ctx` is forwarded to handlers (future use).
