@@ -976,6 +976,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 InventoryService = modules:Get("InventoryService"),
                 RewardService = reward,
                 EnhancementService = modules:Get("EnhancementService"),
+                HotbarService = modules:Get("HotbarService"),
             })
             reward:SetPlayerProgressionService(progression)
         end

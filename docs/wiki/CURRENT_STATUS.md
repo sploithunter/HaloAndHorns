@@ -988,6 +988,12 @@ Last checked: 2026-08-15
   Creator Luck from the non-stacking 1.5x **Founder's Legacy** server aura.
 - Timed player-status badges display durations of at least one minute as `M:SS` (for example,
   `19:45`) and switch to the compact seconds countdown only for the final minute.
+- The early-level boost sampler grants exactly one player-controlled token at each claimed-level
+  milestone: **Double Coins at Level 2**, **Titan Team at Level 3**, and **Double XP at Level 4**.
+  Tokens enter the normal Inventory/Items path and auto-bind only when a hotbar slot is empty; no
+  boost starts automatically. Named profile markers reconcile already-progressed players exactly
+  once, independently of token consumption or paid purchases. Admin Reset re-arms the milestone
+  markers for another new-player test without guessing which shared-stack tokens were purchased.
 - The pet-capacity pass is presented as **Deploy an Extra Pet** and adds one to the
   player's current deploy limit (3→4 immediately, up through 10→11 after progression);
   it is not a fixed unlock that jumps every buyer directly to eleven pets.

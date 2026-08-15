@@ -123,6 +123,9 @@ local function generateProfileTemplate(configLoader)
             -- Named progression entitlements reconcile existing profiles without coupling
             -- content grants to the schema version or replaying the Level-5 claim sequence.
             FutureCall = {},
+            -- One-time L2-L4 sampler grants. Markers are separate from item quantities so
+            -- consuming or buying another boost can never cause a free-token regrant.
+            EarlyBoostSampler = {},
             -- Launch cohort reservation + one permanent promotional pass BENEFIT. This remains
             -- separate from Marketplace ownership so the reward never impersonates a Roblox pass.
             FoundersChoice = {},

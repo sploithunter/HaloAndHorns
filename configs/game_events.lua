@@ -135,6 +135,13 @@ return {
         banner = { seconds = 8, color = { 145, 95, 255 } },
     },
 
+    -- One free, player-controlled paid-style boost at claimed levels 2, 3, and 4.
+    early_boost_awarded = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 90, 215, 255 }, count = 24 },
+        banner = { seconds = 8, color = { 90, 215, 255 } },
+    },
+
     tester_reward_awarded = {
         sound = "celebratory_jingle",
         vfx = { kind = "burst", color = { 70, 210, 255 }, count = 28 },

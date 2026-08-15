@@ -43,4 +43,35 @@ return {
             },
         },
     },
+
+    -- Early-game sampler: one player-controlled boost token at each claimed level.
+    -- L2 reinforces the first hatch/farm loop, L3 makes combat visibly exciting, and
+    -- L4 accelerates the final approach to the L5 Origin choice without altering the
+    -- tutorial's own pacing. Named markers reconcile existing profiles exactly once.
+    early_boost_sampler = {
+        enabled = true,
+        grants = {
+            {
+                claimed_level = 2,
+                item_id = "double_coins_token",
+                display_name = "Double Coins",
+                quantity = 1,
+                marker = "level2_double_coins_v1",
+            },
+            {
+                claimed_level = 3,
+                item_id = "titan_team_token",
+                display_name = "Titan Team",
+                quantity = 1,
+                marker = "level3_titan_team_v1",
+            },
+            {
+                claimed_level = 4,
+                item_id = "double_xp_token",
+                display_name = "Double XP",
+                quantity = 1,
+                marker = "level4_double_xp_v1",
+            },
+        },
+    },
 }
