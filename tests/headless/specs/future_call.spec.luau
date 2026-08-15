@@ -95,6 +95,22 @@ return function()
             expect(type(gameEvents.future_call_departed.banner)).to.equal("table")
         end)
 
+        it("replicates the two-minute Future Self countdown into the player badge row", function()
+            local futureCallSource = readFile("src/Server/Services/FutureCallService.lua")
+            local badgeSource = readFile("src/Client/Systems/PlayerPowerBadges.lua")
+
+            expect(
+                futureCallSource:find(
+                    'player:SetAttribute("FutureCallUntil", os.time() + duration)',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(futureCallSource:find('player:SetAttribute("FutureCallUntil", 0)', 1, true)).to.be.ok()
+            expect(badgeSource:find('attr = "FutureCall"', 1, true)).to.be.ok()
+            expect(badgeSource:find('symbol = "portal"', 1, true)).to.be.ok()
+        end)
+
         it("wires manifested squads into their owner's whole-team combat", function()
             local enemySource = readFile("src/Server/Services/EnemyService.lua")
             expect(enemySource:find("function EnemyService:_playerForPetFolder", 1, true)).to.be.ok()

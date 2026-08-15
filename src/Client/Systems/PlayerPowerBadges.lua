@@ -46,6 +46,11 @@ local BUFFS = {
         fixed = { element = "exclusive", symbol = "xp_up" },
         valueActive = true,
     },
+    {
+        attr = "FutureCall",
+        label = "SELF",
+        fixed = { element = "exclusive", symbol = "portal" },
+    },
     { attr = "OverheatDamageBuff", label = "HEAT", toggleable = true }, -- Pyromancer Overheat
     { attr = "CritBuff", label = "CRIT" }, -- Critical Strike
     { attr = "CoinYieldPower", label = "CRYS" }, -- Prospector (coin_yield axis) — "Crystals" display
@@ -192,9 +197,12 @@ local function makeToggleClick(def)
     end
 end
 
-local function makeBadge(parent, order, onClick)
+local function makeBadge(parent, order, onClick, attr)
     local holder = Instance.new("Frame")
-    holder.Name = "PBadge"
+    -- Stable destination name for GameEvents' consumable-transfer animation. The animation can
+    -- now visibly land on the exact timed effect it just activated instead of vaguely flying at
+    -- the whole player bar.
+    holder.Name = "PBadge_" .. tostring(attr or "Status")
     holder.Size = UDim2.fromOffset(38, 50)
     holder.BackgroundTransparency = 1
     holder.LayoutOrder = order
@@ -294,7 +302,7 @@ function PlayerPowerBadges.start()
             local b = badges[def.attr]
             if active or owned then
                 if not b then
-                    b = makeBadge(row, i, def.toggleable and makeToggleClick(def) or nil)
+                    b = makeBadge(row, i, def.toggleable and makeToggleClick(def) or nil, def.attr)
                     badges[def.attr] = b
                 end
                 local disc

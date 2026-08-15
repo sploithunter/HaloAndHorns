@@ -688,6 +688,8 @@ function EconomyService:UseItem(player, data)
             local healedPets, healedTotal =
                 self:_applySquadHealthPotion(player, squadHealFraction, squadTargets)
             fireGameEvent(player, "health_potion_used", {
+                itemId = itemId,
+                targetScope = "pets",
                 healedPets = healedPets,
                 healedTotal = healedTotal,
                 fraction = squadHealFraction,
@@ -709,6 +711,12 @@ function EconomyService:UseItem(player, data)
                 end
                 return false
             end
+            local feedback = itemConfig.use_feedback or {}
+            fireGameEvent(player, "consumable_used", {
+                itemId = itemId,
+                targetScope = feedback.target_scope,
+                destinationAttr = feedback.destination_attr,
+            })
         elseif itemConfig.effects.global_effect then
             self:_applyGlobalEffect(player, itemConfig)
         elseif itemConfig.effects.special_effect then

@@ -223,6 +223,7 @@ return {
         sound = "power_up_stronger",
         vfx = { kind = "burst", color = { 90, 190, 255 }, count = 18 },
         banner = { seconds = 4, color = { 90, 190, 255 } },
+        effect_transfer = {},
     },
 
     -- The matching closing beat when a successful Future Call naturally reaches the end of its
@@ -425,6 +426,17 @@ return {
     -- completes on this; styling is config-only like every bus event.
     potion_used = {
         float = { color = { 190, 130, 240 } },
+        effect_transfer = {},
+    },
+
+    -- Structured inventory consumables (paid boosts and future config-authored tokens) use the
+    -- same center-bloom -> destination animation as potions. Context selects player/pets/enemy.
+    consumable_used = {
+        effect_transfer = {},
+    },
+
+    health_potion_used = {
+        effect_transfer = {},
     },
 
     potion_pickup = {
