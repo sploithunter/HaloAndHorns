@@ -121,6 +121,25 @@ return {
         },
     },
 
+    -- FUTURE'S PATH: a baked, same-server level 2-7 combat route reached from Home.
+    -- Geometry is authored by RobloxGenerateMap and saved under Workspace.Maps.FuturePath;
+    -- runtime code only binds the cloned Home gate and the route's authored return anchor.
+    -- Keep this separate from `realm_portals`: it is not a Heaven/Hell layer and must never
+    -- mutate CurrentLayer or charge realm-traversal currency.
+    future_path = {
+        enabled = true,
+        required_level = 2,
+        map_folder = "FuturePath",
+        home_portal_name = "Portal_FuturesPath",
+        entry_purpose = "future_path_entry",
+        return_purpose = "future_path_return",
+        prompt_hold = 0.35,
+        max_distance = 14,
+        stream_timeout = 8,
+        -- Reserved away from Home and from MissionInstanceService's positive-X slots.
+        world_offset = { x = -24000, y = 0, z = 0 },
+    },
+
     -- Client realm skin (RealmAtmosphere, World S3 A1) — DEPTH-SCALED. The client captures the
     -- map's real base lighting and blends base -> the realm's `deep` anchor below by t = depth /
     -- max_depth (RealmTheme): layer 1 = a faint 20% wash, the deepest layer = the full `deep` look.

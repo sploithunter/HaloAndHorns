@@ -1,0 +1,37 @@
+return function()
+    describe("FuturePathService authored-map contract", function()
+        local source = readFile("src/Server/Services/FuturePathService.lua")
+        local layers = readFile("configs/layers.lua")
+        local installer = readFile("scripts/studio/install_futures_path_portal.luau")
+        local placement = readFile("scripts/studio/place_futures_path_map.luau")
+
+        it("keeps the route out of the Heaven/Hell layer service", function()
+            expect(source:find('home_portal_name or "Portal_FuturesPath"', 1, true)).to.be.ok()
+            expect(source:find('map_folder or "FuturePath"', 1, true)).to.be.ok()
+            expect(source:find("UseLayer", 1, true)).to.equal(nil)
+        end)
+
+        it("binds authored entry and return purposes", function()
+            expect(source:find('"future_path_entry"', 1, true)).to.be.ok()
+            expect(source:find('"future_path_return"', 1, true)).to.be.ok()
+            expect(source:find("RequestStreamAroundAsync", 1, true)).to.be.ok()
+        end)
+
+        it("gates entry at level two", function()
+            expect(layers:find("required_level = 2", 1, true)).to.be.ok()
+            expect(source:find("self:_level(player) < required", 1, true)).to.be.ok()
+        end)
+
+        it("clones without stealing Portal_Home ownership", function()
+            expect(installer:find('FindFirstChild("Portal_Home", true)', 1, true)).to.be.ok()
+            expect(installer:find('clone.Name = "Portal_FuturesPath"', 1, true)).to.be.ok()
+            expect(installer:find('inst:SetAttribute("RealmPortalBound", nil)', 1, true)).to.be.ok()
+        end)
+
+        it("places the baked route in its reserved world-space exactly once", function()
+            expect(placement:find('maps:FindFirstChild("FuturePath")', 1, true)).to.be.ok()
+            expect(placement:find('root:GetAttribute("WorldOffsetX")', 1, true)).to.be.ok()
+            expect(placement:find('root:SetAttribute("WorldOffsetX", TARGET_OFFSET.X)', 1, true)).to.be.ok()
+        end)
+    end)
+end
