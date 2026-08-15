@@ -19,6 +19,7 @@ local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local Principal = require(ReplicatedStorage.Shared.Game.Principal)
 local PlayerListStatus = require(ReplicatedStorage.Shared.Game.PlayerListStatus)
+local EarlyBoostSampler = require(ReplicatedStorage.Shared.Game.EarlyBoostSampler)
 
 local PlayerProgressionService = {}
 PlayerProgressionService.__index = PlayerProgressionService
@@ -54,6 +55,7 @@ function PlayerProgressionService:Init()
     self._inventoryService = nil
     self._rewardService = nil
     self._enhancementService = nil
+    self._hotbarService = nil
     self._config = self._configLoader:LoadConfig("player_progression")
     self._xpConfig = self._config.xp or { mode = "linear", per_level = 100 }
     local okTrack, track = pcall(function()
@@ -86,6 +88,7 @@ function PlayerProgressionService:BindPeerServices(services)
     self._inventoryService = services.InventoryService
     self._rewardService = services.RewardService
     self._enhancementService = services.EnhancementService
+    self._hotbarService = services.HotbarService
 end
 
 function PlayerProgressionService:IsEnabled()
@@ -105,6 +108,9 @@ function PlayerProgressionService:Start()
                 -- Catch up any banked FILLER levels on join (e.g. earned offline); training
                 -- levels still stall for the altar.
                 self:_advanceAuto(player)
+                -- Existing profiles receive any missing early sampler tokens through the same
+                -- named-marker path as newly claimed levels.
+                self:_reconcileEarlyBoostSampler(player)
                 -- RECONCILE the levels_gained mission counter with the actual claimed
                 -- level (Jason hit this: at L6 the "Reach Level 5" mission read 0/4 —
                 -- the counter only counted claims made AFTER it shipped, walling every
@@ -153,6 +159,86 @@ function PlayerProgressionService:Start()
     for _, player in ipairs(Players:GetPlayers()) do
         hook(player)
     end
+end
+
+function PlayerProgressionService:_reconcileEarlyBoostSampler(player)
+    local sampler = self._config.early_boost_sampler or {}
+    if sampler.enabled == false or not (player and player.Parent) then
+        return { ok = false, reason = "disabled_or_left" }
+    end
+    local data = self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    local pending =
+        EarlyBoostSampler.pendingGrants(data.GameData, self:GetClaimedLevel(player), sampler)
+    if #pending == 0 then
+        return { ok = true, granted = 0 }
+    end
+
+    local granted = {}
+    for _, grant in ipairs(pending) do
+        -- Mark before AddItem: its ordinary save persists the marker and token together. On
+        -- failure, restore only this marker; prior successful milestones remain exactly-once.
+        EarlyBoostSampler.markGrant(data.GameData, grant)
+        local uid, err = self._inventoryService:AddItem(player, "consumables", {
+            id = grant.itemId,
+            quantity = grant.quantity,
+            obtained_at = os.time(),
+            source = "early_boost_sampler",
+        })
+        if not uid then
+            EarlyBoostSampler.restoreGrant(data.GameData, grant)
+            if self._logger then
+                self._logger:Warn("Early boost sampler grant failed", {
+                    player = player.Name,
+                    level = grant.level,
+                    item = grant.itemId,
+                    error = tostring(err),
+                })
+            end
+            return { ok = false, reason = err or "inventory_add_failed", granted = #granted }
+        end
+        granted[#granted + 1] = grant
+        if self._hotbarService and self._hotbarService.AutoBindToken then
+            self._hotbarService:AutoBindToken(player, grant.itemId)
+        end
+    end
+
+    self._dataService:RequestSave(player, "early_boost_sampler", { critical = true })
+    local names = {}
+    for _, grant in ipairs(granted) do
+        names[#names + 1] = grant.displayName
+    end
+    local name = #granted == 1
+            and string.format(
+                "🎁 LEVEL %d BOOST!\nYou received one %s token. Use it when you're ready!",
+                granted[1].level,
+                granted[1].displayName
+            )
+        or string.format(
+            "🎁 EARLY BOOST SAMPLER!\nYou received: %s. Use them when you're ready!",
+            table.concat(names, ", ")
+        )
+    fireGameEvent(player, "early_boost_awarded", {
+        name = name,
+        count = #granted,
+    })
+    return { ok = true, granted = #granted }
+end
+
+-- Admin Reset re-arms the sampler for a reproducible new-player run. It deliberately does not
+-- remove existing boost inventory: those tokens may have been paid purchases, and provenance is
+-- intentionally not inferred from a shared stack.
+function PlayerProgressionService:ResetEarlyBoostSampler(player)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    data.GameData.EarlyBoostSampler = {}
+    return true
 end
 
 function PlayerProgressionService:GetExperience(player)
@@ -776,6 +862,9 @@ function PlayerProgressionService:_applyLevel(player, newLevel, auto, silent, sk
         end
     end
     self:_publish(player)
+    if not replaying then
+        self:_reconcileEarlyBoostSampler(player)
+    end
     local payload = {
         level = newLevel,
         kind = entry.kind,

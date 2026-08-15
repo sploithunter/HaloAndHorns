@@ -2597,3 +2597,13 @@ first-session cohort rates.
 - Replaced long raw-seconds labels on timed player-status badges with `M:SS` clocks at one minute
   and above (`19:45` instead of `1185s`). The final minute keeps the terse seconds countdown and its
   existing near-expiry blink.
+
+## 2026-08-15 — Level 2–4 boost sampler
+
+- Added a one-time early progression schedule: one Double Coins token at claimed Level 2, one Titan
+  Team token at Level 3, and one Double XP token at Level 4. The order reinforces farming first,
+  demonstrates the visible team transformation in early combat, then accelerates the bridge to the
+  Level-5 Origin choice without altering tutorial XP.
+- Grants use named profile markers, reconcile existing players exactly once, enter the canonical
+  dynamic consumable inventory, auto-bind only into empty hotbar space, and never auto-activate.
+  Admin Reset re-arms the marker schedule while preserving potentially purchased shared-stack items.

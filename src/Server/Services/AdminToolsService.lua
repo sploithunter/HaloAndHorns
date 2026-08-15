@@ -722,6 +722,10 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.GameData.TesterRewards = { campaigns = {} }
     playerData.GameData.TrialEggRewards = { tracks = {} }
     playerData.GameData.PromoCodes = { claims = {}, attribution = {} }
+    local prog = self._playerProgressionService
+    if prog and prog.ResetEarlyBoostSampler then
+        prog:ResetEarlyBoostSampler(targetPlayer)
+    end
     if self._futureCallService and self._futureCallService.ResetForBeginning then
         pcall(function()
             self._futureCallService:ResetForBeginning(targetPlayer)
@@ -735,7 +739,6 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
 
     -- 4) Progression: Level 1 / XP 0 (Level is derived from data.Stats.Experience). SetLevel
     --    writes the level-1 threshold XP and republishes the Level/XP/XPForNext attributes.
-    local prog = self._playerProgressionService
     if prog and prog.SetLevel then
         pcall(function()
             prog:SetLevel(targetPlayer, 1)
