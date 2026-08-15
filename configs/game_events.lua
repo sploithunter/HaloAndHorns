@@ -427,16 +427,19 @@ return {
     potion_used = {
         float = { color = { 190, 130, 240 } },
         effect_transfer = {},
+        sound = "power_up_stronger",
     },
 
     -- Structured inventory consumables (paid boosts and future config-authored tokens) use the
     -- same center-bloom -> destination animation as potions. Context selects player/pets/enemy.
     consumable_used = {
         effect_transfer = {},
+        sound = "power_up_stronger",
     },
 
     health_potion_used = {
         effect_transfer = {},
+        sound = "power_up_stronger",
     },
 
     potion_pickup = {

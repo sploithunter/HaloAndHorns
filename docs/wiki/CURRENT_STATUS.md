@@ -971,13 +971,16 @@ Last checked: 2026-08-15
   Inventory, the hotbar, and the active player HUD.
 - Timed paid boosts never stack strength: each additional Double XP or Double Coins token adds
   another 60 minutes, and each additional Titan Team token adds another 20 minutes. Their player
-  badges count down the combined remaining duration. Future Call instead rejects a second token
+  badges count down the combined remaining duration from a server-authored session deadline and
+  clamp cleanly at zero. The persisted authority remains **remaining in-session seconds**, so these
+  products do not drain while the player is offline. Future Call instead rejects a second token
   while that player's Future Self is active (without consuming it); its portal badge counts down
   the active two-minute summon and clears on expiry, dismissal, or admin reset.
 - Successful consumable activation now explains its destination visually: the authored icon blooms
-  at screen center, then flies to the exact player-status badge, splits across all visible deployed
-  pets for team buffs/heals, or lands on the selected enemy HUD card for thrown debuffs. The route
-  is item/meter configuration, so later tokens and potions reuse the same non-blocking choreography.
+  at screen center, then flies to the exact player-status badge, splits across visible **pet HUD
+  cards** for team buffs/heals (or the collapsed My Team handle), or lands on the selected enemy HUD
+  card for thrown debuffs. Activations also play the shared power-up sound. The route is item/meter
+  configuration, so later tokens and potions reuse the same non-blocking choreography.
 - The pet-capacity pass is presented as **Deploy an Extra Pet** and adds one to the
   player's current deploy limit (3→4 immediately, up through 10→11 after progression);
   it is not a fixed unlock that jumps every buyer directly to eleven pets.

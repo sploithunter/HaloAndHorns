@@ -175,11 +175,34 @@ end
 -- Apply effect-owned runtime attributes without persisting duplicate state. The TimedBoosts folder
 -- remains authoritative; these attributes are projections consumed by the shared stat registry and
 -- live pet renderer. Rebuilds are requested only on active/inactive transitions, never per frame.
-function PlayerEffectsService:_setRuntimeEffectState(player, effectConfig, active, rebuild)
+function PlayerEffectsService:_setRuntimeEffectState(
+    player,
+    effectConfig,
+    active,
+    rebuild,
+    timeRemaining
+)
     for attributeName, activeValue in pairs(effectConfig.playerAttributes or {}) do
         if active then
+            -- TimedBoosts stores remaining *session* seconds, so boosts pause while the player is
+            -- offline. This deadline is only a replicated HUD projection for the current session.
+            -- Publish it before the value attribute so the client never observes an active boost
+            -- with a missing/zero deadline and renders a Unix-sized negative countdown.
+            local remaining = tonumber(timeRemaining)
+            if remaining == -1 then
+                remaining = 999999999
+            end
+            if remaining and remaining > 0 then
+                player:SetAttribute(
+                    attributeName .. "Until",
+                    self._serverClock:GetServerTime() + math.ceil(remaining)
+                )
+            else
+                player:SetAttribute(attributeName .. "Until", nil)
+            end
             player:SetAttribute(attributeName, activeValue)
         else
+            player:SetAttribute(attributeName .. "Until", nil)
             player:SetAttribute(attributeName, nil)
         end
     end
@@ -228,7 +251,13 @@ function PlayerEffectsService:ApplyEffect(player, effectId, duration, customEffe
                 addedDuration = duration,
                 newRemaining = currentTimeRemaining and currentTimeRemaining.Value or duration,
             })
-            self:_setRuntimeEffectState(player, effectConfig, true, false)
+            self:_setRuntimeEffectState(
+                player,
+                effectConfig,
+                true,
+                false,
+                currentTimeRemaining and currentTimeRemaining.Value or duration
+            )
             self:_updateEffectInProfile(
                 player,
                 effectId,
@@ -262,7 +291,7 @@ function PlayerEffectsService:ApplyEffect(player, effectId, duration, customEffe
             effectId = effectId,
             newDuration = duration,
         })
-        self:_setRuntimeEffectState(player, effectConfig, true, false)
+        self:_setRuntimeEffectState(player, effectConfig, true, false, duration)
         self:_updateEffectInProfile(player, effectId, duration)
         self:_sendUnifiedEffectsUpdate(player, self:GetActiveEffects(player))
         return true
@@ -312,7 +341,7 @@ function PlayerEffectsService:ApplyEffect(player, effectId, duration, customEffe
 
     -- Apply stat modifiers
     self:_applyStatModifiers(player, effectConfig, 1)
-    self:_setRuntimeEffectState(player, effectConfig, true, true)
+    self:_setRuntimeEffectState(player, effectConfig, true, true, duration)
 
     -- Save to ProfileStore for persistence (timeRemaining, not expiresAt)
     self:_saveEffectToProfile(player, effectId, duration, effectConfig)
