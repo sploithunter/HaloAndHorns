@@ -202,6 +202,14 @@ local function percent(value)
     return math.floor((tonumber(value) or 0) * 100 + 0.5)
 end
 
+local function formatCountdown(remaining)
+    local seconds = math.max(0, math.ceil(tonumber(remaining) or 0))
+    if seconds >= 60 then
+        return ("%d:%02d"):format(math.floor(seconds / 60), seconds % 60)
+    end
+    return tostring(seconds) .. "s"
+end
+
 local function joinLines(lines)
     if not lines or #lines == 0 then
         return ""
@@ -669,7 +677,7 @@ function PlayerPowerBadges.start()
                         end
                         b.disc.ImageTransparency = 0
                     else
-                        b.timer.Text = math.ceil(remaining) .. "s"
+                        b.timer.Text = formatCountdown(remaining)
                         -- near-expiry blink (timed powers)
                         local blink = remaining <= BLINK_LEAD
                         local hidden = blink and (os.clock() % BLINK_PERIOD) >= (BLINK_PERIOD * 0.5)
