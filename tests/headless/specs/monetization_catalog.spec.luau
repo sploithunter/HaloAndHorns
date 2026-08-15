@@ -136,6 +136,12 @@ return function()
             expect(badges:find('attr = "CoinProductBuff"', 1, true)).to.be.ok()
             expect(badges:find('attr = "XpProductBuff"', 1, true)).to.be.ok()
             expect(badges:find('attr = "TitanTeamDamageBuff"', 1, true)).to.be.ok()
+            expect(badges:find("Workspace:GetServerTimeNow()", 1, true)).to.be.ok()
+            expect(badges:find("math.max(0, untilT - now)", 1, true)).to.be.ok()
+
+            local effects = readFile("src/Server/Services/PlayerEffectsService.lua")
+            expect(effects:find('attributeName .. "Until"', 1, true)).to.be.ok()
+            expect(effects:find("math.ceil(remaining)", 1, true)).to.be.ok()
         end)
 
         it("defaults creator benefits on and persists an explicit off gate", function()

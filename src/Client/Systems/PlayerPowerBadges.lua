@@ -14,6 +14,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
 local ENCHANTS_CONFIG = require(ReplicatedStorage.Configs:WaitForChild("enchants"))
@@ -31,20 +32,22 @@ local BUFFS = {
         attr = "TitanTeamDamageBuff",
         label = "TITAN",
         fixed = { element = "exclusive", symbol = "pet" },
-        steady = true,
         valueActive = true,
+        timedValue = true,
     },
     {
         attr = "CoinProductBuff",
         label = "2X",
         fixed = { element = "exclusive", symbol = "coins_up" },
         valueActive = true,
+        timedValue = true,
     },
     {
         attr = "XpProductBuff",
         label = "2X",
         fixed = { element = "exclusive", symbol = "xp_up" },
         valueActive = true,
+        timedValue = true,
     },
     {
         attr = "FutureCall",
@@ -192,7 +195,8 @@ local function makeToggleClick(def)
         if not owned then
             return
         end
-        local on = (localPlayer:GetAttribute(def.attr .. "Until") or 0) > os.time()
+        local on = (localPlayer:GetAttribute(def.attr .. "Until") or 0)
+            > Workspace:GetServerTimeNow()
         Signals.Power_ToggleActive:FireServer({ powerId = owned, on = not on })
     end
 end
@@ -291,11 +295,12 @@ function PlayerPowerBadges.start()
     local badges = {} -- attr -> badge
 
     RunService.RenderStepped:Connect(function()
-        local now = os.time()
+        local now = Workspace:GetServerTimeNow()
         for i, def in ipairs(BUFFS) do
             local untilT = localPlayer:GetAttribute(def.attr .. "Until") or 0
-            local active = untilT > now
-                or (def.valueActive and (tonumber(localPlayer:GetAttribute(def.attr)) or 0) > 0)
+            local valueIsActive = def.valueActive
+                and (tonumber(localPlayer:GetAttribute(def.attr)) or 0) > 0
+            local active = untilT > now or (valueIsActive and def.timedValue ~= true)
             -- toggleable always-on powers keep a (greyed) badge while OWNED but off, so the player can
             -- click to turn them back on. `<attr>Owned` carries the powerId; it persists across on/off.
             local owned = def.toggleable and localPlayer:GetAttribute(def.attr .. "Owned") or nil
@@ -331,7 +336,7 @@ function PlayerPowerBadges.start()
                     b.timer.TextColor3 = Color3.fromRGB(165, 165, 165)
                 else
                     b.disc.ImageColor3 = def.tint or Color3.fromRGB(255, 255, 255)
-                    local remaining = untilT - now
+                    local remaining = math.max(0, untilT - now)
                     -- PASSIVE / TOGGLE buffs (Magnet/Swift/Hasten/XP) are always-on: their `Until` is a
                     -- far-future sentinel. Show "ON", not a ~73-year countdown.
                     local permanent = def.steady == true

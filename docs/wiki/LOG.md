@@ -2572,3 +2572,13 @@ first-session cohort rates.
   the deterministic tie-breaker. Outside the top 100, the existing progression title remains.
 - Added Eggs Hatched as a status-only OrderedDataStore ranking. Physical origin boards remain top
   10 and no profile enumeration or new persistent player field was introduced.
+
+## 2026-08-15 — Timed-boost HUD deadline and squad-HUD transfers
+
+- Fixed Double Coins, Double XP, and Titan Team badges rendering Unix-sized negative countdowns:
+  `TimedBoosts.timeRemaining` remains the in-session/offline-paused authority, while the server now
+  projects a synchronized `<Buff>Until` deadline solely for the current client session. Timed badges
+  use synchronized server time, clamp at zero, and Titan Team displays its real remaining duration.
+- Added the standard power-up sound to potion, health-potion, and structured-consumable activation.
+  Squad-target transfers such as Berserk Brew now split to visible pet HUD cards (or the collapsed
+  My Team handle) rather than chasing the moving 3D pet models in world space.

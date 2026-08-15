@@ -37,12 +37,16 @@ return function()
         it("NEVER plays a sound without a visual (Jason's rule)", function()
             for name, entry in pairs(gameEvents) do
                 if entry.sound then
-                    local visual = entry.vfx or entry.float or entry.banner or entry.world_visual
+                    local visual = entry.vfx
+                        or entry.float
+                        or entry.banner
+                        or entry.effect_transfer
+                        or entry.world_visual
                     if not visual then
                         error(
                             (
-                                "event '%s' has a sound but NO visual — add vfx/float/banner "
-                                .. "(or world_visual=true if the world itself shows it)"
+                                "event '%s' has a sound but NO visual — add vfx/float/banner/"
+                                .. "effect_transfer (or world_visual=true if the world itself shows it)"
                             ):format(name)
                         )
                     end
@@ -109,11 +113,16 @@ return function()
             end
 
             expect(type(gameEvents.potion_used.effect_transfer)).to.equal("table")
+            expect(gameEvents.potion_used.sound).to.equal("power_up_stronger")
             expect(type(gameEvents.future_call_used.effect_transfer)).to.equal("table")
             expect(type(gameEvents.consumable_used.effect_transfer)).to.equal("table")
+            expect(gameEvents.consumable_used.sound).to.equal("power_up_stronger")
             expect(type(gameEvents.health_potion_used.effect_transfer)).to.equal("table")
+            expect(gameEvents.health_potion_used.sound).to.equal("power_up_stronger")
             expect(dispatcher:find("REACTIONS.effect_transfer", 1, true)).to.be.ok()
             expect(dispatcher:find('scope == "pets"', 1, true)).to.be.ok()
+            expect(dispatcher:find('FindFirstChild("PlayerPets")', 1, true)).never.to.be.ok()
+            expect(dispatcher:find('FindFirstChild("TeamHandle", true)', 1, true)).to.be.ok()
             expect(dispatcher:find('scope == "enemy"', 1, true)).to.be.ok()
             expect(potionService:find('targetScope = "enemy"', 1, true)).to.be.ok()
             expect(economyService:find('fireGameEvent(player, "consumable_used"', 1, true)).to.be.ok()

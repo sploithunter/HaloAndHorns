@@ -401,27 +401,9 @@ local function collectTransferTargets(ctx)
     local scope = tostring(ctx.targetScope or "player")
     local targets = {}
     if scope == "pets" then
-        -- Prefer the actual deployed companions: Berserk Brew visibly splits out through the world
-        -- to every pet it empowers. HUD cards remain the fallback when pets are off-camera.
-        local camera = Workspace.CurrentCamera
-        local petRoot = Workspace:FindFirstChild("PlayerPets")
-        local petFolder = petRoot and petRoot:FindFirstChild(Players.LocalPlayer.Name)
-        for _, pet in ipairs((petFolder and petFolder:GetChildren()) or {}) do
-            local part = pet:IsA("Model")
-                and (pet.PrimaryPart or pet:FindFirstChildWhichIsA("BasePart"))
-            if part and camera then
-                local screen, onScreen = camera:WorldToViewportPoint(part.Position)
-                if onScreen and screen.Z > 0 then
-                    targets[#targets + 1] = Vector2.new(screen.X, screen.Y)
-                    if #targets >= 12 then
-                        break
-                    end
-                end
-            end
-        end
-        if #targets > 0 then
-            return targets
-        end
+        -- Squad-scoped buffs belong to the squad HUD, not the moving 3D companions. This keeps
+        -- the result legible during combat/mining and gives Berserk Brew, heals, and future squad
+        -- consumables one stable destination regardless of camera framing.
         local squad = playerGui:FindFirstChild("SquadHud")
         local seen = {}
         for _, obj in ipairs((squad and squad:GetDescendants()) or {}) do
@@ -439,6 +421,14 @@ local function collectTransferTargets(ctx)
                         break
                     end
                 end
+            end
+        end
+        -- Compact/bar modes can collapse every individual card. In that state, land the transfer
+        -- once on the visible team handle; expanding the HUD is not required just to show a buff.
+        if #targets == 0 then
+            local handle = squad and squad:FindFirstChild("TeamHandle", true)
+            if handle and actuallyVisible(handle) then
+                targets[1] = handle
             end
         end
     elseif scope == "enemy" then
