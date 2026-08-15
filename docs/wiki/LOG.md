@@ -2508,3 +2508,13 @@ first-session cohort rates.
 - Updated the eight configured dashboard baselines to the beta-week prices (19–54 Robux). These
   values remain validation/analytics metadata only; a failed marketplace lookup now says to view
   the Roblox price rather than presenting stale configuration as authoritative.
+
+## 2026-08-15 — Compact social People list
+
+- Replaced the native list's single `Level` mirror with compact `Rank`, `Status`, and `Location`
+  columns. Veteran rank now presents as crossed swords plus the veteran level (for example,
+  `⚔️ 72`), while VIP and Founder's Legacy use icon-only status markers.
+- Location follows live area/layer/mission attributes and uses short realm-aware labels such as
+  `Home Ice`, `😇2 Ice`, `😈2 Ice`, and `😇 Trial`; no new persistence fields were introduced.
+- Monetization now publishes the effective VIP entitlement as a player attribute so the social
+  status stays correct after Marketplace ownership checks and creator testing-gate changes.
