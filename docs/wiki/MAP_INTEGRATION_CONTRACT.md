@@ -135,6 +135,23 @@ For imported enchanter cosmetics such as `FloatingCoinScript`, leave `configs/en
 
 Successful rerolls can also trigger station-authored VFX through `stations.<id>.animation.lightning`. The default `basic_enchanter` effect temporarily clones the selected pet from preloaded pet assets, places it at the station, and calls the reusable `Shared.Effects.EnchantLightning` module. That module fires ColorfulClickers-style procedural neon cylinder bolts from configured origin parts into the cloned pet's primary/first part. Use `origin_part_paths` for exact station-relative child paths, such as `RuneStone1.Rune`, when an imported model has extra parts with the same name; use `origin_part_name` or `origin_part_names` only when name-based discovery is unambiguous. Designers can swap the top endpoint contract to a single named part such as `LightningTop` or an explicit `origin_part_paths` list without changing service code. The station config owns colors, duration, curve, jitter/radius, thickness, core/glow intensity, strand/segment counts, result delay, temporary pet placement, and independent thunder audio lifetime.
 
+### Future's Path
+
+Future's Path is a baked, same-server level 2–7 combat route, not a Heaven/Hell realm layer.
+RobloxGenerateMap authors it under `Workspace.Maps.FuturePath`; Studio saves the result at the
+reserved `(-24000, 0, 0)` world offset. Runtime code must not generate its structural tiles or call
+`LayerService:UseLayer`.
+
+The Home entrance is an authored clone of an existing Heaven/Hell `Portal_Home`, renamed
+`Portal_FuturesPath`. The rename is mandatory because `RealmPortalService` binds every descendant
+named `Portal_Home`. Run `scripts/studio/install_futures_path_portal.luau` to make the anchored,
+prompt-free clone and `scripts/studio/place_futures_path_map.luau` after importing the baked map.
+The placement script is repeatable and records its applied offset on the map root.
+
+`FuturePathService` owns only travel behavior. It binds the Home clone and the baked BasePart markers
+whose `Purpose` values are `future_path_entry` and `future_path_return`, requires level 2, requests
+streaming around the destination, and returns each player to the exact CFrame from which they entered.
+
 ## Links
 
 - [Foundation & Requirements K8](../FOUNDATION_AND_REQUIREMENTS.md)

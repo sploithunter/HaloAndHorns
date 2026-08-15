@@ -2499,3 +2499,23 @@ first-session cohort rates.
 - All `rig_class` pets now deploy Golden/Rainbow variants as runtime reskins of their animated Basic
   geometry while inventory images and static catalog variants remain unchanged. Lune was raised to
   0.10.5 so current Studio RBXM properties can be validated headlessly.
+
+## 2026-08-14 — Roblox-authoritative game-pass prices
+
+- Changed the Pet Shop to resolve each player's live game-pass price through client-side
+  `MarketplaceService:GetProductInfo`, preserving Roblox Managed/Regional Pricing and eliminating
+  hardcoded storefront prices.
+- Updated the eight configured dashboard baselines to the beta-week prices (19–54 Robux). These
+  values remain validation/analytics metadata only; a failed marketplace lookup now says to view
+  the Roblox price rather than presenting stale configuration as authoritative.
+
+## 2026-08-14 — Future's Path authored gate and travel boundary
+
+- Reserved `Workspace.Maps.FuturePath` at negative X for the baked level 2–7 combat route, outside
+  Home, stacked realm layers, and the positive-X mission-instance band.
+- Added a repeatable Studio pass that clones an existing Heaven/Hell return gate into Home as
+  `Portal_FuturesPath`, preserving the original gates while preventing `RealmPortalService` from
+  claiming the new entrance.
+- Added server-owned level-2 entry/return travel with destination streaming and exact Home return
+  positions. Structural route geometry remains Studio-owned and is placed by a repeatable post-import
+  script rather than generated during play.

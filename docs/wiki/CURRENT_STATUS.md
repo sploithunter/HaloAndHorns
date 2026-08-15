@@ -933,12 +933,17 @@ quests/daily/achievements/shop). Add a per-mine XP grant + curve tuning when bal
 
 ## Halo & Horns — Unified Pet Shop monetization
 
-Last checked: 2026-07-19
+Last checked: 2026-08-14
 
 - The **Pet Shop is Robux-only**. Its default tab lists every configured live game
   pass with the Marketplace thumbnail, authored benefit description, Robux price,
   and authoritative owned/purchase state. Earned gem/coin offers belong to the
   neighboring economy shop and are deliberately excluded from this panel.
+- Robux prices shown to players are resolved client-side with
+  `MarketplaceService:GetProductInfo`, so Roblox Managed/Regional Pricing is the
+  display authority. `configs/monetization.lua` retains the current dashboard
+  baseline only for validation and approximate internal analytics; the storefront
+  never falls back to an obsolete configured number when Marketplace data is unavailable.
 - Category and purchase-state controls use the same area/citrine/emerald/amethyst
   glossy pill assets as the established menu style guide; the storefront does not
   maintain a parallel flat-button palette.

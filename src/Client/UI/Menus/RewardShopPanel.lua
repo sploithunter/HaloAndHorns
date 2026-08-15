@@ -9,6 +9,7 @@
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local MarketplaceService = game:GetService("MarketplaceService")
 local TweenService = game:GetService("TweenService")
 
 local CloseButton = require(script.Parent.Parent.Components.CloseButton)
@@ -62,6 +63,10 @@ function RewardShopPanel.new()
     self.ownedPasses = {}
     self.founderPasses = {}
     self.foundersChoice = nil
+    -- Prices are deliberately client-resolved. Managed Pricing can return a
+    -- different pass price for each player, and Roblox's dynamic-price test
+    -- only recognizes MarketplaceService calls made from a LocalScript.
+    self.marketplaceInfo = {}
     self.livePasses = MonetizationCatalog.livePasses(monetization)
     self.liveProducts = MonetizationCatalog.liveProducts(monetization)
     self._areaKey, self._areaColor = PanelChrome.areaPill()
@@ -509,13 +514,15 @@ function RewardShopPanel:_createMarketplaceCard(entry)
     price.Size = UDim2.new(1, -16, 0, 24)
     price.Position = UDim2.new(0, 8, 1, -70)
     price.BackgroundTransparency = 1
-    price.Text = "R$ " .. tostring(item.price_robux or "?")
+    price.Text = "Loading price…"
     price.TextColor3 = COLORS.robux
     price.TextScaled = true
     price.Font = Enum.Font.GothamBold
     price.ZIndex = 103
     price.Parent = card
     constrain(price, 16, 9)
+
+    self:_loadMarketplacePrice(entry, price)
 
     local buy = Instance.new("TextButton")
     buy.Name = "BuyButton"
@@ -556,6 +563,41 @@ function RewardShopPanel:_createMarketplaceCard(entry)
             })
         end)
     end
+end
+
+function RewardShopPanel:_loadMarketplacePrice(entry, label)
+    local cacheKey = entry.kind .. ":" .. tostring(entry.robloxId)
+    local cached = self.marketplaceInfo[cacheKey]
+    if cached then
+        label.Text = cached.text
+        label.TextColor3 = cached.available and COLORS.robux or COLORS.subtext
+        return
+    end
+
+    task.spawn(function()
+        local infoType = if entry.kind == "gamepass"
+            then Enum.InfoType.GamePass
+            else Enum.InfoType.Product
+        local ok, info = pcall(function()
+            return MarketplaceService:GetProductInfo(entry.robloxId, infoType)
+        end)
+
+        local available = ok and type(info) == "table" and info.IsForSale ~= false
+        local resolved = {
+            available = available,
+            text = if available and type(info.PriceInRobux) == "number"
+                then "R$ " .. tostring(info.PriceInRobux)
+                else "See Roblox price",
+        }
+        self.marketplaceInfo[cacheKey] = resolved
+
+        -- Cards can be rebuilt while the request yields. Never write through a
+        -- stale label from the previous tab/open cycle.
+        if label.Parent then
+            label.Text = resolved.text
+            label.TextColor3 = resolved.available and COLORS.robux or COLORS.subtext
+        end
+    end)
 end
 
 function RewardShopPanel:_animateEntrance()

@@ -838,6 +838,14 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.RealmPortalService,
     { "Logger", "ConfigLoader", "LayerService", "AdminService" }
 )
+-- FuturePathService: binds the cloned Home entrance and the baked route's authored return marker.
+-- It is deliberately independent of LayerService: Future's Path is a same-server combat route,
+-- not a Heaven/Hell realm layer.
+loader:RegisterModule(
+    "FuturePathService",
+    ServerScriptService.Server.Services.FuturePathService,
+    { "Logger", "ConfigLoader" }
+)
 -- MissionInstanceService: CoH-style door missions — MissionDoor prompts open a
 -- deterministic procedural instance (seeded tile-kit map) at a far-X slot and
 -- teleport the party in (docs/MISSION_WORLDGEN.md).
@@ -1225,6 +1233,7 @@ table.insert(requiredModules, "SummonService")
 table.insert(requiredModules, "AscensionAltarService")
 table.insert(requiredModules, "DailyRewardZoneService")
 table.insert(requiredModules, "RealmPortalService")
+table.insert(requiredModules, "FuturePathService")
 table.insert(requiredModules, "MissionInstanceService")
 table.insert(requiredModules, "ZoneTrackerService")
 table.insert(requiredModules, "GameAPIService")
