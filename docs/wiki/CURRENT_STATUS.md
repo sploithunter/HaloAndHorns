@@ -981,6 +981,11 @@ Last checked: 2026-08-15
   cards** for team buffs/heals (or the collapsed My Team handle), or lands on the selected enemy HUD
   card for thrown debuffs. Activations also play the shared power-up sound. The route is item/meter
   configuration, so later tokens and potions reuse the same non-blocking choreography.
+- Every active player-status badge now has a shared config-derived tooltip. Desktop hover and mobile
+  tap identify the source and live effect; a mobile hold inspects toggleable powers without toggling
+  them. Power and potion copy reuses their existing description modules, enchants read their effect
+  definitions, pet auras show live magnitude/source count, and presence badges distinguish 2x
+  Creator Luck from the non-stacking 1.5x **Founder's Legacy** server aura.
 - The pet-capacity pass is presented as **Deploy an Extra Pet** and adds one to the
   player's current deploy limit (3→4 immediately, up through 10→11 after progression);
   it is not a fixed unlock that jumps every buyer directly to eleven pets.

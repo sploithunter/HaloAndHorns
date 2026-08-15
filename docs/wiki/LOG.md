@@ -2582,3 +2582,12 @@ first-session cohort rates.
 - Added the standard power-up sound to potion, health-potion, and structured-consumable activation.
   Squad-target transfers such as Berserk Brew now split to visible pet HUD cards (or the collapsed
   My Team handle) rather than chasing the moving 3D pet models in world space.
+
+## 2026-08-15 — Config-derived player-status badge tooltips
+
+- Added one tooltip path to every active badge beside the player bar. Desktop hover and mobile tap
+  now explain powers, potions, paid boosts, pet auras, enchants, summons, Creator Luck, and Founder's
+  Legacy; a mobile hold inspects toggleable powers without changing their on/off state.
+- Tooltip values come from live definitions and replicated attributes. In particular, the
+  source-specific Founder badge identifies **Founder's Legacy** and its configured 1.5x server hatch
+  luck rather than leaving players to infer the red/gold clover from its icon.

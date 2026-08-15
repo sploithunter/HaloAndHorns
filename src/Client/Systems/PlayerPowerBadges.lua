@@ -14,11 +14,18 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
+local CREATORS = require(ReplicatedStorage.Configs:WaitForChild("creators"))
 local ENCHANTS_CONFIG = require(ReplicatedStorage.Configs:WaitForChild("enchants"))
+local MONETIZATION = require(ReplicatedStorage.Configs:WaitForChild("monetization"))
+local POTIONS = require(ReplicatedStorage.Configs:WaitForChild("potions"))
+local POWERS = require(ReplicatedStorage.Configs:WaitForChild("powers"))
 local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime)
+local PotionDescribe = require(ReplicatedStorage.Shared.Game.PotionDescribe)
+local PowerDescribe = require(ReplicatedStorage.Shared.Game.PowerDescribe)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
@@ -98,12 +105,7 @@ local BUFFS = {
         fixed = { element = "neutral", symbol = "clover_lucky" },
         steady = true,
         tint = (function()
-            local ok, creators = pcall(function()
-                return require(
-                    game:GetService("ReplicatedStorage").Configs:WaitForChild("creators")
-                )
-            end)
-            local c = ok and creators and creators.server_luck and creators.server_luck.display
+            local c = CREATORS.server_luck and CREATORS.server_luck.display
             c = c and c.color or { 170, 90, 255 }
             return Color3.fromRGB(c[1], c[2], c[3])
         end)(),
@@ -173,6 +175,7 @@ table.sort(enchantIds)
 for _, effectId in ipairs(enchantIds) do
     table.insert(BUFFS, {
         attr = EnchantRuntime.effectAttribute(effectId),
+        enchantId = effectId,
         label = string.upper(effectId),
         fixed = {
             element = "neutral",
@@ -186,6 +189,172 @@ end
 local BLINK_LEAD = 5 -- seconds: blink in the final stretch
 local BLINK_PERIOD = 0.5
 local PERMANENT_THRESHOLD = 86400 * 30 -- >30 days remaining = always-on (passive/toggle) -> "ON"
+local TOUCH_HOLD_SECONDS = 0.45
+
+local POTION_BY_METER = {}
+for potionId, potion in pairs(POTIONS.potions or {}) do
+    if potion.meter then
+        POTION_BY_METER[potion.meter] = potionId
+    end
+end
+
+local function percent(value)
+    return math.floor((tonumber(value) or 0) * 100 + 0.5)
+end
+
+local function joinLines(lines)
+    if not lines or #lines == 0 then
+        return ""
+    end
+    return table.concat(lines, "  ·  ")
+end
+
+local function configuredProduct(productId)
+    for _, product in ipairs(MONETIZATION.products or {}) do
+        if product.id == productId then
+            return product
+        end
+    end
+    return nil
+end
+
+-- One config-derived description path for every badge. Fixed status badges describe their actual
+-- replicated mechanic; powers, potions, and enchants read the same definitions as their menus.
+local function describeBadge(def)
+    local attr = def.attr
+    local powerId = localPlayer:GetAttribute(attr .. "PowerId")
+        or localPlayer:GetAttribute(attr .. "Owned")
+
+    if type(powerId) == "string" and powerId:sub(1, 7) == "potion_" then
+        local potionId = POTION_BY_METER[powerId:sub(8)]
+        local desc = potionId and PotionDescribe.describe(POTIONS, potionId)
+        if desc then
+            return desc.name, desc.type, desc.summary, joinLines(desc.lines)
+        end
+    elseif powerId and POWERS.powers and POWERS.powers[powerId] then
+        local power = POWERS.powers[powerId]
+        local desc = PowerDescribe.describe(POWERS, powerId)
+        local details = desc and joinLines(desc.lines) or ""
+        if def.toggleable then
+            local isOn = (localPlayer:GetAttribute(attr .. "Until") or 0)
+                > Workspace:GetServerTimeNow()
+            details = (isOn and "Currently ON" or "Currently OFF")
+                .. (details ~= "" and ("  ·  " .. details) or "")
+                .. "  ·  Tap to toggle"
+        end
+        return power.display_name or power.name or powerId,
+            power.subtitle or "Player Power",
+            desc and desc.summary or "This power is active.",
+            details
+    end
+
+    if def.enchantId then
+        local effect = (ENCHANTS_CONFIG.effects or {})[def.enchantId] or {}
+        local stacks = tonumber(localPlayer:GetAttribute(attr .. "Stacks")) or 1
+        return effect.display_name or def.enchantId,
+            "Pet Enchantment",
+            effect.description or "A deployed pet is granting this enhancement.",
+            ("%d contributing pet%s"):format(stacks, stacks == 1 and "" or "s")
+    end
+
+    local value = tonumber(localPlayer:GetAttribute(attr)) or 0
+    local stacks = tonumber(localPlayer:GetAttribute(attr .. "Stacks")) or 1
+    local fixed = {
+        TitanTeamDamageBuff = function()
+            local product = configuredProduct("titan_team") or {}
+            return product.name or "Titan Team",
+                "Paid Boost",
+                product.description or "Your deployed pets grow and gain more power.",
+                "Remaining game time is shown below the badge"
+        end,
+        CoinProductBuff = function()
+            local product = configuredProduct("coin_hour") or {}
+            return product.name or "2x Coins",
+                "Paid Boost",
+                product.description or "Doubles origin-crystal earnings.",
+                "Remaining game time is shown below the badge"
+        end,
+        XpProductBuff = function()
+            local product = configuredProduct("xp_hour") or {}
+            return product.name or "2x XP",
+                "Paid Boost",
+                product.description or "Doubles XP from everything.",
+                "Remaining game time is shown below the badge"
+        end,
+        FutureCall = function()
+            return "Future Self",
+                "Summon Token",
+                "Your Future Self is fighting and farming beside your squad.",
+                "Remaining game time is shown below the badge"
+        end,
+        HatchLuckBuff = function()
+            return "Hatch Luck",
+                "Pet Aura",
+                ("Deployed support pets improve hatch luck by +%d%%."):format(
+                    percent(math.max(0, value - 1))
+                ),
+                ("%d contributing pet%s"):format(stacks, stacks == 1 and "" or "s")
+        end,
+        PetXpAura = function()
+            return "Pet XP",
+                "Pet Aura",
+                ("Deployed support pets increase pet XP by +%d%%."):format(
+                    percent(math.max(0, value - 1))
+                ),
+                ("%d contributing pet%s"):format(stacks, stacks == 1 and "" or "s")
+        end,
+        HugeLuckAura = function()
+            return "Huge Fortune",
+                "Pet Aura",
+                ("Deployed support pets improve HUGE hatch luck by +%d%%."):format(
+                    percent(math.max(0, value - 1))
+                ),
+                ("%d contributing pet%s"):format(stacks, stacks == 1 and "" or "s")
+        end,
+        DropRateAura = function()
+            return "Windfall",
+                "Pet Aura",
+                ("Deployed support pets increase loot drops by +%d%%."):format(
+                    percent(math.max(0, value - 1))
+                ),
+                ("%d contributing pet%s"):format(stacks, stacks == 1 and "" or "s")
+        end,
+        CreatorServerLuckBuff = function()
+            local mult = (CREATORS.server_luck or {}).mult or 2
+            return "Creator Luck",
+                "Server Aura",
+                ("A creator is in this server. Hatch luck is now %gx for everyone else!"):format(
+                    mult
+                ),
+                "Creator and Founder server luck do not stack"
+        end,
+        FounderServerLuckBuff = function()
+            local legacy = (MONETIZATION.founders_choice or {}).legacy or {}
+            local mult = (legacy.server_luck or {}).mult or 1.5
+            return legacy.name or "Founder's Legacy",
+                "Server Aura",
+                ("A Founder's Legacy holder is here. Server hatch luck is %.1fx!"):format(mult),
+                "Creator and Founder server luck do not stack"
+        end,
+        FocusRegenAura = function()
+            return "Inner Light",
+                "Pet Aura",
+                ("Deployed support pets restore +%.2f Focus per second."):format(value),
+                ("%d contributing pet%s"):format(stacks, stacks == 1 and "" or "s")
+        end,
+        RechargeAura = function()
+            return "Ember Tempo",
+                "Pet Aura",
+                ("Deployed support pets reduce power cooldowns by %d%%."):format(percent(value)),
+                ("%d contributing pet%s"):format(stacks, stacks == 1 and "" or "s")
+        end,
+    }
+    if fixed[attr] then
+        return fixed[attr]()
+    end
+
+    return def.label or attr, "Active Effect", "This effect is currently active.", ""
+end
 
 -- Clicking a toggleable badge flips its always-on power on/off (the player's HUD control). Reads live
 -- state at click time: `<attr>Owned` carries the powerId; the buff being present = currently ON.
@@ -201,7 +370,8 @@ local function makeToggleClick(def)
     end
 end
 
-local function makeBadge(parent, order, onClick, attr)
+local function makeBadge(parent, order, onClick, def, showTooltip, hideTooltip)
+    local attr = def.attr
     local holder = Instance.new("Frame")
     -- Stable destination name for GameEvents' consumable-transfer animation. The animation can
     -- now visibly land on the exact timed effect it just activated instead of vaguely flying at
@@ -212,20 +382,43 @@ local function makeBadge(parent, order, onClick, attr)
     holder.LayoutOrder = order
     holder.Parent = parent
 
-    -- tap target INSIDE the holder (a row-level button joined the UIListLayout and shoved the pile
-    -- left). ONLY toggleable badges are clickable now (onClick = flip the power on/off); status
-    -- badges (pet auras, timed buffs) are display-only — the Active Buffs panel moved to the player
-    -- portrait (PlayerBar), so the badges are free to be on/off controls (Jason).
-    if onClick then
-        local hit = Instance.new("TextButton")
-        hit.Name = "ToggleHit"
-        hit.BackgroundTransparency = 1
-        hit.Text = ""
-        hit.Size = UDim2.fromScale(1, 1)
-        hit.ZIndex = 20
-        hit.Parent = holder
-        hit.Activated:Connect(onClick)
-    end
+    -- Every badge owns a full-size hit target: desktop hover describes it, while touch taps describe
+    -- display-only statuses. Toggleable powers retain tap-to-toggle; holding one on touch describes
+    -- it without accidentally changing its state.
+    local hit = Instance.new("TextButton")
+    hit.Name = onClick and "ToggleHit" or "TooltipHit"
+    hit.BackgroundTransparency = 1
+    hit.Text = ""
+    hit.Size = UDim2.fromScale(1, 1)
+    hit.ZIndex = 20
+    hit.Parent = holder
+
+    local touchBeganAt = nil
+    hit.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            touchBeganAt = os.clock()
+        end
+    end)
+    hit.MouseEnter:Connect(function()
+        showTooltip(holder, def, false)
+    end)
+    hit.MouseLeave:Connect(function()
+        hideTooltip(false)
+    end)
+    hit.Activated:Connect(function(input)
+        local held = input
+                and input.UserInputType == Enum.UserInputType.Touch
+                and touchBeganAt
+                and (os.clock() - touchBeganAt) >= TOUCH_HOLD_SECONDS
+            or false
+        touchBeganAt = nil
+        if held or not onClick then
+            showTooltip(holder, def, true)
+        else
+            hideTooltip(true)
+            onClick()
+        end
+    end)
 
     local disc = Instance.new("ImageLabel")
     disc.Name = "Disc"
@@ -258,8 +451,98 @@ function PlayerPowerBadges.start()
     gui.Name = "PlayerPowerBadges"
     gui.ResetOnSpawn = false
     gui.IgnoreGuiInset = true
-    gui.DisplayOrder = 6
+    gui.DisplayOrder = 26
     gui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+    local tooltip = Instance.new("Frame")
+    tooltip.Name = "StatusTooltip"
+    tooltip.Size = UDim2.fromOffset(320, 166)
+    tooltip.BackgroundColor3 = Color3.fromRGB(24, 25, 32)
+    tooltip.BorderSizePixel = 0
+    tooltip.Visible = false
+    tooltip.ZIndex = 100
+    tooltip.Parent = gui
+
+    local tooltipCorner = Instance.new("UICorner")
+    tooltipCorner.CornerRadius = UDim.new(0, 10)
+    tooltipCorner.Parent = tooltip
+    local tooltipStroke = Instance.new("UIStroke")
+    tooltipStroke.Color = Color3.fromRGB(85, 185, 255)
+    tooltipStroke.Thickness = 2
+    tooltipStroke.Parent = tooltip
+    local tooltipPadding = Instance.new("UIPadding")
+    tooltipPadding.PaddingTop = UDim.new(0, 10)
+    tooltipPadding.PaddingBottom = UDim.new(0, 10)
+    tooltipPadding.PaddingLeft = UDim.new(0, 12)
+    tooltipPadding.PaddingRight = UDim.new(0, 12)
+    tooltipPadding.Parent = tooltip
+
+    local function tooltipLabel(name, height, font, color, size)
+        local label = Instance.new("TextLabel")
+        label.Name = name
+        label.Size = UDim2.new(1, 0, 0, height)
+        label.BackgroundTransparency = 1
+        label.Font = font
+        label.TextColor3 = color
+        label.TextSize = size
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextYAlignment = Enum.TextYAlignment.Top
+        label.TextWrapped = true
+        label.ZIndex = 101
+        label.Parent = tooltip
+        return label
+    end
+
+    local tooltipLayout = Instance.new("UIListLayout")
+    tooltipLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    tooltipLayout.Padding = UDim.new(0, 2)
+    tooltipLayout.Parent = tooltip
+    local tooltipTitle =
+        tooltipLabel("Title", 25, Enum.Font.GothamBold, Color3.fromRGB(255, 255, 255), 20)
+    tooltipTitle.LayoutOrder = 1
+    local tooltipSource =
+        tooltipLabel("Source", 18, Enum.Font.GothamBold, Color3.fromRGB(120, 200, 255), 13)
+    tooltipSource.LayoutOrder = 2
+    local tooltipDescription =
+        tooltipLabel("Description", 72, Enum.Font.Gotham, Color3.fromRGB(225, 226, 235), 14)
+    tooltipDescription.LayoutOrder = 3
+    local tooltipDetails =
+        tooltipLabel("Details", 25, Enum.Font.Gotham, Color3.fromRGB(165, 170, 185), 12)
+    tooltipDetails.LayoutOrder = 4
+
+    local tooltipAnchor = nil
+    local function hideTooltip(force)
+        if force or not UserInputService.TouchEnabled then
+            tooltip.Visible = false
+            tooltipAnchor = nil
+        end
+    end
+    local function showTooltip(anchor, def, touch)
+        if touch and tooltip.Visible and tooltipAnchor == anchor then
+            tooltip.Visible = false
+            tooltipAnchor = nil
+            return
+        end
+        local title, source, description, details = describeBadge(def)
+        tooltipTitle.Text = title
+        tooltipSource.Text = source
+        tooltipDescription.Text = description
+        tooltipDetails.Text = details
+        tooltipDetails.Visible = details ~= ""
+
+        local viewport = Workspace.CurrentCamera and Workspace.CurrentCamera.ViewportSize
+            or Vector2.new(1280, 720)
+        local anchorCenter = anchor.AbsolutePosition.X + anchor.AbsoluteSize.X * 0.5
+        local x = math.clamp(anchorCenter - 160, 8, math.max(8, viewport.X - 328))
+        local y = math.clamp(
+            anchor.AbsolutePosition.Y + anchor.AbsoluteSize.Y + 8,
+            8,
+            math.max(8, viewport.Y - 174)
+        )
+        tooltip.Position = UDim2.fromOffset(x, y)
+        tooltip.Visible = true
+        tooltipAnchor = anchor
+    end
 
     local row = Instance.new("Frame")
     row.Name = "Row"
@@ -279,7 +562,6 @@ function PlayerPowerBadges.start()
         local cap = bar and bar:WaitForChild("Capsule", 10)
         if cap then
             row.Parent = cap
-            gui:Destroy() -- the standalone gui is no longer needed
         else
             row.Parent = gui -- fallback: original floating placement
         end
@@ -307,7 +589,14 @@ function PlayerPowerBadges.start()
             local b = badges[def.attr]
             if active or owned then
                 if not b then
-                    b = makeBadge(row, i, def.toggleable and makeToggleClick(def) or nil, def.attr)
+                    b = makeBadge(
+                        row,
+                        i,
+                        def.toggleable and makeToggleClick(def) or nil,
+                        def,
+                        showTooltip,
+                        hideTooltip
+                    )
                     badges[def.attr] = b
                 end
                 local disc
