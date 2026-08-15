@@ -933,7 +933,7 @@ quests/daily/achievements/shop). Add a per-mine XP grant + curve tuning when bal
 
 ## Halo & Horns — Unified Pet Shop monetization
 
-Last checked: 2026-08-14
+Last checked: 2026-08-15
 
 - The **Pet Shop is Robux-only**. Its default tab lists every configured live game
   pass with the Marketplace thumbnail, authored benefit description, Robux price,
@@ -956,6 +956,12 @@ Last checked: 2026-08-14
 - Developer products are deliberately omitted while their Roblox IDs are zero and
   their grant handlers are placeholders. A **Boosts** tab appears automatically once
   live mapped products exist, avoiding nonfunctional purchase buttons at launch.
+- **Titan Team** is the first live timed developer product (`3708227956`, 19 Robux):
+  for 20 in-session minutes, every deployed pet uses its authored Huge visual scale and
+  the player's full pet team receives an external +50% combat-and-mining power multiplier.
+  It never changes a pet's saved identity, Huge trait, serial, variant, or attack scope;
+  buying it again extends the remaining time. The shop obtains both its approved paw
+  thumbnail and each player's current price directly from Marketplace metadata.
 - The pet-capacity pass is presented as **Deploy an Extra Pet** and adds one to the
   player's current deploy limit (3→4 immediately, up through 10→11 after progression);
   it is not a fixed unlock that jumps every buyer directly to eleven pets.

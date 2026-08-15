@@ -110,6 +110,25 @@ return {
             },
         },
 
+        -- Paid deterministic team transformation. This is deliberately a runtime visual/state
+        -- effect, not a pet mutation: it never changes a pet's stored id, rarity, variant, serial,
+        -- Huge trait, or attack scope. A PetRuntimeBridge rebuild applies/removes the scale once.
+        titan_team = {
+            actions = {},
+            multiplier = 1.5,
+            duration = 1200,
+            maxUses = -1,
+            consumeOnUse = false,
+            description = "All deployed pets are Titan-sized with +50% combat and mining power",
+            displayName = "Titan Team",
+            icon = "🐾",
+            stacking = "extend_duration",
+            playerAttributes = {
+                TitanTeamDamageBuff = 0.5,
+            },
+            rebuildPets = true,
+        },
+
         -- VIP/Premium effects (permanent)
         vip_pass = {
             actions = { "PurchaseItem", "SellItem", "GetShopItems", "UseItem" },

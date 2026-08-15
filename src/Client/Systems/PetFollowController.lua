@@ -216,7 +216,7 @@ local function floatTouchup(pet, config)
     if not fo then
         return 0
     end
-    local isHuge = pet:GetAttribute("Huge") == true
+    local isHuge = pet:GetAttribute("Huge") == true or pet:GetAttribute("TemporaryTitan") == true
     local byType = fo.by_type and fo.by_type[pet:GetAttribute("PetType")]
     if byType then
         local v = isHuge and byType.huge or byType.normal

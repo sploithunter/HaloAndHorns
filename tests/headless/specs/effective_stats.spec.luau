@@ -55,6 +55,14 @@ return function()
             expect(math.abs(m - 1.3) < 1e-9).to.equal(true)
         end)
 
+        it("adds Titan Team's session-time +50% pet power on the shared damage axis", function()
+            local get = getter({
+                TitanTeamDamageBuff = 0.5,
+            })
+            local m = EffectiveStats.multiplier("pet_damage", get, NOW, { cap = 5 })
+            expect(math.abs(m - 1.5) < 1e-9).to.equal(true)
+        end)
+
         it("stacks tester-pet farming auras with their matching Natural powers", function()
             local get = getter({
                 XpBuff = 0.5,

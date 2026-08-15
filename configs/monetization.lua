@@ -37,6 +37,7 @@ return {
         supporter_pet = 0, -- REPLACE: "Supporter Pet" product
         focus_surge = 0, -- REPLACE: "Focus Surge (30 min)" product
         endurance_surge = 0, -- REPLACE: "Endurance Surge (30 min)" product
+        titan_team = 3708227956, -- LIVE: "Titan Team" (dashboard 2026-08-15)
 
         -- Game Passes
         vip_pass = 1905890871, -- LIVE (dashboard 2026-07-14)
@@ -146,6 +147,24 @@ return {
             },
             category = "boosts",
             analytics_category = "boost_endurance",
+            test_mode_enabled = true,
+        },
+        {
+            id = "titan_team",
+            name = "Titan Team (20 min)",
+            description = "All deployed pets grow to Huge size and gain +50% power for 20 minutes!",
+            -- Dashboard fallback only. The shop resolves the current managed/regional price live.
+            price_robux = 19,
+            rewards = {
+                boost = {
+                    effect_id = "titan_team",
+                    axis = "pet_damage",
+                    mult = 1.5,
+                    duration_minutes = 20,
+                },
+            },
+            category = "boosts",
+            analytics_category = "boost_titan_team",
             test_mode_enabled = true,
         },
     },

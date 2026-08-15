@@ -13,5 +13,19 @@ return function()
                 nil
             )
         end)
+
+        it("projects Titan runtime state and rebuilds pets only on state transitions", function()
+            local effectsSource = readFile("src/Server/Services/PlayerEffectsService.lua")
+            local petSource = readFile("src/Server/Services/PetHandler.server.lua")
+            local followSource = readFile("src/Client/Systems/PetFollowController.lua")
+
+            expect(
+                effectsSource:find("function PlayerEffectsService:_setRuntimeEffectState", 1, true)
+            ).to.be.ok()
+            expect(effectsSource:find("PetRuntimeBridge.RequestRebuild(player)", 1, true)).to.be.ok()
+            expect(petSource:find("applyTemporaryTitanScale", 1, true)).to.be.ok()
+            expect(petSource:find('petModel:SetAttribute("TemporaryTitan", true)', 1, true)).to.be.ok()
+            expect(followSource:find('pet:GetAttribute("TemporaryTitan") == true', 1, true)).to.be.ok()
+        end)
     end)
 end

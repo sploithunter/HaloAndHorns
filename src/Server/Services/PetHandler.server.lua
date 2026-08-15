@@ -807,6 +807,32 @@ local function applyHugePetScale(petModel)
     end
 end
 
+-- Titan Team borrows the authored HugeScale purely as a temporary presentation layer. Never set
+-- the Huge attribute here: true Huge identity controls serials, power, AoE rules, and inventory
+-- semantics. Real Huges are already the intended size and therefore are not scaled twice.
+local function applyTemporaryTitanScale(petModel)
+    if not petModel or not petModel:IsA("Model") then
+        return
+    end
+    petModel:SetAttribute("TitanTeamActive", true)
+    if petModel:GetAttribute("Huge") == true then
+        return
+    end
+
+    local hugeScale = tonumber(petModel:GetAttribute("HugeScale")) or 1
+    if hugeScale <= 0 then
+        hugeScale = 1
+    end
+    local ok, err = pcall(function()
+        petModel:ScaleTo(petModel:GetScale() * hugeScale)
+    end)
+    if ok then
+        petModel:SetAttribute("TemporaryTitan", true)
+    else
+        warn("PetHandler: Failed to apply temporary Titan Team scale", petModel.Name, tostring(err))
+    end
+end
+
 -- Watch for weld/anchor/offset changes shortly after parenting to catch transient issues
 local function watchModelStability(model, tag)
     if not STABILITY_WATCH_ENABLED or not model or not model.PrimaryPart then
@@ -1453,6 +1479,11 @@ function loadEquipped(Player)
                                             PetModel:SetAttribute("AttackTargeting", "targeted_aoe")
                                         end
                                     end
+                                end
+                                if
+                                    (tonumber(Player:GetAttribute("TitanTeamDamageBuff")) or 0) > 0
+                                then
+                                    applyTemporaryTitanScale(PetModel)
                                 end
                                 -- Rigged (skeletal) pets: RigClass tells every client's PetAnimator
                                 -- to drive the published clip set (configs/animations.lua) instead
