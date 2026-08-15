@@ -2557,3 +2557,9 @@ first-session cohort rates.
 - Added a config-driven consumable activation animation. The item/potion badge blooms at screen
   center, then flies to the exact player effect, splits toward deployed pets for squad effects, or
   lands on the selected enemy HUD for debuffs; mechanics remain immediate and non-blocking.
+
+## 2026-08-15 — Nonblank People-list status titles
+
+- The native People-list Status column now always shows a broad progression title: Noob, Novice,
+  Adventurer, Hero, Master, or Legend. VIP and Founder's Legacy icons remain compact prefixes, so
+  paid/founder social flex survives while ordinary and brand-new players never render a blank cell.

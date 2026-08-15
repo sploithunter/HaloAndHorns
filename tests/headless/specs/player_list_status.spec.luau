@@ -17,9 +17,20 @@ return function()
     end)
 
     describe("PlayerListStatus.status", function()
-        it("uses compact entitlement icons", function()
-            expect(PlayerListStatus.status({ vip = true, founder = true })).to.equal("👑 ⭐")
-            expect(PlayerListStatus.status({})).to.equal("")
+        it("never leaves an ordinary player's status blank", function()
+            expect(PlayerListStatus.status({})).to.equal("Noob")
+            expect(PlayerListStatus.status({ level = 1 })).to.equal("Noob")
+            expect(PlayerListStatus.status({ level = 5 })).to.equal("Novice")
+            expect(PlayerListStatus.status({ level = 10 })).to.equal("Adventurer")
+            expect(PlayerListStatus.status({ level = 20 })).to.equal("Hero")
+            expect(PlayerListStatus.status({ level = 35 })).to.equal("Master")
+            expect(PlayerListStatus.status({ level = 50 })).to.equal("Legend")
+        end)
+
+        it("keeps compact entitlement icons ahead of the progression title", function()
+            expect(PlayerListStatus.status({ level = 1, vip = true, founder = true })).to.equal(
+                "👑 ⭐ Noob"
+            )
         end)
     end)
 
