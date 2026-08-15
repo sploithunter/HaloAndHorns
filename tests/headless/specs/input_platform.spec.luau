@@ -17,5 +17,15 @@ return function()
             )
             expect(InputPlatform.inputMode(nil, {})).to.equal("mouse_keyboard")
         end)
+
+        it("ships console runtime support behind a disabled feature gate", function()
+            local gameConfig = loadModule("configs/game.lua")
+            local client = readFile("src/Client/init.client.lua")
+            local context = readFile("src/Client/Systems/InputContext.lua")
+
+            expect(gameConfig.features.console_support).to.equal(false)
+            expect(client:find('IsFeatureEnabled("console_support", false)', 1, true)).to.be.ok()
+            expect(context:find('SetAttribute("ConsoleSupportEnabled"', 1, true)).to.be.ok()
+        end)
     end)
 end
