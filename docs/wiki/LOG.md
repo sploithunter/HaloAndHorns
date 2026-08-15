@@ -1,5 +1,16 @@
 # Log
 
+## 2026-08-15 — Console rollback gate and Signal Seal beta week
+
+- Disabled console action routing and ten-foot/gamepad presentation behind the
+  `features.console_support` kill switch while preserving the implementation for repair and QA.
+- Closed week-one Beta Byte to new claims without disturbing existing award reconciliation.
+- Opened `beta_week_2_2026` and the matching **Beta Test Week Two** Events card for Aug. 15–22
+  Mountain time: Signal Seal at level 2, Golden at 5, Rainbow at 10, and 1% same-species Huge.
+- Imported and Studio-resolved Signal Seal's regular/golden art, meshes, textures, and egg, assigned
+  it Ice/Support with a deterministic Luck aura, and moved the Admin tester-egg regression controls
+  to the week-two award.
+
 ## 2026-08-13 — Prebake mapping disabled for the rigged-pet migration
 
 - Removed the `assets/place/Models.rbxm` mapping from `default.project.json` so Studio owns

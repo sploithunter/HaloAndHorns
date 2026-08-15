@@ -7,8 +7,10 @@ draft selection destroys and recreates many card buttons in one batch; rewiring 
 cubic work on large inventories and can hang Studio. Mouse/touch mode performs no directional-neighbor
 work. Gamepad mode schedules at most one deferred rewire for the batch.
 
-Status: implemented (2026-08-13). Console input is a first-class presentation of the same
-server-authoritative gameplay used by keyboard, mouse, and touch.
+Status: implementation retained but runtime-disabled (2026-08-15) after the first published console
+build was rolled back. `configs/game.lua` owns the `console_support` kill switch. When false, the
+client does not install console actions or enter gamepad/ten-foot presentation; established touch
+and keyboard/mouse behavior remains active. Re-enable only after the verification matrix below.
 
 ## Controller Contract
 

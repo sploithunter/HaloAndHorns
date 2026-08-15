@@ -597,6 +597,92 @@
       "notes": "Rainbow tester reward intentionally shares the normal assets and relies on runtime Rainbow treatment."
     },
     {
+      "key": "signal_seal.basic",
+      "pet": "signal_seal",
+      "variant": "basic",
+      "display_name": "Signal Seal",
+      "status": "verified",
+      "prompt": "limited beta tester robot seal companion, ice support pet, game-ready Roblox pet simulator style",
+      "reference_image": "assets/source/references/pets/signal_seal_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": "User-supplied Meshy GLB on 2026-08-15."
+      },
+      "files": {
+        "source_glb": "assets/source/pets/signal_seal_basic.glb",
+        "source_fbx": "assets/exports/pets/signal_seal_basic/signal_seal_basic_10k.fbx",
+        "texture_image": "assets/exports/pets/signal_seal_basic/signal_seal_basic.png",
+        "icon_image": "assets/exports/pets/basic/signal_seal_basic.png"
+      },
+      "roblox": {
+        "source_model_asset_id": "rbxassetid://120824214418978",
+        "mesh_asset_id": "rbxassetid://99213597845777",
+        "texture_decal_asset_id": "rbxassetid://84011475765358",
+        "texture_image_asset_id": "rbxassetid://94517080479423",
+        "thumbnail_decal_asset_id": "rbxassetid://100060190447599",
+        "image_asset_id": "rbxassetid://117359766708193"
+      },
+      "notes": "Week-two tester reward. Runtime uses the Studio-resolved mesh, texture, and transparent card image."
+    },
+    {
+      "key": "signal_seal.golden",
+      "pet": "signal_seal",
+      "variant": "golden",
+      "display_name": "Golden Signal Seal",
+      "status": "verified",
+      "prompt": "golden limited beta tester robot seal companion, ice support pet, game-ready Roblox pet simulator style",
+      "reference_image": "assets/source/references/pets/signal_seal_gold.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": "User-supplied golden Meshy GLB on 2026-08-15."
+      },
+      "files": {
+        "source_glb": "assets/source/pets/signal_seal_gold.glb",
+        "source_fbx": "assets/exports/pets/signal_seal_gold/signal_seal_gold_10k.fbx",
+        "texture_image": "assets/exports/pets/signal_seal_gold/signal_seal_gold.png",
+        "icon_image": "assets/exports/pets/gold/signal_seal_gold.png"
+      },
+      "roblox": {
+        "source_model_asset_id": "rbxassetid://116918870803643",
+        "mesh_asset_id": "rbxassetid://91790618028346",
+        "texture_decal_asset_id": "rbxassetid://92367336136265",
+        "texture_image_asset_id": "rbxassetid://133722004952829",
+        "thumbnail_decal_asset_id": "rbxassetid://86152775271569",
+        "image_asset_id": "rbxassetid://77728909524646"
+      },
+      "notes": "Golden week-two reward uses its dedicated model, texture, and transparent card image."
+    },
+    {
+      "key": "signal_seal.rainbow",
+      "pet": "signal_seal",
+      "variant": "rainbow",
+      "display_name": "Rainbow Signal Seal",
+      "status": "verified",
+      "prompt": "rainbow limited beta tester robot seal companion, ice support pet, runtime rainbow treatment",
+      "reference_image": "assets/source/references/pets/signal_seal_basic.png",
+      "meshy": {
+        "task_id": "",
+        "source_url": "",
+        "notes": "Intentionally reuses the normal model and art; Rainbow is applied by the standard runtime script."
+      },
+      "files": {
+        "source_glb": "assets/source/pets/signal_seal_basic.glb",
+        "source_fbx": "assets/exports/pets/signal_seal_basic/signal_seal_basic_10k.fbx",
+        "texture_image": "assets/exports/pets/signal_seal_basic/signal_seal_basic.png",
+        "icon_image": "assets/exports/pets/basic/signal_seal_basic.png"
+      },
+      "roblox": {
+        "source_model_asset_id": "rbxassetid://120824214418978",
+        "mesh_asset_id": "rbxassetid://99213597845777",
+        "texture_image_asset_id": "rbxassetid://94517080479423",
+        "image_asset_id": "rbxassetid://117359766708193",
+        "shares_model_asset_with": "signal_seal.basic"
+      },
+      "notes": "Rainbow week-two reward shares the normal assets and relies on runtime Rainbow treatment."
+    },
+    {
       "key": "cobra.basic",
       "pet": "cobra",
       "variant": "basic",

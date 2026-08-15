@@ -15,7 +15,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--softness", type=int, default=20, help="Feather range below the threshold")
     parser.add_argument(
         "--mode",
-        choices=["edge-white", "ring-white", "all-white", "edge-green", "ring-green"],
+        choices=[
+            "edge-white",
+            "ring-white",
+            "all-white",
+            "edge-green",
+            "ring-green",
+            "edge-magenta",
+        ],
         default="edge-white",
         help=(
             "edge-white: background connected to image edges; "
@@ -37,6 +44,8 @@ def parse_args() -> argparse.Namespace:
         default=40,
         help="Required green excess over max(red, blue) for green-screen key",
     )
+    parser.add_argument("--magenta-min", type=int, default=120)
+    parser.add_argument("--magenta-dominance", type=int, default=40)
     return parser.parse_args()
 
 
@@ -74,6 +83,18 @@ def is_blue_screen_candidate(
     softness: int,
 ) -> bool:
     return blue >= min_blue - softness and (blue - max(red, green)) >= dominance - softness
+
+
+def is_magenta_screen_candidate(
+    red: int,
+    green: int,
+    blue: int,
+    min_magenta: int,
+    dominance: int,
+    softness: int,
+) -> bool:
+    magenta = min(red, blue)
+    return magenta >= min_magenta - softness and (magenta - green) >= dominance - softness
 
 
 def green_screen_alpha(
@@ -128,6 +149,30 @@ def blue_screen_alpha(
     return int(255 * (softness - score) / softness)
 
 
+def magenta_screen_alpha(
+    red: int,
+    green: int,
+    blue: int,
+    min_magenta: int,
+    dominance: int,
+    softness: int,
+) -> int:
+    magenta = min(red, blue)
+    excess = magenta - green
+    if magenta < min_magenta - softness or excess <= 0:
+        return 255
+    if excess >= dominance and magenta >= min_magenta:
+        return 0
+    if softness <= 0:
+        return 255
+    score = min(magenta - (min_magenta - softness), excess - (dominance - softness))
+    if score <= 0:
+        return 255
+    if score >= softness:
+        return 0
+    return int(255 * (softness - score) / softness)
+
+
 def despill_green(red: int, green: int, blue: int, alpha: int) -> tuple[int, int, int]:
     spill = max(0, green - max(red, blue))
     if spill <= 0 or alpha <= 0:
@@ -142,6 +187,14 @@ def despill_blue(red: int, green: int, blue: int, alpha: int) -> tuple[int, int,
         return red, green, blue
     reduction = spill * alpha // 255
     return red, green, max(red, green, blue - reduction)
+
+
+def despill_magenta(red: int, green: int, blue: int, alpha: int) -> tuple[int, int, int]:
+    spill = max(0, min(red, blue) - green)
+    if spill <= 0 or alpha <= 0:
+        return red, green, blue
+    reduction = spill * alpha // 255
+    return max(green, red - reduction), green, max(green, blue - reduction)
 
 
 def flood_connected_background(
@@ -232,6 +285,24 @@ def edge_connected_blue_screen(
     return flood_connected_background(image, 0, 0, seeds, candidate=candidate)
 
 
+def edge_connected_magenta_screen(
+    image: Image.Image,
+    min_magenta: int,
+    dominance: int,
+    softness: int,
+) -> set[tuple[int, int]]:
+    width, height = image.size
+    seeds = [(x, y) for x in range(width) for y in (0, height - 1)]
+    seeds.extend((x, y) for y in range(height) for x in (0, width - 1))
+
+    def candidate(red: int, green: int, blue: int) -> bool:
+        return is_magenta_screen_candidate(
+            red, green, blue, min_magenta, dominance, softness
+        )
+
+    return flood_connected_background(image, 0, 0, seeds, candidate=candidate)
+
+
 def ring_connected_background(image: Image.Image, threshold: int, softness: int) -> set[tuple[int, int]]:
     width, height = image.size
     center_x = width // 2
@@ -300,6 +371,13 @@ def main() -> None:
             args.green_dominance,
             args.softness,
         )
+    elif args.mode == "edge-magenta":
+        background_mask = edge_connected_magenta_screen(
+            image,
+            args.magenta_min,
+            args.magenta_dominance,
+            args.softness,
+        )
 
     for index, (red, green, blue, alpha) in enumerate(image.getdata()):
         if background_mask is not None:
@@ -322,6 +400,22 @@ def main() -> None:
                     ),
                 )
                 red, green, blue = despill_green(red, green, blue, next_alpha)
+                pixels.append((red, green, blue, next_alpha))
+                continue
+
+            if args.mode == "edge-magenta":
+                next_alpha = min(
+                    alpha,
+                    magenta_screen_alpha(
+                        red,
+                        green,
+                        blue,
+                        args.magenta_min,
+                        args.magenta_dominance,
+                        args.softness,
+                    ),
+                )
+                red, green, blue = despill_magenta(red, green, blue, next_alpha)
                 pixels.append((red, green, blue, next_alpha))
                 continue
 

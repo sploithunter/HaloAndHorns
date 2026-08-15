@@ -80,6 +80,16 @@ return {
             modifiers = {},
         },
 
+        beta_test_week_two = {
+            display_name = "Beta Test Week Two",
+            description = "Reach level 2 this week to earn Signal Seal: Golden at 5, Rainbow at 10!",
+            duration_seconds = -1,
+            stacking = "reset",
+            icon = "BETA",
+            -- Reward eligibility remains authoritative in tester_rewards.lua.
+            modifiers = {},
+        },
+
         friend_boost_launch = {
             display_name = "Launch Friend Boost",
             description = "Play with up to four Roblox friends for bonus Hatch Luck, XP, and coins!",
@@ -272,6 +282,13 @@ return {
             starts_at = 1786168800,
             ends_at = 1786773600,
             reason = "Beta Test Week One",
+        },
+        beta_test_week_two = {
+            event_id = "beta_test_week_two",
+            -- Saturday 2026-08-15 00:00 through Saturday 2026-08-22 00:00 Mountain.
+            starts_at = 1786773600,
+            ends_at = 1787378400,
+            reason = "Beta Test Week Two",
         },
         friend_boost_launch = {
             event_id = "friend_boost_launch",

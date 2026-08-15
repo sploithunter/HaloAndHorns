@@ -26,12 +26,16 @@ from remove_image_background import (
     blue_screen_alpha,
     despill_blue,
     despill_green,
+    despill_magenta,
     edge_connected_background,
     edge_connected_blue_screen,
     edge_connected_green_screen,
+    edge_connected_magenta_screen,
     green_screen_alpha,
     is_blue_screen_candidate,
     is_green_screen_candidate,
+    is_magenta_screen_candidate,
+    magenta_screen_alpha,
 )
 
 
@@ -103,9 +107,11 @@ def parse_args() -> argparse.Namespace:
         default=40,
         help="Required blue excess over max(red, green) for blue-screen key",
     )
+    parser.add_argument("--magenta-min", type=int, default=120)
+    parser.add_argument("--magenta-dominance", type=int, default=40)
     parser.add_argument(
         "--background-mode",
-        choices=["auto", "white", "dark", "green", "blue"],
+        choices=["auto", "white", "dark", "green", "blue", "magenta"],
         default="auto",
         help="Background removal mode (default: auto-detect from corners)",
     )
@@ -195,6 +201,8 @@ def detect_background_mode(
     green_dominance: int,
     blue_min: int = 120,
     blue_dominance: int = 40,
+    magenta_min: int = 120,
+    magenta_dominance: int = 40,
 ) -> str | None:
     alpha = image.split()[-1]
     transparent_corners = sum(1 for value in alpha.getdata() if value < 16)
@@ -217,9 +225,18 @@ def detect_background_mode(
         for red, green, blue in samples
         if is_blue_screen_candidate(red, green, blue, blue_min, blue_dominance, 0)
     )
+    magenta_votes = sum(
+        1
+        for red, green, blue in samples
+        if is_magenta_screen_candidate(
+            red, green, blue, magenta_min, magenta_dominance, 0
+        )
+    )
 
-    screen_votes = max(green_votes, blue_votes)
+    screen_votes = max(green_votes, blue_votes, magenta_votes)
     if screen_votes >= max(white_votes, dark_votes) and screen_votes >= len(samples) // 2:
+        if magenta_votes == screen_votes:
+            return "magenta"
         return "green" if green_votes >= blue_votes else "blue"
     if white_votes >= dark_votes and white_votes >= len(samples) // 2:
         return "white"
@@ -332,6 +349,8 @@ def remove_background(
     green_dominance: int = 40,
     blue_min: int = 120,
     blue_dominance: int = 40,
+    magenta_min: int = 120,
+    magenta_dominance: int = 40,
 ) -> Image.Image:
     if mode is None:
         return image
@@ -357,6 +376,18 @@ def remove_background(
                 alpha,
                 blue_screen_alpha(red, green, blue, blue_min, blue_dominance, softness),
             )
+    elif mode == "magenta":
+        background_mask = edge_connected_magenta_screen(
+            image, magenta_min, magenta_dominance, softness
+        )
+
+        def alpha_for_pixel(red: int, green: int, blue: int, alpha: int) -> int:
+            return min(
+                alpha,
+                magenta_screen_alpha(
+                    red, green, blue, magenta_min, magenta_dominance, softness
+                ),
+            )
     else:
         background_mask = edge_connected_dark_background(image, dark_threshold, softness)
 
@@ -375,6 +406,8 @@ def remove_background(
             red, green, blue = despill_green(red, green, blue, next_alpha)
         elif mode == "blue" and next_alpha > 0:
             red, green, blue = despill_blue(red, green, blue, next_alpha)
+        elif mode == "magenta" and next_alpha > 0:
+            red, green, blue = despill_magenta(red, green, blue, next_alpha)
         pixels.append((red, green, blue, next_alpha))
 
     result = image.copy()
@@ -424,6 +457,8 @@ def normalize_icon(
     green_dominance: int = 40,
     blue_min: int = 120,
     blue_dominance: int = 40,
+    magenta_min: int = 120,
+    magenta_dominance: int = 40,
     background_mode: str = "auto",
 ) -> tuple[Image.Image, str | None]:
     rgba = image.convert("RGBA")
@@ -436,6 +471,8 @@ def normalize_icon(
             green_dominance,
             blue_min,
             blue_dominance,
+            magenta_min,
+            magenta_dominance,
         )
     else:
         mode = background_mode
@@ -449,11 +486,17 @@ def normalize_icon(
         green_dominance,
         blue_min,
         blue_dominance,
+        magenta_min,
+        magenta_dominance,
     )
     if mode == "green":
         rgba = remove_green_spill(rgba)
     elif mode == "blue":
         rgba = remove_blue_spill(rgba)
+    elif mode == "magenta":
+        # The edge pass already despills partial pixels; run no broad second pass because blue
+        # content is legitimate in ice-themed icons.
+        pass
     rgba = crop_to_content(rgba, padding, square)
     if size > 0:
         rgba = rgba.resize((size, size), Image.Resampling.LANCZOS)
@@ -532,6 +575,8 @@ def main() -> int:
             args.green_dominance,
             args.blue_min,
             args.blue_dominance,
+            args.magenta_min,
+            args.magenta_dominance,
             args.background_mode,
         )
         destination = output_path_for(source, input_path, output_root, args.prefix, index)

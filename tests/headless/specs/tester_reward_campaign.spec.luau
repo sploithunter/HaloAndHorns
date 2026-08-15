@@ -91,51 +91,55 @@ return function()
             end
         )
 
-        it("ships the authored week-one campaign with public claiming enabled", function()
+        it("closes week one and ships the authored week-two Signal Seal campaign", function()
             local config = loadModule("configs/tester_rewards.lua")
             local pets = loadModule("configs/pets.lua")
             local roles = loadModule("configs/pet_roles.lua")
             local weekOne = config.campaigns.beta_week_1_2026
-            local betaByte = pets.pets.beta_tester_bot
-            local testerEgg = pets.egg_sources.beta_tester_egg
-            expect(weekOne.egg_id).to.equal("beta_tester_egg")
-            expect(weekOne.pet_id).to.equal("beta_tester_bot")
-            expect(weekOne.claim.enabled).to.equal(true)
+            local weekTwo = config.campaigns.beta_week_2_2026
+            local signalSeal = pets.pets.signal_seal
+            local signalSealEgg = pets.egg_sources.signal_seal_egg
+            expect(weekOne.claim.enabled).to.equal(false)
             expect(weekOne.claim.studio_enabled).to.equal(true)
             expect(weekOne.claim.starts_at).to.equal(1786168800)
             expect(weekOne.claim.ends_at).to.equal(1786773600)
-            expect(weekOne.claim_limit).to.equal(1)
-            expect(weekOne.minimum_claim_level).to.equal(2)
-            expect(weekOne.golden_level).to.equal(5)
-            expect(weekOne.rainbow_level).to.equal(10)
-            expect(weekOne.huge_chance).to.equal(0.01)
+            expect(weekTwo.egg_id).to.equal("signal_seal_egg")
+            expect(weekTwo.pet_id).to.equal("signal_seal")
+            expect(weekTwo.claim.enabled).to.equal(true)
+            expect(weekTwo.claim.studio_enabled).to.equal(true)
+            expect(weekTwo.claim.starts_at).to.equal(1786773600)
+            expect(weekTwo.claim.ends_at).to.equal(1787378400)
+            expect(weekTwo.claim_limit).to.equal(1)
+            expect(weekTwo.minimum_claim_level).to.equal(2)
+            expect(weekTwo.golden_level).to.equal(5)
+            expect(weekTwo.rainbow_level).to.equal(10)
+            expect(weekTwo.huge_chance).to.equal(0.01)
             expect(config.defaults.minimum_claim_level).to.equal(2)
             expect(config.defaults.golden_level).to.equal(5)
             expect(config.defaults.rainbow_level).to.equal(10)
             expect(config.defaults.huge_chance).to.equal(0.01)
-            expect(betaByte.display_name).to.equal("Beta Byte")
-            expect(betaByte.category).to.equal("exclusive")
-            expect(betaByte.origin).to.equal("grass")
-            expect(roles.by_type.beta_tester_bot).to.equal("melee")
-            expect(roles.support_auras.beta_tester_bot.kind).to.equal("huge_luck")
+            expect(signalSeal.display_name).to.equal("Signal Seal")
+            expect(signalSeal.category).to.equal("exclusive")
+            expect(signalSeal.origin).to.equal("ice")
+            expect(roles.by_type.signal_seal).to.equal("support")
             expect(roles.support_auras.signal_seal.kind).to.equal("luck")
-            expect(testerEgg.huge.chance).to.equal(0.01)
-            expect(testerEgg.huge.pets.beta_tester_bot).to.equal(1)
+            expect(signalSealEgg.huge.chance).to.equal(0.01)
+            expect(signalSealEgg.huge.pets.signal_seal).to.equal(1)
         end)
 
         it(
             "shows the public campaign in Events for the same Saturday-to-Saturday window",
             function()
                 local events = loadModule("configs/events.lua")
-                local event = events.global_events.beta_test_week_one
-                local schedule = events.scheduled_global_events.beta_test_week_one
+                local event = events.global_events.beta_test_week_two
+                local schedule = events.scheduled_global_events.beta_test_week_two
                 local eventService = readFile("src/Server/Services/EventService.lua")
 
-                expect(event.display_name).to.equal("Beta Test Week One")
+                expect(event.display_name).to.equal("Beta Test Week Two")
                 expect(next(event.modifiers)).to.equal(nil)
-                expect(schedule.event_id).to.equal("beta_test_week_one")
-                expect(schedule.starts_at).to.equal(1786168800)
-                expect(schedule.ends_at).to.equal(1786773600)
+                expect(schedule.event_id).to.equal("beta_test_week_two")
+                expect(schedule.starts_at).to.equal(1786773600)
+                expect(schedule.ends_at).to.equal(1787378400)
                 expect(eventService:find("now < startsAt", 1, true)).to.be.ok()
                 expect(eventService:find("now >= endsAt", 1, true)).to.be.ok()
             end

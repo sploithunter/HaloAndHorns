@@ -360,5 +360,22 @@
    "texture": "assets/exports/eggs/beta_tester_egg/beta_tester_egg.png"
   },
   "uploadedBy": "upload_eggs.js 2026-08-06"
+ },
+ "signal_seal_egg": {
+  "icon_decal": "80643117420793",
+  "icon_image": "104137799755029",
+  "model_asset": "98060739014885",
+  "mesh_id": "88693571117741",
+  "mesh_image": "76853992650186",
+  "_mesh_tex_decal": "97926087034111",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "neutral",
+  "origin": "ice",
+  "sources": {
+   "icon": "assets/source/eggs/signal_seal_egg.png",
+   "fbx": "assets/exports/eggs/signal_seal_egg/signal_seal_egg_10k.fbx",
+   "texture": "assets/exports/eggs/signal_seal_egg/signal_seal_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-15"
  }
 }

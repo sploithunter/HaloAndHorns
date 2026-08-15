@@ -3499,6 +3499,57 @@ local petConfig = {
             },
         },
 
+        -- LIMITED BETA TESTER REWARD (week two). Signal Seal is an exclusive Ice support pet
+        -- with the deterministic Hatch Luck aura authored in pet_roles.lua. Award provenance and
+        -- level-driven variants follow the same config-driven path as Beta Byte.
+        signal_seal = {
+            display_name = "Signal Seal",
+            category = "exclusive",
+            origin = "ice",
+            rarity = "exclusive",
+            base_power = 50,
+            base_health = 500,
+
+            asset_transform = {
+                scale = 3.2,
+                huge_scale = 3,
+                orientation = { x = 0, y = 0, z = 0 },
+            },
+
+            camera = {
+                distance = 4,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://99213597845777",
+                    texture_asset = "rbxassetid://94517080479423",
+                    image_id = "rbxassetid://117359766708193",
+                    display_name = "Signal Seal",
+                    abilities = {},
+                },
+                golden = {
+                    mesh_asset = "rbxassetid://91790618028346",
+                    texture_asset = "rbxassetid://133722004952829",
+                    image_id = "rbxassetid://77728909524646",
+                    display_name = "Golden Signal Seal",
+                    abilities = {},
+                },
+                rainbow = {
+                    -- Rainbow uses the normal model/art plus the standard runtime treatment.
+                    mesh_asset = "rbxassetid://99213597845777",
+                    texture_asset = "rbxassetid://94517080479423",
+                    image_id = "rbxassetid://117359766708193",
+                    display_name = "Rainbow Signal Seal",
+                    abilities = {},
+                },
+            },
+        },
+
         colorado_creator = {
             display_name = "Creator Colorado",
             category = "creator",
@@ -6306,6 +6357,47 @@ local petConfig = {
 
             pet_weights = {
                 beta_tester_bot = 1,
+            },
+            rarity_rates = {
+                golden_chance = 0,
+                rainbow_chance = 0,
+            },
+            variant_rolls = {
+                enabled = false,
+                allow_basic = true,
+                allow_golden = false,
+                allow_rainbow = false,
+                cost_multiplier = 1,
+            },
+            modifier_support = {
+                supports_luck_gamepass = false,
+                supports_golden_gamepass = false,
+                supports_rainbow_gamepass = false,
+                max_luck_multiplier = 1,
+            },
+            hatching_time = 3,
+            guaranteed_shiny_chance = 0,
+            bonus_xp = 0,
+        },
+
+        -- Week-two tester egg. It reuses the proven Beta Tester Egg geometry while carrying a
+        -- distinct Signal Seal icon and immutable award provenance.
+        signal_seal_egg = {
+            name = "Signal Seal Egg",
+            description = "Hatches the exclusive Signal Seal, with a 1% chance to be Huge.",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            fixed_odds = true,
+            huge = { chance = 0.01, pets = { signal_seal = 1 } },
+            mesh_asset = "rbxassetid://88693571117741",
+            texture_asset = "rbxassetid://76853992650186",
+            asset_id = "rbxassetid://98060739014885",
+            image_id = "rbxassetid://104137799755029",
+            unlock_requirement = nil,
+
+            pet_weights = {
+                signal_seal = 1,
             },
             rarity_rates = {
                 golden_chance = 0,

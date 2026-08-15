@@ -1889,5 +1889,25 @@
     "variant": "gold",
     "sharedMeshFrom": "beta_tester_bot_basic",
     "uploadedBy": "upload_pets.js 2026-08-06"
+  },
+  "signal_seal_basic": {
+    "modelAssetId": "120824214418978",
+    "textureDecalId": "84011475765358",
+    "meshId": "99213597845777",
+    "imageId": "94517080479423",
+    "realm": "neutral",
+    "origin": "ice",
+    "variant": "basic",
+    "uploadedBy": "upload_pets.js 2026-08-15"
+  },
+  "signal_seal_gold": {
+    "modelAssetId": "116918870803643",
+    "textureDecalId": "92367336136265",
+    "meshId": "91790618028346",
+    "imageId": "133722004952829",
+    "realm": "neutral",
+    "origin": "ice",
+    "variant": "gold",
+    "uploadedBy": "upload_pets.js 2026-08-15"
   }
 }

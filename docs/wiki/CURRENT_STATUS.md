@@ -4,6 +4,10 @@ Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2
 
 ## Console Support (landed 2026-08-13)
 
+Runtime status: **disabled by feature flag as of 2026-08-15** following a published-build rollback.
+The controller implementation remains in source for diagnosis and later re-enable; touch and
+keyboard/mouse paths remain active.
+
 - Controller gameplay has one semantic action layer: `X` world interaction, `LB`/`RB` hotbar
   selection, `RT` cast/use, `LT` autocast, `Y` Farm mode, and D-pad shortcuts to Pets, Powers,
   Quest, and Settings. `A` activates the selected control and `B` closes the top custom menu.

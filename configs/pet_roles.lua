@@ -57,6 +57,7 @@ return {
         colorado = "ranged",
         kade = "tank",
         beta_tester_bot = "melee", -- Beta Byte: exclusive Grass robot dog
+        signal_seal = "support", -- week-two tester exclusive: Ice hatch-luck buffer
         colorado_creator = "ranged", -- the apex is a BLASTER like its species twin (the
         -- two-species split missed this map and it fell to default=melee — Jason caught it)
         -- One BUFFER (support archetype) per zone — trades attack for a team aura. Their
