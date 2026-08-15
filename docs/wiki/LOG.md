@@ -2591,3 +2591,9 @@ first-session cohort rates.
 - Tooltip values come from live definitions and replicated attributes. In particular, the
   source-specific Founder badge identifies **Founder's Legacy** and its configured 1.5x server hatch
   luck rather than leaving players to infer the red/gold clover from its icon.
+
+## 2026-08-15 — Readable timed-badge clocks
+
+- Replaced long raw-seconds labels on timed player-status badges with `M:SS` clocks at one minute
+  and above (`19:45` instead of `1185s`). The final minute keeps the terse seconds countdown and its
+  existing near-expiry blink.
