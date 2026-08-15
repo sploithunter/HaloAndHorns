@@ -37,6 +37,7 @@ return {
         badge_element = {
             colorado_creator = "creator",
             beta_tester_bot = "exclusive",
+            signal_seal = "exclusive",
             -- boss-egg exclusives (obsidian + celestial): no biome origin, so
             -- their role badge wears the EXCLUSIVE purple disc (Jason). The
             -- flag disc stays Colorado-only.
@@ -132,6 +133,7 @@ return {
             colorado = "lava",
             kade = "grass", -- developer reward: Grass tank with healing + luck support
             beta_tester_bot = "grass", -- week-one tester exclusive: neutral badge, grass combat FX
+            signal_seal = "ice", -- week-two tester exclusive: neutral badge, ice combat FX
             colorado_creator = "lava", -- the Creator apex is a FIRE blaster (bolt + AoE fire-ring)
             -- Ember family = lava origin (RPS / element stats / VFX).
             emberling = "lava",

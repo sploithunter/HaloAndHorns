@@ -1516,19 +1516,19 @@ function AdminPanel:_executePetGrantAction(action)
             huge = true,
         },
         grant_beta_egg_basic = {
-            testerAwardId = "beta_week_1_2026",
+            testerAwardId = "beta_week_2_2026",
             testerTier = "basic",
         },
         grant_beta_egg_golden = {
-            testerAwardId = "beta_week_1_2026",
+            testerAwardId = "beta_week_2_2026",
             testerTier = "golden",
         },
         grant_beta_egg_rainbow = {
-            testerAwardId = "beta_week_1_2026",
+            testerAwardId = "beta_week_2_2026",
             testerTier = "rainbow",
         },
         grant_beta_egg_huge = {
-            testerAwardId = "beta_week_1_2026",
+            testerAwardId = "beta_week_2_2026",
             testerTier = "rainbow",
             testerForceHuge = true,
         },

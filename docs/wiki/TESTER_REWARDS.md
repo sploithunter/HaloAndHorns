@@ -1,9 +1,9 @@
 # Beta Tester Reward Campaigns
 
-Status: week-one Beta Byte content is wired and public claiming is enabled for the first advertised
-beta-testing run, Saturday 2026-08-08 00:00 through Saturday 2026-08-15 00:00 Mountain time. The
-Events panel shows the same explicit window as **Beta Test Week One**. Already-reserved and granted
-awards continue to reconcile after public claiming closes.
+Status: week one is closed to new claims and week-two Signal Seal claiming is enabled from Saturday
+2026-08-15 00:00 through Saturday 2026-08-22 00:00 Mountain time. The Events panel shows the same
+explicit window as **Beta Test Week Two**. Already-reserved and granted awards from either campaign
+continue to reconcile after public claiming closes.
 
 ## Player contract
 
@@ -35,8 +35,8 @@ can resize the same species, but a campaign may name a distinct Huge species.
 
 ## Week one: Beta Byte
 
-- Campaign id: `beta_week_1_2026`; public `claim.enabled = true` with the Saturday-to-Saturday
-  `starts_at`/`ends_at` window above. The end is exclusive so week two can take over cleanly.
+- Campaign id: `beta_week_1_2026`; public `claim.enabled = false`. Its expired timestamps and full
+  definition remain in the SSOT so existing awards continue to reconcile.
 - `claim.studio_enabled = true` opens the same reservation and level-gated grant flow only when
   `RunService:IsStudio()` is true; it never opens production claiming.
 - One Beta Tester Egg at claimed level 2 hatches the exclusive Grass/Melee robot dog **Beta Byte**;
@@ -54,6 +54,17 @@ can resize the same species, but a campaign may name a distinct Huge species.
   Rainbow eggs while the campaign is closed. Admin Reset to Beginning removes any held/hatched
   tester award and clears its ledger so the full claim flow can be replayed.
 
+## Week two: Signal Seal
+
+- Campaign id: `beta_week_2_2026`; public claiming runs Saturday 2026-08-15 00:00 through Saturday
+  2026-08-22 00:00 Mountain time, with the end exclusive.
+- One Signal Seal Egg at claimed level 2 hatches the exclusive Ice/Support **Signal Seal**. The same
+  held egg or resulting pet becomes Golden at 5 and Rainbow at 10, with a 1% same-species Huge roll.
+- Signal Seal provides the deterministic **Luck** farming aura while deployed. It uses the same
+  normalized Basic/Golden/Rainbow scaling and player-buff visibility as other support auras.
+- The Admin tester-egg buttons target the current week-two campaign for Basic, Golden, Rainbow, and
+  forced-Huge regression runs. Historical Beta Byte award reconciliation is unaffected.
+
 ## Five-week farming identities
 
 Each tester exclusive carries exactly one authored player-facing Natural farming aura. It is part of
@@ -69,8 +80,8 @@ the five-week collection identity without making the reward a general combat car
 | Future pet 4 | Prospector | currency earned from crystals |
 | Future pet 5 | XP Surge | all player XP |
 
-Signal Seal's identity is reserved in config before its campaign content lands. The final three
-assignments are reserved by power; bind each to the authored pet id as that week's pet is imported.
+Signal Seal's campaign is live for week two. The final three assignments are reserved by power;
+bind each to the authored pet id as that week's pet is imported.
 XP Surge is intentionally last and Prospector second-to-last so early tester rounds assess baseline
 leveling and crystal-income balance rather than a reward-modified economy.
 Huge tester rewards retain `huge`, serial, identity, and award provenance when their campaign tier

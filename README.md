@@ -83,9 +83,9 @@ The game is built in two stacked tracks, both well past their core milestones, w
 - A **tutorial** (objective capsule + egg beacon + UI pulse), starter companion role choice, and an early ordered **mission chain**, with derived power tooltips and first-time funnel instrumentation.
 - Five-to-nine progression grants **Future Call** tokens that summon a level-scaled Future Self and its authored four-pet team for two minutes; the summon fights, farms, and credits all rewards to the player.
 - The compact objective capsule rotates randomized ten-second gameplay tips once per minute and restores the live objective afterward; tips can be disabled in Settings.
-- Full controller and console support: semantic hotbar/farm/menu actions, `X` world prompts,
-  gamepad-aware tutorial copy, contained modal focus navigation, and a ten-foot safe-area/readability
-  presentation that remains independent from the current input device.
+- Controller and console implementation (currently runtime-disabled): semantic hotbar/farm/menu
+  actions, `X` world prompts, gamepad-aware tutorial copy, contained modal focus navigation, and a
+  ten-foot safe-area/readability presentation retained behind `features.console_support`.
 - A boot loader / loading screen that gates play until data is ready and stamps the build version + Mountain-Time update timestamp.
 
 **Foundation (template baseline)**

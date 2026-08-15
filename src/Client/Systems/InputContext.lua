@@ -12,6 +12,7 @@ local InputPlatform = require(ReplicatedStorage.Shared.Game.InputPlatform)
 local InputContext = {}
 local player = Players.LocalPlayer
 local started = false
+local consoleSupportEnabled = false
 
 local function viewport()
     local camera = Workspace.CurrentCamera
@@ -27,16 +28,29 @@ end
 
 local function refresh()
     local size = viewport()
-    local gamepad = UserInputService.GamepadEnabled
-    local mode = InputPlatform.inputMode(preferredInput(), {
+    local gamepad = consoleSupportEnabled and UserInputService.GamepadEnabled
+    local preferred = preferredInput()
+    if
+        not consoleSupportEnabled
+        and InputPlatform.inputMode(preferred, {}) == InputPlatform.MODE.GAMEPAD
+    then
+        -- Preserve touch behavior on phones/tablets while declining controller input. A compact
+        -- touch screen remains touch-first; larger hybrid displays fall back to mouse/keyboard.
+        preferred = if UserInputService.TouchEnabled and (size.X < 900 or size.Y < 560)
+            then "Touch"
+            else "MouseMovement"
+    end
+    local mode = InputPlatform.inputMode(preferred, {
         gamepad = gamepad,
         touch = UserInputService.TouchEnabled,
         keyboard = UserInputService.KeyboardEnabled,
     })
     local tenFoot = false
-    pcall(function()
-        tenFoot = GuiService:IsTenFootInterface()
-    end)
+    if consoleSupportEnabled then
+        pcall(function()
+            tenFoot = GuiService:IsTenFootInterface()
+        end)
+    end
     local display = InputPlatform.displayClass(tenFoot, size.X, size.Y, {
         touch = UserInputService.TouchEnabled,
         keyboard = UserInputService.KeyboardEnabled,
@@ -45,17 +59,19 @@ local function refresh()
     player:SetAttribute("DisplayClass", display)
     player:SetAttribute("IsTenFootInterface", tenFoot)
     player:SetAttribute("ControllerConnected", gamepad)
+    player:SetAttribute("ConsoleSupportEnabled", consoleSupportEnabled)
     player:SetAttribute("ControllerGlyphSet", "xbox")
     pcall(function()
         GuiService.AutoSelectGuiEnabled = mode == InputPlatform.MODE.GAMEPAD
     end)
 end
 
-function InputContext.start()
+function InputContext.start(enabled)
     if started then
         return
     end
     started = true
+    consoleSupportEnabled = enabled == true
     refresh()
     pcall(function()
         UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(refresh)

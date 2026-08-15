@@ -8,6 +8,9 @@ return {
     RespawnTime = 5,
 
     features = {
+        -- Temporarily disabled after the August 2026 console release regression. Keep the
+        -- implementation in source so it can be repaired and re-enabled behind this gate.
+        console_support = false,
         stats = true,
         modifiers = true,
         economy_ledger = true,
