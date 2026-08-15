@@ -36,10 +36,12 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 
 -- Get shared modules
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
+local CoreGuiStateGuard = require(script.Parent.CoreGuiStateGuard)
 local FocusNavigator = require(script.Parent.FocusNavigator)
 
 -- Load Logger with wrapper (following the established pattern)
@@ -143,6 +145,11 @@ function MenuManager.new()
     -- UI elements
     self.overlayFrame = nil
     self.escConnection = nil
+    self._playerListGuard = CoreGuiStateGuard.new(function()
+        return StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.PlayerList)
+    end, function(enabled)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, enabled)
+    end)
 
     -- Initialize overlay
     self:_createOverlay()
@@ -190,11 +197,10 @@ function MenuManager:_createOverlay()
     scrim.Parent = overlayGui
     self._scrim = scrim
 
-    -- The scrim MUST hide whenever no panel is showing. Panels can self-close (their own X /
-    -- _requestClose / ESC) without routing through CloseCurrentPanel, and a stale click-absorbing
-    -- scrim would lock the whole screen (Jason). So derive its visibility reactively from panel
-    -- presence — robust to every close path.
-    local function updateScrim()
+    -- Scrim and Roblox People-list visibility are derived from actual panel presence. Panels can
+    -- self-close (their own X / _requestClose / ESC) without routing through CloseCurrentPanel, so
+    -- this one lifecycle covers managed closes, direct closes, and panel switches alike.
+    local function updateOverlayState()
         local hasPanel = false
         for _, c in ipairs(overlayGui:GetChildren()) do
             if c ~= scrim and c:IsA("GuiObject") then
@@ -203,12 +209,26 @@ function MenuManager:_createOverlay()
             end
         end
         scrim.Visible = hasPanel
-        if not hasPanel then
+        if hasPanel then
+            local suppressed, suppressError = self._playerListGuard:Suppress()
+            if not suppressed then
+                self.logger:warn("Could not temporarily hide Roblox player list", {
+                    error = tostring(suppressError),
+                })
+            end
+        else
             FocusNavigator.close()
+            local restored, restoreError = self._playerListGuard:Restore()
+            if not restored then
+                self.logger:warn("Could not restore Roblox player list", {
+                    error = tostring(restoreError),
+                })
+            end
         end
     end
-    overlayGui.ChildAdded:Connect(updateScrim)
-    overlayGui.ChildRemoved:Connect(updateScrim)
+    overlayGui.ChildAdded:Connect(updateOverlayState)
+    overlayGui.ChildRemoved:Connect(updateOverlayState)
+    updateOverlayState()
 
     self.logger:debug("Overlay frame created")
 end
@@ -731,6 +751,14 @@ function MenuManager:Destroy()
     -- Clean up overlay
     if self.overlayFrame then
         self.overlayFrame:Destroy()
+    end
+
+    -- Destruction can race a panel's own cleanup; always make one final restoration attempt.
+    local restored, restoreError = self._playerListGuard:Restore()
+    if not restored then
+        self.logger:warn("Could not restore Roblox player list while destroying menus", {
+            error = tostring(restoreError),
+        })
     end
 
     self.logger:info("MenuManager destroyed")
