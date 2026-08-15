@@ -2518,3 +2518,7 @@ first-session cohort rates.
   `Home Ice`, `😇2 Ice`, `😈2 Ice`, and `😇 Trial`; no new persistence fields were introduced.
 - Monetization now publishes the effective VIP entitlement as a player attribute so the social
   status stays correct after Marketplace ownership checks and creator testing-gate changes.
+## 2026-08-15 — All full menus suppress the Roblox People list
+
+- Moved native `PlayerList` suppression from `InventoryPanel` into the shared `MenuManager` overlay lifecycle. Any full menu now hides the expanded Roblox People list while present and restores the exact prior CoreGui state after the last menu closes, including direct-X closes, panel switches, and manager destruction.
+- Removed Inventory's independent guard so it cannot restore the People list over another menu, and added a headless source contract for central ownership and both overlay child-change paths.
