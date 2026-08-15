@@ -2563,3 +2563,12 @@ first-session cohort rates.
 - The native People-list Status column now always shows a broad progression title: Noob, Novice,
   Adventurer, Hero, Master, or Legend. VIP and Founder's Legacy icons remain compact prefixes, so
   paid/founder social flex survives while ordinary and brand-new players never render a blank cell.
+
+## 2026-08-15 — Leaderboard-earned People-list titles
+
+- Connected native People-list status to the existing event-driven global leaderboard cache. Top
+  100 players earn `Dragonlord` (dragons), `Farmer` (crystals), `Slayer` (defeats), `Commander`
+  (team power), or `Hatcher` (eggs); a player's best numerical placement wins, with config order as
+  the deterministic tie-breaker. Outside the top 100, the existing progression title remains.
+- Added Eggs Hatched as a status-only OrderedDataStore ranking. Physical origin boards remain top
+  10 and no profile enumeration or new persistent player field was introduced.

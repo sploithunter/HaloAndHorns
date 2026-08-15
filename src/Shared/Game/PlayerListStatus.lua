@@ -61,11 +61,15 @@ function PlayerListStatus.status(state)
         table.insert(parts, "⭐")
     end
 
-    local level = math.max(1, math.floor(tonumber(state.level) or 1))
-    for _, title in ipairs(STATUS_TITLES) do
-        if level >= title.minLevel then
-            table.insert(parts, title.label)
-            break
+    if type(state.leaderboardTitle) == "string" and state.leaderboardTitle ~= "" then
+        table.insert(parts, state.leaderboardTitle)
+    else
+        local level = math.max(1, math.floor(tonumber(state.level) or 1))
+        for _, title in ipairs(STATUS_TITLES) do
+            if level >= title.minLevel then
+                table.insert(parts, title.label)
+                break
+            end
         end
     end
     return table.concat(parts, " ")

@@ -5037,6 +5037,20 @@ function ConfigLoader:_validateLeaderboardsConfig(config)
         end
         seen[board.id] = true
 
+        if board.status_only ~= nil and type(board.status_only) ~= "boolean" then
+            return self:_configError("leaderboards", path .. ".status_only", "expected boolean")
+        end
+        if
+            board.status_title ~= nil
+            and (type(board.status_title) ~= "string" or board.status_title == "")
+        then
+            return self:_configError(
+                "leaderboards",
+                path .. ".status_title",
+                "expected non-empty string"
+            )
+        end
+
         local score = board.score
         if score == nil and type(board.stat) == "string" then
             score = { kind = "counter", counter = board.stat } -- legacy config compatibility
