@@ -1,6 +1,6 @@
 # Archetype Line — Controller (slow / root / freeze / fear)
 
-Status: implemented through the current fox roster (2026-08-16). Line doc — see
+Status: implemented through the current authored roster (audited 2026-08-16). Line doc — see
 [blaster](PET_LINE_BLASTER.md) · [melee](PET_LINE_MELEE.md) · [tank](PET_LINE_TANK.md) ·
 [support](PET_LINE_SUPPORT.md) · [controller](PET_LINE_CONTROLLER.md) · [dragon](PET_LINE_DRAGON.md).
 Cross-refs: [roster](../PET_REALM_HEAVEN_HELL_ROSTER.md) ·
@@ -67,4 +67,7 @@ the lower-right inventory badge and live mechanics share one source of truth:
 - Prism Fox / Dread Fox: short focused-enemy **Root**.
 
 Controller-role coverage fails CI if any future controller ships without a configured slow, root, or
-hold. The L2 Ice dragon freeze-AoE remains a separate melee/control hybrid implementation.
+hold. The hybrid line is mechanical too: Aurora/Black-Ice Leviathans are tank/controllers with a
+three-second on-hit slow, while Aurora/Rimewraith Dragons retain their targeted-AoE two-second root.
+`PetAbility` derives card and egg-preview badges from those same on-hit records, so hybrid control is
+visible without copying it into the periodic aura system and accidentally executing it twice.

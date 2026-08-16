@@ -25,6 +25,7 @@ local UserInputService = game:GetService("UserInputService")
 
 -- Dependencies
 local Locations = require(ReplicatedStorage.Shared.Locations)
+local PetAbility = require(ReplicatedStorage.Shared.Game.PetAbility)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
 local petConfig = Locations.getConfig("pets")
 local eggSystemConfig = Locations.getConfig("egg_system")
@@ -715,23 +716,19 @@ function EggPetPreviewService:CreatePetIdentityBadges(petFrame, petInfo)
         end
     end
 
-    local entry = PET_ROLES.support_auras and PET_ROLES.support_auras[petType]
-    local auras = nil
-    if type(entry) == "table" then
-        auras = entry.kind and { entry } or entry
-    end
+    local abilities = PetAbility.forPet(petType, PET_ROLES, petConfig)
     local shown = 0
-    for _, aura in ipairs(auras or {}) do
-        local meta = POWER_ICONS.support_badge and POWER_ICONS.support_badge[aura.kind]
+    for _, ability in ipairs(abilities) do
+        local meta = POWER_ICONS.support_badge and POWER_ICONS.support_badge[ability.kind]
         if meta and meta.symbol then
             local abilityButton = createBadgeButton(
                 petFrame,
                 "SupportBadge" .. (shown > 0 and tostring(shown + 1) or ""),
                 UDim2.fromScale(0.36, 0.36),
                 UDim2.fromScale(0.63 - shown * 0.12, 0.4),
-                30 + (#auras - shown)
+                30 + (#abilities - shown)
             )
-            local auraScope = PetTargeting.auraScope(aura, PET_ROLES)
+            local auraScope = PetTargeting.auraScope(ability, PET_ROLES)
             local badge = PetBadge.create(abilityButton, {
                 element = PetBadge.elementForPetType(petType),
                 symbol = meta.symbol,
@@ -740,7 +737,7 @@ function EggPetPreviewService:CreatePetIdentityBadges(petFrame, petInfo)
             })
             if badge and badge.disc and badge.disc.Visible then
                 shown += 1
-                abilityButton:SetAttribute("AbilityKind", aura.kind)
+                abilityButton:SetAttribute("AbilityKind", ability.kind)
                 abilityButton:SetAttribute("AbilityLabel", meta.label)
                 wireIdentityTooltip(
                     abilityButton,
