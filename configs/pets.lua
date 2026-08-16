@@ -3967,6 +3967,10 @@ local petConfig = {
             base_power = 42,
             base_health = 220,
             viewport_zoom = 1.5,
+            -- Tank/control apex: every strike slows its target. This is an ON-HIT controller
+            -- mechanic (not a periodic support aura), so the inventory badge is derived from this
+            -- same record and cannot drift into decorative-only metadata.
+            attack_control = { kind = "slow", factor = 0.55, duration = 3 },
             asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
             camera = {
                 distance = 3.5,
@@ -4944,6 +4948,8 @@ local petConfig = {
             base_power = 28,
             base_health = 150,
             viewport_zoom = 1.5,
+            -- Hell mirror of Aurora Leviathan: tank/control with a real on-hit slow.
+            attack_control = { kind = "slow", factor = 0.55, duration = 3 },
             asset_transform = { scale = 1.6, huge_scale = 3, orientation = { x = 0, y = 0, z = 0 } },
             camera = {
                 distance = 3.5,

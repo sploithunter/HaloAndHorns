@@ -2649,3 +2649,13 @@ first-session cohort rates.
 - Recalculated Power Choice **Upgrade All** to quote only genuinely outgrown enhancements: exact -5
   remains effective and free of premature replacement; -6 upgrades to the current shop band.
 - Added headless boundary coverage for the automatic upgrade and bulk-junk paths.
+
+## 2026-08-16 — Support and controller roster audit
+
+- Reconciled the full current Support/Controller roster against the formal Heaven/Hell line docs.
+  Six layer-one support species now have their intended archetype and live aura; Aurora and
+  Black-Ice Leviathans now have their intended tank/control on-hit slow.
+- Added a shared `PetAbility` resolver so periodic support auras and real on-hit control both render
+  lower-right inventory and egg-preview badges/tooltips without duplicating runtime effects.
+- Added CI coverage requiring every Support pet to have a configured aura, every Controller pet to
+  have live control, and every surfaced ability kind to have complete, renderable badge metadata.

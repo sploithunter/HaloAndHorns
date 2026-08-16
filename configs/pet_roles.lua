@@ -44,13 +44,12 @@ return {
         emberowl = "ranged",
         snowflakeowl = "ranged",
         seraph_owl = "ranged",
-        verdant_sprite = "ranged",
+        verdant_sprite = "support", -- harvest-yield support (formal Heaven Grass roster)
         emberlion = "tank",
         camel = "tank",
         goldleaf_stag = "tank",
         glacial_seraph = "tank",
-        bloomlamb = "tank", -- lamb body reads bruiser here; support lambs elsewhere carry AURAS — a
-        -- support role without an aura is just a damage nerf, so base lamb tanks instead
+        bloomlamb = "support", -- Heaven Grass healer (formal support-line identity)
         bunny = "support", -- Grass buffer (LUCK — lucky rabbit/clover) — see support_auras
         cat = "ranged",
         kitty = "ranged", -- the actual pet id ("cat" above was the intended mapping)
@@ -77,7 +76,7 @@ return {
         gilded_sphinx = "ranged",
         solar_roc = "ranged",
         cinderling_imp = "support",
-        brimstone_salamander = "melee",
+        brimstone_salamander = "support", -- Hell Lava burn-curse support
         ashmane_lion = "tank",
         ashfeather_phoenix = "ranged",
         abyssal_wyrm = "ranged",
@@ -90,17 +89,17 @@ return {
         rimewraith_fox = "control",
         dread_owl = "ranged",
         black_seraph = "tank",
-        black_ice_leviathan = "ranged",
+        black_ice_leviathan = "tank", -- tank/control apex; on-hit slow lives in pets.lua
         blightlamb = "support",
         dread_hare = "melee",
         rotleaf_stag = "tank",
-        wither_sprite = "ranged",
+        wither_sprite = "support", -- Hell Grass wither-curse support
         gravewood_ent = "tank",
-        radiant_salamander = "melee", -- ground bruiser
+        radiant_salamander = "support", -- Heaven Lava offense support
         sunmane_lion = "tank", -- front-line soak/taunt
         solar_phoenix = "ranged", -- flies + fires from range
         empyrean_dragon = "ranged", -- the secret apex: flies + breathes fire (like the earth dragon)
-        aurora_leviathan = "ranged", -- Heaven ice apex: blaster (matches its twin black_ice_leviathan)
+        aurora_leviathan = "tank", -- tank/control apex; on-hit slow lives in pets.lua
         worldroot_ent = "tank", -- Heaven grass apex: tank (matches its twin gravewood_ent / the ent-stag line)
         -- ===== Layer 2 (Heaven 2 / Hell 2) — roles per PET_REALM_HEAVEN_HELL_ROSTER.md =====
         -- (blaster→"ranged", bruiser→"tank", per the established mapping above.)
@@ -142,23 +141,23 @@ return {
         frostcinder_imp = "melee",
         rimemane_lion = "tank", -- bruiser
         hoarfrost_phoenix = "ranged", -- blaster
-        frostbrand_salamander = "support", -- curse (combat aura pending build)
+        frostbrand_salamander = "support", -- curse
         deadfire_phoenix = "ranged", -- blaster apex
         rimegloom_hare = "melee",
         dread_fox = "control",
         gravefrost_owl = "ranged", -- blaster
         rimeguard_bear = "tank",
-        rimewraith_dragon = "melee", -- secret; freeze-AoE power pending build
-        frostblight_lamb = "support", -- drain-heal (pending build)
+        rimewraith_dragon = "melee", -- secret; targeted AoE root lives in pets.lua
+        frostblight_lamb = "support", -- drain-heal
         gloom_hare = "melee",
         icerot_stag = "tank",
-        rimewither_sprite = "support", -- wither-curse (pending build)
+        rimewither_sprite = "support", -- wither-curse
         frostgrave_ent = "tank", -- tank/drain apex
-        wraith_dove = "support", -- drain-heal (pending build)
-        rime_scarab = "support", -- armor-shred (pending build)
-        gloom_jackal = "support", -- debuff (pending build)
-        frostdust_camel = "support", -- regen-denial (pending build)
-        dread_couatl = "support", -- apex curse (pending build)
+        wraith_dove = "support", -- drain-heal
+        rime_scarab = "support", -- armor-shred
+        gloom_jackal = "support", -- debuff
+        frostdust_camel = "support", -- regen-denial
+        dread_couatl = "support", -- apex curse
     },
 
     -- Per-zone BUFFER auras (City-of-Heroes support). Resolved by SupportAura.forPet
@@ -253,10 +252,17 @@ return {
             duration = 6,
         },
         rimelight_hare = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 },
-        blightlamb = { kind = "defense", interval = 2.0, amount = 53.3, duration = 6 },
+        -- Layer-one support mirrors. These were once assigned damage/tank roles with no ability,
+        -- contradicting the formal roster and leaving their lower-right card power absent.
+        radiant_salamander = { kind = "offense", interval = 2.0, mult = 1.1667, duration = 6 },
+        brimstone_salamander = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
+        bloomlamb = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 },
+        blightlamb = { kind = "drain", interval = 2.0, fraction = 0.08, duration = 6 },
+        verdant_sprite = { kind = "yield", interval = 2.0, mult = 1.1667, duration = 6 },
+        wither_sprite = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
         -- ===== Heaven 2 supports — FARMING lean (heal / shield / yield / luck / offense). =====
-        -- Hell 2 supports are COMBAT lean (drain / shred / curse) — their aura kinds don't exist
-        -- yet, so they're role-tagged support but wired in the combat-aura build pass, not here.
+        -- Hell 2 supports are COMBAT lean (drain / shred / curse); all kinds below are live in
+        -- EnemyService and share the same card-badge registry as the Heaven farming supports.
         bloomspirit_lamb = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 }, -- grass heal
         radiant_sprite = { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 }, -- grass luck
         lumen_salamander = { kind = "offense", interval = 2.0, mult = 1.1667, duration = 6 }, -- fire +dmg
@@ -268,9 +274,8 @@ return {
         -- roster needs combat reachable in heaven for the invader fights). Strongest support aura.
         empyreal_couatl = { kind = "offense", interval = 2.0, mult = 1.25, duration = 6 },
         -- ===== Hell 2 — drain-heal supports (COMBAT realm's sustain; give→take flavor). =====
-        -- The COMBAT debuff supports (shred/curse on rime_scarab, rimewither_sprite,
-        -- frostbrand_salamander, gloom_jackal, frostdust_camel, dread_couatl) await the
-        -- enemy-debuff-aura build (new aura kinds + combat-path consumers) — role-tagged, not wired.
+        -- The COMBAT debuff supports target the squad's focus enemy through the live
+        -- VulnerableMult/WeakenMult combat seams.
         frostblight_lamb = { kind = "drain", interval = 2.0, fraction = 0.08, duration = 6 }, -- grass leech-heal
         wraith_dove = { kind = "drain", interval = 2.0, fraction = 0.08, duration = 6 }, -- desert leech-heal
         -- ===== Hell 2 — COMBAT debuff supports (the give→take inversion; enemy-targeting). =====

@@ -102,6 +102,7 @@ local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailRes
 local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
+local PetAbility = require(ReplicatedStorage.Shared.Game.PetAbility) -- aura + on-hit control badge SSOT
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- shared variant-scaled aura math
 local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime) -- effective type-scaled enchant math
 local PetEnchantView = require(ReplicatedStorage.Shared.Game.PetEnchantView) -- stack + unique display SSOT
@@ -260,6 +261,10 @@ local QuantitySelector = require(script.Parent.Parent.Components.QuantitySelecto
 
 local function supportBadgeSpec(kind)
     return POWER_ICONS and POWER_ICONS.support_badge and POWER_ICONS.support_badge[kind]
+end
+
+local function petAbilitiesFor(petType)
+    return PetAbility.forPet(petType, PET_ROLES, PETS_CONFIG)
 end
 -- Hatcher display: the pet stores the hatcher's STABLE UserId (hatcher_user_id) as the SSOT —
 -- players rename, so we resolve the id to the CURRENT username for display (Jason). Cached +
@@ -4403,12 +4408,10 @@ function InventoryPanel:_itemSearchText(item)
         if PetBadge then
             add(item.creator and "creator" or PetBadge.biomeElementForPetType(item.petType))
         end
-        if PET_ROLES and PET_ROLES.support_auras then
-            local entry = PET_ROLES.support_auras[item.petType]
-            local auras = (type(entry) == "table") and (entry.kind and { entry } or entry) or nil
-            for _, a in ipairs(auras or {}) do
-                add(a.kind)
-                local meta = supportBadgeSpec(a.kind)
+        if PET_ROLES then
+            for _, ability in ipairs(petAbilitiesFor(item.petType)) do
+                add(ability.kind)
+                local meta = supportBadgeSpec(ability.kind)
                 if meta then
                     add(meta.label)
                 end
@@ -5212,21 +5215,14 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
         end
     end
 
-    -- Support buff this pet PROVIDES (bottom-right): the per-zone buffer pets (bunny=Heal,
-    -- penguin=Defense, emberimp=Offense, meerkat=Coin Yield) emit a team aura — surface it so
-    -- "what does a meerkat do?" reads at a glance. Element-disc (biome colour) + short label.
+    -- Implemented inherent ability this pet PROVIDES (bottom-right): support auras and on-hit
+    -- controller effects share one display resolver, while retaining their separate runtime paths.
     if POWER_ICONS and PET_ROLES and PetBadge and item.category == "Pets" and item.petType then
-        -- entry may be a single aura or a LIST (creator pets carry every buffer); fan the
-        -- badges across the corner and label "ALL" when there are several.
-        local entry = PET_ROLES.support_auras and PET_ROLES.support_auras[item.petType]
-        local auras = nil
-        if type(entry) == "table" then
-            auras = entry.kind and { entry } or entry
-        end
+        local abilities = petAbilitiesFor(item.petType)
         local shown = 0
         local shownLabels = {}
-        for _, aura in ipairs(auras or {}) do
-            local meta = supportBadgeSpec(aura.kind)
+        for _, ability in ipairs(abilities) do
+            local meta = supportBadgeSpec(ability.kind)
             if meta and meta.symbol then
                 local holder = Instance.new("Frame")
                 holder.Name = "SupportBadge" .. (shown > 0 and tostring(shown + 1) or "")
@@ -5235,7 +5231,7 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
                 holder.Position =
                     UDim2.new(0.66, -shown * math.floor(self.cardSize.X * 0.14), 0.5, 0)
                 holder.BackgroundTransparency = 1
-                holder.ZIndex = 107 + (#auras - shown) -- earlier badges sit in front
+                holder.ZIndex = 107 + (#abilities - shown) -- earlier badges sit in front
                 holder.Parent = itemFrame
                 local aspect = Instance.new("UIAspectRatioConstraint")
                 aspect.AspectRatio = 1
@@ -5245,7 +5241,7 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
                 -- SCOPE — single-target (empower/hold → inward ring) vs team (offense/yield → aura
                 -- ring) — derived from PetTargeting.auraScope, not hand-set. PetBadge is the single
                 -- renderer, and derives the disc/ring colour from this pet's configured origin.
-                local auraScope = PetTargeting.auraScope(aura, PET_ROLES)
+                local auraScope = PetTargeting.auraScope(ability, PET_ROLES)
                 local ringShape = POWER_ICONS.targeting_ring
                     and POWER_ICONS.targeting_ring[auraScope]
                 local badge = PetBadge.create(holder, {
@@ -6055,26 +6051,34 @@ function InventoryPanel:_showItemTooltip(item, sourceFrame)
         end
         table.insert(lines, { label = "Zone", value = zoneVal })
 
-        -- Support pets: surface the team aura they provide (Jason). Reuse the config-owned badge
-        -- label + a readable magnitude; fall back to the capitalized kind if future data is incomplete.
-        local aura = PET_ROLES and PET_ROLES.support_auras and PET_ROLES.support_auras[item.petType]
-        if aura and aura.kind then
-            local meta = supportBadgeSpec(aura.kind)
-            local label = (meta and meta.label) or (tostring(aura.kind):gsub("^%l", string.upper))
+        -- Surface every implemented inherent ability. This is the same resolver as the card badge,
+        -- so attack-bound controls no longer disappear from the tooltip.
+        for _, ability in ipairs(petAbilitiesFor(item.petType)) do
+            local meta = supportBadgeSpec(ability.kind)
+            local label = (meta and meta.label)
+                or (tostring(ability.kind):gsub("^%l", string.upper))
             local mag = ""
-            if aura.mult then
-                local scaled = SupportAura.scaleMultiplier(aura.mult, item.variant, PET_ROLES)
+            if ability.mult then
+                local scaled = SupportAura.scaleMultiplier(ability.mult, item.variant, PET_ROLES)
                 mag = (" +%d%%"):format((scaled - 1) * 100 + 0.5)
-            elseif aura.amount then
-                local scaled = SupportAura.scaleMagnitude(aura.amount, item.variant, PET_ROLES)
+            elseif ability.amount then
+                local scaled = SupportAura.scaleMagnitude(ability.amount, item.variant, PET_ROLES)
                 mag = (" +%d"):format(scaled + 0.5)
-            elseif aura.fraction then
-                local scaled = SupportAura.scaleMagnitude(aura.fraction, item.variant, PET_ROLES)
-                mag = (" %d%%/%ds"):format(scaled * 100 + 0.5, aura.interval or 2)
-            elseif aura.duration then
-                mag = (" %ds"):format(aura.duration)
+            elseif ability.fraction then
+                local scaled = SupportAura.scaleMagnitude(ability.fraction, item.variant, PET_ROLES)
+                mag = (" %d%%/%ds"):format(scaled * 100 + 0.5, ability.interval or 2)
+            elseif ability.factor then
+                mag = (" %d%% speed/%ds"):format(
+                    (tonumber(ability.factor) or 1) * 100 + 0.5,
+                    tonumber(ability.duration) or 0
+                )
+            elseif ability.duration then
+                mag = (" %ds"):format(ability.duration)
             end
-            table.insert(lines, { label = "Aura", value = label .. mag })
+            table.insert(lines, {
+                label = ability.source == "attack_control" and "Control" or "Aura",
+                value = label .. mag,
+            })
         end
     end
     if item.locked ~= nil then

@@ -1,6 +1,6 @@
 # Archetype Line — Support (heal / shield / buff / yield ⟷ drain / curse / shred)
 
-Status: design (Jason + Claude, 2026-06). Line doc — see
+Status: implemented through the current authored roster (audited 2026-08-16). Line doc — see
 [blaster](PET_LINE_BLASTER.md) · [melee](PET_LINE_MELEE.md) · [tank](PET_LINE_TANK.md) ·
 [support](PET_LINE_SUPPORT.md) · [controller](PET_LINE_CONTROLLER.md) · [dragon](PET_LINE_DRAGON.md).
 Cross-refs: [roster](../PET_REALM_HEAVEN_HELL_ROSTER.md) ·
@@ -100,6 +100,13 @@ new behavior. The auras exist today (heal/defense/offense/yield support pets).
 
 ## Build state
 
-The richest line today: support auras (heal/defense/offense/yield) are **live and wired**
-(`EnemyService:_supportPass`, `CoinYieldBuff`, etc.). Remaining work is per-pet authoring of *which*
-aura each support carries + scaling, and the L4 support-dragon's multi-axis aura.
+The current authored roster is live and config-owned: every pet classified as Support has at least
+one `support_auras` entry, every configured aura kind has an executing `EnemyService:_supportPass`
+path, and every ability has a lower-right card/egg-preview badge plus tooltip. The 2026-08-16 audit
+also reconciled the original layer-one line with the formal roster: Radiant/Brimstone Salamanders,
+Bloom/Blight Lambs, and Verdant/Wither Sprites now carry their intended offense/curse, heal/drain,
+and yield/curse identities rather than silently behaving as damage or tank pets.
+
+CI fails if a future Support pet lacks an aura or if an implemented aura/control kind lacks
+renderable badge metadata. Future layers still need normal per-pet tuning as their species land; the
+L4 support dragon's multi-axis aura remains a future content task rather than a current-roster gap.
