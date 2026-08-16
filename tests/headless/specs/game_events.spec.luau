@@ -118,6 +118,20 @@ return function()
             end
         )
 
+        it("closes Power Choice synchronously before the Ascend ceremony", function()
+            local dispatcher = readFile("src/Client/Systems/GameEvents.lua")
+            local manager = readFile("src/Client/UI/MenuManager.lua")
+            local closeAt = dispatcher:find('CloseCurrentPanelImmediately("PowerChoice")', 1, true)
+            local ceremonyAt = dispatcher:find("AscensionPresentation.play(ctx, spec)", 1, true)
+
+            expect(closeAt ~= nil).to.equal(true)
+            expect(ceremonyAt ~= nil).to.equal(true)
+            expect(closeAt < ceremonyAt).to.equal(true)
+            expect(
+                manager:find("function MenuManager:CloseCurrentPanelImmediately", 1, true) ~= nil
+            ).to.equal(true)
+        end)
+
         it("routes consumable activation visuals to the affected HUD surface", function()
             local dispatcher = readFile("src/Client/Systems/GameEvents.lua")
             local potionService = readFile("src/Server/Services/PotionService.lua")

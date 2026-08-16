@@ -185,6 +185,12 @@ end
 -- ascension: the altar claim ceremony. Presentation is deliberately separated from the
 -- authoritative claim: it animates a local visual clone and can never move or mutate the player.
 REACTIONS.ascension = function(spec, ctx)
+    -- `level_claimed` is emitted only after the server accepts the claim. Dismiss the choice menu
+    -- synchronously so the ceremony never starts behind the menu or races its exit tween.
+    local menuManager = rawget(_G, "MenuManager")
+    if menuManager and menuManager.CloseCurrentPanelImmediately then
+        menuManager:CloseCurrentPanelImmediately("PowerChoice")
+    end
     AscensionPresentation.play(ctx, spec)
 end
 
