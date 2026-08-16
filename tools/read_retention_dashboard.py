@@ -95,7 +95,7 @@ def dashboard_payload(
             [{"counters": build["counters"]}]
         )
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "dateUtc": date_utc,
         "bucketCount": bucket_count,
         "bucketsPresent": len(buckets),
@@ -151,6 +151,16 @@ def print_dashboard(payload: dict[str, Any]) -> None:
         f"{summary['newPlayerTutorialCompleted']}/{summary['newPlayers']} "
         f"({percent(summary['newPlayerTutorialCompletionRate'])})"
     )
+    print(
+        "Distinct cohort returners: "
+        f"D1 {summary['distinctD1Returners']}/{summary['newPlayers']} "
+        f"({percent(summary['distinctD1RetentionRate'])}); "
+        f"D2–7 {summary['distinctD2To7Returners']}/{summary['newPlayers']} "
+        f"({percent(summary['distinctD2To7RetentionRate'])}); "
+        f"D8–30 {summary['distinctD8To30Returners']}/{summary['newPlayers']} "
+        f"({percent(summary['distinctD8To30RetentionRate'])})"
+    )
+    print("  Windows mature after 1, 7, and 30 complete UTC days, respectively.")
     print(
         "Exited below earned level 2: "
         f"{summary['exitedBeforeEarnedLevel2']}/{summary['newPlayerSessionsEnded']} "

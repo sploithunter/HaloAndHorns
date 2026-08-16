@@ -33,6 +33,7 @@ def day(date: str, new_players: int, sessions: int) -> dict:
             "sessionsEnded": sessions,
             "totalSessionSeconds": sessions * 100,
             "newPlayerTutorialCompleted": 1,
+            "distinctReturners": {"d1": 1, "d2_7": 2, "d8_30": 1},
             "tutorialSteps": {
                 "hatch_first_egg": {"reached": 2, "totalSecondsToReach": 20},
                 "equip_pet": {"reached": 1, "totalSecondsToReach": 20},
@@ -55,6 +56,12 @@ class LiveMetricsTests(unittest.TestCase):
         self.assertEqual(metrics["newPlayersPerDay"], 5)
         self.assertEqual(metrics["sessionsStarted"], 15)
         self.assertEqual(metrics["repeatSessionVolume"], 5)
+        self.assertEqual(metrics["distinctD1Returners"], 2)
+        self.assertEqual(metrics["distinctD1RetentionRate"], 0.2)
+        self.assertEqual(metrics["distinctD2To7Returners"], 4)
+        self.assertEqual(metrics["distinctD2To7RetentionRate"], 0.4)
+        self.assertEqual(metrics["distinctD8To30Returners"], 2)
+        self.assertEqual(metrics["distinctD8To30RetentionRate"], 0.2)
         self.assertEqual(metrics["firstHatch"], 4)
         self.assertEqual(metrics["firstHatchRate"], 0.4)
         self.assertEqual(metrics["tutorialCompleted"], 2)

@@ -42,6 +42,7 @@ class RetentionDashboardTests(unittest.TestCase):
                     "exclusions": {"playerNamePrefixes": ["sploit"]},
                     "counters": {
                         "newPlayers": 2,
+                        "distinctReturners": {"d1": 1, "d2_7": 1},
                         "newPlayerSessionsEnded": 2,
                         "tutorialSteps": {
                             "hatch_first_egg": {
@@ -66,6 +67,7 @@ class RetentionDashboardTests(unittest.TestCase):
                     },
                     "counters": {
                         "newPlayers": 3,
+                        "distinctReturners": {"d1": 1, "d8_30": 1},
                         "newPlayerSessionsEnded": 2,
                         "tutorialSteps": {
                             "hatch_first_egg": {
@@ -88,6 +90,10 @@ class RetentionDashboardTests(unittest.TestCase):
         self.assertEqual(payload["bucketsPresent"], 2)
         self.assertEqual(payload["updatedAt"], 20)
         self.assertEqual(payload["summary"]["newPlayers"], 5)
+        self.assertEqual(payload["summary"]["distinctD1Returners"], 2)
+        self.assertEqual(payload["summary"]["distinctD1RetentionRate"], 0.4)
+        self.assertEqual(payload["summary"]["distinctD2To7Returners"], 1)
+        self.assertEqual(payload["summary"]["distinctD8To30Returners"], 1)
         self.assertEqual(payload["tutorialFunnel"][0]["reached"], 3)
         self.assertEqual(payload["starterChoice"]["byPet"], {"kitty": 2, "bear": 2})
         self.assertEqual(payload["builds"]["place:100"]["summary"]["newPlayers"], 2)

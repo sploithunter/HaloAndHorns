@@ -146,7 +146,88 @@ function RetentionLogic.newAggregate()
             totalSecondsToSelect = 0,
             byPet = {},
         },
+        distinctReturners = {
+            d1 = 0,
+            d2_7 = 0,
+            d8_30 = 0,
+        },
     }
+end
+
+local RETURN_WINDOWS = {
+    { id = "d1", firstDay = 1, lastDay = 1 },
+    { id = "d2_7", firstDay = 2, lastDay = 7 },
+    { id = "d8_30", firstDay = 8, lastDay = 30 },
+}
+
+local function utcDay(timestamp)
+    return math.floor(math.max(0, tonumber(timestamp) or 0) / 86400)
+end
+
+function RetentionLogic.returnWindow(joinedAt, returnedAt)
+    local dayOffset = utcDay(returnedAt) - utcDay(joinedAt)
+    for _, window in ipairs(RETURN_WINDOWS) do
+        if dayOffset >= window.firstDay and dayOffset <= window.lastDay then
+            return window.id, dayOffset
+        end
+    end
+    return nil, dayOffset
+end
+
+-- Claims one cohort-relative return window on the player profile. The caller projects the claim
+-- into the fixed-key dashboard under cohortDate. Persisting the claim keeps later sessions from
+-- inflating a distinct-player counter; using UTC calendar days matches Roblox retention semantics.
+function RetentionLogic.claimReturnWindow(state, joinedAt, returnedAt, minimumCohortDate)
+    if type(state) ~= "table" or state.Eligible ~= true then
+        return nil
+    end
+    joinedAt = tonumber(joinedAt) or 0
+    returnedAt = tonumber(returnedAt) or 0
+    if joinedAt <= 0 or returnedAt <= 0 then
+        return nil
+    end
+    local cohortDate = os.date("!%Y%m%d", joinedAt)
+    local minimum = tostring(minimumCohortDate or ""):gsub("[^%d]", "")
+    if #minimum == 8 and cohortDate < minimum then
+        return nil
+    end
+
+    state.ReturnTracking = type(state.ReturnTracking) == "table" and state.ReturnTracking or {}
+    local tracking = state.ReturnTracking
+    local storedCohortDate = tostring(tracking.CohortDate or ""):gsub("[^%d]", "")
+    tracking.CohortDate = #storedCohortDate == 8 and storedCohortDate or cohortDate
+    local storedCohortDay = tonumber(tracking.CohortDay)
+    tracking.CohortDay = storedCohortDay and storedCohortDay >= 0 and math.floor(storedCohortDay)
+        or utcDay(joinedAt)
+    tracking.Counted = type(tracking.Counted) == "table" and tracking.Counted or {}
+
+    -- Once established, the cohort anchor is immutable even if unrelated legacy profile fields
+    -- are later repaired.
+    cohortDate = tracking.CohortDate
+    local dayOffset = utcDay(returnedAt) - tracking.CohortDay
+    local windowId
+    for _, window in ipairs(RETURN_WINDOWS) do
+        if dayOffset >= window.firstDay and dayOffset <= window.lastDay then
+            windowId = window.id
+            break
+        end
+    end
+    if not windowId or tracking.Counted[windowId] ~= nil then
+        return nil, cohortDate, dayOffset
+    end
+    tracking.Counted[windowId] = math.floor(returnedAt)
+    return windowId, cohortDate, dayOffset
+end
+
+function RetentionLogic.aggregateDistinctReturner(counters, windowId)
+    counters.distinctReturners = type(counters.distinctReturners) == "table"
+            and counters.distinctReturners
+        or {}
+    if windowId ~= "d1" and windowId ~= "d2_7" and windowId ~= "d8_30" then
+        return false
+    end
+    counters.distinctReturners[windowId] = (tonumber(counters.distinctReturners[windowId]) or 0) + 1
+    return true
 end
 
 function RetentionLogic.aggregateSessionStarted(counters, firstSession)
@@ -393,6 +474,8 @@ function RetentionLogic.dashboardSummary(counters)
     local starterChoice = type(counters.starterChoice) == "table" and counters.starterChoice or {}
     local choices = tonumber(starterChoice.selected) or 0
     local promoCodes = type(counters.promoCodes) == "table" and counters.promoCodes or {}
+    local returners = type(counters.distinctReturners) == "table" and counters.distinctReturners
+        or {}
     return {
         sessionsStarted = tonumber(counters.sessionsStarted) or 0,
         sessionsEnded = ended,
@@ -416,6 +499,12 @@ function RetentionLogic.dashboardSummary(counters)
         averageStarterChoiceSeconds = ratio(starterChoice.totalSecondsToSelect, choices),
         promoCodeAttributed = tonumber(promoCodes.attributed) or 0,
         promoCodesRedeemed = tonumber(promoCodes.redeemed) or 0,
+        distinctD1Returners = tonumber(returners.d1) or 0,
+        distinctD1RetentionRate = ratio(returners.d1, newPlayers),
+        distinctD2To7Returners = tonumber(returners.d2_7) or 0,
+        distinctD2To7RetentionRate = ratio(returners.d2_7, newPlayers),
+        distinctD8To30Returners = tonumber(returners.d8_30) or 0,
+        distinctD8To30RetentionRate = ratio(returners.d8_30, newPlayers),
     }
 end
 
@@ -443,6 +532,7 @@ function RetentionLogic.ensure(state, eligible, now)
     local instrumentedAt = tonumber(state.InstrumentedAt) or 0
     state.InstrumentedAt = instrumentedAt > 0 and instrumentedAt or now
     state.Milestones = type(state.Milestones) == "table" and state.Milestones or {}
+    state.ReturnTracking = type(state.ReturnTracking) == "table" and state.ReturnTracking or {}
     state.AnalyticsFunnelStep = math.max(0, math.floor(tonumber(state.AnalyticsFunnelStep) or 0))
     return state
 end

@@ -21,6 +21,10 @@ This record answers how far one player reached and in which session/how many sec
 `Analytics.SessionCount`, `TotalPlayTime`, and `LastSessionDuration` remain the session source of
 truth.
 
+Distinct return-window claims are stored on the profile under
+`Analytics.Retention.ReturnTracking`. The immutable UTC first-join cohort and a three-key claim
+ledger ensure that repeat sessions cannot increment the same player's window twice.
+
 The first-companion role lesson has its own pre-hatch microfunnel. The semantic events
 `starter_pet_choice_shown` and `starter_pet_selected` are present in the raw stream, and daily
 aggregate shards expose `starterChoice.shown`, `selected`, `totalSecondsToSelect`, and `byPet`.
@@ -89,9 +93,10 @@ testing and diagnosis.
 Counters include sessions and completed-session time, new players, the starter-choice shown/selected
 microfunnel and pet split, every first-session tutorial step with time-to-step and active-step exits,
 tutorial completion, quest completion, area unlocks, earned/claimed levels, and first-session exit
-levels. Every server contribution retains `placeVersion` and the generated git build fields, so a
-same-day read exposes build populations instead of silently blending a pre-publish and post-publish
-cohort.
+levels. Dashboard schema v2 also records distinct D1, D2–7, and D8–30 returners against the
+player's original first-join UTC cohort. Every server contribution retains `placeVersion` and the
+generated git build fields, so a same-day read exposes build populations instead of silently
+blending a pre-publish and post-publish cohort.
 
 After the build containing this feature is published, the quick CLI read is:
 
@@ -113,10 +118,11 @@ python3 tools/read_live_metrics.py \
 ```
 
 Use `--days 1` for the quickest day-over-day spot check. The report treats `newPlayers` as internal
-acquisition and labels `sessionsStarted - newPlayers` as **repeat-session volume**, not unique D1
-retention. Canonical Roblox D1 and paid impressions/clicks/attributed plays still come from Creator
-Hub or the Analytics Query API. Quest completion counters are all-session one-time events, so their
-ratio to daily new players is directional rather than a strict first-session cohort rate.
+acquisition and reports distinct returners directly from the original cohort's fixed dashboard
+buckets. `sessionsStarted - newPlayers` remains labeled **repeat-session volume** because it is not
+a unique-player measure. Paid impressions/clicks/attributed plays still come from Creator Hub or the
+Analytics Query API. Quest completion counters are all-session one-time events, so their ratio to
+daily new players is directional rather than a strict first-session cohort rate.
 
 The same read is available to an authorized live admin through
 `retention.dashboard { dateUtc = "YYYYMMDD" }`. Neither path backfills dates from before this
@@ -133,6 +139,16 @@ Canonical launch definitions:
 - Tutorial exit step = the active tutorial objective when a first-session player left unfinished.
 - Pre-level-2 exit rate = first-session players leaving below earned (or claimed) level 2 /
   first-session players whose session ended.
+- D1 retention = distinct cohort players returning on UTC calendar-day offset 1 / new players in
+  that first-join UTC cohort.
+- D2–7 retention = distinct cohort players with at least one return on offsets 2 through 7 / new
+  players in that cohort.
+- D8–30 retention = distinct cohort players with at least one return on offsets 8 through 30 / new
+  players in that cohort.
+
+Distinct retention instrumentation starts with UTC cohort `20260816`; earlier cohorts are not
+partially backfilled. A cohort's D1, D2–7, and D8–30 values are not mature until 1, 7, and 30 full
+UTC days have elapsed. Reads before those boundaries are explicitly provisional.
 
 For an immediate long-form export, create a read-only Open Cloud key with list/read access, then:
 

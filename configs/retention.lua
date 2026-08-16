@@ -115,8 +115,13 @@ return {
     dashboard = {
         enabled = true,
         name = "RetentionDashboard_v1",
-        schema_version = 1,
+        schema_version = 2,
         write_in_studio = false,
+
+        -- Cohort-attributed distinct retention begins at this UTC date. Older profiles are not
+        -- opportunistically backfilled because their historical return windows may already have
+        -- happened and would make the rates incomplete in a non-obvious way.
+        distinct_retention_start_utc = "20260816",
 
         -- A small, fixed key set is intentionally used instead of one global hot key or a
         -- ListKeysAsync scan. Each server replaces its absolute contribution in one deterministic

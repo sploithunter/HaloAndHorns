@@ -244,6 +244,7 @@ function RetentionService:_beginRawSession(player)
         progression = progressionSnapshot(data, player),
     })
     self:_aggregateSessionStarted(self._rawSessions[player])
+    self:_recordDistinctReturner(player, self._rawSessions[player], data)
     if self._pendingClientContext[player] then
         self:_appendRawEvent(player, "client_context", self._pendingClientContext[player])
         self._pendingClientContext[player] = nil
@@ -262,8 +263,22 @@ function RetentionService:_tutorialDefinitions()
     return definitions
 end
 
-function RetentionService:_aggregateFor(session)
-    local cohortDate = session.cohortDate
+function RetentionService:_dashboardDefinitions()
+    return {
+        tutorialSteps = self:_tutorialDefinitions(),
+        distinctRetention = {
+            attribution = "first_join_utc_date",
+            denominator = "newPlayers",
+            windows = {
+                d1 = { firstDay = 1, lastDay = 1 },
+                d2_7 = { firstDay = 2, lastDay = 7 },
+                d8_30 = { firstDay = 8, lastDay = 30 },
+            },
+        },
+    }
+end
+
+function RetentionService:_aggregateForDate(cohortDate, server)
     local aggregate = self._aggregates[cohortDate]
     if aggregate then
         return aggregate
@@ -276,8 +291,8 @@ function RetentionService:_aggregateFor(session)
         dashboardBucket = dashboardBucket,
         dashboardBucketCount = bucketCount,
         cohortDate = cohortDate,
-        server = session.server,
-        definitions = { tutorialSteps = self:_tutorialDefinitions() },
+        server = server,
+        definitions = self:_dashboardDefinitions(),
         counters = RetentionLogic.newAggregate(),
         dashboardCounters = RetentionLogic.newAggregate(),
         dirty = false,
@@ -287,6 +302,39 @@ function RetentionService:_aggregateFor(session)
     }
     self._aggregates[cohortDate] = aggregate
     return aggregate
+end
+
+function RetentionService:_aggregateFor(session)
+    return self:_aggregateForDate(session.cohortDate, session.server)
+end
+
+function RetentionService:_recordDistinctReturner(player, session, data)
+    if not session.dashboardEligible or session.firstSession then
+        return
+    end
+    data.Analytics = type(data.Analytics) == "table" and data.Analytics or {}
+    local state = RetentionLogic.ensure(data.Analytics.Retention, false, os.time())
+    data.Analytics.Retention = state
+    local windowId, cohortDate, dayOffset = RetentionLogic.claimReturnWindow(
+        state,
+        data.JoinDate,
+        session.startedAt,
+        self._dashboardConfig.distinct_retention_start_utc
+    )
+    if not windowId then
+        return
+    end
+
+    local cohortAggregate = self:_aggregateForDate(cohortDate, session.server)
+    RetentionLogic.aggregateDistinctReturner(cohortAggregate.dashboardCounters, windowId)
+    cohortAggregate.dashboardDirty = true
+    self:_appendRawEvent(player, "distinct_retention_window", {
+        cohortDate = cohortDate,
+        dayOffset = dayOffset,
+        window = windowId,
+    })
+    self:_scheduleAggregateFlush(cohortDate)
+    self._dataService:RequestSave(player, "distinct_retention_window")
 end
 
 function RetentionService:_aggregateSessionStarted(session)
@@ -816,9 +864,7 @@ function RetentionService:GetDashboard(dateUtc)
         exclusions = {
             playerNamePrefixes = self._dashboardConfig.excluded_name_prefixes,
         },
-        definitions = {
-            tutorialSteps = self:_tutorialDefinitions(),
-        },
+        definitions = self:_dashboardDefinitions(),
         builds = builds,
         summary = RetentionLogic.dashboardSummary(counters),
         counters = counters,
