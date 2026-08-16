@@ -986,6 +986,12 @@ Last checked: 2026-08-15
   them. Power and potion copy reuses their existing description modules, enchants read their effect
   definitions, pet auras show live magnitude/source count, and presence badges distinguish 2x
   Creator Luck from the non-stacking 1.5x **Founder's Legacy** server aura.
+- The player-status HUD is split into two truthful, independently sized rows. Full-size, high-contrast
+  badges remain reserved for active/timed effects; a compact subdued row below them renders every
+  effective owned game pass in authored catalog order using its Marketplace artwork and an infinity
+  marker. The pass row consumes the existing `OwnedPasses` snapshot (including Marketplace, Founder,
+  creator, and Studio-test sources), updates after purchases or creator-gate changes without polling,
+  and identifies the exact entitlement source through the shared hover/tap tooltip.
 - Timed player-status badges display durations of at least one minute as `M:SS` (for example,
   `19:45`) and switch to the compact seconds countdown only for the final minute.
 - The early-level boost sampler grants exactly one player-controlled token at each claimed-level
