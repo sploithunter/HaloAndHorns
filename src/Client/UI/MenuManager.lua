@@ -356,6 +356,37 @@ function MenuManager:CloseCurrentPanel(transitionEffect)
     end, transitionEffect)
 end
 
+-- Close a panel synchronously when gameplay presentation must begin only after the UI is gone.
+-- `expectedPanelName` prevents a late event from dismissing an unrelated menu the player opened.
+function MenuManager:CloseCurrentPanelImmediately(expectedPanelName)
+    local panelToClose = self.currentPanel
+    local panelName = self.currentPanelName
+    if not panelToClose then
+        return false
+    end
+    if expectedPanelName and panelName ~= expectedPanelName then
+        return false
+    end
+
+    self.currentPanel = nil
+    self.currentPanelName = nil
+    self.isTransitioning = false
+    FocusNavigator.close()
+
+    if self.escConnection then
+        self.escConnection:Disconnect()
+        self.escConnection = nil
+    end
+
+    panelToClose:Hide()
+    if self._scrim then
+        self._scrim.Visible = false
+    end
+
+    self.logger:info("Closed panel immediately:", panelName)
+    return true
+end
+
 -- Toggle a panel (open if closed, close if open)
 function MenuManager:TogglePanel(panelName, transitionEffect)
     if self.currentPanelName == panelName then

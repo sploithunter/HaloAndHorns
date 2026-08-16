@@ -1107,7 +1107,9 @@ attribute (keeps accruing past the cap). A successful altar claim now owns the f
 Ascension ceremony: the approved crescendo is positional for nearby players, while the claimant's
 avatar is represented by a local, anchored visual clone that rises, accelerates through a spin,
 crosses layered gold rings/sparkles, and lands on the level reveal. The real character is never
-teleported or handed to client physics; XP-bar completion retains only lightweight feedback.
+teleported or handed to client physics; XP-bar completion retains only lightweight feedback. The
+successful `level_claimed` event synchronously closes the Power Choice menu before starting the
+ceremony; rejected claims leave the menu open with their actionable error.
 
 **Full build respec (admin-tested flow).** `RespecService` preserves exact lifetime XP and all
 non-build progression, returns every installed enhancement instance to the stack inventory, clears

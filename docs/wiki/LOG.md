@@ -1,5 +1,11 @@
 # Log
 
+## 2026-08-16 — Ascend menu closes before ceremony
+
+- Successful level claims now synchronously dismiss the Power Choice menu before the Ascension
+  presentation starts, eliminating menu/cinematic overlap and exit-tween races. Rejected claims
+  still leave the menu open so the player can act on the error.
+
 ## 2026-08-16 — Inventory Best Pets role quick-fill
 
 - Shortened the inventory search field and added Ranged, Melee, Tank, Support, and Control quick-fill
