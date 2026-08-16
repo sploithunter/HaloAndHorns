@@ -2613,3 +2613,14 @@ first-session cohort rates.
 - Owned passes now render from the existing authoritative `OwnedPasses` snapshot, reuse shop artwork,
   identify Founder/creator/test sources in tooltips, and never perform client Marketplace polling.
 - Added headless coverage for the two-row ownership contract; full headless suite passes 1862/1862.
+
+## 2026-08-16 — Shop access fallback and claim-first quest tracker
+
+- Added a permanent Pet Shop action to the lower-left HUD. The tray remains a six-cell 2x3 for
+  everyone by showing Daily to regular players and Admin in that cell for creators/admins.
+- Centralized every streamed Pet Shop prompt on a reusable, floor-height runtime attachment while
+  preserving `PetShopPromptAnchor` as an authored override. Late-streamed parts refresh the same
+  anchor instead of leaving a roof-sign prompt inaccessible.
+- Made claimable quest rewards higher priority than rotating gameplay tips: a new claim cancels an
+  active tip, blocks new tips, and pauses the minute timer until the claim is cleared.
+- Added headless source-contract coverage; full headless suite passes 1865/1865.

@@ -962,9 +962,10 @@ function BaseUI:_createPaneElement(contentConfig, parent, layoutOrder, layoutCon
         self.logger:info("🔧 BaseUI: Creating menu button", {
             buttonName = config.name,
             hasAdminOnly = config.admin_only or false,
+            hasNonAdminOnly = config.non_admin_only or false,
         })
-        -- Check admin-only restriction
-        if config.admin_only then
+        -- A few tray cells swap by entitlement so both player types retain the same 2x3 geometry.
+        if config.admin_only or config.non_admin_only then
             -- Use centralized admin checking (single source of truth)
             local Locations = require(ReplicatedStorage.Shared.Locations)
             local AdminChecker = require(Locations.SharedUtils.AdminChecker)
@@ -974,11 +975,17 @@ function BaseUI:_createPaneElement(contentConfig, parent, layoutOrder, layoutCon
                 isAdmin = isAdmin,
                 userId = Players.LocalPlayer.UserId,
             })
-            if not isAdmin then
+            if config.admin_only and not isAdmin then
                 self.logger:info("🚫 BaseUI: Skipping admin button - user not authorized", {
                     buttonName = config.name,
                 })
                 return nil -- Skip admin button for non-admin users
+            end
+            if config.non_admin_only and isAdmin then
+                self.logger:info("🚫 BaseUI: Skipping non-admin button for admin", {
+                    buttonName = config.name,
+                })
+                return nil
             end
         end
         return self:_createMenuButtonElement(config, parent, layoutOrder)
@@ -2287,10 +2294,7 @@ function BaseUI:_bindQuestTracker()
             -- nothing claimable and no active focus -> nudge the player to pick a branch (or all
             -- branches done). Opening the Quests panel and hitting "Activate" sets the focus.
             self._trackedQuestId = nil
-            if self._questClaimBtn then
-                self._questClaimBtn:SetAttribute("Available", false)
-                self._questClaimBtn.Visible = false
-            end
+            require(script.Parent.Parent.Systems.QuestTrackerStyle).setClaimAvailable(false)
             if self._questDesc then
                 self._questDesc.Text = res.activeTrack
                         and "Check the Quests menu for new adventures!"
@@ -2313,11 +2317,9 @@ function BaseUI:_bindQuestTracker()
         end
         local sameQuest = self._trackedQuestId == q.id
         self._trackedQuestId = q.id
-        if self._questClaimBtn then
-            local tips = require(script.Parent.Parent.Systems.QuestTrackerStyle)
-            self._questClaimBtn:SetAttribute("Available", q.claimable == true)
-            self._questClaimBtn.Visible = q.claimable == true and not tips.isTipActive()
-        end
+        require(script.Parent.Parent.Systems.QuestTrackerStyle).setClaimAvailable(
+            q.claimable == true
+        )
         local cur = math.floor((q.progress and q.progress.current) or 0)
         local tgt = math.floor((q.progress and q.progress.target) or 1)
         local frac = math.clamp((q.progress and q.progress.fraction) or 0, 0, 1)
@@ -2405,10 +2407,7 @@ function BaseUI:_bindQuestTracker()
             if type(text) ~= "string" or text == "" then
                 return false
             end
-            if self._questClaimBtn then
-                self._questClaimBtn:SetAttribute("Available", false)
-                self._questClaimBtn.Visible = false
-            end
+            require(script.Parent.Parent.Systems.QuestTrackerStyle).setClaimAvailable(false)
             if self._questDesc then
                 self._questDesc.Text = text
             end
@@ -2470,8 +2469,9 @@ function BaseUI:_bindQuestTracker()
         btn.TextSize = 12
         btn.Font = Enum.Font.GothamBlack
         btn.ZIndex = 30
+        local questTrackerStyle = require(script.Parent.Parent.Systems.QuestTrackerStyle)
         btn.Visible = false
-        btn:SetAttribute("Available", false)
+        btn:SetAttribute("Available", questTrackerStyle.isClaimAvailable())
         local c = Instance.new("UICorner")
         c.CornerRadius = UDim.new(1, 0)
         c.Parent = btn
@@ -2481,6 +2481,7 @@ function BaseUI:_bindQuestTracker()
         st.Parent = btn
         btn.Parent = pane
         self._questClaimBtn = btn
+        questTrackerStyle.setClaimAvailable(questTrackerStyle.isClaimAvailable())
         btn.Activated:Connect(function()
             local id = self._trackedQuestId
             if not id then
@@ -2490,6 +2491,7 @@ function BaseUI:_bindQuestTracker()
             if not remote then
                 return
             end
+            questTrackerStyle.setClaimAvailable(false)
             pcall(function()
                 remote:InvokeServer("quest.claim", { questId = id })
             end)

@@ -1036,8 +1036,8 @@ local uiConfig = {
             layout = {
                 type = "grid",
                 auto_size = true, -- Enable automatic sizing based on content
-                button_count = 6, -- Daily/Quest/Shop/Effects/Settings + adopted Rewards (2x3);
-                -- Admin floats above the tray (admin-only), Pets/Powers flank the hotbar
+                button_count = 6, -- Non-admin: Settings/Daily/Shop/Quest/Events/Awards.
+                -- Admin: Settings/Admin/Shop/Quest/Events/Awards. Pets/Powers flank the hotbar.
                 -- left/bottom zero so the buttons sit flush on the pane's anchored corner
                 padding = { top = 5, bottom = 0, left = 0, right = 5 },
             },
@@ -1074,10 +1074,6 @@ local uiConfig = {
                     },
                 },
 
-                -- (Shop button pulled — Jason, playtest audit: the catalog is Phase-7
-                -- placeholder priced in dead legacy coins. Panel stays registered;
-                -- re-add this entry when a real catalog lands.)
-
                 -- (Effects button pulled — Jason: its only live content source was the
                 -- placeholder shop's timed boost, and the buff-readout HUD shows active
                 -- multipliers. Panel stays registered for when timed effects are real.)
@@ -1102,10 +1098,23 @@ local uiConfig = {
                         icon = "📅",
                         text = "Daily",
                         action = "daily_login_action",
+                        non_admin_only = true, -- Admin occupies this sixth tray cell for creators.
                         -- the "!" badge is DYNAMIC now (BaseUI polls daily.status): it only
                         -- shows when a claim is actually waiting (Jason: a permanent ! trains
                         -- players to ignore it)
                         -- 🎨 Automatically gets: teal background, default icon/text styling!
+                    },
+                },
+
+                -- Permanent storefront escape hatch. World shop prompts remain useful landmarks,
+                -- but a streamed or awkwardly-authored building can never strand the player.
+                {
+                    type = "menu_button",
+                    config = {
+                        name = "Shop",
+                        icon = "🛒",
+                        text = "Shop",
+                        action = "shop_action",
                     },
                 },
 

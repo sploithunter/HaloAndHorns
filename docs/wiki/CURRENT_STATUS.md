@@ -134,7 +134,9 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
   mining, hatching, power, teaming, and travel mechanics. The live objective continues updating
   underneath and is restored exactly afterward. Each session shuffles a no-repeat deck so players
   do not always see the same early tips. `Settings → Display Tips` persists the player's opt-out
-  under `Settings.ClientPrefs.displayTips`; new players default to tips on.
+  under `Settings.ClientPrefs.displayTips`; new players default to tips on. A claimable quest always
+  preempts an active tip and pauses the rotation until the reward is claimed, so the 10-second tip
+  lease can never hide or intercept the Claim action.
 - Rarity hatch, genuine claimed-level congratulations, and team-sidekick announcements use the
   standard Roblox chat window and default on. Level messages randomize among **Grats**,
   **Congratulations**, and **GG**, use the player's display name, and never fire for respec replays.
@@ -952,7 +954,13 @@ Last checked: 2026-08-15
   maintain a parallel flat-button palette.
 - Every streamed `Pet shop` world model receives a client-owned proximity prompt that
   opens the same panel through `MenuManager`. Prompt discovery tolerates models whose
-  sign/parts stream in after the outer model.
+  sign/parts stream in after the outer model. Runtime-generated prompt anchors keep the
+  interaction near floor height even when the authored sign is on a roof; an explicit authored
+  `PetShopPromptAnchor` remains the override.
+- The lower-left HUD has a permanent Shop action, so a missing, streamed-out, or awkwardly placed
+  world prompt can never strand a player. The tray stays 2x3 for both audiences: regular players
+  see Daily while admins see Admin in that same entitlement-swapped cell (Daily remains available
+  from its world chest).
 - Game-pass purchase completion now maps the Roblox pass ID back to its authored
   config, applies the benefit, persists ownership, refreshes capacity, records
   analytics, and pushes the updated owned state to the client.

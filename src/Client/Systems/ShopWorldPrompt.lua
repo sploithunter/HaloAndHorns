@@ -10,6 +10,8 @@ local Workspace = game:GetService("Workspace")
 local ShopWorldPrompt = {}
 
 local PROMPT_NAME = "PetShopPrompt"
+local ANCHOR_NAME = "PetShopPromptAnchor"
+local PROMPT_HEIGHT_ABOVE_MODEL_BOTTOM = 5
 local bound = setmetatable({}, { __mode = "k" })
 
 local function isPetShop(model)
@@ -45,16 +47,53 @@ local function promptHost(model)
     return model:FindFirstChildWhichIsA("BasePart", true)
 end
 
+local function promptAnchor(model, host)
+    local explicit = model:FindFirstChild(ANCHOR_NAME, true)
+    if
+        explicit
+        and explicit:GetAttribute("RuntimeGenerated") ~= true
+        and (explicit:IsA("Attachment") or explicit:IsA("BasePart"))
+    then
+        return explicit
+    end
+
+    local anchor = explicit or host:FindFirstChild(ANCHOR_NAME)
+    if anchor and not anchor:IsA("Attachment") then
+        anchor:Destroy()
+        anchor = nil
+    end
+    if not anchor then
+        anchor = Instance.new("Attachment")
+        anchor.Name = ANCHOR_NAME
+    end
+    anchor:SetAttribute("RuntimeGenerated", true)
+    anchor.Parent = host
+
+    -- Authored signs are often on the roof. Keep their useful X/Z placement but move the prompt
+    -- down near the building floor so it is visible and reachable from every realm/layer copy.
+    local boxCFrame, boxSize = model:GetBoundingBox()
+    local targetY = boxCFrame.Position.Y - (boxSize.Y * 0.5) + PROMPT_HEIGHT_ABOVE_MODEL_BOTTOM
+    local targetWorld =
+        Vector3.new(host.Position.X, math.min(host.Position.Y, targetY), host.Position.Z)
+    anchor.Position = host.CFrame:PointToObjectSpace(targetWorld)
+    return anchor
+end
+
 local function bind(model, menuManager)
-    if bound[model] or not isPetShop(model) or hasPetShopAncestor(model) then
+    if not isPetShop(model) or hasPetShopAncestor(model) then
         return
     end
     local host = promptHost(model)
     if not host then
         return
     end
+    local anchor = promptAnchor(model, host)
 
-    local prompt = host:FindFirstChild(PROMPT_NAME)
+    local prompt = model:FindFirstChild(PROMPT_NAME, true)
+    if prompt and not prompt:IsA("ProximityPrompt") then
+        prompt:Destroy()
+        prompt = nil
+    end
     if not prompt then
         prompt = Instance.new("ProximityPrompt")
         prompt.Name = PROMPT_NAME
@@ -66,12 +105,15 @@ local function bind(model, menuManager)
         prompt.MaxActivationDistance = 34
         prompt.RequiresLineOfSight = false
         prompt.Exclusivity = Enum.ProximityPromptExclusivity.OnePerButton
-        prompt.Parent = host
     end
+    prompt.Parent = anchor
+    prompt.Enabled = true
 
-    bound[model] = prompt.Triggered:Connect(function()
-        menuManager:OpenShopPanel("scale_in_small")
-    end)
+    if not bound[model] then
+        bound[model] = prompt.Triggered:Connect(function()
+            menuManager:OpenShopPanel("scale_in_small")
+        end)
+    end
 end
 
 function ShopWorldPrompt.start(menuManager)
