@@ -1,5 +1,14 @@
 # Log
 
+## 2026-08-16 — Controller fox powers and inventory badge audit
+
+- Audited the Controller role from pet config through live combat and inventory/egg-preview badges.
+  Snow, Aurora, Rimewraith, Prism, and Dread Fox now consistently use the Controller archetype and
+  carry real config-owned Slow/Root powers on the existing lower-right badge path.
+- Added server execution for focused-enemy Slow and Root auras through the same `SlowUntil`,
+  `SlowFactor`, and `RootedUntil` attributes already consumed by combat movement, plus CI coverage
+  preventing any Controller pet from shipping without a designated control power.
+
 ## 2026-08-15 — Console rollback gate and Signal Seal beta week
 
 - Disabled console action routing and ten-foot/gamepad presentation behind the

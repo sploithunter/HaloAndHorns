@@ -3766,7 +3766,7 @@ end
 
 -- A buffer pet's team aura (configs/pet_roles.lua support_auras, keyed by PetType — a
 -- `SupportAura` model attribute can override later), or nil. The returned table carries
--- `.kind` (heal | defense | offense | yield) + that flavour's tuning knobs.
+-- `.kind` (heal | defense | offense | yield | slow | root | hold | ...) + that flavour's knobs.
 function EnemyService:_petAura(pet)
     local list = self:_petAuras(pet)
     return list and list[1] or nil
@@ -4092,6 +4092,44 @@ function EnemyService:_auraHold(folder, aura)
     end
 end
 
+-- Graded CONTROL auras for the Ice fox line. Both target the squad's focused enemy and stamp the
+-- same authoritative attributes used by player powers and on-hit control:
+--   slow -> movement × factor while SlowUntil is live
+--   root -> no movement while RootedUntil is live (attacks are still allowed; unlike a full hold)
+-- Reapplication refreshes to the longer duration and keeps the stronger live slow, so a weaker fox
+-- can never overwrite a stronger controller. This is the mechanic represented by the fox's
+-- lower-right inventory badge; it is deliberately not display-only metadata.
+function EnemyService:_auraMovementControl(folder, aura)
+    local player = Players:FindFirstChild(folder.Name)
+    if not player then
+        return
+    end
+    local model = self:_focusEnemy(player)
+    if not model then
+        return
+    end
+    local now = os.time()
+    local untilT = now + math.max(0, tonumber(aura.duration) or 0)
+    if untilT <= now then
+        return
+    end
+    if aura.kind == "slow" then
+        local active = (tonumber(model:GetAttribute("SlowUntil")) or 0) > now
+        local current = active and (tonumber(model:GetAttribute("SlowFactor")) or 1) or 1
+        local incoming = math.clamp(tonumber(aura.factor) or 0.65, 0, 1)
+        model:SetAttribute("SlowFactor", math.min(current, incoming))
+        model:SetAttribute(
+            "SlowUntil",
+            math.max(tonumber(model:GetAttribute("SlowUntil")) or 0, untilT)
+        )
+    elseif aura.kind == "root" then
+        model:SetAttribute(
+            "RootedUntil",
+            math.max(tonumber(model:GetAttribute("RootedUntil")) or 0, untilT)
+        )
+    end
+end
+
 -- A team player-attribute buff (Lava offense -> PetTeamDamageBuff in _mine; Desert yield ->
 -- CoinYieldBuff in BreakableSpawner). Short-lived + refreshed each interval, on a channel
 -- separate from Powers so an aura stacks with an activated power buff.
@@ -4266,6 +4304,10 @@ function EnemyService:_supportPass(now)
                     for _ = 1, count do -- N controllers => N enemies pinned (each picks a fresh one)
                         self:_auraHold(folder, aura)
                     end
+                elseif kind == "slow" or kind == "root" then
+                    -- Ice fox designated powers: graded movement control on the squad's focus.
+                    -- Multiple matching controllers refresh the same focus; effects never compound.
+                    self:_auraMovementControl(folder, aura)
                 elseif kind == "shred" or kind == "curse" then
                     -- Hell combat-debuff auras (enemy-targeting): each buffer stamps the squad's
                     -- focus enemy. shred = +damage-taken, curse = -enemy-damage. Keep-stronger so

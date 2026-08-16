@@ -17,6 +17,8 @@
       huge_luck— Huge hatch attempts for the PLAYER (tester reward / Huge Fortune identity).
       drop_rate— premium-drop chance for the PLAYER (tester reward / Windfall identity).
       rage     — SELF damage buff while hurt (bear). { enrage_below, mult, interval, duration }
+      slow     — CONTROL: reduce the focused enemy's movement. { interval, duration, factor }
+      root     — CONTROL: stop the focused enemy's movement. { interval, duration }
       hold     — CONTROL: pin one enemy (no move/attack) for `duration`s; targets the player's focus
                  (assist → most-targeted-by-pets → nearest). { interval = recharge, duration } (experimental)
       empower  — SINGLE-TARGET damage buffer (the "carry amplifier"): instead of lifting the whole

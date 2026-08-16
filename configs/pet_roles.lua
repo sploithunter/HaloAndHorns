@@ -29,9 +29,11 @@ return {
         -- fell to default=melee SILENTLY — Jason's live probe caught snowfox with
         -- role=nil while two of three foxes idled. Explicit rows for every species;
         -- the pet_role_coverage spec now fails CI when a new species ships unmapped.
-        snowfox = "melee",
+        -- The Ice fox line is CONTROL from base through realm 2; its designated power
+        -- lives in support_auras so the lower-right card badge is also mechanical truth.
+        snowfox = "control",
         emberfox = "melee",
-        aurora_fox = "melee",
+        aurora_fox = "control",
         fennec = "melee",
         emberling = "melee",
         desertiguana = "melee",
@@ -85,7 +87,7 @@ return {
         glass_sphinx = "ranged",
         ash_roc = "ranged",
         rimelight_hare = "support",
-        rimewraith_fox = "melee",
+        rimewraith_fox = "control",
         dread_owl = "ranged",
         black_seraph = "tank",
         black_ice_leviathan = "ranged",
@@ -183,6 +185,8 @@ return {
     -- individual aura entry can override with its own `targeting`.
     aura_targeting_by_kind = {
         empower = "single",
+        slow = "single",
+        root = "single",
         hold = "single",
         heal = "single",
         drain = "single", -- Hell's life-drain heal (routes through the heal path)
@@ -217,6 +221,15 @@ return {
         -- The hold IS its identity; CC is the fifth archetype the squad diversifies around (the old
         -- Desert yield aura it replaced now lives on the Desert scarabs).
         meerkat = { kind = "hold", interval = 30, duration = 10 }, -- Desert controller (full mez)
+        -- ICE CONTROLLER FOXES: designated powers are config-owned, real combat effects — never
+        -- decorative inventory metadata. The base fox teaches graded control; the first realm pair
+        -- improves the slow; the second realm pair graduates to a short root. EnemyService applies
+        -- these to the squad's focus through the same SlowUntil/RootedUntil seams as player powers.
+        snowfox = { kind = "slow", interval = 8, duration = 4, factor = 0.65 },
+        aurora_fox = { kind = "slow", interval = 8, duration = 5, factor = 0.55 },
+        rimewraith_fox = { kind = "slow", interval = 8, duration = 5, factor = 0.55 },
+        prism_fox = { kind = "root", interval = 12, duration = 3 },
+        dread_fox = { kind = "root", interval = 12, duration = 3 },
         -- Heaven (solar egg): the Emberling Cherub HEALS — an angelic healer, the realm's buffer.
         -- A gentle continuous mend of the most-hurt ally (fraction of its pool every 2s); kept well
         -- under Colorado's old 20%/1.5s that read as invulnerable. Tune freely.
