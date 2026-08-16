@@ -97,6 +97,7 @@ local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
 local InventoryCategories = require(ReplicatedStorage.Shared.Game.InventoryCategories) -- pure tab visibility (specced)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local BestPetSelector = require(ReplicatedStorage.Shared.Inventory.BestPetSelector)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
@@ -1632,9 +1633,10 @@ function InventoryPanel:_createSearchSection()
     searchContainer.ZIndex = 101
     searchContainer.Parent = self.content
 
-    -- Search box background — RELATIVE 70% width (Jason); the Reset/Activate block takes the right 30%.
+    -- Search is intentionally compact: Best Pets quick-fill occupies the middle of this row and the
+    -- existing Reset/Activate draft controls retain the right edge.
     local searchBG = Instance.new("Frame")
-    searchBG.Size = UDim2.new(0.7, 0, 1, 0)
+    searchBG.Size = UDim2.new(0.245, 0, 1, 0)
     searchBG.Position = UDim2.new(0, 0, 0, 5)
     searchBG.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
     searchBG.BorderSizePixel = 0
@@ -1670,7 +1672,7 @@ function InventoryPanel:_createSearchSection()
     self.searchBox.AnchorPoint = Vector2.new(0, 0.5)
     self.searchBox.BackgroundTransparency = 1
     self.searchBox.Text = ""
-    self.searchBox.PlaceholderText = "Search items..."
+    self.searchBox.PlaceholderText = "Search..."
     self.searchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
     self.searchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 160)
     self.searchBox.TextScaled = true
@@ -1686,9 +1688,10 @@ function InventoryPanel:_createSearchSection()
         self:_updateItemsDisplay()
     end)
 
-    -- Team loadout bar (Team 1-4 + Activate), to the right of the search box. Surfaces the existing
-    -- Rosters backend: build a team here (draft, persisted via roster.create, NOT deployed); Activate
-    -- = roster.invoke swaps the live squad. Draft editing on the Equipped strip is Stage 2. (task #240)
+    self:_createBestPetBar(searchContainer)
+
+    -- Draft activation controls remain on the right. Best Pets only edits this same local draft;
+    -- Activate is still the one atomic server commit.
     self:_createTeamBar(searchContainer)
 end
 
@@ -1710,14 +1713,83 @@ local function styleTeamButton(btn, baseColor)
     return btn
 end
 
+-- Five compact role buttons. They add ONE best available pet to the next draft slot per click, so
+-- repeated clicks can intentionally build (for example) a two-tank team without hidden auto-replace.
+function InventoryPanel:_createBestPetBar(searchContainer)
+    local bar = Instance.new("Frame")
+    bar.Name = "BestPetsBar"
+    bar.Size = UDim2.new(0.445, 0, 1, 0)
+    bar.Position = UDim2.new(0.25, 0, 0, 5)
+    bar.BackgroundTransparency = 1
+    bar.ZIndex = 102
+    bar.Parent = searchContainer
+
+    local layout = Instance.new("UIListLayout")
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    layout.VerticalAlignment = Enum.VerticalAlignment.Center
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0.004, 0)
+    layout.Parent = bar
+
+    local label = Instance.new("TextLabel")
+    label.Name = "BestPetsLabel"
+    label.Size = UDim2.new(0.13, 0, 1, -2)
+    label.LayoutOrder = 0
+    label.BackgroundTransparency = 1
+    label.Text = "BEST\nPETS"
+    label.TextColor3 = Color3.fromRGB(215, 220, 235)
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
+    label.ZIndex = 103
+    label.Parent = bar
+    local labelCap = Instance.new("UITextSizeConstraint")
+    labelCap.MaxTextSize = 16
+    labelCap.Parent = label
+
+    self._bestPetButtons = {}
+    local buttons = {
+        { role = "ranged", text = "Ranged", order = 1 },
+        { role = "melee", text = "Melee", order = 2 },
+        { role = "tank", text = "Tank", order = 3 },
+        { role = "support", text = "Support", order = 4 },
+        { role = "control", text = "Control", order = 5 },
+    }
+    for _, spec in ipairs(buttons) do
+        local roleDef = PET_ROLES and PET_ROLES.roles and PET_ROLES.roles[spec.role]
+        local rgb = roleDef and roleDef.color or { 70, 90, 130 }
+        local button = Instance.new("TextButton")
+        button.Name = "Best" .. spec.role:gsub("^%l", string.upper)
+        button.Size = UDim2.new(0.166, 0, 1, -2)
+        button.LayoutOrder = spec.order
+        button.Text = spec.text
+        button.BackgroundColor3 = Color3.fromRGB(rgb[1], rgb[2], rgb[3])
+        button.BorderSizePixel = 0
+        button.AutoButtonColor = true
+        button.Font = Enum.Font.GothamBold
+        button.TextScaled = true
+        button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        button.ZIndex = 103
+        pillify(button)
+        local cap = Instance.new("UITextSizeConstraint")
+        cap.MaxTextSize = 18
+        cap.MinTextSize = 8
+        cap.Parent = button
+        button.Parent = bar
+        self._bestPetButtons[spec.role] = button
+        button.Activated:Connect(function()
+            self:_quickFillBestPet(spec.role)
+        end)
+    end
+end
+
 -- Draft-squad bar (Reset + Activate). The Equipped strip IS the draft; clicking pets edits it
 -- locally with NO deploy. Reset reverts the draft to the deployed squad; Activate commits it via one
 -- atomic server call (SetEquippedPets). This is the deploy model — there is no click-to-equip-live.
 function InventoryPanel:_createTeamBar(searchContainer)
     local bar = Instance.new("Frame")
     bar.Name = "DraftBar"
-    -- RELATIVE 30% width, right-anchored (Jason); search box takes the left 70%. Reset/Activate inside
-    -- are relative too, so the whole row scales.
+    -- RELATIVE 30% width, right-anchored; the compact search + Best Pets strip use the left 70%.
     bar.Size = UDim2.new(0.3, 0, 1, 0)
     bar.Position = UDim2.new(1, 0, 0, 5)
     bar.AnchorPoint = Vector2.new(1, 0)
@@ -2051,6 +2123,145 @@ function InventoryPanel:_toggleDraftMember(item, isDraftCard)
         self._draftDirty = true
     end
     self:_updateItemsDisplay()
+end
+
+local function bestPetButtonColor(role)
+    local roleDef = PET_ROLES and PET_ROLES.roles and PET_ROLES.roles[role]
+    local rgb = roleDef and roleDef.color or { 70, 90, 130 }
+    return Color3.fromRGB(rgb[1], rgb[2], rgb[3])
+end
+
+-- Small, local response for a quick-fill click. "Added" confirms the draft changed; "Full" and
+-- "None" explain why it did not. The normal card rebuild restores the button after the pulse.
+function InventoryPanel:_flashBestPetButton(role, text, color)
+    local button = self._bestPetButtons and self._bestPetButtons[role]
+    if not button then
+        return
+    end
+    local originalText = button.Text
+    self._bestPetFlashGeneration = self._bestPetFlashGeneration or {}
+    self._bestPetFlashGeneration[role] = (self._bestPetFlashGeneration[role] or 0) + 1
+    local generation = self._bestPetFlashGeneration[role]
+    button.Text = text
+    button.BackgroundColor3 = color
+    local tween = TweenService:Create(
+        button,
+        TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { BackgroundColor3 = bestPetButtonColor(role) }
+    )
+    tween.Completed:Once(function()
+        if button and button.Parent and self._bestPetFlashGeneration[role] == generation then
+            button.Text = originalText
+            button.BackgroundColor3 = bestPetButtonColor(role)
+        end
+    end)
+    tween:Play()
+end
+
+-- Adapt one real inventory record into the pure selector's shape. Availability is evaluated against
+-- the CURRENT draft, not the deployed squad: stacks may be chosen repeatedly up to total ownership,
+-- while a unique uid can appear once. The item clone carries _ownedTotal so _toggleDraftMember uses
+-- the same quantity after the inventory card has been reduced by the draft.
+function InventoryPanel:_bestPetCandidate(item, role, seenRefs)
+    if type(item) ~= "table" or item.folder_source ~= "pets" or not item.petType then
+        return nil
+    end
+
+    local okRole, roleInfo = pcall(function()
+        return PetPowerView and PetPowerView.roleInfo(item.petType, item.role)
+    end)
+    local itemRole = okRole and roleInfo and roleInfo.id
+        or (PET_ROLES and PET_ROLES.by_type and PET_ROLES.by_type[item.petType])
+        or (PET_ROLES and PET_ROLES.default)
+    if itemRole ~= role then
+        return nil
+    end
+
+    local ref = self:_draftRefForItem(item)
+    if not ref or seenRefs[ref] then
+        return nil
+    end
+    seenRefs[ref] = true
+
+    local candidateItem = table.clone(item)
+    local isStack = string.sub(ref, 1, 6) == "stack|"
+    if isStack then
+        -- Quantity is live and server-projected as UNEQUIPPED. Add deployed copies to obtain total
+        -- ownership, then subtract the local draft to decide whether another copy is selectable.
+        local liveQuantity = item._quantityValue and tonumber(item._quantityValue.Value)
+            or tonumber(item.count)
+            or tonumber(item.quantity)
+            or 0
+        candidateItem.count = liveQuantity
+        candidateItem.quantity = liveQuantity
+        local remaining, total = self:_draftStackAvailability(candidateItem, ref, self._draftRefs)
+        candidateItem._ownedTotal = total
+        if remaining <= 0 then
+            return nil
+        end
+    elseif self:_isItemInDraft(item) then
+        return nil
+    end
+
+    local profile = resolvePetProfile(item.power, item.petType, item.variant, item.creator, item)
+    local damage = profile and tonumber(profile.combatEffective)
+        or displaySortPower(item.power, item.petType, item.variant, item.creator, item)
+    local okHealth, health = pcall(function()
+        return PetPowerView and PetPowerView.survivability(item.power, item.petType, item.role)
+    end)
+
+    local abilities = {}
+    for _, ability in ipairs(petAbilitiesFor(item)) do
+        local normalized = table.clone(ability)
+        normalized.scope = PetTargeting.auraScope(ability, PET_ROLES)
+        table.insert(abilities, normalized)
+    end
+
+    return {
+        key = ref,
+        role = itemRole,
+        damage = tonumber(damage) or 0,
+        health = (okHealth and tonumber(health)) or 0,
+        abilities = abilities,
+        available = true,
+        item = candidateItem,
+    }
+end
+
+-- Add ONE best eligible pet for the requested archetype to the next empty draft slot. This is a
+-- draft helper, not an auto-equip bypass: Activate remains the single atomic deployment action.
+function InventoryPanel:_quickFillBestPet(role)
+    if self._draftRefs == nil then
+        self:_seedDraftFromEquipped()
+    end
+    if #self._draftRefs >= self:_squadSlotCount() then
+        self:_flashActivateFull()
+        self:_flashBestPetButton(role, "Full", Color3.fromRGB(150, 50, 50))
+        return
+    end
+
+    local catalog = table.clone(self.inventoryData or {})
+    for _, item in pairs(self._stackDataByKey or {}) do
+        table.insert(catalog, item)
+    end
+
+    local candidates = {}
+    local seenRefs = {}
+    for _, item in ipairs(catalog) do
+        local candidate = self:_bestPetCandidate(item, role, seenRefs)
+        if candidate then
+            table.insert(candidates, candidate)
+        end
+    end
+
+    local best = BestPetSelector.best(candidates, role)
+    if not best then
+        self:_flashBestPetButton(role, "None", Color3.fromRGB(80, 80, 90))
+        return
+    end
+
+    self:_toggleDraftMember(best.item, false)
+    self:_flashBestPetButton(role, "Added", Color3.fromRGB(46, 160, 87))
 end
 
 -- Brief red flash on Activate when the draft is at the squad cap.

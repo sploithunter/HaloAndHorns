@@ -1,5 +1,15 @@
 # Log
 
+## 2026-08-16 — Inventory Best Pets role quick-fill
+
+- Shortened the inventory search field and added Ranged, Melee, Tank, Support, and Control quick-fill
+  buttons beside it. Each click adds the strongest eligible pet for that role to the next empty draft
+  squad slot; the existing Activate action remains the only deployment commit.
+- Rankings use live effective damage/health and the shared configured pet-ability resolver, prioritizing
+  area Heal/support and area Hold/control effects before their targeted counterparts. Selection respects
+  unique identities, enchant-distinct stacks, and remaining stack quantity.
+- Added deterministic headless coverage for every role and the support/control scope priorities.
+
 ## 2026-08-16 — Controller fox powers and inventory badge audit
 
 - Audited the Controller role from pet config through live combat and inventory/egg-preview badges.
