@@ -722,6 +722,61 @@ function TradePanel:_closeWindow()
     self.state = nil
 end
 
+-- TradeUpdate is server-authoritative, so every local or partner offer mutation replaces the
+-- state view. Preserve the user's position inside each column across that rebuild; otherwise a
+-- selection near the bottom recreates the ScrollingFrame at (0, 0) and makes multi-pet trades
+-- practically unusable. The source key includes its tab so deliberately changing tabs still
+-- opens the new collection at the top.
+function TradePanel:_captureScrollPositions()
+    local positions = {}
+    if not self.window then
+        return positions
+    end
+    for _, descendant in ipairs(self.window:GetDescendants()) do
+        if descendant:IsA("ScrollingFrame") then
+            local key = descendant:GetAttribute("TradeScrollKey")
+            if type(key) == "string" then
+                positions[key] = descendant.CanvasPosition
+            end
+        end
+    end
+    return positions
+end
+
+function TradePanel:_restoreScrollPositions(window, positions)
+    if type(positions) ~= "table" or not next(positions) then
+        return
+    end
+
+    -- AutomaticCanvasSize settles after the hierarchy is parented. Two deferred applications
+    -- cover both the immediate rebuild and the following layout pass without holding this event
+    -- handler open or restoring into a newer trade window.
+    local function restore()
+        if self.window ~= window or not window.Parent then
+            return
+        end
+        for _, descendant in ipairs(window:GetDescendants()) do
+            if descendant:IsA("ScrollingFrame") then
+                local position = positions[descendant:GetAttribute("TradeScrollKey")]
+                if position then
+                    local maxX =
+                        math.max(0, descendant.AbsoluteCanvasSize.X - descendant.AbsoluteSize.X)
+                    local maxY =
+                        math.max(0, descendant.AbsoluteCanvasSize.Y - descendant.AbsoluteSize.Y)
+                    descendant.CanvasPosition = Vector2.new(
+                        math.clamp(position.X, 0, maxX),
+                        math.clamp(position.Y, 0, maxY)
+                    )
+                end
+            end
+        end
+    end
+    task.defer(function()
+        restore()
+        task.defer(restore)
+    end)
+end
+
 -- Build (or rebuild) the two-player trade window from a state view.
 -- THREE PANELS (Jason: "borrow from the inventory menu... full icon, hover info"):
 -- left = YOUR tradeable pets (inventory-style cards, click to offer), middle = your
@@ -735,6 +790,7 @@ local VARIANT_COLORS = { -- tooltip stroke accents only; cards use PetCardStyle 
 }
 
 function TradePanel:_renderWindow(state)
+    local scrollPositions = self:_captureScrollPositions()
     self:_closeWindow()
     local gui = self:_ensureLiveGui()
     local win = Instance.new("Frame")
@@ -845,6 +901,7 @@ function TradePanel:_renderWindow(state)
 
     local colW = 1 / 3
     self:_petColumn(win, "Your Stuff", sourceItems, {
+        scrollKey = "source:" .. self._sourceTab,
         pos = UDim2.new(0, 14, 0, 84),
         size = UDim2.new(colW, -20, 1, -156),
         tint = COLORS.row,
@@ -923,6 +980,8 @@ function TradePanel:_renderWindow(state)
         ("Your Offer (%d)"):format(#cardsOf(state.you.items)),
         aggregate(state.you.items),
         {
+            scrollKey = "your-offer",
+            offerMarker = true,
             pos = UDim2.new(colW, 8, 0, 84),
             size = UDim2.new(colW, -16, 1, -156),
             tint = COLORS.you,
@@ -942,6 +1001,8 @@ function TradePanel:_renderWindow(state)
         (state.them.name or "Them") .. ("'s Offer (%d)"):format(#cardsOf(state.them.items)),
         aggregate(state.them.items),
         {
+            scrollKey = "their-offer",
+            offerMarker = true,
             pos = UDim2.new(2 * colW, 2, 0, 84),
             size = UDim2.new(colW, -16, 1, -156),
             tint = COLORS.them,
@@ -984,6 +1045,8 @@ function TradePanel:_renderWindow(state)
     cancel.Activated:Connect(function()
         self:_callBus("trade.cancel", {})
     end)
+
+    self:_restoreScrollPositions(win, scrollPositions)
 end
 
 -- One titled column holding a GRID of pet cards. opts: pos, size, tint, confirmed,
@@ -1045,6 +1108,10 @@ function TradePanel:_petColumn(parent, titleText, items, opts)
     end
 
     local grid = Instance.new("ScrollingFrame")
+    grid.Name = "TradeItems"
+    if opts.scrollKey then
+        grid:SetAttribute("TradeScrollKey", opts.scrollKey)
+    end
     grid.Size = UDim2.new(1, -12, 1, -(gridTop + 6 + gridBottomInset))
     grid.Position = UDim2.new(0, 6, 0, gridTop)
     grid.BackgroundTransparency = 1
@@ -1301,6 +1368,28 @@ function TradePanel:_petCard(parent, pet, order, opts)
     -- the REAL pet-card chrome (rarity ring + variant ring/background, animated per
     -- config) — same config the inventory cards render from (PetCardStyle)
     PetCardStyle.applyChrome(card, pet.rarity_id, pet.variant, pet.id)
+
+    -- Number every selected kind in the offer columns. Duplicate copies stay consolidated on one
+    -- card and retain the existing ×N badge, so the marker remains readable for both unique pets
+    -- and stacks while the offer is changing.
+    if opts.offerMarker then
+        local selected = Instance.new("TextLabel")
+        selected.Name = "OfferSelectionNumber"
+        selected.Size = UDim2.fromOffset(24, 20)
+        selected.Position = UDim2.fromOffset(3, 3)
+        selected.BackgroundColor3 = COLORS.accept
+        selected.BackgroundTransparency = 0.08
+        selected.Text = "#" .. tostring(order)
+        selected.TextColor3 = COLORS.text
+        selected.TextScaled = true
+        selected.Font = Enum.Font.GothamBold
+        selected.ZIndex = 107
+        selected.Parent = card
+        corner(selected, 7)
+        local selectedConstraint = Instance.new("UITextSizeConstraint")
+        selectedConstraint.MaxTextSize = 12
+        selectedConstraint.Parent = selected
+    end
 
     -- Flat uploaded art is the steady-state renderer, exactly as in InventoryPanel. The old code
     -- only cloned ReplicatedStorage.Assets.Images.Pets, but the lazy-loading refinement correctly

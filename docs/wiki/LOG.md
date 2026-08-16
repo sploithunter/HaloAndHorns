@@ -2705,3 +2705,13 @@ first-session cohort rates.
   accelerating lift/spin, layered gold rings and sparkles, glow, and a decisive landing/reveal.
 - The presentation never moves the real character and has defensive cleanup that restores local
   avatar visibility and controls on completion, interruption, respawn, or replacement.
+
+## 2026-08-16 — Trade picker preserves the player's place
+
+- Preserved the independent scroll position of the inventory, local-offer, and partner-offer
+  columns across every authoritative trade-state refresh, including changes made by the other
+  player. Switching Pets/Enhancements/Eggs remains an intentional view change instead of borrowing
+  an unrelated tab's position.
+- Numbered the aggregated pet cards in both offer columns while retaining their existing `×N`
+  quantity badge, making the selected set and duplicate counts readable without hunting through a
+  rerendered inventory.
