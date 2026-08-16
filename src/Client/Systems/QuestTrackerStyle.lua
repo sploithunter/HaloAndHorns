@@ -18,6 +18,7 @@ local started = false
 QuestTrackerStyle._pane = nil
 QuestTrackerStyle._dismissed = false
 QuestTrackerStyle._tipActive = false
+QuestTrackerStyle._claimAvailable = false
 QuestTrackerStyle._tipProgress = nil
 QuestTrackerStyle._tipDescription = nil
 QuestTrackerStyle._manuallyExpanded = false
@@ -136,9 +137,31 @@ function QuestTrackerStyle.isTipActive()
     return QuestTrackerStyle._tipActive == true
 end
 
+function QuestTrackerStyle.isClaimAvailable()
+    return QuestTrackerStyle._claimAvailable == true
+end
+
+-- Claim is the only time-sensitive action on the compact tracker, so it always owns the surface.
+-- Keep this state even before the asynchronously-created button exists; BaseUI can publish quest
+-- state immediately and the button will adopt it when it is created.
+function QuestTrackerStyle.setClaimAvailable(value)
+    QuestTrackerStyle._claimAvailable = value == true
+    if QuestTrackerStyle._claimAvailable and QuestTrackerStyle._tipActive then
+        QuestTrackerStyle.hideTip()
+    end
+
+    local pane = QuestTrackerStyle._pane
+    local claim = pane and pane:FindFirstChild("QuestClaimButton")
+    if claim then
+        claim:SetAttribute("Available", QuestTrackerStyle._claimAvailable)
+    end
+    applyPresentation()
+end
+
 function QuestTrackerStyle.showTip(text)
     if
         QuestTrackerStyle._dismissed
+        or QuestTrackerStyle._claimAvailable
         or type(text) ~= "string"
         or text == ""
         or not ensureTipOverlay()
@@ -199,6 +222,10 @@ function QuestTrackerStyle.hideTip()
         end
         if originalDescription then
             originalDescription.Visible = true
+        end
+        local claim = pane:FindFirstChild("QuestClaimButton")
+        if claim then
+            claim:SetAttribute("Available", QuestTrackerStyle._claimAvailable)
         end
     end
     applyPresentation()

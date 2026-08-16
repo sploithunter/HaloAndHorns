@@ -129,6 +129,14 @@ function GameplayTips.start()
             return
         end
 
+        -- Never cover or delay a quest reward. While a claim is available, cancel any active tip
+        -- and pause the one-minute rotation so the next tip does not appear immediately after the
+        -- player claims it.
+        if QuestTrackerStyle.isClaimAvailable() then
+            hideTip()
+            return
+        end
+
         cycleElapsed += dt
         if tipActive then
             tipElapsed += dt
