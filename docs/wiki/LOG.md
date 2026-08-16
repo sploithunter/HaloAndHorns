@@ -2668,3 +2668,9 @@ first-session cohort rates.
   Berserk Brew binding instead of assuming a positional slot.
 - Unified Huge, periodic-AoE, and on-hit-control targeting rings across runtime spawning, inventory,
   egg previews, and squad HUD; added contract coverage for the complete pet roster.
+
+## 2026-08-16 — Trade pet sorting aligned with inventory
+
+- Replaced the trade picker's alphabetical pet order with Huge-first, then live effective power,
+  using the same level, Eternal, aptitude, variant, biome, Home World, and realm inputs as inventory.
+- Added deterministic quantity/identity tie-breakers and headless regression coverage.

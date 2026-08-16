@@ -5,9 +5,49 @@
 
 local TradeLogic = loadModule("src/Shared/Game/TradeLogic.lua")
 local TradeReveal = loadModule("src/Shared/Game/TradeReveal.lua")
+local TradePetSort = loadModule("src/Shared/Game/TradePetSort.lua")
 local config = loadModule("configs/trade.lua")
 
 return function()
+    describe("trade pet sorting", function()
+        it("puts Huges before stronger normal pets, then sorts each tier by power", function()
+            local pets = {
+                { id = "normal_strong", sortPower = 900 },
+                { id = "huge_weak", huge = true, sortPower = 10 },
+                { id = "huge_strong", record = { huge = true }, sortPower = 50 },
+                { id = "normal_weak", sortPower = 20 },
+            }
+
+            TradePetSort.sort(pets)
+
+            expect(pets[1].id).to.equal("huge_strong")
+            expect(pets[2].id).to.equal("huge_weak")
+            expect(pets[3].id).to.equal("normal_strong")
+            expect(pets[4].id).to.equal("normal_weak")
+        end)
+
+        it("uses quantity and identity to make equal-power stacks deterministic", function()
+            local pets = {
+                { id = "bunny", variant = "rainbow", sortPower = 25, quantity = 2 },
+                { id = "bear", variant = "basic", sortPower = 25, quantity = 4 },
+                { id = "doggy", variant = "basic", sortPower = 25, quantity = 4 },
+            }
+
+            TradePetSort.sort(pets)
+
+            expect(pets[1].id).to.equal("bear")
+            expect(pets[2].id).to.equal("doggy")
+            expect(pets[3].id).to.equal("bunny")
+        end)
+
+        it("wires the trade picker to the shared Huge-first comparator", function()
+            local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
+            expect(string.find(panel, "TradePetSort.sort(sourceItems", 1, true) ~= nil).to.equal(
+                true
+            )
+        end)
+    end)
+
     describe("TradeLogic invitations", function()
         it("expires exactly at the configured deadline", function()
             local invite = TradeLogic.newInvite(123, 1_000, config.invite_timeout_seconds)
