@@ -73,7 +73,10 @@ differentiation with zero new combat tech.
 
 ## Build state
 
-- Authored today: **none** carry `targeted_aoe` yet (the one AoE pet in `pets.lua` is a grass/contagion
-  test pet; empyrean_dragon's AoE was reverted to single-target).
-- Highest-value first authoring: give the **L2 Fire apex (Dawnfire/Deadfire Phoenix)** its debut small
-  splash, so the blaster line's signature actually appears at the layer the progression says it should.
+- Fire dragon variants now carry real periodic breath splash (`area_damage`), while Aurora and
+  Rimewraith use `targeted_aoe` on every swing. Ordinary Fire-dragon swings remain single-target;
+  their area ring advertises the periodic breath capability that actually damages the cluster.
+- Every Huge pet receives an area attack structurally. An authored `huge_attack_targeting` wins
+  (for example, Huge Bear's aura); otherwise a single-target Huge becomes the standard targeted
+  splash. Inventory, egg preview, squad HUD, and runtime spawning share this targeting resolver.
+- The remaining layer-by-layer blaster escalation in the table above is still design work.

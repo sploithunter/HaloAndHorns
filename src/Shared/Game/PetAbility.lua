@@ -29,7 +29,7 @@ local function appendUnique(out, seen, ability, source, targeting)
     table.insert(out, view)
 end
 
-function PetAbility.forPet(petType, rolesConfig, petsConfig)
+function PetAbility.forPet(petType, rolesConfig, petsConfig, options)
     local out, seen = {}, {}
     if type(petType) ~= "string" or petType == "" then
         return out
@@ -43,7 +43,14 @@ function PetAbility.forPet(petType, rolesConfig, petsConfig)
 
     local petDef = petsConfig and petsConfig.pets and petsConfig.pets[petType]
     local control = petDef and petDef.attack_control
-    appendUnique(out, seen, control, "attack_control", petDef and petDef.attack_targeting)
+    local controlTargeting = options and options.attackScope
+    appendUnique(
+        out,
+        seen,
+        control,
+        "attack_control",
+        controlTargeting or (petDef and petDef.attack_targeting)
+    )
 
     return out
 end

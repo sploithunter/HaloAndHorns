@@ -76,6 +76,7 @@ local function applyVariantName(label, displayName, variant, huge)
 end
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage scope → role-badge ring
+local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local HudCard = require(script.Parent.Parent.UI.HudCard)
 local StatusBadges = require(script.Parent.Parent.UI.StatusBadges)
@@ -128,6 +129,20 @@ local function roleFor(pet)
     }
     ROLE_CACHE[id] = cached
     return cached
+end
+
+local function attackScopeFor(pet, roleId)
+    local petType = pet:GetAttribute("PetType")
+    local petDef = PETS.pets and PETS.pets[petType]
+    return PetTargeting.displayAttackScope(petDef, roleId, PET_ROLES, {
+        explicit = pet:GetAttribute("AttackTargeting"),
+        huge = pet:GetAttribute("Huge") == true,
+        hasAreaProc = PetAbilityRuntime.hasAreaDamage(
+            PETS,
+            petType,
+            pet:GetAttribute("PetVariant") or pet:GetAttribute("Variant") or "basic"
+        ),
+    })
 end
 
 local STATE_COLOR = {
@@ -1255,11 +1270,7 @@ function SquadHud.start()
                             or (PET_ROLES.by_type and PET_ROLES.by_type[pet:GetAttribute("PetType")])
                             or PET_ROLES.default
                         local element = PetBadge.elementForPetType(pet:GetAttribute("PetType"))
-                        local atkScope = PetTargeting.attackScope(
-                            pet:GetAttribute("AttackTargeting"),
-                            roleId,
-                            PET_ROLES
-                        )
+                        local atkScope = attackScopeFor(pet, roleId)
                         local hasBadge = PetBadge.apply(pc.roleIcon, pc.roleRing, element, roleId, {
                             ring = POWER_ICONS.targeting_ring[atkScope],
                         })
@@ -1608,11 +1619,7 @@ function SquadHud.start()
                     -- DAMAGE-targeting ring: the archetype badge wears the ring for how its attack
                     -- hits (PetTargeting.attackScope → power_icons.targeting_ring). Per-pet override
                     -- via the AttackTargeting attribute, else the role default. SSOT with the card.
-                    local atkScope = PetTargeting.attackScope(
-                        pet:GetAttribute("AttackTargeting"),
-                        roleId,
-                        PET_ROLES
-                    )
+                    local atkScope = attackScopeFor(pet, roleId)
                     local hasBadge = PetBadge.apply(
                         card.roleIcon,
                         card.roleRing,

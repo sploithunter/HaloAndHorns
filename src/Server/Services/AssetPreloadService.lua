@@ -27,6 +27,7 @@ local AssetReport = require(ReplicatedStorage.Shared.Game.AssetReport)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
+local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
 
 -- Record one model/mesh load attempt into the consolidated boot AssetReport. `kind` is inferred
 -- from the target folder (Pets -> pet_model, etc.) so failures read as "what + where" in one log.
@@ -57,10 +58,12 @@ local petConfig
 local petThumbnailConfig
 local soundsConfig
 local breakablesConfig
+local petRolesConfig
 
 function AssetPreloadService:Init()
     logger = self._modules.Logger
     petConfig = self._modules.ConfigLoader:LoadConfig("pets")
+    petRolesConfig = self._modules.ConfigLoader:LoadConfig("pet_roles")
     soundsConfig = self._modules.ConfigLoader:LoadConfig("sounds")
     local okThumbs, thumbs = pcall(function()
         return self._modules.ConfigLoader:LoadConfig("pet_thumbnail_assets")
@@ -783,9 +786,16 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
                                 -- an attribute so both the squad badge ring AND the attack splash
                                 -- (PetFollowService) read one value. Defaults single (no splash);
                                 -- a role-default resolve folds in here once an AoE role exists.
+                                local roleId = petRolesConfig
+                                    and petRolesConfig.by_type
+                                    and petRolesConfig.by_type[petType]
                                 variantModel:SetAttribute(
                                     "AttackTargeting",
-                                    petData.attack_targeting or "single"
+                                    PetTargeting.mechanicalAttackScope(
+                                        petData,
+                                        roleId,
+                                        petRolesConfig
+                                    )
                                 )
                                 -- DoT (burn/poison/bleed) — orthogonal to targeting. A pet with an
                                 -- attack_dot { fraction, tick, duration } stamps a ticking burn on

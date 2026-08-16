@@ -36,6 +36,37 @@ return function()
         end)
     end)
 
+    describe("PetTargeting Huge and periodic-AoE resolution", function()
+        it("gives every Huge an area attack while preserving an authored Huge aura", function()
+            expect(PetTargeting.mechanicalAttackScope({}, "ranged", ROLES, { huge = true })).to.equal(
+                "targeted_aoe"
+            )
+            expect(
+                PetTargeting.mechanicalAttackScope(
+                    { huge_attack_targeting = "aura" },
+                    "tank",
+                    ROLES,
+                    { huge = true }
+                )
+            ).to.equal("aura")
+        end)
+
+        it("advertises a real periodic splash without changing ordinary swing geometry", function()
+            local pet = { attack_targeting = "single" }
+            expect(PetTargeting.mechanicalAttackScope(pet, "ranged", ROLES)).to.equal("single")
+            expect(PetTargeting.displayAttackScope(pet, "ranged", ROLES, { hasAreaProc = true })).to.equal(
+                "targeted_aoe"
+            )
+        end)
+
+        it("recognizes every supported area geometry", function()
+            expect(PetTargeting.isArea("single")).to.equal(false)
+            expect(PetTargeting.isArea("targeted_aoe")).to.equal(true)
+            expect(PetTargeting.isArea("aoe")).to.equal(true)
+            expect(PetTargeting.isArea("aura")).to.equal(true)
+        end)
+    end)
+
     describe("PetTargeting.auraScope (power targeting -> ability badge ring)", function()
         it("uses the kind default map", function()
             expect(PetTargeting.auraScope({ kind = "empower" }, ROLES)).to.equal("single")

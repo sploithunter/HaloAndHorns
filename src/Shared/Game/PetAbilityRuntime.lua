@@ -143,6 +143,16 @@ function PetAbilityRuntime.resolve(config, petType, variant)
     return profile
 end
 
+function PetAbilityRuntime.hasAreaDamage(config, petType, variant)
+    local profile = PetAbilityRuntime.resolve(config, petType, variant)
+    for _, active in ipairs(profile.active or {}) do
+        if active.area_damage == true then
+            return true
+        end
+    end
+    return false
+end
+
 -- Activates every ready proc (variants currently author at most one damage proc,
 -- but this remains deterministic if a future variant combines several).
 function PetAbilityRuntime.activate(profile, nextReady, now)

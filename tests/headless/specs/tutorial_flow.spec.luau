@@ -55,6 +55,38 @@ return function()
             expect(client:find("self:_commitDraft(closeAndReport)", 1, true)).to.be.ok()
             expect(client:find('FireServer("reviewed")', 1, true)).to.be.ok()
         end)
+
+        it("makes the battle brew's exact hotbar slot impossible to miss", function()
+            local battleBrew
+            for _, step in ipairs(cfg.steps) do
+                if step.id == "battle_brew" then
+                    battleBrew = step
+                    break
+                end
+            end
+            expect(battleBrew).to.be.ok()
+            expect(battleBrew.target.name).to.equal(nil)
+            expect(battleBrew.target.hotbar_type).to.equal("potion")
+            expect(battleBrew.target.hotbar_target).to.equal("berserk_brew")
+            expect(battleBrew.target.cue).to.equal("click")
+            expect(battleBrew.target.cue_text).to.equal("CLICK HERE")
+
+            local client = readFile("src/Client/Systems/TutorialController.lua")
+            expect(client:find("options.clickCue and 5 or 3", 1, true)).to.be.ok()
+            expect(client:find('tostring(options.cueText or "CLICK HERE")', 1, true)).to.be.ok()
+            expect(client:find('GetAttribute("HotbarBindTarget")', 1, true)).to.be.ok()
+
+            local hotbar = readFile("src/Client/Systems/HotbarBar.lua")
+            expect(hotbar:find('SetAttribute("HotbarBindTarget"', 1, true)).to.be.ok()
+        end)
+
+        it("keeps starter companion portraits visible when flat thumbnails fail", function()
+            local client = readFile("src/Client/Systems/StarterPetController.lua")
+            expect(client:find('viewport.Name = "PetModelFallback"', 1, true)).to.be.ok()
+            expect(client:find("PetThumbnailFetchPolicy.action(status.Name)", 1, true)).to.be.ok()
+            expect(client:find('family:WaitForChild("basic", 20)', 1, true)).to.be.ok()
+            expect(client:find("ViewportModelPlacement.centerPreservingOrientation", 1, true)).to.be.ok()
+        end)
     end)
 
     describe("advance (the whole new-player path)", function()

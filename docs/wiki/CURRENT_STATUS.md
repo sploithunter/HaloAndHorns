@@ -1351,3 +1351,20 @@ Last checked: 2026-08-04
   phase as one explicit switch. Hatch Luck Hour remains an independent global event.
 - Claiming a level-derived deployable pet slot now produces its own matching banner. The existing
   configuration remains authoritative: level 8, then every seven levels through 50.
+
+## Starter portraits, Tutorial 6 cue, and AoE-ring contract
+
+Last checked: 2026-08-16
+
+- The first-companion chooser no longer depends on Roblox serving four flat thumbnails. Each card
+  keeps a live, already-replicated pet model underneath its flat image; only a confirmed successful
+  image fetch replaces the model. A failed, timed-out, pending, or unavailable image therefore
+  leaves the actual Bunny, Bear, Doggy, or Kitty visible instead of a paw placeholder.
+- Tutorial 6 now names the exact action, resolves the live `berserk_brew` hotbar binding instead of
+  assuming a slot, and outlines that real slot with a large, bobbing `CLICK HERE` callout.
+- Centralized effective attack geometry for runtime and UI. Every Huge structurally receives area
+  damage unless it authors a stronger Huge scope; real periodic AoE procs receive an area ring; and
+  an on-hit control badge inherits the attack geometry that carries it. Inventory, egg preview, and
+  squad HUD now agree.
+- Next FTUE pass retained from tester feedback: Ascend notification teleport, more UI-target arrows,
+  a stronger first-30-second payoff, an Ascension animation, and a short Level-3 enhancement lesson.

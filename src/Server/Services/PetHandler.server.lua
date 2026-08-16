@@ -37,6 +37,7 @@ end)
 -- Single source of truth for configured base power (huge-aware), shared with the
 -- client inventory display so the shown power matches the power that fights.
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
+local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
 local petProgressionConfig = nil
 pcall(function()
     petProgressionConfig = require(ReplicatedStorage.Configs.pet_progression)
@@ -1456,38 +1457,24 @@ function loadEquipped(Player)
                                     and rawEntry.asset_transform.huge_scale
                                 if isHuge then
                                     applyHugePetScale(PetModel, configuredHugeScale)
-                                    -- HUGE-ONLY attack scope: a pet may gain a stronger attack
-                                    -- targeting only in its huge form (the huge bear tank's earth
-                                    -- AURA field — normal bears stay single-target). Config-driven
-                                    -- (pets.lua huge_attack_targeting); overrides the AttackTargeting
-                                    -- the clone carried from the prototype so the aura pass
-                                    -- (EnemyService) + squad-HUD ring read one huge-aware value.
-                                    -- Read the RAW pets entry, NOT getPet() — getPet curates fields
-                                    -- and drops attack_targeting/huge_attack_targeting (the same
-                                    -- reason AssetPreloadService reads petData.attack_targeting
-                                    -- straight off the entry). getPet only surfaced huge_base_power.
-                                    local hugeTargeting = rawEntry
-                                        and rawEntry.huge_attack_targeting
-                                    if hugeTargeting then
-                                        PetModel:SetAttribute("AttackTargeting", hugeTargeting)
-                                    else
-                                        -- THE HUGE RULE, made STRUCTURAL (Jason: "all huge
-                                        -- pets have some kind of AoE — it's like a rule";
-                                        -- caught again on a single-target huge Cinder
-                                        -- Golemite): a huge with no explicit huge scope and
-                                        -- no AoE of its own defaults to targeted_aoe (50%
-                                        -- splash to 5 nearby, combat.pet_aoe knobs). Pets
-                                        -- with their own aura/aoe keep it; per-pet
-                                        -- huge_attack_targeting still overrides everything.
-                                        local baseScope = rawEntry and rawEntry.attack_targeting
-                                        if
-                                            baseScope ~= "aura"
-                                            and baseScope ~= "aoe"
-                                            and baseScope ~= "targeted_aoe"
-                                        then
-                                            PetModel:SetAttribute("AttackTargeting", "targeted_aoe")
-                                        end
-                                    end
+                                    -- Structural Huge targeting is centralized with every badge
+                                    -- surface. Explicit huge scope wins (Bear = aura); otherwise any
+                                    -- single-target Huge receives the standard targeted splash.
+                                    local roleId = petRolesConfig
+                                        and petRolesConfig.by_type
+                                        and petRolesConfig.by_type[petIdName]
+                                    PetModel:SetAttribute(
+                                        "AttackTargeting",
+                                        PetTargeting.mechanicalAttackScope(
+                                            rawEntry,
+                                            roleId,
+                                            petRolesConfig,
+                                            {
+                                                huge = true,
+                                                explicit = PetModel:GetAttribute("AttackTargeting"),
+                                            }
+                                        )
+                                    )
                                 end
                                 if
                                     (tonumber(Player:GetAttribute("TitanTeamDamageBuff")) or 0) > 0

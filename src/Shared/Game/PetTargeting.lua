@@ -15,10 +15,14 @@
       aoe           -> untargeted area        (aoe)
       aura          -> persistent team/radius (aura)
 
-    Display today, mechanics later: every current pet is `single`, so this is visual SSOT now; the
-    attack system reads attackScope for real fan-out when the first AoE pet ships. Pure (no Roblox).
+    This module is the shared mechanical/display SSOT. `mechanicalAttackScope` applies the structural
+    Huge rule used by runtime spawning; `displayAttackScope` additionally advertises a real periodic
+    AoE proc so cards do not show a single-target ring for a pet that regularly splashes a cluster.
+    Pure (no Roblox).
 
       PetTargeting.attackScope(explicit, roleId, rolesConfig) -> scope
+      PetTargeting.mechanicalAttackScope(petDef, roleId, rolesConfig, options) -> scope
+      PetTargeting.displayAttackScope(petDef, roleId, rolesConfig, options) -> scope
       PetTargeting.auraScope(aura, rolesConfig)               -> scope
       PetTargeting.isContagious(attackDot, explicitTargeting) -> boolean
 ]]
@@ -26,6 +30,10 @@
 local PetTargeting = {}
 
 PetTargeting.DEFAULT = "single"
+
+function PetTargeting.isArea(scope)
+    return scope == "targeted_aoe" or scope == "aoe" or scope == "aura"
+end
 
 -- CONTAGION is an orthogonal MODIFIER on the burn (attack_dot.spread), not a hit geometry — so it
 -- composes with any attackScope (single+spread = the plague; targeted_aoe+spread = AoE-contagion).
@@ -51,6 +59,44 @@ function PetTargeting.attackScope(explicit, roleId, rolesConfig)
         return t
     end
     return PetTargeting.DEFAULT
+end
+
+-- Runtime attack geometry, including the structural Huge contract: every Huge pet has an area
+-- attack. A pet-authored huge_attack_targeting wins; otherwise a single-target Huge becomes the
+-- standard targeted splash. `options.explicit` accepts a live model attribute when resolving HUDs.
+function PetTargeting.mechanicalAttackScope(petDef, roleId, rolesConfig, options)
+    petDef = type(petDef) == "table" and petDef or {}
+    options = type(options) == "table" and options or {}
+
+    local explicit = options.explicit
+    if type(explicit) ~= "string" or explicit == "" then
+        explicit = petDef.attack_targeting
+    end
+    local scope = PetTargeting.attackScope(explicit, roleId, rolesConfig)
+
+    if options.huge == true then
+        local hugeScope = petDef.huge_attack_targeting
+        if type(hugeScope) == "string" and hugeScope ~= "" then
+            return hugeScope
+        end
+        if not PetTargeting.isArea(scope) then
+            return "targeted_aoe"
+        end
+    end
+
+    return scope
+end
+
+-- Player-facing attack capability. A cooldown proc with real area damage receives the targeted-AoE
+-- ring even when its ordinary swings remain single-target. This changes only the explanatory ring;
+-- runtime fan-out continues to occur solely when that proc fires.
+function PetTargeting.displayAttackScope(petDef, roleId, rolesConfig, options)
+    options = type(options) == "table" and options or {}
+    local scope = PetTargeting.mechanicalAttackScope(petDef, roleId, rolesConfig, options)
+    if not PetTargeting.isArea(scope) and options.hasAreaProc == true then
+        return "targeted_aoe"
+    end
+    return scope
 end
 
 -- POWER/aura targeting: the aura's own `targeting` -> the kind default (rolesConfig

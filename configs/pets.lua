@@ -5221,6 +5221,7 @@ local petConfig = {
         },
         prismatic_breath = {
             damage_multiplier = 5.0,
+            area_damage = true,
             reality_burn = true,
             cosmic_flight = true,
             cooldown = 4,
