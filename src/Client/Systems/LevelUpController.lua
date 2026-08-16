@@ -197,11 +197,10 @@ function LevelUpController:_build()
     -- pixel-designed nudge: shrink on small viewports (center-anchored, scales in place)
     require(script.Parent.Parent.UI.UIViewportScale).attach(btn)
     self.button = btn
-    -- Nudge: leveling up happens AT THE ALTAR (one consistent entry — Ascend opens the menu via
-    -- LevelUp_OpenChoice). The nudge just points you there; it never opens the menu itself (devs use
-    -- the admin POWER CHOICE button for a direct open). Keeps the flow consistent regardless of admin.
+    -- The nudge is informational rather than another menu entry. Both the authored altar and the
+    -- permanent Powers button lead into the same ascension flow, so remind players of both routes.
     btn.Activated:Connect(function()
-        self:_toast({ title = "Ascend at the Ascension Altar", auto = true })
+        self:_toast({ title = "Ascend at the altar or from the Powers menu", auto = true })
     end)
 
     -- gentle pulse so it draws the eye
@@ -358,8 +357,8 @@ end
 
 -- ---- nudge + toast ------------------------------------------------------
 
--- The button is now a NUDGE: shown only when TRAINING levels are owed, reminding the player to
--- visit the Ascension Altar (the claim itself happens at the altar's prompt).
+-- The button is a NUDGE: shown only when TRAINING levels are owed. Players can enter the same
+-- ascension flow from either the world altar or the Powers menu.
 function LevelUpController:_refreshButton()
     local training = tonumber(self.player:GetAttribute("PendingTraining")) or 0
     -- Suppressed while the level-up menu is open so the nudge never covers it.
