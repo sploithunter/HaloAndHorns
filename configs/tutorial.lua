@@ -142,8 +142,8 @@ return {
             id = "slot_power",
             title = "Power up Resonance",
             -- GRANT-ON-ENTER (TutorialService:_applyStepGrant): ONE level-3 natural Potency + an
-            -- inherent slot on Resonance so a level-1 player has somewhere to drop it. L3 is exactly
-            -- slottable at level 1 (window=2 → 3 ≤ 1+2) and stronger than L1 (per_level scaling). Potency
+            -- inherent slot on Resonance so a level-1 player has somewhere to drop it. L3 is
+            -- slottable at level 1 (window=5 → 3 ≤ 1+5) and stronger than L1 (per_level scaling). Potency
             -- boosts Resonance's magnitude (the crystal-boost amount) — its first real upgrade. (Jason)
             grant = {
                 enhancements = { { type = "potency", origins = {}, level = 3, count = 1 } },

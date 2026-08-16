@@ -4,7 +4,7 @@
     Price is a pure function of LEVEL + GRADE (flat across types). The store sells in fixed
     increments (level_step) and shows
     only the ONE band the player can currently SLOT — the nearest multiple of level_step, which is
-    always within the slot window (±2), so e.g. L17 → L15, L18 → L20.
+    always within the slot window (±5), so e.g. L17 → L15, L18 → L20.
 
       EnhancementPricing.value(grade, level, cfg)         -> number   (canonical gem value, unfloored)
       EnhancementPricing.bandFor(playerLevel, cfg)        -> number   (the buyable band)
@@ -33,7 +33,7 @@ end
 
 -- The single slottable band shown to a player: the nearest multiple of `level_step`, clamped to
 -- [min_level, max_level]. Every integer is <= step/2 from its nearest multiple, and with step 5 that
--- is <= 2 — i.e. always inside the ±2 slot window, so the shown band is always slottable.
+-- is <= 2 — i.e. always inside the ±5 slot window, so the shown band is always slottable.
 function EnhancementPricing.bandFor(playerLevel, cfg)
     cfg = cfg or {}
     local step = tonumber(cfg.level_step) or 5
@@ -99,8 +99,10 @@ end
 
 -- Quote the one-click "Upgrade All" action for every FILLED power slot.
 --
--- "Correct level" is the player's current shop band. Only enhancements BELOW that band are
--- included: an unusually strong +1/+2 field drop must never be downgraded. The replacement keeps
+-- "Correct level" is the player's current shop band. Only enhancements that are genuinely OUTGROWN
+-- (more than `upgrade_all.outgrown_window` levels below the player) are included. An enhancement at
+-- exactly the low edge of the effectiveness window remains useful and must not be charged for an
+-- early upgrade; an unusually strong field drop must never be downgraded. The replacement keeps
 -- the exact type/origin identity and charges the same grade-aware price as buying that enhancement
 -- at the target band. `slots` is profile.Slots:
 --   { [powerId] = { { enh = { type, origins, level } }, ... } }
@@ -110,6 +112,8 @@ end
 function EnhancementPricing.upgradeAllPlan(slots, playerLevel, cfg)
     cfg = cfg or {}
     local targetLevel = EnhancementPricing.bandFor(playerLevel, cfg)
+    local outgrownWindow = (cfg.upgrade_all and tonumber(cfg.upgrade_all.outgrown_window)) or 5
+    local outgrownBelow = (tonumber(playerLevel) or 1) - outgrownWindow
     local changes = {}
     local totalCost = 0
     local byGrade = { natural = 0, dual = 0, single = 0 }
@@ -122,7 +126,7 @@ function EnhancementPricing.upgradeAllPlan(slots, playerLevel, cfg)
                 if
                     type(enh) == "table"
                     and type(enh.type) == "string"
-                    and fromLevel < targetLevel
+                    and fromLevel < outgrownBelow
                 then
                     local origins = type(enh.origins) == "table" and enh.origins or {}
                     local grade = EnhancementPricing.gradeFromOrigins(origins)
@@ -230,7 +234,7 @@ function EnhancementPricing.junkSweep(stacks, playerLevel, cfg, opts)
     cfg = cfg or {}
     opts = opts or {}
     local archetype = opts.playerArchetype
-    local window = (cfg.bulk and tonumber(cfg.bulk.dead_window)) or 2
+    local window = (cfg.bulk and tonumber(cfg.bulk.dead_window)) or 5
     local nat = { items = {}, count = 0, gems = 0 }
     local dual = { items = {}, count = 0, gems = 0 }
     for _, s in ipairs(stacks or {}) do

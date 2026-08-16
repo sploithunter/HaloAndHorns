@@ -12,6 +12,7 @@ local CFG = {
     grade_mult = { natural = 1.0, dual = 1.54, single = 2.86 },
     buy = { base = 20, per_level = 10 },
     sell = { fraction = 0.30 },
+    upgrade_all = { outgrown_window = 5 },
 }
 
 return function()
@@ -24,7 +25,7 @@ return function()
             expect(EnhancementPricing.bandFor(23, CFG)).to.equal(25)
         end)
 
-        it("the shown band is always within the ±2 slot window", function()
+        it("the shown band is always within the ±5 effectiveness window", function()
             for lvl = 5, 50 do
                 local band = EnhancementPricing.bandFor(lvl, CFG)
                 expect(math.abs(band - lvl) <= 2).to.equal(true)
@@ -111,13 +112,13 @@ return function()
             grade_mult = { natural = 1.0, dual = 1.54, single = 2.86 },
             buy = { base = 20, per_level = 10 },
             sell = { fraction = 0.30 },
-            bulk = { grades = { natural = true, dual = true }, dead_window = 2 },
+            bulk = { grades = { natural = true, dual = true }, dead_window = 5 },
         }
-        -- Player: geomancer, L17 -> dead = level < 15.
+        -- Player: geomancer, L17 -> dead = level < 12 (exactly -5 is still effective).
         local stacks = {
             { uid = "a", origins = {}, level = 10, quantity = 3 }, -- dead natural -> naturals
             { uid = "b", origins = {}, level = 16, quantity = 9 }, -- alive natural -> skip
-            { uid = "c", origins = { "geomancer", "pyromancer" }, level = 12, quantity = 2 }, -- dead dual -> duals
+            { uid = "c", origins = { "geomancer", "pyromancer" }, level = 11, quantity = 2 }, -- dead dual -> duals
             { uid = "d", origins = { "geomancer", "pyromancer" }, level = 16, quantity = 1 }, -- alive + usable -> KEEP
             { uid = "e", origins = { "pyromancer", "cryomancer" }, level = 16, quantity = 4 }, -- alive but WRONG-origin -> duals
             { uid = "f", origins = { "geomancer" }, level = 5, quantity = 1 }, -- single -> protected
@@ -131,9 +132,9 @@ return function()
             expect(#plan.naturals.items).to.equal(1)
         end)
         it("duals bucket = dead OR wrong-origin duals; keeps usable+alive", function()
-            -- c: dual L12 sell floor(140*1.54*0.3)=64 ×2 = 128 ; e: dual L16 sell floor(180*1.54*0.3)=83 ×4 = 332
+            -- c: dual L11 sell floor(130*1.54*0.3)=60 ×2 = 120 ; e: dual L16 sell floor(180*1.54*0.3)=83 ×4 = 332
             expect(plan.duals.count).to.equal(6) -- 2 + 4
-            expect(plan.duals.gems).to.equal(128 + 332)
+            expect(plan.duals.gems).to.equal(120 + 332)
             expect(#plan.duals.items).to.equal(2)
         end)
         it("never sweeps singles (protected)", function()
@@ -184,25 +185,38 @@ return function()
             },
         }
 
-        it("targets the current band and skips current/above-band/empty slots", function()
+        it("targets the current band and upgrades only genuinely outgrown slots", function()
             local plan = EnhancementPricing.upgradeAllPlan(slots, 18, CFG)
             expect(plan.targetLevel).to.equal(20)
-            expect(plan.count).to.equal(3)
-            expect(plan.byGrade.natural).to.equal(1)
-            expect(plan.byGrade.single).to.equal(2)
+            expect(plan.count).to.equal(1)
+            expect(plan.byGrade.natural).to.equal(0)
+            expect(plan.byGrade.single).to.equal(1)
             expect(plan.byGrade.dual).to.equal(0)
             for _, change in ipairs(plan.changes) do
-                expect(change.fromLevel < 20).to.equal(true)
+                expect(change.fromLevel < 13).to.equal(true)
                 expect(change.toLevel).to.equal(20)
             end
+        end)
+
+        it("keeps an enhancement at exactly -5 and upgrades it at -6", function()
+            local edge = {
+                resonance = {
+                    { enh = { type = "damage", origins = {}, level = 15 } },
+                },
+            }
+            expect(EnhancementPricing.upgradeAllPlan(edge, 20, CFG).count).to.equal(0)
+            local outgrown = EnhancementPricing.upgradeAllPlan(edge, 21, CFG)
+            expect(outgrown.count).to.equal(1)
+            expect(outgrown.changes[1].fromLevel).to.equal(15)
+            expect(outgrown.changes[1].toLevel).to.equal(20)
         end)
 
         it(
             "charges the exact grade-aware replacement prices, including excluded rare types",
             function()
                 local plan = EnhancementPricing.upgradeAllPlan(slots, 18, CFG)
-                -- natural L20 = 220; two singles L20 = floor(220*2.86)=629 each.
-                expect(plan.cost).to.equal(220 + 629 + 629)
+                -- Only the outgrown single-origin Spark is replaced at L20.
+                expect(plan.cost).to.equal(629)
                 local sawSpark = false
                 for _, change in ipairs(plan.changes) do
                     if change.type == "spark" then

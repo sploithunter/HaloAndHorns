@@ -19,6 +19,9 @@
     (power_icons.rings.enhancement, grayscale) tinted origins[2] or origins[1]'s color.
 ]]
 
+-- One source of truth for runtime effectiveness, placement, automatic upgrades, and junk cleanup.
+local EFFECTIVENESS_WINDOW = 5
+
 return {
     -- The four origins (archetype ids — usability checks read the player's data.Archetype).
     origins = { "geomancer", "pyromancer", "cryomancer", "sandwalker" },
@@ -296,9 +299,9 @@ return {
         -- realms add their own band keyed by the player's CurrentArea attribute value.
         levels = {
             jitter = 2,
-            -- HARD CEILING (Jason): no drop above 52 (player cap 50 + slot
-            -- window 2) — the enemy-band roll from +N bosses respects it
-            max = 52,
+            -- HARD CEILING (Jason): no drop above 55 (player cap 50 + slot
+            -- window 5) — the enemy-band roll from +N bosses respects it
+            max = 50 + EFFECTIVENESS_WINDOW,
             -- DELIBERATELY ONE BAND for the whole homeworld — do NOT texture per zone
             -- (Jason): everyone starts in Grass/earth, so per-zone bands would
             -- disadvantage earth-origin players (their homeworld singles would roll
@@ -306,17 +309,17 @@ return {
             -- takes fair turns at "go back to your homeworld for the right stuff."
 
             -- CoH-style level scaling (Jason): an enhancement works within +/- `window`
-            -- levels of the PLAYER. Above you (up to +2) = stronger; below = weaker;
+            -- levels of the PLAYER. Above you (up to +5) = stronger; below = weaker;
             -- can't SLOT one more than `window` above you; one slotted that falls more
             -- than `window` BELOW you contributes NOTHING (stays slotted, boost dead).
             -- value multiplier = 1 + per_level * (enhLevel - playerLevel), so a single
-            -- at +2 = 33% * 1.2 ~= 40%, at -2 = 33% * 0.8 ~= 26%. L50 players hunt L52s.
-            scaling = { window = 2, per_level = 0.10 },
+            -- at +5 = 33% * 1.5 ~= 50%, at -5 = 33% * 0.5 ~= 17%. L50 players hunt L55s.
+            scaling = { window = EFFECTIVENESS_WINDOW, per_level = 0.10 },
             -- FOLLOW-PLAYER (Jason, 2026-06-11: "I'm level 8 and there is no new
             -- world to get higher ones"): once the player outgrows an area's band,
             -- it slides up with them — effective band = { max(lo, player - span),
             -- max(hi, player) }, jitter on top. L8 on the 1-5 homeworld rolls 4-8
-            -- (finds up to 10); L50 rolls 46-50 (hunts 52s). Below the band top
+            -- (finds up to 10); L50 rolls 46-50 (hunts 55s). Below the band top
             -- nothing changes. Realm bands with high floors (e.g. {10,18}) still
             -- beat the slid homeworld band, so realm hunting stays worth it.
             follow_player = { enabled = true, span = 4 },
@@ -391,7 +394,7 @@ return {
     -- field-earned, preserving their value). Price is a STATIC function of LEVEL — flat across types
     -- (natural magnitude 0.15 is identical on every axis), so EnhancementPricing keys price off the
     -- band alone. Sold in `level_step` increments, and only the ONE band the player can currently SLOT
-    -- is shown (nearest multiple of step → always inside the ±2 slot window; L17→L15, L18→L20).
+    -- is shown (nearest multiple of step → always inside the ±5 slot window; L17→L15, L18→L20).
     -- Sell-back is a junk SINK: a fraction of buy, gems, un-slotted only, always < buy (no arbitrage).
     shop = {
         enabled = true,
@@ -424,6 +427,9 @@ return {
         -- costs its normal grade-aware band price. Already-current and above-band drops are untouched.
         upgrade_all = {
             enabled = true,
+            -- Only replace enhancements that no longer contribute. Exactly five levels behind is
+            -- still effective; six levels behind is outgrown and enters the quote.
+            outgrown_window = EFFECTIVENESS_WINDOW,
         },
         -- BULK "Sell Junk" sweep (one-click clear of outgrown drops). Per-stack sell (1 / N) works on
         -- ANY grade; this bulk button is conservative: only DEAD stacks (more than `dead_window` levels
@@ -432,7 +438,7 @@ return {
         -- scaling window (drops.levels.scaling.window).
         bulk = {
             grades = { natural = true, dual = true },
-            dead_window = 2,
+            dead_window = EFFECTIVENESS_WINDOW,
         },
     },
 

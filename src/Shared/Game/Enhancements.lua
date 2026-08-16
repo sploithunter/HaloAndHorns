@@ -147,7 +147,7 @@ function Enhancements.levelFactor(cfg, enhLevel, playerLevel)
         return 1
     end
     local sc = scalingCfg(cfg)
-    local window = tonumber(sc.window) or 2
+    local window = tonumber(sc.window) or 5
     local diff = enhLevel - playerLevel
     if diff > window or diff < -window then
         return 0
@@ -162,7 +162,7 @@ function Enhancements.canSlotAtLevel(cfg, enhLevel, playerLevel)
     if not enhLevel or not playerLevel then
         return true -- legacy records without levels stay slottable
     end
-    local window = tonumber(scalingCfg(cfg).window) or 2
+    local window = tonumber(scalingCfg(cfg).window) or 5
     return enhLevel <= playerLevel + window
 end
 

@@ -489,7 +489,7 @@ end
 -- yellow = below you (reduced), blue = on target, green = above you (boosted)
 local function levelColor(lvl, playerLvl)
     local window = ((enhCfg.drops or {}).levels or {}).scaling
-    window = (window and window.window) or 2
+    window = (window and window.window) or 5
     local d = (tonumber(lvl) or playerLvl) - playerLvl
     if d < -window then
         return Color3.fromRGB(220, 90, 90) -- dead: contributes nothing

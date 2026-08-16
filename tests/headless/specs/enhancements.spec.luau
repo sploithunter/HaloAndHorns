@@ -330,13 +330,14 @@ return function()
         end)
 
         it("more than window BELOW the player: slotted but DEAD (factor 0)", function()
-            expect(Enhancements.levelFactor(cfg, 9, 12)).to.equal(0)
+            expect(Enhancements.levelFactor(cfg, 7, 12)).to.equal(1 - sc.per_level * 5)
+            expect(Enhancements.levelFactor(cfg, 6, 12)).to.equal(0)
             expect(Enhancements.levelFactor(cfg, 1, 50)).to.equal(0)
         end)
 
         it("placement gate: max player+window; legacy no-level records pass", function()
-            expect(Enhancements.canSlotAtLevel(cfg, 52, 50)).to.equal(true) -- the L50 chase
-            expect(Enhancements.canSlotAtLevel(cfg, 53, 50)).to.equal(false)
+            expect(Enhancements.canSlotAtLevel(cfg, 55, 50)).to.equal(true) -- the L50 chase
+            expect(Enhancements.canSlotAtLevel(cfg, 56, 50)).to.equal(false)
             expect(Enhancements.canSlotAtLevel(cfg, nil, 50)).to.equal(true)
         end)
 

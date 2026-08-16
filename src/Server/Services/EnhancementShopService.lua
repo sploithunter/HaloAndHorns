@@ -388,7 +388,7 @@ function EnhancementShopService:ListOwned(player)
     end
     local archetype = self:_archetype(player)
     local lvl = playerLevel(player)
-    local window = (shop.bulk and tonumber(shop.bulk.dead_window)) or 2
+    local window = (shop.bulk and tonumber(shop.bulk.dead_window)) or 5
     local currency = shop.currency or CURRENCY_FALLBACK
     local items = {}
     for _, s in ipairs(self:_stacks(player)) do

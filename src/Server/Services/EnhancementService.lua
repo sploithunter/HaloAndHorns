@@ -499,7 +499,7 @@ function EnhancementService:GrantOriginSingle(player)
     local lv = math.clamp(
         math.floor(tonumber(player:GetAttribute("Level")) or 1),
         tonumber(levels.min) or 1,
-        tonumber(levels.max) or 52
+        tonumber(levels.max) or 55
     )
     return self:Grant(player, { type = pick, origins = { origin }, level = lv })
 end
