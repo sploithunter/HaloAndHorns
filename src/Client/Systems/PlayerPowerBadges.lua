@@ -1,5 +1,5 @@
 --[[
-    PlayerPowerBadges — a small HUD row of the PLAYER's own active power buffs.
+    PlayerPowerBadges — two compact HUD rows for active effects and permanent entitlements.
 
     The squad cards show buffs on the PETS; this shows the buffs the player cast on THEMSELF
     (Mountain's Strength, Prospector, Fortune, Swift, Hasten, XP Surge, …). Each is a player
@@ -24,6 +24,7 @@ local MONETIZATION = require(ReplicatedStorage.Configs:WaitForChild("monetizatio
 local POTIONS = require(ReplicatedStorage.Configs:WaitForChild("potions"))
 local POWERS = require(ReplicatedStorage.Configs:WaitForChild("powers"))
 local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime)
+local MonetizationCatalog = require(ReplicatedStorage.Shared.Game.MonetizationCatalog)
 local PotionDescribe = require(ReplicatedStorage.Shared.Game.PotionDescribe)
 local PowerDescribe = require(ReplicatedStorage.Shared.Game.PowerDescribe)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
@@ -229,6 +230,24 @@ end
 -- One config-derived description path for every badge. Fixed status badges describe their actual
 -- replicated mechanic; powers, potions, and enchants read the same definitions as their menus.
 local function describeBadge(def)
+    if def.passConfig then
+        local sources = def.passSources or {}
+        local source = "Permanent Game Pass"
+        if sources.marketplace == true then
+            source = "Permanent Game Pass"
+        elseif sources.founder == true then
+            source = "Founder's Benefit"
+        elseif sources.creator == true then
+            source = "Creator Entitlement"
+        elseif sources.test == true then
+            source = "Studio Test Entitlement"
+        end
+        return def.passConfig.name or def.passId or "Game Pass",
+            source,
+            def.passConfig.description or "This permanent benefit is active.",
+            "Owned  ·  Always active"
+    end
+
     local attr = def.attr
     local powerId = localPlayer:GetAttribute(attr .. "PowerId")
         or localPlayer:GetAttribute(attr .. "Owned")
@@ -454,6 +473,63 @@ local function makeBadge(parent, order, onClick, def, showTooltip, hideTooltip)
     return { holder = holder, disc = disc, timer = timer }
 end
 
+-- Permanent entitlements intentionally read quieter than live effects. They use the same authored
+-- Marketplace artwork as the shop, but at a smaller, slightly subdued treatment with an infinity
+-- marker instead of ON/a timer. Full-strength artwork would make an always-owned pass look like a
+-- newly fired power; hiding it entirely made pass ownership invisible from ordinary gameplay.
+local function makePassBadge(parent, order, def, showTooltip, hideTooltip)
+    local holder = Instance.new("Frame")
+    holder.Name = "PassBadge_" .. tostring(def.passId or "Unknown")
+    holder.Size = UDim2.fromOffset(30, 38)
+    holder.BackgroundTransparency = 1
+    holder.LayoutOrder = order
+    holder.Parent = parent
+
+    local hit = Instance.new("TextButton")
+    hit.Name = "TooltipHit"
+    hit.BackgroundTransparency = 1
+    hit.Text = ""
+    hit.Size = UDim2.fromScale(1, 1)
+    hit.ZIndex = 20
+    hit.Parent = holder
+    hit.MouseEnter:Connect(function()
+        showTooltip(holder, def, false)
+    end)
+    hit.MouseLeave:Connect(function()
+        hideTooltip(false)
+    end)
+    hit.Activated:Connect(function()
+        showTooltip(holder, def, true)
+    end)
+
+    local icon = Instance.new("ImageLabel")
+    icon.Name = "Icon"
+    icon.Size = UDim2.fromOffset(28, 28)
+    icon.Position = UDim2.fromScale(1, 0)
+    icon.AnchorPoint = Vector2.new(1, 0)
+    icon.BackgroundTransparency = 1
+    icon.Image = def.passConfig.icon or ""
+    icon.ImageColor3 = Color3.fromRGB(225, 225, 235)
+    icon.ImageTransparency = 0.14
+    icon.ScaleType = Enum.ScaleType.Fit
+    icon.Parent = holder
+
+    local permanent = Instance.new("TextLabel")
+    permanent.Name = "Permanent"
+    permanent.Size = UDim2.fromOffset(30, 10)
+    permanent.Position = UDim2.fromScale(1, 1)
+    permanent.AnchorPoint = Vector2.new(1, 1)
+    permanent.BackgroundTransparency = 1
+    permanent.Font = Enum.Font.GothamBold
+    permanent.Text = "∞"
+    permanent.TextScaled = true
+    permanent.TextColor3 = Color3.fromRGB(175, 185, 210)
+    permanent.TextStrokeTransparency = 0.55
+    permanent.Parent = holder
+
+    return { holder = holder, def = def }
+end
+
 function PlayerPowerBadges.start()
     local gui = Instance.new("ScreenGui")
     gui.Name = "PlayerPowerBadges"
@@ -552,37 +628,92 @@ function PlayerPowerBadges.start()
         tooltipAnchor = anchor
     end
 
-    local row = Instance.new("Frame")
-    row.Name = "Row"
-    -- SINGLE ROW growing LEFTWARD from the player bar's left edge (Jason: players can carry
-    -- a lot of buffs even at high levels, so one row stacking left scales best). Right edge
-    -- pinned beside the capsule, vertically centred on it; new badges extend left.
-    -- Parented INTO the capsule, so it inherits the bar's viewport scale and moves with it.
-    row.AnchorPoint = Vector2.new(1, 0.5)
-    row.Position = UDim2.new(0, -10, 0.5, 0)
-    row.Size = UDim2.fromOffset(0, 50)
-    row.AutomaticSize = Enum.AutomaticSize.X
-    row.BackgroundTransparency = 1
-    row.ZIndex = 8
+    local activeRow = Instance.new("Frame")
+    activeRow.Name = "ActiveEffectsRow"
+    -- Active effects retain the large, high-contrast treatment at capsule height. Permanent
+    -- entitlements get their own compact row immediately below, so neither category can make the
+    -- other unreadable. Both grow LEFTWARD from the player bar and inherit its viewport scale.
+    activeRow.AnchorPoint = Vector2.new(1, 0.5)
+    activeRow.Position = UDim2.new(0, -10, 0.5, 0)
+    activeRow.Size = UDim2.fromOffset(0, 50)
+    activeRow.AutomaticSize = Enum.AutomaticSize.X
+    activeRow.BackgroundTransparency = 1
+    activeRow.ZIndex = 8
+
+    local passRow = Instance.new("Frame")
+    passRow.Name = "OwnedPassesRow"
+    passRow.AnchorPoint = Vector2.new(1, 0)
+    passRow.Position = UDim2.new(0, -10, 0.5, 26)
+    passRow.Size = UDim2.fromOffset(0, 38)
+    passRow.AutomaticSize = Enum.AutomaticSize.X
+    passRow.BackgroundTransparency = 1
+    passRow.ZIndex = 8
     task.spawn(function()
         local pg = localPlayer:WaitForChild("PlayerGui")
         local bar = pg:WaitForChild("PlayerBar", 20)
         local cap = bar and bar:WaitForChild("Capsule", 10)
         if cap then
-            row.Parent = cap
+            activeRow.Parent = cap
+            passRow.Parent = cap
         else
-            row.Parent = gui -- fallback: original floating placement
+            activeRow.Parent = gui -- fallback: original floating placement
+            passRow.Parent = gui
         end
     end)
-    local layout = Instance.new("UIListLayout")
-    layout.FillDirection = Enum.FillDirection.Horizontal
-    layout.HorizontalAlignment = Enum.HorizontalAlignment.Right -- stack from the bar outward (leftward)
-    layout.VerticalAlignment = Enum.VerticalAlignment.Center
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding = UDim.new(0, 4)
-    layout.Parent = row
+    local activeLayout = Instance.new("UIListLayout")
+    activeLayout.FillDirection = Enum.FillDirection.Horizontal
+    activeLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    activeLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    activeLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    activeLayout.Padding = UDim.new(0, 4)
+    activeLayout.Parent = activeRow
+
+    local passLayout = Instance.new("UIListLayout")
+    passLayout.FillDirection = Enum.FillDirection.Horizontal
+    passLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    passLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    passLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    passLayout.Padding = UDim.new(0, 2)
+    passLayout.Parent = passRow
 
     local badges = {} -- attr -> badge
+    local passBadges = {} -- pass id -> badge
+    local livePasses = MonetizationCatalog.livePasses(MONETIZATION)
+
+    local function refreshOwnedPasses(snapshot)
+        local owned = MonetizationCatalog.ownedSet(snapshot)
+        local detailsById = {}
+        for _, detail in ipairs((snapshot and snapshot.passes) or {}) do
+            if type(detail) == "table" and type(detail.id) == "string" then
+                detailsById[detail.id] = detail
+            end
+        end
+
+        for _, entry in ipairs(livePasses) do
+            local passId = entry.id
+            local badge = passBadges[passId]
+            if owned[passId] then
+                local detail = detailsById[passId] or {}
+                if not badge then
+                    local def = {
+                        passId = passId,
+                        passConfig = entry.config,
+                        passSources = detail.sources or {},
+                    }
+                    badge = makePassBadge(passRow, entry.order, def, showTooltip, hideTooltip)
+                    passBadges[passId] = badge
+                else
+                    badge.def.passSources = detail.sources or {}
+                end
+            elseif badge then
+                badge.holder:Destroy()
+                passBadges[passId] = nil
+            end
+        end
+    end
+
+    Signals.OwnedPasses.OnClientEvent:Connect(refreshOwnedPasses)
+    Signals.GetOwnedPasses:FireServer()
 
     RunService.RenderStepped:Connect(function()
         local now = Workspace:GetServerTimeNow()
@@ -598,7 +729,7 @@ function PlayerPowerBadges.start()
             if active or owned then
                 if not b then
                     b = makeBadge(
-                        row,
+                        activeRow,
                         i,
                         def.toggleable and makeToggleClick(def) or nil,
                         def,

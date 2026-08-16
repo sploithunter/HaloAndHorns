@@ -2607,3 +2607,9 @@ first-session cohort rates.
 - Grants use named profile markers, reconcile existing players exactly once, enter the canonical
   dynamic consumable inventory, auto-bind only into empty hotbar space, and never auto-activate.
   Admin Reset re-arms the marker schedule while preserving potentially purchased shared-stack items.
+## 2026-08-16 — Player HUD separates permanent passes from live effects
+
+- Split the player-bar badge strip into an active-effect row and a compact permanent-entitlement row.
+- Owned passes now render from the existing authoritative `OwnedPasses` snapshot, reuse shop artwork,
+  identify Founder/creator/test sources in tooltips, and never perform client Marketplace polling.
+- Added headless coverage for the two-row ownership contract; full headless suite passes 1862/1862.
