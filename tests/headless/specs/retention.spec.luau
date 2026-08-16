@@ -279,12 +279,96 @@ return function()
                     selected = 4,
                     totalSecondsToSelect = 40,
                 },
+                distinctReturners = {
+                    d1 = 2,
+                    d2_7 = 3,
+                    d8_30 = 1,
+                },
             })
             expect(summary.averageCompletedSessionSeconds).to.equal(100)
             expect(summary.newPlayerTutorialCompletionRate).to.equal(0.6)
             expect(summary.exitedBeforeEarnedLevel2Rate).to.equal(0.5)
             expect(summary.starterChoiceConversionRate).to.equal(0.8)
             expect(summary.averageStarterChoiceSeconds).to.equal(10)
+            expect(summary.distinctD1Returners).to.equal(2)
+            expect(summary.distinctD1RetentionRate).to.equal(0.4)
+            expect(summary.distinctD2To7Returners).to.equal(3)
+            expect(summary.distinctD2To7RetentionRate).to.equal(0.6)
+            expect(summary.distinctD8To30Returners).to.equal(1)
+            expect(summary.distinctD8To30RetentionRate).to.equal(0.2)
+        end)
+
+        it("classifies cohort returns by UTC calendar-day window", function()
+            local joinedAt = 100 * 86400 + 86300
+            expect(select(1, RetentionLogic.returnWindow(joinedAt, joinedAt + 50))).to.equal(nil)
+            expect(select(1, RetentionLogic.returnWindow(joinedAt, joinedAt + 100))).to.equal("d1")
+            expect(select(2, RetentionLogic.returnWindow(joinedAt, joinedAt + 100))).to.equal(1)
+            expect(select(1, RetentionLogic.returnWindow(joinedAt, joinedAt + 2 * 86400))).to.equal(
+                "d2_7"
+            )
+            expect(select(1, RetentionLogic.returnWindow(joinedAt, joinedAt + 8 * 86400))).to.equal(
+                "d8_30"
+            )
+            expect(select(1, RetentionLogic.returnWindow(joinedAt, joinedAt + 31 * 86400))).to.equal(
+                nil
+            )
+        end)
+
+        it("counts each eligible player once per cohort return window", function()
+            local joinedAt = 100 * 86400 + 100
+            local state = RetentionLogic.ensure(nil, true, joinedAt)
+
+            local firstWindow, cohortDate, dayOffset =
+                RetentionLogic.claimReturnWindow(state, joinedAt, joinedAt + 2 * 86400, "19700101")
+            expect(firstWindow).to.equal("d2_7")
+            expect(type(cohortDate)).to.equal("string")
+            expect(dayOffset).to.equal(2)
+            expect(
+                select(
+                    1,
+                    RetentionLogic.claimReturnWindow(
+                        state,
+                        joinedAt,
+                        joinedAt + 5 * 86400,
+                        "19700101"
+                    )
+                )
+            ).to.equal(nil)
+            expect(
+                select(
+                    1,
+                    RetentionLogic.claimReturnWindow(
+                        state,
+                        joinedAt,
+                        joinedAt + 8 * 86400,
+                        "19700101"
+                    )
+                )
+            ).to.equal("d8_30")
+            expect(state.ReturnTracking.Counted.d2_7 ~= nil).to.equal(true)
+            expect(state.ReturnTracking.Counted.d8_30 ~= nil).to.equal(true)
+        end)
+
+        it("does not count legacy or ineligible profiles as distinct returners", function()
+            local joinedAt = 100 * 86400
+            local ineligible = RetentionLogic.ensure(nil, false, joinedAt)
+            expect(
+                RetentionLogic.claimReturnWindow(ineligible, joinedAt, joinedAt + 86400, "19700101")
+            ).to.equal(nil)
+
+            local eligible = RetentionLogic.ensure(nil, true, joinedAt)
+            expect(
+                RetentionLogic.claimReturnWindow(eligible, joinedAt, joinedAt + 86400, "20260816")
+            ).to.equal(nil)
+        end)
+
+        it("aggregates only recognized distinct-return windows", function()
+            local counters = RetentionLogic.newAggregate()
+            expect(RetentionLogic.aggregateDistinctReturner(counters, "d1")).to.equal(true)
+            expect(RetentionLogic.aggregateDistinctReturner(counters, "d1")).to.equal(true)
+            expect(RetentionLogic.aggregateDistinctReturner(counters, "other")).to.equal(false)
+            expect(counters.distinctReturners.d1).to.equal(2)
+            expect(counters.distinctReturners.other).to.equal(nil)
         end)
 
         it(

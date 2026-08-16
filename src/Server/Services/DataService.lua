@@ -190,6 +190,9 @@ local function generateProfileTemplate(configLoader)
                 EligibilityDecided = false,
                 InstrumentedAt = 0,
                 Milestones = {},
+                -- Cohort-relative return windows are claimed once per player and projected into
+                -- RetentionDashboard_v1. This is deliberately a compact ledger, not an event log.
+                ReturnTracking = {},
                 AnalyticsFunnelStep = 0,
             },
         },

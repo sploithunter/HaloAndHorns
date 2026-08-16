@@ -180,6 +180,7 @@ def summary_from(aggregates: list[dict[str, Any]]) -> dict[str, Any]:
     sessions_ended = counters.get("sessionsEnded", 0)
     new_players = counters.get("newPlayers", 0)
     new_player_sessions_ended = counters.get("newPlayerSessionsEnded", 0)
+    returners = counters.get("distinctReturners") or {}
     return {
         "aggregateShardCount": len(aggregates),
         "sessionsStarted": counters.get("sessionsStarted", 0),
@@ -205,6 +206,12 @@ def summary_from(aggregates: list[dict[str, Any]]) -> dict[str, Any]:
         "exitedBeforeClaimedLevel2Rate": ratio(
             counters.get("exitedBeforeClaimedLevel2", 0), new_player_sessions_ended
         ),
+        "distinctD1Returners": returners.get("d1", 0),
+        "distinctD1RetentionRate": ratio(returners.get("d1", 0), new_players),
+        "distinctD2To7Returners": returners.get("d2_7", 0),
+        "distinctD2To7RetentionRate": ratio(returners.get("d2_7", 0), new_players),
+        "distinctD8To30Returners": returners.get("d8_30", 0),
+        "distinctD8To30RetentionRate": ratio(returners.get("d8_30", 0), new_players),
     }
 
 
@@ -378,6 +385,12 @@ def write_exports(
             "exitedBeforeEarnedLevel2Rate",
             "exitedBeforeClaimedLevel2",
             "exitedBeforeClaimedLevel2Rate",
+            "distinctD1Returners",
+            "distinctD1RetentionRate",
+            "distinctD2To7Returners",
+            "distinctD2To7RetentionRate",
+            "distinctD8To30Returners",
+            "distinctD8To30RetentionRate",
         ],
     )
 

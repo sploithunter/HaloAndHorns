@@ -2624,3 +2624,11 @@ first-session cohort rates.
 - Made claimable quest rewards higher priority than rotating gameplay tips: a new claim cancels an
   active tip, blocks new tips, and pauses the minute timer until the claim is cleared.
 - Added headless source-contract coverage; full headless suite passes 1865/1865.
+
+## 2026-08-16 — Cohort-attributed distinct retention counters
+
+- Added fixed-dashboard distinct D1, D2–7, and D8–30 returner counters, attributed to each player's
+  original first-join UTC cohort and deduplicated by a small per-profile claim ledger.
+- Dashboard/readout schema v2 exposes counts and cohort rates without scanning raw event chunks;
+  instrumentation begins with the 2026-08-16 UTC cohort and reports explicit 1/7/30-day maturity
+  limits rather than implying incomplete windows are final retention.

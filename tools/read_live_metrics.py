@@ -140,12 +140,23 @@ def metric_snapshot(window: dict[str, Any]) -> dict[str, Any]:
     below_level_2 = int(summary.get("exitedBeforeEarnedLevel2") or 0)
     starter = counters.get("starterChoice") or {}
     quests = counters.get("questsCompleted") or {}
+    returners = counters.get("distinctReturners") or {}
     return {
         "newPlayers": new_players,
         "newPlayersPerDay": ratio(new_players, len(window["dates"])),
         "sessionsStarted": sessions,
         # This is session volume, not a unique-user D1 calculation.
         "repeatSessionVolume": max(0, sessions - new_players),
+        "distinctD1Returners": int(returners.get("d1") or 0),
+        "distinctD1RetentionRate": ratio(float(returners.get("d1") or 0), new_players),
+        "distinctD2To7Returners": int(returners.get("d2_7") or 0),
+        "distinctD2To7RetentionRate": ratio(
+            float(returners.get("d2_7") or 0), new_players
+        ),
+        "distinctD8To30Returners": int(returners.get("d8_30") or 0),
+        "distinctD8To30RetentionRate": ratio(
+            float(returners.get("d8_30") or 0), new_players
+        ),
         "averageCompletedNewPlayerSessionSeconds": summary.get(
             "averageCompletedNewPlayerSessionSeconds"
         ),
@@ -252,6 +263,15 @@ def print_readout(report: dict[str, Any]) -> None:
         f"{change(current['repeatSessionVolume'], previous['repeatSessionVolume'])}"
     )
     print(
+        "  Distinct cohort returners: "
+        f"D1 {current['distinctD1Returners']}/{current['newPlayers']} "
+        f"({pct(current['distinctD1RetentionRate'])}); "
+        f"D2–7 {current['distinctD2To7Returners']}/{current['newPlayers']} "
+        f"({pct(current['distinctD2To7RetentionRate'])}); "
+        f"D8–30 {current['distinctD8To30Returners']}/{current['newPlayers']} "
+        f"({pct(current['distinctD8To30RetentionRate'])})"
+    )
+    print(
         "  Average completed new-player session: "
         f"{seconds(current['averageCompletedNewPlayerSessionSeconds'])}, change "
         f"{change(current['averageCompletedNewPlayerSessionSeconds'], previous['averageCompletedNewPlayerSessionSeconds'])}"
@@ -293,16 +313,15 @@ def print_readout(report: dict[str, Any]) -> None:
         f"  Session-end coverage: {pct(current['sessionEndCoverage'])}; "
         f"new-player end coverage: {pct(current['newPlayerSessionEndCoverage'])}."
     )
-    print(
-        "  Repeat-session volume = sessions minus new players; it is not unique-player D1 retention."
-    )
+    print("  Distinct-return rates are cohort-attributed; D1/D2–7/D8–30 mature after 1/7/30 UTC days.")
+    print("  Repeat-session volume remains a non-distinct activity diagnostic, not retention.")
     print(
         "  Quest completion counters are all-session one-time events; dividing them by new players "
         "is a directional funnel proxy, not a strict first-session cohort rate."
     )
     print(
-        "  Canonical D1 retention and paid acquisition impressions/clicks/attributed plays remain "
-        "Roblox Creator Hub / Analytics Query API metrics, not RetentionDashboard_v1 fields."
+        "  Paid acquisition impressions/clicks/attributed plays remain Roblox Creator Hub / "
+        "Analytics Query API metrics."
     )
     if len(report["currentWindow"]["builds"]) > 1:
         print(
@@ -383,7 +402,7 @@ def main() -> int:
         "playerNamePrefixes"
     ) or ["colorado", "waxillium", "waxilium", "sploit", "macros"]
     report = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "pulledAtUtc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "source": args.store,
         "universeId": universe_id,
