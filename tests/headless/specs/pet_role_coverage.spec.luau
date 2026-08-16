@@ -35,4 +35,39 @@ describe("pet role coverage", function()
         table.sort(missing)
         expect(table.concat(missing, ", ")).to.equal("")
     end)
+
+    it("gives every controller a real designated control power", function()
+        local missing = {}
+        local allowed = { slow = true, root = true, hold = true }
+        for petType, role in pairs(rolesConfig.by_type or {}) do
+            if role == "control" then
+                local entry = (rolesConfig.support_auras or {})[petType]
+                local auras = type(entry) == "table" and (entry.kind and { entry } or entry) or {}
+                local hasControl = false
+                for _, aura in ipairs(auras) do
+                    if allowed[aura.kind] then
+                        hasControl = true
+                        break
+                    end
+                end
+                if not hasControl then
+                    table.insert(missing, petType)
+                end
+            end
+        end
+        table.sort(missing)
+        expect(table.concat(missing, ", ")).to.equal("")
+    end)
+
+    it("keeps the authored Ice fox line in the controller archetype", function()
+        for _, petType in ipairs({
+            "snowfox",
+            "aurora_fox",
+            "rimewraith_fox",
+            "prism_fox",
+            "dread_fox",
+        }) do
+            expect(rolesConfig.by_type[petType]).to.equal("control")
+        end
+    end)
 end)

@@ -1,6 +1,6 @@
 # Archetype Line — Controller (slow / root / freeze / fear)
 
-Status: design (Jason + Claude, 2026-06). Line doc — see
+Status: implemented through the current fox roster (2026-08-16). Line doc — see
 [blaster](PET_LINE_BLASTER.md) · [melee](PET_LINE_MELEE.md) · [tank](PET_LINE_TANK.md) ·
 [support](PET_LINE_SUPPORT.md) · [controller](PET_LINE_CONTROLLER.md) · [dragon](PET_LINE_DRAGON.md).
 Cross-refs: [roster](../PET_REALM_HEAVEN_HELL_ROSTER.md) ·
@@ -59,6 +59,12 @@ debuting it early (control is significant enough to appear at L2).
 ## Build state
 
 On-hit slow/root and the control toolbox are **built and tested** (OnHitEffects: slow/shred/execute;
-control modifiers). Nothing authored onto control *pets* yet beyond the framework. The L2 Ice dragon
-freeze-AoE is the single highest-value authoring task in the whole roster — it makes the current L2
-chase actually *play* like a control dragon.
+control modifiers). The current pure-controller fox line now uses the designated-power aura seam, so
+the lower-right inventory badge and live mechanics share one source of truth:
+
+- Snow Fox: light focused-enemy **Slow**.
+- Aurora Fox / Rimewraith Fox: stronger focused-enemy **Slow**.
+- Prism Fox / Dread Fox: short focused-enemy **Root**.
+
+Controller-role coverage fails CI if any future controller ships without a configured slow, root, or
+hold. The L2 Ice dragon freeze-AoE remains a separate melee/control hybrid implementation.

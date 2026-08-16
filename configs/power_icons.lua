@@ -237,6 +237,16 @@ local M = {
             label = "Hold",
             tooltip = "Stops the focused enemy from moving or attacking.",
         },
+        slow = {
+            symbol = "speed",
+            label = "Slow",
+            tooltip = "Slows the focused enemy's movement.",
+        },
+        root = {
+            symbol = "user_desk",
+            label = "Root",
+            tooltip = "Stops the focused enemy from moving.",
+        },
         empower = {
             symbol = "chevrons_up",
             label = "Empower",
