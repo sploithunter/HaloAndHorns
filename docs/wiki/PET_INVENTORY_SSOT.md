@@ -102,6 +102,13 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   duplicate uniques, over-owned stacks, unknown refs, and over-cap drafts reject the whole request.
   Rendered draft cards carry their exact saved reference so enchant-specific stacks cannot be
   confused by legacy-prefix fallback. A missing acknowledgement times out to an editable retry state.
+- **Best Pets buttons are draft-only selectors.** Ranged and Melee rank eligible pets by live
+  effective damage, while Tank ranks by live effective health. Support and Control rank real
+  configured abilities with area effects ahead of targeted effects; Support then prefers Heal,
+  Drain, Defense, Focus, Recharge, Haste, Offense, Empower, Luck, farming auras, and debuffs, while
+  Control prefers Hold, Root, Slow, Shred, then Curse. Stable identity is the final tie-breaker.
+  Every click fills one empty draft slot, respects unique UIDs and remaining common-stack quantity,
+  and still requires the normal atomic **Activate** action to deploy the resulting squad.
 - **Guided hatches may fill empty slots, never replace them.** During the two configured FTUE hatch
   steps, the server takes successfully minted, non-auto-deleted result refs in canonical reveal
   order and asks `InventoryService` to fill only validated empty squad slots. Excess results remain
