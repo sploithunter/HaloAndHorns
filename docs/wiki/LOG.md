@@ -2715,3 +2715,10 @@ first-session cohort rates.
 - Numbered the aggregated pet cards in both offer columns while retaining their existing `×N`
   quantity badge, making the selected set and duplicate counts readable without hunting through a
   rerendered inventory.
+
+## 2026-08-16 — Pets and Powers tutorial click cues
+
+- Replaced the two remaining plain tutorial arrows on **Build your squad** and **Power up
+  Resonance** with the same large, bobbing `CLICK HERE` treatment used by Berserk Brew and Rally.
+- Both cues attach to the live Pets/Powers button objects, preserving correct placement across
+  mobile scaling and alternate HUD layouts without hard-coded coordinates.
