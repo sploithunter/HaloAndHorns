@@ -832,6 +832,10 @@ function HotbarBar.start()
                 local bind = state.hotbar[tostring(slot)] or state.hotbar[slot]
                 currentHotbar[slot] = bind
                 card.bindObj = bind
+                -- Tutorial/UI guidance resolves a live binding by identity. Slot numbers are not
+                -- stable: auto-binding correctly chooses around whatever the player already has.
+                card.frame:SetAttribute("HotbarBindType", bind and tostring(bind.type) or nil)
+                card.frame:SetAttribute("HotbarBindTarget", bind and tostring(bind.target) or nil)
                 -- An emptied/rebound slot drops its auto-cast lock so the badge can't linger.
                 if not bind and locked[slot] then
                     locked[slot] = nil

@@ -103,6 +103,7 @@ local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModel
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local PetAbility = require(ReplicatedStorage.Shared.Game.PetAbility) -- aura + on-hit control badge SSOT
+local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- shared variant-scaled aura math
 local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime) -- effective type-scaled enchant math
 local PetEnchantView = require(ReplicatedStorage.Shared.Game.PetEnchantView) -- stack + unique display SSOT
@@ -263,8 +264,26 @@ local function supportBadgeSpec(kind)
     return POWER_ICONS and POWER_ICONS.support_badge and POWER_ICONS.support_badge[kind]
 end
 
-local function petAbilitiesFor(petType)
-    return PetAbility.forPet(petType, PET_ROLES, PETS_CONFIG)
+local function petAttackScopeFor(item, roleId)
+    local petType = item and item.petType
+    local petDef = PETS_CONFIG and PETS_CONFIG.pets and PETS_CONFIG.pets[petType]
+    return PetTargeting.displayAttackScope(petDef, roleId, PET_ROLES, {
+        huge = item and item.huge == true,
+        hasAreaProc = PetAbilityRuntime.hasAreaDamage(
+            PETS_CONFIG,
+            petType,
+            (item and item.variant) or "basic"
+        ),
+    })
+end
+
+local function petAbilitiesFor(item)
+    local petType = item and item.petType
+    local roleId = PET_ROLES
+        and ((PET_ROLES.by_type and PET_ROLES.by_type[petType]) or PET_ROLES.default)
+    return PetAbility.forPet(petType, PET_ROLES, PETS_CONFIG, {
+        attackScope = petAttackScopeFor(item, roleId),
+    })
 end
 -- Hatcher display: the pet stores the hatcher's STABLE UserId (hatcher_user_id) as the SSOT —
 -- players rename, so we resolve the id to the CURRENT username for display (Jason). Cached +
@@ -4409,7 +4428,7 @@ function InventoryPanel:_itemSearchText(item)
             add(item.creator and "creator" or PetBadge.biomeElementForPetType(item.petType))
         end
         if PET_ROLES then
-            for _, ability in ipairs(petAbilitiesFor(item.petType)) do
+            for _, ability in ipairs(petAbilitiesFor(item)) do
                 add(ability.kind)
                 local meta = supportBadgeSpec(ability.kind)
                 if meta then
@@ -5140,15 +5159,7 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
                 -- the inventory card and the squad badge always agree. NOT item.attack_targeting
                 -- (unpopulated → wrongly fell back to single, diverging from the HUD — Jason's catch).
                 local petDef = PETS_CONFIG and PETS_CONFIG.pets and PETS_CONFIG.pets[item.petType]
-                -- Huge-only scope override (pets.lua huge_attack_targeting): the huge bear's earth
-                -- AURA is huge-exclusive, so a HUGE card shows the aura ring while a normal bear
-                -- shows single — mirrors the huge-aware AttackTargeting the spawn path stamps, so
-                -- card ↔ squad HUD stay in agreement.
-                local cfgTargeting = petDef and petDef.attack_targeting
-                if item.huge == true and petDef and petDef.huge_attack_targeting then
-                    cfgTargeting = petDef.huge_attack_targeting
-                end
-                local atkScope = PetTargeting.attackScope(cfgTargeting, role.id, PET_ROLES)
+                local atkScope = petAttackScopeFor(item, role.id)
                 local b = PetBadge.create(holder, {
                     element = element,
                     role = role.id,
@@ -5218,7 +5229,7 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
     -- Implemented inherent ability this pet PROVIDES (bottom-right): support auras and on-hit
     -- controller effects share one display resolver, while retaining their separate runtime paths.
     if POWER_ICONS and PET_ROLES and PetBadge and item.category == "Pets" and item.petType then
-        local abilities = petAbilitiesFor(item.petType)
+        local abilities = petAbilitiesFor(item)
         local shown = 0
         local shownLabels = {}
         for _, ability in ipairs(abilities) do
@@ -6053,7 +6064,7 @@ function InventoryPanel:_showItemTooltip(item, sourceFrame)
 
         -- Surface every implemented inherent ability. This is the same resolver as the card badge,
         -- so attack-bound controls no longer disappear from the tooltip.
-        for _, ability in ipairs(petAbilitiesFor(item.petType)) do
+        for _, ability in ipairs(petAbilitiesFor(item)) do
             local meta = supportBadgeSpec(ability.kind)
             local label = (meta and meta.label)
                 or (tostring(ability.kind):gsub("^%l", string.upper))

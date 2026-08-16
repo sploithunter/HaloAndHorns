@@ -26,6 +26,7 @@ local UserInputService = game:GetService("UserInputService")
 -- Dependencies
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local PetAbility = require(ReplicatedStorage.Shared.Game.PetAbility)
+local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
 local petConfig = Locations.getConfig("pets")
 local eggSystemConfig = Locations.getConfig("egg_system")
@@ -694,7 +695,14 @@ function EggPetPreviewService:CreatePetIdentityBadges(petFrame, petInfo)
             UDim2.fromScale(-0.04, 0.01),
             20
         )
-        local attackScope = PetTargeting.attackScope(petDef.attack_targeting, roleId, PET_ROLES)
+        local attackScope = PetTargeting.displayAttackScope(petDef, roleId, PET_ROLES, {
+            huge = petInfo.huge == true,
+            hasAreaProc = PetAbilityRuntime.hasAreaDamage(
+                petConfig,
+                petType,
+                petInfo.variant or "basic"
+            ),
+        })
         local badge = PetBadge.create(roleButton, {
             element = PetBadge.elementForPetType(petType),
             role = roleId,
@@ -716,7 +724,17 @@ function EggPetPreviewService:CreatePetIdentityBadges(petFrame, petInfo)
         end
     end
 
-    local abilities = PetAbility.forPet(petType, PET_ROLES, petConfig)
+    local attackScope = PetTargeting.displayAttackScope(petDef, roleId, PET_ROLES, {
+        huge = petInfo.huge == true,
+        hasAreaProc = PetAbilityRuntime.hasAreaDamage(
+            petConfig,
+            petType,
+            petInfo.variant or "basic"
+        ),
+    })
+    local abilities = PetAbility.forPet(petType, PET_ROLES, petConfig, {
+        attackScope = attackScope,
+    })
     local shown = 0
     for _, ability in ipairs(abilities) do
         local meta = POWER_ICONS.support_badge and POWER_ICONS.support_badge[ability.kind]

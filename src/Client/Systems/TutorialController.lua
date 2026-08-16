@@ -35,6 +35,8 @@ local capsule, stepLabel, titleLabel, bodyLabel
 local beacon -- BillboardGui (parented to the current nearest egg)
 local pulseStroke -- UIStroke on the current ui target
 local pulseArrow -- blinking arrow floating above the current ui target (small buttons need a louder cue)
+local pulseTarget -- exact GuiObject currently highlighted
+local pulseTargetWasClipped -- restored when guidance ends
 local stepToken = 0 -- bumps every state push; loops check it to die
 
 local questPane -- quest_tracker_pane (hidden while the tutorial runs)
@@ -148,6 +150,11 @@ local function clearGuidance()
         pulseArrow:Destroy()
         pulseArrow = nil
     end
+    if pulseTarget and pulseTarget.Parent and pulseTargetWasClipped ~= nil then
+        pulseTarget.ClipsDescendants = pulseTargetWasClipped
+    end
+    pulseTarget = nil
+    pulseTargetWasClipped = nil
     if pathFolder then
         pathFolder:Destroy()
         pathFolder = nil
@@ -402,16 +409,42 @@ local function showEggPath(token, finder)
     end)
 end
 
--- withArrow: add a blinking ⬇ above the target (PRIMARY ui targets only). A secondary ui pulse (the
+-- options.arrow: add a visible pointer above the target (PRIMARY ui targets only). A secondary ui pulse (the
 -- farm step's Farm-Near cue alongside the crystal beacon) gets just the stroke — an arrow there reads
 -- as a second "do this" when the real target is the crystal (Jason: "you put an arrow at farm near").
-local function showUiPulse(token, name, withArrow)
+local function findUiTarget(pg, name, options)
+    if options.hotbarTarget then
+        local hotbar = pg:FindFirstChild("HotbarBar")
+        if hotbar then
+            for _, candidate in ipairs(hotbar:GetDescendants()) do
+                if
+                    candidate:IsA("GuiObject")
+                    and candidate:GetAttribute("HotbarBindTarget") == options.hotbarTarget
+                    and (
+                        not options.hotbarType
+                        or candidate:GetAttribute("HotbarBindType") == options.hotbarType
+                    )
+                then
+                    return candidate
+                end
+            end
+        end
+        return nil
+    end
+    if type(name) == "string" and name ~= "" then
+        return pg:FindFirstChild(name, true)
+    end
+    return nil
+end
+
+local function showUiPulse(token, name, options)
+    options = options or {}
     task.spawn(function()
         local pg = Players.LocalPlayer:WaitForChild("PlayerGui")
         -- the target may not exist yet (LevelUpButton appears with pending levels) — poll politely
         local target
         while token == stepToken and not target do
-            target = pg:FindFirstChild(name, true)
+            target = findUiTarget(pg, name, options)
             if not target then
                 task.wait(1)
             end
@@ -421,10 +454,10 @@ local function showUiPulse(token, name, withArrow)
         end
         pulseStroke = Instance.new("UIStroke")
         pulseStroke.Color = GOLD
-        pulseStroke.Thickness = 3
+        pulseStroke.Thickness = options.clickCue and 5 or 3
         pulseStroke.Parent = target
 
-        if not withArrow then
+        if not options.arrow then
             -- stroke-only cue; blink it and bail (no arrow for secondary targets)
             local t0 = os.clock()
             while token == stepToken and pulseStroke do
@@ -435,31 +468,52 @@ local function showUiPulse(token, name, withArrow)
             return
         end
 
-        -- A blinking arrow floating just above the target. The breathing stroke alone is easy to miss on
-        -- a small button (e.g. the power bar's Edit), so this points right at it. Parented to the target
-        -- so it tracks the button; bobs + blinks via the loop below.
+        -- Parent the callout to the resolved object itself, so it cannot drift from the binding on
+        -- scaled/mobile layouts. Hotbar slots normally clip their icon to a circle; temporarily
+        -- release that clip so the callout can sit outside, then restore it in clearGuidance.
+        pulseTarget = target
+        pulseTargetWasClipped = target.ClipsDescendants
+        target.ClipsDescendants = false
+
         pulseArrow = Instance.new("TextLabel")
         pulseArrow.Name = "TutorialArrow"
-        pulseArrow.BackgroundTransparency = 1
+        pulseArrow.BackgroundColor3 = Color3.fromRGB(16, 18, 28)
+        pulseArrow.BackgroundTransparency = if options.clickCue then 0.08 else 1
         pulseArrow.AnchorPoint = Vector2.new(0.5, 1)
-        pulseArrow.Position = UDim2.new(0.5, 0, 0, -6) -- centered just above the target
-        pulseArrow.Size = UDim2.fromOffset(68, 44)
+        pulseArrow.Position = UDim2.new(0.5, 0, 0, -6)
+        pulseArrow.Size = if options.clickCue
+            then UDim2.fromOffset(150, 68)
+            else UDim2.fromOffset(68, 44)
         pulseArrow.Font = Enum.Font.GothamBlack
-        pulseArrow.TextSize = 38
-        pulseArrow.TextColor3 = GOLD
+        pulseArrow.TextSize = if options.clickCue then 23 else 38
+        pulseArrow.TextColor3 = if options.clickCue then Color3.new(1, 1, 1) else GOLD
         pulseArrow.TextStrokeColor3 = Color3.new(0, 0, 0)
         pulseArrow.TextStrokeTransparency = 0.3
-        pulseArrow.Text = "⬇"
+        pulseArrow.Text = if options.clickCue
+            then tostring(options.cueText or "CLICK HERE") .. "\n▼"
+            else "⬇"
         pulseArrow.ZIndex = 50
         pulseArrow.Parent = target
+        if options.clickCue then
+            local calloutCorner = Instance.new("UICorner")
+            calloutCorner.CornerRadius = UDim.new(0, 12)
+            calloutCorner.Parent = pulseArrow
+            local calloutStroke = Instance.new("UIStroke")
+            calloutStroke.Color = GOLD
+            calloutStroke.Thickness = 4
+            calloutStroke.Parent = pulseArrow
+        end
 
         local t0 = os.clock()
         while token == stepToken and pulseStroke do
             local s = 0.5 + 0.5 * math.sin((os.clock() - t0) * 4)
             pulseStroke.Transparency = 0.25 + 0.55 * s
             if pulseArrow then
-                pulseArrow.TextTransparency = 0.05 + 0.55 * s -- blink
-                pulseArrow.Position = UDim2.new(0.5, 0, 0, -6 - math.floor(8 * s)) -- bob
+                -- Keep the instruction legible throughout the pulse. The older full fade was
+                -- nearly invisible against Grass/Home's bright ground at the exact moment a new
+                -- player needed it.
+                pulseArrow.TextTransparency = if options.clickCue then 0 else 0.05 + 0.55 * s
+                pulseArrow.Position = UDim2.new(0.5, 0, 0, -6 - math.floor(8 * s))
             end
             RunService.RenderStepped:Wait()
         end
@@ -531,11 +585,17 @@ local function apply(state)
         local finder = namedPartFinder(target.name)
         showEggBeacon(stepToken, finder, target.label or "⬇ GO")
         showEggPath(stepToken, finder)
-    elseif target.kind == "ui" and type(target.name) == "string" then
-        showUiPulse(stepToken, target.name, true) -- primary ui target → arrow
+    elseif target.kind == "ui" then
+        showUiPulse(stepToken, target.name, {
+            arrow = true,
+            clickCue = target.cue == "click",
+            cueText = target.cue_text,
+            hotbarType = target.hotbar_type,
+            hotbarTarget = target.hotbar_target,
+        }) -- primary ui target → arrow/callout
     end
     if target.ui and type(target.ui) == "string" then
-        showUiPulse(stepToken, target.ui) -- secondary UI pulse alongside a world target — stroke only
+        showUiPulse(stepToken, target.ui, {}) -- secondary UI pulse alongside a world target — stroke only
     end
 end
 

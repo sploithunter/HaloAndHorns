@@ -2659,3 +2659,12 @@ first-session cohort rates.
   lower-right inventory and egg-preview badges/tooltips without duplicating runtime effects.
 - Added CI coverage requiring every Support pet to have a configured aura, every Controller pet to
   have live control, and every surfaced ability kind to have complete, renderable badge metadata.
+
+## 2026-08-16 — Starter-choice reliability and combat-capability UI audit
+
+- Made starter companion portraits fail-safe with an immediate replicated-model fallback and
+  success-only promotion of flat Roblox thumbnails.
+- Reworked Tutorial 6 into an explicit click interaction that finds and highlights the actual live
+  Berserk Brew binding instead of assuming a positional slot.
+- Unified Huge, periodic-AoE, and on-hit-control targeting rings across runtime spawning, inventory,
+  egg previews, and squad HUD; added contract coverage for the complete pet roster.

@@ -89,18 +89,22 @@ return {
             target = { kind = "part", name = "BaddieSpawnerEarth", label = "⬇ FIGHT" },
             complete_on = { event = "enemy_defeated" },
         },
-        -- POTIONS fill from the TOP RIGHT (Jason: powers bottom-left, potions
-        -- top-right, usable immediately). The grant lands two battle brews on
-        -- slot 20 automatically (PotionService -> HotbarService.AutoBindPotion)
-        -- and the step teaches the drink — mid-battle-flavored, right after the
-        -- first fight while the cave still feels dangerous.
+        -- Potion auto-binding uses the first eligible top-row slot, which may vary with the
+        -- player's existing bindings. Target the live Berserk Brew binding by identity rather
+        -- than guessing a slot number.
         {
             id = "battle_brew",
             title = "Drink for battle",
             grant = { potions = { { id = "berserk_brew", count = 2 } } },
-            body = "You found two Berserk Brews! Potions fill your bar from the TOP RIGHT (powers fill from the bottom left). Drink one — your pets hit harder while the brew lasts!",
-            body_gamepad = "You found two Berserk Brews! Use LB/RB to select the brew at the TOP RIGHT, then RT to drink it.",
-            target = { kind = "ui", name = "Slot_20" },
+            body = "CLICK the flashing Berserk Brew in your power bar. It makes every pet hit harder!",
+            body_gamepad = "You found two Berserk Brews! Use LB/RB to select the flashing brew, then RT to drink it.",
+            target = {
+                kind = "ui",
+                hotbar_type = "potion",
+                hotbar_target = "berserk_brew",
+                cue = "click",
+                cue_text = "CLICK HERE",
+            },
             complete_on = { event = "potion_used" },
         },
         -- THE RALLY FLAG (Jason: "teach the player even in tutorial about the

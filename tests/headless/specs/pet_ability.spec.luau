@@ -42,6 +42,13 @@ describe("PetAbility", function()
         expect(abilities[1].targeting).to.equal("targeted_aoe")
     end)
 
+    it("accepts the effective Huge/proc attack scope for an on-hit control ring", function()
+        local abilities = PetAbility.forPet("dragon", roles, pets, {
+            attackScope = "aura",
+        })
+        expect(abilities[1].targeting).to.equal("aura")
+    end)
+
     it("returns an empty list for unknown pets", function()
         expect(#PetAbility.forPet("unknown", roles, pets)).to.equal(0)
         expect(#PetAbility.forPet(nil, roles, pets)).to.equal(0)

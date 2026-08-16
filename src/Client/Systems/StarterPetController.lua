@@ -4,16 +4,20 @@
 ]]
 
 local Players = game:GetService("Players")
+local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
+local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
+local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local UIViewportScale = require(script.Parent.Parent.UI.UIViewportScale)
 
 local THUMBNAILS = require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
+local PETS = require(ReplicatedStorage.Configs:WaitForChild("pets"))
 local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
 
@@ -78,6 +82,120 @@ local function label(parent, text, size, position, font, color, textSize)
     return value
 end
 
+local function cameraDirection(cameraConfig)
+    local angleY = math.rad(tonumber(cameraConfig and cameraConfig.angle_y) or 0)
+    local angleX = math.rad(tonumber(cameraConfig and cameraConfig.angle_x) or 180)
+    return Vector3.new(
+        math.sin(angleY) * math.cos(angleX),
+        math.sin(angleX),
+        math.cos(angleY) * math.cos(angleX)
+    )
+end
+
+-- The starter choice is too important to trust to one CDN image request. Four live viewports are
+-- cheap for this one-time screen, so every card gets an already-replicated model underneath its
+-- flat thumbnail. The flat art still wins once Roblox reports Success; Failure, TimedOut, or a slow
+-- request leaves the real model visible instead of a terminal paw placeholder.
+local function attachModelFallback(imageBack, choice, fallback)
+    local viewport = Instance.new("ViewportFrame")
+    viewport.Name = "PetModelFallback"
+    viewport.BackgroundTransparency = 1
+    viewport.Size = UDim2.new(1, -10, 1, -10)
+    viewport.Position = UDim2.fromOffset(5, 5)
+    viewport.Ambient = Color3.fromRGB(210, 210, 210)
+    viewport.LightColor = Color3.fromRGB(255, 255, 255)
+    viewport.LightDirection = Vector3.new(-1, -1, -1)
+    viewport.ZIndex = 2
+    viewport.Parent = imageBack
+
+    local camera = Instance.new("Camera")
+    camera.Name = "PetCamera"
+    camera.FieldOfView = 42
+    camera.Parent = viewport
+    viewport.CurrentCamera = camera
+
+    task.spawn(function()
+        -- AssetPreloadService publishes this authored hierarchy asynchronously. Wait on the
+        -- hierarchy itself rather than polling; the starter screen remains responsive because
+        -- this work is already isolated in its own task.
+        local assets = ReplicatedStorage:WaitForChild("Assets", 20)
+        local models = assets and assets:WaitForChild("Models", 20)
+        local petModels = models and models:WaitForChild("Pets", 20)
+        local family = petModels and petModels:WaitForChild(tostring(choice.id), 20)
+        local sourceModel = family and family:WaitForChild("basic", 20)
+        if not imageBack.Parent or not sourceModel then
+            return
+        end
+
+        local modelClone = sourceModel:Clone()
+        if not ViewportModelPlacement.centerPreservingOrientation(modelClone) then
+            modelClone:Destroy()
+            return
+        end
+        modelClone.Parent = viewport
+
+        local petData = PETS.pets and PETS.pets[choice.id] or {}
+        local _, modelSize = modelClone:GetBoundingBox()
+        local extent = math.max(modelSize.X, modelSize.Y, modelSize.Z)
+        local zoom = tonumber(petData.viewport_zoom) or 1.5
+        -- This modal uses a square viewport and a deliberately narrow 42-degree FOV. The
+        -- inventory-card framing constant (1.45) crops tall starter rigs at this aspect ratio;
+        -- give them enough breathing room that the fallback always teaches the whole pet shape.
+        local distance = math.max(1, extent * 2 / zoom)
+        local modelPosition = modelClone:GetBoundingBox().Position
+        camera.CFrame =
+            CFrame.new(modelPosition + cameraDirection(petData.camera) * distance, modelPosition)
+        fallback.Visible = false
+    end)
+
+    return viewport
+end
+
+local function attachFlatThumbnail(image, thumbnail, viewport)
+    if not thumbnail then
+        image.Visible = false
+        return
+    end
+    image.Image = thumbnail
+    image.Visible = false
+
+    local function applyStatus(status)
+        if not image.Parent then
+            return
+        end
+        local action = PetThumbnailFetchPolicy.action(status.Name)
+        image.Visible = action == "flat"
+        viewport.Visible = action ~= "flat"
+    end
+
+    local ok, status = pcall(function()
+        return ContentProvider:GetAssetFetchStatus(thumbnail)
+    end)
+    if ok then
+        applyStatus(status)
+    end
+
+    local connection
+    local okSignal, signal = pcall(function()
+        return ContentProvider:GetAssetFetchStatusChangedSignal(thumbnail)
+    end)
+    if okSignal and signal then
+        connection = signal:Connect(function(nextStatus)
+            if not image.Parent then
+                connection:Disconnect()
+                return
+            end
+            applyStatus(nextStatus)
+        end)
+    end
+    image.Destroying:Once(function()
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+    end)
+end
+
 local function setPending(value)
     pending = value
     for _, button in ipairs(cardButtons) do
@@ -113,6 +231,9 @@ local function makeCard(parent, choice, index)
     local fallback =
         label(imageBack, "🐾", UDim2.fromScale(1, 1), nil, Enum.Font.GothamBold, accent, 45)
     fallback.TextXAlignment = Enum.TextXAlignment.Center
+    fallback.ZIndex = 1
+
+    local modelFallback = attachModelFallback(imageBack, choice, fallback)
 
     local image = Instance.new("ImageLabel")
     image.Name = "PetImage"
@@ -120,8 +241,13 @@ local function makeCard(parent, choice, index)
     image.Size = UDim2.new(1, -10, 1, -10)
     image.Position = UDim2.fromOffset(5, 5)
     image.ScaleType = Enum.ScaleType.Fit
-    image.Image = PetThumbnailResolver.resolve(THUMBNAILS, choice.id, "basic", false) or ""
+    image.ZIndex = 3
     image.Parent = imageBack
+    attachFlatThumbnail(
+        image,
+        PetThumbnailResolver.resolve(THUMBNAILS, choice.id, "basic", false),
+        modelFallback
+    )
 
     -- Use the same element + combat-role badge shown on inventory and squad cards. The adjacent
     -- role copy turns this first choice into the player's legend for that icon vocabulary.
