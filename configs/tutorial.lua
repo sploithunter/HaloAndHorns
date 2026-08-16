@@ -73,7 +73,12 @@ return {
             body = "This is where you choose which pets fight beside you. Open Pets and take a look—you can keep your current squad.",
             body_gamepad = "This is where you choose which pets fight beside you. Press D-pad Left to open Pets, then use A to choose.",
             body_with_unequipped = "You have more pets to choose from now. Open Pets and choose who fights beside you. Swap someone if you want—or keep your current squad.",
-            target = { kind = "ui", name = "PetsButton" },
+            target = {
+                kind = "ui",
+                name = "PetsButton",
+                cue = "click",
+                cue_text = "CLICK HERE",
+            },
             complete_on = { event = "tutorial_squad_reviewed" },
         },
         -- THE FIRST FIGHT (Jason: "introduce combat in the first five minutes —
@@ -163,7 +168,12 @@ return {
             },
             body = "You earned a Potency enhancement! Open POWERS, tap Resonance, and drop it into a slot — stronger pulses mean faster, richer crystals.",
             body_gamepad = "You earned a Potency enhancement! Press D-pad Right, select Resonance with A, and slot Potency for stronger pulses.",
-            target = { kind = "ui", name = "PowersButton" },
+            target = {
+                kind = "ui",
+                name = "PowersButton",
+                cue = "click",
+                cue_text = "CLICK HERE",
+            },
             complete_on = { event = "enhancement_slotted" },
         },
     },

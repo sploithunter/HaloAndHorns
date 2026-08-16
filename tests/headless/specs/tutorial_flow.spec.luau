@@ -96,6 +96,26 @@ return function()
             expect(rallyCall.target.cue_text).to.equal("CLICK HERE")
         end)
 
+        it("gives the Pets and Powers tutorial buttons anchored CLICK HERE cues", function()
+            local expectedTargets = {
+                build_squad = "PetsButton",
+                slot_power = "PowersButton",
+            }
+            local found = {}
+            for _, step in ipairs(cfg.steps) do
+                local expectedName = expectedTargets[step.id]
+                if expectedName then
+                    expect(step.target.kind).to.equal("ui")
+                    expect(step.target.name).to.equal(expectedName)
+                    expect(step.target.cue).to.equal("click")
+                    expect(step.target.cue_text).to.equal("CLICK HERE")
+                    found[step.id] = true
+                end
+            end
+            expect(found.build_squad).to.equal(true)
+            expect(found.slot_power).to.equal(true)
+        end)
+
         it("keeps starter companion portraits visible when flat thumbnails fail", function()
             local client = readFile("src/Client/Systems/StarterPetController.lua")
             expect(client:find('viewport.Name = "PetModelFallback"', 1, true)).to.be.ok()
