@@ -132,6 +132,9 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   context. `CurrentArea` and `CurrentRealm` changes therefore coalesce into one full client inventory
   refresh/re-sort after the transition; this contextual rebuild is intentional even when no pet
   ownership record changed.
+- The trade pet picker uses the same live effective-power inputs, with one deliberate marketplace
+  override: Huge pets form the first tier regardless of power, then Huge and non-Huge tiers each
+  sort strongest-first. Quantity and stable identity fields break ties deterministically.
 - Card badges and tooltips resolve enchant display records through `PetEnchantView`: unique pets use
   their per-instance `enchantments` list, while stack pets project their saved `enchant` id at the
   config-owned stack strength. The two surfaces must never disagree about whether a pet is enchanted.

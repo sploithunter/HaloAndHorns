@@ -1015,6 +1015,10 @@ function TradeService:ListMyPets(player)
             serial = rec.serial,
             level = rec.level,
             rarity_id = rec.rarity_id,
+            -- The picker is owner-only. Preserve the pet's gameplay metadata so the
+            -- client can resolve the same live display-power profile as inventory
+            -- (including levels, Eternal scaling, and Home World enchants).
+            record = deepCopy(rec),
         })
     end
     return { ok = true, pets = out }

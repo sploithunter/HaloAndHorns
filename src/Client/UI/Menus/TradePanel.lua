@@ -27,6 +27,11 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local TradeReveal = require(ReplicatedStorage.Shared.Game.TradeReveal)
+local TradePetSort = require(ReplicatedStorage.Shared.Game.TradePetSort)
+local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
+local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView)
+local ElementResonance = require(ReplicatedStorage.Shared.Game.ElementResonance)
+local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime)
 local gameEventsOk, GameEvents = pcall(function()
     return require(script.Parent.Parent.Parent.Systems.GameEvents)
 end)
@@ -36,6 +41,109 @@ local petThumbsOk, PET_THUMBNAILS = pcall(function()
 end)
 if not petThumbsOk then
     PET_THUMBNAILS = nil
+end
+
+local function config(name)
+    local ok, value = pcall(function()
+        return require(ReplicatedStorage.Configs:WaitForChild(name))
+    end)
+    return ok and value or {}
+end
+
+local PETS_CONFIG = config("pets")
+local PET_PROGRESSION = config("pet_progression")
+local PET_ROLES = config("pet_roles")
+local COMBAT_FX = config("combat_fx")
+local AREAS_CONFIG = config("areas")
+local ELEMENTS_CONFIG = config("elements")
+local ENCHANTS_CONFIG = config("enchants")
+
+local function variantEternalScale(percent, variant)
+    if not percent or percent <= 0 then
+        return percent or 0
+    end
+    local multipliers = PET_ROLES.variant_effect_multipliers
+    local multiplier = multipliers and tonumber(multipliers[string.lower(tostring(variant))])
+    return percent * (multiplier or 1)
+end
+
+local function configuredEternalPercent(petData, record, variant)
+    local eternal = PETS_CONFIG.eternal or {}
+    local percent = 0
+    if record.creator == true then
+        percent = tonumber(eternal.creator_power_percent) or 130
+    elseif record.huge == true then
+        percent = tonumber(eternal.huge_power_percent) or 120
+    elseif tonumber(record.eternal_percent) and tonumber(record.eternal_percent) > 0 then
+        percent = tonumber(record.eternal_percent)
+    elseif type(petData and petData.eternal) == "table" and petData.eternal.enabled == true then
+        percent = tonumber(petData.eternal.power_percent) or 0
+    else
+        local defaults = eternal.default_percent_by_rarity
+        percent = type(defaults) == "table" and tonumber(defaults[petData and petData.rarity_id])
+            or 0
+    end
+    return variantEternalScale(percent, variant)
+end
+
+local function eternalLevelScale(rarityId, level)
+    local cap = PETS_CONFIG.eternal and tonumber(PETS_CONFIG.eternal.level_bonus_max)
+    if not cap or cap <= 0 then
+        return 1
+    end
+    local maxLevel = PetPower.maxLevelForRarity(rarityId, PET_PROGRESSION)
+    level = math.max(1, math.floor(tonumber(level) or 1))
+    if maxLevel <= 1 or level <= 1 then
+        return 1
+    end
+    return 1 + cap * math.clamp((level - 1) / (maxLevel - 1), 0, 1)
+end
+
+-- Resolve the same effective number inventory uses for sorting: configured level
+-- power, Eternal floor, role aptitude, variant, live biome, and live realm.
+local function tradeDisplayPower(item)
+    local record = type(item.record) == "table" and item.record or item
+    local petType = item.id or record.id
+    local variant = item.variant or record.variant or "basic"
+    local petData = PETS_CONFIG.getPet and PETS_CONFIG.getPet(petType, variant)
+    local level = item.level or record.level or 1
+    local isHuge = item.huge == true or record.huge == true
+    local isCreator = item.creator == true or record.creator == true
+    local power = PetPower.basePowerForLevel(petData, isHuge, level, PET_PROGRESSION)
+
+    local eternalPercent = configuredEternalPercent(petData, record, variant)
+    local eternalBaseline = tonumber(Players.LocalPlayer:GetAttribute("EternalPowerBase"))
+    if eternalPercent > 0 and eternalBaseline and eternalBaseline > 0 then
+        local rarityId = record.rarity_id or (petData and petData.rarity_id)
+        local eternalPower = math.floor(
+            eternalBaseline * (eternalPercent / 100) * eternalLevelScale(rarityId, level) + 0.5
+        )
+        power = math.max(power, eternalPower)
+    end
+
+    local origin = COMBAT_FX.origin or {}
+    local zones = AREAS_CONFIG.zones or {}
+    local zone = zones[tostring(Players.LocalPlayer:GetAttribute("CurrentArea"))]
+    local zoneMultiplier = ElementResonance.biomeMultiplierWithFloor(
+        (origin.pettype_element or {})[petType],
+        zone and zone.element,
+        ELEMENTS_CONFIG,
+        EnchantRuntime.effectMagnitude("home_world", record, ENCHANTS_CONFIG)
+    )
+    local petDef = PETS_CONFIG.pets and PETS_CONFIG.pets[petType]
+    local realmMultiplier = ElementResonance.petRealmMultiplier(
+        petDef and petDef.realm,
+        Players.LocalPlayer:GetAttribute("CurrentRealm"),
+        ELEMENTS_CONFIG
+    )
+    local profile = PetPowerView.profile({
+        base = power,
+        petType = petType,
+        variant = variant,
+        creator = isCreator,
+        context = { zone = zoneMultiplier, realm = realmMultiplier },
+    })
+    return math.max(profile.miningEffective or 0, profile.combatEffective or 0)
 end
 
 local COLORS = {
@@ -732,9 +840,7 @@ function TradePanel:_renderWindow(state)
     else
         local r = self:_callBus("trade.myPets", {})
         sourceItems = (r and r.pets) or {}
-        table.sort(sourceItems, function(a, b)
-            return tostring(a.id) .. tostring(a.variant) < tostring(b.id) .. tostring(b.variant)
-        end)
+        TradePetSort.sort(sourceItems, tradeDisplayPower)
     end
 
     local colW = 1 / 3
