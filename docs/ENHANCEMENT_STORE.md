@@ -11,7 +11,7 @@ Buy/sell enhancements for **gems**. v1 scope and decisions locked with Jason.
   types** (natural magnitude 0.15 is identical on every axis, so type doesn't change price). No dynamic
   market (exploit-prone; revisit later). `EnhancementPricing` is the headless-tested SSOT.
 - **Level gate:** sold in **increments of 5**, and the store shows the **one band the player can
-  currently SLOT** — the nearest multiple of 5, which is always within the ±2 slot window.
+  currently SLOT** — the nearest multiple of 5, which is always within the ±5 slot window.
   `band = round(playerLevel / 5) × 5` → L16-17 see **L15**, L18-22 see **L20**, L23-27 see **L25**, …
   Clamped to `[min_level, max_level]` (5..50). `spark` (rare proc tier) is excluded — found, not bought.
 - **Sell-back: YES** (the junk sink). `sell = floor(value × fraction)` gems, **un-slotted stacks only**,
@@ -27,9 +27,10 @@ Buy/sell enhancements for **gems**. v1 scope and decisions locked with Jason.
   stats to mirror `enhancements_found`; OpsAlert can flag anomalies.
 - **Upgrade All:** slotted enhancements are permanent, so the Power Choice screen offers one
   server-quoted bulk purchase instead of making the player replace them one at a time at each
-  five-level band boundary. It upgrades every filled slot below the current shop band and preserves
+  five-level band boundary. It upgrades only filled slots that are genuinely outgrown (more than five
+  levels below the player), targeting the current shop band, and preserves
   the exact type, origins/grade, and slot position. Each slot costs its full grade-aware buy price at
-  the target band (no sell credit); current-band and above-band drops are skipped. The debit and all
+  the target band (no sell credit); still-effective and above-band drops are skipped. The debit and all
   level writes are one transaction, with quote revalidation/refund if slots change during confirm.
 
 ## Starting price table (TUNE vs gem income — `configs/enhancements.lua` `shop` knobs)

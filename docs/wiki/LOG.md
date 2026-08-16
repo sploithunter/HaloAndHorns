@@ -2632,3 +2632,11 @@ first-session cohort rates.
 - Dashboard/readout schema v2 exposes counts and cohort rates without scanning raw event chunks;
   instrumentation begins with the 2026-08-16 UTC cohort and reports explicit 1/7/30-day maturity
   limits rather than implying incomplete windows are final retention.
+
+## 2026-08-16 — Enhancement effectiveness window widened to ±5
+
+- Widened the enhancement effectiveness and placement window from ±2 to ±5, including the L55 drop
+  ceiling for level-50 players and the matching dead-junk threshold.
+- Recalculated Power Choice **Upgrade All** to quote only genuinely outgrown enhancements: exact -5
+  remains effective and free of premature replacement; -6 upgrades to the current shop band.
+- Added headless boundary coverage for the automatic upgrade and bulk-junk paths.

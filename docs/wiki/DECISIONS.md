@@ -366,6 +366,14 @@ slotting flow (purchase deferred to APPLY, CANCEL free), not a standalone shop; 
 MenuManager panel. North star: signature powers afford 6 enhancement types → drop-only SET enhancements
 (CoH invention sets) on the `augmentation.lua` set_bonuses scaffold.
 
+## Enhancement Effectiveness Window Is ±5 (2026-08-16)
+
+Enhancements contribute within five levels of the player and become dead only at six levels behind or
+ahead. Placement permits up to +5, and drops may reach L55 for a capped L50 player. The Power Choice
+**Upgrade All** quote is outgrown-aware: an enhancement exactly five levels behind is still useful and
+is not replaced or charged; at six behind it is upgraded to the current five-level shop band. Bulk junk
+selling uses the same five-level boundary.
+
 ## Reductive Axes Use Division — soft-cap by construction (2026-06-26)
 
 Reductive enhancement axes (Focus reduction, recharge) use `base / (1 + Σ)`, never additive-with-clamp.
