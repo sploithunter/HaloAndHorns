@@ -467,9 +467,8 @@ function PlayerProgressionService:_publish(player)
         return
     end
     local earned = self:GetEarnedLevel(player)
-    -- LEVEL EARNED (Jason: the world moment is "when the bar changes to the blinking
-    -- arrow" — not the claim): fire once per earned-level increase. The epic level-up
-    -- animation + sound hang off THIS event (world_sound row in game_events).
+    -- LEVEL EARNED: fire once per earned-level increase. This is lightweight XP-bar feedback;
+    -- the full Ascension ceremony hangs off the successful server-truth `level_claimed` event.
     self._lastEarned = self._lastEarned or {}
     local prevEarned = self._lastEarned[player]
     self._lastEarned[player] = earned

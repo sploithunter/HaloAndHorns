@@ -21,6 +21,7 @@ local KNOWN_KINDS = {
     world_sound = true, -- SERVER-side positional sound at the player (everyone nearby hears)
     world_sound_range = true, -- optional RollOffMaxDistance for world_sound (studs)
     fanfare = true, -- local non-interrupting world celebration around the player (sparkles + glow)
+    ascension = true, -- altar claim ceremony: visual avatar lift/spin/rings, no gameplay mutation
     effect_transfer = true, -- consumable icon blooms center, then flies to its affected HUD target(s)
 }
 
@@ -90,17 +91,32 @@ return function()
             end
         end)
 
-        it("level_up keeps the visual; the world jingle is on level_EARNED", function()
-            -- Jason: the public moment is the bar filling ("when the bar changes to
-            -- the blinking arrow"), NOT the claim — the epic animation + sound land
-            -- on level_earned; the client-fired level_up row keeps the burst visual.
+        it("keeps earned feedback light and reserves the epic ceremony for Ascend", function()
             expect(type(gameEvents.level_up)).to.equal("table")
             expect(type(gameEvents.level_up.vfx)).to.equal("table")
-            -- the epic level-up theme rides level_earned (a real world_sound); level_up has no sound
-            expect(gameEvents.level_earned.world_sound).to.equal("level_up_epic")
+            expect(type(gameEvents.level_earned.vfx)).to.equal("table")
+            expect(gameEvents.level_earned.world_sound).to.equal(nil)
+            expect(gameEvents.level_claimed.world_sound).to.equal("level_up_epic")
+            expect(type(gameEvents.level_claimed.ascension)).to.equal("table")
+            expect(gameEvents.level_claimed.ascension.seconds).to.equal(7.5)
             expect(gameEvents.level_up.sound).to.equal(nil)
             expect(gameEvents.level_up.world_sound).to.equal(nil)
         end)
+
+        it(
+            "implements Ascend as a visual clone so it cannot teleport the real character",
+            function()
+                local presentation = readFile("src/Client/Systems/AscensionPresentation.lua")
+                expect(presentation:find('clone.Name = "AscensionAvatar"', 1, true) ~= nil).to.equal(
+                    true
+                )
+                expect(presentation:find("clone:PivotTo", 1, true) ~= nil).to.equal(true)
+                expect(presentation:find("character:PivotTo", 1, true)).to.equal(nil)
+                expect(presentation:find("LocalTransparencyModifier", 1, true) ~= nil).to.equal(
+                    true
+                )
+            end
+        )
 
         it("routes consumable activation visuals to the affected HUD surface", function()
             local dispatcher = readFile("src/Client/Systems/GameEvents.lua")

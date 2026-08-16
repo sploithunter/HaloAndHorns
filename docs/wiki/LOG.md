@@ -2674,3 +2674,18 @@ first-session cohort rates.
 - Replaced the trade picker's alphabetical pet order with Huge-first, then live effective power,
   using the same level, Eternal, aptitude, variant, biome, Home World, and realm inputs as inventory.
 - Added deterministic quantity/identity tie-breakers and headless regression coverage.
+
+## 2026-08-16 — Rally tutorial live-slot cue
+
+- Gave **Call them back** the same large, bobbing `CLICK HERE` guidance as Berserk Brew.
+- The cue resolves the live tactical `rally` binding, so it follows the real flag slot rather than
+  relying on a hard-coded hotbar position.
+
+## 2026-08-16 — Epic altar Ascension ceremony
+
+- Moved the full level-up crescendo from XP-bar completion to the authoritative successful altar
+  claim; nearby players hear the positional celebration while earned-level feedback stays light.
+- Added a seven-and-a-half-second claimant presentation with an anchored visual avatar clone,
+  accelerating lift/spin, layered gold rings and sparkles, glow, and a decisive landing/reveal.
+- The presentation never moves the real character and has defensive cleanup that restores local
+  avatar visibility and controls on completion, interruption, respawn, or replacement.
