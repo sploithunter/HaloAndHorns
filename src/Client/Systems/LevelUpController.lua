@@ -111,9 +111,10 @@ function LevelUpController.start()
     Signals.LevelUp_OpenChoice.OnClientEvent:Connect(function()
         self:_openChoiceMenu()
     end)
-    -- Celebratory jingle whenever the CLAIMED level actually goes UP (catches every path: altar
-    -- COMMIT, admin, etc. — commits are silent so we key off the attribute, not LevelUp_Claimed).
-    -- Seed from the current value so the initial join replication doesn't fire it.
+    -- Small immediate claim burst whenever CLAIMED level goes up. The authoritative server
+    -- `level_claimed` event owns the full Ascension ceremony + positional crescendo; this local
+    -- attribute seam remains a fast confirmation and catches unusual/admin claim paths too.
+    -- Seed from the current value so initial join replication does not fire it.
     local lastClaimed = tonumber(self.player:GetAttribute("ClaimedLevel"))
     self.player:GetAttributeChangedSignal("ClaimedLevel"):Connect(function()
         local lvl = tonumber(self.player:GetAttribute("ClaimedLevel"))

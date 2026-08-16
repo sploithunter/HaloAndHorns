@@ -26,6 +26,7 @@ local items = require(ReplicatedStorage.Configs:WaitForChild("items"))
 local potions = require(ReplicatedStorage.Configs:WaitForChild("potions"))
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
+local AscensionPresentation = require(script.Parent.AscensionPresentation)
 
 local GameEvents = {}
 
@@ -179,6 +180,12 @@ REACTIONS.fanfare = function(spec)
             att:Destroy()
         end
     end)
+end
+
+-- ascension: the altar claim ceremony. Presentation is deliberately separated from the
+-- authoritative claim: it animates a local visual clone and can never move or mutate the player.
+REACTIONS.ascension = function(spec, ctx)
+    AscensionPresentation.play(ctx, spec)
 end
 
 -- float: rising announcement text. spec = { color = {r,g,b}?, prefix = ""?, size = px? };

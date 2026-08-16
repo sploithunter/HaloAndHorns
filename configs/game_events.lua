@@ -43,25 +43,25 @@ return {
         vfx = { kind = "burst", color = { 200, 70, 70 }, count = 6 }, -- small red "nope" puff
     },
 
-    -- level_up (client-fired) keeps the VISUAL juice; the SOUND moved to the
-    -- server-fired level_claimed row as a world_sound, so EVERYONE nearby hears a
-    -- level-up, not just the leveler (Jason: "it should be server-wide... everybody
-    -- should hear those sounds").
+    -- level_up (client-fired from ClaimedLevel) keeps a small immediate confirmation burst.
     level_up = {
         vfx = { kind = "burst", color = { 255, 205, 70 } }, -- gold celebratory burst at the player
     },
 
     -- LEVEL EARNED: the bar just filled and the arrow starts blinking (server truth,
-    -- once per earned level). THIS is the public moment — the epic level-up animation
-    -- + sound land here (Jason). The 7.5s "An Epic Modern-day Video Game" theme; plays AT
-    -- the player's character, audible nearby (3D falloff, ~120 studs). The level-up ANIMATION
-    -- times itself to sounds.lua level_up_epic.duration_seconds.
+    -- once per earned level). This stays deliberately light: the full transformation belongs to
+    -- the player's successful altar claim, not merely filling the XP bar.
     level_earned = {
+        vfx = { kind = "burst", color = { 255, 225, 120 }, count = 8 },
+    },
+
+    -- LEVEL CLAIMED / ASCEND: the City-of-Heroes-style payoff. The approved 7.5-second crescendo
+    -- plays positionally so nearby players hear it; the claimant rises, spins through layered
+    -- rings/sparkles, and lands on the final reveal. `level_claimed` is server truth and fires only
+    -- after the atomic claim succeeds.
+    level_claimed = {
         world_sound = "level_up_epic",
-        -- the local world fanfare around the leveler (sparkles + glow), timed to the song's length
-        -- (sounds.lua level_up_epic.duration_seconds). Non-interrupting; everyone nearby hears the
-        -- world_sound, the leveler sees the effect centred on their character.
-        fanfare = { sound = "level_up_epic" },
+        ascension = { seconds = 7.5 },
     },
 
     -- A new area/gate was unlocked (client: init.client ZoneUnlockResult ok). Celebratory, and no

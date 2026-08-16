@@ -80,6 +80,22 @@ return function()
             expect(hotbar:find('SetAttribute("HotbarBindTarget"', 1, true)).to.be.ok()
         end)
 
+        it("points Call them back at the live Rally binding", function()
+            local rallyCall
+            for _, step in ipairs(cfg.steps) do
+                if step.id == "rally_call" then
+                    rallyCall = step
+                    break
+                end
+            end
+            expect(rallyCall).to.be.ok()
+            expect(rallyCall.target.name).to.equal(nil)
+            expect(rallyCall.target.hotbar_type).to.equal("tactical")
+            expect(rallyCall.target.hotbar_target).to.equal("rally")
+            expect(rallyCall.target.cue).to.equal("click")
+            expect(rallyCall.target.cue_text).to.equal("CLICK HERE")
+        end)
+
         it("keeps starter companion portraits visible when flat thumbnails fail", function()
             local client = readFile("src/Client/Systems/StarterPetController.lua")
             expect(client:find('viewport.Name = "PetModelFallback"', 1, true)).to.be.ok()

@@ -1103,7 +1103,11 @@ floor, cap)` reading a single `EffectiveLevel` seam (teaming will override it); 
 levels; powers/slots/egg-hatch are *claimed* via a level-up sequence UI. Hybrid **Ascension Altar:**
 filler levels auto-claim in the field; power/slot/milestone levels train at the altar. Caps: **10
 equipped pets + 10 power picks**; +1 egg-hatch per claimed level. Dev XP reads a monotonic `XPTotal`
-attribute (keeps accruing past the cap).
+attribute (keeps accruing past the cap). A successful altar claim now owns the full 7.5-second
+Ascension ceremony: the approved crescendo is positional for nearby players, while the claimant's
+avatar is represented by a local, anchored visual clone that rises, accelerates through a spin,
+crosses layered gold rings/sparkles, and lands on the level reveal. The real character is never
+teleported or handed to client physics; XP-bar completion retains only lightweight feedback.
 
 **Full build respec (admin-tested flow).** `RespecService` preserves exact lifetime XP and all
 non-build progression, returns every installed enhancement instance to the stack inventory, clears
@@ -1360,11 +1364,13 @@ Last checked: 2026-08-16
   keeps a live, already-replicated pet model underneath its flat image; only a confirmed successful
   image fetch replaces the model. A failed, timed-out, pending, or unavailable image therefore
   leaves the actual Bunny, Bear, Doggy, or Kitty visible instead of a paw placeholder.
-- Tutorial 6 now names the exact action, resolves the live `berserk_brew` hotbar binding instead of
-  assuming a slot, and outlines that real slot with a large, bobbing `CLICK HERE` callout.
+- Tutorial 6 and **Call them back** now resolve their live `berserk_brew` and `rally` hotbar
+  bindings by identity instead of assuming positions, and outline the real slots with a large,
+  bobbing `CLICK HERE` callout.
 - Centralized effective attack geometry for runtime and UI. Every Huge structurally receives area
   damage unless it authors a stronger Huge scope; real periodic AoE procs receive an area ring; and
   an on-hit control badge inherits the attack geometry that carries it. Inventory, egg preview, and
   squad HUD now agree.
 - Next FTUE pass retained from tester feedback: Ascend notification teleport, more UI-target arrows,
-  a stronger first-30-second payoff, an Ascension animation, and a short Level-3 enhancement lesson.
+  a stronger first-30-second payoff, and a short Level-3 enhancement lesson. (The Ascension
+  ceremony itself is now implemented.)

@@ -108,10 +108,12 @@ return {
             complete_on = { event = "potion_used" },
         },
         -- THE RALLY FLAG (Jason: "teach the player even in tutorial about the
-        -- rally flag" — the panic button lives at the TOP-LEFT of the bar,
-        -- granted on step entry at slot 11). Taught right after the cave fights
-        -- while "a fight going wrong" is a fresh memory. Rejoin reapplies this
-        -- idempotently so the objective can never point at an empty slot.
+        -- rally flag" — the panic button is granted on step entry at slot 11).
+        -- Target the live binding by identity, just like Berserk Brew, so the
+        -- click cue remains attached to Rally if hotbar layout rules ever move it.
+        -- Taught right after the cave fights while "a fight going wrong" is a
+        -- fresh memory. Rejoin reapplies this idempotently so the objective can
+        -- never point at an empty slot.
         {
             id = "rally_call",
             title = "Call them back",
@@ -120,7 +122,13 @@ return {
             },
             body = "See the FLAG at the top-left of your power bar? That's Rally — press it and your pets instantly return to your side. Your escape button when a fight goes wrong!",
             body_gamepad = "See the FLAG at the top-left of your power bar? Select it with LB/RB and press RT to call every pet back!",
-            target = { kind = "ui", name = "Slot_11" },
+            target = {
+                kind = "ui",
+                hotbar_type = "tactical",
+                hotbar_target = "rally",
+                cue = "click",
+                cue_text = "CLICK HERE",
+            },
             complete_on = { event = "rally_used" },
         },
         -- POWERS come AFTER the familiar pet-game rhythm (Jason: hook them with what they know first,
