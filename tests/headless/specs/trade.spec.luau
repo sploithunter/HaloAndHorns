@@ -48,6 +48,38 @@ return function()
         end)
     end)
 
+    describe("trade picker view stability", function()
+        it("preserves each keyed column scroll position across authoritative updates", function()
+            local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
+            expect(
+                string.find(panel, "function TradePanel:_captureScrollPositions()", 1, true) ~= nil
+            ).to.equal(true)
+            expect(
+                string.find(panel, "function TradePanel:_restoreScrollPositions", 1, true) ~= nil
+            ).to.equal(true)
+            expect(string.find(panel, 'scrollKey = "source:" .. self._sourceTab', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(panel, 'scrollKey = "your-offer"', 1, true) ~= nil).to.equal(true)
+            expect(string.find(panel, 'scrollKey = "their-offer"', 1, true) ~= nil).to.equal(true)
+            expect(
+                string.find(panel, "self:_restoreScrollPositions(win, scrollPositions)", 1, true)
+                    ~= nil
+            ).to.equal(true)
+        end)
+
+        it("numbers selected offer cards while preserving duplicate counts", function()
+            local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
+            expect(string.find(panel, 'selected.Name = "OfferSelectionNumber"', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(panel, 'selected.Text = "#" .. tostring(order)', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(panel, "local badgeN = pet.count", 1, true) ~= nil).to.equal(true)
+        end)
+    end)
+
     describe("TradeLogic invitations", function()
         it("expires exactly at the configured deadline", function()
             local invite = TradeLogic.newInvite(123, 1_000, config.invite_timeout_seconds)
