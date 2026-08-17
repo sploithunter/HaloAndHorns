@@ -2754,3 +2754,9 @@ first-session cohort rates.
 - The active tutorial now suppresses Roblox's People list while it owns the upper-right corner.
 - Tapping the tutorial temporarily reveals the People list for ten seconds, then restores the same
   tutorial step automatically; it cannot be permanently dismissed before completion.
+
+## 2026-08-17 — Exact tutorial corner anchoring
+
+- Corrected `TutorialDock` to the exact scale-only upper-right position `{1,0},{0,0}` after phone
+  verification showed that pixel offsets displaced it from the intended corner.
+- Added a regression guard that rejects a pixel-offset `UDim2.new(...)` position for this dock.

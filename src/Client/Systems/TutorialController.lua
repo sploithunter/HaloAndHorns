@@ -124,12 +124,12 @@ local function buildCapsule(pg)
 
     -- Keep the screen-edge anchor outside the scaled card. UIScale scales a root's anchored
     -- placement as well as its contents on small viewports, which left a large false margin on
-    -- phones. This zero-size dock stays exactly at the safe upper-right point while the card
-    -- hanging left from it remains responsive.
+    -- phones. This dock must remain at the exact, scale-only upper-right corner; do not add pixel
+    -- offsets here. The card hangs left from the dock and handles its own responsive scale.
     local dock = Instance.new("Frame")
     dock.Name = "TutorialDock"
     dock.AnchorPoint = Vector2.new(1, 0)
-    dock.Position = UDim2.new(1, -12, 0, 56)
+    dock.Position = UDim2.fromScale(1, 0)
     dock.Size = UDim2.fromOffset(0, 0)
     dock.BackgroundTransparency = 1
     dock.ClipsDescendants = false
