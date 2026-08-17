@@ -365,9 +365,9 @@ function LevelUpController:_refreshButton()
     -- Suppressed while the level-up menu is open so the nudge never covers it.
     self.button.Visible = training > 0 and not (_G.PowerChoiceMenuOpen == true)
     if training > 1 then
-        self.button.Text = string.format("✦  ASCEND  (%d)", training)
+        self.button.Text = string.format("ASCEND  (%d)", training)
     else
-        self.button.Text = "✦  ASCEND"
+        self.button.Text = "ASCEND"
     end
 end
 
