@@ -209,6 +209,10 @@ function MenuManager:_createOverlay()
             end
         end
         scrim.Visible = hasPanel
+        -- Shared HUD contract: full-size modal panels own the screen. Systems such as the
+        -- tutorial objective can yield while a panel is present and restore themselves after
+        -- direct X/ESC closes without coupling to every individual panel implementation.
+        player:SetAttribute("LargeMenuOpen", hasPanel)
         if hasPanel then
             local suppressed, suppressError = self._playerListGuard:Suppress()
             if not suppressed then
@@ -783,6 +787,8 @@ function MenuManager:Destroy()
     if self.overlayFrame then
         self.overlayFrame:Destroy()
     end
+
+    Players.LocalPlayer:SetAttribute("LargeMenuOpen", false)
 
     -- Destruction can race a panel's own cleanup; always make one final restoration attempt.
     local restored, restoreError = self._playerListGuard:Restore()

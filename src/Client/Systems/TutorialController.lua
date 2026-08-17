@@ -2,10 +2,9 @@
     TutorialController (client) — renders the server-pushed tutorial state (Signals.TutorialState,
     TutorialFlow.stateFor shape). Three guidance surfaces, all torn down between steps:
 
-      capsule  — the objective card. Docks INTO the TopHudStack (under the player bar, where
-                 the quest tracker lives — Jason: the tutorial IS the new player's quest) and
-                 HIDES the quest_tracker_pane while active; quests reappear there when done.
-                 Falls back to a bottom-center ScreenGui if the stack never shows up.
+      capsule  — the objective card. Lives in a responsive upper-right dock so it does not cover
+                 the center playfield. It HIDES the quest_tracker_pane while active; quests
+                 reappear there when done. Full-size menus temporarily hide the capsule.
       beacon   — target.kind == "egg": pulsing BillboardGui over the NEAREST world egg (egg models
                  carry an EggInfo child — same detection as the BootLoader gate), re-aimed every 2s
       pulse    — target.kind == "ui": breathing gold UIStroke around the named GuiObject, found
@@ -40,12 +39,27 @@ local pulseTargetWasClipped -- restored when guidance ends
 local stepToken = 0 -- bumps every state push; loops check it to die
 
 local questPane -- quest_tracker_pane (hidden while the tutorial runs)
-local docked = false
 local tutorialActive = false
+local capsuleWantedVisible = false
 
--- one rule: while the tutorial runs (and we're docked in the stack), quests yield the spot
+local function syncCapsuleVisibility()
+    if not capsule then
+        return
+    end
+    local player = Players.LocalPlayer
+    capsule.Visible = capsuleWantedVisible
+        and player:GetAttribute("InPrologue") ~= true
+        and player:GetAttribute("LargeMenuOpen") ~= true
+end
+
+local function setCapsuleWantedVisible(visible)
+    capsuleWantedVisible = visible == true
+    syncCapsuleVisibility()
+end
+
+-- While the tutorial runs, quests yield their normal tracker spot.
 local function syncQuestPane()
-    if docked and questPane then
+    if questPane then
         questPane.Visible = not tutorialActive
     end
 end
@@ -59,8 +73,8 @@ local function buildCapsule(pg)
 
     capsule = Instance.new("Frame")
     capsule.Name = "Objective"
-    capsule.AnchorPoint = Vector2.new(0.5, 1)
-    capsule.Position = UDim2.new(0.5, 0, 1, -140) -- fallback spot (above the hotbar)
+    capsule.AnchorPoint = Vector2.new(1, 0)
+    capsule.Position = UDim2.new(1, -24, 0, 72)
     -- Mobile can shrink this HUD root to nearly half size. Keep the supporting copy at 18px and
     -- the title at 20px so the objective remains readable on a physical phone.
     capsule.Size = UDim2.fromOffset(420, 124)
@@ -111,28 +125,18 @@ local function buildCapsule(pg)
     gui.Parent = pg
     require(script.Parent.Parent.UI.UIViewportScale).attach(capsule)
 
-    -- Dock into the TopHudStack (above the quest tracker, same screen home as quests).
-    -- The stack's capsule already carries a ViewportScale, so ours goes when we move in.
+    -- The post-tutorial quest tracker keeps its existing TopHudStack home. We only discover it
+    -- here so the tutorial can yield that surface after completion; the tutorial itself stays in
+    -- its own upper-right ScreenGui dock.
     task.spawn(function()
         local barGui = pg:WaitForChild("PlayerBar", 20)
         local cap = barGui and barGui:WaitForChild("Capsule", 10)
         local stack = cap and cap:WaitForChild("TopHudStack", 10)
-        if not (stack and capsule) then
-            return -- fallback: stays bottom-center in its own gui
+        if not stack then
+            return
         end
-        local own = capsule:FindFirstChild("ViewportScale")
-        if own then
-            own:Destroy()
-        end
-        capsule.LayoutOrder = 0 -- above the quest tracker slot
-        capsule.Parent = stack
-        docked = true
         questPane = stack:FindFirstChild("quest_tracker_pane")
             or stack:WaitForChild("quest_tracker_pane", 15)
-        if gui then
-            gui:Destroy()
-            gui = nil
-        end
         syncQuestPane()
     end)
 end
@@ -538,17 +542,17 @@ local function apply(state)
             stepLabel.Text = "TUTORIAL COMPLETE"
             titleLabel.Text = doneCfg.title or "🎉 QUESTS UNLOCKED!"
             bodyLabel.Text = doneCfg.body or "Your missions are in the tracker up top!"
-            capsule.Visible = true
+            setCapsuleWantedVisible(true)
             task.delay(tonumber(doneCfg.show_seconds) or 8, function()
                 if stepToken == token and capsule then
-                    capsule.Visible = false
+                    setCapsuleWantedVisible(false)
                     syncQuestPane()
                 end
             end)
             return
         end
         if capsule then
-            capsule.Visible = false
+            setCapsuleWantedVisible(false)
         end
         syncQuestPane() -- hand the spot back to quests
         return
@@ -571,7 +575,7 @@ local function apply(state)
         end
     end
     bodyLabel.Text = body
-    capsule.Visible = true
+    setCapsuleWantedVisible(true)
 
     local target = state.target or {}
     if target.kind == "egg" then
@@ -631,7 +635,7 @@ function TutorialController.start()
             parked = state
             clearGuidance()
             if capsule then
-                capsule.Visible = false
+                syncCapsuleVisibility()
             end
             return
         end
@@ -646,7 +650,7 @@ function TutorialController.start()
         if inPrologue() then
             clearGuidance()
             if capsule then
-                capsule.Visible = false
+                syncCapsuleVisibility()
             end
         elseif parked then
             local state = parked
@@ -656,6 +660,7 @@ function TutorialController.start()
             Signals.TutorialStateRequest:FireServer() -- nothing parked: pull fresh
         end
     end)
+    me:GetAttributeChangedSignal("LargeMenuOpen"):Connect(syncCapsuleVisibility)
 
     Signals.TutorialState.OnClientEvent:Connect(gatedApply)
     -- pull current state — the server's join-time push may predate this connection
