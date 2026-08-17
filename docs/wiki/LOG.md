@@ -2748,3 +2748,9 @@ first-session cohort rates.
   upper-right dock, preserving the post-tutorial quest tracker's existing placement.
 - Full-size menus now publish one shared `LargeMenuOpen` state; tutorial copy hides while a modal
   panel owns the screen and restores after managed, X-button, or ESC closes.
+
+## 2026-08-17 — Tutorial/player-list upper-right handoff
+
+- The active tutorial now suppresses Roblox's People list while it owns the upper-right corner.
+- Tapping the tutorial temporarily reveals the People list for ten seconds, then restores the same
+  tutorial step automatically; it cannot be permanently dismissed before completion.
