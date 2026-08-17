@@ -2442,9 +2442,9 @@ function BaseUI:_bindQuestTracker()
         self._missionOverride()
     end
 
-    -- tiny CLAIM chip riding the tracker's top-right corner; visible only when the
-    -- tracked mission is claimable. Claiming refreshes immediately -> the tracker
-    -- cycles to the next mission in the chain.
+    -- Lower-left CLAIM action, contained by the tracker rather than stranded in its far upper-right
+    -- corner. Scale/anchor placement owns the position; no viewport-sized pixel translation is
+    -- involved. Claiming refreshes immediately -> the tracker cycles to the next mission in chain.
     task.spawn(function()
         local pane = self._questDesc and self._questDesc.Parent
         if not pane or self._questClaimBtn then
@@ -2452,13 +2452,13 @@ function BaseUI:_bindQuestTracker()
         end
         local btn = Instance.new("TextButton")
         btn.Name = "QuestClaimButton"
-        btn.AnchorPoint = Vector2.new(1, 0)
-        btn.Position = UDim2.new(1, 6, 0, -6)
-        btn.Size = UDim2.fromOffset(58, 20)
+        btn.AnchorPoint = Vector2.new(0, 1)
+        btn.Position = UDim2.fromScale(0, 1)
+        btn.Size = UDim2.fromOffset(72, 24)
         btn.BackgroundColor3 = Color3.fromRGB(60, 160, 90)
         btn.Text = "CLAIM"
         btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        btn.TextSize = 12
+        btn.TextSize = 13
         btn.Font = Enum.Font.GothamBlack
         btn.ZIndex = 30
         local questTrackerStyle = require(script.Parent.Parent.Systems.QuestTrackerStyle)

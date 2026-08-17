@@ -2783,3 +2783,11 @@ first-session cohort rates.
 - Matched the full quest capsule to the live Roblox People-list outer frame: 397px wide with a 4px
   right inset and justified 14px top inset, while retaining the scale-only upper-right dock anchor.
 - Full CI passed: 1,912/1,912 headless cases across 206 specs.
+
+## 2026-08-17 — Quest actions and responsive placement policy
+
+- Moved the quest Claim action into the lower-left of the tracker and replaced the small gray
+  top-left dismiss glyph with the standard red menu close X in the upper-right.
+- Recorded the project-wide GUI rule: anchors, scale, layout, constraints, and parent-relative
+  geometry own placement; every non-zero pixel placement offset must be a small, locally documented
+  correction with a concrete stable reference.

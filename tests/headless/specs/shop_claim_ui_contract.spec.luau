@@ -23,6 +23,20 @@ return function()
             )
         end)
 
+        it("keeps quest actions accessible in their established corners", function()
+            local baseUI = readFile("src/Client/UI/BaseUI.lua")
+            local tracker = readFile("src/Client/Systems/QuestTrackerStyle.lua")
+
+            expect(baseUI:find("btn.AnchorPoint = Vector2.new(0, 1)", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(baseUI:find("btn.Position = UDim2.fromScale(0, 1)", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(tracker:find("CloseButton.attach(pane", 1, true) ~= nil).to.equal(true)
+            expect(tracker:find('x.Name = "DismissX"', 1, true) ~= nil).to.equal(true)
+        end)
+
         it("uses a shared ground-height prompt anchor for every streamed pet shop", function()
             local prompt = readFile("src/Client/Systems/ShopWorldPrompt.lua")
 

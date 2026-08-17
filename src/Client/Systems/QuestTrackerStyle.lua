@@ -13,6 +13,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local QuestDisplayMode = require(ReplicatedStorage.Shared.Game.QuestDisplayMode)
+local CloseButton = require(script.Parent.Parent.UI.Components.CloseButton)
 
 local QuestTrackerStyle = {}
 local started = false
@@ -435,27 +436,18 @@ function QuestTrackerStyle.start()
             fill.ZIndex = 3
         end
 
-        -- Dismiss X — top-left gutter (clear of the top-right CLAIM chip). Hides the tracker until
-        -- the Quest menu is opened or a quest becomes claimable.
+        -- Dismiss X — use the same red image button as every full-size menu. The component's small
+        -- fixed corner overlap is deliberate panel chrome, not viewport placement: the responsive
+        -- upper-right dock and the pane's own corner establish the actual layout.
         if not pane:FindFirstChild("DismissX") then
-            local x = Instance.new("TextButton")
+            local x = CloseButton.attach(pane, {
+                zindex = 30,
+                onClick = function()
+                    QuestTrackerStyle._dismissed = true
+                    applyVisibility()
+                end,
+            })
             x.Name = "DismissX"
-            x.AnchorPoint = Vector2.new(0, 0)
-            x.Position = UDim2.new(0, 3, 0, 2)
-            x.Size = UDim2.fromOffset(16, 16)
-            x.BackgroundColor3 = Color3.fromRGB(70, 72, 80)
-            x.Text = "✕"
-            x.TextColor3 = Color3.fromRGB(235, 238, 245)
-            x.TextScaled = true
-            x.Font = Enum.Font.GothamBold
-            x.ZIndex = 6
-            x.Parent = pane
-            corner(x, 8)
-            stroke(x, Color3.fromRGB(28, 30, 36), 1)
-            x.Activated:Connect(function()
-                QuestTrackerStyle._dismissed = true
-                applyVisibility()
-            end)
         end
 
         -- Alternate compact presentations share the live description/count/fill above. The ring is
