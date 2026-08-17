@@ -116,6 +116,9 @@ return function()
                 "TutorialService.GetState"
             )
             expect(networkConfig.packets.TutorialState.topic).to.equal("tutorial.state")
+            expect(networkConfig.packets.TutorialHotbarDone.handler).to.equal(
+                "TutorialService.HotbarDone"
+            )
             expect(networkConfig.packets.StarterPetChoose.handler).to.equal(
                 "StarterPetService.Choose"
             )
@@ -257,6 +260,7 @@ return function()
             expect(signals.ShopItems.name).to.equal("ShopItems")
             expect(signals.TutorialStateRequest.name).to.equal("TutorialStateRequest")
             expect(signals.TutorialState.name).to.equal("TutorialState")
+            expect(signals.TutorialHotbarDone.name).to.equal("TutorialHotbarDone")
             expect(signals.StarterPetStateRequest.name).to.equal("StarterPetStateRequest")
             expect(signals.StarterPetChoose.name).to.equal("StarterPetChoose")
             expect(signals.StarterPetState.name).to.equal("StarterPetState")
@@ -302,7 +306,7 @@ return function()
             expect(signals.FoundersChoiceStateRequest.name).to.equal("FoundersChoiceStateRequest")
             expect(signals.FoundersChoiceSelect.name).to.equal("FoundersChoiceSelect")
             expect(signals.FoundersChoiceState.name).to.equal("FoundersChoiceState")
-            expect(#created).to.equal(126)
+            expect(#created).to.equal(127)
         end)
 
         it("omits Studio-only packets from a production registry", function()

@@ -150,7 +150,9 @@ return {
                 cue = "click",
                 cue_text = "CLICK HERE",
             }, -- the live power-bar Edit button (HotbarBar)
-            complete_on = { event = "power_bound" },
+            -- Binding Resonance is only the middle of this lesson. The server completes the step
+            -- after the player presses Done and verifies that Resonance is actually on the bar.
+            complete_on = { event = "tutorial_hotbar_finished" },
         },
         {
             id = "cast_power",

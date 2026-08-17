@@ -67,6 +67,28 @@ function TutorialService:Start()
             fireGameEvent(player, "tutorial_squad_reviewed", { source = "pets_panel" })
         end
     end)
+    Signals.TutorialHotbarDone.OnServerEvent:Connect(function(player)
+        if not self._dataService:IsDataLoaded(player) then
+            return
+        end
+        local data = self:_ensureProgress(player)
+        local step = data and TutorialFlow.current(self._config, data.Tutorial)
+        if not (step and step.id == "bind_power") then
+            return
+        end
+
+        -- The client controls the edit UI, but not tutorial completion: only accept Done when the
+        -- authoritative saved bar contains the Resonance power the lesson asked the player to bind.
+        for _, bind in pairs(data.Hotbar or {}) do
+            if type(bind) == "table" and bind.type == "power" and bind.target == "resonance" then
+                fireGameEvent(player, "tutorial_hotbar_finished", {
+                    source = "hotbar_done",
+                    power = "resonance",
+                })
+                return
+            end
+        end
+    end)
     Players.PlayerAdded:Connect(function(player)
         task.spawn(function()
             self:_waitForDataAndPush(player)

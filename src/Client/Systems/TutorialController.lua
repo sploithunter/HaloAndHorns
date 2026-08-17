@@ -40,6 +40,7 @@ local pulseArrow -- blinking arrow floating above the current ui target (small b
 local pulseTarget -- exact GuiObject currently highlighted
 local pulseTargetWasClipped -- restored when guidance ends
 local stepToken = 0 -- bumps every state push; loops check it to die
+local pulseGeneration = 0 -- invalidates an in-step cue when a multi-phase lesson changes target
 
 local questPane -- quest_tracker_pane (hidden while the tutorial runs)
 local tutorialActive = false
@@ -217,11 +218,8 @@ end
 
 local pathFolder -- ground breadcrumb trail (egg steps)
 
-local function clearGuidance()
-    if beacon then
-        beacon:Destroy()
-        beacon = nil
-    end
+local function clearUiGuidance()
+    pulseGeneration += 1
     if pulseStroke then
         pulseStroke:Destroy()
         pulseStroke = nil
@@ -235,6 +233,14 @@ local function clearGuidance()
     end
     pulseTarget = nil
     pulseTargetWasClipped = nil
+end
+
+local function clearGuidance()
+    if beacon then
+        beacon:Destroy()
+        beacon = nil
+    end
+    clearUiGuidance()
     if pathFolder then
         pathFolder:Destroy()
         pathFolder = nil
@@ -519,17 +525,19 @@ end
 
 local function showUiPulse(token, name, options)
     options = options or {}
+    pulseGeneration += 1
+    local generation = pulseGeneration
     task.spawn(function()
         local pg = Players.LocalPlayer:WaitForChild("PlayerGui")
         -- the target may not exist yet (LevelUpButton appears with pending levels) — poll politely
         local target
-        while token == stepToken and not target do
+        while token == stepToken and generation == pulseGeneration and not target do
             target = findUiTarget(pg, name, options)
             if not target then
                 task.wait(1)
             end
         end
-        if token ~= stepToken or not target then
+        if token ~= stepToken or generation ~= pulseGeneration or not target then
             return
         end
         pulseStroke = Instance.new("UIStroke")
@@ -540,7 +548,7 @@ local function showUiPulse(token, name, options)
         if not options.arrow then
             -- stroke-only cue; blink it and bail (no arrow for secondary targets)
             local t0 = os.clock()
-            while token == stepToken and pulseStroke do
+            while token == stepToken and generation == pulseGeneration and pulseStroke do
                 pulseStroke.Transparency = 0.25
                     + 0.55 * (0.5 + 0.5 * math.sin((os.clock() - t0) * 4))
                 RunService.RenderStepped:Wait()
@@ -585,7 +593,7 @@ local function showUiPulse(token, name, options)
         end
 
         local t0 = os.clock()
-        while token == stepToken and pulseStroke do
+        while token == stepToken and generation == pulseGeneration and pulseStroke do
             local s = 0.5 + 0.5 * math.sin((os.clock() - t0) * 4)
             pulseStroke.Transparency = 0.25 + 0.55 * s
             if pulseArrow then
@@ -594,6 +602,47 @@ local function showUiPulse(token, name, options)
                 -- player needed it.
                 pulseArrow.TextTransparency = if options.clickCue then 0 else 0.05 + 0.55 * s
                 pulseArrow.Position = UDim2.new(0.5, 0, 0, -6 - math.floor(8 * s))
+            end
+            RunService.RenderStepped:Wait()
+        end
+    end)
+end
+
+-- Set your power is a three-phase interaction. A single cue attached to the Edit/Done button
+-- incorrectly survived while the player was choosing a slot and obscured the picker's own guides.
+-- Resolve each phase from live UI state instead:
+--   Edit (not editing, no Resonance) -> no callout while choosing -> Done after Resonance is bound.
+local function showBindPowerGuidance(token)
+    task.spawn(function()
+        local pg = Players.LocalPlayer:WaitForChild("PlayerGui")
+        local phase
+        while token == stepToken do
+            local hotbar = pg:FindFirstChild("HotbarBar")
+            local editButton = hotbar and hotbar:FindFirstChild("Edit", true)
+            local editing = editButton and editButton:GetAttribute("HotbarEditing") == true
+            local resonanceBound = findUiTarget(pg, nil, {
+                hotbarType = "power",
+                hotbarTarget = "resonance",
+            }) ~= nil
+            local nextPhase
+            if editing and resonanceBound then
+                nextPhase = "done"
+            elseif not editing and not resonanceBound then
+                nextPhase = "edit"
+            else
+                nextPhase = "choose"
+            end
+
+            if nextPhase ~= phase then
+                phase = nextPhase
+                clearUiGuidance()
+                if phase == "edit" or phase == "done" then
+                    showUiPulse(token, "Edit", {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = "CLICK HERE",
+                    })
+                end
             end
             RunService.RenderStepped:Wait()
         end
@@ -665,6 +714,8 @@ local function apply(state)
         local finder = namedPartFinder(target.name)
         showEggBeacon(stepToken, finder, target.label or "⬇ GO")
         showEggPath(stepToken, finder)
+    elseif state.id == "bind_power" then
+        showBindPowerGuidance(stepToken)
     elseif target.kind == "ui" then
         showUiPulse(stepToken, target.name, {
             arrow = true,

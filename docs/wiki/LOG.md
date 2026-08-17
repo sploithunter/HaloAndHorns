@@ -2760,3 +2760,13 @@ first-session cohort rates.
 - Corrected `TutorialDock` to the exact scale-only upper-right position `{1,0},{0,0}` after phone
   verification showed that pixel offsets displaced it from the intended corner.
 - Added a regression guard that rejects a pixel-offset `UDim2.new(...)` position for this dock.
+
+## 2026-08-17 — Sequenced Set-your-power guidance
+
+- Split the live **Set your power** interaction into three visual phases without changing its saved
+  tutorial index: `Edit` callout, cue-free slot/Resonance selection, then `Done` callout.
+- Enlarged the Resonance picker arrow and added a scale/opacity pulse so it remains legible on a
+  phone without competing with the hotbar callout.
+- Moved lesson completion from the intermediate `power_bound` event to pressing `Done`; a new
+  rate-limited request only advances after the server verifies Resonance in the saved hotbar.
+- Full CI passed: 1,910/1,910 headless cases across 206 specs.

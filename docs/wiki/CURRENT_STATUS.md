@@ -1370,9 +1370,13 @@ Last checked: 2026-08-16
 - Tutorial 6 and **Call them back** now resolve their live `berserk_brew` and `rally` hotbar
   bindings by identity instead of assuming positions, and outline the real slots with a large,
   bobbing `CLICK HERE` callout.
-- **Build your squad**, **Set your power**, and **Power up Resonance** use that same large, bobbing
-  `CLICK HERE` treatment on the live Pets, hotbar Edit, and Powers buttons. Each cue is parented to
-  the resolved button, so it follows scaled/mobile layouts instead of relying on screen coordinates.
+- **Build your squad** and **Power up Resonance** use that same large, bobbing `CLICK HERE`
+  treatment on the live Pets and Powers buttons. **Set your power** is one persisted lesson with
+  three client phases: `Edit` gets the callout; slot/power selection removes it and enlarges/pulses
+  the Resonance-row arrow; after Resonance is bound, `Done` gets the callout. Pressing `Done` only
+  completes the lesson after the server verifies Resonance in the authoritative saved hotbar.
+  Every cue is parented to its resolved control, so it follows scaled/mobile layouts instead of
+  relying on screen coordinates.
 - Centralized effective attack geometry for runtime and UI. Every Huge structurally receives area
   damage unless it authors a stronger Huge scope; real periodic AoE procs receive an area ring; and
   an on-hit control badge inherits the attack geometry that carries it. Inventory, egg preview, and
