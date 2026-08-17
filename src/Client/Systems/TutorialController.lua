@@ -42,7 +42,6 @@ local pulseTargetWasClipped -- restored when guidance ends
 local stepToken = 0 -- bumps every state push; loops check it to die
 local pulseGeneration = 0 -- invalidates an in-step cue when a multi-phase lesson changes target
 
-local questPane -- quest_tracker_pane (hidden while the tutorial runs)
 local tutorialActive = false
 local capsuleWantedVisible = false
 local playerListPeekUntil = 0
@@ -82,6 +81,10 @@ end
 
 local function setCapsuleWantedVisible(visible)
     capsuleWantedVisible = visible == true
+    -- QuestTrackerStyle uses this ownership signal rather than inferring from the step id. It
+    -- remains true through the tutorial-complete handoff card, so the two upper-right surfaces
+    -- can never overlap.
+    Players.LocalPlayer:SetAttribute("TutorialCornerOwned", capsuleWantedVisible)
     syncCapsuleVisibility()
 end
 
@@ -105,13 +108,6 @@ local function showPlayerListTemporarily()
         playerListPeekUntil = 0
         syncCapsuleVisibility()
     end)
-end
-
--- While the tutorial runs, quests yield their normal tracker spot.
-local function syncQuestPane()
-    if questPane then
-        questPane.Visible = not tutorialActive
-    end
 end
 
 local function buildCapsule(pg)
@@ -199,21 +195,6 @@ local function buildCapsule(pg)
     capsule.Parent = dock
     gui.Parent = pg
     require(script.Parent.Parent.UI.UIViewportScale).attach(capsule)
-
-    -- The post-tutorial quest tracker keeps its existing TopHudStack home. We only discover it
-    -- here so the tutorial can yield that surface after completion; the tutorial itself stays in
-    -- its own upper-right ScreenGui dock.
-    task.spawn(function()
-        local barGui = pg:WaitForChild("PlayerBar", 20)
-        local cap = barGui and barGui:WaitForChild("Capsule", 10)
-        local stack = cap and cap:WaitForChild("TopHudStack", 10)
-        if not stack then
-            return
-        end
-        questPane = stack:FindFirstChild("quest_tracker_pane")
-            or stack:WaitForChild("quest_tracker_pane", 15)
-        syncQuestPane()
-    end)
 end
 
 local pathFolder -- ground breadcrumb trail (egg steps)
@@ -669,7 +650,6 @@ local function apply(state)
             task.delay(tonumber(doneCfg.show_seconds) or 8, function()
                 if stepToken == token and capsule then
                     setCapsuleWantedVisible(false)
-                    syncQuestPane()
                 end
             end)
             return
@@ -677,12 +657,10 @@ local function apply(state)
         if capsule then
             setCapsuleWantedVisible(false)
         end
-        syncQuestPane() -- hand the spot back to quests
         return
     end
     Players.LocalPlayer:SetAttribute("TutorialStepId", state.id)
     tutorialActive = true
-    syncQuestPane()
     stepLabel.Text = ("TUTORIAL  %d / %d"):format(state.index or 1, state.total or 1)
         .. (
             (state.need or 1) > 1 and ("   ·   %d / %d"):format(state.count or 0, state.need) or ""

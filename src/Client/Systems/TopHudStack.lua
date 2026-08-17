@@ -1,12 +1,9 @@
 --[[
     TopHudStack (client) — pull the top-center cluster into ONE tight stack under the player bar.
 
-    The ASCEND nudge (LevelUpGui), the quest tracker capsule (BaseUI pane) and the buff-toggle
-    row (PlayerPowerBadges) are separate guis with independent pixel positions, so on small
-    screens they drift apart / overlap (Jason: "this also" — stack them). Same structural fix
-    as CurrencyStack: adopt them into a vertical UIListLayout container parented INSIDE the
-    PlayerBar capsule — they inherit the capsule's UIViewportScale (own scales removed, no
-    double-shrink) and the list owns the spacing, so the cluster reads tight at every size.
+    The ASCEND nudge (LevelUpGui) is adopted into a small stack beneath the player bar. The quest
+    tracker now owns a dedicated zero-offset upper-right dock above the People list and must never
+    be reparented here.
 
     UIListLayout skips invisible children, so the ASCEND nudge popping in/out just compacts
     the stack. Post-process: PlayerBar/LevelUpController/BaseUI logic untouched.
@@ -65,23 +62,11 @@ function TopHudStack.start()
             end)
         end
 
-        -- PERSISTENT elements first; the TRANSIENT ascend nudge goes LAST so it pops in
-        -- BELOW them — the quest bar and toggles never shift when it appears/disappears.
-
-        -- 1. quest tracker capsule (BaseUI pane, restyled by QuestTrackerStyle)
-        adopt(1, function()
-            -- No give-up timeout (see MenuTrayStyle): a non-owner's late/stalled BaseUI boot used to
-            -- outlast the old 20s window, so the top-HUD panes were never adopted into the stack.
-            local base = pg:WaitForChild("ProfessionalBaseUI")
-            local mc = base and base:WaitForChild("MainContainer", 10)
-            return mc and mc:WaitForChild("quest_tracker_pane", 15)
-        end)
-
         -- (the buff-toggle row straddles the player bar's lower edge — PlayerPowerBadges
         -- docks it onto the capsule itself, enhancement-slot style; not part of this stack)
 
-        -- 2. ASCEND / LEVEL UP nudge (transient — visible only with pending levels)
-        adopt(2, function()
+        -- ASCEND / LEVEL UP nudge (transient — visible only with pending levels)
+        adopt(1, function()
             local gui = pg:WaitForChild("LevelUpGui", 20)
             return gui and gui:WaitForChild("LevelUpButton", 10)
         end)

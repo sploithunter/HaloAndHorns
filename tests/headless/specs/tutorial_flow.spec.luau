@@ -96,6 +96,22 @@ return function()
             expect(rallyCall.target.cue_text).to.equal("CLICK HERE")
         end)
 
+        it("points Use Resonance at its actual live hotbar binding", function()
+            local castPower
+            for _, step in ipairs(cfg.steps) do
+                if step.id == "cast_power" then
+                    castPower = step
+                    break
+                end
+            end
+            expect(castPower).to.be.ok()
+            expect(castPower.target.name).to.equal(nil)
+            expect(castPower.target.hotbar_type).to.equal("power")
+            expect(castPower.target.hotbar_target).to.equal("resonance")
+            expect(castPower.target.cue).to.equal("click")
+            expect(castPower.target.cue_text).to.equal("CLICK HERE")
+        end)
+
         it("gives every actionable tutorial button an anchored CLICK HERE cue", function()
             local expectedTargets = {
                 build_squad = "PetsButton",
@@ -131,6 +147,22 @@ return function()
             expect(hotbar:find("arrowScale.Scale = 0.88 + 0.24 * a", 1, true)).to.be.ok()
             expect(server:find('bind.target == "resonance"', 1, true)).to.be.ok()
             expect(server:find('fireGameEvent(player, "tutorial_hotbar_finished"', 1, true)).to.be.ok()
+        end)
+
+        it("aligns post-tutorial quests with the upper-right PlayerList", function()
+            local tracker = readFile("src/Client/Systems/QuestTrackerStyle.lua")
+            local stack = readFile("src/Client/Systems/TopHudStack.lua")
+            local tutorial = readFile("src/Client/Systems/TutorialController.lua")
+            expect(tracker:find('dock.Name = "QuestTrackerDock"', 1, true)).to.be.ok()
+            expect(tracker:find("dock.AnchorPoint = Vector2.new(1, 0)", 1, true)).to.be.ok()
+            expect(tracker:find("dock.Position = UDim2.fromScale(1, 0)", 1, true)).to.be.ok()
+            expect(tracker:find("dock.Position = UDim2.new(", 1, true)).to.equal(nil)
+            expect(tracker:find("pane.Parent = dock", 1, true)).to.be.ok()
+            expect(tracker:find("pane.Position = UDim2.fromOffset(-4, 14)", 1, true)).to.be.ok()
+            expect(tracker:find("pane.Size = UDim2.fromOffset(397, 40)", 1, true)).to.be.ok()
+            expect(tracker:find("pane.ZIndex = 1", 1, true)).to.be.ok()
+            expect(stack:find('WaitForChild("quest_tracker_pane"', 1, true)).to.equal(nil)
+            expect(tutorial:find('SetAttribute("TutorialCornerOwned"', 1, true)).to.be.ok()
         end)
 
         it("keeps starter companion portraits visible when flat thumbnails fail", function()

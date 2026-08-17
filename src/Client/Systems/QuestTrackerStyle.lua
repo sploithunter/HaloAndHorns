@@ -1,7 +1,7 @@
 --[[
-    QuestTrackerStyle (client) — move the Current Quest tracker out of the top-right and dock it
-    directly BELOW the center player bar, restyled to match (a dark capsule with a blue progress bar
-    on top + the quest name below), per assets/ui/reference/player_status_quest_combo_reference.png.
+    QuestTrackerStyle (client) — dock the Current Quest tracker above Roblox's People list. Its
+    4px right inset and 397px width match that CoreGui panel, with the same justified 14px top inset
+    for rounded-screen clearance, so the objective stays predictable without covering the playfield.
 
     Scoped post-process of ProfessionalBaseUI's quest_tracker_pane (BaseUI logic untouched). The
     progress fill is area-themed via UITheme (blue default). Idempotent.
@@ -34,11 +34,14 @@ local autoExpandGeneration = 0
 local detailHideGeneration = 0
 local DETAIL_READ_GRACE_SECONDS = 10
 
--- The tracker's visibility is a pure function of the dismissed flag — set by the X, cleared when the
--- Quest menu opens or a quest becomes claimable (Jason: it's in the way when idle, esp. on mobile).
+-- Tutorial and quest objectives share one upper-right surface. A full menu or the tutorial owns the
+-- corner exclusively; dismissal remains local to the quest tracker itself.
 local function applyVisibility()
     if QuestTrackerStyle._pane then
+        local player = Players.LocalPlayer
         QuestTrackerStyle._pane.Visible = not QuestTrackerStyle._dismissed
+            and player:GetAttribute("LargeMenuOpen") ~= true
+            and player:GetAttribute("TutorialCornerOwned") ~= true
         applyPresentation()
     end
 end
@@ -349,10 +352,33 @@ function QuestTrackerStyle.start()
         end
         pane:SetAttribute("Restyled", true)
 
-        -- dock TIGHT below the player bar (Jason: as close as possible) — compact pane.
-        pane.AnchorPoint = Vector2.new(0.5, 0)
-        pane.Position = UDim2.new(0.5, 0, 0, 68)
-        pane.Size = UDim2.fromOffset(360, 40) -- compact strip (Jason: shrink it down)
+        local trackerGui = Instance.new("ScreenGui")
+        trackerGui.Name = "QuestTrackerGui"
+        trackerGui.ResetOnSpawn = false
+        trackerGui.DisplayOrder = 90
+        trackerGui.IgnoreGuiInset = true
+        trackerGui.Parent = pg
+
+        -- Anchor at the upper-right safe edge. These measured offsets match Roblox's PlayerList
+        -- outer frame: 4px from the right edge, 14px from the rounded-screen top, and 397px wide.
+        local dock = Instance.new("Frame")
+        dock.Name = "QuestTrackerDock"
+        dock.AnchorPoint = Vector2.new(1, 0)
+        dock.Position = UDim2.fromScale(1, 0)
+        dock.Size = UDim2.fromOffset(0, 0)
+        dock.BackgroundTransparency = 1
+        dock.ClipsDescendants = false
+        dock.Parent = trackerGui
+
+        pane.AnchorPoint = Vector2.new(1, 0)
+        pane.Position = UDim2.fromOffset(-4, 14)
+        pane.Size = UDim2.fromOffset(397, 40)
+        pane.Parent = dock
+        -- BaseUI created this pane at Z12 because it lived beneath MainContainer. The restyled
+        -- quest layers intentionally start at Z2; after moving to a fresh ScreenGui, retaining Z12
+        -- makes the pane's own background paint over those layers (only the Z40 tooltip survives).
+        -- Reset the local baseline so every original and compact child renders above the shell.
+        pane.ZIndex = 1
         -- The PANE (the pill the bar sits in) is the neutral player-bar capsule gray — Jason: the
         -- BLACK pill should go gray, not the (green) bar fill.
         pane.BackgroundColor3 = Color3.fromRGB(120, 124, 132)
@@ -378,7 +404,7 @@ function QuestTrackerStyle.start()
         if pbg then
             pbg.AnchorPoint = Vector2.new(0.5, 0)
             pbg.Position = UDim2.new(0.5, 0, 0, 5)
-            pbg.Size = UDim2.fromOffset(300, 10) -- thin strip, a touch under the Focus bar (leaves a left gutter for the dismiss X)
+            pbg.Size = UDim2.fromOffset(337, 10) -- preserve the 30px side gutters at PlayerList width
             pbg.BackgroundColor3 = Color3.fromRGB(18, 20, 26)
             pbg.ZIndex = 2
             stroke(pbg, Color3.fromRGB(70, 110, 180), 1.5)
@@ -591,14 +617,14 @@ function QuestTrackerStyle.start()
                     ptext.Visible = false
                 end
             else
-                pane.Size = UDim2.fromOffset(360, 40)
+                pane.Size = UDim2.fromOffset(397, 40)
                 if paneCorner then
                     paneCorner.CornerRadius = UDim.new(0, 16)
                 end
                 if pbg then
                     pbg.AnchorPoint = Vector2.new(0.5, 0)
                     pbg.Position = UDim2.new(0.5, 0, 0, 5)
-                    pbg.Size = UDim2.fromOffset(300, 10)
+                    pbg.Size = UDim2.fromOffset(337, 10)
                     pbg.Visible = not QuestTrackerStyle._tipActive
                 end
                 if ptext then
@@ -619,7 +645,7 @@ function QuestTrackerStyle.start()
             if tipProgress then
                 tipProgress.AnchorPoint = Vector2.new(0.5, 0)
                 tipProgress.Position = UDim2.new(0.5, 0, 0, 5)
-                tipProgress.Size = UDim2.fromOffset(300, 10)
+                tipProgress.Size = UDim2.fromOffset(337, 10)
                 tipProgress.Visible = QuestTrackerStyle._tipActive
             end
             if tipDescription then
@@ -719,6 +745,8 @@ function QuestTrackerStyle.start()
             autoExpandGeneration += 1
             applyPresentation()
         end)
+        player:GetAttributeChangedSignal("LargeMenuOpen"):Connect(applyVisibility)
+        player:GetAttributeChangedSignal("TutorialCornerOwned"):Connect(applyVisibility)
 
         QuestTrackerStyle._pane = pane
         ensureTipOverlay()

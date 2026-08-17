@@ -2770,3 +2770,16 @@ first-session cohort rates.
 - Moved lesson completion from the intermediate `power_bound` event to pressing `Done`; a new
   rate-limited request only advances after the server verifies Resonance in the saved hotbar.
 - Full CI passed: 1,910/1,910 headless cases across 206 specs.
+
+## 2026-08-17 — Live Resonance cue and fixed quest corner
+
+- **Use Resonance** now resolves the player's actual saved Resonance hotbar binding and anchors its
+  `CLICK HERE` cue there; it never assumes the slot chosen during the preceding lesson.
+- Moved the post-tutorial quest tracker from the player-bar stack to its own exact scale-only
+  `{1,0},{0,0}` upper-right dock above the People list. Tutorial ownership and full menus suppress
+  it, including throughout the tutorial-complete card, so those surfaces cannot overlap.
+- Reset the reparented pane's local Z baseline so its original quest text, progress, dismiss, and
+  compact controls remain above the capsule background; high-Z tooltip clones had exposed this.
+- Matched the full quest capsule to the live Roblox People-list outer frame: 397px wide with a 4px
+  right inset and justified 14px top inset, while retaining the scale-only upper-right dock anchor.
+- Full CI passed: 1,912/1,912 headless cases across 206 specs.
