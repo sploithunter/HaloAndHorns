@@ -134,18 +134,43 @@ return function()
             expect(client:find("bodyLabel.TextSize = 18", 1, true)).to.be.ok()
         end)
 
-        it("docks the tutorial upper-right and yields to large menus", function()
-            local client = readFile("src/Client/Systems/TutorialController.lua")
-            expect(client:find("capsule.AnchorPoint = Vector2.new(1, 0)", 1, true)).to.be.ok()
-            expect(client:find("capsule.Position = UDim2.new(1, -24, 0, 72)", 1, true)).to.be.ok()
-            expect(client:find('GetAttribute("LargeMenuOpen") ~= true', 1, true)).to.be.ok()
-            expect(client:find('GetAttributeChangedSignal("LargeMenuOpen")', 1, true)).to.be.ok()
-            expect(client:find("capsule.Parent = stack", 1, true)).to.equal(nil)
+        it(
+            "owns the upper-right player-list slot without becoming permanently dismissible",
+            function()
+                local client = readFile("src/Client/Systems/TutorialController.lua")
+                expect(client:find('dock.Name = "TutorialDock"', 1, true)).to.be.ok()
+                expect(client:find("dock.AnchorPoint = Vector2.new(1, 0)", 1, true)).to.be.ok()
+                expect(client:find("dock.Position = UDim2.new(1, -12, 0, 56)", 1, true)).to.be.ok()
+                expect(client:find("dock.Size = UDim2.fromOffset(0, 0)", 1, true)).to.be.ok()
+                expect(client:find("capsule.AnchorPoint = Vector2.new(1, 0)", 1, true)).to.be.ok()
+                expect(client:find("capsule.Position = UDim2.fromOffset(0, 0)", 1, true)).to.be.ok()
+                expect(client:find("capsule.Parent = dock", 1, true)).to.be.ok()
+                expect(client:find("gui.DisplayOrder = 110", 1, true)).to.be.ok()
+                expect(client:find('GetAttribute("LargeMenuOpen") ~= true', 1, true)).to.be.ok()
+                expect(client:find('GetAttributeChangedSignal("LargeMenuOpen")', 1, true)).to.be.ok()
+                expect(client:find("capsule.Parent = stack", 1, true)).to.equal(nil)
+                expect(client:find("PLAYER_LIST_PEEK_SECONDS = 10", 1, true)).to.be.ok()
+                expect(client:find("playerListGuard:Suppress()", 1, true)).to.be.ok()
+                expect(client:find("playerListGuard:Restore()", 1, true)).to.be.ok()
+                expect(client:find('peekButton.Name = "ShowPlayersTemporarily"', 1, true)).to.be.ok()
+                expect(
+                    client:find("peekButton.Activated:Connect(showPlayerListTemporarily)", 1, true)
+                ).to.be.ok()
+                expect(
+                    client:find(
+                        "playerListPeekConnection = RunService.Heartbeat:Connect(function()",
+                        1,
+                        true
+                    )
+                ).to.be.ok()
+                expect(client:find('GetAttribute("LargeMenuOpen") == true', 1, true)).to.be.ok()
+                expect(client:find("task.defer(syncCapsuleVisibility)", 1, true)).to.be.ok()
 
-            local menus = readFile("src/Client/UI/MenuManager.lua")
-            expect(menus:find('SetAttribute("LargeMenuOpen", hasPanel)', 1, true)).to.be.ok()
-            expect(menus:find('SetAttribute("LargeMenuOpen", false)', 1, true)).to.be.ok()
-        end)
+                local menus = readFile("src/Client/UI/MenuManager.lua")
+                expect(menus:find('SetAttribute("LargeMenuOpen", hasPanel)', 1, true)).to.be.ok()
+                expect(menus:find('SetAttribute("LargeMenuOpen", false)', 1, true)).to.be.ok()
+            end
+        )
     end)
 
     describe("advance (the whole new-player path)", function()

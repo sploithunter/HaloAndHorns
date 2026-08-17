@@ -16,15 +16,18 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 local Workspace = game:GetService("Workspace")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local CoreGuiStateGuard = require(script.Parent.Parent.UI.CoreGuiStateGuard)
 local TUTORIAL_CFG
 pcall(function()
     TUTORIAL_CFG = require(ReplicatedStorage.Configs:WaitForChild("tutorial"))
 end)
 
 local GOLD = Color3.fromRGB(255, 205, 70)
+local PLAYER_LIST_PEEK_SECONDS = 10
 
 local TutorialController = {}
 local started = false
@@ -41,20 +44,66 @@ local stepToken = 0 -- bumps every state push; loops check it to die
 local questPane -- quest_tracker_pane (hidden while the tutorial runs)
 local tutorialActive = false
 local capsuleWantedVisible = false
+local playerListPeekUntil = 0
+local playerListPeekConnection
+local playerListGuard = CoreGuiStateGuard.new(function()
+    return StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.PlayerList)
+end, function(enabled)
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, enabled)
+end)
 
 local function syncCapsuleVisibility()
     if not capsule then
         return
     end
     local player = Players.LocalPlayer
-    capsule.Visible = capsuleWantedVisible
+    local tutorialOwnsCorner = capsuleWantedVisible
         and player:GetAttribute("InPrologue") ~= true
         and player:GetAttribute("LargeMenuOpen") ~= true
+    local peekingAtPlayers = tutorialOwnsCorner and os.clock() < playerListPeekUntil
+    capsule.Visible = tutorialOwnsCorner and not peekingAtPlayers
+
+    if tutorialOwnsCorner and not peekingAtPlayers then
+        local suppressed, suppressError = playerListGuard:Suppress()
+        if not suppressed then
+            warn(
+                "[TutorialController] Could not temporarily hide Roblox player list:",
+                suppressError
+            )
+        end
+    else
+        local restored, restoreError = playerListGuard:Restore()
+        if not restored then
+            warn("[TutorialController] Could not restore Roblox player list:", restoreError)
+        end
+    end
 end
 
 local function setCapsuleWantedVisible(visible)
     capsuleWantedVisible = visible == true
     syncCapsuleVisibility()
+end
+
+local function showPlayerListTemporarily()
+    if not capsuleWantedVisible or capsule.Visible ~= true then
+        return
+    end
+
+    playerListPeekUntil = os.clock() + PLAYER_LIST_PEEK_SECONDS
+    syncCapsuleVisibility()
+
+    if playerListPeekConnection then
+        playerListPeekConnection:Disconnect()
+    end
+    playerListPeekConnection = RunService.Heartbeat:Connect(function()
+        if os.clock() < playerListPeekUntil then
+            return
+        end
+        playerListPeekConnection:Disconnect()
+        playerListPeekConnection = nil
+        playerListPeekUntil = 0
+        syncCapsuleVisibility()
+    end)
 end
 
 -- While the tutorial runs, quests yield their normal tracker spot.
@@ -68,13 +117,28 @@ local function buildCapsule(pg)
     gui = Instance.new("ScreenGui")
     gui.Name = "TutorialGui"
     gui.ResetOnSpawn = false
-    gui.DisplayOrder = 40
+    -- Above the regular HUD (PlayerBar=80, BuffStats=100) so the full-card tap target cannot be
+    -- intercepted by a transparent HUD surface. Full menus remain above it at 120 and hide it.
+    gui.DisplayOrder = 110
     gui.IgnoreGuiInset = true
+
+    -- Keep the screen-edge anchor outside the scaled card. UIScale scales a root's anchored
+    -- placement as well as its contents on small viewports, which left a large false margin on
+    -- phones. This zero-size dock stays exactly at the safe upper-right point while the card
+    -- hanging left from it remains responsive.
+    local dock = Instance.new("Frame")
+    dock.Name = "TutorialDock"
+    dock.AnchorPoint = Vector2.new(1, 0)
+    dock.Position = UDim2.new(1, -12, 0, 56)
+    dock.Size = UDim2.fromOffset(0, 0)
+    dock.BackgroundTransparency = 1
+    dock.ClipsDescendants = false
+    dock.Parent = gui
 
     capsule = Instance.new("Frame")
     capsule.Name = "Objective"
     capsule.AnchorPoint = Vector2.new(1, 0)
-    capsule.Position = UDim2.new(1, -24, 0, 72)
+    capsule.Position = UDim2.fromOffset(0, 0)
     -- Mobile can shrink this HUD root to nearly half size. Keep the supporting copy at 18px and
     -- the title at 20px so the objective remains readable on a physical phone.
     capsule.Size = UDim2.fromOffset(420, 124)
@@ -121,7 +185,17 @@ local function buildCapsule(pg)
     bodyLabel.TextYAlignment = Enum.TextYAlignment.Top
     bodyLabel.Parent = capsule
 
-    capsule.Parent = gui
+    local peekButton = Instance.new("TextButton")
+    peekButton.Name = "ShowPlayersTemporarily"
+    peekButton.Size = UDim2.fromScale(1, 1)
+    peekButton.BackgroundTransparency = 1
+    peekButton.Text = ""
+    peekButton.AutoButtonColor = false
+    peekButton.ZIndex = 10
+    peekButton.Parent = capsule
+    peekButton.Activated:Connect(showPlayerListTemporarily)
+
+    capsule.Parent = dock
     gui.Parent = pg
     require(script.Parent.Parent.UI.UIViewportScale).attach(capsule)
 
@@ -660,7 +734,16 @@ function TutorialController.start()
             Signals.TutorialStateRequest:FireServer() -- nothing parked: pull fresh
         end
     end)
-    me:GetAttributeChangedSignal("LargeMenuOpen"):Connect(syncCapsuleVisibility)
+    me:GetAttributeChangedSignal("LargeMenuOpen"):Connect(function()
+        if me:GetAttribute("LargeMenuOpen") == true then
+            -- Yield before MenuManager captures the current People-list state for its modal.
+            syncCapsuleVisibility()
+        else
+            -- MenuManager restores its captured CoreGui state after publishing
+            -- LargeMenuOpen=false. Reclaim the corner only after that restoration finishes.
+            task.defer(syncCapsuleVisibility)
+        end
+    end)
 
     Signals.TutorialState.OnClientEvent:Connect(gatedApply)
     -- pull current state — the server's join-time push may predate this connection
