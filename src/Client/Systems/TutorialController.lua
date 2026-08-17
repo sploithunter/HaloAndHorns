@@ -61,7 +61,9 @@ local function buildCapsule(pg)
     capsule.Name = "Objective"
     capsule.AnchorPoint = Vector2.new(0.5, 1)
     capsule.Position = UDim2.new(0.5, 0, 1, -140) -- fallback spot (above the hotbar)
-    capsule.Size = UDim2.fromOffset(360, 88) -- room for 3-line bodies (farm step)
+    -- Mobile can shrink this HUD root to nearly half size. Keep every authored line at least as
+    -- large as the old 15px title, then give the wrapped body enough room to retain that floor.
+    capsule.Size = UDim2.fromOffset(420, 124)
     capsule.BackgroundColor3 = Color3.fromRGB(24, 22, 34)
     capsule.BackgroundTransparency = 0.12
     capsule.Visible = false
@@ -75,30 +77,30 @@ local function buildCapsule(pg)
 
     stepLabel = Instance.new("TextLabel")
     stepLabel.BackgroundTransparency = 1
-    stepLabel.Size = UDim2.new(1, -20, 0, 16)
+    stepLabel.Size = UDim2.new(1, -20, 0, 18)
     stepLabel.Position = UDim2.fromOffset(10, 6)
     stepLabel.Font = Enum.Font.GothamBold
-    stepLabel.TextSize = 11
+    stepLabel.TextSize = 15
     stepLabel.TextColor3 = GOLD
     stepLabel.TextXAlignment = Enum.TextXAlignment.Left
     stepLabel.Parent = capsule
 
     titleLabel = Instance.new("TextLabel")
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Size = UDim2.new(1, -20, 0, 18)
-    titleLabel.Position = UDim2.fromOffset(10, 21)
+    titleLabel.Size = UDim2.new(1, -20, 0, 22)
+    titleLabel.Position = UDim2.fromOffset(10, 26)
     titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 15
+    titleLabel.TextSize = 17
     titleLabel.TextColor3 = Color3.fromRGB(245, 245, 250)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = capsule
 
     bodyLabel = Instance.new("TextLabel")
     bodyLabel.BackgroundTransparency = 1
-    bodyLabel.Size = UDim2.new(1, -20, 0, 42)
-    bodyLabel.Position = UDim2.fromOffset(10, 41)
+    bodyLabel.Size = UDim2.new(1, -20, 0, 68)
+    bodyLabel.Position = UDim2.fromOffset(10, 50)
     bodyLabel.Font = Enum.Font.Gotham
-    bodyLabel.TextSize = 12
+    bodyLabel.TextSize = 15
     bodyLabel.TextWrapped = true
     bodyLabel.TextColor3 = Color3.fromRGB(200, 200, 215)
     bodyLabel.TextXAlignment = Enum.TextXAlignment.Left
