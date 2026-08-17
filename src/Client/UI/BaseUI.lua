@@ -2299,6 +2299,7 @@ function BaseUI:_bindQuestTracker()
                 self._questDesc.Text = res.activeTrack
                         and "Check the Quests menu for new adventures!"
                     or "Open Quests → activate a branch to begin!"
+                self._questDesc.Parent:SetAttribute("QuestDetailText", "")
             end
             if self._questText then
                 self._questText.Text = res.activeTrack and "★ All caught up ★"
@@ -2327,6 +2328,9 @@ function BaseUI:_bindQuestTracker()
             self._questDesc.Text = tostring(q.name or "Quest")
         end
         self._trackedQuestBody = tostring(q.description or "") -- hover tooltip copy
+        if self._questDesc then
+            self._questDesc.Parent:SetAttribute("QuestDetailText", self._trackedQuestBody)
+        end
         if self._questText then
             self._questText.Text = q.claimable and "✓ Claim!" or (cur .. "/" .. tgt)
         end
@@ -2347,10 +2351,9 @@ function BaseUI:_bindQuestTracker()
         end)
     end
 
-    -- HOVER TOOLTIP (Jason: "hover over Welcome to the Realm and other quests
-    -- to tell people exactly what to do"): hovering the tracker capsule shows
-    -- the quest's full description below it. Desktop hover; mobile keeps the
-    -- Quests menu as its detail surface.
+    -- QUEST DETAIL TIP: QuestTrackerStyle owns the shared mouse/touch interaction so every display
+    -- mode behaves consistently. Pressing reveals this immediately; release/hover-exit leaves it
+    -- readable for ten seconds instead of forcing a mobile player to cover the text with a thumb.
     do
         local pane = self._questDesc and self._questDesc.Parent
         if pane and not pane:FindFirstChild("QuestHoverTip") then
@@ -2379,19 +2382,7 @@ function BaseUI:_bindQuestTracker()
             local sz = Instance.new("UITextSizeConstraint")
             sz.MaxTextSize = 14
             sz.Parent = tip
-            pane.MouseEnter:Connect(function()
-                if require(script.Parent.Parent.Systems.QuestTrackerStyle).isTipActive() then
-                    return
-                end
-                local body = self._trackedQuestBody
-                if type(body) == "string" and body ~= "" then
-                    tip.Text = body
-                    tip.Visible = true
-                end
-            end)
-            pane.MouseLeave:Connect(function()
-                tip.Visible = false
-            end)
+            pane:SetAttribute("QuestDetailText", tostring(self._trackedQuestBody or ""))
         end
     end
 
@@ -2410,6 +2401,7 @@ function BaseUI:_bindQuestTracker()
             require(script.Parent.Parent.Systems.QuestTrackerStyle).setClaimAvailable(false)
             if self._questDesc then
                 self._questDesc.Text = text
+                self._questDesc.Parent:SetAttribute("QuestDetailText", text)
             end
             if self._questText then
                 self._questText.Text = tostring(player:GetAttribute("MissionObjectiveCount") or "")

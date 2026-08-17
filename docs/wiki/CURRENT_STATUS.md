@@ -1384,8 +1384,12 @@ Last checked: 2026-08-16
 
 Last checked: 2026-08-17
 
-- The tutorial objective capsule authors every line at a minimum 15px text size before shared HUD
-  scaling—the former title size and the smallest readable size in phone testing. Step copy and body
-  copy no longer fall to 11px/12px, while the title rises to 17px to preserve hierarchy.
+- The tutorial objective capsule authors step and body copy at 18px before shared HUD scaling, with
+  20px titles. Step copy and body copy no longer fall to the former unreadable 11px/12px sizes on
+  phones.
 - The capsule is now 420x124 authored pixels so larger wrapped instructions remain visible instead
   of clipping. It continues to use the existing shared viewport scaling and top-HUD docking path.
+- After the tutorial, every quest/mission detail in the shared tracker reveals immediately on mouse
+  or touch press, stays visible while held, and remains readable for ten seconds after release.
+  Compact pill/ring modes temporarily expand through the same interval; desktop hover uses the same
+  grace instead of disappearing the instant the pointer leaves.
