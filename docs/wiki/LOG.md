@@ -2733,3 +2733,11 @@ first-session cohort rates.
 - Raised tutorial step and body copy to the former 15px title floor, raised titles to 17px, and
   enlarged the objective capsule so wrapped instructions remain readable and unclipped on phones.
 - Added a headless source-contract regression for the typography floor and capsule dimensions.
+
+## 2026-08-17 — Tap-readable quest details
+
+- Corrected the final tutorial typography values to 18px step/body copy and 20px titles after phone
+  review; the earlier session note recorded the intermediate values rather than the shipped ones.
+- Replaced the quest tracker's touch-simulated hover dependency with an explicit shared interaction:
+  press reveals the full instruction immediately, holding keeps it open, and release grants ten
+  seconds of unobstructed reading time. Mouse and all full/pill/ring tracker modes share the rule.

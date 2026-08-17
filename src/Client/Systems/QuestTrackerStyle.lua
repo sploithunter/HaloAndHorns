@@ -10,6 +10,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local QuestDisplayMode = require(ReplicatedStorage.Shared.Game.QuestDisplayMode)
 
@@ -23,11 +24,15 @@ QuestTrackerStyle._tipProgress = nil
 QuestTrackerStyle._tipDescription = nil
 QuestTrackerStyle._manuallyExpanded = false
 QuestTrackerStyle._autoExpandedUntil = 0
+QuestTrackerStyle._detailHeld = false
+QuestTrackerStyle._detailHovered = false
 QuestTrackerStyle._lastObjectiveKey = nil
 QuestTrackerStyle._lastObjectiveFraction = nil
 
 local applyPresentation = function() end
 local autoExpandGeneration = 0
+local detailHideGeneration = 0
+local DETAIL_READ_GRACE_SECONDS = 10
 
 -- The tracker's visibility is a pure function of the dismissed flag — set by the X, cleared when the
 -- Quest menu opens or a quest becomes claimable (Jason: it's in the way when idle, esp. on mobile).
@@ -61,6 +66,62 @@ local function autoExpand(seconds)
             end
         end
     end)
+end
+
+local function detailTip()
+    local pane = QuestTrackerStyle._pane
+    return pane and pane:FindFirstChild("QuestHoverTip")
+end
+
+local function showQuestDetail()
+    if QuestTrackerStyle._tipActive then
+        return false
+    end
+    local pane = QuestTrackerStyle._pane
+    local tip = detailTip()
+    local detail = pane and pane:GetAttribute("QuestDetailText")
+    if not tip or type(detail) ~= "string" or detail == "" then
+        return false
+    end
+    detailHideGeneration += 1
+    tip.Text = detail
+    tip.Visible = true
+    return true
+end
+
+local function hideQuestDetailAfterGrace()
+    detailHideGeneration += 1
+    local generation = detailHideGeneration
+    local hideAt = os.clock() + DETAIL_READ_GRACE_SECONDS
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        if generation ~= detailHideGeneration or os.clock() >= hideAt then
+            connection:Disconnect()
+            if
+                generation == detailHideGeneration
+                and not QuestTrackerStyle._detailHeld
+                and not QuestTrackerStyle._detailHovered
+            then
+                local tip = detailTip()
+                if tip then
+                    tip.Visible = false
+                end
+            end
+        end
+    end)
+end
+
+local function beginQuestDetailRead()
+    QuestTrackerStyle._detailHeld = true
+    detailHideGeneration += 1
+    showQuestDetail()
+    applyPresentation()
+end
+
+local function finishQuestDetailRead()
+    QuestTrackerStyle._detailHeld = false
+    autoExpand(DETAIL_READ_GRACE_SECONDS)
+    hideQuestDetailAfterGrace()
 end
 
 -- Called by BaseUI at the authoritative quest/mission update seams. Compact presentations briefly
@@ -457,6 +518,8 @@ function QuestTrackerStyle.start()
             local expanded = mode == "full"
                 or QuestTrackerStyle._manuallyExpanded
                 or QuestTrackerStyle._tipActive
+                or QuestTrackerStyle._detailHeld
+                or QuestTrackerStyle._detailHovered
                 or QuestTrackerStyle._autoExpandedUntil > os.clock()
             local collapsedPill = mode == "pill" and not expanded
             local collapsedRing = mode == "ring" and not expanded
@@ -465,7 +528,10 @@ function QuestTrackerStyle.start()
             compactCount.Text = compactCountText()
             compactGlyph.Visible = collapsedPill or collapsedRing
             compactCount.Visible = collapsedPill or collapsedRing
-            toggle.Visible = mode ~= "full"
+            -- The transparent interaction surface stays available in every presentation. Compact
+            -- modes borrow the full bar while details are being read; full mode still needs the
+            -- same tap-to-read behavior on touch devices.
+            toggle.Visible = true
 
             for _, segment in ipairs(ringSegments) do
                 segment.Visible = collapsedRing
@@ -575,17 +641,62 @@ function QuestTrackerStyle.start()
             end
         end
 
-        toggle.Activated:Connect(function()
-            local mode = QuestDisplayMode.normalize(player:GetAttribute("QuestDisplayMode"))
-            if mode == "full" then
+        local activeDetailInput = nil
+        local lastTouchAt = -math.huge
+
+        toggle.InputBegan:Connect(function(input)
+            local inputType = input.UserInputType
+            if
+                inputType ~= Enum.UserInputType.Touch
+                and inputType ~= Enum.UserInputType.MouseButton1
+            then
                 return
             end
-            local expanded = QuestTrackerStyle._manuallyExpanded
-                or QuestTrackerStyle._autoExpandedUntil > os.clock()
-            autoExpandGeneration += 1
-            QuestTrackerStyle._autoExpandedUntil = 0
-            QuestTrackerStyle._manuallyExpanded = not expanded
+            if inputType == Enum.UserInputType.Touch then
+                lastTouchAt = os.clock()
+                -- Roblox can synthesize hover events for a touch. A touch release must still begin
+                -- the ten-second grace period instead of leaving the detail pinned forever.
+                QuestTrackerStyle._detailHovered = false
+            end
+            activeDetailInput = input
+            beginQuestDetailRead()
+        end)
+
+        UserInputService.InputEnded:Connect(function(input)
+            if input ~= activeDetailInput then
+                return
+            end
+            activeDetailInput = nil
+            finishQuestDetailRead()
+        end)
+
+        toggle.MouseEnter:Connect(function()
+            if UserInputService.TouchEnabled and os.clock() - lastTouchAt < 1 then
+                return
+            end
+            QuestTrackerStyle._detailHovered = true
+            detailHideGeneration += 1
+            showQuestDetail()
             applyPresentation()
+        end)
+
+        toggle.MouseLeave:Connect(function()
+            if UserInputService.TouchEnabled and os.clock() - lastTouchAt < 1 then
+                return
+            end
+            QuestTrackerStyle._detailHovered = false
+            if not QuestTrackerStyle._detailHeld then
+                autoExpand(DETAIL_READ_GRACE_SECONDS)
+                hideQuestDetailAfterGrace()
+            end
+        end)
+
+        -- Activated also covers keyboard/gamepad activation and unusual pointer paths where Roblox
+        -- does not deliver InputBegan to the transparent overlay.
+        toggle.Activated:Connect(function()
+            showQuestDetail()
+            autoExpand(DETAIL_READ_GRACE_SECONDS)
+            hideQuestDetailAfterGrace()
         end)
 
         if ptext then
@@ -602,6 +713,9 @@ function QuestTrackerStyle.start()
         player:GetAttributeChangedSignal("QuestDisplayMode"):Connect(function()
             QuestTrackerStyle._manuallyExpanded = false
             QuestTrackerStyle._autoExpandedUntil = 0
+            QuestTrackerStyle._detailHeld = false
+            QuestTrackerStyle._detailHovered = false
+            detailHideGeneration += 1
             autoExpandGeneration += 1
             applyPresentation()
         end)
