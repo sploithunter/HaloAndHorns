@@ -2728,3 +2728,8 @@ first-session cohort rates.
 - Replaced the remaining plain arrow on **Set your power** with the large, bobbing `CLICK HERE`
   treatment attached directly to the live hotbar Edit button.
 - Expanded the tutorial source contract to cover every actionable Pets/Edit/Powers UI target.
+## 2026-08-17 — Mobile-readable tutorial typography
+
+- Raised tutorial step and body copy to the former 15px title floor, raised titles to 17px, and
+  enlarged the objective capsule so wrapped instructions remain readable and unclipped on phones.
+- Added a headless source-contract regression for the typography floor and capsule dimensions.

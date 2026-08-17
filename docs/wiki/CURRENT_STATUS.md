@@ -1379,3 +1379,13 @@ Last checked: 2026-08-16
 - Next FTUE pass retained from tester feedback: Ascend notification teleport, more UI-target arrows,
   a stronger first-30-second payoff, and a short Level-3 enhancement lesson. (The Ascension
   ceremony itself is now implemented.)
+
+## Mobile-readable tutorial typography
+
+Last checked: 2026-08-17
+
+- The tutorial objective capsule authors every line at a minimum 15px text size before shared HUD
+  scaling—the former title size and the smallest readable size in phone testing. Step copy and body
+  copy no longer fall to 11px/12px, while the title rises to 17px to preserve hierarchy.
+- The capsule is now 420x124 authored pixels so larger wrapped instructions remain visible instead
+  of clipping. It continues to use the existing shared viewport scaling and top-HUD docking path.
