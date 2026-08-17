@@ -61,8 +61,8 @@ local function buildCapsule(pg)
     capsule.Name = "Objective"
     capsule.AnchorPoint = Vector2.new(0.5, 1)
     capsule.Position = UDim2.new(0.5, 0, 1, -140) -- fallback spot (above the hotbar)
-    -- Mobile can shrink this HUD root to nearly half size. Keep every authored line at least as
-    -- large as the old 15px title, then give the wrapped body enough room to retain that floor.
+    -- Mobile can shrink this HUD root to nearly half size. Keep the supporting copy at 18px and
+    -- the title at 20px so the objective remains readable on a physical phone.
     capsule.Size = UDim2.fromOffset(420, 124)
     capsule.BackgroundColor3 = Color3.fromRGB(24, 22, 34)
     capsule.BackgroundTransparency = 0.12
@@ -80,7 +80,7 @@ local function buildCapsule(pg)
     stepLabel.Size = UDim2.new(1, -20, 0, 18)
     stepLabel.Position = UDim2.fromOffset(10, 6)
     stepLabel.Font = Enum.Font.GothamBold
-    stepLabel.TextSize = 15
+    stepLabel.TextSize = 18
     stepLabel.TextColor3 = GOLD
     stepLabel.TextXAlignment = Enum.TextXAlignment.Left
     stepLabel.Parent = capsule
@@ -90,7 +90,7 @@ local function buildCapsule(pg)
     titleLabel.Size = UDim2.new(1, -20, 0, 22)
     titleLabel.Position = UDim2.fromOffset(10, 26)
     titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 17
+    titleLabel.TextSize = 20
     titleLabel.TextColor3 = Color3.fromRGB(245, 245, 250)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = capsule
@@ -100,7 +100,7 @@ local function buildCapsule(pg)
     bodyLabel.Size = UDim2.new(1, -20, 0, 68)
     bodyLabel.Position = UDim2.fromOffset(10, 50)
     bodyLabel.Font = Enum.Font.Gotham
-    bodyLabel.TextSize = 15
+    bodyLabel.TextSize = 18
     bodyLabel.TextWrapped = true
     bodyLabel.TextColor3 = Color3.fromRGB(200, 200, 215)
     bodyLabel.TextXAlignment = Enum.TextXAlignment.Left
