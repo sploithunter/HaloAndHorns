@@ -215,7 +215,7 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Huge-and-above provenance is now captured as separate hatcher metadata. Future grants stamp `hatcher_name`/`hatcher_user_id` for pets meeting the configured provenance threshold; `grant_source` remains non-displayed audit data. `tests/studio/BackfillPetHatcherProvenance.lua` can backfill existing qualifying pets for the current Studio player.
 - Pet tooltip metadata visibility is driven by `configs/inventory.lua` `tooltip_fields`, so fields can be hidden, labeled, or ordered without editing `InventoryPanel`.
 - `MenuManager` temporarily disables Roblox's `PlayerList` CoreGui whenever any full game menu is present in `MenuOverlay`, so the native People list cannot cover Shop, Inventory, or other menu controls. Managed closes, direct panel X closes, panel switches, and manager destruction restore the exact enabled state captured before the first menu opened; individual panels must not own competing CoreGui guards.
-- The active tutorial objective owns a responsive upper-right dock rather than the top-center player-bar stack, leaving the main playfield clear. While visible it suppresses Roblox's People list; tapping the objective swaps in the People list for ten seconds and then restores the mandatory tutorial automatically. `MenuManager` publishes the `LargeMenuOpen` local-player attribute from actual overlay panel presence; the tutorial yields while any full-size menu is present and restores after every managed or self-close path. The post-tutorial quest tracker remains in its existing top-center stack.
+- The active tutorial objective owns a responsive upper-right dock rather than the top-center player-bar stack, leaving the main playfield clear. Its dock is scale-only at `{1,0},{0,0}`; arbitrary pixel offsets must not be added because they break placement across screens. While visible it suppresses Roblox's People list; tapping the objective swaps in the People list for ten seconds and then restores the mandatory tutorial automatically. `MenuManager` publishes the `LargeMenuOpen` local-player attribute from actual overlay panel presence; the tutorial yields while any full-size menu is present and restores after every managed or self-close path. After the tutorial, the quest tracker uses that upper-right anchor plus the measured CoreGui PlayerList geometry: a justified 14px rounded-screen top inset, 4px right inset, and 397px width; a shared `TutorialCornerOwned` attribute prevents overlap during the completion handoff.
 - Pet inventory cards now distinguish rarity/specialness and variant separately. Rarity rings are config-driven and can animate around the card using a `UIGradient`; the default rarity ladder currently includes Common, Uncommon, Rare, Epic, Legendary, Mythical, Secret, Exclusive, and Huge. Variant backgrounds are also config-driven, including darker gold and rainbow fills. Inventory display reads rarity names/colors from `configs/pets.lua`.
 - Pet-card thumbnails use uploaded, group-owned flat images for the cheap steady state and
   lazily constructed 3D views as the delivery fallback. The client does not catalog-prewarm pet
@@ -1370,9 +1370,13 @@ Last checked: 2026-08-16
 - Tutorial 6 and **Call them back** now resolve their live `berserk_brew` and `rally` hotbar
   bindings by identity instead of assuming positions, and outline the real slots with a large,
   bobbing `CLICK HERE` callout.
-- **Build your squad**, **Set your power**, and **Power up Resonance** use that same large, bobbing
-  `CLICK HERE` treatment on the live Pets, hotbar Edit, and Powers buttons. Each cue is parented to
-  the resolved button, so it follows scaled/mobile layouts instead of relying on screen coordinates.
+- **Build your squad** and **Power up Resonance** use that same large, bobbing `CLICK HERE`
+  treatment on the live Pets and Powers buttons. **Set your power** is one persisted lesson with
+  three client phases: `Edit` gets the callout; slot/power selection removes it and enlarges/pulses
+  the Resonance-row arrow; after Resonance is bound, `Done` gets the callout. Pressing `Done` only
+  completes the lesson after the server verifies Resonance in the authoritative saved hotbar.
+  Every cue is parented to its resolved control, so it follows scaled/mobile layouts instead of
+  relying on screen coordinates.
 - Centralized effective attack geometry for runtime and UI. Every Huge structurally receives area
   damage unless it authors a stronger Huge scope; real periodic AoE procs receive an area ring; and
   an on-hit control badge inherits the attack geometry that carries it. Inventory, egg preview, and

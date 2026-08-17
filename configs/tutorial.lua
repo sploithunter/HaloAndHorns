@@ -150,14 +150,24 @@ return {
                 cue = "click",
                 cue_text = "CLICK HERE",
             }, -- the live power-bar Edit button (HotbarBar)
-            complete_on = { event = "power_bound" },
+            -- Binding Resonance is only the middle of this lesson. The server completes the step
+            -- after the player presses Done and verifies that Resonance is actually on the bar.
+            complete_on = { event = "tutorial_hotbar_finished" },
         },
         {
             id = "cast_power",
             title = "Use Resonance",
             body = "Now press that slot (or its number key) near crystals — Resonance makes them break faster and pay more currency.",
             body_gamepad = "Use LB/RB to select Resonance, then press RT near crystals. It makes them break faster and pay more currency.",
-            target = { kind = "none" },
+            -- Resolve by binding identity, never by slot number: the preceding lesson lets the
+            -- player place Resonance anywhere on the bar.
+            target = {
+                kind = "ui",
+                hotbar_type = "power",
+                hotbar_target = "resonance",
+                cue = "click",
+                cue_text = "CLICK HERE",
+            },
             complete_on = { event = "power_cast" },
         },
         {

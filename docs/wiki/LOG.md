@@ -2754,3 +2754,32 @@ first-session cohort rates.
 - The active tutorial now suppresses Roblox's People list while it owns the upper-right corner.
 - Tapping the tutorial temporarily reveals the People list for ten seconds, then restores the same
   tutorial step automatically; it cannot be permanently dismissed before completion.
+
+## 2026-08-17 — Exact tutorial corner anchoring
+
+- Corrected `TutorialDock` to the exact scale-only upper-right position `{1,0},{0,0}` after phone
+  verification showed that pixel offsets displaced it from the intended corner.
+- Added a regression guard that rejects a pixel-offset `UDim2.new(...)` position for this dock.
+
+## 2026-08-17 — Sequenced Set-your-power guidance
+
+- Split the live **Set your power** interaction into three visual phases without changing its saved
+  tutorial index: `Edit` callout, cue-free slot/Resonance selection, then `Done` callout.
+- Enlarged the Resonance picker arrow and added a scale/opacity pulse so it remains legible on a
+  phone without competing with the hotbar callout.
+- Moved lesson completion from the intermediate `power_bound` event to pressing `Done`; a new
+  rate-limited request only advances after the server verifies Resonance in the saved hotbar.
+- Full CI passed: 1,910/1,910 headless cases across 206 specs.
+
+## 2026-08-17 — Live Resonance cue and fixed quest corner
+
+- **Use Resonance** now resolves the player's actual saved Resonance hotbar binding and anchors its
+  `CLICK HERE` cue there; it never assumes the slot chosen during the preceding lesson.
+- Moved the post-tutorial quest tracker from the player-bar stack to its own exact scale-only
+  `{1,0},{0,0}` upper-right dock above the People list. Tutorial ownership and full menus suppress
+  it, including throughout the tutorial-complete card, so those surfaces cannot overlap.
+- Reset the reparented pane's local Z baseline so its original quest text, progress, dismiss, and
+  compact controls remain above the capsule background; high-Z tooltip clones had exposed this.
+- Matched the full quest capsule to the live Roblox People-list outer frame: 397px wide with a 4px
+  right inset and justified 14px top inset, while retaining the scale-only upper-right dock anchor.
+- Full CI passed: 1,912/1,912 headless cases across 206 specs.

@@ -96,6 +96,22 @@ return function()
             expect(rallyCall.target.cue_text).to.equal("CLICK HERE")
         end)
 
+        it("points Use Resonance at its actual live hotbar binding", function()
+            local castPower
+            for _, step in ipairs(cfg.steps) do
+                if step.id == "cast_power" then
+                    castPower = step
+                    break
+                end
+            end
+            expect(castPower).to.be.ok()
+            expect(castPower.target.name).to.equal(nil)
+            expect(castPower.target.hotbar_type).to.equal("power")
+            expect(castPower.target.hotbar_target).to.equal("resonance")
+            expect(castPower.target.cue).to.equal("click")
+            expect(castPower.target.cue_text).to.equal("CLICK HERE")
+        end)
+
         it("gives every actionable tutorial button an anchored CLICK HERE cue", function()
             local expectedTargets = {
                 build_squad = "PetsButton",
@@ -116,6 +132,37 @@ return function()
             expect(found.build_squad).to.equal(true)
             expect(found.bind_power).to.equal(true)
             expect(found.slot_power).to.equal(true)
+        end)
+
+        it("sequences the power-binding cue through Edit, selection, and Done", function()
+            local client = readFile("src/Client/Systems/TutorialController.lua")
+            local hotbar = readFile("src/Client/Systems/HotbarBar.lua")
+            local server = readFile("src/Server/Services/TutorialService.lua")
+            expect(client:find('state.id == "bind_power"', 1, true)).to.be.ok()
+            expect(client:find('nextPhase = "done"', 1, true)).to.be.ok()
+            expect(client:find('nextPhase = "choose"', 1, true)).to.be.ok()
+            expect(hotbar:find('SetAttribute("HotbarEditing", editMode)', 1, true)).to.be.ok()
+            expect(hotbar:find("Signals.TutorialHotbarDone:FireServer()", 1, true)).to.be.ok()
+            expect(hotbar:find('arrow.Name = "TutorialResonanceArrow"', 1, true)).to.be.ok()
+            expect(hotbar:find("arrowScale.Scale = 0.88 + 0.24 * a", 1, true)).to.be.ok()
+            expect(server:find('bind.target == "resonance"', 1, true)).to.be.ok()
+            expect(server:find('fireGameEvent(player, "tutorial_hotbar_finished"', 1, true)).to.be.ok()
+        end)
+
+        it("aligns post-tutorial quests with the upper-right PlayerList", function()
+            local tracker = readFile("src/Client/Systems/QuestTrackerStyle.lua")
+            local stack = readFile("src/Client/Systems/TopHudStack.lua")
+            local tutorial = readFile("src/Client/Systems/TutorialController.lua")
+            expect(tracker:find('dock.Name = "QuestTrackerDock"', 1, true)).to.be.ok()
+            expect(tracker:find("dock.AnchorPoint = Vector2.new(1, 0)", 1, true)).to.be.ok()
+            expect(tracker:find("dock.Position = UDim2.fromScale(1, 0)", 1, true)).to.be.ok()
+            expect(tracker:find("dock.Position = UDim2.new(", 1, true)).to.equal(nil)
+            expect(tracker:find("pane.Parent = dock", 1, true)).to.be.ok()
+            expect(tracker:find("pane.Position = UDim2.fromOffset(-4, 14)", 1, true)).to.be.ok()
+            expect(tracker:find("pane.Size = UDim2.fromOffset(397, 40)", 1, true)).to.be.ok()
+            expect(tracker:find("pane.ZIndex = 1", 1, true)).to.be.ok()
+            expect(stack:find('WaitForChild("quest_tracker_pane"', 1, true)).to.equal(nil)
+            expect(tutorial:find('SetAttribute("TutorialCornerOwned"', 1, true)).to.be.ok()
         end)
 
         it("keeps starter companion portraits visible when flat thumbnails fail", function()
@@ -140,7 +187,8 @@ return function()
                 local client = readFile("src/Client/Systems/TutorialController.lua")
                 expect(client:find('dock.Name = "TutorialDock"', 1, true)).to.be.ok()
                 expect(client:find("dock.AnchorPoint = Vector2.new(1, 0)", 1, true)).to.be.ok()
-                expect(client:find("dock.Position = UDim2.new(1, -12, 0, 56)", 1, true)).to.be.ok()
+                expect(client:find("dock.Position = UDim2.fromScale(1, 0)", 1, true)).to.be.ok()
+                expect(client:find("dock.Position = UDim2.new(", 1, true)).to.equal(nil)
                 expect(client:find("dock.Size = UDim2.fromOffset(0, 0)", 1, true)).to.be.ok()
                 expect(client:find("capsule.AnchorPoint = Vector2.new(1, 0)", 1, true)).to.be.ok()
                 expect(client:find("capsule.Position = UDim2.fromOffset(0, 0)", 1, true)).to.be.ok()
@@ -214,7 +262,7 @@ return function()
                 "enemy_defeated", -- first_fight (the Earth-cave onramp creature)
                 "potion_used", -- battle_brew (drink from the top-right slot)
                 "rally_used", -- rally_call (the flag at the top-left, slot 11)
-                "power_bound", -- bind_power (Resonance onto the bar)
+                "tutorial_hotbar_finished", -- bind_power (Resonance bound, then Done pressed)
                 "power_cast", -- cast_power
                 "enhancement_slotted", -- slot_power → done
             })

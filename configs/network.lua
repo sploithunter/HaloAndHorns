@@ -1150,6 +1150,17 @@ return {
                 arguments = { { name = "action", type = "string" } },
             },
         },
+        TutorialHotbarDone = {
+            name = "TutorialHotbarDone",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 5,
+            handler = "TutorialService.HotbarDone",
+            schema = { kind = "tuple", arguments = {} },
+        },
         StarterPetStateRequest = {
             name = "StarterPetStateRequest",
             transport = "reliable_event",

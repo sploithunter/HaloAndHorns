@@ -1372,24 +1372,31 @@ function HotbarBar.start()
         end
         for _, id in ipairs(available.powers or {}) do
             local row = entry({ type = "power", target = id })
-            if id == "resonance" and not anyPowerBound and row then
+            local teachingResonance = localPlayer:GetAttribute("TutorialStepId") == "bind_power"
+            if id == "resonance" and (teachingResonance or not anyPowerBound) and row then
                 local arrow = Instance.new("TextLabel")
+                arrow.Name = "TutorialResonanceArrow"
                 arrow.BackgroundTransparency = 1
                 arrow.AnchorPoint = Vector2.new(1, 0.5)
-                arrow.Position = UDim2.new(1, -8, 0.5, 0)
-                arrow.Size = UDim2.fromOffset(22, 22)
+                arrow.Position = UDim2.fromScale(0.98, 0.5)
+                arrow.Size = UDim2.fromOffset(38, 38)
                 arrow.Font = Enum.Font.GothamBlack
-                arrow.TextSize = 18
+                arrow.TextSize = 32
                 arrow.Text = "⬅"
                 arrow.TextColor3 = Color3.fromRGB(255, 220, 90)
+                arrow.TextStrokeColor3 = Color3.new(0, 0, 0)
+                arrow.TextStrokeTransparency = 0.25
                 arrow.ZIndex = 106
                 arrow.Parent = row
+                local arrowScale = Instance.new("UIScale")
+                arrowScale.Parent = arrow
                 task.spawn(function()
                     local t = 0
                     while row.Parent do
                         t += 0.05
                         local a = (math.sin(t * 5) + 1) / 2
-                        arrow.TextTransparency = 0.05 + 0.5 * a
+                        arrow.TextTransparency = 0.02 + 0.28 * a
+                        arrowScale.Scale = 0.88 + 0.24 * a
                         task.wait(0.05)
                     end
                 end)
@@ -1534,6 +1541,7 @@ function HotbarBar.start()
 
     local function paintEdit()
         editBtn.Text = editMode and "Done" or "Edit"
+        editBtn:SetAttribute("HotbarEditing", editMode)
         editBtn.BackgroundColor3 = editMode and Color3.fromRGB(235, 170, 60)
             or Color3.fromRGB(60, 63, 76)
         setEditAttention(editMode)
@@ -1544,6 +1552,9 @@ function HotbarBar.start()
             closePicker()
         end
         paintEdit()
+        if not editMode and localPlayer:GetAttribute("TutorialStepId") == "bind_power" then
+            Signals.TutorialHotbarDone:FireServer()
+        end
     end)
 
     paintControllerSelection = function()
