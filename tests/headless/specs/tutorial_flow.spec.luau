@@ -96,9 +96,10 @@ return function()
             expect(rallyCall.target.cue_text).to.equal("CLICK HERE")
         end)
 
-        it("gives the Pets and Powers tutorial buttons anchored CLICK HERE cues", function()
+        it("gives every actionable tutorial button an anchored CLICK HERE cue", function()
             local expectedTargets = {
                 build_squad = "PetsButton",
+                bind_power = "Edit",
                 slot_power = "PowersButton",
             }
             local found = {}
@@ -113,6 +114,7 @@ return function()
                 end
             end
             expect(found.build_squad).to.equal(true)
+            expect(found.bind_power).to.equal(true)
             expect(found.slot_power).to.equal(true)
         end)
 

@@ -144,7 +144,12 @@ return {
             title = "Set your power",
             body = "You were born with a power — Resonance! Hit Edit on your power bar, then drop Resonance onto a slot. You'll do this for every power you unlock.",
             body_gamepad = "You were born with Resonance! Press D-pad Right for Powers, choose Resonance with A, and assign it to a slot.",
-            target = { kind = "ui", name = "Edit" }, -- the power-bar Edit button (HotbarBar) — blinking arrow points at it
+            target = {
+                kind = "ui",
+                name = "Edit",
+                cue = "click",
+                cue_text = "CLICK HERE",
+            }, -- the live power-bar Edit button (HotbarBar)
             complete_on = { event = "power_bound" },
         },
         {

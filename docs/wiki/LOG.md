@@ -2722,3 +2722,9 @@ first-session cohort rates.
   Resonance** with the same large, bobbing `CLICK HERE` treatment used by Berserk Brew and Rally.
 - Both cues attach to the live Pets/Powers button objects, preserving correct placement across
   mobile scaling and alternate HUD layouts without hard-coded coordinates.
+
+## 2026-08-16 — Hotbar Edit tutorial click cue
+
+- Replaced the remaining plain arrow on **Set your power** with the large, bobbing `CLICK HERE`
+  treatment attached directly to the live hotbar Edit button.
+- Expanded the tutorial source contract to cover every actionable Pets/Edit/Powers UI target.
