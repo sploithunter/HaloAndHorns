@@ -16,6 +16,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Architecture](ARCHITECTURE.md) — system shape and service boundaries.
 - [Console Support](CONSOLE_SUPPORT.md) — controller mapping, semantic input routing, modal focus,
   ten-foot HUD behavior, and the console QA matrix.
+- [UI Layout Policy](UI_LAYOUT_POLICY.md) — responsive placement, the narrow role of pixel offsets,
+  and the required justification for every non-zero placement nudge.
 - [Retention Analytics](RETENTION_ANALYTICS.md) — onboarding funnel, player milestones, and admin access.
 - [Founder's Choice](FOUNDERS_CHOICE.md) — exact first-10,000 cohort reservation, permanent
   pass-benefit selection, entitlement-source union, purchase reconciliation, and shop UX.
