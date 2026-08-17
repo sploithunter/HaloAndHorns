@@ -2741,3 +2741,10 @@ first-session cohort rates.
 - Replaced the quest tracker's touch-simulated hover dependency with an explicit shared interaction:
   press reveals the full instruction immediately, holding keeps it open, and release grants ten
   seconds of unobstructed reading time. Mouse and all full/pill/ring tracker modes share the rule.
+
+## 2026-08-17 — Upper-right tutorial objective dock
+
+- Moved the active tutorial objective out of the top-center player-bar stack into a responsive
+  upper-right dock, preserving the post-tutorial quest tracker's existing placement.
+- Full-size menus now publish one shared `LargeMenuOpen` state; tutorial copy hides while a modal
+  panel owns the screen and restores after managed, X-button, or ESC closes.
