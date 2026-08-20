@@ -375,6 +375,24 @@ function RetentionLogic.isExcludedPlayerName(playerName, prefixes)
     return false
 end
 
+function RetentionLogic.isExcludedUserId(userId, userIds)
+    local id = tonumber(userId)
+    if not id then
+        return false
+    end
+    for _, configured in ipairs(type(userIds) == "table" and userIds or {}) do
+        if tonumber(configured) == id then
+            return true
+        end
+    end
+    return false
+end
+
+function RetentionLogic.isInternalPlayer(userId, playerName, userIds, prefixes)
+    return RetentionLogic.isExcludedUserId(userId, userIds)
+        or RetentionLogic.isExcludedPlayerName(playerName, prefixes)
+end
+
 function RetentionLogic.dashboardBucketIndex(jobId, bucketCount)
     bucketCount = math.max(1, math.floor(tonumber(bucketCount) or 1))
     local hash = 0

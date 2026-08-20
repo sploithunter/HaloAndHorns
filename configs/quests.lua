@@ -144,8 +144,8 @@ return {
             -- number (Jason: "if that's the case, get rid of it"). The capstone
             -- now graduates through COMBAT — the thing this game does that pet
             -- sims don't, taught at the cave the tutorial just introduced.
-            name = "Answer the Cave",
-            description = "The Earth cave keeps stirring — defeat 5 creatures there. Your pets fight for you!",
+            name = "Protect the Barn",
+            description = "Creatures keep getting into the barn — defeat 5 of them. Your pets fight for you!",
             condition = {
                 type = "counter_at_least",
                 counter = "enemies_defeated",
@@ -154,13 +154,15 @@ return {
             },
             -- First Steps pays exactly 700 authored XP ACROSS its five claims. After that ordinary
             -- payout, the capstone guarantees the exact remaining XP for earned Level 4 and grants
-            -- two Future Call tokens. These declarative special fields are applied/reconciled by
-            -- QuestService; RewardService deliberately ignores unknown bundle fields.
+            -- the second Future Call token. These declarative special fields are applied/reconciled by
+            -- QuestService; RewardService deliberately ignores unknown bundle fields. The
+            -- player already received one locked Future Call token at onboarding, so this
+            -- capstone adds one more while unlocking both at earned Level 4.
             reward = {
                 experience = 300,
-                currencies = { gems = 15, grass_coins = 1500 },
+                currencies = { gems = 15, hall_coins = 1500 },
                 ensure_earned_level = 4,
-                future_call_tokens = 2,
+                future_call_tokens = 1,
             },
         },
 

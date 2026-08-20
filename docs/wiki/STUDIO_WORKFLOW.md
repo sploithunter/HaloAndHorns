@@ -39,6 +39,13 @@ Recovery checklist:
 4. If source is current but behavior is stale, restart Play to clear the Luau VM/module cache.
 5. Only debug gameplay after the source and runtime agree.
 
+`ReplicatedStorage.Assets` is `$ignoreUnknownInstances`, and Rojo also maps
+`assets/place/Models.rbxm` onto `Assets.Models`. If Studio already saved its own
+`Models` folder, Explorer shows **two** folders named `Models`. Both replicate
+and `FindFirstChild` is nondeterministic. Keep one (the richer Pets/Eggs tree),
+delete the twin in Edit after capturing a runtime snapshot, and never save both
+into the place. See [Asset Pre-Baking](../ASSET_PREBAKE.md).
+
 ### Cross-project Rojo contamination
 
 The separate `RobloxGenerateMap` project also uses port `34872`. Its client draws moving white
@@ -59,6 +66,11 @@ These exact roots are not Halo and Horns content. The server and ReplicatedFirst
 if they are inserted again; they deliberately leave `SpawnZone` tags and game geometry untouched.
 After cleaning an affected place, save it in Edit mode and restart Play. A clean client has no
 `GenMapClientFX` and no instances tagged `SpawnDash`.
+
+The Hall of Worlds intentionally restores one version of that presentation through the owned
+`HallPlayAreaMarquee` client system. It listens only to the explicit `HallPlayArea` tag and creates
+`Workspace.HallPlayAreaFX`; it must not be mistaken for cross-project contamination. Never restore
+the generator's generic `SpawnZone` listener to make the Hall border work.
 
 ## Studio MCP Reset Gotchas
 

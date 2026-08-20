@@ -1,11 +1,11 @@
 --[[
-    HotbarBar — lower-center power/command bar (Feature 16 UI, slice B).
+    HotbarBar — power/command bar (Feature 16 UI, slice B).
 
-    20 slots laid out as two rows of 10 (bottom row 1-0, top row Shift+1-0), plus a
-    farming-mode cycle button on the left (Off -> Near -> High) that drives the
-    auto-target toggles. Slots are fed by the server (Hotbar_State); pressing a slot's
-    key OR clicking it fires Hotbar_Activate(slot), which the server resolves to the
-    bound power / tactical / pet-summon.
+    Keeper: 20 slots as two rows of 10 (bottom 1-0, top Shift+1-0),
+    lower-center. Plus a farming-mode cycle button (Off -> Near -> High).
+    Size follows DisplayClass or Settings. Slots are fed by the server
+    (Hotbar_State); pressing a slot's key OR clicking it fires
+    Hotbar_Activate(slot).
 
     Keys: bottom row = 1..9,0 ; top row = Shift+1..9,0. (No Ctrl — the browser eats
     Ctrl+1-9.) The default Roblox Backpack is disabled so the number keys are free.
@@ -39,6 +39,7 @@ local PanelChrome = require(script.Parent.Parent.UI.Components.PanelChrome)
 local HotbarKeyboard = require(script.Parent.HotbarKeyboard)
 local ConsoleHotbar = require(ReplicatedStorage.Shared.Game.ConsoleHotbar)
 local InputGlyphs = require(ReplicatedStorage.Shared.Game.InputGlyphs)
+local HotbarSize = require(ReplicatedStorage.Shared.Game.HotbarSize)
 
 -- Tint a pill ImageLabel to the player's area palette (frames are keyed by colour name —
 -- sapphire/citrine/ruby/emerald/neutral — same keys UITheme returns), re-applying when the area
@@ -278,7 +279,8 @@ function HotbarBar.start()
     root.Position = UDim2.new(0.5, 0, 1, -20)
     root.Size = UDim2.fromOffset(rowWidth + SLOT + PAD, SLOT * 2 + PAD)
     -- pixel-designed bar: shrink on small viewports (anchored bottom-center, stays docked)
-    require(script.Parent.Parent.UI.UIViewportScale).attach(root)
+    local UIViewportScale = require(script.Parent.Parent.UI.UIViewportScale)
+    UIViewportScale.attach(root)
     root.BackgroundTransparency = 1
     root.Parent = gui
 
@@ -305,15 +307,16 @@ function HotbarBar.start()
 
     -- Compact mobile HUD docks the bar against the usable bottom edge. Classic keeps the breathing
     -- room of the established desktop layout. Position is attribute-driven so Studio edits can be
-    -- compared in either mode without rebuilding the UI.
+    -- compared in either mode without rebuilding the UI. layoutBar is assigned after slots exist
+    -- so orientation can also restack the 2×10 grid (horizontal keeper vs vertical_left).
+    local layoutBar
     local function applyHudLayout()
-        local compact = localPlayer:GetAttribute("HudLayoutResolved") == "compact"
-        local tenFoot = localPlayer:GetAttribute("DisplayClass") == "ten_foot"
-        root.Position = UDim2.new(0.5, 0, 1, tenFoot and -48 or (compact and -16 or -20))
+        if layoutBar then
+            layoutBar()
+        end
     end
     localPlayer:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyHudLayout)
     localPlayer:GetAttributeChangedSignal("DisplayClass"):Connect(applyHudLayout)
-    applyHudLayout()
 
     -- Blue neon pill_frame wrapping the whole bar (9-slice so the wide bar keeps proper corners;
     -- transparent inside AND outside, so the game shows through and the slots sit on top).
@@ -506,6 +509,28 @@ function HotbarBar.start()
     local lastAuto = {} -- slot -> os.clock() of the last auto-fire (bridges the fire->cooldown round-trip)
     local longPressConsumed = {} -- slot -> true: a long-press just toggled, so suppress the tap's activate
     local LONG_PRESS = 0.45 -- seconds: hold a slot this long (touch or mouse) to toggle the lock
+
+    -- Auto-cast lock is slot-based, not power-based. A Range loaned kit overwrites
+    -- those slots, so a leftover lock would fire Hasten (or anything else) that the
+    -- player never locked. Clear every lock on catalog enter and exit.
+    local function clearAutoLocks()
+        table.clear(locked)
+        table.clear(lastAuto)
+        for _, card in pairs(cards) do
+            if card.lock then
+                card.lock.Visible = false
+            end
+        end
+    end
+
+    local lastChallengePowers = localPlayer:GetAttribute("ChallengePowers")
+    localPlayer:GetAttributeChangedSignal("ChallengePowers"):Connect(function()
+        local now = localPlayer:GetAttribute("ChallengePowers")
+        if now ~= lastChallengePowers then
+            lastChallengePowers = now
+            clearAutoLocks()
+        end
+    end)
 
     -- Toggle a slot's auto-cast lock. Same action on desktop (right-click) and mobile (long-press).
     local function toggleAutoLock(slot)
@@ -830,6 +855,7 @@ function HotbarBar.start()
             local card = cards[slot]
             if card then
                 local bind = state.hotbar[tostring(slot)] or state.hotbar[slot]
+                local prev = card.bindObj
                 currentHotbar[slot] = bind
                 card.bindObj = bind
                 -- Tutorial/UI guidance resolves a live binding by identity. Slot numbers are not
@@ -837,11 +863,14 @@ function HotbarBar.start()
                 card.frame:SetAttribute("HotbarBindType", bind and tostring(bind.type) or nil)
                 card.frame:SetAttribute("HotbarBindTarget", bind and tostring(bind.target) or nil)
                 -- An emptied/rebound slot drops its auto-cast lock so the badge can't linger.
-                if not bind and locked[slot] then
+                -- Compare identity: a Range overlay can keep type=power while swapping the target.
+                local sameBind = prev
+                    and bind
+                    and prev.type == bind.type
+                    and prev.target == bind.target
+                if locked[slot] and not sameBind then
                     locked[slot] = nil
-                end
-                if bind and bind.type ~= "power" and bind.type ~= "potion" then
-                    locked[slot] = nil
+                    lastAuto[slot] = nil
                 end
                 if card.lock then
                     card.lock.Visible = locked[slot] == true
@@ -1191,6 +1220,85 @@ function HotbarBar.start()
     ringButton(editBtn)
     ringButton(farmBtn)
 
+    local function isVertical()
+        return HotbarSize.orientation(HOTBAR_CONFIG.size) == "vertical_left"
+    end
+
+    layoutBar = function()
+        local compact = localPlayer:GetAttribute("HudLayoutResolved") == "compact"
+        local tenFoot = localPlayer:GetAttribute("DisplayClass") == "ten_foot"
+        if isVertical() then
+            root.AnchorPoint = Vector2.new(0, 0.5)
+            root.Size = UDim2.fromOffset(SLOT * 2 + PAD, SLOT + PAD + 10 * SLOT + 9 * PAD)
+            -- Far-left experiment: 10px inset, vertically centered. SafeInsets
+            -- are not available as a scale relationship here.
+            root.Position = UDim2.new(0, 10, 0.5, 0)
+            barFrame.Size = UDim2.new(1, 30, 1, 46)
+            editBtn.AnchorPoint = Vector2.new(0, 0)
+            editBtn.Position = UDim2.fromOffset(3, 3)
+            farmBtn.AnchorPoint = Vector2.new(0, 0)
+            farmBtn.Position = UDim2.fromOffset(SLOT + PAD + 3, 3)
+            for slot = 1, 10 do
+                local yBottom = SLOT + PAD + slot * SLOT + (slot - 1) * PAD
+                cards[slot].frame.Position = UDim2.fromOffset(SLOT + PAD, yBottom)
+                cards[slot + 10].frame.Position = UDim2.fromOffset(0, yBottom)
+            end
+            controllerLegend.AnchorPoint = Vector2.new(0, 0.5)
+            controllerLegend.Position = UDim2.new(1, 16, 0, SLOT / 2)
+            return
+        end
+        root.AnchorPoint = Vector2.new(0.5, 1)
+        root.Size = UDim2.fromOffset(rowWidth + SLOT + PAD, SLOT * 2 + PAD)
+        root.Position = UDim2.new(0.5, 0, 1, tenFoot and -48 or (compact and -16 or -20))
+        barFrame.Size = UDim2.new(1, 46, 1, 30)
+        editBtn.AnchorPoint = Vector2.new(0, 1)
+        editBtn.Position = UDim2.fromOffset(3, SLOT)
+        farmBtn.AnchorPoint = Vector2.new(0, 1)
+        -- Nudged up so the Farm ring clears the pill's bottom border.
+        farmBtn.Position = UDim2.fromOffset(3, SLOT * 2 + PAD - 7)
+        for i = 1, 10 do
+            local x = SLOT + PAD + (i - 1) * (SLOT + PAD)
+            cards[i].frame.Position = UDim2.fromOffset(x, SLOT * 2 + PAD)
+            cards[i + 10].frame.Position = UDim2.fromOffset(x, SLOT)
+        end
+        controllerLegend.AnchorPoint = Vector2.new(0.5, 1)
+        controllerLegend.Position = UDim2.new(0.5, 0, 0, -20)
+    end
+    applyHudLayout()
+
+    local function applyHotbarSize()
+        local cam = workspace.CurrentCamera
+        local vp = cam and cam.ViewportSize or Vector2.new(1280, 720)
+        local resolved = HotbarSize.resolve(
+            localPlayer:GetAttribute("HotbarSize"),
+            localPlayer:GetAttribute("DisplayClass")
+        )
+        UIViewportScale.setMultiplier(
+            root,
+            HotbarSize.multiplier(resolved, vp.X, vp.Y, HOTBAR_CONFIG.size)
+        )
+    end
+    applyHotbarSize()
+    localPlayer:GetAttributeChangedSignal("HotbarSize"):Connect(applyHotbarSize)
+    localPlayer:GetAttributeChangedSignal("DisplayClass"):Connect(applyHotbarSize)
+    do
+        local camConn
+        local function watchCam(cam)
+            if camConn then
+                camConn:Disconnect()
+                camConn = nil
+            end
+            if cam then
+                camConn = cam:GetPropertyChangedSignal("ViewportSize"):Connect(applyHotbarSize)
+            end
+            applyHotbarSize()
+        end
+        watchCam(workspace.CurrentCamera)
+        workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+            watchCam(workspace.CurrentCamera)
+        end)
+    end
+
     local pickerFrame
     local function closePicker()
         hoverToken += 1
@@ -1218,24 +1326,36 @@ function HotbarBar.start()
         -- viewports, hiding the POWERS section it exists to offer. Clamp the panel to the
         -- space between the hotbar and the top HUD zone — the relative scroll list below
         -- keeps every row reachable at any height.
-        local bottomOffset = SLOT * 2 + PAD + 18
-        local guiScale = 1
-        local sc = gui:FindFirstChildWhichIsA("UIScale")
-        if sc and sc.Scale > 0 then
-            guiScale = sc.Scale
+        local TOP_SAFE = 130 -- player bar + tutorial capsule zone (screen px)
+        local panelH
+        local shell
+        if isVertical() then
+            -- Sit to the right of the left-edge bar. Height uses most of the
+            -- viewport because the bar no longer occupies the bottom.
+            local availH = gui.AbsoluteSize.Y - TOP_SAFE - 24
+            panelH = math.clamp(math.floor(availH), 180, 400)
+        else
+            local bottomOffset = math.floor(root.AbsoluteSize.Y + 18)
+            local availH = gui.AbsoluteSize.Y - bottomOffset - TOP_SAFE
+            panelH = math.clamp(math.floor(availH), 180, 330)
         end
-        local TOP_SAFE = 130 -- player bar + tutorial capsule zone (scaled px)
-        local availH = gui.AbsoluteSize.Y / guiScale - bottomOffset - TOP_SAFE
-        local panelH = math.clamp(math.floor(availH), 180, 330)
-        local shell = PanelChrome.build(gui, {
+        shell = PanelChrome.build(gui, {
             name = "Picker",
             title = "Assign slot " .. slot,
             size = UDim2.fromOffset(300, panelH),
             onClose = closePicker,
         })
         local p = shell.frame
-        p.AnchorPoint = Vector2.new(0.5, 1)
-        p.Position = UDim2.new(0.5, 0, 1, -bottomOffset)
+        if isVertical() then
+            -- 16px past the scaled bar so the picker clears the pill overhang.
+            local left = math.floor(root.AbsolutePosition.X + root.AbsoluteSize.X + 16)
+            p.AnchorPoint = Vector2.new(0, 0.5)
+            p.Position = UDim2.new(0, left, 0.5, 0)
+        else
+            local bottomOffset = math.floor(root.AbsoluteSize.Y + 18)
+            p.AnchorPoint = Vector2.new(0.5, 1)
+            p.Position = UDim2.new(0.5, 0, 1, -bottomOffset)
+        end
         pickerFrame = p
 
         local listFrame = Instance.new("ScrollingFrame")
@@ -1466,25 +1586,39 @@ function HotbarBar.start()
             editHint = Instance.new("TextLabel")
             editHint.Name = "EditSlotHint"
             editHint.BackgroundTransparency = 1
-            editHint.AnchorPoint = Vector2.new(0.5, 1)
             editHint.Size = UDim2.fromOffset(56, 26)
             editHint.Font = Enum.Font.GothamBlack
             editHint.TextSize = 24
             editHint.TextColor3 = Color3.fromRGB(245, 205, 70)
             editHint.TextStrokeColor3 = Color3.new(0, 0, 0)
             editHint.TextStrokeTransparency = 0.3
-            editHint.Text = "⬇"
             editHint.ZIndex = 13
             editHint.Parent = root
-            local baseX = slot1.Position.X.Offset + slot1.Size.X.Offset / 2
-            local baseY = slot1.Position.Y.Offset - slot1.Size.Y.Offset - 2
+            local baseX
+            local baseY
+            if isVertical() then
+                -- Slot 1 is the top of the right column; point left at it.
+                editHint.AnchorPoint = Vector2.new(0, 0.5)
+                editHint.Text = "⬅"
+                baseX = slot1.Position.X.Offset + slot1.Size.X.Offset + 4
+                baseY = slot1.Position.Y.Offset - slot1.Size.Y.Offset / 2
+            else
+                editHint.AnchorPoint = Vector2.new(0.5, 1)
+                editHint.Text = "⬇"
+                baseX = slot1.Position.X.Offset + slot1.Size.X.Offset / 2
+                baseY = slot1.Position.Y.Offset - slot1.Size.Y.Offset - 2
+            end
             task.spawn(function()
                 local t = 0
                 while editMode and editHint do
                     t += 0.05
                     local a = (math.sin(t * 5) + 1) / 2
                     editHint.TextTransparency = 0.05 + 0.5 * a
-                    editHint.Position = UDim2.fromOffset(baseX, baseY - math.floor(5 * a))
+                    if isVertical() then
+                        editHint.Position = UDim2.fromOffset(baseX + math.floor(5 * a), baseY)
+                    else
+                        editHint.Position = UDim2.fromOffset(baseX, baseY - math.floor(5 * a))
+                    end
                     task.wait(0.05)
                 end
             end)
@@ -1499,9 +1633,16 @@ function HotbarBar.start()
             if not editBanner then
                 editBanner = Instance.new("TextLabel")
                 editBanner.Name = "EditBanner"
-                editBanner.AnchorPoint = Vector2.new(0.5, 1)
-                editBanner.Position = UDim2.new(0.5, 0, 0, -8)
-                editBanner.Size = UDim2.fromOffset(380, 26)
+                if isVertical() then
+                    editBanner.AnchorPoint = Vector2.new(0, 0)
+                    -- 10px past the pill so the banner sits in the playfield.
+                    editBanner.Position = UDim2.new(1, 10, 0, 8)
+                    editBanner.Size = UDim2.fromOffset(200, 48)
+                else
+                    editBanner.AnchorPoint = Vector2.new(0.5, 1)
+                    editBanner.Position = UDim2.new(0.5, 0, 0, -8)
+                    editBanner.Size = UDim2.fromOffset(380, 26)
+                end
                 editBanner.BackgroundColor3 = Color3.fromRGB(235, 170, 60)
                 editBanner.TextColor3 = Color3.fromRGB(30, 24, 10)
                 editBanner.Font = Enum.Font.GothamBlack

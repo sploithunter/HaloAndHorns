@@ -13,18 +13,21 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local HudLayoutState = require(script.Parent.HudLayoutState)
+local UI_CONFIG = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("ui"))
 
 local CurrencyStack = {}
 local started = false
 
--- top-to-bottom pill order (gems first, then biome coins)
+-- top-to-bottom pill order (gems first, then the Hall or biome currencies)
 local PANES = {
     "gems_pane",
+    "hall_coins_pane",
     "grass_coins_pane",
     "desert_coins_pane",
     "lava_coins_pane",
@@ -48,6 +51,11 @@ local function currentOriginPane(player)
         end
     end
     return ORIGIN_PANE.grass
+end
+
+local function isHallArea(player)
+    local area = tostring(player:GetAttribute("CurrentArea") or ""):lower()
+    return area:sub(1, 5) == "hall_"
 end
 
 function CurrencyStack.start()
@@ -109,14 +117,24 @@ function CurrencyStack.start()
             local compact = HudLayoutState.isCompact()
             stack.Visible = not (compact and player:GetAttribute("CompactMenuExpanded") == true)
             local originPane = currentOriginPane(player)
+            local inHall = isHallArea(player)
             for order, name in ipairs(PANES) do
                 local pane = panes[name]
                 if pane then
                     pane.LayoutOrder = order
-                    pane.Visible = not compact
-                        or expanded
-                        or name == "gems_pane"
-                        or name == originPane
+                    if inHall then
+                        -- The first-world route intentionally has one currency. Long-press does not
+                        -- reveal currencies that do not participate in the Hall economy.
+                        pane.Visible = name == "gems_pane" or name == "hall_coins_pane"
+                    else
+                        pane.Visible = name ~= "hall_coins_pane"
+                            and (
+                                not compact
+                                or expanded
+                                or name == "gems_pane"
+                                or name == originPane
+                            )
+                    end
                 end
             end
         end
@@ -200,18 +218,36 @@ function CurrencyStack.start()
         -- recomputing GuiObject.AbsolutePosition. Reflowing only from the camera event can therefore
         -- write the old portrait button Y into the new landscape canvas, leaving this stack below the
         -- screen until the next rotation. Absolute geometry changes are the authoritative layout signal.
+        local function badgeBox()
+            local gui = pg:FindFirstChild("PlayerPowerBadges")
+            return gui and gui:FindFirstChild("BadgeStack")
+        end
+
         local function activeMenuAnchor()
-            if HudLayoutState.isCompact() then
-                local compact = mc:FindFirstChild("CompactMenuButton")
-                if compact and compact.Visible then
-                    return compact
-                end
-            end
             return mc:FindFirstChild("menu_buttons_pane")
                 or mc:FindFirstChild("SettingsButton", true)
         end
         local menu = activeMenuAnchor()
         local function reflowAboveButtons()
+            if HudLayoutState.isCompact() then
+                -- Sit just under the left badge box (scale-sized). Do not hug
+                -- the admin chip with a pixel offset — that drops money
+                -- onto the bezel on a short phone.
+                local box = badgeBox()
+                stack.AnchorPoint = Vector2.new(0, 0)
+                if box and box.AbsoluteSize.Y > 0 then
+                    local top = (box.AbsolutePosition.Y + box.AbsoluteSize.Y + 8)
+                        - mc.AbsolutePosition.Y
+                    stack.Position = UDim2.new(0, 12, 0, math.floor(top))
+                    return
+                end
+                local cfg = (UI_CONFIG.hud and UI_CONFIG.hud.power_badges) or {}
+                local top = tonumber(cfg.box_top_scale) or 0.15
+                local height = tonumber(cfg.box_height_scale) or 0.50
+                stack.Position = UDim2.new(0, 12, top + height, 8)
+                return
+            end
+            stack.AnchorPoint = Vector2.new(0, 1)
             menu = activeMenuAnchor()
             local buttonsTop = menu and menu.AbsoluteSize.Y > 0 and menu.AbsolutePosition.Y
                 or (mc.AbsolutePosition.Y + mc.AbsoluteSize.Y * 0.63)
@@ -236,13 +272,24 @@ function CurrencyStack.start()
         mc:GetPropertyChangedSignal("AbsolutePosition"):Connect(scheduleReflow)
         mc:GetPropertyChangedSignal("AbsoluteSize"):Connect(scheduleReflow)
         player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(scheduleReflow)
-        mc.ChildAdded:Connect(function(child)
-            if child.Name == "CompactMenuButton" then
-                child:GetPropertyChangedSignal("AbsolutePosition"):Connect(scheduleReflow)
-                child:GetPropertyChangedSignal("AbsoluteSize"):Connect(scheduleReflow)
+        local function watchBox(box)
+            if not box then
+                return
+            end
+            box:GetPropertyChangedSignal("AbsolutePosition"):Connect(scheduleReflow)
+            box:GetPropertyChangedSignal("AbsoluteSize"):Connect(scheduleReflow)
+            scheduleReflow()
+        end
+        pg.ChildAdded:Connect(function(child)
+            if child.Name == "PlayerPowerBadges" then
+                task.spawn(function()
+                    watchBox(child:WaitForChild("BadgeStack", 5))
+                end)
+            elseif child.Name == "AdminController" then
                 scheduleReflow()
             end
         end)
+        watchBox(badgeBox())
         if menu then
             menu:GetPropertyChangedSignal("AbsolutePosition"):Connect(scheduleReflow)
             menu:GetPropertyChangedSignal("AbsoluteSize"):Connect(scheduleReflow)

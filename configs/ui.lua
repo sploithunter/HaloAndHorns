@@ -602,6 +602,36 @@ local uiConfig = {
         haptic_feedback = true,
     },
 
+    -- CoH player capsule (PlayerBar). Compact is narrower/stockier so the
+    -- avatar clears the Roblox top-bar shop/chat cluster on phones.
+    hud = {
+        player_bar = {
+            desktop = { width = 520, height = 64, track_x = 70 },
+            compact = { width = 390, height = 68, track_x = 64 },
+        },
+        -- Game-pass + toggle-power badges. Keeper "top_chrome" hangs them
+        -- under the Roblox logo…shop run. "vertical_left" stands the same
+        -- two rows up as columns on the far left (the live look-at-it).
+        power_badges = {
+            placement = "vertical_left",
+            topbar_buttons = 5,
+            gap_under_topbar = 4,
+            -- Top-left anchor, 15% down, 50% of the viewport tall.
+            -- No ViewportScale on the box — it is already screen-relative.
+            -- Contents shrink only when the list overflows (Colorado Plays).
+            left_edge = 8,
+            box_top_scale = 0.15,
+            box_height_scale = 0.50,
+            min_fit = 0.42,
+            compact_scale = 0.72,
+            -- vertical_left chrome (top_chrome keeps the smaller under-label discs)
+            disc = 48,
+            pass_disc = 40,
+            label_width = 32,
+            label_side = "right",
+        },
+    },
+
     -- === DEBUG & DEVELOPMENT ===
     debug = {
         show_bounds = false, -- Enable to visualize pane boundaries
@@ -738,6 +768,14 @@ local uiConfig = {
             description = "Manage your powers and slot enhancements",
         },
 
+        hoverboard_action = {
+            type = "script_execute",
+            script = "HoverboardController",
+            method = "Toggle",
+            sound = "button_click",
+            description = "Mount or dismount the Hall hoverboard",
+        },
+
         rewards_action = {
             -- Rewards = the Quest panel (where met missions are claimed). Was a dead
             -- script_execute; the standalone rewards button used a hardcoded click
@@ -860,6 +898,38 @@ local uiConfig = {
                             position = "left_outside",
                             offset = { x = -10, y = 0 },
                         },
+                    },
+                },
+            },
+        },
+
+        -- Hall of Worlds has one deliberately simple route currency. CurrencyStack exposes this
+        -- beside Gems only while CurrentArea is Hall_*; the four origin currencies remain hidden
+        -- until the player enters Crystal World.
+        hall_coins_pane = {
+            position = "center-left",
+            offset = { x = 15, y = -74 },
+            size = { width = 120, height = 32 },
+            background = {
+                enabled = true,
+                color = Color3.fromRGB(180, 118, 20),
+                transparency = 0.15,
+                corner_radius = 18,
+                border = {
+                    enabled = true,
+                    color = Color3.fromRGB(255, 214, 74),
+                    thickness = 2,
+                    transparency = 0.3,
+                },
+            },
+            layout = { type = "single" },
+            contents = {
+                {
+                    type = "currency_display",
+                    config = {
+                        currency = "hall_coins",
+                        icon = "124447234465235",
+                        color = Color3.fromRGB(255, 205, 55),
                     },
                 },
             },
@@ -1037,7 +1107,7 @@ local uiConfig = {
                 type = "grid",
                 auto_size = true, -- Enable automatic sizing based on content
                 button_count = 6, -- Non-admin: Settings/Daily/Shop/Quest/Events/Awards.
-                -- Admin: Settings/Admin/Shop/Quest/Events/Awards. Pets/Powers flank the hotbar.
+                -- Admin: Settings/Admin/Shop/Quest/Events/Awards. Pets/Powers/Board flank the hotbar.
                 -- left/bottom zero so the buttons sit flush on the pane's anchored corner
                 padding = { top = 5, bottom = 0, left = 0, right = 5 },
             },
@@ -1071,6 +1141,19 @@ local uiConfig = {
                         icon_fallback = "💥",
                         text = "Powers",
                         action = "powers_action",
+                    },
+                },
+
+                -- Hall Level-2 mount. Same BaseUI factory + pill skin as Powers; HotbarFlank
+                -- docks it just right of Powers. Not a compact-menu cell.
+                {
+                    type = "menu_button",
+                    config = {
+                        name = "Hoverboard",
+                        icon = "87061483301808",
+                        icon_fallback = "🛹",
+                        text = "Board",
+                        action = "hoverboard_action",
                     },
                 },
 

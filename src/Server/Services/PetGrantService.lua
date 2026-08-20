@@ -304,11 +304,11 @@ function PetGrantService:GrantPet(player, request)
     -- pure data and flushes replication + the save ONCE after the loop (FlushBucket) —
     -- previously EVERY hatched pet paid a full pets-folder rebuild + two critical saves.
     local deferFlush = request ~= nil and request.deferFlush == true
-    local uid, addError = self:_addPetRecord(player, petData, { deferFlush = deferFlush })
+    local uid, addResult = self:_addPetRecord(player, petData, { deferFlush = deferFlush })
     if not uid then
         return {
             ok = false,
-            error = addError or "Failed to add pet",
+            error = addResult or "Failed to add pet",
             petData = petData,
         }
     end
@@ -338,6 +338,7 @@ function PetGrantService:GrantPet(player, request)
         uid = uid,
         petData = petData,
         petConfig = petConfig,
+        petIndex = type(addResult) == "table" and addResult or nil,
     }
 end
 

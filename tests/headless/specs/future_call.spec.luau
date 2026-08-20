@@ -1,5 +1,5 @@
 --[[
-    Future Call — reconciliation-safe Level 5–9 entitlement rules.
+    Future Call — reconciliation-safe onboarding and Level 5–9 entitlement rules.
 ]]
 
 local FutureCallLogic = loadModule("src/Shared/Game/FutureCallLogic.lua")
@@ -8,6 +8,46 @@ local progressionConfig = loadModule("configs/player_progression.lua")
 
 return function()
     describe("FutureCallLogic entitlement", function()
+        it("waits for the Level-2 ascend before granting the promise token", function()
+            expect(config.onboarding.grant_claimed_level).to.equal(2)
+            expect(FutureCallLogic.onboardingPlan({}, 1, 1, config).kind).to.equal("none")
+            local plan = FutureCallLogic.onboardingPlan({}, 2, 2, config)
+            expect(plan.kind).to.equal("grant")
+            expect(plan.amount).to.equal(1)
+            expect(FutureCallLogic.isUnlocked(3, config)).to.equal(false)
+        end)
+
+        it("unlocks the held onboarding token at earned Level 4", function()
+            local gameData = {}
+            local grant = FutureCallLogic.onboardingPlan(gameData, 2, 2, config)
+            FutureCallLogic.markOnboarding(gameData, grant)
+            expect(FutureCallLogic.onboardingPlan(gameData, 3, 3, config).kind).to.equal("none")
+            local unlock = FutureCallLogic.onboardingPlan(gameData, 3, 4, config)
+            expect(unlock.kind).to.equal("unlock")
+            expect(FutureCallLogic.isUnlocked(4, config)).to.equal(true)
+            FutureCallLogic.markOnboarding(gameData, unlock)
+            expect(FutureCallLogic.onboardingPlan(gameData, 4, 4, config).kind).to.equal("none")
+        end)
+
+        it("migrates an existing Level-4 profile without granting a third token", function()
+            local gameData = {}
+            local plan = FutureCallLogic.onboardingPlan(gameData, 4, 4, config)
+            expect(plan.kind).to.equal("migrate")
+            expect(plan.amount).to.equal(nil)
+            FutureCallLogic.markOnboarding(gameData, plan)
+            expect(gameData.FutureCall.onboarding_token_v1).to.equal(true)
+            expect(gameData.FutureCall.onboarding_unlocked_v1).to.equal(true)
+        end)
+
+        it("restores onboarding markers when inventory mutation fails", function()
+            local gameData = { FutureCall = { onboarding_token_v1 = false } }
+            local plan = FutureCallLogic.onboardingPlan(gameData, 2, 2, config)
+            FutureCallLogic.markOnboarding(gameData, plan)
+            expect(gameData.FutureCall.onboarding_token_v1).to.equal(true)
+            FutureCallLogic.restoreOnboarding(gameData, plan)
+            expect(gameData.FutureCall.onboarding_token_v1).to.equal(false)
+        end)
+
         it("waits until claimed level 5", function()
             expect(FutureCallLogic.pendingGrants({}, 4, config).total).to.equal(0)
             expect(FutureCallLogic.pendingGrants({}, 5, config).total).to.equal(5)
@@ -109,6 +149,30 @@ return function()
             expect(futureCallSource:find('player:SetAttribute("FutureCallUntil", 0)', 1, true)).to.be.ok()
             expect(badgeSource:find('attr = "FutureCall"', 1, true)).to.be.ok()
             expect(badgeSource:find('symbol = "portal"', 1, true)).to.be.ok()
+        end)
+
+        it("keeps the Level-4 promise visible and bindable while gating activation", function()
+            local futureCallSource = readFile("src/Server/Services/FutureCallService.lua")
+            local hotbarSource = readFile("src/Server/Services/HotbarService.lua")
+            local inventorySource = readFile("src/Client/UI/Menus/InventoryPanel.lua")
+            local gameEvents = loadModule("configs/game_events.lua")
+            local items = loadModule("configs/items.lua")
+            local item
+            for _, candidate in ipairs(items) do
+                if candidate.id == "future_call_token" then
+                    item = candidate
+                    break
+                end
+            end
+
+            expect(item.unlock_level).to.equal(4)
+            expect(item.locked_description).to.equal("Reach Level 4 to summon Your Future Self.")
+            expect(futureCallSource:find('reason = "level_locked"', 1, true)).to.be.ok()
+            expect(hotbarSource:find("locked = not unlocked", 1, true)).to.be.ok()
+            expect(hotbarSource:find('if type(bind) == "table" and bind.type == "token"', 1, true)).never.to.be.ok()
+            expect(inventorySource:find("if item.locked then", 1, true)).to.be.ok()
+            expect(futureCallSource:find('fireGameEvent(player, "future_call_locked"', 1, true)).to.be.ok()
+            expect(type(gameEvents.future_call_locked.banner)).to.equal("table")
         end)
 
         it("wires manifested squads into their owner's whole-team combat", function()

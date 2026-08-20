@@ -62,6 +62,41 @@ return {
     -- (power slots fill from OWNED powers, so a fresh character's power slots stay empty until they
     -- pick — the real level-up flow). Each entry is { slot, type, target }.
     --
+    -- Power-bar sizes. Auto follows DisplayClass (phone → mobile, tablet →
+    -- tablet, desktop → desktop). Mobile is the designed-for-phone size —
+    -- same proportions, grown so the docked assembly fills most of the
+    -- short phone width. Settings can pin Mobile / Tablet / Desktop.
+    size = {
+        -- KEEPER (2026-08-20 phone playtest): bottom-center 2×10. Keep
+        -- "horizontal". "vertical_left" is leftover (wrong target — the
+        -- far-left experiment is game-pass + toggle badges in ui.lua).
+        orientation = "horizontal",
+        default = "auto",
+        modes = {
+            -- 30% over the 0.80 iPad/desktop pass (0.80 × 1.30).
+            desktop = 1.04,
+            tablet = 1.04,
+            mobile = 1.6,
+        },
+        -- bar 546 + left flank 88 + right flank 158 (HotbarFlank desktop)
+        design_span = 792,
+        -- header + 10 slots (HotbarBar vertical_left)
+        vertical_span = 546,
+        -- 10% narrower than the first mobile pass so Jump keeps a slot
+        -- between the stacked Powers / Board column and the screen edge.
+        mobile_width_scale = 0.81,
+        tablet_width_scale = 0.58,
+        -- Vertical experiment: share of viewport height (not width).
+        mobile_height_scale = 0.82,
+        tablet_height_scale = 0.72,
+        flank = {
+            size = 62,
+            compact_size = 48,
+            gap = 26,
+            inner = 8,
+        },
+    },
+
     -- NIL while we test the level-up system (powers come only from picks). To re-seed a fixed kit
     -- for VFX/signature testing, restore a table here, e.g. the old Pyromancer kit:
     --   { {slot=1,type="power",target="cataclysm"}, {slot=2,type="power",target="wildfire"},

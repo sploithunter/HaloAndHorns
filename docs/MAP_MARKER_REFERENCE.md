@@ -16,6 +16,7 @@ This project treats Studio-authored maps as geometry plus invisible gameplay hoo
 | `EnchanterStation` | `EnchanterId` | `AreaId`, `TouchPartName`, `AnimationRootName` | Map-built pet enchant/reroll station. `EnchanterId` references `configs/enchants.lua` `stations`; `TouchPartName` points at the child part players touch/prompt against. |
 | `AscensionAltar` | none | `LabelHeight` | Invisible `AscensionAltarHost` inside an authored altar. `AscensionAltarService` attaches the `AscendPrompt` and level-training UI to every tagged host. Home's replacement altar is wired by `scripts/studio/wire_home_ascension_altar.luau`; the script transfers the buried old altar's `NativeFX` host-relative and removes the old host's tag. |
 | `PODPodium` | none | `AreaId`, `Slot` | Pet-of-the-day display anchor. |
+| `AwardPodium` | `BoardId` | `AreaId`, `PodiumId` | Origin-board award stand hook. `BoardId` matches `configs/leaderboards.lua` `boards[].id`. Client builds the 1/2/3 visualization on the hook CFrame — move the part, do not hardcode pose. |
 | `ChaseableRegion` | `AreaId`, `ChaseableId` | none | Future chaseable spawn region. |
 | `ShopAnchor` | `AnchorId` | `AreaId` | Shop or UI world anchor. |
 | `NPCAnchor` | `AnchorId` | `AreaId` | NPC placement anchor. |

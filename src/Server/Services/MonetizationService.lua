@@ -385,6 +385,31 @@ function MonetizationService:_processProductPurchase(player, productConfig, rece
         end
     end
 
+    -- Deterministic untradeable cosmetic board. Product IDs stay 0 until
+    -- the dashboard SKU exists; ProcessReceipt only runs on a live id.
+    if type(rewards.hoverboard_skin) == "string" and rewards.hoverboard_skin ~= "" then
+        local hoverboardService = self._modules and self._modules.HoverboardService
+        if not (hoverboardService and hoverboardService.GrantOwned) then
+            self._logger:Error("HoverboardService missing for product skin grant", {
+                player = player.Name,
+                product = productConfig.id,
+                skin = rewards.hoverboard_skin,
+            })
+            return false
+        end
+        local granted = hoverboardService:GrantOwned(player, rewards.hoverboard_skin)
+        if not (granted and granted.ok) then
+            self._logger:Error("Failed to grant hoverboard skin", {
+                player = player.Name,
+                product = productConfig.id,
+                skin = rewards.hoverboard_skin,
+                reason = granted and granted.reason,
+            })
+            return false
+        end
+        hoverboardService:Equip(player, rewards.hoverboard_skin)
+    end
+
     -- Check for first purchase bonus
     if self:_isFirstPurchase(player) then
         self:_grantFirstPurchaseBonus(player)

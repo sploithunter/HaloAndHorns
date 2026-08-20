@@ -99,6 +99,11 @@ return {
             ["golden"] = id(128401392113239),
             ["rainbow"] = id(100736300063954),
         },
+        ["cache_bandit"] = {
+            ["basic"] = id(105047601261112),
+            ["golden"] = id(131757981611289),
+            ["rainbow"] = id(105047601261112),
+        },
         ["carrion_scarab"] = {
             ["basic"] = id(119013107088989),
             ["golden"] = id(109245649471200),
@@ -108,6 +113,11 @@ return {
             ["basic"] = id(98615522952678),
             ["golden"] = id(107018379137294),
             ["rainbow"] = id(98615522952678),
+        },
+        ["core_digger"] = {
+            ["basic"] = id(96182978490912),
+            ["golden"] = id(85405976680950),
+            ["rainbow"] = id(96182978490912),
         },
         ["coronal_cherub"] = {
             ["basic"] = id(88767858148542),
@@ -309,6 +319,11 @@ return {
             ["golden"] = id(71768088457260),
             ["rainbow"] = id(97681032634157),
         },
+        ["patch_phoenix"] = {
+            ["basic"] = id(123984266681031),
+            ["golden"] = id(122052466356164),
+            ["rainbow"] = id(123984266681031),
+        },
         ["phantom_jackal"] = {
             ["basic"] = id(87816495826130),
             ["golden"] = id(98737039707791),
@@ -450,5 +465,6 @@ return {
             ["rainbow"] = id(101697025544772),
         },
     },
-    eggs = {},
+    eggs = {
+    },
 }

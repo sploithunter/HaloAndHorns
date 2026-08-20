@@ -1,5 +1,5 @@
 --[[
-    Future Call — the Level-5 progression consumable.
+    Future Call — the early-progression summon consumable.
 
     The token manifests an authored future version of the player for two minutes.
     Its combat level is the caller's current earned level plus five, capped by the
@@ -11,6 +11,18 @@
 
 return {
     enabled = true,
+
+    -- Ascending at Level 2 awards a visible, auto-bound promise token. It remains
+    -- unusable until earned Level 4; pressing it early explains that requirement.
+    -- Profiles already at Level 4+ when this ships are migrated without another
+    -- token so the historical two-token total cannot become three.
+    onboarding = {
+        grant_count = 1,
+        grant_claimed_level = 2,
+        unlock_level = 4,
+        grant_marker = "onboarding_token_v1",
+        unlock_marker = "onboarding_unlocked_v1",
+    },
 
     entitlement = {
         grants = {
@@ -33,7 +45,8 @@ return {
         id = "future_call_token",
         display_name = "Future Call",
         type = "Summon token",
-        description = "Call your future self 5 levels ahead with four powered-up pets for 2 minutes.",
+        description = "Summon Your Future Self five levels ahead with a four-pet squad.",
+        locked_description = "Reach Level 4 to summon Your Future Self.",
         duration = 120,
         icon_power = "world_travel",
     },

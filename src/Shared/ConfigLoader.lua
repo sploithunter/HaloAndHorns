@@ -1545,6 +1545,28 @@ function ConfigLoader:_validateAreasConfig(config)
                     return ok, err
                 end
             end
+
+            if zone.unlock.required_level ~= nil then
+                ok, err = self:_requireNonNegativeNumber(
+                    "areas",
+                    zone.unlock.required_level,
+                    basePath .. ".unlock.required_level"
+                )
+                if not ok then
+                    return ok, err
+                end
+            end
+
+            if
+                zone.unlock.tutorial_required ~= nil
+                and type(zone.unlock.tutorial_required) ~= "boolean"
+            then
+                return self:_configError(
+                    "areas",
+                    basePath .. ".unlock.tutorial_required",
+                    "expected boolean"
+                )
+            end
         end
     end
 
@@ -3203,6 +3225,116 @@ function ConfigLoader:_validateEggSystemConfig(config)
                 return ok, err
             end
         end
+    end
+    local resultFunnel = animation.result_funnel or {}
+    if type(resultFunnel) ~= "table" then
+        return self:_configError("egg_system", "hatching.animation.result_funnel", "expected table")
+    end
+    if resultFunnel.enabled ~= nil and type(resultFunnel.enabled) ~= "boolean" then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.result_funnel.enabled",
+            "expected boolean"
+        )
+    end
+    for _, fieldName in ipairs({
+        "duration_seconds",
+        "stagger_seconds",
+        "max_stagger_window_seconds",
+        "final_scale",
+        "rotation_degrees",
+    }) do
+        if resultFunnel[fieldName] ~= nil then
+            ok, err = self:_requireNonNegativeNumber(
+                "egg_system",
+                resultFunnel[fieldName],
+                "hatching.animation.result_funnel." .. fieldName
+            )
+            if not ok then
+                return ok, err
+            end
+        end
+    end
+    if resultFunnel.final_scale ~= nil and resultFunnel.final_scale > 1 then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.result_funnel.final_scale",
+            "must be less than or equal to 1"
+        )
+    end
+    local newDiscovery = animation.new_discovery or {}
+    if type(newDiscovery) ~= "table" then
+        return self:_configError("egg_system", "hatching.animation.new_discovery", "expected table")
+    end
+    if newDiscovery.enabled ~= nil and type(newDiscovery.enabled) ~= "boolean" then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.new_discovery.enabled",
+            "expected boolean"
+        )
+    end
+    if newDiscovery.text_format ~= nil and type(newDiscovery.text_format) ~= "string" then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.new_discovery.text_format",
+            "expected string"
+        )
+    end
+    if
+        newDiscovery.show_card_badges ~= nil
+        and type(newDiscovery.show_card_badges) ~= "boolean"
+    then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.new_discovery.show_card_badges",
+            "expected boolean"
+        )
+    end
+    if newDiscovery.card_text ~= nil and type(newDiscovery.card_text) ~= "string" then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.new_discovery.card_text",
+            "expected string"
+        )
+    end
+    if
+        newDiscovery.card_rotation_degrees ~= nil
+        and type(newDiscovery.card_rotation_degrees) ~= "number"
+    then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.new_discovery.card_rotation_degrees",
+            "expected number"
+        )
+    end
+    if
+        newDiscovery.card_rotation_degrees ~= nil
+        and math.abs(newDiscovery.card_rotation_degrees) > 45
+    then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.new_discovery.card_rotation_degrees",
+            "must be between -45 and 45"
+        )
+    end
+    for _, fieldName in ipairs({ "pop_duration_seconds", "initial_scale" }) do
+        if newDiscovery[fieldName] ~= nil then
+            ok, err = self:_requirePositiveNumber(
+                "egg_system",
+                newDiscovery[fieldName],
+                "hatching.animation.new_discovery." .. fieldName
+            )
+            if not ok then
+                return ok, err
+            end
+        end
+    end
+    if newDiscovery.initial_scale ~= nil and newDiscovery.initial_scale > 1 then
+        return self:_configError(
+            "egg_system",
+            "hatching.animation.new_discovery.initial_scale",
+            "must be less than or equal to 1"
+        )
     end
     local revealBadges = animation.reveal_badges or {}
     if type(revealBadges) ~= "table" then
@@ -5067,29 +5199,61 @@ function ConfigLoader:_validateLeaderboardsConfig(config)
                 )
             end
         elseif score.kind == "inventory_taxonomy" then
-            if type(score.pet_ids) ~= "table" or #score.pet_ids == 0 then
+            local hasIds = type(score.pet_ids) == "table" and #score.pet_ids > 0
+            local hasTokens = type(score.pet_name_tokens) == "table" and #score.pet_name_tokens > 0
+            if not hasIds and not hasTokens then
                 return self:_configError(
                     "leaderboards",
-                    path .. ".score.pet_ids",
-                    "expected non-empty array"
+                    path .. ".score",
+                    "expected pet_ids or pet_name_tokens"
                 )
             end
-            local petsConfig = self:_rawConfig("pets")
-            local configuredPets = type(petsConfig) == "table" and petsConfig.pets or {}
-            for petIndex, petId in ipairs(score.pet_ids) do
-                if type(petId) ~= "string" or configuredPets[petId] == nil then
-                    return self:_configError(
-                        "leaderboards",
-                        path .. ".score.pet_ids[" .. petIndex .. "]",
-                        "must reference a configured pet family"
-                    )
+            if hasTokens then
+                for tokenIndex, token in ipairs(score.pet_name_tokens) do
+                    if type(token) ~= "string" or token == "" then
+                        return self:_configError(
+                            "leaderboards",
+                            path .. ".score.pet_name_tokens[" .. tokenIndex .. "]",
+                            "must be a non-empty string"
+                        )
+                    end
                 end
+            end
+            if hasIds then
+                local petsConfig = self:_rawConfig("pets")
+                local configuredPets = type(petsConfig) == "table" and petsConfig.pets or {}
+                for petIndex, petId in ipairs(score.pet_ids) do
+                    if type(petId) ~= "string" or configuredPets[petId] == nil then
+                        return self:_configError(
+                            "leaderboards",
+                            path .. ".score.pet_ids[" .. petIndex .. "]",
+                            "must reference a configured pet family"
+                        )
+                    end
+                end
+            end
+        elseif score.kind == "challenge_window" then
+            if type(score.mode) ~= "string" or score.mode == "" then
+                return self:_configError(
+                    "leaderboards",
+                    path .. ".score.mode",
+                    "expected non-empty challenge mode"
+                )
+            end
+            local challengeCfg = self:_rawConfig("challenge_runs")
+            local modes = type(challengeCfg) == "table" and challengeCfg.modes or nil
+            if type(modes) == "table" and modes[score.mode] == nil then
+                return self:_configError(
+                    "leaderboards",
+                    path .. ".score.mode",
+                    "must reference a configs/challenge_runs.lua mode"
+                )
             end
         elseif score.kind ~= "strongest_squad" then
             return self:_configError(
                 "leaderboards",
                 path .. ".score.kind",
-                "must be counter, inventory_taxonomy, or strongest_squad"
+                "must be counter, inventory_taxonomy, strongest_squad, or challenge_window"
             )
         end
 

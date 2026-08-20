@@ -630,6 +630,7 @@ function AutoTargetService:_collectCandidates(player, mode)
                             local currency = tostring(model:GetAttribute("Currency") or "")
                             if
                                 hp > 0
+                                and not model:GetAttribute("SpawnAnimating")
                                 and (
                                     modeConfig.requires_currency ~= true
                                     or currency == selectedCurrency

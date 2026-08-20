@@ -2,6 +2,8 @@
     FutureCallService — Future Call consumable grants and activation.
 
     Grants:
+      • one visible, auto-bound locked token when ClaimedLevel reaches 2;
+      • that token becomes usable when earned Level reaches 4;
       • five/four/three/two/one tokens when ClaimedLevel reaches 5/6/7/8/9;
       • existing profiles reconcile every missing milestone through named markers;
       • quest/admin rewards share a public non-milestone grant path;
@@ -34,6 +36,7 @@ function FutureCallService:Init()
     self._config = self._configLoader:LoadConfig("future_call")
     self._progressionConfig = self._configLoader:LoadConfig("player_progression")
     self._connections = setmetatable({}, { __mode = "k" })
+    self._lockedNotices = setmetatable({}, { __mode = "k" })
 end
 
 function FutureCallService:BindPeerServices(services)
@@ -45,11 +48,14 @@ function FutureCallService:Start()
         if self._connections[player] then
             return
         end
-        self._connections[player] = player
-            :GetAttributeChangedSignal("ClaimedLevel")
-            :Connect(function()
+        self._connections[player] = {
+            player:GetAttributeChangedSignal("ClaimedLevel"):Connect(function()
                 self:Reconcile(player)
-            end)
+            end),
+            player:GetAttributeChangedSignal("Level"):Connect(function()
+                self:Reconcile(player)
+            end),
+        }
         task.spawn(function()
             if Readiness.awaitAttribute(player, "DataLoaded", true, 15) then
                 self:Reconcile(player)
@@ -59,11 +65,11 @@ function FutureCallService:Start()
 
     Players.PlayerAdded:Connect(watch)
     Players.PlayerRemoving:Connect(function(player)
-        local conn = self._connections[player]
-        if conn then
+        for _, conn in ipairs(self._connections[player] or {}) do
             conn:Disconnect()
         end
         self._connections[player] = nil
+        self._lockedNotices[player] = nil
     end)
     for _, player in ipairs(Players:GetPlayers()) do
         watch(player)
@@ -87,6 +93,11 @@ function FutureCallService:_count(player)
     return math.max(0, math.floor(tonumber(item and item.quantity) or 0))
 end
 
+function FutureCallService:IsUnlocked(player)
+    local earned = self._progressionService:GetEarnedLevel(player)
+    return FutureCallLogic.isUnlocked(earned, self._config)
+end
+
 function FutureCallService:GetState(player)
     local token = self._config.token or {}
     local principalName = FutureCallLogic.principalName(player and player.Name, self._config)
@@ -103,6 +114,12 @@ function FutureCallService:GetState(player)
                 name = token.display_name or "Future Call",
                 type = token.type or "Summon token",
                 description = token.description or "",
+                locked = not self:IsUnlocked(player),
+                unlock_level = tonumber(
+                    self._config.onboarding and self._config.onboarding.unlock_level
+                ) or 4,
+                locked_description = token.locked_description
+                    or "Reach Level 4 to summon Your Future Self.",
                 icon_power = token.icon_power or "world_travel",
                 duration = tonumber(token.duration) or 120,
                 active = active == true,
@@ -135,7 +152,24 @@ function FutureCallService:_announceGrant(player, count, reason)
     })
 end
 
-function FutureCallService:_addTokens(player, count)
+function FutureCallService:_announceOnboardingGrant(player)
+    fireGameEvent(player, "future_call_awarded", {
+        name = "🔮 Future Call Token acquired!\nReach Level 4 to summon Your Future Self.",
+        count = 1,
+        reason = "onboarding",
+    })
+end
+
+function FutureCallService:_announceOnboardingUnlock(player)
+    fireGameEvent(player, "future_call_unlocked", {
+        name = "🔮 Your Future Self is ready!",
+        count = self:_count(player),
+        reason = "level_unlocked",
+    })
+end
+
+function FutureCallService:_addTokens(player, count, options)
+    options = options or {}
     count = math.clamp(math.floor(tonumber(count) or 0), 1, 99)
     local uid, err = self._inventoryService:AddItem(player, "consumables", {
         id = self:_tokenId(),
@@ -146,7 +180,7 @@ function FutureCallService:_addTokens(player, count)
         return false, err or "inventory_add_failed"
     end
     local hotbar = self._hotbarService
-    if hotbar and hotbar.AutoBindToken then
+    if options.autoBind ~= false and hotbar and hotbar.AutoBindToken then
         hotbar:AutoBindToken(player, self:_tokenId())
     end
     self:_pushHotbar(player)
@@ -162,13 +196,52 @@ function FutureCallService:GrantTokens(player, count, reason)
         return { ok = false, reason = "invalid_count" }
     end
     count = math.clamp(count, 1, 99)
-    local ok, err = self:_addTokens(player, count)
+    local ok, err = self:_addTokens(player, count, {
+        autoBind = self:IsUnlocked(player),
+    })
     if not ok then
         return { ok = false, reason = err }
     end
     self._dataService:RequestSave(player, "future_call_grant", { critical = true })
     self:_announceGrant(player, count, reason or "reward")
     return { ok = true, granted = count, count = self:_count(player) }
+end
+
+function FutureCallService:_reconcileOnboarding(player, data)
+    local earned = self._progressionService:GetEarnedLevel(player)
+    local claimed = self._progressionService:GetClaimedLevel(player)
+    local plan = FutureCallLogic.onboardingPlan(data.GameData, claimed, earned, self._config)
+    if plan.kind == "none" then
+        return { ok = true, changed = false }
+    end
+
+    FutureCallLogic.markOnboarding(data.GameData, plan)
+    if plan.kind == "grant" then
+        local ok, err = self:_addTokens(player, plan.amount, { autoBind = true })
+        if not ok then
+            FutureCallLogic.restoreOnboarding(data.GameData, plan)
+            return { ok = false, reason = err or "onboarding_inventory_add_failed" }
+        end
+        self._dataService:RequestSave(player, "future_call_onboarding_grant", { critical = true })
+        self:_announceOnboardingGrant(player)
+        return { ok = true, changed = true, granted = plan.amount }
+    end
+
+    if plan.kind == "unlock" then
+        local hotbar = self._hotbarService
+        if self:_count(player) > 0 and hotbar and hotbar.AutoBindToken then
+            hotbar:AutoBindToken(player, self:_tokenId())
+        end
+        self._dataService:RequestSave(player, "future_call_onboarding_unlock", { critical = true })
+        self:_pushHotbar(player)
+        self:_announceOnboardingUnlock(player)
+        return { ok = true, changed = true, unlocked = true }
+    end
+
+    -- Migration is intentionally marker-only: a historical Level-4+ player may
+    -- already have received the old two-token capstone reward.
+    self._dataService:RequestSave(player, "future_call_onboarding_migration", { critical = true })
+    return { ok = true, changed = true, migrated = true }
 end
 
 -- Existing and newly-claimed profiles take this same idempotent path.
@@ -181,10 +254,23 @@ function FutureCallService:Reconcile(player)
         return { ok = false, reason = "data_not_loaded" }
     end
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    local onboarding = self:_reconcileOnboarding(player, data)
+    if not onboarding.ok then
+        self:_log("Warn", "Future Call onboarding reconciliation failed", {
+            player = player.Name,
+            reason = tostring(onboarding.reason),
+        })
+        return onboarding
+    end
     local claimed = self._progressionService:GetClaimedLevel(player)
     local pending = FutureCallLogic.pendingGrants(data.GameData, claimed, self._config)
     if #pending.grants == 0 then
-        return { ok = true, granted = 0, reconciled = false }
+        return {
+            ok = true,
+            granted = onboarding.granted or 0,
+            reconciled = onboarding.changed == true,
+            onboarding = onboarding,
+        }
     end
 
     -- Mark every due milestone before inventory mutation: AddItem saves the whole shared
@@ -244,6 +330,11 @@ function FutureCallService:ResetForBeginning(player)
     self._npcPrincipalService:Despawn(principalName, "reset")
     player:SetAttribute("FutureCallUntil", 0)
     self:_pushHotbar(player)
+    task.defer(function()
+        if player.Parent then
+            self:Reconcile(player)
+        end
+    end)
     return { ok = true, removed = count }
 end
 
@@ -253,6 +344,19 @@ function FutureCallService:Use(player, tokenId)
     end
     if tokenId ~= self:_tokenId() then
         return { ok = false, reason = "unknown_token" }
+    end
+    if not self:IsUnlocked(player) then
+        local now = os.clock()
+        if now - (self._lockedNotices[player] or -math.huge) >= 1 then
+            self._lockedNotices[player] = now
+            fireGameEvent(player, "future_call_locked", {
+                name = "Reach Level 4 to summon Your Future Self.",
+                unlockLevel = tonumber(
+                    self._config.onboarding and self._config.onboarding.unlock_level
+                ) or 4,
+            })
+        end
+        return { ok = false, reason = "level_locked" }
     end
     if self:_count(player) <= 0 then
         return { ok = false, reason = "none_left" }

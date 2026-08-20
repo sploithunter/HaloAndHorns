@@ -44,6 +44,12 @@ return {
         -- each biome spawner draws its own faction (keyed off the BaddieSpawner<Suffix> part name).
         -- Ice is wired + ready for when a BaddieSpawnerIce part is placed in the map.
         zone_faction = { Lava = "lava", Desert = "desert", Ice = "ice" },
+        -- Named non-Home bindings reuse the normal proximity-wave lifecycle without inheriting
+        -- the suffix as their combat faction. Emptying the resolved drop table makes combat use
+        -- the player's current-area currency (Waycoins in Hall_1) instead of Grass Crystals.
+        bindings = {
+            HallBarn = { faction = "earth", use_area_currency_loot = true },
+        },
         -- VARIETY (Jason): weighted compositions, not just "3 imps / 1 bear". Mixed-role packs make
         -- the role + surround systems sing — a healer behind a tank reads totally differently from a
         -- melee swarm. Weight = relative frequency (rarer = scarier). NOTE: rabid_dog/murder_crow/

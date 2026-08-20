@@ -37,5 +37,16 @@ return function()
             end
             expect(ok).to.equal(true)
         end)
+
+        it("validates the internal-accounts identity list", function()
+            local ok, err = ConfigSchemas.validate(
+                "internal_accounts",
+                loadModule("configs/internal_accounts.lua")
+            )
+            if not ok then
+                error(err)
+            end
+            expect(ok).to.equal(true)
+        end)
     end)
 end

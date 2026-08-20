@@ -10,6 +10,9 @@ return function()
         it("uses compact automatically on touch phones and tablets", function()
             expect(HudLayout.resolve("auto", 844, 390, true, false)).to.equal("compact")
             expect(HudLayout.resolve("auto", 2048, 946, true, true)).to.equal("compact")
+            -- Studio iPad emulator often reports no touch.
+            expect(HudLayout.resolve("auto", 1080, 810, false, true)).to.equal("compact")
+            expect(HudLayout.resolve("auto", 874, 402, false, true)).to.equal("compact")
         end)
 
         it("keeps desktop classic in auto", function()

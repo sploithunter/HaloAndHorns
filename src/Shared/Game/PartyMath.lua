@@ -8,12 +8,86 @@
       scaledHp(baseHp, partySize, perExtra)-> integer
       splitLoot(loot, partySize)           -> { [currency] = perPlayerAmount }
       attribution(contributions)           -> { fractions = {id=frac}, mvp, total }
+      inviteExpired(invite, now, timeout)  -> boolean
+      invitePrivacy(value, cfg)            -> "everyone"|"friends"
+      invitePrivacyLabel(value, cfg)       -> string
+      canSendInvite(ctx)                   -> ok, reason
+      canAcceptInvite(ctx)                 -> ok, reason
 ]]
 
 local PartyMath = {}
 
 function PartyMath.canJoin(currentSize, maxSize)
     return (tonumber(currentSize) or 0) < (tonumber(maxSize) or 0)
+end
+
+-- Keep invitation lifetime testable without Roblox scheduling. PartyService supplies os.clock().
+function PartyMath.inviteExpired(invite, now, timeoutSeconds)
+    if type(invite) ~= "table" or type(invite.at) ~= "number" then
+        return true
+    end
+    local timeout = math.max(1, tonumber(timeoutSeconds) or 30)
+    return ((tonumber(now) or invite.at) - invite.at) >= timeout
+end
+
+local function privacyModes(cfg)
+    return type(cfg) == "table" and type(cfg.invite_privacy) == "table" and cfg.invite_privacy
+        or nil
+end
+
+function PartyMath.invitePrivacy(value, cfg)
+    local privacy = privacyModes(cfg)
+    local default = (privacy and type(privacy.default) == "string" and privacy.default)
+        or "everyone"
+    if type(value) == "string" and privacy and type(privacy.modes) == "table" and privacy.modes[value] then
+        return value
+    end
+    if value == "everyone" or value == "friends" then
+        return value
+    end
+    if type(privacy) == "table" and type(privacy.modes) == "table" and privacy.modes[default] then
+        return default
+    end
+    return "everyone"
+end
+
+function PartyMath.invitePrivacyLabel(value, cfg)
+    local id = PartyMath.invitePrivacy(value, cfg)
+    local privacy = privacyModes(cfg)
+    local mode = privacy and type(privacy.modes) == "table" and privacy.modes[id]
+    if type(mode) == "table" and type(mode.list_label) == "string" then
+        return mode.list_label
+    end
+    if type(mode) == "table" and type(mode.display) == "string" then
+        return mode.display
+    end
+    if id == "friends" then
+        return "Friends only"
+    end
+    return "Everyone"
+end
+
+-- ctx: fromInRange, targetInRange, targetPrivacy, areFriends, cfg
+function PartyMath.canSendInvite(ctx)
+    ctx = type(ctx) == "table" and ctx or {}
+    if ctx.fromInRange == true then
+        return false, "in_range"
+    end
+    if ctx.targetInRange == true then
+        return false, "target_in_range"
+    end
+    if PartyMath.invitePrivacy(ctx.targetPrivacy, ctx.cfg) == "friends" and ctx.areFriends ~= true then
+        return false, "friends_only"
+    end
+    return true
+end
+
+function PartyMath.canAcceptInvite(ctx)
+    ctx = type(ctx) == "table" and ctx or {}
+    if ctx.fromInRange == true or ctx.targetInRange == true then
+        return false, "in_range"
+    end
+    return true
 end
 
 -- Enemy HP scaling with party size (solo = unscaled). Mirrors CombatMath.

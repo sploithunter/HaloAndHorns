@@ -72,5 +72,11 @@ return function()
             expect(ActiveSquad.canSummon(false, true).reason).to.equal("slot_recharging")
             expect(ActiveSquad.canSummon(true, false).reason).to.equal("no_ready_instance")
         end)
+
+        it("canSummon refuses a gauntlet down even when the slot timer would be ready", function()
+            local r = ActiveSquad.canSummon(true, true, true)
+            expect(r.ok).to.equal(false)
+            expect(r.reason).to.equal("gauntlet_no_revive")
+        end)
     end)
 end

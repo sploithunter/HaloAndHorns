@@ -1,0 +1,134 @@
+{
+  "_comment": "Hoverboard + surfboard + rocketboard mesh+texture+icon uploads (Open Simulator group 15872767). Each colorway is its own mesh + matching albedo — Meshy re-unwraps recolors, so a shared mesh kaleidoscopes. meshId = raw MeshId inside the uploaded Model; imageId/iconImageId = resolved Image ids (NOT Decal ids). MeshPart.TextureID and UI ImageLabels need the Image id.",
+  "uploadedBy": "self-serve 2026-08-20 paired mesh+texture",
+  "skins": {
+    "black_gold": {
+      "modelAssetId": "87414742225863",
+      "meshId": "rbxassetid://107782231692733",
+      "textureDecalId": "122692369001912",
+      "imageId": "rbxassetid://94992959538591",
+      "iconDecalId": "139880924300284",
+      "iconImageId": "rbxassetid://87061483301808"
+    },
+    "green_white": {
+      "modelAssetId": "72233653653151",
+      "meshId": "rbxassetid://120196894539668",
+      "textureDecalId": "83498536927801",
+      "imageId": "rbxassetid://138907188850875",
+      "iconDecalId": "82160187165611",
+      "iconImageId": "rbxassetid://112798106384374"
+    },
+    "orange_black": {
+      "modelAssetId": "105290825358530",
+      "meshId": "rbxassetid://81823991106177",
+      "textureDecalId": "98468412838903",
+      "imageId": "rbxassetid://100111684455833",
+      "iconDecalId": "83236382520511",
+      "iconImageId": "rbxassetid://132269632223665"
+    },
+    "white_red": {
+      "modelAssetId": "82951193865841",
+      "meshId": "rbxassetid://107106683475888",
+      "textureDecalId": "104833477908509",
+      "imageId": "rbxassetid://80419383868895",
+      "iconDecalId": "92370704618161",
+      "iconImageId": "rbxassetid://76324772471833"
+    },
+    "blue_gold": {
+      "modelAssetId": "114885299319663",
+      "meshId": "rbxassetid://106160270625805",
+      "textureDecalId": "121964280623902",
+      "imageId": "rbxassetid://106362955686682",
+      "iconDecalId": "86482071195660",
+      "iconImageId": "rbxassetid://75952704459390"
+    },
+    "surf_blue": {
+      "modelAssetId": "132100308148494",
+      "meshId": "rbxassetid://100950220964401",
+      "textureDecalId": "91267193866055",
+      "imageId": "rbxassetid://119278352204562",
+      "iconDecalId": "102776751807441",
+      "iconImageId": "rbxassetid://117143775561972"
+    },
+    "surf_green": {
+      "modelAssetId": "75757332810211",
+      "meshId": "rbxassetid://80278668372830",
+      "textureDecalId": "121232074642862",
+      "imageId": "rbxassetid://74765248927064",
+      "iconDecalId": "120523275957650",
+      "iconImageId": "rbxassetid://139763699272656"
+    },
+    "surf_orange": {
+      "modelAssetId": "104114673363657",
+      "meshId": "rbxassetid://109317365695389",
+      "textureDecalId": "111658179192390",
+      "imageId": "rbxassetid://105400480808574",
+      "iconDecalId": "70740520035082",
+      "iconImageId": "rbxassetid://96082451486237"
+    },
+    "surf_purple": {
+      "modelAssetId": "107426268791269",
+      "meshId": "rbxassetid://105874976370618",
+      "textureDecalId": "97279341832214",
+      "imageId": "rbxassetid://132111181151334",
+      "iconDecalId": "73486293607850",
+      "iconImageId": "rbxassetid://101287015320374"
+    },
+    "surf_yellow": {
+      "modelAssetId": "120993523671985",
+      "meshId": "rbxassetid://88992456084036",
+      "textureDecalId": "100851294283477",
+      "imageId": "rbxassetid://90441648070879",
+      "iconDecalId": "83888797390348",
+      "iconImageId": "rbxassetid://90986899452531"
+    },
+    "rocket_blue": {
+      "modelAssetId": "139246849060992",
+      "meshId": "rbxassetid://117138673433205",
+      "textureDecalId": "108168071571962",
+      "imageId": "rbxassetid://71787865530109",
+      "iconDecalId": "97280689154171",
+      "iconImageId": "rbxassetid://129252383967484"
+    },
+    "rocket_lightblue": {
+      "modelAssetId": "98077101156145",
+      "meshId": "rbxassetid://76682335674258",
+      "textureDecalId": "127779089163064",
+      "imageId": "rbxassetid://81007461024536",
+      "iconDecalId": "80483671463888",
+      "iconImageId": "rbxassetid://133972121715113"
+    },
+    "rocket_green": {
+      "modelAssetId": "124486807268642",
+      "meshId": "rbxassetid://71618028846487",
+      "textureDecalId": "119985262859201",
+      "imageId": "rbxassetid://105398201025679",
+      "iconDecalId": "100283849870616",
+      "iconImageId": "rbxassetid://96303282078395"
+    },
+    "rocket_orange": {
+      "modelAssetId": "126332016823444",
+      "meshId": "rbxassetid://101957059386544",
+      "textureDecalId": "72041270209718",
+      "imageId": "rbxassetid://139838111779734",
+      "iconDecalId": "129070981384096",
+      "iconImageId": "rbxassetid://116281403293135"
+    },
+    "rocket_purple": {
+      "modelAssetId": "125131195844713",
+      "meshId": "rbxassetid://78046396356932",
+      "textureDecalId": "99089141242596",
+      "imageId": "rbxassetid://96369411448428",
+      "iconDecalId": "76507309449130",
+      "iconImageId": "rbxassetid://100574923388292"
+    },
+    "rocket_yellow": {
+      "modelAssetId": "99012308112514",
+      "meshId": "rbxassetid://110315632323608",
+      "textureDecalId": "80928646907252",
+      "imageId": "rbxassetid://95038196703144",
+      "iconDecalId": "120911786811076",
+      "iconImageId": "rbxassetid://140411912611437"
+    }
+  }
+}

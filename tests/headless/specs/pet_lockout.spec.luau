@@ -120,6 +120,35 @@ return function()
             )
             expect(cfg.slot_lock_seconds < cfg.pet_lockout_seconds).to.equal(true)
         end)
+
+        it("a forever slot lock stays down and then converts to a normal lock", function()
+            local s = PetLockout.recordDown(
+                PetLockout.empty(),
+                { kind = "stack", stackKey = "bear:basic", slot = "slot_2" },
+                NOW,
+                { pet_lockout_seconds = 300, slot_lock_forever = true }
+            )
+            expect(PetLockout.isSlotLocked(s, "slot_2", NOW + 10)).to.equal(true)
+            expect(PetLockout.isSlotLocked(s, "slot_2", NOW + 10 ^ 6)).to.equal(true)
+            expect(PetLockout.canUseSlot(s, "slot_2", NOW + 10).ok).to.equal(false)
+            local after = PetLockout.endGauntletSlotLocks(s, NOW + 100, 60)
+            expect(PetLockout.isSlotLocked(after, "slot_2", NOW + 100)).to.equal(true)
+            expect(PetLockout.isSlotLocked(after, "slot_2", NOW + 161)).to.equal(false)
+            -- The stack identity must not inherit FOREVER or the pet is bricked after the run.
+            expect(PetLockout.availableQuantity(s, "bear:basic", 1, NOW + 61)).to.equal(1)
+        end)
+
+        it("heals a leaked forever stack lock on prune", function()
+            local leaked = {
+                pets = {},
+                stacks = { ["compass_fox:golden"] = { -1 } },
+                slots = {},
+            }
+            local healed = PetLockout.prune(leaked, NOW)
+            expect(PetLockout.availableQuantity(healed, "compass_fox:golden", 1, NOW + 61)).to.equal(
+                1
+            )
+        end)
     end)
 
     describe("PetLockout.prune", function()

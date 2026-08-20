@@ -22,6 +22,8 @@ local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
 local Locations = require(ReplicatedStorage.Shared.Locations)
+local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
+local PetLockout = require(ReplicatedStorage.Shared.Game.PetLockout)
 local PetEquipCapacity = require(ReplicatedStorage.Shared.Game.PetEquipCapacity)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
 local PetProjectionPolicy = require(ReplicatedStorage.Shared.Inventory.PetProjectionPolicy)
@@ -246,11 +248,15 @@ function InventoryService:AddItem(player, bucketName, itemData, opts)
             })
         end
 
+        local petIndexResult = nil
         if bucketName == "pets" then
-            self:_recordPetIndex(player, itemData)
+            petIndexResult = self:_recordPetIndex(player, itemData)
         end
 
-        return uid
+        -- The second success return is intentionally metadata, not an error. Pet grants use
+        -- this to carry the authoritative first-index-discovery bit into hatch results while
+        -- legacy callers that only consume the uid remain unchanged.
+        return uid, petIndexResult
     else
         self._logger:Error("❌ ADD ITEM FAILED - Storage error", {
             player = player.Name,
@@ -306,8 +312,12 @@ function InventoryService:_recordPetIndex(player, itemData)
                 itemId = itemData.id,
                 error = tostring(result),
             })
+            return nil
         end
+        return result
     end
+
+    return nil
 end
 
 function InventoryService:_addStackableItem(player, bucketName, itemData, bucket, bucketConfig)
@@ -536,15 +546,24 @@ function InventoryService:_isSpecialPetData(data)
     return self:_isSpecialPet(data.id, data.variant)
 end
 
--- First equip slot in [1..maxSlots] not occupied by ANY pet (common or special).
-function InventoryService:_freePetSlot(items, equipped, maxSlots)
+-- First equip slot in [1..maxSlots] not occupied by ANY pet (common or special)
+-- and not still on its down-lockout. A red slot stays red until the timer ends.
+function InventoryService:_freePetSlot(items, equipped, maxSlots, lockedSlots)
     local slotMap = PetInventoryView.resolveEquipped(items, equipped, maxSlots)
     for slot = 1, maxSlots do
-        if slotMap[slot] == nil then
+        if
+            slotMap[slot] == nil
+            and not (lockedSlots and (lockedSlots[slot] or lockedSlots["slot_" .. slot]))
+        then
             return slot
         end
     end
     return nil
+end
+
+function InventoryService:_lockedPetSlots(player)
+    local data = player and self._dataService and self._dataService:GetData(player)
+    return PetLockout.lockedSlotSet(data and data.PetLockouts, os.time())
 end
 
 -- Translate a client identifier into a concrete target:
@@ -2290,6 +2309,27 @@ end
 -- 🎽 EQUIPMENT HANDLERS
 -- ═══════════════════════════════════════════════════════════════════════════════════
 
+-- Fight rooms lock the roster so a downed slot cannot be healed by swapping.
+-- The stamped entrance tile (and a missing map during first warp) still allow kit-up.
+local function gauntletRosterLocked(player)
+    if not player or player:GetAttribute("GauntletNoRevives") ~= true then
+        return false
+    end
+    local mapTable
+    local encoded = player:GetAttribute("MissionMapData")
+    if type(encoded) == "string" and encoded ~= "" then
+        local ok, decoded = pcall(function()
+            return HttpService:JSONDecode(encoded)
+        end)
+        if ok then
+            mapTable = decoded
+        end
+    end
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    local pos = root and root.Position
+    return ChallengeRun.gauntletRosterLocked(true, mapTable, pos and pos.X, pos and pos.Z)
+end
+
 function InventoryService:_handleTogglePetEquipped(player, data)
     self._logger:Info("🐾 PET EQUIP REQUEST", {
         player = player.Name,
@@ -2298,6 +2338,13 @@ function InventoryService:_handleTogglePetEquipped(player, data)
         itemId = data.itemId,
         action = data.action or "toggle",
     })
+
+    if gauntletRosterLocked(player) then
+        self._logger:Warn("❌ Pet equip blocked: gauntlet roster locked", {
+            player = player.Name,
+        })
+        return
+    end
 
     -- Validate request
     if not data.bucket or not data.itemUid or data.bucket ~= "pets" then
@@ -2352,7 +2399,7 @@ function InventoryService:_handleTogglePetEquipped(player, data)
             equipped[currentSlot] = nil
             success, result = true, { action = "unequipped" }
         else
-            local slot = self:_freePetSlot(items, equipped, maxSlots)
+            local slot = self:_freePetSlot(items, equipped, maxSlots, self:_lockedPetSlots(player))
             if slot then
                 equipped["slot_" .. slot] = target.uid
                 success, result = true, { action = "equipped", slot = slot }
@@ -2380,7 +2427,7 @@ function InventoryService:_handleTogglePetEquipped(player, data)
             success, result = true, { action = "unequipped", slot = target.slot }
         elseif (equippedByKey[target.stackKey] or 0) < (tonumber(stack.quantity) or 0) then
             -- Equip one more copy.
-            local slot = self:_freePetSlot(items, equipped, maxSlots)
+            local slot = self:_freePetSlot(items, equipped, maxSlots, self:_lockedPetSlots(player))
             if slot then
                 equipped["slot_" .. slot] = "stack|" .. target.stackKey
                 success, result = true, { action = "equipped", slot = slot }
@@ -2431,6 +2478,9 @@ end
 function InventoryService:_handleSetEquippedPets(player, data)
     local refs = data and data.refs
     local requestId = data and data.requestId
+    if gauntletRosterLocked(player) then
+        return { ok = false, requestId = requestId, reason = "gauntlet_roster_locked" }
+    end
     if type(refs) ~= "table" then
         return { ok = false, requestId = requestId, reason = "invalid_refs" }
     end
@@ -2443,7 +2493,10 @@ function InventoryService:_handleSetEquippedPets(player, data)
     local maxSlots = self:_getMaxEquippedSlots(player, "pets", petSlots.slots)
     playerData.Equipped = playerData.Equipped or {}
 
-    local newEquipped, summary = PetInventoryView.buildEquipped(items, refs, maxSlots)
+    local newEquipped, summary = PetInventoryView.buildEquipped(items, refs, maxSlots, {
+        lockedSlots = self:_lockedPetSlots(player),
+        previous = playerData.Equipped.pets,
+    })
     if summary.rejected > 0 then
         self._logger:Warn("❌ Draft squad rejected atomically", {
             player = player.Name,
@@ -2493,8 +2546,13 @@ function InventoryService:FillEmptyPetSlots(player, refs, saveTag)
     playerData.Equipped = playerData.Equipped or {}
     local configured = self._inventoryConfig.equipped and self._inventoryConfig.equipped.pets
     local maxSlots = self:_getMaxEquippedSlots(player, "pets", configured and configured.slots or 1)
-    local nextEquipped, summary =
-        PetInventoryView.fillEmptySlots(pets.items, playerData.Equipped.pets, refs, maxSlots)
+    local nextEquipped, summary = PetInventoryView.fillEmptySlots(
+        pets.items,
+        playerData.Equipped.pets,
+        refs,
+        maxSlots,
+        self:_lockedPetSlots(player)
+    )
     if summary.added <= 0 then
         summary.ok = true
         return summary

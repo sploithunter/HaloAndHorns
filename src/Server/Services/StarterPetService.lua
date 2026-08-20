@@ -75,6 +75,11 @@ function StarterPetService:_push(player, extra)
     end
     self:_reconcile(player, data)
     local state = StarterPetChoice.stateFor(self._config, data)
+    local savedStarter = data.StarterPet
+    local starterChosen = type(savedStarter) == "table" and type(savedStarter.choice) == "string"
+    if not starterChosen then
+        player:SetAttribute("StarterPetChosen", false)
+    end
     if type(extra) == "table" then
         for key, value in pairs(extra) do
             state[key] = value
@@ -118,6 +123,15 @@ function StarterPetService:_push(player, extra)
     end
 
     Signals.StarterPetState:FireClient(player, state)
+    if starterChosen then
+        -- Publish this after the state packet that closes the chooser. Other onboarding
+        -- celebrations can now wait on an explicit UI-ready seam without polling.
+        task.defer(function()
+            if player.Parent then
+                player:SetAttribute("StarterPetChosen", true)
+            end
+        end)
+    end
     if state.eligible and not self._shown[player] then
         self._shown[player] = true
         fireGameEvent(player, "starter_pet_choice_shown", {

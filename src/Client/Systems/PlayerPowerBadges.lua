@@ -7,15 +7,23 @@
     it). The badge is the universal two-layer disc resolved via PetBadge.forPower(powerId) — same
     art as the hotbar/cards — with a countdown that blinks in its last few seconds.
 
-    Row sits top-centre, just under the player nameplate. Steady (refreshed) player buffs are rare,
-    so these all show a countdown + near-expiry blink (timed-power behaviour, per Jason's rule).
+    Game-pass entitlements sit first (they cannot be toggled). Toggleable powers sit
+    second. Keeper placement (`top_chrome`) hangs the two rows under the Roblox left
+    chrome. `vertical_left` stands those rows up as columns on the far left edge
+    inside a scale-height box; contents shrink to fit (Colorado Plays is the
+    long list). Passes are icon-only. ON/OFF/PET/timer sit beside the discs.
+    The column hides while EnemyHud has engaged foes (`EnemyHudActive`) when
+    Settings "Hide Toggles in Battle" is on (the default).
 ]]
 
 local Players = game:GetService("Players")
+local GuiService = game:GetService("GuiService")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
+
+local UI_CONFIG = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("ui"))
 
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
 local CREATORS = require(ReplicatedStorage.Configs:WaitForChild("creators"))
@@ -397,6 +405,83 @@ local function makeToggleClick(def)
     end
 end
 
+local function badgeCfg()
+    return (UI_CONFIG.hud and UI_CONFIG.hud.power_badges) or {}
+end
+
+local function isVerticalBadges()
+    return badgeCfg().placement == "vertical_left"
+end
+
+local function powerDiscSize()
+    if isVerticalBadges() then
+        return tonumber(badgeCfg().disc) or 48
+    end
+    return 36
+end
+
+local function passDiscSize()
+    if isVerticalBadges() then
+        return tonumber(badgeCfg().pass_disc) or 40
+    end
+    return 28
+end
+
+local function labelWidth()
+    return tonumber(badgeCfg().label_width) or 32
+end
+
+-- Size the disc + ON/OFF/PET/timer. Vertical-left puts the status beside the
+-- disc (see-through, toward the playfield) so the disc can be a bigger tap.
+local function applyPowerChrome(holder, disc, timer, stacks)
+    stacks = math.max(1, tonumber(stacks) or 1)
+    local d = powerDiscSize()
+    disc.Size = UDim2.fromOffset(d, d)
+    local hit = holder:FindFirstChild("ToggleHit") or holder:FindFirstChild("TooltipHit")
+    if isVerticalBadges() then
+        local overlap = math.floor(d * 0.5)
+        local stackPad = (stacks - 1) * overlap
+        local lw = labelWidth()
+        local labelLeft = badgeCfg().label_side == "left"
+        local labelX = labelLeft and 0 or (stackPad + d + 3)
+        local discX = labelLeft and (lw + 3) or stackPad
+        holder.Size = UDim2.fromOffset(stackPad + d + 4 + lw, d)
+        disc.AnchorPoint = Vector2.new(0, 0)
+        disc.Position = UDim2.fromOffset(discX, 0)
+        timer.Size = UDim2.fromOffset(lw, 16)
+        timer.AnchorPoint = Vector2.new(0, 0.5)
+        -- Side status; scale cannot park this beside a fixed disc.
+        timer.Position = UDim2.fromOffset(labelX, d * 0.5)
+        timer.TextXAlignment = labelLeft and Enum.TextXAlignment.Right or Enum.TextXAlignment.Left
+        timer.TextScaled = false
+        timer.TextSize = 11
+        timer.TextTransparency = 0.12
+        timer.TextStrokeTransparency = 0.55
+        if hit then
+            hit.AnchorPoint = Vector2.new(0, 0)
+            hit.Position = UDim2.fromOffset(discX, 0)
+            hit.Size = UDim2.fromOffset(d, d)
+        end
+        return overlap, discX
+    end
+    holder.Size = UDim2.fromOffset(38 + (stacks - 1) * 18, 50)
+    disc.AnchorPoint = Vector2.new(1, 0)
+    disc.Position = UDim2.fromScale(1, 0)
+    timer.Size = UDim2.fromOffset(38, 12)
+    timer.AnchorPoint = Vector2.new(1, 1)
+    timer.Position = UDim2.fromScale(1, 1)
+    timer.TextXAlignment = Enum.TextXAlignment.Center
+    timer.TextScaled = true
+    timer.TextTransparency = 0
+    timer.TextStrokeTransparency = 0.4
+    if hit then
+        hit.AnchorPoint = Vector2.new(0, 0)
+        hit.Position = UDim2.fromScale(0, 0)
+        hit.Size = UDim2.fromScale(1, 1)
+    end
+    return 18, (stacks - 1) * 18
+end
+
 local function makeBadge(parent, order, onClick, def, showTooltip, hideTooltip)
     local attr = def.attr
     local holder = Instance.new("Frame")
@@ -404,7 +489,6 @@ local function makeBadge(parent, order, onClick, def, showTooltip, hideTooltip)
     -- now visibly land on the exact timed effect it just activated instead of vaguely flying at
     -- the whole player bar.
     holder.Name = "PBadge_" .. tostring(attr or "Status")
-    holder.Size = UDim2.fromOffset(38, 50)
     holder.BackgroundTransparency = 1
     holder.LayoutOrder = order
     holder.Parent = parent
@@ -449,38 +533,28 @@ local function makeBadge(parent, order, onClick, def, showTooltip, hideTooltip)
 
     local disc = Instance.new("ImageLabel")
     disc.Name = "Disc"
-    disc.Size = UDim2.fromOffset(36, 36)
-    -- pinned to the holder's RIGHT edge; stack discs fan LEFT from here (Jason: anchor
-    -- at 1 on X, grow left — the pile must never crowd the avatar on its right)
-    disc.Position = UDim2.fromScale(1, 0)
-    disc.AnchorPoint = Vector2.new(1, 0)
     disc.BackgroundTransparency = 1
     disc.ScaleType = Enum.ScaleType.Fit
     disc.Parent = holder
 
     local timer = Instance.new("TextLabel")
     timer.Name = "Timer"
-    timer.Size = UDim2.fromOffset(38, 12)
-    timer.Position = UDim2.fromScale(1, 1)
-    timer.AnchorPoint = Vector2.new(1, 1) -- under the front (right-pinned) disc
     timer.BackgroundTransparency = 1
     timer.Font = Enum.Font.GothamBold
-    timer.TextScaled = true
     timer.TextColor3 = Color3.fromRGB(255, 255, 255)
-    timer.TextStrokeTransparency = 0.4
     timer.Parent = holder
 
+    applyPowerChrome(holder, disc, timer, 1)
     return { holder = holder, disc = disc, timer = timer }
 end
 
--- Permanent entitlements intentionally read quieter than live effects. They use the same authored
--- Marketplace artwork as the shop, but at a smaller, slightly subdued treatment with an infinity
--- marker instead of ON/a timer. Full-strength artwork would make an always-owned pass look like a
--- newly fired power; hiding it entirely made pass ownership invisible from ordinary gameplay.
+-- Permanent entitlements stay quieter than live effects: same Marketplace
+-- artwork, slightly subdued. No infinity marker — passes are always on.
 local function makePassBadge(parent, order, def, showTooltip, hideTooltip)
+    local d = passDiscSize()
     local holder = Instance.new("Frame")
     holder.Name = "PassBadge_" .. tostring(def.passId or "Unknown")
-    holder.Size = UDim2.fromOffset(30, 38)
+    holder.Size = UDim2.fromOffset(d, d)
     holder.BackgroundTransparency = 1
     holder.LayoutOrder = order
     holder.Parent = parent
@@ -504,28 +578,13 @@ local function makePassBadge(parent, order, def, showTooltip, hideTooltip)
 
     local icon = Instance.new("ImageLabel")
     icon.Name = "Icon"
-    icon.Size = UDim2.fromOffset(28, 28)
-    icon.Position = UDim2.fromScale(1, 0)
-    icon.AnchorPoint = Vector2.new(1, 0)
+    icon.Size = UDim2.fromScale(1, 1)
     icon.BackgroundTransparency = 1
     icon.Image = def.passConfig.icon or ""
     icon.ImageColor3 = Color3.fromRGB(225, 225, 235)
     icon.ImageTransparency = 0.14
     icon.ScaleType = Enum.ScaleType.Fit
     icon.Parent = holder
-
-    local permanent = Instance.new("TextLabel")
-    permanent.Name = "Permanent"
-    permanent.Size = UDim2.fromOffset(30, 10)
-    permanent.Position = UDim2.fromScale(1, 1)
-    permanent.AnchorPoint = Vector2.new(1, 1)
-    permanent.BackgroundTransparency = 1
-    permanent.Font = Enum.Font.GothamBold
-    permanent.Text = "∞"
-    permanent.TextScaled = true
-    permanent.TextColor3 = Color3.fromRGB(175, 185, 210)
-    permanent.TextStrokeTransparency = 0.55
-    permanent.Parent = holder
 
     return { holder = holder, def = def }
 end
@@ -537,6 +596,14 @@ function PlayerPowerBadges.start()
     gui.IgnoreGuiInset = true
     gui.DisplayOrder = 26
     gui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+    local function applyBattleHide()
+        local hideInBattle = localPlayer:GetAttribute("HideTogglesInBattle") ~= false
+        gui.Enabled = not (hideInBattle and localPlayer:GetAttribute("EnemyHudActive") == true)
+    end
+    localPlayer:GetAttributeChangedSignal("EnemyHudActive"):Connect(applyBattleHide)
+    localPlayer:GetAttributeChangedSignal("HideTogglesInBattle"):Connect(applyBattleHide)
+    applyBattleHide()
 
     local tooltip = Instance.new("Frame")
     tooltip.Name = "StatusTooltip"
@@ -616,53 +683,79 @@ function PlayerPowerBadges.start()
 
         local viewport = Workspace.CurrentCamera and Workspace.CurrentCamera.ViewportSize
             or Vector2.new(1280, 720)
-        local anchorCenter = anchor.AbsolutePosition.X + anchor.AbsoluteSize.X * 0.5
-        local x = math.clamp(anchorCenter - 160, 8, math.max(8, viewport.X - 328))
-        local y = math.clamp(
-            anchor.AbsolutePosition.Y + anchor.AbsoluteSize.Y + 8,
-            8,
-            math.max(8, viewport.Y - 174)
-        )
+        local cfg = (UI_CONFIG.hud and UI_CONFIG.hud.power_badges) or {}
+        local x, y
+        if cfg.placement == "vertical_left" then
+            -- Open to the right of the left-edge column.
+            x = math.clamp(
+                anchor.AbsolutePosition.X + anchor.AbsoluteSize.X + 8,
+                8,
+                math.max(8, viewport.X - 328)
+            )
+            y = math.clamp(anchor.AbsolutePosition.Y, 8, math.max(8, viewport.Y - 174))
+        else
+            local anchorCenter = anchor.AbsolutePosition.X + anchor.AbsoluteSize.X * 0.5
+            x = math.clamp(anchorCenter - 160, 8, math.max(8, viewport.X - 328))
+            y = math.clamp(
+                anchor.AbsolutePosition.Y + anchor.AbsoluteSize.Y + 8,
+                8,
+                math.max(8, viewport.Y - 174)
+            )
+        end
         tooltip.Position = UDim2.fromOffset(x, y)
         tooltip.Visible = true
         tooltipAnchor = anchor
     end
 
-    local activeRow = Instance.new("Frame")
-    activeRow.Name = "ActiveEffectsRow"
-    -- Active effects retain the large, high-contrast treatment at capsule height. Permanent
-    -- entitlements get their own compact row immediately below, so neither category can make the
-    -- other unreadable. Both grow LEFTWARD from the player bar and inherit its viewport scale.
-    activeRow.AnchorPoint = Vector2.new(1, 0.5)
-    activeRow.Position = UDim2.new(0, -10, 0.5, 0)
-    activeRow.Size = UDim2.fromOffset(0, 50)
-    activeRow.AutomaticSize = Enum.AutomaticSize.X
-    activeRow.BackgroundTransparency = 1
-    activeRow.ZIndex = 8
+    local host = Instance.new("Frame")
+    host.Name = "BadgeStack"
+    host.AnchorPoint = Vector2.new(0.5, 0)
+    host.AutomaticSize = Enum.AutomaticSize.XY
+    host.BackgroundTransparency = 1
+    host.ZIndex = 8
+    host.Parent = gui
+    local UIViewportScale = require(script.Parent.Parent.UI.UIViewportScale)
+    UIViewportScale.attach(host)
+
+    local fit = Instance.new("Frame")
+    fit.Name = "Fit"
+    fit.AutomaticSize = Enum.AutomaticSize.XY
+    fit.BackgroundTransparency = 1
+    fit.ZIndex = 8
+    fit.Parent = host
+    local fitScale = Instance.new("UIScale")
+    fitScale.Name = "FitScale"
+    fitScale.Scale = 1
+    fitScale.Parent = fit
+
+    local stackLayout = Instance.new("UIListLayout")
+    stackLayout.FillDirection = Enum.FillDirection.Vertical
+    stackLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    stackLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    stackLayout.Padding = UDim.new(0, 2)
+    stackLayout.Parent = fit
 
     local passRow = Instance.new("Frame")
     passRow.Name = "OwnedPassesRow"
-    passRow.AnchorPoint = Vector2.new(1, 0)
-    passRow.Position = UDim2.new(0, -10, 0.5, 26)
+    passRow.LayoutOrder = 1
     passRow.Size = UDim2.fromOffset(0, 38)
     passRow.AutomaticSize = Enum.AutomaticSize.X
     passRow.BackgroundTransparency = 1
     passRow.ZIndex = 8
-    task.spawn(function()
-        local pg = localPlayer:WaitForChild("PlayerGui")
-        local bar = pg:WaitForChild("PlayerBar", 20)
-        local cap = bar and bar:WaitForChild("Capsule", 10)
-        if cap then
-            activeRow.Parent = cap
-            passRow.Parent = cap
-        else
-            activeRow.Parent = gui -- fallback: original floating placement
-            passRow.Parent = gui
-        end
-    end)
+    passRow.Parent = fit
+
+    local activeRow = Instance.new("Frame")
+    activeRow.Name = "ActiveEffectsRow"
+    activeRow.LayoutOrder = 2
+    activeRow.Size = UDim2.fromOffset(0, 50)
+    activeRow.AutomaticSize = Enum.AutomaticSize.X
+    activeRow.BackgroundTransparency = 1
+    activeRow.ZIndex = 8
+    activeRow.Parent = fit
+
     local activeLayout = Instance.new("UIListLayout")
     activeLayout.FillDirection = Enum.FillDirection.Horizontal
-    activeLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    activeLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     activeLayout.VerticalAlignment = Enum.VerticalAlignment.Center
     activeLayout.SortOrder = Enum.SortOrder.LayoutOrder
     activeLayout.Padding = UDim.new(0, 4)
@@ -670,11 +763,107 @@ function PlayerPowerBadges.start()
 
     local passLayout = Instance.new("UIListLayout")
     passLayout.FillDirection = Enum.FillDirection.Horizontal
-    passLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    passLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     passLayout.VerticalAlignment = Enum.VerticalAlignment.Center
     passLayout.SortOrder = Enum.SortOrder.LayoutOrder
     passLayout.Padding = UDim.new(0, 2)
     passLayout.Parent = passRow
+
+    local function fitToBox()
+        local cfg = (UI_CONFIG.hud and UI_CONFIG.hud.power_badges) or {}
+        if cfg.placement ~= "vertical_left" then
+            fitScale.Scale = 1
+            return
+        end
+        local boxH = host.AbsoluteSize.Y
+        local current = fitScale.Scale
+        if current < 0.05 then
+            current = 1
+        end
+        local natural = fit.AbsoluteSize.Y / current
+        if boxH <= 1 or natural <= 1 then
+            return
+        end
+        local nextScale = math.clamp(boxH / natural, tonumber(cfg.min_fit) or 0.42, 1)
+        if math.abs(nextScale - current) > 0.01 then
+            fitScale.Scale = nextScale
+        end
+    end
+
+    local function placeStack()
+        local inset = GuiService:GetGuiInset()
+        local cfg = (UI_CONFIG.hud and UI_CONFIG.hud.power_badges) or {}
+        local gap = tonumber(cfg.gap_under_topbar) or 4
+        local compact = localPlayer:GetAttribute("HudLayoutResolved") == "compact"
+            or localPlayer:GetAttribute("DisplayClass") == "phone"
+        if cfg.placement == "vertical_left" then
+            -- The box is screen-relative. A ViewportScale here was shrinking
+            -- a "50%" box down to ~quarter-screen on a phone.
+            local vs = host:FindFirstChild("ViewportScale")
+            if vs then
+                vs:Destroy()
+            end
+            host.AnchorPoint = Vector2.new(0, 0)
+            host.AutomaticSize = Enum.AutomaticSize.X
+            host.Position =
+                UDim2.new(0, tonumber(cfg.left_edge) or 8, tonumber(cfg.box_top_scale) or 0.15, 0)
+            host.Size = UDim2.new(0, 0, tonumber(cfg.box_height_scale) or 0.50, 0)
+            stackLayout.FillDirection = Enum.FillDirection.Horizontal
+            stackLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+            stackLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+            passLayout.FillDirection = Enum.FillDirection.Vertical
+            passLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+            activeLayout.FillDirection = Enum.FillDirection.Vertical
+            activeLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+            passRow.Size = UDim2.fromOffset(0, 0)
+            passRow.AutomaticSize = Enum.AutomaticSize.XY
+            activeRow.Size = UDim2.fromOffset(0, 0)
+            activeRow.AutomaticSize = Enum.AutomaticSize.XY
+            task.defer(fitToBox)
+            return
+        end
+        fitScale.Scale = 1
+        if not host:FindFirstChild("ViewportScale") then
+            UIViewportScale.attach(host)
+        end
+        UIViewportScale.setMultiplier(host, compact and (tonumber(cfg.compact_scale) or 0.72) or 1)
+        host.AnchorPoint = Vector2.new(0.5, 0)
+        host.AutomaticSize = Enum.AutomaticSize.XY
+        host.Size = UDim2.fromOffset(0, 0)
+        local button = math.max(36, inset.Y)
+        local count = tonumber(cfg.topbar_buttons) or 5
+        -- Midpoint of logo…shop. CoreGui is not a layout parent we can anchor to.
+        host.Position = UDim2.fromOffset(button * count * 0.5, inset.Y + gap)
+        stackLayout.FillDirection = Enum.FillDirection.Vertical
+        stackLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        stackLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+        passLayout.FillDirection = Enum.FillDirection.Horizontal
+        passLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        activeLayout.FillDirection = Enum.FillDirection.Horizontal
+        activeLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        passRow.Size = UDim2.fromOffset(0, 38)
+        passRow.AutomaticSize = Enum.AutomaticSize.X
+        activeRow.Size = UDim2.fromOffset(0, 50)
+        activeRow.AutomaticSize = Enum.AutomaticSize.X
+    end
+    placeStack()
+    localPlayer:GetAttributeChangedSignal("HudLayoutResolved"):Connect(placeStack)
+    localPlayer:GetAttributeChangedSignal("DisplayClass"):Connect(placeStack)
+    pcall(function()
+        GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(placeStack)
+    end)
+    local cam = Workspace.CurrentCamera
+    if cam then
+        cam:GetPropertyChangedSignal("ViewportSize"):Connect(placeStack)
+    end
+    host:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitToBox)
+    fit:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitToBox)
+    passRow.ChildAdded:Connect(function()
+        task.defer(fitToBox)
+    end)
+    activeRow.ChildAdded:Connect(function()
+        task.defer(fitToBox)
+    end)
 
     local badges = {} -- attr -> badge
     local passBadges = {} -- pass id -> badge
@@ -757,7 +946,7 @@ function PlayerPowerBadges.start()
                             end
                         end
                     end
-                    b.holder.Size = UDim2.fromOffset(38, 50)
+                    applyPowerChrome(b.holder, b.disc, b.timer, 1)
                     b.disc.ImageColor3 = Color3.fromRGB(120, 120, 120)
                     b.disc.ImageTransparency = 0.4
                     b.timer.Text = "OFF"
@@ -779,6 +968,8 @@ function PlayerPowerBadges.start()
                             5
                         )
                         b.extra = b.extra or {}
+                        local overlap, stackPad =
+                            applyPowerChrome(b.holder, b.disc, b.timer, stacks)
                         for n = 1, stacks - 1 do
                             if not b.extra[n] then
                                 local d = b.disc:Clone()
@@ -788,7 +979,14 @@ function PlayerPowerBadges.start()
                                 b.extra[n] = d
                             end
                             b.extra[n].Image = b.disc.Image
-                            b.extra[n].Position = UDim2.new(1, -n * 18, 0, 0) -- fan LEFT, half-overlap
+                            b.extra[n].Size = b.disc.Size
+                            b.extra[n].AnchorPoint = b.disc.AnchorPoint
+                            -- Fan LEFT of the front disc, half-overlap.
+                            if isVerticalBadges() then
+                                b.extra[n].Position = UDim2.fromOffset(stackPad - n * overlap, 0)
+                            else
+                                b.extra[n].Position = UDim2.new(1, -n * overlap, 0, 0)
+                            end
                             b.extra[n].ImageTransparency = 0
                         end
                         for n = stacks, #b.extra do -- prune dropped stacks
@@ -797,7 +995,6 @@ function PlayerPowerBadges.start()
                                 b.extra[n] = nil
                             end
                         end
-                        b.holder.Size = UDim2.fromOffset(38 + (stacks - 1) * 18, 50)
                         if def.petSource then
                             -- a PET grants this for free (not a toggle the player owns/spends on)
                             b.timer.Text = "PET"
@@ -808,6 +1005,7 @@ function PlayerPowerBadges.start()
                         end
                         b.disc.ImageTransparency = 0
                     else
+                        applyPowerChrome(b.holder, b.disc, b.timer, 1)
                         b.timer.Text = formatCountdown(remaining)
                         -- near-expiry blink (timed powers)
                         local blink = remaining <= BLINK_LEAD

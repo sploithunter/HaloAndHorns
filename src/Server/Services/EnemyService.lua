@@ -1314,7 +1314,8 @@ function EnemyService:_onDefeated(targetId)
                         player,
                         entry.enemyId,
                         model:GetAttribute("Level"),
-                        model:GetAttribute("EnemyTier")
+                        model:GetAttribute("EnemyTier"),
+                        entry.def
                     )
                 end)
                 fireGameEvent(player, "enemy_defeated", { enemy = entry.enemyId })
@@ -1577,7 +1578,7 @@ end
 
 -- Record a down into the player's persisted lockout state.
 function EnemyService:_recordDownLockout(pet)
-    local _, data = self:_petOwnerData(pet)
+    local player, data = self:_petOwnerData(pet)
     if not data then
         return
     end
@@ -1586,7 +1587,12 @@ function EnemyService:_recordDownLockout(pet)
     entry.slot = "slot_" .. tostring((pn and pn.Value) or pet:GetAttribute("PositionNumber") or "?")
     local now = os.time()
     local state = PetLockout.prune(data.PetLockouts, now) -- housekeeping on write
-    data.PetLockouts = PetLockout.recordDown(state, entry, now, self:_lockoutCfg())
+    local cfg = self:_lockoutCfg()
+    if player and player:GetAttribute("GauntletNoRevives") == true then
+        cfg = table.clone(cfg)
+        cfg.slot_lock_forever = true
+    end
+    data.PetLockouts = PetLockout.recordDown(state, entry, now, cfg)
 end
 
 -- Re-assert lockouts on the live squad each tick: a (re)spawned pet whose identity is still locked is
@@ -1627,7 +1633,7 @@ function EnemyService:_enforceLockouts(now)
                     local slotName = "slot_"
                         .. tostring((pn and pn.Value) or pet:GetAttribute("PositionNumber") or "?")
                     local slotUntil = (state.slots or {})[slotName] or 0
-                    if slotUntil <= now then
+                    if not PetLockout.isSlotLocked(state, slotName, now) then
                         slotUntil = 0
                     end
                     pet:SetAttribute("SlotLockUntil", slotUntil) -- UI: the SLOT bar (the 1-min timer)
@@ -1641,7 +1647,12 @@ function EnemyService:_enforceLockouts(now)
                             idUntil = u
                         end
                     end
-                    local holdUntil = math.max(idUntil, slotUntil)
+                    local holdUntil = idUntil
+                    if slotUntil == PetLockout.FOREVER then
+                        holdUntil = math.max(holdUntil, now + 1)
+                    elseif slotUntil > now then
+                        holdUntil = math.max(holdUntil, slotUntil)
+                    end
                     if holdUntil > now then
                         if not pet:GetAttribute("CombatDowned") then
                             self:_holdDown(pet, holdUntil) -- a (re)spawned unit that's still locked
@@ -1709,6 +1720,9 @@ end
 -- ("back for a split second and then dead again" — Jason, live 2026-07-02). This is the ONE entry
 -- point for revives that beat the clock: release the identity/slot locks FIRST, then revive.
 function EnemyService:ResurrectPet(pet, player)
+    if player and player:GetAttribute("GauntletNoRevives") == true then
+        return false
+    end
     if not (pet and pet.Parent) then
         return false
     end
@@ -3613,6 +3627,9 @@ end
 
 -- Summon (player action): bring a recovered pet back once its slot cooldown elapsed.
 function EnemyService:SummonPet(player, payload)
+    if player and player:GetAttribute("GauntletNoRevives") == true then
+        return
+    end
     local slot = tonumber(type(payload) == "table" and payload.slot or payload)
     if not slot then
         return
@@ -6521,13 +6538,21 @@ function EnemyService:_enemyTunerSignature(player)
     }, ":")
 end
 
-function EnemyService:_applyTunedEnemyLevel(model, def, player)
+function EnemyService:_applyTunedEnemyLevel(model, def, player, opts)
     local tuner = self:_resolveEnemyTuner(player)
     local playerLevel = tuner:GetAttribute("EffectiveLevel") or tuner:GetAttribute("Level") or 1
     local rankOff = (
         self._levelingConfig.rank_offset and self._levelingConfig.rank_offset[def.tier]
     ) or 0
-    local lvlOffset = math.clamp(tonumber(tuner:GetAttribute("EnemyLevelOffset")) or 0, -3, 3)
+    local skipOffset = (opts and opts.ignoreEnemyLevelOffset == true)
+        or model:GetAttribute("IgnoreEnemyLevelOffset") == true
+    local lvlOffset = 0
+    if not skipOffset then
+        lvlOffset = math.clamp(tonumber(tuner:GetAttribute("EnemyLevelOffset")) or 0, -3, 3)
+    end
+    if opts and opts.ignoreEnemyLevelOffset == true then
+        model:SetAttribute("IgnoreEnemyLevelOffset", true)
+    end
     local baseLevel = math.max(1, (def.level or playerLevel) + lvlOffset)
     local level = LevelScale.effectiveLevel(baseLevel, rankOff)
     if model:GetAttribute("Level") ~= level then
@@ -6668,7 +6693,7 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     -- players tune to themselves; EffectiveLevel keeps a solo-triggering sidekick correct.
     -- Difficulty knob (SettingsService EnemyLevelOffset, -3..+3) and team-lead resolution
     -- are centralized here so initial spawns and pre-engagement patrol retunes cannot diverge.
-    self:_applyTunedEnemyLevel(model, def, player)
+    self:_applyTunedEnemyLevel(model, def, player, opts)
     -- TEAM HP (docs/TEAMING.md — PartyMath.scaledHp, finally wired): packs facing an engaged
     -- TEAM are meatier as well as more numerous. HP × (1 + per_extra × (engaged−1)), toggled
     -- by teaming pack.hp_scaling; applies to EVERY tier (bosses scale hp-only by design).

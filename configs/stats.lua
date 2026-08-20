@@ -10,6 +10,11 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        huge_pets_hatched = {
+            display_name = "Huge Pets Hatched",
+            scope = "lifetime",
+            default = 0,
+        },
         breakables_broken = {
             display_name = "Breakables Broken",
             scope = "lifetime",
@@ -249,6 +254,16 @@ return {
         },
         heaven_desert_trials_completed = {
             display_name = "Heaven Desert Trials Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        ranges_completed = {
+            display_name = "Range Runs Completed",
+            scope = "lifetime",
+            default = 0,
+        },
+        training_grounds_completed = {
+            display_name = "Training Ground Runs Completed",
             scope = "lifetime",
             default = 0,
         },

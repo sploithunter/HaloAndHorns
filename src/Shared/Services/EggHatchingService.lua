@@ -173,6 +173,72 @@ local function getResultStackPolicy()
     }
 end
 
+local function getResultFunnelPolicy()
+    local policy = getAnimationPolicy().result_funnel
+    if type(policy) ~= "table" then
+        policy = {}
+    end
+    return {
+        enabled = policy.enabled ~= false,
+        durationSeconds = math.max(0.05, tonumber(policy.duration_seconds) or 0.55),
+        staggerSeconds = math.max(0, tonumber(policy.stagger_seconds) or 0.025),
+        maxStaggerWindowSeconds = math.max(0, tonumber(policy.max_stagger_window_seconds) or 0.4),
+        finalScale = math.clamp(tonumber(policy.final_scale) or 0.18, 0.01, 1),
+        rotationDegrees = math.max(0, tonumber(policy.rotation_degrees) or 12),
+    }
+end
+
+local function getNewDiscoveryPolicy()
+    local policy = getAnimationPolicy().new_discovery
+    if type(policy) ~= "table" then
+        policy = {}
+    end
+    return {
+        enabled = policy.enabled ~= false,
+        textFormat = type(policy.text_format) == "string" and policy.text_format or "+%d NEW",
+        popDurationSeconds = math.max(0.05, tonumber(policy.pop_duration_seconds) or 0.28),
+        initialScale = math.clamp(tonumber(policy.initial_scale) or 0.6, 0.05, 1),
+        showCardBadges = policy.show_card_badges ~= false,
+        cardText = type(policy.card_text) == "string" and policy.card_text or "NEW!",
+        cardRotationDegrees = math.clamp(tonumber(policy.card_rotation_degrees) or -18, -45, 45),
+    }
+end
+
+local function isGuiObjectActuallyVisible(guiObject)
+    if not guiObject or not guiObject:IsA("GuiObject") then
+        return false
+    end
+
+    local current = guiObject
+    while current do
+        if current:IsA("GuiObject") and current.Visible == false then
+            return false
+        end
+        if current:IsA("ScreenGui") and current.Enabled == false then
+            return false
+        end
+        current = current.Parent
+    end
+
+    return guiObject.AbsoluteSize.X > 0 and guiObject.AbsoluteSize.Y > 0
+end
+
+local function findVisiblePetsButton(playerGui)
+    local bestButton = nil
+    local bestArea = -1
+    for _, descendant in ipairs(playerGui:GetDescendants()) do
+        if descendant.Name == "PetsButton" and isGuiObjectActuallyVisible(descendant) then
+            local size = descendant.AbsoluteSize
+            local area = size.X * size.Y
+            if area > bestArea then
+                bestButton = descendant
+                bestArea = area
+            end
+        end
+    end
+    return bestButton
+end
+
 local function getLayoutPolicy()
     local layout = getAnimationPolicy().layout
     if type(layout) ~= "table" then
@@ -463,6 +529,7 @@ function EggHatchingService:CreateEggFrame(position, eggData)
     frame:SetAttribute("RarityId", rarityId or "")
     frame:SetAttribute("SpecialHatch", specialHatch)
     frame:SetAttribute("AutoDeleted", isAutoDeletedEggData(eggData))
+    frame:SetAttribute("NewIndexEntry", eggData.newIndexEntry == true)
 
     -- Egg image - use authored world egg visuals first, then generated ViewportFrames.
     local eggImage = nil
@@ -525,6 +592,35 @@ function EggHatchingService:CreateEggFrame(position, eggData)
     local badges = {}
     if badgePolicy.enabled ~= false then
         badges = self:CreateRevealBadges(frame, eggData, rarityColor, specialHatch, badgePolicy)
+    end
+
+    local newDiscoveryPolicy = getNewDiscoveryPolicy()
+    if
+        eggData.newIndexEntry == true
+        and newDiscoveryPolicy.enabled
+        and newDiscoveryPolicy.showCardBadges
+    then
+        -- This badge belongs to the result card, so its placement is proportional to that card.
+        -- It intentionally avoids any viewport/screen offset assumptions.
+        local newBadge = self:CreateRevealBadge(
+            frame,
+            "NewBadge",
+            newDiscoveryPolicy.cardText,
+            Color3.fromRGB(40, 35, 12),
+            UDim2.fromScale(0.13, 0.12),
+            UDim2.fromScale(0.32, 0.15)
+        )
+        newBadge.BackgroundColor3 = Color3.fromRGB(255, 224, 67)
+        newBadge.BackgroundTransparency = 0.02
+        newBadge.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+        newBadge.TextStrokeTransparency = 0.5
+        newBadge.Rotation = newDiscoveryPolicy.cardRotationDegrees
+        local newStroke = newBadge:FindFirstChild("BadgeStroke")
+        if newStroke and newStroke:IsA("UIStroke") then
+            newStroke.Color = Color3.fromRGB(111, 78, 10)
+        end
+        badges.new = newBadge
+        frame:SetAttribute("NewBadgeText", newDiscoveryPolicy.cardText)
     end
 
     -- Ensure the parent frame has a transparent background for the reveal
@@ -1470,7 +1566,7 @@ function EggHatchingService:ClearEggFrames()
     -- Remove all existing egg frames from the container
     local removedCount = 0
     for _, child in pairs(self._persistentContainer:GetChildren()) do
-        if child.Name:match("EggFrame_") then
+        if child.Name:match("EggFrame_") or child.Name == "NewDiscoveryBadge" then
             child:Destroy()
             removedCount = removedCount + 1
         end
@@ -1478,6 +1574,77 @@ function EggHatchingService:ClearEggFrames()
 
     if removedCount > 0 then
     end
+end
+
+function EggHatchingService:ShowNewDiscoverySummary(eggsData)
+    local policy = getNewDiscoveryPolicy()
+    if policy.enabled == false or not self._persistentContainer then
+        return nil
+    end
+
+    local count = 0
+    for _, eggData in ipairs(eggsData or {}) do
+        if eggData.newIndexEntry == true then
+            count += 1
+        end
+    end
+    if count <= 0 then
+        return nil
+    end
+
+    local textValue = "+" .. tostring(count) .. " NEW"
+    local formatted, candidate = pcall(string.format, policy.textFormat, count)
+    if formatted then
+        textValue = candidate
+    end
+
+    local badge = Instance.new("TextLabel")
+    badge.Name = "NewDiscoveryBadge"
+    badge.AnchorPoint = Vector2.new(0.5, 0.5)
+    badge.Position = UDim2.fromScale(0.5, 0.1)
+    badge.Size = UDim2.fromScale(0.24, 0.085)
+    badge.BackgroundColor3 = Color3.fromRGB(21, 184, 91)
+    badge.BackgroundTransparency = 0.08
+    badge.BorderSizePixel = 0
+    badge.Font = Enum.Font.GothamBlack
+    badge.Text = textValue
+    badge.TextColor3 = Color3.fromRGB(255, 255, 255)
+    badge.TextScaled = true
+    badge.TextStrokeColor3 = Color3.fromRGB(7, 61, 31)
+    badge.TextStrokeTransparency = 0.25
+    badge.ZIndex = 80
+    badge.Parent = self._persistentContainer
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0.5, 0)
+    corner.Parent = badge
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(255, 225, 72)
+    stroke.Thickness = 3
+    stroke.Transparency = 0.05
+    stroke.Parent = badge
+
+    local scale = Instance.new("UIScale")
+    scale.Scale = policy.initialScale
+    scale.Parent = badge
+    TweenService
+        :Create(
+            scale,
+            TweenInfo.new(
+                policy.popDurationSeconds,
+                Enum.EasingStyle.Back,
+                Enum.EasingDirection.Out
+            ),
+            { Scale = 1 }
+        )
+        :Play()
+
+    if self._persistentGui then
+        self._persistentGui:SetAttribute("NewIndexDiscoveryCount", count)
+        self._persistentGui:SetAttribute("NewIndexDiscoveryText", textValue)
+    end
+    return badge
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════════
@@ -1503,6 +1670,8 @@ function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
     self:InitializePersistentGui()
     self:CleanupExistingHatchingGUIs()
     self:ClearEggFrames()
+    self._persistentGui:SetAttribute("NewIndexDiscoveryCount", 0)
+    self._persistentGui:SetAttribute("NewIndexDiscoveryText", "")
 
     local timingDebug = resolveAnimationTiming(eggsData[1] and eggsData[1].hatchOptions)
     self._persistentGui:SetAttribute("TimingPreset", timingDebug.preset)
@@ -1653,6 +1822,8 @@ function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
             return
         end
 
+        local newDiscoveryBadge = self:ShowNewDiscoverySummary(eggsData)
+
         -- PHASE 4: After animations complete, wait a moment then restore screen
         local resultEnjoymentTime =
             hatchingConfig.helpers.get_adjusted_timing("result_enjoyment_time")
@@ -1665,7 +1836,15 @@ function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
             return
         end
 
+        if newDiscoveryBadge and newDiscoveryBadge.Parent then
+            newDiscoveryBadge.Visible = false
+        end
+
+        -- Bring the HUD back before the finish so the reveal cards can visibly converge into
+        -- the actual Pets button. If that button is absent/hidden, the funnel no-ops and the
+        -- existing cleanup path remains intact.
         self:RestoreScreen(animatedElements)
+        self:AnimateResultsIntoPetsButton(eggFrames)
         if type(onRevealComplete) == "function" then
             local callbackOk, callbackError = pcall(onRevealComplete)
             if not callbackOk then
@@ -1902,6 +2081,113 @@ function EggHatchingService:ExecuteHatchingSequence(
     pcall(function()
         self:AnimateStackedResults(eggFrames, eggComponents, eggsData, gridInfo)
     end)
+    return true
+end
+
+-- Converge the visible, consolidated reveal cards into the live Pets button. This runs only
+-- after RestoreScreen(), because the hatch cinematic temporarily disables the HUD that owns
+-- that button. Absolute GUI geometry is converted into the hatch container's coordinates so
+-- the destination stays correct on phones, tablets, desktop, and custom HUD layouts.
+function EggHatchingService:AnimateResultsIntoPetsButton(eggFrames)
+    local policy = getResultFunnelPolicy()
+    if policy.enabled == false or not self._persistentContainer then
+        return false
+    end
+
+    RunService.RenderStepped:Wait()
+
+    local player = Players.LocalPlayer
+    local playerGui = player and player:FindFirstChildOfClass("PlayerGui")
+    local petsButton = playerGui and findVisiblePetsButton(playerGui)
+    if not petsButton then
+        if self._persistentGui then
+            self._persistentGui:SetAttribute("ResultFunnelTargetFound", false)
+            self._persistentGui:SetAttribute("ResultFunnelFrameCount", 0)
+        end
+        return false
+    end
+
+    local visibleFrames = {}
+    for _, frame in ipairs(eggFrames or {}) do
+        if frame and frame.Parent and frame.Visible and frame:IsA("GuiObject") then
+            table.insert(visibleFrames, frame)
+        end
+    end
+    table.sort(visibleFrames, function(a, b)
+        return (a:GetAttribute("EggIndex") or 0) < (b:GetAttribute("EggIndex") or 0)
+    end)
+    if #visibleFrames == 0 then
+        return false
+    end
+
+    local containerPosition = self._persistentContainer.AbsolutePosition
+    local buttonPosition = petsButton.AbsolutePosition
+    local buttonSize = petsButton.AbsoluteSize
+    local targetCenter = Vector2.new(
+        buttonPosition.X - containerPosition.X + buttonSize.X * 0.5,
+        buttonPosition.Y - containerPosition.Y + buttonSize.Y * 0.5
+    )
+    local finalSide = math.max(2, math.min(buttonSize.X, buttonSize.Y) * policy.finalScale)
+    local finalPosition =
+        UDim2.fromOffset(targetCenter.X - finalSide * 0.5, targetCenter.Y - finalSide * 0.5)
+    local finalSize = UDim2.fromOffset(finalSide, finalSide)
+    local staggerSeconds = policy.staggerSeconds
+    if #visibleFrames > 1 then
+        staggerSeconds =
+            math.min(staggerSeconds, policy.maxStaggerWindowSeconds / (#visibleFrames - 1))
+    end
+
+    if self._persistentGui then
+        self._persistentGui:SetAttribute("ResultFunnelTargetFound", true)
+        self._persistentGui:SetAttribute("ResultFunnelFrameCount", #visibleFrames)
+        self._persistentGui:SetAttribute("ResultFunnelTargetX", targetCenter.X)
+        self._persistentGui:SetAttribute("ResultFunnelTargetY", targetCenter.Y)
+    end
+
+    local completion = CompletionGroup.new(#visibleFrames)
+    for index, frame in ipairs(visibleFrames) do
+        local delaySeconds = (index - 1) * staggerSeconds
+        if not frame.Parent then
+            completion:Resolve(index)
+            continue
+        end
+
+        -- Normalize the live position first; stacked results may have been recentered with
+        -- offset UDim2 values, while this conversion also works if a future layout uses scale.
+        local absolutePosition = frame.AbsolutePosition
+        frame.Position = UDim2.fromOffset(
+            absolutePosition.X - containerPosition.X,
+            absolutePosition.Y - containerPosition.Y
+        )
+
+        local rotationSign = index % 2 == 0 and 1 or -1
+        -- TweenInfo's delay produces the visual stagger without adding an untracked runtime timer.
+        local tween = TweenService:Create(
+            frame,
+            TweenInfo.new(
+                policy.durationSeconds,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.In,
+                0,
+                false,
+                delaySeconds
+            ),
+            {
+                Position = finalPosition,
+                Size = finalSize,
+                Rotation = rotationSign * policy.rotationDegrees,
+            }
+        )
+        tween.Completed:Once(function()
+            if frame.Parent then
+                frame.Visible = false
+            end
+            completion:Resolve(index)
+        end)
+        tween:Play()
+    end
+
+    completion:Await()
     return true
 end
 
@@ -2390,6 +2676,10 @@ function EggHatchingService:GetActiveAnimationDebugState()
     }
     if self._persistentGui then
         state.skipped = self._persistentGui:GetAttribute("AnimationSkipped") == true
+        state.newIndexDiscoveryCount = self._persistentGui:GetAttribute("NewIndexDiscoveryCount")
+            or 0
+        state.newIndexDiscoveryText = self._persistentGui:GetAttribute("NewIndexDiscoveryText")
+            or ""
         state.layout = {
             containerWidth = self._persistentGui:GetAttribute("GridContainerWidth"),
             containerHeight = self._persistentGui:GetAttribute("GridContainerHeight"),
@@ -2450,6 +2740,7 @@ function EggHatchingService:GetActiveAnimationDebugState()
             rarityId = frame:GetAttribute("RarityId"),
             specialHatch = frame:GetAttribute("SpecialHatch") == true,
             autoDeleted = frame:GetAttribute("AutoDeleted") == true,
+            newIndexEntry = frame:GetAttribute("NewIndexEntry") == true,
             eggVisualSource = frame:GetAttribute("EggVisualSource"),
             position = {
                 x = frame.Position.X.Offset,
@@ -2489,6 +2780,7 @@ function EggHatchingService:GetActiveAnimationDebugState()
             "RarityBadge",
             "VariantBadge",
             "AutoDeleteBadge",
+            "NewBadge",
         }) do
             local badge = frame:FindFirstChild(badgeName)
             if badge and badge:IsA("TextLabel") then

@@ -320,9 +320,9 @@ task.spawn(function()
     status.Text = "Ready!"
     awaitDuration(math.max(SETTLE, MIN_DISPLAY - (os.clock() - start)))
 
-    -- THE PROLOGUE TITLE CARD (Jason: "for ONE MONTH FROM NOW we can probably put that in
-    -- the black startup screen in very big, bold letters — it will only be there for first
-    -- runs"). If the server has dropped this player into the cold open, the boot screen
+    -- THE PROLOGUE TITLE CARD: the black loading screen carries the Future Self promise
+    -- in very big, bold letters, and only on first runs. If the server has dropped this
+    -- player into the cold open, the boot screen
     -- doubles as the card: everything else hides, the caption punches in, and the fade
     -- reveals the battle already running underneath. PrologueGate resolving to anything
     -- without InPrologue means a normal session — no wait beyond the short race window.
@@ -345,7 +345,7 @@ task.spawn(function()
             end
         end
         if prologueBound then
-            local capText = "ONE MONTH FROM NOW"
+            local capText = "YOUR FUTURE SELF"
             pcall(function()
                 local cfg =
                     require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("prologue", 3))

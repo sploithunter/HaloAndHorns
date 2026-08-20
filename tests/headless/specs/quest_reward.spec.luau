@@ -56,12 +56,13 @@ return function()
             expect(total).to.equal(700)
         end)
 
-        it("guarantees Level 4 and two Future Call tokens at the First Steps capstone", function()
+        it("guarantees Level 4 and adds the second Future Call token at the capstone", function()
             local quests = loadModule("configs/quests.lua")
             local reward = quests.defs.fs_cave.reward
             expect(reward.ensure_earned_level).to.equal(4)
-            expect(reward.future_call_tokens).to.equal(2)
-            expect(reward.currencies.grass_coins).to.equal(1500)
+            expect(reward.future_call_tokens).to.equal(1)
+            expect(reward.currencies.hall_coins).to.equal(1500)
+            expect(reward.currencies.grass_coins).to.equal(nil)
             expect(reward.currencies.area_coins).to.equal(nil)
         end)
 

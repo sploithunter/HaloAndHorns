@@ -98,12 +98,25 @@ end
 -- Publish derived level/XP to player attributes so the client HUD can read them
 -- without a bespoke remote (Level, XP = xp into current level, XPForNext).
 function PlayerProgressionService:Start()
+    if self._statsService and self._statsService.CounterChanged then
+        self._statsService.CounterChanged:Connect(function(player, counterId, value)
+            if counterId == "huge_pets_hatched" and player and player.Parent then
+                player:SetAttribute("HasHatchedHuge", (tonumber(value) or 0) > 0)
+            end
+        end)
+    end
     local function publishLater(player)
         task.spawn(function()
             if self._dataService and self._dataService.IsDataLoaded then
                 Readiness.awaitAttribute(player, "DataLoaded", true, 15)
             end
             if player.Parent then
+                if self._statsService then
+                    player:SetAttribute(
+                        "HasHatchedHuge",
+                        (tonumber(self._statsService:Get(player, "huge_pets_hatched")) or 0) > 0
+                    )
+                end
                 self:_publish(player)
                 -- Catch up any banked FILLER levels on join (e.g. earned offline); training
                 -- levels still stall for the altar.
@@ -143,6 +156,7 @@ function PlayerProgressionService:Start()
             "HasVIPPass",
             "FounderLegacyActive",
             "LeaderboardStatusTitle",
+            "HasHatchedHuge",
             "VetLevel",
         }) do
             player:GetAttributeChangedSignal(attribute):Connect(function()
@@ -293,6 +307,14 @@ end
 function PlayerProgressionService:GetEffectiveLevel(player)
     if not player then
         return 1
+    end
+    -- RANGE PIN (configs/challenge_runs.lua modes.range.effective_level): MissionInstance
+    -- stamps ChallengeLevel for a catalog rank run so everyone fights at the same combat
+    -- level. First branch — wins over TeamLead / AllianceAnchor (Range is solo-only).
+    -- Exact pin, no sidekick offset. POWER AXIS ONLY: claimed/earned Level is untouched.
+    local challengeLevel = math.floor(tonumber(player:GetAttribute("ChallengeLevel")) or 0)
+    if challengeLevel >= 1 then
+        return challengeLevel
     end
     -- SIDEKICK/EXEMPLAR (task #150, docs/TEAMING.md): a teamed player fights at the TEAM
     -- LEAD's combat level — up (sidekick: an L20 teaming with an L50 lead can actually hit
@@ -448,6 +470,7 @@ function PlayerProgressionService:_publishNativePlayerList(player, level)
         vip = player:GetAttribute("HasVIPPass") == true,
         founder = player:GetAttribute("FounderLegacyActive") == true,
         leaderboardTitle = player:GetAttribute("LeaderboardStatusTitle"),
+        hugeHatcher = player:GetAttribute("HasHatchedHuge") == true,
     })
     location.Value = PlayerListStatus.location({
         area = player:GetAttribute("CurrentArea"),
@@ -1060,7 +1083,11 @@ function PlayerProgressionService:_getTeamPowerContribution(context)
         return {}
     end
 
-    local level = self:GetLevel(context.player)
+    -- Range stamps ChallengeLevel so ranking is fair: use the combat pin, not
+    -- claimed level (otherwise an L5 Colorado is ~45% weaker than an L50 one).
+    local level = math.floor(tonumber(context.player:GetAttribute("ChallengeLevel")) or 0) >= 1
+            and self:GetEffectiveLevel(context.player)
+        or self:GetLevel(context.player)
     local startLevel = math.max(1, math.floor(tonumber(teamPower.start_level) or 1))
     local effectiveLevels = math.max(0, level - startLevel)
     local perLevel = tonumber(teamPower.percent_per_level) or 0

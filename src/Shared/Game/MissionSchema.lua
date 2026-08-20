@@ -26,7 +26,12 @@
 
 local MissionSchema = {}
 
-local SEED_POLICIES = { team_stable = true, per_attempt = true, shared_sequence = true }
+local SEED_POLICIES = {
+    team_stable = true,
+    per_attempt = true,
+    shared_sequence = true,
+    gauntlet_room = true,
+}
 local AGGRESSION_POLICIES = { realm = true, universal = true }
 local OBJECTIVE_KINDS = { reach_beacon = true, clear_then_beacon = true, defeat_named = true }
 

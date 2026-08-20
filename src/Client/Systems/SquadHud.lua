@@ -219,15 +219,24 @@ local function resolveTargetModel(pet)
 end
 
 -- Resolve the live state the HUD renders for one pet.
-local function readSlot(pet, factor, thresholds)
+local function readSlot(pet, factor, thresholds, noResummon)
     local power = petPower(pet)
     local damage = pet:GetAttribute("CombatDamageTaken") or 0
     local downed = pet:GetAttribute("CombatDowned") == true
     local cdRemaining = 0
+    local slotRemaining = 0
     local state
+    local gauntletLock = downed and noResummon == true
     if downed then
-        cdRemaining = math.max(0, (pet:GetAttribute("CooldownUntil") or 0) - os.time())
-        state = cdRemaining > 0 and "Recharging" or "Ready"
+        if gauntletLock then
+            -- Range / Training Ground: the down lasts the run. Backend still stamps the
+            -- overworld 60s / 5min lockout; the HUD must not count it down to Ready.
+            state = "Down"
+        else
+            cdRemaining = math.max(0, (pet:GetAttribute("CooldownUntil") or 0) - os.time())
+            slotRemaining = math.max(0, (pet:GetAttribute("SlotLockUntil") or 0) - os.time())
+            state = cdRemaining > 0 and "Recharging" or "Ready"
+        end
     else
         state = PetEndurance.state(damage, power, factor, thresholds)
     end
@@ -246,8 +255,9 @@ local function readSlot(pet, factor, thresholds)
         cdRemaining = cdRemaining,
         -- #179 down-lockout: the SLOT's own (shorter) timer + whether this pet is a unique special
         -- (so the recovery bar scales to the 5-min pet lockout, not the 1-min slot).
-        slotRemaining = math.max(0, (pet:GetAttribute("SlotLockUntil") or 0) - os.time()),
+        slotRemaining = slotRemaining,
         special = pet:GetAttribute("LockoutSpecial") == true,
+        gauntletLock = gauntletLock,
     }
 end
 
@@ -808,8 +818,8 @@ function SquadHud.start()
         end)
 
         frame.Activated:Connect(function()
-            -- A downed pet whose cooldown has elapsed shows "Summon" — clicking the card
-            -- re-summons it. Otherwise a click just selects the slot (assist target).
+            -- Overworld: a downed pet whose cooldown has elapsed shows "Summon".
+            -- Gauntlets never become summon-ready (slot stays Down for the run).
             local c = cards[slot]
             if c and c.summonReady then
                 Signals.Squad_Summon:FireServer({ slot = slot })
@@ -1585,7 +1595,12 @@ function SquadHud.start()
         if folder then
             for _, pet in ipairs(folder:GetChildren()) do
                 if pet:IsA("Model") and pet.PrimaryPart then
-                    local s = readSlot(pet, factor, thresholds)
+                    local s = readSlot(
+                        pet,
+                        factor,
+                        thresholds,
+                        localPlayer:GetAttribute("GauntletNoRevives") == true
+                    )
                     needsAttention = needsAttention or s.downed or s.healthFraction < 0.999
                     petCount += 1
                     present[s.slot] = true
@@ -1653,19 +1668,29 @@ function SquadHud.start()
                         end
                     end
                     if s.downed then
-                        -- TWO BARS (down-lockout). Main = THIS pet's recovery (drains as it heals; a
-                        -- unique special scales to the 5-min lockout, a stack to the 1-min slot). The
-                        -- thin bar below = the SLOT's 1-min timer, so you can see when to re-summon
-                        -- this pet vs. when the slot frees for a different / stack pet.
-                        local petTotal = (s.special and lockoutDur.petSpecial) or lockoutDur.slot
-                        local petFrac = (petTotal > 0 and s.cdRemaining > 0)
-                                and math.clamp(s.cdRemaining / petTotal, 0, 1)
-                            or (s.cdRemaining > 0 and 1 or 0)
-                        card.fill.Size = UDim2.fromScale(s.cdRemaining > 0 and petFrac or 1, 1)
-                        card.fill.BackgroundColor3 = s.cdRemaining > 0 and STATE_COLOR.Recharging
-                            or STATE_COLOR.Ready
-                        card.note.Text = s.cdRemaining > 0 and formatTime(s.cdRemaining) or "Summon"
-                        card.summonReady = s.cdRemaining <= 0
+                        if s.gauntletLock then
+                            card.fill.Size = UDim2.fromScale(1, 1)
+                            card.fill.BackgroundColor3 = STATE_COLOR.Recharging
+                            card.note.Text = "Down"
+                            card.summonReady = false
+                        else
+                            -- TWO BARS (down-lockout). Main = THIS pet's recovery (drains as it heals; a
+                            -- unique special scales to the 5-min lockout, a stack to the 1-min slot). The
+                            -- thin bar below = the SLOT's 1-min timer, so you can see when to re-summon
+                            -- this pet vs. when the slot frees for a different / stack pet.
+                            local petTotal = (s.special and lockoutDur.petSpecial)
+                                or lockoutDur.slot
+                            local petFrac = (petTotal > 0 and s.cdRemaining > 0)
+                                    and math.clamp(s.cdRemaining / petTotal, 0, 1)
+                                or (s.cdRemaining > 0 and 1 or 0)
+                            card.fill.Size = UDim2.fromScale(s.cdRemaining > 0 and petFrac or 1, 1)
+                            card.fill.BackgroundColor3 = s.cdRemaining > 0
+                                    and STATE_COLOR.Recharging
+                                or STATE_COLOR.Ready
+                            card.note.Text = s.cdRemaining > 0 and formatTime(s.cdRemaining)
+                                or "Summon"
+                            card.summonReady = s.cdRemaining <= 0
+                        end
                     else
                         -- Health fill drains + recolours green->yellow->red.
                         card.fill.Size = UDim2.fromScale(math.clamp(s.healthFraction, 0, 1), 1)
@@ -1675,12 +1700,16 @@ function SquadHud.start()
                     end
                     -- Thin secondary bar: the SLOT timer (orange) when downed, else the shield pool (blue).
                     if s.downed then
-                        local slotFrac = lockoutDur.slot > 0
-                                and math.clamp(s.slotRemaining / lockoutDur.slot, 0, 1)
-                            or 0
-                        card.shieldBg.Visible = s.slotRemaining > 0
-                        card.shieldFill.Size = UDim2.fromScale(slotFrac, 1)
-                        card.shieldFill.BackgroundColor3 = SLOT_BAR_COLOR
+                        if s.gauntletLock then
+                            card.shieldBg.Visible = false
+                        else
+                            local slotFrac = lockoutDur.slot > 0
+                                    and math.clamp(s.slotRemaining / lockoutDur.slot, 0, 1)
+                                or 0
+                            card.shieldBg.Visible = s.slotRemaining > 0
+                            card.shieldFill.Size = UDim2.fromScale(slotFrac, 1)
+                            card.shieldFill.BackgroundColor3 = SLOT_BAR_COLOR
+                        end
                     else
                         local shieldF = s.shieldFraction or 0
                         card.shieldBg.Visible = shieldF > 0
@@ -1735,17 +1764,28 @@ function SquadHud.start()
                         { ring = POWER_ICONS.targeting_ring[atkScope] }
                     )
                     if s.downed then
-                        local petTotal = (s.special and lockoutDur.petSpecial) or lockoutDur.slot
-                        local recovery = petTotal > 0
-                                and math.clamp(1 - (s.cdRemaining / petTotal), 0, 1)
-                            or 0
-                        paintSegmentRing(
-                            compactCard.enduranceRing,
-                            recovery,
-                            STATE_COLOR.Recharging,
-                            false
-                        )
-                        paintSegmentRing(compactCard.shieldRing, 0, SHIELD_BAR_COLOR, true)
+                        if s.gauntletLock then
+                            paintSegmentRing(
+                                compactCard.enduranceRing,
+                                0,
+                                STATE_COLOR.Recharging,
+                                false
+                            )
+                            paintSegmentRing(compactCard.shieldRing, 0, SHIELD_BAR_COLOR, true)
+                        else
+                            local petTotal = (s.special and lockoutDur.petSpecial)
+                                or lockoutDur.slot
+                            local recovery = petTotal > 0
+                                    and math.clamp(1 - (s.cdRemaining / petTotal), 0, 1)
+                                or 0
+                            paintSegmentRing(
+                                compactCard.enduranceRing,
+                                recovery,
+                                STATE_COLOR.Recharging,
+                                false
+                            )
+                            paintSegmentRing(compactCard.shieldRing, 0, SHIELD_BAR_COLOR, true)
+                        end
                     else
                         paintSegmentRing(
                             compactCard.enduranceRing,

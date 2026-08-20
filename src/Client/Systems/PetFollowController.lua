@@ -684,6 +684,11 @@ function PetFollowController.start()
                 still = { t = 0 }
                 anchorStill[anchorKey] = still
             end
+            local catchupDist = config.movement.catchup_distance
+            local ownerTeleported = still.lastPos ~= nil
+                and (cf.Position - still.lastPos).Magnitude > (catchupDist or 200)
+            local rallying = (attrs:GetAttribute("RallyUntil") or 0) > os.clock()
+            local holdFormation = rallying or ownerTeleported
             if still.lastPos and (cf.Position - still.lastPos).Magnitude < 0.5 then
                 still.t += dt
             else
@@ -739,7 +744,9 @@ function PetFollowController.start()
             -- flies over to a new target at a bounded speed instead of teleporting onto it
             -- (the exponential lerp alone covers any distance almost instantly). Orientation
             -- still uses the full lerp; only linear position is capped.
-            local catchupDist = config.movement.catchup_distance
+            if holdFormation then
+                catchupDist = 8
+            end
 
             -- Pick this frame's HEADING: face the way the pet is actually moving when it's
             -- travelling above face_move_speed (so it heads forward instead of sliding), else
@@ -901,7 +908,7 @@ function PetFollowController.start()
             for slot, pet in ipairs(pets) do
                 local tid = pet:FindFirstChild("TargetID")
                 local breakable = nil
-                if tid and tid.Value ~= 0 then
+                if not holdFormation and tid and tid.Value ~= 0 then
                     local tt = pet:FindFirstChild("TargetType")
                     local tw = pet:FindFirstChild("TargetWorld")
                     breakable = findBreakable(tt and tt.Value, tw and tw.Value, tid.Value)

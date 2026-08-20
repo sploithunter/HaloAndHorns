@@ -41,6 +41,62 @@ return {
     power_cast_failed = {
         sound = "flub",
         vfx = { kind = "burst", color = { 200, 70, 70 }, count = 6 }, -- small red "nope" puff
+        -- The sound/puff says the cast failed; this says what the player can do about it. Reasons
+        -- are server-authored machine keys, while all visible wording stays config-driven here.
+        failure_float = {
+            seconds = 2.4,
+            color = { 255, 220, 105 },
+            default = "That power can't be used here.",
+            messages = {
+                no_crystals_in_range = "No resources in range — move closer.",
+                no_enemy_target = "No enemy target — engage an enemy first.",
+                no_enemy_or_crystal_target = "No enemy or crystal target.",
+                no_pets_deployed = "No pets deployed.",
+                no_downed_pets = "No downed pets to revive.",
+                no_pets_or_enemies_in_range = "No pets or enemies in range.",
+                no_tank = "Select a pet or deploy a Tank.",
+                not_enough_focus = "Not enough Focus to use this power.",
+                on_cooldown = "That power is still recharging.",
+                travel_unavailable = "World Travel is unavailable.",
+                invalid_destination = "Choose an unlocked destination.",
+                destination_locked = "That destination is locked.",
+                missing_spawn = "That destination is temporarily unavailable.",
+                character_not_ready = "Your character is not ready.",
+                travel_failed = "Travel failed — try again.",
+                no_recall_egg = "Hatch an egg before using Recall.",
+                invalid_recall_egg = "Your last egg cannot be recalled.",
+                recall_unavailable = "Recall is unavailable.",
+                recall_egg_missing = "That egg is no longer available.",
+                recall_no_safe_arrival = "No safe landing spot near that egg.",
+            },
+        },
+    },
+
+    -- POTION FIZZLE: drinking or throwing failed before inventory consumption. This mirrors the
+    -- failed-power feedback, but keeps potion-specific language and a distinct server event so
+    -- item activation remains independently auditable.
+    potion_use_failed = {
+        sound = "flub",
+        vfx = { kind = "burst", color = { 200, 70, 70 }, count = 6 },
+        failure_float = {
+            seconds = 2.4,
+            color = { 255, 220, 105 },
+            default = "That item can't be used here.",
+            messages = {
+                no_enemy_target = "No enemy target — engage an enemy first.",
+                target_unavailable = "That enemy target is unavailable.",
+                target_out_of_range = "Enemy target is out of range — move closer.",
+                meter_full = "That effect is already full.",
+                too_fast = "Wait a moment before using another.",
+                none_left = "None left.",
+                enemy_target_requires_throw = "Use this potion on an enemy.",
+                not_throwable = "That item cannot be thrown.",
+                unknown_potion = "That potion is unavailable.",
+                no_meter = "That potion is unavailable.",
+                service_unavailable = "Items are temporarily unavailable.",
+                consume_failed = "Could not use that item — try again.",
+            },
+        },
     },
 
     -- level_up (client-fired from ClaimedLevel) keeps a small immediate confirmation burst.
@@ -133,6 +189,18 @@ return {
         sound = "celebratory_jingle",
         vfx = { kind = "burst", color = { 145, 95, 255 }, count = 24 },
         banner = { seconds = 8, color = { 145, 95, 255 } },
+    },
+
+    future_call_unlocked = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 145, 95, 255 }, count = 24 },
+        banner = { seconds = 8, color = { 145, 95, 255 } },
+    },
+
+    -- Pressing the visible Level-2 promise token before it unlocks should teach
+    -- the goal, not silently fail or consume anything.
+    future_call_locked = {
+        banner = { seconds = 5, color = { 145, 95, 255 } },
     },
 
     -- One free, player-controlled paid-style boost at claimed levels 2, 3, and 4.
@@ -248,6 +316,20 @@ return {
     },
 
     trade_request_timed_out = {
+        banner = { seconds = 5, color = { 255, 190, 75 } },
+    },
+
+    -- Team invitations use the same prominent response treatment as trade invitations. The
+    -- requester may be hatching or have closed the Team picker by the time the response arrives.
+    team_request_declined = {
+        banner = { seconds = 5, color = { 235, 95, 95 } },
+    },
+
+    team_request_timed_out = {
+        banner = { seconds = 5, color = { 255, 190, 75 } },
+    },
+
+    team_request_in_range = {
         banner = { seconds = 5, color = { 255, 190, 75 } },
     },
 
@@ -405,6 +487,16 @@ return {
         float = { color = { 255, 235, 150 } },
     },
 
+    gauntlet_next_room = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 255, 180, 80 } },
+        float = { color = { 255, 200, 120 } },
+    },
+
+    gauntlet_wipe = {
+        float = { color = { 255, 90, 90 } },
+    },
+
     -- An EXCLUSIVE boss egg was picked up (server: DropService _collect,
     -- kind "egg_item"). Jason: "it's a big deal" — full fireworks, gold
     -- burst, the float carries "<Egg> acquired!" from ctx.
@@ -465,6 +557,38 @@ return {
     tutorial_complete = {
         sound = "celebratory_jingle",
         vfx = { kind = "burst", color = { 255, 215, 90 }, count = 24 }, -- big gold
+    },
+
+    -- The Range is a solo archetype test. A teamed player is refused at the door
+    -- and again on ChallengeRun_Start so a party cannot share the ranked instance.
+    -- Door / StartChallengeRun refused. The prompt still fires, so without a
+    -- float it looks like E did nothing (the Colorado Plays trial miss).
+    mission_enter_blocked = {
+        sound = "flub",
+        vfx = { kind = "burst", color = { 200, 70, 70 }, count = 6 },
+        failure_float = {
+            seconds = 2.8,
+            color = { 255, 220, 105 },
+            default = "You can't enter that right now.",
+            messages = {
+                team_busy = "Your team is already in a trial. Leave the team or wait for them.",
+                server_full = "Too many trials on this server — try again shortly.",
+                no_slot = "No free trial slot — try again shortly.",
+            },
+        },
+    },
+
+    range_solo_required = {
+        sound = "flub",
+        vfx = { kind = "burst", color = { 200, 70, 70 }, count = 6 },
+        failure_float = {
+            seconds = 2.8,
+            color = { 255, 220, 105 },
+            default = "Leave your team to enter The Range.",
+            messages = {
+                teamed = "Leave your team to enter The Range.",
+            },
+        },
     },
 
     -- SOURCES WIRED, NO DEFAULT REACTIONS (add a row to react — the fire is already in place):

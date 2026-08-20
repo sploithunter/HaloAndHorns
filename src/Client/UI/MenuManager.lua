@@ -391,6 +391,30 @@ function MenuManager:CloseCurrentPanelImmediately(expectedPanelName)
     return true
 end
 
+-- Panels' own X buttons call Hide() without going through CloseCurrentPanel.
+-- Forget the stale open flag and drop the scrim so the next E can reopen.
+function MenuManager:NotifyPanelHidden(panel)
+    if not panel or self.currentPanel ~= panel then
+        return false
+    end
+
+    self.currentPanel = nil
+    self.currentPanelName = nil
+    self.isTransitioning = false
+    FocusNavigator.close()
+
+    if self.escConnection then
+        self.escConnection:Disconnect()
+        self.escConnection = nil
+    end
+    if self._scrim then
+        self._scrim.Visible = false
+    end
+
+    self.logger:info("Panel hid itself; cleared open flag")
+    return true
+end
+
 -- Toggle a panel (open if closed, close if open)
 function MenuManager:TogglePanel(panelName, transitionEffect)
     if self.currentPanelName == panelName then
@@ -699,6 +723,10 @@ end
 
 function MenuManager:OpenPotionShopPanel(effect)
     return self:OpenPanel("PotionShop", effect)
+end
+
+function MenuManager:OpenHoverboardShopPanel(effect)
+    return self:OpenPanel("HoverboardShop", effect)
 end
 
 function MenuManager:OpenInventoryPanel(effect)

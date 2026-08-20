@@ -172,6 +172,11 @@ streamSeed  = fnv1a32(tostring(seed) .. "|" .. phaseName)  -- "layout" | "decor"
     reproducible: the instance record stores the resolved seed, so any map a
     player saw can be regenerated exactly for debugging ("what seed was that
     broken room?" → stamp it in Studio).
+  - `shared_sequence`: `seq#N` — Trials ladder; everyone's trial #N is the same
+    map. Advances `GameData.MissionSeq`.
+  - `gauntlet_room`: `room#N` — Range / Training Ground. Everyone's Room N is
+    the same map (no player/attempt/salt). Advancing restamps Room N. Do not
+    use `shared_sequence` here.
 - **Stream isolation:** each phase gets its own rng stream. Adding a
   decoration draw can never shift the layout; layout changes only when the
   layout stream's consumption changes.

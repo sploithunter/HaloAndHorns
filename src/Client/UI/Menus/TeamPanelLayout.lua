@@ -32,7 +32,9 @@ function TeamPanelLayout.content(panelHeight, teamed)
     local headerHeight = if compact then 54 else 72
     local hintTop = headerHeight + (if compact then 6 else 12)
     local hintHeight = if compact then 34 else 28
-    local listTop = hintTop + hintHeight + 6
+    local privacyHeight = if compact then 36 else 40
+    local privacyTop = hintTop + hintHeight + 4
+    local listTop = privacyTop + privacyHeight + 6
     local footerReserve = if teamed
         then (if compact then 58 else 64)
         else (if compact then 12 else 16)
@@ -43,6 +45,8 @@ function TeamPanelLayout.content(panelHeight, teamed)
         horizontalMargin = if compact then 12 else 24,
         hintTop = hintTop,
         hintHeight = hintHeight,
+        privacyTop = privacyTop,
+        privacyHeight = privacyHeight,
         listTop = listTop,
         listHeight = math.max(80, panelHeight - listTop - footerReserve),
         leaveHeight = if compact then 36 else 40,

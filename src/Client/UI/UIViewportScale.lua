@@ -11,8 +11,10 @@
         local UIViewportScale = require(...UI.UIViewportScale)
         UIViewportScale.attach(rootFrame)            -- defaults: 1280x720 baseline, [0.45, 1]
         UIViewportScale.attach(rootFrame, { min = 0.6 })
+        UIViewportScale.setMultiplier(rootFrame, 1.8) -- user enlarge; Roblox applies one UIScale
 
     One camera listener total (all attached scales update together).
+    A second UIScale on the same object is ignored — put user enlarge in `multiplier`.
 ]]
 
 local Workspace = game:GetService("Workspace")
@@ -37,7 +39,20 @@ local function factorFor(entry)
     if tenFoot and not entry.explicitMax then
         maxScale = 1.15
     end
-    return math.clamp(f, entry.min, maxScale)
+    return math.clamp(f, entry.min, maxScale) * (entry.multiplier or 1)
+end
+
+local function entryFor(guiObject)
+    local scale = guiObject and guiObject:FindFirstChild("ViewportScale")
+    if not (scale and scale:IsA("UIScale")) then
+        return nil
+    end
+    for _, entry in ipairs(attached) do
+        if entry.scale == scale then
+            return entry
+        end
+    end
+    return nil
 end
 
 local function refreshAll()
@@ -81,11 +96,24 @@ function UIViewportScale.attach(guiObject, opts)
         min = tonumber(opts.min) or DEFAULT_MIN,
         max = tonumber(opts.max) or DEFAULT_MAX,
         explicitMax = opts.max ~= nil,
+        multiplier = tonumber(opts.multiplier) or 1,
     }
     attached[#attached + 1] = entry
     scale.Scale = factorFor(entry)
     ensureListener()
     return scale
+end
+
+-- Extra uniform enlarge on top of the viewport factor. Roblox only honors one
+-- UIScale per object, so a second instance does nothing — this writes the same one.
+function UIViewportScale.setMultiplier(guiObject, multiplier)
+    local entry = entryFor(guiObject)
+    if not entry then
+        return nil
+    end
+    entry.multiplier = math.max(0.05, tonumber(multiplier) or 1)
+    entry.scale.Scale = factorFor(entry)
+    return entry.scale.Scale
 end
 
 return UIViewportScale

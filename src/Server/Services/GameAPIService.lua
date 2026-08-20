@@ -711,6 +711,8 @@ function GameAPIService:_registerCommands()
                 hudLayout = prefs and prefs.hudLayout or "auto",
                 squadDisplayMode = prefs and prefs.squadDisplayMode or "classic",
                 questDisplayMode = prefs and prefs.questDisplayMode or "full",
+                tutorialLanguage = prefs and prefs.tutorialLanguage or "auto",
+                hideTogglesInBattle = not prefs or prefs.hideTogglesInBattle ~= false,
             }
         end,
     })
@@ -737,6 +739,12 @@ function GameAPIService:_registerCommands()
                     optional = true,
                     oneOf = { "full", "pill", "ring" },
                 },
+                tutorialLanguage = {
+                    type = "string",
+                    optional = true,
+                    oneOf = { "auto", "en" },
+                },
+                hideTogglesInBattle = { type = "boolean", optional = true },
             })
         end,
         handler = function(context, args)
@@ -772,6 +780,12 @@ function GameAPIService:_registerCommands()
             end
             if type(args.questDisplayMode) == "string" then
                 data.Settings.ClientPrefs.questDisplayMode = args.questDisplayMode
+            end
+            if type(args.tutorialLanguage) == "string" then
+                data.Settings.ClientPrefs.tutorialLanguage = args.tutorialLanguage
+            end
+            if type(args.hideTogglesInBattle) == "boolean" then
+                data.Settings.ClientPrefs.hideTogglesInBattle = args.hideTogglesInBattle
             end
             dataSvc:RequestSave(context.player, "client_prefs")
             return { ok = true }
@@ -1528,6 +1542,10 @@ function GameAPIService:_registerCommands()
             if tut and tut.Reset then
                 tut:Reset(context.player)
             end
+            local boards = self:_service("HoverboardService")
+            if boards and boards.ResetForBeginning then
+                boards:ResetForBeginning(context.player)
+            end
             -- Jason: the L1 reset should clear enhancements too (pets/huges stay)
             local enhSvc = self:_service("EnhancementService")
             if enhSvc and enhSvc.WipeAll then
@@ -1628,6 +1646,11 @@ function GameAPIService:_registerCommands()
         accept = { desc = "Accept your pending team invite.", fn = "Accept" },
         decline = { desc = "Decline your pending team invite.", fn = "Decline" },
         leave = { desc = "Leave your team.", fn = "Leave" },
+        set_invite_privacy = {
+            desc = "Choose who can send you team invites (everyone or friends).",
+            fn = "SetInvitePrivacy",
+            arg = "mode",
+        },
         follow_warp = {
             desc = "While following a teammate, take the realm portal they took (portal gates apply).",
             fn = "FollowWarp",
@@ -1895,6 +1918,76 @@ function GameAPIService:_registerCommands()
                 return { ok = false, reason = "service_unavailable" }
             end
             return s:Buy(context.player, args)
+        end,
+    })
+    bus:register("leaderboard.snapshot", {
+        description = "Return the cached global leaderboard page for a board.",
+        validate = function(args)
+            return Validators.fields(args, {
+                boardId = "string",
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("LeaderboardService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:RequestSnapshot(args.boardId)
+        end,
+    })
+    bus:register("hoverboard.shop.catalog", {
+        description = "List Kade's hoverboard shop stock, story, and equipped board.",
+        handler = function(context)
+            local s = self:_service("HoverboardShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Catalog(context.player)
+        end,
+    })
+    bus:register("hoverboard.shop.buy", {
+        description = "Take, buy with gems, or prompt Robux for a hoverboard skin.",
+        validate = function(args)
+            return Validators.fields(args, {
+                skinId = "string",
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("HoverboardShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Buy(context.player, args)
+        end,
+    })
+    bus:register("hoverboard.equip", {
+        description = "Equip an owned hoverboard from inventory (no shop range).",
+        validate = function(args)
+            return Validators.fields(args, {
+                skinId = "string",
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("HoverboardService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Equip(context.player, args.skinId)
+        end,
+    })
+    bus:register("hoverboard.shop.equip", {
+        description = "Equip an owned hoverboard skin.",
+        validate = function(args)
+            return Validators.fields(args, {
+                skinId = "string",
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("HoverboardShopService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:Equip(context.player, args)
         end,
     })
     bus:register("potion.shop.sell", {

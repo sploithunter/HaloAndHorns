@@ -291,6 +291,7 @@ loader:RegisterModule("PrologueService", ServerScriptService.Server.Services.Pro
     "NpcPrincipalService",
     "EnemyService",
     "PlayerProgressionService",
+    "ZoneService",
 })
 loader:RegisterModule(
     "PlayerEffectsService",
@@ -667,9 +668,13 @@ loader:RegisterModule(
     "PartyService",
     ServerScriptService.Server.Services.PartyService,
     appendIfEnabled(
-        { "Logger", "ConfigLoader", "LayerService", "ChatAnnouncementService" },
-        "player_progression",
-        "PlayerProgressionService"
+        appendIfEnabled(
+            { "Logger", "ConfigLoader", "LayerService", "ChatAnnouncementService" },
+            "player_progression",
+            "PlayerProgressionService"
+        ),
+        "map_binding",
+        "ZoneService"
     )
 )
 -- TradeService: Halo & Horns trading (Feature 19) — session offers, both-confirm
@@ -802,6 +807,20 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.DailyRewardZoneService,
     { "Logger", "ConfigLoader", "DataService", "DailyService", "RewardService" }
 )
+loader:RegisterModule(
+    "HoverboardService",
+    ServerScriptService.Server.Services.HoverboardService,
+    appendIfEnabled(
+        { "Logger", "ConfigLoader", "DataService" },
+        "player_progression",
+        "PlayerProgressionService"
+    )
+)
+loader:RegisterModule(
+    "HoverboardShopService",
+    ServerScriptService.Server.Services.HoverboardShopService,
+    { "Logger", "ConfigLoader", "EconomyService", "HoverboardService" }
+)
 -- BaddieSpawnerService: proximity enemy waves at map-authored BaddieSpawner* parts
 -- (combat taste before the Heaven/Hell choice — Jason). Resolves EnemyService at runtime.
 loader:RegisterModule(
@@ -830,6 +849,7 @@ loader:RegisterModule(
         "TesterRewardService",
         "TrialEggRewardService",
         "ChatAnnouncementService",
+        "StatsService",
     }
 )
 -- RealmPortalService: binds named workspace portals (Portal_Halo1/Portal_Horn1) to a
@@ -1015,6 +1035,15 @@ local loadSuccess, loadOrderOrError = pcall(function()
             BreakableSpawner = modules:Get("BreakableSpawner"),
             DropService = modules:Get("DropService"),
             EventService = isFeatureEnabled("global_events") and modules:Get("EventService") or nil,
+            NpcPrincipalService = modules:Get("NpcPrincipalService"),
+            HotbarService = modules:Get("HotbarService"),
+            PowerService = modules:Get("PowerService"),
+            PlayerProgressionService = isFeatureEnabled("player_progression") and modules:Get(
+                "PlayerProgressionService"
+            ) or nil,
+            LeaderboardService = isFeatureEnabled("leaderboards") and modules:Get(
+                "LeaderboardService"
+            ) or nil,
         })
         if isFeatureEnabled("admin_tools") then
             modules:Get("AdminToolsService"):BindPeerServices({
@@ -1027,6 +1056,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 TutorialService = modules:Get("TutorialService"),
                 EnhancementService = modules:Get("EnhancementService"),
                 HotbarService = modules:Get("HotbarService"),
+                HoverboardService = modules:Get("HoverboardService"),
                 FutureCallService = modules:Get("FutureCallService"),
                 MonetizationService = modules:Get("MonetizationService"),
                 FoundersChoiceService = modules:Get("FoundersChoiceService"),
@@ -1090,8 +1120,13 @@ local loadSuccess, loadOrderOrError = pcall(function()
             FusionService = modules:Get("FusionService"),
             FutureCallService = modules:Get("FutureCallService"),
             HotbarService = modules:Get("HotbarService"),
+            HoverboardService = modules:Get("HoverboardService"),
+            HoverboardShopService = modules:Get("HoverboardShopService"),
             InventoryService = modules:Get("InventoryService"),
             LayerService = modules:Get("LayerService"),
+            LeaderboardService = isFeatureEnabled("leaderboards") and modules:Get(
+                "LeaderboardService"
+            ) or nil,
             MeetCreatorService = modules:Get("MeetCreatorService"),
             MissionInstanceService = modules:Get("MissionInstanceService"),
             NpcPrincipalService = modules:Get("NpcPrincipalService"),
@@ -1234,6 +1269,8 @@ table.insert(requiredModules, "DropService")
 table.insert(requiredModules, "SummonService")
 table.insert(requiredModules, "AscensionAltarService")
 table.insert(requiredModules, "DailyRewardZoneService")
+table.insert(requiredModules, "HoverboardService")
+table.insert(requiredModules, "HoverboardShopService")
 table.insert(requiredModules, "RealmPortalService")
 table.insert(requiredModules, "MissionInstanceService")
 table.insert(requiredModules, "ZoneTrackerService")

@@ -1,0 +1,237 @@
+local HallOfWorldsLogic = {}
+
+local function unlockedSet(unlockedAreas)
+    local unlocked = {}
+    for key, value in pairs(type(unlockedAreas) == "table" and unlockedAreas or {}) do
+        if type(key) == "number" then
+            unlocked[tostring(value)] = true
+        elseif value == true then
+            unlocked[tostring(key)] = true
+        end
+    end
+    return unlocked
+end
+
+-- Last world for join/respawn. Hall tiles resume in place. Crystal World biomes,
+-- Heaven/Hell layers, and trial/mission_* ids all collapse to Crystal World Spawn.
+-- Never persist ZoneTracker CurrentArea — that is the player-list location and
+-- becomes mission_* inside a trial.
+function HallOfWorldsLogic.normalizeResumeArea(areaId, hallAreaIds, crystalAreaId)
+    if type(areaId) ~= "string" or areaId == "" then
+        return nil
+    end
+    if hallAreaIds and hallAreaIds[areaId] == true then
+        return areaId
+    end
+    return tostring(crystalAreaId or "Spawn")
+end
+
+function HallOfWorldsLogic.resolvedResumeArea(
+    lastArea,
+    enteredCrystalWorld,
+    unlockedAreas,
+    hallAreaIds,
+    crystalAreaId,
+    tutorial,
+    gameData
+)
+    local resume = HallOfWorldsLogic.normalizeResumeArea(lastArea, hallAreaIds, crystalAreaId)
+    if not resume then
+        return nil
+    end
+    local unlocked = unlockedSet(unlockedAreas)
+    if unlocked[resume] ~= true then
+        return nil
+    end
+    -- Post-update Hall players who have not finished the tutorial stay on Hall tiles.
+    if
+        HallOfWorldsLogic.hasHallTutorialTrack(tutorial)
+        and not HallOfWorldsLogic.isTutorialCompleted(gameData, tutorial)
+        and not (hallAreaIds and hallAreaIds[resume] == true)
+    then
+        return nil
+    end
+    if hallAreaIds and hallAreaIds[resume] == true then
+        return resume
+    end
+    if resume == tostring(crystalAreaId or "Spawn") and enteredCrystalWorld == true then
+        return resume
+    end
+    return nil
+end
+
+function HallOfWorldsLogic.initialArea(
+    enteredCrystalWorld,
+    unlockedAreas,
+    routeAreaIds,
+    hallAreaId,
+    crystalAreaId,
+    lastArea,
+    hallAreaIds,
+    tutorial,
+    gameData
+)
+    local resume = HallOfWorldsLogic.resolvedResumeArea(
+        lastArea,
+        enteredCrystalWorld,
+        unlockedAreas,
+        hallAreaIds,
+        crystalAreaId,
+        tutorial,
+        gameData
+    )
+    if resume then
+        return resume
+    end
+
+    if enteredCrystalWorld == true then
+        return tostring(crystalAreaId or "Spawn")
+    end
+
+    local unlocked = unlockedSet(unlockedAreas)
+    for index = #(routeAreaIds or {}), 1, -1 do
+        local areaId = tostring(routeAreaIds[index])
+        if unlocked[areaId] then
+            return areaId
+        end
+    end
+    return tostring(hallAreaId or "Hall_1")
+end
+
+-- Session-only Crystal World visit for an unfinished-Hall teammate. Never stamps
+-- entered_crystal_world and never persists LastArea as Spawn.
+function HallOfWorldsLogic.sessionRespawnArea(
+    enteredCrystalWorld,
+    unlockedAreas,
+    routeAreaIds,
+    hallAreaId,
+    crystalAreaId,
+    lastArea,
+    hallAreaIds,
+    isGuestVisit,
+    tutorial,
+    gameData
+)
+    if enteredCrystalWorld ~= true and isGuestVisit == true then
+        return tostring(crystalAreaId or "Spawn")
+    end
+    return HallOfWorldsLogic.initialArea(
+        enteredCrystalWorld,
+        unlockedAreas,
+        routeAreaIds,
+        hallAreaId,
+        crystalAreaId,
+        lastArea,
+        hallAreaIds,
+        tutorial,
+        gameData
+    )
+end
+
+function HallOfWorldsLogic.meetsUnlock(claimedLevel, tutorialCompleted, unlock, tutorial)
+    unlock = type(unlock) == "table" and unlock or {}
+    if unlock.tutorial_required == true then
+        local met = if tutorial ~= nil
+            then HallOfWorldsLogic.tutorialRequirementMet(
+                { TutorialCompleted = tutorialCompleted == true },
+                tutorial,
+                unlock
+            )
+            else tutorialCompleted == true
+        if met ~= true then
+            return false, "tutorial_required"
+        end
+    end
+    local requiredLevel = math.max(0, math.floor(tonumber(unlock.required_level) or 0))
+    if math.floor(tonumber(claimedLevel) or 1) < requiredLevel then
+        return false, "level_required"
+    end
+    return true
+end
+
+-- Hall-era new profiles carry Tutorial.track == 2. Legacy saves have no track.
+function HallOfWorldsLogic.hasHallTutorialTrack(tutorial, expectedTrack)
+    local expected = math.floor(tonumber(expectedTrack) or 2)
+    return type(tutorial) == "table" and math.floor(tonumber(tutorial.track) or 0) == expected
+end
+
+-- Tutorial.done is the current tutorial SSOT. GameData.TutorialCompleted predates the
+-- event-driven tutorial and remains a persisted compatibility field for older consumers.
+-- Accept either representation so a completed player can never be stranded at a Hall gate.
+function HallOfWorldsLogic.isTutorialCompleted(gameData, tutorial)
+    return (type(gameData) == "table" and gameData.TutorialCompleted == true)
+        or (type(tutorial) == "table" and tutorial.done == true)
+end
+
+-- Hall gates only check completion for post-update (track 2) players. Legacy
+-- saves have no track and must not be locked behind the new tutorial.
+function HallOfWorldsLogic.tutorialRequirementMet(gameData, tutorial, unlock)
+    unlock = type(unlock) == "table" and unlock or {}
+    if unlock.tutorial_required ~= true then
+        return true
+    end
+    if not HallOfWorldsLogic.hasHallTutorialTrack(tutorial) then
+        return true
+    end
+    return HallOfWorldsLogic.isTutorialCompleted(gameData, tutorial)
+end
+
+function HallOfWorldsLogic.canLeaveHall(enteredCrystalWorld, targetAreaId, hallAreaIds, isHallExit)
+    if enteredCrystalWorld == true or isHallExit == true then
+        return true
+    end
+    return hallAreaIds[tostring(targetAreaId or "")] == true
+end
+
+function HallOfWorldsLogic.normalizeState(gameData, version)
+    gameData = type(gameData) == "table" and gameData or {}
+    local state = type(gameData.HallOfWorlds) == "table" and gameData.HallOfWorlds or {}
+    state.version = math.max(1, math.floor(tonumber(state.version) or tonumber(version) or 1))
+    state.entered_crystal_world = state.entered_crystal_world == true
+    state.highest_stage = math.max(0, math.floor(tonumber(state.highest_stage) or 0))
+    state.completed = state.completed == true
+    state.rewarded = type(state.rewarded) == "table" and state.rewarded or {}
+    state.checkpoint = type(state.checkpoint) == "string" and state.checkpoint or ""
+    gameData.HallOfWorlds = state
+    return state
+end
+
+function HallOfWorldsLogic.canEnter(claimedLevel, minimumLevel)
+    return math.floor(tonumber(claimedLevel) or 1) >= math.floor(tonumber(minimumLevel) or 2)
+end
+
+function HallOfWorldsLogic.nextStage(state, stageCount)
+    state = type(state) == "table" and state or {}
+    local nextIndex = math.max(1, math.floor(tonumber(state.highest_stage) or 0) + 1)
+    if nextIndex > math.max(0, math.floor(tonumber(stageCount) or 0)) then
+        return nil
+    end
+    return nextIndex
+end
+
+function HallOfWorldsLogic.canStartStage(state, stageIndex, claimedLevel, targetLevel)
+    local expected = HallOfWorldsLogic.nextStage(state, math.huge)
+    if stageIndex ~= expected then
+        return false, stageIndex < expected and "already_complete" or "previous_stage_required"
+    end
+    local prerequisite = math.max(2, math.floor(tonumber(targetLevel) or 3) - 1)
+    if math.floor(tonumber(claimedLevel) or 1) < prerequisite then
+        return false, "claim_previous_level"
+    end
+    return true
+end
+
+function HallOfWorldsLogic.markCompleted(state, stageIndex, stageId, checkpoint, stageCount)
+    state.rewarded = type(state.rewarded) == "table" and state.rewarded or {}
+    local firstCompletion = state.rewarded[stageId] ~= true
+    state.rewarded[stageId] = true
+    state.highest_stage = math.max(
+        math.floor(tonumber(state.highest_stage) or 0),
+        math.floor(tonumber(stageIndex) or 0)
+    )
+    state.checkpoint = tostring(checkpoint or "")
+    state.completed = state.highest_stage >= math.floor(tonumber(stageCount) or math.huge)
+    return firstCompletion
+end
+
+return HallOfWorldsLogic

@@ -23,6 +23,7 @@ local KNOWN_KINDS = {
     fanfare = true, -- local non-interrupting world celebration around the player (sparkles + glow)
     ascension = true, -- altar claim ceremony: visual avatar lift/spin/rings, no gameplay mutation
     effect_transfer = true, -- consumable icon blooms center, then flies to its affected HUD target(s)
+    failure_float = true, -- reason-aware cast refusal text above the local player
 }
 
 return function()
@@ -68,6 +69,97 @@ return function()
                     end
                 end
             end
+        end)
+
+        it("explains why Resonance cannot cast away from resources", function()
+            local feedback = gameEvents.power_cast_failed.failure_float
+            expect(type(feedback)).to.equal("table")
+            expect(feedback.messages.no_crystals_in_range).to.equal(
+                "No resources in range — move closer."
+            )
+
+            local dispatcher = readFile("src/Client/Systems/GameEvents.lua")
+            expect(dispatcher:find("REACTIONS.failure_float", 1, true) ~= nil).to.equal(true)
+            expect(dispatcher:find("ctx.reason", 1, true) ~= nil).to.equal(true)
+        end)
+
+        it("gives every normal cast refusal an actionable message", function()
+            local messages = gameEvents.power_cast_failed.failure_float.messages
+            for _, reason in ipairs({
+                "no_enemy_target",
+                "no_enemy_or_crystal_target",
+                "no_pets_deployed",
+                "no_downed_pets",
+                "no_pets_or_enemies_in_range",
+                "no_crystals_in_range",
+                "no_tank",
+                "not_enough_focus",
+                "on_cooldown",
+                "travel_unavailable",
+                "invalid_destination",
+                "destination_locked",
+                "missing_spawn",
+                "character_not_ready",
+                "travel_failed",
+                "no_recall_egg",
+                "invalid_recall_egg",
+                "recall_unavailable",
+                "recall_egg_missing",
+                "recall_no_safe_arrival",
+            }) do
+                if type(messages[reason]) ~= "string" or messages[reason] == "" then
+                    error(("cast refusal '%s' has no player-facing message"):format(reason))
+                end
+            end
+
+            local powerService = readFile("src/Server/Services/PowerService.lua")
+            expect(powerService:find('self:_flub(player, "on_cooldown"', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(powerService:find('or "no_enemy_target"', 1, true) ~= nil).to.equal(true)
+        end)
+
+        it("explains potion refusals without consuming the item", function()
+            local messages = gameEvents.potion_use_failed.failure_float.messages
+            for _, reason in ipairs({
+                "no_enemy_target",
+                "target_unavailable",
+                "target_out_of_range",
+                "meter_full",
+                "too_fast",
+                "none_left",
+                "enemy_target_requires_throw",
+                "not_throwable",
+                "unknown_potion",
+                "no_meter",
+                "service_unavailable",
+                "consume_failed",
+            }) do
+                if type(messages[reason]) ~= "string" or messages[reason] == "" then
+                    error(("potion refusal '%s' has no player-facing message"):format(reason))
+                end
+            end
+
+            local potionService = readFile("src/Server/Services/PotionService.lua")
+            expect(
+                potionService:find(
+                    'fireGameEvent(player, "potion_use_failed", { reason = reason })',
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(
+                potionService:find('return self:_refuse(player, "no_enemy_target")', 1, true) ~= nil
+            ).to.equal(true)
+
+            local targetGate =
+                potionService:find('return self:_refuse(player, "no_enemy_target")', 1, true)
+            local consume = potionService:find(
+                "local consumed, consumeReason = self:_consumeOne(player, potionId)",
+                targetGate,
+                true
+            )
+            expect(targetGate < consume).to.equal(true)
         end)
 
         it("every `sound` reaction points at a real sounds.lua entry with an id", function()

@@ -79,6 +79,16 @@ function PotionService:_canUse(player, potionId)
     return true
 end
 
+-- Keep every refused potion activation on the same feedback path as failed powers. The service
+-- owns this response because hotbar/inventory callers intentionally share Use() and should not
+-- need to duplicate failure presentation. All validation occurs before _consumeOne, so a refused
+-- click explains itself without spending the item.
+function PotionService:_refuse(player, reason)
+    reason = reason or "consume_failed"
+    fireGameEvent(player, "potion_use_failed", { reason = reason })
+    return { ok = false, reason = reason }
+end
+
 -- Consume exactly one matching stack entry. InventoryService owns stack mutation + persistence;
 -- this service only resolves which entry backs the configured potion id.
 function PotionService:_consumeOne(player, potionId)
@@ -263,32 +273,32 @@ end
 function PotionService:Drink(player, potionId)
     local pcfg = self:_potionCfg(potionId)
     if not pcfg then
-        return { ok = false, reason = "unknown_potion" }
+        return self:_refuse(player, "unknown_potion")
     end
     local meterId = pcfg.meter
     local m = self:_meterCfg(meterId)
     if not m then
-        return { ok = false, reason = "no_meter" }
+        return self:_refuse(player, "no_meter")
     end
     if m.target == "enemy" then
-        return { ok = false, reason = "enemy_target_requires_throw" }
+        return self:_refuse(player, "enemy_target_requires_throw")
     end
 
     local canUse, useReason = self:_canUse(player, potionId)
     if not canUse then
-        return { ok = false, reason = useReason }
+        return self:_refuse(player, useReason)
     end
 
     local uid = player.UserId
     self._meters[uid] = self._meters[uid] or {}
     local charge = self._meters[uid][meterId] or 0
     if BrewMeter.isFull(charge, m.full_threshold) then
-        return { ok = false, reason = "meter_full" } -- a sip would be wasted; don't consume
+        return self:_refuse(player, "meter_full") -- a sip would be wasted; don't consume
     end
 
     local consumed, consumeReason = self:_consumeOne(player, potionId)
     if not consumed then
-        return { ok = false, reason = consumeReason }
+        return self:_refuse(player, consumeReason)
     end
 
     -- sip_fraction lives on the POTION (pcfg), not the meter — m.sip_fraction was nil, so the sip
@@ -309,12 +319,12 @@ end
 function PotionService:Throw(player, potionId)
     local pcfg = self:_potionCfg(potionId)
     if not pcfg then
-        return { ok = false, reason = "unknown_potion" }
+        return self:_refuse(player, "unknown_potion")
     end
     local meterId = pcfg.meter
     local m = self:_meterCfg(meterId)
     if not (m and m.target == "enemy") then
-        return { ok = false, reason = "not_throwable" }
+        return self:_refuse(player, "not_throwable")
     end
     local throwCfg = type(pcfg.throw) == "table" and pcfg.throw or {}
     local enemyService = self._enemyService
@@ -322,31 +332,31 @@ function PotionService:Throw(player, potionId)
         and enemyService.GetFocusEnemy
         and enemyService:GetFocusEnemy(player)
     if not target then
-        return { ok = false, reason = "no_enemy_target" }
+        return self:_refuse(player, "no_enemy_target")
     end
     local character = player.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
     local targetPart = target.PrimaryPart or target:FindFirstChildWhichIsA("BasePart")
     if not (root and targetPart) then
-        return { ok = false, reason = "target_unavailable" }
+        return self:_refuse(player, "target_unavailable")
     end
     local range = math.max(1, tonumber(throwCfg.range) or 100)
     if (targetPart.Position - root.Position).Magnitude > range then
-        return { ok = false, reason = "target_out_of_range" }
+        return self:_refuse(player, "target_out_of_range")
     end
     local canUse, useReason = self:_canUse(player, potionId)
     if not canUse then
-        return { ok = false, reason = useReason }
+        return self:_refuse(player, useReason)
     end
 
     self._enemyMeters[target] = self._enemyMeters[target] or {}
     local charge = self._enemyMeters[target][meterId] or 0
     if BrewMeter.isFull(charge, m.full_threshold) then
-        return { ok = false, reason = "meter_full" }
+        return self:_refuse(player, "meter_full")
     end
     local consumed, consumeReason = self:_consumeOne(player, potionId)
     if not consumed then
-        return { ok = false, reason = consumeReason }
+        return self:_refuse(player, consumeReason)
     end
 
     charge = BrewMeter.sip(charge, pcfg.sip_fraction)

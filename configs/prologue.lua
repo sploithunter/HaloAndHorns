@@ -2,7 +2,7 @@
     THE PROLOGUE — the playable cold open (docs/PROLOGUE.md).
 
     A genuinely-new player spawns into a dressed dungeon room at level 50, mid-battle, with a
-    squad already fighting — then hard-cuts to the starter egg with "ONE MONTH FROM NOW".
+    squad already fighting — then hard-cuts into the player's own journey.
     Jason: "our player retention bottleneck is literally in the first 15 seconds."
 
     It does NOT compete with boot (measured 8.1s cold / 3.5s warm, only ~3s usable). It
@@ -27,9 +27,10 @@ return {
     room = {
         kit = "graybox", -- Shared/Worldgen/GrayBoxKit
         tile = "mezzanine_hall",
-        -- Built far from the playable world so it never collides with the map or streams into
-        -- an ordinary session. Y is well below the realms (Home ±2000).
-        origin = { x = 0, y = -8000, z = 0 },
+        -- Built in an isolated horizontal lane so it never collides with the playable maps or
+        -- streams into an ordinary session. Realm layers now repeat vertically every 2,000
+        -- studs, so the old Y=-8000 location occupied Hell 4 instead of empty space.
+        origin = { x = -12000, y = 0, z = 0 },
     },
 
     -- THE PLAYER'S TEMPORARY SQUAD (Jason: "one of every dragon, plus a huge Ent for a
@@ -74,9 +75,9 @@ return {
     -- Where the player lands afterwards: nil = the normal spawn (tutorial takes over at
     -- `hatch_first_egg`).
     caption = {
-        cut = "ONE MONTH FROM NOW", -- the black boot screen doubles as the title card (first runs only)
+        cut = "YOUR FUTURE SELF", -- aligns the cold-open promise with Future Call
         victory = "VICTORY!", -- giant floating text the moment the wave is wiped
-        land = "PRESENT DAY", -- the hard cut back to the real beginning
+        land = "YOUR JOURNEY BEGINS", -- the hard cut back to the real beginning
     },
 
     -- Seconds the VICTORY beat holds before the cut ("once the battle is over, it ends

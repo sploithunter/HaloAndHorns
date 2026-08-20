@@ -1,5 +1,114 @@
 return {
     zones = {
+        hall_world = {
+            id = "hall_world",
+            kind = "world",
+            display_name = "Hall of Worlds",
+            order = 0,
+        },
+        hall_route = {
+            id = "hall_route",
+            kind = "island",
+            parent = "hall_world",
+            display_name = "Wayfinder Hall",
+            order = 1,
+            primary_area = "Hall_1",
+        },
+        Hall_1 = {
+            id = "Hall_1",
+            kind = "area",
+            element = "hall",
+            zone_level = 1,
+            mining_currency = "hall_coins",
+            parent = "hall_route",
+            display_name = "Wayfinder Landing",
+            order = 0,
+            unlock = { unlocked_by_default = true },
+            boosts = {},
+            synthetic = {
+                -- Tile01 plus the arrival leg of Tile02, ending at the Level 2 wall.
+                center = { x = 2000, y = 24, z = -223 },
+                size = { x = 570, y = 48, z = 690 },
+                floor_y = 0,
+                -- Fallback only. Live Hall_1 spawn is the authored Maps.FuturePath.HallSpawn part.
+                spawn_position = { x = 1897.8, y = 7.8, z = -314.7 },
+                egg_stands = {},
+            },
+        },
+        Hall_2 = {
+            id = "Hall_2",
+            kind = "area",
+            element = "hall",
+            zone_level = 2,
+            mining_currency = "hall_coins",
+            parent = "hall_route",
+            display_name = "Gilded Gallery",
+            order = 1,
+            unlock = {
+                unlocked_by_default = false,
+                required_zone = "Hall_1",
+                required_level = 2,
+                tutorial_required = true,
+            },
+            boosts = {},
+            synthetic = {
+                -- Gilded Gallery, from the Level 2 wall through the east turn.
+                center = { x = 1950, y = 24, z = 321 },
+                size = { x = 350, y = 48, z = 398 },
+                floor_y = 0,
+                spawn_position = { x = 2000, y = 5, z = 208 },
+                egg_stands = {},
+            },
+        },
+        Hall_3 = {
+            id = "Hall_3",
+            kind = "area",
+            element = "hall",
+            zone_level = 3,
+            mining_currency = "hall_coins",
+            parent = "hall_route",
+            display_name = "Vanguard Walk",
+            order = 2,
+            unlock = {
+                unlocked_by_default = false,
+                required_zone = "Hall_2",
+                currency = "hall_coins",
+                cost = 750,
+            },
+            boosts = {},
+            synthetic = {
+                center = { x = 2346, y = 24, z = 428 },
+                size = { x = 442, y = 48, z = 244 },
+                floor_y = 0,
+                spawn_position = { x = 2348, y = 5, z = 428 },
+                egg_stands = {},
+            },
+        },
+        Hall_4 = {
+            id = "Hall_4",
+            kind = "area",
+            element = "hall",
+            zone_level = 4,
+            mining_currency = "hall_coins",
+            parent = "hall_route",
+            display_name = "Worlds Plaza",
+            order = 3,
+            unlock = {
+                unlocked_by_default = false,
+                required_zone = "Hall_3",
+                currency = "hall_coins",
+                cost = 2500,
+            },
+            boosts = {},
+            synthetic = {
+                center = { x = 2568, y = 24, z = 907 },
+                size = { x = 564, y = 48, z = 714 },
+                floor_y = 0,
+                spawn_position = { x = 2568, y = 5, z = 982 },
+                egg_stands = {},
+            },
+        },
+
         -- MISSION pseudo-zones (docs/MISSION_WORLDGEN.md): element-THEMED
         -- trials brand their interior — biome RPS applies (pet element vs
         -- zone element: pet selection matters) AND enhancement drops roll

@@ -2243,6 +2243,7 @@ function EggInteractionService:ShowHatchingResults(result)
                 specialHatch = entry.SpecialHatch == true or entry.specialHatch == true,
                 autoDeleted = entry.AutoDeleted or entry.autoDeleted,
                 autoDeleteReason = entry.AutoDeleteReason or entry.autoDeleteReason,
+                newIndexEntry = entry.NewIndexEntry == true or entry.newIndexEntry == true,
             })
         end
 

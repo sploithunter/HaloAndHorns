@@ -377,5 +377,117 @@
    "texture": "assets/exports/eggs/signal_seal_egg/signal_seal_egg.png"
   },
   "uploadedBy": "upload_eggs.js 2026-08-15"
+ },
+ "patch_phoenix_egg": {
+  "icon_decal": "117136941657428",
+  "icon_image": "108893181025623",
+  "model_asset": "129772519518186",
+  "mesh_id": "rbxassetid://88693571117741",
+  "mesh_image": "rbxassetid://84746173497756",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "neutral",
+  "origin": "lava",
+  "sources": {
+   "icon": "assets/source/eggs/patch_phoenix_egg.png",
+   "fbx": "assets/exports/eggs/patch_phoenix_egg/patch_phoenix_egg_10k.fbx",
+   "texture": "assets/exports/eggs/patch_phoenix_egg/patch_phoenix_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-18"
+ },
+ "core_digger_egg": {
+  "icon_decal": "89127808947024",
+  "icon_image": "100737108974990",
+  "model_asset": "76582207389908",
+  "mesh_id": "rbxassetid://88693571117741",
+  "mesh_image": "rbxassetid://81153793799639",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "neutral",
+  "origin": "desert",
+  "sources": {
+   "icon": "assets/source/eggs/core_digger_egg.png",
+   "fbx": "assets/exports/eggs/core_digger_egg/core_digger_egg_10k.fbx",
+   "texture": "assets/exports/eggs/core_digger_egg/core_digger_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-18"
+ },
+ "cache_bandit_egg": {
+  "icon_decal": "82315452878833",
+  "icon_image": "130651016946810",
+  "model_asset": "117927555396759",
+  "mesh_id": "rbxassetid://88693571117741",
+  "mesh_image": "rbxassetid://71677326374403",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "neutral",
+  "origin": "grass",
+  "sources": {
+   "icon": "assets/source/eggs/cache_bandit_egg.png",
+   "fbx": "assets/exports/eggs/cache_bandit_egg/cache_bandit_egg_10k.fbx",
+   "texture": "assets/exports/eggs/cache_bandit_egg/cache_bandit_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-18"
+ },
+ "wayfinder_egg": {
+  "icon_decal": "71283766882826",
+  "icon_image": "73813925244413",
+  "model_asset": "109380671147953",
+  "mesh_id": "rbxassetid://85917855243799",
+  "mesh_image": "rbxassetid://71301802096616",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "hall",
+  "origin": "hall",
+  "sources": {
+   "icon": "assets/source/eggs/wayfinder_egg.png",
+   "fbx": "assets/exports/eggs/wayfinder_egg/wayfinder_egg_10k.fbx",
+   "texture": "assets/exports/eggs/wayfinder_egg/wayfinder_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-18"
+ },
+ "hall_gilded_egg": {
+  "icon_decal": "138275858183505",
+  "icon_image": "92154990657326",
+  "model_asset": "114164077732209",
+  "mesh_id": "rbxassetid://79002375686597",
+  "mesh_image": "rbxassetid://76870312052027",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "hall",
+  "origin": "hall",
+  "sources": {
+   "icon": "assets/source/eggs/hall_gilded_egg.png",
+   "fbx": "assets/exports/eggs/hall_gilded_egg/hall_gilded_egg_10k.fbx",
+   "texture": "assets/exports/eggs/hall_gilded_egg/hall_gilded_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-19"
+ },
+ "vanguard_egg": {
+  "icon_decal": "76650851772523",
+  "icon_image": "133582624829203",
+  "model_asset": "84073314782695",
+  "mesh_id": "rbxassetid://124838811817826",
+  "mesh_image": "rbxassetid://106498438354720",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "hall",
+  "origin": "hall",
+  "sources": {
+   "icon": "assets/source/eggs/vanguard_egg.png",
+   "fbx": "assets/exports/eggs/vanguard_egg/vanguard_egg_10k.fbx",
+   "texture": "assets/exports/eggs/vanguard_egg/vanguard_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-19"
+ },
+ "worldheart_egg": {
+  "icon_decal": "124521270374587",
+  "icon_image": "75792210741748",
+  "model_asset": "107303501881003",
+  "mesh_id": "rbxassetid://133021157405492",
+  "mesh_image": "rbxassetid://103667752364907",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "hall",
+  "origin": "hall",
+  "sources": {
+   "icon": "assets/source/eggs/worldheart_egg.png",
+   "fbx": "assets/exports/eggs/worldheart_egg/worldheart_egg_10k.fbx",
+   "texture": "assets/exports/eggs/worldheart_egg/worldheart_egg.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-19"
  }
 }

@@ -39,6 +39,11 @@ Implemented so far:
 - The expanded hatch drawer now has automated layout coverage. `EggProximitySmoke` opens the real `PlayerGui` drawer, verifies desktop/mobile fit math, and checks that visible drawer controls are not clipped inside the configured drawer bounds.
 - Special hatch animation polish now has a config-driven backdrop layer. `egg_system.hatching.animation.special_backdrop` controls a rarity-colored reveal backdrop behind special pets, `ConfigLoader` validates its fields, and `EggAnimationContractSmoke` verifies the visual contract.
 - Hatch result stacking/readout polish is now config-driven. `egg_system.hatching.animation.result_stack` controls duplicate-result stacking, name/count labels, count threshold, tween timing, and hold duration; `EggAnimationContractSmoke` verifies duplicate Bear hatches stack into a `Bear x2` readout.
+- First-discovery hatch presentation is server-authoritative. `InventoryService` reports whether each
+  granted pet created a new index entry, the hatch response preserves that flag, and the reveal puts
+  a canted `NEW!` badge on only those result cards plus a compact `+N NEW` batch summary. Reveal
+  cards then funnel into the live Pets-menu button; repeated species/variant discoveries are never
+  inferred as new by the client.
 - Hatch-result reveals use the uploaded flat pet-thumbnail registry as their primary source and only
   ask for a generated ViewportFrame when a catalog entry lacks flat art. The animation smoke asserts
   that pet reveal content itself is visible so badge-only regressions cannot pass.
@@ -249,6 +254,12 @@ Later polish:
   hatch posts a rarity-colored system line to the current server's standard Roblox chat;
   every Huge hatch also relays across live servers through MessagingService. The source server
   displays first and de-duplicates its own relay, so a relay failure never hides the local win.
+- Inventory-held eggs (tester, trial, creator, and boss rewards) must enter that same announcement
+  path even though they hatch outside `EggService`. Compact held-egg responses derive their
+  effective rarity from the authoritative pet family, so Exclusive announcements do not depend on
+  redundant client/result metadata. Every Huge hatch also increments the persistent
+  `huge_pets_hatched` lifetime counter. The native People-list status shows **Huge Hatcher** in place
+  of an ordinary level title; a top-100 leaderboard title remains the higher-priority social flex.
 - Party/shared hatch visibility.
 - Premium/event eggs with stricter odds disclosure and no hidden client-side luck drift.
 

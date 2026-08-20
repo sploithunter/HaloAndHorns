@@ -3,7 +3,8 @@
 Status: week one is closed to new claims and week-two Signal Seal claiming is enabled from Saturday
 2026-08-15 00:00 through Saturday 2026-08-22 00:00 Mountain time. The Events panel shows the same
 explicit window as **Beta Test Week Two**. Already-reserved and granted awards from either campaign
-continue to reconcile after public claiming closes.
+continue to reconcile after public claiming closes. Weeks three through five are fully authored and
+admin-testable in Studio, but remain closed to production claims until their scheduled launch weeks.
 
 ## Player contract
 
@@ -62,8 +63,10 @@ can resize the same species, but a campaign may name a distinct Huge species.
   held egg or resulting pet becomes Golden at 5 and Rainbow at 10, with a 1% same-species Huge roll.
 - Signal Seal provides the deterministic **Luck** farming aura while deployed. It uses the same
   normalized Basic/Golden/Rainbow scaling and player-buff visibility as other support auras.
-- The Admin tester-egg buttons target the current week-two campaign for Basic, Golden, Rainbow, and
-  forced-Huge regression runs. Historical Beta Byte award reconciliation is unaffected.
+- Campaign-specific Admin tester-egg buttons target weeks two through five for Basic, Golden,
+  Rainbow, and forced-Huge regression runs. Future campaigns keep `studio_enabled = false` so an
+  ordinary level-two Studio run does not receive every future egg. Historical award reconciliation
+  is unaffected.
 
 ## Five-week farming identities
 
@@ -76,12 +79,15 @@ the five-week collection identity without making the reward a general combat car
 |---|---|---|
 | Beta Byte | Huge Fortune | Huge hatch attempts |
 | Signal Seal | Luck | species/variant hatch luck |
-| Future pet 3 | Windfall | enhancement, potion, and premium-drop chance |
-| Future pet 4 | Prospector | currency earned from crystals |
-| Future pet 5 | XP Surge | all player XP |
+| Patch Phoenix | Windfall | enhancement, potion, and premium-drop chance |
+| Core Digger | Prospector | currency earned from crystals |
+| Cache Bandit | XP Surge | all player XP |
 
-Signal Seal's campaign is live for week two. The final three assignments are reserved by power;
-bind each to the authored pet id as that week's pet is imported.
+Signal Seal's campaign is live for week two. Patch Phoenix, Core Digger, and Cache Bandit have
+normal/Golden models and transparent card art; Rainbow reuses the normal asset with the standard
+runtime treatment. Their one-pet inventory eggs use distinct art, immutable award provenance, and
+the same level-2/5/10 plus 1% Huge contract. Future public claims are disabled while
+`studio_enabled = true` preserves the full regression path.
 XP Surge is intentionally last and Prospector second-to-last so early tester rounds assess baseline
 leveling and crystal-income balance rather than a reward-modified economy.
 Huge tester rewards retain `huge`, serial, identity, and award provenance when their campaign tier

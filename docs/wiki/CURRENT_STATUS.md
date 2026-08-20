@@ -2,6 +2,34 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Range / Training Ground (landed 2026-08-20)
+
+Hall_2 Tile04_corner Field hosts the shared Challenge Field gauntlet. Room 1–99 is a
+difficulty index (`ChallengeRun.packForRoom`) on a **fixed layout sequence**: Range
+`room#N`, Training Ground `train#N`. Early rooms are one chamber and two imps;
+later rooms add trash, lieutenants, then bosses. Settings Enemy Level and Trial
+Enemy Group Size do not apply. Advancing
+restamps that room. Range is **solo-only** and uses a catalog GhostPet loadout picked
+across Inventory + PowerChoice (origin + up to 6 loaned powers). Closing
+that picker clears the menu flag and re-arms the pad E. Everyone
+fights at level 50 for the run (`ChallengeLevel` on the sidekick
+`EffectiveLevel` pipe; earned/claimed stay put and restore on exit). Those picks persist as
+four per-origin Range defaults (`GameData.RangeDefaults`) plus the last catalog squad,
+and they are the only legal powers for the run (auto-slotted: Hasten 6 recharge; others
+3/3). Hotbar auto-cast locks clear on Range enter and exit so a slot lock cannot
+follow a loaned power home. Training Ground uses your own pets on an easier curve
+and still allows a team. A downed slot stays down for the run (no Ready/Summon
+timer) and cannot be refilled. Entry-tile kit-up is white slots only. Overworld
+red slots stay reserved for 60s. Neither field spawns farmable crate or
+crystal-node debris (the MissionCrate placeholder was a sideways crystal).
+Best room persists under `GameData.ChallengeRuns`, plus a sliding-window `recent`
+list that feeds the current Range / Training Ground OrderedDataStores.
+A run writes and publishes immediately; window expiry sweeps at server
+start, every 5 minutes, and BindToClose. Neither field belongs on the
+ProfileStore template. Internal IDs still publish; `hide_internal_accounts`
+hides them on the public page (TEMP off so Macros can test).
+See [Hall of Worlds](HALL_OF_WORLDS.md).
+
 ## Console Support (landed 2026-08-13)
 
 Runtime status: **disabled by feature flag as of 2026-08-15** following a published-build rollback.
@@ -187,8 +215,10 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - Four global origin boards are configured: Grass `Most Dragons`, Desert `Crystal Crusher`, Lava
   `Enemies Defeated`, and Ice `Team Power`. `LeaderboardService` publishes only loaded players on
   join/relevant changes/leave, reads a top-100 cache, and exposes the first 10 to reusable tagged
-  physical boards; it never walks the profile DataStore. ColoradoPlays, MacrosGodOfMagic,
-  SploitHunter, and SploitGiver are excluded by immutable user ID.
+  physical boards; it never walks the profile DataStore. Internal tester
+  identities live in `configs/internal_accounts.lua` (IDs, not `Colorado*`
+  names) and still publish; `hide_internal_accounts` omits them from the
+  visible page only.
 - Top-100 placement also feeds the native People-list `Status`: `Dragonlord`, `Farmer`, `Slayer`,
   `Commander`, or `Hatcher`. The lowest rank wins for multi-board qualifiers. Eggs Hatched uses the
   same bounded cache as a status-only ranking; the authored world still has exactly four boards.
@@ -737,7 +767,15 @@ headless-tested core, a server service, and bus commands.
   `augment.get/place`.
 - **Hotbar (16)**: `configs/hotbar.lua` (20 slots, 4 bind types, defaults) + pure
   `HotbarLogic` (archetype defaults, rebind validation, empty-slot no-op).
-  `HotbarService` owns `profile.Hotbar`. Bus `hotbar.get/rebind`.
+  `HotbarService` owns `profile.Hotbar`. Bus `hotbar.get/rebind`. Power-bar
+  size is Auto (phone → Mobile, tablet → Tablet, desktop → Desktop) or a
+  Settings pin. Mobile is the designed-for-phone size; compact HUD stacks
+  Powers/Board and stacks Pets/Menu at the same 48px so the bar is
+  symmetrical. Admin sits in the far lower-left corner. That
+  bottom-center layout is the saved keeper. The far-left look-at-it is
+  game-pass + toggle badges (`hud.power_badges.placement`), not the bar.
+  The badge column hides while the battle list is up; Settings → Hide
+  Toggles in Battle (default on) can keep them visible.
 - **Rosters (17)**: `configs/rosters.lua` (injury rules) + pure `RosterLogic`
   (clampMaxToDeploy, removeRef, resolveDeploy for ready_only/best_available/
   deploy_anyway). `RosterService` owns `profile.Rosters` (create clamps to squad
@@ -996,9 +1034,9 @@ Last checked: 2026-08-15
   definitions, pet auras show live magnitude/source count, and presence badges distinguish 2x
   Creator Luck from the non-stacking 1.5x **Founder's Legacy** server aura.
 - The player-status HUD is split into two truthful, independently sized rows. Full-size, high-contrast
-  badges remain reserved for active/timed effects; a compact subdued row below them renders every
-  effective owned game pass in authored catalog order using its Marketplace artwork and an infinity
-  marker. The pass row consumes the existing `OwnedPasses` snapshot (including Marketplace, Founder,
+  badges remain reserved for active/timed effects; a compact subdued row (or left-edge
+  column) renders every effective owned game pass in authored catalog order using its
+  Marketplace artwork with no infinity marker. The pass row consumes the existing `OwnedPasses` snapshot (including Marketplace, Founder,
   creator, and Studio-test sources), updates after purchases or creator-gate changes without polling,
   and identifies the exact entitlement source through the shared hover/tap tooltip.
 - Timed player-status badges display durations of at least one minute as `M:SS` (for example,
@@ -1232,6 +1270,11 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
 
 ## 2026-07-27 — Level 5–9 Future Call
 
+- Ascending through claimed Level 2 awards **one Future Call token** as a visible new capability.
+  It auto-binds immediately but remains locked until earned Level 4; pressing it early displays
+  **“Reach Level 4 to summon Your Future Self.”** At Level 4 it becomes usable and celebrates
+  readiness without moving or replacing the player's chosen hotbar slot. Existing Level-4+
+  profiles are marker-migrated without receiving a duplicate token.
 - Claiming Levels 5/6/7/8/9 grants 5/4/3/2/1 **Future Call** consumable tokens, respectively,
   for 15 total. Existing profiles reconcile every missing marker-backed milestone. Profiles that
   received the original three-token Level-5 grant receive only its two-token top-up; Reset to
@@ -1336,8 +1379,9 @@ Last checked: 2026-08-04
 - Claiming **Answer the Cave**, the fifth and final First Steps mission, first applies its authored
   300 XP and then adds only the exact XP still missing for **earned level 4**. The top-up bypasses
   boosts/multipliers and never removes progress or overshoots an already-higher player.
-- The same capstone grants **two Future Call tokens** through the canonical inventory path, including
-  auto-bind, hotbar refresh, persistence, and the existing award banner. This reward is independent
+- The same capstone grants **one additional Future Call token** through the canonical inventory path,
+  preserving its historical two-token total together with the immediate locked onboarding token. It
+  includes auto-bind, hotbar refresh, persistence, and the existing award banner. This reward is independent
   of, and does not consume, the marker-backed Level 5–9 token schedule.
 - Per-component completion markers make the grant retry-safe. Opening the Quest menu reconciles
   older profiles that already claimed Answer the Cave before this reward existed, while Reset to
@@ -1398,3 +1442,56 @@ Last checked: 2026-08-17
   or touch press, stays visible while held, and remains readable for ten seconds after release.
   Compact pill/ring modes temporarily expand through the same interval; desktop hover uses the same
   grace instead of disappearing the instant the pointer leaves.
+
+## Resonance-before-combat tutorial sequence
+
+Last checked: 2026-08-18
+
+- The ten-step FTUE now teaches the complete Resonance loop before sending the player to Answer the
+  Cave: hatch, mine, hatch, review squad, bind Resonance, cast Resonance, enhance Resonance, fight,
+  drink Berserk Brew, then Rally the pets home.
+- Rally is the final tutorial action. Only after it completes does the existing exact XP top-up
+  guarantee earned Level 2, preventing cave combat from overlapping an unfinished power-slot lesson.
+- Tutorial progress is version 3. Migrations now run one version at a time, preserving the semantic
+  lesson for active v1 and v2 saves rather than interpreting their persisted numeric step under the
+  new order. The retention funnel uses the same sequence while retaining its live milestone IDs.
+
+## Actionable power and potion refusals
+
+Last checked: 2026-08-18
+
+- A failed Resonance cast with no nearby crystal still uses the standard red refusal puff and flub
+  sound, but now also floats **“No crystals in range — move closer.”** above the player.
+- Failure reasons remain server-authored machine keys and player-facing wording remains in
+  `configs/game_events.lua`, so every hotbar/input path receives the same explanation.
+- Normal power refusals distinguish missing enemy/crystal/pet/downed-pet targets, insufficient
+  Focus, cooldown, Tank requirements, and travel/Recall failures instead of relying on the bonk.
+- Potion activation uses a parallel `potion_use_failed` event. Enemy debuffs report a missing,
+  unavailable, or out-of-range target, and rejected activations occur before inventory consumption.
+
+## World-space tutorial breadcrumbs
+
+Last checked: 2026-08-18
+
+- Tutorial travel guidance now renders as outlined, floating 3D chevrons instead of flat neon
+  ground discs. The markers are ordinary anchored world parts, with no screen-space placement or
+  GUI pixel offsets. Each arrow physically advances along the route and wraps back to the player
+  end rather than remaining stationary under a traveling transparency pulse.
+- The breadcrumb is deliberately not a navigation path. Every rendered frame samples the player's
+  current position and the objective's current position, then places the moving chevrons on that
+  live direct line. There is no pathfinding, periodic replan, waypoint rebuild, or route cache.
+- The direct line uses a shallow world-space arc for readability and is capped at twelve chevrons.
+  It disappears when the destination prompt is in range; all marker parts remain noncollidable,
+  untouchable, and excluded from queries.
+
+## Tutorial language detection and English override
+
+Last checked: 2026-08-18
+
+- New-player tutorial copy defaults from the local Roblox translator locale, with complete Spanish
+  and Brazilian Portuguese catalogs and authored-English fallback for every other language.
+- Settings exposes a persisted **Tutorial Language** choice: `Auto (<detected language>)` or
+  `English`. Stable localization keys travel beside the raw English tutorial state, so older or
+  untranslated clients never receive blank copy.
+- Auto-mode players using a supported non-English locale receive a one-time session banner naming
+  their tutorial language and pointing to the English override in Settings.

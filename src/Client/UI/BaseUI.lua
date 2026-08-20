@@ -1396,6 +1396,7 @@ function BaseUI:_createEmojiIcon(config, parent, iconSize, iconPosition, iconOff
         or config.name == "Effects" and "⚡"
         or config.name == "Settings" and "⚙️"
         or config.name == "Admin" and "👑"
+        or config.name == "Hoverboard" and (config.icon_fallback or "🛹")
         or iconValue ~= "" and iconValue
         or "📋"
 
@@ -3043,6 +3044,19 @@ function BaseUI:_onMenuButtonClicked(menuName)
                 return
             end
         end
+    end
+    if
+        actionConfig
+        and actionConfig.type == "script_execute"
+        and actionConfig.script == "HoverboardController"
+    then
+        local ok, handler = pcall(function()
+            return require(script.Parent.Parent.Systems.HoverboardController)
+        end)
+        if ok and handler and handler.Toggle then
+            handler.Toggle()
+        end
+        return
     end
 
     -- menu_panel: the button opens a DIFFERENT panel than its own name (Pets -> "Inventory",

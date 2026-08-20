@@ -400,7 +400,7 @@ def main() -> int:
     partial = merge_days([daily[today_key]])
     exclusions = (daily[today_key].get("exclusions") or {}).get(
         "playerNamePrefixes"
-    ) or ["colorado", "waxillium", "waxilium", "sploit", "macros"]
+    ) or ["waxillium", "waxilium", "sploit", "macros"]
     report = {
         "schemaVersion": 2,
         "pulledAtUtc": datetime.now(timezone.utc).isoformat(timespec="seconds"),

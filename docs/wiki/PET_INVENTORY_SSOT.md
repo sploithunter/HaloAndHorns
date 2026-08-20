@@ -114,6 +114,11 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   order and asks `InventoryService` to fill only validated empty squad slots. Excess results remain
   ordinary inventory ownership. Existing occupants are never ranked, moved, or displaced, and the
   full projection/save path runs after any accepted fill.
+- **The squad editor previews the next capacity milestone from progression config.** After the live
+  equipped and empty unlocked slots, the inventory grid renders one gray, noninteractive
+  `Next pet slot: Level N` card. `N` is derived from `player_progression.pet_slots` (currently
+  8/15/22/29/36/43/50), updates when level or slot attributes change, and disappears once no later
+  configured milestone remains. The UI must not duplicate that schedule.
 
 ### Rebuild tiers (do NOT re-validate equip on every mutation)
 

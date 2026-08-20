@@ -35,6 +35,13 @@ return {
         xp_hour = 3708216219, -- LIVE: "Double XP" (dashboard 2026-08-15)
         coin_hour = 3708216387, -- LIVE: "Double Coins" (dashboard 2026-08-15)
         frenzy_burst = 0, -- REPLACE: "Personal Frenzy (30 min)" product
+        hoverboard_blue_gold = 0, -- REPLACE: "Blue Gold Hoverboard" product
+        hoverboard_rocket_blue = 3709033036, -- LIVE: "Blue Rocketboard" (dashboard 2026-08-20)
+        hoverboard_rocket_lightblue = 3709032949, -- LIVE: "Light Blue Rocketboard" (dashboard 2026-08-20)
+        hoverboard_rocket_green = 3709033097, -- LIVE: "Green Rocketboard" (dashboard 2026-08-20)
+        hoverboard_rocket_orange = 3709033159, -- LIVE: "Orange Rocketboard" (dashboard 2026-08-20)
+        hoverboard_rocket_purple = 3709033211, -- LIVE: "Purple Rocketboard" (dashboard 2026-08-20)
+        hoverboard_rocket_yellow = 3709033275, -- LIVE: "Yellow Rocketboard" (dashboard 2026-08-20)
         supporter_pet = 0, -- REPLACE: "Supporter Pet" product
         focus_surge = 0, -- REPLACE: "Focus Surge (30 min)" product
         endurance_surge = 0, -- REPLACE: "Endurance Surge (30 min)" product
@@ -168,6 +175,78 @@ return {
             },
             category = "boosts",
             analytics_category = "boost_titan_team",
+            test_mode_enabled = true,
+        },
+        {
+            id = "hoverboard_blue_gold",
+            name = "Blue Gold Hoverboard",
+            description = "Kade's premium board. Deterministic, untradeable cosmetic.",
+            price_robux = 79,
+            rewards = {
+                hoverboard_skin = "blue_gold",
+            },
+            category = "cosmetics",
+            analytics_category = "hoverboard_skin",
+            test_mode_enabled = true,
+        },
+        {
+            id = "hoverboard_rocket_blue",
+            name = "Blue Rocket",
+            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
+            price_robux = 19,
+            rewards = { hoverboard_skin = "rocket_blue" },
+            category = "cosmetics",
+            analytics_category = "hoverboard_skin",
+            test_mode_enabled = true,
+        },
+        {
+            id = "hoverboard_rocket_lightblue",
+            name = "Light Blue Rocket",
+            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
+            price_robux = 19,
+            rewards = { hoverboard_skin = "rocket_lightblue" },
+            category = "cosmetics",
+            analytics_category = "hoverboard_skin",
+            test_mode_enabled = true,
+        },
+        {
+            id = "hoverboard_rocket_green",
+            name = "Green Rocket",
+            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
+            price_robux = 19,
+            rewards = { hoverboard_skin = "rocket_green" },
+            category = "cosmetics",
+            analytics_category = "hoverboard_skin",
+            test_mode_enabled = true,
+        },
+        {
+            id = "hoverboard_rocket_orange",
+            name = "Orange Rocket",
+            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
+            price_robux = 19,
+            rewards = { hoverboard_skin = "rocket_orange" },
+            category = "cosmetics",
+            analytics_category = "hoverboard_skin",
+            test_mode_enabled = true,
+        },
+        {
+            id = "hoverboard_rocket_purple",
+            name = "Purple Rocket",
+            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
+            price_robux = 19,
+            rewards = { hoverboard_skin = "rocket_purple" },
+            category = "cosmetics",
+            analytics_category = "hoverboard_skin",
+            test_mode_enabled = true,
+        },
+        {
+            id = "hoverboard_rocket_yellow",
+            name = "Yellow Rocket",
+            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
+            price_robux = 19,
+            rewards = { hoverboard_skin = "rocket_yellow" },
+            category = "cosmetics",
+            analytics_category = "hoverboard_skin",
             test_mode_enabled = true,
         },
     },

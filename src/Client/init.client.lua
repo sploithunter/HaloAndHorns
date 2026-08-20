@@ -9,6 +9,7 @@
 ]]
 
 local Players = game:GetService("Players")
+local CollectionService = game:GetService("CollectionService")
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
@@ -37,6 +38,7 @@ local ModuleLoader = require(Locations.SharedUtils.ModuleLoader)
 local localPlayer = Players.LocalPlayer
 local TRAVEL_PROMPT_NAME = "ZoneTravelPrompt"
 local UNLOCKED_AREAS_ATTRIBUTE = "UnlockedAreasJson"
+local ENTERED_CRYSTAL_WORLD_ATTRIBUTE = "EnteredCrystalWorld"
 
 -- Console noise reduction: defer logging until Logger is initialized
 
@@ -99,8 +101,10 @@ do
     local ok, err = pcall(function()
         require(script.Systems.InputContext).start(consoleSupportEnabled)
         require(script.Systems.HudLayoutState).start()
+        require(script.Systems.HideTogglesInBattle).start()
         require(script.Systems.SquadDisplayState).start()
         require(script.Systems.QuestDisplayState).start()
+        require(script.Systems.TutorialLanguageState).start()
     end)
     if not ok then
         Logger:Warn("Failed to start HUD preference state", { error = tostring(err) })
@@ -178,6 +182,27 @@ do
     end
 end
 
+-- Hall display eggs float locally while their server interaction anchors remain fixed.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.EggIdleAnimator).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start EggIdleAnimator", { error = tostring(err) })
+    end
+end
+
+-- Hall play-area boundary: the original generated-map marquee, recovered as an explicit Hall-only
+-- effect so generic SpawnZone markers in Crystal World never receive dotted outlines.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.HallPlayAreaMarquee).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start HallPlayAreaMarquee", { error = tostring(err) })
+    end
+end
+
 -- Team follow (docs/TEAMING.md): CoH-style /follow of a TEAMMATE — walk-follow with a
 -- manual-input break; realm-portal hops ride team.follow_warp. Toggled from SquadHud
 -- (follow chip on the mate card / F with the teammate selected).
@@ -202,7 +227,7 @@ do
 end
 
 -- Prologue cinematics (docs/PROLOGUE.md): VICTORY! when the wave is wiped + the
--- PRESENT DAY hard cut at warp-out. Pure attribute renderer, same contract as the banner.
+-- Journey-begins hard cut at warp-out. Pure attribute renderer, same contract as the banner.
 do
     local ok, err = pcall(function()
         require(script.Systems.PrologueCinematics).start()
@@ -384,9 +409,10 @@ end
 do
     local ok, err = pcall(function()
         require(script.Systems.ZoneUnlockPrompt).start()
+        require(script.Systems.HallRouteGates).start()
     end)
     if not ok then
-        Logger:Warn("Failed to start ZoneUnlockPrompt", { error = tostring(err) })
+        Logger:Warn("Failed to start zone progression presentation", { error = tostring(err) })
     end
 end
 
@@ -439,6 +465,15 @@ do
     end)
     if not ok then
         Logger:Warn("Failed to start GameEvents", { error = tostring(err) })
+    end
+end
+
+do
+    local ok, err = pcall(function()
+        require(script.Systems.RangePicker).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start RangePicker", { error = tostring(err) })
     end
 end
 
@@ -550,6 +585,7 @@ do
         require(script.Systems.CurrencyStack).start()
         require(script.Systems.TopHudStack).start()
         require(script.Systems.HotbarFlank).start()
+        require(script.Systems.HoverboardController).start()
         require(script.Systems.StarterPetController).start()
         require(script.Systems.FoundersChoiceController).start()
         require(script.Systems.TutorialController).start()
@@ -557,6 +593,24 @@ do
     end)
     if not ok then
         Logger:Warn("Failed to start CurrencyStyle", { error = tostring(err) })
+    end
+end
+
+do
+    local ok, err = pcall(function()
+        require(script.Systems.BlockLetterRainbow).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start BlockLetterRainbow", { error = tostring(err) })
+    end
+end
+
+do
+    local ok, err = pcall(function()
+        require(script.Systems.AwardPodium).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start AwardPodium", { error = tostring(err) })
     end
 end
 
@@ -758,9 +812,26 @@ local function updateZoneTravelPrompt(prompt)
 
     local targetAreaId = prompt:GetAttribute("TargetAreaId")
     local requiresUnlockPrompt = prompt:GetAttribute("RequiresUnlockPrompt") == true
-    prompt.Enabled = requiresUnlockPrompt
-        and type(targetAreaId) == "string"
-        and unlockedAreas[targetAreaId] ~= true
+    local alwaysPrompt = prompt:GetAttribute("AlwaysPrompt") == true
+    local unlocked = type(targetAreaId) == "string" and unlockedAreas[targetAreaId] == true
+    local host = prompt.Parent
+    if host and host:IsA("Attachment") then
+        host = host.Parent
+    end
+    -- Hall barriers keep ForcePrompt so they never silent-touch while locked.
+    -- After unlock the wall is already gone; leave the lock proxy up and it
+    -- still says "Unlock 750 hall_coins" in an open corridor.
+    if unlocked and host and CollectionService:HasTag(host, "HallGate") then
+        prompt.Enabled = false
+        return
+    end
+    if host and host:GetAttribute("CrystalWorldReturn") == true then
+        local entered = localPlayer:GetAttribute(ENTERED_CRYSTAL_WORLD_ATTRIBUTE) == true
+        prompt.ActionText = entered and "Travel" or "Finish the Hall"
+        prompt.Enabled = true
+        return
+    end
+    prompt.Enabled = alwaysPrompt or (requiresUnlockPrompt and not unlocked)
 end
 
 local function updateAllZoneTravelPrompts()
@@ -784,7 +855,7 @@ local function watchZoneTravelPrompt(prompt)
     local connections = {}
     watchedPrompts[prompt] = connections
 
-    for _, attributeName in ipairs({ "TargetAreaId", "RequiresUnlockPrompt" }) do
+    for _, attributeName in ipairs({ "TargetAreaId", "RequiresUnlockPrompt", "AlwaysPrompt" }) do
         table.insert(
             connections,
             prompt:GetAttributeChangedSignal(attributeName):Connect(function()
@@ -825,6 +896,9 @@ end
 
 localPlayer:GetAttributeChangedSignal(UNLOCKED_AREAS_ATTRIBUTE):Connect(function()
     refreshUnlockedAreas()
+    updateAllZoneTravelPrompts()
+end)
+localPlayer:GetAttributeChangedSignal(ENTERED_CRYSTAL_WORLD_ATTRIBUTE):Connect(function()
     updateAllZoneTravelPrompts()
 end)
 
@@ -941,6 +1015,18 @@ Signals.PotionShopOpened.OnClientEvent:Connect(function(data)
     end
     menuManager:OpenPotionShopPanel("bounce_in")
 end)
+Signals.HoverboardShopOpened.OnClientEvent:Connect(function(data)
+    local menuManager = _G.MenuManager
+    local panel = menuManager and menuManager:GetPanel("HoverboardShop")
+    if not (menuManager and panel) then
+        showNotice("Hoverboard shop is still loading. Try again.", true)
+        return
+    end
+    if panel.SetShopContext then
+        panel:SetShopContext(data)
+    end
+    menuManager:OpenHoverboardShopPanel("bounce_in")
+end)
 Signals.EnchantPetResult.OnClientEvent:Connect(function(data)
     if _G.MenuManager then
         local enchantPanel = _G.MenuManager:GetPanel("Enchant")
@@ -1037,6 +1123,13 @@ local function applyWalkSpeed()
     local char = localPlayer.Character
     local humanoid = char and char:FindFirstChildOfClass("Humanoid")
     if humanoid then
+        if localPlayer:GetAttribute("HoverboardMounted") == true then
+            local mounted = tonumber(localPlayer:GetAttribute("HoverboardWalkSpeed"))
+            if mounted then
+                humanoid.WalkSpeed = mounted
+                return
+            end
+        end
         local mult = tonumber(localPlayer:GetAttribute("Eff_Speed")) or 1
         humanoid.WalkSpeed = gameConfig.WorldSettings.WalkSpeed * mult
     end
@@ -1076,6 +1169,8 @@ localPlayer.CharacterAdded:Connect(onCharacterAdded)
 -- (Eff_Speed covers grant/toggle AND expiry — the publisher schedules the
 -- expiry republish, so no client-side deadline math).
 localPlayer:GetAttributeChangedSignal("Eff_Speed"):Connect(applyWalkSpeed)
+localPlayer:GetAttributeChangedSignal("HoverboardMounted"):Connect(applyWalkSpeed)
+localPlayer:GetAttributeChangedSignal("HoverboardWalkSpeed"):Connect(applyWalkSpeed)
 
 -- Wait for data to load
 local function waitForDataLoaded()
@@ -1285,6 +1380,9 @@ do
         end)
         buildPanel("PotionShop", function()
             return require(script.UI.Menus.PotionShopPanel).new()
+        end)
+        buildPanel("HoverboardShop", function()
+            return require(script.UI.Menus.HoverboardShopPanel).new()
         end)
         buildPanel("Effects", function()
             return require(script.UI.Menus.EffectsPanel).new()

@@ -11,9 +11,9 @@
 ]]
 
 return {
-    -- v2 is the FTUE reorder boundary (guided auto-fill + explicit squad review). Historical raw
-    -- events/dashboard dates remain intact; new cohorts use this aligned ten-step definition.
-    version = 2,
+    -- v3 is the Resonance-before-combat FTUE boundary. Historical raw events/dashboard dates
+    -- remain intact; new cohorts use this aligned ten-step definition.
+    version = 3,
     onboarding = {
         enabled = true,
         steps = {
@@ -43,6 +43,25 @@ return {
                 match = { stepId = "build_squad" },
             },
             {
+                id = "tutorial_bind_power",
+                name = "Tutorial: Bind Resonance",
+                event = "tutorial_step_completed",
+                match = { stepId = "bind_power" },
+            },
+            {
+                id = "tutorial_cast_power",
+                name = "Tutorial: Cast Resonance",
+                event = "tutorial_step_completed",
+                match = { stepId = "cast_power" },
+            },
+            {
+                -- Stable live milestone ID retained even though this lesson now precedes combat.
+                id = "tutorial_completed",
+                name = "Tutorial: Enhance Resonance",
+                event = "tutorial_step_completed",
+                match = { stepId = "slot_power" },
+            },
+            {
                 id = "tutorial_first_fight",
                 name = "Tutorial: Win first fight",
                 event = "tutorial_step_completed",
@@ -56,27 +75,9 @@ return {
             },
             {
                 id = "tutorial_rally_call",
-                name = "Tutorial: Use Rally",
+                name = "Tutorial: Use Rally / Complete",
                 event = "tutorial_step_completed",
                 match = { stepId = "rally_call" },
-            },
-            {
-                id = "tutorial_bind_power",
-                name = "Tutorial: Bind Resonance",
-                event = "tutorial_step_completed",
-                match = { stepId = "bind_power" },
-            },
-            {
-                id = "tutorial_cast_power",
-                name = "Tutorial: Cast Resonance",
-                event = "tutorial_step_completed",
-                match = { stepId = "cast_power" },
-            },
-            {
-                id = "tutorial_completed",
-                name = "Tutorial complete",
-                event = "tutorial_step_completed",
-                match = { stepId = "slot_power" },
             },
             {
                 id = "first_quest_completed",
@@ -128,14 +129,8 @@ return {
         -- bucket; an admin read merges these 16 known keys.
         bucket_count = 16,
 
-        -- Quick launch reads exclude internal/test accounts before counters are incremented. Raw
-        -- RetentionEvents_v1 records remain available for forensic work.
-        excluded_name_prefixes = {
-            "colorado",
-            "waxillium",
-            "waxilium", -- Protect the spelling used by the older test-account family too.
-            "sploit",
-            "macros",
-        },
+        -- Quick launch reads exclude internal accounts before counters increment.
+        -- Colorado is ID-only (see configs/internal_accounts.lua); other families
+        -- may still use the prefixes listed there. Raw RetentionEvents_v1 stays.
     },
 }

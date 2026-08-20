@@ -83,6 +83,17 @@ function FloraService:_spawnAt(anchor, floraFolder)
         return false
     end
     local clone = template:Clone()
+    -- Same Meshy gotcha as breakables: TextureID is multiplied by BasePart.Color.
+    -- The prebake often stores the default gray (163,162,165), which flattens
+    -- a good albedo into the untextured-looking trees after a Models restore.
+    for _, descendant in ipairs(clone:GetDescendants()) do
+        if descendant:IsA("MeshPart") then
+            local tex = descendant.TextureID
+            if type(tex) == "string" and tex ~= "" and tex ~= "rbxassetid://0" then
+                descendant.Color = Color3.new(1, 1, 1)
+            end
+        end
+    end
     -- harvested exemplars carry UNRELIABLE pivots (some offset a full ±2000/
     -- ±4000-stud layer height from their geometry — the 2026-07-16 floating
     -- ice pines). ScaleTo scales ABOUT the pivot and PivotTo places the

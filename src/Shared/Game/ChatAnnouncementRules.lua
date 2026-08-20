@@ -54,6 +54,26 @@ local function colorHex(color)
     )
 end
 
+local function effectiveRarityId(result, petsConfig)
+    if result.huge == true or result.creator == true then
+        return "huge"
+    end
+    local rarityId = result.RarityId or result.rarityId
+    if rarityId == "creator" then
+        return "huge"
+    end
+    if rarityId then
+        return rarityId
+    end
+
+    -- Some inventory-held egg hatches intentionally return a compact payload with only the pet
+    -- id, variant, and Huge flag. Recover the normal effective rarity from the authoritative pet
+    -- family so an Exclusive cannot silently fall below the public-announcement threshold.
+    local petId = result.Pet or result.pet
+    local family = petsConfig and petsConfig.pets and petsConfig.pets[petId]
+    return family and (family.rarity_id or family.rarity or family.category)
+end
+
 local function petName(petsConfig, result)
     local petId = result.Pet or result.pet
     local variantId = result.Type or result.variant or "basic"
@@ -62,7 +82,7 @@ local function petName(petsConfig, result)
         boundedString(family and (family.display_name or family.name), boundedString(petId, "Pet"))
 
     local modifiers = {}
-    local rarityId = result.RarityId or result.rarityId
+    local rarityId = effectiveRarityId(result, petsConfig)
     if rarityId == "huge" or rarityId == "creator" then
         modifiers[#modifiers + 1] = "Huge"
     end
@@ -78,10 +98,7 @@ end
 function ChatAnnouncementRules.hatch(playerName, result, petsConfig, announcementConfig)
     result = result or {}
     local hatchConfig = announcementConfig and announcementConfig.hatch or {}
-    local rarityId = result.RarityId or result.rarityId
-    if rarityId == "creator" then
-        rarityId = "huge"
-    end
+    local rarityId = effectiveRarityId(result, petsConfig)
 
     local ranks = rankMap(petsConfig)
     local minimum = hatchConfig.minimum_rarity or "mythic"
@@ -103,7 +120,8 @@ function ChatAnnouncementRules.hatch(playerName, result, petsConfig, announcemen
     if isGlobal then
         text = ("🌎 HUGE HATCH! %s hatched a %s!"):format(displayName, hatchedPet)
     else
-        text = ("✨ %s hatched a %s %s!"):format(displayName, rarityName, hatchedPet)
+        local article = rarityName:match("^[AEIOUaeiou]") and "an" or "a"
+        text = ("✨ %s hatched %s %s %s!"):format(displayName, article, rarityName, hatchedPet)
     end
 
     return {

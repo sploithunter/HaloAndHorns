@@ -158,7 +158,7 @@ return function()
             expect(badges:find("MonetizationCatalog.ownedSet", 1, true)).to.be.ok()
             expect(badges:find("Signals.OwnedPasses.OnClientEvent", 1, true)).to.be.ok()
             expect(badges:find("Signals.GetOwnedPasses:FireServer()", 1, true)).to.be.ok()
-            expect(badges:find('permanent.Text = "∞"', 1, true)).to.be.ok()
+            expect(badges:find('permanent.Text = "∞"', 1, true)).never.to.be.ok()
         end)
 
         it("defaults creator benefits on and persists an explicit off gate", function()

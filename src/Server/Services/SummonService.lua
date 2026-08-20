@@ -236,6 +236,9 @@ end
 -- Summon a guardian for `kind` (the effect_kind: guardian/duration/revive/magnitude). Called by
 -- PowerService:_summonGuardian. Applies the immediate payoff + spawns the model + standing buffs.
 function SummonService:Summon(player, kind, now, powerId)
+    if player and player:GetAttribute("GauntletNoRevives") == true and kind and kind.revive then
+        return
+    end
     local gkind = kind.guardian
     local gcfg = gkind and self._config[gkind]
     if not gcfg then

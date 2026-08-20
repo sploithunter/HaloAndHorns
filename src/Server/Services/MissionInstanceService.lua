@@ -12,8 +12,11 @@
 
     Determinism: seed = MissionSeed.seed(missionId, contextKey, worldgen_version)
     with contextKey from the mission's seed_policy; the layout runs on
-    stream(seed, "layout"). The resolved seed is stamped on the container so
-    any map a player saw can be regenerated exactly.
+    stream(seed, "layout"). Gauntlet missions ignore player/attempt salt and
+    use ChallengeRun.layoutContext(room, mode) so everyone's Room N is the
+    same map (Training Ground uses `train#N`); advancing restamps that
+    room at the same slot. The resolved seed is
+    stamped on the container so any map a player saw can be regenerated exactly.
 
     Population (CoH model): a seeded STATIC population is fielded at the
     kit's MissionSpawn anchors once at stamp time — no proximity waves, no
@@ -33,6 +36,8 @@ local HttpService = game:GetService("HttpService")
 local MissionSeed = require(ReplicatedStorage.Shared.Worldgen.MissionSeed)
 local MissionPopulation = require(ReplicatedStorage.Shared.Worldgen.MissionPopulation)
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
+local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
+local PetLockout = require(ReplicatedStorage.Shared.Game.PetLockout)
 local MissionDecor = require(ReplicatedStorage.Shared.Worldgen.MissionDecor)
 local TileCatalog = require(ReplicatedStorage.Shared.Worldgen.TileCatalog)
 local LayoutSolver = require(ReplicatedStorage.Shared.Worldgen.LayoutSolver)
@@ -95,6 +100,10 @@ function MissionInstanceService:Init()
         return configLoader:LoadConfig("enemies")
     end)
     self._enemiesConfig = (okE and type(enemies) == "table") and enemies or nil
+    local okC, challenge = pcall(function()
+        return configLoader:LoadConfig("challenge_runs")
+    end)
+    self._challengeConfig = (okC and type(challenge) == "table") and challenge or nil
 end
 
 function MissionInstanceService:BindPeerServices(services)
@@ -108,6 +117,12 @@ function MissionInstanceService:BindPeerServices(services)
     self._dropService = services.DropService
     self._eventService = services.EventService
     self._enhancementService = services.EnhancementService
+    self._npcPrincipalService = services.NpcPrincipalService
+    self._hotbarService = services.HotbarService
+    self._powerService = services.PowerService
+    self._playerProgressionService = services.PlayerProgressionService
+    self._leaderboardService = services.LeaderboardService
+    self._petFollowService = services.PetFollowService
 end
 
 function MissionInstanceService:_cancelStream(player)
@@ -123,6 +138,11 @@ end
 function MissionInstanceService:Start()
     if not self._config then
         return
+    end
+    if Signals.ChallengeRun_Start then
+        Signals.ChallengeRun_Start.OnServerEvent:Connect(function(player, request)
+            self:StartChallengeRun(player, request)
+        end)
     end
     Signals.MissionStreamReady.OnServerEvent:Connect(function(player, response)
         if type(response) ~= "table" or type(response.token) ~= "string" then
@@ -140,7 +160,7 @@ function MissionInstanceService:Start()
         pending.signal:Fire()
     end)
     Players.PlayerRemoving:Connect(function(player)
-        self:_cancelStream(player)
+        self:_onPlayerLeaving(player)
     end)
     -- CandleStand self-heal: re-assert the flame truth table against
     -- whatever the MissionProps rbxm shipped (see CANDLE_FLAME_POINTS).
@@ -221,6 +241,11 @@ local function teamKeyFor(player)
     return "solo:" .. player.UserId
 end
 
+local function isTeamed(player)
+    local teamId = player:GetAttribute("TeamId")
+    return teamId ~= nil and teamId ~= ""
+end
+
 local function membersOf(teamKey)
     local prefix, id = teamKey:match("^(%w+):(.+)$")
     if prefix == "solo" then
@@ -234,6 +259,100 @@ local function membersOf(teamKey)
         end
     end
     return members
+end
+
+-- Players still on this server who belong to the instance. `except` is the
+-- leaver (PlayerRemoving still lists them in Players).
+function MissionInstanceService:_livingMembers(record, except)
+    local seen = {}
+    local live = {}
+    local function add(player)
+        if player and player ~= except and player.Parent and not seen[player] then
+            seen[player] = true
+            table.insert(live, player)
+        end
+    end
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        add(member)
+    end
+    for _, player in ipairs(Players:GetPlayers()) do
+        if record.instanceId and player:GetAttribute("InMission") == record.instanceId then
+            add(player)
+        end
+    end
+    return live
+end
+
+function MissionInstanceService:_clearMemberMissionState(member, record)
+    member:SetAttribute("MissionObjectiveText", nil)
+    member:SetAttribute("MissionObjectiveCount", nil)
+    member:SetAttribute("MissionObjectiveFraction", nil)
+    member:SetAttribute("MissionMapData", nil)
+    member:SetAttribute("InMission", nil)
+    member:SetAttribute("MissionTheme", nil)
+    member:SetAttribute("MissionArea", nil)
+    member:SetAttribute("MissionAggressionPolicy", nil)
+    member:SetAttribute("MissionSequence", nil)
+    pcall(function()
+        self._layerService:RefreshRealmAttributes(member)
+    end)
+    member:SetAttribute("MissionEnemyPings", nil)
+    if record and record.gauntlet then
+        pcall(function()
+            local data = self._dataService and self._dataService:GetData(member)
+            if data then
+                data.PetLockouts = PetLockout.endGauntletSlotLocks(data.PetLockouts, os.time(), 60)
+            end
+        end)
+    end
+    member:SetAttribute("GauntletNoRevives", nil)
+    member:SetAttribute("GauntletMode", nil)
+    member:SetAttribute("GauntletRoom", nil)
+    member:SetAttribute("ChallengePowers", nil)
+    member:SetAttribute("ChallengeOrigin", nil)
+    pcall(function()
+        self:_applyChallengeLevel(member, nil)
+    end)
+    local zoom = record and record.savedZoom and record.savedZoom[member.UserId]
+    if zoom then
+        member.CameraMaxZoomDistance = zoom
+    end
+end
+
+-- Free the enter gate immediately so a mid-teardown error cannot stick E.
+function MissionInstanceService:_releaseEnterGate(record)
+    if record.slotIndex and self._slots[record.slotIndex] == record.instanceId then
+        self._slots[record.slotIndex] = nil
+    end
+    if record.teamKey and self._byTeam[record.teamKey] == record.instanceId then
+        self._byTeam[record.teamKey] = nil
+    end
+end
+
+function MissionInstanceService:_sweepOrphans()
+    for instanceId, record in pairs(self._instances) do
+        if not record.closing and #self:_livingMembers(record) == 0 then
+            self:_log("Warn", "orphan mission abandoned", { instanceId = instanceId })
+            self:_close(instanceId, "orphan")
+        end
+    end
+end
+
+function MissionInstanceService:_onPlayerLeaving(player)
+    self:_cancelStream(player)
+    local instanceId = player:GetAttribute("InMission")
+    if type(instanceId) ~= "string" or instanceId == "" then
+        instanceId = self._byTeam[teamKeyFor(player)]
+    end
+    local record = instanceId and self._instances[instanceId]
+    if record then
+        if #self:_livingMembers(record, player) == 0 then
+            self:_close(instanceId, "disconnect")
+        else
+            self:_clearMemberMissionState(player, record)
+        end
+    end
+    self:_sweepOrphans()
 end
 
 -- ---- kit / catalog cache ---------------------------------------------------
@@ -345,13 +464,27 @@ function MissionInstanceService:Open(player, missionId, opts)
 
     local teamKey = teamKeyFor(player)
     if self._byTeam[teamKey] then
-        return nil, "team already has an active mission"
+        local existing = self._byTeam[teamKey]
+        local rec = existing and self._instances[existing]
+        if not rec or rec.closing then
+            self._byTeam[teamKey] = nil
+        elseif #self:_livingMembers(rec) == 0 then
+            self:_close(existing, "orphan")
+        else
+            fireGameEvent(player, "mission_enter_blocked", { reason = "team_busy" })
+            return nil, "team already has an active mission"
+        end
+    end
+    if ChallengeRun.soloOnly(self:_challengeModeCfg(mission)) and isTeamed(player) then
+        self:_rejectRangeTeam(player)
+        return nil, "range_solo_required"
     end
     local live = 0
     for _ in pairs(self._instances) do
         live += 1
     end
     if live >= (self._config.limits.global or 6) then
+        fireGameEvent(player, "mission_enter_blocked", { reason = "server_full" })
         return nil, "server mission capacity reached"
     end
 
@@ -364,6 +497,7 @@ function MissionInstanceService:Open(player, missionId, opts)
         end
     end
     if not slotIndex then
+        fireGameEvent(player, "mission_enter_blocked", { reason = "no_slot" })
         return nil, "no free mission slot"
     end
     local slots = self._config.slots
@@ -372,7 +506,15 @@ function MissionInstanceService:Open(player, missionId, opts)
     -- seed (docs §3)
     local contextKey
     local sequenceN
-    if mission.seed_policy == "team_stable" then
+    local gauntletInputs
+    if mission.gauntlet or mission.seed_policy == "gauntlet_room" then
+        -- Fair ranking: Room N is the same map for everyone. No player,
+        -- attempt, or session salt. Do not use shared_sequence — that
+        -- advances MissionSeq and is the Trials ladder. Early rooms may
+        -- override tile_budget to a single chamber.
+        gauntletInputs = self:_gauntletSolveInputs(mission, opts.roomIndex or 1)
+        contextKey = gauntletInputs.contextKey
+    elseif mission.seed_policy == "team_stable" then
         contextKey = teamKey
     elseif mission.seed_policy == "shared_sequence" and opts.sequence then
         -- REPLAY: only numbers you've already reached (no peeking ahead at
@@ -427,7 +569,8 @@ function MissionInstanceService:Open(player, missionId, opts)
     if not catalog then
         return nil, kitErr
     end
-    local params = mergedParams(self._config.solver_defaults, mission.solver_overrides)
+    local params = gauntletInputs and gauntletInputs.params
+        or mergedParams(self._config.solver_defaults, mission.solver_overrides)
     local spec, report = LayoutSolver.solve(catalog, params, layoutSeed)
     if not spec then
         return nil, "layout failed: " .. tostring(report and report.error)
@@ -450,6 +593,9 @@ function MissionInstanceService:Open(player, missionId, opts)
     if sequenceN then
         container:SetAttribute("MissionSequence", sequenceN)
     end
+    if mission.gauntlet then
+        container:SetAttribute("GauntletRoom", 1)
+    end
 
     -- teleport the party in, remembering where each member stood
     local spawnPad = hooks.PlayerSpawn and hooks.PlayerSpawn[1]
@@ -457,22 +603,7 @@ function MissionInstanceService:Open(player, missionId, opts)
     -- exit prompt on the entrance pad (CoH: you leave through the door you
     -- came in). Lives inside the container, so teardown removes it. Only the
     -- instance's own team can trigger it.
-    if spawnPad then
-        local exitPrompt = Instance.new("ProximityPrompt")
-        exitPrompt.GamepadKeyCode = Enum.KeyCode.ButtonX
-        exitPrompt.Name = "MissionExitPrompt"
-        exitPrompt.ActionText = "Leave Mission"
-        exitPrompt.ObjectText = mission.display or missionId
-        exitPrompt.HoldDuration = 0.25
-        exitPrompt.MaxActivationDistance = 10
-        exitPrompt.RequiresLineOfSight = false
-        exitPrompt.Parent = spawnPad
-        exitPrompt.Triggered:Connect(function(who)
-            if teamKeyFor(who) == teamKey then
-                self:Abandon(instanceId)
-            end
-        end)
-    end
+    self:_attachExitPrompt(spawnPad, mission, teamKey, instanceId)
     local returnCFrames = {}
     local savedZoom = {}
     local missionAggressionPolicy = mission.aggression_policy
@@ -529,6 +660,11 @@ function MissionInstanceService:Open(player, missionId, opts)
                 savedZoom[member.UserId] = member.CameraMaxZoomDistance
                 member.CameraMaxZoomDistance = cameraMaxZoom
             end
+            if mission.gauntlet then
+                member:SetAttribute("GauntletNoRevives", true)
+                member:SetAttribute("GauntletMode", mission.gauntlet.mode or missionId)
+                member:SetAttribute("GauntletRoom", 1)
+            end
         end
     end
 
@@ -550,6 +686,9 @@ function MissionInstanceService:Open(player, missionId, opts)
         crates = {}, -- farmable mission debris (die with the mission)
         openerLevel = player:GetAttribute("Level") or 1,
         createdAt = os.clock(),
+        catalogPets = type(opts.catalogPets) == "table" and opts.catalogPets or nil,
+        catalogPowers = type(opts.catalogPowers) == "table" and opts.catalogPowers or nil,
+        catalogOrigin = type(opts.catalogOrigin) == "string" and opts.catalogOrigin or nil,
         boundsMin = Vector3.new(
             slotPos.X + spec.bbox.minx - 20,
             slotPos.Y - 50,
@@ -564,24 +703,21 @@ function MissionInstanceService:Open(player, missionId, opts)
     self._instances[instanceId] = record
     self._slots[slotIndex] = instanceId
     self._byTeam[teamKey] = instanceId
+    self:_prepareGauntlet(record, mission, player, spawnPad)
 
     -- Build the shared pure room payload BEFORE population. MissionSpawn anchors, enemy movement
     -- bounds, minimap, dressing, and treasure must all resolve against this one layout result.
     local mapTable = LayoutSolver.mapData(catalog, spec)
     mapTable.ox = slotOrigin.Position.X
     mapTable.oz = slotOrigin.Position.Z
+    record.mapTable = mapTable
 
     -- STATIC population (CoH model): field a seeded, fixed pack at every
     -- MissionSpawn anchor, once. No proximity waves, no respawn — the
     -- homeworld BaddieSpawner system never runs inside missions.
     record.enemies = {}
     do
-        local points = {}
-        for _, desc in ipairs(container:GetDescendants()) do
-            if desc.Name == "MissionSpawn" and desc:IsA("BasePart") then
-                table.insert(points, desc)
-            end
-        end
+        local points = self:_missionSpawnPoints(container, record.gauntletCurve)
         local objectivePointIndex
         for i, point in ipairs(points) do
             if point:GetAttribute("ObjectiveRoom") then
@@ -595,10 +731,17 @@ function MissionInstanceService:Open(player, missionId, opts)
         local ts = self._config.team_scaling or {}
         local teamSize = #membersOf(teamKey)
         local groupCfg = (self._config.player_tuning or {}).group_scale or {}
-        local groupScale =
-            PackScale.sanitizeMultiplier(player:GetAttribute("TrialGroupScale"), groupCfg)
-        local teamMult = PackScale.teamMultiplier(teamSize, ts)
+        -- Gauntlet ranking ignores the Trials density slider: everyone enters at 1.0.
+        local groupScale = 1
+        if not record.gauntlet then
+            groupScale =
+                PackScale.sanitizeMultiplier(player:GetAttribute("TrialGroupScale"), groupCfg)
+        end
+        local teamMult = record.gauntlet and 1 or PackScale.teamMultiplier(teamSize, ts)
         local countMult = groupScale * teamMult
+        if record.gauntletCurve then
+            countMult = countMult * (tonumber(record.gauntletCurve.count_mult) or 1)
+        end
         container:SetAttribute("TrialGroupScale", groupScale)
         container:SetAttribute("TrialTeamScale", teamMult)
         record.groupScale = groupScale
@@ -607,22 +750,27 @@ function MissionInstanceService:Open(player, missionId, opts)
         -- BOSS LADDER (Jason 2026-07-13): the slider's top half buys extra
         -- bosses — budget = max(0, scale - offset). Team scaling deliberately
         -- does NOT feed the budget (a full team at 100% still sees one boss;
-        -- only the deliberate difficulty choice does).
+        -- only the deliberate difficulty choice does). Gauntlets do not use it.
         local bossBudgetCfg = (self._config.player_tuning or {}).boss_budget
         local extraBossBudget = 0
         local villainChance = 0
-        if bossBudgetCfg then
+        if bossBudgetCfg and not record.gauntlet then
             extraBossBudget = math.max(0, groupScale - (tonumber(bossBudgetCfg.offset) or 0.75))
             local villainCfg = bossBudgetCfg.villain
             if villainCfg and groupScale >= (tonumber(villainCfg.at) or 2) then
                 villainChance = tonumber(villainCfg.chance) or 0
             end
         end
-        local comp, popMeta = MissionPopulation.roll(
-            mission.packs or {},
-            #points,
-            MissionSeed.stream(seed, "spawns"),
-            {
+        local spawnPhase = record.gauntlet and ("spawns_r" .. tostring(record.room_index or 1))
+            or "spawns"
+        local packs = mission.packs or {}
+        if record.gauntletCurve then
+            packs = ChallengeRun.filterPacks(packs, record.gauntletCurve)
+        end
+        local forceBoss = objectivePointIndex
+            and (not record.gauntletCurve or record.gauntletCurve.add_boss == true)
+        local comp, popMeta =
+            MissionPopulation.roll(packs, #points, MissionSeed.stream(seed, spawnPhase), {
                 extraBossBudget = extraBossBudget,
                 villainChance = villainChance,
                 -- villain tier mapping: pet-model boss rank → titan (the
@@ -648,7 +796,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                 -- CoH rule (Jason's boss-less lava run): the OBJECTIVE room's
                 -- point always rolls a boss-marked pack — the boss guards the
                 -- glowy; weight-3 luck can no longer produce a boss-less map
-                bossPointIndex = objectivePointIndex,
+                bossPointIndex = forceBoss and objectivePointIndex or nil,
                 bossOnlyAtObjective = (self._config.population or {}).boss_only_at_objective,
                 countMult = countMult,
                 scalesUnit = function(unit)
@@ -661,8 +809,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                     end
                     return true
                 end,
-            }
-        )
+            })
         if popMeta and (popMeta.extraBosses or 0) > 0 then
             container:SetAttribute("TrialExtraBosses", popMeta.extraBosses)
             container:SetAttribute("TrialVillain", popMeta.villain == true)
@@ -673,7 +820,9 @@ function MissionInstanceService:Open(player, missionId, opts)
                 villain = popMeta.villain,
             })
         end
-        local posRng = MissionSeed.mulberry32(MissionSeed.stream(seed, "spawnpos"))
+        local posPhase = record.gauntlet and ("spawnpos_r" .. tostring(record.room_index or 1))
+            or "spawnpos"
+        local posRng = MissionSeed.mulberry32(MissionSeed.stream(seed, posPhase))
         local SCATTER = 14 -- studs around the anchor (rooms are 96+ wide at 6x scale)
         local enemySvc
         pcall(function()
@@ -795,6 +944,15 @@ function MissionInstanceService:Open(player, missionId, opts)
                                 synthDef.exclusive_egg = self:_eggForTier(mission, "archvillain")
                             end
                         end
+                        if synthDef and record.gauntletCurve then
+                            synthDef = self:_scaleGauntletDef(synthDef, record.gauntletCurve)
+                        elseif record.gauntletCurve and type(entry) ~= "table" then
+                            local base = synthDef
+                                or (enemyDefs[enemyId] and table.clone(enemyDefs[enemyId]))
+                            if base then
+                                synthDef = self:_scaleGauntletDef(base, record.gauntletCurve)
+                            end
+                        end
                         if type(entry) == "table" and not synthDef then
                             -- config gate (MissionSchema) makes this unreachable
                             -- for typos; if it fires, something deeper broke —
@@ -831,6 +989,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                             encounterGroup = point,
                             dormant = true, -- no birth aggro: engage when the team arrives
                             persistent = true, -- never idle-despawn: defeat or teardown only
+                            ignoreEnemyLevelOffset = record.gauntlet == true,
                         })
                         if r and r.ok and r.model then
                             table.insert(record.enemies, r.model)
@@ -949,6 +1108,9 @@ function MissionInstanceService:Open(player, missionId, opts)
         -- the shared-sequence number IS the shared experience — put it in
         -- the tracker so players can talk about "Trial #28"
         local seqTag = record.sequence and ("Trial #" .. record.sequence .. " — ") or ""
+        if record.gauntlet then
+            seqTag = ("Room %d — "):format(record.room_index or 1)
+        end
         if gated and total > 0 then
             publish(seqTag .. clearText, ("0/%d"):format(total), 0)
         else
@@ -958,42 +1120,55 @@ function MissionInstanceService:Open(player, missionId, opts)
         -- COMPLETE = press/hold E at the ACTIVE beacon (Jason: "instead of
         -- just passing out... same E functionality — works on mobile"). The
         -- prompt exists disabled; the monitor enables it at activation.
-        local beaconPrompts = {}
-        for _, beacon in ipairs(beacons) do
-            local bp = Instance.new("ProximityPrompt")
-            bp.GamepadKeyCode = Enum.KeyCode.ButtonX
-            bp.Name = "MissionCompletePrompt"
-            bp.ActionText = "Complete Mission"
-            bp.ObjectText = mission.display or missionId
-            bp.HoldDuration = 0.5
-            bp.MaxActivationDistance = 12
-            bp.RequiresLineOfSight = false
-            bp.Enabled = not gated -- reach_beacon variant: live immediately
-            bp.Parent = beacon
-            table.insert(beaconPrompts, bp)
-            bp.Triggered:Connect(function(who)
-                if teamKeyFor(who) ~= teamKey then
-                    return
-                end
-                if gated and beacon:GetAttribute("ObjectiveActive") ~= true then
-                    return
-                end
-                -- completion fanfare (reward TBD — the hook is this event)
-                for _, member in ipairs(membersOf(teamKey)) do
-                    fireGameEvent(member, "mission_complete", {
-                        mission = missionId,
-                        sequence = record.sequence,
-                        name = ("%s complete!"):format(mission.display or missionId),
-                    })
-                end
-                self:Complete(instanceId)
-            end)
-        end
+        local beaconPrompts = self:_attachBeaconPrompts(record, mission, beacons, gated)
 
         record.monitor = task.spawn(function()
             local cleared = not gated or #watched == 0
             local lastDown = -1
+            local lastRoom = record.room_index
             while self._instances[instanceId] do
+                if record.layoutSwap then
+                    task.wait(0.5)
+                    continue
+                end
+                if record.gauntlet and record.room_index ~= lastRoom then
+                    lastRoom = record.room_index
+                    beacons = (record.hooks and record.hooks.MissionObjective) or {}
+                    beaconPrompts = {}
+                    for _, beacon in ipairs(beacons) do
+                        local bp = beacon:FindFirstChild("MissionCompletePrompt")
+                        if bp then
+                            table.insert(beaconPrompts, bp)
+                        end
+                    end
+                    watched = record.enemies
+                    total = #watched
+                    cleared = not gated or total == 0
+                    lastDown = -1
+                    seqTag = ("Room %d — "):format(record.room_index or 1)
+                    if gated then
+                        for _, beacon in ipairs(beacons) do
+                            if beacon.Parent then
+                                beacon:SetAttribute("ObjectiveActive", false)
+                                beacon.Color = INERT_COLOR
+                                beacon.Transparency = 0.5
+                            end
+                        end
+                        for _, bp in ipairs(beaconPrompts) do
+                            if bp.Parent then
+                                bp.Enabled = false
+                                if record.room_index >= (record.gauntletRooms or 99) then
+                                    bp.ActionText = "Finish Run"
+                                else
+                                    bp.ActionText = "Next Room"
+                                end
+                            end
+                        end
+                        if total > 0 then
+                            publish(seqTag .. clearText, ("0/%d"):format(total), 0)
+                        end
+                    end
+                end
                 if not cleared then
                     local alive = 0
                     for _, model in ipairs(watched) do
@@ -1063,6 +1238,9 @@ function MissionInstanceService:Open(player, missionId, opts)
                 task.wait(0.5)
             end
         end)
+        if record.gauntlet then
+            self:_watchGauntletWipe(record)
+        end
     end
 
     self:_log("Info", "opened", {
@@ -1152,10 +1330,28 @@ function MissionInstanceService:_close(instanceId, reason)
     if not record then
         return false, "unknown instance " .. tostring(instanceId)
     end
+    if record.closing then
+        return true
+    end
+    record.closing = true
+    -- Leave = leave. Drop the enter gate before teardown so a restore error
+    -- or a crash mid-warp cannot keep E dead on the next door.
+    self:_releaseEnterGate(record)
 
     -- stop the objective monitor (unless we're being called FROM it)
     if record.monitor and record.monitor ~= coroutine.running() then
         pcall(task.cancel, record.monitor)
+    end
+    if record.wipeWatch and record.wipeWatch ~= coroutine.running() then
+        pcall(task.cancel, record.wipeWatch)
+    end
+    if record.gauntlet then
+        pcall(function()
+            self:_persistChallengeBest(record)
+        end)
+        pcall(function()
+            self:_restoreGauntletLoadouts(record)
+        end)
     end
 
     -- COMPLETION counters (quest ladder substrate): every team member's
@@ -1280,23 +1476,7 @@ function MissionInstanceService:_close(instanceId, reason)
                 warping -= 1
             end)
         end
-        member:SetAttribute("MissionObjectiveText", nil)
-        member:SetAttribute("MissionObjectiveCount", nil)
-        member:SetAttribute("MissionObjectiveFraction", nil)
-        member:SetAttribute("MissionMapData", nil)
-        member:SetAttribute("InMission", nil)
-        member:SetAttribute("MissionTheme", nil)
-        member:SetAttribute("MissionArea", nil)
-        member:SetAttribute("MissionAggressionPolicy", nil)
-        member:SetAttribute("MissionSequence", nil)
-        pcall(function() -- restore layer-derived CurrentRealm (theme override ends)
-            self._layerService:RefreshRealmAttributes(member)
-        end)
-        member:SetAttribute("MissionEnemyPings", nil)
-        local zoom = record.savedZoom and record.savedZoom[member.UserId]
-        if zoom then
-            member.CameraMaxZoomDistance = zoom
-        end
+        self:_clearMemberMissionState(member, record)
     end
 
     -- enemies born inside the mission die with it — never loiter at the slot
@@ -1326,12 +1506,842 @@ function MissionInstanceService:_close(instanceId, reason)
         task.wait(0.1)
     end
 
-    record.container:Destroy()
-    self._slots[record.slotIndex] = nil
-    self._byTeam[record.teamKey] = nil
+    pcall(function()
+        if record.container then
+            record.container:Destroy()
+        end
+    end)
     self._instances[instanceId] = nil
     self:_log("Info", "closed", { instanceId = instanceId, reason = reason })
     return true
+end
+
+function MissionInstanceService:_challengeModeCfg(mission)
+    local mode = mission and mission.gauntlet and mission.gauntlet.mode
+    return mode
+        and self._challengeConfig
+        and self._challengeConfig.modes
+        and self._challengeConfig.modes[mode]
+end
+
+function MissionInstanceService:_rejectRangeTeam(player)
+    fireGameEvent(player, "range_solo_required", { reason = "teamed" })
+end
+
+function MissionInstanceService:_rangeDefaults(player, catalog)
+    local raw
+    pcall(function()
+        local data = self._dataService and self._dataService:GetData(player)
+        raw = data and data.GameData and data.GameData.RangeDefaults
+    end)
+    return ChallengeRun.readRangeDefaults(raw, catalog)
+end
+
+function MissionInstanceService:_persistRangeDefaults(player, catalog, draft)
+    local dataSvc = self._dataService
+    local data = dataSvc and dataSvc:GetData(player)
+    if not data then
+        return
+    end
+    data.GameData = data.GameData or {}
+    -- Written only when a kit exists — never a ProfileStore template field.
+    data.GameData.RangeDefaults =
+        ChallengeRun.writeRangeDefaults(data.GameData.RangeDefaults, catalog, draft)
+    dataSvc:RequestSave(player, "range_defaults")
+end
+
+function MissionInstanceService:StartChallengeRun(player, request)
+    if type(request) ~= "table" then
+        return nil, "invalid request"
+    end
+    local missionId = request.missionId or request.mission
+    local mission = missionId and self._config and self._config.missions[missionId]
+    if not (mission and mission.gauntlet) then
+        return nil, "unknown challenge"
+    end
+    local mode = mission.gauntlet.mode or missionId
+    local modeCfg = self._challengeConfig
+        and self._challengeConfig.modes
+        and self._challengeConfig.modes[mode]
+    if ChallengeRun.soloOnly(modeCfg) and isTeamed(player) then
+        self:_rejectRangeTeam(player)
+        return nil, "range_solo_required"
+    end
+    local origin = ChallengeRun.canonicalOrigin(
+        request.origin,
+        ChallengeRun.knownOrigins(modeCfg and modeCfg.catalog)
+    )
+    if modeCfg and modeCfg.loadout == "catalog" and not origin then
+        return nil, "range_origin_required"
+    end
+    local loadout =
+        ChallengeRun.sanitizeLoadout(modeCfg and modeCfg.catalog, request.pets, request.powers)
+    if modeCfg and modeCfg.loadout == "catalog" then
+        self:_persistRangeDefaults(player, modeCfg.catalog, {
+            origin = origin,
+            pets = loadout.pets,
+            powers = loadout.powers,
+        })
+    end
+    local instanceId, err = self:Open(player, missionId, {
+        catalogPets = loadout.pets,
+        catalogPowers = loadout.powers,
+        catalogOrigin = origin,
+    })
+    if not instanceId then
+        self:_log("Info", "challenge start rejected", { player = player.Name, err = err })
+    end
+    return instanceId, err
+end
+
+function MissionInstanceService:_applyChallengeLevel(player, pin)
+    if type(pin) == "number" and pin >= 1 then
+        player:SetAttribute("ChallengeLevel", pin)
+    else
+        player:SetAttribute("ChallengeLevel", nil)
+    end
+    local prog = self._playerProgressionService
+    if prog and prog.RefreshPublishedState then
+        prog:RefreshPublishedState(player)
+    elseif type(pin) == "number" and pin >= 1 then
+        player:SetAttribute("EffectiveLevel", pin)
+    end
+end
+
+function MissionInstanceService:_gauntletSolveInputs(mission, roomIndex)
+    local mode = (mission.gauntlet and mission.gauntlet.mode) or mission.id
+    local modeCfg = self._challengeConfig
+        and self._challengeConfig.modes
+        and self._challengeConfig.modes[mode]
+    local pack = ChallengeRun.packForRoom(modeCfg and modeCfg.curve, roomIndex)
+    local params = mergedParams(self._config.solver_defaults, mission.solver_overrides)
+    params = mergedParams(params, ChallengeRun.solverOverrides(pack))
+    return {
+        mode = mode,
+        pack = pack,
+        params = params,
+        contextKey = ChallengeRun.layoutContext(roomIndex, mode),
+    }
+end
+
+function MissionInstanceService:_prepareGauntlet(record, mission, player, spawnPad)
+    if not (mission and mission.gauntlet) then
+        return
+    end
+    local mode = mission.gauntlet.mode or record.missionId
+    local modeCfg = self._challengeConfig
+        and self._challengeConfig.modes
+        and self._challengeConfig.modes[mode]
+    record.gauntlet = true
+    record.gauntletMode = mode
+    record.gauntletRooms = tonumber(mission.gauntlet.rooms)
+        or tonumber(modeCfg and modeCfg.curve and modeCfg.curve.rooms)
+        or 99
+    record.room_index = 1
+    record.cleared_room = 0
+    record.gauntletCurve = ChallengeRun.packForRoom(modeCfg and modeCfg.curve, 1)
+    record.gauntletLoadout = modeCfg and modeCfg.loadout or "own"
+    -- Pin combat level before catalog ghosts / ReapplyPassives so Accuracy,
+    -- pet realization, and loaned-power stamps all see the rank level.
+    local pin = ChallengeRun.effectiveLevel(modeCfg)
+    record.challengeLevel = pin
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        self:_applyChallengeLevel(member, pin)
+    end
+    if record.gauntletLoadout == "catalog" then
+        local loadout = ChallengeRun.sanitizeLoadout(
+            modeCfg and modeCfg.catalog,
+            record.catalogPets,
+            record.catalogPowers
+        )
+        record.catalogPets = loadout.pets
+        record.catalogPowers = loadout.powers
+        record.catalogOrigin = ChallengeRun.canonicalOrigin(
+            record.catalogOrigin,
+            ChallengeRun.knownOrigins(modeCfg.catalog)
+        )
+        for _, member in ipairs(membersOf(record.teamKey)) do
+            self:_applyCatalogLoadout(member, record, spawnPad)
+        end
+    end
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        member:SetAttribute("GauntletRoom", 1)
+        member:SetAttribute("GauntletNoRevives", true)
+        member:SetAttribute("GauntletMode", mode)
+    end
+end
+
+function MissionInstanceService:_scaleGauntletDef(def, curve)
+    if type(def) ~= "table" or type(curve) ~= "table" then
+        return def
+    end
+    local out = table.clone(def)
+    out.hp = math.max(1, math.floor((tonumber(def.hp) or 1) * (tonumber(curve.hp_mult) or 1)))
+    if type(def.attack) == "table" then
+        out.attack = table.clone(def.attack)
+        out.attack.damage = math.max(
+            1,
+            math.floor((tonumber(def.attack.damage) or 0) * (tonumber(curve.dmg_mult) or 1))
+        )
+    end
+    return out
+end
+
+function MissionInstanceService:_challengeBestRoom(player, mode)
+    local best = 0
+    pcall(function()
+        local data = self._dataService and self._dataService:GetData(player)
+        local runs = data and data.GameData and data.GameData.ChallengeRuns
+        local rec = runs and runs[mode]
+        best = tonumber(rec and rec.best_room) or 0
+    end)
+    return best
+end
+
+function MissionInstanceService:_persistChallengeBest(record)
+    if not record.gauntlet then
+        return
+    end
+    local cleared = math.max(0, math.floor(tonumber(record.cleared_room) or 0))
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        pcall(function()
+            local dataSvc = self._dataService
+            local data = dataSvc and dataSvc:GetData(member)
+            if not data then
+                return
+            end
+            data.GameData = data.GameData or {}
+            -- Written only when a run exists — never a ProfileStore template field.
+            data.GameData.ChallengeRuns = data.GameData.ChallengeRuns or {}
+            local prev = data.GameData.ChallengeRuns[record.gauntletMode]
+            if type(prev) ~= "table" then
+                prev = {}
+            end
+            local window, cap = ChallengeRun.leaderboardWindow(self._challengeConfig)
+            local nextRec = ChallengeRun.writeWindowAttempt(prev, cleared, os.time(), {
+                window_seconds = window,
+                recent_cap = cap,
+            })
+            data.GameData.ChallengeRuns[record.gauntletMode] = nextRec
+            if nextRec.best_room ~= (tonumber(prev.best_room) or 0) or cleared > 0 then
+                dataSvc:RequestSave(member, "challenge_run")
+            end
+            local lbSvc = self._leaderboardService
+            if lbSvc and lbSvc.RefreshChallengeBoards and cleared > 0 then
+                lbSvc:RefreshChallengeBoards(member, true)
+            end
+        end)
+    end
+end
+
+function MissionInstanceService:_squadPets(record)
+    local pets = {}
+    local root = workspace:FindFirstChild("PlayerPets")
+    if not root then
+        return pets
+    end
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        local folder = root:FindFirstChild(member.Name)
+        if folder then
+            for _, model in ipairs(folder:GetChildren()) do
+                if model:IsA("Model") and model.PrimaryPart then
+                    table.insert(pets, {
+                        downed = model:GetAttribute("CombatDowned") == true,
+                    })
+                end
+            end
+        end
+    end
+    return pets
+end
+
+function MissionInstanceService:_watchGauntletWipe(record)
+    record.wipeWatch = task.spawn(function()
+        task.wait(2)
+        while self._instances[record.instanceId] and not record.closing do
+            if ChallengeRun.squadWiped(self:_squadPets(record)) then
+                for _, member in ipairs(membersOf(record.teamKey)) do
+                    fireGameEvent(member, "gauntlet_wipe", {
+                        mission = record.missionId,
+                        room = record.room_index,
+                        name = ("Wiped at room %d"):format(record.room_index or 1),
+                    })
+                end
+                self:_close(record.instanceId, "wipe")
+                return
+            end
+            task.wait(0.4)
+        end
+    end)
+end
+
+function MissionInstanceService:_attachExitPrompt(spawnPad, mission, teamKey, instanceId)
+    if not spawnPad then
+        return
+    end
+    local exitPrompt = Instance.new("ProximityPrompt")
+    exitPrompt.GamepadKeyCode = Enum.KeyCode.ButtonX
+    exitPrompt.Name = "MissionExitPrompt"
+    exitPrompt.ActionText = "Leave Mission"
+    exitPrompt.ObjectText = mission.display or instanceId
+    exitPrompt.HoldDuration = 0.25
+    exitPrompt.MaxActivationDistance = 10
+    exitPrompt.RequiresLineOfSight = false
+    exitPrompt.Parent = spawnPad
+    exitPrompt.Triggered:Connect(function(who)
+        if teamKeyFor(who) == teamKey or who:GetAttribute("InMission") == instanceId then
+            self:Abandon(instanceId)
+        end
+    end)
+end
+
+function MissionInstanceService:_attachBeaconPrompts(record, mission, beacons, gated)
+    local teamKey = record.teamKey
+    local instanceId = record.instanceId
+    local missionId = record.missionId
+    local prompts = {}
+    for _, beacon in ipairs(beacons) do
+        local existing = beacon:FindFirstChild("MissionCompletePrompt")
+        if existing then
+            existing:Destroy()
+        end
+        local bp = Instance.new("ProximityPrompt")
+        bp.GamepadKeyCode = Enum.KeyCode.ButtonX
+        bp.Name = "MissionCompletePrompt"
+        bp.ActionText = record.gauntlet and "Next Room" or "Complete Mission"
+        bp.ObjectText = mission.display or missionId
+        bp.HoldDuration = 0.5
+        bp.MaxActivationDistance = 12
+        bp.RequiresLineOfSight = false
+        bp.Enabled = not gated
+        bp.Parent = beacon
+        table.insert(prompts, bp)
+        bp.Triggered:Connect(function(who)
+            if teamKeyFor(who) ~= teamKey then
+                return
+            end
+            if gated and beacon:GetAttribute("ObjectiveActive") ~= true then
+                return
+            end
+            if record.gauntlet then
+                self:_advanceGauntlet(instanceId)
+                return
+            end
+            for _, member in ipairs(membersOf(teamKey)) do
+                fireGameEvent(member, "mission_complete", {
+                    mission = missionId,
+                    sequence = record.sequence,
+                    name = ("%s complete!"):format(mission.display or missionId),
+                })
+            end
+            self:Complete(instanceId)
+        end)
+    end
+    return prompts
+end
+
+function MissionInstanceService:_restampGauntlet(record, roomIndex)
+    local mission = self._config.missions[record.missionId]
+    if not (mission and mission.gauntlet) then
+        return false
+    end
+    local slots = self._config.slots
+    local slotOrigin =
+        CFrame.new(slots.origin_x + (record.slotIndex - 1) * slots.spacing, slots.y or 0, 0)
+    local gauntletInputs = self:_gauntletSolveInputs(mission, roomIndex)
+    local contextKey = gauntletInputs.contextKey
+    local seed = MissionSeed.seed(record.missionId, contextKey, self._config.worldgen_version)
+    local layoutSeed = MissionSeed.stream(seed, "layout")
+    local catalog, kitFolder, kitErr = self:_kit(mission.kit)
+    if not catalog then
+        self:_log("Warn", "gauntlet restamp kit failed", { err = kitErr })
+        return false
+    end
+    local params = gauntletInputs.params
+    local spec, report = LayoutSolver.solve(catalog, params, layoutSeed)
+    if not spec then
+        self:_log("Warn", "gauntlet restamp layout failed", {
+            room = roomIndex,
+            err = report and report.error,
+        })
+        return false
+    end
+
+    local members = membersOf(record.teamKey)
+    local old = record.container
+    for _, member in ipairs(members) do
+        if old then
+            pcall(function()
+                old:RemovePersistentPlayer(member)
+            end)
+        end
+        local holdCf = slotOrigin * CFrame.new(0, 24, 0)
+        local root = member.Character and member.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            root.CFrame = holdCf
+        end
+        self:_bringSquadWithPlayer(member, holdCf)
+    end
+
+    if record.boundsMin then
+        local enemySvc = self._enemyService
+        if enemySvc and enemySvc.DespawnEnemiesInBounds then
+            pcall(function()
+                enemySvc:DespawnEnemiesInBounds(record.boundsMin, record.boundsMax)
+            end)
+        end
+    end
+    record.enemies = {}
+    for _, crate in ipairs(record.crates or {}) do
+        if crate.Parent then
+            crate:Destroy()
+        end
+    end
+    record.crates = {}
+
+    if old then
+        old:Destroy()
+    end
+
+    local container, hooks = MissionStamper.stamp(spec, {
+        kitFolder = kitFolder,
+        slotOrigin = slotOrigin,
+        instanceId = record.instanceId,
+        yieldEvery = 25,
+    })
+    container.ModelStreamingMode = Enum.ModelStreamingMode.PersistentPerPlayer
+    container:SetAttribute("MissionId", record.missionId)
+    container:SetAttribute("MissionSeed", seed)
+    container:SetAttribute("GauntletRoom", roomIndex)
+    if record.groupScale then
+        container:SetAttribute("TrialGroupScale", record.groupScale)
+    end
+    if record.teamScale then
+        container:SetAttribute("TrialTeamScale", record.teamScale)
+    end
+
+    local spawnPad = hooks.PlayerSpawn and hooks.PlayerSpawn[1]
+    self:_attachExitPrompt(spawnPad, mission, record.teamKey, record.instanceId)
+
+    local beacons = hooks.MissionObjective or {}
+    local inertColor = Color3.fromRGB(70, 70, 78)
+    for _, beacon in ipairs(beacons) do
+        beacon:SetAttribute("ObjectiveActive", false)
+        beacon:SetAttribute("ActiveColor", beacon.Color)
+        beacon.Color = inertColor
+        beacon.Transparency = 0.5
+    end
+    self:_attachBeaconPrompts(record, mission, beacons, true)
+
+    local slotPos = slotOrigin.Position
+    record.seed = seed
+    record.container = container
+    record.hooks = hooks
+    record.boundsMin = Vector3.new(
+        slotPos.X + spec.bbox.minx - 20,
+        slotPos.Y - 50,
+        slotPos.Z + spec.bbox.minz - 20
+    )
+    record.boundsMax = Vector3.new(
+        slotPos.X + spec.bbox.maxx + 20,
+        slotPos.Y + 60,
+        slotPos.Z + spec.bbox.maxz + 20
+    )
+    local mapTable = LayoutSolver.mapData(catalog, spec)
+    mapTable.ox = slotPos.X
+    mapTable.oz = slotPos.Z
+    mapTable.name = mission.display or record.missionId
+    record.mapTable = mapTable
+
+    local okEncode, encoded = pcall(function()
+        return HttpService:JSONEncode(mapTable)
+    end)
+    for _, member in ipairs(members) do
+        container:AddPersistentPlayer(member)
+        if okEncode then
+            member:SetAttribute("MissionMapData", encoded)
+        end
+        member:SetAttribute("GauntletRoom", roomIndex)
+    end
+
+    if not mission.decor or mission.decor.enabled ~= false then
+        self:_applyDressing(
+            mission.decor or {},
+            mapTable,
+            spec,
+            container,
+            slotOrigin,
+            seed,
+            mission.theme,
+            record,
+            mission.realm
+        )
+    end
+
+    self:_log("Info", "gauntlet restamped", {
+        instanceId = record.instanceId,
+        room = roomIndex,
+        seed = seed,
+        tiles = #spec.tiles,
+    })
+    return true
+end
+
+function MissionInstanceService:_advanceGauntlet(instanceId)
+    local record = self._instances[instanceId]
+    if not record or not record.gauntlet then
+        return
+    end
+    record.cleared_room = record.room_index
+    local rooms = record.gauntletRooms or 99
+    if record.room_index >= rooms then
+        for _, member in ipairs(membersOf(record.teamKey)) do
+            fireGameEvent(member, "mission_complete", {
+                mission = record.missionId,
+                name = ("%s complete!"):format(record.missionId),
+            })
+        end
+        return self:Complete(instanceId)
+    end
+    local nextRoom = record.room_index + 1
+    record.layoutSwap = true
+    local restamped = self:_restampGauntlet(record, nextRoom)
+    record.room_index = nextRoom
+    local modeCfg = self._challengeConfig
+        and self._challengeConfig.modes
+        and self._challengeConfig.modes[record.gauntletMode]
+    record.gauntletCurve = ChallengeRun.packForRoom(modeCfg and modeCfg.curve, nextRoom)
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        member:SetAttribute("GauntletRoom", nextRoom)
+        member:SetAttribute(
+            "MissionObjectiveText",
+            ("Room %d — Defeat all enemies!"):format(nextRoom)
+        )
+        fireGameEvent(member, "gauntlet_next_room", {
+            mission = record.missionId,
+            room = nextRoom,
+            name = ("Room %d"):format(nextRoom),
+        })
+    end
+    if not restamped then
+        self:_log("Warn", "gauntlet kept previous layout", { room = nextRoom })
+    end
+    self:_restockGauntlet(record)
+    self:_warpToGauntletEntrance(record)
+    record.layoutSwap = nil
+end
+
+-- Teaching rooms field one pack at the objective even if the map has
+-- extra chambers, so growing the layout does not multiply the two whelps.
+function MissionInstanceService:_missionSpawnPoints(container, curve)
+    local points = {}
+    local objective
+    for _, desc in ipairs(container:GetDescendants()) do
+        if desc.Name == "MissionSpawn" and desc:IsA("BasePart") then
+            points[#points + 1] = desc
+            if desc:GetAttribute("ObjectiveRoom") then
+                objective = desc
+            end
+        end
+    end
+    if curve and curve.intro_only == true then
+        if objective then
+            return { objective }
+        end
+        if #points > 0 then
+            return { points[#points] }
+        end
+    end
+    return points
+end
+
+function MissionInstanceService:_entranceCFrame(record)
+    local spawnPad = record.hooks and record.hooks.PlayerSpawn and record.hooks.PlayerSpawn[1]
+    if not (spawnPad and spawnPad.Parent) then
+        return nil
+    end
+    return spawnPad.CFrame * CFrame.new(0, 4, 0), spawnPad
+end
+
+function MissionInstanceService:_petFolder(player)
+    local root = workspace:FindFirstChild("PlayerPets")
+    return root and root:FindFirstChild(player.Name)
+end
+
+-- Pets are client-moved. A restamp leaves them in the last chamber, where
+-- they auto-acquire the new pack. RallyUntil + cleared reports keeps them
+-- on the owner until both land at the entrance.
+function MissionInstanceService:_bringSquadWithPlayer(player, originCf)
+    local folder = self:_petFolder(player)
+    if not folder then
+        return
+    end
+    player:SetAttribute("RallyUntil", os.clock() + STREAM_WAIT)
+    local pfs = self._petFollowService
+    if pfs and pfs.ClearReportedPositions then
+        pfs:ClearReportedPositions(player)
+    end
+    local i = 0
+    for _, model in ipairs(folder:GetChildren()) do
+        if model:IsA("Model") then
+            local tid = model:FindFirstChild("TargetID")
+            if tid then
+                tid.Value = 0
+            end
+            i += 1
+            if originCf then
+                pcall(function()
+                    model:PivotTo(originCf * CFrame.new((i - 3) * 4, 0, 5))
+                end)
+            end
+        end
+    end
+end
+
+function MissionInstanceService:_warpToGauntletEntrance(record)
+    local targetCF, spawnPad = self:_entranceCFrame(record)
+    if not targetCF then
+        return
+    end
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        self:_bringSquadWithPlayer(member, targetCF)
+        self:_cancelStream(member)
+        task.spawn(function()
+            local ok = self:_safeWarp(member, targetCF, record.instanceId, spawnPad, 4)
+            if not ok then
+                local character = member.Character
+                if character then
+                    pcall(function()
+                        character:PivotTo(targetCF)
+                    end)
+                end
+            end
+            self:_bringSquadWithPlayer(member, targetCF)
+        end)
+    end
+end
+
+function MissionInstanceService:_restockGauntlet(record)
+    local enemySvc = self._enemyService
+    if enemySvc and enemySvc.DespawnEnemiesInBounds and record.boundsMin then
+        pcall(function()
+            enemySvc:DespawnEnemiesInBounds(record.boundsMin, record.boundsMax)
+        end)
+    else
+        for _, model in ipairs(record.enemies or {}) do
+            if model and model.Parent then
+                model:Destroy()
+            end
+        end
+    end
+    record.enemies = {}
+    local mission = self._config.missions[record.missionId]
+    local container = record.container
+    if not (mission and container) then
+        return
+    end
+    local points = self:_missionSpawnPoints(container, record.gauntletCurve)
+    if #points == 0 then
+        return
+    end
+    local opener
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        opener = member
+        break
+    end
+    if not opener then
+        return
+    end
+    local objectivePointIndex
+    for i, point in ipairs(points) do
+        if point:GetAttribute("ObjectiveRoom") then
+            objectivePointIndex = i
+            break
+        end
+    end
+    local groupScale = 1
+    local teamMult = 1
+    local countMult = groupScale
+        * teamMult
+        * (tonumber(record.gauntletCurve and record.gauntletCurve.count_mult) or 1)
+    local enemyDefs = (self._enemiesConfig and self._enemiesConfig.enemies) or {}
+    local packs = ChallengeRun.filterPacks(mission.packs or {}, record.gauntletCurve)
+    local forceBoss = objectivePointIndex
+        and record.gauntletCurve
+        and record.gauntletCurve.add_boss == true
+    local comp = MissionPopulation.roll(
+        packs,
+        #points,
+        MissionSeed.stream(record.seed, "spawns_r" .. tostring(record.room_index)),
+        {
+            extraBossBudget = 0,
+            villainChance = 0,
+            bossPointIndex = forceBoss and objectivePointIndex or nil,
+            bossOnlyAtObjective = (self._config.population or {}).boss_only_at_objective,
+            countMult = countMult,
+            scalesUnit = function(unit)
+                if unit.rank == "boss" or unit.rank == "titan" then
+                    return false
+                end
+                local def = unit.enemy and enemyDefs[unit.enemy]
+                if def and (def.tier == "boss" or def.tier == "archvillain") then
+                    return false
+                end
+                return true
+            end,
+        }
+    )
+    local mapTable = record.mapTable
+    local posRng = MissionSeed.mulberry32(
+        MissionSeed.stream(record.seed, "spawnpos_r" .. tostring(record.room_index))
+    )
+    if not enemySvc then
+        return
+    end
+    for i, point in ipairs(points) do
+        local movementLeash
+        if mapTable then
+            local room, roomIndex = LayoutSolver.roomAt(
+                mapTable,
+                point.Position.X,
+                point.Position.Z,
+                mapTable.ox,
+                mapTable.oz
+            )
+            if room then
+                movementLeash = {
+                    shapes = {
+                        {
+                            kind = "box",
+                            cx = mapTable.ox + room.x,
+                            cz = mapTable.oz + room.z,
+                            halfX = room.hx,
+                            halfZ = room.hz,
+                        },
+                    },
+                    inset = tonumber((self._config.navigation or {}).room_inset) or 0,
+                    recovery = point.Position + Vector3.new(0, 3, 0),
+                    roomIndex = roomIndex,
+                }
+            end
+        end
+        for _, entry in ipairs(comp[i] or {}) do
+            local offset = Vector3.new((posRng() * 2 - 1) * 14, 3, (posRng() * 2 - 1) * 14)
+            pcall(function()
+                local enemyId, synthDef
+                if type(entry) == "table" and entry.pet then
+                    local ladder = self._config.pet_ranks or {}
+                    synthDef = enemySvc.SynthesizePetEnemy
+                        and enemySvc:SynthesizePetEnemy(
+                            entry.pet,
+                            ladder[entry.rank or "minion"],
+                            record.openerLevel
+                        )
+                    enemyId = "petinv_" .. entry.pet
+                else
+                    enemyId = entry
+                    local base = enemyDefs[enemyId]
+                    if base then
+                        synthDef = table.clone(base)
+                    end
+                end
+                if synthDef and record.gauntletCurve then
+                    synthDef = self:_scaleGauntletDef(synthDef, record.gauntletCurve)
+                end
+                local r = enemySvc:SpawnEnemy(opener, enemyId, {
+                    def = synthDef,
+                    position = point.Position + offset,
+                    home = point.Position,
+                    movementLeash = movementLeash,
+                    encounterGroup = point,
+                    dormant = true,
+                    persistent = true,
+                    ignoreEnemyLevelOffset = true,
+                })
+                if r and r.ok and r.model then
+                    table.insert(record.enemies, r.model)
+                end
+            end)
+        end
+    end
+end
+
+function MissionInstanceService:_applyCatalogLoadout(player, record, spawnPad)
+    local npc = self._npcPrincipalService
+    local root = workspace:FindFirstChild("PlayerPets")
+    local folder = root and root:FindFirstChild(player.Name)
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = player.Name
+        folder.Parent = root or workspace
+    end
+    local parked = Instance.new("Folder")
+    parked.Name = "GauntletParked_" .. player.UserId
+    parked.Parent = game:GetService("ServerStorage")
+    for _, model in ipairs(folder:GetChildren()) do
+        if model:IsA("Model") and not model:GetAttribute("GhostPet") then
+            model.Parent = parked
+        end
+    end
+    record.parkedFolders = record.parkedFolders or {}
+    record.parkedFolders[player.UserId] = parked
+    local origin = spawnPad and spawnPad.CFrame or CFrame.new()
+    if npc and npc.SpawnGhostSquad then
+        npc:SpawnGhostSquad(folder, record.catalogPets or {}, origin)
+    end
+    -- Exclusive allowlist even when empty: unselected owned powers (Swift/Magnet/…) stay off.
+    player:SetAttribute("ChallengePowers", HttpService:JSONEncode(record.catalogPowers or {}))
+    if type(record.catalogOrigin) == "string" and record.catalogOrigin ~= "" then
+        player:SetAttribute("ChallengeOrigin", record.catalogOrigin)
+    else
+        player:SetAttribute("ChallengeOrigin", nil)
+    end
+    local hotbar = self._hotbarService
+    if hotbar and hotbar.SetChallengeBinds then
+        hotbar:SetChallengeBinds(player, record.catalogPowers or {})
+    end
+    local powerSvc = self._powerService
+    if powerSvc and powerSvc.ReapplyPassives then
+        powerSvc:ReapplyPassives(player)
+    end
+end
+
+function MissionInstanceService:_restoreGauntletLoadouts(record)
+    if not record.parkedFolders then
+        return
+    end
+    local root = workspace:FindFirstChild("PlayerPets")
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        local folder = root and root:FindFirstChild(member.Name)
+        if folder then
+            for _, model in ipairs(folder:GetChildren()) do
+                if model:GetAttribute("GhostPet") then
+                    model:Destroy()
+                end
+            end
+        end
+        local parked = record.parkedFolders[member.UserId]
+        if parked then
+            if folder then
+                for _, model in ipairs(parked:GetChildren()) do
+                    model.Parent = folder
+                end
+            end
+            parked:Destroy()
+        end
+        member:SetAttribute("ChallengePowers", nil)
+        member:SetAttribute("ChallengeOrigin", nil)
+        self:_applyChallengeLevel(member, nil)
+        local hotbar = self._hotbarService
+        if hotbar and hotbar.ClearChallengeBinds then
+            hotbar:ClearChallengeBinds(member)
+        end
+        local powerSvc = self._powerService
+        if powerSvc and powerSvc.ReapplyPassives then
+            powerSvc:ReapplyPassives(member)
+        end
+    end
+    record.parkedFolders = nil
 end
 
 function MissionInstanceService:GetActiveInstance(player)
@@ -1347,6 +2357,7 @@ function MissionInstanceService:_sweep()
             self:_close(instanceId, "ttl")
         end
     end
+    self:_sweepOrphans()
 end
 
 -- ---- dressing (M5a) --------------------------------------------------------------
@@ -2088,41 +3099,57 @@ function MissionInstanceService:_applyDressing(
         end
         if breakableSvc and FARMABLE_KIND[prop.kind] then
             self:_ensureMissionCrateVisual()
-            local okSpawn, model = pcall(function()
-                return breakableSvc:SpawnMissionBreakable(
-                    pseudoWorld,
-                    "MissionCrate",
-                    cf.Position + Vector3.new(0, 2, 0),
-                    cf.Position.Y -- TRUE floor for the bbox aligner
-                )
-            end)
-            if okSpawn and model then
-                spawned = model
-                -- crates track the OPENER's level, not the pseudo-zone's
-                -- default 1 — else the over-leveled yield gate starves the
-                -- payout ("up the damage compared to my level", 2026-07-08)
-                local lvl = (record and record.openerLevel) or 1
-                model:SetAttribute("MiningLevel", lvl)
-                -- LEVEL-SCALED durability + payout (playtest: flat 60 HP =
-                -- one-shot for an endgame squad). Knobs in mission decor cfg.
-                local hpScaled = (decorCfg.crate_health_base or 60)
-                    + lvl * (decorCfg.crate_health_per_level or 12)
-                model:SetAttribute("MaxHP", hpScaled)
-                model:SetAttribute("HP", hpScaled)
-                model:SetAttribute(
-                    "Value",
-                    (decorCfg.crate_value_base or 15)
-                        + math.floor(lvl * (decorCfg.crate_value_per_level or 1))
-                )
-                if record and record.crates then
-                    table.insert(record.crates, model)
-                end
+            -- Never present the SmallBlueCrystal placeholder as a crate.
+            -- If CrateWood has not swapped in, fall through to wood prefab
+            -- / primitive so Trials and Range cannot spawn sideways crystals.
+            local crystals = ReplicatedStorage:FindFirstChild("Assets")
+            crystals = crystals and crystals:FindFirstChild("Models")
+            crystals = crystals and crystals:FindFirstChild("Breakables")
+            crystals = crystals and crystals:FindFirstChild("Crystals")
+            local missionCrate = crystals and crystals:FindFirstChild("MissionCrate")
+            local crateReady = missionCrate and missionCrate:GetAttribute("CrateVisual") == true
+            local okSpawn, model = false, nil
+            if crateReady then
+                okSpawn, model = pcall(function()
+                    return breakableSvc:SpawnMissionBreakable(
+                        pseudoWorld,
+                        "MissionCrate",
+                        cf.Position + Vector3.new(0, 2, 0),
+                        cf.Position.Y -- TRUE floor for the bbox aligner
+                    )
+                end)
             else
-                -- surface the real failure (a silent pcall here cost a debug
-                -- round on 2026-07-08 — don't repeat it)
-                self:_log("Warn", "mission crate spawn failed", {
-                    err = not okSpawn and tostring(model) or "returned nil",
-                })
+                self:_log("Warn", "mission crate using wood fallback (CrateVisual not ready)")
+            end
+            if crateReady then
+                if okSpawn and model then
+                    spawned = model
+                    -- crates track the OPENER's level, not the pseudo-zone's
+                    -- default 1 — else the over-leveled yield gate starves the
+                    -- payout ("up the damage compared to my level", 2026-07-08)
+                    local lvl = (record and record.openerLevel) or 1
+                    model:SetAttribute("MiningLevel", lvl)
+                    -- LEVEL-SCALED durability + payout (playtest: flat 60 HP =
+                    -- one-shot for an endgame squad). Knobs in mission decor cfg.
+                    local hpScaled = (decorCfg.crate_health_base or 60)
+                        + lvl * (decorCfg.crate_health_per_level or 12)
+                    model:SetAttribute("MaxHP", hpScaled)
+                    model:SetAttribute("HP", hpScaled)
+                    model:SetAttribute(
+                        "Value",
+                        (decorCfg.crate_value_base or 15)
+                            + math.floor(lvl * (decorCfg.crate_value_per_level or 1))
+                    )
+                    if record and record.crates then
+                        table.insert(record.crates, model)
+                    end
+                else
+                    -- surface the real failure (a silent pcall here cost a debug
+                    -- round on 2026-07-08 — don't repeat it)
+                    self:_log("Warn", "mission crate spawn failed", {
+                        err = not okSpawn and tostring(model) or "returned nil",
+                    })
+                end
             end
         end
         local prefab = not spawned and prefabFor(prop.kind, math.floor(math.abs(prop.x) * 10))
@@ -2539,7 +3566,13 @@ end
 -- client when we pivot, and the CLIENT owns character physics — so it falls
 -- through geometry only the server has. The place-level integrity setting remains defense in
 -- depth; the actual release gate is now a client-observed collidable floor from the expected map.
-function MissionInstanceService:_safeWarp(member, targetCF, expectedInstanceId, focusPart)
+function MissionInstanceService:_safeWarp(
+    member,
+    targetCF,
+    expectedInstanceId,
+    focusPart,
+    fallbackSeconds
+)
     local character = member.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
     if not root then
@@ -2570,6 +3603,18 @@ function MissionInstanceService:_safeWarp(member, targetCF, expectedInstanceId, 
         y = targetCF.Position.Y,
         z = targetCF.Position.Z,
     })
+
+    -- Same-slot gauntlet restamps already have PersistentPerPlayer geometry nearby.
+    -- Don't wait forever for a stream ack — land in the entryway anyway.
+    if type(fallbackSeconds) == "number" and fallbackSeconds > 0 then
+        task.delay(fallbackSeconds, function()
+            if not pending.done then
+                pending.ready = true
+                pending.done = true
+                pending.signal:Fire()
+            end
+        end)
+    end
 
     -- Server-side prefetch remains useful, but it is not the readiness gate. Run it in parallel;
     -- the BindableEvent below is fired only by the client floor acknowledgement or cancellation.
@@ -2693,6 +3738,25 @@ function MissionInstanceService:_bindDoor(part)
     end
 
     prompt.Triggered:Connect(function(player)
+        local mode = mission.gauntlet and mission.gauntlet.mode
+        local modeCfg = mode
+            and self._challengeConfig
+            and self._challengeConfig.modes
+            and self._challengeConfig.modes[mode]
+        if modeCfg and modeCfg.loadout == "catalog" then
+            if ChallengeRun.soloOnly(modeCfg) and isTeamed(player) then
+                self:_rejectRangeTeam(player)
+                return
+            end
+            fireGameEvent(player, "range_picker", {
+                mission = missionId,
+                display = mission.display or missionId,
+                catalog = modeCfg.catalog,
+                best_room = self:_challengeBestRoom(player, mode),
+                defaults = self:_rangeDefaults(player, modeCfg.catalog),
+            })
+            return
+        end
         local instanceId, err = self:Open(player, missionId, { doorRealm = doorRealm })
         if not instanceId then
             self:_log("Info", "door open rejected", { player = player.Name, err = err })

@@ -72,7 +72,7 @@ function MissionMap.start()
     title.TextScaled = true
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.TextColor3 = Color3.fromRGB(255, 235, 170)
-    title.Text = "MAP"
+    title.Text = ""
     title.Parent = header
 
     local minimize = Instance.new("TextButton")
@@ -259,9 +259,16 @@ function MissionMap.start()
             data = nil
         end
         if data then
-            local seq = player:GetAttribute("MissionSequence")
-            local seqTag = seq and (" #" .. seq) or ""
-            title.Text = "MAP — " .. tostring(data.name or "Mission") .. seqTag
+            local name = tostring(data.name or "Mission")
+            local room = math.floor(tonumber(player:GetAttribute("GauntletRoom")) or 0)
+            local seq = math.floor(tonumber(player:GetAttribute("MissionSequence")) or 0)
+            if room >= 1 then
+                title.Text = string.format("%s Level %d", name, room)
+            elseif seq >= 1 then
+                title.Text = string.format("%s #%d", name, seq)
+            else
+                title.Text = name
+            end
             panel.Visible = true
             rebuild()
             -- entrance is known from the start
@@ -319,6 +326,8 @@ function MissionMap.start()
     player:GetAttributeChangedSignal("MissionEnemyPings"):Connect(updatePings)
 
     player:GetAttributeChangedSignal("MissionMapData"):Connect(applyData)
+    player:GetAttributeChangedSignal("GauntletRoom"):Connect(applyData)
+    player:GetAttributeChangedSignal("MissionSequence"):Connect(applyData)
     canvas:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
         if data then
             local wasRevealed = revealed

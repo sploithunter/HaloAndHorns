@@ -43,6 +43,13 @@ return {
                 SpawnAttempts = "number",
                 SpawnAreaMargin = "number",
                 MinDistance = "number",
+                OutlinePath = "string",
+                SlotLayout = "string",
+                DashLength = "number",
+                DashWidth = "number",
+                DashHeight = "number",
+                DashSpacing = "number",
+                MarqueeSpeed = "number",
                 BalancedCells = "boolean",
                 CellSize = "number",
             },
@@ -103,6 +110,17 @@ return {
             optional_attributes = {
                 Slot = "number",
                 AreaId = "string",
+            },
+        },
+        -- Award stands for the four origin leaderboards. Client visualization
+        -- parents to the hook; move the part to pose the stand.
+        AwardPodium = {
+            required_attributes = {
+                BoardId = "string",
+            },
+            optional_attributes = {
+                AreaId = "string",
+                PodiumId = "string",
             },
         },
         ChaseableRegion = {

@@ -1,5 +1,288 @@
 # Log
 
+## 2026-08-20 — Fight list covers the left toggles
+
+- EnemyHud DisplayOrder is 40 (above PlayerPowerBadges 26). While any
+  engaged foe is on the strip, `EnemyHudActive` hides the pass/toggle
+  column; it comes back when the list empties. Settings → Hide Toggles
+  in Battle (default on) persists via `ClientPrefs.hideTogglesInBattle`.
+
+## 2026-08-20 — iPad compact stack was too big
+
+- The 1080×810 iPad shot was already compact (Pets stacked on Menu), not
+  desktop. Short edge ≥ 700 uses a 1.04 assembly (30% over the 0.80 pass)
+  on both iPad and desktop. Phone 874×402 unchanged.
+
+## 2026-08-20 — Badge box + currency under it
+
+- Left badges live in a fixed box: top-left anchor, 15% down, 50% of the
+  viewport tall. The box itself is not ViewportScaled (that was shrinking
+  it to a quarter-screen on phones). Contents shrink only when the list
+  overflows (Colorado Plays).
+- Currency docks just under that box (measured), not a pixel offset above
+  Admin. Admin stays in the far lower-left corner.
+
+## 2026-08-20 — Pets/Menu match Powers/Board
+
+- Compact HUD stacks Pets above Menu at the same 48px as Powers/Board.
+  Admin OFF sits in the far lower-left corner. Currency stacks above that
+  chip. The compact Menu popup opens above the new Menu square.
+
+## 2026-08-20 — Bigger left badges, side ON/OFF
+
+- Vertical-left badges grew (48px toggles, 40px passes, 0.90 phone scale).
+  ON/OFF/PET/timer sit beside the disc (see-through). Game-pass infinity
+  marks are gone — passes are always on. Tap target is the disc only.
+
+## 2026-08-20 — Far-left is badges, not the power bar
+
+- The far-left experiment is game-pass + toggle-power badges
+  (`configs/ui.lua` `hud.power_badges.placement = "vertical_left"`): the same
+  two rows stood up as columns under the Roblox chrome. The 20-slot power bar
+  stays the saved bottom-center keeper (`hotbar.size.orientation = "horizontal"`).
+- Flip `placement` back to `top_chrome` to restore badges under logo…shop.
+
+## 2026-08-20 — Pass badges sit under the Roblox chrome
+
+- Game-pass icons are the first row (not toggleable). Powers sit under them.
+  The stack is centered on the logo…shop run, just below the top bar, instead
+  of growing left off the player capsule into those buttons.
+
+## 2026-08-20 — Phone player bar is stockier
+
+- Compact PlayerBar is 390×68 (was 520×64), still centered, so the avatar
+  clears the Roblox shop/chat cluster. Game-pass badge row is next.
+
+## 2026-08-20 — Phone power-bar leaves Jump a slot
+
+- Compact HUD stacks Powers above Board (smaller 48px) so the Jump button
+  keeps the far-right gap. Admin docks under Pets. Mobile width target is
+  81% (10% narrower) so the column does not cover Jump.
+
+## 2026-08-20 — Power bar sizes follow the device
+
+- DisplayClass is now phone / tablet / desktop / ten_foot. Phones default to
+  the bigger Mobile power-bar size (same proportions, ~90% of the docked
+  width). Tablets default to Tablet. Settings → Power Bar Size can pin Auto,
+  Mobile, Tablet, or Desktop. The old chevron toggle is gone.
+
+## 2026-08-20 — Power bar enlarge toggle
+
+- The lower-center power bar has a top-right chevron. Compact is the desktop
+  size. Expanded is the same layout at 1.5× (`configs/hotbar.lua` `size`).
+  Chevron points out to grow, in to shrink. Persists as `Settings.HotbarSize`.
+
+## 2026-08-20 — Closing the Range picker resets E
+
+- X on the catalog menus hid the panel but left MenuManager's open flag and
+  the dim scrim. Next E looked dead because RangePicker treated Inventory as
+  already open. Close now forgets that flag, drops the overlay, and re-arms
+  the pad prompt so you do not have to walk away.
+
+## 2026-08-20 — Silent trial door + leaked forever stack lock
+
+- Door Open failed with "team already has an active mission" and no toast, so
+  E looked dead while a teammate (or a stale team record) held a trial. Now
+  it tells you. Range is still solo-only. Also: gauntlet downs stamped
+  FOREVER onto stack identity; leaving converted slots only, so a fox could
+  stay undeployable. Stacks stay 60s; prune heals a leaked -1.
+
+## 2026-08-20 — Unequipped red slots stay red in inventory
+
+- Removing a recovering pet from the squad strip left a white hole because
+  the live model still claimed the slot lock. Leftover slot locks now paint
+  empty rings (and a replacement card) red for the remaining time.
+
+## 2026-08-20 — Red slots stay locked (overworld + gauntlet)
+
+- Deploy packed pets into recovering slots, so unequip/re-equip left a slot
+  red for 60s and still accepted a new occupant. Locked slots are reserved:
+  a new pet cannot enter until the lock ends. Overworld is 60s. Range and
+  Training Ground stay down for the run, then convert to 60s on exit.
+  Entry-room kit-up still works on white slots.
+
+## 2026-08-20 — Gauntlet entry tile still allows kit-up
+
+- Roster lock is only past the stamped entrance tile. The spawn chamber can
+  still re-equip. Fight rooms cannot swap a fresh pet into a downed slot.
+
+## 2026-08-20 — Gauntlet downs last the run
+
+- Range / Training Ground already refused Summon / Genie / ResurrectPet, but the HUD
+  still counted 60s to Ready and Training Ground let you swap a fresh pet into a
+  downed slot. The slot now stays Down for the run (no timer). Mid-run equip is
+  locked. Overworld 60s / 5 min lockouts are unchanged after you leave.
+
+## 2026-08-20 — Gauntlet maps change after the teaching room
+
+- Rooms 1–6 were all one chamber and two Cinder Whelps, so advancing felt
+  stuck. Room 1 stays that fight. Room 2 grows the map but still fields
+  one intro pack at the objective. Room 3+ uses trash on a larger layout.
+
+## 2026-08-20 — Mission map title is the room, not "MAP"
+
+- Header is `Training Ground Level 3` / `The Range Level 3` (GauntletRoom).
+  Trials stay `Name #N`. The word MAP is gone.
+
+## 2026-08-20 — Training Ground signs face the field
+
+- Range boards face +X. TG boards were left facing the same way, so the
+  field saw the blank backs. Yawed `TrainingGroundGuide` and
+  `TrainingGroundLeaderboard` 180° in place (now −X). Save the place.
+
+## 2026-08-20 — Range catalog: Kade + Colorado, no Creator, no huges
+
+- Range loans basic Exclusive Colorado and Kade, plus a Hall mix. Huges are
+  off. `colorado_creator` is disallowed (apex/test-only). Saved Range kits
+  keep legal pets and take variant/huge from the current catalog; missing
+  slots fill from defaults so an old rainbow-huge save does not break.
+
+## 2026-08-20 — Gauntlet pets warp with the player
+
+- Next-room restamp parked the player at the entrance but left pets in the
+  last chamber, where they acquired the new pack. Squad now rallies with the
+  owner (RallyUntil, cleared reports/targets) on restamp and entrance warp.
+
+## 2026-08-20 — Range Room 1 is a teaching fight
+
+- Early Range/TG rooms are one chamber and two lava imps (`intro_only`
+  beats). Later rooms add trash, lieutenants, bosses, then extra
+  lieutenants. Training Ground uses `train#N` maps. Gauntlets ignore
+  Settings Enemy Level and Trial Enemy Group Size (count stays 1.0;
+  `ignoreEnemyLevelOffset` on spawn).
+
+## 2026-08-20 — Challenge window TEMP 2 hours
+
+- `challenge_runs.leaderboard.window_seconds` is 2 hours for testing.
+  Production is 48. Guide/board copy matches. Flip back with the hide
+  and studio-write flags. Rewards pay the unexcluded public top 10 only.
+
+## 2026-08-20 — Leaderboard hide is display-only
+
+- Internal accounts always publish. `hide_internal_accounts` only drops
+  them from the visible top 10. Boot no longer RemoveAsync those keys.
+  TEMP: hide is false and `studio_write_global` is true so Macros can
+  test the Range/TG signs. Flip both back before public scoring.
+
+## 2026-08-20 — Challenge boards rotated 180
+
+- All four wooden gate signs (`RangeLeaderboard`, `RangeGuide`,
+  `TrainingGroundLeaderboard`, `TrainingGroundGuide`) were rotated 180°
+  in place so SurfaceGui Front faces the approach. Do not auto-pick
+  Left/Right (that squeezed the GUI onto the thin edge). Save the place.
+
+## 2026-08-20 — Challenge pads follow rotated gates
+
+- `RangePad` / `TrainingGroundPad` sit on their gate visual XZ so the
+  Enter prompt is at the arch, not the old west-facing fallback. Wire
+  fallbacks match the current arches; existing pads are still adopted
+  in place. Gate signs pick the SurfaceGui face that points at the pad
+  (Range Front was the back of the board after the rotate). Save the
+  place after aligning.
+
+## 2026-08-20 — Range / Training Ground gate boards
+
+- Wooden signs parented into Hall tiles: Range pair on
+  `Tile04_corner`, Training Ground pair on `Tile07_corner` (where that
+  gate visual sits). `LeaderboardBoard` + `BoardId` for the live top 10;
+  `ChallengeGuide` + `GuideMode` for the gate copy. Both use SurfaceGuis
+  on the sign face. Save the place after reviewing.
+
+## 2026-08-20 — Range / Training Ground 48h boards (backend)
+
+- Current leaderboards `range_current` and `training_ground_current` publish
+  the best cleared room in a 48-hour sliding window
+  (`challenge_runs.leaderboard.window_seconds`). Each run appends
+  `GameData.ChallengeRuns.<mode>.recent` and publishes then — not on
+  player exit. Window expiry is the only poll: server start, BindToClose,
+  and every `sweep_seconds` (5 min). Same `internal_accounts` exclusions.
+  No UI / podium yet.
+
+## 2026-08-20 — Range drops crate-crystal placeholders
+
+- Range / Training Ground no longer spawn farmable MissionCrate or rubble
+  crystal nodes. Those slots were presenting the SmallBlueCrystal
+  placeholder (sideways black slab + crystal) because CrateWood never
+  swapped in. Combat field stays empty of crate/crystal debris.
+- Trials still get farmable crates only when `CrateVisual` is actually
+  on the store model; otherwise they fall through to wood prefab/primitive.
+
+## 2026-08-20 — Range fights at level 50
+
+- Catalog Range pins combat to `modes.range.effective_level` (50) via the
+  existing `EffectiveLevel` seam (same pipe as sidekick). `ChallengeLevel`
+  is stamped on enter and cleared on restore/close; claimed/earned `Level`
+  and ProfileStore are untouched. Training Ground is unchanged.
+
+## 2026-08-20 — Range clears hotbar auto-cast locks
+
+- Entering or leaving The Range clears every hotbar auto-cast lock. The lock
+  lives on the slot, so a loaned Hasten (or any overlay) would otherwise keep
+  firing after the kit swap, and restore could lock a power the player never
+  meant to lock.
+
+## 2026-08-20 — Range defaults per origin + solo entry
+
+- Entering The Range now loads the last archetype + that origin's saved
+  powers (four kits: geomancer / sandwalker / cryomancer / pyromancer) and
+  the last catalog pet squad. Switching origin in PowerChoice stashes the
+  current kit and restores the other origin's last picks. Written to
+  `GameData.RangeDefaults` only when a kit is used — not a ProfileStore
+  template field (same Reconcile trap as ChallengeRuns / Tutorial).
+- The Range is solo-only. A teamed player is refused at the door and again
+  on `ChallengeRun_Start` (`range_solo_required`). Training Ground is
+  unchanged.
+
+## 2026-08-20 — Range next-room entry + fair early rooms
+
+- Next Room beacon restamps then warps the party to the new map's entrance pad
+  (stream-safe, with a short fallback so a hung ack cannot leave you on the glowy).
+- Gauntlets ignore the Trials density slider and team-size pack scale. Magma Wyrm
+  (`infernal_boss`) and lieutenant packs wait for `boss_at` / `lieutenant_at`.
+- Range power list: only selected rows glow; Genie and Revive are not pickable.
+
+## 2026-08-20 — Range loaned powers: exclusive kit + auto-slot
+
+- Catalog Range is an exclusive allowlist (`ChallengePowers`). Unselected owned powers
+  (Swift, Magnet, Resonance, …) are refused at Cast/Toggle and owned passives are cleared
+  on the server — not a client hide.
+- Loaned powers auto-slot: Hasten = 6 recharge (perma); everything else = 3 recharge +
+  3 focus. Does not write the player's saved `Slots`. Custom slotting later, same defaults.
+
+## 2026-08-20 — Range layouts are a fixed sequence
+
+- Two first-room entries looked different because `range` / `training_ground` used
+  `per_attempt` (session salt + attempt counter). Ranking cannot be fair that way.
+- Both doors now use `seed_policy = "gauntlet_room"`: contextKey is `room#N` only.
+  Room 1 is always the same map; Room 2 is a different but also-fixed map; etc.
+- Solver cap is entry + 3 rooms (`tile_budget = 4`, `target_depth` 2–3). Advancing
+  restamps Room N at the same slot, then restocks. Do not use `shared_sequence`
+  (that is the Trials `MissionSeq` ladder).
+
+## 2026-08-20 — Range pets/powers menus
+
+- Range entry is now two screens on one shared draft: Inventory catalog pets and the real
+  PowerChoice menu (choose origin, hover tooltips, pick up to 6 powers). Pets ↔ Powers keeps
+  the draft; Enter from either side starts the run. Closing abandons. Catalog `powers = "all"`
+  so the loaned kit can use any authored power.
+
+## 2026-08-20 — Range entry uses inventory cards
+
+- The Range door no longer opens the pet-id pill list. `range_picker` opens Inventory in a
+  catalog session: the same cards, badges, power/HP rankings, and Best Pets buttons as the
+  owned-pet squad editor. Enter sends `ChallengeRun_Start`; closing does not deploy the real
+  squad. Catalog `gold` variants are `golden` so GhostPets clone the golden models.
+
+## 2026-08-20 — Range and Training Ground gauntlet
+
+- Hall_2 Tile04_corner Field now hosts the shared Challenge Field: Range (catalog / GhostPet
+  loadout) and Training Ground (own pets, easier curve). Room 1–99 is a recycled-arena index,
+  not 99 stamped tiles.
+- `MissionInstanceService` advances `room_index` on beacon clear, restocks the same arena, and
+  persists `GameData.ChallengeRuns.<mode>.best_room` without a ProfileStore template field.
+  Squad wipe or leave records the last cleared room. Pet revives are off for the whole run.
+- Challenge Field is this Hall_2 Range, not a Plaza-only reservation.
+
 ## 2026-08-16 — Ascend menu closes before ceremony
 
 - Successful level claims now synchronously dismiss the Power Choice menu before the Ascension
@@ -2791,3 +3074,711 @@ first-session cohort rates.
 - Recorded the project-wide GUI rule: anchors, scale, layout, constraints, and parent-relative
   geometry own placement; every non-zero pixel placement offset must be a small, locally documented
   correction with a concrete stable reference.
+
+## 2026-08-17 — Huge hatch announcements and status
+
+- Fixed inventory-held egg hatches bypassing the public chat-announcement pipeline; tester, trial,
+  creator, and boss reward eggs now use the same server/global rarity announcements as world eggs.
+- Added the persistent `huge_pets_hatched` stat and **Huge Hatcher** native People-list status.
+  Top-100 leaderboard titles continue to take priority over this achievement status.
+- Hardened compact held-egg results to derive Exclusive rarity from the pet configuration, closing
+  the same missing-chat failure for non-Huge tester, trial, creator, and boss reward pets.
+
+## 2026-08-17 — Immediate Future Call promise
+
+- New-player profiles now receive one Future Call token immediately, locked until earned Level 4;
+  its visible promise is **“Reach Level 4 to summon Your Future Self.”** Unlocking auto-binds the
+  token and celebrates readiness, while hotbar, inventory, and server activation all enforce the gate.
+- Reduced Answer the Cave's Future Call award from two tokens to one so the onboarding and capstone
+  together preserve the existing two-token supply. Existing Level-4+ profiles migrate marker-only.
+- Rebranded the prologue landing from a literal **ONE MONTH FROM NOW / PRESENT DAY** timeline to
+  **YOUR FUTURE SELF / YOUR JOURNEY BEGINS**, aligning the cold open with the summon mechanic.
+
+## 2026-08-18 — Level-2 Future Call promise
+
+- Moved the onboarding Future Call award from silent account creation to the claimed Level-2
+  ascend, making the acquisition a visible progression beat.
+- The locked token now auto-binds and remains available in hotbar editing; pressing it before earned
+  Level 4 displays **“Reach Level 4 to summon Your Future Self.”** without consuming the token.
+
+## 2026-08-18 — Beta tester weeks three through five imported
+
+- Imported and wired Patch Phoenix (Lava/Ranged/Windfall), Core Digger
+  (Desert/Tank/Prospector), and Cache Bandit (Grass/Melee/XP Surge), including normal and Golden
+  meshes, transparent card art, Rainbow runtime variants, exclusive badges, and distinct egg art.
+- Authored the remaining Saturday-to-Saturday campaign and Events windows. Public claims remain
+  disabled until launch, while Studio keeps the standard reservation, tier-up, Huge, trade, reset,
+  and admin-grant test paths available.
+
+## 2026-08-18 — Future tester campaign isolation
+
+- Kept weeks three through five out of automatic Studio reservation so a normal level-two test does
+  not receive every future egg. Added explicit Basic, Golden, Rainbow, and forced-Huge admin grants
+  for Patch Phoenix, Core Digger, and Cache Bandit instead.
+
+## 2026-08-18 — Resonance moved before Answer the Cave
+
+- Reordered the actual persisted tutorial state machine so bind/cast/enhance Resonance precede the
+  cave fight; the closing sequence is Answer the Cave, Berserk Brew, then Call Them Back.
+- Added chained v1→v2→v3 numeric-progress migration, aligned the retention funnel, and retained the
+  completion-only earned-Level-2 top-up after Rally.
+
+## 2026-08-18 — Hatch discovery reveal and next pet-slot preview
+
+- Added server-authoritative first-discovery metadata to hatch results, per-card canted `NEW!`
+  badges, a compact `+N NEW` summary, and a result-card funnel into the live Pets-menu button.
+- Added a gray noninteractive squad-grid preview for the next pet-slot level, derived directly from
+  the configured 8/15/22/29/36/43/50 progression schedule and hidden after the final milestone.
+- Full CI passed: 1,924/1,924 headless cases across 206 specs.
+
+## 2026-08-18 — Actionable failed-cast feedback
+
+- Resonance now preserves a distinct `no_crystals_in_range` refusal from the shared server cast
+  gate through the game-event packet. The existing failed-cast bonk and red puff remain, while a
+  world-space message above the player adds **“No crystals in range — move closer.”**
+- The same config-driven reaction supplies concise text for known Focus, target, and Tank failures;
+  no power range, Focus cost, or cooldown behavior changed.
+- Extended the response across ordinary power cooldown, pet/target, travel, and Recall refusals, and
+  added the same reason-aware feedback to potion use. Enemy debuff potions now explicitly report a
+  missing/out-of-range target and remain unconsumed on every rejected activation.
+- Headless verification passed: 1,927/1,927 cases across 206 specs.
+
+## 2026-08-18 — 3D tutorial breadcrumbs
+
+- Replaced the tutorial's flat ground-dot trail with outlined, floating 3D chevrons that physically
+  travel along the route toward the objective and wrap back to the player end.
+- Preserved the live half-second route replan, pathfinding/direct-route fallback, terrain snapping,
+  and prompt-range handoff; the visual change adds no screen-space positioning or pixel offsets.
+- Full CI passed: 1,928/1,928 headless cases across 206 specs.
+
+## 2026-08-18 — Tutorial breadcrumb direct-line simplification
+
+- Removed the inherited PathfindingService route, half-second replan, waypoint rebuild, and terrain
+  sampling from the new 3D breadcrumb. The markers are now allocated once and move continuously on
+  the live player-to-objective line, whose endpoints are sampled every rendered frame.
+- Kept prompt-range handoff, a shallow readability arc, twelve-marker cap, and zero screen-space
+  offsets. This is objective guidance rather than navigation; walls are intentionally not routed.
+- Full CI passed: 1,928/1,928 headless cases across 206 specs.
+
+## 2026-08-18 — Tutorial locale detection and English override
+
+- Added Roblox translator-locale detection with explicit Spanish and Brazilian Portuguese tutorial
+  catalogs, plus a guaranteed authored-English fallback for unsupported or incomplete locales.
+- Added a persisted Settings choice between `Auto (<detected language>)` and `English`, and a
+  one-time Auto-mode banner that names the active tutorial language and explains the override.
+- Added stable localization keys to tutorial config/state without removing raw English compatibility
+  copy. Headless verification passed: 1,932/1,932 cases across 207 specs.
+
+## 2026-08-18 — Team invitation timeout and requester feedback
+
+- Added a server-authoritative 30-second team-request lifetime, matching trading. Expired requests
+  clear the recipient popup and show the requester a floating "didn't respond" banner; explicit
+  declines now receive a distinct requester banner as well.
+- Player departure and delayed-callback races use the same identity-checked expiry path, so a
+  pending invitation no longer terminates silently while the recipient is hatching or leaves.
+
+## 2026-08-18 — Hall of Worlds placement and orphan terrain cleanup
+
+- Moved the baked `Workspace.Maps.FuturePath` Hall of Worlds onto the positive-X lane so it no
+  longer overlaps the repeating realm stack, and added Studio geometry copies for Heaven 3–5 and
+  Hell 3–5 from their layer-2 sources.
+- Removed three orphan voxel-terrain components left behind by prior map placement: the visible
+  green island plus two distant vertical root-like sheets. Verified from the same Studio camera
+  that the Hall geometry remains intact and the unwanted terrain is gone.
+
+## 2026-08-18 — Hall of Worlds guided entry foundation
+
+- Made the baked Hall the first world for fresh profiles while grandfathering existing players,
+  then wired four route areas, per-player translucent progression walls, and two-way Hall/Crystal
+  World travel through an idempotent Studio Edit script.
+- Added the standalone Waycoin economy and cache fields, tutorial/earned-Level-2 first gate, 750
+  and 2,500 Waycoin gates, four five-pet egg-bay hooks, and 80% Crystal World effectiveness for the
+  future Hall pet roster.
+- Generalized Resonance's failed-cast tutorial wording from crystals to resources so the same power
+  teaches correctly against Hall caches and Crystal World nodes.
+
+## 2026-08-18 — Polyfork asset source and Hall hoverboard direction
+
+- Added Polyfork Founder access as an approved commercial asset source while preserving the
+  source-first Roblox import pipeline, local-key rules, and the prohibition on redistributing raw
+  catalog files.
+- Defined the Hall hoverboard as a Level-2 traversal graduation reward: server-authorized state,
+  client presentation, a configurable cruise-speed floor that preserves existing movement bonuses,
+  and automatic suppression for combat, missions, teleport, and precision interactions. Cosmetic
+  board collection remains a later extension rather than enabling mount inventory in V1.
+
+## 2026-08-18 — Hall visual perimeter restoration and World 1 art prompts
+
+- Restored the baked Hall route's omitted visual perimeter from the generator manifest: 779
+  `BarrierBank` screening placements plus 43 `GrassPedestal` and 20 `AccentPiece` placements. The
+  repair is idempotently tagged and preserves all 102 existing `InvisibleWall` safety barriers.
+- Added persistent local `ReplicatedStorage.GenMap.Assets` prototypes for the four trusted Hall
+  template meshes so future materialization no longer silently skips the visual screens.
+- Documented copy-ready, image-to-mesh-safe prompts for the four World 1 eggs and all twenty pets,
+  including a geometry-preserving gold-variant prompt.
+
+## 2026-08-18 — Hall Wayfinder Egg stand and idle presentation
+
+- Imported the authored Hall egg stand, uploaded its package/mesh/texture assets, and added a local
+  `PlaceAssets` cache so the first Hall egg bay remains deterministic at boot.
+- Bound Egg Bay 1 to `wayfinder_egg`; the other three authored bays remain dormant pending their
+  rosters. The new-player tutorial now targets and names the local Wayfinder Egg instead of the
+  distant Crystal World Earth Egg.
+- Added a subtle client-only vertical idle float for the displayed egg. The server stand anchor is
+  fixed, preserving proximity prompts and hatch validation while the egg gently hovers.
+
+## 2026-08-18 — Hall Waycoin materialization and Farm Near targeting
+
+- Made Waycoin piles and caches fade into view overhead and tween down to their authored ground
+  position. Manual clicks, Farm Near, and pet mining ignore the reward until its landing completes.
+- Fixed Hall area tracking to consult synthetic Hall bounds when no legacy biome baseplate exists,
+  so teleported players no longer remain logically in `Spawn` while standing in `Hall_1`–`Hall_4`.
+  Hall coins continue to use the generic breakable and pet-farming lifecycle.
+
+## 2026-08-18 — Hall egg and pet art import for Bays 2–4
+
+- Staged, decimated, uploaded, and resolved the Gilded Gallery, Vanguard, and Worldheart egg models;
+  placed them on the authored Hall stands as dormant preview displays with the shared client-only
+  idle float. They remain noninteractive until gameplay configuration is approved.
+- Staged and uploaded all fifteen normal Hall pet models, fourteen delivered gold models, and all
+  thirty cleaned transparent pet-card images. Kept their image ids in a Hall-specific manifest so
+  importing art does not prematurely assign stats, odds, costs, roles, or rarities.
+- Recorded the sole delivery gap explicitly: Star Moth includes normal geometry and normal/gold card
+  art, but Downloads does not contain a gold GLB.
+
+## 2026-08-19 — Waycoin texture and ground-placement correction
+
+- Rebound the three Waycoin breakables to their resolved embedded UV-atlas IMAGE ids and normalized
+  explicit-texture MeshParts to white, fixing the gray/untextured coin presentation.
+- Corrected the Hall landing surface to the authored field top at `Y = 0.6` and added opt-in imported
+  part-pivot normalization. The small pile now measures its rendered 0.905-stud height instead of a
+  false 2.4-stud pivot-bound height and lands with a measured zero-stud floor gap.
+
+## 2026-08-19 — Hall Waycoin pickups and currency HUD isolation
+
+- Restricted the Hall HUD to Gems and Waycoins; Crystal World's four origin currencies no longer
+  appear while `CurrentArea` is a Hall area.
+- Replaced the Hall reward's green-gem fallback with a textured gold Waycoin pickup carrying
+  `hall_coins`. Recorded the Roblox Model-id versus raw-MeshPart-id loader trap and separated the
+  pile's flat resting correction from its collection-flight orientation.
+
+## 2026-08-19 — Hall mineable Waycoin target set
+
+- Imported the Waycoin bag, Gold Fern nugget, and coin trove meshes with their extracted UV-atlas
+  textures. Replaced mineable loose coin piles with a Bag → Nugget → Trove → Gilded Chest
+  progression across Hall areas 1–4.
+- Kept the single coin and shallow pile exclusively in the physical pickup/Magnet presentation
+  path so mining targets and spawned rewards have distinct, readable silhouettes.
+
+## 2026-08-19 — Configured breakable spawn strategies and shared pickup motion
+
+- Promoted sky arrival to a reusable breakable `spawn.method = "drop"` configuration while leaving
+  immediate placement as the default crystal strategy.
+- Removed the Hall-specific pickup rotation branch. Waycoin import correction now lives in its
+  configured visual template, and rewards reuse the established gem pop, rest/spin, and Magnet
+  collection loop unchanged.
+- Corrected the three newly imported Waycoin mineables at the asset-definition boundary and reduced
+  Hall-only replacement delays to 2–6 seconds.
+- Corrected the remaining startup/orientation regressions: breakable templates now load before the
+  shared `models_ready` gate opens, and the already-horizontal loose-coin mesh uses a neutral
+  one-time template orientation so generic pickup spin and Magnet motion cannot turn it sideways.
+- Increased Wayfinder Landing's configured breakable cap from 10 to 50 after live scale testing;
+  this is a density-only balance knob and does not introduce a Hall-specific spawn path.
+- Replaced Hall 1's visible jittered slot lattice with uniformly random candidates inside the
+  authored circular play area; placement remains shared, cached, and collision-aware.
+
+## 2026-08-19 — Hall play-area boundary recovery
+
+- Recovered the original RobloxGenerateMap moving white marquee dimensions and speed without
+  restoring its global `GenMapClient`, which previously leaked map-authoring boundaries into
+  Crystal World.
+- Added one configured `Hall_1_PlayArea` footprint shared by the Hall-only marquee and Waycoin
+  spawn filtering, preventing the visible boundary and usable coin field from drifting apart.
+
+## 2026-08-19 — Hall barn tutorial encounter
+
+- Adopted the authored Hall barn and its 21 fence sections into `Tile01_cap` rather than importing
+  duplicate geometry, and added an idempotent `BaddieSpawnerHallBarn` binding at its entrance.
+- Redirected the tutorial's first fight from Crystal World's distant Earth Cave to the Hall barn;
+  the normal proximity-wave and enemy lifecycle now drives that fight and resolves its loot through
+  the player's Hall area currency as Waycoins.
+- Renamed the First Steps combat capstone to **Protect the Barn** while preserving its persistent
+  quest id and analytics identity.
+
+## 2026-08-19 — Prologue room isolation and deterministic Hall landing
+
+- Moved the generated mezzanine prologue out of the vertically repeated realm stack and into an
+  isolated horizontal lane; its former Y=-8000 position overlapped the live Hell 4 layer.
+- Injected `ZoneService` into `PrologueService` so the closing cut resolves the profile's authored
+  initial area and sends new Hall players to `Hall_1` instead of Roblox's first `SpawnLocation`.
+- Restricted the emergency landing fallback to the matching tagged `PlayerSpawn`, preventing a
+  missing dependency or binding from silently routing a new player into Home.
+
+## 2026-08-19 — Gilded Gallery completion gate repair
+
+- Reconciled the current `Tutorial.done` state into the legacy persisted tutorial-completion flag
+  and made Hall unlock checks accept either representation, repairing completed profiles that were
+  incorrectly rejected at the Level 2 wall.
+- Moved Hall progression prompts from each tall barrier's center to a configured world-space
+  Attachment 4.5 studs above its bottom, keeping the E/tap prompt at a readable player height.
+## 2026-08-19 — Wayfinder Landing final entry density
+
+- Doubled the Hall 1 Waycoin-breakable cap from 50 to 100 after live field testing, reaching the
+  approved ten-times original density without changing target value, mix, spacing, or respawn timing.
+
+## 2026-08-19 — Vanguard Egg activated
+
+- Promoted Hall Egg Bay 3 from a visual-only preview to the interactive `vanguard_egg` hatcher at
+  1,000 Waycoins, backed by the uploaded five-role Vanguard roster and explicit support/control
+  behavior.
+- Made Hall egg placement resolve route configuration as the runtime authority, so an older baked
+  marker cannot leave a configured egg visible but un-hatchable.
+
+## 2026-08-19 — Vanguard pet textures used Decal ids
+
+- The live Vanguard roster hatched untextured gray pets because `texture_asset` was wired to
+  `pet_mesh_ids.json` `textureDecalId`. `MeshPart.TextureID` needs the resolved `imageId`.
+- Rebound all ten Blade Lynx / Bastion Ram / Bolt Hawk / Banner Hare / Chain Serpent
+  basic+gold (and rainbow-reuse) textures to those Image ids. Wayfinder already used the
+  resolved Image column; keep that rule when activating later Hall eggs.
+
+## 2026-08-19 — Hall egg stands authored on the floor
+
+- Stopped fabricating Hall pedestals at runtime. Crystal World stands were already
+  physically placed; Hall now follows that contract.
+- `wire_hall_of_worlds` seats each `HallEggStand` on the authored `NookPad` top (bays 1 and 4
+  at Y=-2.10) or the local walkway/field when a tile has no egg nook. Runtime only places the
+  egg on `UIanchor`. Sitting on the invisible `HallEggBay` marker top was the float.
+- Bay 2's old XZ `(1840, 208)` is west of Tile03's ShoulderDeck and has no floor. The stand
+  now sits on that deck at `(1872, 208)`.
+
+## 2026-08-19 — Gilded Egg activated and Hall hatch proximity
+
+- Promoted Hall Egg Bay 2 from a preview-only display to the interactive `hall_gilded_egg`
+  hatcher at 400 Waycoins, using the uploaded vault roster and resolved Image textures.
+- Hall hatch targeting now counts ground-plane distance to the stand as well as 3D distance
+  to the high `UIanchor`, so a tall pedestal no longer hides the hatch card. Egg hover is
+  1.25 studs above the stand top instead of 3.25.
+## 2026-08-19 — Hall play footprints restored
+
+- Replaced the broad synthetic Hall spawn circle with the six baked green-field `SpawnZone` parts.
+  The same adopted parts now drive both legal breakable positions and the animated dotted marquee,
+  including the paired markers at both corridor turns; obsolete synthetic play-area parts are
+  removed by the idempotent Studio wiring pass.
+- Disabled the legacy post-placement de-overlap nudge for registry-claimed slots. Slot claims
+  already enforce spacing; the redundant nudge could move a legal edge target onto a sidewalk.
+
+## 2026-08-19 — Hall hatch prompt and Worldheart Egg
+
+- Hall hatch targeting now also uses distance to the stand AABB and clamps the screen
+  card on-screen. A tall `UIanchor` was leaving players "at" the pedestal outside the
+  18-stud cap, or putting the card above the viewport. Hall eggs also get a world-space
+  `E HATCH` billboard.
+- Promoted Hall Egg Bay 4 from a preview-only display to the interactive `worldheart_egg`
+  hatcher at 2,500 Waycoins. Star Moth gold reuses the basic mesh until a gold GLB exists;
+  do not use the card image as a mesh texture.
+
+## 2026-08-19 — Hall pet world scale
+
+- Hall Meshy meshes import at ~1 stud. They had been using the Crystal World `1.6` scale,
+  so followers sat at a 1.6-stud max (Bastion Ram ~1.1 tall) next to ~3-stud homeworld and
+  tester pets. All twenty Hall pets now use `asset_transform.scale = 3.2`.
+
+## 2026-08-19 — Hall marquee follows authored field curves
+
+- The Hall dotted line was marching `zone.Size`, a rectangle that cut across every
+  rounded field corner and the corner-tile 45. Ported the GenerateMap
+  `roundedRectPath` / FieldCorner walk into `RoundedOutline` and publish that
+  polyline as `OutlinePath` again. The client uses the same path when a baked
+  marker still has a cleared outline.
+- The marquee now traces the authored white `FieldKerb`/`FieldKerbCorner` loop
+  (the green field's existing outline). Using SpawnZone size produced an inset
+  oval that did not match the field.
+
+## 2026-08-19 — Hall eggs fill the pedestal cup
+
+- Hall egg meshes import at ~1 stud. Shared `egg_stand_defaults.scale = 3.5`
+  left them ~3.5 tall in a 12-stud stand. Hall placement now uses
+  `hall_of_worlds.egg_stand.egg_scale = 8`.
+
+## 2026-08-19 — Hall drop slots follow the field outline
+
+- Breakable slot build was still sampling each `SpawnZone` rectangle. Corner
+  tiles (Tile04/07) are pentagons whose field extends far outside that box, so
+  the 45° cut stayed empty. `HallFieldOutline` now feeds the same kerb loop to
+  both the marquee and `SpawnSlots.layoutRandom`, which samples the outline AABB
+  instead of a centered zone rectangle.
+
+## 2026-08-19 — Hall drop density follows field area
+
+- Worlds Plaza was a 304×304 green field with a hard max of 20 bags. Hall
+  population is now `area/1000 * 2.6` so every Hall tile keeps the same farm
+  feel. Cap fields resolve to ~240; the two-tile mid halls resolve to ~108.
+  `max` is only a ceiling.
+
+## 2026-08-19 — Hall lock prompts hide after unlock
+
+- `ForcePrompt` on Hall barriers left `ZoneTravelPrompt` enabled after the
+  wall dropped, so "Unlock 750 hall_coins" still appeared in an open
+  corridor. HallGate prompts now disable once their target is in
+  `UnlockedAreasJson`.
+
+## 2026-08-19 — Hall hoverboard V1
+
+- Wiki had the Level-2 traversal contract but no code. Added `configs/hoverboard.lua`,
+  `HoverboardLogic`, server-owned `HoverboardEligible`/`HoverboardMounted`, a Board
+  button to the right of Powers, and keybind H. Cruise speed 64 is a floor under
+  `Eff_Speed`. Combat, missions, death, area travel, and the egg hatch card dismount.
+
+## 2026-08-19 — Hoverboard skate stance and ride physics
+
+- Roblox hoverboard threads all hit the same wall: WalkSpeed keeps running
+  animations. Mount now sets `PlatformStand`, drives XZ with `LinearVelocity`
+  from `ControlModule:GetMoveVector()`, and yaws the Root joint 90° so the
+  rider stands across the deck. Idle is replayed so PlatformStand is not a
+  ragdoll. Cruise is 64.
+
+## 2026-08-19 — Hoverboard glued to the soles
+
+- The deck was welded to HumanoidRootPart and bobbed on that weld, so the
+  board floated while the feet stayed put. It now WeldConstraints to both
+  feet after the skate pose lands. Bob is applied to the whole rider height.
+
+## 2026-08-19 — Hoverboard mount leap then body-centered deck
+
+- Gluing to the soles during a run left the deck under one foot. Mount now
+  plays a short leap (Roblox R15 Superhero jump, classic R6 jump fallback),
+  then applies the skate stance and welds the deck under `HumanoidRootPart`
+  so it stays centered on the body. The Ninja jump looked off on the live
+  avatar; Superhero is the pack leap we are evaluating.
+
+## 2026-08-19 — Hoverboard uses the avatar jump/fall pair
+
+- Pack "jump" clips (Ninja/Superhero) are a 2-frame takeoff pose. Mount now
+  plays that avatar's `Animate.jump` then holds `Animate.fall` for the air
+  time so R15 and classic R6 both read as a normal Roblox jump.
+
+## 2026-08-19 — Duplicate Assets.Models folders
+
+- Live Play had two `ReplicatedStorage.Assets.Models` folders (8324 vs 7373
+  descendants). Fast-path was still working (`adopted=372 fetched=80`, ~16s
+  `models_ready`), but both trees replicated and `FindFirstChild` could miss
+  the richer snapshot. Cause: Rojo-mapped `Models.rbxm` plus a Studio-saved
+  sibling under `$ignoreUnknownInstances`.
+- Boot now merges unique children into the richest folder and destroys extras.
+  Capture a new `Models.rbxm` from the single remaining runtime folder, then
+  delete any leftover Studio twin in Edit. Hoverboard sole tuner stays for R6.
+
+## 2026-08-19 — Crystal World gate trigger missed the arch
+
+- The Hall `CrystalWorld` doorway used a copied Home Gate whose WorldPivot
+  sat 71 studs from the mesh. Players at the visible arch never reached the
+  invisible Portal. Runtime now snaps that trigger (and the Home return
+  gate) to the visual bounding box; the Studio wire script recenters the
+  pivot before `PivotTo`.
+- Home's Hall arch now sits on the layer `Portal_Home` footprint
+  (`Heaven_1.Portal_Home` minus 2000Y → about `48, 9, 190`), the same
+  back-to-base pad every Heaven/Hell layer already uses.
+
+## 2026-08-19 — Board button uses the Powers pill path
+
+- Board is now a BaseUI `menu_button` (`Hoverboard` / `hoverboard_action`),
+  pill-skinned by MenuTrayStyle, and docked by HotbarFlank just right of
+  Powers. HoverboardController only toggles visibility; it no longer builds
+  its own brown chrome.
+
+## 2026-08-19 — Flora gray after Models restore
+
+- The restored Flora bake still has albedo TextureIDs, but MeshParts keep
+  Roblox's default gray Color. TextureID is multiplied by Color, so Home
+  trees/bushes looked untextured after the folder wipe. FloraService now
+  whitens textured MeshParts on spawn, matching the breakable atlas fix.
+
+## 2026-08-19 — Hall 1 windmill was 3 studs high
+
+- Tile01 `ZoneLandmark` (the sailed mill at `2000, -516`) sat at plinth Y=0
+  while the other three Hall mills sit on ShoulderDeck at Y=-3. Flowers in
+  that plaza showed in the gap. Live Edit dropped it 3 studs; save the
+  place so the next boot keeps it.
+
+## 2026-08-19 — Hoverboard mesh + five recolors
+
+- Uploaded one shared Meshy hoverboard mesh and five albedo recolors
+  (black_gold, green_white, orange_black, white_red, blue_gold) plus
+  magenta-keyed UI icons. Registry: `scripts/hoverboard_assets.json`.
+- V1 mounts `black_gold` via MeshAssembly (server template in
+  `ReplicatedStorage.HoverboardTemplates`); procedural deck is fallback.
+  HUD Board button uses the keyed black-gold icon. Cosmetic swap stays later.
+
+## 2026-08-19 — Hoverboard glow is admin-only
+
+- The neon box under the deck stays for trail/light, but Transparency is 1
+  unless `AdminOverlaysOn`. Mesh flatten (`pitch 2.6°`, `roll -0.2°`) is
+  applied before sole-height tuning.
+- Admin tuner now has live sole / pitch / roll rows so flatten can be
+  dialed in Play without a reboot. Report the numbers back into
+  `configs/hoverboard.lua` `flatten`.
+- Locked flatten from live tune: pitch 10.1°, roll -0.2°, sole -0.7.
+  Debug glow stays world-flat and transparent unless ADMIN is on.
+
+## 2026-08-19 — Kade's hoverboard shack
+
+- Hall 1 `Tile01_cap.Shack` is now Kade's board shop. His avatar
+  (`536245038`) stands in the doorway; the five recolors sit outside.
+  Waycoin catalog is `configs/hoverboard.lua` `shop`. Owned/equipped
+  skins persist in `GameData.Hoverboard`. Black Gold is the free starter.
+
+## 2026-08-19 — Kade shop story and mixed tender
+
+- Dropped the 3D board lineup outside the shack. Catalog is the keyed
+  skin images plus Kade's Colorado story (three years of asking, then he
+  bought the boards himself). Black Gold and Green White are free; Orange
+  Black / White Red cost gems; Blue Gold is a Robux stub
+  (`hoverboard_blue_gold`, product id 0). Closing the shop now destroys
+  the panel frame so the MenuOverlay dim scrim clears.
+
+## 2026-08-19 — Kade's Boards roof sign
+
+- Added a config-driven 3D part letter sign above the Hall 1 shack:
+  `KADE'S` / `BOARDS` in gold neon (`BlockLetterSign`, pose in
+  `configs/hoverboard.lua` `shop.location.sign`).
+
+## 2026-08-19 — Kade sign rainbow cascade
+
+- Roof letters now run an animated hue cascade. Server stamps
+  `RainbowIndex` on each cell; `BlockLetterRainbow` on the client
+  rotates the range (`shop.location.sign.rainbow_speed`).
+
+## 2026-08-19 — Kade sign is client-only
+
+- The roof letters are a client visualization. Server no longer
+  spawns the sign; `BlockLetterRainbow` builds it locally and
+  runs the cascade. Replication races were why the animation
+  never started.
+
+## 2026-08-19 — Hall award podium preview
+
+- Added a client-built 1st/2nd/3rd stand beside Kade's shack for
+  Enemies Defeated. Characters come from the leaderboard snapshot,
+  padded with server players so Studio can see bodies while we
+  move the pose. Config: `leaderboards.podiums`.
+
+## 2026-08-19 — Podium uses the live OrderedDataStore
+
+- Macros on 1st with 0 was the Studio pad, not a real rank. Studio
+  can now read `LB_EnemiesDefeated_v1` (`publication.studio_read_global`)
+  without writing tester scores. The podium asks
+  `leaderboard.snapshot` and no longer fills empty steps with whoever
+  is in the server. Raised the SLAYERS title above the figures.
+
+## 2026-08-19 — Podium plates on the steps
+
+- Name/score left the head BillboardGui. Each step now has a fixed-size
+  SurfaceGui plate on the courtyard face (`podiums[].plate`). 3D cookie
+  letters stay on the title and rank numerals only.
+
+## 2026-08-19 — Internal account IDs
+
+- Gathered Jason's tester identities into `configs/internal_accounts.lua`.
+  Leaderboards and the retention dashboard exclude those IDs. Colorado is
+  ID-only — never a `Colorado*` name prefix. Studio also RemoveAsync the
+  excluded OrderedDataStore keys.
+
+## 2026-08-20 — Hall award podium hooks
+
+- Four origin-board stands now bind to tagged `AwardPodium` map hooks at
+  the Hall 1 cap exit, same contract as egg stands. Pose is the hook
+  CFrame. Stamp: `scripts/studio/stamp_award_podiums.luau`.
+
+## 2026-08-20 — Hoverboard per-skin meshes + surfboards
+
+- Meshy re-unwrapped each hoverboard recolor (same 3424-tri silhouette,
+  different UVs). Shared-mesh + foreign albedo kaleidoscoped. Each skin
+  now has its own uploaded mesh + matching texture (MeshAssembly).
+- Ingested five Chevron surfboards from Downloads (1616 tris, not
+  decimated). Same combine path. Catalog entries are free until priced.
+  IDs: `scripts/hoverboard_assets.json`.
+
+## 2026-08-20 — Rocket boards + per-skin flatten
+
+- Ingested six rocket boards from Downloads (1236 tris, not decimated).
+  Same per-skin mesh+texture MeshAssembly path.
+- Flatten is now per-skin (`pitch_degrees` / `roll_degrees` /
+  `deck_yaw_degrees`) falling back to global hoverboard flatten. Surf
+  starts at pitch 90; rockets start at 0.
+
+## 2026-08-20 — Surf scale + oriented sole
+
+- Chevron surf length is 12.4 (2× the import). Deck weld/glow use the
+  oriented AABB half-height, not `Size.Y` — pitch 90 had put length on Y
+  and buried the board under the feet. Sole tuner floor is -6.
+- Locked surf flatten from live ride: sole -0.2, pitch 90, roll 0, yaw 180
+  (nose was backwards at yaw 0). Yaw is applied after pitch so 180 actually
+  reverses the point. Per-skin `sole_drop` so hoverboards stay at -0.7.
+- Owned boards replicate into `Inventory.hoverboards` and show on the Items
+  tab. Click equips via `hoverboard.equip` (no Kade range). Free catalog
+  skins are granted on save load. Hoverboard sole uses the up-facing axis
+  so orange no longer drops under the rider.
+
+## 2026-08-20 — Kade's Boards owned state
+
+- Catalog rows the player already owns show OWNED (or EQUIPPED) instead of
+  a price. The action is Equip only; Take/Buy/Robux never reappear.
+  `HoverboardLogic.canBuy` still rejects `already_owned`.
+
+## 2026-08-20 — Hover ray leftover hop height
+
+- After skipping a steep/underside hit, the hover probe reused
+  `(rootY - hitY)` as the remaining budget, so a still rider could hang at
+  mount-hop height until they moved. Search stays 28 studs from the origin;
+  no floor applies a downward fall.
+
+## 2026-08-20 — Roll is a rail bank
+
+- Deck orient was `yaw * Angles(pitch, 0, roll)`. At surf pitch 90 that
+  world-Z roll matched yaw. Roll is now a bank around the mesh long axis
+  after pitch+yaw. Roll 0 keeps the locked surf flatten.
+
+## 2026-08-20 — Surf flatten locked (roll 0.5)
+
+- Live tuner: sole -0.2, pitch 90, roll 0.5, yaw 180. All five surf skins.
+
+## 2026-08-20 — Rocket flatten + 150% length
+
+- Rocket yaw locked at 90. Length 8.1 (150% of 5.4). Sole -0.2 / pitch 0 /
+  roll 0 are the pre-scale starting point and may move after the resize.
+
+## 2026-08-20 — Sole lock after idle, not Admin
+
+- First deck weld ran two frames after the hop, while feet were still in
+  the fall pose. Standing idle then left a gap above the board; turning
+  Admin on restamped against planted soles and "locked." Mount now waits
+  for idle, restamps once more, and restamps on Admin toggle. Tuner
+  pitch/roll/yaw attrs apply only while Admin is on.
+
+## 2026-08-20 — Rocket regional prices
+
+- Kade Robux cards resolve `MarketplaceService:GetProductInfo` on the
+  client (same as the pass shop) so regional/managed pricing is shown.
+  Config `price_robux = 19` is dashboard baseline only.
+
+## 2026-08-20 — Rocket product IDs live
+
+- Wired dashboard SKUs: blue 3709033036, light blue 3709032949, green
+  3709033097, orange 3709033159, purple 3709033211, yellow 3709033275.
+  All R$ 19.
+
+## 2026-08-20 — Rocket cruise actually applies
+
+- Ride LinearVelocity used `HoverboardWalkSpeed` or 64 and Equip never
+  restamped speed, so rocket and skate timed the same. Client now takes
+  max(attr, skin cruise). Equip / HoverboardSkin restamp server speed.
+  Rockets set `cruise_speed = 83.2`.
+
+## 2026-08-20 — Board shop prices
+
+- Hoverboards free. Surfs 900/950/1000/1100/1050 gems. Rockets R$ 19 on
+  sale. Kade Robux buy uses MonetizationService test_mode (like tokens)
+  when the dashboard id is still 0.
+
+## 2026-08-20 — Rocket Robux + Kade lineup
+
+- Rockets are Robux products (`hoverboard_rocket_*`, product id 0) and use
+  `cruise_multiplier = 1.3`. Display lineup folder
+  `Workspace.Maps.FuturePath.KadeBoardLineup` (five skins) for shop-edge posing.
+  Stamp: `scripts/studio/stamp_kade_board_lineup.luau`.
+
+## 2026-08-20 — Kade shop square grid
+
+- First condensation of Kade's Boards: 2–4 column square-icon cards
+  (measured from the grid width) instead of 120-tall full-width rows.
+  Panel is 0.72×0.78. Story/status stay above the grid.
+
+## 2026-08-20 — Hall seams do not dismount
+
+- `CurrentArea` Hall_1→Hall_2 (old gate wall lines) was treated as area
+  travel and forced a dismount. ZoneTracker bounds are not a teleport;
+  the board stays mounted across Hall route segments.
+
+## 2026-08-20 — Rocket cruise 2×
+
+- Orange rocket still timed 25s egg-to-egg after HoverboardWalkSpeed
+  showed 83.2. This Play session's ride Heartbeat does not re-run
+  `start()` on Rojo sync, and 1.3× is easy to miss on Hall turns.
+  Rockets are now 2× skate (128). LinearVelocity uses per-axis 1e6
+  force so hover Y cannot starve XZ. Remount or Stop/Play to pick up
+  the new client liner; a live Heartbeat boost covers the current Play.
+
+## 2026-08-20 — Reset to Beginning clears boards
+
+- Admin Reset to Beginning (keeps unique pets) now wipes
+  `GameData.Hoverboard` and `Inventory.hoverboards`. Free catalog skins
+  grant again only after the Level-2 unlock, not on every save load.
+
+## 2026-08-20 — Rocket engine trails
+
+- Skate and surf keep the single deck wake. Rockets spawn two trails on
+  the mesh nozzles (`ride_fx.engines` offsets) tinted with each skin
+  `accent_color`. Remount to pick up the new FX in a live Play session.
+
+## 2026-08-20 — Hall 1 Archpad Crystal World return
+
+- Tile01 `Archpad` now holds a Crystal World arch copy
+  (`CrystalWorldReturnPortal`). It is not `HallExitToCrystalWorld`, so
+  new Hall players cannot skip. `EnteredCrystalWorld` publishes
+  `HallOfWorlds.entered_crystal_world` (v16 grandfather or Plaza first
+  exit). Lock prompt is "Finish the Hall"; members Travel. Wayfinder
+  egg bay 1 stays off the pad at ~1818.9, -317.9.
+
+## 2026-08-20 — Last world resume (Hall or Crystal Spawn)
+
+- `GameData.LastArea` is written from portal travel / zone placement and
+  from `InMission`, never from player-list `CurrentArea`. Hall tiles
+  resume on that tile. Heaven, Hell, Crystal biomes, and trials all
+  resume at Crystal World `Spawn`. In-trial deaths stay in the instance.
+
+## 2026-08-20 — Hall tutorial track 2 + sidekick guest visit
+
+- New tutorial records write `Tutorial.track = 2`. Legacy saves have no
+  track, so Hall gates only check tutorial completion for post-update
+  players. Sidekick/follow can guest-pull an unfinished Hall player to
+  Crystal World Spawn for the session without stamping membership or
+  LastArea; leaving the team or rejoining returns them to Hall.
+
+## 2026-08-20 — Admin reset restores Hall tutorial track 2
+
+- Reset-to-beginning and `TutorialService:Reset` now write a fresh
+  `Tutorial.track = 2` record and clear `GameData.TutorialCompleted`, so
+  a reset tester is gated like a new post-update player.
+
+## 2026-08-20 — Hall 1 spawn in front of the Wayfinder egg
+
+- Hall_1 player spawn is the play-field pad at `1897.8, 7.8, -314.7`, facing
+  the Wayfinder stand. Authored `Hall_1_PlayerSpawn` sits 5 studs under that
+  HRP so the shared ground-spawn lift lands on the field.
+
+## 2026-08-20 — Authored HallSpawn pad
+
+- `Workspace.Maps.FuturePath.HallSpawn` is the Hall_1 spawn marker. Move it
+  in Studio; wire/runtime bind the part in place and do not snap it back.
+  The pad is invisible (`Transparency = 1`); find it by name.
+
+## 2026-08-20 — Hall eggs follow the stand
+
+- Hall `UIanchor` is the stand cup (mesh-top + hover), not a fossilized
+  ground/nook Y. `HallEggBay` parents to the pedestal so hatch UI moves
+  with it. Wire does not re-sit a stand you already placed.
+
+## 2026-08-20 — Gilded egg follows the pedestal mesh
+
+- HallEggStand2's mesh was 227 studs from the model pivot (play-field
+  nook vs old ShoulderDeck). Hatch UI used the huge AABB so it still
+  fired on the empty stand. Cup XZ now comes from `hall_egg_stand`,
+  and WorldPivot is realigned to that mesh.
+
+## 2026-08-20 — Dragonlord is hatchable dragons only
+
+- Portal Drake is the Worldheart secret and counts for Dragonlord.
+  Abyssal Wyrm stays. Wyrmling does not: it is an Obsidian exclusive,
+  not the "playing for dragons" hatch chase.
+

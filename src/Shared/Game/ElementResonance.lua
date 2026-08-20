@@ -42,6 +42,12 @@ function ElementResonance.biomeMultiplier(petElement, zoneElement, cfg)
     if petElement == "" or zoneElement == "" then
         return 1
     end
+    local special = biome.special
+    local specialRow = type(special) == "table" and special[petElement] or nil
+    local specialValue = type(specialRow) == "table" and tonumber(specialRow[zoneElement]) or nil
+    if specialValue then
+        return specialValue
+    end
     if biome.beats[petElement] == zoneElement then
         return tonumber(biome.advantage) or 1
     end

@@ -189,14 +189,29 @@ return function()
             expect(#key <= 50).to.equal(true)
         end)
 
-        it("excludes configured internal username prefixes case-insensitively", function()
-            local prefixes = retention.dashboard.excluded_name_prefixes
-            expect(RetentionLogic.isExcludedPlayerName("ColoradoPlays", prefixes)).to.equal(true)
+        it("excludes internal accounts by ID and safe prefixes, never Colorado*", function()
+            local accounts = loadModule("configs/internal_accounts.lua")
+            local InternalAccounts = loadModule("src/Shared/Game/InternalAccounts.lua")
+            local prefixes = InternalAccounts.namePrefixes(accounts)
+            local userIds = InternalAccounts.userIds(accounts)
+
+            expect(RetentionLogic.isExcludedPlayerName("ColoradoPlays", prefixes)).to.equal(false)
+            expect(RetentionLogic.isExcludedPlayerName("ColoradoFan", prefixes)).to.equal(false)
+            expect(RetentionLogic.isExcludedUserId(3200870803, userIds)).to.equal(true)
+            expect(RetentionLogic.isInternalPlayer(3200870803, "ColoradoPlays", userIds, prefixes)).to.equal(
+                true
+            )
+            expect(RetentionLogic.isInternalPlayer(1, "ColoradoFan", userIds, prefixes)).to.equal(
+                false
+            )
             expect(RetentionLogic.isExcludedPlayerName("WAXILLIUM_alt", prefixes)).to.equal(true)
             expect(RetentionLogic.isExcludedPlayerName("waxiliumLegacy", prefixes)).to.equal(true)
             expect(RetentionLogic.isExcludedPlayerName("sploitdm1", prefixes)).to.equal(true)
             expect(RetentionLogic.isExcludedPlayerName("MacrosTester", prefixes)).to.equal(true)
             expect(RetentionLogic.isExcludedPlayerName("StrangerPlayer", prefixes)).to.equal(false)
+            expect(InternalAccounts.isUserId(accounts, 3539984059)).to.equal(true)
+            expect(InternalAccounts.isUserId(accounts, 3086045027)).to.equal(true)
+            expect(InternalAccounts.isUserId(accounts, 3047771242)).to.equal(true)
         end)
 
         it("uses a deterministic bounded key for dashboard buckets", function()

@@ -63,6 +63,95 @@ return function()
         end)
     end)
 
+    describe("SpawnSlots authored random layout", function()
+        local function seededRng()
+            local state = 17
+            return function()
+                state = (state * 1103515245 + 12345) % 2147483648
+                return state / 2147483648
+            end
+        end
+
+        it("measures a rectangle with the shoelace area", function()
+            local outline = SpawnSlots.parseOutline("-10,-10;10,-10;10,10;-10,10")
+            expect(SpawnSlots.polygonArea(outline)).to.equal(400)
+            expect(SpawnSlots.polygonArea({})).to.equal(0)
+        end)
+
+        it("parses the authored OutlinePath contract", function()
+            local outline = SpawnSlots.parseOutline("-10,-10;10,-10;10,10;-10,10")
+            expect(#outline).to.equal(4)
+            expect(outline[3].x).to.equal(10)
+            expect(outline[3].z).to.equal(10)
+        end)
+
+        it("samples the outline AABB so a corner pentagon is not clipped to a centered rectangle", function()
+            local outline = {
+                { x = -68, z = -103 },
+                { x = 7, z = -103 },
+                { x = 68, z = -42 },
+                { x = 68, z = 33 },
+                { x = -68, z = 33 },
+            }
+            local minX, maxX, minZ, maxZ = SpawnSlots.boundsOf(outline)
+            expect(minX).to.be.near(-68, 0.001)
+            expect(maxX).to.be.near(68, 0.001)
+            expect(minZ).to.be.near(-103, 0.001)
+            expect(maxZ).to.be.near(33, 0.001)
+
+            local points = SpawnSlots.layoutRandom({
+                width = 160,
+                depth = 90,
+                spacing = 18,
+                outline = outline,
+                rng = seededRng(),
+            })
+            expect(#points > 0).to.equal(true)
+            local sawFarSouth = false
+            for _, point in ipairs(points) do
+                expect(SpawnSlots.containsPoint(outline, point.x, point.z)).to.equal(true)
+                if point.z < -50 then
+                    sawFarSouth = true
+                end
+            end
+            expect(sawFarSouth).to.equal(true)
+        end)
+
+        it("filters random candidates to the authored polygon", function()
+            local outline = SpawnSlots.parseOutline("-10,-10;10,-10;10,10;-10,10")
+            local points = SpawnSlots.layoutRandom({
+                width = 40,
+                depth = 40,
+                spacing = 5,
+                outline = outline,
+                rng = seededRng(),
+            })
+            expect(#points > 0).to.equal(true)
+            for _, point in ipairs(points) do
+                expect(SpawnSlots.containsPoint(outline, point.x, point.z)).to.equal(true)
+                expect(math.abs(point.x) <= 10).to.equal(true)
+                expect(math.abs(point.z) <= 10).to.equal(true)
+            end
+        end)
+
+        it("does not quantize candidates into rows", function()
+            local points = SpawnSlots.layoutRandom({
+                width = 100,
+                depth = 100,
+                spacing = 10,
+                rng = seededRng(),
+            })
+            local sawNonGridCoordinate = false
+            for _, point in ipairs(points) do
+                if math.abs(point.x / 10 - math.floor(point.x / 10 + 0.5)) > 0.01 then
+                    sawNonGridCoordinate = true
+                    break
+                end
+            end
+            expect(sawNonGridCoordinate).to.equal(true)
+        end)
+    end)
+
     describe("SpawnSlots registry — claim / release", function()
         local function makeReg()
             return SpawnSlots.new({

@@ -53,6 +53,7 @@ local PowerStats = require(ReplicatedStorage.Shared.Game.PowerStats)
 local PowerStatsDiff = require(ReplicatedStorage.Shared.Game.PowerStatsDiff)
 local FocusUpkeep = require(ReplicatedStorage.Shared.Game.FocusUpkeep)
 local CloseButton = require(script.Parent.Parent.Components.CloseButton)
+local RangeLoadoutSession = require(script.Parent.Parent.Parent.Systems.RangeLoadoutSession)
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 local Pill = require(script.Parent.Parent.Pill)
 -- The level a new player chooses their origin (NATURAL picks come before this; ORIGIN powers after).
@@ -160,7 +161,74 @@ function PowerChoiceMenu.new()
     self.undoBtn = nil
     self.upgradeBtn = nil
     self.resetBtn = nil
+    self.petsBtn = nil
+    self.rangeOrigin = nil
     return self
+end
+
+function PowerChoiceMenu:_isRangeCatalog()
+    return RangeLoadoutSession.isActive()
+end
+
+function PowerChoiceMenu:_initRangeState()
+    local session = RangeLoadoutSession.get()
+    self.live = false
+    self.level = MAX_LEVEL
+    self.owned = {}
+    self.pendingSlots = 0
+    self.pendingLevels = 0
+    self.atMax = true
+    self.archetype = nil
+    self.pendingOrigin = nil
+    self.notice = nil
+    self.rangeOrigin = session and session.origin or nil
+    self.pendingPower = (session and session.powerSlots) or 6
+    self:_loadRangeStagedFromSession()
+end
+
+function PowerChoiceMenu:_loadRangeStagedFromSession()
+    local session = RangeLoadoutSession.get()
+    self.staged = {}
+    for _, powerId in ipairs((session and session.powers) or {}) do
+        if type(powerId) == "string" then
+            self.staged[#self.staged + 1] = { action = "pick", id = powerId }
+        end
+    end
+end
+
+function PowerChoiceMenu:_persistRangeDraft()
+    if not self:_isRangeCatalog() then
+        return
+    end
+    local powers = {}
+    for _, staged in ipairs(self.staged or {}) do
+        if staged.action == "pick" and type(staged.id) == "string" then
+            powers[#powers + 1] = staged.id
+        end
+    end
+    RangeLoadoutSession.setPowers(powers)
+    RangeLoadoutSession.setOrigin(self.rangeOrigin)
+end
+
+function PowerChoiceMenu:_pruneRangePicks()
+    local allowed = {}
+    for _, powerId in ipairs(archetypesCfg.generic_pool or {}) do
+        allowed[powerId] = true
+    end
+    local origin = self.rangeOrigin
+    local def = origin and archetypesCfg.archetypes and archetypesCfg.archetypes[origin]
+    for _, powerId in ipairs((def and def.power_pool) or {}) do
+        allowed[powerId] = true
+    end
+    local kept = {}
+    local banned = self:_rangeBanned()
+    for _, staged in ipairs(self.staged) do
+        if staged.action == "pick" and allowed[staged.id] and not banned[staged.id] then
+            kept[#kept + 1] = staged
+        end
+    end
+    self.staged = kept
+    self:_persistRangeDraft()
 end
 
 -- ---- staged-buffer helpers ----------------------------------------------
@@ -234,6 +302,9 @@ end
 
 -- COMMIT is allowed once the beat's grant is fully allocated (picks always; slots unless none fit)
 function PowerChoiceMenu:_canCommit()
+    if self:_isRangeCatalog() then
+        return self.rangeOrigin ~= nil
+    end
     -- Level 5 cannot be committed until the separate permanent-origin review has been locked in.
     -- Staging a card is deliberately insufficient: no footer action may bypass the warning.
     if self.live and not self.archetype and self.level >= ORIGIN_CHOICE_LEVEL then
@@ -363,6 +434,9 @@ end
 
 -- click a row: stage a slot (committed power) OR stage/clear a pick (radio on a pick beat).
 function PowerChoiceMenu:_onRow(id)
+    if self:_isRangeCatalog() and self:_rangeBanned()[id] then
+        return
+    end
     self.notice = nil
     if self.owned[id] then
         -- committed power: stage a slot if the beat grants slots and it isn't maxed
@@ -401,6 +475,9 @@ function PowerChoiceMenu:_onRow(id)
             self:_render()
         end
     end
+    if self:_isRangeCatalog() then
+        self:_persistRangeDraft()
+    end
 end
 
 function PowerChoiceMenu:_undo()
@@ -408,6 +485,9 @@ function PowerChoiceMenu:_undo()
         return
     end
     table.remove(self.staged)
+    if self:_isRangeCatalog() then
+        self:_persistRangeDraft()
+    end
     self:_render()
 end
 
@@ -428,6 +508,16 @@ function PowerChoiceMenu:_resetRun()
 end
 
 function PowerChoiceMenu:_commit()
+    if self:_isRangeCatalog() then
+        self:_persistRangeDraft()
+        if not self.rangeOrigin then
+            self.notice = "Choose an origin first"
+            self:_render()
+            return
+        end
+        RangeLoadoutSession.enter()
+        return
+    end
     if not self:_canCommit() then
         return
     end
@@ -1353,6 +1443,21 @@ function PowerChoiceMenu:_statusText()
     if self.notice then
         return self.notice, Color3.fromRGB(255, 180, 120)
     end
+    if self:_isRangeCatalog() then
+        local slots = (RangeLoadoutSession.get() and RangeLoadoutSession.get().powerSlots) or 6
+        local picked = self:_stagedPickCount()
+        if self.pendingOrigin then
+            local def = archetypesCfg.archetypes and archetypesCfg.archetypes[self.pendingOrigin]
+            local name = def and def.display_name or self.pendingOrigin
+            return "REVIEW " .. string.upper(name) .. " — lock it in or go back", COMMIT_COLOR
+        end
+        if not self.rangeOrigin then
+            return "CHOOSE YOUR ORIGIN — then pick up to " .. tostring(slots) .. " powers",
+                Color3.fromRGB(235, 230, 250)
+        end
+        return ("THE RANGE  —  %d/%d powers  ·  Pets ↔ Powers"):format(picked, slots),
+            Color3.fromRGB(150, 230, 150)
+    end
     if self.live and not self.archetype and self.level >= ORIGIN_CHOICE_LEVEL then
         if self.pendingOrigin then
             local def = archetypesCfg.archetypes and archetypesCfg.archetypes[self.pendingOrigin]
@@ -1728,6 +1833,21 @@ function PowerChoiceMenu:_hideTooltip()
     end
 end
 
+function PowerChoiceMenu:_rangeBanned()
+    local banned = {}
+    local session = RangeLoadoutSession.get()
+    local list = session
+        and session.ctx
+        and session.ctx.catalog
+        and session.ctx.catalog.disallowed_powers
+    for _, id in ipairs(type(list) == "table" and list or {}) do
+        if type(id) == "string" then
+            banned[id] = true
+        end
+    end
+    return banned
+end
+
 function PowerChoiceMenu:_fillColumn(holder, pool)
     for _, child in ipairs(holder:GetChildren()) do
         if child:IsA("GuiObject") then
@@ -1736,6 +1856,16 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
     end
     if not pool then
         return
+    end
+    if self:_isRangeCatalog() then
+        local banned = self:_rangeBanned()
+        local filtered = {}
+        for _, id in ipairs(pool) do
+            if type(id) == "string" and not banned[id] then
+                filtered[#filtered + 1] = id
+            end
+        end
+        pool = filtered
     end
     local ownedSet = {}
     for id in pairs(self.owned) do
@@ -1811,11 +1941,13 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
             size = UDim2.fromScale(1, 1),
             rowPx = rowPixelHeight(),
         })
-        -- glow: gold = staged (unsaved); green/blue = actionable this beat
+        -- glow: gold = staged (unsaved); green/blue = actionable this beat.
+        -- Range catalog: only the picked powers glow — every row is pickable, so
+        -- the "new/available" green frame on everything is noise.
         local glowColor
         if hasStaged then
             glowColor = STAGED_GLOW
-        elseif actionable then
+        elseif actionable and not self:_isRangeCatalog() then
             glowColor = (r.state == "owned") and Color3.fromRGB(140, 200, 255)
                 or Color3.fromRGB(150, 230, 150)
         end
@@ -1844,8 +1976,9 @@ end
 -- First click is deliberately reversible: it stages a local review and performs no server write.
 function PowerChoiceMenu:_stageOrigin(origin)
     if
-        not self.live
+        (not self.live and not self:_isRangeCatalog())
         or self.archetype
+        or self.rangeOrigin
         or not (archetypesCfg.archetypes and archetypesCfg.archetypes[origin])
     then
         return
@@ -1865,6 +1998,17 @@ end
 -- than the initial chooser button, so a browse/tap can never accidentally make the decision.
 function PowerChoiceMenu:_commitOrigin()
     local origin = self.pendingOrigin
+    if self:_isRangeCatalog() and origin then
+        self:_persistRangeDraft()
+        RangeLoadoutSession.setOrigin(origin)
+        self.rangeOrigin = origin
+        self.pendingOrigin = nil
+        self.notice = nil
+        self:_loadRangeStagedFromSession()
+        self:_pruneRangePicks()
+        self:_render()
+        return
+    end
     if not (self.live and not self.archetype and origin) then
         return
     end
@@ -2126,6 +2270,25 @@ function PowerChoiceMenu:_fillOriginChooser(holder)
 end
 
 function PowerChoiceMenu:_refreshOrigin()
+    if self:_isRangeCatalog() and not self.rangeOrigin then
+        if self.originHeader then
+            if self.pendingOrigin then
+                local def = archetypesCfg.archetypes
+                    and archetypesCfg.archetypes[self.pendingOrigin]
+                self.originHeader.Text = "REVIEW "
+                    .. string.upper((def and def.display_name) or self.pendingOrigin)
+                self.originHeader.TextColor3 = ORIGIN_COLOR[self.pendingOrigin]
+                    or Color3.fromRGB(235, 230, 250)
+            else
+                self.originHeader.Text = "CHOOSE ORIGIN"
+                self.originHeader.TextColor3 = Color3.fromRGB(235, 230, 250)
+            end
+        end
+        if self.originCol then
+            self:_fillOriginChooser(self.originCol)
+        end
+        return
+    end
     if self.live and not self.archetype then
         -- no origin yet: the ORIGIN column is a chooser (at L5+) or a locked note (before L5)
         if self.originHeader then
@@ -2149,11 +2312,17 @@ function PowerChoiceMenu:_refreshOrigin()
         end
         return
     end
-    local origin = self.live and self.archetype or ORIGINS[self.originIndex]
+    local origin = (self:_isRangeCatalog() and self.rangeOrigin)
+        or (self.live and self.archetype)
+        or ORIGINS[self.originIndex]
     local def = archetypesCfg.archetypes and archetypesCfg.archetypes[origin]
     if self.originHeader then
         local name = (def and def.display_name or tostring(origin)):upper()
-        self.originHeader.Text = self.live and name or ("‹ " .. name .. " ›")
+        if self:_isRangeCatalog() then
+            self.originHeader.Text = name .. "  ·  change"
+        else
+            self.originHeader.Text = self.live and name or ("‹ " .. name .. " ›")
+        end
         self.originHeader.TextColor3 = ORIGIN_COLOR[origin] or Color3.new(1, 1, 1)
     end
     if self.originCol then
@@ -2200,6 +2369,39 @@ function PowerChoiceMenu:_render()
             atMax and ("MAX (L" .. MAX_LEVEL .. ")") or "LEVEL UP  ▶  (BANK)"
         )
         setChipEnabled(self.levelBtn, not atMax)
+    end
+    if self:_isRangeCatalog() then
+        if self.petsBtn then
+            self.petsBtn.Visible = true
+            self.petsBtn.Size = UDim2.fromScale(0.18, 0.05)
+            self.petsBtn.Position = UDim2.fromScale(0.14, 0.965)
+        end
+        if self.undoBtn then
+            self.undoBtn.Visible = #self.staged > 0
+            self.undoBtn.Size = UDim2.fromScale(0.18, 0.05)
+            self.undoBtn.Position = UDim2.fromScale(0.36, 0.965)
+            setChipEnabled(self.undoBtn, #self.staged > 0)
+        end
+        if self.commitBtn then
+            setChipText(self.commitBtn, "✓ ENTER")
+            self.commitBtn.Visible = true
+            self.commitBtn.Size = UDim2.fromScale(0.28, 0.055)
+            self.commitBtn.Position = UDim2.fromScale(0.62, 0.965)
+            setChipEnabled(self.commitBtn, self.rangeOrigin ~= nil)
+        end
+        if self.upgradeBtn then
+            self.upgradeBtn.Visible = false
+        end
+        if self.levelBtn then
+            self.levelBtn.Visible = false
+        end
+        if self.resetBtn then
+            self.resetBtn.Visible = false
+        end
+        return
+    end
+    if self.petsBtn then
+        self.petsBtn.Visible = false
     end
     local levelChoiceAvailable = self.pendingPower > 0 or self.pendingSlots > 0
     setChipEnabled(self.commitBtn, levelChoiceAvailable and self:_canCommit())
@@ -2345,7 +2547,7 @@ function PowerChoiceMenu:Show(parent)
     title.Size = UDim2.fromScale(0.6, 0.05)
     title.Position = UDim2.fromScale(0.2, 0.012)
     title.BackgroundTransparency = 1
-    title.Text = "POWER CHOICE"
+    title.Text = self:_isRangeCatalog() and "THE RANGE" or "POWER CHOICE"
     title.TextColor3 = Color3.fromRGB(235, 230, 250)
     title.TextScaled = true
     title.Font = Enum.Font.GothamBold
@@ -2368,6 +2570,10 @@ function PowerChoiceMenu:Show(parent)
     CloseButton.attach(root, {
         zindex = 146, -- above the 130 panel pill border
         onClick = function()
+            if self:_isRangeCatalog() then
+                RangeLoadoutSession.abandon()
+                return
+            end
             if _G.MenuManager then
                 _G.MenuManager:CloseCurrentPanel()
             end
@@ -2404,6 +2610,20 @@ function PowerChoiceMenu:Show(parent)
     ohs.Parent = oHeader
     self.originHeader = oHeader
     oHeader.Activated:Connect(function()
+        if self:_isRangeCatalog() then
+            if self.pendingOrigin then
+                self:_cancelOriginReview()
+                return
+            end
+            if self.rangeOrigin then
+                self:_persistRangeDraft()
+                RangeLoadoutSession.setOrigin(nil)
+                self.rangeOrigin = nil
+                self:_pruneRangePicks()
+                self:_render()
+            end
+            return
+        end
         if self.live then
             return -- origin is locked to your real archetype in live mode
         end
@@ -2484,15 +2704,41 @@ function PowerChoiceMenu:Show(parent)
         self:_resetRun()
     end)
 
+    self.petsBtn = makeChip(
+        root,
+        "🐾 PETS",
+        UDim2.fromScale(0.17, 0.05),
+        UDim2.fromScale(0.12, 0.965),
+        Color3.fromRGB(70, 100, 160),
+        0
+    )
+    self.petsBtn.Visible = false
+    self.petsBtn.Activated:Connect(function()
+        if self:_isRangeCatalog() then
+            self:_persistRangeDraft()
+            RangeLoadoutSession.openPets()
+        end
+    end)
+
     -- The menu owns the level-up claim UX while open — suppress the old LevelUpController reveal
     -- modal so they don't fight over LevelUp_Claimed.
     _G.PowerChoiceMenuOpen = true
-    self:_initState()
+    if self:_isRangeCatalog() then
+        self:_initRangeState()
+    else
+        self:_initState()
+    end
     self:_render()
     root.Parent = parent
 end
 
 function PowerChoiceMenu:Hide()
+    if self:_isRangeCatalog() then
+        self:_persistRangeDraft()
+        if not RangeLoadoutSession.consumeSwitch() then
+            RangeLoadoutSession.clear()
+        end
+    end
     if self._hostGui then
         self._hostGui.DisplayOrder = self._hostOrder or 0
         self._hostGui = nil
@@ -2517,8 +2763,14 @@ function PowerChoiceMenu:Hide()
     self.undoBtn = nil
     self.upgradeBtn = nil
     self.resetBtn = nil
+    self.petsBtn = nil
+    self.rangeOrigin = nil
     self.upgradePreview = nil
     self._upgradeInFlight = false
+    local menu = _G.MenuManager
+    if menu and menu.NotifyPanelHidden then
+        menu:NotifyPanelHidden(self)
+    end
 end
 
 function PowerChoiceMenu:GetFrame()

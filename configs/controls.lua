@@ -18,6 +18,10 @@ return {
         -- to focus one (e.g. the healer first). Hold Shift to cycle backward. Pressing it
         -- with no enemy in range clears the assist.
         enemy_cycle = "Z",
+
+        -- Toggle the Hall Level-2 hoverboard. The HUD button next to Powers
+        -- is the same action for mouse and touch.
+        hoverboard = "H",
     },
 
     -- Z-cycle scope. By default it only steps through real enemies that need attention;

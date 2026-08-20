@@ -17,6 +17,7 @@ local HotbarService = {}
 HotbarService.__index = HotbarService
 
 function HotbarService:Init()
+    self._challengeBinds = {}
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
     self._dataService = self._modules and self._modules.DataService
@@ -151,6 +152,15 @@ function HotbarService:_assignablePalette(player)
             seen[id] = true
         end
     end
+    local loaned = self._challengeBinds[player]
+    if type(loaned) == "table" then
+        for _, id in ipairs(loaned) do
+            if type(id) == "string" and not seen[id] then
+                powers[#powers + 1] = id
+                seen[id] = true
+            end
+        end
+    end
     -- Potions the player OWNS (drinkable consumables you can bind to a slot like a power).
     -- PotionService is the SSOT for owned counts; an empty list if it's not up yet.
     local potions = {}
@@ -164,20 +174,28 @@ function HotbarService:_assignablePalette(player)
         end
     end
     local tokens = {}
+    local earnedLevel = math.max(1, math.floor(tonumber(player:GetAttribute("Level")) or 1))
     local bucket = self._inventoryService:GetInventory(player, "consumables")
     for uid, record in pairs((bucket and bucket.items) or {}) do
         local itemId = tostring(record.id or uid)
         local def = self._itemsById[itemId]
         local count = math.max(0, math.floor(tonumber(record.quantity) or 0))
+        local unlockLevel = def and tonumber(def.unlock_level)
+        local unlocked = unlockLevel == nil or earnedLevel >= unlockLevel
         if def and def.hotbar_type == "token" and count > 0 then
             tokens[#tokens + 1] = {
                 id = itemId,
                 count = count,
                 name = def.name,
                 type = def.type_label or "Boost token",
-                description = def.description,
+                description = unlocked and def.description
+                    or def.locked_description
+                    or def.description,
                 icon_power = def.icon_power,
                 badge = def.badge,
+                locked = not unlocked,
+                unlock_level = unlockLevel,
+                locked_description = def.locked_description,
             }
         end
     end
@@ -276,7 +294,25 @@ function HotbarService:GetState(player)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
     end
-    return { ok = true, hotbar = self:_ensureDefaults(data), slot_count = self._config.slot_count }
+    local hotbar = self:_ensureDefaults(data)
+    local loaned = self._challengeBinds[player]
+    if type(loaned) == "table" and #loaned > 0 then
+        hotbar = table.clone(hotbar)
+        for i, powerId in ipairs(loaned) do
+            hotbar[tostring(i)] = { type = "power", target = powerId }
+        end
+    end
+    return { ok = true, hotbar = hotbar, slot_count = self._config.slot_count }
+end
+
+function HotbarService:SetChallengeBinds(player, powerIds)
+    self._challengeBinds[player] = type(powerIds) == "table" and powerIds or {}
+    self:_pushState(player)
+end
+
+function HotbarService:ClearChallengeBinds(player)
+    self._challengeBinds[player] = nil
+    self:_pushState(player)
 end
 
 -- Restore the exact authored new-player bar and publish it immediately. Admin reset uses this
@@ -401,7 +437,13 @@ function HotbarService:Activate(player, payload)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
     end
-    local bind = HotbarLogic.bindAt(self:_ensureDefaults(data), slot)
+    local bind
+    local loaned = self._challengeBinds[player]
+    if type(loaned) == "table" and loaned[slot] then
+        bind = { type = "power", target = loaned[slot] }
+    else
+        bind = HotbarLogic.bindAt(self:_ensureDefaults(data), slot)
+    end
     if not bind then
         return { ok = false, reason = "empty_slot" }
     end

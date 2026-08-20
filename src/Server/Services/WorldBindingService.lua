@@ -125,6 +125,17 @@ function WorldBindingService:_markerRaycastExclusions()
     return exclusions
 end
 
+local function facingCFrame(position, fromCFrame)
+    if typeof(fromCFrame) == "CFrame" then
+        local look = fromCFrame.LookVector
+        local flat = Vector3.new(look.X, 0, look.Z)
+        if flat.Magnitude > 0.05 then
+            return CFrame.lookAt(position, position + flat.Unit)
+        end
+    end
+    return CFrame.new(position)
+end
+
 function WorldBindingService:_findGroundSpawnPosition(areaId)
     local playerSpawn = self._playerSpawnsByArea[areaId]
     local playerSpawnPart = getPrimaryPartOrSelf(playerSpawn)
@@ -993,7 +1004,9 @@ function WorldBindingService:GetSpawnCFrameForZone(zoneId)
 
     local groundPosition = self:_findGroundSpawnPosition(areaId)
     if groundPosition then
-        return CFrame.new(groundPosition), areaId
+        local playerSpawn = self._playerSpawnsByArea[areaId]
+        local playerSpawnPart = getPrimaryPartOrSelf(playerSpawn)
+        return facingCFrame(groundPosition, playerSpawnPart and playerSpawnPart.CFrame), areaId
     end
 
     return CFrame.new(self:_spawnPosition(areaId)), areaId

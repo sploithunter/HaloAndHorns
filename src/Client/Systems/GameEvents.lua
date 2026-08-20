@@ -345,6 +345,21 @@ REACTIONS.float = function(spec, ctx)
     end)
 end
 
+-- failure_float: reason-aware failed-cast feedback. The server sends a stable machine reason in
+-- ctx.reason; config owns the player-facing language. This deliberately reuses the existing world
+-- float instead of creating another positioned HUD surface, so it remains readable on every screen
+-- size and appears alongside (rather than replacing) the standard red puff + flub sound.
+REACTIONS.failure_float = function(spec, ctx)
+    spec = type(spec) == "table" and spec or {}
+    ctx = type(ctx) == "table" and ctx or {}
+    local messages = type(spec.messages) == "table" and spec.messages or {}
+    local text = messages[tostring(ctx.reason or "")] or spec.default
+    if not text then
+        return
+    end
+    REACTIONS.float(spec, { name = text })
+end
+
 -- effect_transfer: make a consumable explain itself spatially. Its universal badge blooms at
 -- screen centre, then one or more copies fly to the HUD surface affected by the mechanic:
 -- player status row, deployed squad cards, or the selected enemy. This is presentation only;

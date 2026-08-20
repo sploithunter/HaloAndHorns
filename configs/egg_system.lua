@@ -115,6 +115,28 @@ return {
                 recenter_tween_seconds = 0.45,
                 hold_seconds = 1,
             },
+            -- End every hatch/trade reveal by teaching the destination: the visible result
+            -- cards converge into the live Pets button. The target is resolved from the
+            -- button's runtime AbsolutePosition/AbsoluteSize, never a fixed screen offset.
+            result_funnel = {
+                enabled = true,
+                duration_seconds = 0.55,
+                stagger_seconds = 0.025,
+                max_stagger_window_seconds = 0.4,
+                final_scale = 0.18,
+                rotation_degrees = 12,
+            },
+            -- A hatch-only summary of authoritative first-time pet-index discoveries in the
+            -- batch. Placement is proportional to the hatch canvas, not a screen-pixel guess.
+            new_discovery = {
+                enabled = true,
+                text_format = "+%d NEW",
+                pop_duration_seconds = 0.28,
+                initial_scale = 0.6,
+                show_card_badges = true,
+                card_text = "NEW!",
+                card_rotation_degrees = -18,
+            },
             reveal_badges = {
                 enabled = true,
                 show_rarity = true,

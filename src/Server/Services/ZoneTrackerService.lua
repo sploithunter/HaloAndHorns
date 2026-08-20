@@ -207,14 +207,17 @@ function ZoneTrackerService:_resolveFor(player)
     -- Primary: which baseplate are we physically standing on.
     local resolved = self:_resolveByRaycast(player)
     if not resolved then
-        -- Not on a known baseplate (mid-air/bridge): keep the last area rather than risk a
-        -- mis-resolve from the overlapping boxes. Use the box fallback only if we have no area yet.
-        resolved = current
-            or ZoneResolver.resolveSticky(pos, self._bounds, current, {
-                verticalBand = self._verticalBand,
-                margin = self._boundaryMargin,
-                default = self._defaultArea,
-            })
+        -- Authored biome baseplates are the strongest signal, but synthetic-only spaces such as
+        -- Hall of Worlds have no legacy biome part to raycast. Always consult the sticky bounds
+        -- fallback: it preserves the current area on bridges while still allowing a teleport from
+        -- Spawn into Hall_1 to resolve instead of remaining stuck on Spawn forever.
+        resolved = ZoneResolver.resolveSticky(pos, self._bounds, current, {
+            verticalBand = self._verticalBand,
+            margin = self._boundaryMargin,
+            -- Between authored footprints (bridges / brief airborne movement), retain the last
+            -- known area. A containing Hall bound still wins before this fallback is consulted.
+            default = current or self._defaultArea,
+        })
     end
 
     if resolved ~= current then

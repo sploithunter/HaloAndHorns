@@ -12,10 +12,12 @@ local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local PetRevive = require(script.Parent.Parent.PetRevive)
 local Enhancements = require(ReplicatedStorage.Shared.Game.Enhancements)
+local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 local PowerSelection = require(ReplicatedStorage.Shared.Game.PowerSelection)
 local ArchetypeLogic = require(ReplicatedStorage.Shared.Game.ArchetypeLogic)
 local AmplifiedBurst = require(ReplicatedStorage.Shared.Game.AmplifiedBurst)
@@ -112,6 +114,10 @@ function PowerService:Init()
     self._archetypesConfig = self._configLoader:LoadConfig("archetypes")
     self._combatConfig = self._configLoader:LoadConfig("combat") -- accuracy curve for P4 to-hit
     self._enhConfig = self._configLoader:LoadConfig("enhancements") -- slotted-enhancement boosts
+    local okChallenge, challenge = pcall(function()
+        return self._configLoader:LoadConfig("challenge_runs")
+    end)
+    self._challengeConfig = (okChallenge and type(challenge) == "table") and challenge or nil
 
     self._cooldowns = setmetatable({}, { __mode = "k" }) -- player -> { powerId -> expiry (os.time) }
     -- player -> { [powerId]=true }: the always-on toggles currently RUNNING (draining focus_upkeep).
@@ -207,6 +213,44 @@ end
 
 -- Clear every managed passive axis, then re-apply the ones the player currently OWNS (permanent,
 -- no timer). Idempotent: call after pick / respec / grant / spawn. Respec (owned empty) clears all.
+function PowerService:_challengeAllowlist(player)
+    local raw = player:GetAttribute("ChallengePowers")
+    if type(raw) ~= "string" or raw == "" then
+        return nil
+    end
+    local ok, list = pcall(function()
+        return HttpService:JSONDecode(raw)
+    end)
+    if not (ok and type(list) == "table") then
+        return nil
+    end
+    return list
+end
+
+function PowerService:_slotsForPower(player, powerId)
+    local allow = self:_challengeAllowlist(player)
+    if allow and ChallengeRun.allowsPower(allow, powerId) then
+        local mode = player:GetAttribute("GauntletMode")
+        local modeCfg = self._challengeConfig
+            and self._challengeConfig.modes
+            and self._challengeConfig.modes[mode]
+        local slotting = modeCfg and modeCfg.catalog and modeCfg.catalog.slotting
+        local data = self._dataService and self._dataService:GetData(player)
+        local challengeOrigin = player:GetAttribute("ChallengeOrigin")
+        local origin = (type(challengeOrigin) == "string" and challengeOrigin ~= "")
+                and challengeOrigin
+            or (data and type(data.Archetype) == "string" and data.Archetype ~= "") and data.Archetype
+            or (slotting and slotting.origin)
+            or "sandwalker"
+        return ChallengeRun.defaultSlots(powerId, slotting, origin)
+    end
+    local data = self._dataService and self._dataService:GetData(player)
+    if data and type(data.Slots) == "table" then
+        return data.Slots[tostring(powerId)] or {}
+    end
+    return {}
+end
+
 function PowerService:_applyOwnedPassives(player)
     for _, attr in pairs(PASSIVE_ATTR) do
         player:SetAttribute(attr, nil)
@@ -218,13 +262,20 @@ function PowerService:_applyOwnedPassives(player)
     if self._activeToggles then
         self._activeToggles[player] = {} -- reset the running set; owned passives re-activate (default ON) below
     end
+    local allow = self:_challengeAllowlist(player)
+    if allow then
+        -- Catalog Range: only the picked loaned powers exist. Owned Swift/Magnet/etc. stay off.
+        for _, powerId in ipairs(allow) do
+            self:_stampPassive(player, powerId, self:_slotsForPower(player, powerId))
+        end
+        return
+    end
     local data = self._dataService and self._dataService:GetData(player)
     if not data or type(data.Powers) ~= "table" then
         return
     end
     for _, powerId in ipairs(data.Powers) do
-        local slots = (type(data.Slots) == "table" and data.Slots[tostring(powerId)]) or {}
-        self:_stampPassive(player, powerId, slots)
+        self:_stampPassive(player, powerId, self:_slotsForPower(player, powerId))
     end
 end
 
@@ -340,18 +391,25 @@ end
 -- player's real slotting and starts the upkeep drain; OFF clears the buff but KEEPS the owned marker so
 -- the HUD shows a greyed badge to flip back on.
 function PowerService:ToggleActive(player, powerId, on)
-    local data = self._dataService and self._dataService:GetData(player)
-    local owns = false
-    if data and type(data.Powers) == "table" then
-        for _, p in ipairs(data.Powers) do
-            if tostring(p) == tostring(powerId) then
-                owns = true
-                break
+    local allow = self:_challengeAllowlist(player)
+    if allow then
+        if not ChallengeRun.allowsPower(allow, powerId) then
+            return { ok = false, reason = "not_owned" }
+        end
+    else
+        local data = self._dataService and self._dataService:GetData(player)
+        local owns = false
+        if data and type(data.Powers) == "table" then
+            for _, p in ipairs(data.Powers) do
+                if tostring(p) == tostring(powerId) then
+                    owns = true
+                    break
+                end
             end
         end
-    end
-    if not owns then
-        return { ok = false, reason = "not_owned" }
+        if not owns then
+            return { ok = false, reason = "not_owned" }
+        end
     end
     local kinds = self._powersConfig.effect_kinds or {}
     local def = self._powersConfig.powers[tostring(powerId)]
@@ -360,8 +418,7 @@ function PowerService:ToggleActive(player, powerId, on)
         return { ok = false, reason = "not_toggle" }
     end
     if on then
-        local slots = (type(data.Slots) == "table" and data.Slots[tostring(powerId)]) or {}
-        local attr = self:_stampPassive(player, powerId, slots)
+        local attr = self:_stampPassive(player, powerId, self:_slotsForPower(player, powerId))
         return { ok = attr ~= nil, on = true }
     end
     self:_clearPassive(player, powerId) -- keep the owned marker → badge greys to OFF
@@ -382,8 +439,7 @@ function PowerService:_activeUpkeepRate(player, active)
         local def = self._powersConfig.powers[tostring(powerId)]
         local base = def and tonumber(def.focus_upkeep)
         if base and base > 0 then
-            local slots = (data and type(data.Slots) == "table" and data.Slots[tostring(powerId)])
-                or {}
+            local slots = self:_slotsForPower(player, powerId)
             local reduction = Enhancements.aggregate(self._enhConfig, slots, level).focus or 0
             rates[#rates + 1] = FocusUpkeep.effectiveRate(base, reduction)
         end
@@ -1596,9 +1652,8 @@ function PowerService:_dotHit(player, enemy, perTick, critChance, critMult, now,
     -- SPARK procs (slotted on this power): chance per hit to surge it for +bonus of its
     -- damage. The first proc enhancement — establishes the mechanics (Jason); rare
     -- specialty drops later ride the same Enhancements.procs path.
-    local data = self._dataService and self._dataService:GetData(player)
-    local slots = data and type(data.Slots) == "table" and data.Slots[tostring(powerId)]
-    if slots then
+    local slots = self:_slotsForPower(player, powerId)
+    if type(slots) == "table" and #slots > 0 then
         for _, proc in
             ipairs(
                 Enhancements.procs(
@@ -2876,10 +2931,17 @@ function PowerService:Cast(player, powerId, opts)
     local adminBypass = (opts and opts.adminBypass == true)
         or player:GetAttribute("IsAdmin") == true
         or RunService:IsStudio()
-    -- INNATE powers (e.g. Resonance) are owned by EVERYONE by default — they're never written to
-    -- data.Powers (so they don't consume a level-grant slot or appear in the picker), so the
-    -- owned-list gate would wrongly refuse them. Skip the gate for innate; cooldown/focus still apply.
-    if not adminBypass and not def.innate then
+    -- Catalog Range: the picked list is exclusive. Owned Swift/Magnet/Resonance do not leak
+    -- through Studio or admin identity — only the admin power-bar (opts.adminBypass) may.
+    local challengeAllow = self:_challengeAllowlist(player)
+    if challengeAllow and not (opts and opts.adminBypass == true) then
+        if not ChallengeRun.allowsPower(challengeAllow, powerId) then
+            return { ok = false, reason = "not_owned" }
+        end
+    elseif not adminBypass and not def.innate then
+        -- INNATE powers (e.g. Resonance) are owned by EVERYONE by default — they're never written to
+        -- data.Powers (so they don't consume a level-grant slot or appear in the picker), so the
+        -- owned-list gate would wrongly refuse them outside a catalog run.
         local data = self._dataService and self._dataService:GetData(player)
         local owned = (data and type(data.Powers) == "table") and data.Powers or {}
         local has = false
@@ -2900,7 +2962,7 @@ function PowerService:Cast(player, powerId, opts)
         self._cooldowns[player] = cds
     end
     if cds[powerId] and now < cds[powerId] then
-        return { ok = false, reason = "on_cooldown", remaining = cds[powerId] - now }
+        return self:_flub(player, "on_cooldown", { remaining = cds[powerId] - now })
     end
 
     local rawKind = (
@@ -2915,20 +2977,15 @@ function PowerService:Cast(player, powerId, opts)
     local record = PowerRegistry.record(tostring(powerId), self._powersConfig)
     -- Slotted ENHANCEMENTS on the cast power -> per-axis bonus fractions (additive within an
     -- axis; single > dual). Feeds resolveEffective + the cooldown stamp below.
-    local data = self._dataService and self._dataService:GetData(player)
-    -- Enhancement slots feeding the cast: the admin power-bar passes opts.slotsOverride to test a
-    -- power at a fixed slotting (MIN = {} bare, MAX = a full single-origin set) WITHOUT touching the
-    -- player's saved Slots; everyone else reads their real slotted enhancements.
-    local castSlots = (opts and opts.slotsOverride)
-        or (data and type(data.Slots) == "table" and data.Slots[tostring(powerId)])
-        or {}
-    local enhAxes = Enhancements.aggregate(
-        self._enhConfig,
-        castSlots,
-        tonumber(player:GetAttribute("Level")) or 1 -- CoH scaling: +2 stronger, -3 dead
-    )
+    -- Admin power-bar passes opts.slotsOverride (MIN/MAX) without touching saved Slots.
+    -- Catalog Range uses ChallengeRun.defaultSlots so ranking stays fair.
+    local castSlots = (opts and opts.slotsOverride) or self:_slotsForPower(player, powerId) or {}
+    local combatLevel = tonumber(player:GetAttribute("EffectiveLevel"))
+        or tonumber(player:GetAttribute("Level"))
+        or 1
+    local enhAxes = Enhancements.aggregate(self._enhConfig, castSlots, combatLevel)
     if record then
-        local casterLevel = tonumber(player:GetAttribute("Level")) or 1
+        local casterLevel = combatLevel
         local effective = PowerStats.resolveEffective(record, {
             casterLevel = casterLevel,
             scaling = self._powersConfig.scaling, -- nil today ⇒ identity; P3 fills it
@@ -2991,7 +3048,10 @@ function PowerService:Cast(player, powerId, opts)
         local farmTargeted = self._powersConfig.farm_targeted_families
             and self._powersConfig.farm_targeted_families[kind.family]
         if not (farmTargeted and self:_hasEngagedFarmTarget(player)) then
-            return self:_flub(player, "no_target")
+            return self:_flub(
+                player,
+                farmTargeted and "no_enemy_or_crystal_target" or "no_enemy_target"
+            )
         end
     end
 
