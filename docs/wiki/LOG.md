@@ -3868,3 +3868,20 @@ first-session cohort rates.
   base volume `0.12` became effectively silent through a 17% Effects setting
   plus positional falloff. Raised the base to `0.55`, kept it on the Effects
   bus, and widened the full-volume/falloff distances to 24/90 studs.
+
+## 2026-08-21 — Durable offline awards and Range/Training settlement
+
+- Added a producer-neutral `AwardDeliveryService` over ProfileStore messages and RewardService.
+  Stable ids are recorded in the same player profile as the granted bundle, and the message is
+  acknowledged in that critical save, so a crash retries rather than losing or double-paying the
+  award. The lazy bounded ledger avoids a template reconcile field. A personal GameEvent banner and
+  chime tells a returning player exactly what arrived. Future offline exchange receipts should use
+  this same queue boundary.
+- Range and Training Ground now retain each public entrant's lowest numeric (best) rank during a
+  personal rolling award window. Expiry writes an immutable per-board outbox record before queueing:
+  rank 1 pays 100 gems, ranks 2–3 pay 50, and ranks 4–10 pay 25. Failed queue/ack operations retry by
+  stable id; an offline expired record settles on return. Only successful global public snapshots
+  count, and `hide_internal_accounts` remains TEMP false so internal testers are currently eligible.
+- Reduced the TEMP score/award window from two hours to 30 minutes and updated both board subtitles
+  and arch guides. Production remains 48 hours. Added a Studio smoke bridge for the actual queued
+  grant + notification + profile-ledger path, with test state restoration.

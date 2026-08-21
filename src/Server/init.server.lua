@@ -717,6 +717,22 @@ loader:RegisterModule("RewardService", ServerScriptService.Server.Services.Rewar
     "PlayerEffectsService",
 })
 loader:RegisterModule(
+    "AwardDeliveryService",
+    ServerScriptService.Server.Services.AwardDeliveryService,
+    { "Logger", "ConfigLoader", "DataService", "RewardService" }
+)
+registerFeatureModule(
+    "leaderboards",
+    "LeaderboardAwardService",
+    ServerScriptService.Server.Services.LeaderboardAwardService,
+    {
+        "Logger",
+        "ConfigLoader",
+        "LeaderboardService",
+        "AwardDeliveryService",
+    }
+)
+loader:RegisterModule(
     "PromoCodeService",
     ServerScriptService.Server.Services.PromoCodeService,
     appendIfEnabled(
@@ -932,6 +948,7 @@ if RunService:IsStudio() then
     appendIfEnabled(studioSmokeDeps, "enchants", "EnchantService")
     appendIfEnabled(studioSmokeDeps, "auto_target", "AutoTargetService")
     table.insert(studioSmokeDeps, "PetGrantService")
+    table.insert(studioSmokeDeps, "AwardDeliveryService")
 
     loader:RegisterModule(
         "StudioSmokeTestService",
@@ -1259,6 +1276,8 @@ table.insert(requiredModules, "PartyService")
 table.insert(requiredModules, "TradeService")
 table.insert(requiredModules, "FusionService")
 table.insert(requiredModules, "RewardService")
+table.insert(requiredModules, "AwardDeliveryService")
+appendIfEnabled(requiredModules, "leaderboards", "LeaderboardAwardService")
 table.insert(requiredModules, "PromoCodeService")
 table.insert(requiredModules, "QuestService")
 table.insert(requiredModules, "DailyService")

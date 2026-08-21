@@ -13,8 +13,8 @@ return {
     -- Current boards: best cleared room in this sliding window.
     -- Persist GameData.ChallengeRuns.<mode>.recent only when a run exists.
     leaderboard = {
-        -- Production is 48 hours. TEMP 2 hours so we can test ranking/rewards.
-        window_seconds = 2 * 60 * 60,
+        -- Production is 48 hours. TEMP 30 minutes so we can exercise settlement + return delivery.
+        window_seconds = 30 * 60,
         recent_cap = 48,
         -- Expire stale window scores: server start, BindToClose, and this interval.
         sweep_seconds = 5 * 60,
@@ -40,7 +40,7 @@ return {
                     "Everyone fights at level 50.",
                     "Room 1 is two whelps. Maps change after that.",
                     "Pick an origin kit and a loaned squad.",
-                    "Best room in the last 2 hours ranks the board.",
+                    "Best room in the last 30 minutes ranks the board.",
                 },
             },
             -- Room 1 teaches. Room 2 keeps two whelps but grows the map.
@@ -196,7 +196,7 @@ return {
                     "Teams are allowed.",
                     "Room 1 is two whelps. Maps change after that.",
                     "Easier rooms than The Range.",
-                    "Best room in the last 2 hours ranks the board.",
+                    "Best room in the last 30 minutes ranks the board.",
                 },
             },
             curve = {

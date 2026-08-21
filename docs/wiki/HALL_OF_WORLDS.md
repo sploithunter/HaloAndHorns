@@ -256,8 +256,11 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   room when a run ends (and on join). Window expiry sweeps at server
   start, every 5 minutes, and BindToClose. Internal IDs still write;
   `hide_internal_accounts` only omits them from the visible top 10
-  (TEMP off for Macros testing). Window is TEMP 2 hours (production 48).
-  Backend only — no HUD yet.
+  (TEMP off for Macros testing). Window is TEMP 30 minutes (production 48 hours).
+  The server retains each entrant's best numeric rank during their rolling award window, then
+  durably queues the configured gem tier. Delivery occurs immediately when online or on the next
+  return, with a personal award banner; stable ids make retries idempotent. Backend only — no HUD
+  countdown yet.
 - Wire adopts named pads in place and does not snap a user-moved pad back to fallback
   coordinates. After a gate rotate, move the pad to that arch (`scripts/studio/align_challenge_pads.luau`)
   — the E-prompt parents to the pad. Save the place after the pads/arches exist.

@@ -129,7 +129,7 @@ return {
         {
             id = "range_current",
             display_name = "The Range",
-            subtitle = "Best room in the last 2 hours",
+            subtitle = "Best room in the last 30 minutes",
             style = { accent = { 232, 176, 72 }, header = { 72, 48, 18 } },
             score = { kind = "challenge_window", mode = "range" },
             sort = "desc",
@@ -139,11 +139,26 @@ return {
                 studio_enabled = false,
                 ordered_store = "LB_RangeCurrent_v1",
             },
+            awards = {
+                enabled = true,
+                -- TEMP Studio access supports the 30-minute pre-release test. Disable with the
+                -- other Studio live-store exceptions before publication.
+                studio_enabled = true,
+                state_store = "LB_RangeAwardWindows_v1",
+                observation_debounce_seconds = 5 * 60,
+                -- Production cadence is 48 hours. These repeatable competitive prizes are gems,
+                -- not unique/tradable objects, and are delivered through the durable award queue.
+                tiers = {
+                    { max_rank = 1, label = "100 Gems", reward = { currencies = { gems = 100 } } },
+                    { max_rank = 3, label = "50 Gems", reward = { currencies = { gems = 50 } } },
+                    { max_rank = 10, label = "25 Gems", reward = { currencies = { gems = 25 } } },
+                },
+            },
         },
         {
             id = "training_ground_current",
             display_name = "Training Ground",
-            subtitle = "Best room in the last 2 hours",
+            subtitle = "Best room in the last 30 minutes",
             style = { accent = { 120, 196, 96 }, header = { 28, 56, 32 } },
             score = { kind = "challenge_window", mode = "training_ground" },
             sort = "desc",
@@ -152,6 +167,17 @@ return {
                 enabled = true,
                 studio_enabled = false,
                 ordered_store = "LB_TrainingGroundCurrent_v1",
+            },
+            awards = {
+                enabled = true,
+                studio_enabled = true,
+                state_store = "LB_TrainingAwardWindows_v1",
+                observation_debounce_seconds = 5 * 60,
+                tiers = {
+                    { max_rank = 1, label = "100 Gems", reward = { currencies = { gems = 100 } } },
+                    { max_rank = 3, label = "50 Gems", reward = { currencies = { gems = 50 } } },
+                    { max_rank = 10, label = "25 Gems", reward = { currencies = { gems = 25 } } },
+                },
             },
         },
     },

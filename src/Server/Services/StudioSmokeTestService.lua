@@ -10,6 +10,7 @@ local StudioSmokeTestService = {}
 StudioSmokeTestService.__index = StudioSmokeTestService
 
 local CollectionService = game:GetService("CollectionService")
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -54,9 +55,11 @@ local modifierService
 local playerProgressionService
 local autoTargetService
 local settingsService
+local awardDeliveryService
 
 local sessions = {}
 local travelSessions = {}
+local awardSessions = {}
 
 local function deepCopy(value)
     if type(value) ~= "table" then
@@ -159,6 +162,7 @@ function StudioSmokeTestService:Init()
     playerProgressionService = self._modules.PlayerProgressionService
     autoTargetService = self._modules.AutoTargetService
     settingsService = self._modules.SettingsService
+    awardDeliveryService = self._modules.AwardDeliveryService
 end
 
 function StudioSmokeTestService:Start()
@@ -174,6 +178,7 @@ function StudioSmokeTestService:Start()
     Players.PlayerRemoving:Connect(function(player)
         sessions[player.UserId] = nil
         travelSessions[player.UserId] = nil
+        awardSessions[player.UserId] = nil
     end)
 
     logger:Info("Studio smoke test bridge ready", {
@@ -234,12 +239,87 @@ function StudioSmokeTestService:_handleRequest(player, action, payload)
         return self:_runPhase5AutoSystemsSmoke(player, payload)
     elseif action == "CleanupColoradoGrantOrphans" then
         return self:_cleanupColoradoGrantOrphans(player)
+    elseif action == "BeginAwardDeliverySmoke" then
+        return self:_beginAwardDeliverySmoke(player)
+    elseif action == "CheckAwardDeliverySmoke" then
+        return self:_checkAwardDeliverySmoke(player)
+    elseif action == "RestoreAwardDeliverySmoke" then
+        return self:_restoreAwardDeliverySmoke(player)
     end
 
     return {
         ok = false,
         error = "Unknown smoke action: " .. tostring(action),
     }
+end
+
+function StudioSmokeTestService:_beginAwardDeliverySmoke(player)
+    local data = dataService:GetData(player)
+    if not data or not awardDeliveryService then
+        return { ok = false, error = "Award delivery smoke dependencies are not loaded" }
+    end
+    if awardSessions[player.UserId] then
+        return { ok = false, error = "Award delivery smoke session already active" }
+    end
+
+    local awardId = "studio-smoke:" .. HttpService:GenerateGUID(false)
+    awardSessions[player.UserId] = {
+        awardId = awardId,
+        originalGems = tonumber(data.Currencies and data.Currencies.gems) or 0,
+    }
+    local queued = awardDeliveryService:QueueForUser(player.UserId, {
+        id = awardId,
+        source = "studio_smoke:award_delivery",
+        bundle = { currencies = { gems = 1 } },
+        notification = {
+            event = "award_delivered",
+            name = "🎁 Studio durable-award smoke: 1 Gem",
+        },
+    })
+    if not queued.ok then
+        awardSessions[player.UserId] = nil
+        return { ok = false, error = queued.reason or "Award message did not queue" }
+    end
+    return { ok = true, awardId = awardId }
+end
+
+function StudioSmokeTestService:_checkAwardDeliverySmoke(player)
+    local session = awardSessions[player.UserId]
+    local data = dataService:GetData(player)
+    if not session or not data then
+        return { ok = false, error = "Award delivery smoke session is not active" }
+    end
+    local AwardDelivery = require(ReplicatedStorage.Shared.Game.AwardDelivery)
+    local gems = tonumber(data.Currencies and data.Currencies.gems) or 0
+    return {
+        ok = true,
+        awardId = session.awardId,
+        claimed = AwardDelivery.isClaimed(data, session.awardId),
+        granted = gems == session.originalGems + 1,
+        gems = gems,
+        originalGems = session.originalGems,
+    }
+end
+
+function StudioSmokeTestService:_restoreAwardDeliverySmoke(player)
+    local session = awardSessions[player.UserId]
+    local data = dataService:GetData(player)
+    if not session or not data then
+        return { ok = false, error = "Award delivery smoke session is not active" }
+    end
+
+    economyService:SetCurrency(player, "gems", session.originalGems, "award_delivery_smoke_restore")
+    local AwardDelivery = require(ReplicatedStorage.Shared.Game.AwardDelivery)
+    local root = AwardDelivery.root(data)
+    root.claimed[session.awardId] = nil
+    for index = #root.order, 1, -1 do
+        if root.order[index] == session.awardId then
+            table.remove(root.order, index)
+        end
+    end
+    dataService:RequestSave(player, "award_delivery_smoke_restore", { critical = true })
+    awardSessions[player.UserId] = nil
+    return { ok = true, restored = true }
 end
 
 local function ensureFolder(parent, name)

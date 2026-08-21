@@ -122,6 +122,12 @@ filtered out of production registries.
   config IDs, rather than public spellings or aliases, key durable claim records and retention
   attribution; LaunchData may prefill a code but never silently redeems it. See
   [Promo / Reward Codes](PROMO_CODES.md).
+- `AwardDeliveryService` is the producer-neutral offline award boundary. Server producers enqueue a
+  versioned ProfileStore message with a stable award id and RewardBundle. On the active session or
+  next return, it grants through `RewardService`, records the id under the lazy
+  `GameData.AwardDelivery` ledger, acknowledges the message, and requests one critical profile save;
+  grant + claim id + acknowledgement therefore commit together. Leaderboard settlements use it now,
+  and future offline exchange receipts should call the same `QueueForUser` boundary.
 - `LeaderboardService` owns event-driven leaderboard scoring and OrderedDataStore publication. It
   never enumerates saved profiles: join, relevant counter/inventory changes, leave, and server
   shutdown replace only the current player's key. Global reads cache the top 100 scores while
@@ -131,6 +137,11 @@ filtered out of production registries.
   People-list activity titles: Dragonlord, Farmer, Slayer, Commander, or Hatcher. Best numerical
   placement wins when a player qualifies for several; egg hatches are status-only and do not add a
   fifth physical board.
+- `LeaderboardAwardService` observes only successful global public snapshots for configured award
+  boards. Per-board DataStore state holds each entrant's rolling-window best numeric rank plus an
+  outbox-style pending award. Pending bundles are immutable, stable ids make cross-server retries
+  harmless, and an expired offline record settles when the player returns. The same public exclusion
+  switch used by the board controls eligibility.
 - `configs/network.lua.packets` is the incremental network manifest. `NetworkManifest` validates packet names, transport, direction, authorization, environments, delivery, schemas, and client-origin rate/handler metadata at boot and in headless CI. `SignalRegistry` is the sole manifest-to-transport constructor. Twenty-six exact-compatible notifications now use the manifest, including progression, economy, interaction, combat-presentation, player-status, gameplay-event, and debug packets; the legacy bridge table and remaining `Signals` declarations stay live until later compatibility slices remove them.
 - Phase 2 player actions use central `Signals` remotes: `PurchaseUpgrade`, `UpgradeResult`, `UnlockZoneRequest`, `ZoneUnlockResult`, and `ZoneTravelResult`. Admin test actions include `Admin_SetZoneLock`. Service methods remain the authority; remotes are thin request/result bridges for future UI.
 - `StudioSmokeTestService` is a Studio-only test bridge. It exposes controlled server-authoritative smoke-test actions to MCP/client runners and must remain disabled outside Studio.
