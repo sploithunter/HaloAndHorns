@@ -988,6 +988,10 @@ Last checked: 2026-08-15
   display authority. `configs/monetization.lua` retains the current dashboard
   baseline only for validation and approximate internal analytics; the storefront
   never falls back to an obsolete configured number when Marketplace data is unavailable.
+- A positive dashboard ID always opens Roblox's purchase prompt, including the
+  full Studio simulator; `test_mode` instant-grants only zero-ID development
+  stubs. Developer-product ownership is still granted exclusively through
+  `ProcessReceipt`.
 - Category and purchase-state controls use the same area/citrine/emerald/amethyst
   glossy pill assets as the established menu style guide; the storefront does not
   maintain a parallel flat-button palette.

@@ -35,6 +35,19 @@ function MonetizationCatalog.liveProducts(config)
     return project(config, config and config.products, "product")
 end
 
+-- A real dashboard ID always exercises Roblox's prompt + receipt pipeline,
+-- including Studio's purchase simulator. Test mode is only the fallback for
+-- authored products whose dashboard ID is still a zero placeholder.
+function MonetizationCatalog.purchaseRoute(robloxId, testMode)
+    if (tonumber(robloxId) or 0) > 0 then
+        return "marketplace"
+    end
+    if testMode == true then
+        return "simulate"
+    end
+    return "unavailable"
+end
+
 function MonetizationCatalog.ownedSet(snapshot)
     local owned = {}
     for _, entry in ipairs((snapshot and snapshot.passes) or {}) do

@@ -1,6 +1,7 @@
 local HoverboardLogic = loadModule("src/Shared/Game/HoverboardLogic.lua")
 local BlockLetterSign = loadModule("src/Shared/Assets/BlockLetterSign.lua")
 local hoverboard = loadModule("configs/hoverboard.lua")
+local monetization = loadModule("configs/monetization.lua")
 
 return function()
     describe("HoverboardLogic", function()
@@ -82,9 +83,45 @@ return function()
             expect(hoverboard.shop.catalog.surf_orange.price).to.equal(1000)
             expect(hoverboard.shop.catalog.rocket_blue.price_robux).to.equal(19)
             expect(hoverboard.shop.catalog.rocket_blue.on_sale).to.equal(true)
+            expect(hoverboard.shop.catalog.rocket_blue.product).to.equal("hoverboard_rocket_blue")
+            expect(monetization.product_id_mapping.hoverboard_rocket_blue).to.equal(3709033036)
+            local rocketProduct
+            for _, product in ipairs(monetization.products) do
+                if product.id == "hoverboard_rocket_blue" then
+                    rocketProduct = product
+                    break
+                end
+            end
+            expect(rocketProduct).to.be.ok()
+            expect(rocketProduct.rewards.hoverboard_skin).to.equal("rocket_blue")
             expect(#hoverboard.shop.story.lines).to.equal(3)
             expect(hoverboard.shop.location.sign.lines[1]).to.equal("KADE'S")
             expect(hoverboard.shop.location.sign.lines[2]).to.equal("BOARDS")
+        end)
+
+        it("injects the monetization service into Kade's shop", function()
+            local bootstrap = readFile("src/Server/init.server.lua")
+            local registration = bootstrap:find('"HoverboardShopService"', 1, true)
+            expect(registration).to.be.ok()
+            local dependencyBlock = bootstrap:sub(registration, registration + 400)
+            expect(dependencyBlock:find('"MonetizationService"', 1, true)).to.be.ok()
+
+            local shopService = readFile("src/Server/Services/HoverboardShopService.lua")
+            expect(
+                shopService:find(
+                    "self._monetizationService = self._modules and self._modules.MonetizationService",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+        end)
+
+        it("uses the Pet Shop's shared glossy pill chrome", function()
+            local panel = readFile("src/Client/UI/Menus/HoverboardShopPanel.lua")
+            expect(panel:find("PanelChrome.pillPanel", 1, true)).to.be.ok()
+            expect(panel:find("PanelChrome.pillBorder", 1, true)).to.be.ok()
+            expect(panel:find('return "Robux", "emerald", true', 1, true)).to.be.ok()
+            expect(panel:find('return "Equip", "amethyst", true', 1, true)).to.be.ok()
         end)
 
         it("can spell Kade's Boards with block-letter parts", function()
@@ -117,6 +154,27 @@ return function()
             expect(raw.owned.rocket_orange).to.equal(true)
             expect(raw.owned.black_gold).to.equal(nil)
             expect(HoverboardLogic.normalizeSave(nil, nil).owned.black_gold).to.equal(nil)
+        end)
+
+        it("keeps only the starter when every free skate was auto-granted", function()
+            local catalog = hoverboard.shop.catalog
+            local owned = HoverboardLogic.stripCompleteFreeSet({
+                black_gold = true,
+                green_white = true,
+                orange_black = true,
+                white_red = true,
+                blue_gold = true,
+                rocket_blue = true,
+            }, catalog, "black_gold")
+            expect(owned.black_gold).to.equal(true)
+            expect(owned.green_white).to.equal(nil)
+            expect(owned.blue_gold).to.equal(nil)
+            expect(owned.rocket_blue).to.equal(true)
+            local partial = HoverboardLogic.stripCompleteFreeSet({
+                black_gold = true,
+                green_white = true,
+            }, catalog, "black_gold")
+            expect(partial.green_white).to.equal(true)
         end)
 
         it("treats the default board as owned and prices the rest", function()
@@ -171,6 +229,22 @@ return function()
             expect(entries[11].kind).to.equal("robux")
             expect(entries[11].on_sale).to.equal(true)
             expect(hoverboard.shop.catalog.rocket_blue.kind).to.equal("robux")
+        end)
+
+        it("confirms gem spends, then says insufficient funds when broke", function()
+            local messages = hoverboard.shop.messages
+            expect(messages.insufficient_funds).to.equal("insufficient funds")
+            expect(messages.confirm_spend).to.equal("Spend %d gems on %s?")
+            local step, price = HoverboardLogic.gemBuyStep({ kind = "gems", price = 900 }, 16)
+            expect(step).to.equal("confirm")
+            expect(price).to.equal(900)
+            step = HoverboardLogic.gemBuyStep({ kind = "gems", price = 900 }, 16, true)
+            expect(step).to.equal("insufficient_funds")
+            step, price = HoverboardLogic.gemBuyStep({ kind = "gems", price = 900 }, 900, true)
+            expect(step).to.equal("buy")
+            expect(price).to.equal(900)
+            expect(HoverboardLogic.gemBuyStep({ kind = "free" }, 0)).to.equal("take")
+            expect(HoverboardLogic.gemBuyStep({ kind = "robux" }, 0)).to.equal("robux")
         end)
     end)
 end

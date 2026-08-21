@@ -53,6 +53,38 @@ function HoverboardLogic.emptySave()
     }
 end
 
+-- Auto-grant used to stamp every free catalog skate. If a save owns the
+-- complete free set, keep only the starter plus paid boards.
+function HoverboardLogic.stripCompleteFreeSet(owned, catalog, defaultSkin)
+    owned = type(owned) == "table" and owned or {}
+    catalog = type(catalog) == "table" and catalog or {}
+    local freeIds = {}
+    local freeCount = 0
+    local ownedFree = 0
+    for skinId, offer in pairs(catalog) do
+        if type(skinId) == "string" and HoverboardLogic.offerKind(offer) == "free" then
+            freeIds[skinId] = true
+            freeCount += 1
+            if owned[skinId] == true then
+                ownedFree += 1
+            end
+        end
+    end
+    if freeCount < 2 or ownedFree < freeCount then
+        return owned
+    end
+    local nextOwned = {}
+    for skinId, value in pairs(owned) do
+        if value == true and freeIds[skinId] ~= true then
+            nextOwned[skinId] = true
+        end
+    end
+    if type(defaultSkin) == "string" and defaultSkin ~= "" then
+        nextOwned[defaultSkin] = true
+    end
+    return nextOwned
+end
+
 function HoverboardLogic.normalizeSave(save, defaultSkin)
     save = type(save) == "table" and save or {}
     local owned = {}
@@ -118,6 +150,27 @@ function HoverboardLogic.canBuy(owned, skinId, offer, balances)
         return true, cost
     end
     return false, "invalid_offer"
+end
+
+-- Client buy gate. Gem cards always confirm the spend first; funds are
+-- checked after that confirm so a broke click still sees the price.
+function HoverboardLogic.gemBuyStep(offer, gems, confirmed)
+    local kind = HoverboardLogic.offerKind(offer)
+    if kind == "robux" then
+        return "robux", 0
+    end
+    if kind ~= "gems" then
+        return "take", 0
+    end
+    local price = math.max(0, math.floor(tonumber(offer and offer.price) or 0))
+    if confirmed ~= true then
+        return "confirm", price
+    end
+    local have = tonumber(gems) or 0
+    if price > 0 and have < price then
+        return "insufficient_funds", price
+    end
+    return "buy", price
 end
 
 function HoverboardLogic.canEquip(owned, skinId)

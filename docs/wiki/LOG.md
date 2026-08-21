@@ -1,5 +1,23 @@
 # Log
 
+## 2026-08-21 — Pet Shop uses the full Roblox simulator; Kade matches its chrome
+
+- A positive dashboard product/pass ID now always opens Roblox's purchase
+  prompt, even in Studio. Studio test mode instant-grants only zero-ID stubs,
+  so Pet Shop buys exercise the same `ProcessReceipt` path that made Kade's
+  rocket purchase work.
+- Kade's Take, Buy, Robux, Equip, confirmation, cancel, and OK controls now
+  use the Pet Shop's glossy 9-sliced game-pill panels and rings instead of the
+  older flat/gradient button treatment.
+
+## 2026-08-21 — Kade's Robux buttons reach monetization
+
+- `HoverboardShopService` read `MonetizationService` from its injected module
+  table but the bootstrap did not declare that dependency. Free and gem buys
+  bypassed it; every Robux buy stopped as `service_unavailable`. The shop now
+  receives the same monetization service that powers the Pet Shop, so live
+  rocket prompts and their `ProcessReceipt` board grants can run.
+
 ## 2026-08-20 — Fight list covers the left toggles
 
 - EnemyHud DisplayOrder is 40 (above PlayerPowerBadges 26). While any

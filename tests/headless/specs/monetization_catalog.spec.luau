@@ -35,6 +35,13 @@ return function()
             expect(#MonetizationCatalog.liveProducts(config)).to.equal(0)
         end)
 
+        it("uses Roblox's prompt for live IDs and only simulates zero-ID stubs", function()
+            expect(MonetizationCatalog.purchaseRoute(3709033036, true)).to.equal("marketplace")
+            expect(MonetizationCatalog.purchaseRoute(3709033036, false)).to.equal("marketplace")
+            expect(MonetizationCatalog.purchaseRoute(0, true)).to.equal("simulate")
+            expect(MonetizationCatalog.purchaseRoute(nil, false)).to.equal("unavailable")
+        end)
+
         it("normalizes both compact and detailed owned-pass snapshots", function()
             local owned = MonetizationCatalog.ownedSet({
                 passes = {

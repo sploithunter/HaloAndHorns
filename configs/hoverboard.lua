@@ -60,8 +60,8 @@ return {
     skins = {
         black_gold = {
             display_name = "Black Gold",
-            mesh_asset = "rbxassetid://107782231692733",
-            texture_asset = "rbxassetid://94992959538591",
+            mesh_asset = "rbxassetid://106160270625805",
+            texture_asset = "rbxassetid://106362955686682",
             icon = "rbxassetid://87061483301808",
             length = 5.4,
             deck_yaw_degrees = 0,
@@ -92,8 +92,8 @@ return {
         },
         blue_gold = {
             display_name = "Blue Gold",
-            mesh_asset = "rbxassetid://106160270625805",
-            texture_asset = "rbxassetid://106362955686682",
+            mesh_asset = "rbxassetid://107782231692733",
+            texture_asset = "rbxassetid://94992959538591",
             icon = "rbxassetid://75952704459390",
             length = 5.4,
             deck_yaw_degrees = 0,
@@ -299,6 +299,13 @@ return {
                 "I wanted people to actually get around this place. He wanted another dragon.",
                 "So I paid for the boards myself. A couple are on the house — take one. The fancy ones I have to charge for, or I can't keep the shack stocked.",
             },
+        },
+        messages = {
+            insufficient_funds = "insufficient funds",
+            confirm_spend = "Spend %d gems on %s?",
+            confirm_button = "Spend %d gems",
+            cancel_button = "Cancel",
+            ok_button = "OK",
         },
         -- kind: free | gems | robux. Hoverboards are free. Surfs are gems.
         -- Rockets are Robux (product id 0 until dashboard SKUs exist; Studio

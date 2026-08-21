@@ -542,11 +542,16 @@ local function attachBoardUnderRoot(character, root, humanoid, drop, config)
     local deck
     local player = Players:GetPlayerFromCharacter(character)
     local skin, skinKey = selectedSkin(config, player)
-    local template = ensureMeshTemplate(config, false, skinKey)
+    local template = ensureMeshTemplate(config, true, skinKey)
     if template then
         model = template:Clone()
         model.Name = "Hoverboard"
         deck = model.PrimaryPart or model:FindFirstChild("Deck")
+        if type(skinKey) == "string" and template.Name ~= skinKey then
+            model:Destroy()
+            model = buildClientTemplate(config, skinKey)
+            deck = model and (model.PrimaryPart or model:FindFirstChild("Deck"))
+        end
         if deck then
             deck.Anchored = false
             deck.CanCollide = false
@@ -556,6 +561,7 @@ local function attachBoardUnderRoot(character, root, humanoid, drop, config)
             deck.Color = Color3.new(1, 1, 1)
             applySkinOrient(deck, skin, config)
             syncDeckOrientFromPlayer(character, deck)
+            model:SetAttribute("SkinId", skinKey)
         end
     end
     if not (model and deck) then

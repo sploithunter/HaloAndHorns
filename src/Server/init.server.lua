@@ -819,7 +819,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "HoverboardShopService",
     ServerScriptService.Server.Services.HoverboardShopService,
-    { "Logger", "ConfigLoader", "EconomyService", "HoverboardService" }
+    { "Logger", "ConfigLoader", "EconomyService", "HoverboardService", "MonetizationService" }
 )
 -- BaddieSpawnerService: proximity enemy waves at map-authored BaddieSpawner* parts
 -- (combat taste before the Heaven/Hell choice — Jason). Resolves EnemyService at runtime.
@@ -1095,6 +1095,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
         })
         modules:Get("MonetizationService"):BindPeerServices({
             HotbarService = modules:Get("HotbarService"),
+            HoverboardService = modules:Get("HoverboardService"),
         })
         modules:Get("NpcPrincipalService"):BindPeerServices({
             AutoTargetService = isFeatureEnabled("auto_target") and modules:Get(

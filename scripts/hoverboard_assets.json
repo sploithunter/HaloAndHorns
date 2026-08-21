@@ -3,10 +3,10 @@
   "uploadedBy": "self-serve 2026-08-20 paired mesh+texture",
   "skins": {
     "black_gold": {
-      "modelAssetId": "87414742225863",
-      "meshId": "rbxassetid://107782231692733",
-      "textureDecalId": "122692369001912",
-      "imageId": "rbxassetid://94992959538591",
+      "modelAssetId": "114885299319663",
+      "meshId": "rbxassetid://106160270625805",
+      "textureDecalId": "121964280623902",
+      "imageId": "rbxassetid://106362955686682",
       "iconDecalId": "139880924300284",
       "iconImageId": "rbxassetid://87061483301808"
     },
@@ -35,10 +35,10 @@
       "iconImageId": "rbxassetid://76324772471833"
     },
     "blue_gold": {
-      "modelAssetId": "114885299319663",
-      "meshId": "rbxassetid://106160270625805",
-      "textureDecalId": "121964280623902",
-      "imageId": "rbxassetid://106362955686682",
+      "modelAssetId": "87414742225863",
+      "meshId": "rbxassetid://107782231692733",
+      "textureDecalId": "122692369001912",
+      "imageId": "rbxassetid://94992959538591",
       "iconDecalId": "86482071195660",
       "iconImageId": "rbxassetid://75952704459390"
     },

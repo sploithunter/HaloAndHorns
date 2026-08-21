@@ -171,20 +171,10 @@ function HoverboardService:_save(player)
     end
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     local normalized = HoverboardLogic.normalizeSave(data.GameData.Hoverboard, defaultSkin)
-    -- Free catalog skins belong to an unlocked rider, not a fresh L1 reset.
-    if eligible then
-        local catalog = self._config.shop and self._config.shop.catalog
-        if type(catalog) == "table" then
-            for skinId, offer in pairs(catalog) do
-                if
-                    HoverboardLogic.offerKind(offer) == "free"
-                    and type(self._config.skins) == "table"
-                    and type(self._config.skins[skinId]) == "table"
-                then
-                    normalized.owned[skinId] = true
-                end
-            end
-        end
+    local catalog = self._config.shop and self._config.shop.catalog
+    normalized.owned = HoverboardLogic.stripCompleteFreeSet(normalized.owned, catalog, defaultSkin)
+    if type(normalized.equipped) ~= "string" or normalized.owned[normalized.equipped] ~= true then
+        normalized.equipped = defaultSkin
     end
     data.GameData.Hoverboard = normalized
     return normalized

@@ -6,6 +6,7 @@
     board. Ownership lives in GameData.Hoverboard, not mount inventory.
 ]]
 
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -274,16 +275,20 @@ function HoverboardShopService:Buy(player, args)
         if productId <= 0 and not testMode then
             return { ok = false, reason = "robux_unwired" }
         end
+        -- Live SKUs use the real Marketplace prompt so Studio's purchase
+        -- simulation and ProcessReceipt are the same path as production.
+        -- test_mode only simulates when the dashboard id is still 0.
+        if productId > 0 then
+            MarketplaceService:PromptProductPurchase(player, productId)
+            local catalog = self:Catalog(player)
+            catalog.pending_robux = true
+            return catalog
+        end
         self._monetizationService:_handlePurchaseRequest(player, {
             productId = offer.product,
             productType = "product",
         })
-        local catalog = self:Catalog(player)
-        if testMode then
-            return catalog
-        end
-        catalog.pending_robux = true
-        return catalog
+        return self:Catalog(player)
     end
     local cost = tonumber(costOrReason) or 0
     if kind == "gems" and cost > 0 then

@@ -9,18 +9,15 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
-local Pill = require(script.Parent.Parent.Pill)
+local HoverboardLogic = require(ReplicatedStorage.Shared.Game.HoverboardLogic)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local REMOTE_NAME = "GameAPICommand"
 local COLORS = {
     text = Color3.fromRGB(255, 255, 255),
     subtext = Color3.fromRGB(202, 207, 218),
-    buy = Color3.fromRGB(42, 176, 102),
-    equip = Color3.fromRGB(70, 130, 210),
     equipped = Color3.fromRGB(116, 235, 155),
     owned = Color3.fromRGB(186, 168, 255),
-    disabled = Color3.fromRGB(72, 74, 84),
     error = Color3.fromRGB(242, 105, 105),
     gems = Color3.fromRGB(130, 220, 255),
     robux = Color3.fromRGB(0, 176, 111),
@@ -28,7 +25,8 @@ local COLORS = {
 
 local REASONS = {
     shop_out_of_range = "Move closer to Kade.",
-    insufficient_gems = "You need more gems.",
+    insufficient_gems = "insufficient funds",
+    insufficient_funds = "insufficient funds",
     already_owned = "You already own that board.",
     not_owned = "Grab that board first.",
     invalid_skin = "That board is not in the shop.",
@@ -39,6 +37,44 @@ local REASONS = {
 
 local HoverboardShopPanel = {}
 HoverboardShopPanel.__index = HoverboardShopPanel
+
+-- Match the Pet Shop's glossy game-pill action treatment. Text stays in a
+-- child label above the 9-sliced panel/ring, so the artwork never tints it.
+local function shopButton(parent, options)
+    options = options or {}
+    local zindex = options.zindex or 603
+    local button = Instance.new("TextButton")
+    button.Name = options.name or "Action"
+    button.Size = options.size or UDim2.fromScale(0.4, 1)
+    button.Position = options.position or UDim2.new()
+    button.AnchorPoint = options.anchor or Vector2.zero
+    button.BackgroundTransparency = 1
+    button.BorderSizePixel = 0
+    button.Text = ""
+    button.Active = options.enabled ~= false
+    button.AutoButtonColor = options.enabled ~= false
+    button.ZIndex = zindex
+    button.Parent = parent
+
+    PanelChrome.pillPanel(button, options.key or "emerald", zindex - 1)
+    PanelChrome.pillBorder(button, options.key or "emerald", zindex + 1, 0, 0.18)
+
+    local label = Instance.new("TextLabel")
+    label.Name = "Label"
+    label.Size = UDim2.fromScale(1, 1)
+    label.BackgroundTransparency = 1
+    label.Text = options.text or ""
+    label.TextColor3 = COLORS.text
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
+    label.ZIndex = zindex + 2
+    label.Parent = button
+    local textSize = Instance.new("UITextSizeConstraint")
+    textSize.MinTextSize = options.minText or 11
+    textSize.MaxTextSize = options.maxText or 16
+    textSize.Parent = label
+    return button, label
+end
 
 local function textLabel(parent, options)
     local label = Instance.new("TextLabel")
@@ -119,7 +155,10 @@ function HoverboardShopPanel.new()
         grid = nil,
         gridLayout = nil,
         story = nil,
+        gems = 0,
         _robuxPrices = {},
+        _prompt = nil,
+        _busy = false,
     }, HoverboardShopPanel)
     self._purchaseConn = Signals.PurchaseSuccess.OnClientEvent:Connect(function(data)
         if not self:IsVisible() then
@@ -180,6 +219,8 @@ function HoverboardShopPanel:Hide()
     self.statusLabel = nil
     self.balanceLabel = nil
     self.storyLabel = nil
+    self._prompt = nil
+    self._busy = false
     self.rows = {}
 end
 
@@ -318,6 +359,173 @@ function HoverboardShopPanel:_setStatus(text, isError)
     end
 end
 
+function HoverboardShopPanel:_messages()
+    local ok, cfg = pcall(function()
+        return require(ReplicatedStorage.Configs.hoverboard)
+    end)
+    local shop = ok and type(cfg) == "table" and cfg.shop
+    return type(shop) == "table" and type(shop.messages) == "table" and shop.messages or {}
+end
+
+function HoverboardShopPanel:_reasonText(reason)
+    local messages = self:_messages()
+    if reason == "insufficient_gems" or reason == "insufficient_funds" then
+        return messages.insufficient_funds or REASONS.insufficient_funds
+    end
+    return REASONS[reason]
+end
+
+function HoverboardShopPanel:_closePrompt()
+    if self._prompt then
+        self._prompt:Destroy()
+        self._prompt = nil
+    end
+end
+
+function HoverboardShopPanel:_showPrompt(opts)
+    opts = opts or {}
+    if not self.frame then
+        return
+    end
+    self:_closePrompt()
+    local scrim = Instance.new("TextButton")
+    scrim.Name = "BuyPrompt"
+    scrim.Text = ""
+    scrim.AutoButtonColor = false
+    scrim.Size = UDim2.fromScale(1, 1)
+    scrim.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    scrim.BackgroundTransparency = 0.45
+    scrim.BorderSizePixel = 0
+    scrim.ZIndex = 600
+    scrim.Parent = self.frame
+    self._prompt = scrim
+
+    local card = Instance.new("Frame")
+    card.Name = "Card"
+    card.Size = UDim2.fromScale(0.82, 0.42)
+    card.AnchorPoint = Vector2.new(0.5, 0.5)
+    card.Position = UDim2.fromScale(0.5, 0.5)
+    card.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    card.BorderSizePixel = 0
+    card.ZIndex = 601
+    card.Parent = scrim
+    local size = Instance.new("UISizeConstraint")
+    -- Cap the dialog so phones keep it readable without a full-panel takeover.
+    size.MinSize = Vector2.new(240, 150)
+    size.MaxSize = Vector2.new(420, 220)
+    size.Parent = card
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 18)
+    corner.Parent = card
+    PanelChrome.pillBorder(card, PanelChrome.areaPill(), 605, 0, 0.12)
+
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Size = UDim2.fromScale(0.88, 0.42)
+    title.Position = UDim2.fromScale(0.06, 0.08)
+    title.BackgroundTransparency = 1
+    title.Text = opts.title or ""
+    title.TextColor3 = COLORS.text
+    title.TextWrapped = true
+    title.TextScaled = true
+    title.Font = Enum.Font.GothamBold
+    title.ZIndex = 602
+    title.Parent = card
+    local titleSize = Instance.new("UITextSizeConstraint")
+    titleSize.MinTextSize = 14
+    titleSize.MaxTextSize = 22
+    titleSize.Parent = title
+
+    local function close()
+        if self._prompt == scrim then
+            self:_closePrompt()
+        elseif scrim.Parent then
+            scrim:Destroy()
+        end
+    end
+    scrim.Activated:Connect(close)
+
+    local buttons = Instance.new("Frame")
+    buttons.Name = "Buttons"
+    buttons.Size = UDim2.fromScale(0.88, 0.22)
+    buttons.Position = UDim2.fromScale(0.06, 0.72)
+    buttons.BackgroundTransparency = 1
+    buttons.ZIndex = 602
+    buttons.Parent = card
+    local layout = Instance.new("UIListLayout")
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0.04, 0)
+    layout.Parent = buttons
+
+    if opts.onConfirm then
+        local cancel = shopButton(buttons, {
+            name = "Cancel",
+            size = UDim2.fromScale(0.36, 1),
+            text = opts.cancelText or "Cancel",
+            key = PanelChrome.areaPill(),
+        })
+        cancel.LayoutOrder = 1
+        cancel.Activated:Connect(close)
+
+        local confirm = shopButton(buttons, {
+            name = "Confirm",
+            size = UDim2.fromScale(0.48, 1),
+            text = opts.confirmText or "Confirm",
+            key = "emerald",
+        })
+        confirm.LayoutOrder = 2
+        confirm.Activated:Connect(function()
+            close()
+            opts.onConfirm()
+        end)
+        return
+    end
+
+    local ok = shopButton(buttons, {
+        name = "Ok",
+        size = UDim2.fromScale(0.36, 1),
+        text = opts.confirmText or "OK",
+        key = "emerald",
+    })
+    ok.LayoutOrder = 1
+    ok.Activated:Connect(close)
+end
+
+function HoverboardShopPanel:_showInsufficientFunds()
+    local messages = self:_messages()
+    local text = messages.insufficient_funds or REASONS.insufficient_funds
+    self:_setStatus(text, true)
+    self:_showPrompt({
+        title = text,
+        confirmText = messages.ok_button or "OK",
+    })
+end
+
+function HoverboardShopPanel:_requestBuy(offer)
+    local step, price = HoverboardLogic.gemBuyStep(offer, self.gems, false)
+    if step == "confirm" then
+        local messages = self:_messages()
+        local name = offer.display_name or "this board"
+        self:_showPrompt({
+            title = string.format(messages.confirm_spend or "Spend %d gems on %s?", price, name),
+            confirmText = string.format(messages.confirm_button or "Spend %d gems", price),
+            cancelText = messages.cancel_button or "Cancel",
+            onConfirm = function()
+                local nextStep = HoverboardLogic.gemBuyStep(offer, self.gems, true)
+                if nextStep == "insufficient_funds" then
+                    self:_showInsufficientFunds()
+                    return
+                end
+                self:_act("hoverboard.shop.buy", offer.id)
+            end,
+        })
+        return
+    end
+    self:_act("hoverboard.shop.buy", offer.id)
+end
+
 function HoverboardShopPanel:_clearRows()
     for _, row in ipairs(self.rows) do
         row:Destroy()
@@ -360,21 +568,21 @@ end
 
 function HoverboardShopPanel:_actionFor(offer)
     if offer.equipped then
-        return "Equipped", COLORS.disabled, false
+        return "Equipped", "amethyst", false
     end
     if offer.owned then
-        return "Equip", COLORS.equip, true
+        return "Equip", "amethyst", true
     end
     if offer.kind == "robux" then
         if offer.on_sale then
-            return "Sale", COLORS.robux, true
+            return "Sale", "emerald", true
         end
-        return "Robux", COLORS.robux, true
+        return "Robux", "emerald", true
     end
     if offer.kind == "free" then
-        return "Take", COLORS.buy, true
+        return "Take", "emerald", true
     end
-    return "Buy", COLORS.buy, true
+    return "Buy", "emerald", true
 end
 
 function HoverboardShopPanel:_render(catalog)
@@ -385,7 +593,8 @@ function HoverboardShopPanel:_render(catalog)
     if self.storyLabel then
         self.storyLabel.Text = storyText(self.story)
     end
-    self.balanceLabel.Text = string.format("Gems  %s", tostring(catalog.gems or 0))
+    self.gems = tonumber(catalog.gems) or 0
+    self.balanceLabel.Text = string.format("Gems  %s", tostring(self.gems))
     local offers = catalog.offers
     if type(offers) ~= "table" or #offers == 0 then
         self:_setStatus("Kade has no boards in stock.", true)
@@ -440,25 +649,17 @@ function HoverboardShopPanel:_render(catalog)
         if offer.kind == "robux" and not offer.owned then
             self:_fillRobuxPrice(priceNode, offer)
         end
-        local actionText, actionColor, enabled = self:_actionFor(offer)
-        local button, buttonLabel = Pill.button({
-            parent = card,
+        local actionText, actionKey, enabled = self:_actionFor(offer)
+        local button = shopButton(card, {
             name = "Action",
-            color = actionColor,
             size = UDim2.new(0.86, 0, 0.16, 0),
             position = UDim2.new(0.5, 0, 0.92, 0),
-            anchorPoint = Vector2.new(0.5, 1),
+            anchor = Vector2.new(0.5, 1),
             text = actionText,
-            textSize = 14,
-            zIndex = 106,
+            key = actionKey,
+            enabled = enabled,
+            zindex = 106,
         })
-        buttonLabel.TextScaled = true
-        local buttonSize = Instance.new("UITextSizeConstraint")
-        buttonSize.MinTextSize = 11
-        buttonSize.MaxTextSize = 16
-        buttonSize.Parent = buttonLabel
-        button.Active = enabled
-        button.AutoButtonColor = enabled
         if offer.owned then
             button.Activated:Connect(function()
                 if offer.equipped then
@@ -468,7 +669,7 @@ function HoverboardShopPanel:_render(catalog)
             end)
         elseif enabled then
             button.Activated:Connect(function()
-                self:_act("hoverboard.shop.buy", offer.id)
+                self:_requestBuy(offer)
             end)
         end
         table.insert(self.rows, card)
@@ -478,7 +679,10 @@ end
 function HoverboardShopPanel:_refresh()
     local result = self:_callBus("hoverboard.shop.catalog", {})
     if not result or result.ok ~= true then
-        self:_setStatus(REASONS[result and result.reason] or "Could not load the shop.", true)
+        self:_setStatus(
+            self:_reasonText(result and result.reason) or "Could not load the shop.",
+            true
+        )
         return
     end
     self:_setStatus("Take a free board. Fancy ones cost gems or Robux.", false)
@@ -486,9 +690,19 @@ function HoverboardShopPanel:_refresh()
 end
 
 function HoverboardShopPanel:_act(command, skinId)
+    if self._busy then
+        return
+    end
+    self._busy = true
     local result = self:_callBus(command, { skinId = skinId })
+    self._busy = false
     if not result or result.ok ~= true then
-        self:_setStatus(REASONS[result and result.reason] or "That did not work.", true)
+        local reason = result and result.reason
+        if reason == "insufficient_gems" or reason == "insufficient_funds" then
+            self:_showInsufficientFunds()
+            return
+        end
+        self:_setStatus(self:_reasonText(reason) or "That did not work.", true)
         return
     end
     if result.pending_robux == true then
