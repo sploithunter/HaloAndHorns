@@ -3831,3 +3831,15 @@ first-session cohort rates.
   returning the architecture guard to zero unclassified runtime waits.
 - Applied the repository StyLua contract to the six files that entered `main`
   with formatting drift. No gameplay behavior changed in this cleanup.
+
+## 2026-08-21 — Main verification now requires a main-served Studio test
+
+- A stale beta worktree was still feeding Rojo while CLI checks ran against
+  `main`, allowing disabled rocketboard developer products to remain visible
+  in the live Pet Shop despite the correct game-pass conversion on `main`.
+- Canonical verification now requires a clean current `main` worktree to own
+  the Rojo process, an explicit Studio reconnect, a fresh Play VM, live client
+  behavior/runtime inspection, and an Output error check.
+- Reconnected Studio to `main` commit `64aadf5`. The live Boosts tab rendered
+  only Double XP, Double Coins, and Titan Team; runtime projection reported
+  zero rocket products, six rocket passes, and zero Pet Shop rocket passes.

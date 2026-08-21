@@ -6,6 +6,28 @@ Status: current
 
 The project uses Rojo for file sync and Roblox Studio for live playtesting. Codex is connected to Studio through the official Roblox Studio MCP server, which is now the preferred way for agents to inspect and verify the live game.
 
+## Canonical `main` Verification Contract
+
+A claim that the repository or `main` is correct requires a fresh Roblox Studio Play test served
+from a clean checkout of current `main`. Testing a feature branch, or running CLI checks in a
+separate worktree while Studio remains connected to another branch, does not verify `main`.
+
+Before the Play test:
+
+1. Record `git branch --show-current` and `git rev-parse HEAD` in the worktree that will run Rojo.
+   The branch must be `main`, fetched and fast-forwarded to `origin/main`, with no local changes.
+2. Resolve the running `rojo serve` process and inspect its current working directory. Stop a server
+   rooted in any other branch. If the primary checkout contains active dirty work, preserve it and
+   create a separate clean `main` worktree instead of switching or cleaning it.
+3. Start `mise exec -- rojo serve` from that clean `main` worktree. In Studio, reconnect the Rojo
+   plugin and confirm project `HaloAndHorns` at `localhost:34872`.
+4. Stop Play before judging the sync. Inspect the relevant ModuleScript `Source` in Edit mode, then
+   start a new Play session so cached `require` results cannot mask the newly synced source.
+5. Exercise the changed behavior through the live client, inspect authoritative runtime state, and
+   read Studio Output for errors. Capture the decisive UI state when the task changes presentation.
+
+Only after those steps and the repository CI gate pass may work be reported as verified on `main`.
+
 ## MCP Setup
 
 In Roblox Studio:
