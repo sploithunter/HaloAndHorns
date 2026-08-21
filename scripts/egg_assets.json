@@ -489,5 +489,21 @@
    "texture": "assets/exports/eggs/worldheart_egg/worldheart_egg.png"
   },
   "uploadedBy": "upload_eggs.js 2026-08-19"
+ },
+ "gauntlet_champion_egg": {
+  "icon_decal": "87099422560554",
+  "icon_image": "95013203314805",
+  "model_asset": "76836580602317",
+  "mesh_id": "rbxassetid://73613992662851",
+  "mesh_image": "rbxassetid://88303254205097",
+  "creator": "Open Simulator Group (15872767)",
+  "realm": "neutral",
+  "origin": "creator",
+  "sources": {
+   "icon": "assets/source/eggs/gauntlet_champion_egg.png",
+   "fbx": "assets/exports/eggs/gauntlet_champion_egg/Meshy_AI_gauntlet_champion_egg_0821212653_texture_10k.fbx",
+   "texture": "assets/exports/eggs/gauntlet_champion_egg/Meshy_AI_gauntlet_champion_egg_0821212653_texture.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-21"
  }
 }

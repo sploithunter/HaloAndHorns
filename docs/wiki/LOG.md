@@ -3905,3 +3905,13 @@ first-session cohort rates.
   updated state. The pure acknowledgement helper also returns a boolean for normal callers;
   forwarding that second value made Roblox interpret it as the DataStore `userIds` metadata array
   and reject the write with `AttributeFormatError` after an award had queued.
+
+## 2026-08-21 — Gauntlet Champion leaderboard rewards
+
+- Imported and resolved the group-owned Gauntlet Champion Egg plus Basic/Golden models and flat
+  thumbnails for Ribbon Ram, Medal Moth, Laurel Lynx, Victory Gryphon, and Crowned Chimera.
+- Shipped the five pets as regular 90%-baseline Exclusives across tank/support/melee/ranged/control.
+  Medal Moth supplies team defense; Crowned Chimera uses the established full-hold cadence.
+- The held egg uses fixed 42/28/18/10/2 species odds, standard 5% Golden / 0.5% Rainbow / 1% Huge
+  rolls, and no luck channel. Both challenge boards now use exact Top 10 bundles with doubled Gems,
+  Champion Eggs, origin-valid enhancements, boost/summon tokens, and a rank-one direct Chimera.

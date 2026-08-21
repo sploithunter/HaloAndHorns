@@ -1,3 +1,120 @@
+local function championAwardTiers()
+    local function egg(quantity)
+        return {
+            id = "gauntlet_champion_egg",
+            qty = quantity,
+            bucket = "eggs",
+        }
+    end
+    local function enhancement(grade, quantity)
+        return {
+            id = "origin_" .. grade .. "_enhancement",
+            qty = quantity,
+            bucket = "enhancements",
+            roll = "origin_" .. grade,
+        }
+    end
+    local function token(id)
+        return { id = id, qty = 1, bucket = "consumables" }
+    end
+
+    return {
+        {
+            max_rank = 1,
+            label = "1,500 Gems + Crowned Chimera + 3 Champion Eggs + champion supplies",
+            reward = {
+                currencies = { gems = 1500 },
+                pets = { { id = "crowned_chimera", variant = "basic" } },
+                items = {
+                    egg(3),
+                    enhancement("single", 2),
+                    token("double_xp_token"),
+                    token("double_coins_token"),
+                },
+            },
+        },
+        {
+            max_rank = 2,
+            label = "1,200 Gems + 3 Champion Eggs + Single Enhancement + Double Coins",
+            reward = {
+                currencies = { gems = 1200 },
+                items = {
+                    egg(3),
+                    enhancement("single", 1),
+                    token("double_coins_token"),
+                },
+            },
+        },
+        {
+            max_rank = 3,
+            label = "1,000 Gems + 2 Champion Eggs + Single Enhancement + Double XP",
+            reward = {
+                currencies = { gems = 1000 },
+                items = {
+                    egg(2),
+                    enhancement("single", 1),
+                    token("double_xp_token"),
+                },
+            },
+        },
+        {
+            max_rank = 4,
+            label = "800 Gems + 2 Champion Eggs + Dual Enhancement + Future Call",
+            reward = {
+                currencies = { gems = 800 },
+                items = {
+                    egg(2),
+                    enhancement("dual", 1),
+                    token("future_call_token"),
+                },
+            },
+        },
+        {
+            max_rank = 5,
+            label = "700 Gems + Champion Egg + Dual Enhancement + Future Call",
+            reward = {
+                currencies = { gems = 700 },
+                items = {
+                    egg(1),
+                    enhancement("dual", 1),
+                    token("future_call_token"),
+                },
+            },
+        },
+        {
+            max_rank = 6,
+            label = "600 Gems + Champion Egg + Dual Enhancement",
+            reward = {
+                currencies = { gems = 600 },
+                items = { egg(1), enhancement("dual", 1) },
+            },
+        },
+        {
+            max_rank = 7,
+            label = "500 Gems + Champion Egg + Future Call",
+            reward = {
+                currencies = { gems = 500 },
+                items = { egg(1), token("future_call_token") },
+            },
+        },
+        {
+            max_rank = 8,
+            label = "450 Gems + Champion Egg",
+            reward = { currencies = { gems = 450 }, items = { egg(1) } },
+        },
+        {
+            max_rank = 9,
+            label = "400 Gems + Champion Egg",
+            reward = { currencies = { gems = 400 }, items = { egg(1) } },
+        },
+        {
+            max_rank = 10,
+            label = "350 Gems + Champion Egg",
+            reward = { currencies = { gems = 350 }, items = { egg(1) } },
+        },
+    }
+end
+
 return {
     version = "2.0.0",
 
@@ -146,13 +263,9 @@ return {
                 studio_enabled = true,
                 state_store = "LB_RangeAwardWindows_v1",
                 observation_debounce_seconds = 5 * 60,
-                -- Production cadence is 48 hours. These repeatable competitive prizes are gems,
-                -- not unique/tradable objects, and are delivered through the durable award queue.
-                tiers = {
-                    { max_rank = 1, label = "100 Gems", reward = { currencies = { gems = 100 } } },
-                    { max_rank = 3, label = "50 Gems", reward = { currencies = { gems = 50 } } },
-                    { max_rank = 10, label = "25 Gems", reward = { currencies = { gems = 25 } } },
-                },
+                -- Production cadence is 48 hours. The pre-release window remains 30 minutes.
+                -- Every rank has an exact bundle, delivered through the durable award queue.
+                tiers = championAwardTiers(),
             },
         },
         {
@@ -173,11 +286,7 @@ return {
                 studio_enabled = true,
                 state_store = "LB_TrainingAwardWindows_v1",
                 observation_debounce_seconds = 5 * 60,
-                tiers = {
-                    { max_rank = 1, label = "100 Gems", reward = { currencies = { gems = 100 } } },
-                    { max_rank = 3, label = "50 Gems", reward = { currencies = { gems = 50 } } },
-                    { max_rank = 10, label = "25 Gems", reward = { currencies = { gems = 25 } } },
-                },
+                tiers = championAwardTiers(),
             },
         },
     },

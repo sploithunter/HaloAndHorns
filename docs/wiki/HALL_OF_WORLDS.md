@@ -258,9 +258,18 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   `hide_internal_accounts` only omits them from the visible top 10
   (TEMP off for Macros testing). Window is TEMP 30 minutes (production 48 hours).
   The server retains each entrant's best numeric rank during their rolling award window, then
-  durably queues the configured gem tier. Delivery occurs immediately when online or on the next
-  return, with a personal award banner; stable ids make retries idempotent. Backend only — no HUD
-  countdown yet.
+  durably queues the exact configured Top 10 bundle. Delivery occurs immediately when online or on
+  the next return, with a personal award banner; stable ids make retries idempotent. Backend only —
+  no HUD countdown yet. Both boards share the Gauntlet Champion reward ladder: ranks 1–10 pay
+  1,500/1,200/1,000/800/700/600/500/450/400/350 Gems and at least one held Champion Egg. Higher
+  ranks add more eggs, origin-usable Single/Dual enhancements, Double XP/Coins, and Future Call
+  tokens; rank 1 also receives a direct Crowned Chimera. The 30-minute window remains pre-release
+  test tuning; production is 48 hours.
+- The held `gauntlet_champion_egg` has fixed, luck-independent odds: Ribbon Ram 42% (tank), Medal
+  Moth 28% (defense support), Laurel Lynx 18% (melee), Victory Gryphon 10% (ranged), and Crowned
+  Chimera 2% (hold controller). All five are regular Exclusives at the shared 90% eternal baseline
+  (Secrets 85%, Huges 120%). Standard Exclusive side rolls are 5% Golden, 0.5% Rainbow, and 1% Huge;
+  player luck, paid luck, presence luck, and events never alter any of these stated odds.
 - Wire adopts named pads in place and does not snap a user-moved pad back to fallback
   coordinates. After a gate rotate, move the pad to that arch (`scripts/studio/align_challenge_pads.luau`)
   — the E-prompt parents to the pad. Save the place after the pads/arches exist.
