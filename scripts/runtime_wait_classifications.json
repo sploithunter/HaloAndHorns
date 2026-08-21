@@ -70,9 +70,6 @@
   "src/Client/Systems/PrologueCinematics.lua": {
    "animation": 4
   },
-  "src/Client/Systems/RangePicker.lua": {
-   "retry_backoff": 1
-  },
   "src/Client/Systems/RealmAtmosphere.lua": {
    "animation": 1
   },
@@ -203,9 +200,9 @@
    "retry_backoff": 1
   },
   "src/Server/Services/MissionInstanceService.lua": {
-   "deadline": 4,
+   "deadline": 3,
    "frame_budget": 1,
-   "periodic": 5
+   "periodic": 4
   },
   "src/Server/Services/NpcPrincipalService.lua": {
    "periodic": 2
