@@ -3898,3 +3898,10 @@ first-session cohort rates.
 - Random reward enhancements always include the recipient's archetype; duals add one uniformly
   selected alternate origin. The pure selector has headless coverage for grade, usability, weighted
   type selection, level clamping, and invalid origins.
+
+## 2026-08-21 — Leaderboard award outbox acknowledgement DataStore fix
+
+- Fixed `LeaderboardAwardService` so its acknowledgement `UpdateAsync` callback returns only the
+  updated state. The pure acknowledgement helper also returns a boolean for normal callers;
+  forwarding that second value made Roblox interpret it as the DataStore `userIds` metadata array
+  and reject the write with `AttributeFormatError` after an award had queued.
