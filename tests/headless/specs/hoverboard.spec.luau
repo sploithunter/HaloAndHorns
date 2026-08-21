@@ -84,6 +84,12 @@ return function()
             expect(hoverboard.shop.catalog.rocket_blue.price_robux).to.equal(19)
             expect(hoverboard.shop.catalog.rocket_blue.on_sale).to.equal(true)
             expect(hoverboard.shop.catalog.rocket_blue.pass).to.equal("hoverboard_rocket_blue")
+            expect(monetization.product_id_mapping.hoverboard_rocket_blue).to.equal(1954662606)
+            expect(monetization.product_id_mapping.hoverboard_rocket_lightblue).to.equal(1952355180)
+            expect(monetization.product_id_mapping.hoverboard_rocket_green).to.equal(1955478550)
+            expect(monetization.product_id_mapping.hoverboard_rocket_orange).to.equal(1954240779)
+            expect(monetization.product_id_mapping.hoverboard_rocket_purple).to.equal(1951917369)
+            expect(monetization.product_id_mapping.hoverboard_rocket_yellow).to.equal(1955796497)
             local rocketPass
             local legacyProduct
             for _, pass in ipairs(monetization.passes) do
