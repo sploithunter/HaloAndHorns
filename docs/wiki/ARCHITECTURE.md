@@ -30,6 +30,10 @@ filtered out of production registries.
 - `EconomyService` owns currency mutation and passes source reasons into the ledger. Reward bundle
   currencies route through it so ledger history, lifetime counters, service signals, and client
   balance notifications observe the same grant.
+- `RewardService` enhancement items route through `EnhancementService`, never directly into the
+  inventory bucket. Reward descriptors may request an origin-single, an origin-dual, or an explicit
+  valid enhancement record; random origin rewards always include the recipient's current archetype
+  and use their clamped level band, so durable/offline awards remain immediately usable.
 - `EconomyService:SetCurrency` owns absolute balance changes for admin and test setup.
   `EconomyService:Transact` preflights multi-currency debits, applies debits and credits in stable
   order, runs an optional domain commit, and compensates every applied mutation in reverse on
