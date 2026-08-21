@@ -148,7 +148,7 @@ return function()
 
         it("ranks the best room inside a sliding window", function()
             local window, cap, sweep = ChallengeRun.leaderboardWindow(challengeCfg)
-            expect(window).to.equal(2 * 60 * 60)
+            expect(window).to.equal(30 * 60)
             expect(cap >= 1).to.equal(true)
             expect(sweep).to.equal(5 * 60)
             expect(ChallengeRun.recentChanged({ { room = 12, at = 1 } }, { { room = 12, at = 1 } })).to.equal(
@@ -157,7 +157,7 @@ return function()
             expect(ChallengeRun.recentChanged({ { room = 12, at = 1 } }, {})).to.equal(true)
 
             local now = 2_000_000
-            local first = ChallengeRun.writeWindowAttempt(nil, 12, now - 3600, {
+            local first = ChallengeRun.writeWindowAttempt(nil, 12, now - 900, {
                 window_seconds = window,
                 recent_cap = cap,
             })

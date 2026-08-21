@@ -27,7 +27,10 @@ list that feeds the current Range / Training Ground OrderedDataStores.
 A run writes and publishes immediately; window expiry sweeps at server
 start, every 5 minutes, and BindToClose. Neither field belongs on the
 ProfileStore template. Internal IDs still publish; `hide_internal_accounts`
-hides them on the public page (TEMP off so Macros can test).
+hides them on the public page (TEMP off so Macros can test). The score and award window is TEMP
+30 minutes (production 48 hours). Each public top-10 entrant retains their best numeric rank during
+their personal rolling window; expiry queues 100 gems for rank 1, 50 for ranks 2–3, or 25 for ranks
+4–10. Delivery is durable across offline sessions and shows a personal award banner on return.
 See [Hall of Worlds](HALL_OF_WORLDS.md).
 
 ## Console Support (landed 2026-08-13)

@@ -224,6 +224,14 @@ return {
         banner = { seconds = 8, color = { 75, 225, 145 } },
     },
 
+    -- Durable server award delivery (leaderboard windows now; future offline exchange receipts).
+    -- The producer supplies the exact award summary as ctx.name after the profile mutation succeeds.
+    award_delivered = {
+        sound = "daily_claim_chime",
+        vfx = { kind = "burst", color = { 255, 205, 70 }, count = 28 },
+        banner = { seconds = 9, color = { 255, 205, 70 } },
+    },
+
     -- Guided-hatch squad auto-fill. EggService delays this until the reveal sequence finishes so
     -- the summary reads as the consequence of what the player just saw, not an overlapping popup.
     tutorial_squad_autofill = {

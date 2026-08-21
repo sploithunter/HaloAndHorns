@@ -633,9 +633,13 @@ sweep at server start, every 5 minutes, and BindToClose. Persist
 template. Immutable creator/test IDs in `internal_accounts` still publish;
 `hide_internal_accounts` hides them on the public page only. Do not
 RemoveAsync those keys. TEMP: hide is off and Studio may write so Macros
-can appear on the Range/TG signs. Window is TEMP 2 hours (production 48).
-Rewards pay the same unexcluded public top 10 the board shows — hidden
-IDs are never paid once hide is back on.
+can appear on the Range/TG signs. Window is TEMP 30 minutes (production 48 hours).
+Each player's award window begins on their first public top-10 observation and retains the lowest
+numeric rank (best placement) reached in that rolling window. Expiry creates a stable-id outbox
+award; a generic ProfileStore message delivers it on the active session or next return through
+RewardService, with the claim ledger and message acknowledgement saved atomically. The configured
+tiers are rank 1 = 100 gems, ranks 2–3 = 50, ranks 4–10 = 25. Hidden IDs are never observed or paid
+once `hide_internal_accounts` is back on; the exclusion remains TEMP disabled for testing.
 Each of the four origins keeps its own saved power kit plus a shared last
 catalog squad under `GameData.RangeDefaults`; do not put that field on the ProfileStore
 template (same Reconcile trap as ChallengeRuns / Tutorial).
