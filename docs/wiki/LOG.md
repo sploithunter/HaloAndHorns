@@ -3885,3 +3885,7 @@ first-session cohort rates.
 - Reduced the TEMP score/award window from two hours to 30 minutes and updated both board subtitles
   and arch guides. Production remains 48 hours. Added a Studio smoke bridge for the actual queued
   grant + notification + profile-ledger path, with test state restoration.
+- Live Studio Play against the task branch confirmed a fresh runtime window of 1,800 seconds with
+  internal-account exclusions still disabled. The durable smoke queued one award, delivered its
+  personal notification, granted exactly one gem, proved the stable claim id, and restored gems
+  from 68 to 69 to 68 without new Output errors.
