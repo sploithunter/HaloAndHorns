@@ -37,67 +37,70 @@ return function()
             ).to.equal("Spawn")
         end)
 
-        it("resumes the last Hall tile and collapses Crystal/Heaven/Hell/trials to Spawn", function()
-            local route = { "Hall_1", "Hall_2", "Hall_3", "Hall_4" }
-            local hallAreas = { Hall_1 = true, Hall_2 = true, Hall_3 = true, Hall_4 = true }
-            local unlocked = { "Hall_1", "Hall_2", "Hall_3", "Hall_4", "Spawn", "Heaven_1" }
+        it(
+            "resumes the last Hall tile and collapses Crystal/Heaven/Hell/trials to Spawn",
+            function()
+                local route = { "Hall_1", "Hall_2", "Hall_3", "Hall_4" }
+                local hallAreas = { Hall_1 = true, Hall_2 = true, Hall_3 = true, Hall_4 = true }
+                local unlocked = { "Hall_1", "Hall_2", "Hall_3", "Hall_4", "Spawn", "Heaven_1" }
 
-            expect(HallOfWorldsLogic.normalizeResumeArea("Hall_3", hallAreas, "Spawn")).to.equal(
-                "Hall_3"
-            )
-            expect(HallOfWorldsLogic.normalizeResumeArea("Heaven_2", hallAreas, "Spawn")).to.equal(
-                "Spawn"
-            )
-            expect(HallOfWorldsLogic.normalizeResumeArea("mission_hell", hallAreas, "Spawn")).to.equal(
-                "Spawn"
-            )
+                expect(HallOfWorldsLogic.normalizeResumeArea("Hall_3", hallAreas, "Spawn")).to.equal(
+                    "Hall_3"
+                )
+                expect(HallOfWorldsLogic.normalizeResumeArea("Heaven_2", hallAreas, "Spawn")).to.equal(
+                    "Spawn"
+                )
+                expect(HallOfWorldsLogic.normalizeResumeArea("mission_hell", hallAreas, "Spawn")).to.equal(
+                    "Spawn"
+                )
 
-            expect(
-                HallOfWorldsLogic.initialArea(
-                    true,
-                    unlocked,
-                    route,
-                    "Hall_1",
-                    "Spawn",
-                    "Hall_3",
-                    hallAreas
-                )
-            ).to.equal("Hall_3")
-            expect(
-                HallOfWorldsLogic.initialArea(
-                    true,
-                    unlocked,
-                    route,
-                    "Hall_1",
-                    "Spawn",
-                    "Heaven_1",
-                    hallAreas
-                )
-            ).to.equal("Spawn")
-            expect(
-                HallOfWorldsLogic.initialArea(
-                    true,
-                    unlocked,
-                    route,
-                    "Hall_1",
-                    "Spawn",
-                    "mission_grass",
-                    hallAreas
-                )
-            ).to.equal("Spawn")
-            -- A new Hall player must not inherit Crystal World Spawn from a stale LastArea.
-            expect(
-                HallOfWorldsLogic.initialArea(
-                    false,
-                    { "Hall_1", "Spawn" },
-                    route,
-                    "Hall_1",
-                    "Spawn",
-                    "Spawn",
-                    hallAreas
-                )
-            ).to.equal("Hall_1")
-        end)
+                expect(
+                    HallOfWorldsLogic.initialArea(
+                        true,
+                        unlocked,
+                        route,
+                        "Hall_1",
+                        "Spawn",
+                        "Hall_3",
+                        hallAreas
+                    )
+                ).to.equal("Hall_3")
+                expect(
+                    HallOfWorldsLogic.initialArea(
+                        true,
+                        unlocked,
+                        route,
+                        "Hall_1",
+                        "Spawn",
+                        "Heaven_1",
+                        hallAreas
+                    )
+                ).to.equal("Spawn")
+                expect(
+                    HallOfWorldsLogic.initialArea(
+                        true,
+                        unlocked,
+                        route,
+                        "Hall_1",
+                        "Spawn",
+                        "mission_grass",
+                        hallAreas
+                    )
+                ).to.equal("Spawn")
+                -- A new Hall player must not inherit Crystal World Spawn from a stale LastArea.
+                expect(
+                    HallOfWorldsLogic.initialArea(
+                        false,
+                        { "Hall_1", "Spawn" },
+                        route,
+                        "Hall_1",
+                        "Spawn",
+                        "Spawn",
+                        hallAreas
+                    )
+                ).to.equal("Hall_1")
+            end
+        )
 
         it("requires both tutorial completion and the configured level", function()
             local unlock = { tutorial_required = true, required_level = 2 }
@@ -130,32 +133,22 @@ return function()
             expect(HallOfWorldsLogic.hasHallTutorialTrack(nil)).to.equal(false)
 
             -- Legacy: no track, so the Hall tutorial wall does not apply.
-            expect(
-                HallOfWorldsLogic.tutorialRequirementMet({}, { done = false }, unlock)
-            ).to.equal(true)
-            expect(HallOfWorldsLogic.meetsUnlock(2, false, unlock, { done = false })).to.equal(
+            expect(HallOfWorldsLogic.tutorialRequirementMet({}, { done = false }, unlock)).to.equal(
                 true
             )
+            expect(HallOfWorldsLogic.meetsUnlock(2, false, unlock, { done = false })).to.equal(true)
 
             -- Post-update new player: track 2, must finish the tutorial.
             expect(
-                HallOfWorldsLogic.tutorialRequirementMet(
-                    {},
-                    { track = 2, done = false },
-                    unlock
-                )
+                HallOfWorldsLogic.tutorialRequirementMet({}, { track = 2, done = false }, unlock)
             ).to.equal(false)
-            local ok, reason = HallOfWorldsLogic.meetsUnlock(
-                2,
-                false,
-                unlock,
-                { track = 2, done = false }
-            )
+            local ok, reason =
+                HallOfWorldsLogic.meetsUnlock(2, false, unlock, { track = 2, done = false })
             expect(ok).to.equal(false)
             expect(reason).to.equal("tutorial_required")
-            expect(
-                HallOfWorldsLogic.meetsUnlock(2, false, unlock, { track = 2, done = true })
-            ).to.equal(true)
+            expect(HallOfWorldsLogic.meetsUnlock(2, false, unlock, { track = 2, done = true })).to.equal(
+                true
+            )
 
             -- Incomplete track 2 must not persist Crystal World Spawn.
             local route = { "Hall_1", "Hall_2", "Hall_3", "Hall_4" }
@@ -236,7 +229,9 @@ return function()
 
         it("sizes Hall populations from shared field-area density", function()
             for _, areaId in ipairs({ "Hall_1", "Hall_2", "Hall_3", "Hall_4" }) do
-                expect(breakables.worlds[areaId].spawn_settings.targets_per_1000_studs).to.equal(2.6)
+                expect(breakables.worlds[areaId].spawn_settings.targets_per_1000_studs).to.equal(
+                    2.6
+                )
             end
             -- 304×304 cap field. 2.6/1000 restores the old 100-in-195×195 look.
             expect(BreakableDensity.count(92416, 2.6, { min = 80, max = 250 })).to.equal(240)
