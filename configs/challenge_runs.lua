@@ -33,11 +33,17 @@ return {
             -- Combat/power axis only (same seam as sidekick). Claimed/earned
             -- Level and entitlements stay put; exit clears the pin.
             effective_level = 50,
+            -- Kill XP uses earned Level, not the 50 pin. Combat stays endgame;
+            -- the bar ticks like a peer fight outside. xp_mult is a spare knob
+            -- (1 = same as overworld at your rank).
+            xp_from = "earned_level",
+            xp_mult = 1,
             guide = {
                 title = "The Range",
                 lines = {
                     "Solo catalog run. Leave your team at the door.",
                     "Everyone fights at level 50.",
+                    "XP pays at your real level, not 50.",
                     "Room 1 is two whelps. Maps change after that.",
                     "Pick an origin kit and a loaned squad.",
                     "Best room in the last 30 minutes ranks the board.",
@@ -189,10 +195,15 @@ return {
         training_ground = {
             loadout = "own",
             display = "Training Ground",
+            -- Overworld onramp (combat.engagement.min_engage_level 5) is for
+            -- the Hall/Crystal display fight. TG is the place to train with
+            -- your real pets as soon as you can walk in.
+            skip_engage_gate = true,
             guide = {
                 title = "Training Ground",
                 lines = {
                     "Your own pets and powers.",
+                    "Fight as soon as you can get here.",
                     "Teams are allowed.",
                     "Room 1 is two whelps. Maps change after that.",
                     "Easier rooms than The Range.",

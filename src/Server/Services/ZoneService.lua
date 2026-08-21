@@ -145,7 +145,9 @@ function ZoneService:HasEnteredCrystalWorld(player)
 end
 
 function ZoneService:IsHallArea(areaId)
-    return type(areaId) == "string" and self._hallRouteAreaSet and self._hallRouteAreaSet[areaId] == true
+    return type(areaId) == "string"
+        and self._hallRouteAreaSet
+        and self._hallRouteAreaSet[areaId] == true
 end
 
 function ZoneService:IsInHall(player)
@@ -272,6 +274,8 @@ end
 
 function ZoneService:Start()
     self:_connectTravelHooks()
+    self:_seatHallAreaZones()
+    self:_seatComingSoonWalls()
     self:_setupNetworkSignals()
 
     self._worldBindingService.AreaEntered:Connect(function(player, areaId)
@@ -1046,6 +1050,7 @@ function ZoneService:_connectTravelHooks()
     for _, hook in ipairs(hooks) do
         if hook:IsA("BasePart") then
             self:_alignCopiedGatePortal(hook)
+            self:_seatHallGate(hook)
             self:_ensureTravelPrompt(hook)
         end
 
@@ -1056,6 +1061,125 @@ function ZoneService:_connectTravelHooks()
             end)
         end
     end
+end
+
+function ZoneService:_seatHallGate(hook)
+    if not CollectionService:HasTag(hook, "HallGate") then
+        return
+    end
+    local gates = self._hallConfig and self._hallConfig.progression_gates
+    if type(gates) ~= "table" then
+        return
+    end
+    for _, definition in ipairs(gates) do
+        if definition.name == hook.Name then
+            local pos = definition.position
+            local size = definition.size
+            if type(pos) == "table" then
+                hook.CFrame = CFrame.new(pos[1] or 0, pos[2] or 0, pos[3] or 0)
+            end
+            if type(size) == "table" then
+                hook.Size = Vector3.new(
+                    size[1] or hook.Size.X,
+                    size[2] or hook.Size.Y,
+                    size[3] or hook.Size.Z
+                )
+            end
+            return
+        end
+    end
+end
+
+function ZoneService:_seatHallAreaZones()
+    local maps = workspace:FindFirstChild("Maps")
+    local hall = maps
+        and maps:FindFirstChild(self._hallConfig and self._hallConfig.map_name or "FuturePath")
+    local runtime = hall and hall:FindFirstChild("HallRuntimeBindings")
+    if not runtime then
+        return
+    end
+    local zones = self._areasConfig and self._areasConfig.zones or {}
+    for areaId in pairs(self._hallRouteAreaSet or {}) do
+        if areaId == "Hall_1" then
+            continue
+        end
+        local synthetic = zones[areaId] and zones[areaId].synthetic
+        local part = runtime:FindFirstChild(areaId .. "_AreaZone")
+        local center = synthetic and synthetic.center
+        local size = synthetic and synthetic.size
+        if part and part:IsA("BasePart") and type(center) == "table" and type(size) == "table" then
+            part.Size =
+                Vector3.new(size.x or part.Size.X, size.y or part.Size.Y, size.z or part.Size.Z)
+            part.CFrame = CFrame.new(center.x or 0, center.y or 0, center.z or 0)
+        end
+    end
+end
+
+function ZoneService:_seatComingSoonWalls()
+    local coming = self._hallConfig and self._hallConfig.coming_soon
+    local walls = coming and coming.walls
+    if type(walls) ~= "table" then
+        return
+    end
+    local maps = workspace:FindFirstChild("Maps")
+    local hall = maps
+        and maps:FindFirstChild(self._hallConfig and self._hallConfig.map_name or "FuturePath")
+    local runtime = hall and hall:FindFirstChild("HallRuntimeBindings")
+    if not runtime then
+        return
+    end
+    local look = self._hallConfig.gate_appearance or {}
+    local color = look.color or { 226, 236, 242 }
+    for _, definition in ipairs(walls) do
+        local name = definition.name
+        if type(name) == "string" and name ~= "" then
+            local wall = runtime:FindFirstChild(name)
+            if not (wall and wall:IsA("BasePart")) then
+                wall = Instance.new("Part")
+                wall.Name = name
+                wall.Anchored = true
+                wall.Parent = runtime
+            end
+            local pos = definition.position or {}
+            local size = definition.size or { 100, 28, 5 }
+            wall.Size = Vector3.new(size[1] or 100, size[2] or 28, size[3] or 5)
+            wall.CFrame = CFrame.new(pos[1] or 0, pos[2] or 0, pos[3] or 0)
+            wall.Material = Enum.Material[look.material or "Ice"] or Enum.Material.Ice
+            wall.Color = Color3.fromRGB(color[1] or 226, color[2] or 236, color[3] or 242)
+            wall.Transparency = look.transparency or 0.28
+            wall.Reflectance = look.reflectance or 0.04
+            wall.CanCollide = true
+            wall.CanTouch = false
+            wall.CanQuery = true
+            wall.CastShadow = false
+            CollectionService:AddTag(wall, "HallComingSoon")
+        end
+    end
+end
+
+function ZoneService:_isPressingLockedHallGate(player, areaId)
+    local root = getRootPart(player)
+    if not root then
+        return false
+    end
+    for _, gate in ipairs(CollectionService:GetTagged("HallGate")) do
+        if gate:IsA("BasePart") then
+            local target = gate:GetAttribute("TargetAreaId") or gate:GetAttribute("TargetZoneId")
+            if tostring(target) == tostring(areaId) then
+                local closest = gate.Position
+                local ok, point = pcall(function()
+                    return gate:GetClosestPointOnSurface(root.Position)
+                end)
+                if ok and typeof(point) == "Vector3" then
+                    closest = point
+                end
+                if (root.Position - closest).Magnitude <= 10 then
+                    return true
+                end
+            end
+        end
+    end
+    return false
 end
 
 function ZoneService:_ensureTravelPrompt(hook)
@@ -1077,6 +1201,9 @@ function ZoneService:_ensureTravelPrompt(hook)
         prompt.HoldDuration = 0
         prompt.MaxActivationDistance = 14
         prompt.Parent = hook
+    end
+    if CollectionService:HasTag(hook, "HallGate") then
+        prompt.Style = Enum.ProximityPromptStyle.Custom
     end
 
     local promptHeightFromBottom = tonumber(hook:GetAttribute("PromptHeightFromBottom"))
@@ -1144,12 +1271,12 @@ function ZoneService:_getTravelPromptActionText(targetZoneId, hook)
     local currency = unlock and unlock.currency
     local cost = unlock and tonumber(unlock.cost) or 0
 
-    if unlock and unlock.tutorial_required == true then
-        return string.format("Reach Level %d", tonumber(unlock.required_level) or 2)
+    if currency and cost > 0 then
+        return HallOfWorldsLogic.gateButtonText(unlock)
     end
 
-    if currency and cost > 0 then
-        return string.format("Unlock %d %s", cost, currency)
+    if unlock and unlock.tutorial_required == true then
+        return string.format("Reach Level %d", tonumber(unlock.required_level) or 2)
     end
 
     return "Travel"
@@ -1179,6 +1306,12 @@ function ZoneService:_handleHookPromptTriggered(hook, player)
         end
     end
 
+    -- Hall walls drop in place. Walking through is the travel; do not snap
+    -- the player to the next pad.
+    if CollectionService:HasTag(hook, "HallGate") then
+        return
+    end
+
     local travelResult = self:TravelViaHook(player, hook)
     Signals.ZoneTravelResult:FireClient(player, travelResult)
 end
@@ -1203,12 +1336,42 @@ function ZoneService:_handleHookTouched(hook, hit)
     end
     playerDebounce[hook] = now
 
+    if CollectionService:HasTag(hook, "HallGate") then
+        return
+    end
+
     local result = self:TravelViaHook(player, hook)
     Signals.ZoneTravelResult:FireClient(player, result)
 end
 
 function ZoneService:_handleAreaEntered(player, areaId)
     if self:IsZoneUnlocked(player, areaId) then
+        return
+    end
+
+    if self:IsHallArea(areaId) then
+        if self:_isPressingLockedHallGate(player, areaId) then
+            return
+        end
+        local unlockSet = self:_getUnlockSet(player)
+        local routeAreaIds = {}
+        for _, routeArea in ipairs((self._hallConfig and self._hallConfig.route) or {}) do
+            if type(routeArea.area_id) == "string" then
+                table.insert(routeAreaIds, routeArea.area_id)
+            end
+        end
+        local dest = HallOfWorldsLogic.lockedEntryReturn(
+            unlockSet,
+            routeAreaIds,
+            areaId,
+            self._hallConfig and self._hallConfig.initial_area or HALL_START_AREA
+        )
+        self._logger:Warn("Player entered locked Hall tile; returning to last unlocked tile", {
+            player = player.Name,
+            areaId = areaId,
+            dest = dest,
+        })
+        self:TravelToZone(player, dest)
         return
     end
 

@@ -33,13 +33,13 @@ return {
     slots = {
         origin_x = 24000,
         spacing = 3072, -- wider berth for the 6x-scale maps (envelope below caps sprawl)
-        count = 8, -- last slot at 24000 + 7*3072 = 45504, inside float comfort
+        count = 10, -- last slot at 24000 + 9*3072 = 51648; matches 10-player servers
         y = 0,
     },
 
     limits = {
         per_team = 1, -- live instances per team
-        global = 6, -- live instances per server
+        global = 10, -- live instances per server (same as current MaxPlayers)
         max_lifetime = 1800, -- seconds; TTL sweep abandons older instances
     },
 

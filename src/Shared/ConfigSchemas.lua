@@ -114,6 +114,8 @@ local SCHEMAS = {
         final_plaza = "table",
         future_spokes = "table",
         stages = "table",
+        arch_lightning = "table",
+        coming_soon = "table",
     }),
     gems = schema({ meshes = "table", textures = "table", default_color = "string" }),
     -- NPC principals (docs/CREATOR_SUMMON.md): summonable allies that own a squad and anchor

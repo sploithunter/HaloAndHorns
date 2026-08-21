@@ -483,14 +483,14 @@ function MissionInstanceService:Open(player, missionId, opts)
     for _ in pairs(self._instances) do
         live += 1
     end
-    if live >= (self._config.limits.global or 6) then
+    if live >= (self._config.limits.global or 10) then
         fireGameEvent(player, "mission_enter_blocked", { reason = "server_full" })
         return nil, "server mission capacity reached"
     end
 
     -- slot
     local slotIndex
-    for i = 1, self._config.slots.count or 8 do
+    for i = 1, self._config.slots.count or 10 do
         if not self._slots[i] then
             slotIndex = i
             break

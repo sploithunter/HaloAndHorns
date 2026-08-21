@@ -11,17 +11,17 @@ tiles during play.
 Wayfinder Landing
   tutorial + Egg Bay 1
         |
-  tutorial complete + earned Level 2
+  tutorial complete + earned Level 2 + 3,000 Waycoins
         v
 Gilded Gallery
   Egg Bay 2 + Waycoin caches
         |
-      750 Waycoins
+    6,000 Waycoins
         v
 Vanguard Walk
   Egg Bay 3 + richer Waycoin caches
         |
-     2,500 Waycoins
+   10,000 Waycoins
         v
 Worlds Plaza
   Egg Bay 4 + Hall spokes + gate to Crystal World
@@ -87,16 +87,18 @@ Worlds Plaza
   random candidate pool inside the authored green-field outline; the shared slot registry still
   enforces occupied minimum distance. Do not replace this with a jittered grid—the grid remains
   visible as rows at this field scale.
-- The six `SpawnZone` parts baked into `Tile01`, `Tile03`, `Tile04`, `Tile06`, `Tile07`, and
-  `Tile09` are the single source of truth for Hall gameplay footprints. The wiring pass adopts each
-  part in place, assigns its route `AreaId`, and tags it for both breakable spawning and
+- Every Hall green field is a play area. Cap / playfield / corner tiles already have baked
+  `SpawnZone` parts (`Tile01`, `Tile03`, `Tile04`, `Tile06`, `Tile07`, `Tile09`). Corridor
+  tiles (`Tile02`, `Tile05`, `Tile08`) have Field pads only; bind mints a `SpawnZone` from
+  that AABB at runtime and in the Studio wire pass. The wiring pass adopts existing markers
+  in place, assigns the route `AreaId`, and tags them for breakable spawning and
   `HallPlayAreaMarquee`. The marquee **and** breakable drop slots follow the authored white
   `FieldKerb` / `FieldKerbCorner` outline of the green field — the same loop already built into
   the tile — not the smaller `SpawnZone` rectangle. Corner tiles are pentagons whose field
   extends well outside the inscribed spawn marker; sampling the marker box left the 45° cut and
-  the far lobe empty. Corridor bends use two markers with the same area id. Never replace these
-  with a broad synthetic circle: it admits sidewalks and makes the visible perimeter disagree with
-  legal spawn positions.
+  the far lobe empty. Corridor tiles share the neighboring Hall `area_id` (Tile02 with Hall_1,
+  Tile05 with Hall_3, Tile08 with Hall_4). Never replace these with a broad synthetic circle:
+  it admits sidewalks and makes the visible perimeter disagree with legal spawn positions.
 - `ZoneTrackerService` resolves the Hall's synthetic area bounds when no legacy biome baseplate is
   beneath the player. This keeps `CurrentArea` on `Hall_1`–`Hall_4`, which is required for Farm Near
   to search the correct world's breakable folder after a Hall teleport.
@@ -141,9 +143,11 @@ Worlds Plaza
   Copied Home `Gate` meshes keep a stale WorldPivot; the travel trigger is
   snapped to the visible arch so the doorway actually fires.
 - Hall progression walls keep a lock prompt only while their target area is locked.
-  `ForcePrompt` must not keep "Unlock N hall_coins" up after `UnlockedAreasJson` already
-  contains that area — the wall is already locally transparent. Crystal World travel
-  portals are not `HallGate` and still keep their Travel prompt.
+  The default E bubble is hidden (`ProximityPromptStyle.Custom`). A citrine pill
+  shows the live `areas`/`route` cost (`3,000` / `6,000` / `10,000 Waycoins`) and
+  fires `UnlockZoneRequest`. Baked `HallGateLabel` SurfaceGuis are destroyed so
+  old 750/2,500 text cannot linger. Crystal World travel portals are not
+  `HallGate` and still keep their Travel prompt.
 - World Travel does not expose the non-Hall catalog to a fresh player before the Hall exit.
 
 ## Authority and Studio Binding
@@ -155,8 +159,23 @@ the authored landing barn and its 21 Hall fence sections into `Tile01_cap`, anch
 the invisible `BaddieSpawnerHallBarn` marker just inside the field-facing doorway. The marker uses
 the normal proximity-wave lifecycle and group gate; its only Hall-specific binding is Earth-family
 enemy selection plus the established current-area currency fallback, so defeats pay Waycoins.
-Progression-wall prompts are parented to authored Attachments 4.5 studs above each wall's bottom,
-placing the E/tap affordance at player height instead of at the center of a 28-stud barrier.
+Progression walls use pale Ice (`gate_appearance`) so they read frosted, not amber glass.
+The live cost is a citrine SurfaceGui pill on the wall face. The Plaza wall
+(`WaycoinBarrier2500`) sits at z 558, in the pillar line, so the corner cannot be
+squeezed. Every progression wall spans to the tile InvisibleWalls (Level 2
+and Plaza 220 wide; Hall_2→3 240 deep) so you cannot walk around the
+SeamTowers. Hall_3's AreaZone extends to that wall; Hall_4 starts just past it.
+Pressing a locked wall does not teleport. A real clip into a locked Hall tile
+returns to the previous unlocked tile, not Hall_1 / LastArea. `HallRouteGates`
+paints look and pills at runtime; ZoneService seats `progression_gates` and
+Hall_2–4 AreaZones so Play does not need a re-wire. The last Plaza endcap
+(`Tile09_cap` SeamTowers at z 696) is closed by `Hall4EndcapComingSoon` —
+same Ice look, citrine SurfaceGui "Coming Soon", not a HallGate. The wall
+is 220 wide so it meets the Tile09 InvisibleWalls (x 2466 / 2670) and
+cannot be walked around at the Crystal World arch. Egg Bay 4 and the
+Crystal World gate stay in front of it. The wire pass adopts a
+user-moved `CrystalWorldGateVisual` in place and seats the portal on that
+visual.
 
 Progression is enforced twice:
 
@@ -216,7 +235,11 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   temporary powers). **Solo only** — a teamed player is refused at the door and on start
   (`range_solo_required`). Everyone fights at **level 50** for the run
   (`effective_level` → `ChallengeLevel` → `EffectiveLevel`); real levels
-  restore on exit. Entry is two menus you can flip between: **Inventory** (same pet cards,
+  restore on exit. Kill XP uses earned Level (`xp_from = "earned_level"`),
+  not the 50 pin, so the bar ticks like a peer overworld fight. The combat
+  onramp (`min_engage_level` 5) reads that pin, not earned Level — otherwise
+  Room 1 stays peaceful for a sub-5 player.
+  Entry is two menus you can flip between: **Inventory** (same pet cards,
   badges, Best Pets) and **PowerChoice** (origin chooser, tooltips, up to 6 loaned powers).
   Closing either menu (X or ESC) abandons the draft, clears the open-menu flag,
   and re-arms the pad E so you can open it again without leaving the pad.
@@ -240,7 +263,13 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   were the SmallBlueCrystal crate placeholder (sideways crystals). Magma Wyrm
   waits until `boss_at` (room 25). Genie and Revive are not in the catalog.
 - **Training Ground** (`TrainingGroundPad`, `MissionId = training_ground`): your own pets and
-  powers, same loop, easier curve.
+  powers, same loop, easier curve. The overworld combat onramp (`min_engage_level` 5)
+  does **not** apply (`skip_engage_gate`) — you fight with your real pets as soon
+  as you can reach the door.
+- Live cap is **10 instances per server** (`missions.limits.global` and `slots.count`),
+  matching the current 10-player place. Range uses one slot per player; Training
+  Ground uses one slot per team. Neighbors stay 3072 studs apart inside a ±400
+  envelope, so they do not collide or stream into each other.
 - No downed-pet summons, Genie/Djinn revives, or `ResurrectPet` inside a gauntlet. A downed
   slot stays down for the run (HUD shows **Down**, no Ready/Summon). Pet equip is
   allowed on the stamped **entry** tile for **white** slots only — a red slot cannot
@@ -362,7 +391,8 @@ icons; no 3D board lineup) and his Colorado story: he asked for boards for
 three years, then paid for them himself so he could give some away and open
 the shop. Owned skins show **OWNED** / **EQUIPPED** and never offer Take,
 Buy, or Robux again (`canBuy` returns `already_owned`).
-All five skate hoverboards are free. Surfs cost gems (900–1100). Rockets
+All five skate hoverboards are free. Surfs cost gems (900–1100). A gem
+Buy asks to confirm the spend; not enough gems shows **insufficient funds**. Rockets
 are on sale; the card shows Roblox's live `PriceInRobux` (regional /
 managed pricing), not the config baseline of 19. Each rocket is a permanent,
 personal game pass sold only through Kade: rocket passes are hidden from the
@@ -373,11 +403,12 @@ Studio `test_mode`. All six group-owned pass IDs are live as of 2026-08-21.
 Rockets cruise at 2× skate (`cruise_speed` 64 → 128).
 Ownership is `GameData.Hoverboard` (`owned` + `equipped`); the dormant
 mounts inventory bucket stays off. Owned boards also replicate into
-`Inventory.hoverboards` and appear on the Items tab for equip. Free
-catalog skins are granted only when the rider is eligible (tutorial +
-Level 2). Admin **Reset to Beginning** wipes `GameData.Hoverboard` and
-the Items-tab folder so kept unique pets do not keep Kade's boards.
-Black Gold is also granted with the Level-2 board unlock. The HUD
+`Inventory.hoverboards` and appear on the Items tab for equip. Level 2
+grants **Black Gold only**. The other free skates stay at Kade's for
+Take. A save that owns the entire free set is treated as the old
+auto-grant and stripped back to the starter plus any paid boards.
+Admin **Reset to Beginning** wipes `GameData.Hoverboard` and the
+Items-tab folder so kept unique pets do not keep Kade's boards. The HUD
 mounts whichever skin is equipped.
 
 Four client-built award podiums bind to tagged `AwardPodium` hooks in

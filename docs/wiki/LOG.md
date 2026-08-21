@@ -1,5 +1,15 @@
 # Log
 
+## 2026-08-21 — Every Hall green field is a play area; Protect the Realm
+
+- Corridor tiles Tile02 / Tile05 / Tile08 had green Fields and no SpawnZone, so
+  the pads between Range and Vanguard and in front of Worldheart had no
+  marquee and no Waycoins. `play_areas` now lists all nine Hall tiles; bind
+  mints a missing SpawnZone from the field AABB at runtime (and in the wire
+  pass). Do not snap existing markers.
+- First Steps capstone `fs_cave` is **Protect the Realm** (same id). The barn
+  copy did not fit a player who finished the fight in Crystal World.
+
 ## 2026-08-21 — Pet Shop uses the full Roblox simulator; Kade matches its chrome
 
 - A positive dashboard product/pass ID now always opens Roblox's purchase
@@ -17,6 +27,162 @@
   bypassed it; every Robux buy stopped as `service_unavailable`. The shop now
   receives the same monetization service that powers the Pet Shop, so live
   rocket prompts and their `ProcessReceipt` board grants can run.
+
+## 2026-08-21 — Training Ground skips the level-5 combat onramp
+
+- Overworld `min_engage_level` 5 left TG Room 1 peaceful for anyone who
+  reached the door below 5. Range already passed via the 50 pin; Training
+  Ground has no pin and is meant for your real pets. Mode flag
+  `skip_engage_gate` opens the fight as soon as you can walk in.
+
+## 2026-08-21 — Inventory open reseeds the squad draft
+
+- Reopening Pets could show `Squad (deployed) — 4/4` with only three white
+  slots filled. Hide kept `_draftRefs`; the next Show skipped the seed.
+  Open now fires the same Reset path (`_resetDraftToDeployed`) so the strip
+  matches the live deployed squad.
+
+## 2026-08-21 — Range XP pays earned level, not the 50 pin
+
+- Range combat stays at 50 (`effective_level` / `ChallengeLevel`) for ranking
+  and the kit test. Kill XP now uses earned `Level` (`xp_from =
+  "earned_level"`) so a Room 1 whelp ticks the bar like a peer overworld
+  fight instead of paying a level-50 bounty. Spare knob: `modes.range.xp_mult`.
+  Training Ground is unchanged.
+
+## 2026-08-21 — Studio Robux rocket buy granted nothing
+
+- ProcessReceipt knew `hoverboard_skin` but MonetizationService never had
+  HoverboardService (not a module dep; shop already depends the other way).
+  Bound as a peer. Live rocket SKUs now PromptProductPurchase so Studio's
+  purchase simulation and the receipt are the production path.
+
+## 2026-08-21 — Range Room 1 was peaceful; Kade Ghost lost his head
+
+- Combat onramp used earned `Level` (3) instead of the Range `EffectiveLevel`
+  pin (50), so pets never pulled and Cinder Whelps loitered. Gate now reads
+  the pin (`ChallengeRun.passesEngageGate`).
+- Range Ghost Kade is a 51-part packaged avatar. Client `PivotTo` left most
+  parts behind (including the head) because they were separate anchored
+  assemblies. Pet follow prep now welds every part to PrimaryPart and
+  anchors only that part.
+
+## 2026-08-21 — Kade gem buys confirm spend, then insufficient funds
+
+- Buying a gem surf now asks "Spend N gems on <board>?" first. Confirming
+  without enough gems shows "insufficient funds" (config
+  `shop.messages`). Free Take and Robux still skip this prompt.
+
+## 2026-08-21 — Black Gold / Blue Gold mesh+texture were swapped
+
+- Live labels: the `black_gold` template was the blue deck, `blue_gold`
+  was the black deck. Config and `hoverboard_assets.json` mesh/texture
+  IDs are exchanged. Icons stay put.
+
+## 2026-08-21 — All Hall walls span to the side barriers
+
+- Level2Barrier and WaycoinBarrier2500 are 220 wide; WaycoinBarrier750
+  is 240 deep. Same close as the Coming Soon wall: meet the tile
+  InvisibleWalls so you cannot walk around the SeamTowers.
+
+## 2026-08-21 — Only Black Gold is the free starter board
+
+- Eligible riders were stamped every free skate (`green_white` through
+  `blue_gold`). `_save` now grants `default_skin` only. A save that owns
+  the whole free set is stripped back to Black Gold plus paid boards.
+  The ride mesh must match `HoverboardSkin`.
+
+## 2026-08-21 — Hatch shake shows the egg front
+
+- Authored hatch ViewportFrames were locked to +Z. A Hall egg that faces +X
+  shook in side view. Camera now sits on the clone LookVector.
+
+## 2026-08-21 — Coming Soon wall spans to the Tile09 side barriers
+
+- Widened `Hall4EndcapComingSoon` from 100 to 220 so it meets the
+  InvisibleWalls at x 2466 and 2670. The Crystal World arch no longer
+  leaves a walk-around.
+
+## 2026-08-21 — Coming Soon wall closes the last Plaza endcap
+
+- `Hall4EndcapComingSoon` sits in the Tile09 SeamTower line (z 696). The
+  moved egg and Crystal World gate stay in front. SurfaceGui "Coming Soon"
+  on both faces. Not a HallGate. Wire no longer snaps a moved Crystal
+  World visual back to the old plaza-end coords.
+
+## 2026-08-21 — Locked Hall wall / out-of-area no longer dumps to Hall_1
+
+- Hall_4's AreaZone started at z 550, so the Plaza wall and the sidewalk in
+  front of it counted as locked Hall_4. Touch fired `AreaEntered` and
+  `GetInitialArea` used a stale LastArea (Hall_1). Hall_3 now covers the
+  wall face; Hall_4 starts past it. Wall-press is ignored. Other locked
+  Hall clips return to the previous unlocked tile.
+
+## 2026-08-21 — Arch lightning grouped into every Hall gate
+
+- `ArchLightning` marker models sit inside Range, Training Ground, both
+  Crystal World Hall arches, the Home Hall arch, and `HellFaceGateTest`.
+  Loose Workspace cubes are gone. Pairs follow the opening axis so a
+  yawed Home gate still crosses.
+
+## 2026-08-21 — Arch lightning is jamb-to-jamb, not a mid-arch hub
+
+- Sample points are two pillar columns only. Bolts always cross the opening
+  (`min_cross_span`). The dragon flash orb is off so it does not read as a
+  source in the middle of the gate.
+
+## 2026-08-21 — Arch lightning stamps markers (loose cubes vanish on Play)
+
+- Loose Workspace `lightning*` parts were unanchored and gone in Play, so
+  the TG arch had nothing to zap. Client now stamps anchored points from
+  `TrainingGroundPadGateVisual` / `RangePadGateVisual` bounds.
+
+## 2026-08-21 — Training Ground arch lightning (markers still loose)
+
+- Client `ArchLightning` zaps the dragon bolt between authored `lightning*`
+  parts at the Training Ground gate. Workspace-root markers are adopted
+  until they are parented into each Hall arch. Hold off on the import.
+
+## 2026-08-21 — Hall walls are frosted; Plaza wall sits in the frame
+
+- Gate look is Ice + pale tint, not gold Glass. The cost pill is a SurfaceGui
+  on the wall. WaycoinBarrier2500 moved from z 550 to 558 so the pillar
+  corner cannot be walked around.
+
+## 2026-08-21 — Mission instances match 10-player servers
+
+- `missions.limits.global` and `slots.count` are 10. Range / Training Ground
+  / Trials share that pool. Spacing stays 3072 so envelopes cannot overlap.
+
+## 2026-08-20 — Hatch shake was blanking ViewportFrame eggs
+
+- Authored hatch eggs are ViewportFrames. Rotating that GuiObject during
+  shake made Roblox draw an empty frame (drum roll + confetti still ran).
+  Shake now rolls the viewport camera. Hall clones use PlacedEgg, not the
+  dual-tagged pedestal.
+
+## 2026-08-20 — Hall walls use one live-cost pill
+
+- Baked "750 Waycoins" / "OPEN THE WAY" SurfaceGuis are gone. Each locked
+  Hall wall shows a citrine pill with the current route cost. Default E
+  prompt is Custom/hidden. Clicking the pill unlocks; the wall drops in place.
+
+## 2026-08-20 — Hall progression walls are frosted glass
+
+- Closed Hall walls were ForceField at 0.38, which still reads as a faint
+  veil. `gate_appearance` now uses Glass at 0.18 transparency. HallRouteGates
+  paints that at runtime so Play does not need a re-wire.
+
+## 2026-08-20 — New players can afford the first Hall egg
+
+- Fresh profiles already start with 100 Waycoins (`hall_coins.defaultAmount`).
+  Admin Reset to Beginning now restores each currency's config default
+  instead of zeroing Waycoins, so a reset tester can hatch Wayfinder.
+
+## 2026-08-20 — Worldheart egg faces the plaza
+
+- Worldheart mesh imported facing the stand. `egg_sources.worldheart_egg`
+  `stand_yaw_degrees = 180` turns it on the pedestal.
 
 ## 2026-08-20 — Fight list covers the left toggles
 

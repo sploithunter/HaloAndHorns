@@ -342,7 +342,39 @@ function PetFollowService:_stampPetSyncDiag()
     end
 end
 
--- Anchor every part so the pet can't fall/drift (the client moves it via PivotTo).
+-- One anchored assembly so client PivotTo cannot leave packaged-avatar
+-- pieces (Kade's head) at the last replicated CFrame. Weld everyone to
+-- PrimaryPart, then anchor only that part — welds stay live.
+local function weldToPrimary(pet)
+    local primary = pet.PrimaryPart
+    if not primary then
+        return
+    end
+    local weldedToPrimary = {}
+    for _, d in ipairs(pet:GetDescendants()) do
+        if d:IsA("WeldConstraint") then
+            if d.Part0 == primary and d.Part1 then
+                weldedToPrimary[d.Part1] = true
+            elseif d.Part1 == primary and d.Part0 then
+                weldedToPrimary[d.Part0] = true
+            end
+        end
+    end
+    for _, d in ipairs(pet:GetDescendants()) do
+        if d:IsA("BasePart") and d ~= primary then
+            if not weldedToPrimary[d] then
+                local weld = Instance.new("WeldConstraint")
+                weld.Part0 = primary
+                weld.Part1 = d
+                weld.Parent = primary
+            end
+            d.Anchored = false
+        end
+    end
+    primary.Anchored = true
+end
+
+-- Anchor the pet so it can't fall/drift (the client moves it via PivotTo).
 -- Strips any stale movement constraints from earlier builds. Once per pet.
 function PetFollowService:_prepPet(pet)
     if pet:GetAttribute("PetFollowPrepped") then
@@ -354,8 +386,11 @@ function PetFollowService:_prepPet(pet)
             c:Destroy()
         end
     end
+    weldToPrimary(pet)
     for _, d in ipairs(pet:GetDescendants()) do
-        if d:IsA("BasePart") then
+        if d:IsA("BasePart") and d ~= pet.PrimaryPart then
+            d.Anchored = false
+        elseif d:IsA("BasePart") then
             d.Anchored = true
         end
     end

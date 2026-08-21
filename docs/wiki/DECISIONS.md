@@ -623,7 +623,10 @@ the lock is on the slot, not the power. Range is solo-only (a party cannot share
 instance). Catalog Range pins combat to level 50 (`effective_level` on the
 mode, stamped as `ChallengeLevel`) so ranking is fair — same
 `EffectiveLevel` seam as sidekick, no sidekick offset, no ProfileStore
-field, claimed/earned Level unchanged. Training Ground does not pin.
+field, claimed/earned Level unchanged. Kill XP still pays from earned
+Level (`xp_from = "earned_level"`, optional `xp_mult`) so Range is not a
+leveling machine. Training Ground does not pin and skips the overworld
+`min_engage_level` onramp (`skip_engage_gate`) so a reachable door fights.
 Current Range / Training Ground boards are a 48-hour sliding window of
 best cleared room (`challenge_window`), published through the existing
 one-player OrderedDataStore pipeline. Persist and publish when a run

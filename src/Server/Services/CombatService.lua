@@ -31,6 +31,7 @@ local CombatSim = require(ReplicatedStorage.Shared.Game.CombatSim)
 local PetCombat = require(ReplicatedStorage.Shared.Game.PetCombat)
 local XpReward = require(ReplicatedStorage.Shared.Game.XpReward)
 local LevelDiffYield = require(ReplicatedStorage.Shared.Game.LevelDiffYield)
+local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 
 local CombatService = {}
 CombatService.__index = CombatService
@@ -58,11 +59,34 @@ function CombatService:Init()
     -- LEVEL-based combat XP (not loot-based): scale off the enemy's effective level + rank.
     self._combatXp = (okLvl and type(lvlCfg) == "table" and lvlCfg.combat_xp) or {}
     self._combatCoins = (okLvl and type(lvlCfg) == "table" and lvlCfg.combat_coins) or {}
+    local okCh, chCfg = pcall(function()
+        return self._configLoader:LoadConfig("challenge_runs")
+    end)
+    self._challengeConfig = okCh and type(chCfg) == "table" and chCfg or {}
     self._deps = { Targeting = Targeting, CombatMath = CombatMath, FocusMath = FocusMath }
 end
 
 function CombatService:_enemyDef(enemyId)
     return self._enemiesConfig.enemies[enemyId]
+end
+
+function CombatService:_challengeModeCfg(player)
+    if not player or not player.GetAttribute then
+        return nil
+    end
+    local mode = player:GetAttribute("GauntletMode")
+    if type(mode) ~= "string" or mode == "" then
+        return nil
+    end
+    local modes = self._challengeConfig and self._challengeConfig.modes
+    if type(modes) ~= "table" then
+        return nil
+    end
+    local cfg = modes[mode]
+    if type(cfg) == "table" then
+        return cfg
+    end
+    return nil
 end
 
 -- Expand a configured spawner into fight-ready enemy records (HP scaled by party
@@ -215,14 +239,25 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier, resolve
     -- model's Level attribute — base + elite rank offset + the player's ±difficulty offset already
     -- baked in. rank_xp_mult adds a lieutenant/boss premium on top of their level. Floor 1 so any kill
     -- ticks the bar. AddExperience publishes the XP attribute -> the HUD level bar ticks live.
+    -- Range pins combat at 50 but pays XP from earned Level (`xp_from = "earned_level"`)
+    -- so the bar ticks like a peer overworld fight. Training Ground omits that and
+    -- uses the stamped enemy level. Do not feed ChallengeLevel / EffectiveLevel here.
     local cx = self._combatXp or {}
     local effLevel = tonumber(enemyLevel) or tonumber(def.level) or 1
+    local playerLvl = player:GetAttribute("Level")
+    local modeCfg = self:_challengeModeCfg(player)
+    local yieldLevel = ChallengeRun.xpYieldLevel(modeCfg, playerLvl, effLevel)
     local rankMult = (cx.rank_xp_mult and cx.rank_xp_mult[tier]) or 1
-    local xp = XpReward.fromEnemyLevel(effLevel, cx.xp_per_level, rankMult)
+    local xp = XpReward.fromEnemyLevel(yieldLevel, cx.xp_per_level, rankMult)
+    local yieldMult = ChallengeRun.xpYieldMult(modeCfg)
+    if yieldMult ~= 1 then
+        xp = math.max(1, math.floor(xp * yieldMult))
+    end
     -- DIMINISHING XP vs out-leveled enemies (Jason: no overnight farm-leveling; same
     -- gate as mining). enemyLevel = the model's Level attribute (rank already baked).
     -- REALM RESCALE: the player's realm depth lifts the target level (layers.level_offsets) so
     -- realms keep paying XP instead of flooring a high-level player on arrival — parity with mining.
+    -- Earned-level Range yield is already a peer fight; do not re-apply realm offset there.
     local layerService = self._layerService
     local realmLevelOffset = (
         layerService
@@ -230,24 +265,25 @@ function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier, resolve
         and layerService:GetLevelOffset(player)
     ) or 0
     local baseXp = xp
-    local diminish = LevelDiffYield.xp(
-        player:GetAttribute("Level"),
-        (enemyLevel or def.level or 1) + realmLevelOffset,
-        self._xpLevelScale
-    )
+    local diminishTarget = yieldLevel
+    if not (type(modeCfg) == "table" and modeCfg.xp_from == "earned_level") then
+        diminishTarget = (enemyLevel or def.level or 1) + realmLevelOffset
+    end
+    local diminish = LevelDiffYield.xp(playerLvl, diminishTarget, self._xpLevelScale)
     xp = math.floor(xp * diminish)
     -- [CombatXP] trace (Jason balance pass): why did a kill pay what it paid? base = level×rate×rank
-    -- before diminish; diminish = LevelDiffYield vs (enemy effLevel + realm offset). Gated on
+    -- before diminish; diminish = LevelDiffYield vs (yield or enemy+realm). Gated on
     -- combat.combat_trace (leave in, flip the flag for a balancing pass).
     if self._combatConfig and self._combatConfig.combat_trace then
         print(
             string.format(
-                "[CombatXP] %s tier=%s effLevel=%d base=%d playerLvl=%s realmOff=%s diminish=%.2f -> %d XP",
+                "[CombatXP] %s tier=%s effLevel=%d yieldLvl=%d base=%d playerLvl=%s realmOff=%s diminish=%.2f -> %d XP",
                 tostring(enemyId),
                 tostring(tier),
                 effLevel,
+                yieldLevel,
                 baseXp,
-                tostring(player:GetAttribute("Level")),
+                tostring(playerLvl),
                 tostring(realmLevelOffset),
                 diminish,
                 xp

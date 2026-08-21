@@ -6640,6 +6640,8 @@ local petConfig = {
             world_placeable = true,
             cost = 2500,
             currency = "hall_coins",
+            -- Mesh imports facing the stand instead of the plaza walk.
+            stand_yaw_degrees = 180,
             huge = { chance = 0.00002, any_pet = true },
             mesh_asset = "rbxassetid://133021157405492",
             texture_asset = "rbxassetid://103667752364907",

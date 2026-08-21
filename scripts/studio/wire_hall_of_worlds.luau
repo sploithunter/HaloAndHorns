@@ -15,8 +15,8 @@ local hallConfig = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChil
 local HallEggStand = require(
     ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Game"):WaitForChild("HallEggStand")
 )
-local HallFieldOutline = require(
-    ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Game"):WaitForChild("HallFieldOutline")
+local HallPlayAreas = require(
+    ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Game"):WaitForChild("HallPlayAreas")
 )
 
 local maps = workspace:FindFirstChild("Maps")
@@ -364,96 +364,19 @@ local function adoptHallSpawn()
 end
 
 local function bindPlayArea(definition)
-    local areaId = assert(definition.area_id, "Hall play area requires area_id")
     local tileName = assert(definition.tile_name, "Hall play area requires tile_name")
-    local markerName = definition.marker_name or "SpawnZone"
-    local tile = assert(tiles:FindFirstChild(tileName), "Missing Hall play-area tile " .. tileName)
-    local zone = assert(
-        tile:FindFirstChild(markerName),
-        string.format("Missing Hall play-area marker %s.%s", tileName, markerName)
-    )
-    assert(zone:IsA("BasePart"), zone:GetFullName() .. " must be a BasePart")
-
-    zone.Transparency = 1
-    zone.CanCollide = false
-    zone.CanTouch = false
-    zone.CanQuery = false
-    zone.CastShadow = false
-    CollectionService:AddTag(zone, "SpawnZone")
-    CollectionService:AddTag(zone, "HallPlayArea")
-
-    local marquee = definition.marquee or {}
-    setAttributes(zone, {
-        AreaId = areaId,
-        SpawnerId = definition.spawner_id or "spawn_crystals",
-        -- Follow the authored white FieldKerb outline, not the smaller SpawnZone.
-        OutlinePath = HallFieldOutline.encode(zone),
-        SlotLayout = definition.slot_layout or "random",
-        DashLength = marquee.dash_length or 4.5,
-        DashWidth = marquee.dash_width or 1.3,
-        DashHeight = marquee.dash_height or 0.4,
-        DashSpacing = marquee.dash_spacing or 8,
-        MarqueeSpeed = marquee.speed or 14,
-    })
-end
-
-local function ensureGateLabel(gate, title, subtitle, face)
-    local gui = gate:FindFirstChild("HallGateLabel")
-    if gui and not gui:IsA("SurfaceGui") then
-        gui:Destroy()
-        gui = nil
-    end
-    if not gui then
-        gui = Instance.new("SurfaceGui")
-        gui.Name = "HallGateLabel"
-        gui.AlwaysOnTop = true
-        gui.LightInfluence = 0
-        gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-        gui.PixelsPerStud = 32
-        gui.Parent = gate
-    end
-    gui.Face = face or Enum.NormalId.Front
-
-    local frame = gui:FindFirstChild("Content")
-    if not frame then
-        frame = Instance.new("Frame")
-        frame.Name = "Content"
-        frame.Size = UDim2.fromScale(1, 1)
-        frame.BackgroundTransparency = 1
-        frame.Parent = gui
-    end
-
-    local layout = frame:FindFirstChildOfClass("UIListLayout") or Instance.new("UIListLayout")
-    layout.FillDirection = Enum.FillDirection.Vertical
-    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    layout.VerticalAlignment = Enum.VerticalAlignment.Center
-    layout.Padding = UDim.new(0.04, 0)
-    layout.Parent = frame
-
-    local function textLabel(name, text, scaleHeight, color)
-        local label = frame:FindFirstChild(name) or Instance.new("TextLabel")
-        label.Name = name
-        label.Size = UDim2.fromScale(0.94, scaleHeight)
-        label.BackgroundTransparency = 1
-        label.Font = Enum.Font.GothamBlack
-        label.Text = text
-        label.TextColor3 = color
-        label.TextScaled = true
-        label.TextStrokeColor3 = Color3.fromRGB(45, 27, 4)
-        label.TextStrokeTransparency = 0
-        label.Parent = frame
-        return label
-    end
-
-    textLabel("Title", title, 0.34, Color3.fromRGB(255, 245, 183))
-    textLabel("Subtitle", subtitle, 0.2, Color3.fromRGB(255, 255, 255))
+    local zone = HallPlayAreas.bind(tiles, definition)
+    assert(zone, "Missing Hall play-area tile or field " .. tostring(tileName))
 end
 
 local function ensureProgressionGate(parent, definition)
+    local look = hallConfig.gate_appearance or {}
+    local color = look.color or { 226, 236, 242 }
     local gate = ensurePart(parent, definition.name, definition.size, definition.cframe)
-    gate.Material = Enum.Material.ForceField
-    gate.Color = Color3.fromRGB(255, 201, 48)
-    gate.Transparency = 0.38
+    gate.Material = Enum.Material[look.material or "Ice"] or Enum.Material.Ice
+    gate.Color = Color3.fromRGB(color[1] or 226, color[2] or 236, color[3] or 242)
+    gate.Transparency = look.transparency or 0.28
+    gate.Reflectance = look.reflectance or 0.04
     gate.CanCollide = true
     gate.CanTouch = true
     gate.CanQuery = true
@@ -469,7 +392,33 @@ local function ensureProgressionGate(parent, definition)
         -- authored measurement into an Attachment, avoiding screen-size-dependent UI offsets.
         PromptHeightFromBottom = definition.promptHeightFromBottom or 4.5,
     })
-    ensureGateLabel(gate, definition.title, definition.subtitle, definition.face)
+    local staleLabel = gate:FindFirstChild("HallGateLabel")
+    if staleLabel then
+        staleLabel:Destroy()
+    end
+end
+
+local function ensureComingSoonWall(parent, definition)
+    local look = hallConfig.gate_appearance or {}
+    local color = look.color or { 226, 236, 242 }
+    local pos = definition.position or {}
+    local size = definition.size or { 100, 28, 5 }
+    local wall = ensurePart(
+        parent,
+        definition.name,
+        Vector3.new(size[1], size[2], size[3]),
+        CFrame.new(pos[1] or 0, pos[2] or 0, pos[3] or 0)
+    )
+    wall.Material = Enum.Material[look.material or "Ice"] or Enum.Material.Ice
+    wall.Color = Color3.fromRGB(color[1] or 226, color[2] or 236, color[3] or 242)
+    wall.Transparency = look.transparency or 0.28
+    wall.Reflectance = look.reflectance or 0.04
+    wall.CanCollide = true
+    wall.CanTouch = false
+    wall.CanQuery = true
+    wall.CastShadow = false
+    resetTags(wall, { "HallComingSoon" })
+    setAttributes(wall, { ComingSoon = true })
 end
 
 local function ensurePortalTrigger(parent, name, cframe, source, target, hallExit, returnDoor)
@@ -512,6 +461,10 @@ end
 
 local function cloneGateVisual(template, parent, name, pivot)
     local old = parent:FindFirstChild(name)
+    local savedLightning = old and old:FindFirstChild("ArchLightning")
+    if savedLightning then
+        savedLightning = savedLightning:Clone()
+    end
     if old then
         old:Destroy()
     end
@@ -534,6 +487,9 @@ local function cloneGateVisual(template, parent, name, pivot)
     local boxCf = clone:GetBoundingBox()
     clone.WorldPivot = CFrame.new(boxCf.Position)
     clone:PivotTo(pivot)
+    if savedLightning then
+        savedLightning.Parent = clone
+    end
     return clone
 end
 
@@ -601,53 +557,39 @@ end
 ensureArea(
     runtime,
     "Hall_2",
-    Vector3.new(350, 48, 398),
-    Vector3.new(1950, 24, 321),
+    Vector3.new(350, 48, 394),
+    Vector3.new(1950, 24, 323),
     Vector3.new(2000, 5, 208)
 )
 ensureArea(
     runtime,
     "Hall_3",
-    Vector3.new(442, 48, 244),
-    Vector3.new(2346, 24, 428),
+    Vector3.new(438, 48, 250),
+    Vector3.new(2348, 24, 431),
     Vector3.new(2348, 5, 428)
 )
 ensureArea(
     runtime,
     "Hall_4",
-    Vector3.new(564, 48, 714),
-    Vector3.new(2568, 24, 907),
+    Vector3.new(564, 48, 700),
+    Vector3.new(2568, 24, 914),
     Vector3.new(2568, 5, 982)
 )
 
-ensureProgressionGate(runtime, {
-    name = "Level2Barrier",
-    source = "Hall_1",
-    target = "Hall_2",
-    size = Vector3.new(100, 28, 5),
-    cframe = CFrame.new(2000, 14, 122),
-    title = "COMPLETE THE TUTORIAL",
-    subtitle = "Reach Level 2",
-})
-ensureProgressionGate(runtime, {
-    name = "WaycoinBarrier750",
-    source = "Hall_2",
-    target = "Hall_3",
-    size = Vector3.new(5, 28, 100),
-    cframe = CFrame.new(2125, 14, 428),
-    face = Enum.NormalId.Left,
-    title = "OPEN THE WAY",
-    subtitle = "750 Waycoins",
-})
-ensureProgressionGate(runtime, {
-    name = "WaycoinBarrier2500",
-    source = "Hall_3",
-    target = "Hall_4",
-    size = Vector3.new(100, 28, 5),
-    cframe = CFrame.new(2568, 14, 550),
-    title = "ENTER WORLDS PLAZA",
-    subtitle = "2,500 Waycoins",
-})
+for _, definition in ipairs(hallConfig.progression_gates or {}) do
+    local pos = definition.position or {}
+    local size = definition.size or { 100, 28, 5 }
+    ensureProgressionGate(runtime, {
+        name = definition.name,
+        source = definition.source,
+        target = definition.target,
+        size = Vector3.new(size[1], size[2], size[3]),
+        cframe = CFrame.new(pos[1] or 0, pos[2] or 0, pos[3] or 0),
+    })
+end
+for _, definition in ipairs((hallConfig.coming_soon and hallConfig.coming_soon.walls) or {}) do
+    ensureComingSoonWall(runtime, definition)
+end
 
 local eggBayPositions = {
     -- Wayfinder was moved off Tile01 Archpad; do not snap it back onto the return door.
@@ -849,12 +791,15 @@ local gateTemplate = findLargestGate(home, homeRuntime)
 assert(gateTemplate, "A reusable Home Gate model is required")
 local homeGatePos, homeGateYaw = homeFootprintFromHeavenPortal()
 
-local crystalVisual = cloneGateVisual(
-    gateTemplate,
-    runtime,
-    "CrystalWorldGateVisual",
-    CFrame.new(2770, 17, 970) * CFrame.Angles(0, math.rad(90), 0)
-)
+local crystalVisual = runtime:FindFirstChild("CrystalWorldGateVisual")
+if not (crystalVisual and crystalVisual:IsA("Model")) then
+    crystalVisual = cloneGateVisual(
+        gateTemplate,
+        runtime,
+        "CrystalWorldGateVisual",
+        CFrame.new(2770, 17, 970) * CFrame.Angles(0, math.rad(90), 0)
+    )
+end
 ensureBillboard(
     runtime,
     "CrystalWorldGateTitle",
@@ -862,10 +807,11 @@ ensureBillboard(
     crystalVisual,
     Color3.fromRGB(90, 238, 255)
 )
+local crystalBox = crystalVisual:GetBoundingBox()
 ensurePortalTrigger(
     runtime,
     "CrystalWorldPortal",
-    CFrame.new(2770, 7, 970),
+    CFrame.new(crystalBox.Position.X, 7, crystalBox.Position.Z),
     "Hall_4",
     "Spawn",
     true

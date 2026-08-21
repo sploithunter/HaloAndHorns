@@ -266,8 +266,7 @@ function DropService:_ensureCurrencyTemplate(currency)
         root.Parent = model
 
         part.Anchored = false
-        part.CFrame = root.CFrame
-            * CFrame.Angles(math.rad(x), math.rad(y), math.rad(z))
+        part.CFrame = root.CFrame * CFrame.Angles(math.rad(x), math.rad(y), math.rad(z))
 
         local weld = Instance.new("WeldConstraint")
         weld.Name = "VisualWeld"

@@ -1,3 +1,4 @@
+local ArchLightning = loadModule("src/Shared/Game/ArchLightning.lua")
 local HallOfWorldsLogic = loadModule("src/Shared/Game/HallOfWorldsLogic.lua")
 local HallEggStand = loadModule("src/Shared/Game/HallEggStand.lua")
 local BreakableDensity = loadModule("src/Shared/Game/BreakableDensity.lua")
@@ -6,9 +7,33 @@ local drops = loadModule("configs/drops.lua")
 local hall = loadModule("configs/hall_of_worlds.lua")
 local pets = loadModule("configs/pets.lua")
 local roles = loadModule("configs/pet_roles.lua")
+local currencies = loadModule("configs/currencies.lua")
 
 return function()
     describe("HallOfWorldsLogic", function()
+        it("returns a locked Hall entry to the previous unlocked tile", function()
+            local route = { "Hall_1", "Hall_2", "Hall_3", "Hall_4" }
+            expect(
+                HallOfWorldsLogic.lockedEntryReturn(
+                    { "Hall_1", "Hall_2", "Hall_3" },
+                    route,
+                    "Hall_4"
+                )
+            ).to.equal("Hall_3")
+            expect(HallOfWorldsLogic.lockedEntryReturn({ "Hall_1" }, route, "Hall_3")).to.equal(
+                "Hall_1"
+            )
+        end)
+
+        it("keeps the Plaza wall on the Hall_3 side of the Hall_4 volume", function()
+            local areas = loadModule("configs/areas.lua")
+            local hall3 = areas.zones.Hall_3.synthetic
+            local hall4 = areas.zones.Hall_4.synthetic
+            local wallZ = 558
+            expect(hall3.center.z + hall3.size.z / 2 > wallZ - 4).to.equal(true)
+            expect(hall4.center.z - hall4.size.z / 2 > wallZ).to.equal(true)
+        end)
+
         it("starts fresh players at their furthest Hall checkpoint", function()
             local route = { "Hall_1", "Hall_2", "Hall_3", "Hall_4" }
             expect(HallOfWorldsLogic.initialArea(false, { "Hall_1" }, route, "Hall_1", "Spawn")).to.equal(
@@ -242,10 +267,13 @@ return function()
         it("uses every baked green-field marker instead of a synthetic Hall circle", function()
             local expected = {
                 Hall_1 = { area = "Hall_1", tile = "Tile01_cap" },
+                Hall_1_B = { area = "Hall_1", tile = "Tile02_corridor" },
                 Hall_2_A = { area = "Hall_2", tile = "Tile03_playfield" },
                 Hall_2_B = { area = "Hall_2", tile = "Tile04_corner" },
+                Hall_3_C = { area = "Hall_3", tile = "Tile05_corridor" },
                 Hall_3_A = { area = "Hall_3", tile = "Tile06_playfield" },
                 Hall_3_B = { area = "Hall_3", tile = "Tile07_corner" },
+                Hall_4_B = { area = "Hall_4", tile = "Tile08_corridor" },
                 Hall_4 = { area = "Hall_4", tile = "Tile09_cap" },
             }
             local count = 0
@@ -259,10 +287,143 @@ return function()
                 expect(playArea.center).never.to.be.ok()
                 expect(playArea.size).never.to.be.ok()
             end
-            expect(count).to.equal(6)
+            expect(count).to.equal(9)
 
             expect(breakables.worlds.Hall_1.spawn_area.size.x).to.equal(195.52)
             expect(breakables.worlds.Hall_4.spawn_area.position.z).to.equal(982)
+        end)
+
+        it("fires dragon bolts across Training Ground lightning markers", function()
+            local fx = hall.arch_lightning
+            expect(fx).to.be.ok()
+            expect(fx.enabled).to.equal(true)
+            expect(fx.part_prefix).to.equal("lightning")
+            expect(fx.adopt_workspace_parts).to.equal(true)
+            expect(fx.host_names[1]).to.equal("TrainingGroundPadGateVisual")
+            expect(fx.host_names[2]).to.equal("RangePadGateVisual")
+            expect(fx.host_names[5]).to.equal("HallOfWorldsGateVisual")
+            expect(fx.host_names[6]).to.equal("HellFaceGateTest")
+            local sampled = ArchLightning.sampleArchPoints(26, 36, 9)
+            expect(#sampled >= 18).to.equal(true)
+            local mid = 0
+            for _, point in ipairs(sampled) do
+                if math.abs(point.z) < 1 then
+                    mid += 1
+                end
+            end
+            expect(mid).to.equal(0)
+            local cols = {
+                { x = 0, y = 4, z = 0 },
+                { x = 0, y = 8, z = 0 },
+                { x = 0, y = 4, z = 16 },
+                { x = 0, y = 8, z = 16 },
+            }
+            local i2, j2 = ArchLightning.pickPair(cols, true, 0.1, 8)
+            expect(i2).to.be.ok()
+            expect(j2).to.be.ok()
+            expect(math.abs(cols[i2].z - cols[j2].z) >= 8).to.equal(true)
+
+            local acrossX = {
+                { x = 0, y = 4, z = 10 },
+                { x = 0, y = 8, z = 10 },
+                { x = 16, y = 4, z = 10 },
+                { x = 16, y = 8, z = 10 },
+            }
+            local ix, jx = ArchLightning.pickPair(acrossX, true, 0.1, 8)
+            expect(math.abs(acrossX[ix].x - acrossX[jx].x) >= 8).to.equal(true)
+            expect(ArchLightning.openingWidth({ X = 25.9, Y = 36, Z = 6.8 })).to.equal(25.9)
+            expect(fx.bolt.colors[1][3]).to.equal(255)
+            expect(ArchLightning.isMarkerName("lightning19", "lightning")).to.equal(true)
+            expect(ArchLightning.isMarkerName("HellFace", "lightning")).to.equal(false)
+
+            local left = { x = 0, y = 10, z = 0 }
+            local right = { x = 0, y = 10, z = 16 }
+            local i, j = ArchLightning.pickPair({ left, right }, true, 0.1)
+            expect(i).to.be.ok()
+            expect(j).to.be.ok()
+            expect(i == j).to.equal(false)
+
+            local clusters = ArchLightning.clusterLoose({
+                { id = 1, x = 0, y = 0, z = 0 },
+                { id = 2, x = 2, y = 0, z = 2 },
+                { id = 3, x = 200, y = 0, z = 200 },
+                { id = 4, x = 202, y = 0, z = 201 },
+            }, 48)
+            expect(#clusters).to.equal(2)
+            expect(#clusters[1]).to.equal(2)
+            expect(#clusters[2]).to.equal(2)
+        end)
+
+        it("authors frosted ice progression walls", function()
+            local look = hall.gate_appearance
+            expect(look).to.be.ok()
+            expect(look.material).to.equal("Ice")
+            expect(look.transparency > 0.15).to.equal(true)
+            expect(look.transparency < 0.45).to.equal(true)
+            expect(hall.gate_prompt.surface).to.equal(true)
+        end)
+
+        it("closes the last Plaza endcap with a Coming Soon wall", function()
+            local coming = hall.coming_soon
+            expect(coming).to.be.ok()
+            expect(coming.text).to.equal("Coming Soon")
+            local wall = coming.walls[1]
+            expect(wall.name).to.equal("Hall4EndcapComingSoon")
+            expect(wall.position[3] > 680).to.equal(true)
+            expect(wall.position[3] < 720).to.equal(true)
+            expect(wall.size[1] >= 220).to.equal(true)
+            for _, gate in ipairs(hall.progression_gates) do
+                expect(gate.name ~= wall.name).to.equal(true)
+            end
+        end)
+
+        it("spans every Hall wall to the side barriers", function()
+            local byName = {}
+            for _, gate in ipairs(hall.progression_gates) do
+                byName[gate.name] = gate
+            end
+            expect(byName.Level2Barrier.size[1]).to.equal(220)
+            expect(byName.WaycoinBarrier750.size[3]).to.equal(240)
+            expect(byName.WaycoinBarrier2500.size[1]).to.equal(220)
+        end)
+
+        it("seats the Plaza wall in the pillar line", function()
+            local plaza
+            for _, gate in ipairs(hall.progression_gates) do
+                if gate.name == "WaycoinBarrier2500" then
+                    plaza = gate
+                end
+            end
+            expect(plaza).to.be.ok()
+            expect(plaza.position[3] > 550).to.equal(true)
+        end)
+
+        it("labels Hall walls from live route costs, not baked SurfaceGuis", function()
+            expect(HallOfWorldsLogic.formatUnlockAmount(6000)).to.equal("6,000")
+            expect(HallOfWorldsLogic.gateButtonText(hall.route[2].unlock)).to.equal(
+                "3,000 Waycoins"
+            )
+            expect(HallOfWorldsLogic.gateButtonText(hall.route[3].unlock)).to.equal(
+                "6,000 Waycoins"
+            )
+            expect(HallOfWorldsLogic.gateButtonText(hall.route[4].unlock)).to.equal(
+                "10,000 Waycoins"
+            )
+            expect(hall.gate_prompt.pill_key).to.equal("citrine")
+        end)
+
+        it("starts a new player with enough Waycoins for the first Hall egg", function()
+            local wayfinder = pets.egg_sources.wayfinder_egg
+            local hallCoins
+            for _, currency in ipairs(currencies) do
+                if currency.id == "hall_coins" then
+                    hallCoins = currency
+                end
+            end
+            expect(wayfinder).to.be.ok()
+            expect(hallCoins).to.be.ok()
+            expect(wayfinder.currency).to.equal("hall_coins")
+            expect(hallCoins.defaultAmount >= wayfinder.cost).to.equal(true)
         end)
 
         it("binds Gilded Gallery to a complete live five-pet hatcher", function()
@@ -318,6 +479,7 @@ return function()
             local source = pets.egg_sources[routeEgg.egg_id]
             expect(routeEgg.egg_id).to.equal("worldheart_egg")
             expect(source).to.be.ok()
+            expect(source.stand_yaw_degrees).to.equal(180)
             expect(source.world_placeable).to.equal(true)
             expect(source.currency).to.equal("hall_coins")
             expect(source.cost).to.equal(routeEgg.cost)

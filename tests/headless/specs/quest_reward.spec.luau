@@ -58,6 +58,7 @@ return function()
 
         it("guarantees Level 4 and adds the second Future Call token at the capstone", function()
             local quests = loadModule("configs/quests.lua")
+            expect(quests.defs.fs_cave.name).to.equal("Protect the Realm")
             local reward = quests.defs.fs_cave.reward
             expect(reward.ensure_earned_level).to.equal(4)
             expect(reward.future_call_tokens).to.equal(1)
