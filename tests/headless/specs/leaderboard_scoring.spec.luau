@@ -36,19 +36,22 @@ return function()
             expect(score).to.equal(130)
         end)
 
-        it("hides internal accounts from display without dropping them from the list when hide is off", function()
-            local rows = {
-                { userId = 1, value = 40 },
-                { userId = 873359641, value = 39 },
-                { userId = 2, value = 12 },
-            }
-            local hidden = { [873359641] = true }
-            expect(#Scoring.visibleEntries(rows, hidden, false)).to.equal(3)
-            local shown = Scoring.visibleEntries(rows, hidden, true)
-            expect(#shown).to.equal(2)
-            expect(shown[1].userId).to.equal(1)
-            expect(shown[2].userId).to.equal(2)
-        end)
+        it(
+            "hides internal accounts from display without dropping them from the list when hide is off",
+            function()
+                local rows = {
+                    { userId = 1, value = 40 },
+                    { userId = 873359641, value = 39 },
+                    { userId = 2, value = 12 },
+                }
+                local hidden = { [873359641] = true }
+                expect(#Scoring.visibleEntries(rows, hidden, false)).to.equal(3)
+                local shown = Scoring.visibleEntries(rows, hidden, true)
+                expect(#shown).to.equal(2)
+                expect(shown[1].userId).to.equal(1)
+                expect(shown[2].userId).to.equal(2)
+            end
+        )
 
         it("pays the same unexcluded top 10 that the board shows", function()
             local rows = {

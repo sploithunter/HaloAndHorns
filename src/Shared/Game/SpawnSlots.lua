@@ -176,7 +176,9 @@ function SpawnSlots.layoutRandom(opts)
     end
 
     -- A pathological injected RNG should not make a tiny valid area unusable.
-    if #points == 0 and SpawnSlots.containsPoint(outline, (minX + maxX) * 0.5, (minZ + maxZ) * 0.5) then
+    if
+        #points == 0 and SpawnSlots.containsPoint(outline, (minX + maxX) * 0.5, (minZ + maxZ) * 0.5)
+    then
         points[1] = { x = (minX + maxX) * 0.5, z = (minZ + maxZ) * 0.5 }
     end
     return points
