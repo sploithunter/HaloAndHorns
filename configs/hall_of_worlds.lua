@@ -22,6 +22,62 @@ return {
     currency = "hall_coins",
     crystal_world_effectiveness = 0.8,
 
+    -- Ambient jamb-to-jamb bolts on Hall gate arches. Authored lightning*
+    -- markers are already grouped under each host; the client can also sample
+    -- a host's bounds if a streamed copy arrives without markers.
+    arch_lightning = {
+        enabled = true,
+        part_prefix = "lightning",
+        adopt_workspace_parts = true,
+        host_names = {
+            "TrainingGroundPadGateVisual",
+            "RangePadGateVisual",
+            "CrystalWorldGateVisual",
+            "CrystalWorldReturnGateVisual",
+            "HallOfWorldsGateVisual",
+            "HellFaceGateTest",
+        },
+        host_tag = "ArchLightning",
+        hide_markers = true,
+        sample_rows = 9,
+        cluster_radius = 48,
+        view_distance = 180,
+        interval_min = 0.05,
+        interval_max = 0.14,
+        bolts_per_pulse = 2,
+        prefer_cross = true,
+        min_cross_span = 8,
+        bolt = {
+            enabled = true,
+            duration = 0.3,
+            thickness = 0.22,
+            segments = 16,
+            origin_limit = 1,
+            strands_per_origin = 2,
+            min_radius = 0,
+            max_radius = 0.6,
+            curve_size0 = 0,
+            curve_size1 = 0,
+            center_flash = false,
+            animation_speed = 9,
+            flicker = 0.4,
+            fade_out_seconds = 0.12,
+            target_offset = { 0, 0, 0 },
+            colors = { { 120, 150, 255 }, { 200, 235, 255 } },
+            sound_name = "_silent",
+        },
+        -- The rapid visual cadence stays silent. A separate positional buzz
+        -- plays softly and no more than about once per second near the player.
+        sound = {
+            name = "arch_lightning_buzz",
+            volume = 0.12,
+            interval_min = 0.65,
+            interval_max = 1.1,
+            roll_off_min_distance = 8,
+            roll_off_max_distance = 60,
+        },
+    },
+
     theme = {
         id = "wayfinder_hall",
         display_name = "Wayfinder Hall",

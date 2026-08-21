@@ -464,13 +464,15 @@ function EnchantLightning.Play(station, config, targetInstance)
     local centerPosition = centerPart.Position + centerOffset
 
     playThunder(station, config)
-    createCenterFlash(
-        parent,
-        centerPosition,
-        colors[math.random(1, #colors)],
-        thickness * 3.2,
-        duration
-    )
+    if config.center_flash ~= false then
+        createCenterFlash(
+            parent,
+            centerPosition,
+            colors[math.random(1, #colors)],
+            thickness * 3.2,
+            duration
+        )
+    end
 
     for originIndex, origin in ipairs(origins) do
         if originIndex > originLimit then

@@ -261,6 +261,13 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
 - Wire adopts named pads in place and does not snap a user-moved pad back to fallback
   coordinates. After a gate rotate, move the pad to that arch (`scripts/studio/align_challenge_pads.luau`)
   — the E-prompt parents to the pad. Save the place after the pads/arches exist.
+- Hall gate lightning is client ambience driven by the saved `ArchLightning/lightning1…18`
+  marker groups under the Range, Training Ground, both Crystal World directions, Home, and
+  Hell test arches. `ArchLightning` rescans streamed hosts, hides the marker parts, and fires
+  rapid jamb-to-jamb bolts only near the player. The supplied 0.48-second buzz is group-owned
+  audio `80802960194213`; it is a separate positional Effects-bus sound at volume `0.12`,
+  throttled to one nearby arch every 0.65–1.1 seconds. If an arch is rebuilt, run
+  `scripts/studio/stamp_arch_lightning.luau` in Edit and save the place.
 - Gate signs: `RangeLeaderboard` / `RangeGuide` live on Hall_2
   `Tile04_corner`; `TrainingGroundLeaderboard` / `TrainingGroundGuide`
   live on `Tile07_corner`. Tag `LeaderboardBoard` (`BoardId` =

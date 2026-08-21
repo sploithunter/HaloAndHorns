@@ -3853,3 +3853,14 @@ first-session cohort rates.
 - Rocket cards now carry only their Game Pass config key through the catalog.
   The server resolves the six live pass IDs and the client requests each pass
   with `Enum.InfoType.GamePass`, keeping Roblox managed/regional pricing authoritative.
+
+## 2026-08-21 — Hall arch lightning restored to main
+
+- The six saved `ArchLightning` marker groups were still present in the place,
+  but their shared logic, client runtime, config, and startup registration had
+  remained on an unmerged beta branch. Main therefore rendered no arch bolts.
+- Restored the streamed-host fallback and jamb-to-jamb effect for Range,
+  Training Ground, both Crystal World directions, Home, and the Hell test arch.
+- Uploaded the supplied 0.48-second buzz as group-owned audio `80802960194213`.
+  It plays softly (`0.12`) as a throttled positional Effects-bus sound near the
+  closest active arch; rapid visual bolts do not each spawn audio.

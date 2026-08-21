@@ -203,6 +203,17 @@ do
     end
 end
 
+-- Hall gate arches: ambient jamb-to-jamb dragon lightning and its quiet,
+-- positional buzz. Gameplay travel/unlock authority remains server-side.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.ArchLightning).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start ArchLightning", { error = tostring(err) })
+    end
+end
+
 -- Team follow (docs/TEAMING.md): CoH-style /follow of a TEAMMATE — walk-follow with a
 -- manual-input break; realm-portal hops ride team.follow_warp. Toggled from SquadHud
 -- (follow chip on the mate card / F with the teammate selected).
