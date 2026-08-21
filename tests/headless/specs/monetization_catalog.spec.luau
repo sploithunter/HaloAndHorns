@@ -10,11 +10,13 @@ return function()
             product_id_mapping = {
                 vip = 101,
                 speed = 202,
+                kade_rocket = 303,
                 future_boost = 0,
             },
             passes = {
                 { id = "vip", name = "VIP" },
                 { id = "speed", name = "Speed" },
+                { id = "kade_rocket", name = "Rocket", pet_shop_visible = false },
             },
             products = {
                 { id = "future_boost", name = "Future" },
@@ -24,11 +26,18 @@ return function()
 
         it("projects configured passes with positive Marketplace IDs in authored order", function()
             local passes = MonetizationCatalog.livePasses(config)
-            expect(#passes).to.equal(2)
+            expect(#passes).to.equal(3)
             expect(passes[1].id).to.equal("vip")
             expect(passes[1].robloxId).to.equal(101)
             expect(passes[1].kind).to.equal("gamepass")
             expect(passes[2].order).to.equal(2)
+        end)
+
+        it("keeps dedicated-vendor passes out of the Pet Shop", function()
+            local passes = MonetizationCatalog.petShopPasses(config)
+            expect(#passes).to.equal(2)
+            expect(passes[1].id).to.equal("vip")
+            expect(passes[2].id).to.equal("speed")
         end)
 
         it("hides developer-product placeholders until their IDs are live", function()
@@ -90,6 +99,9 @@ return function()
                 byId[product.id] = product
             end
 
+            expect(#products).to.equal(3)
+            expect(byId.hoverboard_rocket_blue).to.equal(nil)
+
             local titan = byId.titan_team
             expect(titan).never.to.equal(nil)
             expect(titan.robloxId).to.equal(3708227956)
@@ -103,6 +115,24 @@ return function()
             expect(byId.coin_hour.robloxId).to.equal(3708216387)
             expect(byId.coin_hour.config.price_robux).to.equal(19)
             expect(byId.coin_hour.config.rewards.token.item_id).to.equal("double_coins_token")
+        end)
+
+        it("ships rocketboards only as hidden permanent game passes", function()
+            local shipped = loadModule("configs/monetization.lua")
+            local rocketPass
+            for _, pass in ipairs(shipped.passes) do
+                if pass.id == "hoverboard_rocket_blue" then
+                    rocketPass = pass
+                    break
+                end
+            end
+            expect(rocketPass).never.to.equal(nil)
+            expect(rocketPass.benefits.hoverboard_skin).to.equal("rocket_blue")
+            expect(rocketPass.pet_shop_visible).to.equal(false)
+            expect(rocketPass.tradeable).to.equal(false)
+
+            local shop = readFile("src/Client/UI/Menus/RewardShopPanel.lua")
+            expect(shop:find("MonetizationCatalog.petShopPasses", 1, true)).to.be.ok()
         end)
 
         it(

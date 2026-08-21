@@ -3809,3 +3809,25 @@ first-session cohort rates.
   disabled recipients are labeled and unavailable in the picker.
 - Unanswered Team requests now match Trade: after 30 seconds both the sender
   and recipient receive an explicit expiry banner, and the stale popup closes.
+
+## 2026-08-21 — Rocketboards become Kade-only game passes
+
+- Removed every hoverboard from the Pet Shop developer-product catalog.
+  The six rockets are permanent game-pass entitlements shown only at
+  Kade's Boards; the free and gem catalogs are unchanged.
+- Kade routes live rocket purchases through `PromptGamePassPurchase`.
+  Pass completion grants and equips the board, while join reconciliation
+  restores the board from Marketplace ownership.
+- Repeat attempts are rejected from both the owned-board catalog gate and
+  the monetization request boundary. Hoverboards are explicitly non-tradable.
+  No prerelease product-to-pass migration is included.
+- Wired the six live group-owned pass IDs supplied from Creator Dashboard;
+  each pass is enabled at the R$19 baseline.
+
+## 2026-08-21 — Main CI classifications and formatting restored
+
+- Classified the Range picker retry and the two new mission clocks by their
+  approved purposes (retry backoff, periodic polling, and deadline fallback),
+  returning the architecture guard to zero unclassified runtime waits.
+- Applied the repository StyLua contract to the six files that entered `main`
+  with formatting drift. No gameplay behavior changed in this cleanup.

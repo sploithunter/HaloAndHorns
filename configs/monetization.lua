@@ -35,13 +35,6 @@ return {
         xp_hour = 3708216219, -- LIVE: "Double XP" (dashboard 2026-08-15)
         coin_hour = 3708216387, -- LIVE: "Double Coins" (dashboard 2026-08-15)
         frenzy_burst = 0, -- REPLACE: "Personal Frenzy (30 min)" product
-        hoverboard_blue_gold = 0, -- REPLACE: "Blue Gold Hoverboard" product
-        hoverboard_rocket_blue = 3709033036, -- LIVE: "Blue Rocketboard" (dashboard 2026-08-20)
-        hoverboard_rocket_lightblue = 3709032949, -- LIVE: "Light Blue Rocketboard" (dashboard 2026-08-20)
-        hoverboard_rocket_green = 3709033097, -- LIVE: "Green Rocketboard" (dashboard 2026-08-20)
-        hoverboard_rocket_orange = 3709033159, -- LIVE: "Orange Rocketboard" (dashboard 2026-08-20)
-        hoverboard_rocket_purple = 3709033211, -- LIVE: "Purple Rocketboard" (dashboard 2026-08-20)
-        hoverboard_rocket_yellow = 3709033275, -- LIVE: "Yellow Rocketboard" (dashboard 2026-08-20)
         supporter_pet = 0, -- REPLACE: "Supporter Pet" product
         focus_surge = 0, -- REPLACE: "Focus Surge (30 min)" product
         endurance_surge = 0, -- REPLACE: "Endurance Surge (30 min)" product
@@ -56,6 +49,12 @@ return {
         huge_luck_pass = 1912772276, -- LIVE (dashboard 2026-07-14)
         pet_slot_pass = 1912340314, -- LIVE (dashboard 2026-07-14)
         second_wind = 1912664284, -- LIVE (dashboard 2026-07-14)
+        hoverboard_rocket_blue = 1954662606, -- LIVE: "Blue Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_lightblue = 1952355180, -- LIVE: "Light Blue Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_green = 1955478550, -- LIVE: "Green Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_orange = 1954240779, -- LIVE: "Orange Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_purple = 1951917369, -- LIVE: "Purple Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_yellow = 1955796497, -- LIVE: "Yellow Rocketboard" pass (dashboard 2026-08-21)
     },
 
     -- Developer Products (consumable Robux purchases).
@@ -175,78 +174,6 @@ return {
             },
             category = "boosts",
             analytics_category = "boost_titan_team",
-            test_mode_enabled = true,
-        },
-        {
-            id = "hoverboard_blue_gold",
-            name = "Blue Gold Hoverboard",
-            description = "Kade's premium board. Deterministic, untradeable cosmetic.",
-            price_robux = 79,
-            rewards = {
-                hoverboard_skin = "blue_gold",
-            },
-            category = "cosmetics",
-            analytics_category = "hoverboard_skin",
-            test_mode_enabled = true,
-        },
-        {
-            id = "hoverboard_rocket_blue",
-            name = "Blue Rocket",
-            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
-            price_robux = 19,
-            rewards = { hoverboard_skin = "rocket_blue" },
-            category = "cosmetics",
-            analytics_category = "hoverboard_skin",
-            test_mode_enabled = true,
-        },
-        {
-            id = "hoverboard_rocket_lightblue",
-            name = "Light Blue Rocket",
-            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
-            price_robux = 19,
-            rewards = { hoverboard_skin = "rocket_lightblue" },
-            category = "cosmetics",
-            analytics_category = "hoverboard_skin",
-            test_mode_enabled = true,
-        },
-        {
-            id = "hoverboard_rocket_green",
-            name = "Green Rocket",
-            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
-            price_robux = 19,
-            rewards = { hoverboard_skin = "rocket_green" },
-            category = "cosmetics",
-            analytics_category = "hoverboard_skin",
-            test_mode_enabled = true,
-        },
-        {
-            id = "hoverboard_rocket_orange",
-            name = "Orange Rocket",
-            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
-            price_robux = 19,
-            rewards = { hoverboard_skin = "rocket_orange" },
-            category = "cosmetics",
-            analytics_category = "hoverboard_skin",
-            test_mode_enabled = true,
-        },
-        {
-            id = "hoverboard_rocket_purple",
-            name = "Purple Rocket",
-            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
-            price_robux = 19,
-            rewards = { hoverboard_skin = "rocket_purple" },
-            category = "cosmetics",
-            analytics_category = "hoverboard_skin",
-            test_mode_enabled = true,
-        },
-        {
-            id = "hoverboard_rocket_yellow",
-            name = "Yellow Rocket",
-            description = "Kade's rocket board. 30% faster cruise. On sale R$ 19.",
-            price_robux = 19,
-            rewards = { hoverboard_skin = "rocket_yellow" },
-            category = "cosmetics",
-            analytics_category = "hoverboard_skin",
             test_mode_enabled = true,
         },
     },
@@ -394,6 +321,83 @@ return {
             },
             icon = "rbxassetid://134787629853603",
             test_mode_enabled = true,
+        },
+        -- KADE'S BOARDS ONLY. Rocketboards are reusable permanent entitlements,
+        -- not consumable developer products. They stay out of the Pet Shop and
+        -- out of trading; Kade's catalog is their only in-game storefront.
+        -- Unlike ordinary Studio test passes, these remain disabled for automatic
+        -- ownership so a live ID exercises Roblox's purchase simulator.
+        {
+            id = "hoverboard_rocket_blue",
+            name = "Blue Rocketboard",
+            description = "Permanent Blue Rocketboard from Kade's Boards.",
+            price_robux = 19,
+            benefits = { hoverboard_skin = "rocket_blue" },
+            icon = "rbxassetid://129252383967484",
+            pet_shop_visible = false,
+            storefront = "kade_boards",
+            tradeable = false,
+            test_mode_enabled = false,
+        },
+        {
+            id = "hoverboard_rocket_lightblue",
+            name = "Light Blue Rocketboard",
+            description = "Permanent Light Blue Rocketboard from Kade's Boards.",
+            price_robux = 19,
+            benefits = { hoverboard_skin = "rocket_lightblue" },
+            icon = "rbxassetid://133972121715113",
+            pet_shop_visible = false,
+            storefront = "kade_boards",
+            tradeable = false,
+            test_mode_enabled = false,
+        },
+        {
+            id = "hoverboard_rocket_green",
+            name = "Green Rocketboard",
+            description = "Permanent Green Rocketboard from Kade's Boards.",
+            price_robux = 19,
+            benefits = { hoverboard_skin = "rocket_green" },
+            icon = "rbxassetid://96303282078395",
+            pet_shop_visible = false,
+            storefront = "kade_boards",
+            tradeable = false,
+            test_mode_enabled = false,
+        },
+        {
+            id = "hoverboard_rocket_orange",
+            name = "Orange Rocketboard",
+            description = "Permanent Orange Rocketboard from Kade's Boards.",
+            price_robux = 19,
+            benefits = { hoverboard_skin = "rocket_orange" },
+            icon = "rbxassetid://116281403293135",
+            pet_shop_visible = false,
+            storefront = "kade_boards",
+            tradeable = false,
+            test_mode_enabled = false,
+        },
+        {
+            id = "hoverboard_rocket_purple",
+            name = "Purple Rocketboard",
+            description = "Permanent Purple Rocketboard from Kade's Boards.",
+            price_robux = 19,
+            benefits = { hoverboard_skin = "rocket_purple" },
+            icon = "rbxassetid://100574923388292",
+            pet_shop_visible = false,
+            storefront = "kade_boards",
+            tradeable = false,
+            test_mode_enabled = false,
+        },
+        {
+            id = "hoverboard_rocket_yellow",
+            name = "Yellow Rocketboard",
+            description = "Permanent Yellow Rocketboard from Kade's Boards.",
+            price_robux = 19,
+            benefits = { hoverboard_skin = "rocket_yellow" },
+            icon = "rbxassetid://140411912611437",
+            pet_shop_visible = false,
+            storefront = "kade_boards",
+            tradeable = false,
+            test_mode_enabled = false,
         },
     },
 

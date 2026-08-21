@@ -1,10 +1,11 @@
 --[[
     Trade — Halo & Horns [PROTOTYPE] (Feature 19).
 
-    Pets are tradeable (unless locked); currencies are NOT; cosmetics are. Trades
-    are server-authoritative, require both players to confirm, execute atomically
-    (anti-duplication), and are written to a trade-history audit log. Pure rules:
-    `src/Shared/Game/TradeLogic.lua`.
+    Pets are tradeable (unless locked); currencies are NOT; cosmetics are.
+    Hoverboards are durable personal unlocks and are explicitly NOT tradeable.
+    Trades are server-authoritative, require both players to confirm, execute
+    atomically (anti-duplication), and are written to a trade-history audit log.
+    Pure rules: `src/Shared/Game/TradeLogic.lua`.
 ]]
 
 return {
@@ -34,6 +35,7 @@ return {
         pets = true,
         currencies = false, -- gems are the exception, via tradeable_currencies below
         cosmetics = true,
+        hoverboards = false,
         enhancements = true, -- all enhancements are tradeable (Jason)
         eggs = true, -- held tester/creator eggs preserve their complete provenance record
     },
