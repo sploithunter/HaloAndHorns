@@ -85,37 +85,40 @@ return function()
             expect(outline[3].z).to.equal(10)
         end)
 
-        it("samples the outline AABB so a corner pentagon is not clipped to a centered rectangle", function()
-            local outline = {
-                { x = -68, z = -103 },
-                { x = 7, z = -103 },
-                { x = 68, z = -42 },
-                { x = 68, z = 33 },
-                { x = -68, z = 33 },
-            }
-            local minX, maxX, minZ, maxZ = SpawnSlots.boundsOf(outline)
-            expect(minX).to.be.near(-68, 0.001)
-            expect(maxX).to.be.near(68, 0.001)
-            expect(minZ).to.be.near(-103, 0.001)
-            expect(maxZ).to.be.near(33, 0.001)
+        it(
+            "samples the outline AABB so a corner pentagon is not clipped to a centered rectangle",
+            function()
+                local outline = {
+                    { x = -68, z = -103 },
+                    { x = 7, z = -103 },
+                    { x = 68, z = -42 },
+                    { x = 68, z = 33 },
+                    { x = -68, z = 33 },
+                }
+                local minX, maxX, minZ, maxZ = SpawnSlots.boundsOf(outline)
+                expect(minX).to.be.near(-68, 0.001)
+                expect(maxX).to.be.near(68, 0.001)
+                expect(minZ).to.be.near(-103, 0.001)
+                expect(maxZ).to.be.near(33, 0.001)
 
-            local points = SpawnSlots.layoutRandom({
-                width = 160,
-                depth = 90,
-                spacing = 18,
-                outline = outline,
-                rng = seededRng(),
-            })
-            expect(#points > 0).to.equal(true)
-            local sawFarSouth = false
-            for _, point in ipairs(points) do
-                expect(SpawnSlots.containsPoint(outline, point.x, point.z)).to.equal(true)
-                if point.z < -50 then
-                    sawFarSouth = true
+                local points = SpawnSlots.layoutRandom({
+                    width = 160,
+                    depth = 90,
+                    spacing = 18,
+                    outline = outline,
+                    rng = seededRng(),
+                })
+                expect(#points > 0).to.equal(true)
+                local sawFarSouth = false
+                for _, point in ipairs(points) do
+                    expect(SpawnSlots.containsPoint(outline, point.x, point.z)).to.equal(true)
+                    if point.z < -50 then
+                        sawFarSouth = true
+                    end
                 end
+                expect(sawFarSouth).to.equal(true)
             end
-            expect(sawFarSouth).to.equal(true)
-        end)
+        )
 
         it("filters random candidates to the authored polygon", function()
             local outline = SpawnSlots.parseOutline("-10,-10;10,-10;10,10;-10,10")

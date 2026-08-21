@@ -39,7 +39,12 @@ function PartyMath.invitePrivacy(value, cfg)
     local privacy = privacyModes(cfg)
     local default = (privacy and type(privacy.default) == "string" and privacy.default)
         or "everyone"
-    if type(value) == "string" and privacy and type(privacy.modes) == "table" and privacy.modes[value] then
+    if
+        type(value) == "string"
+        and privacy
+        and type(privacy.modes) == "table"
+        and privacy.modes[value]
+    then
         return value
     end
     if value == "everyone" or value == "friends" then
@@ -76,7 +81,10 @@ function PartyMath.canSendInvite(ctx)
     if ctx.targetInRange == true then
         return false, "target_in_range"
     end
-    if PartyMath.invitePrivacy(ctx.targetPrivacy, ctx.cfg) == "friends" and ctx.areFriends ~= true then
+    if
+        PartyMath.invitePrivacy(ctx.targetPrivacy, ctx.cfg) == "friends"
+        and ctx.areFriends ~= true
+    then
         return false, "friends_only"
     end
     return true

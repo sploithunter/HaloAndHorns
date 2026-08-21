@@ -3800,3 +3800,10 @@ first-session cohort rates.
   Abyssal Wyrm stays. Wyrmling does not: it is an Obsidian exclusive,
   not the "playing for dragons" hatch chase.
 
+## 2026-08-21 — Main CI classifications and formatting restored
+
+- Classified the Range picker retry and the two new mission clocks by their
+  approved purposes (retry backoff, periodic polling, and deadline fallback),
+  returning the architecture guard to zero unclassified runtime waits.
+- Applied the repository StyLua contract to the six files that entered `main`
+  with formatting drift. No gameplay behavior changed in this cleanup.
