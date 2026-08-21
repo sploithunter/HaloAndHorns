@@ -534,7 +534,7 @@ function HoverboardShopPanel:_clearRows()
 end
 
 function HoverboardShopPanel:_fillRobuxPrice(label, offer)
-    local robloxId = tonumber(offer.roblox_product_id) or 0
+    local robloxId = tonumber(offer.roblox_pass_id) or 0
     if robloxId <= 0 or not label then
         return
     end
@@ -546,7 +546,7 @@ function HoverboardShopPanel:_fillRobuxPrice(label, offer)
     end
     task.spawn(function()
         local ok, info = pcall(function()
-            return MarketplaceService:GetProductInfo(robloxId, Enum.InfoType.Product)
+            return MarketplaceService:GetProductInfo(robloxId, Enum.InfoType.GamePass)
         end)
         local price = ok and type(info) == "table" and tonumber(info.PriceInRobux)
         local text

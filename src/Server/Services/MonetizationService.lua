@@ -388,32 +388,6 @@ function MonetizationService:_processProductPurchase(player, productConfig, rece
         end
     end
 
-    -- Deterministic untradeable cosmetic board. Product IDs stay 0 until
-    -- the dashboard SKU exists; ProcessReceipt only runs on a live id.
-    if type(rewards.hoverboard_skin) == "string" and rewards.hoverboard_skin ~= "" then
-        local hoverboardService = self._hoverboardService
-            or (self._modules and self._modules.HoverboardService)
-        if not (hoverboardService and hoverboardService.GrantOwned) then
-            self._logger:Error("HoverboardService missing for product skin grant", {
-                player = player.Name,
-                product = productConfig.id,
-                skin = rewards.hoverboard_skin,
-            })
-            return false
-        end
-        local granted = hoverboardService:GrantOwned(player, rewards.hoverboard_skin)
-        if not (granted and granted.ok) then
-            self._logger:Error("Failed to grant hoverboard skin", {
-                player = player.Name,
-                product = productConfig.id,
-                skin = rewards.hoverboard_skin,
-                reason = granted and granted.reason,
-            })
-            return false
-        end
-        hoverboardService:Equip(player, rewards.hoverboard_skin)
-    end
-
     -- Check for first purchase bonus
     if self:_isFirstPurchase(player) then
         self:_grantFirstPurchaseBonus(player)
@@ -472,8 +446,8 @@ function MonetizationService:_handleGamePassPurchase(player, gamePassId)
 
     local firstPurchase = self:_isFirstPurchase(player)
     local ownedPasses = self._dataService:GetOwnedPasses(player) or {}
+    self:_applyPassBenefits(player, passConfig, { equipHoverboard = true })
     if not table.find(ownedPasses, passConfig.id) then
-        self:_applyPassBenefits(player, passConfig)
         table.insert(ownedPasses, passConfig.id)
     end
     if not self._dataService:SetOwnedPasses(player, ownedPasses) then
@@ -510,6 +484,9 @@ function MonetizationService:_handleGamePassPurchase(player, gamePassId)
     self._signals.PurchaseSuccess:FireClient(player, {
         type = "gamepass",
         id = passConfig.id,
+        rewards = {
+            hoverboard_skin = (passConfig.benefits or {}).hoverboard_skin,
+        },
     })
     self:_sendOwnedPasses(player)
     self:_sendFoundersChoiceState(player, true, nil)
@@ -704,8 +681,37 @@ function MonetizationService:CheckPlayerPasses(player)
 end
 
 -- Apply game pass benefits
-function MonetizationService:_applyPassBenefits(player, passConfig)
+function MonetizationService:_applyPassBenefits(player, passConfig, options)
     local benefits = passConfig.benefits or {}
+    options = type(options) == "table" and options or {}
+
+    -- Rocketboards are permanent game-pass entitlements. Ownership is mirrored
+    -- into the existing hoverboard save so Kade's catalog, equip flow, and join
+    -- reconciliation all use the same durable source of truth.
+    local skinId = benefits.hoverboard_skin
+    if type(skinId) == "string" and skinId ~= "" then
+        local hoverboardService = self._hoverboardService
+            or (self._modules and self._modules.HoverboardService)
+        if not (hoverboardService and hoverboardService.GrantOwned) then
+            self._logger:Error("HoverboardService missing for game-pass board grant", {
+                player = player.Name,
+                pass = passConfig.id,
+                skin = skinId,
+            })
+        else
+            local granted = hoverboardService:GrantOwned(player, skinId)
+            if not (granted and granted.ok) then
+                self._logger:Error("Failed to grant game-pass hoverboard", {
+                    player = player.Name,
+                    pass = passConfig.id,
+                    skin = skinId,
+                    reason = granted and granted.reason,
+                })
+            elseif options.equipHoverboard == true then
+                hoverboardService:Equip(player, skinId)
+            end
+        end
+    end
 
     -- Apply multipliers
     if benefits.multipliers then
@@ -767,6 +773,21 @@ function MonetizationService:_applyPassBenefits(player, passConfig)
         player = player.Name,
         pass = passConfig.id,
     })
+end
+
+function MonetizationService:_ownsDurablePassEntitlement(player, passConfig)
+    local benefits = passConfig and passConfig.benefits or {}
+    local skinId = benefits.hoverboard_skin
+    if type(skinId) ~= "string" or skinId == "" then
+        return false
+    end
+    local hoverboardService = self._hoverboardService
+        or (self._modules and self._modules.HoverboardService)
+    if not (hoverboardService and hoverboardService.GetSave) then
+        return false
+    end
+    local save = hoverboardService:GetSave(player)
+    return type(save) == "table" and type(save.owned) == "table" and save.owned[skinId] == true
 end
 
 -- Check premium status
@@ -847,6 +868,12 @@ function MonetizationService:_handlePurchaseRequest(player, data)
             self:_sendPurchaseError(player, "Product is not listed")
         end
     elseif productType == "gamepass" then
+        local passConfig = self._productIdMapper:GetPassConfig(productId)
+        if not passConfig then
+            self:_sendPurchaseError(player, "Game pass not found")
+            return
+        end
+
         -- Get Roblox game pass ID
         local robloxId = self._productIdMapper:GetProductId(productId)
         if not robloxId then
@@ -856,13 +883,19 @@ function MonetizationService:_handlePurchaseRequest(player, data)
 
         -- Check if already owned
         local ownsPass = self:PlayerOwnsPass(player, productId)
-        if ownsPass then
-            self:_sendPurchaseError(player, "You already own this game pass!")
+        local ownsEntitlement = self:_ownsDurablePassEntitlement(player, passConfig)
+        if ownsPass or ownsEntitlement then
+            local message = ownsEntitlement and "You already own this board!"
+                or "You already own this game pass!"
+            self:_sendPurchaseError(player, message)
             return
         end
 
         -- Game passes follow the same live-ID rule as developer products.
-        local route = MonetizationCatalog.purchaseRoute(robloxId, self._testMode)
+        local route = MonetizationCatalog.purchaseRoute(
+            robloxId,
+            self._testMode and passConfig.test_mode_enabled == true
+        )
         if route == "marketplace" then
             MarketplaceService:PromptGamePassPurchase(player, robloxId)
         elseif route == "simulate" then

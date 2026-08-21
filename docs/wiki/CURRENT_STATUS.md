@@ -1499,3 +1499,18 @@ Last checked: 2026-08-18
   untranslated clients never receive blank copy.
 - Auto-mode players using a supported non-English locale receive a one-time session banner naming
   their tutorial language and pointing to the English override in Settings.
+
+## Kade's rocketboard entitlements
+
+Last checked: 2026-08-21
+
+- The six rocketboards are permanent, personal game passes sold only by Kade's Boards. They are
+  excluded from the Pet Shop's general pass catalog and are not developer-product consumables.
+- Kade and the monetization boundary both reject a purchase request when the matching board is
+  already present in `GameData.Hoverboard.owned`; Roblox game-pass ownership supplies the platform
+  duplicate-purchase guard as well.
+- Pass reconciliation grants the matching saved board on join. A newly completed purchase grants
+  and equips it immediately. All hoverboards publish `Tradeable = false`, and the trade rules
+  explicitly reject the `hoverboards` category. No migration is required before release.
+- The six group-owned rocketboard passes are live at the authored R$19 baseline; config contains
+  their dashboard IDs, so Kade always exercises Roblox's real prompt/simulator route.

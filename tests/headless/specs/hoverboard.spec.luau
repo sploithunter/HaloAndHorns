@@ -83,17 +83,34 @@ return function()
             expect(hoverboard.shop.catalog.surf_orange.price).to.equal(1000)
             expect(hoverboard.shop.catalog.rocket_blue.price_robux).to.equal(19)
             expect(hoverboard.shop.catalog.rocket_blue.on_sale).to.equal(true)
-            expect(hoverboard.shop.catalog.rocket_blue.product).to.equal("hoverboard_rocket_blue")
-            expect(monetization.product_id_mapping.hoverboard_rocket_blue).to.equal(3709033036)
-            local rocketProduct
-            for _, product in ipairs(monetization.products) do
-                if product.id == "hoverboard_rocket_blue" then
-                    rocketProduct = product
+            expect(hoverboard.shop.catalog.rocket_blue.pass).to.equal("hoverboard_rocket_blue")
+            expect(monetization.product_id_mapping.hoverboard_rocket_blue).to.equal(1954662606)
+            expect(monetization.product_id_mapping.hoverboard_rocket_lightblue).to.equal(1952355180)
+            expect(monetization.product_id_mapping.hoverboard_rocket_green).to.equal(1955478550)
+            expect(monetization.product_id_mapping.hoverboard_rocket_orange).to.equal(1954240779)
+            expect(monetization.product_id_mapping.hoverboard_rocket_purple).to.equal(1951917369)
+            expect(monetization.product_id_mapping.hoverboard_rocket_yellow).to.equal(1955796497)
+            local rocketPass
+            local legacyProduct
+            for _, pass in ipairs(monetization.passes) do
+                if pass.id == "hoverboard_rocket_blue" then
+                    rocketPass = pass
                     break
                 end
             end
-            expect(rocketProduct).to.be.ok()
-            expect(rocketProduct.rewards.hoverboard_skin).to.equal("rocket_blue")
+            for _, product in ipairs(monetization.products) do
+                if product.id == "hoverboard_rocket_blue" then
+                    legacyProduct = product
+                    break
+                end
+            end
+            expect(rocketPass).to.be.ok()
+            expect(rocketPass.benefits.hoverboard_skin).to.equal("rocket_blue")
+            expect(rocketPass.pet_shop_visible).to.equal(false)
+            expect(rocketPass.storefront).to.equal("kade_boards")
+            expect(rocketPass.tradeable).to.equal(false)
+            expect(rocketPass.test_mode_enabled).to.equal(false)
+            expect(legacyProduct).to.equal(nil)
             expect(#hoverboard.shop.story.lines).to.equal(3)
             expect(hoverboard.shop.location.sign.lines[1]).to.equal("KADE'S")
             expect(hoverboard.shop.location.sign.lines[2]).to.equal("BOARDS")
@@ -114,6 +131,24 @@ return function()
                     true
                 )
             ).to.be.ok()
+            expect(shopService:find('productType = "gamepass"', 1, true)).to.be.ok()
+            expect(shopService:find("PromptProductPurchase", 1, true)).never.to.be.ok()
+
+            local monetizationService = readFile("src/Server/Services/MonetizationService.lua")
+            expect(monetizationService:find("_ownsDurablePassEntitlement", 1, true)).to.be.ok()
+            expect(monetizationService:find('"You already own this board!"', 1, true)).to.be.ok()
+            expect(
+                monetizationService:find("hoverboardService:GrantOwned(player, skinId)", 1, true)
+            ).to.be.ok()
+
+            local panel = readFile("src/Client/UI/Menus/HoverboardShopPanel.lua")
+            expect(panel:find("offer.roblox_pass_id", 1, true)).to.be.ok()
+            expect(panel:find("Enum.InfoType.GamePass", 1, true)).to.be.ok()
+        end)
+
+        it("publishes every hoverboard as a non-tradable inventory entitlement", function()
+            local service = readFile("src/Server/Services/HoverboardService.lua")
+            expect(service:find('child:SetAttribute("Tradeable", false)', 1, true)).to.be.ok()
         end)
 
         it("uses the Pet Shop's shared glossy pill chrome", function()

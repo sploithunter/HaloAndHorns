@@ -67,7 +67,7 @@ function RewardShopPanel.new()
     -- different pass price for each player, and Roblox's dynamic-price test
     -- only recognizes MarketplaceService calls made from a LocalScript.
     self.marketplaceInfo = {}
-    self.livePasses = MonetizationCatalog.livePasses(monetization)
+    self.livePasses = MonetizationCatalog.petShopPasses(monetization)
     self.liveProducts = MonetizationCatalog.liveProducts(monetization)
     self._areaKey, self._areaColor = PanelChrome.areaPill()
     self.connections = {

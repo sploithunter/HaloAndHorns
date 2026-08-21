@@ -31,6 +31,19 @@ function MonetizationCatalog.livePasses(config)
     return project(config, config and config.passes, "gamepass")
 end
 
+-- The Pet Shop is the general monetization storefront. Permanent entitlements
+-- sold by a dedicated world vendor (for example Kade's rocketboards) stay live
+-- for ownership checks without being duplicated in the Pet Shop.
+function MonetizationCatalog.petShopPasses(config)
+    local result = {}
+    for _, entry in ipairs(MonetizationCatalog.livePasses(config)) do
+        if entry.config.pet_shop_visible ~= false then
+            result[#result + 1] = entry
+        end
+    end
+    return result
+end
+
 function MonetizationCatalog.liveProducts(config)
     return project(config, config and config.products, "product")
 end
