@@ -25,6 +25,7 @@ function RewardService:Init()
     self._dataService = self._modules and self._modules.DataService
     self._economyService = self._modules and self._modules.EconomyService
     self._inventoryService = self._modules and self._modules.InventoryService
+    self._enhancementService = self._modules and self._modules.EnhancementService
     self._petGrantService = self._modules and self._modules.PetGrantService
     self._playerEffectsService = self._modules and self._modules.PlayerEffectsService
     self._potionService = nil
@@ -98,7 +99,33 @@ function RewardService:Grant(player, bundle, source)
     for _, item in ipairs(b.items) do
         local bucket = item.bucket or self._config.default_item_bucket or "consumables"
         local quantity = item.qty or item.quantity or 1
-        if bucket == "potions" and self._potionService then
+        if bucket == "enhancements" and self._enhancementService then
+            local results = {}
+            local allOk = true
+            for _ = 1, quantity do
+                local result
+                if item.roll == "origin_single" then
+                    result = self._enhancementService:GrantOriginSingle(player)
+                elseif item.roll == "origin_dual" then
+                    result = self._enhancementService:GrantOriginDual(player)
+                elseif type(item.record) == "table" then
+                    result = self._enhancementService:Grant(player, item.record)
+                else
+                    result = { ok = false, reason = "invalid_enhancement_reward" }
+                end
+                table.insert(results, result)
+                if not result or result.ok ~= true then
+                    allOk = false
+                end
+            end
+            table.insert(granted.items, {
+                id = item.id or (item.roll and (item.roll .. "_enhancement")) or "enhancement",
+                qty = quantity,
+                bucket = bucket,
+                results = results,
+                ok = allOk,
+            })
+        elseif bucket == "potions" and self._potionService then
             local result = self._potionService:Grant(player, item.id, quantity)
             table.insert(granted.items, {
                 id = item.id,

@@ -19,6 +19,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Enhancements = require(ReplicatedStorage.Shared.Game.Enhancements)
+local EnhancementReward = require(ReplicatedStorage.Shared.Game.EnhancementReward)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
 local EnhancementService = {}
@@ -475,33 +476,33 @@ end
 -- SINGLE-origin cog of the PLAYER's own archetype origin, at the player's
 -- level (clamped to the drop band). Pre-origin players get nothing (origined
 -- gear is unslottable for them; their spoils moment arrives with the choice).
-function EnhancementService:GrantOriginSingle(player)
+function EnhancementService:_grantOriginGrade(player, grade)
     local data = self._dataService and self._dataService:GetData(player)
     local origin = data and data.Archetype
-    if not origin then
-        return { ok = false, reason = "no_origin" }
-    end
     local rng = Random.new()
-    local weights = (self._config.drops or {}).type_weights or {}
-    local total = 0
-    for t in pairs(self._config.types) do
-        total += tonumber(weights[t]) or 1
-    end
-    local pick, acc = nil, rng:NextNumber() * total
-    for t in pairs(self._config.types) do
-        acc -= tonumber(weights[t]) or 1
-        if acc <= 0 then
-            pick = t
-            break
+    local record, reason = EnhancementReward.roll(
+        self._config,
+        origin,
+        player:GetAttribute("Level"),
+        grade,
+        function()
+            return rng:NextNumber()
         end
-    end
-    local levels = (self._config.drops or {}).levels or {}
-    local lv = math.clamp(
-        math.floor(tonumber(player:GetAttribute("Level")) or 1),
-        tonumber(levels.min) or 1,
-        tonumber(levels.max) or 55
     )
-    return self:Grant(player, { type = pick, origins = { origin }, level = lv })
+    if not record then
+        return { ok = false, reason = reason }
+    end
+    return self:Grant(player, record)
+end
+
+function EnhancementService:GrantOriginSingle(player)
+    return self:_grantOriginGrade(player, "single")
+end
+
+-- Reward-grade duals always include the recipient's origin, so the award is immediately usable.
+-- The second origin is uniformly selected from the remaining configured archetypes.
+function EnhancementService:GrantOriginDual(player)
+    return self:_grantOriginGrade(player, "dual")
 end
 
 function EnhancementService:RollDrop(rng, areaId, opts)

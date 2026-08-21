@@ -713,6 +713,7 @@ loader:RegisterModule("RewardService", ServerScriptService.Server.Services.Rewar
     "DataService",
     "EconomyService",
     "InventoryService",
+    "EnhancementService",
     "PetGrantService",
     "PlayerEffectsService",
 })

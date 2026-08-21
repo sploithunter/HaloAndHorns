@@ -3889,3 +3889,12 @@ first-session cohort rates.
   internal-account exclusions still disabled. The durable smoke queued one award, delivered its
   personal notification, granted exactly one gem, proved the stable claim id, and restored gems
   from 68 to 69 to 68 without new Output errors.
+
+## 2026-08-21 — Enhancement descriptors in durable reward bundles
+
+- RewardService now routes enhancement item descriptors through EnhancementService rather than
+  inserting incomplete records into the inventory bucket. Durable awards can grant an explicit
+  valid record or roll an origin-single/origin-dual enhancement at the recipient's current level.
+- Random reward enhancements always include the recipient's archetype; duals add one uniformly
+  selected alternate origin. The pure selector has headless coverage for grade, usability, weighted
+  type selection, level clamping, and invalid origins.

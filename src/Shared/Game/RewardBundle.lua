@@ -9,7 +9,11 @@
       {
         currencies = { lava_coins = 500, light_tokens = 2 },
         pets       = { { id = "bear", variant = "golden", element = "light" } },
-        items      = { { id = "health_potion", qty = 3, bucket = "consumables" } },
+        items      = {
+          { id = "health_potion", qty = 3, bucket = "consumables" },
+          { id = "origin_single_enhancement", qty = 1, bucket = "enhancements",
+            roll = "origin_single" },
+        },
         effects    = { { id = "speed_boost", seconds = 600, modifiers = {...} } },
         titles     = { "Thousand-Door Veteran" },
         slots      = { pet_equip_slots = 1 },   -- permanent capacity (upgrade levels)
