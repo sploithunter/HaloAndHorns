@@ -214,6 +214,12 @@ return function()
             expect(r.ok).to.equal(true)
         end)
 
+        it("rejects reusable hoverboard entitlements", function()
+            local r = TradeLogic.canAddItem("hoverboards", { id = "rocket_blue" }, config)
+            expect(r.ok).to.equal(false)
+            expect(r.reason).to.equal("not_tradeable")
+        end)
+
         it("allows enhancements (all are tradeable)", function()
             local r = TradeLogic.canAddItem("enhancements", { id = "enh_anvil_fire_L1" }, config)
             expect(r.ok).to.equal(true)

@@ -228,6 +228,7 @@ function HoverboardService:_publishInventory(player)
             child:SetAttribute("DisplayName", skin.display_name or skinId)
             child:SetAttribute("Icon", type(skin.icon) == "string" and skin.icon or "")
             child:SetAttribute("Equipped", save.equipped == skinId)
+            child:SetAttribute("Tradeable", false)
         end
     end
     for _, child in ipairs(folder:GetChildren()) do

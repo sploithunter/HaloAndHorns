@@ -3800,3 +3800,14 @@ first-session cohort rates.
   Abyssal Wyrm stays. Wyrmling does not: it is an Obsidian exclusive,
   not the "playing for dragons" hatch chase.
 
+## 2026-08-21 — Rocketboards become Kade-only game passes
+
+- Removed every hoverboard from the Pet Shop developer-product catalog.
+  The six rockets are permanent game-pass entitlements shown only at
+  Kade's Boards; the free and gem catalogs are unchanged.
+- Kade routes live rocket purchases through `PromptGamePassPurchase`.
+  Pass completion grants and equips the board, while join reconciliation
+  restores the board from Marketplace ownership.
+- Repeat attempts are rejected from both the owned-board catalog gate and
+  the monetization request boundary. Hoverboards are explicitly non-tradable.
+  No prerelease product-to-pass migration is included.
