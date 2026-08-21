@@ -32,6 +32,16 @@ return {
         bus = "effects", -- rides the SFX slider (the "ui" bus is a binary on/off that ignores it)
     },
 
+    -- Soft positional buzz for Hall arch lightning. The client throttles this
+    -- 0.48-second clip independently from the much faster visual bolt cadence.
+    arch_lightning_buzz = {
+        id = "rbxassetid://80802960194213",
+        volume = 0.12,
+        playback_speed = 1.0,
+        duration_seconds = 0.48,
+        bus = "effects",
+    },
+
     -- Add more named sounds here as needed
 
     -- Short celebratory stinger (non-looping) — kept for moments that still share one

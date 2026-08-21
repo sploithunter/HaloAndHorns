@@ -106,6 +106,7 @@ local SCHEMAS = {
         crystal_world_area = "string",
         currency = "string",
         crystal_world_effectiveness = "number",
+        arch_lightning = "table",
         theme = "table",
         egg_stand = "table",
         play_areas = "table",
