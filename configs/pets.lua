@@ -3445,6 +3445,229 @@ local petConfig = {
             },
         },
 
+        -- GAUNTLET LEADERBOARD EXCLUSIVES. These five pets hatch only from the held
+        -- Gauntlet Champion Egg. They use normal Exclusive eternal strength (90% of
+        -- the top-team baseline); Huge remains the separate 120% jackpot trait.
+        ribbon_ram = {
+            display_name = "Ribbon Ram",
+            category = "exclusive",
+            origin = "creator",
+            rarity = "exclusive",
+            base_power = 50,
+            base_health = 500,
+            asset_transform = {
+                scale = 3.2,
+                huge_scale = 3,
+                orientation = { x = 0, y = 0, z = 0 },
+            },
+            camera = {
+                distance = 4,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://137651490972191",
+                    texture_asset = "rbxassetid://81329620865393",
+                    image_id = "rbxassetid://119202863416060",
+                    display_name = "Ribbon Ram",
+                    abilities = {},
+                },
+                golden = {
+                    mesh_asset = "rbxassetid://109709334405239",
+                    texture_asset = "rbxassetid://102490483247053",
+                    image_id = "rbxassetid://111322395062159",
+                    display_name = "Golden Ribbon Ram",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://137651490972191",
+                    texture_asset = "rbxassetid://81329620865393",
+                    image_id = "rbxassetid://119202863416060",
+                    display_name = "Rainbow Ribbon Ram",
+                    abilities = {},
+                },
+            },
+        },
+
+        medal_moth = {
+            display_name = "Medal Moth",
+            category = "exclusive",
+            origin = "creator",
+            rarity = "exclusive",
+            base_power = 50,
+            base_health = 500,
+            asset_transform = {
+                scale = 3.2,
+                huge_scale = 3,
+                orientation = { x = 0, y = 0, z = 0 },
+            },
+            camera = {
+                distance = 4,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://138333613388800",
+                    texture_asset = "rbxassetid://127141326281593",
+                    image_id = "rbxassetid://100751363877983",
+                    display_name = "Medal Moth",
+                    abilities = {},
+                },
+                golden = {
+                    mesh_asset = "rbxassetid://117871991127739",
+                    texture_asset = "rbxassetid://109606041848458",
+                    image_id = "rbxassetid://128986840112011",
+                    display_name = "Golden Medal Moth",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://138333613388800",
+                    texture_asset = "rbxassetid://127141326281593",
+                    image_id = "rbxassetid://100751363877983",
+                    display_name = "Rainbow Medal Moth",
+                    abilities = {},
+                },
+            },
+        },
+
+        laurel_lynx = {
+            display_name = "Laurel Lynx",
+            category = "exclusive",
+            origin = "creator",
+            rarity = "exclusive",
+            base_power = 50,
+            base_health = 500,
+            asset_transform = {
+                scale = 3.2,
+                huge_scale = 3,
+                orientation = { x = 0, y = 0, z = 0 },
+            },
+            camera = {
+                distance = 4,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://90614489735458",
+                    texture_asset = "rbxassetid://75381801781988",
+                    image_id = "rbxassetid://103347938981872",
+                    display_name = "Laurel Lynx",
+                    abilities = {},
+                },
+                golden = {
+                    mesh_asset = "rbxassetid://124675214184824",
+                    texture_asset = "rbxassetid://99058083784294",
+                    image_id = "rbxassetid://139095862623259",
+                    display_name = "Golden Laurel Lynx",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://90614489735458",
+                    texture_asset = "rbxassetid://75381801781988",
+                    image_id = "rbxassetid://103347938981872",
+                    display_name = "Rainbow Laurel Lynx",
+                    abilities = {},
+                },
+            },
+        },
+
+        victory_gryphon = {
+            display_name = "Victory Gryphon",
+            category = "exclusive",
+            origin = "creator",
+            rarity = "exclusive",
+            base_power = 50,
+            base_health = 500,
+            asset_transform = {
+                scale = 3.2,
+                huge_scale = 3,
+                orientation = { x = 0, y = 0, z = 0 },
+            },
+            camera = {
+                distance = 4,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://75766973916030",
+                    texture_asset = "rbxassetid://98538155098624",
+                    image_id = "rbxassetid://99113887064290",
+                    display_name = "Victory Gryphon",
+                    abilities = {},
+                },
+                golden = {
+                    mesh_asset = "rbxassetid://75766973916030",
+                    texture_asset = "rbxassetid://100382567617549",
+                    image_id = "rbxassetid://130423316162327",
+                    display_name = "Golden Victory Gryphon",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://75766973916030",
+                    texture_asset = "rbxassetid://98538155098624",
+                    image_id = "rbxassetid://99113887064290",
+                    display_name = "Rainbow Victory Gryphon",
+                    abilities = {},
+                },
+            },
+        },
+
+        crowned_chimera = {
+            display_name = "Crowned Chimera",
+            category = "exclusive",
+            origin = "creator",
+            rarity = "exclusive",
+            base_power = 50,
+            base_health = 500,
+            asset_transform = {
+                scale = 3.2,
+                huge_scale = 3,
+                orientation = { x = 0, y = 0, z = 0 },
+            },
+            camera = {
+                distance = 4,
+                angle_y = 0,
+                angle_x = 180,
+                offset = Vector3.new(0, 0, 0),
+                lighting = "default",
+            },
+            variants = {
+                basic = {
+                    mesh_asset = "rbxassetid://115339552933766",
+                    texture_asset = "rbxassetid://122258349459247",
+                    image_id = "rbxassetid://109235482941198",
+                    display_name = "Crowned Chimera",
+                    abilities = {},
+                },
+                golden = {
+                    mesh_asset = "rbxassetid://77134909269593",
+                    texture_asset = "rbxassetid://78529842686863",
+                    image_id = "rbxassetid://90150786155704",
+                    display_name = "Golden Crowned Chimera",
+                    abilities = {},
+                },
+                rainbow = {
+                    mesh_asset = "rbxassetid://115339552933766",
+                    texture_asset = "rbxassetid://122258349459247",
+                    image_id = "rbxassetid://109235482941198",
+                    display_name = "Rainbow Crowned Chimera",
+                    abilities = {},
+                },
+            },
+        },
+
         -- LIMITED BETA TESTER REWARD (week one). The one awarded egg and the one pet it can
         -- become retain immutable award provenance through trades. Golden/Rainbow are determined
         -- by the original tester's configured level thresholds, not by ordinary variant rolls.
@@ -7473,6 +7696,51 @@ local petConfig = {
                 supports_golden_gamepass = true,
                 supports_rainbow_gamepass = true,
                 max_luck_multiplier = 10.0,
+            },
+            hatching_time = 3,
+            guaranteed_shiny_chance = 0,
+            bonus_xp = 0,
+        },
+
+        -- RANGE / TRAINING GROUND leaderboard reward. This is a held inventory egg,
+        -- never a world purchase. fixed_odds keeps species, variants, and the Huge roll
+        -- independent of player luck, presence luck, events, and paid luck.
+        gauntlet_champion_egg = {
+            name = "Gauntlet Champion Egg",
+            description = "A champion's prize from The Range and Training Ground.",
+            cost = 0,
+            currency = "coins",
+            purchasable = false,
+            fixed_odds = true,
+            huge = { chance = 0.01, any_pet = true },
+            mesh_asset = "rbxassetid://73613992662851",
+            texture_asset = "rbxassetid://88303254205097",
+            asset_id = "rbxassetid://76836580602317",
+            image_id = "rbxassetid://95013203314805",
+            unlock_requirement = nil,
+            pet_weights = {
+                ribbon_ram = 42,
+                medal_moth = 28,
+                laurel_lynx = 18,
+                victory_gryphon = 10,
+                crowned_chimera = 2,
+            },
+            rarity_rates = {
+                golden_chance = 0.05,
+                rainbow_chance = 0.005,
+            },
+            variant_rolls = {
+                enabled = true,
+                allow_basic = true,
+                allow_golden = true,
+                allow_rainbow = true,
+                cost_multiplier = 1,
+            },
+            modifier_support = {
+                supports_luck_gamepass = false,
+                supports_golden_gamepass = false,
+                supports_rainbow_gamepass = false,
+                max_luck_multiplier = 1,
             },
             hatching_time = 3,
             guaranteed_shiny_chance = 0,

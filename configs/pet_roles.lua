@@ -57,6 +57,12 @@ return {
         bird = "ranged",
         colorado = "ranged",
         kade = "tank",
+        -- Gauntlet Champion Egg: one complete five-role Exclusive squad.
+        ribbon_ram = "tank",
+        medal_moth = "support",
+        laurel_lynx = "melee",
+        victory_gryphon = "ranged",
+        crowned_chimera = "control",
         beta_tester_bot = "melee", -- Beta Byte: exclusive Grass robot dog
         signal_seal = "support", -- week-two tester exclusive: Ice hatch-luck buffer
         patch_phoenix = "ranged", -- week-three tester exclusive: Lava Windfall blaster
@@ -364,6 +370,10 @@ return {
             { kind = "heal", interval = 15, fraction = 0.2 },
             { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 },
         },
+        -- Champion utilities: Medal Moth protects the full squad; the 2% Chimera
+        -- controls the focused enemy with the established 10s/30s full-hold cadence.
+        medal_moth = { kind = "defense", interval = 2.0, amount = 53.3, duration = 6 },
+        crowned_chimera = { kind = "hold", interval = 30, duration = 10 },
         -- Limited tester rewards each carry ONE deterministic Natural farming identity.
         -- They are player-facing support auras, not random enchants: the pet must be deployed,
         -- multiple providers stack additively, and variant scaling makes Basic/Golden/Rainbow
