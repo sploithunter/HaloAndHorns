@@ -2,11 +2,10 @@
     HoverboardShopService — Kade's Hall 1 shack shop.
 
     Spawns Kade from his Roblox avatar. The catalog is image-based (keyed
-    skin icons) with mixed tender: free giveaways, gems, and one Robux
-    board. Ownership lives in GameData.Hoverboard, not mount inventory.
+    skin icons) with mixed tender: free giveaways, gems, and permanent Robux
+    passes. Ownership lives in GameData.Hoverboard, not mount inventory.
 ]]
 
-local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -196,9 +195,9 @@ function HoverboardShopService:_gems(player)
     return self._economyService and self._economyService:GetCurrency(player, "gems") or 0
 end
 
-function HoverboardShopService:_robuxProductId(offer)
-    local productKey = type(offer) == "table" and offer.product or nil
-    if type(productKey) ~= "string" or productKey == "" then
+function HoverboardShopService:_robuxPassId(offer)
+    local passKey = type(offer) == "table" and offer.pass or nil
+    if type(passKey) ~= "string" or passKey == "" then
         return 0
     end
     local ok, monetization = pcall(function()
@@ -207,7 +206,7 @@ function HoverboardShopService:_robuxProductId(offer)
     if not (ok and type(monetization) == "table") then
         return 0
     end
-    return tonumber((monetization.product_id_mapping or {})[productKey]) or 0
+    return tonumber((monetization.product_id_mapping or {})[passKey]) or 0
 end
 
 function HoverboardShopService:Catalog(player)
@@ -227,8 +226,8 @@ function HoverboardShopService:Catalog(player)
             kind = entry.kind,
             price = entry.price,
             price_robux = entry.price_robux,
-            product = entry.product,
-            roblox_product_id = self:_robuxProductId(entry),
+            pass = entry.pass,
+            roblox_pass_id = self:_robuxPassId(entry),
             on_sale = entry.on_sale == true,
             owned = owned,
             equipped = save.equipped == entry.id,
@@ -262,33 +261,25 @@ function HoverboardShopService:Buy(player, args)
     end
     local kind = HoverboardLogic.offerKind(offer)
     if kind == "robux" then
-        -- Same path as ShopPanel tokens: MonetizationService test_mode grants
-        -- in Studio even when the dashboard product id is still 0.
+        -- Route through MonetizationService so Kade uses the same ownership
+        -- guard and PromptGamePassPurchase callback as every other pass.
         if not (self._monetizationService and self._monetizationService._handlePurchaseRequest) then
             return { ok = false, reason = "service_unavailable" }
         end
-        if type(offer.product) ~= "string" or offer.product == "" then
+        if type(offer.pass) ~= "string" or offer.pass == "" then
             return { ok = false, reason = "robux_unwired" }
         end
-        local productId = self:_robuxProductId(offer)
-        local testMode = self._monetizationService._testMode == true
-        if productId <= 0 and not testMode then
+        local passId = self:_robuxPassId(offer)
+        if passId <= 0 then
             return { ok = false, reason = "robux_unwired" }
-        end
-        -- Live SKUs use the real Marketplace prompt so Studio's purchase
-        -- simulation and ProcessReceipt are the same path as production.
-        -- test_mode only simulates when the dashboard id is still 0.
-        if productId > 0 then
-            MarketplaceService:PromptProductPurchase(player, productId)
-            local catalog = self:Catalog(player)
-            catalog.pending_robux = true
-            return catalog
         end
         self._monetizationService:_handlePurchaseRequest(player, {
-            productId = offer.product,
-            productType = "product",
+            productId = offer.pass,
+            productType = "gamepass",
         })
-        return self:Catalog(player)
+        local catalog = self:Catalog(player)
+        catalog.pending_robux = passId > 0
+        return catalog
     end
     local cost = tonumber(costOrReason) or 0
     if kind == "gems" and cost > 0 then

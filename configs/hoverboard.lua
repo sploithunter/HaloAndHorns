@@ -308,8 +308,7 @@ return {
             ok_button = "OK",
         },
         -- kind: free | gems | robux. Hoverboards are free. Surfs are gems.
-        -- Rockets are Robux (product id 0 until dashboard SKUs exist; Studio
-        -- test_mode grants like titan_team tokens).
+        -- Rockets are permanent, non-tradable game passes sold only by Kade.
         catalog = {
             black_gold = { kind = "free", price = 0, order = 1 },
             green_white = { kind = "free", price = 0, order = 2 },
@@ -323,42 +322,42 @@ return {
             surf_yellow = { kind = "gems", price = 1050, order = 10 },
             rocket_blue = {
                 kind = "robux",
-                product = "hoverboard_rocket_blue",
+                pass = "hoverboard_rocket_blue",
                 price_robux = 19,
                 on_sale = true,
                 order = 11,
             },
             rocket_lightblue = {
                 kind = "robux",
-                product = "hoverboard_rocket_lightblue",
+                pass = "hoverboard_rocket_lightblue",
                 price_robux = 19,
                 on_sale = true,
                 order = 12,
             },
             rocket_green = {
                 kind = "robux",
-                product = "hoverboard_rocket_green",
+                pass = "hoverboard_rocket_green",
                 price_robux = 19,
                 on_sale = true,
                 order = 13,
             },
             rocket_orange = {
                 kind = "robux",
-                product = "hoverboard_rocket_orange",
+                pass = "hoverboard_rocket_orange",
                 price_robux = 19,
                 on_sale = true,
                 order = 14,
             },
             rocket_purple = {
                 kind = "robux",
-                product = "hoverboard_rocket_purple",
+                pass = "hoverboard_rocket_purple",
                 price_robux = 19,
                 on_sale = true,
                 order = 15,
             },
             rocket_yellow = {
                 kind = "robux",
-                product = "hoverboard_rocket_yellow",
+                pass = "hoverboard_rocket_yellow",
                 price_robux = 19,
                 on_sale = true,
                 order = 16,

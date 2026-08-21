@@ -343,9 +343,12 @@ the shop. Owned skins show **OWNED** / **EQUIPPED** and never offer Take,
 Buy, or Robux again (`canBuy` returns `already_owned`).
 All five skate hoverboards are free. Surfs cost gems (900–1100). Rockets
 are on sale; the card shows Roblox's live `PriceInRobux` (regional /
-managed pricing), not the config baseline of 19. Product ids are live
-(2026-08-20). Studio `test_mode` still grants them like titan-team tokens. Rockets cruise
-at 2× skate (`cruise_speed` 64 → 128).
+managed pricing), not the config baseline of 19. Each rocket is a permanent,
+personal game pass sold only through Kade: rocket passes are hidden from the
+Pet Shop, cannot be traded, and cannot be purchased again after the matching
+board is owned. A live pass uses `PromptGamePassPurchase`, including Roblox's
+Studio purchase simulator; rocket passes do not auto-grant through ordinary
+Studio `test_mode`. Rockets cruise at 2× skate (`cruise_speed` 64 → 128).
 Ownership is `GameData.Hoverboard` (`owned` + `equipped`); the dormant
 mounts inventory bucket stays off. Owned boards also replicate into
 `Inventory.hoverboards` and appear on the Items tab for equip. Free
