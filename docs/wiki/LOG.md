@@ -3862,5 +3862,9 @@ first-session cohort rates.
 - Restored the streamed-host fallback and jamb-to-jamb effect for Range,
   Training Ground, both Crystal World directions, Home, and the Hell test arch.
 - Uploaded the supplied 0.48-second buzz as group-owned audio `80802960194213`.
-  It plays softly (`0.12`) as a throttled positional Effects-bus sound near the
+  It plays softly as a throttled positional Effects-bus sound near the
   closest active arch; rapid visual bolts do not each spawn audio.
+- Live Studio playback proved the upload loaded and decoded successfully, but
+  base volume `0.12` became effectively silent through a 17% Effects setting
+  plus positional falloff. Raised the base to `0.55`, kept it on the Effects
+  bus, and widened the full-volume/falloff distances to 24/90 studs.

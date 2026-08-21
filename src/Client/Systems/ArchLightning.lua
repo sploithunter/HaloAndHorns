@@ -231,12 +231,12 @@ local function playBuzz(parent, cfg, catalog)
     local sound = Instance.new("Sound")
     sound.Name = "ArchLightningBuzz"
     sound.SoundId = entry.id
-    sound.Volume = tonumber(cfg.volume) or tonumber(entry.volume) or 0.12
+    sound.Volume = tonumber(cfg.volume) or tonumber(entry.volume) or 0.55
     sound.PlaybackSpeed = tonumber(entry.playback_speed) or 1
     sound.RollOffMode = Enum.RollOffMode.InverseTapered
-    sound.RollOffMinDistance = math.max(0, tonumber(cfg.roll_off_min_distance) or 8)
+    sound.RollOffMinDistance = math.max(0, tonumber(cfg.roll_off_min_distance) or 24)
     sound.RollOffMaxDistance =
-        math.max(sound.RollOffMinDistance, tonumber(cfg.roll_off_max_distance) or 60)
+        math.max(sound.RollOffMinDistance, tonumber(cfg.roll_off_max_distance) or 90)
     SoundGroups.assign(sound, entry.bus or "effects")
     sound.Parent = parent
     sound:Play()
@@ -261,7 +261,7 @@ function ArchLightning.start()
     local soundCfg = cfg.sound or {}
     local soundIntervalMin = math.max(0.1, tonumber(soundCfg.interval_min) or 0.65)
     local soundIntervalMax = math.max(soundIntervalMin, tonumber(soundCfg.interval_max) or 1.1)
-    local soundDistance = math.max(1, tonumber(soundCfg.roll_off_max_distance) or 60)
+    local soundDistance = math.max(1, tonumber(soundCfg.roll_off_max_distance) or 90)
 
     local boltCfg = table.clone(cfg.bolt or {})
     boltCfg.target_offset = asVector3(boltCfg.target_offset)
