@@ -7659,3 +7659,18 @@ first-session cohort rates.
 - Added pure headless coverage for transient, resized, and bootstrap-sized observations; the full
   headless suite passed 2523/2523. Animation debug state and the primary Studio animation contract
   expose the readiness result so future first-frame regressions fail visibly.
+
+## 2026-08-21 — Late ProfileStore load no longer strands realm access
+
+- Fixed an intermittent production boot race where `PlayerProgressionService` waited 15 seconds for
+  `DataLoaded`, ignored a timeout, and published unloaded level-1 attributes. A profile that arrived
+  later restored earned `Level` but left `EffectiveLevel` stale at 1, so qualified players could
+  complete a realm portal's hold-E prompt without moving until a progression refresh or rejoin.
+- Initial progression publication now subscribes to the one-shot `DataLoaded` handoff before
+  checking its current state. Fast and delayed ProfileStore loads take the same path, and unloaded
+  defaults are never published.
+- Realm portal entry, LayerService access, team follow-warp, and the client lock display now share
+  `AccessLevel`: the greater of earned `Level` and temporary `EffectiveLevel`. Sidekick guest access
+  still works, while stale derived state or formal-team exemplaring cannot revoke earned travel.
+- Portal attempts made before profile readiness now say the character is loading. A rejected
+  `LayerService:UseLayer` result is logged and shown instead of becoming a silent no-op.

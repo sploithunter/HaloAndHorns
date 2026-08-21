@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local LayerAccess = require(ReplicatedStorage.Shared.Game.LayerAccess)
+local AccessLevel = require(ReplicatedStorage.Shared.Game.AccessLevel)
 local RealmTokens = require(ReplicatedStorage.Shared.Game.RealmTokens)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
@@ -212,14 +213,13 @@ function LayerService:_tokenBalances(player)
     }
 end
 
--- Player level for the World-S3 requires_level gate: the published EffectiveLevel
--- (combat level the curves read; teaming will sync it), falling back to Level.
+-- Player level for progression-gated travel. EffectiveLevel may raise access for a sidekick but
+-- cannot lower the player's earned Level through exemplaring or a stale boot-time attribute.
 function LayerService:_playerLevel(player)
     if not player then
         return 0
     end
-    local lvl = player:GetAttribute("EffectiveLevel") or player:GetAttribute("Level")
-    return tonumber(lvl) or 0
+    return AccessLevel.resolve(player:GetAttribute("Level"), player:GetAttribute("EffectiveLevel"))
 end
 
 function LayerService:AccessibleLayers(player)
