@@ -195,7 +195,10 @@ function HoverboardLogic.catalogEntries(skins, shopCatalog)
                 kind = HoverboardLogic.offerKind(offer),
                 price = math.max(0, math.floor(tonumber(offer.price) or 0)),
                 price_robux = math.max(0, math.floor(tonumber(offer.price_robux) or 0)),
-                product = type(offer.product) == "string" and offer.product or nil,
+                -- Kade's Robux boards are permanent game passes. Preserve the
+                -- pass config key so the server can resolve the live Roblox ID
+                -- and the client can request its managed/regional price.
+                pass = type(offer.pass) == "string" and offer.pass or nil,
                 on_sale = offer.on_sale == true,
                 order = tonumber(offer.order) or 99,
             })
