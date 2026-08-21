@@ -31,6 +31,7 @@ local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
 local HatchTiming = require(ReplicatedStorage.Shared.Game.HatchTiming)
 local HatchRevealPolicy = require(ReplicatedStorage.Shared.Game.HatchRevealPolicy)
 local HatchGridLayout = require(ReplicatedStorage.Shared.Game.HatchGridLayout)
+local EggHatchFront = require(ReplicatedStorage.Shared.Game.EggHatchFront)
 local CompletionGroup = require(ReplicatedStorage.Shared.Utils.CompletionGroup)
 
 local eggSystemConfig = Locations.getConfig("egg_system")
@@ -554,7 +555,18 @@ function EggHatchingService:CreateEggFrame(position, eggData)
     -- Fallback if no generated image available
     if not eggImage then
         eggImage = Instance.new("ImageLabel")
-        eggImage.Image = eggData.imageId or "rbxasset://textures/face.png"
+        local imageId = eggData.imageId
+        if not imageId or imageId == "" or imageId == "generated_image" then
+            local source = petConfig
+                and petConfig.egg_sources
+                and petConfig.egg_sources[eggData.eggType or ""]
+            if source and type(source.image_id) == "string" and source.image_id ~= "" then
+                imageId = source.image_id
+            else
+                imageId = "rbxasset://textures/face.png"
+            end
+        end
+        eggImage.Image = imageId
     end
     frame:SetAttribute("EggVisualSource", visualSource)
 
@@ -912,17 +924,27 @@ function EggHatchingService:ShowRevealBadges(eggComponents)
     end
 end
 
--- Shake animation (egg wobbles)
+-- Shake animation (egg wobbles). ViewportFrames go blank if the GuiObject
+-- Rotation is non-zero, so 3D eggs wobble their camera instead.
 function EggHatchingService:AnimateShake(eggComponents, duration)
     duration = duration or 2.0
     local eggImage = eggComponents.egg
 
     eggComponents.state = ANIMATION_STATE.SHAKE
 
+    local camera = eggImage and eggImage:IsA("ViewportFrame") and eggImage.CurrentCamera
+    local baseCFrame = camera and camera.CFrame
+
     local driver = Instance.new("NumberValue")
     local connection = driver.Changed:Connect(function(progress)
-        if eggImage and eggImage.Parent then
-            eggImage.Rotation = math.sin(progress * duration * math.pi * 10) * 5
+        if not (eggImage and eggImage.Parent) then
+            return
+        end
+        local wobble = math.sin(progress * duration * math.pi * 10) * 8
+        if camera and camera.Parent and baseCFrame then
+            camera.CFrame = baseCFrame * CFrame.Angles(0, 0, math.rad(wobble))
+        else
+            eggImage.Rotation = wobble * 0.625
         end
     end)
     local tween =
@@ -932,8 +954,11 @@ function EggHatchingService:AnimateShake(eggComponents, duration)
     connection:Disconnect()
     driver:Destroy()
 
-    -- Reset rotation
-    eggImage.Rotation = 0
+    if camera and camera.Parent and baseCFrame then
+        camera.CFrame = baseCFrame
+    elseif eggImage then
+        eggImage.Rotation = 0
+    end
 
     return true
 end
@@ -2867,7 +2892,12 @@ end
 local function prepareViewportClone(instance)
     local clone = instance:Clone()
     for _, descendant in ipairs(clone:GetDescendants()) do
-        if descendant:IsA("BaseScript") then
+        if
+            descendant:IsA("BaseScript")
+            or descendant:IsA("BillboardGui")
+            or descendant:IsA("SurfaceGui")
+            or descendant:IsA("ProximityPrompt")
+        then
             descendant:Destroy()
         elseif descendant:IsA("BasePart") then
             descendant.Anchored = true
@@ -2913,15 +2943,31 @@ local function getAuthoredEggVisualScale(eggType)
     return math.clamp(scale, 0.25, 5)
 end
 
+local function countVisibleParts(model)
+    local count = 0
+    if model:IsA("BasePart") and model.Transparency < 0.95 then
+        count += 1
+    end
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("BasePart") and descendant.Transparency < 0.95 then
+            count += 1
+        end
+    end
+    return count
+end
+
 function EggHatchingService:GetAuthoredEggViewport(eggType)
     local success, viewport = pcall(function()
-        local egg = EggWorldQuery.FindEggByType(eggType)
+        local egg = EggWorldQuery.FindEggVisual(eggType) or EggWorldQuery.FindEggByType(eggType)
         if not egg then
             return nil
         end
 
         local model = prepareViewportClone(egg)
-        if not model then
+        if not model or countVisibleParts(model) == 0 then
+            if model then
+                model:Destroy()
+            end
             return nil
         end
 
@@ -2938,14 +2984,15 @@ function EggHatchingService:GetAuthoredEggViewport(eggType)
         model.Parent = worldModel
 
         local bboxCFrame, bboxSize = model:GetBoundingBox()
-        model:PivotTo(CFrame.new(-bboxCFrame.Position) * model:GetPivot())
+        model:TranslateBy(-bboxCFrame.Position)
 
         local maxSize = math.max(bboxSize.X, bboxSize.Y, bboxSize.Z, 1)
         local focusY = bboxSize.Y * 0.08
         local visualScale = getAuthoredEggVisualScale(eggType)
         local distance = (maxSize * 2.25) / visualScale
+        local look = model:GetPivot().LookVector
         local camera = Instance.new("Camera")
-        camera.CFrame = CFrame.lookAt(Vector3.new(0, focusY, distance), Vector3.new(0, focusY, 0))
+        camera.CFrame = EggHatchFront.cameraCFrame(look.X, look.Z, focusY, distance)
         camera.Parent = viewportFrame
         viewportFrame.CurrentCamera = camera
 

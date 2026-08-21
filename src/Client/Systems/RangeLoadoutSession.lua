@@ -25,7 +25,10 @@ local function eachNearbyDoorPrompt(fn)
         return
     end
     for _, part in ipairs(CollectionService:GetTagged("MissionDoor")) do
-        if part:IsA("BasePart") and (part.Position - hrp.Position).Magnitude <= DOOR_HOLD_RADIUS then
+        if
+            part:IsA("BasePart")
+            and (part.Position - hrp.Position).Magnitude <= DOOR_HOLD_RADIUS
+        then
             local prompt = part:FindFirstChild(PROMPT_NAME)
             if prompt and prompt:IsA("ProximityPrompt") then
                 fn(prompt)

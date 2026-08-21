@@ -15,6 +15,7 @@ WorldBindingService.__index = WorldBindingService
 -- zone kind allowlist lives in ZoneSchema (ONE source; the dual-allowlist
 -- drift hard-crashed boot 2026-07-09)
 local ZoneSchema = require(game:GetService("ReplicatedStorage").Shared.Game.ZoneSchema)
+local HallPlayAreas = require(game:GetService("ReplicatedStorage").Shared.Game.HallPlayAreas)
 
 local function toVector3(value, fallback)
     fallback = fallback or Vector3.zero
@@ -193,6 +194,10 @@ function WorldBindingService:Init()
     self._breakablesConfig = self._configLoader:LoadConfig("breakables")
     self._petsConfig = self._configLoader:LoadConfig("pets")
     self._enchantsConfig = self._configLoader:LoadConfig("enchants")
+    local okHall, hallCfg = pcall(function()
+        return self._configLoader:LoadConfig("hall_of_worlds")
+    end)
+    self._hallConfig = okHall and type(hallCfg) == "table" and hallCfg or {}
     self._mapMode = (self._gameConfig.map and self._gameConfig.map.mode) or "auto"
 
     self:_validateZoneTree()
@@ -834,6 +839,20 @@ function WorldBindingService:_connectAreaZone(areaZone)
     end)
 end
 
+function WorldBindingService:_bindHallPlayAreas()
+    local playAreas = self._hallConfig and self._hallConfig.play_areas
+    if type(playAreas) ~= "table" then
+        return
+    end
+    local maps = workspace:FindFirstChild("Maps")
+    local hall = maps and maps:FindFirstChild("FuturePath")
+    local tiles = hall and hall:FindFirstChild("Tiles")
+    if not tiles then
+        return
+    end
+    HallPlayAreas.bindAll(tiles, playAreas)
+end
+
 function WorldBindingService:RebuildBindings()
     table.clear(self._boundByTag)
     table.clear(self._zoneById)
@@ -847,6 +866,8 @@ function WorldBindingService:RebuildBindings()
     if self._mapMode == "synthetic" or (self._mapMode == "auto" and not hasAuthoredHooks) then
         self:_synthesizeMissingHooks()
     end
+
+    self:_bindHallPlayAreas()
 
     for tagName in pairs(self._markersConfig.tags or {}) do
         for _, instance in ipairs(CollectionService:GetTagged(tagName)) do

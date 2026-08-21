@@ -55,7 +55,7 @@ position, capped at 18%) while the task's mining/combat/hatching remains the pri
 2. **Work the Vein** — break **20** crystals. Reward: 100 XP + 10 gems.
 3. **Grow Your Collection** — hatch **10** eggs. Reward: 100 XP + 10 gems.
 4. **Fill Your Coffers** — earn **1,500** area coins. Reward: 150 XP + 10 gems.
-5. **Answer the Cave** — defeat **5** enemies. Reward: 300 XP + 15 gems + 1,500 area coins.
+5. **Protect the Realm** — defeat **5** enemies (Hall or Crystal World). Reward: 300 XP + 15 gems + 1,500 area coins.
 
 ---
 

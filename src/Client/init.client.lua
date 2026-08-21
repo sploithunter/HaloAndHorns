@@ -421,6 +421,7 @@ do
     local ok, err = pcall(function()
         require(script.Systems.ZoneUnlockPrompt).start()
         require(script.Systems.HallRouteGates).start()
+        require(script.Systems.HallComingSoon).start()
     end)
     if not ok then
         Logger:Warn("Failed to start zone progression presentation", { error = tostring(err) })
@@ -830,8 +831,7 @@ local function updateZoneTravelPrompt(prompt)
         host = host.Parent
     end
     -- Hall barriers keep ForcePrompt so they never silent-touch while locked.
-    -- After unlock the wall is already gone; leave the lock proxy up and it
-    -- still says "Unlock 750 hall_coins" in an open corridor.
+    -- After unlock the wall and its cost pill are already gone.
     if unlocked and host and CollectionService:HasTag(host, "HallGate") then
         prompt.Enabled = false
         return

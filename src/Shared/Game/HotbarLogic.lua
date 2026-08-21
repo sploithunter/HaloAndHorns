@@ -14,6 +14,7 @@
       ensureBindAt(hotbar, index, bind, config)        -> { ok, changed, movedFrom?, movedTo? }
       potionAutoBindSlot(hotbar, potionId, config)     -> slot or nil
       tokenAutoBindSlot(hotbar, tokenId, config)       -> slot or nil
+      applyChallengeOverlay(hotbar, loaned)            -> published hotbar (does not mutate saved)
 ]]
 
 local HotbarLogic = {}
@@ -247,6 +248,22 @@ function HotbarLogic.tokenAutoBindSlot(hotbar, tokenId, config)
         end
     end
     return nil
+end
+
+-- Catalog Range publishes a blank bar plus the loaned kit. The saved hotbar
+-- is not copied, so a high-level player's leftover binds (Genie, Rally, …)
+-- cannot overlap the run. Exit restores the saved bar.
+function HotbarLogic.applyChallengeOverlay(_hotbar, loaned)
+    local out = {}
+    if type(loaned) ~= "table" then
+        return out
+    end
+    for i, id in ipairs(loaned) do
+        if type(id) == "string" and id ~= "" then
+            out[tostring(i)] = { type = "power", target = id }
+        end
+    end
+    return out
 end
 
 return HotbarLogic

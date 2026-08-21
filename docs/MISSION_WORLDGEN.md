@@ -284,10 +284,11 @@ seed sweep (e.g. 500 seeds) all pass all invariants.
 
 Slot pool + lifecycle owner.
 
-- **Slots:** `configs/missions.lua` `slots = { origin_x = 24000, spacing = 2048, count = 8, y = 0 }`
+- **Slots:** `configs/missions.lua` `slots = { origin_x = 24000, spacing = 3072, count = 10, y = 0 }`
   — an X-band well past the authored map, spacing > 2× the default
   streaming `StreamingTargetRadius` (1024) so instances never stream into
-  each other. Stay under ~50k studs from origin (float precision).
+  each other. Last pad is ~51.6k (10-player servers). A 20-pad line would
+  need a second Z-row instead of stretching X.
 - **API (server):**
   - `Open(teamId, missionId) → instanceId | err` — gate (one live instance
     per team, global concurrency cap), resolve seed, solve (pure), stamp,
@@ -366,8 +367,8 @@ return {
 ```lua
 return {
   worldgen_version = 1,
-  slots = { origin_x = 24000, spacing = 2048, count = 8, y = 0 },
-  limits = { per_team = 1, global = 6, max_lifetime = 1800 },
+  slots = { origin_x = 24000, spacing = 3072, count = 10, y = 0 },
+  limits = { per_team = 1, global = 10, max_lifetime = 1800 },
   missions = {
     rescue_the_lost = {
       kit = "hell_catacombs",

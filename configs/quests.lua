@@ -144,8 +144,8 @@ return {
             -- number (Jason: "if that's the case, get rid of it"). The capstone
             -- now graduates through COMBAT — the thing this game does that pet
             -- sims don't, taught at the cave the tutorial just introduced.
-            name = "Protect the Barn",
-            description = "Creatures keep getting into the barn — defeat 5 of them. Your pets fight for you!",
+            name = "Protect the Realm",
+            description = "Defeat 5 creatures. Your pets fight for you — in the Hall or out in the worlds.",
             condition = {
                 type = "counter_at_least",
                 counter = "enemies_defeated",

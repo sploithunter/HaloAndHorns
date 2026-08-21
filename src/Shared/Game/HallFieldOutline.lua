@@ -42,6 +42,45 @@ function HallFieldOutline.corners(zone)
     return cylinderCorners(zone, "FieldCorner")
 end
 
+-- World-space AABB of a tile's Field / FieldKerb parts. Used to mint a
+-- missing SpawnZone on corridor tiles that have green fields but no marker.
+function HallFieldOutline.worldBounds(tile)
+    if not tile or not tile.GetDescendants then
+        return nil
+    end
+
+    local minX, maxX, minZ, maxZ = math.huge, -math.huge, math.huge, -math.huge
+    local y = 0.3
+    local found = false
+    for _, inst in ipairs(tile:GetDescendants()) do
+        if (inst.Name == "FieldKerb" or inst.Name == "Field") and inst:IsA("BasePart") then
+            found = true
+            y = inst.Position.Y
+            local localCf = inst.CFrame
+            local halfX, halfZ = inst.Size.X * 0.5, inst.Size.Z * 0.5
+            for _, offsetX in ipairs({ -halfX, halfX }) do
+                for _, offsetZ in ipairs({ -halfZ, halfZ }) do
+                    local point = localCf * Vector3.new(offsetX, 0, offsetZ)
+                    minX = math.min(minX, point.X)
+                    maxX = math.max(maxX, point.X)
+                    minZ = math.min(minZ, point.Z)
+                    maxZ = math.max(maxZ, point.Z)
+                end
+            end
+        end
+    end
+    if not found then
+        return nil
+    end
+    return {
+        width = maxX - minX,
+        depth = maxZ - minZ,
+        x = (minX + maxX) * 0.5,
+        y = y,
+        z = (minZ + maxZ) * 0.5,
+    }
+end
+
 function HallFieldOutline.bounds(zone)
     local parent = zone and zone.Parent
     if not parent then

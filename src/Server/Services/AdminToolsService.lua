@@ -703,14 +703,19 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         playerData.Equipped.pets = {}
     end
 
-    -- 2) Currencies: 100 grass_coins (the starter), 0 for every other defined currency.
+    -- 2) Currencies: each config defaultAmount. Hall starts with one Wayfinder
+    -- hatch (hall_coins 100); grass_coins 100 remains the Earth egg starter.
     local okCur, currencies = pcall(function()
         return self._configLoader:LoadConfig("currencies")
     end)
     if okCur and type(currencies) == "table" then
         for _, c in ipairs(currencies) do
-            local amt = (c.id == "grass_coins") and 100 or 0
-            self._economyService:SetCurrency(targetPlayer, c.id, amt, "admin_reset_to_beginning")
+            self._economyService:SetCurrency(
+                targetPlayer,
+                c.id,
+                c.defaultAmount or 0,
+                "admin_reset_to_beginning"
+            )
         end
     end
 

@@ -13,12 +13,18 @@ restamps that room. Range is **solo-only** and uses a catalog GhostPet loadout p
 across Inventory + PowerChoice (origin + up to 6 loaned powers). Closing
 that picker clears the menu flag and re-arms the pad E. Everyone
 fights at level 50 for the run (`ChallengeLevel` on the sidekick
-`EffectiveLevel` pipe; earned/claimed stay put and restore on exit). Those picks persist as
+`EffectiveLevel` pipe; earned/claimed stay put and restore on exit). Kill
+XP pays from earned Level, not the pin. Those picks persist as
 four per-origin Range defaults (`GameData.RangeDefaults`) plus the last catalog squad,
 and they are the only legal powers for the run (auto-slotted: Hasten 6 recharge; others
-3/3). Hotbar auto-cast locks clear on Range enter and exit so a slot lock cannot
-follow a loaned power home. Training Ground uses your own pets on an easier curve
-and still allows a team. A downed slot stays down for the run (no Ready/Summon
+3/3). The hotbar blanks to that kit and restores the saved bar on exit
+(publish-only; `profile.Hotbar` is not written).
+Hotbar auto-cast locks clear on Range enter and exit so a slot lock cannot
+follow a loaned power home. The Hall currency stack stays Gems + Waycoins
+inside Range and Training Ground (`hall_currency_hud`); exit drops `mission_*`
+so the Challenge Field does not show Crystal World coins. Training Ground uses your own pets on an easier curve
+and still allows a team. The overworld level-5 combat onramp does not apply.
+A downed slot stays down for the run (no Ready/Summon
 timer) and cannot be refilled. Entry-tile kit-up is white slots only. Overworld
 red slots stay reserved for 60s. Neither field spawns farmable crate or
 crystal-node debris (the MissionCrate placeholder was a sideways crystal).
@@ -31,7 +37,10 @@ hides them on the public page (TEMP off so Macros can test). The score and award
 30 minutes (production 48 hours). Each public top-10 entrant retains their best numeric rank during
 their personal rolling window; expiry queues 100 gems for rank 1, 50 for ranks 2–3, or 25 for ranks
 4–10. Delivery is durable across offline sessions and shows a personal award banner on return.
-See [Hall of Worlds](HALL_OF_WORLDS.md).
+See [Hall of Worlds](HALL_OF_WORLDS.md). Hall arch lightning lives in an
+`ArchLightning` group inside each Hall gate visual (plus the Home Hall
+arch and `HellFaceGateTest`). The last Plaza endcap is closed by a Coming
+Soon wall at the SeamTowers. Save the place after the stamp.
 
 ## Console Support (landed 2026-08-13)
 
@@ -889,7 +898,7 @@ Bus: `quest.list/claim`, `daily.status/claim`, `shop.list/purchase`,
 
 Last checked: 2026-08-05
 
-- **Answer the Cave** explicitly pays 1,500 Grass Crystals instead of resolving a movable
+- **Protect the Realm** (First Steps capstone, id `fs_cave`) pays 1,500 Waycoins instead of resolving a movable
   `area_coins` token; **Hatch 1,000 Eggs** adds five Fortune Flasks; **Defeat 100 Enemies** still
   awards three Health Potions, which are now real common consumables that heal 25% of maximum
   endurance on every deployed, living pet (without reviving downed pets or bypassing resurrection
@@ -1383,7 +1392,7 @@ Last checked: 2026-08-03
 
 Last checked: 2026-08-04
 
-- Claiming **Answer the Cave**, the fifth and final First Steps mission, first applies its authored
+- Claiming **Protect the Realm**, the fifth and final First Steps mission, first applies its authored
   300 XP and then adds only the exact XP still missing for **earned level 4**. The top-up bypasses
   boosts/multipliers and never removes progress or overshoots an already-higher player.
 - The same capstone grants **one additional Future Call token** through the canonical inventory path,

@@ -112,12 +112,7 @@ local function snapHallAnchorToStand(stand)
         pivot.Position.X,
         pivot.Position.Z
     )
-    local x, y, z = HallEggStand.cupPosition(
-        sourceX,
-        sourceZ,
-        standMeshTopY(stand),
-        hover
-    )
+    local x, y, z = HallEggStand.cupPosition(sourceX, sourceZ, standMeshTopY(stand), hover)
     if not x then
         return nil
     end
@@ -197,6 +192,11 @@ local function placeEgg(stand, eggTemplate, eggId)
     local scale = placementScale(stand)
     if offsetY ~= 0 then
         cf = cf * CFrame.new(0, offsetY, 0)
+    end
+    local source = petConfig.egg_sources and petConfig.egg_sources[eggId]
+    local standYaw = source and tonumber(source.stand_yaw_degrees)
+    if standYaw and standYaw ~= 0 then
+        cf = cf * CFrame.Angles(0, math.rad(standYaw), 0)
     end
     local egg = eggTemplate:Clone()
     egg.Name = "PlacedEgg"

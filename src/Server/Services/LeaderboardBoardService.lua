@@ -260,14 +260,8 @@ function LeaderboardBoardService:_bindGuide(host)
         42
     )
     local body = table.concat(guide.lines or {}, "\n\n")
-    local lines = label(
-        root,
-        "Body",
-        UDim2.fromOffset(36, 110),
-        UDim2.new(1, -72, 1, -160),
-        body,
-        26
-    )
+    local lines =
+        label(root, "Body", UDim2.fromOffset(36, 110), UDim2.new(1, -72, 1, -160), body, 26)
     lines.Font = Enum.Font.Gotham
     lines.TextWrapped = true
     lines.TextYAlignment = Enum.TextYAlignment.Top

@@ -357,6 +357,8 @@ function HotbarBar.start()
     local available = { powers = {}, tacticals = {}, potions = {}, tokens = {} }
     local editMode = false
     local openPicker
+    local closePicker
+    local paintEdit
     local editHint -- the "pick a slot" arrow over slot 1; dismissed once a slot is clicked (openPicker)
 
     -- ===== Potions: live brew-meter state for any slot bound to a potion =====
@@ -524,11 +526,23 @@ function HotbarBar.start()
     end
 
     local lastChallengePowers = localPlayer:GetAttribute("ChallengePowers")
+    local function challengeOverlayActive()
+        return localPlayer:GetAttribute("ChallengePowers") ~= nil
+    end
     localPlayer:GetAttributeChangedSignal("ChallengePowers"):Connect(function()
         local now = localPlayer:GetAttribute("ChallengePowers")
         if now ~= lastChallengePowers then
             lastChallengePowers = now
             clearAutoLocks()
+            if now ~= nil and editMode then
+                editMode = false
+                if closePicker then
+                    closePicker()
+                end
+                if paintEdit then
+                    paintEdit()
+                end
+            end
         end
     end)
 
@@ -1300,7 +1314,7 @@ function HotbarBar.start()
     end
 
     local pickerFrame
-    local function closePicker()
+    closePicker = function()
         hoverToken += 1
         hideTip()
         if pickerFrame then
@@ -1459,6 +1473,10 @@ function HotbarBar.start()
             selectionStroke.Transparency = bindMatches(currentBind, bind) and 0 or 0.75
             selectionStroke.Parent = e
             e.Activated:Connect(function()
+                if challengeOverlayActive() then
+                    closePicker()
+                    return
+                end
                 Signals.Hotbar_Rebind:FireServer({ slot = slot, bind = bind })
                 closePicker()
             end)
@@ -1680,7 +1698,7 @@ function HotbarBar.start()
         end
     end
 
-    local function paintEdit()
+    paintEdit = function()
         editBtn.Text = editMode and "Done" or "Edit"
         editBtn:SetAttribute("HotbarEditing", editMode)
         editBtn.BackgroundColor3 = editMode and Color3.fromRGB(235, 170, 60)
@@ -1688,6 +1706,12 @@ function HotbarBar.start()
         setEditAttention(editMode)
     end
     editBtn.Activated:Connect(function()
+        if challengeOverlayActive() then
+            editMode = false
+            closePicker()
+            paintEdit()
+            return
+        end
         editMode = not editMode
         if not editMode then
             closePicker()

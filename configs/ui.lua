@@ -904,8 +904,8 @@ local uiConfig = {
         },
 
         -- Hall of Worlds has one deliberately simple route currency. CurrencyStack exposes this
-        -- beside Gems only while CurrentArea is Hall_*; the four origin currencies remain hidden
-        -- until the player enters Crystal World.
+        -- beside Gems on Hall_1–Hall_4 and Hall gauntlets (Range / Training Ground). The four
+        -- origin currencies remain hidden until the player enters Crystal World.
         hall_coins_pane = {
             position = "center-left",
             offset = { x = 15, y = -74 },

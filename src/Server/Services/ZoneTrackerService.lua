@@ -203,6 +203,12 @@ function ZoneTrackerService:_resolveFor(player)
     end
 
     local current = player:GetAttribute(CURRENT_AREA_ATTR)
+    -- mission_* is a trial overlay, not a standable bound. After exit, do not
+    -- sticky-keep or default back to it — that hid Hall Waycoins on the
+    -- Challenge Field and showed Crystal World crystals instead.
+    if type(current) == "string" and current:sub(1, 8) == "mission_" then
+        current = nil
+    end
 
     -- Primary: which baseplate are we physically standing on.
     local resolved = self:_resolveByRaycast(player)
@@ -266,8 +272,16 @@ function ZoneTrackerService:Start()
     end
     for _, player in ipairs(Players:GetPlayers()) do
         onCharacter(player)
+        player:GetAttributeChangedSignal("InMission"):Connect(function()
+            self:_resolveFor(player)
+        end)
     end
-    Players.PlayerAdded:Connect(onCharacter)
+    Players.PlayerAdded:Connect(function(player)
+        onCharacter(player)
+        player:GetAttributeChangedSignal("InMission"):Connect(function()
+            self:_resolveFor(player)
+        end)
+    end)
 
     -- Throttled poll loop.
     local accumulator = 0

@@ -49,12 +49,15 @@ return {
                 required_zone = "Hall_1",
                 required_level = 2,
                 tutorial_required = true,
+                currency = "hall_coins",
+                cost = 3000,
             },
             boosts = {},
             synthetic = {
-                -- Gilded Gallery, from the Level 2 wall through the east turn.
-                center = { x = 1950, y = 24, z = 321 },
-                size = { x = 350, y = 48, z = 398 },
+                -- Starts just past the Level 2 wall (z 122) so the locked
+                -- volume does not cover the Hall_1 face of that wall.
+                center = { x = 1950, y = 24, z = 323 },
+                size = { x = 350, y = 48, z = 394 },
                 floor_y = 0,
                 spawn_position = { x = 2000, y = 5, z = 208 },
                 egg_stands = {},
@@ -73,12 +76,14 @@ return {
                 unlocked_by_default = false,
                 required_zone = "Hall_2",
                 currency = "hall_coins",
-                cost = 750,
+                cost = 6000,
             },
             boosts = {},
             synthetic = {
-                center = { x = 2346, y = 24, z = 428 },
-                size = { x = 442, y = 48, z = 244 },
+                -- Extends to the Plaza wall (z 558) so the sidewalk before
+                -- that wall stays Hall_3. Starts just past the Hall_2 wall.
+                center = { x = 2348, y = 24, z = 431 },
+                size = { x = 438, y = 48, z = 250 },
                 floor_y = 0,
                 spawn_position = { x = 2348, y = 5, z = 428 },
                 egg_stands = {},
@@ -97,12 +102,14 @@ return {
                 unlocked_by_default = false,
                 required_zone = "Hall_3",
                 currency = "hall_coins",
-                cost = 2500,
+                cost = 10000,
             },
             boosts = {},
             synthetic = {
-                center = { x = 2568, y = 24, z = 907 },
-                size = { x = 564, y = 48, z = 714 },
+                -- Starts past the Plaza wall (z 558) so standing on the
+                -- Hall_3 face does not count as entering locked Hall_4.
+                center = { x = 2568, y = 24, z = 914 },
+                size = { x = 564, y = 48, z = 700 },
                 floor_y = 0,
                 spawn_position = { x = 2568, y = 5, z = 982 },
                 egg_stands = {},

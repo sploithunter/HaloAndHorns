@@ -78,6 +78,9 @@ Still to build:
 - Richer compact near-egg hatch UI polish beyond the current cost/action/status pass, plus direct Studio screenshot QA across desktop/mobile layouts when screenshot capture is available.
 - Move auto-delete/filter editing out of the always-visible egg-adjacent flow. Candidate player-facing paths are Settings menu controls, interactions on the pet preview billboard, or inventory card actions after the player has discovered a pet.
 - Further hatch setting UI polish beyond the current Settings-menu action mode, Show/Silent toggles, config-derived mode cost/luck education, protected auto-delete tier list, saved-filter summary, Max/Auto entitlement state, and dynamic hover/focus help text.
+- Hatch shake must not set `ViewportFrame.Rotation` (Roblox blanks the 3D view). Camera roll
+  inside the viewport is the shake. Hall authored clones must use `PlacedEgg`, not the
+  dual-tagged pedestal.
 - Richer authored egg animation visual polish beyond the current ViewportFrame clone/scale/reveal-badge/glow/backdrop/result-stack pass.
 - Direct Studio screenshot QA across desktop/mobile layouts for the expanded hatch drawer when screenshot capture is reliable; current automated geometry/debug-state coverage exists, and a local screenshot attempt timed out.
 
@@ -129,7 +132,9 @@ Necessary:
 - Config-driven hatch limits with max count, partial-hatch policy, required unlocks, and hotkey/button labels.
 - Batch currency/storage validation before rolling.
 - Batch result payload for animation, stats, auto-delete, and errors.
-- Egg animation uses the authored egg model/anchor, not a generic icon.
+- Egg animation uses the authored egg model/anchor, not a generic icon. The
+  hatch ViewportFrame camera sits on the egg LookVector so the shake shows
+  the front, not a +Z side view of a Hall stand.
 - Tests for too-far, insufficient funds, insufficient storage, rapid repeat, single hatch, and multi-hatch.
 
 High priority:

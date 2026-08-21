@@ -693,7 +693,10 @@ function InventoryPanel:Show(parent)
     if self:_isRangeCatalog() then
         self.selectedCategory = "Pets"
     end
-    self:_updateItemsDisplay() -- Update items display with real data
+    -- Same as ↺ Reset. Hide used to keep _draftRefs after destroying the
+    -- frame, so a reopened strip could read 4/4 while a stale ref failed
+    -- to paint (empty white slot). Always reseed from the live squad.
+    self:_resetDraftToDeployed()
     self:_refreshCategoryTabs() -- Update category tabs with real counts (after data is loaded)
 
     -- Owned-inventory listeners must not overwrite a Range catalog session.
@@ -1180,6 +1183,8 @@ function InventoryPanel:Hide()
     self._deleteSelectionCount = 0
 
     self.itemFrames = {}
+    self._draftRefs = nil
+    self._draftDirty = false
     self.isVisible = false
     if self._rangeSession then
         self:_persistRangePets()
@@ -1973,8 +1978,7 @@ function InventoryPanel:_createTeamBar(searchContainer)
     styleTeamButton(reset, Color3.fromRGB(56, 56, 68))
     reset.Parent = bar
     reset.Activated:Connect(function()
-        self:_seedDraftFromEquipped()
-        self:_updateItemsDisplay()
+        self:_resetDraftToDeployed()
     end)
 
     local activate = Instance.new("TextButton")
@@ -1992,6 +1996,12 @@ function InventoryPanel:_createTeamBar(searchContainer)
             self:_commitDraft()
         end
     end)
+end
+
+-- ↺ Reset: replace the working draft with the live deployed squad and repaint.
+function InventoryPanel:_resetDraftToDeployed()
+    self:_seedDraftFromEquipped()
+    self:_updateItemsDisplay()
 end
 
 -- Seed the working draft from the currently-deployed squad (player.Equipped.pets, in slot order).

@@ -2330,7 +2330,11 @@ function EggInteractionService:GetEggImageId(eggType)
                 end
             end
         end
-        return "rbxasset://textures/face.png" -- Fallback
+        local source = petConfig and petConfig.egg_sources and petConfig.egg_sources[eggType]
+        if source and type(source.image_id) == "string" and source.image_id ~= "" then
+            return source.image_id
+        end
+        return "rbxasset://textures/face.png"
     end)
 
     return success and imageId or "rbxasset://textures/face.png"

@@ -50,6 +50,7 @@ local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
 local ActiveSquad = require(ReplicatedStorage.Shared.Game.ActiveSquad)
 local CombatMath = require(ReplicatedStorage.Shared.Game.CombatMath)
+local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local TargetPriority = require(ReplicatedStorage.Shared.Game.TargetPriority)
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura)
@@ -166,6 +167,10 @@ function EnemyService:Init()
     self._enemiesConfig = self._configLoader:LoadConfig("enemies")
     self._petFollowConfig = self._configLoader:LoadConfig("pet_follow")
     self._combatConfig = self._configLoader:LoadConfig("combat")
+    local okCh, chCfg = pcall(function()
+        return self._configLoader:LoadConfig("challenge_runs")
+    end)
+    self._challengeConfig = okCh and type(chCfg) == "table" and chCfg or {}
     self._squadConfig = self._configLoader:LoadConfig("squad")
     self._petRoles = self._configLoader:LoadConfig("pet_roles")
     self._petsConfig = self._configLoader:LoadConfig("pets")
@@ -349,7 +354,21 @@ function EnemyService:_engagesCombat(player)
     if not minLvl or minLvl <= 1 then
         return true
     end
-    return (player:GetAttribute("Level") or 1) >= minLvl
+    -- EffectiveLevel includes the Range ChallengeLevel pin. Earned Level
+    -- stays 1–4 on the overworld onramp; using it here made catalog rooms idle.
+    -- Training Ground has no pin and skip_engage_gate so a reachable door fights.
+    local modeCfg
+    local mode = player:GetAttribute("GauntletMode")
+    local modes = self._challengeConfig and self._challengeConfig.modes
+    if type(mode) == "string" and type(modes) == "table" then
+        modeCfg = modes[mode]
+    end
+    return ChallengeRun.passesEngageGate(
+        player:GetAttribute("EffectiveLevel"),
+        player:GetAttribute("Level"),
+        minLvl,
+        modeCfg
+    )
 end
 
 -- Resolve a pet folder to the REAL player whose combat state, territory, team, and rewards it

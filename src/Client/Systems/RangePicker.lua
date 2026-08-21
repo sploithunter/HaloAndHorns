@@ -5,6 +5,8 @@
     two Range screens; Enter from either sends ChallengeRun_Start.
 ]]
 
+local Players = game:GetService("Players")
+
 local RangeLoadoutSession = require(script.Parent.RangeLoadoutSession)
 
 local RangePicker = {}
@@ -37,6 +39,40 @@ local function openInventory(ctx)
     return opened
 end
 
+local function hookInventory(ctx)
+    local menu = _G.MenuManager
+    if not (menu and menu.OnPanelRegistered) then
+        return false
+    end
+    menu:OnPanelRegistered("Inventory", function()
+        if not openInventory(ctx) then
+            RangeLoadoutSession.clear()
+        end
+    end)
+    return true
+end
+
+local function openWhenReady(ctx)
+    if openInventory(ctx) then
+        return
+    end
+    if hookInventory(ctx) then
+        return
+    end
+    -- MenuManager is assigned in the same beat as ClientUIReady. Inventory
+    -- registers later; OnPanelRegistered is the open event, not a poll.
+    local player = Players.LocalPlayer
+    local conn
+    local function tryHook()
+        if hookInventory(ctx) and conn then
+            conn:Disconnect()
+            conn = nil
+        end
+    end
+    conn = player:GetAttributeChangedSignal("ClientUIReady"):Connect(tryHook)
+    tryHook()
+end
+
 function RangePicker.start()
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Signals = require(ReplicatedStorage.Shared.Network.Signals)
@@ -45,19 +81,7 @@ function RangePicker.start()
             if name ~= "range_picker" or type(ctx) ~= "table" then
                 return
             end
-            if openInventory(ctx) then
-                return
-            end
-            -- MenuManager boots after this system; retry once the overlay exists.
-            task.defer(function()
-                for _ = 1, 20 do
-                    if openInventory(ctx) then
-                        return
-                    end
-                    task.wait(0.1)
-                end
-                RangeLoadoutSession.clear()
-            end)
+            openWhenReady(ctx)
         end)
     end
     return RangePicker

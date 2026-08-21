@@ -574,6 +574,10 @@ function ChallengeRun.canonicalOrigin(origin, origins)
     return nil
 end
 
+function ChallengeRun.usesHallCurrencyHud(modeCfg)
+    return type(modeCfg) == "table" and modeCfg.hall_currency_hud == true
+end
+
 function ChallengeRun.soloOnly(modeCfg)
     return type(modeCfg) == "table" and modeCfg.solo_only == true
 end
@@ -589,6 +593,50 @@ function ChallengeRun.effectiveLevel(modeCfg)
         return nil
     end
     return n
+end
+
+-- Combat pin (50) is the fight. XP yield can stay on earned Level so
+-- Range is not a leveling machine. Unknown / omitted xp_from keeps the
+-- enemy's combat level (Training Ground, overworld).
+function ChallengeRun.xpYieldLevel(modeCfg, earnedLevel, enemyLevel)
+    local enemy = math.max(1, math.floor(tonumber(enemyLevel) or 1))
+    if type(modeCfg) == "table" and modeCfg.xp_from == "earned_level" then
+        return math.max(1, math.floor(tonumber(earnedLevel) or 1))
+    end
+    return enemy
+end
+
+function ChallengeRun.xpYieldMult(modeCfg)
+    if type(modeCfg) ~= "table" then
+        return 1
+    end
+    local n = tonumber(modeCfg.xp_mult)
+    if n == nil or n < 0 then
+        return 1
+    end
+    return n
+end
+
+-- Training Ground skips the overworld onramp: you came to fight with your
+-- real pets, at whatever earned level can reach the door.
+function ChallengeRun.skipsEngageGate(modeCfg)
+    return type(modeCfg) == "table" and modeCfg.skip_engage_gate == true
+end
+
+-- Combat onramp (configs/combat.lua engagement.min_engage_level) must
+-- read the Range pin, not earned Level. A level-3 player in The Range
+-- fights at 50; treating earned Level as the gate leaves the room peaceful.
+-- Training Ground sets skip_engage_gate and always passes.
+function ChallengeRun.passesEngageGate(effectiveLevel, earnedLevel, minEngageLevel, modeCfg)
+    if ChallengeRun.skipsEngageGate(modeCfg) then
+        return true
+    end
+    local minLvl = tonumber(minEngageLevel)
+    if not minLvl or minLvl <= 1 then
+        return true
+    end
+    local combat = tonumber(effectiveLevel) or tonumber(earnedLevel) or 1
+    return combat >= minLvl
 end
 
 function ChallengeRun.powersForOrigin(defaults, origin, catalog)

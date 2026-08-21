@@ -1,4 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local EggHatchVisual = require(ReplicatedStorage.Shared.Game.EggHatchVisual)
 
 local EggWorldQuery = {}
 
@@ -237,6 +240,10 @@ end
 function EggWorldQuery.FindEggByType(eggType)
     local typed = EggWorldQuery.GetEggsByType(eggType)
     return typed[1] and typed[1].instance or nil
+end
+
+function EggWorldQuery.FindEggVisual(eggType)
+    return EggHatchVisual.select(EggWorldQuery.GetEggsByType(eggType))
 end
 
 function EggWorldQuery.FindClosestEgg(playerPosition, eggTypes, maxDistance)

@@ -97,6 +97,10 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
   the inventory grid before Activate commits the draft. Draft accounting matches the complete
   `id:variant:enchant` key (after removing only the equipped-slot suffix); stacks that differ by
   enchant are separate ownership rows and selecting one must never decrement the others.
+- **Opening inventory reseeds the draft from the live deployed squad** (same as ↺ Reset).
+  Hide destroys the frame but used to keep `_draftRefs`, so a later open could show
+  `Squad (deployed) — 4/4` with a phantom empty white slot. Hide now clears the draft;
+  Show always calls `_resetDraftToDeployed` before first paint.
 - **Squad-draft commits are acknowledged and atomic.** The client keeps the draft dirty and shows
   `Deploying…` until `SetEquippedPetsResult` confirms the server replacement. Empty squads are valid;
   duplicate uniques, over-owned stacks, unknown refs, and over-cap drafts reject the whole request.

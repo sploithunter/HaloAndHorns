@@ -22,6 +22,14 @@ return {
     currency = "hall_coins",
     crystal_world_effectiveness = 0.8,
 
+    -- Closed Hall walls. Ice + pale tint reads as frosted glass, not amber.
+    gate_appearance = {
+        material = "Ice",
+        color = { 226, 236, 242 },
+        transparency = 0.28,
+        reflectance = 0.04,
+    },
+
     -- Ambient jamb-to-jamb bolts on Hall gate arches. Authored lightning*
     -- markers are already grouped under each host; the client can also sample
     -- a host's bounds if a streamed copy arrives without markers.
@@ -47,6 +55,7 @@ return {
         bolts_per_pulse = 2,
         prefer_cross = true,
         min_cross_span = 8,
+        -- Same look as pet_follow.ranged_bolt; mute combat thunder / impact.
         bolt = {
             enabled = true,
             duration = 0.3,
@@ -78,6 +87,61 @@ return {
             interval_max = 1.1,
             roll_off_min_distance = 24,
             roll_off_max_distance = 90,
+        },
+    },
+
+    -- Cost pill is a SurfaceGui on the wall face, not a floating billboard.
+    gate_prompt = {
+        pill_key = "citrine",
+        width = 320,
+        height = 88,
+        pixels_per_stud = 40,
+        surface = true,
+    },
+
+    -- Wire and ZoneService both seat these. The Plaza wall is 8 studs deeper
+    -- so it sits in the pillar line (z 555.6) instead of leaving a side gap.
+    -- Long axis reaches the tile InvisibleWalls so you cannot walk around
+    -- the SeamTowers (same close as Hall4EndcapComingSoon).
+    progression_gates = {
+        {
+            name = "Level2Barrier",
+            source = "Hall_1",
+            target = "Hall_2",
+            size = { 220, 28, 5 },
+            position = { 2000, 14, 122 },
+        },
+        {
+            name = "WaycoinBarrier750",
+            source = "Hall_2",
+            target = "Hall_3",
+            size = { 5, 28, 240 },
+            position = { 2125, 14, 428 },
+        },
+        {
+            name = "WaycoinBarrier2500",
+            source = "Hall_3",
+            target = "Hall_4",
+            size = { 220, 28, 5 },
+            position = { 2568, 14, 558 },
+        },
+    },
+
+    -- Closes Tile09 until the endcap is authored. Sits in the SeamTower
+    -- line so the moved egg / Crystal World gate stay in front. Width
+    -- reaches the Tile09 InvisibleWalls at x 2466 and 2670 so you cannot
+    -- walk around the Crystal World arch.
+    coming_soon = {
+        text = "Coming Soon",
+        width = 420,
+        height = 110,
+        pixels_per_stud = 40,
+        walls = {
+            {
+                name = "Hall4EndcapComingSoon",
+                size = { 220, 28, 5 },
+                position = { 2568, 14, 696 },
+            },
         },
     },
 
@@ -121,10 +185,11 @@ return {
         float_period = 3.4,
     },
 
-    -- Authored gameplay footprints. These records adopt the SpawnZone parts baked into each tile;
-    -- they never recreate their geometry from duplicate coordinates. A marker can share an area_id
-    -- with another marker (the two corridor turns do), so spawning and the moving dotted marquee
-    -- cover the exact union of green fields without accepting the surrounding sidewalks.
+    -- Authored gameplay footprints. Cap / playfield / corner tiles already have
+    -- baked SpawnZone parts. Corridor tiles have green Field pads only — bind
+    -- mints a SpawnZone from that AABB. Same area_id unions a tile with its
+    -- neighbors (Hall_1 cap+Tile02, Hall_3 playfield+Tile05+corner, Hall_4
+    -- Tile08+cap) so every green field is a play area.
     play_areas = {
         Hall_1 = {
             area_id = "Hall_1",
@@ -140,6 +205,13 @@ return {
                 speed = 14,
             },
         },
+        Hall_1_B = {
+            area_id = "Hall_1",
+            tile_name = "Tile02_corridor",
+            marker_name = "SpawnZone",
+            spawner_id = "spawn_crystals",
+            slot_layout = "random",
+        },
         Hall_2_A = {
             area_id = "Hall_2",
             tile_name = "Tile03_playfield",
@@ -154,6 +226,13 @@ return {
             spawner_id = "spawn_crystals",
             slot_layout = "random",
         },
+        Hall_3_C = {
+            area_id = "Hall_3",
+            tile_name = "Tile05_corridor",
+            marker_name = "SpawnZone",
+            spawner_id = "spawn_crystals",
+            slot_layout = "random",
+        },
         Hall_3_A = {
             area_id = "Hall_3",
             tile_name = "Tile06_playfield",
@@ -164,6 +243,13 @@ return {
         Hall_3_B = {
             area_id = "Hall_3",
             tile_name = "Tile07_corner",
+            marker_name = "SpawnZone",
+            spawner_id = "spawn_crystals",
+            slot_layout = "random",
+        },
+        Hall_4_B = {
+            area_id = "Hall_4",
+            tile_name = "Tile08_corridor",
             marker_name = "SpawnZone",
             spawner_id = "spawn_crystals",
             slot_layout = "random",
@@ -210,6 +296,8 @@ return {
                 kind = "level",
                 required_level = 2,
                 tutorial_required = true,
+                currency = "hall_coins",
+                cost = 3000,
             },
         },
         {
@@ -220,14 +308,14 @@ return {
             -- live hatcher. EggStandPlacement resolves this config at runtime, so an older baked
             -- marker cannot silently leave the finished egg noninteractive.
             egg = { egg_id = "vanguard_egg", pet_choice_count = 5, cost = 1000 },
-            unlock = { kind = "currency", currency = "hall_coins", cost = 750 },
+            unlock = { kind = "currency", currency = "hall_coins", cost = 6000 },
         },
         {
             id = "coin_gate_2",
             area_id = "Hall_4",
             display_name = "Worlds Plaza",
             egg = { egg_id = "worldheart_egg", pet_choice_count = 5, cost = 2500 },
-            unlock = { kind = "currency", currency = "hall_coins", cost = 2500 },
+            unlock = { kind = "currency", currency = "hall_coins", cost = 10000 },
         },
     },
 

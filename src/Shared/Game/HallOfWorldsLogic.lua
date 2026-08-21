@@ -98,6 +98,36 @@ function HallOfWorldsLogic.initialArea(
     return tostring(hallAreaId or "Hall_1")
 end
 
+-- Locked-area eject: the previous unlocked Hall tile, never a stale LastArea
+-- (that is often still Hall_1 after walking the route).
+function HallOfWorldsLogic.lockedEntryReturn(unlockedAreas, routeAreaIds, enteredAreaId, hallStart)
+    local unlocked = unlockedSet(unlockedAreas)
+    local entered = tostring(enteredAreaId or "")
+    local route = type(routeAreaIds) == "table" and routeAreaIds or {}
+    local enteredIndex
+    for index, areaId in ipairs(route) do
+        if tostring(areaId) == entered then
+            enteredIndex = index
+            break
+        end
+    end
+    if enteredIndex then
+        for index = enteredIndex - 1, 1, -1 do
+            local areaId = tostring(route[index])
+            if unlocked[areaId] then
+                return areaId
+            end
+        end
+    end
+    for index = #route, 1, -1 do
+        local areaId = tostring(route[index])
+        if unlocked[areaId] then
+            return areaId
+        end
+    end
+    return tostring(hallStart or "Hall_1")
+end
+
 -- Session-only Crystal World visit for an unfinished-Hall teammate. Never stamps
 -- entered_crystal_world and never persists LastArea as Spawn.
 function HallOfWorldsLogic.sessionRespawnArea(
@@ -126,6 +156,46 @@ function HallOfWorldsLogic.sessionRespawnArea(
         tutorial,
         gameData
     )
+end
+
+function HallOfWorldsLogic.formatUnlockAmount(amount)
+    local text = tostring(math.floor(tonumber(amount) or 0))
+    local replaced
+    repeat
+        text, replaced = text:gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+    until replaced == 0
+    return text
+end
+
+function HallOfWorldsLogic.gateButtonText(unlock)
+    unlock = type(unlock) == "table" and unlock or {}
+    local cost = tonumber(unlock.cost) or 0
+    if cost <= 0 then
+        return "Open"
+    end
+    local name = unlock.currency == "hall_coins" and "Waycoins"
+        or tostring(unlock.currency or "coins")
+    return string.format("%s %s", HallOfWorldsLogic.formatUnlockAmount(cost), name)
+end
+
+function HallOfWorldsLogic.formatUnlockAmount(amount)
+    local text = tostring(math.floor(tonumber(amount) or 0))
+    local replaced
+    repeat
+        text, replaced = text:gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+    until replaced == 0
+    return text
+end
+
+function HallOfWorldsLogic.gateButtonText(unlock)
+    unlock = type(unlock) == "table" and unlock or {}
+    local cost = tonumber(unlock.cost) or 0
+    if cost <= 0 then
+        return "Open"
+    end
+    local name = unlock.currency == "hall_coins" and "Waycoins"
+        or tostring(unlock.currency or "coins")
+    return string.format("%s %s", HallOfWorldsLogic.formatUnlockAmount(cost), name)
 end
 
 function HallOfWorldsLogic.meetsUnlock(claimedLevel, tutorialCompleted, unlock, tutorial)
@@ -207,6 +277,26 @@ function HallOfWorldsLogic.nextStage(state, stageCount)
         return nil
     end
     return nextIndex
+end
+
+function HallOfWorldsLogic.isHallAreaId(areaId)
+    if type(areaId) ~= "string" or areaId == "" then
+        return false
+    end
+    return string.lower(areaId):sub(1, 5) == "hall_"
+end
+
+-- Hall route tiles and Hall-hosted gauntlets (Range / Training Ground).
+-- Those runs publish mission_* for farming/music; the currency HUD stays
+-- Gems + Waycoins so origin crystals never replace Waycoins in the Hall.
+function HallOfWorldsLogic.usesHallCurrencyHud(areaId, gauntletMode, challengeModes)
+    if type(gauntletMode) == "string" then
+        local modeCfg = type(challengeModes) == "table" and challengeModes[gauntletMode]
+        if type(modeCfg) == "table" and modeCfg.hall_currency_hud == true then
+            return true
+        end
+    end
+    return HallOfWorldsLogic.isHallAreaId(areaId)
 end
 
 function HallOfWorldsLogic.canStartStage(state, stageIndex, claimedLevel, targetLevel)
