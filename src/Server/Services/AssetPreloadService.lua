@@ -131,8 +131,6 @@ function AssetPreloadService:Start()
         logger:Info("🔄 AssetPreloadService: LoadAllModelsIntoAssets task started")
         AssetReport.reset()
         self:LoadAllModelsIntoAssets()
-        -- Load breakable models (e.g., crystals)
-        self:LoadAllBreakableModelsIntoAssets()
         self:LoadAllSoundsIntoAssets()
         -- ONE consolidated boot report: every asset id that failed to load, what it is, and where
         -- it was being placed. Read this single block instead of scraping scattered warnings.
@@ -145,6 +143,58 @@ function AssetPreloadService:Start()
     self:SetupAdminRegenerationSignal()
 
     logger:Info("✅ AssetPreloadService:Start() completed")
+end
+
+-- Rojo maps Models.rbxm onto Assets.Models, but Assets also uses
+-- $ignoreUnknownInstances. A Studio-saved Models folder then survives next to
+-- the mapped one. FindFirstChild picks one at random; the other still
+-- replicates to every client (~7k extra descendants) and the preload fast-path
+-- can miss templates that only exist in the sibling.
+local function mergeFolderContents(keep, extra)
+    for _, child in ipairs(extra:GetChildren()) do
+        local existing = keep:FindFirstChild(child.Name)
+        if not existing then
+            child.Parent = keep
+        elseif existing:IsA("Folder") and child:IsA("Folder") then
+            mergeFolderContents(existing, child)
+        end
+    end
+end
+
+local function resolveUniqueNamedFolder(parent, name)
+    local folders = {}
+    for _, child in ipairs(parent:GetChildren()) do
+        if child.Name == name and child:IsA("Folder") then
+            table.insert(folders, child)
+        end
+    end
+
+    if #folders == 0 then
+        local folder = Instance.new("Folder")
+        folder.Name = name
+        folder.Parent = parent
+        return folder
+    end
+
+    if #folders == 1 then
+        return folders[1]
+    end
+
+    table.sort(folders, function(a, b)
+        return #a:GetDescendants() > #b:GetDescendants()
+    end)
+    local keep = folders[1]
+    for index = 2, #folders do
+        mergeFolderContents(keep, folders[index])
+        folders[index]:Destroy()
+    end
+    logger:Warn("Merged duplicate asset folders", {
+        parent = parent:GetFullName(),
+        name = name,
+        extras = #folders - 1,
+        keptDescendants = #keep:GetDescendants(),
+    })
+    return keep
 end
 
 -- Create folder structure in ReplicatedStorage.Assets
@@ -165,19 +215,12 @@ function AssetPreloadService:CreateAssetFolders()
         logger:Info("✅ CreateAssetFolders: Assets folder created")
     end
 
-    local models = assets:FindFirstChild("Models")
+    local models = resolveUniqueNamedFolder(assets, "Models")
     logger:Info("📁 CreateAssetFolders: Models folder", {
-        exists = models ~= nil,
-        path = models and models:GetFullName() or "nil",
+        exists = true,
+        path = models:GetFullName(),
+        descendants = #models:GetDescendants(),
     })
-
-    if not models then
-        logger:Info("📁 CreateAssetFolders: Creating Models folder...")
-        models = Instance.new("Folder")
-        models.Name = "Models"
-        models.Parent = assets
-        logger:Info("✅ CreateAssetFolders: Models folder created")
-    end
 
     local pets = models:FindFirstChild("Pets")
     logger:Info("📁 CreateAssetFolders: Pets folder", {
@@ -367,6 +410,59 @@ local function prebakedMeshMatchesConfig(model, variantData)
     return not expectedTexture or numericAssetId(meshPart.TextureID) == expectedTexture
 end
 
+-- Packaged Meshy breakables can arrive with geometry but without their separately uploaded
+-- base-color image. Rebind that image on fetched AND pre-baked models. A breakable may also opt
+-- into a one-time axis correction; its signature survives an RBXM save so fast-load adoption
+-- cannot rotate it repeatedly.
+local function normalizeBreakablePresentation(model, crystalData)
+    if not model or not model:IsA("Model") or type(crystalData) ~= "table" then
+        return
+    end
+
+    local textureId = crystalData.texture_asset
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("MeshPart") then
+            if type(textureId) == "string" and textureId ~= "" then
+                descendant.TextureID = textureId
+                -- Imported Meshy parts can carry a gray vertex/material tint. TextureID is
+                -- multiplied by BasePart.Color, so normalize explicit base-color textures to
+                -- white or the gold atlas renders as dull gray.
+                descendant.Color = Color3.new(1, 1, 1)
+                local surface = descendant:FindFirstChildWhichIsA("SurfaceAppearance")
+                if surface then
+                    pcall(function()
+                        surface.ColorMap = textureId
+                    end)
+                end
+            end
+
+            -- Some GLB imports preserve a rotated authoring pivot even after their visible mesh
+            -- has been corrected upright. Model:GetBoundingBox() honors that PivotOffset, so a
+            -- shallow coin pile can falsely report itself as 2.4 studs tall and be placed above
+            -- the floor. Opt-in normalization makes placement use the rendered part bounds.
+            if crystalData.normalize_part_pivots == true then
+                descendant.PivotOffset = CFrame.new()
+            end
+        end
+    end
+
+    local orientation = crystalData.default_orientation
+    if crystalData.normalize_prebaked_orientation ~= true or type(orientation) ~= "table" then
+        return
+    end
+
+    local x = tonumber(orientation.x) or 0
+    local y = tonumber(orientation.y) or 0
+    local z = tonumber(orientation.z) or 0
+    local signature = string.format("%.3f,%.3f,%.3f", x, y, z)
+    if model:GetAttribute("BreakableOrientationSignature") == signature then
+        return
+    end
+
+    model:PivotTo(model:GetPivot() * CFrame.Angles(math.rad(x), math.rad(y), math.rad(z)))
+    model:SetAttribute("BreakableOrientationSignature", signature)
+end
+
 function AssetPreloadService:ResolvePetAssetTransform(petData, variantData)
     return mergeAssetTransforms(
         petData and petData.asset_transform,
@@ -485,6 +581,7 @@ function AssetPreloadService:LoadAllBreakableModelsIntoAssets()
             -- until that finishes the on-entry fill has no templates, so crystals only appear on the 30s
             -- safety-net sweep — the "30s window" walk-in delay that came back after the model pre-bake.
             -- (Pets + eggs got this fix; breakables were missed.)
+            normalizeBreakablePresentation(existing, crystalData)
             successCount += 1
         elseif type(crystalData) == "table" and crystalData.procedural_asset then
             if existing then
@@ -495,6 +592,7 @@ function AssetPreloadService:LoadAllBreakableModelsIntoAssets()
             if model then
                 model.Name = crystalName
                 model.Parent = crystalsFolder
+                normalizeBreakablePresentation(model, crystalData)
                 successCount += 1
             else
                 logger:Warn("LoadAllBreakableModelsIntoAssets: Unknown procedural breakable", {
@@ -515,7 +613,8 @@ function AssetPreloadService:LoadAllBreakableModelsIntoAssets()
 
             local transformCF
             if
-                crystalData.default_orientation
+                crystalData.normalize_prebaked_orientation ~= true
+                and crystalData.default_orientation
                 and type(crystalData.default_orientation) == "table"
             then
                 local ori = crystalData.default_orientation
@@ -530,6 +629,10 @@ function AssetPreloadService:LoadAllBreakableModelsIntoAssets()
                 { transformCF = transformCF }
             )
             if ok then
+                normalizeBreakablePresentation(
+                    crystalsFolder:FindFirstChild(crystalName),
+                    crystalData
+                )
                 successCount += 1
             else
                 failureCount += 1
@@ -1034,6 +1137,11 @@ function AssetPreloadService:LoadAllModelsIntoAssets()
             imageFailureCount = imageFailureCount + 1
         end
     end
+
+    -- Breakables are part of the SAME template-readiness contract as pets and eggs. This must run
+    -- before models_ready is signalled: signalling first let BreakableSpawner attempt the Hall fill
+    -- without Waycoin templates, then wait for its 30-second safety reconciler before trying again.
+    self:LoadAllBreakableModelsIntoAssets()
 
     -- All model TEMPLATES (pets/eggs/breakables) are built by this point — open the gameplay gate
     -- NOW, before the cosmetic thumbnail pass. Egg placement (and anything else waiting on

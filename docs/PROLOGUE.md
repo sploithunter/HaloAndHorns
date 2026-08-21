@@ -1,6 +1,6 @@
-# The Prologue — a playable cold open (design spec, DRAFT)
+# The Prologue — a playable cold open
 
-**Status:** proposed, not built. Jason 2026-07-24.
+**Status:** implemented and under live iteration. Originally specified 2026-07-24.
 
 ## The problem this solves
 
@@ -51,22 +51,31 @@ sequence is **hard-capped**.
 | 2.0 | **The payoff.** They tap → screen-clearing AoE. Mass evaporation, damage numbers everywhere, shake, the good sound. This is the moment the whole feature exists for. |
 | 3.5–5.5 | **Escalate.** A bigger wave floods in. Second button pulses — a *different* power. Teaches "there are many of these," not "there is a button." |
 | 6.5 | **The tease.** Boss silhouette drops through the breach — recommend the **Empyrean Dragon / Abysmal Wyrm** pairing from the ad art, so the thing they clicked the ad for appears in-game within 7 seconds. Beat of menace. No fight. |
-| 7.5 | **Cut.** Whiteout. Caption: **ONE MONTH FROM NOW.** |
-| 8.0 | **Land.** Warp to the real spawn, level 1, starter egg glowing, tutorial step `hatch_first_egg` active. Optional caption: **Today.** |
+| 7.5 | **Cut.** Whiteout. Caption: **YOUR FUTURE SELF.** |
+| 8.0 | **Land.** Warp to the real spawn, level 1, starter egg glowing, tutorial step `hatch_first_egg` active. Caption: **YOUR JOURNEY BEGINS.** |
 
 The closing frame is load-bearing. Without the explicit flash-forward framing, level 1 reads
 as a *demotion* and the prologue engineers its own letdown — the known failure mode of
-power-fantasy cold opens. The cut must say "that was your future," not "that was a demo."
-
-**"One month," not "one year"** (Jason): a month is a promise the game can actually keep —
-he estimates a determined player gets there in a week. A distant horizon reads as *grind* and
-pushes the payoff outside the window a new player is willing to imagine; a near one reads as
-*reachable* and converts the fantasy into an intention. Never quote a timeframe longer than
-the game's real pace — an over-promise here is a broken promise later.
+power-fantasy cold opens. **YOUR FUTURE SELF** aligns the cold open with the Future Call system
+without making a literal time-to-progression promise; **YOUR JOURNEY BEGINS** turns the return to
+Level 1 into the start of that arc rather than a reset.
 
 ---
 
 ## Architecture
+
+### Room isolation and the landing contract
+
+The generated `mezzanine_hall` is a real server-side room, but it must never overlap a playable
+realm. Realm layers repeat on the vertical axis, so the room lives in a distant horizontal lane
+configured by `prologue.room.origin`; placing it "far below" is unsafe because a later Hell layer
+can occupy that same height.
+
+At the cut, `PrologueService` asks `ZoneService:GetInitialArea(player)` for the player's authored
+destination and places them through `ZoneService:PlacePlayerAtZoneSpawn`. New Hall profiles land at
+`Hall_1`; grandfathered Crystal World profiles retain their configured initial area. The emergency
+fallback may use only the matching tagged `PlayerSpawn` for that area—never Roblox's first generic
+`SpawnLocation`, whose traversal order is not a routing contract.
 
 ### Real combat, rigged outcome (Jason's call — supersedes the scripted-diorama draft)
 
@@ -312,7 +321,7 @@ so it should have to earn them.
 | Risk | Mitigation |
 |---|---|
 | Perf on mid-range phone while world streams | asset-subset rule above; count over variety |
-| "Why am I level 50 / where did my pets go" | explicit ONE YEAR FROM NOW → Today framing |
+| "Why am I level 50 / where did my pets go" | explicit YOUR FUTURE SELF → YOUR JOURNEY BEGINS framing |
 | Level 1 feels weak after the power fantasy | fast handoff — egg is glowing and actionable on landing |
 | Replay annoyance on rejoin | one-time `data.Prologue` record, written on START |
 | Non-determinism ruining the set piece | scripted outcomes, not simulated combat |

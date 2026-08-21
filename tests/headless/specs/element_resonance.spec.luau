@@ -34,6 +34,14 @@ return function()
             expect(ElementResonance.biomeMultiplier("lava", "grass", nil)).to.equal(1)
         end)
 
+        it("gives Hall pets configured effectiveness throughout Crystal World", function()
+            expect(ElementResonance.biomeMultiplier("hall", "grass", biomeCfg)).to.equal(0.8)
+            expect(ElementResonance.biomeMultiplier("hall", "desert", biomeCfg)).to.equal(0.8)
+            expect(ElementResonance.biomeMultiplier("hall", "ice", biomeCfg)).to.equal(0.8)
+            expect(ElementResonance.biomeMultiplier("hall", "lava", biomeCfg)).to.equal(0.8)
+            expect(ElementResonance.biomeMultiplier("hall", "hall", biomeCfg)).to.equal(1)
+        end)
+
         it("uses a tier-scaled Home World floor without reducing the normal matchup", function()
             -- Grass normally beats Desert (+25), is neutral in Grass/Ice, and is weak in Lava.
             -- A Silver Exclusive Home World enchant is +15%, so it raises neutral/weak zones to

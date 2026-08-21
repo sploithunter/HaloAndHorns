@@ -16,6 +16,11 @@
       "per_attempt" — fresh map each run (attempt counter in the context
                       key); the resolved seed is stored on the instance so
                       any map a player saw can be regenerated for debugging
+      "shared_sequence" — Trials ladder: everyone's trial #N is the same map
+      "gauntlet_room" — Range / Training Ground: everyone's Room N is the
+                        same map (contextKey = room#N; no player/attempt/salt).
+                        Ranking stays fair. Do not use shared_sequence here —
+                        that advances MissionSeq.
 
     Solver knobs are LayoutSolver params (docs §4); `solver_defaults` apply
     to every mission, `solver_overrides` merge on top per mission.
@@ -1034,6 +1039,173 @@ return {
                 open_hold = 3,
             },
             solver_overrides = {},
+        },
+
+        -- Hall_2 Range: Room 1–99 is a curve index AND a fixed layout
+        -- sequence (seed_policy gauntlet_room). Cap is entry + 3 rooms.
+        -- Catalog loadout is applied by MissionInstanceService.
+        range = {
+            display = "The Range",
+            kit = "gray_box",
+            theme = "earth",
+            seed_policy = "gauntlet_room",
+            objective = { kind = "clear_then_beacon" },
+            gauntlet = { mode = "range", rooms = 99 },
+            packs = {
+                {
+                    weight = 10,
+                    intro = true,
+                    units = {
+                        { enemy = "lava_imp", count = 2 },
+                    },
+                },
+                {
+                    weight = 10,
+                    units = {
+                        { enemy = "lava_imp", count = 3 },
+                        { enemy = "murder_crow", count = 2 },
+                        { enemy = "ember_acolyte", count = 1 },
+                    },
+                },
+                {
+                    weight = 4,
+                    lieutenant = true,
+                    units = {
+                        { enemy = "ember_brute", count = 1 },
+                        { enemy = "lava_imp", count = 2 },
+                        { enemy = "murder_crow", count = 1 },
+                    },
+                },
+                {
+                    weight = 3,
+                    lieutenant = true,
+                    extra = 1,
+                    units = {
+                        { enemy = "ember_brute", count = 2 },
+                        { enemy = "lava_imp", count = 2 },
+                    },
+                },
+                {
+                    weight = 2,
+                    lieutenant = true,
+                    extra = 2,
+                    units = {
+                        { enemy = "ember_brute", count = 3 },
+                        { enemy = "lava_imp", count = 2 },
+                        { enemy = "murder_crow", count = 1 },
+                    },
+                },
+                {
+                    weight = 2,
+                    boss = true,
+                    units = {
+                        { enemy = "infernal_boss", count = 1 }, -- Magma Wyrm; curve.boss_at
+                        { enemy = "lava_imp", count = 2 },
+                    },
+                },
+            },
+            decor = {
+                -- Combat field, not a mining dungeon. Farmable crates use
+                -- MissionCrate's crystal placeholder when CrateWood isn't
+                -- replicated — that is the sideways-crystal look.
+                props_min = 0,
+                props_max = 0,
+                farmable_props = false,
+                crystal_nodes = false,
+                color_jitter = 0.08,
+                wall_decor_min = 1,
+                wall_decor_max = 2,
+                feature_chance = 0.3,
+            },
+            solver_overrides = {
+                -- Late-room default. Early beats override to one chamber.
+                -- Enemy Level / Trial Group Size sliders do not apply.
+                tile_budget = 4,
+                target_depth = { min = 2, max = 3 },
+                class_weights_by_band = {
+                    { upto = 1.0, corridor = 0, room = 1, junction = 0 },
+                },
+                max_half_extent = 400,
+            },
+        },
+
+        -- Same gauntlet_room sequence, own loadout, easier curve.
+        training_ground = {
+            display = "Training Ground",
+            kit = "gray_box",
+            theme = "earth",
+            seed_policy = "gauntlet_room",
+            objective = { kind = "clear_then_beacon" },
+            gauntlet = { mode = "training_ground", rooms = 99 },
+            packs = {
+                {
+                    weight = 10,
+                    intro = true,
+                    units = {
+                        { enemy = "lava_imp", count = 2 },
+                    },
+                },
+                {
+                    weight = 10,
+                    units = {
+                        { enemy = "lava_imp", count = 3 },
+                        { enemy = "murder_crow", count = 1 },
+                        { enemy = "ember_acolyte", count = 1 },
+                    },
+                },
+                {
+                    weight = 4,
+                    lieutenant = true,
+                    units = {
+                        { enemy = "ember_brute", count = 1 },
+                        { enemy = "lava_imp", count = 2 },
+                    },
+                },
+                {
+                    weight = 3,
+                    lieutenant = true,
+                    extra = 1,
+                    units = {
+                        { enemy = "ember_brute", count = 2 },
+                        { enemy = "lava_imp", count = 1 },
+                    },
+                },
+                {
+                    weight = 2,
+                    lieutenant = true,
+                    extra = 2,
+                    units = {
+                        { enemy = "ember_brute", count = 2 },
+                        { enemy = "lava_imp", count = 2 },
+                    },
+                },
+                {
+                    weight = 2,
+                    boss = true,
+                    units = {
+                        { enemy = "infernal_boss", count = 1 }, -- Magma Wyrm; curve.boss_at
+                        { enemy = "lava_imp", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 0,
+                props_max = 0,
+                farmable_props = false,
+                crystal_nodes = false,
+                color_jitter = 0.08,
+                wall_decor_min = 1,
+                wall_decor_max = 2,
+                feature_chance = 0.3,
+            },
+            solver_overrides = {
+                tile_budget = 4,
+                target_depth = { min = 2, max = 3 },
+                class_weights_by_band = {
+                    { upto = 1.0, corridor = 0, room = 1, junction = 0 },
+                },
+                max_half_extent = 400,
+            },
         },
     },
 }

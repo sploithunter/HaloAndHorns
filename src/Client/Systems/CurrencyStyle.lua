@@ -21,6 +21,9 @@ local CurrencyStyle = {}
 local started = false
 
 local GEM_IMAGE = "rbxassetid://136309678310342" -- generic diamond (tint fallback)
+-- This is an uploaded image/decal asset. rbxthumb resolves its underlying image reliably in an
+-- ImageLabel; using rbxassetid directly produced a blank overhanging icon in live UI.
+local WAYCOIN_IMAGE = "rbxthumb://type=Asset&id=124447234465235&w=150&h=150"
 
 -- REAL gem renders (Jason: "why aren't we using our actual assets?") — purpose-made flat
 -- UI gem singles (assets/ui/gems_*/gem_single.png, uploaded 2026-06-10; ids in
@@ -65,10 +68,16 @@ local COLORS = {
         light = Color3.fromRGB(95, 165, 240),
         gem = Color3.fromRGB(155, 205, 255),
     },
+    waycoin = {
+        fill = Color3.fromRGB(180, 118, 20),
+        light = Color3.fromRGB(255, 214, 74),
+        gem = Color3.fromRGB(255, 238, 150),
+    },
 }
 
 local BOXES = {
     gems_pane = "amethyst",
+    hall_coins_pane = "waycoin",
     grass_coins_pane = "emerald",
     desert_coins_pane = "citrine",
     lava_coins_pane = "ruby",
@@ -110,7 +119,7 @@ local function addGemIcon(pane, col, key)
     shadow.ZIndex = icon.ZIndex + 4
     shadow.Parent = holder
 
-    local real = REAL_GEMS[key]
+    local real = key == "waycoin" and WAYCOIN_IMAGE or REAL_GEMS[key]
     local gem = Instance.new("ImageLabel")
     gem.Name = "GemIcon"
     gem.BackgroundTransparency = 1

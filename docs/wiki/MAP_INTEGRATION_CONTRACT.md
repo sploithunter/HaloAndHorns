@@ -53,6 +53,9 @@ reimport from silently restoring unsafe source meshes without throwing away land
 - `EggStand` or contracted names like `EggStand_Basic`
 - `EnchanterStation`
 - `PODPodium` or contracted names like `PetDisplay_Podium`
+- `AwardPodium` (`BoardId` = origin leaderboard id)
+- `LeaderboardBoard` (`BoardId` = board id; SurfaceGui on the sign `Screen`)
+- `ChallengeGuide` (`GuideMode` = `range` / `training_ground`)
 - `ChaseableRegion`
 - `ShopAnchor` / `NPCAnchor`
 
@@ -92,6 +95,12 @@ The current synthetic baseline creates:
 - bidirectional `Portal` hooks between `spawn_island` and `meadow_island`.
 
 `BreakableSpawner` now asks `WorldBindingService` for `SpawnZone` parts before falling back to legacy child-name scanning. A `SpawnZone` can be either an invisible volume for synthetic/template maps or a real surface mesh for authored maps. Surface spawners use `SurfaceOnly = true` plus clearance attributes to raycast onto the tagged surface and reject candidates that overlap props, paths, eggs, portals, trees, rocks, or existing breakables. On imported mesh maps, use `ClearanceMode = "ray_samples"` so giant mesh bounding boxes do not block playable grass unless downward obstacle rays actually hit visible/queryable geometry.
+
+Large authored play fields may add `SlotLayout = "random"` and a local-space polygon string in
+`OutlinePath` (`"x,z;x,z;..."`). The shared breakable spawner then samples non-lattice candidates
+inside that polygon while preserving normal occupancy/min-distance checks. A presentation system
+may consume the same outline only through a feature-specific opt-in tag; generic `SpawnZone`
+markers must not acquire editor-style runtime visuals globally.
 
 `ZoneService` consumes the zone tree plus bound `TeleportPad`/`Portal` hooks. It validates unlocks on the server, persists `GameData.UnlockedAreas`, moves the character to the target zone spawn, and updates the active area through `WorldBindingService`.
 
@@ -134,6 +143,20 @@ For NewWorld breakables, `Workspace.Maps.Home.Grass` is stamped as the authored 
 For imported enchanter cosmetics such as `FloatingCoinScript`, leave `configs/enchants.lua` `stations.<id>.animation.active_when_near = false` unless the designer explicitly wants proximity-driven ambient animation. The current model expects its floating scripts to run continuously.
 
 Successful rerolls can also trigger station-authored VFX through `stations.<id>.animation.lightning`. The default `basic_enchanter` effect temporarily clones the selected pet from preloaded pet assets, places it at the station, and calls the reusable `Shared.Effects.EnchantLightning` module. That module fires ColorfulClickers-style procedural neon cylinder bolts from configured origin parts into the cloned pet's primary/first part. Use `origin_part_paths` for exact station-relative child paths, such as `RuneStone1.Rune`, when an imported model has extra parts with the same name; use `origin_part_name` or `origin_part_names` only when name-based discovery is unambiguous. Designers can swap the top endpoint contract to a single named part such as `LightningTop` or an explicit `origin_part_paths` list without changing service code. The station config owns colors, duration, curve, jitter/radius, thickness, core/glow intensity, strand/segment counts, result delay, temporary pet placement, and independent thunder audio lifetime.
+
+## Hall of Worlds Studio layout
+
+The baked `Workspace.Maps.FuturePath` Hall of Worlds is Studio-owned geometry positioned on the
+positive X lane, approximately X 1,478–3,090, rather than on the realm stack's Z lane. Home remains
+near Y 0; Heaven layers occupy Y +2,000 through +10,000 and Hell layers occupy Y -2,000 through
+-10,000. Heaven 3–5 are current geometry copies of Heaven 2, and Hell 3–5 are geometry copies of
+Hell 2 pending their own authored content.
+
+Moving a Model does not move Roblox voxel Terrain. After importing or relocating a baked map,
+inspect `Workspace.Terrain` independently. The initial Hall integration left one broad horizontal
+terrain island and two malformed vertical terrain sheets far outside every authored map bound;
+those orphan components were removed in Studio on 2026-08-18. Do not recreate them when rerunning
+the map generator or applying the Hall lane offset.
 
 ## Links
 

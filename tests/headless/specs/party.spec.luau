@@ -18,6 +18,20 @@ return function()
         end)
     end)
 
+    describe("PartyMath.inviteExpired", function()
+        it("keeps a team invitation live before the configured timeout", function()
+            expect(PartyMath.inviteExpired({ at = 100 }, 129, config.invite_timeout_seconds)).to.equal(
+                false
+            )
+        end)
+
+        it("expires a team invitation at 30 seconds", function()
+            expect(PartyMath.inviteExpired({ at = 100 }, 130, config.invite_timeout_seconds)).to.equal(
+                true
+            )
+        end)
+    end)
+
     describe("PartyMath.scaledHp", function()
         it("solo HP is unscaled", function()
             expect(PartyMath.scaledHp(1000, 1, 0.5)).to.equal(1000)

@@ -59,6 +59,34 @@ return {
         kade = "tank",
         beta_tester_bot = "melee", -- Beta Byte: exclusive Grass robot dog
         signal_seal = "support", -- week-two tester exclusive: Ice hatch-luck buffer
+        patch_phoenix = "ranged", -- week-three tester exclusive: Lava Windfall blaster
+        core_digger = "tank", -- week-four tester exclusive: Desert Prospector tank
+        cache_bandit = "melee", -- week-five tester exclusive: Grass XP Surge melee
+        -- Hall of Worlds / Wayfinder Egg: one readable starter-role spread.
+        trail_pup = "melee",
+        pack_tortoise = "tank",
+        beacon_finch = "ranged",
+        guide_moth = "support",
+        compass_fox = "control",
+        -- Hall of Worlds / Gilded Egg: vault-themed roster between Wayfinder and Vanguard.
+        keytail_raccoon = "melee",
+        vault_beetle = "tank",
+        crownwing_falcon = "ranged",
+        fortune_wisp = "support",
+        lockbox_imp = "control",
+        -- Hall of Worlds / Vanguard Egg: the same readable five-role spread, with stronger
+        -- post-gate pets and explicit support/control gameplay rather than decorative badges.
+        blade_lynx = "melee",
+        bastion_ram = "tank",
+        bolt_hawk = "ranged",
+        banner_hare = "support",
+        chain_serpent = "control",
+        -- Hall of Worlds / Worldheart Egg: plaza roster, same five-role spread.
+        rift_panther = "melee",
+        atlas_golem = "tank",
+        portal_drake = "ranged", -- Worldheart secret dragon; counts for Dragonlord
+        star_moth = "support",
+        clockwork_spider = "control",
         colorado_creator = "ranged", -- the apex is a BLASTER like its species twin (the
         -- two-species split missed this map and it fell to default=melee — Jason caught it)
         -- One BUFFER (support archetype) per zone — trades attack for a team aura. Their
@@ -212,6 +240,14 @@ return {
         -- bunnies"): rainbow (x1.5) lands exactly on the OLD value, so basic +16.7%,
         -- golden +20.8%, rainbow +25% (and defense ~53/67/80, heal 20%/25%/30%).
         bunny = { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 },
+        guide_moth = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 },
+        compass_fox = { kind = "root", interval = 12, duration = 3 },
+        fortune_wisp = { kind = "heal", interval = 2.0, fraction = 0.09, duration = 6 },
+        lockbox_imp = { kind = "root", interval = 11, duration = 3.25 },
+        star_moth = { kind = "heal", interval = 2.0, fraction = 0.1, duration = 6 },
+        clockwork_spider = { kind = "root", interval = 10, duration = 3.5 },
+        banner_hare = { kind = "offense", interval = 2.0, mult = 1.1667, duration = 6 },
+        chain_serpent = { kind = "root", interval = 10, duration = 3.5 },
         penguin = { kind = "defense", interval = 2.0, amount = 53.3, duration = 6 }, -- Ice
         emberimp = { kind = "offense", interval = 2.0, mult = 1.1667, duration = 6 }, -- Lava
         -- CONTROLLER (Jason): the meerkat is the game's CONTROL archetype (by_type = "control"). It
@@ -337,6 +373,9 @@ return {
         -- Week two is reserved before its pet definition lands so the five-week rotation cannot
         -- drift. XP Surge is held for week five; Prospector is held for week four.
         signal_seal = { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 },
+        patch_phoenix = { kind = "drop_rate", interval = 2.0, mult = 1.1667, duration = 6 },
+        core_digger = { kind = "yield", interval = 2.0, mult = 1.1667, duration = 6 },
+        cache_bandit = { kind = "xp", interval = 2.0, mult = 1.1667, duration = 6 },
         -- The colorado_creator SPECIES (the apex — different pet, same model): every
         -- buffer at once — the creator's testing/scaling tool.
         -- (the apex is a rainbow record, so x1.5 puts it at the old full values)

@@ -90,6 +90,33 @@ return {
             modifiers = {},
         },
 
+        beta_test_week_three = {
+            display_name = "Beta Test Week Three",
+            description = "Reach level 2 this week to earn Patch Phoenix: Golden at 5, Rainbow at 10!",
+            duration_seconds = -1,
+            stacking = "reset",
+            icon = "BETA",
+            modifiers = {},
+        },
+
+        beta_test_week_four = {
+            display_name = "Beta Test Week Four",
+            description = "Reach level 2 this week to earn Core Digger: Golden at 5, Rainbow at 10!",
+            duration_seconds = -1,
+            stacking = "reset",
+            icon = "BETA",
+            modifiers = {},
+        },
+
+        beta_test_week_five = {
+            display_name = "Beta Test Week Five",
+            description = "Reach level 2 this week to earn Cache Bandit: Golden at 5, Rainbow at 10!",
+            duration_seconds = -1,
+            stacking = "reset",
+            icon = "BETA",
+            modifiers = {},
+        },
+
         friend_boost_launch = {
             display_name = "Launch Friend Boost",
             description = "Play with up to four Roblox friends for bonus Hatch Luck, XP, and coins!",
@@ -289,6 +316,24 @@ return {
             starts_at = 1786773600,
             ends_at = 1787378400,
             reason = "Beta Test Week Two",
+        },
+        beta_test_week_three = {
+            event_id = "beta_test_week_three",
+            starts_at = 1787378400,
+            ends_at = 1787983200,
+            reason = "Beta Test Week Three",
+        },
+        beta_test_week_four = {
+            event_id = "beta_test_week_four",
+            starts_at = 1787983200,
+            ends_at = 1788588000,
+            reason = "Beta Test Week Four",
+        },
+        beta_test_week_five = {
+            event_id = "beta_test_week_five",
+            starts_at = 1788588000,
+            ends_at = 1789192800,
+            reason = "Beta Test Week Five",
         },
         friend_boost_launch = {
             event_id = "friend_boost_launch",

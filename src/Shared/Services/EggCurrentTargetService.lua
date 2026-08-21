@@ -19,6 +19,7 @@ local Locations = require(ReplicatedStorage.Shared.Locations)
 local eggSystemConfig = Locations.getConfig("egg_system")
 local petConfig = Locations.getConfig("pets")
 local EggWorldQuery = require(ReplicatedStorage.Shared.Services.EggWorldQuery)
+local HallEggStand = require(ReplicatedStorage.Shared.Game.HallEggStand)
 local InputGlyphs = require(ReplicatedStorage.Shared.Game.InputGlyphs)
 
 -- Services
@@ -401,12 +402,16 @@ function EggCurrentTargetService:UpdateEggUI(egg, eggType)
 
         if anchor then
             local screenPos = camera:WorldToScreenPoint(anchor.Position)
-            frame.Position = UDim2.new(
-                0,
-                screenPos.X + eggSystemConfig.ui.position_offset.x,
-                0,
-                screenPos.Y + eggSystemConfig.ui.position_offset.y
-            )
+            local width = eggSystemConfig.ui.preview_size.width
+            local height = eggSystemConfig.ui.preview_size.height
+            local inset = 16
+            local viewport = camera.ViewportSize
+            local x = screenPos.X + eggSystemConfig.ui.position_offset.x
+            local y = screenPos.Y + eggSystemConfig.ui.position_offset.y
+            -- A high UIanchor (Hall pedestals) can project above the viewport; keep the card on-screen.
+            x = math.clamp(x, inset, math.max(inset, viewport.X - width - inset))
+            y = math.clamp(y, inset, math.max(inset, viewport.Y - height - inset))
+            frame.Position = UDim2.new(0, x, 0, y)
 
             -- Update pet preview position
             if eggPetPreviewService then
@@ -473,7 +478,34 @@ function EggCurrentTargetService:UpdateTargeting(step)
 
         for _, egg in ipairs(EggWorldQuery.GetEggs()) do
             if egg.anchor and egg.eggType then
-                local distance = (egg.anchor.Position - rootPart.Position).Magnitude
+                local root = rootPart.Position
+                local anchor = egg.anchor.Position
+                local box
+                local stand = egg.instance
+                while stand and stand ~= workspace do
+                    if stand:IsA("Model") and stand:FindFirstChild("UIanchor") then
+                        local bounds, size = stand:GetBoundingBox()
+                        box = {
+                            x = bounds.Position.X,
+                            y = bounds.Position.Y,
+                            z = bounds.Position.Z,
+                            sx = size.X,
+                            sy = size.Y,
+                            sz = size.Z,
+                        }
+                        break
+                    end
+                    stand = stand.Parent
+                end
+                local distance = HallEggStand.hatcherDistance(
+                    root.X,
+                    root.Y,
+                    root.Z,
+                    anchor.X,
+                    anchor.Y,
+                    anchor.Z,
+                    box
+                )
                 if distance <= MAX_MAGNITUDE then
                     local current = inRangeByType[egg.eggType]
                     if not current or distance < current.distance then

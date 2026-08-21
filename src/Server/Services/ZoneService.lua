@@ -8,8 +8,10 @@
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local HallOfWorldsLogic = require(ReplicatedStorage.Shared.Game.HallOfWorldsLogic)
 local PrologueSpawnGate = require(ReplicatedStorage.Shared.Game.PrologueSpawnGate)
 local WorldContext = require(ReplicatedStorage.Shared.Game.WorldContext)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
@@ -20,8 +22,12 @@ ZoneService.__index = ZoneService
 
 local TOUCH_DEBOUNCE_SECONDS = 1
 local DEFAULT_START_AREA = "Spawn"
+local HALL_START_AREA = "Hall_1"
 local TRAVEL_PROMPT_NAME = "ZoneTravelPrompt"
+local TRAVEL_PROMPT_ATTACHMENT_NAME = "ZoneTravelPromptAttachment"
+local DEFAULT_HALL_PROMPT_HEIGHT_FROM_BOTTOM = 4.5
 local UNLOCKED_AREAS_ATTRIBUTE = "UnlockedAreasJson"
+local ENTERED_CRYSTAL_WORLD_ATTRIBUTE = "EnteredCrystalWorld"
 
 local function asSet(values)
     local set = {}
@@ -76,7 +82,192 @@ function ZoneService:Init()
     self._worldBindingService = self._modules.WorldBindingService
     self._statsService = self._modules.StatsService
     self._areasConfig = self._configLoader:LoadConfig("areas")
+    self._hallConfig = self._configLoader:LoadConfig("hall_of_worlds")
+    self._hallRouteAreaSet = {}
+    for _, routeArea in ipairs((self._hallConfig and self._hallConfig.route) or {}) do
+        if type(routeArea.area_id) == "string" then
+            self._hallRouteAreaSet[routeArea.area_id] = true
+        end
+    end
     self._touchDebounce = {}
+end
+
+function ZoneService:CanLeaveHall(player, sourceHook, targetAreaId)
+    local data = player and self._dataService:GetData(player) or nil
+    local gameData = data and data.GameData or {}
+    local hallState = HallOfWorldsLogic.normalizeState(
+        gameData,
+        self._hallConfig and self._hallConfig.version or 2
+    )
+    local isHallExit = sourceHook and sourceHook:GetAttribute("HallExitToCrystalWorld") == true
+        or false
+    return HallOfWorldsLogic.canLeaveHall(
+        hallState.entered_crystal_world,
+        targetAreaId,
+        self._hallRouteAreaSet or {},
+        isHallExit
+    )
+end
+
+function ZoneService:GetInitialArea(player)
+    local data = player and self._dataService:GetData(player) or nil
+    local gameData = data and data.GameData or {}
+    local hallState = HallOfWorldsLogic.normalizeState(
+        gameData,
+        self._hallConfig and self._hallConfig.version or 2
+    )
+    local routeAreaIds = {}
+    for _, routeArea in ipairs((self._hallConfig and self._hallConfig.route) or {}) do
+        if type(routeArea.area_id) == "string" then
+            table.insert(routeAreaIds, routeArea.area_id)
+        end
+    end
+    return HallOfWorldsLogic.initialArea(
+        hallState.entered_crystal_world,
+        gameData.UnlockedAreas,
+        routeAreaIds,
+        self._hallConfig and self._hallConfig.initial_area or HALL_START_AREA,
+        self._hallConfig and self._hallConfig.crystal_world_area or DEFAULT_START_AREA,
+        gameData.LastArea,
+        self._hallRouteAreaSet,
+        data and data.Tutorial,
+        gameData
+    )
+end
+
+function ZoneService:HasEnteredCrystalWorld(player)
+    local data = player and self._dataService and self._dataService:GetData(player)
+    local hallState = HallOfWorldsLogic.normalizeState(
+        data and data.GameData,
+        self._hallConfig and self._hallConfig.version or 2
+    )
+    return hallState.entered_crystal_world == true
+end
+
+function ZoneService:IsHallArea(areaId)
+    return type(areaId) == "string" and self._hallRouteAreaSet and self._hallRouteAreaSet[areaId] == true
+end
+
+function ZoneService:IsInHall(player)
+    if not player then
+        return false
+    end
+    local active = self._worldBindingService and self._worldBindingService:GetActiveArea(player)
+    if self:IsHallArea(active) then
+        return true
+    end
+    return self:IsHallArea(player:GetAttribute("CurrentArea"))
+end
+
+function ZoneService:GetRespawnArea(player)
+    local data = player and self._dataService:GetData(player) or nil
+    local gameData = data and data.GameData or {}
+    local hallState = HallOfWorldsLogic.normalizeState(
+        gameData,
+        self._hallConfig and self._hallConfig.version or 2
+    )
+    local routeAreaIds = {}
+    for _, routeArea in ipairs((self._hallConfig and self._hallConfig.route) or {}) do
+        if type(routeArea.area_id) == "string" then
+            table.insert(routeAreaIds, routeArea.area_id)
+        end
+    end
+    return HallOfWorldsLogic.sessionRespawnArea(
+        hallState.entered_crystal_world,
+        gameData.UnlockedAreas,
+        routeAreaIds,
+        self._hallConfig and self._hallConfig.initial_area or HALL_START_AREA,
+        self._hallConfig and self._hallConfig.crystal_world_area or DEFAULT_START_AREA,
+        gameData.LastArea,
+        self._hallRouteAreaSet,
+        player and player:GetAttribute("HallGuestVisit") == true,
+        data and data.Tutorial,
+        gameData
+    )
+end
+
+function ZoneService:BeginHallGuestVisit(player)
+    if typeof(player) ~= "Instance" or not player:IsA("Player") then
+        return { ok = false, reason = "invalid_player" }
+    end
+    if self:HasEnteredCrystalWorld(player) then
+        return { ok = false, reason = "already_member" }
+    end
+    player:SetAttribute("HallGuestVisit", true)
+    local placed, reason = self:PlacePlayerAtZoneSpawn(player, self:_crystalSpawnArea(), {
+        remember = false,
+    })
+    if not placed then
+        player:SetAttribute("HallGuestVisit", nil)
+        return { ok = false, reason = reason or "guest_place_failed" }
+    end
+    return { ok = true, areaId = self:_crystalSpawnArea(), guest = true }
+end
+
+function ZoneService:EndHallGuestVisit(player)
+    if typeof(player) ~= "Instance" or not player:IsA("Player") then
+        return
+    end
+    if player:GetAttribute("HallGuestVisit") ~= true then
+        return
+    end
+    player:SetAttribute("HallGuestVisit", nil)
+    if player:GetAttribute("InMission") ~= nil then
+        return
+    end
+    self:PlacePlayerAtZoneSpawn(player, self:GetInitialArea(player))
+end
+
+function ZoneService:_crystalSpawnArea()
+    return self._hallConfig and self._hallConfig.crystal_world_area or DEFAULT_START_AREA
+end
+
+function ZoneService:_rememberArea(player, areaId)
+    if typeof(player) ~= "Instance" or not player:IsA("Player") then
+        return
+    end
+    if player:GetAttribute("InPrologue") == true then
+        return
+    end
+    -- Trials own the live character. Persist Crystal World Spawn so a later join
+    -- cannot resume into a mission_* CurrentArea from the player list.
+    if player:GetAttribute("InMission") ~= nil then
+        areaId = self:_crystalSpawnArea()
+    end
+    local data = self._dataService and self._dataService:GetData(player)
+    if type(data) ~= "table" then
+        return
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    local hallState = HallOfWorldsLogic.normalizeState(
+        data.GameData,
+        self._hallConfig and self._hallConfig.version or 2
+    )
+    local resume = HallOfWorldsLogic.resolvedResumeArea(
+        areaId,
+        hallState.entered_crystal_world,
+        data.GameData.UnlockedAreas,
+        self._hallRouteAreaSet,
+        self:_crystalSpawnArea(),
+        data.Tutorial,
+        data.GameData
+    )
+    if not resume then
+        return
+    end
+    if data.GameData.LastArea == resume then
+        return
+    end
+    data.GameData.LastArea = resume
+    self._dataService:RequestSave(player, "last_area", { critical = false })
+end
+
+function ZoneService:_watchLastWorld(player)
+    player:GetAttributeChangedSignal("InMission"):Connect(function()
+        if player:GetAttribute("InMission") ~= nil then
+            self:_rememberArea(player, self:_crystalSpawnArea())
+        end
+    end)
 end
 
 function ZoneService:Start()
@@ -93,11 +284,13 @@ function ZoneService:Start()
 
     Players.PlayerAdded:Connect(function(player)
         self:_connectCharacterSpawnSafety(player)
+        self:_watchLastWorld(player)
         self:_syncUnlocksWhenDataLoads(player)
     end)
 
     for _, player in ipairs(Players:GetPlayers()) do
         self:_connectCharacterSpawnSafety(player)
+        self:_watchLastWorld(player)
         self:_syncUnlocksWhenDataLoads(player)
     end
 end
@@ -157,9 +350,11 @@ function ZoneService:_getUnlockSet(player)
         end
     end
     set[DEFAULT_START_AREA] = true
+    set[HALL_START_AREA] = true
 
     data.GameData.UnlockedAreas = setToSortedArray(set)
     self:_publishUnlockedAreas(player, set)
+    self:PublishHallMembership(player)
     return set, data
 end
 
@@ -334,11 +529,14 @@ function ZoneService:SetZoneLocked(player, zoneId, locked, options)
 
     unlockSet[areaId] = nil
     data.GameData.UnlockedAreas = setToSortedArray(unlockSet)
+    if data.GameData.LastArea == areaId then
+        data.GameData.LastArea = ""
+    end
     self:_publishUnlockedAreas(player, unlockSet)
     self._dataService:RequestSave(player, "zone_lock", { critical = true })
 
     if self._worldBindingService:GetActiveArea(player) == areaId then
-        self:TravelToZone(player, DEFAULT_START_AREA)
+        self:TravelToZone(player, self:GetInitialArea(player))
     end
 
     self._logger:Info("Zone locked", {
@@ -359,25 +557,35 @@ function ZoneService:_connectCharacterSpawnSafety(player)
     player.CharacterAdded:Connect(function()
         task.defer(function()
             task.wait(0.2)
+            if player:GetAttribute("InMission") ~= nil then
+                return
+            end
             if not self:_awaitSpawnSafetyDecision(player) then
                 return
             end
-            self:PlacePlayerAtZoneSpawn(
-                player,
-                self._worldBindingService:GetActiveArea(player) or DEFAULT_START_AREA
-            )
+            if player:GetAttribute("InMission") ~= nil then
+                return
+            end
+            self:PlacePlayerAtZoneSpawn(player, self:GetRespawnArea(player), {
+                remember = player:GetAttribute("HallGuestVisit") ~= true,
+            })
         end)
     end)
 
     if player.Character then
         task.defer(function()
+            if player:GetAttribute("InMission") ~= nil then
+                return
+            end
             if not self:_awaitSpawnSafetyDecision(player) then
                 return
             end
-            self:PlacePlayerAtZoneSpawn(
-                player,
-                self._worldBindingService:GetActiveArea(player) or DEFAULT_START_AREA
-            )
+            if player:GetAttribute("InMission") ~= nil then
+                return
+            end
+            self:PlacePlayerAtZoneSpawn(player, self:GetRespawnArea(player), {
+                remember = player:GetAttribute("HallGuestVisit") ~= true,
+            })
         end)
     end
 end
@@ -431,7 +639,7 @@ function ZoneService:_awaitSpawnSafetyDecision(player)
     return false
 end
 
-function ZoneService:PlacePlayerAtZoneSpawn(player, zoneId)
+function ZoneService:PlacePlayerAtZoneSpawn(player, zoneId, options)
     local spawnCFrame, areaId =
         self._worldBindingService:GetSpawnCFrameForZone(zoneId or DEFAULT_START_AREA)
     if not spawnCFrame then
@@ -453,6 +661,9 @@ function ZoneService:PlacePlayerAtZoneSpawn(player, zoneId)
         currentWorld.Value = areaId
     end
 
+    if not (options and options.remember == false) then
+        self:_rememberArea(player, areaId)
+    end
     return true, nil, areaId
 end
 
@@ -505,6 +716,22 @@ function ZoneService:UnlockZone(player, zoneId, options)
                 zoneId = zoneId,
                 areaId = areaId,
                 requiredZoneId = requiredZoneId,
+                unlock = self:GetUnlockRequirement(player, zoneId),
+            }
+        end
+
+        local progressionOk, progressionReason = HallOfWorldsLogic.meetsUnlock(
+            data.Stats and data.Stats.ClaimedLevel,
+            HallOfWorldsLogic.isTutorialCompleted(data.GameData, data.Tutorial),
+            unlock,
+            data.Tutorial
+        )
+        if not progressionOk then
+            return {
+                ok = false,
+                reason = progressionReason,
+                zoneId = zoneId,
+                areaId = areaId,
                 unlock = self:GetUnlockRequirement(player, zoneId),
             }
         end
@@ -580,6 +807,11 @@ function ZoneService:GetUnlockRequirement(player, zoneId)
     local currency = unlock.currency
     local cost = tonumber(unlock.cost) or 0
     local requiredZoneId = unlock.required_zone
+    local requiredLevel = math.max(0, math.floor(tonumber(unlock.required_level) or 0))
+    local data = player and self._dataService:GetData(player) or nil
+    local claimedLevel = data and data.Stats and tonumber(data.Stats.ClaimedLevel) or 1
+    local tutorialCompleted = data
+        and HallOfWorldsLogic.isTutorialCompleted(data.GameData, data.Tutorial)
     local canAfford = currency == nil
         or cost <= 0
         or (player and self._dataService:CanAfford(player, currency, cost))
@@ -592,6 +824,10 @@ function ZoneService:GetUnlockRequirement(player, zoneId)
         currency = currency,
         cost = cost,
         requiredZoneId = requiredZoneId,
+        requiredLevel = requiredLevel,
+        meetsLevel = claimedLevel >= requiredLevel,
+        tutorialRequired = unlock.tutorial_required == true,
+        tutorialCompleted = tutorialCompleted,
         canAfford = canAfford,
     }
 end
@@ -605,6 +841,18 @@ function ZoneService:_publishUnlockedAreas(player, unlockSet)
         UNLOCKED_AREAS_ATTRIBUTE,
         HttpService:JSONEncode(setToSortedArray(unlockSet))
     )
+end
+
+function ZoneService:PublishHallMembership(player)
+    if not player then
+        return
+    end
+    local data = self._dataService and self._dataService:GetData(player)
+    local hallState = HallOfWorldsLogic.normalizeState(
+        data and data.GameData,
+        self._hallConfig and self._hallConfig.version or 2
+    )
+    player:SetAttribute(ENTERED_CRYSTAL_WORLD_ATTRIBUTE, hallState.entered_crystal_world == true)
 end
 
 function ZoneService:_syncUnlocksWhenDataLoads(player)
@@ -649,6 +897,15 @@ function ZoneService:TravelToZone(player, targetZoneId, sourceHook)
         }
     end
 
+    if not self:CanLeaveHall(player, sourceHook, targetAreaId) then
+        return {
+            ok = false,
+            reason = "hall_route_required",
+            targetZoneId = targetZoneId,
+            targetAreaId = targetAreaId,
+        }
+    end
+
     if not self:IsZoneUnlocked(player, targetZoneId) then
         return {
             ok = false,
@@ -689,6 +946,8 @@ function ZoneService:TravelToZone(player, targetZoneId, sourceHook)
         currentWorld.Value = targetAreaId
     end
 
+    self:_rememberArea(player, targetAreaId)
+
     self._logger:Info("Player traveled to zone", {
         player = player.Name,
         targetZoneId = targetZoneId,
@@ -713,7 +972,66 @@ function ZoneService:TravelViaHook(player, hook)
         }
     end
 
-    return self:TravelToZone(player, targetZoneId, hook)
+    if hook:GetAttribute("RequiresTutorialComplete") == true then
+        local data = self._dataService:GetData(player)
+        if not (data and HallOfWorldsLogic.isTutorialCompleted(data.GameData, data.Tutorial)) then
+            return {
+                ok = false,
+                reason = "tutorial_required",
+                targetZoneId = targetZoneId,
+            }
+        end
+    end
+
+    local result = self:TravelToZone(player, targetZoneId, hook)
+    if result.ok == true and hook:GetAttribute("HallExitToCrystalWorld") == true then
+        local data = self._dataService:GetData(player)
+        if data and data.GameData then
+            local hallState = HallOfWorldsLogic.normalizeState(
+                data.GameData,
+                self._hallConfig and self._hallConfig.version or 2
+            )
+            if hallState.entered_crystal_world ~= true then
+                hallState.entered_crystal_world = true
+                hallState.completed = true
+                self._dataService:RequestSave(player, "hall_crystal_world_entry", {
+                    critical = true,
+                })
+            end
+            self:PublishHallMembership(player)
+        end
+    end
+    return result
+end
+
+local COPIED_GATE_VISUAL = {
+    CrystalWorldPortal = "CrystalWorldGateVisual",
+    CrystalWorldReturnPortal = "CrystalWorldReturnGateVisual",
+    HallOfWorldsPortal = "HallOfWorldsGateVisual",
+}
+
+-- Copied Home Gate models keep a stale WorldPivot. PivotTo then parks the
+-- pivot at the authored point while the arch sits ~70 studs away, so the
+-- invisible Portal never overlaps the visible doorway.
+function ZoneService:_alignCopiedGatePortal(hook)
+    local visualName = COPIED_GATE_VISUAL[hook.Name]
+    if not visualName then
+        return
+    end
+    local visual = hook.Parent and hook.Parent:FindFirstChild(visualName)
+    if not (visual and visual:IsA("Model")) then
+        return
+    end
+    local boxCf = visual:GetBoundingBox()
+    local dest = Vector3.new(boxCf.Position.X, hook.Position.Y, boxCf.Position.Z)
+    if (hook.Position - dest).Magnitude <= 4 then
+        return
+    end
+    hook.CFrame = CFrame.new(dest)
+    self._logger:Info("Aligned copied world gate portal to its visual", {
+        hook = hook:GetFullName(),
+        visual = visual:GetFullName(),
+    })
 end
 
 function ZoneService:_connectTravelHooks()
@@ -727,6 +1045,7 @@ function ZoneService:_connectTravelHooks()
 
     for _, hook in ipairs(hooks) do
         if hook:IsA("BasePart") then
+            self:_alignCopiedGatePortal(hook)
             self:_ensureTravelPrompt(hook)
         end
 
@@ -740,7 +1059,7 @@ function ZoneService:_connectTravelHooks()
 end
 
 function ZoneService:_ensureTravelPrompt(hook)
-    local prompt = hook:FindFirstChild(TRAVEL_PROMPT_NAME)
+    local prompt = hook:FindFirstChild(TRAVEL_PROMPT_NAME, true)
     if prompt and not prompt:IsA("ProximityPrompt") then
         self._logger:Warn("Travel hook has non-prompt child using reserved prompt name", {
             hook = hook:GetFullName(),
@@ -760,23 +1079,50 @@ function ZoneService:_ensureTravelPrompt(hook)
         prompt.Parent = hook
     end
 
+    local promptHeightFromBottom = tonumber(hook:GetAttribute("PromptHeightFromBottom"))
+    if promptHeightFromBottom == nil and CollectionService:HasTag(hook, "HallGate") then
+        promptHeightFromBottom = DEFAULT_HALL_PROMPT_HEIGHT_FROM_BOTTOM
+    end
+    if promptHeightFromBottom ~= nil then
+        local attachment = hook:FindFirstChild(TRAVEL_PROMPT_ATTACHMENT_NAME)
+        if attachment and not attachment:IsA("Attachment") then
+            attachment:Destroy()
+            attachment = nil
+        end
+        if not attachment then
+            attachment = Instance.new("Attachment")
+            attachment.Name = TRAVEL_PROMPT_ATTACHMENT_NAME
+            attachment.Parent = hook
+        end
+        attachment.Position = Vector3.new(
+            0,
+            -hook.Size.Y * 0.5 + math.clamp(promptHeightFromBottom, 0, hook.Size.Y),
+            0
+        )
+        prompt.Parent = attachment
+    end
+
     local targetZoneId = hook:GetAttribute("TargetZoneId")
     local targetAreaId = self:_resolveAreaId(targetZoneId)
     local unlock = self:_getUnlockConfig(targetZoneId)
     local unlockCost = unlock and tonumber(unlock.cost) or 0
     local unlockCurrency = unlock and unlock.currency or nil
+    local hasProgressionRequirement = unlock
+        and (unlock.tutorial_required == true or (tonumber(unlock.required_level) or 0) > 0)
+    local forcePrompt = hook:GetAttribute("ForcePrompt") == true
+        or hook:GetAttribute("RequiresTutorialComplete") == true
 
     prompt.ObjectText = self:_getZoneDisplayName(targetZoneId)
-    prompt.ActionText = self:_getTravelPromptActionText(targetZoneId)
+    prompt.ActionText = self:_getTravelPromptActionText(targetZoneId, hook)
     prompt.Enabled = type(targetZoneId) == "string"
         and targetZoneId ~= ""
-        and unlockCurrency ~= nil
-        and unlockCost > 0
+        and (forcePrompt or hasProgressionRequirement or (unlockCurrency ~= nil and unlockCost > 0))
     prompt:SetAttribute("TargetZoneId", targetZoneId)
     prompt:SetAttribute("TargetAreaId", targetAreaId)
     prompt:SetAttribute("UnlockCurrency", unlockCurrency)
     prompt:SetAttribute("UnlockCost", unlockCost)
     prompt:SetAttribute("RequiresUnlockPrompt", prompt.Enabled)
+    prompt:SetAttribute("AlwaysPrompt", forcePrompt)
 
     if not hook:GetAttribute("ZoneServicePromptConnected") then
         hook:SetAttribute("ZoneServicePromptConnected", true)
@@ -786,10 +1132,21 @@ function ZoneService:_ensureTravelPrompt(hook)
     end
 end
 
-function ZoneService:_getTravelPromptActionText(targetZoneId)
+function ZoneService:_getTravelPromptActionText(targetZoneId, hook)
+    if hook and hook:GetAttribute("CrystalWorldReturn") == true then
+        local lockAction = self._hallConfig
+            and self._hallConfig.crystal_world_return
+            and self._hallConfig.crystal_world_return.lock_action
+        return tostring(lockAction or "Finish the Hall")
+    end
+
     local unlock = self:_getUnlockConfig(targetZoneId)
     local currency = unlock and unlock.currency
     local cost = unlock and tonumber(unlock.cost) or 0
+
+    if unlock and unlock.tutorial_required == true then
+        return string.format("Reach Level %d", tonumber(unlock.required_level) or 2)
+    end
 
     if currency and cost > 0 then
         return string.format("Unlock %d %s", cost, currency)
@@ -833,6 +1190,11 @@ function ZoneService:_handleHookTouched(hook, hit)
         return
     end
 
+    local prompt = hook:FindFirstChild(TRAVEL_PROMPT_NAME, true)
+    if prompt and prompt:IsA("ProximityPrompt") and prompt.Enabled then
+        return
+    end
+
     local now = os.clock()
     local playerDebounce = self._touchDebounce[player] or {}
     self._touchDebounce[player] = playerDebounce
@@ -855,7 +1217,7 @@ function ZoneService:_handleAreaEntered(player, areaId)
         areaId = areaId,
     })
 
-    self:TravelToZone(player, DEFAULT_START_AREA)
+    self:TravelToZone(player, self:GetInitialArea(player))
 end
 
 return ZoneService

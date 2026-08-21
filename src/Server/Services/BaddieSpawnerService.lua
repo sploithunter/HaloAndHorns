@@ -68,10 +68,19 @@ function BaddieSpawnerService:Rescan()
     end
 end
 
--- The faction a spawner draws from, keyed off its name SUFFIX (after part_prefix). The map has
--- BaddieSpawnerLava + BaddieSpawnerDesert; zone_faction maps "Lava" -> "lava", and everything else
--- falls back to default_faction. So a lava-zone spawner only rolls lava packs, never Earth bears.
+function BaddieSpawnerService:_bindingFor(part)
+    local prefix = self._config.part_prefix or "BaddieSpawner"
+    local suffix = part.Name:sub(#prefix + 1)
+    return (self._config.bindings or {})[suffix]
+end
+
+-- The faction a spawner draws from, keyed off its name SUFFIX (after part_prefix). Named bindings
+-- let authored encounters such as HallBarn keep a descriptive marker name while drawing Earth units.
 function BaddieSpawnerService:_factionFor(part)
+    local binding = self:_bindingFor(part)
+    if binding and binding.faction then
+        return binding.faction
+    end
     local prefix = self._config.part_prefix or "BaddieSpawner"
     local suffix = part.Name:sub(#prefix + 1)
     local map = self._config.zone_faction or {}
@@ -163,6 +172,7 @@ function BaddieSpawnerService:_engagedTeamCount(player, position)
 end
 
 function BaddieSpawnerService:_trigger(part, player, rng)
+    local binding = self:_bindingFor(part)
     local wave = self:_pickWave(rng, self:_factionFor(part))
     if not wave then
         return
@@ -266,10 +276,11 @@ function BaddieSpawnerService:_trigger(part, player, rng)
                 -- def clone (combat.engagement.onramp hp/dmg mults) — dies
                 -- fast, barely scratches (Jason: a stock trash mob wiped the
                 -- starter squad; "no possible way a bunny can beat this")
+                local base = self._enemyDefs[unit.enemy]
                 local defOverride = nil
-                if onramp then
-                    local base = self._enemyDefs[unit.enemy]
-                    if base then
+                if base and (onramp or (binding and binding.use_area_currency_loot)) then
+                    defOverride = table.clone(base)
+                    if onramp then
                         local okCfg2, combat2 = pcall(function()
                             return require(
                                 game:GetService("ReplicatedStorage")
@@ -279,7 +290,6 @@ function BaddieSpawnerService:_trigger(part, player, rng)
                         end)
                         local knobs = (okCfg2 and combat2.engagement and combat2.engagement.onramp)
                             or {}
-                        defOverride = table.clone(base)
                         defOverride.hp = math.max(
                             50,
                             math.floor(
@@ -296,6 +306,11 @@ function BaddieSpawnerService:_trigger(part, player, rng)
                                 )
                             )
                         end
+                    end
+                    -- Hall encounters pay the area's configured currency. An empty table takes the
+                    -- established CombatService fallback path instead of hard-coding Hall coins here.
+                    if binding and binding.use_area_currency_loot then
+                        defOverride.drop_table = {}
                     end
                 end
                 local r = enemySvc:SpawnEnemy(player, unit.enemy, {
@@ -318,8 +333,7 @@ function BaddieSpawnerService:_trigger(part, player, rng)
         -- their owned group successfully spawns; ambient Heaven/Hell patrols bypass this service.
         local radius = tonumber(self._config.radius) or 50
         for _, nearby in ipairs(Players:GetPlayers()) do
-            local hrp = nearby.Character
-                and nearby.Character:FindFirstChild("HumanoidRootPart")
+            local hrp = nearby.Character and nearby.Character:FindFirstChild("HumanoidRootPart")
             if hrp and (hrp.Position - part.Position).Magnitude <= radius then
                 self._petFollowService:ReleaseMiningTargets(nearby)
             end

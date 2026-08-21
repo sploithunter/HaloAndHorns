@@ -24,6 +24,9 @@
    "deadline": 1,
    "retry_backoff": 1
   },
+  "src/Client/Systems/AwardPodium.lua": {
+   "animation": 1
+  },
   "src/Client/Systems/CombatAuraController.lua": {
    "cooldown": 5
   },
@@ -41,6 +44,9 @@
    "deadline": 2,
    "debounce": 3,
    "periodic": 3
+  },
+  "src/Client/Systems/HoverboardController.lua": {
+   "frame_budget": 1
   },
   "src/Client/Systems/LevelUpController.lua": {
    "animation": 4,
@@ -86,8 +92,7 @@
   },
   "src/Client/Systems/TutorialController.lua": {
    "deadline": 1,
-   "debounce": 1,
-   "periodic": 1
+   "debounce": 1
   },
   "src/Client/Systems/ZoneUnlockPrompt.lua": {
    "deadline": 1
@@ -195,9 +200,9 @@
    "retry_backoff": 1
   },
   "src/Server/Services/MissionInstanceService.lua": {
-   "deadline": 2,
+   "deadline": 3,
    "frame_budget": 1,
-   "periodic": 3
+   "periodic": 4
   },
   "src/Server/Services/NpcPrincipalService.lua": {
    "periodic": 2

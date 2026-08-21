@@ -106,6 +106,7 @@ function AdminToolsService:BindPeerServices(services)
     self._tutorialService = services.TutorialService
     self._enhancementService = services.EnhancementService
     self._hotbarService = services.HotbarService
+    self._hoverboardService = services.HoverboardService
     self._futureCallService = services.FutureCallService
     self._starterPetService = services.StarterPetService
     self._monetizationService = services.MonetizationService
@@ -713,11 +714,21 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         end
     end
 
-    -- 3) Zones: relock everything (defaults re-merge to Spawn). Republish so the spawn-gate +
-    --    client prompt update immediately.
+    -- 3) Zones: relock everything to the fresh Hall entry. Spawn remains authorized as the
+    --    Crystal World travel destination, while HallOfWorlds controls initial placement.
     playerData.GameData = playerData.GameData or {}
-    playerData.GameData.UnlockedAreas = { "Spawn" }
+    playerData.GameData.UnlockedAreas = { "Hall_1", "Spawn" }
+    playerData.GameData.HallOfWorlds = {
+        version = 2,
+        entered_crystal_world = false,
+        highest_stage = 0,
+        completed = false,
+        rewarded = {},
+        checkpoint = "",
+    }
     playerData.GameData.LastHatchedEggId = ""
+    playerData.GameData.LastArea = ""
+    playerData.GameData.TutorialCompleted = false
     playerData.GameData.LastHatchedEggOffset = {}
     playerData.GameData.TesterRewards = { campaigns = {} }
     playerData.GameData.TrialEggRewards = { tracks = {} }
@@ -856,6 +867,14 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     if tut and tut.Reset then
         pcall(function()
             tut:Reset(targetPlayer)
+        end)
+    end
+    -- Boards are a Level-2 unlock, not unique-pet loot. Wipe owned skins and the
+    -- Items-tab folder so a reset tester is not still carrying Kade's catalog.
+    local boards = self._hoverboardService
+    if boards and boards.ResetForBeginning then
+        pcall(function()
+            boards:ResetForBeginning(targetPlayer)
         end)
     end
     local enh = self._enhancementService

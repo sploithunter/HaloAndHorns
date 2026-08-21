@@ -9,8 +9,10 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath)
+local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 
 local PartyService = {}
 PartyService.__index = PartyService
@@ -21,18 +23,134 @@ function PartyService:Init()
     self._layerService = self._modules and self._modules.LayerService
     self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
     self._chatAnnouncementService = self._modules and self._modules.ChatAnnouncementService
+    self._zoneService = self._modules and self._modules.ZoneService
     self._config = self._configLoader:LoadConfig("party")
+    local okChallenge, challenge = pcall(function()
+        return self._configLoader:LoadConfig("challenge_runs")
+    end)
+    self._challengeConfig = (okChallenge and type(challenge) == "table") and challenge or nil
     local combat = self._configLoader:LoadConfig("combat")
     self._perExtra = (combat and combat.group_scaling and combat.group_scaling.per_extra_player)
         or 0.5
     self._parties = {} -- partyId -> { members = { [userId]=true }, lead = userId }
     self._playerParty = {} -- userId -> partyId
-    self._invites = {} -- target userId -> { partyId, from = name, at = os.time() }
+    self._invites = {} -- target userId -> invite record; at most one pending invite per target
+    self._inviteSweepElapsed = 0
     self._nextId = 0
     Players.PlayerRemoving:Connect(function(player)
-        self._invites[player.UserId] = nil
+        -- A recipient leaving is still a terminal outcome for the requester; expire it now rather
+        -- than recreating the old silent failure. The invite identity check keeps this race-safe
+        -- with the heartbeat expiry sweep.
+        local receivedInvite = self._invites[player.UserId]
+        if receivedInvite then
+            self:_expireInvite(player.UserId, receivedInvite)
+        end
+
+        -- Requests sent by the departing player need no requester-side outcome, but the recipient
+        -- popup must disappear immediately.
+        for targetUserId, invite in pairs(self._invites) do
+            if invite.fromUserId == player.UserId then
+                self._invites[targetUserId] = nil
+                local target = Players:GetPlayerByUserId(targetUserId)
+                if target and target:GetAttribute("TeamInviteFrom") == invite.from then
+                    target:SetAttribute("TeamInviteFrom", nil)
+                end
+            end
+        end
         self:Leave(player)
     end)
+end
+
+function PartyService:Start()
+    -- One lightweight sweep serves every invitation and follows the same lifecycle pattern as
+    -- TradeService. Avoid one scheduled task per request and keep expiry server-authoritative.
+    self._inviteConnection = RunService.Heartbeat:Connect(function(deltaTime)
+        self._inviteSweepElapsed += deltaTime
+        if self._inviteSweepElapsed >= 0.5 then
+            self._inviteSweepElapsed %= 0.5
+            self:_expireInvites(os.clock())
+        end
+    end)
+    local function watch(player)
+        self:_watchPlayer(player)
+    end
+    Players.PlayerAdded:Connect(watch)
+    for _, player in ipairs(Players:GetPlayers()) do
+        watch(player)
+    end
+end
+
+function PartyService:_watchPlayer(player)
+    player:GetAttributeChangedSignal("GauntletMode"):Connect(function()
+        if self:_inSoloChallenge(player) then
+            self:_blockInvitesForRange(player)
+        end
+    end)
+    if self:_inSoloChallenge(player) then
+        self:_blockInvitesForRange(player)
+    end
+end
+
+function PartyService:_inSoloChallenge(player)
+    if not player then
+        return false
+    end
+    local mode = player:GetAttribute("GauntletMode")
+    local modes = self._challengeConfig and self._challengeConfig.modes
+    if ChallengeRun.soloOnly(modes and modes[mode]) then
+        return true
+    end
+    return mode == "range"
+end
+
+function PartyService:_privacyOf(player)
+    return PartyMath.invitePrivacy(
+        player and player:GetAttribute("TeamInvitePrivacy"),
+        self._config
+    )
+end
+
+function PartyService:_areFriends(a, b)
+    if not (a and b) then
+        return false
+    end
+    local ok, result = pcall(function()
+        return a:IsFriendsWith(b.UserId)
+    end)
+    return ok and result == true
+end
+
+function PartyService:_blockInvitesForRange(player)
+    local incoming = self._invites[player.UserId]
+    if incoming then
+        self._invites[player.UserId] = nil
+        if player:GetAttribute("TeamInviteFrom") == incoming.from then
+            player:SetAttribute("TeamInviteFrom", nil)
+        end
+        self:_notifyInviteOutcome(incoming, "in_range")
+    end
+    for targetUserId, invite in pairs(self._invites) do
+        if invite.fromUserId == player.UserId then
+            self._invites[targetUserId] = nil
+            local target = Players:GetPlayerByUserId(targetUserId)
+            if target and target:GetAttribute("TeamInviteFrom") == invite.from then
+                target:SetAttribute("TeamInviteFrom", nil)
+            end
+        end
+    end
+end
+
+function PartyService:SetInvitePrivacy(player, mode)
+    local settings = self._modules and self._modules.SettingsService
+    if settings and settings.SetTeamInvitePrivacy then
+        local saved = settings:SetTeamInvitePrivacy(player, mode)
+        if saved then
+            return { ok = true, mode = self:_privacyOf(player) }
+        end
+    end
+    local sanitized = PartyMath.invitePrivacy(mode, self._config)
+    player:SetAttribute("TeamInvitePrivacy", sanitized)
+    return { ok = true, mode = sanitized }
 end
 
 function PartyService:_partyOf(player)
@@ -103,6 +221,9 @@ function PartyService:Leave(player)
         player:SetAttribute("TeamId", nil)
         player:SetAttribute("TeamLead", nil)
         player:SetAttribute("TeamMembers", nil)
+        if self._zoneService and self._zoneService.EndHallGuestVisit then
+            self._zoneService:EndHallGuestVisit(player)
+        end
         if self._parties[id] then
             self:_publish(id)
         end
@@ -139,10 +260,55 @@ end
 
 -- The invite/accept dance (docs/TEAMING.md). Invite stamps a replicated attribute on the
 -- TARGET (TeamInviteFrom) so their client surfaces accept/decline; Accept consumes it.
+function PartyService:_notifyInviteOutcome(invite, outcome)
+    local requester = invite and Players:GetPlayerByUserId(invite.fromUserId)
+    if not requester then
+        return
+    end
+    requester:SetAttribute("TeamInviteOutcome", outcome)
+    requester:SetAttribute("TeamInviteTarget", invite.targetName or "Player")
+    requester:SetAttribute(
+        "TeamInviteOutcomeSerial",
+        (tonumber(requester:GetAttribute("TeamInviteOutcomeSerial")) or 0) + 1
+    )
+end
+
+function PartyService:_expireInvite(targetUserId, invite)
+    if self._invites[targetUserId] ~= invite then
+        return false
+    end
+    self._invites[targetUserId] = nil
+    local target = Players:GetPlayerByUserId(targetUserId)
+    if target and target:GetAttribute("TeamInviteFrom") == invite.from then
+        target:SetAttribute("TeamInviteFrom", nil)
+    end
+    self:_notifyInviteOutcome(invite, "timed_out")
+    return true
+end
+
+function PartyService:_expireInvites(now)
+    local timeout = tonumber(self._config.invite_timeout_seconds) or 30
+    for targetUserId, invite in pairs(self._invites) do
+        if PartyMath.inviteExpired(invite, now, timeout) then
+            self:_expireInvite(targetUserId, invite)
+        end
+    end
+end
+
 function PartyService:Invite(player, targetName)
     local target = Players:FindFirstChild(tostring(targetName))
     if not target or target == player then
         return { ok = false, reason = "target_not_found" }
+    end
+    local allowed, reason = PartyMath.canSendInvite({
+        fromInRange = self:_inSoloChallenge(player),
+        targetInRange = self:_inSoloChallenge(target),
+        targetPrivacy = self:_privacyOf(target),
+        areFriends = self:_areFriends(player, target),
+        cfg = self._config,
+    })
+    if not allowed then
+        return { ok = false, reason = reason }
     end
     local id = select(1, self:_partyOf(player))
     if not id then
@@ -153,18 +319,51 @@ function PartyService:Invite(player, targetName)
     if not PartyMath.canJoin(partySize(self._parties[id]), self._config.max_size) then
         return { ok = false, reason = "party_full" }
     end
-    self._invites[target.UserId] = { partyId = id, from = player.Name, at = os.time() }
+    local existing = self._invites[target.UserId]
+    local timeout = tonumber(self._config.invite_timeout_seconds) or 30
+    if existing and not PartyMath.inviteExpired(existing, os.clock(), timeout) then
+        return { ok = false, reason = "target_has_pending_invite" }
+    elseif existing then
+        self:_expireInvite(target.UserId, existing)
+    end
+
+    local invite = {
+        partyId = id,
+        from = player.Name,
+        fromUserId = player.UserId,
+        targetName = target.Name,
+        at = os.clock(),
+    }
+    self._invites[target.UserId] = invite
     target:SetAttribute("TeamInviteFrom", player.Name)
     return { ok = true, partyId = id }
 end
 
 function PartyService:Accept(player)
     local invite = self._invites[player.UserId]
-    self._invites[player.UserId] = nil
-    player:SetAttribute("TeamInviteFrom", nil)
-    if not invite or (os.time() - invite.at) > 120 then
+    if not invite then
         return { ok = false, reason = "no_invite" }
     end
+    if
+        PartyMath.inviteExpired(
+            invite,
+            os.clock(),
+            tonumber(self._config.invite_timeout_seconds) or 30
+        )
+    then
+        self:_expireInvite(player.UserId, invite)
+        return { ok = false, reason = "invite_expired" }
+    end
+    local from = Players:GetPlayerByUserId(invite.fromUserId)
+    local allowed, reason = PartyMath.canAcceptInvite({
+        fromInRange = self:_inSoloChallenge(from),
+        targetInRange = self:_inSoloChallenge(player),
+    })
+    if not allowed then
+        return { ok = false, reason = reason }
+    end
+    self._invites[player.UserId] = nil
+    player:SetAttribute("TeamInviteFrom", nil)
     local joined = self:Join(player, invite.partyId)
     if joined.ok then
         self:_publish(invite.partyId)
@@ -182,13 +381,29 @@ function PartyService:Accept(player)
                 effectiveLevel
             )
         end
+        -- Unfinished Hall player joining a teammate already in Crystal World / a
+        -- realm: session guest visit only. Do not stamp Hall completion.
+        if
+            joined.joined
+            and lead
+            and self._zoneService
+            and self._zoneService.BeginHallGuestVisit
+            and not self._zoneService:HasEnteredCrystalWorld(player)
+            and not self._zoneService:IsInHall(lead)
+        then
+            self._zoneService:BeginHallGuestVisit(player)
+        end
     end
     return joined
 end
 
 function PartyService:Decline(player)
+    local invite = self._invites[player.UserId]
     self._invites[player.UserId] = nil
     player:SetAttribute("TeamInviteFrom", nil)
+    if invite then
+        self:_notifyInviteOutcome(invite, "declined")
+    end
     return { ok = true }
 end
 
@@ -225,6 +440,24 @@ function PartyService:FollowWarp(player, targetName)
     end
     local myLayer = layers:GetCurrentLayer(player) or "base"
     local destLayer = layers:GetCurrentLayer(target) or "base"
+    local zone = self._zoneService
+    local unfinishedHall = zone
+        and zone.HasEnteredCrystalWorld
+        and not zone:HasEnteredCrystalWorld(player)
+    if unfinishedHall then
+        if destLayer ~= "base" then
+            return { ok = false, reason = "hall_route_required" }
+        end
+        if zone.IsInHall and zone:IsInHall(target) then
+            return { ok = false, reason = "same_layer" }
+        end
+        local visit = zone:BeginHallGuestVisit(player)
+        if type(visit) == "table" and visit.ok == true then
+            self._followWarpAt[player.UserId] = os.clock()
+            return { ok = true, layer = "base", guest = true }
+        end
+        return visit or { ok = false, reason = "guest_place_failed" }
+    end
     if myLayer == destLayer then
         return { ok = false, reason = "same_layer" }
     end

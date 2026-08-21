@@ -7,7 +7,7 @@ return function()
             it("refuses " .. family .. " with no living pet target", function()
                 local ok, reason = PowerCastGate.validate({ family = family }, { livePetCount = 0 })
                 expect(ok).to.equal(false)
-                expect(reason).to.equal("no_target")
+                expect(reason).to.equal("no_pets_deployed")
                 expect(PowerCastGate.validate({ family = family }, { livePetCount = 1 })).to.equal(
                     true
                 )
@@ -15,27 +15,33 @@ return function()
         end
 
         it("refuses an instant heal with no living pet but permits a persistent field", function()
-            expect(PowerCastGate.validate({ family = "heal" }, { livePetCount = 0 })).to.equal(
-                false
-            )
+            local ok, reason = PowerCastGate.validate({ family = "heal" }, { livePetCount = 0 })
+            expect(ok).to.equal(false)
+            expect(reason).to.equal("no_pets_deployed")
             expect(PowerCastGate.validate({ family = "heal", field = true }, { livePetCount = 0 })).to.equal(
                 true
             )
         end)
 
         it("casts Revive only when a downed target exists", function()
-            expect(PowerCastGate.validate({ family = "revive" }, { hasDownedPet = false })).to.equal(
-                false
+            local ok, reason = PowerCastGate.validate(
+                { family = "revive" },
+                { hasDownedPet = false }
             )
+            expect(ok).to.equal(false)
+            expect(reason).to.equal("no_downed_pets")
             expect(PowerCastGate.validate({ family = "revive" }, { hasDownedPet = true })).to.equal(
                 true
             )
         end)
 
         it("casts Resonance only when a crystal is in range", function()
-            expect(PowerCastGate.validate({ family = "farm_boost" }, { breakableCount = 0 })).to.equal(
-                false
+            local ok, reason = PowerCastGate.validate(
+                { family = "farm_boost" },
+                { breakableCount = 0 }
             )
+            expect(ok).to.equal(false)
+            expect(reason).to.equal("no_crystals_in_range")
             expect(PowerCastGate.validate({ family = "farm_boost" }, { breakableCount = 1 })).to.equal(
                 true
             )
@@ -43,9 +49,9 @@ return function()
 
         it("allows Simoom when either its heal or blind half has a target", function()
             local kind = { family = "heal_blind" }
-            expect(PowerCastGate.validate(kind, { livePetCount = 0, enemyCount = 0 })).to.equal(
-                false
-            )
+            local ok, reason = PowerCastGate.validate(kind, { livePetCount = 0, enemyCount = 0 })
+            expect(ok).to.equal(false)
+            expect(reason).to.equal("no_pets_or_enemies_in_range")
             expect(PowerCastGate.validate(kind, { livePetCount = 1, enemyCount = 0 })).to.equal(
                 true
             )

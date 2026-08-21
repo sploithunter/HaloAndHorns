@@ -85,10 +85,12 @@ absolute contribution. Repeated flushes are therefore idempotent rather than add
 fixed buckets avoid one globally contended key. A read never calls `ListKeysAsync` and never
 downloads event chunks.
 
-The quick dashboard excludes player names beginning with `Colorado`, `waxillium` (and the historical
-`waxilium` spelling), `sploit`, or `Macros`, case-insensitively, before its counters are incremented.
-This filter affects only the operational dashboard; internal traces remain in the raw store for
-testing and diagnosis.
+The quick dashboard excludes Jason's tester accounts from
+`configs/internal_accounts.lua` before counters increment. Colorado
+accounts are matched by immutable user ID only — never a `Colorado*`
+name prefix, because other players use that word. `waxillium` /
+`waxilium` / `sploit` / `macros` may still use name prefixes for
+unlisted alts. Internal traces remain in the raw store.
 
 Counters include sessions and completed-session time, new players, the starter-choice shown/selected
 microfunnel and pet split, every first-session tutorial step with time-to-step and active-step exits,

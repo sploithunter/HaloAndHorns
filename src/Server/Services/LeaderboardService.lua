@@ -3,6 +3,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
+local InternalAccounts = require(ReplicatedStorage.Shared.Game.InternalAccounts)
 local LeaderboardScoring = require(ReplicatedStorage.Shared.Game.LeaderboardScoring)
 local LeaderboardStatus = require(ReplicatedStorage.Shared.Game.LeaderboardStatus)
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
@@ -35,6 +37,11 @@ function LeaderboardService:Init()
     self._boardsById = {}
     self._counterBoards = {}
     self._derivedBoards = {}
+    self._challengeBoards = {}
+    self._challengeConfig = nil
+    pcall(function()
+        self._challengeConfig = self._configLoader:LoadConfig("challenge_runs")
+    end)
     self._excluded = {}
     self._liveValues = {}
     self._cachedGlobal = {}
@@ -48,9 +55,14 @@ function LeaderboardService:Init()
     self._pendingWrites = 0
     self.SnapshotChanged = Signal.new()
 
+    self._internalAccounts = self._configLoader:LoadConfig("internal_accounts")
+    for userId in pairs(InternalAccounts.userIdSet(self._internalAccounts)) do
+        self._excluded[userId] = true
+    end
     for _, userId in ipairs(self._config.excluded_user_ids or {}) do
         self._excluded[tonumber(userId)] = true
     end
+    -- Hidden from the public page only. Every account still publishes.
 
     for _, board in ipairs(self._config.boards or {}) do
         self._boardsById[board.id] = board
@@ -59,6 +71,8 @@ function LeaderboardService:Init()
         if score.kind == "counter" then
             self._counterBoards[score.counter] = self._counterBoards[score.counter] or {}
             table.insert(self._counterBoards[score.counter], board)
+        elseif score.kind == "challenge_window" then
+            table.insert(self._challengeBoards, board)
         else
             table.insert(self._derivedBoards, board)
         end
@@ -94,9 +108,9 @@ function LeaderboardService:Start()
     end)
 
     Players.PlayerRemoving:Connect(function(player)
-        -- PlayerRemoving still has access to the profile in the normal teardown path. A forced
-        -- write bypasses debounce; if another service released first, the last cached value wins.
-        self:RefreshPlayer(player, true)
+        -- Origin boards still replace their ordered key on leave. Challenge
+        -- window scores are written when a run ends, not on player exit.
+        self:RefreshPlayer(player, true, true)
         for boardId in pairs(self._liveValues) do
             self._liveValues[boardId][player.UserId] = nil
             self._pendingRefresh[boardId .. ":" .. tostring(player.UserId)] = nil
@@ -109,16 +123,19 @@ function LeaderboardService:Start()
         end)
     end
 
-    self:_cleanExcludedKeys()
     self:_startGlobalReadLoop()
+    self:_startChallengeWindowSweep()
     RunService.Heartbeat:Connect(function(deltaTime)
         self:_heartbeat(deltaTime)
     end)
 
     game:BindToClose(function()
-        -- This is bounded by the current server population; it never enumerates saved profiles.
+        -- Window expiry first (may drop a published room), then the other
+        -- boards replace their keys. Challenge scores are not rewritten just
+        -- because the server is closing unless the sweep changed them.
+        self:_sweepChallengeWindows(true)
         for _, player in ipairs(Players:GetPlayers()) do
-            self:RefreshPlayer(player, true)
+            self:RefreshPlayer(player, true, true)
         end
     end)
 end
@@ -159,21 +176,45 @@ function LeaderboardService:_calculate(board, player)
     if score.kind == "counter" then
         return LeaderboardScoring.counter(data, score.counter)
     elseif score.kind == "inventory_taxonomy" then
-        return LeaderboardScoring.countTaxonomy(data, score.pet_ids)
+        return LeaderboardScoring.countTaxonomy(
+            data,
+            LeaderboardScoring.taxonomyIds(score, self._petsConfig.pets)
+        )
     elseif score.kind == "strongest_squad" then
         local slots = self._inventoryService:RefreshEquipCapacity(player)
         return LeaderboardScoring.strongestLegalSquad(data, slots, function(record)
             return self:_petPower(record)
         end)
+    elseif score.kind == "challenge_window" then
+        local window = ChallengeRun.leaderboardWindow(self._challengeConfig)
+        if tonumber(score.window_seconds) then
+            window = math.max(1, math.floor(score.window_seconds))
+        end
+        local runs = data.GameData and data.GameData.ChallengeRuns
+        local rec = type(runs) == "table" and runs[score.mode]
+        return ChallengeRun.windowBest(rec and rec.recent, os.time(), window)
     end
     return 0
 end
 
+function LeaderboardService:_hideInternalAccounts()
+    return (self._config.publication or {}).hide_internal_accounts == true
+end
+
+function LeaderboardService:_visibleEntries(entries)
+    return LeaderboardScoring.visibleEntries(entries, self._excluded, self:_hideInternalAccounts())
+end
+
+function LeaderboardService:_publicTop(entries, limit)
+    return LeaderboardScoring.publicTop(
+        entries,
+        self._excluded,
+        self:_hideInternalAccounts(),
+        limit
+    )
+end
+
 function LeaderboardService:_setLiveValue(board, player, value)
-    if self._excluded[player.UserId] then
-        self._liveValues[board.id][player.UserId] = nil
-        return
-    end
     self._liveValues[board.id][player.UserId] = {
         userId = player.UserId,
         name = player.Name,
@@ -183,7 +224,7 @@ function LeaderboardService:_setLiveValue(board, player, value)
 end
 
 function LeaderboardService:_refreshBoardForPlayer(board, player, force)
-    if not player or self._excluded[player.UserId] then
+    if not player then
         return
     end
     local value = self:_calculate(board, player)
@@ -198,14 +239,62 @@ function LeaderboardService:_refreshBoardForPlayer(board, player, force)
     self:_scheduleGlobalValue(board, player.UserId, value, force)
 end
 
-function LeaderboardService:RefreshPlayer(player, force)
+function LeaderboardService:RefreshPlayer(player, force, skipChallenge)
     for _, board in ipairs(self._config.boards or {}) do
+        if skipChallenge and self:_scoreDefinition(board).kind == "challenge_window" then
+            -- run persist already published this score
+        else
+            self:_refreshBoardForPlayer(board, player, force == true)
+        end
+    end
+end
+
+function LeaderboardService:RefreshChallengeBoards(player, force)
+    for _, board in ipairs(self._challengeBoards) do
         self:_refreshBoardForPlayer(board, player, force == true)
     end
 end
 
+function LeaderboardService:_startChallengeWindowSweep()
+    if #self._challengeBoards == 0 then
+        return
+    end
+    self._challengeSweepElapsed = 0
+    task.spawn(function()
+        self:_sweepChallengeWindows(true)
+    end)
+end
+
+function LeaderboardService:_sweepChallengeWindows(force)
+    if #self._challengeBoards == 0 then
+        return
+    end
+    local window, cap = ChallengeRun.leaderboardWindow(self._challengeConfig)
+    local now = os.time()
+    for _, player in ipairs(Players:GetPlayers()) do
+        local data = self._dataService and self._dataService:GetData(player)
+        local runs = data and data.GameData and data.GameData.ChallengeRuns
+        local changed = false
+        if type(runs) == "table" then
+            for _, rec in pairs(runs) do
+                if type(rec) == "table" then
+                    local pruned = ChallengeRun.pruneWindow(rec.recent, now, window, cap)
+                    if ChallengeRun.recentChanged(rec.recent, pruned) then
+                        rec.recent = pruned
+                        changed = true
+                    end
+                end
+            end
+        end
+        if changed and self._dataService and self._dataService.RequestSave then
+            self._dataService:RequestSave(player, "challenge_window_sweep")
+        end
+        self:RefreshChallengeBoards(player, force == true)
+    end
+end
+
 function LeaderboardService:_scheduleBoardRefresh(board, player)
-    if not player or self._excluded[player.UserId] then
+    if not player then
         return
     end
     local delaySeconds = tonumber((self._config.publication or {}).derive_debounce_seconds) or 1
@@ -228,7 +317,7 @@ function LeaderboardService:GetLiveLeaderboard(boardId, limit)
         table.insert(entries, table.clone(entry))
     end
     self:_sortEntries(board, entries)
-    return self:_trimEntries(entries, limit or board.max_entries or 10)
+    return self:_publicTop(entries, limit or board.max_entries or 10)
 end
 
 function LeaderboardService:_sortEntries(board, entries)
@@ -251,6 +340,17 @@ function LeaderboardService:_trimEntries(entries, limit)
         trimmed[index].rank = index
     end
     return trimmed
+end
+
+function LeaderboardService:RequestSnapshot(boardId)
+    local board = self._boardsById[boardId]
+    if not board then
+        return { ok = false, reason = "unknown_board" }
+    end
+    if not self._cachedGlobal[boardId] then
+        self:_readGlobalBoard(board)
+    end
+    return self:GetSnapshot(boardId)
 end
 
 function LeaderboardService:GetSnapshot(boardId)
@@ -283,7 +383,11 @@ end
 function LeaderboardService:_statusEntries(board)
     local global = board.global or {}
     local usesGlobal = global.enabled == true
-        and (not RunService:IsStudio() or global.studio_enabled == true)
+        and (
+            not RunService:IsStudio()
+            or global.studio_enabled == true
+            or self:_studioMayReadGlobal()
+        )
     if usesGlobal then
         return self._cachedGlobalTop100[board.id]
     end
@@ -305,7 +409,7 @@ function LeaderboardService:_refreshPlayerStatusTitles()
     local rankLimit = positiveInteger((self._config.publication or {}).status_rank_limit, 10)
     for _, player in ipairs(Players:GetPlayers()) do
         local best = nil
-        if not self._excluded[player.UserId] then
+        if not (self:_hideInternalAccounts() and self._excluded[player.UserId]) then
             best = LeaderboardStatus.bestForUser(
                 player.UserId,
                 self._config.boards,
@@ -320,17 +424,15 @@ function LeaderboardService:_refreshPlayerStatusTitles()
     end
 end
 
-function LeaderboardService:_getGlobalStore(board)
-    local global = board.global or {}
-    if global.enabled ~= true then
-        return nil
-    end
-    if RunService:IsStudio() and global.studio_enabled ~= true then
-        return nil
-    end
+function LeaderboardService:_studioMayReadGlobal()
+    return (self._config.publication or {}).studio_read_global == true
+end
+
+function LeaderboardService:_openGlobalStore(board)
     if self._globalStores[board.id] ~= nil then
         return self._globalStores[board.id] or nil
     end
+    local global = board.global or {}
     local ok, result = pcall(function()
         return DataStoreService:GetOrderedDataStore(global.ordered_store)
     end)
@@ -343,6 +445,36 @@ function LeaderboardService:_getGlobalStore(board)
         })
     end
     return self._globalStores[board.id] or nil
+end
+
+function LeaderboardService:_getGlobalReadStore(board)
+    local global = board.global or {}
+    if global.enabled ~= true then
+        return nil
+    end
+    if
+        RunService:IsStudio()
+        and global.studio_enabled ~= true
+        and not self:_studioMayReadGlobal()
+    then
+        return nil
+    end
+    return self:_openGlobalStore(board)
+end
+
+function LeaderboardService:_getGlobalStore(board)
+    local global = board.global or {}
+    if global.enabled ~= true then
+        return nil
+    end
+    if
+        RunService:IsStudio()
+        and global.studio_enabled ~= true
+        and (self._config.publication or {}).studio_write_global ~= true
+    then
+        return nil
+    end
+    return self:_openGlobalStore(board)
 end
 
 function LeaderboardService:_scheduleGlobalValue(board, userId, value, force)
@@ -386,8 +518,13 @@ function LeaderboardService:_publishNow(board, store, userId, value, key, genera
         return
     end
     self._pendingWrites += 1
+    local score = self:_scoreDefinition(board)
     local ok, errorMessage = pcall(function()
-        store:SetAsync(tostring(userId), value)
+        if value <= 0 and score.kind == "challenge_window" then
+            store:RemoveAsync(tostring(userId))
+        else
+            store:SetAsync(tostring(userId), value)
+        end
     end)
     self._pendingWrites -= 1
     if ok then
@@ -400,29 +537,6 @@ function LeaderboardService:_publishNow(board, store, userId, value, key, genera
             error = tostring(errorMessage),
         })
     end
-end
-
-function LeaderboardService:_cleanExcludedKeys()
-    task.spawn(function()
-        for _, board in ipairs(self._config.boards or {}) do
-            local store = self:_getGlobalStore(board)
-            if store then
-                for userId in pairs(self._excluded) do
-                    local ok, errorMessage = pcall(function()
-                        store:RemoveAsync(tostring(userId))
-                    end)
-                    if not ok then
-                        self._logger:Warn("Failed to remove excluded leaderboard key", {
-                            context = "LeaderboardService",
-                            board = board.id,
-                            userId = userId,
-                            error = tostring(errorMessage),
-                        })
-                    end
-                end
-            end
-        end
-    end)
 end
 
 function LeaderboardService:_nameForUserId(userId)
@@ -441,7 +555,7 @@ function LeaderboardService:_nameForUserId(userId)
 end
 
 function LeaderboardService:_readGlobalBoard(board)
-    local store = self:_getGlobalStore(board)
+    local store = self:_getGlobalReadStore(board)
     if not store then
         self:_broadcast(board.id)
         return
@@ -463,10 +577,11 @@ function LeaderboardService:_readGlobalBoard(board)
     local entries = {}
     for _, row in ipairs(pageOrError:GetCurrentPage()) do
         local userId = tonumber(row.key)
-        if userId and not self._excluded[userId] then
+        local value = tonumber(row.value) or 0
+        if userId and value > 0 then
             table.insert(entries, {
                 userId = userId,
-                value = tonumber(row.value) or 0,
+                value = value,
             })
         end
     end
@@ -474,7 +589,7 @@ function LeaderboardService:_readGlobalBoard(board)
 
     -- OrderedDataStore keeps/read-caches 100 scores, but a board only needs names for its ten
     -- visible rows. This keeps refresh cost bounded if the experience grows substantially.
-    local visible = self:_trimEntries(
+    local visible = self:_publicTop(
         entries,
         positiveInteger((self._config.publication or {}).display_entries, 10)
     )
@@ -518,6 +633,15 @@ function LeaderboardService:_heartbeat(deltaTime)
                 pending.generation
             )
         end
+    end
+
+    local _, _, sweepSeconds = ChallengeRun.leaderboardWindow(self._challengeConfig)
+    self._challengeSweepElapsed = (self._challengeSweepElapsed or 0) + deltaTime
+    if #self._challengeBoards > 0 and self._challengeSweepElapsed >= sweepSeconds then
+        self._challengeSweepElapsed %= sweepSeconds
+        task.spawn(function()
+            self:_sweepChallengeWindows(false)
+        end)
     end
 
     self._globalReadElapsed = (self._globalReadElapsed or 0) + deltaTime

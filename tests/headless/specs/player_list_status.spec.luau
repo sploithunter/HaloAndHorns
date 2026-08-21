@@ -40,6 +40,25 @@ return function()
                 leaderboardTitle = "Slayer",
             })).to.equal("👑 Slayer")
         end)
+
+        it("shows a persistent Huge-hatcher achievement above ordinary level titles", function()
+            expect(PlayerListStatus.status({ level = 50, hugeHatcher = true })).to.equal(
+                "Huge Hatcher"
+            )
+            expect(PlayerListStatus.status({
+                level = 50,
+                vip = true,
+                hugeHatcher = true,
+            })).to.equal("👑 Huge Hatcher")
+        end)
+
+        it("keeps a rarer leaderboard title ahead of Huge-hatcher status", function()
+            expect(PlayerListStatus.status({
+                level = 50,
+                hugeHatcher = true,
+                leaderboardTitle = "Slayer",
+            })).to.equal("Slayer")
+        end)
     end)
 
     describe("PlayerListStatus.location", function()

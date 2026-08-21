@@ -214,11 +214,122 @@ local M = {
             health = 25,
             value = 25,
             currency = "coins",
+            spawn = {
+                method = "drop",
+                height = 16,
+                duration = 0.75,
+            },
             placement = {
                 height_offset = 0,
                 sink_depth = 0,
-                drop_from_height = 16,
-                drop_duration = 0.75,
+            },
+            physics = {
+                anchored = true,
+                can_collide = false,
+                can_touch = false,
+                can_query = true,
+            },
+        },
+        WaycoinBag = {
+            display_name = "Waycoin Bag",
+            asset_id = "rbxassetid://110554935395608",
+            texture_asset = "rbxassetid://75865995790002",
+            default_orientation = { x = 90, y = 0, z = 0 },
+            normalize_prebaked_orientation = true,
+            normalize_part_pivots = true,
+            scale = 2.8,
+            health = 35,
+            value = 30,
+            currency = "hall_coins",
+            spawn = {
+                method = "drop",
+                height = 16,
+                duration = 0.75,
+            },
+            placement = {
+                height_offset = 0,
+                sink_depth = 0,
+            },
+            physics = {
+                anchored = true,
+                can_collide = false,
+                can_touch = false,
+                can_query = true,
+            },
+        },
+        GoldFernNugget = {
+            display_name = "Gold Fern Nugget",
+            asset_id = "rbxassetid://120014016368053",
+            texture_asset = "rbxassetid://122238167351476",
+            default_orientation = { x = 90, y = 0, z = 0 },
+            normalize_prebaked_orientation = true,
+            normalize_part_pivots = true,
+            scale = 3,
+            health = 120,
+            value = 100,
+            currency = "hall_coins",
+            spawn = {
+                method = "drop",
+                height = 18,
+                duration = 0.8,
+            },
+            placement = {
+                height_offset = 0,
+                sink_depth = 0,
+            },
+            physics = {
+                anchored = true,
+                can_collide = false,
+                can_touch = false,
+                can_query = true,
+            },
+        },
+        WaycoinTrove = {
+            display_name = "Waycoin Trove",
+            asset_id = "rbxassetid://95705960346519",
+            texture_asset = "rbxassetid://93434113201492",
+            default_orientation = { x = 90, y = 0, z = 0 },
+            normalize_prebaked_orientation = true,
+            normalize_part_pivots = true,
+            scale = 3.8,
+            health = 300,
+            value = 250,
+            currency = "hall_coins",
+            spawn = {
+                method = "drop",
+                height = 20,
+                duration = 0.85,
+            },
+            placement = {
+                height_offset = 0,
+                sink_depth = 0,
+            },
+            physics = {
+                anchored = true,
+                can_collide = false,
+                can_touch = false,
+                can_query = true,
+            },
+        },
+        GildedWaycache = {
+            display_name = "Gilded Waycache",
+            asset_id = "rbxassetid://127252019339192",
+            texture_asset = "rbxassetid://119749174286025",
+            default_orientation = { x = 90, y = 0, z = 0 },
+            normalize_prebaked_orientation = true,
+            normalize_part_pivots = true,
+            scale = 4.2,
+            health = 450,
+            value = 400,
+            currency = "hall_coins",
+            spawn = {
+                method = "drop",
+                height = 22,
+                duration = 0.9,
+            },
+            placement = {
+                height_offset = 0,
+                sink_depth = 0,
             },
             physics = {
                 anchored = true,
@@ -231,6 +342,128 @@ local M = {
 
     -- World-level settings for breakables
     worlds = {
+        -- Hall of Worlds uses one simple world currency. Bags, nuggets, troves, and
+        -- chests are mineable targets placed on the baked FuturePath geometry. The
+        -- old loose Waycoin pile is reserved for physical reward pickups in drops.lua.
+        Hall_1 = {
+            -- Safety ceiling only. Live population is field area × targets_per_1000_studs.
+            -- Cap tiles are 304×304 (~92k studs²); 2.6/1000 restores the approved
+            -- "100 in the old 195×195 box" feel across the full green field.
+            max = 250,
+            interval = 8,
+            spawn_area = {
+                name = "SpawnArea",
+                -- Recovery fallback only. The baked Tile01 SpawnZone is authoritative.
+                size = { x = 195.52, y = 0.5, z = 195.52 },
+                position = { x = 2000, y = 0.3, z = -286 },
+            },
+            spawn_settings = {
+                upright = true,
+                -- FuturePath field parts have their walkable top at Y=0.6. The marker's thin
+                -- volume is only a footprint; surface_y is the actual landing plane.
+                surface_y = 0.6,
+                use_spawner_bounds = true,
+                spawn_area_margin = 8,
+                spawn_exclusion_radius = 0,
+                min_distance = 18,
+                -- Hall uses the exact baked green-field SpawnZone footprint. Uniform random
+                -- candidates eliminate visible rows while the shared slot registry still
+                -- enforces occupied spacing.
+                slot_layout = "random",
+                targets_per_1000_studs = 2.6,
+                min_targets = 80,
+                spawn_attempts = 50,
+                respawn_min_seconds = 2,
+                respawn_max_seconds = 6,
+            },
+            spawn_table = {
+                { name = "WaycoinBag", weight = 5 },
+                { name = "GoldFernNugget", weight = 1 },
+            },
+        },
+        Hall_2 = {
+            max = 160,
+            interval = 8,
+            spawn_area = {
+                name = "SpawnArea",
+                size = { x = 79, y = 0.5, z = 111 },
+                position = { x = 2000, y = 0.3, z = 208 },
+            },
+            spawn_settings = {
+                upright = true,
+                surface_y = 0.6,
+                use_spawner_bounds = true,
+                spawn_area_margin = 20,
+                spawn_exclusion_radius = 18,
+                min_distance = 20,
+                slot_layout = "random",
+                targets_per_1000_studs = 2.6,
+                min_targets = 40,
+                spawn_attempts = 60,
+                respawn_min_seconds = 2,
+                respawn_max_seconds = 6,
+            },
+            spawn_table = {
+                { name = "WaycoinBag", weight = 4 },
+                { name = "GoldFernNugget", weight = 2 },
+            },
+        },
+        Hall_3 = {
+            max = 160,
+            interval = 8,
+            spawn_area = {
+                name = "SpawnArea",
+                size = { x = 79, y = 0.5, z = 111 },
+                position = { x = 2348, y = 0.3, z = 428 },
+            },
+            spawn_settings = {
+                upright = true,
+                surface_y = 0.6,
+                use_spawner_bounds = true,
+                spawn_area_margin = 22,
+                spawn_exclusion_radius = 18,
+                min_distance = 20,
+                slot_layout = "random",
+                targets_per_1000_studs = 2.6,
+                min_targets = 40,
+                spawn_attempts = 70,
+                respawn_min_seconds = 2,
+                respawn_max_seconds = 6,
+            },
+            spawn_table = {
+                { name = "WaycoinBag", weight = 3 },
+                { name = "GoldFernNugget", weight = 3 },
+                { name = "WaycoinTrove", weight = 1 },
+            },
+        },
+        Hall_4 = {
+            max = 250,
+            interval = 8,
+            spawn_area = {
+                name = "SpawnArea",
+                size = { x = 195.52, y = 0.5, z = 195.52 },
+                position = { x = 2568, y = 0.3, z = 982 },
+            },
+            spawn_settings = {
+                upright = true,
+                surface_y = 0.6,
+                use_spawner_bounds = true,
+                spawn_area_margin = 26,
+                spawn_exclusion_radius = 22,
+                min_distance = 18,
+                slot_layout = "random",
+                targets_per_1000_studs = 2.6,
+                min_targets = 80,
+                spawn_attempts = 80,
+                respawn_min_seconds = 2,
+                respawn_max_seconds = 6,
+            },
+            spawn_table = {
+                { name = "GoldFernNugget", weight = 4 },
+                { name = "WaycoinTrove", weight = 3 },
+                { name = "GildedWaycache", weight = 1 },
+            },
+        },
         -- Spawn uses an invisible SpawnArea part under:
         -- Workspace.Game.Breakables.Crystals.Spawn
         Spawn = {

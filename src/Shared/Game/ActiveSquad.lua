@@ -50,8 +50,12 @@ function ActiveSquad.slotReady(cooldownUntil, now)
 end
 
 -- Summon is allowed only when the slot is off cooldown AND a ready instance exists
--- (stack ready_count > 0, or a unique past its spirit-form cooldown).
-function ActiveSquad.canSummon(slotReady, hasReadyInstance)
+-- (stack ready_count > 0, or a unique past its spirit-form cooldown). Gauntlets
+-- (`noRevive`) refuse resummon for the rest of the run — no timer, no Ready.
+function ActiveSquad.canSummon(slotReady, hasReadyInstance, noRevive)
+    if noRevive then
+        return { ok = false, reason = "gauntlet_no_revive" }
+    end
     if not slotReady then
         return { ok = false, reason = "slot_recharging" }
     end

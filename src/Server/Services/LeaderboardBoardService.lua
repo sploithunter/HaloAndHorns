@@ -1,6 +1,9 @@
 local CollectionService = game:GetService("CollectionService")
 
 local TAG = "LeaderboardBoard"
+local GUIDE_TAG = "ChallengeGuide"
+-- Screen parts are larger than the wooden opening; keep the card inside the frame.
+local ROOT_SCALE = Vector2.new(0.72, 0.86)
 
 local LeaderboardBoardService = {}
 LeaderboardBoardService.__index = LeaderboardBoardService
@@ -37,10 +40,27 @@ local function label(parent, name, position, size, text, textSize, alignment)
     return item
 end
 
+local function insetRoot(gui)
+    local root = Instance.new("Frame")
+    root.Name = "Root"
+    root.AnchorPoint = Vector2.new(0.5, 0.5)
+    root.Position = UDim2.fromScale(0.5, 0.5)
+    root.Size = UDim2.fromScale(ROOT_SCALE.X, ROOT_SCALE.Y)
+    root.BackgroundColor3 = Color3.fromRGB(17, 19, 27)
+    root.BorderSizePixel = 0
+    root.ClipsDescendants = true
+    root.Parent = gui
+    return root
+end
+
 function LeaderboardBoardService:Init()
     self._logger = self._modules.Logger
     self._config = self._modules.ConfigLoader:LoadConfig("leaderboards")
     self._leaderboards = self._modules.LeaderboardService
+    self._challengeConfig = nil
+    pcall(function()
+        self._challengeConfig = self._modules.ConfigLoader:LoadConfig("challenge_runs")
+    end)
     self._boardsById = {}
     self._bindings = {}
     for _, board in ipairs(self._config.boards or {}) do
@@ -57,6 +77,12 @@ function LeaderboardBoardService:Start()
     end)
     CollectionService:GetInstanceRemovedSignal(TAG):Connect(function(host)
         self._bindings[host] = nil
+    end)
+    for _, host in ipairs(CollectionService:GetTagged(GUIDE_TAG)) do
+        self:_bindGuide(host)
+    end
+    CollectionService:GetInstanceAddedSignal(GUIDE_TAG):Connect(function(host)
+        self:_bindGuide(host)
     end)
     self._leaderboards.SnapshotChanged:Connect(function(boardId, snapshot)
         self:_renderBoard(boardId, snapshot)
@@ -97,22 +123,8 @@ function LeaderboardBoardService:_bind(host)
     if old then
         old:Destroy()
     end
-    local gui = Instance.new("SurfaceGui")
-    gui.Name = "LeaderboardSurface"
-    gui.Face = Enum.NormalId.Front
-    gui.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
-    gui.CanvasSize = Vector2.new(900, 620)
-    gui.LightInfluence = 0
-    gui.Brightness = 2
-    gui.AlwaysOnTop = false
-    gui.Parent = screen
-
-    local root = Instance.new("Frame")
-    root.Name = "Root"
-    root.Size = UDim2.fromScale(1, 1)
-    root.BackgroundColor3 = Color3.fromRGB(17, 19, 27)
-    root.BorderSizePixel = 0
-    root.Parent = gui
+    local gui = self:_makeBoardGui(screen, host)
+    local root = insetRoot(gui)
 
     local stroke = Instance.new("UIStroke")
     stroke.Color = color(definition.style and definition.style.accent, Color3.new(1, 1, 1))
@@ -149,8 +161,8 @@ function LeaderboardBoardService:_bind(host)
     local rows = Instance.new("Frame")
     rows.Name = "Rows"
     rows.BackgroundTransparency = 1
-    rows.Position = UDim2.fromOffset(24, 118)
-    rows.Size = UDim2.new(1, -48, 0, 455)
+    rows.Position = UDim2.fromOffset(0, 104)
+    rows.Size = UDim2.new(1, 0, 0, 455)
     rows.Parent = root
 
     for index = 1, 10 do
@@ -181,8 +193,8 @@ function LeaderboardBoardService:_bind(host)
     local footer = label(
         root,
         "Footer",
-        UDim2.new(0, 30, 1, -39),
-        UDim2.new(1, -60, 0, 28),
+        UDim2.new(0, 0, 1, -39),
+        UDim2.new(1, 0, 0, 28),
         "GLOBAL TOP 10  •  REFRESHING…",
         17,
         Enum.TextXAlignment.Center
@@ -192,6 +204,74 @@ function LeaderboardBoardService:_bind(host)
 
     self._bindings[host] = { boardId = boardId, root = root }
     self:_renderBinding(self._bindings[host], self._leaderboards:GetSnapshot(boardId))
+end
+
+function LeaderboardBoardService:_surfaceFace(screen, host)
+    local named = host:GetAttribute("SurfaceFace") or screen:GetAttribute("SurfaceFace")
+    if type(named) == "string" and named ~= "" then
+        local ok, id = pcall(function()
+            return Enum.NormalId[named]
+        end)
+        if ok and typeof(id) == "EnumItem" then
+            return id
+        end
+    end
+    return Enum.NormalId.Front
+end
+
+function LeaderboardBoardService:_makeBoardGui(screen, host)
+    local gui = Instance.new("SurfaceGui")
+    gui.Name = "LeaderboardSurface"
+    gui.Face = self:_surfaceFace(screen, host)
+    gui.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
+    gui.CanvasSize = Vector2.new(900, 620)
+    gui.LightInfluence = 0
+    gui.Brightness = 2
+    gui.AlwaysOnTop = false
+    gui.Parent = screen
+    return gui
+end
+
+function LeaderboardBoardService:_bindGuide(host)
+    local mode = host:GetAttribute("GuideMode")
+    local modes = self._challengeConfig and self._challengeConfig.modes
+    local guide = type(modes) == "table" and type(modes[mode]) == "table" and modes[mode].guide
+    local screen = self:_screenOf(host)
+    if type(guide) ~= "table" or not screen then
+        self._logger:Warn("Challenge guide hook is incomplete", {
+            context = "LeaderboardBoardService",
+            host = host:GetFullName(),
+            mode = mode,
+        })
+        return
+    end
+    local old = screen:FindFirstChild("LeaderboardSurface")
+    if old then
+        old:Destroy()
+    end
+    local gui = self:_makeBoardGui(screen, host)
+    local root = insetRoot(gui)
+    label(
+        root,
+        "Title",
+        UDim2.fromOffset(32, 28),
+        UDim2.new(1, -64, 0, 64),
+        tostring(guide.title or mode),
+        42
+    )
+    local body = table.concat(guide.lines or {}, "\n\n")
+    local lines = label(
+        root,
+        "Body",
+        UDim2.fromOffset(36, 110),
+        UDim2.new(1, -72, 1, -160),
+        body,
+        26
+    )
+    lines.Font = Enum.Font.Gotham
+    lines.TextWrapped = true
+    lines.TextYAlignment = Enum.TextYAlignment.Top
+    lines.TextColor3 = Color3.fromRGB(208, 215, 232)
 end
 
 function LeaderboardBoardService:_renderBoard(boardId, snapshot)

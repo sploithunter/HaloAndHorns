@@ -21,6 +21,9 @@ local Workspace = game:GetService("Workspace")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CoreGuiStateGuard = require(script.Parent.Parent.UI.CoreGuiStateGuard)
+local GameEvents = require(script.Parent.GameEvents)
+local TutorialLanguageState = require(script.Parent.TutorialLanguageState)
+local TutorialLocalization = require(ReplicatedStorage.Shared.Game.TutorialLocalization)
 local TUTORIAL_CFG
 pcall(function()
     TUTORIAL_CFG = require(ReplicatedStorage.Configs:WaitForChild("tutorial"))
@@ -43,6 +46,9 @@ local stepToken = 0 -- bumps every state push; loops check it to die
 local pulseGeneration = 0 -- invalidates an in-step cue when a multi-phase lesson changes target
 
 local tutorialActive = false
+local currentState
+local completionCardVisible = false
+local languageBannerShown = false
 local capsuleWantedVisible = false
 local playerListPeekUntil = 0
 local playerListPeekConnection
@@ -243,6 +249,9 @@ local function nearestEgg(prefer)
         if not prefer then
             return false
         end
+        if tostring(model:GetAttribute("EggId") or "") == tostring(prefer) then
+            return true
+        end
         local node = model
         for _ = 1, 4 do -- the hatcher folder is a near ancestor (Grass/PlacedEgg)
             if node and node.Name:find(prefer) then
@@ -356,14 +365,16 @@ local function showEggBeacon(token, finder, label)
     end)
 end
 
--- Breadcrumb trail on the GROUND from the player to the nearest egg (Jason: "a path on
--- the ground that the player follows... until the proximity menu appears"). Pathfinding
--- waypoints render as flat gold discs that ripple toward the egg; the trail recomputes as
--- the player moves and disappears inside prompt range (the ProximityPrompt takes over).
+-- World-space breadcrumb trail from the player to the current objective. This is intentionally a
+-- live direct line, not a navigation path: the endpoints are sampled every rendered frame, so
+-- player/objective movement updates it continuously without pathfinding or a periodic replan.
+-- Floating 3D chevrons flow toward the objective and disappear once its prompt is reachable.
 local PROMPT_RANGE = 12 -- studs: hide the trail once the hatch prompt is reachable
-local REPLAN_SECONDS = 0.5 -- LIVE trail: full replan every cycle (Jason: "no matter where
--- the player moves... the trail's always correct"). No thresholds, no locked targets —
--- early-replication races, streaming, respawns all self-heal within one cycle.
+local TRAIL_SPACING = 5.5
+local TRAIL_MAX_MARKERS = 12
+local TRAIL_START_DISTANCE = 4.5
+local TRAIL_ARC_HEIGHT = 2.25
+local TRAIL_TRAVEL_SPEED = 8 -- studs per second toward the objective
 
 local function showEggPath(token, finder)
     finder = finder or nearestEgg
@@ -371,29 +382,90 @@ local function showEggPath(token, finder)
     pathFolder.Name = "TutorialPath"
     pathFolder.Parent = Workspace
 
-    local PathfindingService = game:GetService("PathfindingService")
-
-    local function dot(pos, index)
-        -- clearGuidance can nil pathFolder DURING a pathfinding yield (live-caught at the
-        -- jackalope cave after the prologue's retract/replay churn) — a dot with nowhere
-        -- to go is just skipped.
+    local function chevron(index)
+        -- clearGuidance can nil pathFolder between frames; skip an orphaned marker.
         if not pathFolder then
             return nil
         end
-        local d = Instance.new("Part")
-        d.Shape = Enum.PartType.Cylinder
-        d.Size = Vector3.new(0.2, 2.2, 2.2)
-        d.CFrame = CFrame.new(pos + Vector3.new(0, 0.15, 0)) * CFrame.Angles(0, 0, math.rad(90))
-        d.Anchored = true
-        d.CanCollide = false
-        d.CanQuery = false
-        d.CastShadow = false
-        d.Material = Enum.Material.Neon
-        d.Color = GOLD
-        d.Transparency = 0.35
-        d:SetAttribute("TrailIndex", index)
-        d.Parent = pathFolder
-        return d
+
+        local marker = Instance.new("Model")
+        marker.Name = "TutorialChevron"
+        marker:SetAttribute("TrailIndex", index)
+
+        -- The root lets the entire 3D arrow travel along the route without rebuilding its arms.
+        local root = Instance.new("Part")
+        root.Name = "Root"
+        root.Size = Vector3.new(0.1, 0.1, 0.1)
+        root.CFrame = CFrame.identity
+        root.Anchored = true
+        root.CanCollide = false
+        root.CanTouch = false
+        root.CanQuery = false
+        root.CastShadow = false
+        root.Transparency = 1
+        root.Parent = marker
+        marker.PrimaryPart = root
+
+        local tip = Vector3.new(0, 0, -0.82)
+        local leftTail = Vector3.new(-0.72, 0, 0.24)
+        local rightTail = Vector3.new(0.72, 0, 0.24)
+
+        local function arm(name, tail)
+            local midpoint = (tail + tip) * 0.5
+            local part = Instance.new("Part")
+            part.Name = name
+            part.Size = Vector3.new(0.32, 0.24, (tip - tail).Magnitude)
+            part.CFrame = CFrame.lookAt(midpoint, tip)
+            part.Anchored = true
+            part.CanCollide = false
+            part.CanTouch = false
+            part.CanQuery = false
+            part.CastShadow = false
+            part.Material = Enum.Material.Neon
+            part.Color = Color3.fromRGB(255, 249, 224)
+            part.Transparency = 0.08
+            part.Parent = marker
+        end
+
+        arm("LeftArm", leftTail)
+        arm("RightArm", rightTail)
+
+        local outline = Instance.new("Highlight")
+        outline.Name = "Outline"
+        outline.DepthMode = Enum.HighlightDepthMode.Occluded
+        outline.FillColor = Color3.fromRGB(255, 247, 210)
+        outline.FillTransparency = 0.62
+        outline.OutlineColor = Color3.fromRGB(35, 43, 61)
+        outline.OutlineTransparency = 0.08
+        outline.Adornee = marker
+        outline.Parent = marker
+
+        marker.Parent = pathFolder
+        return marker
+    end
+
+    local markers = {}
+    local function setMarkerVisual(marker, visible, fade)
+        if not marker then
+            return
+        end
+        for _, child in ipairs(marker:GetChildren()) do
+            if child:IsA("BasePart") and child.Name ~= "Root" then
+                child.Transparency = visible and (0.08 + (1 - fade) * 0.72) or 1
+            elseif child:IsA("Highlight") then
+                child.Enabled = visible
+                if visible then
+                    child.FillTransparency = 0.62 + (1 - fade) * 0.28
+                    child.OutlineTransparency = 0.08 + (1 - fade) * 0.6
+                end
+            end
+        end
+    end
+
+    for markerIndex = 1, TRAIL_MAX_MARKERS do
+        local marker = chevron(markerIndex)
+        markers[markerIndex] = marker
+        setMarkerVisual(marker, false, 0)
     end
 
     task.spawn(function()
@@ -401,77 +473,57 @@ local function showEggPath(token, finder)
             local char = Players.LocalPlayer.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
             local egg = finder()
-            if hrp and egg then
-                local target = egg:GetPivot().Position
-                local dist = (target - hrp.Position).Magnitude
-                if dist <= PROMPT_RANGE then
-                    -- close enough: the prompt is the guidance now
-                    pathFolder:ClearAllChildren()
-                else
-                    -- CLEAR FIRST, every cycle. The old structure cleared only inside the
-                    -- pathfind-SUCCESS branch and the fallback drew only into an EMPTY
-                    -- folder — with NoPath (this map, always) the first boot-time plan
-                    -- (drawn before the eggs even replicated) could never be redrawn.
-                    -- THE frozen-wrong-trail bug, all builds, all day.
-                    pathFolder:ClearAllChildren()
-                    local path = PathfindingService:CreatePath({
-                        AgentRadius = 2,
-                        AgentCanJump = true,
-                    })
-                    local ok = pcall(function()
-                        path:ComputeAsync(hrp.Position, target)
-                    end)
-                    if ok and path.Status == Enum.PathStatus.Success then
-                        local n = 0
-                        for _, wp in ipairs(path:GetWaypoints()) do
-                            -- skip dots under the player's FEET (by distance, not waypoint
-                            -- count — count-skipping ate most of a short route: Jason saw
-                            -- "two dots in front of the hatch") and stop short of the egg
-                            n += 1
-                            if
-                                (wp.Position - hrp.Position).Magnitude > 4
-                                and (wp.Position - target).Magnitude > PROMPT_RANGE * 0.6
-                            then
-                                dot(wp.Position, n)
-                            end
+            local canShow = hrp ~= nil and egg ~= nil
+            local start = canShow and hrp.Position or Vector3.zero
+            local target = canShow and egg:GetPivot().Position or Vector3.zero
+            local distance = (target - start).Magnitude
+            local endDistance = distance - PROMPT_RANGE * 0.6
+            local travelLength = endDistance - TRAIL_START_DISTANCE
+
+            if canShow and distance > PROMPT_RANGE and travelLength > 0.01 then
+                local markerCount = math.min(
+                    TRAIL_MAX_MARKERS,
+                    math.max(1, math.floor(travelLength / TRAIL_SPACING))
+                )
+                local markerSeparation = travelLength / markerCount
+                local now = os.clock()
+                local travel = (now * TRAIL_TRAVEL_SPEED) % travelLength
+
+                local function positionAt(alpha)
+                    local point = start:Lerp(target, alpha)
+                    return point + Vector3.new(0, math.sin(math.pi * alpha) * TRAIL_ARC_HEIGHT, 0)
+                end
+
+                for index, marker in ipairs(markers) do
+                    if index <= markerCount and marker and marker.Parent then
+                        local offset = (index - 1) * markerSeparation
+                        local along = TRAIL_START_DISTANCE + ((offset + travel) % travelLength)
+                        local alpha = math.clamp(along / distance, 0, 1)
+                        local nextAlpha = math.clamp((along + 0.35) / distance, 0, 1)
+                        local position = positionAt(alpha)
+                        local nextPosition = positionAt(nextAlpha)
+                        local facing = nextPosition - position
+                        local edgeFade = math.min(
+                            math.clamp((along - TRAIL_START_DISTANCE) / TRAIL_SPACING, 0, 1),
+                            math.clamp((endDistance - along) / TRAIL_SPACING, 0, 1)
+                        )
+                        if facing.Magnitude > 0.01 then
+                            marker:PivotTo(CFrame.lookAt(position, position + facing.Unit))
+                            setMarkerVisual(marker, true, edgeFade)
+                        else
+                            setMarkerVisual(marker, false, 0)
                         end
-                    end
-                    -- straight-line fallback when pathfinding drew nothing (NoPath) —
-                    -- each dot raycast-snapped to the ground
-                    if pathFolder and #pathFolder:GetChildren() == 0 and dist > PROMPT_RANGE then
-                        local params = RaycastParams.new()
-                        params.FilterType = Enum.RaycastFilterType.Exclude
-                        params.FilterDescendantsInstances = { char, pathFolder }
-                        local dir = (target - hrp.Position) * Vector3.new(1, 0, 1)
-                        local flat = dir.Magnitude
-                        if flat > 1 then
-                            dir = dir.Unit
-                            local steps = math.min(14, math.floor(flat / 6))
-                            for i = 2, steps do
-                                local pos = hrp.Position + dir * (i * 6)
-                                local hit = Workspace:Raycast(
-                                    pos + Vector3.new(0, 10, 0),
-                                    Vector3.new(0, -40, 0),
-                                    params
-                                )
-                                if hit and (target - pos).Magnitude > PROMPT_RANGE * 0.6 then
-                                    dot(hit.Position, i)
-                                end
-                            end
-                        end
+                    else
+                        setMarkerVisual(marker, false, 0)
                     end
                 end
-            end
-            -- ripple: pulse dots in sequence so the trail FLOWS toward the egg
-            local nextPlan = os.clock() + REPLAN_SECONDS
-            while token == stepToken and pathFolder and os.clock() < nextPlan do
-                local t = os.clock() * 4
-                for _, d in ipairs(pathFolder:GetChildren()) do
-                    local i = d:GetAttribute("TrailIndex") or 0
-                    d.Transparency = 0.25 + 0.45 * (0.5 + 0.5 * math.sin(t - i * 0.7))
+            else
+                for _, marker in ipairs(markers) do
+                    setMarkerVisual(marker, false, 0)
                 end
-                task.wait(0.05)
             end
+
+            RunService.RenderStepped:Wait()
         end
     end)
 end
@@ -621,7 +673,11 @@ local function showBindPowerGuidance(token)
                     showUiPulse(token, "Edit", {
                         arrow = true,
                         clickCue = true,
-                        cueText = "CLICK HERE",
+                        cueText = TutorialLocalization.text(
+                            TutorialLanguageState.getLocaleId(),
+                            "tutorial.cue.click_here",
+                            "CLICK HERE"
+                        ),
                     })
                 end
             end
@@ -630,9 +686,93 @@ local function showBindPowerGuidance(token)
     end)
 end
 
+local function configuredStep(stepId)
+    for _, step in ipairs((TUTORIAL_CFG and TUTORIAL_CFG.steps) or {}) do
+        if step.id == stepId then
+            return step
+        end
+    end
+    return nil
+end
+
+local function renderActiveState(state)
+    local localeId = TutorialLanguageState.getLocaleId()
+    local step = configuredStep(state.id) or {}
+    local baseKey = step.localization_key or ("tutorial." .. tostring(state.id))
+    local progress = TutorialLocalization.format(
+        localeId,
+        "tutorial.progress",
+        "TUTORIAL  %d / %d",
+        state.index or 1,
+        state.total or 1
+    )
+    if (state.need or 1) > 1 then
+        progress ..= ("   ·   %d / %d"):format(state.count or 0, state.need)
+    end
+    stepLabel.Text = progress
+    titleLabel.Text = TutorialLocalization.text(
+        localeId,
+        state.title_key or (baseKey .. ".title"),
+        state.title or step.title or ""
+    )
+
+    local bodyKey = state.body_key or (baseKey .. ".body")
+    local body = state.body or step.body or ""
+    if Players.LocalPlayer:GetAttribute("InputMode") == "gamepad" and step.body_gamepad then
+        bodyKey = baseKey .. ".body_gamepad"
+        body = step.body_gamepad
+    end
+    bodyLabel.Text = TutorialLocalization.text(localeId, bodyKey, body)
+end
+
+local function renderCompletionState()
+    local doneCfg = (TUTORIAL_CFG and TUTORIAL_CFG.completion) or {}
+    local baseKey = doneCfg.localization_key or "tutorial.completion"
+    local localeId = TutorialLanguageState.getLocaleId()
+    stepLabel.Text =
+        TutorialLocalization.text(localeId, "tutorial.complete_label", "TUTORIAL COMPLETE")
+    titleLabel.Text = TutorialLocalization.text(
+        localeId,
+        baseKey .. ".title",
+        doneCfg.title or "🎉 QUESTS UNLOCKED!"
+    )
+    bodyLabel.Text = TutorialLocalization.text(
+        localeId,
+        baseKey .. ".body",
+        doneCfg.body or "Your missions are in the tracker up top!"
+    )
+end
+
+local function maybeShowLanguageBanner()
+    local player = Players.LocalPlayer
+    local localeId = TutorialLanguageState.getLocaleId()
+    if
+        languageBannerShown
+        or not tutorialActive
+        or player:GetAttribute("TutorialLanguageReady") ~= true
+        or TutorialLanguageState.getPreference() ~= "auto"
+        or not TutorialLocalization.isTranslated(localeId)
+    then
+        return
+    end
+
+    languageBannerShown = true
+    local languageName = TutorialLocalization.displayName(localeId)
+    GameEvents.showBanner(
+        TutorialLocalization.format(
+            localeId,
+            "tutorial.language_banner",
+            "Your tutorial language is %s. You can switch to English in Settings.",
+            languageName
+        ),
+        { seconds = 6, color = { 75, 175, 255 } }
+    )
+end
+
 local function apply(state)
     stepToken += 1
     clearGuidance()
+    currentState = state
     if type(state) ~= "table" or state.done then
         Players.LocalPlayer:SetAttribute("TutorialStepId", nil)
         local wasActive = tutorialActive
@@ -643,54 +783,70 @@ local function apply(state)
             -- The celebration stinger/burst rides the tutorial_complete game event.
             local doneCfg = (TUTORIAL_CFG and TUTORIAL_CFG.completion) or {}
             local token = stepToken
-            stepLabel.Text = "TUTORIAL COMPLETE"
-            titleLabel.Text = doneCfg.title or "🎉 QUESTS UNLOCKED!"
-            bodyLabel.Text = doneCfg.body or "Your missions are in the tracker up top!"
+            completionCardVisible = true
+            renderCompletionState()
             setCapsuleWantedVisible(true)
             task.delay(tonumber(doneCfg.show_seconds) or 8, function()
                 if stepToken == token and capsule then
+                    completionCardVisible = false
                     setCapsuleWantedVisible(false)
                 end
             end)
             return
         end
         if capsule then
+            completionCardVisible = false
             setCapsuleWantedVisible(false)
         end
         return
     end
     Players.LocalPlayer:SetAttribute("TutorialStepId", state.id)
     tutorialActive = true
-    stepLabel.Text = ("TUTORIAL  %d / %d"):format(state.index or 1, state.total or 1)
-        .. (
-            (state.need or 1) > 1 and ("   ·   %d / %d"):format(state.count or 0, state.need) or ""
-        )
-    titleLabel.Text = state.title or ""
-    local body = state.body or ""
-    if Players.LocalPlayer:GetAttribute("InputMode") == "gamepad" then
-        for _, configuredStep in ipairs((TUTORIAL_CFG and TUTORIAL_CFG.steps) or {}) do
-            if configuredStep.id == state.id and configuredStep.body_gamepad then
-                body = configuredStep.body_gamepad
-                break
-            end
-        end
-    end
-    bodyLabel.Text = body
+    completionCardVisible = false
+    renderActiveState(state)
     setCapsuleWantedVisible(true)
+    maybeShowLanguageBanner()
 
     local target = state.target or {}
     if target.kind == "egg" then
         local finder = function()
             return nearestEgg(target.prefer)
         end
-        showEggBeacon(stepToken, finder)
+        showEggBeacon(
+            stepToken,
+            finder,
+            TutorialLocalization.text(
+                TutorialLanguageState.getLocaleId(),
+                "tutorial.target.hatch",
+                "⬇ HATCH"
+            )
+        )
         showEggPath(stepToken, finder)
     elseif target.kind == "crystal" then
-        showEggBeacon(stepToken, nearestSmallCrystal, "⬇ MINE")
+        showEggBeacon(
+            stepToken,
+            nearestSmallCrystal,
+            TutorialLocalization.text(
+                TutorialLanguageState.getLocaleId(),
+                "tutorial.target.mine",
+                "⬇ MINE"
+            )
+        )
         showEggPath(stepToken, nearestSmallCrystal)
     elseif target.kind == "part" and type(target.name) == "string" then
         local finder = namedPartFinder(target.name)
-        showEggBeacon(stepToken, finder, target.label or "⬇ GO")
+        local targetKey = if state.id == "first_fight"
+            then "tutorial.target.fight"
+            else "tutorial.target.go"
+        showEggBeacon(
+            stepToken,
+            finder,
+            TutorialLocalization.text(
+                TutorialLanguageState.getLocaleId(),
+                targetKey,
+                target.label or "⬇ GO"
+            )
+        )
         showEggPath(stepToken, finder)
     elseif state.id == "bind_power" then
         showBindPowerGuidance(stepToken)
@@ -698,7 +854,11 @@ local function apply(state)
         showUiPulse(stepToken, target.name, {
             arrow = true,
             clickCue = target.cue == "click",
-            cueText = target.cue_text,
+            cueText = TutorialLocalization.text(
+                TutorialLanguageState.getLocaleId(),
+                "tutorial.cue.click_here",
+                target.cue_text or "CLICK HERE"
+            ),
             hotbarType = target.hotbar_type,
             hotbarTarget = target.hotbar_target,
         }) -- primary ui target → arrow/callout
@@ -711,7 +871,7 @@ end
 -- bumped per behavior change: printed at start so a LIVE session's running BYTECODE is
 -- identifiable (rojo syncs Source into running sessions but required modules never
 -- re-execute — we chased "stale build vs real bug" three times today)
-local BUILD = "trail-live-replan v5 short-range (2026-06-10)"
+local BUILD = "tutorial-localization v9 locale-aware (2026-08-18)"
 
 function TutorialController.start()
     if started then
@@ -773,6 +933,15 @@ function TutorialController.start()
             task.defer(syncCapsuleVisibility)
         end
     end)
+    me:GetAttributeChangedSignal("TutorialLocaleId"):Connect(function()
+        if completionCardVisible then
+            renderCompletionState()
+        elseif tutorialActive and type(currentState) == "table" then
+            apply(currentState)
+        end
+        maybeShowLanguageBanner()
+    end)
+    me:GetAttributeChangedSignal("TutorialLanguageReady"):Connect(maybeShowLanguageBanner)
 
     Signals.TutorialState.OnClientEvent:Connect(gatedApply)
     -- pull current state — the server's join-time push may predate this connection

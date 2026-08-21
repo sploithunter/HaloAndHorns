@@ -22,6 +22,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Libraries = ReplicatedStorage.Shared.Libraries
 local Signal = require(Libraries.Signal)
 local FoundersChoice = require(ReplicatedStorage.Shared.Game.FoundersChoice)
+local MonetizationCatalog = require(ReplicatedStorage.Shared.Game.MonetizationCatalog)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 
@@ -105,9 +106,11 @@ end
 
 -- Bound after the module graph is initialized: HotbarService already depends on
 -- monetization's lower-level inventory/economy services, so keeping this as a
--- peer avoids a dependency cycle.
+-- peer avoids a dependency cycle. HoverboardService is the same — the shop
+-- already depends on monetization, so the skin grant cannot be a module dep.
 function MonetizationService:BindPeerServices(services)
     self._hotbarService = services and services.HotbarService
+    self._hoverboardService = services and services.HoverboardService
 end
 
 -- Pass benefits write PROFILE state (features, multipliers, owned passes) —
@@ -383,6 +386,32 @@ function MonetizationService:_processProductPurchase(player, productConfig, rece
             })
             return false
         end
+    end
+
+    -- Deterministic untradeable cosmetic board. Product IDs stay 0 until
+    -- the dashboard SKU exists; ProcessReceipt only runs on a live id.
+    if type(rewards.hoverboard_skin) == "string" and rewards.hoverboard_skin ~= "" then
+        local hoverboardService = self._hoverboardService
+            or (self._modules and self._modules.HoverboardService)
+        if not (hoverboardService and hoverboardService.GrantOwned) then
+            self._logger:Error("HoverboardService missing for product skin grant", {
+                player = player.Name,
+                product = productConfig.id,
+                skin = rewards.hoverboard_skin,
+            })
+            return false
+        end
+        local granted = hoverboardService:GrantOwned(player, rewards.hoverboard_skin)
+        if not (granted and granted.ok) then
+            self._logger:Error("Failed to grant hoverboard skin", {
+                player = player.Name,
+                product = productConfig.id,
+                skin = rewards.hoverboard_skin,
+                reason = granted and granted.reason,
+            })
+            return false
+        end
+        hoverboardService:Equip(player, rewards.hoverboard_skin)
     end
 
     -- Check for first purchase bonus
@@ -806,12 +835,16 @@ function MonetizationService:_handlePurchaseRequest(player, data)
             return
         end
 
-        -- Prompt purchase
-        if self._testMode then
-            -- In test mode, simulate purchase
+        -- Live dashboard products always use Roblox's real prompt. Studio then
+        -- exercises its full purchase simulator and ProcessReceipt, exactly as
+        -- production does. Instant test grants are only for zero-ID stubs.
+        local route = MonetizationCatalog.purchaseRoute(robloxId, self._testMode)
+        if route == "marketplace" then
+            MarketplaceService:PromptProductPurchase(player, robloxId)
+        elseif route == "simulate" then
             self:_simulateTestPurchase(player, productId)
         else
-            MarketplaceService:PromptProductPurchase(player, robloxId)
+            self:_sendPurchaseError(player, "Product is not listed")
         end
     elseif productType == "gamepass" then
         -- Get Roblox game pass ID
@@ -828,12 +861,14 @@ function MonetizationService:_handlePurchaseRequest(player, data)
             return
         end
 
-        -- Prompt purchase
-        if self._testMode then
-            -- In test mode, simulate purchase
+        -- Game passes follow the same live-ID rule as developer products.
+        local route = MonetizationCatalog.purchaseRoute(robloxId, self._testMode)
+        if route == "marketplace" then
+            MarketplaceService:PromptGamePassPurchase(player, robloxId)
+        elseif route == "simulate" then
             self:_simulateTestPassPurchase(player, productId)
         else
-            MarketplaceService:PromptGamePassPurchase(player, robloxId)
+            self:_sendPurchaseError(player, "Game pass is not listed")
         end
     end
 end

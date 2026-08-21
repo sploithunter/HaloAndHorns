@@ -1,12 +1,13 @@
 --[[
-    DropService (server, #167 + #177) — physical GEM pickups + Magnet collection.
+    DropService (server, #167 + #177) — physical currency pickups + Magnet collection.
 
-    When a crystal breaks, BreakableSpawner hands the resolved COIN award to SpawnCoinDrop instead of
-    crediting it instantly. The award SPLITS into one or more GEMS (payout by count — a fat node
-    bursts a fistful) that pop out and rest on the ground; a single Heartbeat loop collects them when
-    the owner walks within `collect_radius` (+ the Magnet power's MagnetBuff bonus), flying them in
-    once close. Coins are never lost: a gem auto-collects to its owner on despawn-timeout or when the
-    per-server cap is exceeded. XP / pet-xp / realm cuts stay instant in BreakableSpawner.
+    When a breakable breaks, BreakableSpawner hands the resolved currency award to SpawnCoinDrop
+    instead of crediting it instantly. Origin awards render as gems; currencies such as Hall
+    Waycoins can provide their own physical pickup. The award splits into one or more pickups that
+    pop out and rest on the ground; a single Heartbeat loop collects them when the owner walks within
+    `collect_radius` (+ the Magnet power's MagnetBuff bonus), flying them in once close. Currency is
+    never lost: a pickup auto-collects to its owner on despawn-timeout or when the per-server cap is
+    exceeded. XP / pet-xp / realm cuts stay instant in BreakableSpawner.
 
     Each gem is a MODEL: a MeshPart (one of 3 shared form meshes + the biome-colour texture) with a
     PointLight inside for glow (configs/gems.lua). Gem colour = biome currency; gem FORM = the chunk
@@ -53,6 +54,7 @@ function DropService:Init()
     self._active = {} -- live drop records
     self._pool = {} -- recycled gem models, keyed "color|form" (or "ball")
     self._templates = {} -- built gem model templates, keyed "color|form"
+    self._currencyTemplates = {} -- non-gem pickup templates, keyed by saved currency id
     self._collectRadiusEnchantCache = setmetatable({}, { __mode = "k" })
 
     if not self._config.enabled then
@@ -74,6 +76,9 @@ function DropService:Init()
             for form in pairs(forms) do
                 self:_ensureTemplate(color, form)
             end
+        end
+        for currency in pairs(self._config.currency_pickups or {}) do
+            self:_ensureCurrencyTemplate(currency)
         end
     end)
 
@@ -211,6 +216,88 @@ function DropService:_acquireGem(color, form)
     return model, ball
 end
 
+-- Hall Waycoins and future non-gem currencies stay on the same reliable drop/collection pipeline,
+-- but can provide an authored physical pickup instead of inheriting the emerald-gem fallback.
+function DropService:_ensureCurrencyTemplate(currency)
+    currency = tostring(currency)
+    if self._currencyTemplates[currency] then
+        return self._currencyTemplates[currency]
+    end
+    local cfg = self._config.currency_pickups and self._config.currency_pickups[currency]
+    if not (cfg and cfg.mesh and cfg.texture) then
+        return nil
+    end
+    local model = MeshAssembly.build(cfg.mesh, cfg.texture, {
+        modelName = "CurrencyDrop",
+        partName = "Currency",
+    })
+    local part = model and model.PrimaryPart
+    if not part then
+        return nil
+    end
+    part.Color = Color3.new(1, 1, 1)
+    part.CanQuery = false
+    part.CanTouch = false
+    part.Massless = true
+    local widest = math.max(part.Size.X, part.Size.Y, part.Size.Z)
+    local target = tonumber(cfg.size) or 1.35
+    if widest > 0 then
+        part.Size = part.Size * (target / widest)
+    end
+
+    -- Imported currency art may need a one-time presentation correction. Keep that correction on
+    -- the visual beneath a neutral root so the shared drop loop can rotate/move the root exactly as
+    -- it does for gems. Applying the correction directly to the moving part made Waycoins rest at
+    -- one angle and visibly rotate 90 degrees during Magnet collection.
+    local orientation = cfg.orientation or {}
+    local x = tonumber(orientation.x) or 0
+    local y = tonumber(orientation.y) or 0
+    local z = tonumber(orientation.z) or 0
+    if x ~= 0 or y ~= 0 or z ~= 0 then
+        local root = Instance.new("Part")
+        root.Name = "Root"
+        root.Size = Vector3.new(0.05, 0.05, 0.05)
+        root.Transparency = 1
+        root.Anchored = true
+        root.CanCollide = false
+        root.CanQuery = false
+        root.CanTouch = false
+        root.CFrame = CFrame.new()
+        root.Parent = model
+
+        part.Anchored = false
+        part.CFrame = root.CFrame
+            * CFrame.Angles(math.rad(x), math.rad(y), math.rad(z))
+
+        local weld = Instance.new("WeldConstraint")
+        weld.Name = "VisualWeld"
+        weld.Part0 = root
+        weld.Part1 = part
+        weld.Parent = root
+        model.PrimaryPart = root
+    end
+    model.Parent = self._templateHolder
+    self._currencyTemplates[currency] = model
+    return model
+end
+
+function DropService:_acquireCurrency(currency)
+    currency = tostring(currency)
+    local key = "currency|" .. currency
+    local pooled = self._pool[key] and table.remove(self._pool[key])
+    if pooled then
+        pooled.Parent = self._folder
+        return pooled, pooled.PrimaryPart
+    end
+    local template = self._currencyTemplates[currency] or self:_ensureCurrencyTemplate(currency)
+    if not template then
+        return nil, nil
+    end
+    local clone = template:Clone()
+    clone.Parent = self._folder
+    return clone, clone.PrimaryPart
+end
+
 function DropService:_recycle(rec)
     local model = rec.model
     if not model then
@@ -288,8 +375,8 @@ function DropService:_groundY(x, z, fromY, fallbackY)
     return result and result.Position.Y or fallbackY
 end
 
--- Spawn gem pickups for a coin award. Returns true if drops were created (caller must NOT credit),
--- false to credit instantly (disabled / too small / no position). Never throws.
+-- Spawn physical currency pickups for an award. Returns true if drops were created (caller must
+-- NOT credit), false to credit instantly (disabled / too small / no position). Never throws.
 function DropService:SpawnCoinDrop(player, currencyType, amount, position)
     amount = tonumber(amount) or 0
     if not self:IsEnabled() then
@@ -302,7 +389,10 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position)
         return false
     end
 
-    local color = self:_colorFor(currencyType)
+    local currencyId = tostring(currencyType or "coins")
+    local configuredPickup = self._config.currency_pickups
+        and self._config.currency_pickups[currencyId]
+    local color = self:_colorFor(currencyId)
     local chunks = self:_split(amount)
     local pop = self._config.pop_up or 7
     local out = self._config.pop_out or 5
@@ -313,19 +403,28 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position)
             self:_collect(self._active[1], true)
         end
         local form = self:_formFor(chunkAmount)
-        local model, part = self:_acquireGem(color, form)
+        local model, part
+        local pickupCfg = configuredPickup
+        if pickupCfg then
+            model, part = self:_acquireCurrency(currencyId)
+        end
+        if not (model and part) then
+            model, part = self:_acquireGem(color, form)
+            pickupCfg = nil
+        end
         local ang = ((#self._active + i) % 12) * (math.pi / 6)
         local hx = position.X + math.cos(ang) * out
         local hz = position.Z + math.sin(ang) * out
         local groundY = self:_groundY(hx, hz, position.Y, position.Y - 1)
-        local radius = part.Size.Y * 0.5
-        local rest = Vector3.new(hx, groundY + radius, hz)
         local apex = position
             + Vector3.new(math.cos(ang) * out * 0.5, pop, math.sin(ang) * out * 0.5)
         -- random resting yaw so gems don't all turn in lockstep (they settle facing
         -- random directions; the _step spin then carries each from its own phase)
         local yaw = math.random() * (2 * math.pi)
-        part.CFrame = CFrame.new(apex) * CFrame.Angles(0, yaw, 0)
+        local rotation = CFrame.Angles(0, yaw, 0)
+        part.CFrame = CFrame.new(apex) * rotation
+        local _, orientedSize = model:GetBoundingBox()
+        local rest = Vector3.new(hx, groundY + orientedSize.Y * 0.5, hz)
 
         -- visibility filter: gems are owner-only pickups, so they're owner-only
         -- VISIBLE too (DropVisibility hides foreign gems client-side — Jason: "it
@@ -334,9 +433,9 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position)
         local rec = {
             model = model,
             part = part,
-            poolKey = color .. "|" .. form,
+            poolKey = pickupCfg and ("currency|" .. currencyId) or (color .. "|" .. form),
             owner = player.UserId,
-            currency = tostring(currencyType or "coins"),
+            currency = currencyId,
             amount = math.floor(chunkAmount),
             spawnAt = os.clock(),
             settling = true,
@@ -351,7 +450,7 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position)
                 Enum.EasingStyle.Quad,
                 Enum.EasingDirection.Out
             ),
-            { CFrame = CFrame.new(rest) * CFrame.Angles(0, yaw, 0) }
+            { CFrame = CFrame.new(rest) * rotation }
         ):Play()
         task.delay(self._config.pop_time or 0.35, function()
             rec.settling = false

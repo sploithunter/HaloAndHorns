@@ -18,6 +18,11 @@ local Workspace = game:GetService("Workspace")
 local CloseButton = require(script.Parent.Parent.Components.CloseButton)
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 local TeamPanelLayout = require(script.Parent.TeamPanelLayout)
+local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath)
+local partyCfg = require(ReplicatedStorage.Configs:WaitForChild("party"))
+local gameEventsOk, GameEvents = pcall(function()
+    return require(script.Parent.Parent.Parent.Systems.GameEvents)
+end)
 
 local REMOTE_NAME = "GameAPICommand"
 
@@ -70,6 +75,7 @@ function TeamPanel.new()
     self.invitePopup = nil
     self.viewportConnection = nil
     self.cameraConnection = nil
+    self._inviteOutcomeSerial = tonumber(localPlayer:GetAttribute("TeamInviteOutcomeSerial")) or 0
     -- Live from boot: an invite is a replicated attribute stamp, not an event.
     localPlayer:GetAttributeChangedSignal("TeamInviteFrom"):Connect(function()
         local from = localPlayer:GetAttribute("TeamInviteFrom")
@@ -79,6 +85,33 @@ function TeamPanel.new()
             self:_closeInvitePopup()
         end
     end)
+    -- The requester may have closed this panel long before the recipient responds. A monotonic
+    -- serial turns the replicated attributes into a reliable one-shot result notification.
+    localPlayer:GetAttributeChangedSignal("TeamInviteOutcomeSerial"):Connect(function()
+        local serial = tonumber(localPlayer:GetAttribute("TeamInviteOutcomeSerial")) or 0
+        if serial <= self._inviteOutcomeSerial then
+            return
+        end
+        self._inviteOutcomeSerial = serial
+        local outcome = localPlayer:GetAttribute("TeamInviteOutcome")
+        local target = tostring(localPlayer:GetAttribute("TeamInviteTarget") or "Player")
+        if outcome == "timed_out" then
+            self:_statusBanner(
+                "team_request_timed_out",
+                ("⌛ %s didn't respond. Team request timed out."):format(target)
+            )
+        elseif outcome == "declined" then
+            self:_statusBanner(
+                "team_request_declined",
+                ("👥 %s declined your team request."):format(target)
+            )
+        elseif outcome == "in_range" then
+            self:_statusBanner(
+                "team_request_in_range",
+                ("🎯 %s is in The Range."):format(target)
+            )
+        end
+    end)
     -- Roster changes re-render the open panel (join/leave/promotion).
     localPlayer:GetAttributeChangedSignal("TeamMembers"):Connect(function()
         if self.isVisible then
@@ -86,6 +119,12 @@ function TeamPanel.new()
         end
     end)
     return self
+end
+
+function TeamPanel:_statusBanner(eventName, text)
+    if gameEventsOk and GameEvents and GameEvents.fire then
+        GameEvents.fire(eventName, { name = text })
+    end
 end
 
 function TeamPanel:_disconnectViewport()
@@ -117,6 +156,11 @@ function TeamPanel:_applyResponsiveLayout()
     if self.hint then
         self.hint.Size = UDim2.new(1, -(content.horizontalMargin * 2), 0, content.hintHeight)
         self.hint.Position = UDim2.fromOffset(content.horizontalMargin, content.hintTop)
+    end
+    if self.privacyBar then
+        self.privacyBar.Size =
+            UDim2.new(1, -(content.horizontalMargin * 2), 0, content.privacyHeight)
+        self.privacyBar.Position = UDim2.fromOffset(content.horizontalMargin, content.privacyTop)
     end
     if self.list then
         self.list.Size = UDim2.new(1, -(content.horizontalMargin * 2), 0, content.listHeight)
@@ -234,6 +278,50 @@ function TeamPanel:Show(parent)
     hint.ZIndex = 102
     self.hint = hint
 
+    local privacy = Instance.new("Frame")
+    privacy.Name = "InvitePrivacy"
+    privacy.Size = UDim2.new(1, -48, 0, 40)
+    privacy.Position = UDim2.new(0, 24, 0, 116)
+    privacy.BackgroundTransparency = 1
+    privacy.ZIndex = 102
+    privacy.Parent = frame
+    self.privacyBar = privacy
+    local privacyLabel = label(
+        privacy,
+        "Accepting invites",
+        UDim2.new(0.42, 0, 1, 0),
+        UDim2.new(0, 0, 0, 0),
+        COLORS.subtext,
+        Enum.Font.Gotham
+    )
+    privacyLabel.TextXAlignment = Enum.TextXAlignment.Left
+    privacyLabel.ZIndex = 103
+    self.privacyLabel = privacyLabel
+    self.privacyButtons = {}
+    local modes = { "everyone", "friends" }
+    for i, mode in ipairs(modes) do
+        local btn = Instance.new("TextButton")
+        btn.Name = mode
+        btn.Size = UDim2.new(0.27, 0, 0.86, 0)
+        btn.Position = UDim2.new(0.44 + (i - 1) * 0.29, 0, 0.07, 0)
+        btn.BackgroundColor3 = COLORS.row
+        btn.Text = PartyMath.invitePrivacyLabel(mode, partyCfg)
+        btn.TextColor3 = COLORS.text
+        btn.TextScaled = true
+        btn.Font = Enum.Font.GothamBold
+        btn.ZIndex = 103
+        btn.Parent = privacy
+        pillify(btn)
+        local bc = Instance.new("UITextSizeConstraint")
+        bc.MaxTextSize = 14
+        bc.Parent = btn
+        btn.Activated:Connect(function()
+            self:_callBus("team.set_invite_privacy", { mode = mode })
+            self:_refreshPrivacy()
+        end)
+        self.privacyButtons[mode] = btn
+    end
+
     local list = Instance.new("ScrollingFrame")
     list.Size = UDim2.new(1, -24, 1, -180)
     list.Position = UDim2.new(0, 12, 0, 116)
@@ -274,8 +362,96 @@ function TeamPanel:Show(parent)
     self.leaveBtn = leave
 
     self.isVisible = true
+    self:_watchOthers()
     self:_refresh()
     self:_watchViewport()
+end
+
+function TeamPanel:_disconnectOthers()
+    if not self._otherConns then
+        return
+    end
+    for _, conn in ipairs(self._otherConns) do
+        conn:Disconnect()
+    end
+    self._otherConns = nil
+end
+
+function TeamPanel:_watchOthers()
+    self:_disconnectOthers()
+    self._otherConns = {}
+    local function hook(player)
+        table.insert(
+            self._otherConns,
+            player:GetAttributeChangedSignal("TeamInvitePrivacy"):Connect(function()
+                if self.isVisible then
+                    if player == localPlayer then
+                        self:_refreshPrivacy()
+                    else
+                        self:_refresh()
+                    end
+                end
+            end)
+        )
+        table.insert(
+            self._otherConns,
+            player:GetAttributeChangedSignal("GauntletMode"):Connect(function()
+                if self.isVisible then
+                    self:_refresh()
+                end
+            end)
+        )
+    end
+    for _, player in ipairs(Players:GetPlayers()) do
+        hook(player)
+    end
+    table.insert(
+        self._otherConns,
+        Players.PlayerAdded:Connect(function(player)
+            hook(player)
+            if self.isVisible then
+                self:_refresh()
+            end
+        end)
+    )
+    table.insert(
+        self._otherConns,
+        Players.PlayerRemoving:Connect(function()
+            if self.isVisible then
+                self:_refresh()
+            end
+        end)
+    )
+end
+
+function TeamPanel:_currentPrivacy()
+    return PartyMath.invitePrivacy(localPlayer:GetAttribute("TeamInvitePrivacy"), partyCfg)
+end
+
+function TeamPanel:_refreshPrivacy()
+    if not self.privacyButtons then
+        return
+    end
+    local current = self:_currentPrivacy()
+    for mode, btn in pairs(self.privacyButtons) do
+        local on = mode == current
+        btn.BackgroundColor3 = on and COLORS.accept or COLORS.row
+        btn.AutoButtonColor = not on
+    end
+end
+
+local function inRange(player)
+    return player and player:GetAttribute("GauntletMode") == "range"
+end
+
+local function isFriend(other)
+    if not other then
+        return false
+    end
+    local ok, result = pcall(function()
+        return localPlayer:IsFriendsWith(other.UserId)
+    end)
+    return ok and result == true
 end
 
 -- Render from the replicated attributes: solo -> invite picker; teamed -> roster.
@@ -304,11 +480,28 @@ function TeamPanel:_refresh()
     else
         self.hint.Text = "Pick a player to invite to your team:"
         local order, others = 0, 0
+        local selfBusy = inRange(localPlayer)
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= localPlayer then
                 order += 1
                 others += 1
-                self:_row(p.Name, order, { invite = true })
+                local privacy = PartyMath.invitePrivacy(p:GetAttribute("TeamInvitePrivacy"), partyCfg)
+                local busy = inRange(p)
+                local friendsOnly = privacy == "friends"
+                local blockedReason = nil
+                if selfBusy then
+                    blockedReason = "in_range"
+                elseif busy then
+                    blockedReason = "target_in_range"
+                elseif friendsOnly and not isFriend(p) then
+                    blockedReason = "friends_only"
+                end
+                self:_row(p.Name, order, {
+                    invite = true,
+                    privacy = PartyMath.invitePrivacyLabel(privacy, partyCfg),
+                    busy = busy,
+                    blockedReason = blockedReason,
+                })
             end
         end
         if others == 0 then
@@ -326,6 +519,7 @@ function TeamPanel:_refresh()
             ec.Parent = empty
         end
     end
+    self:_refreshPrivacy()
     self:_applyResponsiveLayout()
 end
 
@@ -344,6 +538,11 @@ function TeamPanel:_row(name, order, opts)
     local text = (lvl and ("Lv %d   "):format(lvl) or "") .. name
     if opts.tag then
         text = text .. "   " .. opts.tag
+    elseif opts.invite then
+        local status = opts.busy and "In The Range" or opts.privacy
+        if status then
+            text = text .. "   ·  " .. status
+        end
     end
     local nameLabel = label(
         row,
@@ -374,12 +573,29 @@ function TeamPanel:_row(name, order, opts)
         local bc = Instance.new("UITextSizeConstraint")
         bc.MaxTextSize = 16
         bc.Parent = btn
-        btn.Activated:Connect(function()
-            local res = self:_callBus("team.invite", { target = name })
-            btn.Text = (res and res.ok) and "Invited ✓" or "Failed"
+        local failText = {
+            in_range = "In Range",
+            target_in_range = "In Range",
+            friends_only = "Friends only",
+        }
+        if opts.blockedReason then
+            btn.Text = failText[opts.blockedReason] or "Busy"
+            btn.BackgroundColor3 = COLORS.pending
             btn.Active = false
             btn.AutoButtonColor = false
-        end)
+        else
+            btn.Activated:Connect(function()
+                local res = self:_callBus("team.invite", { target = name })
+                if res and res.ok then
+                    btn.Text = "Invited ✓"
+                else
+                    btn.Text = failText[res and res.reason] or "Failed"
+                    btn.BackgroundColor3 = COLORS.pending
+                end
+                btn.Active = false
+                btn.AutoButtonColor = false
+            end)
+        end
     end
 end
 
@@ -477,9 +693,13 @@ function TeamPanel:Hide()
         self.frame = nil
     end
     self:_disconnectViewport()
+    self:_disconnectOthers()
     self.header = nil
     self.list = nil
     self.hint = nil
+    self.privacyBar = nil
+    self.privacyLabel = nil
+    self.privacyButtons = nil
     self.leaveBtn = nil
     self.isVisible = false
 end

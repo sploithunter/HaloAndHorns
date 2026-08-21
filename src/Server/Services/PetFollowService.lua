@@ -240,6 +240,21 @@ function PetFollowService:GetReportedPosition(pet)
     return rec and rec.cf or nil
 end
 
+-- Drop stale reports so combat falls back to the owner until the client
+-- reports the pets at their new place (gauntlet restamp / entrance warp).
+function PetFollowService:ClearReportedPositions(player)
+    local folder = Workspace:FindFirstChild("PlayerPets")
+        and Workspace.PlayerPets:FindFirstChild(player.Name)
+    if not folder then
+        return
+    end
+    for _, pet in ipairs(folder:GetChildren()) do
+        if pet:IsA("Model") then
+            self._petPos[pet] = nil
+        end
+    end
+end
+
 -- One authoritative position path for anything a pet works on. Moving enemies publish the
 -- server-owned EnemyService entry.pos through MoveTarget because their anchored model pivot stays
 -- at spawn while clients render motion. Static crystals have no MoveTarget and use their model.
@@ -647,6 +662,9 @@ end
 function PetFollowService:_mine(player, pet, breakable)
     if pet:GetAttribute("CombatDowned") then
         return -- downed pets are out healing; they neither mine nor fight
+    end
+    if breakable:GetAttribute("SpawnAnimating") then
+        return -- falling/materializing Hall rewards are not live mining targets yet
     end
     -- MEZ (#269): a HELD pet is fully controlled — no attacks, no mining, until the window
     -- lapses (root only stops movement; hold stops output too).

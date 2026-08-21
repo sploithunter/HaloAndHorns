@@ -80,6 +80,10 @@ All slices landed plus everything the verify shook out:
   TeamInviteFrom popup armed from boot. Duo = BOTH full squads on the rail (teammate pets as
   HudCard cards under their owner's header); 3–4 players collapse to aggregate cards that
   expand while selected.
+- Invite lifecycle: requests expire server-side after 30 seconds. Expiry clears the recipient's
+  stale popup and gives the requester a prominent "didn't respond" banner; explicit declines also
+  report back to the requester instead of failing silently. Leaving during a pending request is
+  treated as a non-response.
 - Mobile invite layout: TeamPanel is bounded to the live camera viewport and recomputes on
   rotation. Its header, hint, invite list, and teamed footer share one responsive layout contract,
   so fixed pixel bands cannot collapse the player list on a short landscape phone/tablet.

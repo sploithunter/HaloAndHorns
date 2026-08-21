@@ -1014,6 +1014,23 @@ return function()
                                 recenter_tween_seconds = 0.45,
                                 hold_seconds = 1,
                             },
+                            result_funnel = {
+                                enabled = true,
+                                duration_seconds = 0.55,
+                                stagger_seconds = 0.025,
+                                max_stagger_window_seconds = 0.4,
+                                final_scale = 0.18,
+                                rotation_degrees = 12,
+                            },
+                            new_discovery = {
+                                enabled = true,
+                                text_format = "+%d NEW",
+                                pop_duration_seconds = 0.28,
+                                initial_scale = 0.6,
+                                show_card_badges = true,
+                                card_text = "NEW!",
+                                card_rotation_degrees = -18,
+                            },
                             reveal_badges = {
                                 enabled = true,
                                 show_rarity = true,
@@ -1229,6 +1246,42 @@ return function()
                 local isValid, error = configLoader:ValidateConfig("egg_system", invalidConfig)
                 expect(isValid).to.equal(false)
                 expect(string.find(error, "hatching.animation.result_stack.hold_seconds", 1, true)).to.be.ok()
+            end)
+
+            it("should reject a hatch result funnel scale above one", function()
+                local invalidConfig = makeValidEggSystemConfig()
+                invalidConfig.hatching.animation.result_funnel.final_scale = 1.5
+
+                local isValid, error = configLoader:ValidateConfig("egg_system", invalidConfig)
+                expect(isValid).to.equal(false)
+                expect(string.find(error, "hatching.animation.result_funnel.final_scale", 1, true)).to.be.ok()
+            end)
+
+            it("should reject a hatch new-discovery initial scale above one", function()
+                local invalidConfig = makeValidEggSystemConfig()
+                invalidConfig.hatching.animation.new_discovery.initial_scale = 1.5
+
+                local isValid, error = configLoader:ValidateConfig("egg_system", invalidConfig)
+                expect(isValid).to.equal(false)
+                expect(
+                    string.find(error, "hatching.animation.new_discovery.initial_scale", 1, true)
+                ).to.be.ok()
+            end)
+
+            it("should reject an excessive hatch new-card badge rotation", function()
+                local invalidConfig = makeValidEggSystemConfig()
+                invalidConfig.hatching.animation.new_discovery.card_rotation_degrees = 46
+
+                local isValid, error = configLoader:ValidateConfig("egg_system", invalidConfig)
+                expect(isValid).to.equal(false)
+                expect(
+                    string.find(
+                        error,
+                        "hatching.animation.new_discovery.card_rotation_degrees",
+                        1,
+                        true
+                    )
+                ).to.be.ok()
             end)
 
             it("should reject special hatch rarity ids that are not configured", function()

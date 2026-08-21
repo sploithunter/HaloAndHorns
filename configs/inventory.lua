@@ -638,6 +638,7 @@ return {
                 "resources",
                 "enhancements",
                 "potions",
+                "hoverboards",
             }, -- All enabled buckets
             display_order = 1,
             always_visible = true, -- Show even if no items
@@ -662,7 +663,7 @@ return {
             name = "Items",
             icon = "⚡",
             description = "Consumable items and potions",
-            folders = { "consumables", "potions" }, -- consumables + brew-charge potions (always stacked, a handful of types)
+            folders = { "consumables", "potions", "hoverboards" },
             display_order = 3,
             always_visible = false, -- Hide if no items
         },

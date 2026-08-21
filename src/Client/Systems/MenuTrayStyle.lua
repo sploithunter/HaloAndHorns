@@ -25,6 +25,7 @@ local started = false
 local TRAY_BUTTONS = {
     "PetsButton",
     "PowersButton",
+    "HoverboardButton",
     "AdminButton",
     "RewardsButton",
     "DailyButton",
@@ -258,6 +259,21 @@ function MenuTrayStyle.start()
                 end
             end
 
+            local function reflowPopup()
+                if not (compactMenu.Parent and popup.Parent) then
+                    return
+                end
+                -- Menu now flanks the hotbar. Open the grid just above that square.
+                local menuPos = compactMenu.AbsolutePosition
+                local menuSize = compactMenu.AbsoluteSize
+                local origin = mc.AbsolutePosition
+                local x = menuPos.X + menuSize.X * 0.5 - origin.X
+                local y = menuPos.Y - 6 - origin.Y
+                popup.AnchorPoint = Vector2.new(0.5, 1)
+                -- 8px floor so a left-of-bar Menu does not clip the popup.
+                popup.Position = UDim2.fromOffset(math.max(8, math.floor(x)), math.floor(y))
+            end
+
             applyCompactTray = function()
                 if adopting then
                     return
@@ -270,6 +286,7 @@ function MenuTrayStyle.start()
                 player:SetAttribute("CompactMenuExpanded", compact and compactExpanded)
 
                 if compact then
+                    reflowPopup()
                     -- The old container remains hidden even if BaseUI tries to re-open it later.
                     pane.Visible = false
                     for btn, saved in pairs(adopted) do
@@ -315,6 +332,8 @@ function MenuTrayStyle.start()
                 end
             end)
             player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyCompactTray)
+            compactMenu:GetPropertyChangedSignal("AbsolutePosition"):Connect(reflowPopup)
+            compactMenu:GetPropertyChangedSignal("AbsoluteSize"):Connect(reflowPopup)
             applyCompactTray()
         end
 

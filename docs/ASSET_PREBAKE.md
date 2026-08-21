@@ -35,14 +35,21 @@ the `AssetReport` lists loaded (not skipped) models — those are the ones missi
 
 1. **Boot the game fully** (Play in Studio) and let it finish loading — wait until
    `[EggStandPlacement] placed eggs on N/N` appears, so every model is in `Assets.Models`.
-2. In the Explorer, right-click **`ReplicatedStorage.Assets.Models`** → **Save / Export → Save to File**
-   → save as `Models.rbxm` (anywhere, e.g. `~/Documents`).
+2. In the Explorer, confirm there is **exactly one** `ReplicatedStorage.Assets.Models` folder.
+   Two siblings with the same name are a Rojo + `$ignoreUnknownInstances` collision (Studio's last
+   saved `Models` plus the mapped `assets/place/Models.rbxm`). Both replicate to clients and
+   `FindFirstChild` picks one at random, so boot looks like the snapshot "isn't working." Keep the
+   richer folder (more Pets/Eggs), delete the twin, then right-click the remaining
+   **`ReplicatedStorage.Assets.Models`** → **Save / Export → Save to File** → save as `Models.rbxm`
+   (anywhere, e.g. `~/Documents`).
    - MCP `execute_luau` **cannot** write files, so this save is manual. (MCP can still *traverse* and
      *validate* — it just can't export.)
+   - After you drop the sanitized file into the repo, delete any leftover Studio `Models` in **Edit**
+     so Rojo owns the only copy. `Images` and `Sounds` can stay; they are not Rojo-mapped.
 3. Sanitize runtime caches/duplicate Studio copies, validate, then drop it in and commit:
    ```sh
-   lune run scripts/prebake/sanitize_prebake.luau ~/Documents/Models.rbxm /tmp/Models-clean.rbxm
-   lune run scripts/prebake/summarize_prebake.luau /tmp/Models-clean.rbxm
+   mise exec -- lune run scripts/prebake/sanitize_prebake.luau ~/Documents/Models.rbxm /tmp/Models-clean.rbxm
+   mise exec -- lune run scripts/prebake/summarize_prebake.luau /tmp/Models-clean.rbxm
    # expect ASSET_ROOTS ... EMPTY=0 and RIGGED_ASSET_ROOTS ... invalid=0
    cp /tmp/Models-clean.rbxm assets/place/Models.rbxm
    git add assets/place/Models.rbxm && git commit -m "chore(prebake): refresh Models cache"

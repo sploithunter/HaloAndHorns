@@ -42,6 +42,22 @@ return {
     part_color = { 240, 200, 70 },
     part_spin = 90, -- deg/s idle spin for readability
 
+    -- Currency-specific pickup presentations. Origin currencies intentionally use the gem
+    -- renderer in configs/gems.lua; Hall Waycoins are actual coins and must never fall through to
+    -- the default emerald-gem presentation. This is the small authored Waycoin pile, scaled down
+    -- from the mineable node. The uploaded mesh is already horizontal, so its one-time template
+    -- orientation is neutral; runtime clones use the exact same pop/rest/spin/Magnet path as gems.
+    currency_pickups = {
+        hall_coins = {
+            -- Raw Studio-resolved mesh id. 80390233095046 is the uploaded Model asset and cannot
+            -- be passed to CreateMeshPartAsync; doing so silently fell back to the green gem.
+            mesh = "rbxassetid://96505477571443",
+            texture = "rbxassetid://75902763288492",
+            size = 1.35,
+            orientation = { x = 0, y = 0, z = 0 },
+        },
+    },
+
     -- Magnet power: the cast sets MagnetBuff (radius BONUS in studs) for its duration; the collect
     -- loop adds it to collect_radius while MagnetBuffUntil is live. Tunable here for reference; the
     -- actual bonus + duration come from the power's effect_kind in configs/powers.lua.

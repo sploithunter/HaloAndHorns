@@ -428,6 +428,23 @@ function MeetCreatorService:_hatchEggItemUnlocked(player, eggItemId, confirmedPe
         variant = hatch.variant,
         huge = hatch.huge == true,
     })
+    -- Inventory-held eggs use this service rather than EggService. Send their hatch through the
+    -- same announcement rules so Mythical/Secret/Exclusive hatches appear server-wide and Huge
+    -- hatches appear both locally and on the cross-server channel.
+    if self._chatAnnouncementService then
+        local family = petsConfig.pets and petsConfig.pets[hatch.pet]
+        self._chatAnnouncementService:AnnounceHatches(player, {
+            {
+                Pet = hatch.pet,
+                Type = hatch.variant,
+                RarityId = hatch.huge == true and "huge" or (family and family.rarity),
+                huge = hatch.huge == true,
+            },
+        })
+    end
+    if hatch.huge == true and self._statsService then
+        self._statsService:Increment(player, "huge_pets_hatched", 1)
+    end
     return { ok = true, pet = hatch.pet, variant = hatch.variant, huge = hatch.huge == true }
 end
 

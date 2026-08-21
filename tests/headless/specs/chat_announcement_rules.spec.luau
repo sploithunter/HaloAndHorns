@@ -93,6 +93,36 @@ return function()
                 "🌎 HUGE HATCH! Colorado Plays hatched a Huge Rainbow Dragon!"
             )
         end)
+
+        it("recognizes the compact result returned by inventory-held egg hatches", function()
+            local payload = Rules.hatch(
+                "Colorado Plays",
+                { pet = "dragon", variant = "golden", huge = true },
+                pets,
+                config
+            )
+            expect(payload.scope).to.equal("global")
+            expect(payload.rarityId).to.equal("huge")
+            expect(payload.text).to.equal(
+                "🌎 HUGE HATCH! Colorado Plays hatched a Huge Golden Dragon!"
+            )
+        end)
+
+        it("derives Exclusive rarity for compact inventory-held egg results", function()
+            pets.pets.beta_tester_bot = {
+                display_name = "Beta Byte",
+                rarity = "exclusive",
+            }
+            local payload = Rules.hatch(
+                "Colorado Plays",
+                { pet = "beta_tester_bot", variant = "basic", huge = false },
+                pets,
+                config
+            )
+            expect(payload.scope).to.equal("server")
+            expect(payload.rarityId).to.equal("exclusive")
+            expect(payload.text).to.equal("✨ Colorado Plays hatched an Exclusive Beta Byte!")
+        end)
     end)
 
     describe("ChatAnnouncementRules team sidekick", function()
@@ -172,6 +202,14 @@ return function()
                 string.find(
                     readFile("src/Server/Services/MeetCreatorService.lua"),
                     "self._chatAnnouncementService:AnnounceCreatorLuck",
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(
+                string.find(
+                    readFile("src/Server/Services/MeetCreatorService.lua"),
+                    "self._chatAnnouncementService:AnnounceHatches",
                     1,
                     true
                 ) ~= nil

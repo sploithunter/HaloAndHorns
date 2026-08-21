@@ -199,6 +199,7 @@ return function()
             expect(signals.SaveDisplayPreferences.name).to.equal("SaveDisplayPreferences")
             expect(signals.ForceRegenerateAssets.name).to.equal("ForceRegenerateAssets")
             expect(signals.UnlockZoneRequest.name).to.equal("UnlockZoneRequest")
+            expect(signals.Hoverboard_Toggle.name).to.equal("Hoverboard_Toggle")
             expect(signals.AutoTarget_ToggleFree.name).to.equal("AutoTarget_ToggleFree")
             expect(signals.AutoTarget_TogglePaid.name).to.equal("AutoTarget_TogglePaid")
             expect(signals.AutoTarget_RequestStatus.name).to.equal("AutoTarget_RequestStatus")
@@ -213,6 +214,7 @@ return function()
             expect(signals.Settings_SetInventoryCardScale.name).to.equal(
                 "Settings_SetInventoryCardScale"
             )
+            expect(signals.Settings_SetHotbarSize.name).to.equal("Settings_SetHotbarSize")
             expect(signals.Settings_SetEnemyLevelOffset.name).to.equal(
                 "Settings_SetEnemyLevelOffset"
             )
@@ -306,7 +308,7 @@ return function()
             expect(signals.FoundersChoiceStateRequest.name).to.equal("FoundersChoiceStateRequest")
             expect(signals.FoundersChoiceSelect.name).to.equal("FoundersChoiceSelect")
             expect(signals.FoundersChoiceState.name).to.equal("FoundersChoiceState")
-            expect(#created).to.equal(127)
+            expect(#created).to.equal(131)
         end)
 
         it("omits Studio-only packets from a production registry", function()

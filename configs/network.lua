@@ -370,6 +370,20 @@ return {
                 arguments = { { name = "request", type = "table" } },
             },
         },
+        Hoverboard_Toggle = {
+            name = "Hoverboard_Toggle",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 12,
+            handler = "HoverboardService.Toggle",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
+            },
+        },
         AutoTarget_ToggleFree = {
             name = "AutoTarget_ToggleFree",
             transport = "reliable_event",
@@ -521,6 +535,20 @@ return {
             delivery = "request",
             rate_limit = 20,
             handler = "SettingsService.SetInventoryCardScale",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
+            },
+        },
+        Settings_SetHotbarSize = {
+            name = "Settings_SetHotbarSize",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 20,
+            handler = "SettingsService.SetHotbarSize",
             schema = {
                 kind = "tuple",
                 arguments = { { name = "request", type = "table" } },
@@ -1487,6 +1515,19 @@ return {
                 arguments = { { name = "shop", type = "table" } },
             },
         },
+        HoverboardShopOpened = {
+            name = "HoverboardShopOpened",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "hoverboard.shop_opened",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "shop", type = "table" } },
+            },
+        },
         AdminToolResult = {
             name = "AdminToolResult",
             transport = "reliable_event",
@@ -1659,6 +1700,21 @@ return {
             schema = {
                 kind = "tuple",
                 arguments = { { name = "snapshot", type = "table" } },
+            },
+        },
+        ChallengeRun_Start = {
+            name = "ChallengeRun_Start",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 8,
+            handler = "MissionInstanceService.StartChallengeRun",
+            topic = "challenge_run.start",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
             },
         },
     },

@@ -19,7 +19,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PowerFXProbe = require(script.Parent:WaitForChild("PowerFXProbe"))
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
-
 local AdminController = {}
 local started = false
 
@@ -27,7 +26,8 @@ local started = false
 local ADMIN_AREAS = { "Grass", "Desert", "Ice", "Lava", "Spawn" }
 
 -- The dev/admin overlay ScreenGuis this chip shows/hides (by Name in PlayerGui).
-local OVERLAYS = { "DevSpawnPanel", "DevMetricsHud", "BuffStatsHud", "PetSyncDiag" }
+local OVERLAYS =
+    { "DevSpawnPanel", "DevMetricsHud", "BuffStatsHud", "PetSyncDiag", "HoverboardSoleTuner" }
 
 local function isAdmin(player)
     return RunService:IsStudio() or player:GetAttribute("IsAdmin") == true
@@ -319,47 +319,32 @@ function AdminController.start()
         apply()
     end)
 
-    -- On compact HUDs, dock the creator-only toggle directly above Powers at the same width. It is
-    -- deliberately not part of the normal utility popup: regular players never see it, while a
-    -- tester can still find it beside the controls it affects. Classic mode restores the established
-    -- bottom-right capsule.
-    task.spawn(function()
-        local hotbarGui = pg:WaitForChild("HotbarBar")
-        local bar = hotbarGui and hotbarGui:WaitForChild("Bar", 10)
-        local powers = bar and bar:WaitForChild("PowersButton", 20)
-        if not (bar and powers) then
-            return
-        end
-        local originalParent = chip.Parent
-        local originalPosition = chip.Position
-        local originalSize = chip.Size
-        local originalAnchor = chip.AnchorPoint
-
-        local function applyLayout()
-            compactAdmin = player:GetAttribute("HudLayoutResolved") == "compact"
-            if compactAdmin then
-                local ownScale = chip:FindFirstChild("ViewportScale")
-                if ownScale then
-                    ownScale:Destroy()
-                end
-                chip.Parent = bar
-                chip.AnchorPoint = Vector2.new(0, 1)
-                chip.Position = UDim2.new(1, 26, 0.5, -35)
-                chip.Size = UDim2.fromOffset(62, 22)
-            else
-                chip.Parent = originalParent
-                chip.AnchorPoint = originalAnchor
-                chip.Position = originalPosition
-                chip.Size = originalSize
-                if not chip:FindFirstChild("ViewportScale") then
-                    require(script.Parent.Parent.UI.UIViewportScale).attach(chip)
-                end
+    -- Compact: far lower-left corner so Pets/Menu can match the Powers/Board
+    -- stack. Classic restores the established bottom-right capsule.
+    local function applyAdminCorner()
+        compactAdmin = player:GetAttribute("HudLayoutResolved") == "compact"
+        if compactAdmin then
+            chip.Parent = gui
+            chip.AnchorPoint = Vector2.new(0, 1)
+            -- 8px from the usable bottom-left; scale cannot express a screen corner.
+            chip.Position = UDim2.new(0, 8, 1, -8)
+            chip.Size = UDim2.fromOffset(72, 22)
+            if not chip:FindFirstChild("ViewportScale") then
+                require(script.Parent.Parent.UI.UIViewportScale).attach(chip)
             end
-            refreshChipLabel(on)
+        else
+            chip.Parent = gui
+            chip.AnchorPoint = Vector2.new(1, 1)
+            chip.Position = UDim2.new(1, -12, 1, -85)
+            chip.Size = UDim2.fromOffset(118, 30)
+            if not chip:FindFirstChild("ViewportScale") then
+                require(script.Parent.Parent.UI.UIViewportScale).attach(chip)
+            end
         end
-        player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyLayout)
-        applyLayout()
-    end)
+        refreshChipLabel(on)
+    end
+    player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyAdminCorner)
+    applyAdminCorner()
 
     -- The overlays may not exist at this instant (they start in their own pcall blocks); apply a few
     -- times early so they begin hidden once they appear.

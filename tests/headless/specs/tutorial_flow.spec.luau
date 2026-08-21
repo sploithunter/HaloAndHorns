@@ -39,6 +39,14 @@ return function()
             expect(source:find('fireGameEvent(player, "tutorial_level_awarded"', 1, true)).to.be.ok()
         end)
 
+        it("admin reset stamps Hall track 2 and clears the legacy completion flag", function()
+            local source = readFile("src/Server/Services/TutorialService.lua")
+            expect(source:find("hallTrack = true", 1, true)).to.be.ok()
+            expect(source:find("data.GameData.TutorialCompleted = false", 1, true)).to.be.ok()
+            local admin = readFile("src/Server/Services/AdminToolsService.lua")
+            expect(admin:find("playerData.GameData.TutorialCompleted = false", 1, true)).to.be.ok()
+        end)
+
         it("keeps guided auto-fill and squad review on server-authoritative seams", function()
             local egg = readFile("src/Server/Services/EggService.lua")
             local fillAt =
@@ -181,6 +189,21 @@ return function()
             expect(client:find("bodyLabel.TextSize = 18", 1, true)).to.be.ok()
         end)
 
+        it("renders the live breadcrumb as flowing 3D chevrons on a direct line", function()
+            local client = readFile("src/Client/Systems/TutorialController.lua")
+            expect(client:find('marker.Name = "TutorialChevron"', 1, true)).to.be.ok()
+            expect(client:find('Instance.new("Highlight")', 1, true)).to.be.ok()
+            expect(client:find('arm("LeftArm", leftTail)', 1, true)).to.be.ok()
+            expect(client:find('arm("RightArm", rightTail)', 1, true)).to.be.ok()
+            expect(client:find("local travel = (now * TRAIL_TRAVEL_SPEED)", 1, true)).to.be.ok()
+            expect(client:find("local point = start:Lerp(target, alpha)", 1, true)).to.be.ok()
+            expect(client:find("marker:PivotTo(", 1, true)).to.be.ok()
+            expect(client:find("RunService.RenderStepped:Wait()", 1, true)).to.be.ok()
+            expect(client:find("PathfindingService", 1, true)).to.equal(nil)
+            expect(client:find("REPLAN_SECONDS", 1, true)).to.equal(nil)
+            expect(client:find("Enum.PartType.Cylinder", 1, true)).to.equal(nil)
+        end)
+
         it(
             "owns the upper-right player-list slot without becoming permanently dismissible",
             function()
@@ -228,7 +251,7 @@ return function()
             expect(step.id).to.equal("hatch_first_egg")
             expect(step.title).to.equal("Hatch your first egg")
             expect(step.body).to.equal(
-                "Your companion needs a squadmate. Follow the trail to the Earth Egg and hatch one."
+                "Your companion needs a squadmate. Follow the trail to the Wayfinder Egg and hatch one."
             )
         end)
 
@@ -259,12 +282,12 @@ return function()
                 { "coin_payout", { amount = 60 } }, -- farm_crystals (100 coins)
                 "egg_hatch", -- hatch_another
                 "tutorial_squad_reviewed", -- build_squad (Pets panel reviewed + server commit)
-                "enemy_defeated", -- first_fight (the Earth-cave onramp creature)
-                "potion_used", -- battle_brew (drink from the top-right slot)
-                "rally_used", -- rally_call (the flag at the top-left, slot 11)
                 "tutorial_hotbar_finished", -- bind_power (Resonance bound, then Done pressed)
                 "power_cast", -- cast_power
-                "enhancement_slotted", -- slot_power → done
+                "enhancement_slotted", -- slot_power
+                "enemy_defeated", -- first_fight (the Hall barn onramp creature)
+                "potion_used", -- battle_brew (drink from the top-right slot)
+                "rally_used", -- rally_call (the flag at the top-left, slot 11) → done
             })
             expect(p.done).to.equal(true)
             expect(TutorialFlow.current(cfg, p)).to.equal(nil)
@@ -281,14 +304,14 @@ return function()
     end)
 
     describe("resilience", function()
-        it("migrates active v1 progress through the reordered steps", function()
+        it("migrates active progress through each tutorial reorder", function()
             local farm, changed = TutorialFlow.migrateProgress(cfg, {
                 step = 3,
                 count = 72,
                 done = false,
             })
             expect(changed).to.equal(true)
-            expect(farm.version).to.equal(2)
+            expect(farm.version).to.equal(3)
             expect(farm.step).to.equal(2)
             expect(farm.count).to.equal(72)
 
@@ -298,7 +321,16 @@ return function()
                 count = 0,
                 done = false,
             })
-            expect(fighter.step).to.equal(5) -- does not force the new review on past players
+            expect(fighter.step).to.equal(8) -- follows first_fight through both reorders
+
+            local binder = TutorialFlow.migrateProgress(cfg, {
+                version = 2,
+                step = 8,
+                count = 0,
+                done = false,
+            })
+            expect(binder.version).to.equal(3)
+            expect(binder.step).to.equal(5) -- remains on bind_power, now before combat
         end)
 
         it("normalizes nil/corrupt progress", function()
@@ -306,6 +338,19 @@ return function()
             expect(p.step).to.equal(1)
             expect(p.count).to.equal(0)
             expect(p.done).to.equal(false)
+            expect(p.track).to.equal(nil)
+        end)
+
+        it("stamps Hall track 2 only on new hall-track records", function()
+            expect(cfg.hall_track).to.equal(2)
+            local fresh = TutorialFlow.fresh(cfg)
+            expect(fresh.track).to.equal(nil)
+            local hall = TutorialFlow.fresh(cfg, { hallTrack = true })
+            expect(hall.track).to.equal(2)
+            local kept = TutorialFlow.normalizeProgress({ step = 1, track = 2 })
+            expect(kept.track).to.equal(2)
+            local migrated = TutorialFlow.migrateProgress(cfg, { version = 2, step = 1 })
+            expect(migrated.track).to.equal(nil)
         end)
 
         it("step index past the end (config shrank) reads as done", function()

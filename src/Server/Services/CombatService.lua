@@ -133,13 +133,16 @@ end
 
 -- Credit a defeated enemy's deterministic drops to the player (Feature 10:
 -- "loot includes biome currency + Shadow Tokens in Hell").
-function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier)
+function CombatService:AwardLoot(player, enemyId, enemyLevel, enemyTier, resolvedDef)
     -- Pet-INVADER enemies (petinv_*, synthesized at spawn from the opposing realm's pets) have NO
     -- entry in the static enemies config — and the REALMS are populated almost entirely by them. Their
     -- Level AND elite Tier are stamped on the model and passed in here, so a def-less invader is still
     -- fully resolvable: rank-scaled XP + coins. `tier` below = static def.tier → the stamped model tier
     -- → trash_mob, so a boss invader finally pays boss rates (was flat trash — the fix we skipped).
-    local def = self:_enemyDef(enemyId)
+    -- EnemyService owns the resolved per-spawn definition. Most enemies use the static config, but
+    -- configured encounters may intentionally override fields such as drop_table without changing
+    -- the global enemy definition.
+    local def = type(resolvedDef) == "table" and resolvedDef or self:_enemyDef(enemyId)
     if not def then
         -- No STATIC def. Pet-invaders are def-less BY DESIGN and carry a stamped tier, so they're
         -- handled. Only warn when we have NEITHER a def NOR a passed tier — a GENUINELY unknown enemy

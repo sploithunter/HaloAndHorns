@@ -281,6 +281,37 @@ return function()
             expect(summary.accepted).to.equal(3)
             expect(summary.rejected).to.equal(3)
         end)
+
+        it("packs around a locked slot and will not slide a new pet into it", function()
+            local previous = {
+                slot_1 = "huge_1",
+                slot_2 = "stack|bunny:golden:leadership",
+            }
+            local equipped, summary = View.buildEquipped(items, {
+                "stack|bunny:golden:leadership",
+                "stack|bunny:golden:luck",
+            }, 5, {
+                lockedSlots = { [1] = true },
+                previous = previous,
+            })
+            expect(summary.rejected).to.equal(0)
+            expect(equipped.slot_1).to.equal(nil)
+            expect(equipped.slot_2).to.equal("stack|bunny:golden:leadership")
+            expect(equipped.slot_3).to.equal("stack|bunny:golden:luck")
+        end)
+
+        it("keeps the downed occupant pinned in a locked slot", function()
+            local equipped, summary = View.buildEquipped(items, {
+                "huge_1",
+                "stack|bunny:golden:luck",
+            }, 5, {
+                lockedSlots = { slot_1 = true },
+                previous = { slot_1 = "huge_1" },
+            })
+            expect(summary.rejected).to.equal(0)
+            expect(equipped.slot_1).to.equal("huge_1")
+            expect(equipped.slot_2).to.equal("stack|bunny:golden:luck")
+        end)
     end)
 
     describe("PetInventoryView capability gating", function()

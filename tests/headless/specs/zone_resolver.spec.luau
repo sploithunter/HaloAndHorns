@@ -18,22 +18,20 @@ end
 
 return function()
     describe("ZoneResolver.boundsFromAreas", function()
-        it(
-            "includes only kind=area zones (Spawn/Lava/Ice/Desert/Meadow), not worlds/islands",
-            function()
-                local ids = {}
-                for _, b in ipairs(bounds) do
-                    ids[b.id] = true
-                end
-                expect(ids.Spawn).to.equal(true)
-                expect(ids.Lava).to.equal(true)
-                expect(ids.Ice).to.equal(true)
-                expect(ids.Desert).to.equal(true)
-                -- worlds/islands are organisational, never standable footprints
-                expect(ids.spawn_world).never.to.be.ok()
-                expect(ids.lava_island).never.to.be.ok()
+        it("includes authored and Hall area zones, but not worlds/islands", function()
+            local ids = {}
+            for _, b in ipairs(bounds) do
+                ids[b.id] = true
             end
-        )
+            expect(ids.Spawn).to.equal(true)
+            expect(ids.Lava).to.equal(true)
+            expect(ids.Ice).to.equal(true)
+            expect(ids.Desert).to.equal(true)
+            expect(ids.Hall_1).to.equal(true)
+            -- worlds/islands are organisational, never standable footprints
+            expect(ids.spawn_world).never.to.be.ok()
+            expect(ids.lava_island).never.to.be.ok()
+        end)
     end)
 
     describe("ZoneResolver.resolve (footprint + vertical band)", function()
@@ -48,6 +46,12 @@ return function()
             local c = center("Ice")
             local pos = { x = c.x, y = c.y + 5, z = c.z }
             expect(ZoneResolver.resolve(pos, bounds, { verticalBand = VB })).to.equal("Ice")
+        end)
+
+        it("resolves the synthetic-only Hall entry area", function()
+            local c = center("Hall_1")
+            local pos = { x = c.x, y = c.y + 5, z = c.z }
+            expect(ZoneResolver.resolve(pos, bounds, { verticalBand = VB })).to.equal("Hall_1")
         end)
 
         it("returns nil when far outside every area footprint", function()
@@ -97,6 +101,16 @@ return function()
                     { verticalBand = VB, margin = MARGIN }
                 )
             ).to.equal("Ice")
+        end)
+
+        it("switches from Spawn to Hall after a long-distance teleport", function()
+            local c = center("Hall_1")
+            local pos = { x = c.x, y = c.y + 5, z = c.z }
+            expect(ZoneResolver.resolveSticky(pos, bounds, "Spawn", {
+                verticalBand = VB,
+                margin = MARGIN,
+                default = "Spawn",
+            })).to.equal("Hall_1")
         end)
     end)
 

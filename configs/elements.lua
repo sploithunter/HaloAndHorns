@@ -28,6 +28,16 @@ return {
         },
         advantage = 1.25, -- standing in the zone your element beats
         disadvantage = 0.8, -- standing in the zone that beats your element
+        -- Hall pets are starter-world pets, not another member of the Home crystal RPS ring.
+        -- They retain 80% effectiveness throughout Crystal World.
+        special = {
+            hall = {
+                grass = 0.8,
+                desert = 0.8,
+                ice = 0.8,
+                lava = 0.8,
+            },
+        },
     },
 
     -- resonance[petElement][realmAlignment] -> multiplier. CROSS-REALM by design (Jason): a pet is

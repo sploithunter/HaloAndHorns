@@ -22,6 +22,15 @@
 
 local PetLockout = {}
 
+-- Slot stays down for the rest of a Range / Training Ground run. JSON-safe
+-- (math.huge is not). Overworld exit rewrites these to a normal 60s lock.
+PetLockout.FOREVER = -1
+
+local function untilActive(t, now)
+    local n = tonumber(t) or 0
+    return n == PetLockout.FOREVER or n > now
+end
+
 local function norm(state)
     state = state or {}
     return {
@@ -50,18 +59,20 @@ function PetLockout.recordDown(state, entry, now, cfg)
     cfg = cfg or {}
     entry = entry or {}
     local petUntil = now + (tonumber(cfg.pet_lockout_seconds) or 300)
-    local slotUntil = now + (tonumber(cfg.slot_lock_seconds) or 60)
+    local recoverUntil = now + (tonumber(cfg.slot_lock_seconds) or 60)
+    local slotUntil = cfg.slot_lock_forever and PetLockout.FOREVER or recoverUntil
     local pets, stacks, slots = shallow(state.pets), shallow(state.stacks), shallow(state.slots)
     if entry.kind == "special" and entry.uid then
         pets[entry.uid] = petUntil -- the EXACT huge is out for the long pet lockout (5 min)
     elseif entry.kind == "stack" and entry.stackKey then
         -- STACK units are fungible: they recover with the SLOT (1 min), not the long pet lockout —
-        -- after the slot frees you just re-summon a sibling from the stack.
+        -- after the slot frees you just re-summon a sibling from the stack. Never stamp FOREVER
+        -- here — a run-long lock is the SLOT only, or a leaked -1 would brick the stack forever.
         local list = {}
         for _, t in ipairs(state.stacks[entry.stackKey] or {}) do
             list[#list + 1] = t
         end
-        list[#list + 1] = slotUntil
+        list[#list + 1] = recoverUntil
         stacks[entry.stackKey] = list
     end
     if entry.slot then
@@ -82,17 +93,17 @@ function PetLockout.accelerate(state, extraSeconds)
     end
     local pets, stacks, slots = {}, {}, {}
     for uid, t in pairs(state.pets) do
-        pets[uid] = t - extraSeconds
+        pets[uid] = t == PetLockout.FOREVER and t or (t - extraSeconds)
     end
     for key, list in pairs(state.stacks) do
         local n = {}
         for i, t in ipairs(list) do
-            n[i] = t - extraSeconds
+            n[i] = t == PetLockout.FOREVER and t or (t - extraSeconds)
         end
         stacks[key] = n
     end
     for slot, t in pairs(state.slots) do
-        slots[slot] = t - extraSeconds
+        slots[slot] = t == PetLockout.FOREVER and t or (t - extraSeconds)
     end
     return { pets = pets, stacks = stacks, slots = slots }
 end
@@ -132,7 +143,7 @@ end
 function PetLockout.activeStackLocks(state, stackKey, now)
     local n = 0
     for _, t in ipairs(norm(state).stacks[stackKey] or {}) do
-        if t > now then
+        if untilActive(t, now) then
             n = n + 1
         end
     end
@@ -140,11 +151,48 @@ function PetLockout.activeStackLocks(state, stackKey, now)
 end
 
 function PetLockout.isPetLocked(state, uid, now)
-    return (norm(state).pets[uid] or 0) > now
+    return untilActive(norm(state).pets[uid], now)
 end
 
 function PetLockout.isSlotLocked(state, slot, now)
-    return (norm(state).slots[slot] or 0) > now
+    return untilActive(norm(state).slots[slot], now)
+end
+
+-- { [1]=true, ["slot_1"]=true, ... } for every slot still recovering.
+function PetLockout.lockedSlotSet(state, now)
+    local locked = {}
+    for slot, t in pairs(norm(state).slots) do
+        if untilActive(t, now) then
+            locked[slot] = true
+            local n = tonumber(tostring(slot):match("^slot_(%d+)$"))
+            if n then
+                locked[n] = true
+            end
+        end
+    end
+    return locked
+end
+
+-- Range / Training Ground exit: a run-long slot lock becomes a normal overworld lock.
+function PetLockout.endGauntletSlotLocks(state, now, slotSeconds)
+    state = norm(state)
+    now = tonumber(now) or 0
+    local until_ = now + (tonumber(slotSeconds) or 60)
+    local slots = shallow(state.slots)
+    for slot, t in pairs(slots) do
+        if t == PetLockout.FOREVER then
+            slots[slot] = until_
+        end
+    end
+    local stacks = {}
+    for key, list in pairs(state.stacks) do
+        local n = {}
+        for i, t in ipairs(list) do
+            n[i] = t == PetLockout.FOREVER and until_ or t
+        end
+        stacks[key] = n
+    end
+    return { pets = state.pets, stacks = stacks, slots = slots }
 end
 
 -- How many of a stack of `quantity` are deployable right now (quantity minus the recovering units).
@@ -162,21 +210,30 @@ function PetLockout.canDeploy(state, entry, now)
     entry = entry or {}
     if entry.kind == "special" and entry.uid then
         local until_ = state.pets[entry.uid] or 0
-        if until_ > now then
-            return { ok = false, reason = "pet_recovering", secondsLeft = math.ceil(until_ - now) }
+        if untilActive(until_, now) then
+            return {
+                ok = false,
+                reason = "pet_recovering",
+                secondsLeft = until_ == PetLockout.FOREVER and nil or math.ceil(until_ - now),
+            }
         end
     elseif entry.kind == "stack" and entry.stackKey then
         if PetLockout.availableQuantity(state, entry.stackKey, entry.quantity or 0, now) <= 0 then
             local soonest
             for _, t in ipairs(state.stacks[entry.stackKey] or {}) do
-                if t > now and (not soonest or t < soonest) then
+                if
+                    untilActive(t, now)
+                    and (not soonest or (t > 0 and (soonest < 0 or t < soonest)))
+                then
                     soonest = t
                 end
             end
             return {
                 ok = false,
                 reason = "stack_recovering",
-                secondsLeft = soonest and math.ceil(soonest - now) or nil,
+                secondsLeft = (soonest and soonest ~= PetLockout.FOREVER) and math.ceil(
+                    soonest - now
+                ) or nil,
             }
         end
     end
@@ -186,8 +243,12 @@ end
 -- Slot gate (separate so the caller can distinguish "slot still locked" from "pet still recovering").
 function PetLockout.canUseSlot(state, slot, now)
     local until_ = norm(state).slots[slot] or 0
-    if until_ > now then
-        return { ok = false, reason = "slot_recovering", secondsLeft = math.ceil(until_ - now) }
+    if untilActive(until_, now) then
+        return {
+            ok = false,
+            reason = "slot_recovering",
+            secondsLeft = until_ == PetLockout.FOREVER and nil or math.ceil(until_ - now),
+        }
     end
     return { ok = true }
 end
@@ -197,14 +258,17 @@ function PetLockout.prune(state, now)
     state = norm(state)
     local pets, stacks, slots = {}, {}, {}
     for uid, t in pairs(state.pets) do
-        if t > now then
+        if untilActive(t, now) then
             pets[uid] = t
         end
     end
     for key, list in pairs(state.stacks) do
         local kept = {}
         for _, t in ipairs(list) do
-            if t > now then
+            if t == PetLockout.FOREVER then
+                t = now + 60
+            end
+            if untilActive(t, now) then
                 kept[#kept + 1] = t
             end
         end
@@ -213,7 +277,7 @@ function PetLockout.prune(state, now)
         end
     end
     for slot, t in pairs(state.slots) do
-        if t > now then
+        if untilActive(t, now) then
             slots[slot] = t
         end
     end

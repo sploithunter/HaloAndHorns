@@ -22,6 +22,20 @@ local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local TutorialService = {}
 TutorialService.__index = TutorialService
 
+local function reconcileCompletionFlag(data)
+    if not (data and type(data.Tutorial) == "table" and data.Tutorial.done == true) then
+        return false
+    end
+
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    if data.GameData.TutorialCompleted == true then
+        return false
+    end
+
+    data.GameData.TutorialCompleted = true
+    return true
+end
+
 function TutorialService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
@@ -118,9 +132,24 @@ function TutorialService:_ensureProgress(player)
     end
     if type(data.Tutorial) == "table" then
         local migrated, changed = TutorialFlow.migrateProgress(self._config, data.Tutorial)
+        -- In-progress Hall-era tutorials predating this stamp still need the track so
+        -- gates can check completion. Never stamp a finished/legacy save.
+        if migrated.done ~= true and migrated.track == nil then
+            local track = math.floor(tonumber(self._config.hall_track) or 2)
+            if track > 0 then
+                migrated.track = track
+                changed = true
+            end
+        end
         data.Tutorial = migrated
-        if changed then
-            self._dataService:RequestSave(player, "tutorial_version_migration")
+        local reconciledCompletion = reconcileCompletionFlag(data)
+        if changed or reconciledCompletion then
+            self._dataService:RequestSave(
+                player,
+                reconciledCompletion and "tutorial_completion_reconcile"
+                    or "tutorial_version_migration",
+                { critical = reconciledCompletion }
+            )
         end
         return data
     end
@@ -134,8 +163,9 @@ function TutorialService:_ensureProgress(player)
         data.Tutorial = TutorialFlow.fresh(self._config)
         data.Tutorial.done = true
     else
-        data.Tutorial = TutorialFlow.fresh(self._config)
+        data.Tutorial = TutorialFlow.fresh(self._config, { hallTrack = true })
     end
+    reconcileCompletionFlag(data)
     self._dataService:RequestSave(player, "tutorial_init")
     return data
 end
@@ -165,7 +195,14 @@ function TutorialService:_onEvent(player, name, ctx)
             data.Tutorial.completionLevelTarget = target
         end
     end
-    self._dataService:RequestSave(player, "tutorial_step")
+    reconcileCompletionFlag(data)
+    self._dataService:RequestSave(
+        player,
+        progress.done and "tutorial_complete" or "tutorial_step",
+        {
+            critical = progress.done,
+        }
+    )
     self:_applyStepGrant(player, data) -- reward on ENTER (e.g. slot step grants potency + a slot)
     self:_applyCompletionLevelGrant(player, data)
     self:_push(player)
@@ -397,13 +434,17 @@ function TutorialService:_push(player)
     end)
 end
 
--- Admin/testing: restart the tutorial for a player (bus command friendly).
+-- Admin/testing: restart the tutorial as a brand-new Hall-era player.
+-- Must stamp track 2 and clear the legacy TutorialCompleted flag, or Hall
+-- gates still treat the reset profile as finished.
 function TutorialService:Reset(player)
     local data = self._dataService:GetData(player)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
     end
-    data.Tutorial = TutorialFlow.fresh(self._config)
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    data.GameData.TutorialCompleted = false
+    data.Tutorial = TutorialFlow.fresh(self._config, { hallTrack = true })
     self._dataService:RequestSave(player, "tutorial_reset")
     self:_push(player)
     return { ok = true }

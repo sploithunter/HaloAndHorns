@@ -85,7 +85,8 @@ scanning `PlayerData`. Each server recalculates at join, coalesces relevant live
 final replacement at leave/shutdown. OrderedDataStore retains/ranks the population; servers request
 only the top 100 and boards show 10. Derived current-state scores (owned dragon count and strongest
 legal squad) are allowed to fall after inventory changes, while lifetime crystal/enemy counters only
-rise. Immutable creator/test user IDs are excluded and any legacy ordered keys are removed.
+rise. Dragonlord counts hatchable world/Hall dragons (Abyssal Wyrm, Portal Drake, the 11-realm
+secrets) — not boss exclusives such as Wyrmling. Immutable creator/test user IDs still publish; `hide_internal_accounts` hides them on the public page only. Do not RemoveAsync those keys.
 
 ## Studio AI Workflow
 
@@ -555,6 +556,17 @@ caster's mark is active. This exception does not penetrate `HoldResistUntil`: th
 earned by a boss breakout remains absolute. Ordinary accuracy resolves before immunity penetration, so
 combat feedback distinguishes `Miss` from `Immune`.
 
+## Phone Power Bar Keeper (2026-08-20)
+
+The keepable compact phone layout is **horizontal, bottom-center**. Do not lose it:
+2×10 slots, `mobile_width_scale = 0.81`, matching 48px columns (Pets above Menu on the
+left, Powers above Board on the right), ADMIN in the far lower-left corner, Jump keeps
+the far-right slot, PlayerBar 390×68 with scale-inset XP/Focus tracks. Game-pass +
+toggle badges live as columns on the far left (`vertical_left`). Restore badges under
+the Roblox chrome with `power_badges.placement = "top_chrome"`. While the battle
+list has engaged foes, the badge column hides (Settings → Hide Toggles in Battle,
+default on). EnemyHud stays above the badges (DisplayOrder 40 vs 26).
+
 ## Mobile HUD Uses Independent Persisted Presentations (2026-08-10)
 
 HUD density and squad presentation are separate persisted preferences. HUD layout retains its
@@ -587,3 +599,43 @@ The current input method and the physical display class are separate state. Conn
 to a desktop changes glyphs and navigation but not HUD scale; a console television keeps ten-foot
 safe margins even if another input device becomes most recent. This prevents the common failure where
 input switching causes the entire layout to jump between desktop and couch presentations.
+
+## Challenge Field Is The Hall_2 Range (2026-08-20)
+
+The Challenge Field is the Hall_2 Tile04_corner Range / Training Ground gauntlet, not a Worlds
+Plaza spoke. Room 1–99 is a difficulty index **and** a fixed layout sequence (`gauntlet_room`
+/ Range `room#N` / Training Ground `train#N`) so ranking is fair: everyone's Room N is the
+same map. Early rooms teach (one chamber, two lava imps). Late rooms cap at entry + 3.
+Settings **Enemy Level** and **Trial Enemy Group Size** do not apply — everyone enters at
+the mode's authored level and pack count. Persist `GameData.ChallengeRuns.<mode>.best_room` only when a run exists — do not
+put `ChallengeRuns` on the ProfileStore template (same Reconcile trap as Tutorial). No pet
+revives; a downed slot stays down for the run (no HUD timer) and cannot be filled
+by a new pet. Roster swaps stay legal on the stamped entry tile for white slots
+only. Overworld red slots stay reserved for 60s — unequip/re-equip does not free
+them. Leaving a gauntlet converts a run-long slot lock to that 60s lock. Squad wipe ends the run and records the last cleared room. Range entry reuses
+InventoryPanel cards and Best Pets plus the existing PowerChoice menu (origin + tooltips);
+it does not ship a second card or power renderer. A shared client draft lets the two menus
+flip without writing the live squad or power loadout until Enter. Catalog Range is exclusive:
+only the picked loaned powers work (server allowlist; owned passives are cleared). Loaned
+powers auto-slot — Hasten 6 recharge, all others 3 recharge + 3 focus — so ranking stays
+fair and players do not slot by hand. Auto-cast locks clear on Range enter and exit because
+the lock is on the slot, not the power. Range is solo-only (a party cannot share the ranked
+instance). Catalog Range pins combat to level 50 (`effective_level` on the
+mode, stamped as `ChallengeLevel`) so ranking is fair — same
+`EffectiveLevel` seam as sidekick, no sidekick offset, no ProfileStore
+field, claimed/earned Level unchanged. Training Ground does not pin.
+Current Range / Training Ground boards are a 48-hour sliding window of
+best cleared room (`challenge_window`), published through the existing
+one-player OrderedDataStore pipeline. Persist and publish when a run
+records a room — not on player exit. The window is the only timer:
+sweep at server start, every 5 minutes, and BindToClose. Persist
+`recent` attempts only when a run exists — not on the ProfileStore
+template. Immutable creator/test IDs in `internal_accounts` still publish;
+`hide_internal_accounts` hides them on the public page only. Do not
+RemoveAsync those keys. TEMP: hide is off and Studio may write so Macros
+can appear on the Range/TG signs. Window is TEMP 2 hours (production 48).
+Rewards pay the same unexcluded public top 10 the board shows — hidden
+IDs are never paid once hide is back on.
+Each of the four origins keeps its own saved power kit plus a shared last
+catalog squad under `GameData.RangeDefaults`; do not put that field on the ProfileStore
+template (same Reconcile trap as ChallengeRuns / Tutorial).

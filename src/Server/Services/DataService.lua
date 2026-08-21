@@ -39,7 +39,7 @@ local DEFAULT_SAVE_DEBOUNCE_SECONDS = 15
 local CRITICAL_SAVE_DEBOUNCE_SECONDS = 1
 local PERIODIC_SAVE_SECONDS = 60
 local SAVE_CONFIRM_TIMEOUT_SECONDS = 10
-local CURRENT_SCHEMA_VERSION = 15
+local CURRENT_SCHEMA_VERSION = 16
 
 local function countInventoryItems(inventory)
     local counts = {}
@@ -113,16 +113,32 @@ local function generateProfileTemplate(configLoader)
         GameData = {
             TutorialCompleted = false,
             CurrentQuest = nil,
-            UnlockedAreas = { "Spawn" },
+            -- Hall_1 is the fresh-player entry route; Spawn is the existing Crystal World.
+            -- Both remain in the unlock set because travel authorization and initial placement
+            -- are separate concerns. GameData.LastArea resumes Hall tiles; Crystal World /
+            -- Heaven / Hell / trials resume at Spawn. entered_crystal_world is the fallback.
+            UnlockedAreas = { "Hall_1", "Spawn" },
             -- Natural Recall stores egg identity, not coordinates. The live EggStand is resolved on
             -- cast so authored stands may move and removed event eggs fail closed.
             LastHatchedEggId = "",
+            -- Last authorized Hall tile, or Crystal World Spawn. Never a trial / Heaven / Hell id.
+            LastArea = "",
             -- Player root position in the egg anchor's local space. This reproduces the safe side of
             -- the hatcher where the player stood without fossilizing a world coordinate.
             LastHatchedEggOffset = {},
             -- Named progression entitlements reconcile existing profiles without coupling
             -- content grants to the schema version or replaying the Level-5 claim sequence.
             FutureCall = {},
+            -- Guided Hall-of-Worlds combat on-ramp. Stage rewards are one-time and the
+            -- checkpoint is an authored anchor name, never a fossilized world coordinate.
+            HallOfWorlds = {
+                version = 2,
+                entered_crystal_world = false,
+                highest_stage = 0,
+                completed = false,
+                rewarded = {},
+                checkpoint = "",
+            },
             -- One-time L2-L4 sampler grants. Markers are separate from item quantities so
             -- consuming or buying another boost can never cause a free-token regrant.
             EarlyBoostSampler = {},
@@ -137,6 +153,10 @@ local function generateProfileTemplate(configLoader)
             TrialEggRewards = { tracks = {} },
             -- Server-authoritative promo-code claims and launch-link campaign attribution.
             PromoCodes = { claims = {}, attribution = {} },
+            Hoverboard = {
+                owned = { black_gold = true },
+                equipped = "black_gold",
+            },
         },
 
         -- Settings
@@ -145,6 +165,8 @@ local function generateProfileTemplate(configLoader)
             SFXEnabled = true,
             GraphicsQuality = "Auto",
             TrialGroupScale = 1.0,
+            -- Who may send this player a team invite. Replicated as TeamInvitePrivacy.
+            TeamInvitePrivacy = "everyone",
             -- Listed creator accounts may deliberately suppress every game-pass benefit for
             -- production balance testing. Missing/legacy values default ON.
             CreatorGamePassesEnabled = true,
@@ -595,6 +617,38 @@ SchemaMigrations[14] = function(_self, data)
             and data.GameData.PromoCodes.attribution
         or {}
     data.SchemaVersion = 15
+    return 1
+end
+
+-- v15 -> v16: Hall of Worlds becomes the fresh-player entry route. Profiles that existed before
+-- this cut are grandfathered into Crystal World so a live player is never displaced. Fresh v16
+-- profiles use the template's entered_crystal_world=false and therefore begin in Hall_1.
+SchemaMigrations[15] = function(_self, data)
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    local hall = type(data.GameData.HallOfWorlds) == "table" and data.GameData.HallOfWorlds or {}
+    hall.version = 2
+    hall.entered_crystal_world = true
+    hall.highest_stage = math.max(0, math.floor(tonumber(hall.highest_stage) or 0))
+    hall.completed = hall.completed == true
+    hall.rewarded = type(hall.rewarded) == "table" and hall.rewarded or {}
+    hall.checkpoint = type(hall.checkpoint) == "string" and hall.checkpoint or ""
+    data.GameData.HallOfWorlds = hall
+
+    local unlocked = {}
+    for _, areaId in ipairs(type(data.GameData.UnlockedAreas) == "table" and data.GameData.UnlockedAreas or {}) do
+        if type(areaId) == "string" and areaId ~= "" then
+            unlocked[areaId] = true
+        end
+    end
+    unlocked.Hall_1 = true
+    unlocked.Spawn = true
+    local unlockedList = {}
+    for areaId in pairs(unlocked) do
+        table.insert(unlockedList, areaId)
+    end
+    table.sort(unlockedList)
+    data.GameData.UnlockedAreas = unlockedList
+    data.SchemaVersion = 16
     return 1
 end
 

@@ -59,6 +59,129 @@ function SpawnSlots.layoutGrid(opts)
     return points
 end
 
+-- Parse the map-generator OutlinePath contract ("x,z;x,z;...") into local-space points.
+-- Keeping this in the pure layout module lets authored play-area geometry drive both the visual
+-- marquee and server spawn filtering without either system inventing a second footprint.
+function SpawnSlots.parseOutline(text)
+    local points = {}
+    if type(text) ~= "string" then
+        return points
+    end
+
+    for pair in string.gmatch(text, "[^;]+") do
+        local xText, zText = string.match(pair, "^%s*([^,]+),([^,]+)%s*$")
+        local x, z = tonumber(xText), tonumber(zText)
+        if x and z then
+            points[#points + 1] = { x = x, z = z }
+        end
+    end
+    return points
+end
+
+function SpawnSlots.polygonArea(outline)
+    if type(outline) ~= "table" or #outline < 3 then
+        return 0
+    end
+    local sum = 0
+    local previous = outline[#outline]
+    for _, current in ipairs(outline) do
+        local x1, z1 = tonumber(previous.x), tonumber(previous.z)
+        local x2, z2 = tonumber(current.x), tonumber(current.z)
+        if x1 and z1 and x2 and z2 then
+            sum += x1 * z2 - x2 * z1
+        end
+        previous = current
+    end
+    return math.abs(sum) * 0.5
+end
+
+function SpawnSlots.boundsOf(outline)
+    if type(outline) ~= "table" or #outline < 1 then
+        return nil
+    end
+    local minX, maxX, minZ, maxZ = math.huge, -math.huge, math.huge, -math.huge
+    for _, point in ipairs(outline) do
+        local x, z = tonumber(point.x), tonumber(point.z)
+        if x and z then
+            minX = math.min(minX, x)
+            maxX = math.max(maxX, x)
+            minZ = math.min(minZ, z)
+            maxZ = math.max(maxZ, z)
+        end
+    end
+    if minX == math.huge then
+        return nil
+    end
+    return minX, maxX, minZ, maxZ
+end
+
+-- Even/odd ray-cast test. A missing/degenerate outline means the rectangular marker is authoritative.
+function SpawnSlots.containsPoint(outline, x, z)
+    if type(outline) ~= "table" or #outline < 3 then
+        return true
+    end
+
+    local inside = false
+    local previous = outline[#outline]
+    for _, current in ipairs(outline) do
+        local crosses = (current.z > z) ~= (previous.z > z)
+        if crosses then
+            local edgeX = (previous.x - current.x) * (z - current.z) / (previous.z - current.z)
+                + current.x
+            if x < edgeX then
+                inside = not inside
+            end
+        end
+        previous = current
+    end
+    return inside
+end
+
+-- Uniform random candidate pool for large authored fields where a jittered grid remains visibly
+-- lattice-like. Runtime occupancy still enforces min-distance through the registry's neighbour map;
+-- this function only supplies a broad, non-rowed set of possible positions.
+function SpawnSlots.layoutRandom(opts)
+    opts = opts or {}
+    local width = math.max(0, tonumber(opts.width) or 0)
+    local depth = math.max(0, tonumber(opts.depth) or 0)
+    local spacing = math.max(0.01, tonumber(opts.spacing) or 1)
+    local rng = opts.rng or function()
+        return 0.5
+    end
+    local outline = opts.outline
+
+    local minX, maxX, minZ, maxZ = -width * 0.5, width * 0.5, -depth * 0.5, depth * 0.5
+    local outlineMinX, outlineMaxX, outlineMinZ, outlineMaxZ = SpawnSlots.boundsOf(outline)
+    if outlineMinX then
+        minX, maxX, minZ, maxZ = outlineMinX, outlineMaxX, outlineMinZ, outlineMaxZ
+        width = math.max(0, maxX - minX)
+        depth = math.max(0, maxZ - minZ)
+    end
+
+    local cols = math.max(1, math.floor(width / spacing))
+    local rows = math.max(1, math.floor(depth / spacing))
+    local targetCount = cols * rows
+    local maxAttempts = math.max(40, targetCount * 30)
+    local points = {}
+
+    for _ = 1, maxAttempts do
+        if #points >= targetCount then
+            break
+        end
+        local x = minX + rng() * (maxX - minX)
+        local z = minZ + rng() * (maxZ - minZ)
+        if SpawnSlots.containsPoint(outline, x, z) then
+            points[#points + 1] = { x = x, z = z }
+        end
+    end
+
+    -- A pathological injected RNG should not make a tiny valid area unusable.
+    if #points == 0 and SpawnSlots.containsPoint(outline, (minX + maxX) * 0.5, (minZ + maxZ) * 0.5) then
+        points[1] = { x = (minX + maxX) * 0.5, z = (minZ + maxZ) * 0.5 }
+    end
+    return points
+end
+
 -- ===== Occupancy registry =====
 
 local Registry = {}

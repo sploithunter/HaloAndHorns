@@ -128,6 +128,63 @@ return function()
         end)
 
         it(
+            "authors the remaining three tester weeks without opening future public claims",
+            function()
+                local config = loadModule("configs/tester_rewards.lua")
+                local pets = loadModule("configs/pets.lua")
+                local roles = loadModule("configs/pet_roles.lua")
+                local expected = {
+                    {
+                        campaign = "beta_week_3_2026",
+                        pet = "patch_phoenix",
+                        egg = "patch_phoenix_egg",
+                        role = "ranged",
+                        aura = "drop_rate",
+                        starts_at = 1787378400,
+                        ends_at = 1787983200,
+                    },
+                    {
+                        campaign = "beta_week_4_2026",
+                        pet = "core_digger",
+                        egg = "core_digger_egg",
+                        role = "tank",
+                        aura = "yield",
+                        starts_at = 1787983200,
+                        ends_at = 1788588000,
+                    },
+                    {
+                        campaign = "beta_week_5_2026",
+                        pet = "cache_bandit",
+                        egg = "cache_bandit_egg",
+                        role = "melee",
+                        aura = "xp",
+                        starts_at = 1788588000,
+                        ends_at = 1789192800,
+                    },
+                }
+
+                for _, row in ipairs(expected) do
+                    local campaign = config.campaigns[row.campaign]
+                    local pet = pets.pets[row.pet]
+                    local egg = pets.egg_sources[row.egg]
+                    expect(campaign.pet_id).to.equal(row.pet)
+                    expect(campaign.egg_id).to.equal(row.egg)
+                    expect(campaign.claim.enabled).to.equal(false)
+                    expect(campaign.claim.studio_enabled).to.equal(false)
+                    expect(campaign.claim.starts_at).to.equal(row.starts_at)
+                    expect(campaign.claim.ends_at).to.equal(row.ends_at)
+                    expect(pet.category).to.equal("exclusive")
+                    expect(roles.by_type[row.pet]).to.equal(row.role)
+                    expect(roles.support_auras[row.pet].kind).to.equal(row.aura)
+                    expect(egg.fixed_odds).to.equal(true)
+                    expect(egg.huge.chance).to.equal(0.01)
+                    expect(egg.huge.pets[row.pet]).to.equal(1)
+                    expect(egg.pet_weights[row.pet]).to.equal(1)
+                end
+            end
+        )
+
+        it(
             "shows the public campaign in Events for the same Saturday-to-Saturday window",
             function()
                 local events = loadModule("configs/events.lua")
@@ -144,6 +201,25 @@ return function()
                 expect(eventService:find("now >= endsAt", 1, true)).to.be.ok()
             end
         )
+
+        it("schedules the remaining tester campaign cards for their authored weeks", function()
+            local events = loadModule("configs/events.lua")
+            local expected = {
+                beta_test_week_three = { 1787378400, 1787983200 },
+                beta_test_week_four = { 1787983200, 1788588000 },
+                beta_test_week_five = { 1788588000, 1789192800 },
+            }
+
+            for eventId, window in pairs(expected) do
+                local event = events.global_events[eventId]
+                local schedule = events.scheduled_global_events[eventId]
+                expect(event).to.be.ok()
+                expect(next(event.modifiers)).to.equal(nil)
+                expect(schedule.event_id).to.equal(eventId)
+                expect(schedule.starts_at).to.equal(window[1])
+                expect(schedule.ends_at).to.equal(window[2])
+            end
+        end)
 
         it("preserves provenance through hatching and trade escrow", function()
             local grant = readFile("src/Server/Services/PetGrantService.lua")

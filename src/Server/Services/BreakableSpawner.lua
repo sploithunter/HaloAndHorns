@@ -29,6 +29,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local CollectionService = game:GetService("CollectionService")
+local TweenService = game:GetService("TweenService")
 
 local XpReward = require(ReplicatedStorage.Shared.Game.XpReward)
 local BreakableBoost = require(ReplicatedStorage.Shared.Game.BreakableBoost)
@@ -38,8 +39,61 @@ local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local buffsConfig = require(ReplicatedStorage.Configs:WaitForChild("buffs"))
 local SpawnSlots = require(ReplicatedStorage.Shared.Game.SpawnSlots)
+local HallFieldOutline = require(ReplicatedStorage.Shared.Game.HallFieldOutline)
+local BreakableDensity = require(ReplicatedStorage.Shared.Game.BreakableDensity)
 local OverheadBar = require(ReplicatedStorage.Shared.UI.OverheadBar)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+
+-- Hall rewards arrive as tangible objects rather than popping into existence. Keep the visual
+-- state local to each spawned model so every material/texture can fade to its authored value.
+local function hideSpawnVisuals(model)
+    local visuals = {}
+    local guis = {}
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("BasePart") or descendant:IsA("Decal") or descendant:IsA("Texture") then
+            table.insert(visuals, {
+                instance = descendant,
+                transparency = descendant.Transparency,
+            })
+            descendant.Transparency = 1
+        elseif descendant:IsA("BillboardGui") or descendant:IsA("SurfaceGui") then
+            table.insert(guis, {
+                instance = descendant,
+                enabled = descendant.Enabled,
+            })
+            descendant.Enabled = false
+        end
+    end
+    return visuals, guis
+end
+
+local function restoreSpawnVisuals(visuals, guis)
+    for _, visual in ipairs(visuals) do
+        if visual.instance.Parent then
+            visual.instance.Transparency = visual.transparency
+        end
+    end
+    for _, gui in ipairs(guis) do
+        if gui.instance.Parent then
+            gui.instance.Enabled = gui.enabled
+        end
+    end
+end
+
+local function hideLateSpawnGuis(model, guis)
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if
+            (descendant:IsA("BillboardGui") or descendant:IsA("SurfaceGui"))
+            and descendant.Enabled
+        then
+            table.insert(guis, {
+                instance = descendant,
+                enabled = true,
+            })
+            descendant.Enabled = false
+        end
+    end
+end
 
 -- Injected services
 local logger
@@ -1016,15 +1070,38 @@ function BreakableSpawner:_setupWorld(worldFolder)
     local worldConfig = getWorldConfig(worldFolder.Name)
     local defaultMax = (breakablesConfig.defaults and breakablesConfig.defaults.max_per_world) or 25
     local configuredMax = tonumber(worldConfig.max or defaultMax) or defaultMax
+    local placeCfg = getSpawnSettings(worldFolder.Name)
+    local density = tonumber(placeCfg.targets_per_1000_studs)
+    local boundSpawners = nil
     if worldBindingService and worldBindingService.GetSpawnZonesForSpawner then
-        local boundSpawners =
+        boundSpawners =
             worldBindingService:GetSpawnZonesForSpawner(worldFolder.Name, "spawn_crystals")
         for _, spawner in ipairs(boundSpawners or {}) do
             local override = tonumber(spawner:GetAttribute("MaxCountOverride"))
             if override then
                 configuredMax = override
+                density = nil
                 break
             end
+        end
+    end
+    if density and density > 0 then
+        local fieldArea = 0
+        for _, spawner in ipairs(boundSpawners or {}) do
+            fieldArea += HallFieldOutline.area(spawner)
+        end
+        if fieldArea <= 0 then
+            local fallback = worldConfig.spawn_area and worldConfig.spawn_area.size
+            if type(fallback) == "table" then
+                fieldArea = math.max(0, tonumber(fallback.x) or 0)
+                    * math.max(0, tonumber(fallback.z) or 0)
+            end
+        end
+        if fieldArea > 0 then
+            configuredMax = BreakableDensity.count(fieldArea, density, {
+                min = placeCfg.min_targets or 8,
+                max = configuredMax,
+            })
         end
     end
     if not max then
@@ -1415,21 +1492,38 @@ function BreakableSpawner:_ensureSlots(worldFolder)
 
     for _, spawner in ipairs(spawners) do
         local sampleSurface = shouldSampleSpawnerSurface(spawner, placeCfg)
-        local width = math.max(spacing, spawner.Size.X - margin * 2)
-        local depth = math.max(spacing, spawner.Size.Z - margin * 2)
-        local offsets = SpawnSlots.layoutGrid({
-            width = width,
-            depth = depth,
-            spacing = spacing,
-            jitter = jitter,
-            rng = math.random,
-        })
+        -- The green field / white kerb is larger than SpawnZone on corner tiles.
+        -- Resolve that outline at slot-build time so bags follow the same loop
+        -- as the marquee, not the inscribed rectangle.
+        local fieldOutline = HallFieldOutline.encode(spawner, 6)
+        local outline = SpawnSlots.parseOutline(fieldOutline or spawner:GetAttribute("OutlinePath"))
+        local hasOutline = type(outline) == "table" and #outline >= 3
+        local width = math.max(spacing, spawner.Size.X - (hasOutline and 0 or margin * 2))
+        local depth = math.max(spacing, spawner.Size.Z - (hasOutline and 0 or margin * 2))
+        local slotLayout = spawner:GetAttribute("SlotLayout") or placeCfg.slot_layout
+        if hasOutline then
+            slotLayout = "random"
+        end
+        local offsets
+        if slotLayout == "random" then
+            offsets = SpawnSlots.layoutRandom({
+                width = width,
+                depth = depth,
+                spacing = spacing,
+                outline = outline,
+                rng = math.random,
+            })
+        else
+            offsets = SpawnSlots.layoutGrid({
+                width = width,
+                depth = depth,
+                spacing = spacing,
+                jitter = jitter,
+                rng = math.random,
+            })
+        end
         for _, off in ipairs(offsets) do
-            local candidate = Vector3.new(
-                spawner.Position.X + off.x,
-                spawner.Position.Y,
-                spawner.Position.Z + off.z
-            )
+            local candidate = spawner.CFrame:PointToWorldSpace(Vector3.new(off.x, 0, off.z))
             if sampleSurface then
                 candidate = raycastSpawnerSurface(spawner, candidate, placeCfg)
             elseif surfaceY then
@@ -1719,11 +1813,13 @@ function BreakableSpawner:_trySpawnOne(
         end)
     end
 
-    -- Simple de-overlap: if another crystal is too close, nudge sideways (up to few tries)
+    -- Legacy placement may still need a last-resort de-overlap nudge. Claimed slots already
+    -- enforce neighbour spacing; nudging those after the claim can push an otherwise legal target
+    -- outside its authored SpawnZone (and onto Hall sidewalks).
     local minDist = numberFromAttributeOrConfig(spawner, "MinDistance", placeCfg.min_distance, 12)
     local itemsFolder = worldFolder:FindFirstChild("Items")
     local tries = 0
-    while tries < 4 and itemsFolder do
+    while not claimedSlot and tries < 4 and itemsFolder do
         local tooClose = false
         for _, other in ipairs(itemsFolder:GetChildren()) do
             if
@@ -1754,13 +1850,35 @@ function BreakableSpawner:_trySpawnOne(
     end
 
     local finalPivot = model:GetPivot()
-    local dropFromHeight = tonumber(
+    -- Spawn presentation is a reusable strategy chosen by the breakable definition. Existing
+    -- crystals default to immediate placement; Waycoin targets select the shared sky-drop tween.
+    -- Legacy placement fields remain a read-only fallback while older authored configs migrate.
+    local spawnCfg = type(crystalCfg) == "table"
+            and type(crystalCfg.spawn) == "table"
+            and crystalCfg.spawn
+        or nil
+    local spawnMethod = spawnCfg and string.lower(tostring(spawnCfg.method or "immediate"))
+        or "immediate"
+    local legacyDropHeight = tonumber(
         crystalPlacement.drop_from_height or placeCfg.drop_from_height or 0
     ) or 0
-    local dropDuration = tonumber(crystalPlacement.drop_duration or placeCfg.drop_duration or 0.6)
+    if not spawnCfg and legacyDropHeight > 0 then
+        spawnMethod = "drop"
+    end
+    local dropFromHeight = spawnMethod == "drop"
+            and (tonumber(spawnCfg and spawnCfg.height) or legacyDropHeight)
+        or 0
+    local dropDuration = tonumber(spawnCfg and spawnCfg.duration)
+        or tonumber(crystalPlacement.drop_duration or placeCfg.drop_duration or 0.6)
         or 0.6
+    local spawnVisuals = {}
+    local spawnGuis = {}
     if dropFromHeight > 0 then
         model:PivotTo(finalPivot + Vector3.new(0, dropFromHeight, 0))
+        model:SetAttribute("SpawnAnimating", true)
+        spawnVisuals, spawnGuis = hideSpawnVisuals(model)
+    else
+        model:SetAttribute("SpawnAnimating", false)
     end
 
     -- Optional attributes for downstream logic (mirrors MCP fields)
@@ -2368,15 +2486,14 @@ function BreakableSpawner:_trySpawnOne(
                                 -- currency above). AddExperience publishes the XP attribute -> the
                                 -- HUD level bar ticks live.
                                 if progression and progression.AddExperience then
-                                    local xpBoostMultiplier =
-                                        BreakableBoost.levelGatedMultiplier(
-                                            model:GetAttribute("Boost"),
-                                            model:GetAttribute("MaxBoost"),
-                                            model:GetAttribute("BoostRewardBonus"),
-                                            plr:GetAttribute("Level"),
-                                            breakablesConfig.boost
-                                                and breakablesConfig.boost.reward_xp_min_level
-                                        )
+                                    local xpBoostMultiplier = BreakableBoost.levelGatedMultiplier(
+                                        model:GetAttribute("Boost"),
+                                        model:GetAttribute("MaxBoost"),
+                                        model:GetAttribute("BoostRewardBonus"),
+                                        plr:GetAttribute("Level"),
+                                        breakablesConfig.boost
+                                            and breakablesConfig.boost.reward_xp_min_level
+                                    )
                                     local xpShare = scaledReward(share, xpBoostMultiplier)
                                     local xp = XpReward.fromValue(xpShare, xpRewardsConfig.mining)
                                     -- DIMINISHING XP vs out-leveled crystals (Jason: no
@@ -2430,11 +2547,10 @@ function BreakableSpawner:_trySpawnOne(
                 if remainder > 0 and topUserId then
                     local topPlayer = Players:GetPlayerByUserId(topUserId)
                     if topPlayer then
-                        local resolvedRemainder =
-                            resolvePlayerAward(
-                                topPlayer,
-                                scaledReward(remainder, boostRewardMultiplier)
-                            )
+                        local resolvedRemainder = resolvePlayerAward(
+                            topPlayer,
+                            scaledReward(remainder, boostRewardMultiplier)
+                        )
                         pcall(function()
                             creditCoins(topPlayer, resolvedRemainder, "crystal_break_remainder")
                         end)
@@ -2588,6 +2704,9 @@ function BreakableSpawner:_trySpawnOne(
         cd.MaxActivationDistance = 50
         cd.Parent = part
         cd.MouseClick:Connect(function(player)
+            if model:GetAttribute("SpawnAnimating") then
+                return
+            end
             -- Active-mining: clicking the node you're mining ASSIGNS your pets to it and BUILDS
             -- its Boost, which amplifies your pets' damage on it (PetFollowService). The click
             -- itself deals NO damage — firewall-clean: the player amplifies, the pets deal.
@@ -2611,6 +2730,12 @@ function BreakableSpawner:_trySpawnOne(
             attachClick(d)
         end
     end
+    -- Health/boost billboards are authored after the initial asset fade capture. Keep them hidden
+    -- until the reward lands so a floating health bar does not reveal an invisible coin first.
+    if dropFromHeight > 0 then
+        hideLateSpawnGuis(model, spawnGuis)
+    end
+
     -- Parent to Items and update count
     model.Parent = worldFolder:FindFirstChild("Items")
     current.Value = current.Value + 1
@@ -2618,20 +2743,45 @@ function BreakableSpawner:_trySpawnOne(
     if dropFromHeight > 0 then
         task.spawn(function()
             local startPivot = model:GetPivot()
-            local elapsed = 0
             local duration = math.max(0.05, dropDuration)
+            local pivotValue = Instance.new("CFrameValue")
+            pivotValue.Value = startPivot
+            local pivotConnection = pivotValue:GetPropertyChangedSignal("Value"):Connect(function()
+                if model.Parent then
+                    model:PivotTo(pivotValue.Value)
+                end
+            end)
 
-            while model.Parent and elapsed < duration do
-                local dt = RunService.Heartbeat:Wait()
-                elapsed += dt
-                local alpha = math.clamp(elapsed / duration, 0, 1)
-                local eased = 1 - math.pow(1 - alpha, 3)
-                model:PivotTo(startPivot:Lerp(finalPivot, eased))
+            -- Become visible quickly while still overhead, then fall with a small accelerating
+            -- finish. Tweening an unparented CFrameValue is the supported way to tween a Model.
+            local fadeInfo = TweenInfo.new(
+                math.max(0.05, duration * 0.55),
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            )
+            for _, visual in ipairs(spawnVisuals) do
+                if visual.instance.Parent then
+                    TweenService:Create(visual.instance, fadeInfo, {
+                        Transparency = visual.transparency,
+                    }):Play()
+                end
             end
+
+            local dropTween = TweenService:Create(
+                pivotValue,
+                TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+                { Value = finalPivot }
+            )
+            dropTween:Play()
+            dropTween.Completed:Wait()
 
             if model.Parent then
                 model:PivotTo(finalPivot)
+                restoreSpawnVisuals(spawnVisuals, spawnGuis)
+                model:SetAttribute("SpawnAnimating", false)
             end
+            pivotConnection:Disconnect()
+            pivotValue:Destroy()
         end)
     end
 

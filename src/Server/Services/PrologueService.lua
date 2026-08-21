@@ -7,8 +7,8 @@
 
     ROOM: the graybox kit's `mezzanine_hall` — the same procedurally-generated large room the
     trials use (Jason's pick: "there is a procedurally generated large room that has a
-    mezzanine; that's what we're going to spawn into"). Built ONCE per server, far below the
-    playable world, and reused by every prologue rather than rebuilt per player.
+    mezzanine; that's what we're going to spawn into"). Built ONCE per server in an isolated
+    horizontal lane, and reused by every prologue rather than rebuilt per player.
 
     GATE: `data.Prologue`, written on START. Same one-time shape as StarterPetService's
     `data.StarterPet` — its absence IS the "new player" signal. Written before the sequence so
@@ -20,6 +20,7 @@
 ]]
 
 local Players = game:GetService("Players")
+local CollectionService = game:GetService("CollectionService")
 local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -99,7 +100,7 @@ function PrologueService:_ensureRoom()
     local room = proto:Clone()
     room.Name = "PrologueRoom"
     local o = cfg.origin or {}
-    room:PivotTo(CFrame.new(tonumber(o.x) or 0, tonumber(o.y) or -8000, tonumber(o.z) or 0))
+    room:PivotTo(CFrame.new(tonumber(o.x) or -12000, tonumber(o.y) or 0, tonumber(o.z) or 0))
     room.Parent = Workspace
     self._room = room
     self:_log(
@@ -339,14 +340,47 @@ function PrologueService:Finish(player)
             self._dataService:RequestSave(player, "prologue_completed", { critical = true })
         end
     end
-    local spawn = Workspace:FindFirstChildWhichIsA("SpawnLocation", true)
-    local character = player.Character
-    if character and spawn then
-        character:PivotTo(spawn.CFrame * CFrame.new(0, 5, 0))
+    local zoneService = self._modules and self._modules.ZoneService
+    local destinationArea = zoneService and zoneService:GetInitialArea(player) or "Hall_1"
+    local placed, placeReason, placedArea
+    if zoneService and zoneService.PlacePlayerAtZoneSpawn then
+        placed, placeReason, placedArea =
+            zoneService:PlacePlayerAtZoneSpawn(player, destinationArea)
+    end
+
+    -- This is deliberately an authored-area fallback, not Roblox's first SpawnLocation.
+    -- The old generic lookup silently sent new players to Home whenever ZoneService was not
+    -- injected. A missing service should be visible in logs without changing the destination.
+    if not placed then
+        local character = player.Character
+        for _, spawn in ipairs(CollectionService:GetTagged("PlayerSpawn")) do
+            if
+                spawn:IsA("BasePart")
+                and spawn:IsDescendantOf(Workspace)
+                and spawn:GetAttribute("AreaId") == destinationArea
+            then
+                if character then
+                    character:PivotTo(spawn.CFrame * CFrame.new(0, 5, 0))
+                    placed = true
+                    placedArea = destinationArea
+                    placeReason = "authored_spawn_fallback"
+                end
+                break
+            end
+        end
+    end
+    if not placed then
+        self:_log("Error", "Prologue destination placement failed", {
+            player = player.Name,
+            destinationArea = destinationArea,
+            reason = placeReason or "zone_service_unavailable",
+        })
     end
     self:_log("Info", "Prologue finished", {
         player = player.Name,
         seconds = rec and (os.clock() - rec.startedAt) or -1,
+        destinationArea = placedArea or destinationArea,
+        placement = placeReason or "zone_service",
     })
     return true
 end
@@ -374,7 +408,7 @@ end
 
 -- THE HELL WAVE — trials-style pre-fill (Jason: "the trial spawn method is probably more
 -- appropriate"): dormant (no birth aggro; perception engages as the squads land), persistent
--- (immune to idle-despawn at Y=-8000), penned by a room-rect movementLeash. Enemy levels
+-- (immune to idle-despawn in its isolated lane), penned by a room-rect movementLeash. Enemy levels
 -- auto-tune to the player's alliance-lifted EffectiveLevel. Returns the despawn bounds.
 function PrologueService:_spawnWave(player, room)
     local enemySvc = self._modules and self._modules.EnemyService

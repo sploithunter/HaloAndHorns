@@ -47,6 +47,7 @@ function EggAnimationContractSmoke.run(options)
             rarityId = "exclusive",
             rarityName = "Exclusive",
             specialHatch = true,
+            newIndexEntry = true,
             autoDeleted = false,
             animation = {
                 useAuthoredEggVisual = true,
@@ -65,6 +66,7 @@ function EggAnimationContractSmoke.run(options)
             rarityId = "common",
             rarityName = "Common",
             specialHatch = false,
+            newIndexEntry = true,
             autoDeleted = true,
             autoDeleteReason = "rarity",
             animation = {
@@ -135,8 +137,12 @@ function EggAnimationContractSmoke.run(options)
     assert(specialFrame.badges.SpecialBadge, "Special hatch badge missing")
     assert(specialFrame.badges.RarityBadge, "Special rarity badge missing")
     assert(specialFrame.badges.VariantBadge, "Special variant badge missing")
+    assert(specialFrame.newIndexEntry == true, "New-index result flag missing")
+    assert(specialFrame.badges.NewBadge, "Per-card NEW badge missing")
+    assert(specialFrame.badges.NewBadge.text == "NEW!", "Per-card NEW badge text mismatch")
     assert(autoDeletedFrame.autoDeleted == true, "Auto-delete flag missing")
     assert(autoDeletedFrame.badges.AutoDeleteBadge, "Auto-delete badge missing")
+    assert(autoDeletedFrame.badges.NewBadge, "Second per-card NEW badge missing")
 
     local revealed = waitFor("visible reveal badges", timeoutSeconds, function()
         local state = eggHatchingService:GetActiveAnimationDebugState()
@@ -147,6 +153,7 @@ function EggAnimationContractSmoke.run(options)
             and second
             and first.badges.SpecialBadge
             and first.badges.SpecialBadge.visible == true
+            and first.badges.NewBadge.visible == true
             and first.revealVisible == true
             and first.specialRevealBackdropVisible == true
             and second.badges.AutoDeleteBadge
@@ -170,6 +177,14 @@ function EggAnimationContractSmoke.run(options)
             and second.stackCountLabel
             and second.stackCountLabel.text == "x2"
         then
+            return state
+        end
+        return nil
+    end)
+
+    local discovery = waitFor("new index discovery summary", timeoutSeconds, function()
+        local state = eggHatchingService:GetActiveAnimationDebugState()
+        if state.newIndexDiscoveryCount == 2 and state.newIndexDiscoveryText == "+2 NEW" then
             return state
         end
         return nil
@@ -246,6 +261,7 @@ function EggAnimationContractSmoke.run(options)
         revealedStatus = revealed.guiStatus,
         stackedCount = stacked.frames[2].stackCount,
         stackedName = stacked.frames[2].stackNameLabel.text,
+        newIndexDiscoveryCount = discovery.newIndexDiscoveryCount,
         animationComplete = animationResult.isComplete == true,
         skipSuppressed = skippedAnimation.skipped == true,
     }
@@ -254,7 +270,7 @@ end
 function EggAnimationContractSmoke.runText(options)
     local result = EggAnimationContractSmoke.run(options)
     return string.format(
-        "EggAnimationContractSmoke passed: frames=%d special=%q rarity=%q variant=%q autoDelete=%q stack=%s/%s revealedStatus=%s skipSuppressed=%s",
+        "EggAnimationContractSmoke passed: frames=%d special=%q rarity=%q variant=%q autoDelete=%q stack=%s/%s new=%d revealedStatus=%s skipSuppressed=%s",
         result.frameCount,
         result.specialBadge,
         result.rarityBadge,
@@ -262,6 +278,7 @@ function EggAnimationContractSmoke.runText(options)
         result.autoDeleteBadge,
         tostring(result.stackedName),
         tostring(result.stackedCount),
+        result.newIndexDiscoveryCount,
         result.revealedStatus,
         tostring(result.skipSuppressed)
     )

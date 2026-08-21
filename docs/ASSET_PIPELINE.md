@@ -2,6 +2,30 @@
 
 This project tracks generated game assets in source control before they become Roblox asset IDs.
 
+## Approved Asset Sources
+
+### Polyfork
+
+[Polyfork](https://polyfork.dev/) is an approved source for production models under the project's
+Founder access. Founder access covers the current and future catalog for commercial use and permits
+modification without attribution. It does **not** permit redistributing or reselling the raw source
+assets.
+
+Polyfork assets follow the same source-first Roblox pipeline as generated assets:
+
+1. Search the catalog for the closest production-ready asset before generating a replacement.
+2. Download GLB or FBX source into the appropriate access-controlled `assets/source/` directory.
+3. Inspect triangle count, orientation, materials, animation clips, and scale locally.
+4. Process or decimate only when Roblox budgets or the game's visual language require it.
+5. Import/upload as a group-owned Roblox asset, then record the Roblox ID in the existing manifest
+   and runtime config rather than loading Polyfork at runtime.
+6. Keep paid raw files out of any public template extraction, asset pack, or other redistribution.
+
+Polyfork uses Y-up coordinates, meters, +Z forward, and ground contact at Y=0. Its moving assets may
+include animations in their GLB/FBX files. Catalog automation may use Polyfork's API or MCP server,
+but `POLYFORK_KEY` must stay in `.env.local` or the shell environment and must never enter source,
+logs, runtime game code, or Studio-published data.
+
 ## Current State
 
 - Runtime pet config lives in `configs/pets.lua`.

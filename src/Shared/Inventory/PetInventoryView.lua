@@ -30,7 +30,9 @@
       normalize(items)                           -> items (pure-ownership canonical fixups)
       parseRef(ref)                              -> { kind="special"|"stack", uid?|stackKey? }
       resolveEquipped(items, equipped, maxSlots) -> slotMap {[n]=desc}, equippedByKey {key=n}
-      buildEquipped(items, refs, maxSlots)       -> validated slot refs + commit summary
+      buildEquipped(items, refs, maxSlots, opts?) -> validated slot refs + commit summary
+          opts.lockedSlots skips recovering slots; opts.previous pins a locked
+          slot's current occupant so a draft cannot slide a fresh pet into it.
       fillEmptySlots(items, equipped, refs, maxSlots) -> equipped + fill-only summary
       hasUnequipped(items, equipped, maxSlots)   -> boolean
       groups(items, config, capability, equippedByKey?) ->
@@ -237,45 +239,133 @@ end
 -- be committed atomically. An empty refs array is intentionally valid: players may deploy no pets.
 -- Invalid, duplicate, over-owned, and over-cap references are rejected instead of becoming phantom
 -- slots. PURE so the full-clear path and its edge cases stay headless-tested.
-function PetInventoryView.buildEquipped(items, refs, maxSlots)
+local function slotKey(n)
+    return "slot_" .. n
+end
+
+local function slotIsLocked(lockedSlots, n)
+    if type(lockedSlots) ~= "table" then
+        return false
+    end
+    return lockedSlots[n] == true or lockedSlots[slotKey(n)] == true
+end
+
+local function refsMatch(ref, previous)
+    local a = PetInventoryView.parseRef(ref)
+    local b = PetInventoryView.parseRef(previous)
+    if not (a and b) or a.kind ~= b.kind then
+        return false
+    end
+    if a.kind == "special" then
+        return a.uid == b.uid
+    end
+    return a.stackKey == b.stackKey
+end
+
+function PetInventoryView.buildEquipped(items, refs, maxSlots, opts)
     items = items or {}
     refs = type(refs) == "table" and refs or {}
     maxSlots = math.max(0, math.floor(tonumber(maxSlots) or 0))
+    opts = type(opts) == "table" and opts or {}
+    local lockedSlots = opts.lockedSlots
+    local previous = type(opts.previous) == "table" and opts.previous or {}
 
     local equipped = {}
     local usedUid, usedStack = {}, {}
     local accepted, rejected = 0, 0
+    local consumed = {}
 
-    for _, ref in ipairs(refs) do
-        if accepted >= maxSlots then
-            rejected += 1
-        else
-            local desc = PetInventoryView.parseRef(ref)
-            if desc and desc.kind == "special" then
-                local rec = items[desc.uid]
-                if rec and not isStackEntry(rec, desc.uid) and not usedUid[desc.uid] then
-                    accepted += 1
-                    usedUid[desc.uid] = true
-                    equipped["slot_" .. accepted] = desc.uid
-                else
-                    rejected += 1
+    local function takeSpecial(uid)
+        local rec = items[uid]
+        if rec and not isStackEntry(rec, uid) and not usedUid[uid] then
+            usedUid[uid] = true
+            return uid
+        end
+        return nil
+    end
+
+    local function takeStack(stackKey)
+        local rec = items[stackKey]
+        local used = usedStack[stackKey] or 0
+        local owned = rec
+                and isStackEntry(rec, stackKey)
+                and math.max(0, math.floor(tonumber(rec.quantity) or 0))
+            or 0
+        if used < owned then
+            usedStack[stackKey] = used + 1
+            return "stack|" .. stackKey
+        end
+        return nil
+    end
+
+    local function takeRef(ref)
+        local desc = PetInventoryView.parseRef(ref)
+        if desc and desc.kind == "special" then
+            return takeSpecial(desc.uid)
+        elseif desc and desc.kind == "stack" then
+            return takeStack(desc.stackKey)
+        end
+        return nil
+    end
+
+    -- A recovering slot cannot take a new pet. If the draft still lists the
+    -- occupant that went down there, keep it pinned so packing cannot slide
+    -- a fresh pet into the red slot.
+    for n = 1, maxSlots do
+        if slotIsLocked(lockedSlots, n) then
+            local prev = previous[slotKey(n)]
+            if prev then
+                for i, ref in ipairs(refs) do
+                    if not consumed[i] and refsMatch(ref, prev) then
+                        local placed = takeRef(ref)
+                        if placed then
+                            equipped[slotKey(n)] = placed
+                            consumed[i] = true
+                            accepted += 1
+                        end
+                        break
+                    end
                 end
-            elseif desc and desc.kind == "stack" then
-                local rec = items[desc.stackKey]
-                local used = usedStack[desc.stackKey] or 0
-                local owned = rec
-                        and isStackEntry(rec, desc.stackKey)
-                        and math.max(0, math.floor(tonumber(rec.quantity) or 0))
-                    or 0
-                if used < owned then
-                    accepted += 1
-                    usedStack[desc.stackKey] = used + 1
-                    equipped["slot_" .. accepted] = "stack|" .. desc.stackKey
-                else
-                    rejected += 1
+            end
+        end
+    end
+
+    local nextOpen = 1
+    local function peekUnlockedSlot()
+        local n = nextOpen
+        while n <= maxSlots and (slotIsLocked(lockedSlots, n) or equipped[slotKey(n)]) do
+            n += 1
+        end
+        if n > maxSlots then
+            return nil
+        end
+        return n
+    end
+
+    for i, ref in ipairs(refs) do
+        if not consumed[i] then
+            local slot = peekUnlockedSlot()
+            if not slot then
+                local reservedEmpty = false
+                for n = 1, maxSlots do
+                    if slotIsLocked(lockedSlots, n) and equipped[slotKey(n)] == nil then
+                        reservedEmpty = true
+                        break
+                    end
                 end
-            else
+                if reservedEmpty then
+                    break
+                end
                 rejected += 1
+            else
+                local placed = takeRef(ref)
+                if placed then
+                    equipped[slotKey(slot)] = placed
+                    nextOpen = slot + 1
+                    accepted += 1
+                else
+                    rejected += 1
+                end
             end
         end
     end
@@ -293,7 +383,7 @@ end
 -- displacing or compacting the player's existing squad. `refs` are in hatch-result order, so a
 -- multi-hatch produces the same deterministic squad order the reveal showed. Invalid/auto-deleted
 -- results are ignored; stack copies are capped by owned quantity and specials remain unique.
-function PetInventoryView.fillEmptySlots(items, equipped, refs, maxSlots)
+function PetInventoryView.fillEmptySlots(items, equipped, refs, maxSlots, lockedSlots)
     items = items or {}
     refs = type(refs) == "table" and refs or {}
     maxSlots = math.max(0, math.floor(tonumber(maxSlots) or 0))
@@ -315,7 +405,7 @@ function PetInventoryView.fillEmptySlots(items, equipped, refs, maxSlots)
     for _, ref in ipairs(refs) do
         local emptySlot
         for slot = 1, maxSlots do
-            if result["slot_" .. slot] == nil then
+            if result["slot_" .. slot] == nil and not slotIsLocked(lockedSlots, slot) then
                 emptySlot = slot
                 break
             end

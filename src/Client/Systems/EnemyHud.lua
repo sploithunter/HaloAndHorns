@@ -215,6 +215,8 @@ function EnemyHud.start()
     gui.ResetOnSpawn = false
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     gui.IgnoreGuiInset = false -- respect the topbar inset so a top-left anchor sits under the ☰/chat row
+    -- Above PlayerPowerBadges (26) so the fight list wins the left rail.
+    gui.DisplayOrder = 40
     gui.Parent = localPlayer:WaitForChild("PlayerGui")
 
     -- LEFT rail — enemies own the TOP-LEFT and grow DOWNWARD (Jason's endgame HUD layout): the foes
@@ -439,6 +441,11 @@ function EnemyHud.start()
         -- Shrink the strip uniformly once the pull exceeds DENSITY_FULL, so it stays bounded.
         densityScale.Scale = math.clamp(DENSITY_FULL / math.max(1, shown), DENSITY_MIN, 1)
         collapseForList() -- money → menus yield space as the list grows down into them (restore on shrink)
+        -- Hide the left toggle/pass column for the duration of the fight list.
+        local fighting = shown > 0
+        if localPlayer:GetAttribute("EnemyHudActive") ~= fighting then
+            localPlayer:SetAttribute("EnemyHudActive", fighting)
+        end
         for bid, card in pairs(cards) do
             if not present[bid] then
                 card.frame:Destroy()

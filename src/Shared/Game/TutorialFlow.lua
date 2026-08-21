@@ -41,31 +41,52 @@ function TutorialFlow.normalizeProgress(progress, version)
     if progress.completionLevelGranted == true then
         normalized.completionLevelGranted = true
     end
+    -- Hall-era cohort. Absence means a legacy save — never invent this during normalize.
+    if tonumber(progress.track) then
+        normalized.track = math.max(1, math.floor(tonumber(progress.track)))
+    end
     return normalized
 end
 
-function TutorialFlow.fresh(config)
-    return freshProgress(config and config.version)
+function TutorialFlow.fresh(config, opts)
+    local progress = freshProgress(config and config.version)
+    if opts and opts.hallTrack == true then
+        local track = math.floor(tonumber(config and config.hall_track) or 2)
+        if track > 0 then
+            progress.track = track
+        end
+    end
+    return progress
 end
 
--- Numeric tutorial steps existed before stable version metadata. Translate those saves once so a
--- reorder cannot send active players backward or credit an unrelated event. Returns progress,
--- changed. Completed players remain completed; live v1 progress uses the config's explicit map.
+-- Numeric tutorial steps existed before stable version metadata. Translate those saves one version
+-- at a time so multiple reorders cannot send active players backward or credit an unrelated event.
+-- Returns progress, changed. Completed players remain completed. `legacy_step_migration` remains a
+-- compatibility fallback for the original v1 -> v2 migration; newer configs should author
+-- `step_migrations[sourceVersion]` for every supported transition.
 function TutorialFlow.migrateProgress(config, progress)
     local targetVersion = math.max(1, math.floor(tonumber(config and config.version) or 1))
     local normalized = TutorialFlow.normalizeProgress(progress)
     if normalized.version >= targetVersion then
         return normalized, false
     end
-    if not normalized.done then
-        local mapping = config and config.legacy_step_migration
-        local rule = mapping and mapping[normalized.step]
-        normalized.step = math.max(1, math.floor(tonumber(rule and rule.step) or normalized.step))
-        if not (rule and rule.preserve_count == true) then
-            normalized.count = 0
+
+    while normalized.version < targetVersion do
+        if not normalized.done then
+            local migrations = config and config.step_migrations
+            local mapping = migrations and migrations[normalized.version]
+            if not mapping and normalized.version == 1 then
+                mapping = config and config.legacy_step_migration
+            end
+            local rule = mapping and mapping[normalized.step]
+            normalized.step =
+                math.max(1, math.floor(tonumber(rule and rule.step) or normalized.step))
+            if not (rule and rule.preserve_count == true) then
+                normalized.count = 0
+            end
         end
+        normalized.version += 1
     end
-    normalized.version = targetVersion
     return normalized, true
 end
 
@@ -143,13 +164,21 @@ function TutorialFlow.stateFor(config, progress, context)
         return { done = true }
     end
     local need = tonumber((step.complete_on or {}).count) or 1
+    local bodyField = if context
+            and context.hasUnequippedPets
+            and step.body_with_unequipped
+        then "body_with_unequipped"
+        else "body"
+    local localizationKey = step.localization_key or ("tutorial." .. tostring(step.id))
     return {
         done = false,
         index = index,
         total = TutorialFlow.total(config),
         id = step.id,
         title = step.title,
-        body = context and context.hasUnequippedPets and step.body_with_unequipped or step.body,
+        title_key = localizationKey .. ".title",
+        body = step[bodyField],
+        body_key = localizationKey .. "." .. bodyField,
         target = step.target or { kind = "none" },
         count = progress.count,
         need = need,

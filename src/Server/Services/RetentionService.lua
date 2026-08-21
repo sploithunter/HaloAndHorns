@@ -13,6 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local InternalAccounts = require(ReplicatedStorage.Shared.Game.InternalAccounts)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local RetentionLogic = require(ReplicatedStorage.Shared.Game.RetentionLogic)
 
@@ -83,6 +84,9 @@ function RetentionService:Init()
     self._config = self._configLoader:LoadConfig("retention")
     self._tutorialConfig = self._configLoader:LoadConfig("tutorial")
     self._buildInfo = self._configLoader:LoadConfig("build_info")
+    self._internalAccounts = self._configLoader:LoadConfig("internal_accounts")
+    self._excludedUserIds = InternalAccounts.userIds(self._internalAccounts)
+    self._excludedNamePrefixes = InternalAccounts.namePrefixes(self._internalAccounts)
     self._sessionStarted = {}
     self._sessionStartedAt = {}
     self._rawSessions = {}
@@ -218,9 +222,11 @@ function RetentionService:_beginRawSession(player)
         endQueued = false,
         firstSession = sessionNumber == 1,
         aggregateSeen = {},
-        dashboardEligible = not RetentionLogic.isExcludedPlayerName(
+        dashboardEligible = not RetentionLogic.isInternalPlayer(
+            player.UserId,
             player.Name,
-            self._dashboardConfig.excluded_name_prefixes
+            self._excludedUserIds,
+            self._excludedNamePrefixes
         ),
         dashboardSeen = {},
         server = {
@@ -480,7 +486,8 @@ function RetentionService:_dashboardContribution(aggregate)
         server = aggregate.server,
         definitions = aggregate.definitions,
         exclusions = {
-            playerNamePrefixes = self._dashboardConfig.excluded_name_prefixes,
+            playerNamePrefixes = self._excludedNamePrefixes,
+            userIds = self._excludedUserIds,
         },
         counters = RetentionLogic.sanitize(aggregate.dashboardCounters, self._eventConfig),
     }
@@ -862,7 +869,8 @@ function RetentionService:GetDashboard(dateUtc)
         readFailures = failures,
         updatedAt = updatedAt,
         exclusions = {
-            playerNamePrefixes = self._dashboardConfig.excluded_name_prefixes,
+            playerNamePrefixes = self._excludedNamePrefixes,
+            userIds = self._excludedUserIds,
         },
         definitions = self:_dashboardDefinitions(),
         builds = builds,

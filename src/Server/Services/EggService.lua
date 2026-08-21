@@ -350,6 +350,9 @@ function EggService:RecordHatchSuccess(player, request, response)
     if hugeCount > 0 then
         -- The apex: grandest fireworks + the dedicated huge_fireworks sound. Once per batch.
         fireGameEvent(player, "egg_hatch_huge", { count = hugeCount })
+        if self._statsService then
+            self._statsService:Increment(player, "huge_pets_hatched", hugeCount)
+        end
     end
     if self._chatAnnouncementService then
         self._chatAnnouncementService:AnnounceHatches(player, response.results)
@@ -1505,6 +1508,7 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
     local processedCount = 0
     local grantFailed = nil
     local specialRevealCount = 0
+    local newIndexCount = 0
     for _, outcome in ipairs(outcomes) do
         local hatchResult = outcome.hatchResult
         local grantResult = nil
@@ -1528,6 +1532,9 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
                 deferFlush = true,
             })
             if grantResult.ok then
+                if grantResult.petIndex and grantResult.petIndex.isNew == true then
+                    newIndexCount += 1
+                end
                 Logger:Info("Pet granted from egg hatch", {
                     player = player.Name,
                     uid = grantResult.uid,
@@ -1575,6 +1582,9 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
             AutoDeleted = outcome.autoDeleted,
             AutoDeleteReason = outcome.autoDeleteReason,
             uid = grantResult and grantResult.uid or nil,
+            NewIndexEntry = grantResult ~= nil
+                and grantResult.petIndex ~= nil
+                and grantResult.petIndex.isNew == true,
             pet = hatchResult.pet,
             variant = hatchResult.variant,
             power = hatchResult.petData and hatchResult.petData.power or 0,
@@ -1586,6 +1596,9 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
             luckMultiplier = hatchResult.luckMultiplier,
             autoDeleted = outcome.autoDeleted,
             autoDeleteReason = outcome.autoDeleteReason,
+            newIndexEntry = grantResult ~= nil
+                and grantResult.petIndex ~= nil
+                and grantResult.petIndex.isNew == true,
         })
     end
 
@@ -1662,6 +1675,7 @@ function EggService:HandleEggPurchase(player, eggType, purchaseType)
         options = hatchOptions,
         autoSessionId = request.autoSessionId,
         animation = animationPayload,
+        newIndexCount = newIndexCount,
     }
 
     -- Must precede RecordHatchSuccess: its `egg_hatch` event advances the tutorial, so checking

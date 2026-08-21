@@ -4,10 +4,10 @@
     Pure attribute renderer, same contract as AllianceBanner:
       • PrologueVictory set   -> giant floating VICTORY! over the battle (Jason: "once the
         battle is over... display a giant, like, floating victory above it")
-      • InPrologue true -> nil -> the PRESENT DAY hard cut: black flash + caption, selling
-        the month-earlier flash-forward snapping back to the real beginning
+      • InPrologue true -> nil -> the journey-begins hard cut: black flash + caption, selling
+        the Future Self preview snapping back to the player's real beginning
 
-    The going-IN caption ("ONE MONTH FROM NOW") is NOT here — it lives on the boot screen
+    The going-IN caption ("YOUR FUTURE SELF") is NOT here — it lives on the boot screen
     (ReplicatedFirst/BootLoader), which is already black and already up on first runs.
 ]]
 
@@ -80,7 +80,7 @@ local function playVictory(text)
     end)
 end
 
--- The PRESENT DAY cut: a black flash carrying the caption, then a fade into now.
+-- The journey-begins cut: a black flash carrying the caption, then a fade into now.
 -- `hold` stretches the black — the mid-session ENTRY flash runs long because the warp to
 -- the room stalls the client for a beat and wall-clock tweens play through frozen frames.
 local function playLanding(text, hold)
@@ -128,12 +128,12 @@ function M.start()
     localPlayer:GetAttributeChangedSignal("InPrologue"):Connect(function()
         local nowIn = localPlayer:GetAttribute("InPrologue") == true
         if wasIn and not nowIn then
-            playLanding(tostring(cap.land or "PRESENT DAY"))
+            playLanding(tostring(cap.land or "YOUR JOURNEY BEGINS"))
         elseif nowIn and not wasIn then
             -- MID-SESSION ENTRY (admin Reset to Beginning): no boot screen to carry the
             -- title card, so the same black-flash beat plays it — "it should just blank
             -- you out and throw you into the reset."
-            playLanding(tostring(cap.cut or "ONE MONTH FROM NOW"), 3.4)
+            playLanding(tostring(cap.cut or "YOUR FUTURE SELF"), 3.4)
         end
         wasIn = nowIn
     end)

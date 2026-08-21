@@ -14,8 +14,10 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local XpGlide = require(script.Parent.XpGlide)
+local UI_CONFIG = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("ui"))
 
 local PlayerBar = {}
 local started = false
@@ -98,12 +100,36 @@ function PlayerBar.start()
     cap.Size = UDim2.fromOffset(520, 64) -- name + matched-height XP + Focus bars, compact
     -- pixel-designed: shrink on small viewports (UIViewportScale, anchored — stays docked)
     require(script.Parent.Parent.UI.UIViewportScale).attach(cap)
+    local barSizes = (UI_CONFIG.hud and UI_CONFIG.hud.player_bar) or {}
+    local track, fxTrack
+    local function barMetrics()
+        local compact = player:GetAttribute("HudLayoutResolved") == "compact"
+            or player:GetAttribute("DisplayClass") == "phone"
+        local row = compact and barSizes.compact or barSizes.desktop
+        if type(row) ~= "table" then
+            row = compact and { width = 390, height = 68, track_x = 64 }
+                or { width = 520, height = 64, track_x = 70 }
+        end
+        return row
+    end
     local function applyDisplayClass()
         cap.Position =
             UDim2.new(0.5, 0, 0, player:GetAttribute("DisplayClass") == "ten_foot" and 48 or 14)
+        local m = barMetrics()
+        cap.Size = UDim2.fromOffset(m.width or 520, m.height or 64)
+        -- Inset from the emblem (left) and level disc (right) so the fill
+        -- tracks stay inside whatever capsule width we just set.
+        local insetX = m.track_x or 70
+        local insetRight = 78
+        if track then
+            track.Size = UDim2.new(1, -(insetX + insetRight), 0, 13)
+            track.Position = UDim2.fromOffset(insetX, 27)
+        end
+        if fxTrack then
+            fxTrack.Size = UDim2.new(1, -(insetX + insetRight), 0, 13)
+            fxTrack.Position = UDim2.fromOffset(insetX, 43)
+        end
     end
-    player:GetAttributeChangedSignal("DisplayClass"):Connect(applyDisplayClass)
-    applyDisplayClass()
     cap.BackgroundColor3 = Color3.fromRGB(120, 124, 132)
     corner(cap, 28)
     grad(cap, Color3.fromRGB(150, 154, 162), Color3.fromRGB(78, 82, 90))
@@ -123,8 +149,8 @@ function PlayerBar.start()
     nameLabel.Parent = cap
 
     -- xp bar (recessed track + glossy fill + unfilled remainder)
-    local track = Instance.new("Frame")
-    track.Size = UDim2.fromOffset(360, 13) -- match the Focus bar height
+    track = Instance.new("Frame")
+    track.Size = UDim2.new(1, -148, 0, 13)
     track.Position = UDim2.fromOffset(70, 27)
     track.BackgroundColor3 = Color3.fromRGB(30, 32, 38)
     corner(track, 6) -- match the Focus bar's rounding
@@ -157,15 +183,18 @@ function PlayerBar.start()
     -- FOCUS bar (the mana pool spent to cast; sits just below XP). CYAN — deliberately NOT the
     -- area-themed XP colour, so the two read as different resources at a glance. Driven by the
     -- Focus / FocusMax attributes FocusService replicates.
-    local fxTrack = Instance.new("Frame")
+    fxTrack = Instance.new("Frame")
     fxTrack.Name = "FocusTrack"
-    fxTrack.Size = UDim2.fromOffset(360, 13)
+    fxTrack.Size = UDim2.new(1, -148, 0, 13)
     fxTrack.Position = UDim2.fromOffset(70, 43) -- directly under the XP bar
     fxTrack.BackgroundColor3 = Color3.fromRGB(26, 30, 40)
     corner(fxTrack, 6)
     stroke(fxTrack, Color3.fromRGB(18, 20, 26), 1.5)
     fxTrack.Visible = false -- shown once Focus replicates
     fxTrack.Parent = cap
+    player:GetAttributeChangedSignal("DisplayClass"):Connect(applyDisplayClass)
+    player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(applyDisplayClass)
+    applyDisplayClass()
     local fxHolder = Instance.new("Frame")
     fxHolder.Size = UDim2.new(1, -4, 1, -4)
     fxHolder.Position = UDim2.fromOffset(2, 2)

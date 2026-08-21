@@ -63,6 +63,8 @@ function PlayerListStatus.status(state)
 
     if type(state.leaderboardTitle) == "string" and state.leaderboardTitle ~= "" then
         table.insert(parts, state.leaderboardTitle)
+    elseif state.hugeHatcher == true then
+        table.insert(parts, "Huge Hatcher")
     else
         local level = math.max(1, math.floor(tonumber(state.level) or 1))
         for _, title in ipairs(STATUS_TITLES) do

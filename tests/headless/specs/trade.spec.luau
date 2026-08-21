@@ -171,6 +171,12 @@ return function()
             expect(string.find(panel, "TradeReveal.receivedPets", 1, true) ~= nil).to.equal(true)
             expect(string.find(hatch, "StartPetRevealAnimation", 1, true) ~= nil).to.equal(true)
             expect(string.find(hatch, "revealOnly = true", 1, true) ~= nil).to.equal(true)
+            expect(string.find(hatch, "AnimateResultsIntoPetsButton", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(hatch, 'descendant.Name == "PetsButton"', 1, true) ~= nil).to.equal(
+                true
+            )
         end)
     end)
 

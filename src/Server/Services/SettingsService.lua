@@ -21,6 +21,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
+local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath)
+local HotbarSize = require(ReplicatedStorage.Shared.Game.HotbarSize)
 
 local SettingsService = {}
 SettingsService.__index = SettingsService
@@ -33,6 +35,7 @@ function SettingsService:Init()
     self._dataService = self._modules.DataService
     self._configLoader = self._modules.ConfigLoader
     self._missionsConfig = self._configLoader:LoadConfig("missions") or {}
+    self._partyConfig = self._configLoader:LoadConfig("party") or {}
 
     -- Dependencies injected
 
@@ -126,11 +129,13 @@ function SettingsService:_createSettingsFolders(player)
             PetFormation = self:_defaultPetFormation(),
             PetAttackStyle = self:_defaultPetAttackStyle(),
             InventoryCardScale = "small",
+            HotbarSize = "auto",
             EnemyLevelOffset = 0,
             TrialGroupScale = PackScale.sanitizeMultiplier(
                 nil,
                 (self._missionsConfig.player_tuning or {}).group_scale
             ),
+            TeamInvitePrivacy = "everyone",
         }
     end
 
@@ -171,8 +176,10 @@ function SettingsService:_createSettingsFolders(player)
     self:_applyPetFormation(player)
     self:_applyPetAttackStyle(player)
     self:_applyInventoryCardScale(player)
+    self:_applyHotbarSize(player)
     self:_applyEnemyLevelOffset(player)
     self:_applyTrialGroupScale(player)
+    self:_applyTeamInvitePrivacy(player)
 
     self._logger:Info("✅ SETTINGS - Settings folders created successfully", {
         player = player.Name,
@@ -644,6 +651,43 @@ function SettingsService:_setInventoryCardScale(player, value)
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════════
+-- HOTBAR SIZE (auto / mobile / tablet / desktop — persisted; HotbarBar resolves
+-- Auto from DisplayClass so phones default to the bigger mobile size)
+-- ═══════════════════════════════════════════════════════════════════════════════════
+
+function SettingsService:_sanitizeHotbarSize(value)
+    if type(value) == "table" then
+        value = value.size or value.scale or value.value
+    end
+    return HotbarSize.normalize(value)
+end
+
+function SettingsService:_applyHotbarSize(player)
+    local data = self._dataService:GetData(player)
+    local size = "auto"
+    if data and data.Settings and type(data.Settings.HotbarSize) == "string" then
+        size = self:_sanitizeHotbarSize(data.Settings.HotbarSize)
+    end
+    player:SetAttribute("HotbarSize", size)
+    return size
+end
+
+function SettingsService:_setHotbarSize(player, value)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+
+    data.Settings = data.Settings or {}
+    local size = self:_sanitizeHotbarSize(value)
+    data.Settings.HotbarSize = size
+    player:SetAttribute("HotbarSize", size)
+
+    self._logger:Info("Updated hotbar size", { player = player.Name, size = size })
+    return true
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════════
 -- ENEMY LEVEL OFFSET (per-player difficulty knob — shifts enemy spawn level vs the
 -- player by -3..+3; applied as the EnemyLevelOffset attribute EnemyService reads on spawn)
 -- ═══════════════════════════════════════════════════════════════════════════════════
@@ -779,6 +823,10 @@ function SettingsService:_setupNetworkSignals()
         self:_setInventoryCardScale(player, payload)
     end)
 
+    Signals.Settings_SetHotbarSize.OnServerEvent:Connect(function(player, payload)
+        self:_setHotbarSize(player, payload)
+    end)
+
     Signals.Settings_SetEnemyLevelOffset.OnServerEvent:Connect(function(player, payload)
         self:_setEnemyLevelOffset(player, payload)
     end)
@@ -842,6 +890,14 @@ function SettingsService:GetInventoryCardScale(player)
     return self:_applyInventoryCardScale(player)
 end
 
+function SettingsService:SetHotbarSize(player, value)
+    return self:_setHotbarSize(player, value)
+end
+
+function SettingsService:GetHotbarSize(player)
+    return self:_applyHotbarSize(player)
+end
+
 function SettingsService:SetEnemyLevelOffset(player, value)
     return self:_setEnemyLevelOffset(player, value)
 end
@@ -856,6 +912,40 @@ end
 
 function SettingsService:GetTrialGroupScale(player)
     return self:_applyTrialGroupScale(player)
+end
+
+function SettingsService:_applyTeamInvitePrivacy(player)
+    local data = self._dataService:GetData(player)
+    local mode = PartyMath.invitePrivacy(
+        data and data.Settings and data.Settings.TeamInvitePrivacy,
+        self._partyConfig
+    )
+    if data then
+        data.Settings = data.Settings or {}
+        data.Settings.TeamInvitePrivacy = mode
+    end
+    player:SetAttribute("TeamInvitePrivacy", mode)
+    return mode
+end
+
+function SettingsService:_setTeamInvitePrivacy(player, value)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+    data.Settings = data.Settings or {}
+    local mode = PartyMath.invitePrivacy(value, self._partyConfig)
+    data.Settings.TeamInvitePrivacy = mode
+    player:SetAttribute("TeamInvitePrivacy", mode)
+    return mode
+end
+
+function SettingsService:SetTeamInvitePrivacy(player, value)
+    return self:_setTeamInvitePrivacy(player, value)
+end
+
+function SettingsService:GetTeamInvitePrivacy(player)
+    return self:_applyTeamInvitePrivacy(player)
 end
 
 return SettingsService

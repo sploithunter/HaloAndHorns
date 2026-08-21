@@ -43,6 +43,9 @@ function WorldTravelService:_isBuilt(layerId)
 end
 
 function WorldTravelService:GetCatalog(player)
+    if not self._zoneService:CanLeaveHall(player, nil, "Spawn") then
+        return {}
+    end
     local travelConfig = self._layersConfig.world_travel or {}
     local built = {}
     for _, layerId in ipairs(travelConfig.layer_order or {}) do

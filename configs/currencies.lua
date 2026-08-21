@@ -34,6 +34,18 @@ return {
         icon = "🔮",
     },
 
+    {
+        id = "hall_coins",
+        name = "Waycoins",
+        description = "Gold currency earned along the Hall of Worlds route",
+        maxAmount = 999999999,
+        -- Exactly one first-egg hatch. The tutorial starts in the Hall before any
+        -- breakables are available, so a fresh profile must be able to hatch here.
+        defaultAmount = 100,
+        icon = "rbxassetid://124447234465235",
+        tradeable = false,
+    },
+
     -- Halo & Horns themed currencies (Feature 4). Per-biome coins + Heaven/Hell
     -- tokens. All non-tradeable (see configs/biomes.lua + configs/layers.lua).
     {

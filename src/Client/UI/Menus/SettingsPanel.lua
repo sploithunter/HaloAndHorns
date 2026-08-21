@@ -27,8 +27,10 @@ local AudioPrefs = require(script.Parent.Parent.Parent.Systems.AudioPrefs)
 local GameplayTips = require(script.Parent.Parent.Parent.Systems.GameplayTips)
 local ChatAnnouncements = require(script.Parent.Parent.Parent.Systems.ChatAnnouncements)
 local HudLayoutState = require(script.Parent.Parent.Parent.Systems.HudLayoutState)
+local HideTogglesInBattle = require(script.Parent.Parent.Parent.Systems.HideTogglesInBattle)
 local SquadDisplayState = require(script.Parent.Parent.Parent.Systems.SquadDisplayState)
 local QuestDisplayState = require(script.Parent.Parent.Parent.Systems.QuestDisplayState)
+local TutorialLanguageState = require(script.Parent.Parent.Parent.Systems.TutorialLanguageState)
 -- THE shared panel exterior + pill helpers (window shell, area theming, entry pills).
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 -- THE capsule widget used by the currency HUD + ADMIN button (Jason: ON/OFF toggles use this exact pill).
@@ -206,8 +208,10 @@ function SettingsPanel.new()
             displayChatAnnouncements = true,
             compactMode = false,
             hudLayout = "auto",
+            hideTogglesInBattle = true,
             squadDisplayMode = "classic",
             questDisplayMode = "full",
+            tutorialLanguage = "auto",
         },
         accessibility = {
             highContrast = false,
@@ -816,6 +820,41 @@ function SettingsPanel:_createUISettings()
         end
     )
 
+    local hotbarSize = Players.LocalPlayer:GetAttribute("HotbarSize") or "auto"
+    if hotbarSize ~= "mobile" and hotbarSize ~= "tablet" and hotbarSize ~= "desktop" then
+        hotbarSize = "auto"
+    end
+    self.settings.ui.hotbarSize = hotbarSize
+    self:_createDropdownSetting(
+        "Power Bar Size",
+        self.settings.ui.hotbarSize,
+        {
+            { value = "auto", display = "Auto (Device)" },
+            { value = "mobile", display = "Mobile" },
+            { value = "tablet", display = "Tablet" },
+            { value = "desktop", display = "Desktop" },
+        },
+        25,
+        function(value)
+            self.settings.ui.hotbarSize = value
+            Players.LocalPlayer:SetAttribute("HotbarSize", value)
+            if Signals.Settings_SetHotbarSize then
+                Signals.Settings_SetHotbarSize:FireServer({ size = value })
+            end
+        end
+    )
+
+    self.settings.ui.hideTogglesInBattle = HideTogglesInBattle.isEnabled()
+    self:_createToggleSetting(
+        "Hide Toggles in Battle",
+        self.settings.ui.hideTogglesInBattle,
+        26,
+        function(value)
+            self.settings.ui.hideTogglesInBattle = value
+            HideTogglesInBattle.setEnabled(value)
+        end
+    )
+
     self.settings.ui.squadDisplayMode = SquadDisplayState.getPreference()
     self:_createDropdownSetting(
         "Squad Display",
@@ -825,7 +864,7 @@ function SettingsPanel:_createUISettings()
             { value = "bar", display = "Bar" },
             { value = "circle", display = "Circle" },
         },
-        25,
+        27,
         function(value)
             self.settings.ui.squadDisplayMode = value
             SquadDisplayState.setPreference(value)
@@ -841,10 +880,25 @@ function SettingsPanel:_createUISettings()
             { value = "pill", display = "Compact Pill" },
             { value = "ring", display = "Progress Ring" },
         },
-        26,
+        28,
         function(value)
             self.settings.ui.questDisplayMode = value
             QuestDisplayState.setPreference(value)
+        end
+    )
+
+    self.settings.ui.tutorialLanguage = TutorialLanguageState.getPreference()
+    self:_createDropdownSetting(
+        "Tutorial Language",
+        self.settings.ui.tutorialLanguage,
+        {
+            { value = "auto", display = TutorialLanguageState.getAutoDisplayName() },
+            { value = "en", display = "English" },
+        },
+        29,
+        function(value)
+            self.settings.ui.tutorialLanguage = value
+            TutorialLanguageState.setPreference(value)
         end
     )
 
@@ -853,7 +907,7 @@ function SettingsPanel:_createUISettings()
     self:_createToggleSetting(
         "Target Highlight",
         Players.LocalPlayer:GetAttribute("TargetHighlightOn") ~= false,
-        27,
+        30,
         function(value)
             Players.LocalPlayer:SetAttribute("TargetHighlightOn", value)
         end

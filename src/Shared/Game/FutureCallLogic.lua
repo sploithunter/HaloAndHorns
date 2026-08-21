@@ -8,6 +8,88 @@
 
 local FutureCallLogic = {}
 
+local function onboardingConfig(config)
+    return type(config and config.onboarding) == "table" and config.onboarding or {}
+end
+
+function FutureCallLogic.isUnlocked(earnedLevel, config)
+    local required = math.max(1, math.floor(tonumber(onboardingConfig(config).unlock_level) or 4))
+    return math.max(0, math.floor(tonumber(earnedLevel) or 0)) >= required
+end
+
+-- Returns one of three idempotent actions:
+--   grant: a profile that has ascended through Level 2 receives the locked token;
+--   unlock: that profile has now earned Level 4;
+--   migrate: a profile already at Level 4+ is stamped without another token.
+function FutureCallLogic.onboardingPlan(gameData, claimedLevel, earnedLevel, config)
+    local authored = onboardingConfig(config)
+    local grantLevel = math.max(1, math.floor(tonumber(authored.grant_claimed_level) or 2))
+    local grantMarker = tostring(authored.grant_marker or "onboarding_token_v1")
+    local unlockMarker = tostring(authored.unlock_marker or "onboarding_unlocked_v1")
+    local state = type(gameData) == "table" and gameData.FutureCall or nil
+    state = type(state) == "table" and state or {}
+    local unlocked = FutureCallLogic.isUnlocked(earnedLevel, config)
+    local hasGrantMarker = state[grantMarker] == true
+    local hasUnlockMarker = state[unlockMarker] == true
+
+    if not hasGrantMarker then
+        if unlocked then
+            return {
+                kind = "migrate",
+                grantMarker = grantMarker,
+                unlockMarker = unlockMarker,
+                previousGrant = state[grantMarker],
+                previousUnlock = state[unlockMarker],
+            }
+        end
+        if math.max(0, math.floor(tonumber(claimedLevel) or 0)) < grantLevel then
+            return { kind = "none" }
+        end
+        return {
+            kind = "grant",
+            amount = math.max(1, math.floor(tonumber(authored.grant_count) or 1)),
+            grantMarker = grantMarker,
+            previousGrant = state[grantMarker],
+        }
+    end
+
+    if unlocked and not hasUnlockMarker then
+        return {
+            kind = "unlock",
+            unlockMarker = unlockMarker,
+            previousUnlock = state[unlockMarker],
+        }
+    end
+    return { kind = "none" }
+end
+
+function FutureCallLogic.markOnboarding(gameData, plan)
+    if type(gameData) ~= "table" or type(plan) ~= "table" then
+        return false
+    end
+    gameData.FutureCall = type(gameData.FutureCall) == "table" and gameData.FutureCall or {}
+    if plan.grantMarker then
+        gameData.FutureCall[plan.grantMarker] = true
+    end
+    if plan.unlockMarker then
+        gameData.FutureCall[plan.unlockMarker] = true
+    end
+    return true
+end
+
+function FutureCallLogic.restoreOnboarding(gameData, plan)
+    local state = type(gameData) == "table" and gameData.FutureCall or nil
+    if type(state) ~= "table" or type(plan) ~= "table" then
+        return
+    end
+    if plan.grantMarker then
+        state[plan.grantMarker] = plan.previousGrant
+    end
+    if plan.unlockMarker then
+        state[plan.unlockMarker] = plan.previousUnlock
+    end
+end
+
 local function configuredGrants(config)
     local entitlement = config and config.entitlement or {}
     if type(entitlement.grants) == "table" then
