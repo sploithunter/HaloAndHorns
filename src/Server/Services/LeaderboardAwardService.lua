@@ -256,7 +256,16 @@ function LeaderboardAwardService:_advanceUser(board, userId, rank)
     local ackAt = os.time()
     local ackOk, ackError = pcall(function()
         return store:UpdateAsync(key, function(current)
-            return LeaderboardWindowAward.acknowledge(current, pending.id, ackAt)
+            -- acknowledge also returns a didAck boolean for ordinary callers. An
+            -- UpdateAsync transform interprets its second return as the userIds
+            -- metadata array, so returning that boolean makes Roblox reject the
+            -- write with AttributeFormatError instead of clearing the outbox.
+            local acknowledgedState = LeaderboardWindowAward.acknowledge(
+                current,
+                pending.id,
+                ackAt
+            )
+            return acknowledgedState
         end)
     end)
     if not ackOk then
