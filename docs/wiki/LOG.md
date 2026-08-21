@@ -1,5 +1,26 @@
 # Log
 
+## 2026-08-21 — Range picker and gauntlet wipe are event-driven
+
+- Range no longer polls for MenuManager. It waits on `ClientUIReady` and
+  `OnPanelRegistered("Inventory")`. Gauntlet wipe watches `CombatDowned`
+  and pet-folder child events instead of a 0.4s `task.wait` loop.
+  `task.wait` stays for in-game clocks only.
+
+## 2026-08-21 — Hall HUD keeps Waycoins through Range / Training Ground
+
+- Leaving the Training Ground / Range left `CurrentArea` as `mission_*`, so
+  CurrencyStack hid Waycoins and showed the four Crystal World crystals.
+  Hall gauntlets now flag `hall_currency_hud`; ZoneTracker drops `mission_*`
+  as soon as `InMission` clears so Hall tiles resolve again.
+
+## 2026-08-21 — Range blanks the hotbar to the loaned kit
+
+- A level-50 bar still showed Genie and other leftover binds after the
+  loaned overlay wrote slots 1–6. Enter now publishes only the catalog
+  kit; exit pushes the saved bar back. Edit is refused during the run.
+  Neither the blank overlay nor the exit republish writes `profile.Hotbar`.
+
 ## 2026-08-21 — Every Hall green field is a play area; Protect the Realm
 
 - Corridor tiles Tile02 / Tile05 / Tile08 had green Fields and no SpawnZone, so

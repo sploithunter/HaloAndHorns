@@ -1345,6 +1345,14 @@ function MissionInstanceService:_close(instanceId, reason)
     if record.wipeWatch and record.wipeWatch ~= coroutine.running() then
         pcall(task.cancel, record.wipeWatch)
     end
+    if record.wipeConnections then
+        for _, conn in ipairs(record.wipeConnections) do
+            pcall(function()
+                conn:Disconnect()
+            end)
+        end
+        record.wipeConnections = nil
+    end
     if record.gauntlet then
         pcall(function()
             self:_persistChallengeBest(record)
@@ -1756,23 +1764,57 @@ function MissionInstanceService:_squadPets(record)
 end
 
 function MissionInstanceService:_watchGauntletWipe(record)
-    record.wipeWatch = task.spawn(function()
-        task.wait(2)
-        while self._instances[record.instanceId] and not record.closing do
-            if ChallengeRun.squadWiped(self:_squadPets(record)) then
-                for _, member in ipairs(membersOf(record.teamKey)) do
-                    fireGameEvent(member, "gauntlet_wipe", {
-                        mission = record.missionId,
-                        room = record.room_index,
-                        name = ("Wiped at room %d"):format(record.room_index or 1),
-                    })
-                end
-                self:_close(record.instanceId, "wipe")
-                return
-            end
-            task.wait(0.4)
+    local connections = {}
+    record.wipeConnections = connections
+    local function check()
+        if not self._instances[record.instanceId] or record.closing then
+            return
         end
-    end)
+        if not ChallengeRun.squadWiped(self:_squadPets(record)) then
+            return
+        end
+        for _, member in ipairs(membersOf(record.teamKey)) do
+            fireGameEvent(member, "gauntlet_wipe", {
+                mission = record.missionId,
+                room = record.room_index,
+                name = ("Wiped at room %d"):format(record.room_index or 1),
+            })
+        end
+        self:_close(record.instanceId, "wipe")
+    end
+    local function watchModel(model)
+        if not model:IsA("Model") then
+            return
+        end
+        table.insert(connections, model:GetAttributeChangedSignal("CombatDowned"):Connect(check))
+    end
+    local function watchFolder(folder)
+        if not folder then
+            return
+        end
+        for _, child in ipairs(folder:GetChildren()) do
+            watchModel(child)
+        end
+        table.insert(connections, folder.ChildAdded:Connect(watchModel))
+        table.insert(connections, folder.ChildRemoved:Connect(check))
+    end
+    local root = workspace:FindFirstChild("PlayerPets")
+    if root then
+        for _, member in ipairs(membersOf(record.teamKey)) do
+            watchFolder(root:FindFirstChild(member.Name))
+        end
+        table.insert(
+            connections,
+            root.ChildAdded:Connect(function(child)
+                for _, member in ipairs(membersOf(record.teamKey)) do
+                    if child.Name == member.Name then
+                        watchFolder(child)
+                    end
+                end
+            end)
+        )
+    end
+    check()
 end
 
 function MissionInstanceService:_attachExitPrompt(spawnPad, mission, teamKey, instanceId)

@@ -574,6 +574,10 @@ function ChallengeRun.canonicalOrigin(origin, origins)
     return nil
 end
 
+function ChallengeRun.usesHallCurrencyHud(modeCfg)
+    return type(modeCfg) == "table" and modeCfg.hall_currency_hud == true
+end
+
 function ChallengeRun.soloOnly(modeCfg)
     return type(modeCfg) == "table" and modeCfg.solo_only == true
 end

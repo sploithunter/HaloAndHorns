@@ -140,6 +140,7 @@ function MenuManager.new()
     self.currentPanel = nil
     self.currentPanelName = nil
     self.panels = {}
+    self._panelReady = {}
     self.isTransitioning = false
 
     -- UI elements
@@ -246,6 +247,29 @@ function MenuManager:RegisterPanel(name, panelObject)
 
     self.panels[name] = panelObject
     self.logger:info("Registered panel:", name)
+    local waiters = self._panelReady[name]
+    self._panelReady[name] = nil
+    if type(waiters) == "table" then
+        for _, callback in ipairs(waiters) do
+            task.defer(callback)
+        end
+    end
+end
+
+function MenuManager:OnPanelRegistered(name, callback)
+    if type(name) ~= "string" or type(callback) ~= "function" then
+        return
+    end
+    if self.panels[name] then
+        task.defer(callback)
+        return
+    end
+    local waiters = self._panelReady[name]
+    if type(waiters) ~= "table" then
+        waiters = {}
+        self._panelReady[name] = waiters
+    end
+    table.insert(waiters, callback)
 end
 
 function MenuManager:_hideCurrentPanelForSwitch()

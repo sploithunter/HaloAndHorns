@@ -55,7 +55,10 @@ Worlds Plaza
   the event-driven tutorial before the compatibility write was restored are not stranded.
 - `hall_coins` display as **Waycoins** and are independent of every origin currency.
 - The Hall HUD shows only **Gems** and **Waycoins**. The four origin-currency panes belong to
-  Crystal World and stay hidden throughout `Hall_1`–`Hall_4`.
+  Crystal World and stay hidden throughout `Hall_1`–`Hall_4`, **The Range**, and
+  **Training Ground**. Those gauntlets set `CurrentArea` to `mission_*` for farming/music;
+  `GauntletMode` plus `hall_currency_hud` keeps Waycoins on the stack. Exit must not
+  sticky-keep `mission_*` or the Challenge Field shows origin crystals instead.
 - Hall Waycoin bags, Gold Fern nuggets, coin troves, and gilded chests use the generic breakable
   pipeline. Breakable definitions select `spawn = { method = "drop", height, duration }`; ordinary
   crystals use the default immediate strategy. `SpawnAnimating` is the shared server guard for
@@ -256,7 +259,10 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   for the run (server `ChallengePowers` allowlist): owned Swift/Magnet/Resonance and any
   other unselected power stay off, including on the server. They are auto-slotted — Hasten
   gets 6 recharge (perma); every other power gets 3 recharge + 3 focus. Players do not
-  slot by hand; optional custom slotting can come later. Entering or leaving The Range
+  slot by hand; optional custom slotting can come later. The hotbar blanks to that
+  loaned kit for the run and restores the saved bar on exit, so a high-level
+  player's leftover binds cannot overlap. The overlay is publish-only:
+  enter, exit, and Edit during the run do not write `profile.Hotbar`. Entering or leaving The Range
   clears every hotbar auto-cast lock (the lock is on the slot, not the power). Next Room
   warps you to the new map's entrance. Trials density settings and team pack-scale do
   not apply. Farmable crate / crystal-node debris is off — those slots

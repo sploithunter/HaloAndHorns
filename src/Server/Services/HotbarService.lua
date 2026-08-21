@@ -4,6 +4,8 @@
     Owns profile.Hotbar (string slot index -> bind { type, target }). New players
     are initialized with archetype defaults on first read. Rebinds persist. Pure
     rules: `src/Shared/Game/HotbarLogic.lua`. (Key-press firing is client/[studio].)
+    Catalog Range uses an in-memory overlay only — enter/exit never write
+    profile.Hotbar, so a blank or loaned kit cannot replace the saved bar.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -57,6 +59,10 @@ function HotbarService:Init()
         end)
     end)
     -- Admin testing: grant + bind the CURRENT area's full power set to the hotbar.
+    game:GetService("Players").PlayerRemoving:Connect(function(player)
+        self._challengeBinds[player] = nil
+    end)
+    -- Admin testing: grant + bind the CURRENT area's full power set to the hotbar.
     Signals.Admin_GrantAreaPowers.OnServerEvent:Connect(function(player)
         -- SECURITY: this GRANTS + persists a whole area's power set (bypassing the pick-10), so it
         -- must be admin-only. It was ungated — any client could fire it and grant themselves every
@@ -87,10 +93,17 @@ local AREA_ARCHETYPE = {
 -- Admin/Studio only: set the player's archetype to the current area's element, mark every power in that
 -- pool as owned (bypassing the pick-10), and bind them all onto the hotbar so every area's powers can
 -- be cast for testing. Re-run after switching area to get that area's set.
+function HotbarService:_overlayActive(player)
+    return self._challengeBinds[player] ~= nil
+end
+
 function HotbarService:AdminGrantArea(player)
     local RunService = game:GetService("RunService")
     if not (player:GetAttribute("IsAdmin") or RunService:IsStudio()) then
         return { ok = false, reason = "not_admin" }
+    end
+    if self:_overlayActive(player) then
+        return { ok = false, reason = "challenge_power" }
     end
     local data = self._dataService:GetData(player)
     if not data then
@@ -152,10 +165,11 @@ function HotbarService:_assignablePalette(player)
             seen[id] = true
         end
     end
-    local loaned = self._challengeBinds[player]
-    if type(loaned) == "table" then
-        for _, id in ipairs(loaned) do
-            if type(id) == "string" and not seen[id] then
+    if self:_overlayActive(player) then
+        powers = {}
+        seen = {}
+        for _, id in ipairs(self._challengeBinds[player] or {}) do
+            if type(id) == "string" and id ~= "" and not seen[id] then
                 powers[#powers + 1] = id
                 seen[id] = true
             end
@@ -295,22 +309,23 @@ function HotbarService:GetState(player)
         return { ok = false, reason = "data_not_loaded" }
     end
     local hotbar = self:_ensureDefaults(data)
-    local loaned = self._challengeBinds[player]
-    if type(loaned) == "table" and #loaned > 0 then
-        hotbar = table.clone(hotbar)
-        for i, powerId in ipairs(loaned) do
-            hotbar[tostring(i)] = { type = "power", target = powerId }
-        end
+    if self:_overlayActive(player) then
+        -- Publish-only. Never assign this table to data.Hotbar — a blank overlay
+        -- would stick forever because HotbarInitialized blocks re-seed.
+        hotbar = HotbarLogic.applyChallengeOverlay(nil, self._challengeBinds[player])
     end
     return { ok = true, hotbar = hotbar, slot_count = self._config.slot_count }
 end
 
 function HotbarService:SetChallengeBinds(player, powerIds)
+    -- Memory-only. Do not RequestSave — the published bar is not profile.Hotbar.
     self._challengeBinds[player] = type(powerIds) == "table" and powerIds or {}
     self:_pushState(player)
 end
 
 function HotbarService:ClearChallengeBinds(player)
+    -- Drop the overlay and republish the saved bar. No persist: exit must not
+    -- write a blank/loaned snapshot over profile.Hotbar.
     self._challengeBinds[player] = nil
     self:_pushState(player)
 end
@@ -319,6 +334,9 @@ end
 -- instead of clearing Hotbar indirectly through respec, which left the one-time seed flags set and
 -- the client displaying its pre-reset snapshot.
 function HotbarService:ResetToBeginning(player)
+    if self:_overlayActive(player) then
+        return { ok = false, reason = "challenge_power" }
+    end
     local data = self._dataService:GetData(player)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
@@ -336,8 +354,9 @@ function HotbarService:ResetToBeginning(player)
     return { ok = true, hotbar = data.Hotbar }
 end
 
--- Rebind a slot. `bind` is { type, target } or nil to clear.
-function HotbarService:Rebind(player, index, bind)
+-- Write a slot on the saved bar. Callers that must persist a grant during a
+-- Range overlay (potion/token auto-bind) use this; player Edit uses Rebind.
+function HotbarService:_writeBind(player, index, bind)
     local data = self._dataService:GetData(player)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
@@ -356,6 +375,16 @@ function HotbarService:Rebind(player, index, bind)
         fireGameEvent(player, "power_bound", { power = bind.target, slot = index })
     end
     return { ok = true, hotbar = hotbar }
+end
+
+-- Rebind a slot. `bind` is { type, target } or nil to clear.
+-- Refused during a Range overlay so the published blank/loaned kit cannot
+-- be written to profile.Hotbar (a cleared bar would stick after exit).
+function HotbarService:Rebind(player, index, bind)
+    if self:_overlayActive(player) then
+        return { ok = false, reason = "challenge_power" }
+    end
+    return self:_writeBind(player, index, bind)
 end
 
 -- Authoritative placement for authored progression/tutorial binds. Unlike a normal player rebind,
@@ -392,7 +421,7 @@ function HotbarService:AutoBindPotion(player, potionId)
     if not slot then
         return { ok = false, reason = "already_bound_or_top_row_full" }
     end
-    local result = self:Rebind(player, slot, { type = "potion", target = potionId })
+    local result = self:_writeBind(player, slot, { type = "potion", target = potionId })
     if not result.ok then
         return result
     end
@@ -417,7 +446,7 @@ function HotbarService:AutoBindToken(player, tokenId)
         self:_pushState(player)
         return { ok = false, reason = "already_bound_or_hotbar_full" }
     end
-    local result = self:Rebind(player, slot, { type = "token", target = tokenId })
+    local result = self:_writeBind(player, slot, { type = "token", target = tokenId })
     if not result.ok then
         return result
     end
@@ -438,9 +467,11 @@ function HotbarService:Activate(player, payload)
         return { ok = false, reason = "data_not_loaded" }
     end
     local bind
-    local loaned = self._challengeBinds[player]
-    if type(loaned) == "table" and loaned[slot] then
-        bind = { type = "power", target = loaned[slot] }
+    if self:_overlayActive(player) then
+        bind = HotbarLogic.bindAt(
+            HotbarLogic.applyChallengeOverlay(nil, self._challengeBinds[player]),
+            slot
+        )
     else
         bind = HotbarLogic.bindAt(self:_ensureDefaults(data), slot)
     end

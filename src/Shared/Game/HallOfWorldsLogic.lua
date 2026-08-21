@@ -279,6 +279,26 @@ function HallOfWorldsLogic.nextStage(state, stageCount)
     return nextIndex
 end
 
+function HallOfWorldsLogic.isHallAreaId(areaId)
+    if type(areaId) ~= "string" or areaId == "" then
+        return false
+    end
+    return string.lower(areaId):sub(1, 5) == "hall_"
+end
+
+-- Hall route tiles and Hall-hosted gauntlets (Range / Training Ground).
+-- Those runs publish mission_* for farming/music; the currency HUD stays
+-- Gems + Waycoins so origin crystals never replace Waycoins in the Hall.
+function HallOfWorldsLogic.usesHallCurrencyHud(areaId, gauntletMode, challengeModes)
+    if type(gauntletMode) == "string" then
+        local modeCfg = type(challengeModes) == "table" and challengeModes[gauntletMode]
+        if type(modeCfg) == "table" and modeCfg.hall_currency_hud == true then
+            return true
+        end
+    end
+    return HallOfWorldsLogic.isHallAreaId(areaId)
+end
+
 function HallOfWorldsLogic.canStartStage(state, stageIndex, claimedLevel, targetLevel)
     local expected = HallOfWorldsLogic.nextStage(state, math.huge)
     if stageIndex ~= expected then

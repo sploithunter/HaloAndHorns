@@ -211,6 +211,37 @@ return function()
         end)
     end)
 
+    describe("HotbarLogic.applyChallengeOverlay", function()
+        it("blanks the saved bar and publishes only the loaned kit", function()
+            local saved = {
+                ["1"] = { type = "power", target = "genie_dunes" },
+                ["8"] = { type = "power", target = "hasten" },
+                ["11"] = { type = "tactical", target = "rally" },
+            }
+            local view = HotbarLogic.applyChallengeOverlay(saved, { "strike", "hasten" })
+            expect(view["1"].target).to.equal("strike")
+            expect(view["2"].target).to.equal("hasten")
+            expect(view["8"]).to.equal(nil)
+            expect(view["11"]).to.equal(nil)
+            expect(saved["1"].target).to.equal("genie_dunes")
+        end)
+
+        it("restores nothing when the loaned kit is empty", function()
+            local view = HotbarLogic.applyChallengeOverlay({
+                ["1"] = { type = "power", target = "genie_dunes" },
+            }, {})
+            expect(view["1"]).to.equal(nil)
+        end)
+
+        it("returns a new table so a blank publish cannot alias the save", function()
+            local saved = { ["1"] = { type = "power", target = "genie_dunes" } }
+            local view = HotbarLogic.applyChallengeOverlay(saved, { "strike" })
+            expect(view == saved).to.equal(false)
+            view["1"] = nil
+            expect(saved["1"].target).to.equal("genie_dunes")
+        end)
+    end)
+
     describe("HotbarLogic.tokenAutoBindSlot", function()
         it("fills the top row from the left without replacing Rally", function()
             local hotbar = {

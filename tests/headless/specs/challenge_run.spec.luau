@@ -295,6 +295,11 @@ return function()
             expect(ChallengeRun.passesEngageGate(50, 3, 1)).to.equal(true)
             expect(ChallengeRun.skipsEngageGate(challengeCfg.modes.training_ground)).to.equal(true)
             expect(ChallengeRun.skipsEngageGate(challengeCfg.modes.range)).to.equal(false)
+            expect(ChallengeRun.usesHallCurrencyHud(challengeCfg.modes.range)).to.equal(true)
+            expect(ChallengeRun.usesHallCurrencyHud(challengeCfg.modes.training_ground)).to.equal(
+                true
+            )
+            expect(ChallengeRun.usesHallCurrencyHud(nil)).to.equal(false)
             expect(ChallengeRun.passesEngageGate(3, 3, 5, challengeCfg.modes.training_ground)).to.equal(
                 true
             )

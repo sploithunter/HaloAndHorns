@@ -20,6 +20,9 @@ local Workspace = game:GetService("Workspace")
 
 local HudLayoutState = require(script.Parent.HudLayoutState)
 local UI_CONFIG = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("ui"))
+local HallOfWorldsLogic = require(ReplicatedStorage.Shared.Game.HallOfWorldsLogic)
+local CHALLENGE_RUNS =
+    require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("challenge_runs"))
 
 local CurrencyStack = {}
 local started = false
@@ -54,8 +57,11 @@ local function currentOriginPane(player)
 end
 
 local function isHallArea(player)
-    local area = tostring(player:GetAttribute("CurrentArea") or ""):lower()
-    return area:sub(1, 5) == "hall_"
+    return HallOfWorldsLogic.usesHallCurrencyHud(
+        player:GetAttribute("CurrentArea"),
+        player:GetAttribute("GauntletMode"),
+        CHALLENGE_RUNS.modes
+    )
 end
 
 function CurrencyStack.start()
@@ -209,6 +215,8 @@ function CurrencyStack.start()
         end)
         player:GetAttributeChangedSignal("CurrentArea"):Connect(applyCompactState)
         player:GetAttributeChangedSignal("HomeArea"):Connect(applyCompactState)
+        player:GetAttributeChangedSignal("GauntletMode"):Connect(applyCompactState)
+        player:GetAttributeChangedSignal("InMission"):Connect(applyCompactState)
 
         -- Sit money's bottom just ABOVE the lower-left menu buttons. `stack` is unscaled and lives in
         -- MainContainer (which spans the whole screen, only inset-shifted), so a measured pixel offset

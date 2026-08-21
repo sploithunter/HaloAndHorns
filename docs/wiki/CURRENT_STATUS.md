@@ -17,8 +17,12 @@ fights at level 50 for the run (`ChallengeLevel` on the sidekick
 XP pays from earned Level, not the pin. Those picks persist as
 four per-origin Range defaults (`GameData.RangeDefaults`) plus the last catalog squad,
 and they are the only legal powers for the run (auto-slotted: Hasten 6 recharge; others
-3/3). Hotbar auto-cast locks clear on Range enter and exit so a slot lock cannot
-follow a loaned power home. Training Ground uses your own pets on an easier curve
+3/3). The hotbar blanks to that kit and restores the saved bar on exit
+(publish-only; `profile.Hotbar` is not written).
+Hotbar auto-cast locks clear on Range enter and exit so a slot lock cannot
+follow a loaned power home. The Hall currency stack stays Gems + Waycoins
+inside Range and Training Ground (`hall_currency_hud`); exit drops `mission_*`
+so the Challenge Field does not show Crystal World coins. Training Ground uses your own pets on an easier curve
 and still allows a team. The overworld level-5 combat onramp does not apply.
 A downed slot stays down for the run (no Ready/Summon
 timer) and cannot be refilled. Entry-tile kit-up is white slots only. Overworld

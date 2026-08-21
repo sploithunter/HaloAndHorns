@@ -11,6 +11,24 @@ local currencies = loadModule("configs/currencies.lua")
 
 return function()
     describe("HallOfWorldsLogic", function()
+        it("keeps Waycoins on the HUD for Hall tiles and Hall gauntlets", function()
+            local modes = loadModule("configs/challenge_runs.lua").modes
+            expect(HallOfWorldsLogic.isHallAreaId("Hall_2")).to.equal(true)
+            expect(HallOfWorldsLogic.isHallAreaId("hall_3")).to.equal(true)
+            expect(HallOfWorldsLogic.isHallAreaId("mission_earth")).to.equal(false)
+            expect(HallOfWorldsLogic.usesHallCurrencyHud("Hall_2", nil, modes)).to.equal(true)
+            expect(HallOfWorldsLogic.usesHallCurrencyHud("mission_earth", "range", modes)).to.equal(
+                true
+            )
+            expect(HallOfWorldsLogic.usesHallCurrencyHud("mission_earth", "training_ground", modes)).to.equal(
+                true
+            )
+            expect(HallOfWorldsLogic.usesHallCurrencyHud("mission_earth", nil, modes)).to.equal(
+                false
+            )
+            expect(HallOfWorldsLogic.usesHallCurrencyHud("Lava", nil, modes)).to.equal(false)
+        end)
+
         it("returns a locked Hall entry to the previous unlocked tile", function()
             local route = { "Hall_1", "Hall_2", "Hall_3", "Hall_4" }
             expect(
