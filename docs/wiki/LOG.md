@@ -1,5 +1,19 @@
 # Log
 
+## 2026-08-21 — Recovered the stranded post-PR Hall work
+
+- PR #251 merged remote beta head `db21c81`, but the completed follow-up commits
+  `6aa0896` and `6fda669` were made locally afterward from the pre-merge tip.
+  They were never pushed and therefore never entered `main`.
+- Recovered both commits onto current main, preserving the later Game Pass,
+  arch-audio, and leaderboard-award changes. The restored contracts include
+  wall-face SurfaceGui pills, frosted wall appearance, full barrier spans and
+  pillar-line seating, unlock-in-place/no gate teleport, locked-tile return,
+  the Plaza endcap, ViewportFrame egg shake, all Hall corridor play areas,
+  Hall gauntlet currency/hotbar state, and event-driven Range cleanup.
+- Added a source-level regression contract because the runtime presentation and
+  server gate policy can disappear even while the older config-only tests pass.
+
 ## 2026-08-21 — Range picker and gauntlet wipe are event-driven
 
 - Range no longer polls for MenuManager. It waits on `ClientUIReady` and
