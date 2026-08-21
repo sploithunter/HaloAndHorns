@@ -37,8 +37,7 @@ end
 
 function PartyMath.invitePrivacy(value, cfg)
     local privacy = privacyModes(cfg)
-    local default = (privacy and type(privacy.default) == "string" and privacy.default)
-        or "everyone"
+    local default = (privacy and type(privacy.default) == "string" and privacy.default) or "friends"
     if
         type(value) == "string"
         and privacy
@@ -53,7 +52,7 @@ function PartyMath.invitePrivacy(value, cfg)
     if type(privacy) == "table" and type(privacy.modes) == "table" and privacy.modes[default] then
         return default
     end
-    return "everyone"
+    return "friends"
 end
 
 function PartyMath.invitePrivacyLabel(value, cfg)
