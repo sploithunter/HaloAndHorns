@@ -36,7 +36,7 @@ return {
     -- 0.48-second clip independently from the much faster visual bolt cadence.
     arch_lightning_buzz = {
         id = "rbxassetid://80802960194213",
-        volume = 0.12,
+        volume = 0.55,
         playback_speed = 1.0,
         duration_seconds = 0.48,
         bus = "effects",

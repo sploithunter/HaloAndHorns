@@ -265,8 +265,10 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   marker groups under the Range, Training Ground, both Crystal World directions, Home, and
   Hell test arches. `ArchLightning` rescans streamed hosts, hides the marker parts, and fires
   rapid jamb-to-jamb bolts only near the player. The supplied 0.48-second buzz is group-owned
-  audio `80802960194213`; it is a separate positional Effects-bus sound at volume `0.12`,
-  throttled to one nearby arch every 0.65–1.1 seconds. If an arch is rebuilt, run
+  audio `80802960194213`; it is a separate positional Effects-bus sound at base volume `0.55`,
+  with full level inside 24 studs and falloff to 90 studs. The player's Effects slider still
+  controls its final loudness. Playback is throttled to one nearby arch every 0.65–1.1 seconds.
+  If an arch is rebuilt, run
   `scripts/studio/stamp_arch_lightning.luau` in Edit and save the place.
 - Gate signs: `RangeLeaderboard` / `RangeGuide` live on Hall_2
   `Tile04_corner`; `TrainingGroundLeaderboard` / `TrainingGroundGuide`

@@ -70,11 +70,14 @@ return {
         -- plays softly and no more than about once per second near the player.
         sound = {
             name = "arch_lightning_buzz",
-            volume = 0.12,
+            -- The source clip is quiet and still passes through the player's
+            -- Effects slider. This remains subdued at normal mix settings but
+            -- stays audible when Effects is turned down.
+            volume = 0.55,
             interval_min = 0.65,
             interval_max = 1.1,
-            roll_off_min_distance = 8,
-            roll_off_max_distance = 60,
+            roll_off_min_distance = 24,
+            roll_off_max_distance = 90,
         },
     },
 

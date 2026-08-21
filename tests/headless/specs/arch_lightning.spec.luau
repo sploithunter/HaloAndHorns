@@ -28,9 +28,12 @@ return function()
                 local sound = sounds[cfg.sound.name]
                 expect(sound.id).to.equal("rbxassetid://80802960194213")
                 expect(sound.duration_seconds).to.equal(0.48)
-                expect(cfg.sound.volume <= 0.12).to.equal(true)
+                expect(sound.volume).to.equal(0.55)
+                expect(cfg.sound.volume).to.equal(sound.volume)
+                expect(cfg.sound.volume <= 0.6).to.equal(true)
                 expect(cfg.sound.interval_min >= sound.duration_seconds).to.equal(true)
-                expect(cfg.sound.roll_off_max_distance).to.equal(60)
+                expect(cfg.sound.roll_off_min_distance).to.equal(24)
+                expect(cfg.sound.roll_off_max_distance).to.equal(90)
             end
         )
 
