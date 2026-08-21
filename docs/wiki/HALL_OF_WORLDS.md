@@ -348,7 +348,8 @@ personal game pass sold only through Kade: rocket passes are hidden from the
 Pet Shop, cannot be traded, and cannot be purchased again after the matching
 board is owned. A live pass uses `PromptGamePassPurchase`, including Roblox's
 Studio purchase simulator; rocket passes do not auto-grant through ordinary
-Studio `test_mode`. Rockets cruise at 2× skate (`cruise_speed` 64 → 128).
+Studio `test_mode`. All six group-owned pass IDs are live as of 2026-08-21.
+Rockets cruise at 2× skate (`cruise_speed` 64 → 128).
 Ownership is `GameData.Hoverboard` (`owned` + `equipped`); the dormant
 mounts inventory bucket stays off. Owned boards also replicate into
 `Inventory.hoverboards` and appear on the Items tab for equip. Free

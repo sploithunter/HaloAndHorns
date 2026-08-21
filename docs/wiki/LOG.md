@@ -3811,3 +3811,5 @@ first-session cohort rates.
 - Repeat attempts are rejected from both the owned-board catalog gate and
   the monetization request boundary. Hoverboards are explicitly non-tradable.
   No prerelease product-to-pass migration is included.
+- Wired the six live group-owned pass IDs supplied from Creator Dashboard;
+  each pass is enabled at the R$19 baseline.

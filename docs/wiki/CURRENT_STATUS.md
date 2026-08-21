@@ -1512,3 +1512,5 @@ Last checked: 2026-08-21
 - Pass reconciliation grants the matching saved board on join. A newly completed purchase grants
   and equips it immediately. All hoverboards publish `Tradeable = false`, and the trade rules
   explicitly reject the `hoverboards` category. No migration is required before release.
+- The six group-owned rocketboard passes are live at the authored R$19 baseline; config contains
+  their dashboard IDs, so Kade always exercises Roblox's real prompt/simulator route.

@@ -49,12 +49,12 @@ return {
         huge_luck_pass = 1912772276, -- LIVE (dashboard 2026-07-14)
         pet_slot_pass = 1912340314, -- LIVE (dashboard 2026-07-14)
         second_wind = 1912664284, -- LIVE (dashboard 2026-07-14)
-        hoverboard_rocket_blue = 0, -- REPLACE: permanent "Blue Rocketboard" pass
-        hoverboard_rocket_lightblue = 0, -- REPLACE: permanent "Light Blue Rocketboard" pass
-        hoverboard_rocket_green = 0, -- REPLACE: permanent "Green Rocketboard" pass
-        hoverboard_rocket_orange = 0, -- REPLACE: permanent "Orange Rocketboard" pass
-        hoverboard_rocket_purple = 0, -- REPLACE: permanent "Purple Rocketboard" pass
-        hoverboard_rocket_yellow = 0, -- REPLACE: permanent "Yellow Rocketboard" pass
+        hoverboard_rocket_blue = 1954662606, -- LIVE: "Blue Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_lightblue = 1952355180, -- LIVE: "Light Blue Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_green = 1955478550, -- LIVE: "Green Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_orange = 1954240779, -- LIVE: "Orange Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_purple = 1951917369, -- LIVE: "Purple Rocketboard" pass (dashboard 2026-08-21)
+        hoverboard_rocket_yellow = 1955796497, -- LIVE: "Yellow Rocketboard" pass (dashboard 2026-08-21)
     },
 
     -- Developer Products (consumable Robux purchases).
