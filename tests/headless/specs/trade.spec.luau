@@ -94,6 +94,61 @@ return function()
             expect(TradeLogic.inviteExpired(nil, 1)).to.equal(true)
         end)
 
+        it("defaults request privacy to Friends Only and supports Off", function()
+            expect(config.invite_privacy.default).to.equal("friends")
+            expect(TradeLogic.invitePrivacy(nil, config)).to.equal("friends")
+            expect(TradeLogic.invitePrivacy("everyone", config)).to.equal("everyone")
+            expect(TradeLogic.invitePrivacy("off", config)).to.equal("off")
+            expect(TradeLogic.invitePrivacyLabel("off", config)).to.equal("Requests off")
+        end)
+
+        it("enforces Friends Only and Off request privacy", function()
+            local allowed, reason = TradeLogic.canSendInvite({
+                targetPrivacy = "friends",
+                areFriends = false,
+                config = config,
+            })
+            expect(allowed).to.equal(false)
+            expect(reason).to.equal("friends_only")
+
+            allowed, reason = TradeLogic.canSendInvite({
+                targetPrivacy = "off",
+                areFriends = true,
+                config = config,
+            })
+            expect(allowed).to.equal(false)
+            expect(reason).to.equal("invites_off")
+        end)
+
+        it("wires all three choices into the Trade menu and server gate", function()
+            local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
+            local service = readFile("src/Server/Services/TradeService.lua")
+            local api = readFile("src/Server/Services/GameAPIService.lua")
+            expect(string.find(panel, '{ "everyone", "friends", "off" }', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(panel, '"trade.set_invite_privacy"', 1, true) ~= nil).to.equal(true)
+            expect(string.find(service, "TradeLogic.canSendInvite({", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(api, 'bus:register("trade.set_invite_privacy"', 1, true) ~= nil).to.equal(
+                true
+            )
+        end)
+
+        it("persists both social privacy settings with a Friends Only migration", function()
+            local data = readFile("src/Server/Services/DataService.lua")
+            local settings = readFile("src/Server/Services/SettingsService.lua")
+            expect(string.find(data, 'TeamInvitePrivacy = "friends"', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(data, 'TradeInvitePrivacy = "friends"', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(data, "SchemaMigrations[16]", 1, true) ~= nil).to.equal(true)
+            expect(string.find(settings, "SetTradeInvitePrivacy", 1, true) ~= nil).to.equal(true)
+        end)
+
         it("keeps requester decline notices live after closing the player picker", function()
             local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
             expect(string.find(panel, "self:_closeSelectionPanel()", 1, true) ~= nil).to.equal(true)

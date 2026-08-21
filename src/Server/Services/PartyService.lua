@@ -260,17 +260,21 @@ end
 
 -- The invite/accept dance (docs/TEAMING.md). Invite stamps a replicated attribute on the
 -- TARGET (TeamInviteFrom) so their client surfaces accept/decline; Accept consumes it.
-function PartyService:_notifyInviteOutcome(invite, outcome)
-    local requester = invite and Players:GetPlayerByUserId(invite.fromUserId)
-    if not requester then
+function PartyService:_notifyPlayerInviteOutcome(player, outcome, otherName)
+    if not player then
         return
     end
-    requester:SetAttribute("TeamInviteOutcome", outcome)
-    requester:SetAttribute("TeamInviteTarget", invite.targetName or "Player")
-    requester:SetAttribute(
+    player:SetAttribute("TeamInviteOutcome", outcome)
+    player:SetAttribute("TeamInviteTarget", otherName or "Player")
+    player:SetAttribute(
         "TeamInviteOutcomeSerial",
-        (tonumber(requester:GetAttribute("TeamInviteOutcomeSerial")) or 0) + 1
+        (tonumber(player:GetAttribute("TeamInviteOutcomeSerial")) or 0) + 1
     )
+end
+
+function PartyService:_notifyInviteOutcome(invite, outcome)
+    local requester = invite and Players:GetPlayerByUserId(invite.fromUserId)
+    self:_notifyPlayerInviteOutcome(requester, outcome, invite and invite.targetName)
 end
 
 function PartyService:_expireInvite(targetUserId, invite)
@@ -283,6 +287,7 @@ function PartyService:_expireInvite(targetUserId, invite)
         target:SetAttribute("TeamInviteFrom", nil)
     end
     self:_notifyInviteOutcome(invite, "timed_out")
+    self:_notifyPlayerInviteOutcome(target, "request_expired", invite.from)
     return true
 end
 

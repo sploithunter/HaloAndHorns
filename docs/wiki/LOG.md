@@ -3800,6 +3800,16 @@ first-session cohort rates.
   Abyssal Wyrm stays. Wyrmling does not: it is an Obsidian exclusive,
   not the "playing for dragons" hatch chase.
 
+## 2026-08-21 — Friends-only social invites with in-menu controls
+
+- Team and Trade player pickers now each expose Everyone, Friends only,
+  and Off without sending players to Settings. Choices persist independently;
+  v17 moves the pre-release baseline for both to Friends only.
+- Both services enforce the recipient's privacy server-side. Non-friends and
+  disabled recipients are labeled and unavailable in the picker.
+- Unanswered Team requests now match Trade: after 30 seconds both the sender
+  and recipient receive an explicit expiry banner, and the stale popup closes.
+
 ## 2026-08-21 — Rocketboards become Kade-only game passes
 
 - Removed every hoverboard from the Pet Shop developer-product catalog.

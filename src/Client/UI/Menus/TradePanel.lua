@@ -28,6 +28,7 @@ local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnail
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local TradeReveal = require(ReplicatedStorage.Shared.Game.TradeReveal)
 local TradePetSort = require(ReplicatedStorage.Shared.Game.TradePetSort)
+local TradeLogic = require(ReplicatedStorage.Shared.Game.TradeLogic)
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
 local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView)
 local ElementResonance = require(ReplicatedStorage.Shared.Game.ElementResonance)
@@ -57,6 +58,7 @@ local COMBAT_FX = config("combat_fx")
 local AREAS_CONFIG = config("areas")
 local ELEMENTS_CONFIG = config("elements")
 local ENCHANTS_CONFIG = config("enchants")
+local TRADE_CONFIG = config("trade")
 
 local function variantEternalScale(percent, variant)
     if not percent or percent <= 0 then
@@ -340,10 +342,55 @@ function TradePanel:Show(parent)
     hint.TextXAlignment = Enum.TextXAlignment.Left
     hint.ZIndex = 102
 
+    local privacy = Instance.new("Frame")
+    privacy.Name = "InvitePrivacy"
+    privacy.Size = UDim2.new(1, -48, 0, 40)
+    privacy.Position = UDim2.new(0, 24, 0, 112)
+    privacy.BackgroundTransparency = 1
+    privacy.ZIndex = 102
+    privacy.Parent = frame
+    self.privacyBar = privacy
+    local privacyLabel = label(
+        privacy,
+        "Accepting requests",
+        UDim2.new(0.37, 0, 1, 0),
+        UDim2.new(0, 0, 0, 0),
+        COLORS.subtext,
+        Enum.Font.Gotham
+    )
+    privacyLabel.TextXAlignment = Enum.TextXAlignment.Left
+    privacyLabel.ZIndex = 103
+    self.privacyButtons = {}
+    for i, mode in ipairs({ "everyone", "friends", "off" }) do
+        local btn = Instance.new("TextButton")
+        btn.Name = mode
+        btn.Size = UDim2.new(0.2, 0, 0.86, 0)
+        btn.Position = UDim2.new(0.37 + (i - 1) * 0.21, 0, 0.07, 0)
+        btn.BackgroundColor3 = COLORS.row
+        btn.Text = TradeLogic.invitePrivacyLabel(mode, TRADE_CONFIG)
+        btn.TextColor3 = COLORS.text
+        btn.TextScaled = true
+        btn.Font = Enum.Font.GothamBold
+        btn.ZIndex = 103
+        btn.Parent = privacy
+        pillify(btn, 16)
+        local constraint = Instance.new("UITextSizeConstraint")
+        constraint.MaxTextSize = 14
+        constraint.Parent = btn
+        btn.Activated:Connect(function()
+            local result = self:_callBus("trade.set_invite_privacy", { mode = mode })
+            if result and result.ok then
+                self._privacyOverride = result.mode
+            end
+            self:_refreshTradePrivacy()
+        end)
+        self.privacyButtons[mode] = btn
+    end
+
     local list = Instance.new("ScrollingFrame")
     list.Name = "PlayerList"
-    list.Size = UDim2.new(1, -24, 1, -160)
-    list.Position = UDim2.new(0, 12, 0, 116)
+    list.Size = UDim2.new(1, -24, 1, -204)
+    list.Position = UDim2.new(0, 12, 0, 160)
     list.BackgroundTransparency = 1
     list.BorderSizePixel = 0
     list.ScrollBarThickness = 6
@@ -374,7 +421,23 @@ function TradePanel:Show(parent)
     end)
 
     self.isVisible = true
+    self:_refreshTradePrivacy()
     self:_refreshPlayers()
+end
+
+function TradePanel:_refreshTradePrivacy()
+    if not self.privacyButtons then
+        return
+    end
+    local current = TradeLogic.invitePrivacy(
+        self._privacyOverride or Players.LocalPlayer:GetAttribute("TradeInvitePrivacy"),
+        TRADE_CONFIG
+    )
+    for mode, btn in pairs(self.privacyButtons) do
+        local selected = mode == current
+        btn.BackgroundColor3 = selected and COLORS.accept or COLORS.row
+        btn.AutoButtonColor = not selected
+    end
 end
 
 function TradePanel:Hide()
@@ -386,6 +449,9 @@ function TradePanel:Hide()
         self.frame = nil
     end
     self.playerList = nil
+    self.privacyBar = nil
+    self.privacyButtons = nil
+    self._privacyOverride = nil
     self.isVisible = false
 end
 
@@ -505,9 +571,10 @@ function TradePanel:_playerRow(p, order)
     -- level?")
     local other = Players:GetPlayerByUserId(p.userId)
     local lvl = other and other:GetAttribute("Level")
+    local status = p.privacy and ("   ·  " .. p.privacy) or ""
     local name = label(
         row,
-        (lvl and ("Lv %d   "):format(lvl) or "") .. p.name,
+        (lvl and ("Lv %d   "):format(lvl) or "") .. p.name .. status,
         UDim2.new(1, -140, 1, 0),
         UDim2.new(0, 14, 0, 0),
         COLORS.text,
@@ -521,24 +588,29 @@ function TradePanel:_playerRow(p, order)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0, 110, 0, 40)
     btn.Position = UDim2.new(1, -122, 0.5, -20)
-    btn.BackgroundColor3 = p.busy and COLORS.pending or COLORS.accept
-    btn.Text = p.busy and "Busy" or "Request"
+    local blockedText = {
+        friends_only = "Friends only",
+        invites_off = "Off",
+    }
+    local unavailable = p.busy or p.blockedReason ~= nil
+    btn.BackgroundColor3 = unavailable and COLORS.pending or COLORS.accept
+    btn.Text = p.busy and "Busy" or blockedText[p.blockedReason] or "Request"
     btn.TextColor3 = COLORS.text
     btn.TextScaled = true
     btn.Font = Enum.Font.GothamBold
-    btn.Active = not p.busy
-    btn.AutoButtonColor = not p.busy
+    btn.Active = not unavailable
+    btn.AutoButtonColor = not unavailable
     btn.ZIndex = 103
     btn.Parent = row
     pillify(btn, 16)
-    if not p.busy then
+    if not unavailable then
         btn.Activated:Connect(function()
             local res = self:_callBus("trade.request", { targetUserId = p.userId })
             if res and res.ok then
                 setPillText(btn, "Sent ✓")
                 self:_closeSelectionPanel()
             else
-                setPillText(btn, "Failed")
+                setPillText(btn, blockedText[res and res.reason] or "Failed")
             end
             btn.Active = false
             btn.AutoButtonColor = false

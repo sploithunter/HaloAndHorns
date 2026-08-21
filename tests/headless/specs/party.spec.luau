@@ -32,6 +32,62 @@ return function()
         end)
     end)
 
+    describe("team invitation privacy", function()
+        it("defaults to Friends Only and supports Everyone or Off", function()
+            expect(config.invite_privacy.default).to.equal("friends")
+            expect(PartyMath.invitePrivacy(nil, config)).to.equal("friends")
+            expect(PartyMath.invitePrivacy(nil, nil)).to.equal("friends")
+            expect(PartyMath.invitePrivacy("everyone", config)).to.equal("everyone")
+            expect(PartyMath.invitePrivacy("off", config)).to.equal("off")
+            expect(PartyMath.invitePrivacyLabel("off", config)).to.equal("Invites off")
+        end)
+
+        it("rejects non-friends and rejects everyone when invites are off", function()
+            local allowed, reason = PartyMath.canSendInvite({
+                targetPrivacy = "friends",
+                areFriends = false,
+                cfg = config,
+            })
+            expect(allowed).to.equal(false)
+            expect(reason).to.equal("friends_only")
+
+            allowed, reason = PartyMath.canSendInvite({
+                targetPrivacy = "off",
+                areFriends = true,
+                cfg = config,
+            })
+            expect(allowed).to.equal(false)
+            expect(reason).to.equal("invites_off")
+        end)
+
+        it("wires all three choices into the Team menu and server gate", function()
+            local panel = readFile("src/Client/UI/Menus/TeamPanel.lua")
+            local service = readFile("src/Server/Services/PartyService.lua")
+            expect(string.find(panel, '{ "everyone", "friends", "off" }', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(panel, '"team.set_invite_privacy"', 1, true) ~= nil).to.equal(true)
+            expect(string.find(service, "PartyMath.canSendInvite({", 1, true) ~= nil).to.equal(true)
+        end)
+
+        it("notifies both players when a Team request expires", function()
+            local service = readFile("src/Server/Services/PartyService.lua")
+            local panel = readFile("src/Client/UI/Menus/TeamPanel.lua")
+            expect(
+                string.find(
+                    service,
+                    'self:_notifyPlayerInviteOutcome(target, "request_expired", invite.from)',
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(string.find(panel, 'outcome == "request_expired"', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(panel, '"team_request_expired"', 1, true) ~= nil).to.equal(true)
+        end)
+    end)
+
     describe("PartyMath.scaledHp", function()
         it("solo HP is unscaled", function()
             expect(PartyMath.scaledHp(1000, 1, 0.5)).to.equal(1000)

@@ -100,16 +100,18 @@ function TeamPanel.new()
                 "team_request_timed_out",
                 ("⌛ %s didn't respond. Team request timed out."):format(target)
             )
+        elseif outcome == "request_expired" then
+            self:_statusBanner(
+                "team_request_expired",
+                ("⌛ Team request from %s expired."):format(target)
+            )
         elseif outcome == "declined" then
             self:_statusBanner(
                 "team_request_declined",
                 ("👥 %s declined your team request."):format(target)
             )
         elseif outcome == "in_range" then
-            self:_statusBanner(
-                "team_request_in_range",
-                ("🎯 %s is in The Range."):format(target)
-            )
+            self:_statusBanner("team_request_in_range", ("🎯 %s is in The Range."):format(target))
         end
     end)
     -- Roster changes re-render the open panel (join/leave/promotion).
@@ -289,7 +291,7 @@ function TeamPanel:Show(parent)
     local privacyLabel = label(
         privacy,
         "Accepting invites",
-        UDim2.new(0.42, 0, 1, 0),
+        UDim2.new(0.35, 0, 1, 0),
         UDim2.new(0, 0, 0, 0),
         COLORS.subtext,
         Enum.Font.Gotham
@@ -298,12 +300,12 @@ function TeamPanel:Show(parent)
     privacyLabel.ZIndex = 103
     self.privacyLabel = privacyLabel
     self.privacyButtons = {}
-    local modes = { "everyone", "friends" }
+    local modes = { "everyone", "friends", "off" }
     for i, mode in ipairs(modes) do
         local btn = Instance.new("TextButton")
         btn.Name = mode
-        btn.Size = UDim2.new(0.27, 0, 0.86, 0)
-        btn.Position = UDim2.new(0.44 + (i - 1) * 0.29, 0, 0.07, 0)
+        btn.Size = UDim2.new(0.2, 0, 0.86, 0)
+        btn.Position = UDim2.new(0.37 + (i - 1) * 0.21, 0, 0.07, 0)
         btn.BackgroundColor3 = COLORS.row
         btn.Text = PartyMath.invitePrivacyLabel(mode, partyCfg)
         btn.TextColor3 = COLORS.text
@@ -316,7 +318,10 @@ function TeamPanel:Show(parent)
         bc.MaxTextSize = 14
         bc.Parent = btn
         btn.Activated:Connect(function()
-            self:_callBus("team.set_invite_privacy", { mode = mode })
+            local result = self:_callBus("team.set_invite_privacy", { mode = mode })
+            if result and result.ok then
+                self._privacyOverride = result.mode
+            end
             self:_refreshPrivacy()
         end)
         self.privacyButtons[mode] = btn
@@ -425,7 +430,10 @@ function TeamPanel:_watchOthers()
 end
 
 function TeamPanel:_currentPrivacy()
-    return PartyMath.invitePrivacy(localPlayer:GetAttribute("TeamInvitePrivacy"), partyCfg)
+    return PartyMath.invitePrivacy(
+        self._privacyOverride or localPlayer:GetAttribute("TeamInvitePrivacy"),
+        partyCfg
+    )
 end
 
 function TeamPanel:_refreshPrivacy()
@@ -485,7 +493,8 @@ function TeamPanel:_refresh()
             if p ~= localPlayer then
                 order += 1
                 others += 1
-                local privacy = PartyMath.invitePrivacy(p:GetAttribute("TeamInvitePrivacy"), partyCfg)
+                local privacy =
+                    PartyMath.invitePrivacy(p:GetAttribute("TeamInvitePrivacy"), partyCfg)
                 local busy = inRange(p)
                 local friendsOnly = privacy == "friends"
                 local blockedReason = nil
@@ -493,6 +502,8 @@ function TeamPanel:_refresh()
                     blockedReason = "in_range"
                 elseif busy then
                     blockedReason = "target_in_range"
+                elseif privacy == "off" then
+                    blockedReason = "invites_off"
                 elseif friendsOnly and not isFriend(p) then
                     blockedReason = "friends_only"
                 end
@@ -577,6 +588,7 @@ function TeamPanel:_row(name, order, opts)
             in_range = "In Range",
             target_in_range = "In Range",
             friends_only = "Friends only",
+            invites_off = "Off",
         }
         if opts.blockedReason then
             btn.Text = failText[opts.blockedReason] or "Busy"
@@ -700,6 +712,7 @@ function TeamPanel:Hide()
     self.privacyBar = nil
     self.privacyLabel = nil
     self.privacyButtons = nil
+    self._privacyOverride = nil
     self.leaveBtn = nil
     self.isVisible = false
 end

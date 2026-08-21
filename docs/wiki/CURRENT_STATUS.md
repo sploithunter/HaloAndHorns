@@ -1500,6 +1500,16 @@ Last checked: 2026-08-18
 - Auto-mode players using a supported non-English locale receive a one-time session banner naming
   their tutorial language and pointing to the English override in Settings.
 
+## Social invite privacy and expiry feedback
+
+Last checked: 2026-08-21
+
+- Team and Trade requests default to Friends only. Each player picker owns an independent,
+  persistent Everyone / Friends only / Off control; the receiving player's saved choice is
+  enforced by the server and reflected in unavailable picker rows.
+- Both invite types expire after 30 seconds. The sender and recipient each receive an explicit
+  timeout banner, and the recipient's stale request popup closes.
+
 ## Kade's rocketboard entitlements
 
 Last checked: 2026-08-21
