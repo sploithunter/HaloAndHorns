@@ -39,7 +39,7 @@ local DEFAULT_SAVE_DEBOUNCE_SECONDS = 15
 local CRITICAL_SAVE_DEBOUNCE_SECONDS = 1
 local PERIODIC_SAVE_SECONDS = 60
 local SAVE_CONFIRM_TIMEOUT_SECONDS = 10
-local CURRENT_SCHEMA_VERSION = 16
+local CURRENT_SCHEMA_VERSION = 17
 
 local function countInventoryItems(inventory)
     local counts = {}
@@ -165,8 +165,9 @@ local function generateProfileTemplate(configLoader)
             SFXEnabled = true,
             GraphicsQuality = "Auto",
             TrialGroupScale = 1.0,
-            -- Who may send this player a team invite. Replicated as TeamInvitePrivacy.
-            TeamInvitePrivacy = "everyone",
+            -- Who may send this player team/trade invites. Both menus expose the saved choice.
+            TeamInvitePrivacy = "friends",
+            TradeInvitePrivacy = "friends",
             -- Listed creator accounts may deliberately suppress every game-pass benefit for
             -- production balance testing. Missing/legacy values default ON.
             CreatorGamePassesEnabled = true,
@@ -635,7 +636,9 @@ SchemaMigrations[15] = function(_self, data)
     data.GameData.HallOfWorlds = hall
 
     local unlocked = {}
-    for _, areaId in ipairs(type(data.GameData.UnlockedAreas) == "table" and data.GameData.UnlockedAreas or {}) do
+    for _, areaId in
+        ipairs(type(data.GameData.UnlockedAreas) == "table" and data.GameData.UnlockedAreas or {})
+    do
         if type(areaId) == "string" and areaId ~= "" then
             unlocked[areaId] = true
         end
@@ -649,6 +652,17 @@ SchemaMigrations[15] = function(_self, data)
     table.sort(unlockedList)
     data.GameData.UnlockedAreas = unlockedList
     data.SchemaVersion = 16
+    return 1
+end
+
+-- v16 -> v17: pre-release social privacy baseline. Team invites previously reconciled to
+-- Everyone and trade requests had no privacy setting, so move both to Friends Only once. Players
+-- may subsequently choose Everyone or Off independently from the relevant picker.
+SchemaMigrations[16] = function(_self, data)
+    data.Settings = type(data.Settings) == "table" and data.Settings or {}
+    data.Settings.TeamInvitePrivacy = "friends"
+    data.Settings.TradeInvitePrivacy = "friends"
+    data.SchemaVersion = 17
     return 1
 end
 

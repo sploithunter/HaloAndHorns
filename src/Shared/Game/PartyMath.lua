@@ -9,7 +9,7 @@
       splitLoot(loot, partySize)           -> { [currency] = perPlayerAmount }
       attribution(contributions)           -> { fractions = {id=frac}, mvp, total }
       inviteExpired(invite, now, timeout)  -> boolean
-      invitePrivacy(value, cfg)            -> "everyone"|"friends"
+      invitePrivacy(value, cfg)            -> "everyone"|"friends"|"off"
       invitePrivacyLabel(value, cfg)       -> string
       canSendInvite(ctx)                   -> ok, reason
       canAcceptInvite(ctx)                 -> ok, reason
@@ -39,10 +39,15 @@ function PartyMath.invitePrivacy(value, cfg)
     local privacy = privacyModes(cfg)
     local default = (privacy and type(privacy.default) == "string" and privacy.default)
         or "everyone"
-    if type(value) == "string" and privacy and type(privacy.modes) == "table" and privacy.modes[value] then
+    if
+        type(value) == "string"
+        and privacy
+        and type(privacy.modes) == "table"
+        and privacy.modes[value]
+    then
         return value
     end
-    if value == "everyone" or value == "friends" then
+    if value == "everyone" or value == "friends" or value == "off" then
         return value
     end
     if type(privacy) == "table" and type(privacy.modes) == "table" and privacy.modes[default] then
@@ -63,6 +68,8 @@ function PartyMath.invitePrivacyLabel(value, cfg)
     end
     if id == "friends" then
         return "Friends only"
+    elseif id == "off" then
+        return "Invites off"
     end
     return "Everyone"
 end
@@ -76,7 +83,11 @@ function PartyMath.canSendInvite(ctx)
     if ctx.targetInRange == true then
         return false, "target_in_range"
     end
-    if PartyMath.invitePrivacy(ctx.targetPrivacy, ctx.cfg) == "friends" and ctx.areFriends ~= true then
+    local privacy = PartyMath.invitePrivacy(ctx.targetPrivacy, ctx.cfg)
+    if privacy == "off" then
+        return false, "invites_off"
+    end
+    if privacy == "friends" and ctx.areFriends ~= true then
         return false, "friends_only"
     end
     return true

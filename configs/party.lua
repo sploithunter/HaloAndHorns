@@ -20,7 +20,7 @@ return {
     -- Who may send this player a team invite. Replicated as TeamInvitePrivacy
     -- so the picker can label every row. Server still enforces the gate.
     invite_privacy = {
-        default = "everyone",
+        default = "friends",
         modes = {
             everyone = {
                 display = "Everyone",
@@ -29,6 +29,10 @@ return {
             friends = {
                 display = "Friends only",
                 list_label = "Friends only",
+            },
+            off = {
+                display = "Off",
+                list_label = "Invites off",
             },
         },
     },

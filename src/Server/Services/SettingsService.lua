@@ -22,6 +22,7 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath)
+local TradeLogic = require(ReplicatedStorage.Shared.Game.TradeLogic)
 local HotbarSize = require(ReplicatedStorage.Shared.Game.HotbarSize)
 
 local SettingsService = {}
@@ -36,6 +37,7 @@ function SettingsService:Init()
     self._configLoader = self._modules.ConfigLoader
     self._missionsConfig = self._configLoader:LoadConfig("missions") or {}
     self._partyConfig = self._configLoader:LoadConfig("party") or {}
+    self._tradeConfig = self._configLoader:LoadConfig("trade") or {}
 
     -- Dependencies injected
 
@@ -135,7 +137,8 @@ function SettingsService:_createSettingsFolders(player)
                 nil,
                 (self._missionsConfig.player_tuning or {}).group_scale
             ),
-            TeamInvitePrivacy = "everyone",
+            TeamInvitePrivacy = "friends",
+            TradeInvitePrivacy = "friends",
         }
     end
 
@@ -180,6 +183,7 @@ function SettingsService:_createSettingsFolders(player)
     self:_applyEnemyLevelOffset(player)
     self:_applyTrialGroupScale(player)
     self:_applyTeamInvitePrivacy(player)
+    self:_applyTradeInvitePrivacy(player)
 
     self._logger:Info("✅ SETTINGS - Settings folders created successfully", {
         player = player.Name,
@@ -946,6 +950,40 @@ end
 
 function SettingsService:GetTeamInvitePrivacy(player)
     return self:_applyTeamInvitePrivacy(player)
+end
+
+function SettingsService:_applyTradeInvitePrivacy(player)
+    local data = self._dataService:GetData(player)
+    local mode = TradeLogic.invitePrivacy(
+        data and data.Settings and data.Settings.TradeInvitePrivacy,
+        self._tradeConfig
+    )
+    if data then
+        data.Settings = data.Settings or {}
+        data.Settings.TradeInvitePrivacy = mode
+    end
+    player:SetAttribute("TradeInvitePrivacy", mode)
+    return mode
+end
+
+function SettingsService:_setTradeInvitePrivacy(player, value)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+    data.Settings = data.Settings or {}
+    local mode = TradeLogic.invitePrivacy(value, self._tradeConfig)
+    data.Settings.TradeInvitePrivacy = mode
+    player:SetAttribute("TradeInvitePrivacy", mode)
+    return mode
+end
+
+function SettingsService:SetTradeInvitePrivacy(player, value)
+    return self:_setTradeInvitePrivacy(player, value)
+end
+
+function SettingsService:GetTradeInvitePrivacy(player)
+    return self:_applyTradeInvitePrivacy(player)
 end
 
 return SettingsService

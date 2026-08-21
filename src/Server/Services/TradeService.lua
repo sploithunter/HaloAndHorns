@@ -87,6 +87,36 @@ function TradeService:_sessionOf(userId)
     return id and self._sessions[id]
 end
 
+function TradeService:_privacyOf(player)
+    return TradeLogic.invitePrivacy(
+        player and player:GetAttribute("TradeInvitePrivacy"),
+        self._config
+    )
+end
+
+function TradeService:_areFriends(a, b)
+    if not (a and b) then
+        return false
+    end
+    local ok, result = pcall(function()
+        return a:IsFriendsWith(b.UserId)
+    end)
+    return ok and result == true
+end
+
+function TradeService:SetInvitePrivacy(player, mode)
+    local settings = self._modules and self._modules.SettingsService
+    if settings and settings.SetTradeInvitePrivacy then
+        local saved = settings:SetTradeInvitePrivacy(player, mode)
+        if saved then
+            return { ok = true, mode = self:_privacyOf(player) }
+        end
+    end
+    local sanitized = TradeLogic.invitePrivacy(mode, self._config)
+    player:SetAttribute("TradeInvitePrivacy", sanitized)
+    return { ok = true, mode = sanitized }
+end
+
 -- Per-recipient view: your side + the partner's side (offers + confirm flags).
 function TradeService:_view(session, forUserId)
     local otherId = (forUserId == session.a) and session.b or session.a
@@ -147,10 +177,18 @@ function TradeService:ListPlayers(player)
     local out = {}
     for _, other in ipairs(Players:GetPlayers()) do
         if other ~= player then
+            local privacy = self:_privacyOf(other)
+            local allowed, reason = TradeLogic.canSendInvite({
+                targetPrivacy = privacy,
+                areFriends = self:_areFriends(player, other),
+                config = self._config,
+            })
             table.insert(out, {
                 userId = other.UserId,
                 name = other.Name,
                 busy = self._playerSession[other.UserId] ~= nil,
+                privacy = TradeLogic.invitePrivacyLabel(privacy, self._config),
+                blockedReason = allowed and nil or reason,
             })
         end
     end
@@ -164,6 +202,14 @@ function TradeService:Request(player, targetUserId)
     local target = playerById(targetUserId)
     if not target then
         return { ok = false, reason = "player_not_found" }
+    end
+    local allowed, reason = TradeLogic.canSendInvite({
+        targetPrivacy = self:_privacyOf(target),
+        areFriends = self:_areFriends(player, target),
+        config = self._config,
+    })
+    if not allowed then
+        return { ok = false, reason = reason }
     end
     if self._playerSession[player.UserId] or self._playerSession[targetUserId] then
         return { ok = false, reason = "already_trading" }

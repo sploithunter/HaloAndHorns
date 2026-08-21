@@ -1647,7 +1647,7 @@ function GameAPIService:_registerCommands()
         decline = { desc = "Decline your pending team invite.", fn = "Decline" },
         leave = { desc = "Leave your team.", fn = "Leave" },
         set_invite_privacy = {
-            desc = "Choose who can send you team invites (everyone or friends).",
+            desc = "Choose who can send you team invites (everyone, friends, or off).",
             fn = "SetInvitePrivacy",
             arg = "mode",
         },
@@ -1736,6 +1736,15 @@ function GameAPIService:_registerCommands()
         description = "List other players in the server (trade targets).",
         handler = tradeAction(function(s, player)
             return s:ListPlayers(player)
+        end),
+    })
+    bus:register("trade.set_invite_privacy", {
+        description = "Choose who can send you trade requests (everyone, friends, or off).",
+        validate = function(args)
+            return Validators.fields(args, { mode = "string" })
+        end,
+        handler = tradeAction(function(s, player, args)
+            return s:SetInvitePrivacy(player, args.mode)
         end),
     })
     bus:register("trade.request", {

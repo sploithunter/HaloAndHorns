@@ -7,6 +7,9 @@
       canAddItem(category, item, config)        -> { ok, reason? }
       canExecute(offerA, offerB)                -> { ok, reason? }
       auditRecord(playerA, playerB, offerA, offerB, timestamp) -> table
+      invitePrivacy(value, config)              -> "everyone"|"friends"|"off"
+      invitePrivacyLabel(value, config)         -> string
+      canSendInvite(ctx)                        -> boolean, reason?
 
     An `offer` is { items = {...}, confirmed = boolean }. An `item` is
     { category = "pets"|"currencies"|"cosmetics", id, locked? }.
@@ -26,6 +29,64 @@ end
 
 function TradeLogic.inviteExpired(invite, now)
     return type(invite) ~= "table" or (tonumber(now) or 0) >= (tonumber(invite.expiresAt) or 0)
+end
+
+local function privacyModes(config)
+    return type(config) == "table"
+            and type(config.invite_privacy) == "table"
+            and config.invite_privacy
+        or nil
+end
+
+function TradeLogic.invitePrivacy(value, config)
+    local privacy = privacyModes(config)
+    local default = (privacy and type(privacy.default) == "string" and privacy.default) or "friends"
+    if
+        type(value) == "string"
+        and privacy
+        and type(privacy.modes) == "table"
+        and privacy.modes[value]
+    then
+        return value
+    end
+    if value == "everyone" or value == "friends" or value == "off" then
+        return value
+    end
+    if privacy and type(privacy.modes) == "table" and privacy.modes[default] then
+        return default
+    end
+    return "friends"
+end
+
+function TradeLogic.invitePrivacyLabel(value, config)
+    local id = TradeLogic.invitePrivacy(value, config)
+    local privacy = privacyModes(config)
+    local mode = privacy and type(privacy.modes) == "table" and privacy.modes[id]
+    if type(mode) == "table" and type(mode.list_label) == "string" then
+        return mode.list_label
+    end
+    if type(mode) == "table" and type(mode.display) == "string" then
+        return mode.display
+    end
+    if id == "everyone" then
+        return "Everyone"
+    elseif id == "off" then
+        return "Requests off"
+    end
+    return "Friends only"
+end
+
+-- ctx: targetPrivacy, areFriends, config
+function TradeLogic.canSendInvite(ctx)
+    ctx = type(ctx) == "table" and ctx or {}
+    local privacy = TradeLogic.invitePrivacy(ctx.targetPrivacy, ctx.config)
+    if privacy == "off" then
+        return false, "invites_off"
+    end
+    if privacy == "friends" and ctx.areFriends ~= true then
+        return false, "friends_only"
+    end
+    return true
 end
 
 function TradeLogic.canAddItem(category, item, config)

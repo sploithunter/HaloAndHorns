@@ -329,6 +329,10 @@ return {
         banner = { seconds = 5, color = { 255, 190, 75 } },
     },
 
+    team_request_expired = {
+        banner = { seconds = 5, color = { 255, 190, 75 } },
+    },
+
     team_request_in_range = {
         banner = { seconds = 5, color = { 255, 190, 75 } },
     },

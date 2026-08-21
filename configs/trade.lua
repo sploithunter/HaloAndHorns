@@ -11,6 +11,25 @@ return {
     -- Pending invitations are intentionally short-lived: unanswered prompts clear on both clients,
     -- the server rejects late responses, and the requester receives a timeout notice.
     invite_timeout_seconds = 30,
+    -- Who may send this player a trade request. The picker exposes all three modes and the server
+    -- independently enforces the recipient's saved choice.
+    invite_privacy = {
+        default = "friends",
+        modes = {
+            everyone = {
+                display = "Everyone",
+                list_label = "Everyone",
+            },
+            friends = {
+                display = "Friends only",
+                list_label = "Friends only",
+            },
+            off = {
+                display = "Off",
+                list_label = "Requests off",
+            },
+        },
+    },
     tradeable = {
         pets = true,
         currencies = false, -- gems are the exception, via tradeable_currencies below
