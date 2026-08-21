@@ -263,6 +263,8 @@ return function()
             expect(entries[11].id).to.equal("rocket_blue")
             expect(entries[11].kind).to.equal("robux")
             expect(entries[11].on_sale).to.equal(true)
+            expect(entries[11].pass).to.equal("hoverboard_rocket_blue")
+            expect(entries[11].product).to.equal(nil)
             expect(hoverboard.shop.catalog.rocket_blue.kind).to.equal("robux")
         end)
 

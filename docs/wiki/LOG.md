@@ -3843,3 +3843,13 @@ first-session cohort rates.
 - Reconnected Studio to `main` commit `64aadf5`. The live Boosts tab rendered
   only Double XP, Double Coins, and Titan Team; runtime projection reported
   zero rocket products, six rocket passes, and zero Pet Shop rocket passes.
+
+## 2026-08-21 — Kade preserves rocket Game Pass keys for live prices
+
+- Kade's shared catalog projection still copied the removed developer-product
+  key and dropped each rocket's `pass` key. Purchases used the raw config and
+  correctly prompted Game Passes, but projected cards received Roblox ID `0`,
+  so the client could not call `GetProductInfo` and stayed on the generic sale text.
+- Rocket cards now carry only their Game Pass config key through the catalog.
+  The server resolves the six live pass IDs and the client requests each pass
+  with `Enum.InfoType.GamePass`, keeping Roblox managed/regional pricing authoritative.
