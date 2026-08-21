@@ -7674,3 +7674,7 @@ first-session cohort rates.
   still works, while stale derived state or formal-team exemplaring cannot revoke earned travel.
 - Portal attempts made before profile readiness now say the character is loading. A rejected
   `LayerService:UseLayer` result is logged and shown instead of becoming a silent no-op.
+- Live Studio Play forced the reported bad state (`Level=15`, stale `EffectiveLevel=1`) on the
+  actual player and isolated the Home Heaven 2 `RealmPortalPrompt`. Holding E fired the real server
+  prompt, set `CurrentLayer=heaven_2` / `CurrentRealm=heaven`, and moved the character to Y≈4007;
+  the return portal restored base/Y≈6. Output contained no new runtime errors.
