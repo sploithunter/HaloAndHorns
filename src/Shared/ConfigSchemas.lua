@@ -114,7 +114,6 @@ local SCHEMAS = {
         final_plaza = "table",
         future_spokes = "table",
         stages = "table",
-        arch_lightning = "table",
         coming_soon = "table",
     }),
     gems = schema({ meshes = "table", textures = "table", default_color = "string" }),
