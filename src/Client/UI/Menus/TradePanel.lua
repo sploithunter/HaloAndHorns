@@ -200,7 +200,7 @@ function TradePanel.new()
     self.window = nil
     self.requestPopup = nil
     self.state = nil
-    self._inventoryPetCards = InventoryPanel.CreatePetCardRenderer({
+    self._inventoryCards = InventoryPanel.CreateItemCardRenderer({
         cardSize = TRADE_CARD_SIZE,
         loggerName = "TradeInventoryCards",
     })
@@ -371,6 +371,98 @@ local function inventoryPetCardItem(pet)
     item.variant = variant
     item.use3DModel = true
     return item
+end
+
+local ENHANCEMENT_ORIGIN_COLORS = {
+    geomancer = Color3.fromRGB(150, 230, 150),
+    pyromancer = Color3.fromRGB(255, 150, 120),
+    cryomancer = Color3.fromRGB(140, 200, 255),
+    sandwalker = Color3.fromRGB(240, 215, 130),
+}
+local ENHANCEMENT_DUAL_COLOR = Color3.fromRGB(196, 156, 255)
+local ENHANCEMENT_NATURAL_COLOR = Color3.fromRGB(205, 205, 215)
+
+local function inventoryEnhancementCardItem(item)
+    local enhancement = type(item.enh) == "table" and item.enh
+        or type(item.record) == "table" and item.record
+        or item
+    local origins = enhancement.origins or item.origins or {}
+    local typeName = enhancement.type or item.type
+    local single = #origins == 1
+    local rarity = (#origins == 0 and "Natural") or (single and "Single") or "Dual"
+    local color = (#origins == 0 and ENHANCEMENT_NATURAL_COLOR)
+        or (single and ENHANCEMENT_ORIGIN_COLORS[origins[1]])
+        or ENHANCEMENT_DUAL_COLOR
+    local shorts = {}
+    for _, origin in ipairs(origins) do
+        shorts[#shorts + 1] = origin:sub(1, 1):upper() .. origin:sub(2, 3)
+    end
+
+    return {
+        id = tostring(item.recordKey or item.uid or item.id),
+        uid = tostring(item.recordKey or item.uid or item.id),
+        name = typeName and (typeName:sub(1, 1):upper() .. typeName:sub(2))
+            or tostring(item.name or enhancement.name or "Enhancement"),
+        icon = "⚙️",
+        rarity = rarity,
+        rarityId = rarity:lower(),
+        color = color or ENHANCEMENT_NATURAL_COLOR,
+        category = "Enhancements",
+        count = tonumber(item.count or item.quantity or enhancement.quantity) or 1,
+        enhancement_type = typeName,
+        level = enhancement.level or item.level,
+        origins = origins,
+        origins_label = table.concat(shorts, "/"),
+        folder_source = "enhancements",
+    }
+end
+
+local function inventoryEggCardItem(item)
+    local record = type(item.record) == "table" and item.record or item
+    local eggId = item.id or record.id
+    local eggDef = PETS_CONFIG.egg_sources and PETS_CONFIG.egg_sources[eggId]
+    if eggDef and record.trial_reward_huge_chance ~= nil then
+        eggDef = table.clone(eggDef)
+        eggDef.huge = table.clone(eggDef.huge or {})
+        eggDef.huge.chance = record.trial_reward_huge_chance
+    end
+    local tier = tostring(item.variant or record.award_tier or record.variant or "basic"):lower()
+    local baseName = (eggDef and eggDef.name)
+        or tostring(item.name or record.name or eggId or "Egg")
+    local displayName = tier ~= "basic" and ((tier:gsub("^%l", string.upper)) .. " " .. baseName)
+        or baseName
+    local uid = tostring(item.recordKey or item.uid or record.uid or eggId)
+
+    return {
+        id = uid,
+        uid = uid,
+        name = displayName,
+        icon = "🥚",
+        image = eggDef and eggDef.image_id,
+        rarity = "Exclusive",
+        rarityId = "exclusive",
+        color = Color3.fromRGB(255, 215, 0),
+        category = "Eggs",
+        count = tonumber(item.count or item.quantity or record.quantity) or 1,
+        egg_def = eggDef,
+        variant = tier,
+        award_kind = record.award_kind,
+        award_id = record.award_id or item.award_id,
+        awarded_to_user_id = record.awarded_to_user_id,
+        trial_reward_stage = record.trial_reward_stage,
+        trial_reward_huge_chance = record.trial_reward_huge_chance,
+        icon_zoom = eggDef and eggDef.icon_zoom,
+        folder_source = "eggs",
+    }
+end
+
+local function inventoryTradeCardItem(item)
+    if item.category == "enhancements" then
+        return inventoryEnhancementCardItem(item)
+    elseif item.category == "eggs" then
+        return inventoryEggCardItem(item)
+    end
+    return inventoryPetCardItem(item)
 end
 
 local function tradeKindKey(item)
@@ -610,9 +702,9 @@ function TradePanel:Destroy()
         self._tradeUpdateConnection:Disconnect()
         self._tradeUpdateConnection = nil
     end
-    if self._inventoryPetCards then
-        self._inventoryPetCards:Destroy()
-        self._inventoryPetCards = nil
+    if self._inventoryCards then
+        self._inventoryCards:Destroy()
+        self._inventoryCards = nil
     end
 end
 
@@ -942,7 +1034,6 @@ end
 
 -- The live trade window uses the same shared shell and pet-card configuration as Inventory.
 -- Authoritative TradeUpdate packets PATCH this hierarchy; they never replace the window or grids.
-local PetBadge = require(script.Parent.Parent.PetBadge) -- shared enhancement-badge renderer (unified w/ inventory)
 local VARIANT_COLORS = { -- tooltip stroke accents only; cards use PetCardStyle chrome
     basic = Color3.fromRGB(120, 125, 140),
     golden = Color3.fromRGB(255, 200, 60),
@@ -1190,8 +1281,8 @@ function TradePanel:_petColumn(parent, spec)
     local head = label(
         col,
         "",
-        UDim2.new(1, -12, 0, 24),
-        UDim2.new(0, 8, 0, 6),
+        UDim2.new(1, -28, 0, 24),
+        UDim2.new(0, 14, 0, 6),
         COLORS.text,
         Enum.Font.GothamBold
     )
@@ -1206,7 +1297,7 @@ function TradePanel:_petColumn(parent, spec)
     local tabs = {}
     if spec.tabs then
         gridTop = 64
-        local tx = 8
+        local tx = 14
         for _, tabSpec in ipairs(spec.tabs) do
             local tabWidth = (tabSpec.label == "Enhancements") and 112 or 58
             local button, buttonLabel = Pill.button({
@@ -1237,8 +1328,8 @@ function TradePanel:_petColumn(parent, spec)
     if spec.scrollKey then
         grid:SetAttribute("TradeScrollKey", spec.scrollKey)
     end
-    grid.Size = UDim2.new(1, -12, 1, -(gridTop + 6 + gridBottomInset))
-    grid.Position = UDim2.new(0, 6, 0, gridTop)
+    grid.Size = UDim2.new(1, -24, 1, -(gridTop + 6 + gridBottomInset))
+    grid.Position = UDim2.new(0, 12, 0, gridTop)
     grid.BackgroundTransparency = 1
     grid.BorderSizePixel = 0
     grid.ScrollBarThickness = 4
@@ -1296,12 +1387,7 @@ function TradePanel:_updatePetColumn(view, titleText, items, opts)
 end
 
 function TradePanel:_tradeCard(parent, item, order, opts)
-    if item.category == "enhancements" then
-        return self:_enhCard(parent, item, order, opts)
-    elseif item.category == "eggs" then
-        return self:_eggCard(parent, item, order, opts)
-    end
-    return self:_petCard(parent, item, order, opts)
+    return self:_inventoryCard(parent, item, order, opts)
 end
 
 -- Symmetric gem bar pinned at a column's bottom. Its controller updates in place with the offer.
@@ -1391,165 +1477,14 @@ function TradePanel:_gemBar(col, mode)
     return controller
 end
 
-local function createQuantityBadge(card)
-    local badge = Instance.new("TextLabel")
-    badge.Name = "QtyLabel"
-    local width = math.max(12, math.floor(TRADE_CARD_SIZE.X * 0.28))
-    local height = math.max(10, math.floor(TRADE_CARD_SIZE.Y * 0.22))
-    local margin = math.max(2, math.floor(TRADE_CARD_SIZE.X * 0.06))
-    badge.Size = UDim2.fromOffset(width, height)
-    badge.Position = UDim2.new(1, -width - margin, 0, margin)
-    badge.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    badge.BackgroundTransparency = 0.15
-    badge.BorderSizePixel = 0
-    badge.TextColor3 = COLORS.text
-    badge.TextScaled = true
-    badge.Font = Enum.Font.GothamBold
-    badge.ZIndex = 108
-    badge.Visible = false
-    badge.Parent = card
-    corner(badge, 6)
-    return badge
-end
-
-function TradePanel:_eggCard(parent, item, order, opts)
-    local card = Instance.new("TextButton")
-    card.Name = "TradeEggCard"
-    card.Text = ""
-    card.Size = UDim2.fromOffset(TRADE_CARD_SIZE.X, TRADE_CARD_SIZE.Y)
-    card.LayoutOrder = order
-    card.BackgroundColor3 = Color3.fromRGB(35, 38, 50)
-    card.ZIndex = 103
-    card.Parent = parent
-    corner(card, 12)
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = VARIANT_COLORS[tostring(item.variant or "basic")] or COLORS.rowStroke
-    stroke.Thickness = 2
-    stroke.Parent = card
-
-    local icon = label(
-        card,
-        "🥚",
-        UDim2.new(1, 0, 0.68, 0),
-        UDim2.fromScale(0, 0.02),
-        COLORS.text,
-        Enum.Font.GothamBold
-    )
-    icon.ZIndex = 104
-    local name = label(
-        card,
-        "",
-        UDim2.new(1, -6, 0.3, 0),
-        UDim2.new(0, 3, 0.68, 0),
-        COLORS.text,
-        Enum.Font.GothamBold
-    )
-    name.TextWrapped = true
-    name.ZIndex = 105
-    local constraint = Instance.new("UITextSizeConstraint")
-    constraint.MaxTextSize = 12
-    constraint.Parent = name
-    local quantity = createQuantityBadge(card)
-
-    local controller = { frame = card, item = item, opts = opts }
-    card.Activated:Connect(function()
-        if controller.opts.onClick then
-            controller.opts.onClick(controller.item)
-        end
-    end)
-    function controller.update(controllerSelf, nextItem, nextOrder, nextOpts)
-        controllerSelf.item = nextItem
-        controllerSelf.opts = nextOpts
-        card.LayoutOrder = nextOrder
-        local clickable = nextOpts.onClick ~= nil
-        card.Active = clickable
-        card.AutoButtonColor = clickable
-        name.Text = tostring(nextItem.name or nextItem.id or "Egg")
-        local count = tonumber(nextItem.count or nextItem.quantity) or 1
-        quantity.Visible = count > 1
-        quantity.Text = "×" .. tostring(count)
-    end
-    function controller.destroy(_controllerSelf)
-        card:Destroy()
-    end
-    controller:update(item, order, opts)
-    return controller
-end
-
--- Enhancement cards reuse the inventory's PetBadge assembly and retain that assembly while counts
--- and offer membership change.
-function TradePanel:_enhCard(parent, item, order, opts)
-    local enhancement = item.enh or item
-    local card = Instance.new("TextButton")
-    card.Name = "TradeEnhancementCard"
-    card.Text = ""
-    card.Size = UDim2.fromOffset(TRADE_CARD_SIZE.X, TRADE_CARD_SIZE.Y)
-    card.LayoutOrder = order
-    card.BackgroundColor3 = COLORS.enh
-    card.ZIndex = 103
-    card.Parent = parent
-    corner(card, 12)
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = COLORS.rowStroke
-    stroke.Thickness = 2
-    stroke.Parent = card
-
-    PetBadge.createEnhancementBadge(card, {
-        record = {
-            type = enhancement.type,
-            origins = enhancement.origins or {},
-            level = enhancement.level,
-        },
-        size = UDim2.fromScale(0.68, 0.68),
-        position = UDim2.fromScale(0.5, 0.02),
-        anchor = Vector2.new(0.5, 0),
-        zindex = 104,
-    })
-    local name = label(
-        card,
-        "",
-        UDim2.new(1, -4, 0.28, 0),
-        UDim2.new(0, 2, 0.7, 0),
-        COLORS.text,
-        Enum.Font.GothamMedium
-    )
-    name.ZIndex = 105
-    local constraint = Instance.new("UITextSizeConstraint")
-    constraint.MaxTextSize = 12
-    constraint.Parent = name
-    local quantity = createQuantityBadge(card)
-
-    local controller = { frame = card, item = item, opts = opts }
-    card.Activated:Connect(function()
-        if controller.opts.onClick then
-            controller.opts.onClick(controller.item)
-        end
-    end)
-    function controller.update(controllerSelf, nextItem, nextOrder, nextOpts)
-        controllerSelf.item = nextItem
-        controllerSelf.opts = nextOpts
-        card.LayoutOrder = nextOrder
-        local clickable = nextOpts.onClick ~= nil
-        card.Active = clickable
-        card.AutoButtonColor = clickable
-        local current = nextItem.enh or nextItem
-        name.Text = tostring(nextItem.name or current.name or "Enhancement")
-        local count = tonumber(nextItem.count or nextItem.quantity) or 1
-        quantity.Visible = count > 1
-        quantity.Text = "×" .. tostring(count)
-    end
-    function controller.destroy(_controllerSelf)
-        card:Destroy()
-    end
-    controller:update(item, order, opts)
-    return controller
-end
-
--- The actual InventoryPanel pet-card renderer, embedded behind a trade-only hit target. Static
--- art, all badges, and both power numbers are built once; only count/offer/click state is patched.
-function TradePanel:_petCard(parent, pet, order, opts)
-    local card = self._inventoryPetCards:Create(inventoryPetCardItem(pet), order, parent)
-    card.Name = "TradePetCard"
+-- The actual InventoryPanel card renderer, embedded behind a trade-only hit target. Pets,
+-- enhancements, and eggs all take Inventory's one presentation path; Trade adds only offer state.
+function TradePanel:_inventoryCard(parent, item, order, opts)
+    local card = self._inventoryCards:Create(inventoryTradeCardItem(item), order, parent)
+    local categoryName = item.category == "enhancements" and "Enhancement"
+        or item.category == "eggs" and "Egg"
+        or "Pet"
+    card.Name = "Trade" .. categoryName .. "Card"
     local baseColor = card.BackgroundColor3
     local quantity = card:FindFirstChild("QtyLabel")
 
@@ -1561,20 +1496,6 @@ function TradePanel:_petCard(parent, pet, order, opts)
     hitTarget.AutoButtonColor = false
     hitTarget.ZIndex = 120
     hitTarget.Parent = card
-
-    local selected = Instance.new("TextLabel")
-    selected.Name = "OfferSelectionNumber"
-    selected.Size = UDim2.fromOffset(20, 18)
-    selected.Position = UDim2.new(0.5, -10, 0, 3)
-    selected.BackgroundColor3 = COLORS.accept
-    selected.BackgroundTransparency = 0.08
-    selected.TextColor3 = COLORS.text
-    selected.TextScaled = true
-    selected.Font = Enum.Font.GothamBold
-    selected.ZIndex = 121
-    selected.Visible = false
-    selected.Parent = card
-    corner(selected, 7)
 
     local offered = Instance.new("TextLabel")
     offered.Name = "OfferedCount"
@@ -1605,7 +1526,7 @@ function TradePanel:_petCard(parent, pet, order, opts)
     locked.Parent = card
     corner(locked, 10)
 
-    local controller = { frame = card, item = pet, opts = opts }
+    local controller = { frame = card, item = item, opts = opts }
     hitTarget.MouseEnter:Connect(function()
         self:_showCardTooltip(card, controller.item)
         if controller.opts.onClick and not controller.item.locked then
@@ -1623,17 +1544,17 @@ function TradePanel:_petCard(parent, pet, order, opts)
         end
     end)
 
-    function controller.update(controllerSelf, nextPet, nextOrder, nextOpts)
-        controllerSelf.item = nextPet
+    function controller.update(controllerSelf, nextItem, nextOrder, nextOpts)
+        controllerSelf.item = nextItem
         controllerSelf.opts = nextOpts
         card.LayoutOrder = nextOrder
-        local record = type(nextPet.record) == "table" and nextPet.record or nextPet
-        local isLocked = nextPet.locked == true or record.locked == true
+        local record = type(nextItem.record) == "table" and nextItem.record or nextItem
+        local isLocked = nextItem.locked == true or record.locked == true
         local clickable = nextOpts.onClick ~= nil and not isLocked
         hitTarget.Active = clickable
         hitTarget.Selectable = clickable
 
-        local count = tonumber(nextPet.count) or tonumber(nextPet.quantity) or 1
+        local count = tonumber(nextItem.count) or tonumber(nextItem.quantity) or 1
         if quantity then
             quantity.Visible = count > 1
             quantity.Text = "×" .. tostring(count)
@@ -1641,12 +1562,10 @@ function TradePanel:_petCard(parent, pet, order, opts)
 
         local offeredCount = 0
         if nextOpts.offeredCount and nextOpts.kindKey then
-            offeredCount = nextOpts.offeredCount[nextOpts.kindKey(nextPet)] or 0
+            offeredCount = nextOpts.offeredCount[nextOpts.kindKey(nextItem)] or 0
         end
         offered.Visible = offeredCount > 0 and nextOpts.offerMarker ~= true
         offered.Text = tostring(offeredCount) .. " offered"
-        selected.Visible = nextOpts.offerMarker == true
-        selected.Text = "#" .. tostring(nextOrder)
         locked.Visible = isLocked
     end
     function controller.destroy(_controllerSelf)
@@ -1654,11 +1573,11 @@ function TradePanel:_petCard(parent, pet, order, opts)
             card:Destroy()
         end
     end
-    controller:update(pet, order, opts)
+    controller:update(item, order, opts)
     return controller
 end
 
-function TradePanel:_showCardTooltip(card, pet)
+function TradePanel:_showCardTooltip(card, item)
     self:_hideCardTooltip()
     local gui = self:_ensureLiveGui()
     local tip = Instance.new("Frame")
@@ -1671,7 +1590,7 @@ function TradePanel:_showCardTooltip(card, pet)
     tip.Parent = gui
     corner(tip, 8)
     local st = Instance.new("UIStroke")
-    st.Color = VARIANT_COLORS[pet.variant] or VARIANT_COLORS.basic
+    st.Color = VARIANT_COLORS[item.variant] or VARIANT_COLORS.basic
     st.Thickness = 2
     st.Parent = tip
     local pad = Instance.new("UIPadding")
@@ -1684,27 +1603,46 @@ function TradePanel:_showCardTooltip(card, pet)
     list.Padding = UDim.new(0, 2)
     list.Parent = tip
 
-    local lines = {
-        petDisplayName(pet) .. (pet.serial and (" #" .. tostring(pet.serial)) or ""),
-        "Variant: " .. tostring(pet.variant or "basic"),
-    }
-    local qty = tonumber(pet.quantity) or 1
+    local lines
+    if item.category == "eggs" then
+        local egg = inventoryEggCardItem(item)
+        lines = {
+            egg.name,
+            "Held egg · tradeable",
+            "Variant: " .. tostring(egg.variant or "basic"),
+        }
+    elseif item.category == "enhancements" then
+        local enhancement = inventoryEnhancementCardItem(item)
+        lines = {
+            enhancement.name,
+            "Grade: " .. tostring(enhancement.rarity),
+            "Level: " .. tostring(enhancement.level or "?"),
+            "Origins: "
+                .. (#enhancement.origins > 0 and table.concat(enhancement.origins, " + ") or "None"),
+        }
+    else
+        lines = {
+            petDisplayName(item) .. (item.serial and (" #" .. tostring(item.serial)) or ""),
+            "Variant: " .. tostring(item.variant or "basic"),
+        }
+    end
+    local qty = tonumber(item.quantity) or 1
     if qty > 1 then
         lines[#lines + 1] = "Owned: ×" .. qty
     end
-    if pet.count and pet.count > 1 then
-        lines[#lines + 1] = "In offer: ×" .. pet.count
+    if item.count and item.count > 1 then
+        lines[#lines + 1] = "In offer: ×" .. item.count
     end
-    if pet.level then
-        lines[#lines + 1] = "Level: " .. tostring(pet.level)
+    if item.category ~= "enhancements" and item.level then
+        lines[#lines + 1] = "Level: " .. tostring(item.level)
     end
-    if pet.element and pet.element ~= "neutral" then
-        lines[#lines + 1] = "Element: " .. tostring(pet.element)
+    if item.element and item.element ~= "neutral" then
+        lines[#lines + 1] = "Element: " .. tostring(item.element)
     end
-    if pet.huge then
+    if item.huge then
         lines[#lines + 1] = "HUGE"
     end
-    if pet.locked then
+    if item.locked then
         lines[#lines + 1] = "🔒 Locked — can't be traded"
     end
     for i, text in ipairs(lines) do

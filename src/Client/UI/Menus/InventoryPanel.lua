@@ -9294,11 +9294,11 @@ function InventoryPanel:_applyEquippedStyling(itemFrame, isEquipped, originalCol
     end
 end
 
--- Read-only adapter for inventory-style pet cards embedded in another live UI (currently Trade).
--- It deliberately calls _createItemFrameInto instead of maintaining a second pet-card renderer:
--- archetype/targeting/support/enchant badges, thumbnail policy, and power text therefore remain
--- identical to Inventory. The host owns selection/click behavior and keyed lifetime.
-function InventoryPanel.CreatePetCardRenderer(options)
+-- Read-only adapter for inventory cards embedded in another live UI (currently Trade). It
+-- deliberately calls _createItemFrameInto instead of maintaining category-specific duplicates:
+-- pet badges/power, enhancement badges, egg art, rarity chrome, and future card presentation all
+-- remain identical to Inventory. The host owns selection/click behavior and keyed lifetime.
+function InventoryPanel.CreateItemCardRenderer(options)
     options = options or {}
     local renderer = setmetatable({
         logger = LoggerWrapper.new(options.loggerName or "InventoryPetCardRenderer"),
@@ -9333,6 +9333,9 @@ function InventoryPanel.CreatePetCardRenderer(options)
 
     return renderer
 end
+
+-- Compatibility for callers released with the first pet-only version of the adapter.
+InventoryPanel.CreatePetCardRenderer = InventoryPanel.CreateItemCardRenderer
 
 function InventoryPanel:Destroy()
     self:Hide()

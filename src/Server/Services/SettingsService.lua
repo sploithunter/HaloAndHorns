@@ -941,6 +941,8 @@ function SettingsService:_setTeamInvitePrivacy(player, value)
     local mode = PartyMath.invitePrivacy(value, self._partyConfig)
     data.Settings.TeamInvitePrivacy = mode
     player:SetAttribute("TeamInvitePrivacy", mode)
+    -- Social privacy must survive an immediate server reboot, not merely the next periodic save.
+    self._dataService:RequestSave(player, "team_invite_privacy", { debounceSeconds = 0 })
     return mode
 end
 
@@ -975,6 +977,9 @@ function SettingsService:_setTradeInvitePrivacy(player, value)
     local mode = TradeLogic.invitePrivacy(value, self._tradeConfig)
     data.Settings.TradeInvitePrivacy = mode
     player:SetAttribute("TradeInvitePrivacy", mode)
+    -- This setting is a user-facing access control. Commit it before acknowledging the picker so
+    -- a quick leave/reboot cannot silently restore Friends Only.
+    self._dataService:RequestSave(player, "trade_invite_privacy", { debounceSeconds = 0 })
     return mode
 end
 
