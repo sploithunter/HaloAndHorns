@@ -133,6 +133,7 @@ function AwardDeliveryService:_deliver(player, profile, message, processed)
     local notification = type(award.notification) == "table" and award.notification or {}
     fireGameEvent(player, notification.event or "award_delivered", {
         name = notification.name or "🎁 Your award has arrived!",
+        title = notification.title or "Award Received!",
         awardId = award.id,
         source = award.source,
         granted = result.granted,

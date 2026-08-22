@@ -16,6 +16,19 @@ local function advance(state, rank, now)
     })
 end
 
+local function advanceFixed(state, rank, now, startedAt)
+    return WindowAward.advance(state, rank and {
+        rank = rank,
+        window_started_at = startedAt,
+    } or nil, {
+        now = now,
+        window_seconds = 300,
+        board_id = "range_current",
+        board_name = "The Range",
+        tiers = TIERS,
+    })
+end
+
 return function()
     describe("LeaderboardWindowAward", function()
         it("keeps the lowest numeric rank reached during the rolling window", function()
@@ -64,6 +77,18 @@ return function()
             expect(state.pending.rank).to.equal(10)
             expect(state.pending.bundle.currencies.gems).to.equal(25)
         end)
+
+        it(
+            "aligns an entrant to the public board round rather than first observation time",
+            function()
+                local state = advanceFixed(nil, 4, 275, 0)
+                expect(state.active.started_at).to.equal(0)
+                state = advanceFixed(state, nil, 300, 300)
+                expect(state.active).to.equal(nil)
+                expect(state.pending.id).to.equal("leaderboard:range_current:0")
+                expect(state.pending.rank).to.equal(4)
+            end
+        )
 
         it("freezes an expired active window while an older outbox award is pending", function()
             local state = advance(nil, 1, 100)

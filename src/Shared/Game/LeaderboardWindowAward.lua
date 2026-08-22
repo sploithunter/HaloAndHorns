@@ -91,12 +91,15 @@ function LeaderboardWindowAward.advance(state, observation, options)
     end
 
     local rank = positiveInteger(observation and observation.rank)
+    local observedWindowStart = observation
+            and math.max(0, math.floor(tonumber(observation.window_started_at) or now))
+        or now
     -- One outbox slot is deliberate. If a prior award cannot queue for longer than a full
     -- window, freeze the expired placement rather than letting later ranks leak into it.
     if rank and not blockedByOlderPending then
         if not active then
             active = {
-                started_at = now,
+                started_at = observedWindowStart,
                 best_rank = rank,
             }
             nextState.active = active

@@ -10,11 +10,13 @@ return {
     no_pet_revives = true,
     wipe_ends_run = true,
 
-    -- Current boards: best cleared room in this sliding window.
+    -- Current boards: best cleared room in one fixed, clock-aligned round.
     -- Persist GameData.ChallengeRuns.<mode>.recent only when a run exists.
     leaderboard = {
-        -- Production is 48 hours. TEMP 30 minutes so we can exercise settlement + return delivery.
+        -- Production is 48 hours. TEMP 30 minutes (:00/:30) so we can exercise
+        -- settlement + return delivery without letting a public board live forever.
         window_seconds = 30 * 60,
+        fixed_rounds = true,
         recent_cap = 48,
         -- Expire stale window scores: server start, BindToClose, and this interval.
         sweep_seconds = 5 * 60,
@@ -49,7 +51,7 @@ return {
                     "XP pays at your real level, not 50.",
                     "Room 1 is two whelps. Maps change after that.",
                     "Pick an origin kit and a loaned squad.",
-                    "Best room in the last 30 minutes ranks the board.",
+                    "Best room this award round ranks the board.",
                 },
             },
             -- Room 1 teaches. Room 2 keeps two whelps but grows the map.
@@ -211,7 +213,7 @@ return {
                     "Teams are allowed.",
                     "Room 1 is two whelps. Maps change after that.",
                     "Easier rooms than The Range.",
-                    "Best room in the last 30 minutes ranks the board.",
+                    "Best room this award round ranks the board.",
                 },
             },
             curve = {

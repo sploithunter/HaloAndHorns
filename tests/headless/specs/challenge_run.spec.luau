@@ -180,6 +180,20 @@ return function()
             expect(ChallengeRun.windowBest(expired.recent, now, window)).to.equal(0)
         end)
 
+        it("keeps fixed leaderboard rounds clock-aligned and excludes the prior round", function()
+            local window = 30 * 60
+            local now = 3 * window + 120
+            expect(ChallengeRun.fixedWindowStart(now, window)).to.equal(3 * window)
+
+            local best, startedAt = ChallengeRun.fixedWindowBest({
+                { room = 30, at = 3 * window - 1 },
+                { room = 12, at = 3 * window },
+                { room = 18, at = now },
+            }, now, window)
+            expect(startedAt).to.equal(3 * window)
+            expect(best).to.equal(18)
+        end)
+
         it("treats a fully downed squad as a wipe and blocks revives", function()
             expect(ChallengeRun.squadWiped({})).to.equal(false)
             expect(ChallengeRun.squadWiped({ { downed = true }, { downed = false } })).to.equal(

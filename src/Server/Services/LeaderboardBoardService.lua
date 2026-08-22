@@ -1,4 +1,5 @@
 local CollectionService = game:GetService("CollectionService")
+local RunService = game:GetService("RunService")
 
 local TAG = "LeaderboardBoard"
 local GUIDE_TAG = "ChallengeGuide"
@@ -87,6 +88,14 @@ function LeaderboardBoardService:Start()
     self._leaderboards.SnapshotChanged:Connect(function(boardId, snapshot)
         self:_renderBoard(boardId, snapshot)
     end)
+    self._countdownElapsed = 0
+    RunService.Heartbeat:Connect(function(deltaTime)
+        self._countdownElapsed += deltaTime
+        if self._countdownElapsed >= 1 then
+            self._countdownElapsed %= 1
+            self:_updateCountdowns(os.time())
+        end
+    end)
 end
 
 function LeaderboardBoardService:_screenOf(host)
@@ -139,11 +148,12 @@ function LeaderboardBoardService:_bind(host)
     header.BorderSizePixel = 0
     header.Parent = root
 
+    local isChallenge = definition.score and definition.score.kind == "challenge_window"
     label(
         header,
         "Title",
         UDim2.fromOffset(32, 10),
-        UDim2.new(1, -64, 0, 54),
+        UDim2.new(1, isChallenge and -264 or -64, 0, 54),
         definition.display_name,
         42
     )
@@ -157,6 +167,19 @@ function LeaderboardBoardService:_bind(host)
     )
     subtitle.Font = Enum.Font.Gotham
     subtitle.TextColor3 = Color3.fromRGB(208, 215, 232)
+    if isChallenge then
+        local countdown = label(
+            header,
+            "ResetClock",
+            UDim2.new(1, -242, 0, 18),
+            UDim2.fromOffset(214, 34),
+            "RESET IN --:--:--",
+            19,
+            Enum.TextXAlignment.Right
+        )
+        countdown.TextColor3 =
+            color(definition.style and definition.style.accent, Color3.fromRGB(255, 205, 70))
+    end
 
     local rows = Instance.new("Frame")
     rows.Name = "Rows"
@@ -202,8 +225,40 @@ function LeaderboardBoardService:_bind(host)
     footer.Font = Enum.Font.Gotham
     footer.TextColor3 = Color3.fromRGB(154, 164, 187)
 
-    self._bindings[host] = { boardId = boardId, root = root }
+    self._bindings[host] = {
+        boardId = boardId,
+        root = root,
+        isChallenge = isChallenge,
+        roundStartedAt = nil,
+    }
     self:_renderBinding(self._bindings[host], self._leaderboards:GetSnapshot(boardId))
+end
+
+function LeaderboardBoardService:_roundSeconds()
+    local leaderboard = self._challengeConfig and self._challengeConfig.leaderboard
+    return math.max(1, math.floor(tonumber(leaderboard and leaderboard.window_seconds) or 1))
+end
+
+function LeaderboardBoardService:_countdownText(roundStartedAt, now)
+    local remaining = math.max(0, roundStartedAt + self:_roundSeconds() - now)
+    local hours = math.floor(remaining / 3600)
+    local minutes = math.floor((remaining % 3600) / 60)
+    local seconds = remaining % 60
+    return string.format("RESET IN %02d:%02d:%02d", hours, minutes, seconds)
+end
+
+function LeaderboardBoardService:_updateCountdowns(now)
+    for host, binding in pairs(self._bindings) do
+        if not host.Parent then
+            self._bindings[host] = nil
+        elseif binding.isChallenge and binding.roundStartedAt then
+            local header = binding.root:FindFirstChild("Header")
+            local clock = header and header:FindFirstChild("ResetClock")
+            if clock then
+                clock.Text = self:_countdownText(binding.roundStartedAt, now)
+            end
+        end
+    end
 end
 
 function LeaderboardBoardService:_surfaceFace(screen, host)
@@ -279,6 +334,12 @@ function LeaderboardBoardService:_renderBoard(boardId, snapshot)
 end
 
 function LeaderboardBoardService:_renderBinding(binding, snapshot)
+    if binding.isChallenge then
+        binding.roundStartedAt = math.floor(tonumber(snapshot and snapshot.roundStartedAt) or 0)
+        if binding.roundStartedAt > 0 then
+            self:_updateCountdowns(os.time())
+        end
+    end
     local rows = binding.root:FindFirstChild("Rows")
     local entries = snapshot and snapshot.entries or {}
     local medalColors = {

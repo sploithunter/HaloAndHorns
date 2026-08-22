@@ -23,6 +23,10 @@ local function positiveInteger(value, fallback)
     return math.floor(number)
 end
 
+local function isChallengeScore(score)
+    return type(score) == "table" and score.kind == "challenge_window"
+end
+
 function LeaderboardService:Init()
     self._logger = self._modules.Logger
     self._configLoader = self._modules.ConfigLoader
@@ -53,6 +57,7 @@ function LeaderboardService:Init()
     self._pendingRefresh = {}
     self._lastPublished = {}
     self._pendingWrites = 0
+    self._challengeRoundStarts = {}
     self.SnapshotChanged = Signal.new()
 
     self._internalAccounts = self._configLoader:LoadConfig("internal_accounts")
@@ -71,7 +76,7 @@ function LeaderboardService:Init()
         if score.kind == "counter" then
             self._counterBoards[score.counter] = self._counterBoards[score.counter] or {}
             table.insert(self._counterBoards[score.counter], board)
-        elseif score.kind == "challenge_window" then
+        elseif isChallengeScore(score) then
             table.insert(self._challengeBoards, board)
         else
             table.insert(self._derivedBoards, board)
@@ -101,6 +106,8 @@ function LeaderboardService:Init()
 end
 
 function LeaderboardService:Start()
+    self:_rotateChallengeRounds(os.time(), false)
+
     Players.PlayerAdded:Connect(function(player)
         task.spawn(function()
             self:_waitForDataAndRefresh(player)
@@ -109,7 +116,8 @@ function LeaderboardService:Start()
 
     Players.PlayerRemoving:Connect(function(player)
         -- Origin boards still replace their ordered key on leave. Challenge
-        -- window scores are written when a run ends, not on player exit.
+        -- scores remain for the full award round, even while the entrant is
+        -- offline, and disappear only when the next fixed round begins.
         self:RefreshPlayer(player, true, true)
         for boardId in pairs(self._liveValues) do
             self._liveValues[boardId][player.UserId] = nil
@@ -138,6 +146,27 @@ function LeaderboardService:Start()
             self:RefreshPlayer(player, true, true)
         end
     end)
+end
+
+function LeaderboardService:_fixedChallengeRounds()
+    local leaderboard = self._challengeConfig and self._challengeConfig.leaderboard
+    return type(leaderboard) == "table" and leaderboard.fixed_rounds == true
+end
+
+function LeaderboardService:_challengeRoundStart(board, now)
+    if not isChallengeScore(self:_scoreDefinition(board)) or not self:_fixedChallengeRounds() then
+        return nil
+    end
+    local window = ChallengeRun.leaderboardWindow(self._challengeConfig)
+    return ChallengeRun.fixedWindowStart(now or os.time(), window)
+end
+
+function LeaderboardService:_publicationKey(board, userId)
+    local roundStart = self:_challengeRoundStart(board, os.time())
+    if roundStart then
+        return string.format("%s:%d:%d", board.id, roundStart, userId)
+    end
+    return board.id .. ":" .. tostring(userId)
 end
 
 function LeaderboardService:_scoreDefinition(board)
@@ -185,13 +214,16 @@ function LeaderboardService:_calculate(board, player)
         return LeaderboardScoring.strongestLegalSquad(data, slots, function(record)
             return self:_petPower(record)
         end)
-    elseif score.kind == "challenge_window" then
+    elseif isChallengeScore(score) then
         local window = ChallengeRun.leaderboardWindow(self._challengeConfig)
         if tonumber(score.window_seconds) then
             window = math.max(1, math.floor(score.window_seconds))
         end
         local runs = data.GameData and data.GameData.ChallengeRuns
         local rec = type(runs) == "table" and runs[score.mode]
+        if self:_fixedChallengeRounds() then
+            return ChallengeRun.fixedWindowBest(rec and rec.recent, os.time(), window)
+        end
         return ChallengeRun.windowBest(rec and rec.recent, os.time(), window)
     end
     return 0
@@ -241,7 +273,7 @@ end
 
 function LeaderboardService:RefreshPlayer(player, force, skipChallenge)
     for _, board in ipairs(self._config.boards or {}) do
-        if skipChallenge and self:_scoreDefinition(board).kind == "challenge_window" then
+        if skipChallenge and isChallengeScore(self:_scoreDefinition(board)) then
             -- run persist already published this score
         else
             self:_refreshBoardForPlayer(board, player, force == true)
@@ -263,6 +295,32 @@ function LeaderboardService:_startChallengeWindowSweep()
     task.spawn(function()
         self:_sweepChallengeWindows(true)
     end)
+end
+
+function LeaderboardService:_rotateChallengeRounds(now, requestReads)
+    if not self:_fixedChallengeRounds() then
+        return
+    end
+    for _, board in ipairs(self._challengeBoards) do
+        local roundStart = self:_challengeRoundStart(board, now)
+        if roundStart and self._challengeRoundStarts[board.id] ~= roundStart then
+            self._challengeRoundStarts[board.id] = roundStart
+            self._liveValues[board.id] = {}
+            self._cachedGlobal[board.id] = nil
+            self._cachedGlobalTop100[board.id] = nil
+            for key, pending in pairs(self._pendingPublish) do
+                if pending.board == board then
+                    self._pendingPublish[key] = nil
+                end
+            end
+            self:_broadcast(board.id)
+            if requestReads then
+                task.spawn(function()
+                    self:_readGlobalBoard(board)
+                end)
+            end
+        end
+    end
 end
 
 function LeaderboardService:_sweepChallengeWindows(force)
@@ -370,6 +428,7 @@ function LeaderboardService:GetSnapshot(boardId)
         source = source,
         entries = entries,
         updatedAt = os.time(),
+        roundStartedAt = self:_challengeRoundStart(board, os.time()),
     }
 end
 
@@ -429,22 +488,30 @@ function LeaderboardService:_studioMayReadGlobal()
 end
 
 function LeaderboardService:_openGlobalStore(board)
-    if self._globalStores[board.id] ~= nil then
-        return self._globalStores[board.id] or nil
-    end
     local global = board.global or {}
+    local storeName = global.ordered_store
+    local roundStart = self:_challengeRoundStart(board, os.time())
+    if roundStart then
+        -- A new logical OrderedDataStore each round makes the reset atomic and
+        -- bounded. Old stores may age out naturally; they are never read again.
+        storeName = string.format("%s_r%d", tostring(storeName), roundStart)
+    end
+    if self._globalStores[storeName] ~= nil then
+        return self._globalStores[storeName] or nil
+    end
     local ok, result = pcall(function()
-        return DataStoreService:GetOrderedDataStore(global.ordered_store)
+        return DataStoreService:GetOrderedDataStore(storeName)
     end)
-    self._globalStores[board.id] = ok and result or false
+    self._globalStores[storeName] = ok and result or false
     if not ok then
         self._logger:Warn("Failed to open ordered leaderboard store", {
             context = "LeaderboardService",
             board = board.id,
+            store = storeName,
             error = tostring(result),
         })
     end
-    return self._globalStores[board.id] or nil
+    return self._globalStores[storeName] or nil
 end
 
 function LeaderboardService:_getGlobalReadStore(board)
@@ -484,7 +551,7 @@ function LeaderboardService:_scheduleGlobalValue(board, userId, value, force)
         return
     end
 
-    local key = board.id .. ":" .. tostring(userId)
+    local key = self:_publicationKey(board, userId)
     local numericValue = math.max(0, math.floor((tonumber(value) or 0) + 0.5))
     self._publishGeneration[key] = (self._publishGeneration[key] or 0) + 1
     local generation = self._publishGeneration[key]
@@ -520,7 +587,7 @@ function LeaderboardService:_publishNow(board, store, userId, value, key, genera
     self._pendingWrites += 1
     local score = self:_scoreDefinition(board)
     local ok, errorMessage = pcall(function()
-        if value <= 0 and score.kind == "challenge_window" then
+        if value <= 0 and isChallengeScore(score) then
             store:RemoveAsync(tostring(userId))
         else
             store:SetAsync(tostring(userId), value)
@@ -529,6 +596,14 @@ function LeaderboardService:_publishNow(board, store, userId, value, key, genera
     self._pendingWrites -= 1
     if ok then
         self._lastPublished[key] = value
+        if value <= 0 and isChallengeScore(score) then
+            self._cachedGlobal[board.id] = nil
+            self._cachedGlobalTop100[board.id] = nil
+            self:_broadcast(board.id)
+            task.spawn(function()
+                self:_readGlobalBoard(board)
+            end)
+        end
     else
         self._logger:Warn("Failed to publish leaderboard value", {
             context = "LeaderboardService",
@@ -555,6 +630,7 @@ function LeaderboardService:_nameForUserId(userId)
 end
 
 function LeaderboardService:_readGlobalBoard(board)
+    local requestedRoundStart = self:_challengeRoundStart(board, os.time())
     local store = self:_getGlobalReadStore(board)
     if not store then
         self:_broadcast(board.id)
@@ -571,6 +647,14 @@ function LeaderboardService:_readGlobalBoard(board)
             error = tostring(pageOrError),
         })
         self:_broadcast(board.id)
+        return
+    end
+    if requestedRoundStart ~= self:_challengeRoundStart(board, os.time()) then
+        -- The datastore read crossed a reset boundary. Never let the completed
+        -- old-round request repopulate the freshly cleared board.
+        task.spawn(function()
+            self:_readGlobalBoard(board)
+        end)
         return
     end
 
@@ -634,6 +718,8 @@ function LeaderboardService:_heartbeat(deltaTime)
             )
         end
     end
+
+    self:_rotateChallengeRounds(os.time(), true)
 
     local _, _, sweepSeconds = ChallengeRun.leaderboardWindow(self._challengeConfig)
     self._challengeSweepElapsed = (self._challengeSweepElapsed or 0) + deltaTime

@@ -240,13 +240,13 @@ return {
                 ordered_store = "LB_EggsHatched_v1",
             },
         },
-        -- Current Range / Training Ground: best cleared room in the sliding
-        -- window from configs/challenge_runs.lua leaderboard.window_seconds.
+        -- Current Range / Training Ground: best cleared room in the fixed,
+        -- clock-aligned round from configs/challenge_runs.lua.
         -- No People-list title and no podium yet (backend first).
         {
             id = "range_current",
             display_name = "The Range",
-            subtitle = "Best room in the last 30 minutes",
+            subtitle = "Current award round",
             style = { accent = { 232, 176, 72 }, header = { 72, 48, 18 } },
             score = { kind = "challenge_window", mode = "range" },
             sort = "desc",
@@ -271,7 +271,7 @@ return {
         {
             id = "training_ground_current",
             display_name = "Training Ground",
-            subtitle = "Best room in the last 30 minutes",
+            subtitle = "Current award round",
             style = { accent = { 120, 196, 96 }, header = { 28, 56, 32 } },
             score = { kind = "challenge_window", mode = "training_ground" },
             sort = "desc",
