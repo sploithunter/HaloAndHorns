@@ -76,6 +76,21 @@ function Pill.applyTo(obj, opts)
     return obj
 end
 
+-- Recolor an existing pill without rebuilding its children. Stateful menus use this for tabs and
+-- confirm buttons so a server update changes only paint/text and never tears down the control.
+function Pill.recolor(obj, color, opts)
+    opts = opts or {}
+    obj.BackgroundColor3 = color
+    local gradient = obj:FindFirstChildOfClass("UIGradient")
+    if gradient then
+        gradient.Color = ColorSequence.new(opts.gradientTop or lighten(color, 60), color)
+    end
+    local stroke = obj:FindFirstChildOfClass("UIStroke")
+    if stroke then
+        stroke.Color = opts.strokeColor or lighten(color, 80)
+    end
+end
+
 -- A non-interactive capsule (Frame). Returns the Frame.
 function Pill.frame(opts)
     opts = opts or {}

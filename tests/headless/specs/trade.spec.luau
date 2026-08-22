@@ -49,34 +49,61 @@ return function()
     end)
 
     describe("trade picker view stability", function()
-        it("preserves each keyed column scroll position across authoritative updates", function()
+        it("reconciles keyed columns without replacing the live trade window", function()
             local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
+            expect(string.find(panel, "KeyedCardGrid.new(grid", 1, true) ~= nil).to.equal(true)
             expect(
-                string.find(panel, "function TradePanel:_captureScrollPositions()", 1, true) ~= nil
+                string.find(panel, "view.cards:update(items, opts.keyFor, opts)", 1, true) ~= nil
             ).to.equal(true)
             expect(
-                string.find(panel, "function TradePanel:_restoreScrollPositions", 1, true) ~= nil
+                string.find(
+                    panel,
+                    "if not (self.window and self.window.Parent and self._tradeView) then",
+                    1,
+                    true
+                ) ~= nil
             ).to.equal(true)
-            expect(string.find(panel, 'scrollKey = "source:" .. self._sourceTab', 1, true) ~= nil).to.equal(
+
+            local renderStart =
+                string.find(panel, "function TradePanel:_renderWindow(state)", 1, true)
+            local renderEnd = string.find(
+                panel,
+                "function TradePanel:_petColumn(parent, spec)",
+                renderStart,
                 true
             )
-            expect(string.find(panel, 'scrollKey = "your-offer"', 1, true) ~= nil).to.equal(true)
-            expect(string.find(panel, 'scrollKey = "their-offer"', 1, true) ~= nil).to.equal(true)
-            expect(
-                string.find(panel, "self:_restoreScrollPositions(win, scrollPositions)", 1, true)
-                    ~= nil
-            ).to.equal(true)
+            local renderBody = string.sub(panel, renderStart, renderEnd - 1)
+            expect(string.find(renderBody, "self:_closeWindow()", 1, true)).to.equal(nil)
         end)
 
-        it("numbers selected offer cards while preserving duplicate counts", function()
+        it("patches offer markers and duplicate counts on retained cards", function()
             local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
             expect(string.find(panel, 'selected.Name = "OfferSelectionNumber"', 1, true) ~= nil).to.equal(
                 true
             )
-            expect(string.find(panel, 'selected.Text = "#" .. tostring(order)', 1, true) ~= nil).to.equal(
+            expect(string.find(panel, 'selected.Text = "#" .. tostring(nextOrder)', 1, true) ~= nil).to.equal(
                 true
             )
-            expect(string.find(panel, "local badgeN = pet.count", 1, true) ~= nil).to.equal(true)
+            expect(
+                string.find(panel, "quantity.Visible = count ~= nil and count > 1", 1, true) ~= nil
+            ).to.equal(true)
+        end)
+
+        it("uses the shared inventory shell, card metrics, and pet chrome", function()
+            local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
+            expect(string.find(panel, "PanelChrome.build(gui, {", 1, true) ~= nil).to.equal(true)
+            expect(string.find(panel, "UI_CONFIG.panel_configs.inventory_panel", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(
+                string.find(
+                    panel,
+                    "PetCardStyle.applyChrome(card, rarityId, pet.variant, pet.id)",
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(string.find(panel, "petDisplayName(nextPet)", 1, true) ~= nil).to.equal(true)
         end)
     end)
 
