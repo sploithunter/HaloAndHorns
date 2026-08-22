@@ -30,9 +30,9 @@ return {
         range = {
             loadout = "catalog",
             display = "The Range",
-            -- Still the Hall economy. CurrentArea becomes mission_* for
-            -- farming/music; the HUD must keep Gems + Waycoins.
-            hall_currency_hud = true,
+            -- The authored gate now lives in Home/Lava, so mission_* uses the ordinary
+            -- Homeworld currency HUD instead of carrying Hall Waycoins into the run.
+            hall_currency_hud = false,
             -- Rank mode is a solo test of an archetype kit. A party would
             -- share the instance and break the leaderboard.
             solo_only = true,
@@ -201,7 +201,7 @@ return {
         training_ground = {
             loadout = "own",
             display = "Training Ground",
-            hall_currency_hud = true,
+            hall_currency_hud = false,
             -- Overworld onramp (combat.engagement.min_engage_level 5) is for
             -- the Hall/Crystal display fight. TG is the place to train with
             -- your real pets as soon as you can walk in.

@@ -4,6 +4,24 @@
 local CollectionService = game:GetService("CollectionService")
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 
+-- The release rollback moved the complete authored fixtures into Homeworld. Never recreate the
+-- retired Hall copies if this historical one-time placement script is run again.
+local maps = workspace:FindFirstChild("Maps")
+local homeBindings = maps
+    and maps:FindFirstChild("Home")
+    and maps.Home:FindFirstChild("ChallengeBindings")
+if
+    homeBindings
+    and homeBindings:FindFirstChild("RangeLeaderboard")
+    and homeBindings:FindFirstChild("TrainingGroundLeaderboard")
+then
+    return {
+        ok = true,
+        already_relocated = true,
+        parent = homeBindings:GetFullName(),
+    }
+end
+
 local function pickScreen(model)
     local best, bestThin
     for _, part in ipairs(model:GetDescendants()) do
@@ -126,40 +144,72 @@ local rangeGuide = copyBesideRange(south)
 local rangeBoard = copyBesideRange(north)
 
 local placed = {
-    configure(south, "TrainingGroundGuide", tile07, {
-        GuideMode = "training_ground",
-        GuiKind = "Surface",
-    }, { "ChallengeGuide" }, "Training Ground", table.concat({
-        "Your own pets and powers.",
-        "Teams are allowed.",
-        "Easier rooms than The Range.",
-        "Best room in the last 48 hours ranks the board.",
-    }, "\n\n")),
-    configure(north, "TrainingGroundLeaderboard", tile07, {
-        BoardId = "training_ground_current",
-        GuiKind = "Surface",
-    }, { "LeaderboardBoard" }, "Training Ground", table.concat({
-        "GLOBAL TOP 10",
-        "Best room in the last 48 hours.",
-        "Ranks fill when players finish a run.",
-    }, "\n\n")),
-    configure(rangeGuide, "RangeGuide", tile04, {
-        GuideMode = "range",
-        GuiKind = "Surface",
-    }, { "ChallengeGuide" }, "The Range", table.concat({
-        "Solo catalog run. Leave your team at the door.",
-        "Everyone fights at level 50.",
-        "Pick an origin kit and a loaned squad.",
-        "Best room in the last 48 hours ranks the board.",
-    }, "\n\n")),
-    configure(rangeBoard, "RangeLeaderboard", tile04, {
-        BoardId = "range_current",
-        GuiKind = "Surface",
-    }, { "LeaderboardBoard" }, "The Range", table.concat({
-        "GLOBAL TOP 10",
-        "Best room in the last 48 hours.",
-        "Ranks fill when players finish a run.",
-    }, "\n\n")),
+    configure(
+        south,
+        "TrainingGroundGuide",
+        tile07,
+        {
+            GuideMode = "training_ground",
+            GuiKind = "Surface",
+        },
+        { "ChallengeGuide" },
+        "Training Ground",
+        table.concat({
+            "Your own pets and powers.",
+            "Teams are allowed.",
+            "Easier rooms than The Range.",
+            "Best room in the last 48 hours ranks the board.",
+        }, "\n\n")
+    ),
+    configure(
+        north,
+        "TrainingGroundLeaderboard",
+        tile07,
+        {
+            BoardId = "training_ground_current",
+            GuiKind = "Surface",
+        },
+        { "LeaderboardBoard" },
+        "Training Ground",
+        table.concat({
+            "GLOBAL TOP 10",
+            "Best room in the last 48 hours.",
+            "Ranks fill when players finish a run.",
+        }, "\n\n")
+    ),
+    configure(
+        rangeGuide,
+        "RangeGuide",
+        tile04,
+        {
+            GuideMode = "range",
+            GuiKind = "Surface",
+        },
+        { "ChallengeGuide" },
+        "The Range",
+        table.concat({
+            "Solo catalog run. Leave your team at the door.",
+            "Everyone fights at level 50.",
+            "Pick an origin kit and a loaned squad.",
+            "Best room in the last 48 hours ranks the board.",
+        }, "\n\n")
+    ),
+    configure(
+        rangeBoard,
+        "RangeLeaderboard",
+        tile04,
+        {
+            BoardId = "range_current",
+            GuiKind = "Surface",
+        },
+        { "LeaderboardBoard" },
+        "The Range",
+        table.concat({
+            "GLOBAL TOP 10",
+            "Best room in the last 48 hours.",
+            "Ranks fill when players finish a run.",
+        }, "\n\n")
+    ),
 }
 
 ChangeHistoryService:SetWaypoint("Challenge gate boards placed")

@@ -4192,3 +4192,15 @@ first-session cohort rates.
 - Added a config-owned Atmosphere envelope (`Density >= 0.32`, `Haze >= 2.4`, `Offset <= 0.12`) to
   blend unloaded distance into the active sky. It is applied to both the captured authored base and
   each deep realm endpoint before per-depth interpolation, preserving distinct level lighting.
+
+## 2026-08-22 — Hall disabled and challenges restored to Homeworld
+
+- Disabled Hall entry without deleting its authored map or player progression ledger. Schema v18
+  normalizes stale Hall resumes to Home Spawn and removes only Hall route unlock ids; owned pets,
+  eggs, enhancements, currencies, powers, rewards, and non-Hall unlocks are preserved.
+- Restored the pre-Hall Homeworld tutorial as version 4 with semantic migrations from every prior
+  step ordering. The Home Hall portal becomes a frosted closed-for-repairs barrier.
+- Via Studio MCP, reparented the complete original Range fixture to Homeworld Lava and Training
+  Ground fixture to Homeworld Desert. Mission pads, gate lightning, titles, guides, leaderboards,
+  tags, attributes, and scripts remain attached to the original Instances; added an idempotent
+  Studio migration/audit script and guards against historical Hall tools recreating duplicates.

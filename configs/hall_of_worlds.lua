@@ -8,6 +8,10 @@
 
 return {
     enabled = true,
+    -- Temporary release patch: keep the authored Hall intact, but make it unreachable and never
+    -- use it as a join/respawn destination. Range and Training Ground fixtures now live under
+    -- Workspace.Maps.Home.ChallengeBindings and retain their own MissionDoor/board/lightning tags.
+    entry_enabled = false,
     version = 2,
     minimum_level = 1,
     map_name = "FuturePath",

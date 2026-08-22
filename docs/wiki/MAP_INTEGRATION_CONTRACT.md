@@ -75,6 +75,18 @@ In `auto` mode, the first authored contract hook is treated as a real-map signal
 
 ## Current Implementation
 
+### Homeworld challenge fixtures
+
+During the Hall repair rollback, the original Range and Training Ground fixture Instances were
+moved in Edit mode to `Workspace.Maps.Home.ChallengeBindings`. Range is positioned in Lava and
+Training Ground in Desert. Each fixture remains a complete authored unit: the invisible
+`MissionDoor` pad, visual arch and `ArchLightning` markers, title, `ChallengeGuide`, and
+`LeaderboardBoard`. Runtime code continues to discover these by tags/attributes and must not
+depend on their former `FuturePath` paths. Run
+`scripts/studio/relocate_home_challenge_gates.luau` to reproduce or audit the move; it reparents
+the originals and never clones them. Historical Hall wiring scripts detect the destination and
+must not recreate a second pair in Hall.
+
 `configs/areas.lua` declares the starter zone tree:
 
 - `spawn_world -> spawn_island -> Spawn`

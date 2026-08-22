@@ -83,6 +83,7 @@ function ZoneService:Init()
     self._statsService = self._modules.StatsService
     self._areasConfig = self._configLoader:LoadConfig("areas")
     self._hallConfig = self._configLoader:LoadConfig("hall_of_worlds")
+    self._hallEntryEnabled = not (self._hallConfig and self._hallConfig.entry_enabled == false)
     self._hallRouteAreaSet = {}
     for _, routeArea in ipairs((self._hallConfig and self._hallConfig.route) or {}) do
         if type(routeArea.area_id) == "string" then
@@ -92,7 +93,16 @@ function ZoneService:Init()
     self._touchDebounce = {}
 end
 
+function ZoneService:IsHallEntryEnabled()
+    return self._hallEntryEnabled == true
+end
+
 function ZoneService:CanLeaveHall(player, sourceHook, targetAreaId)
+    -- With the Hall route retired, World Travel and every normal Crystal World destination are
+    -- available under their ordinary unlock rules; there is no first-world exit gate to satisfy.
+    if not self:IsHallEntryEnabled() then
+        return true
+    end
     local data = player and self._dataService:GetData(player) or nil
     local gameData = data and data.GameData or {}
     local hallState = HallOfWorldsLogic.normalizeState(
@@ -110,6 +120,9 @@ function ZoneService:CanLeaveHall(player, sourceHook, targetAreaId)
 end
 
 function ZoneService:GetInitialArea(player)
+    if not self:IsHallEntryEnabled() then
+        return self:_crystalSpawnArea()
+    end
     local data = player and self._dataService:GetData(player) or nil
     local gameData = data and data.GameData or {}
     local hallState = HallOfWorldsLogic.normalizeState(
@@ -162,6 +175,9 @@ function ZoneService:IsInHall(player)
 end
 
 function ZoneService:GetRespawnArea(player)
+    if not self:IsHallEntryEnabled() then
+        return self:_crystalSpawnArea()
+    end
     local data = player and self._dataService:GetData(player) or nil
     local gameData = data and data.GameData or {}
     local hallState = HallOfWorldsLogic.normalizeState(
@@ -191,6 +207,9 @@ end
 function ZoneService:BeginHallGuestVisit(player)
     if typeof(player) ~= "Instance" or not player:IsA("Player") then
         return { ok = false, reason = "invalid_player" }
+    end
+    if not self:IsHallEntryEnabled() then
+        return { ok = false, reason = "hall_disabled" }
     end
     if self:HasEnteredCrystalWorld(player) then
         return { ok = false, reason = "already_member" }
@@ -241,6 +260,17 @@ function ZoneService:_rememberArea(player, areaId)
         return
     end
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    if not self:IsHallEntryEnabled() then
+        local _, changed = HallOfWorldsLogic.forceHomeResume(
+            data.GameData,
+            self._hallRouteAreaSet,
+            self:_crystalSpawnArea()
+        )
+        if changed then
+            self._dataService:RequestSave(player, "homeworld_resume", { critical = false })
+        end
+        return
+    end
     local hallState = HallOfWorldsLogic.normalizeState(
         data.GameData,
         self._hallConfig and self._hallConfig.version or 2
@@ -274,8 +304,10 @@ end
 
 function ZoneService:Start()
     self:_connectTravelHooks()
-    self:_seatHallAreaZones()
-    self:_seatComingSoonWalls()
+    if self:IsHallEntryEnabled() then
+        self:_seatHallAreaZones()
+        self:_seatComingSoonWalls()
+    end
     self:_setupNetworkSignals()
 
     self._worldBindingService.AreaEntered:Connect(function(player, areaId)
@@ -354,7 +386,18 @@ function ZoneService:_getUnlockSet(player)
         end
     end
     set[DEFAULT_START_AREA] = true
-    set[HALL_START_AREA] = true
+    if self:IsHallEntryEnabled() then
+        set[HALL_START_AREA] = true
+    else
+        for areaId in pairs(self._hallRouteAreaSet or {}) do
+            set[areaId] = nil
+        end
+        HallOfWorldsLogic.forceHomeResume(
+            data.GameData,
+            self._hallRouteAreaSet,
+            self:_crystalSpawnArea()
+        )
+    end
 
     data.GameData.UnlockedAreas = setToSortedArray(set)
     self:_publishUnlockedAreas(player, set)
@@ -386,6 +429,11 @@ function ZoneService:IsZoneUnlocked(player, zoneId, unlockSet)
         return false
     end
 
+    local areaId = self:_resolveAreaId(zoneId)
+    if not self:IsHallEntryEnabled() and self:IsHallArea(areaId or zoneId) then
+        return false
+    end
+
     if zone.unlock and zone.unlock.unlocked_by_default == true then
         return true
     end
@@ -395,7 +443,6 @@ function ZoneService:IsZoneUnlocked(player, zoneId, unlockSet)
         return false
     end
 
-    local areaId = self:_resolveAreaId(zoneId)
     if zone.kind == "area" and unlockSet[zoneId] ~= true then
         return false
     end
@@ -862,6 +909,22 @@ end
 function ZoneService:_syncUnlocksWhenDataLoads(player)
     task.spawn(function()
         if Readiness.awaitAttribute(player, "DataLoaded", true, 30) and player.Parent then
+            if not self:IsHallEntryEnabled() then
+                local data = self._dataService:GetData(player)
+                local changed = false
+                if data then
+                    data.GameData, changed = HallOfWorldsLogic.forceHomeResume(
+                        data.GameData,
+                        self._hallRouteAreaSet,
+                        self:_crystalSpawnArea()
+                    )
+                end
+                if data and changed then
+                    self._dataService:RequestSave(player, "homeworld_resume_reconcile", {
+                        critical = true,
+                    })
+                end
+            end
             local unlockSet = self:_getUnlockSet(player)
             if unlockSet then
                 self:_reconcileUnlockCounters(player, unlockSet)
@@ -898,6 +961,15 @@ function ZoneService:TravelToZone(player, targetZoneId, sourceHook)
             ok = false,
             reason = "missing_primary_area",
             targetZoneId = targetZoneId,
+        }
+    end
+
+    if not self:IsHallEntryEnabled() and self:IsHallArea(targetAreaId) then
+        return {
+            ok = false,
+            reason = "hall_disabled",
+            targetZoneId = targetZoneId,
+            targetAreaId = targetAreaId,
         }
     end
 
@@ -1038,6 +1110,53 @@ function ZoneService:_alignCopiedGatePortal(hook)
     })
 end
 
+function ZoneService:_isDisabledHallEntryHook(hook)
+    if self:IsHallEntryEnabled() or not (hook and hook:IsA("BasePart")) then
+        return false
+    end
+    local targetAreaId = self:_resolveAreaId(hook:GetAttribute("TargetZoneId"))
+    return self:IsHallArea(targetAreaId)
+end
+
+-- Keep the Hall arch as authored scenery, but turn its travel volume into an unmistakable frosted
+-- repair wall. This is server-owned as a second line of defense behind TravelToZone's rejection;
+-- a stale Studio tag or client prompt can never reopen the retired route.
+function ZoneService:_sealDisabledHallEntryHook(hook)
+    hook:SetAttribute("HallEntryDisabled", true)
+    hook.CanTouch = false
+    hook.CanCollide = true
+    hook.CanQuery = true
+
+    local prompt = hook:FindFirstChild(TRAVEL_PROMPT_NAME, true)
+    if prompt and prompt:IsA("ProximityPrompt") then
+        prompt:Destroy()
+    end
+
+    local visualName = COPIED_GATE_VISUAL[hook.Name]
+    local visual = visualName and hook.Parent and hook.Parent:FindFirstChild(visualName)
+    if visual and visual:IsA("Model") then
+        local boxCf, boxSize = visual:GetBoundingBox()
+        hook.Size = Vector3.new(math.max(10, boxSize.X * 0.82), math.max(16, boxSize.Y * 0.82), 3)
+        hook.CFrame = boxCf
+        local look = self._hallConfig and self._hallConfig.gate_appearance or {}
+        local color = look.color or { 226, 236, 242 }
+        hook.Material = Enum.Material[look.material or "Ice"] or Enum.Material.Ice
+        hook.Color = Color3.fromRGB(color[1] or 226, color[2] or 236, color[3] or 242)
+        hook.Transparency = tonumber(look.transparency) or 0.28
+        hook.Reflectance = tonumber(look.reflectance) or 0.04
+        hook.CastShadow = false
+    end
+
+    local title = hook.Parent and hook.Parent:FindFirstChild("HallOfWorldsGateTitle")
+    if title then
+        for _, descendant in ipairs(title:GetDescendants()) do
+            if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
+                descendant.Text = "HALL OF WORLDS\nCLOSED FOR REPAIRS"
+            end
+        end
+    end
+end
+
 function ZoneService:_connectTravelHooks()
     local hooks = {}
     for _, hook in ipairs(self._worldBindingService:GetBound("TeleportPad")) do
@@ -1049,6 +1168,10 @@ function ZoneService:_connectTravelHooks()
 
     for _, hook in ipairs(hooks) do
         if hook:IsA("BasePart") then
+            if self:_isDisabledHallEntryHook(hook) then
+                self:_sealDisabledHallEntryHook(hook)
+                continue
+            end
             self:_alignCopiedGatePortal(hook)
             self:_seatHallGate(hook)
             self:_ensureTravelPrompt(hook)
@@ -1345,6 +1468,15 @@ function ZoneService:_handleHookTouched(hook, hit)
 end
 
 function ZoneService:_handleAreaEntered(player, areaId)
+    if not self:IsHallEntryEnabled() and self:IsHallArea(areaId) then
+        self._logger:Warn("Player entered disabled Hall bounds; returning to Home Spawn", {
+            player = player.Name,
+            areaId = areaId,
+        })
+        self:TravelToZone(player, self:_crystalSpawnArea())
+        return
+    end
+
     if self:IsZoneUnlocked(player, areaId) then
         return
     end

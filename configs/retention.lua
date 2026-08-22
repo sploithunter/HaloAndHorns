@@ -11,9 +11,9 @@
 ]]
 
 return {
-    -- v3 is the Resonance-before-combat FTUE boundary. Historical raw events/dashboard dates
-    -- remain intact; new cohorts use this aligned ten-step definition.
-    version = 3,
+    -- v4 restores the Homeworld combat-before-Resonance FTUE. Historical raw events/dashboard
+    -- dates and stable milestone IDs remain intact; new cohorts use this aligned step ordering.
+    version = 4,
     onboarding = {
         enabled = true,
         steps = {
@@ -43,25 +43,6 @@ return {
                 match = { stepId = "build_squad" },
             },
             {
-                id = "tutorial_bind_power",
-                name = "Tutorial: Bind Resonance",
-                event = "tutorial_step_completed",
-                match = { stepId = "bind_power" },
-            },
-            {
-                id = "tutorial_cast_power",
-                name = "Tutorial: Cast Resonance",
-                event = "tutorial_step_completed",
-                match = { stepId = "cast_power" },
-            },
-            {
-                -- Stable live milestone ID retained even though this lesson now precedes combat.
-                id = "tutorial_completed",
-                name = "Tutorial: Enhance Resonance",
-                event = "tutorial_step_completed",
-                match = { stepId = "slot_power" },
-            },
-            {
                 id = "tutorial_first_fight",
                 name = "Tutorial: Win first fight",
                 event = "tutorial_step_completed",
@@ -75,9 +56,28 @@ return {
             },
             {
                 id = "tutorial_rally_call",
-                name = "Tutorial: Use Rally / Complete",
+                name = "Tutorial: Use Rally",
                 event = "tutorial_step_completed",
                 match = { stepId = "rally_call" },
+            },
+            {
+                id = "tutorial_bind_power",
+                name = "Tutorial: Bind Resonance",
+                event = "tutorial_step_completed",
+                match = { stepId = "bind_power" },
+            },
+            {
+                id = "tutorial_cast_power",
+                name = "Tutorial: Cast Resonance",
+                event = "tutorial_step_completed",
+                match = { stepId = "cast_power" },
+            },
+            {
+                -- Stable live milestone ID retained for the final tutorial lesson.
+                id = "tutorial_completed",
+                name = "Tutorial: Enhance Resonance / Complete",
+                event = "tutorial_step_completed",
+                match = { stepId = "slot_power" },
             },
             {
                 id = "first_quest_completed",

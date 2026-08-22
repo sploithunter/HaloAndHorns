@@ -39,12 +39,35 @@ return function()
             expect(source:find('fireGameEvent(player, "tutorial_level_awarded"', 1, true)).to.be.ok()
         end)
 
-        it("admin reset stamps Hall track 2 and clears the legacy completion flag", function()
+        it("admin reset restores Home Spawn and clears the legacy completion flag", function()
             local source = readFile("src/Server/Services/TutorialService.lua")
-            expect(source:find("hallTrack = true", 1, true)).to.be.ok()
+            expect(source:find("hallTrack = true", 1, true)).to.equal(nil)
             expect(source:find("data.GameData.TutorialCompleted = false", 1, true)).to.be.ok()
             local admin = readFile("src/Server/Services/AdminToolsService.lua")
             expect(admin:find("playerData.GameData.TutorialCompleted = false", 1, true)).to.be.ok()
+            expect(admin:find('playerData.GameData.UnlockedAreas = { "Spawn" }', 1, true)).to.be.ok()
+            expect(admin:find('playerData.GameData.LastArea = "Spawn"', 1, true)).to.be.ok()
+        end)
+
+        it("restores the authored Homeworld lesson order and targets", function()
+            local expected = {
+                "hatch_first_egg",
+                "farm_crystals",
+                "hatch_another",
+                "build_squad",
+                "first_fight",
+                "battle_brew",
+                "rally_call",
+                "bind_power",
+                "cast_power",
+                "slot_power",
+            }
+            for index, id in ipairs(expected) do
+                expect(cfg.steps[index].id).to.equal(id)
+            end
+            expect(cfg.steps[1].target.prefer).to.equal("Grass")
+            expect(cfg.steps[3].target.prefer).to.equal("Grass")
+            expect(cfg.steps[5].target.name).to.equal("BaddieSpawnerEarth")
         end)
 
         it("keeps guided auto-fill and squad review on server-authoritative seams", function()
@@ -251,7 +274,7 @@ return function()
             expect(step.id).to.equal("hatch_first_egg")
             expect(step.title).to.equal("Hatch your first egg")
             expect(step.body).to.equal(
-                "Your companion needs a squadmate. Follow the trail to the Wayfinder Egg and hatch one."
+                "Your companion needs a squadmate. Follow the trail to the Earth Egg and hatch one."
             )
         end)
 
@@ -282,12 +305,12 @@ return function()
                 { "coin_payout", { amount = 60 } }, -- farm_crystals (100 coins)
                 "egg_hatch", -- hatch_another
                 "tutorial_squad_reviewed", -- build_squad (Pets panel reviewed + server commit)
+                "enemy_defeated", -- first_fight (the Earth cave creature)
+                "potion_used", -- battle_brew (drink from the top-right slot)
+                "rally_used", -- rally_call (the flag at the top-left, slot 11)
                 "tutorial_hotbar_finished", -- bind_power (Resonance bound, then Done pressed)
                 "power_cast", -- cast_power
-                "enhancement_slotted", -- slot_power
-                "enemy_defeated", -- first_fight (the Hall barn onramp creature)
-                "potion_used", -- battle_brew (drink from the top-right slot)
-                "rally_used", -- rally_call (the flag at the top-left, slot 11) → done
+                "enhancement_slotted", -- slot_power → done
             })
             expect(p.done).to.equal(true)
             expect(TutorialFlow.current(cfg, p)).to.equal(nil)
@@ -311,7 +334,7 @@ return function()
                 done = false,
             })
             expect(changed).to.equal(true)
-            expect(farm.version).to.equal(3)
+            expect(farm.version).to.equal(4)
             expect(farm.step).to.equal(2)
             expect(farm.count).to.equal(72)
 
@@ -321,7 +344,8 @@ return function()
                 count = 0,
                 done = false,
             })
-            expect(fighter.step).to.equal(8) -- follows first_fight through both reorders
+            expect(fighter.version).to.equal(4)
+            expect(fighter.step).to.equal(5) -- follows first_fight through every reorder
 
             local binder = TutorialFlow.migrateProgress(cfg, {
                 version = 2,
@@ -329,8 +353,17 @@ return function()
                 count = 0,
                 done = false,
             })
-            expect(binder.version).to.equal(3)
-            expect(binder.step).to.equal(5) -- remains on bind_power, now before combat
+            expect(binder.version).to.equal(4)
+            expect(binder.step).to.equal(8) -- remains on bind_power after combat
+
+            local v3Binder = TutorialFlow.migrateProgress(cfg, {
+                version = 3,
+                step = 5,
+                count = 0,
+                done = false,
+            })
+            expect(v3Binder.version).to.equal(4)
+            expect(v3Binder.step).to.equal(8)
         end)
 
         it("normalizes nil/corrupt progress", function()
@@ -341,12 +374,11 @@ return function()
             expect(p.track).to.equal(nil)
         end)
 
-        it("stamps Hall track 2 only on new hall-track records", function()
-            expect(cfg.hall_track).to.equal(2)
+        it("does not put new Homeworld records on the retired Hall track", function()
+            expect(cfg.hall_track).to.equal(nil)
             local fresh = TutorialFlow.fresh(cfg)
             expect(fresh.track).to.equal(nil)
-            local hall = TutorialFlow.fresh(cfg, { hallTrack = true })
-            expect(hall.track).to.equal(2)
+            -- Existing track metadata remains readable so the rollback is data-preserving.
             local kept = TutorialFlow.normalizeProgress({ step = 1, track = 2 })
             expect(kept.track).to.equal(2)
             local migrated = TutorialFlow.migrateProgress(cfg, { version = 2, step = 1 })

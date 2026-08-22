@@ -911,22 +911,30 @@ end
 -- gate rotate, move the pad to the arch — do not leave it on the old
 -- approach. Adopt in place; do not snap a user-moved pad back to these
 -- fallbacks if the part already exists.
-adoptChallengeDoor(
-    "RangePad",
-    "range",
-    "THE RANGE",
-    CFrame.lookAt(Vector3.new(1945.1, 0.8, 400), Vector3.new(1945.1, 0.8, 399))
-)
-adoptChallengeDoor(
-    "TrainingGroundPad",
-    "training_ground",
-    "TRAINING GROUND",
-    CFrame.lookAt(Vector3.new(2623.6, 0.8, 465.1), Vector3.new(2623.6, 0.8, 464.1))
-)
+local homeChallenges = home:FindFirstChild("ChallengeBindings")
+local challengesRelocated = homeChallenges
+    and homeChallenges:FindFirstChild("RangePad")
+    and homeChallenges:FindFirstChild("TrainingGroundPad")
+if not challengesRelocated then
+    adoptChallengeDoor(
+        "RangePad",
+        "range",
+        "THE RANGE",
+        CFrame.lookAt(Vector3.new(1945.1, 0.8, 400), Vector3.new(1945.1, 0.8, 399))
+    )
+    adoptChallengeDoor(
+        "TrainingGroundPad",
+        "training_ground",
+        "TRAINING GROUND",
+        CFrame.lookAt(Vector3.new(2623.6, 0.8, 465.1), Vector3.new(2623.6, 0.8, 464.1))
+    )
+else
+    print("[HallOfWorlds] preserving relocated Home.ChallengeBindings challenge fixtures")
+end
 
 print(
     string.format(
-        "[HallOfWorlds] adopted the barn/fence, wired its encounter, 4 areas, Hall play-area marquee/spawner bounds, 3 progression walls, 4 egg bays, 3 dormant egg displays, 3 travel gates, and Hall_2 Range/Training Ground doors under %s",
+        "[HallOfWorlds] adopted the barn/fence, wired its encounter, 4 areas, Hall play-area marquee/spawner bounds, 3 progression walls, 4 egg bays, 3 dormant egg displays, and 3 travel gates under %s",
         hall:GetFullName()
     )
 )

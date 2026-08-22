@@ -4,11 +4,13 @@
 
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 
-local hall = workspace:FindFirstChild("Maps") and workspace.Maps:FindFirstChild("FuturePath")
-assert(hall, "Workspace.Maps.FuturePath is required")
+local maps = assert(workspace:FindFirstChild("Maps"), "Workspace.Maps is required")
+local home = maps:FindFirstChild("Home")
+local root = home and home:FindFirstChild("ChallengeBindings") or maps:FindFirstChild("FuturePath")
+assert(root, "Home ChallengeBindings or Workspace.Maps.FuturePath is required")
 
 local function findNamed(name)
-    return hall:FindFirstChild(name, true)
+    return root:FindFirstChild(name, true)
 end
 
 local function align(padName, visualName)
@@ -18,7 +20,9 @@ local function align(padName, visualName)
         return {
             name = padName,
             ok = false,
-            reason = (not pad and "missing pad") or (not visual and "missing visual") or "pad not a BasePart",
+            reason = (not pad and "missing pad")
+                or (not visual and "missing visual")
+                or "pad not a BasePart",
         }
     end
     local gate = visual:IsA("Model") and visual:GetPivot() or visual.CFrame

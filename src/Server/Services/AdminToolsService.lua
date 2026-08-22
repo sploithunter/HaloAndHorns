@@ -703,8 +703,8 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         playerData.Equipped.pets = {}
     end
 
-    -- 2) Currencies: each config defaultAmount. Hall starts with one Wayfinder
-    -- hatch (hall_coins 100); grass_coins 100 remains the Earth egg starter.
+    -- 2) Currencies: each config defaultAmount. The Homeworld Earth egg uses the normal
+    -- grass-coin starter balance; dormant Hall currency is preserved by ordinary profiles.
     local okCur, currencies = pcall(function()
         return self._configLoader:LoadConfig("currencies")
     end)
@@ -719,10 +719,10 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         end
     end
 
-    -- 3) Zones: relock everything to the fresh Hall entry. Spawn remains authorized as the
-    --    Crystal World travel destination, while HallOfWorlds controls initial placement.
+    -- 3) Zones: the release patch always begins at Homeworld Spawn. Keep a blank Hall progress
+    --    ledger for later repair work, but do not authorize or resume any Hall tile.
     playerData.GameData = playerData.GameData or {}
-    playerData.GameData.UnlockedAreas = { "Hall_1", "Spawn" }
+    playerData.GameData.UnlockedAreas = { "Spawn" }
     playerData.GameData.HallOfWorlds = {
         version = 2,
         entered_crystal_world = false,
@@ -732,7 +732,7 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         checkpoint = "",
     }
     playerData.GameData.LastHatchedEggId = ""
-    playerData.GameData.LastArea = ""
+    playerData.GameData.LastArea = "Spawn"
     playerData.GameData.TutorialCompleted = false
     playerData.GameData.LastHatchedEggOffset = {}
     playerData.GameData.TesterRewards = { campaigns = {} }

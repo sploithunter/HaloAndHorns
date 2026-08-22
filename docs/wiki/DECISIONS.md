@@ -651,3 +651,16 @@ while `hide_internal_accounts` is enabled for release.
 Each of the four origins keeps its own saved power kit plus a shared last
 catalog squad under `GameData.RangeDefaults`; do not put that field on the ProfileStore
 template (same Reconcile trap as ChallengeRuns / Tutorial).
+
+## Disable Hall Routing; Preserve the Hall and Move Challenges Home (2026-08-22)
+
+Hall of Worlds remains authored for repair but is not a legal player destination for this release.
+Every join and character respawn goes to Homeworld Spawn regardless of saved Hall state. The schema
+migration changes only resume/unlock routing: it removes Hall route ids, preserves every other
+unlock and all player-owned/profile data, and leaves the Hall progress ledger intact.
+
+The original Homeworld tutorial is restored as version 4. Range and Training Ground keep their
+existing mission behavior but their complete authored fixture Instances move into Homeworld Lava
+and Desert respectively. Map geometry and bindings move in Studio; runtime discovers the same tags
+and attributes. Historical Hall tooling must never create replacement copies once
+`Home.ChallengeBindings` exists.
