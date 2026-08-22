@@ -8,6 +8,9 @@
 - On the next profile activation, an expired unclaimed message is acknowledged and
   critically saved without calling `RewardService` or presenting a receipt. Legacy
   timestamp-free messages remain valid rather than being guessed or silently forfeited.
+- A dormant producer outbox first revisited after its deadline is consumed without
+  calling `ProfileStore:MessageAsync`, so an already-forfeited award never enlarges the
+  player's offline message queue.
 
 ## 2026-08-22 — Challenge boards and awards share fixed rounds
 

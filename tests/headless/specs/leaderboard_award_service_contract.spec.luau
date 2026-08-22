@@ -11,6 +11,15 @@ return function()
             local expiryCheck = delivery:find("if AwardDelivery.isExpired", 1, true)
             local grant = delivery:find("self._rewardService:Grant", 1, true)
             expect(expiryCheck < grant).to.equal(true)
+            local queueFunction =
+                delivery:find("function AwardDeliveryService:QueueForUser", 1, true)
+            local preQueueExpiry = delivery:find(
+                "if AwardDelivery.isExpired(messageOrError.award, now)",
+                queueFunction,
+                true
+            )
+            local profileMessage = delivery:find("profileStore:MessageAsync", queueFunction, true)
+            expect(preQueueExpiry < profileMessage).to.equal(true)
             expect(
                 delivery:find(
                     'fireGameEvent(player, notification.event or "award_delivered"',

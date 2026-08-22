@@ -172,13 +172,34 @@ function AwardDeliveryService:QueueForUser(userId, award)
         return { ok = false, reason = "invalid_user_id" }
     end
 
+    local now = os.time()
     local delivery = self._config.delivery or {}
     local ok, messageOrError = pcall(AwardDelivery.message, award, {
-        now = os.time(),
+        now = now,
         expiry_seconds = delivery.unclaimed_expiry_seconds,
     })
     if not ok then
         return { ok = false, reason = "invalid_award", error = tostring(messageOrError) }
+    end
+
+    -- A server restart can leave an old leaderboard outbox record dormant until the
+    -- player returns. Treat an already-expired award as successfully consumed so its
+    -- producer clears that outbox without adding a doomed ProfileStore message.
+    if AwardDelivery.isExpired(messageOrError.award, now) then
+        self._logger:Info("Dropped durable award that expired before queueing", {
+            context = "AwardDeliveryService",
+            userId = id,
+            awardId = award.id,
+            source = award.source,
+            expiresAt = messageOrError.award.expires_at,
+        })
+        return {
+            ok = true,
+            queued = false,
+            expired = true,
+            awardId = award.id,
+            expiresAt = messageOrError.award.expires_at,
+        }
     end
 
     local profileStore = self._dataService and self._dataService.ProfileStore
@@ -207,6 +228,7 @@ function AwardDeliveryService:QueueForUser(userId, award)
     })
     return {
         ok = true,
+        queued = true,
         awardId = award.id,
         expiresAt = messageOrError.award.expires_at,
     }

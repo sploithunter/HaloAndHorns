@@ -134,8 +134,9 @@ filtered out of production registries.
   and future offline exchange receipts should call the same `QueueForUser` boundary. After the
   authoritative mutation, the client queues a click-through receipt instead of a transient banner.
   New messages carry an immutable claim deadline 30 days after the award was created. A retry keeps
-  that original deadline; when an expired message is next loaded, the server acknowledges it without
-  granting or notifying, removing it from the player's pending ProfileStore message queue.
+  that original deadline. Awards already expired when a producer retries are consumed without being
+  queued; when an older queued message is next loaded, the server acknowledges it without granting
+  or notifying, removing it from the player's pending ProfileStore message queue.
 - `LeaderboardService` owns event-driven leaderboard scoring and OrderedDataStore publication. It
   never enumerates saved profiles: join, relevant counter/inventory changes, leave, and server
   shutdown replace only the current player's key. Global reads cache the top 100 scores while
