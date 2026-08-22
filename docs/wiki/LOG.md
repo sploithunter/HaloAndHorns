@@ -4116,3 +4116,11 @@ first-session cohort rates.
 - The held egg uses fixed 42/28/18/10/2 species odds, standard 5% Golden / 0.5% Rainbow / 1% Huge
   rolls, and no luck channel. Both challenge boards now use exact Top 10 bundles with doubled Gems,
   Champion Eggs, origin-valid enhancements, boost/summon tokens, and a rank-one direct Chimera.
+
+## 2026-08-22 — Stable trade picker uses inventory pet cards
+
+- Replaced Trade's duplicate stripped-down pet renderer with a read-only adapter over
+  InventoryPanel's real card path, restoring role/support/enchant badges and both power values.
+- Trade source and offer grids now reconcile by stable escrow keys. Studio QA proved a two-copy
+  stack patches to one without changing source-card identity, and a selected unique moves once while
+  an unrelated card and the live trade window retain their Instances.

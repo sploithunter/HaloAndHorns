@@ -151,6 +151,11 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
 - The trade pet picker uses the same live effective-power inputs, with one deliberate marketplace
   override: Huge pets form the first tier regardless of power, then Huge and non-Huge tiers each
   sort strongest-first. Quantity and stable identity fields break ties deterministically.
+- Trade embeds InventoryPanel's actual read-only pet-card renderer instead of maintaining a second
+  approximation. Trade adds only its click/offer/lock overlays, then reconciles cards by stable
+  escrow key; authoritative snapshots patch quantity, membership, and ordering in place. Inventory
+  remains the single presentation path for thumbnails, rarity chrome, role/support/enchant badges,
+  and damage/health power text, and an unrelated pet card must retain its Instance across updates.
 - Card badges and tooltips resolve enchant display records through `PetEnchantView`: unique pets use
   their per-instance `enchantments` list, while stack pets project their saved `enchant` id at the
   config-owned stack strength. The two surfaces must never disagree about whether a pet is enchanted.
