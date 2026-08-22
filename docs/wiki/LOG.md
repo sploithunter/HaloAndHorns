@@ -4124,3 +4124,13 @@ first-session cohort rates.
 - Trade source and offer grids now reconcile by stable escrow keys. Studio QA proved a two-copy
   stack patches to one without changing source-card identity, and a selected unique moves once while
   an unrelated card and the live trade window retain their Instances.
+
+## 2026-08-22 — Full trade card parity and durable social privacy
+
+- Trade now uses InventoryPanel's single item-card renderer for pets, enhancements, and eggs. Egg
+  cards retain their configured art and provenance, pet text has an explicit layer above image
+  content in both screen contexts, and the duplicate offer ordinals were removed.
+- Increased the picker/grid insets so category pills and cards do not crowd the column borders.
+- Team and trade privacy choices now update the profile field and request an immediate ProfileStore
+  save before the server acknowledges the picker change. The version-17 migration sets Friends Only
+  only once; subsequent Everyone/Friends/Off choices remain player-owned saved settings.
