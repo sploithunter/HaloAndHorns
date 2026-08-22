@@ -2,6 +2,20 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Production streaming visibility (landed 2026-08-22)
+
+The authored world uses a 1024-stud protected streaming radius and a 1536-stud target radius.
+One Crystal World level is roughly 744 × 947 studs, so its enclosure remains inside the protected
+radius; the 2000-stud vertical separation still keeps adjacent stacked levels out of the target.
+The larger Hall is covered by the target plus the player's moving focus. `ModelStreamingBehavior`
+is Improved and `PauseOutsideLoadedArea` remains the integrity gate. These non-scriptable Workspace
+properties are source-controlled in `default.project.json` and must publish with the place.
+
+`RealmAtmosphere` also establishes a minimum Atmosphere envelope before interpolating base → each
+Heaven/Hell depth. It uses Density/Haze/Offset rather than legacy `Lighting.FogStart/FogEnd`, which
+Roblox hides while an Atmosphere exists. The envelope obscures unloaded distance while every level
+retains its own sky, color, ambient light, clock, and increasing depth intensity.
+
 ## Range / Training Ground (landed 2026-08-20)
 
 Hall_2 Tile04_corner Field hosts the shared Challenge Field gauntlet. Room 1–99 is a

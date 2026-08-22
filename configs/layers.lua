@@ -130,6 +130,16 @@ return {
     atmosphere = {
         tween_seconds = 1.2,
         max_depth = 5,
+        -- Streaming horizon mask. Roblox Atmosphere suppresses Lighting's legacy FogStart/FogEnd,
+        -- so every layer starts with enough aerial perspective to blend unloaded distance into
+        -- that layer's own sky. RealmAtmosphere applies this to the captured authored base and to
+        -- each deep endpoint BEFORE depth interpolation; Heaven/Hell colors and level intensity
+        -- therefore stay distinct instead of being replaced by one global fog color.
+        distance_haze = {
+            minimum_density = 0.32,
+            minimum_haze = 2.4,
+            maximum_offset = 0.12,
+        },
         -- Heaven deep (layer 5): blinding, radiant celestial.
         heaven = {
             tint = { 1, 0.99, 0.92 },
@@ -141,12 +151,12 @@ return {
             fog_color = { 250, 248, 235 },
             fog_end = 4000,
             atmosphere = {
-                density = 0.4,
+                density = 0.45,
                 offset = 0.05,
                 color = { 252, 248, 235 },
                 decay = { 245, 238, 215 },
                 glare = 0.7,
-                haze = 2.0,
+                haze = 3.0,
             },
         },
         -- Hell deep (layer 5): red, oppressive MOOD — but lit enough to see your own character +
@@ -162,12 +172,12 @@ return {
             fog_color = { 45, 14, 12 },
             fog_end = 1000,
             atmosphere = {
-                density = 0.35, -- was 0.55 — thin the murk so you're not lost in it
-                offset = 0.2,
+                density = 0.42,
+                offset = 0.1,
                 color = { 120, 40, 32 },
                 decay = { 80, 22, 16 },
                 glare = 0.2,
-                haze = 2.2,
+                haze = 3.2,
             },
         },
         -- Per-LAYER skybox swap (RealmAtmosphere). One sky per layer — base + heaven_1-5 +

@@ -4179,3 +4179,16 @@ first-session cohort rates.
 - Both services now require the persistent SettingsService and fail explicitly if it is unavailable;
   there is no successful attribute-only fallback. Normal logout, disconnect/crash removal, and
   server shutdown continue through DataService/ProfileStore's existing confirmed release paths.
+
+## 2026-08-22 — Production streaming enclosure and realm-aware distance haze
+
+- Production could expose the black streaming horizon even when local Studio Play looked filled:
+  Studio's local server and warm cache satisfy the target quickly, while production only guarantees
+  the minimum radius. Measured Crystal levels are about 744 × 947 studs with 2000 studs between
+  stacked levels; the Hall is about 1330 × 2011 studs.
+- Source-controlled Workspace streaming now protects 1024 studs and targets 1536 with Improved
+  model streaming. That keeps a player's current Crystal level complete without pulling the next
+  vertical level into range, and gives the Hall enough target coverage.
+- Added a config-owned Atmosphere envelope (`Density >= 0.32`, `Haze >= 2.4`, `Offset <= 0.12`) to
+  blend unloaded distance into the active sky. It is applied to both the captured authored base and
+  each deep realm endpoint before per-depth interpolation, preserving distinct level lighting.

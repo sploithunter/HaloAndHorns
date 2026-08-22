@@ -14,6 +14,7 @@
       realmOf(layerId)            -> "heaven"|"hell"|nil
       progress(layerId, maxDepth) -> t in [0,1]  (depth / maxDepth)
       interpolate(a, b, t)        -> blended theme table (numbers, numeric arrays, nested tables)
+      withDistanceHaze(theme, policy) -> copied theme with the streaming-horizon envelope applied
 ]]
 
 local RealmTheme = {}
@@ -85,6 +86,33 @@ function RealmTheme.interpolate(a, b, t)
             out[k] = (bv ~= nil) and bv or av
         end
     end
+    return out
+end
+
+-- Atmosphere replaces Lighting's legacy FogStart/FogEnd rendering, so the streaming horizon must
+-- be hidden with a minimum particle density + haze and a low enough offset to blend distant
+-- geometry into the sky. Return a copy: the captured authored base theme and configured realm
+-- endpoints remain immutable inputs to the per-level interpolation.
+function RealmTheme.withDistanceHaze(theme, policy)
+    local out = RealmTheme.interpolate(theme, theme, 0)
+    policy = type(policy) == "table" and policy or {}
+    out.atmosphere = type(out.atmosphere) == "table" and out.atmosphere or {}
+
+    local atmosphere = out.atmosphere
+    local minimumDensity = tonumber(policy.minimum_density)
+    local minimumHaze = tonumber(policy.minimum_haze)
+    local maximumOffset = tonumber(policy.maximum_offset)
+
+    if minimumDensity then
+        atmosphere.density = math.max(tonumber(atmosphere.density) or 0, minimumDensity)
+    end
+    if minimumHaze then
+        atmosphere.haze = math.max(tonumber(atmosphere.haze) or 0, minimumHaze)
+    end
+    if maximumOffset then
+        atmosphere.offset = math.min(tonumber(atmosphere.offset) or 0, maximumOffset)
+    end
+
     return out
 end
 
