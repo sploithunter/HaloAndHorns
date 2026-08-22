@@ -146,9 +146,11 @@ filtered out of production registries.
   People-list activity titles: Dragonlord, Farmer, Slayer, Commander, or Hatcher. Best numerical
   placement wins when a player qualifies for several; egg hatches are status-only and do not add a
   fifth physical board. Range / Training are the exception to lifetime storage: fixed award rounds
-  use round-suffixed OrderedDataStores and an authoritative header countdown, then rotate as one unit.
+  use round-suffixed OrderedDataStores and an authoritative header countdown, then rotate as one
+  unit. Release rounds run midnight-to-midnight in America/Denver; `MountainTime` resolves both
+  ends so DST transition days may be 23 or 25 absolute hours without shifting the local boundary.
 - `LeaderboardAwardService` observes only successful global public snapshots for configured award
-  boards. Per-board DataStore state holds each entrant's rolling-window best numeric rank plus an
+  boards. Per-board DataStore state holds each entrant's fixed-round best numeric rank plus an
   outbox-style pending award. Pending bundles are immutable, stable ids make cross-server retries
   harmless, and an expired offline record settles when the player returns. The same public exclusion
   switch used by the board controls eligibility.

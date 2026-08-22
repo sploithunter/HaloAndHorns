@@ -157,8 +157,8 @@ function LeaderboardService:_challengeRoundStart(board, now)
     if not isChallengeScore(self:_scoreDefinition(board)) or not self:_fixedChallengeRounds() then
         return nil
     end
-    local window = ChallengeRun.leaderboardWindow(self._challengeConfig)
-    return ChallengeRun.fixedWindowStart(now or os.time(), window)
+    local window, _, _, boundary = ChallengeRun.leaderboardWindow(self._challengeConfig)
+    return ChallengeRun.fixedWindowStart(now or os.time(), window, boundary)
 end
 
 function LeaderboardService:_publicationKey(board, userId)
@@ -215,14 +215,14 @@ function LeaderboardService:_calculate(board, player)
             return self:_petPower(record)
         end)
     elseif isChallengeScore(score) then
-        local window = ChallengeRun.leaderboardWindow(self._challengeConfig)
+        local window, _, _, boundary = ChallengeRun.leaderboardWindow(self._challengeConfig)
         if tonumber(score.window_seconds) then
             window = math.max(1, math.floor(score.window_seconds))
         end
         local runs = data.GameData and data.GameData.ChallengeRuns
         local rec = type(runs) == "table" and runs[score.mode]
         if self:_fixedChallengeRounds() then
-            return ChallengeRun.fixedWindowBest(rec and rec.recent, os.time(), window)
+            return ChallengeRun.fixedWindowBest(rec and rec.recent, os.time(), window, boundary)
         end
         return ChallengeRun.windowBest(rec and rec.recent, os.time(), window)
     end
@@ -327,7 +327,7 @@ function LeaderboardService:_sweepChallengeWindows(force)
     if #self._challengeBoards == 0 then
         return
     end
-    local window, cap = ChallengeRun.leaderboardWindow(self._challengeConfig)
+    local window, cap, _, boundary = ChallengeRun.leaderboardWindow(self._challengeConfig)
     local now = os.time()
     for _, player in ipairs(Players:GetPlayers()) do
         local data = self._dataService and self._dataService:GetData(player)
@@ -336,7 +336,7 @@ function LeaderboardService:_sweepChallengeWindows(force)
         if type(runs) == "table" then
             for _, rec in pairs(runs) do
                 if type(rec) == "table" then
-                    local pruned = ChallengeRun.pruneWindow(rec.recent, now, window, cap)
+                    local pruned = ChallengeRun.pruneWindow(rec.recent, now, window, cap, boundary)
                     if ChallengeRun.recentChanged(rec.recent, pruned) then
                         rec.recent = pruned
                         changed = true

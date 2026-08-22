@@ -634,10 +634,11 @@ At the boundary every server drops the old cache and reads a new round-suffixed
 logical OrderedDataStore, so the board clears atomically without enumerating
 profiles or relying on each attempt's age. The board header counts down from the
 same configured boundary. Persist `recent` attempts only when a run exists — not
-on the ProfileStore template. The cadence is TEMP 30 minutes (`:00` / `:30`);
-production is 48 hours. Immutable creator/test IDs still publish;
-`hide_internal_accounts` hides them on the public page only. TEMP: hide is off
-and Studio may write so Macros can appear on the Range/TG signs.
+on the ProfileStore template. Release cadence is one America/Denver calendar day,
+midnight to midnight. Resolve each boundary through `MountainTime` rather than assuming
+86,400 seconds, because DST transition rounds are 23 or 25 hours. Immutable creator/test
+IDs still write; release `hide_internal_accounts` removes the canonical internal-account
+set from both the public page and placement awards. Studio global reads/writes are disabled.
 Each player's award state uses that same round start and retains the lowest numeric
 rank (best placement) reached in the round. Expiry creates a stable-id outbox award;
 a generic ProfileStore message delivers it on the active session or next return
@@ -646,7 +647,7 @@ atomically. Every new durable message keeps a fixed claim deadline 30 days after
 the award was created; queue retries do not renew it, and an expired message is
 acknowledged without a grant on the player's next return. Durable deliveries open queued click-through receipts; the Gauntlet
 receipt names and pictures the Champion Egg. Hidden IDs are never observed or paid
-once `hide_internal_accounts` is back on; the exclusion remains TEMP disabled for testing.
+while `hide_internal_accounts` is enabled for release.
 Each of the four origins keeps its own saved power kit plus a shared last
 catalog squad under `GameData.RangeDefaults`; do not put that field on the ProfileStore
 template (same Reconcile trap as ChallengeRuns / Tutorial).

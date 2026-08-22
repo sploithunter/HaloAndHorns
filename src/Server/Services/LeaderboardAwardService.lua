@@ -92,6 +92,11 @@ function LeaderboardAwardService:_windowSeconds()
     return ChallengeRun.leaderboardWindow(self._challengeConfig)
 end
 
+function LeaderboardAwardService:_roundEnd(startedAt)
+    local seconds, _, _, boundary = ChallengeRun.leaderboardWindow(self._challengeConfig)
+    return ChallengeRun.fixedWindowEnd(startedAt, seconds, boundary)
+end
+
 function LeaderboardAwardService:_eligible(userId)
     local hide = (self._config.publication or {}).hide_internal_accounts == true
     return not (hide and self._excluded[tonumber(userId)] == true)
@@ -178,7 +183,7 @@ function LeaderboardAwardService:_scheduleDue(board, userId, state)
     if type(active) ~= "table" then
         return
     end
-    local dueAt = math.floor(tonumber(active.started_at) or 0) + self:_windowSeconds()
+    local dueAt = self:_roundEnd(math.floor(tonumber(active.started_at) or 0))
     if dueAt <= 0 then
         return
     end
@@ -212,12 +217,19 @@ function LeaderboardAwardService:_advanceUser(board, userId, rank, roundStartedA
             if current == nil and rank == nil then
                 return nil
             end
+            local observedStart = math.floor(tonumber(roundStartedAt) or 0)
+            if observedStart <= 0 then
+                observedStart = now
+            end
+            local active = type(current) == "table" and current.active or nil
+            local activeStart = math.floor(tonumber(active and active.started_at) or observedStart)
             return LeaderboardWindowAward.advance(current, rank and {
                 rank = rank,
-                window_started_at = roundStartedAt > 0 and roundStartedAt or now,
+                window_started_at = observedStart,
             } or nil, {
                 now = now,
                 window_seconds = self:_windowSeconds(),
+                window_ends_at = self:_roundEnd(activeStart),
                 board_id = board.id,
                 board_name = board.display_name or board.id,
                 tiers = awards.tiers,

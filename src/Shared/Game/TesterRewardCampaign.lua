@@ -75,7 +75,8 @@ function TesterRewardCampaign.isClaimWindowOpen(campaign, now, isStudio)
     now = tonumber(now) or os.time()
     local startsAt = tonumber(claim.starts_at) or 0
     local endsAt = tonumber(claim.ends_at) or math.huge
-    return now >= startsAt and now <= endsAt
+    -- End is exclusive so adjacent Saturday-at-midnight campaigns never overlap.
+    return now >= startsAt and now < endsAt
 end
 
 function TesterRewardCampaign.canGrant(campaign, campaignState, claimedLevel)

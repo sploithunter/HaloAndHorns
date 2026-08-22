@@ -1725,10 +1725,11 @@ function MissionInstanceService:_persistChallengeBest(record)
             if type(prev) ~= "table" then
                 prev = {}
             end
-            local window, cap = ChallengeRun.leaderboardWindow(self._challengeConfig)
+            local window, cap, _, boundary = ChallengeRun.leaderboardWindow(self._challengeConfig)
             local nextRec = ChallengeRun.writeWindowAttempt(prev, cleared, os.time(), {
                 window_seconds = window,
                 recent_cap = cap,
+                round_boundary = boundary,
             })
             data.GameData.ChallengeRuns[record.gauntletMode] = nextRec
             if nextRec.best_room ~= (tonumber(prev.best_room) or 0) or cleared > 0 then

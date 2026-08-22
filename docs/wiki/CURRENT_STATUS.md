@@ -33,15 +33,17 @@ attempt list. The public Range / Training Ground boards use fixed, clock-aligned
 award rounds rather than sliding score expiry: entrants remain visible for the
 complete round even while offline, then both the visible cache and logical
 OrderedDataStore rotate atomically at the boundary. The board header counts down
-to that same boundary. The cadence is TEMP 30 minutes at `:00` / `:30`; production
-is 48 hours. Each public top-10 entrant retains their lowest numeric rank for that
+to that same boundary. Release cadence is one America/Denver calendar day, midnight
+to midnight; exact UTC boundaries account for 23-hour and 25-hour DST days. Each public
+top-10 entrant retains their lowest numeric rank for that
 whole round. The exact configured Top 10 bundle is delivered durably online or on
 the next return, and a queued click-through receipt explicitly shows the held
 Gauntlet Champion Egg before play continues. Unclaimed durable awards expire 30
 days after they were earned; returning after that deadline discards the pending
 message without a grant. Neither `ChallengeRuns` nor award
-delivery state belongs on the ProfileStore template. Internal IDs still publish;
-`hide_internal_accounts` hides them on the public page (TEMP off so Macros can test).
+delivery state belongs on the ProfileStore template. Internal IDs still write to keep the
+publisher deterministic, but `hide_internal_accounts` is enabled for release: the canonical
+developer/test IDs in `configs/internal_accounts.lua` are omitted from public ranks and awards.
 See [Hall of Worlds](HALL_OF_WORLDS.md). Hall arch lightning lives in an
 `ArchLightning` group inside each Hall gate visual (plus the Home Hall
 arch and `HellFaceGateTest`). The last Plaza endcap is closed by a Coming
@@ -234,8 +236,8 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
   join/relevant changes/leave, reads a top-100 cache, and exposes the first 10 to reusable tagged
   physical boards; it never walks the profile DataStore. Internal tester
   identities live in `configs/internal_accounts.lua` (IDs, not `Colorado*`
-  names) and still publish; `hide_internal_accounts` omits them from the
-  visible page only.
+  names) and still write; release `hide_internal_accounts` omits them from the
+  visible page and placement awards.
 - Top-100 placement also feeds the native People-list `Status`: `Dragonlord`, `Farmer`, `Slayer`,
   `Commander`, or `Hatcher`. The lowest rank wins for multi-board qualifiers. Eggs Hatched uses the
   same bounded cache as a status-only ranking; the authored world still has exactly four boards.

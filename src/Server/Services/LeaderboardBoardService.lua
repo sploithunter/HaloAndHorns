@@ -1,5 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+
+local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 
 local TAG = "LeaderboardBoard"
 local GUIDE_TAG = "ChallengeGuide"
@@ -235,13 +238,15 @@ function LeaderboardBoardService:_bind(host)
     self:_renderBinding(self._bindings[host], self._leaderboards:GetSnapshot(boardId))
 end
 
-function LeaderboardBoardService:_roundSeconds()
-    local leaderboard = self._challengeConfig and self._challengeConfig.leaderboard
-    return math.max(1, math.floor(tonumber(leaderboard and leaderboard.window_seconds) or 1))
+function LeaderboardBoardService:_roundPolicy()
+    local seconds, _, _, boundary = ChallengeRun.leaderboardWindow(self._challengeConfig)
+    return seconds, boundary
 end
 
 function LeaderboardBoardService:_countdownText(roundStartedAt, now)
-    local remaining = math.max(0, roundStartedAt + self:_roundSeconds() - now)
+    local seconds, boundary = self:_roundPolicy()
+    local endsAt = ChallengeRun.fixedWindowEnd(roundStartedAt, seconds, boundary)
+    local remaining = math.max(0, endsAt - now)
     local hours = math.floor(remaining / 3600)
     local minutes = math.floor((remaining % 3600) / 60)
     local seconds = remaining % 60

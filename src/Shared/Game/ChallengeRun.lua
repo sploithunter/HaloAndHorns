@@ -12,6 +12,8 @@
     run or Range kit exists.
 ]]
 
+local MountainTime = require(script.Parent.MountainTime)
+
 local ChallengeRun = {}
 
 local function clampRoom(n, rooms)
@@ -236,7 +238,8 @@ function ChallengeRun.leaderboardWindow(cfg)
     if sweep < 1 then
         sweep = DEFAULT_SWEEP_SECONDS
     end
-    return window, cap, sweep
+    local boundary = type(lb.round_boundary) == "string" and lb.round_boundary or "unix_epoch"
+    return window, cap, sweep, boundary
 end
 
 function ChallengeRun.recentChanged(before, after)
@@ -275,18 +278,28 @@ function ChallengeRun.windowBest(recent, now, windowSeconds)
 end
 
 -- Range / Training boards use fixed clock-aligned rounds rather than a sliding
--- public window. With a 30-minute test cadence this returns the top and bottom
--- of every hour in every whole-hour timezone. The old attempts may remain in
--- the player's compact recent list for award recovery, but they cannot appear
--- on the current round's board.
-function ChallengeRun.fixedWindowStart(now, windowSeconds)
+-- public window. The old attempts may remain briefly in the player's compact
+-- recent list for award recovery, but they cannot appear on the current round's board.
+function ChallengeRun.fixedWindowStart(now, windowSeconds, boundary)
     now = math.max(0, math.floor(num(now, 0)))
     windowSeconds = math.max(1, math.floor(num(windowSeconds, DEFAULT_WINDOW_SECONDS)))
+    if boundary == "mountain_midnight" then
+        return MountainTime.startOfDayUtc(now)
+    end
     return now - (now % windowSeconds)
 end
 
-function ChallengeRun.fixedWindowBest(recent, now, windowSeconds)
-    local startedAt = ChallengeRun.fixedWindowStart(now, windowSeconds)
+function ChallengeRun.fixedWindowEnd(startedAt, windowSeconds, boundary)
+    startedAt = math.max(0, math.floor(num(startedAt, 0)))
+    windowSeconds = math.max(1, math.floor(num(windowSeconds, DEFAULT_WINDOW_SECONDS)))
+    if boundary == "mountain_midnight" then
+        return MountainTime.nextStartOfDayUtc(startedAt)
+    end
+    return startedAt + windowSeconds
+end
+
+function ChallengeRun.fixedWindowBest(recent, now, windowSeconds, boundary)
+    local startedAt = ChallengeRun.fixedWindowStart(now, windowSeconds, boundary)
     local best = 0
     for _, entry in ipairs(type(recent) == "table" and recent or {}) do
         if type(entry) == "table" then
@@ -302,17 +315,20 @@ end
 
 -- Keep only in-window attempts that can still be the unique max after a
 -- better older run expires. Cap drops the lowest rooms, never the current max.
-function ChallengeRun.pruneWindow(recent, now, windowSeconds, cap)
+function ChallengeRun.pruneWindow(recent, now, windowSeconds, cap, boundary)
     windowSeconds = math.max(1, math.floor(num(windowSeconds, DEFAULT_WINDOW_SECONDS)))
     cap = math.max(1, math.floor(num(cap, DEFAULT_RECENT_CAP)))
     now = math.floor(num(now, 0))
-    local cutoff = now - windowSeconds
+    local fixed = boundary == "mountain_midnight"
+    local cutoff = if fixed
+        then ChallengeRun.fixedWindowStart(now, windowSeconds, boundary)
+        else now - windowSeconds
     local alive = {}
     for _, entry in ipairs(type(recent) == "table" and recent or {}) do
         if type(entry) == "table" then
             local room = math.max(0, math.floor(num(entry.room, 0)))
             local at = math.floor(num(entry.at, 0))
-            if room > 0 and at > cutoff then
+            if room > 0 and (if fixed then at >= cutoff else at > cutoff) then
                 alive[#alive + 1] = { room = room, at = at }
             end
         end
@@ -366,7 +382,13 @@ function ChallengeRun.writeWindowAttempt(previous, cleared, now, opts)
         nextRec[key] = value
     end
     nextRec.best_room = ChallengeRun.bestRoom(previous.best_room, room)
-    nextRec.recent = ChallengeRun.pruneWindow(recent, now, opts.window_seconds, opts.recent_cap)
+    nextRec.recent = ChallengeRun.pruneWindow(
+        recent,
+        now,
+        opts.window_seconds,
+        opts.recent_cap,
+        opts.round_boundary
+    )
     return nextRec
 end
 

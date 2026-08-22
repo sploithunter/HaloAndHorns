@@ -1,5 +1,17 @@
 # Log
 
+## 2026-08-22 — Week 3 release configuration
+
+- Opened the Patch Phoenix tester campaign for its authored Saturday-to-Saturday Mountain window
+  (2026-08-22 through 2026-08-29), closed weeks one and two, and disabled every Studio claim
+  override. The claim end is exclusive, so adjacent campaigns cannot overlap at midnight.
+- Set Range / Training Ground award rounds to one America/Denver calendar day beginning at
+  midnight. `MountainTime` now resolves exact US DST transition instants and supplies start/end
+  boundaries, so spring and fall rounds correctly last 23 and 25 absolute hours.
+- Enabled the canonical 28-account developer/test exclusion for public ranks and awards, disabled
+  Studio access to production leaderboard stores, and disabled global monetization/Robux bypass
+  test mode. A release-readiness spec locks these gates against accidental re-enablement.
+
 ## 2026-08-22 — Offline awards expire after 30 unclaimed days
 
 - Durable award messages now carry `created_at`, `queued_at`, and an immutable
