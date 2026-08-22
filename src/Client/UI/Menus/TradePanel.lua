@@ -868,6 +868,9 @@ function TradePanel:_ensureLiveGui()
     gui.Name = "TradeLive"
     gui.ResetOnSpawn = false
     gui.IgnoreGuiInset = true
+    -- Inventory cards rely on their card-local sibling layering. Make the embedding host use the
+    -- same stacking behavior instead of allowing a nested icon to outrank the later name label.
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     -- Above MenuOverlay (120) and the inventory's viewport fallback (150): server responses must
     -- remain visible even if another normal menu opens while a request is pending.
     gui.DisplayOrder = 160

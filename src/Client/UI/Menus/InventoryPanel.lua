@@ -5723,7 +5723,9 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
     nameLabel.TextColor3 = nameColor
     nameLabel.TextScaled = true
     nameLabel.Font = nameFont
-    nameLabel.ZIndex = 103
+    -- Text must sit above the icon's ImageLabel (104) even when this card is embedded under a
+    -- ScreenGui with global Z comparison. Inventory's normal sibling context used to mask this.
+    nameLabel.ZIndex = 105
     nameLabel.Parent = itemFrame
 
     powerLabel.Name = "PowerLabel"
@@ -5769,7 +5771,7 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
         or item.color
     powerLabel.TextScaled = true
     powerLabel.Font = powerFont
-    powerLabel.ZIndex = 103
+    powerLabel.ZIndex = 105
     powerLabel.Parent = itemFrame
     -- Thin dark outline: the number is painted in the rarity color, so on a same-colored card
     -- (purple-on-purple is the worst) or on white pet art it blends out. A very thin black stroke

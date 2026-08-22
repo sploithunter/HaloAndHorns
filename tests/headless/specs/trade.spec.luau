@@ -107,6 +107,12 @@ return function()
             expect(string.find(panel, "inventoryEnhancementCardItem(item)", 1, true) ~= nil).to.equal(
                 true
             )
+            expect(
+                string.find(panel, "gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling", 1, true)
+                    ~= nil
+            ).to.equal(true)
+            expect(string.find(inventory, "nameLabel.ZIndex = 105", 1, true) ~= nil).to.equal(true)
+            expect(string.find(inventory, "powerLabel.ZIndex = 105", 1, true) ~= nil).to.equal(true)
             expect(string.find(inventory, "PetBadge.create(holder, {", 1, true) ~= nil).to.equal(
                 true
             )
