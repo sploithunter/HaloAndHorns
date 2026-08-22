@@ -106,15 +106,15 @@ end
 
 function TradeService:SetInvitePrivacy(player, mode)
     local settings = self._modules and self._modules.SettingsService
-    if settings and settings.SetTradeInvitePrivacy then
-        local saved = settings:SetTradeInvitePrivacy(player, mode)
-        if saved then
-            return { ok = true, mode = self:_privacyOf(player) }
-        end
+    if not (settings and settings.SetTradeInvitePrivacy) then
+        return { ok = false, reason = "settings_service_unavailable" }
     end
-    local sanitized = TradeLogic.invitePrivacy(mode, self._config)
-    player:SetAttribute("TradeInvitePrivacy", sanitized)
-    return { ok = true, mode = sanitized }
+
+    local saved = settings:SetTradeInvitePrivacy(player, mode)
+    if not saved then
+        return { ok = false, reason = "profile_unavailable" }
+    end
+    return { ok = true, mode = self:_privacyOf(player) }
 end
 
 -- Per-recipient view: your side + the partner's side (offers + confirm flags).

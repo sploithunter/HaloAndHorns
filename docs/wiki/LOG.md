@@ -4134,3 +4134,12 @@ first-session cohort rates.
 - Team and trade privacy choices now update the profile field and request an immediate ProfileStore
   save before the server acknowledges the picker change. The version-17 migration sets Friends Only
   only once; subsequent Everyone/Friends/Off choices remain player-owned saved settings.
+
+## 2026-08-22 — Social privacy persistence composition fix
+
+- Live two-client reboot testing exposed that PartyService and TradeService had not declared
+  SettingsService as a boot dependency. Both therefore took an attribute-only compatibility path:
+  the menu remembered the choice in-session, but the profile never changed.
+- Both services now require the persistent SettingsService and fail explicitly if it is unavailable;
+  there is no successful attribute-only fallback. Normal logout, disconnect/crash removal, and
+  server shutdown continue through DataService/ProfileStore's existing confirmed release paths.

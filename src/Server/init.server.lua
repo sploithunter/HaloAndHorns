@@ -668,11 +668,13 @@ loader:RegisterModule(
     "PartyService",
     ServerScriptService.Server.Services.PartyService,
     appendIfEnabled(
-        appendIfEnabled(
-            { "Logger", "ConfigLoader", "LayerService", "ChatAnnouncementService" },
-            "player_progression",
-            "PlayerProgressionService"
-        ),
+        appendIfEnabled({
+            "Logger",
+            "ConfigLoader",
+            "LayerService",
+            "ChatAnnouncementService",
+            "SettingsService",
+        }, "player_progression", "PlayerProgressionService"),
         "map_binding",
         "ZoneService"
     )
@@ -698,6 +700,7 @@ loader:RegisterModule(
         "EnhancementService",
         "TesterRewardService",
         "TrialEggRewardService",
+        "SettingsService",
     }, "stats", "StatsService")
 )
 -- FusionService: Halo & Horns Chaotic fusion (Feature 20) — Light + Shadow -> Chaotic.

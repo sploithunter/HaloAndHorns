@@ -142,15 +142,15 @@ end
 
 function PartyService:SetInvitePrivacy(player, mode)
     local settings = self._modules and self._modules.SettingsService
-    if settings and settings.SetTeamInvitePrivacy then
-        local saved = settings:SetTeamInvitePrivacy(player, mode)
-        if saved then
-            return { ok = true, mode = self:_privacyOf(player) }
-        end
+    if not (settings and settings.SetTeamInvitePrivacy) then
+        return { ok = false, reason = "settings_service_unavailable" }
     end
-    local sanitized = PartyMath.invitePrivacy(mode, self._config)
-    player:SetAttribute("TeamInvitePrivacy", sanitized)
-    return { ok = true, mode = sanitized }
+
+    local saved = settings:SetTeamInvitePrivacy(player, mode)
+    if not saved then
+        return { ok = false, reason = "profile_unavailable" }
+    end
+    return { ok = true, mode = self:_privacyOf(player) }
 end
 
 function PartyService:_partyOf(player)

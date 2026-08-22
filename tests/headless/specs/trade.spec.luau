@@ -184,6 +184,9 @@ return function()
         it("persists both social privacy settings with a Friends Only migration", function()
             local data = readFile("src/Server/Services/DataService.lua")
             local settings = readFile("src/Server/Services/SettingsService.lua")
+            local party = readFile("src/Server/Services/PartyService.lua")
+            local trade = readFile("src/Server/Services/TradeService.lua")
+            local composition = readFile("src/Server/init.server.lua")
             expect(string.find(data, 'TeamInvitePrivacy = "friends"', 1, true) ~= nil).to.equal(
                 true
             )
@@ -199,6 +202,35 @@ return function()
                 string.find(settings, 'RequestSave(player, "team_invite_privacy"', 1, true) ~= nil
             ).to.equal(true)
             expect(string.find(settings, "debounceSeconds = 0", 1, true) ~= nil).to.equal(true)
+            expect(
+                string.find(party, "settings:SetTeamInvitePrivacy(player, mode)", 1, true) ~= nil
+            ).to.equal(true)
+            expect(
+                string.find(trade, "settings:SetTradeInvitePrivacy(player, mode)", 1, true) ~= nil
+            ).to.equal(true)
+            expect(string.find(party, 'reason = "settings_service_unavailable"', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(trade, 'reason = "settings_service_unavailable"', 1, true) ~= nil).to.equal(
+                true
+            )
+
+            local partyRegistration = string.match(
+                composition,
+                'loader:RegisterModule%(%s*"PartyService".-%)%s*%-%- TradeService'
+            )
+            local tradeRegistration = string.match(
+                composition,
+                'loader:RegisterModule%(%s*"TradeService".-%)%s*%-%- FusionService'
+            )
+            expect(partyRegistration ~= nil).to.equal(true)
+            expect(tradeRegistration ~= nil).to.equal(true)
+            expect(string.find(partyRegistration, '"SettingsService"', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(tradeRegistration, '"SettingsService"', 1, true) ~= nil).to.equal(
+                true
+            )
         end)
 
         it("keeps requester decline notices live after closing the player picker", function()
