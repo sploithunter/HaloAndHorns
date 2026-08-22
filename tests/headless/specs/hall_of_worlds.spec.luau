@@ -77,6 +77,13 @@ return function()
             expect(source:find("math.sqrt", 1, true)).to.be.ok()
         end)
 
+        it("keeps the relocated Training doorway clear of its cactus anchor", function()
+            local migration = readFile("scripts/studio/relocate_home_challenge_gates.luau")
+            expect(migration:find('GetTagged("FloraAnchor")', 1, true)).to.be.ok()
+            expect(migration:find('GetAttribute("Kind") == "cactus"', 1, true)).to.be.ok()
+            expect(migration:find("removedCactusAnchors", 1, true)).to.be.ok()
+        end)
+
         it("returns a locked Hall entry to the previous unlocked tile", function()
             local route = { "Hall_1", "Hall_2", "Hall_3", "Hall_4" }
             expect(

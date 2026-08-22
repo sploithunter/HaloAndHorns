@@ -99,5 +99,27 @@ assert(
     "Training BoardId changed"
 )
 
+-- The relocated Training arch occupies an authored cactus spawn. Remove the invisible source
+-- anchor, not only the runtime FloraService clone, so the cactus stays gone on every server boot.
+local trainingPosition = destination.TrainingGroundPad:GetPivot().Position
+local removedCactusAnchors = {}
+for _, anchor in ipairs(CollectionService:GetTagged("FloraAnchor")) do
+    if
+        anchor:IsA("BasePart")
+        and anchor:IsDescendantOf(home)
+        and anchor:GetAttribute("Kind") == "cactus"
+        and (anchor.Position - trainingPosition).Magnitude < 12
+    then
+        table.insert(removedCactusAnchors, anchor:GetFullName())
+        anchor:Destroy()
+    end
+end
+table.sort(removedCactusAnchors)
+
 ChangeHistoryService:SetWaypoint("Homeworld challenges relocated")
-return { ok = true, parent = destination:GetFullName(), moved = moved }
+return {
+    ok = true,
+    parent = destination:GetFullName(),
+    moved = moved,
+    removedCactusAnchors = removedCactusAnchors,
+}
