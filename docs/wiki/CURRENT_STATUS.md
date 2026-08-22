@@ -8,9 +8,7 @@ Hall of Worlds remains authored but entry is disabled while its map is repaired.
 character respawns resolve to Homeworld Spawn, including profiles whose saved `LastArea` was a Hall
 tile. Schema v18 strips only the four Hall route ids from `UnlockedAreas`, preserves all other world
 unlocks and player-owned data, and leaves the Hall progress ledger dormant. The Home Hall arch is
-sealed as a frosted **Hall of Worlds — Coming Soon** barrier. Rollback placement resolves the
-tagged `PlayerSpawn` under `Workspace.Maps.Home` deterministically, so another hook with the same
-area id cannot win by CollectionService iteration order.
+sealed as a frosted **Hall of Worlds — Coming Soon** barrier.
 
 Tutorial v4 restores the pre-Hall Homeworld path through the Earth egg and Earth cave. The complete
 authored Range fixture was moved to Lava and the complete Training Ground fixture to Desert under

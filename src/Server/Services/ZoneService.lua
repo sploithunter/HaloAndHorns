@@ -74,23 +74,6 @@ local function waitForRootPart(player, timeoutSeconds)
         or character:WaitForChild("HumanoidRootPart", timeoutSeconds or 5)
 end
 
-local function spawnHookCFrame(instance)
-    local part = if instance and instance:IsA("BasePart")
-        then instance
-        elseif instance and instance:IsA("Model") then instance.PrimaryPart
-            or instance:FindFirstChildWhichIsA("BasePart", true)
-        else nil
-    if not part then
-        return nil
-    end
-    local position = part.Position + Vector3.new(0, 5, 0)
-    local look = part.CFrame.LookVector
-    local flat = Vector3.new(look.X, 0, look.Z)
-    return if flat.Magnitude > 0.05
-        then CFrame.lookAt(position, position + flat.Unit)
-        else CFrame.new(position)
-end
-
 function ZoneService:Init()
     self._logger = self._modules.Logger
     self._configLoader = self._modules.ConfigLoader
@@ -258,45 +241,6 @@ end
 
 function ZoneService:_crystalSpawnArea()
     return self._hallConfig and self._hallConfig.crystal_world_area or DEFAULT_START_AREA
-end
-
--- The authored map may contain several PlayerSpawn hooks, and CollectionService does not promise
--- discovery order. During the Hall rollback the release requirement is specifically Homeworld's
--- spawn, so select the tagged hook under Workspace.Maps.Home instead of accepting whichever
--- same-AreaId hook happened to overwrite WorldBindingService's generic index last.
-function ZoneService:_homeSpawnCFrame()
-    local maps = workspace:FindFirstChild("Maps")
-    local home = maps and maps:FindFirstChild("Home")
-    if not home then
-        return nil
-    end
-    local candidates = {}
-    for _, hook in ipairs(CollectionService:GetTagged("PlayerSpawn")) do
-        if
-            hook:IsDescendantOf(home)
-            and hook:GetAttribute("AreaId") == self:_crystalSpawnArea()
-        then
-            table.insert(candidates, hook)
-        end
-    end
-    table.sort(candidates, function(a, b)
-        if (a.Name == "SpawnLocation") ~= (b.Name == "SpawnLocation") then
-            return a.Name == "SpawnLocation"
-        end
-        return a:GetFullName() < b:GetFullName()
-    end)
-    return spawnHookCFrame(candidates[1])
-end
-
-function ZoneService:_spawnCFrameForZone(zoneId)
-    local areaId = self:_resolveAreaId(zoneId)
-    if not self:IsHallEntryEnabled() and areaId == self:_crystalSpawnArea() then
-        local homeSpawn = self:_homeSpawnCFrame()
-        if homeSpawn then
-            return homeSpawn, areaId
-        end
-    end
-    return self._worldBindingService:GetSpawnCFrameForZone(zoneId)
 end
 
 function ZoneService:_rememberArea(player, areaId)
@@ -747,7 +691,8 @@ function ZoneService:_awaitSpawnSafetyDecision(player)
 end
 
 function ZoneService:PlacePlayerAtZoneSpawn(player, zoneId, options)
-    local spawnCFrame, areaId = self:_spawnCFrameForZone(zoneId or DEFAULT_START_AREA)
+    local spawnCFrame, areaId =
+        self._worldBindingService:GetSpawnCFrameForZone(zoneId or DEFAULT_START_AREA)
     if not spawnCFrame then
         return false, "missing_spawn"
     end
@@ -1047,7 +992,7 @@ function ZoneService:TravelToZone(player, targetZoneId, sourceHook)
         }
     end
 
-    local destinationCFrame = self:_spawnCFrameForZone(targetZoneId)
+    local destinationCFrame = self._worldBindingService:GetSpawnCFrameForZone(targetZoneId)
     if not destinationCFrame then
         return {
             ok = false,
