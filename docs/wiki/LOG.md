@@ -4204,3 +4204,6 @@ first-session cohort rates.
   Ground fixture to Homeworld Desert. Mission pads, gate lightning, titles, guides, leaderboards,
   tags, attributes, and scripts remain attached to the original Instances; added an idempotent
   Studio migration/audit script and guards against historical Hall tools recreating duplicates.
+- Removed the Desert cactus `FloraAnchor` that intersected the relocated Training Ground fixture.
+  The disabled Hall entry barrier now follows the authored arch with a collision-safe lower panel
+  and a segmented semicircular cap instead of protruding through the curved shoulders.

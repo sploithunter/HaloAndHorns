@@ -68,6 +68,15 @@ return function()
             expect(source:find("HALL OF WORLDS\\nCOMING SOON", 1, true)).to.be.ok()
         end)
 
+        it("keeps the disabled entry barrier inside its round-topped arch", function()
+            local source = readFile("src/Server/Services/ZoneService.lua")
+            local barrier = hall.entry_barrier
+            expect(barrier.width_fraction < 0.7).to.equal(true)
+            expect(barrier.curve_segments >= 11).to.equal(true)
+            expect(source:find("HallEntryArchCap", 1, true)).to.be.ok()
+            expect(source:find("math.sqrt", 1, true)).to.be.ok()
+        end)
+
         it("returns a locked Hall entry to the previous unlocked tile", function()
             local route = { "Hall_1", "Hall_2", "Hall_3", "Hall_4" }
             expect(

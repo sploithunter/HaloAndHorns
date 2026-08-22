@@ -1136,15 +1136,63 @@ function ZoneService:_sealDisabledHallEntryHook(hook)
     local visual = visualName and hook.Parent and hook.Parent:FindFirstChild(visualName)
     if visual and visual:IsA("Model") then
         local boxCf, boxSize = visual:GetBoundingBox()
-        hook.Size = Vector3.new(math.max(10, boxSize.X * 0.82), math.max(16, boxSize.Y * 0.82), 3)
-        hook.CFrame = boxCf
         local look = self._hallConfig and self._hallConfig.gate_appearance or {}
         local color = look.color or { 226, 236, 242 }
-        hook.Material = Enum.Material[look.material or "Ice"] or Enum.Material.Ice
-        hook.Color = Color3.fromRGB(color[1] or 226, color[2] or 236, color[3] or 242)
-        hook.Transparency = tonumber(look.transparency) or 0.28
-        hook.Reflectance = tonumber(look.reflectance) or 0.04
-        hook.CastShadow = false
+        local barrier = self._hallConfig and self._hallConfig.entry_barrier or {}
+        local openingWidth = math.max(10, boxSize.X * (tonumber(barrier.width_fraction) or 0.58))
+        local halfWidth = openingWidth / 2
+        local bottomY = -boxSize.Y / 2 + (tonumber(barrier.bottom_inset) or 0.8)
+        local archTopY = boxSize.Y / 2 - (tonumber(barrier.top_inset) or 4)
+        local springY = archTopY - halfWidth
+        local depth = tonumber(barrier.depth) or 3
+        local segmentCount = math.max(7, math.floor(tonumber(barrier.curve_segments) or 13))
+        if segmentCount % 2 == 0 then
+            segmentCount += 1
+        end
+
+        local function applyAppearance(part)
+            part.Anchored = true
+            part.Material = Enum.Material[look.material or "Ice"] or Enum.Material.Ice
+            part.Color = Color3.fromRGB(color[1] or 226, color[2] or 236, color[3] or 242)
+            part.Transparency = tonumber(look.transparency) or 0.28
+            part.Reflectance = tonumber(look.reflectance) or 0.04
+            part.CanCollide = true
+            part.CanTouch = false
+            part.CanQuery = true
+            part.CastShadow = false
+        end
+
+        -- The original travel hook becomes the jamb-height lower panel. At over twenty studs it
+        -- remains the authoritative collision barrier even if a cap strip is streamed late.
+        local lowerHeight = math.max(16, springY - bottomY)
+        hook.Size = Vector3.new(openingWidth, lowerHeight, depth)
+        hook.CFrame = boxCf * CFrame.new(0, bottomY + lowerHeight / 2, 0)
+        applyAppearance(hook)
+
+        -- Approximate the round top with adjacent, non-overlapping strips. Sampling each strip at
+        -- its outer edge keeps every visible corner inside the authored arch instead of allowing a
+        -- rectangular wall to protrude through the curved shoulders.
+        local segmentWidth = openingWidth / segmentCount
+        for index = 1, segmentCount do
+            local capName = ("HallEntryArchCap%02d"):format(index)
+            local cap = hook:FindFirstChild(capName)
+            if not (cap and cap:IsA("BasePart")) then
+                if cap then
+                    cap:Destroy()
+                end
+                cap = Instance.new("Part")
+                cap.Name = capName
+                cap.Parent = hook
+            end
+            local x = -halfWidth + (index - 0.5) * segmentWidth
+            local outerX = math.min(halfWidth, math.abs(x) + segmentWidth / 2)
+            local rise = math.sqrt(math.max(0, halfWidth * halfWidth - outerX * outerX))
+            local capHeight = math.max(0.05, rise)
+            cap.Size = Vector3.new(segmentWidth, capHeight, depth)
+            cap.CFrame = boxCf * CFrame.new(x, springY + capHeight / 2, 0)
+            applyAppearance(cap)
+            cap:SetAttribute("HallEntryArchCap", true)
+        end
     end
 
     local title = hook.Parent and hook.Parent:FindFirstChild("HallOfWorldsGateTitle")
