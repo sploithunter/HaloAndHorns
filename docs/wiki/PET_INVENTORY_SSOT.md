@@ -76,7 +76,8 @@ and lazily swept** — it can never become a phantom. And because equip/unequip 
 - **`PetEquipMigration`** — v6→v7: lift equip off records into `Equipped.pets`.
 
 All three migrations are ownership-conservation-guarded (they assert owned counts are preserved
-before committing) and run in `DataService.SchemaMigrations` (current schema version **7**).
+before committing) and run in `DataService.SchemaMigrations`. The pet storage shape was established
+by schema version **7**; the overall player-profile schema is currently version **17**.
 
 ## Server contract (`InventoryService`)
 
@@ -151,11 +152,14 @@ before committing) and run in `DataService.SchemaMigrations` (current schema ver
 - The trade pet picker uses the same live effective-power inputs, with one deliberate marketplace
   override: Huge pets form the first tier regardless of power, then Huge and non-Huge tiers each
   sort strongest-first. Quantity and stable identity fields break ties deterministically.
-- Trade embeds InventoryPanel's actual read-only pet-card renderer instead of maintaining a second
-  approximation. Trade adds only its click/offer/lock overlays, then reconciles cards by stable
-  escrow key; authoritative snapshots patch quantity, membership, and ordering in place. Inventory
-  remains the single presentation path for thumbnails, rarity chrome, role/support/enchant badges,
-  and damage/health power text, and an unrelated pet card must retain its Instance across updates.
+- Trade embeds InventoryPanel's actual read-only item-card renderer instead of maintaining separate
+  approximations for pets, enhancements, and eggs. Trade adds only its click/offer/lock overlays,
+  then reconciles cards by stable escrow key; authoritative snapshots patch quantity, membership,
+  and ordering in place. Inventory remains the single presentation path for thumbnails, egg art,
+  rarity chrome, role/support/enchant badges, provenance, and damage/health power text, and an
+  unrelated card must retain its Instance across updates. The shared card renderer explicitly keeps
+  name and power labels above image content so its presentation is invariant across Inventory and
+  Trade screen stacking contexts.
 - Card badges and tooltips resolve enchant display records through `PetEnchantView`: unique pets use
   their per-instance `enchantments` list, while stack pets project their saved `enchant` id at the
   config-owned stack strength. The two surfaces must never disagree about whether a pet is enchanted.

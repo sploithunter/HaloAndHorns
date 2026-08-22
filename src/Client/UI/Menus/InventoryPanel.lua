@@ -5723,7 +5723,9 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
     nameLabel.TextColor3 = nameColor
     nameLabel.TextScaled = true
     nameLabel.Font = nameFont
-    nameLabel.ZIndex = 103
+    -- Text must sit above the icon's ImageLabel (104) even when this card is embedded under a
+    -- ScreenGui with global Z comparison. Inventory's normal sibling context used to mask this.
+    nameLabel.ZIndex = 105
     nameLabel.Parent = itemFrame
 
     powerLabel.Name = "PowerLabel"
@@ -5769,7 +5771,7 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
         or item.color
     powerLabel.TextScaled = true
     powerLabel.Font = powerFont
-    powerLabel.ZIndex = 103
+    powerLabel.ZIndex = 105
     powerLabel.Parent = itemFrame
     -- Thin dark outline: the number is painted in the rarity color, so on a same-colored card
     -- (purple-on-purple is the worst) or on white pet art it blends out. A very thin black stroke
@@ -9294,11 +9296,11 @@ function InventoryPanel:_applyEquippedStyling(itemFrame, isEquipped, originalCol
     end
 end
 
--- Read-only adapter for inventory-style pet cards embedded in another live UI (currently Trade).
--- It deliberately calls _createItemFrameInto instead of maintaining a second pet-card renderer:
--- archetype/targeting/support/enchant badges, thumbnail policy, and power text therefore remain
--- identical to Inventory. The host owns selection/click behavior and keyed lifetime.
-function InventoryPanel.CreatePetCardRenderer(options)
+-- Read-only adapter for inventory cards embedded in another live UI (currently Trade). It
+-- deliberately calls _createItemFrameInto instead of maintaining category-specific duplicates:
+-- pet badges/power, enhancement badges, egg art, rarity chrome, and future card presentation all
+-- remain identical to Inventory. The host owns selection/click behavior and keyed lifetime.
+function InventoryPanel.CreateItemCardRenderer(options)
     options = options or {}
     local renderer = setmetatable({
         logger = LoggerWrapper.new(options.loggerName or "InventoryPetCardRenderer"),
@@ -9333,6 +9335,9 @@ function InventoryPanel.CreatePetCardRenderer(options)
 
     return renderer
 end
+
+-- Compatibility for callers released with the first pet-only version of the adapter.
+InventoryPanel.CreatePetCardRenderer = InventoryPanel.CreateItemCardRenderer
 
 function InventoryPanel:Destroy()
     self:Hide()

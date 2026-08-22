@@ -76,37 +76,43 @@ return function()
             expect(string.find(renderBody, "self:_closeWindow()", 1, true)).to.equal(nil)
         end)
 
-        it("patches offer markers and duplicate counts on retained cards", function()
+        it("patches duplicate counts without redundant offer ordinals", function()
             local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
-            expect(string.find(panel, 'selected.Name = "OfferSelectionNumber"', 1, true) ~= nil).to.equal(
-                true
-            )
-            expect(string.find(panel, 'selected.Text = "#" .. tostring(nextOrder)', 1, true) ~= nil).to.equal(
-                true
-            )
+            expect(string.find(panel, "OfferSelectionNumber", 1, true)).to.equal(nil)
             expect(string.find(panel, "quantity.Visible = count > 1", 1, true) ~= nil).to.equal(
                 true
             )
         end)
 
-        it("uses the actual inventory pet-card renderer and its full badge/power path", function()
+        it("uses the actual inventory renderer for pets, enhancements, and eggs", function()
             local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
             local inventory = readFile("src/Client/UI/Menus/InventoryPanel.lua")
             expect(string.find(panel, "PanelChrome.build(gui, {", 1, true) ~= nil).to.equal(true)
             expect(string.find(panel, "UI_CONFIG.panel_configs.inventory_panel", 1, true) ~= nil).to.equal(
                 true
             )
-            expect(string.find(panel, "InventoryPanel.CreatePetCardRenderer", 1, true) ~= nil).to.equal(
+            expect(string.find(panel, "InventoryPanel.CreateItemCardRenderer", 1, true) ~= nil).to.equal(
                 true
             )
             expect(
                 string.find(
                     panel,
-                    "self._inventoryPetCards:Create(inventoryPetCardItem(pet)",
+                    "self._inventoryCards:Create(inventoryTradeCardItem(item)",
                     1,
                     true
                 ) ~= nil
             ).to.equal(true)
+            expect(string.find(panel, "inventoryEggCardItem(item)", 1, true) ~= nil).to.equal(true)
+            expect(string.find(panel, "eggDef and eggDef.image_id", 1, true) ~= nil).to.equal(true)
+            expect(string.find(panel, "inventoryEnhancementCardItem(item)", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(
+                string.find(panel, "gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling", 1, true)
+                    ~= nil
+            ).to.equal(true)
+            expect(string.find(inventory, "nameLabel.ZIndex = 105", 1, true) ~= nil).to.equal(true)
+            expect(string.find(inventory, "powerLabel.ZIndex = 105", 1, true) ~= nil).to.equal(true)
             expect(string.find(inventory, "PetBadge.create(holder, {", 1, true) ~= nil).to.equal(
                 true
             )
@@ -186,6 +192,13 @@ return function()
             )
             expect(string.find(data, "SchemaMigrations[16]", 1, true) ~= nil).to.equal(true)
             expect(string.find(settings, "SetTradeInvitePrivacy", 1, true) ~= nil).to.equal(true)
+            expect(
+                string.find(settings, 'RequestSave(player, "trade_invite_privacy"', 1, true) ~= nil
+            ).to.equal(true)
+            expect(
+                string.find(settings, 'RequestSave(player, "team_invite_privacy"', 1, true) ~= nil
+            ).to.equal(true)
+            expect(string.find(settings, "debounceSeconds = 0", 1, true) ~= nil).to.equal(true)
         end)
 
         it("keeps requester decline notices live after closing the player picker", function()

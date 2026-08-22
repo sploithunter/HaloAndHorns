@@ -1110,6 +1110,9 @@ function TradeService:ListMyEggs(player)
             variant = item.award_tier or item.variant or "basic",
             quantity = tonumber(item.quantity) or 1,
             award_id = item.award_id,
+            -- Owner-only picker payload. Preserve the same provenance/variant fields Inventory uses
+            -- so Trade can render the exact inventory egg card instead of an emoji approximation.
+            record = deepCopy(item),
         }
     end
     return { ok = true, eggs = out }
