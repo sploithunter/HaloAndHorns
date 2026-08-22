@@ -10,7 +10,10 @@
       "$ignoreUnknownInstances": true,
       "$properties": {
         "FallenPartsDestroyHeight": -50000,
-        "StreamingIntegrityMode": "PauseOutsideLoadedArea"
+        "ModelStreamingBehavior": "Improved",
+        "StreamingIntegrityMode": "PauseOutsideLoadedArea",
+        "StreamingMinRadius": 1024,
+        "StreamingTargetRadius": 1536
       }
     },
     "ServerScriptService": {

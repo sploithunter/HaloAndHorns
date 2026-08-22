@@ -61,4 +61,44 @@ return function()
             expect(at1.tint[2]).to.near(0.4, 1e-9)
         end)
     end)
+
+    describe("RealmTheme.withDistanceHaze", function()
+        it("enforces the streaming-horizon envelope without replacing the level palette", function()
+            local theme = {
+                atmosphere = {
+                    density = 0.12,
+                    haze = 0.8,
+                    offset = 0.25,
+                    color = { 12, 34, 56 },
+                },
+            }
+            local result = RealmTheme.withDistanceHaze(theme, {
+                minimum_density = 0.32,
+                minimum_haze = 2.4,
+                maximum_offset = 0.12,
+            })
+
+            expect(result.atmosphere.density).to.near(0.32, 1e-9)
+            expect(result.atmosphere.haze).to.near(2.4, 1e-9)
+            expect(result.atmosphere.offset).to.near(0.12, 1e-9)
+            expect(result.atmosphere.color[1]).to.equal(12)
+            expect(result.atmosphere.color[2]).to.equal(34)
+            expect(result.atmosphere.color[3]).to.equal(56)
+            expect(theme.atmosphere.density).to.near(0.12, 1e-9)
+        end)
+
+        it("preserves stronger per-level atmosphere values", function()
+            local result = RealmTheme.withDistanceHaze({
+                atmosphere = { density = 0.45, haze = 3, offset = 0.05 },
+            }, {
+                minimum_density = 0.32,
+                minimum_haze = 2.4,
+                maximum_offset = 0.12,
+            })
+
+            expect(result.atmosphere.density).to.near(0.45, 1e-9)
+            expect(result.atmosphere.haze).to.near(3, 1e-9)
+            expect(result.atmosphere.offset).to.near(0.05, 1e-9)
+        end)
+    end)
 end

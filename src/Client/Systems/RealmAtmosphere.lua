@@ -103,6 +103,13 @@ function RealmAtmosphere.start()
             haze = atmos.Haze,
         },
     }
+    -- Streaming can leave the stacked world with no geometry behind the current layer. Roblox
+    -- hides legacy FogStart/FogEnd whenever an Atmosphere exists, so establish the shared
+    -- distance-obscuring envelope on the authored base before blending toward each realm's deep
+    -- endpoint. Colors, clock, ambient light, and the increasing per-level intensity remain
+    -- distinct; only the minimum aerial perspective is shared.
+    local distanceHaze = themes.distance_haze
+    baseTheme = RealmTheme.withDistanceHaze(baseTheme, distanceHaze)
 
     -- Per-layer skybox swap (configs/layers.lua atmosphere.sky.per_layer). Capture the base sky
     -- faces so a layer with no textures restores the map's original sky.
@@ -251,7 +258,7 @@ function RealmAtmosphere.start()
             return baseTheme -- base / neutral / unknown
         end
         local t = RealmTheme.progress(layerId, maxDepth)
-        return RealmTheme.interpolate(baseTheme, deep, t)
+        return RealmTheme.interpolate(baseTheme, RealmTheme.withDistanceHaze(deep, distanceHaze), t)
     end
 
     local function refresh(announce)
