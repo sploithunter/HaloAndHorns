@@ -1,5 +1,17 @@
 # Log
 
+## 2026-08-22 — Offline awards expire after 30 unclaimed days
+
+- Durable award messages now carry `created_at`, `queued_at`, and an immutable
+  `expires_at` 30 days after creation. Leaderboard awards anchor creation to the
+  award-round end, so a failed queue acknowledgement or retry cannot renew the deadline.
+- On the next profile activation, an expired unclaimed message is acknowledged and
+  critically saved without calling `RewardService` or presenting a receipt. Legacy
+  timestamp-free messages remain valid rather than being guessed or silently forfeited.
+- A dormant producer outbox first revisited after its deadline is consumed without
+  calling `ProfileStore:MessageAsync`, so an already-forfeited award never enlarges the
+  player's offline message queue.
+
 ## 2026-08-22 — Challenge boards and awards share fixed rounds
 
 - Replaced the per-attempt sliding public Range / Training window with fixed,

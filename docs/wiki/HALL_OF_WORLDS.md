@@ -298,7 +298,9 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   The server retains each entrant's best numeric rank during that fixed award round, then
   durably queues the exact configured Top 10 bundle. Delivery occurs immediately when online or on
   the next return, with a queued click-through receipt showing the Champion Egg; stable ids make
-  retries idempotent. Both boards share the Gauntlet Champion reward ladder: ranks 1–10 pay
+  retries idempotent. The claim deadline is 30 days after that award round ends; retries preserve
+  the original deadline, and returning later discards the expired message without granting it.
+  Both boards share the Gauntlet Champion reward ladder: ranks 1–10 pay
   1,500/1,200/1,000/800/700/600/500/450/400/350 Gems and at least one held Champion Egg. Higher
   ranks add more eggs, origin-usable Single/Dual enhancements, Double XP/Coins, and Future Call
   tokens; rank 1 also receives a direct Crowned Chimera. The 30-minute window remains pre-release

@@ -642,7 +642,9 @@ Each player's award state uses that same round start and retains the lowest nume
 rank (best placement) reached in the round. Expiry creates a stable-id outbox award;
 a generic ProfileStore message delivers it on the active session or next return
 through RewardService, with the claim ledger and message acknowledgement saved
-atomically. Durable deliveries open queued click-through receipts; the Gauntlet
+atomically. Every new durable message keeps a fixed claim deadline 30 days after
+the award was created; queue retries do not renew it, and an expired message is
+acknowledged without a grant on the player's next return. Durable deliveries open queued click-through receipts; the Gauntlet
 receipt names and pictures the Champion Egg. Hidden IDs are never observed or paid
 once `hide_internal_accounts` is back on; the exclusion remains TEMP disabled for testing.
 Each of the four origins keeps its own saved power kit plus a shared last

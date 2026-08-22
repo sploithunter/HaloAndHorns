@@ -243,6 +243,9 @@ function LeaderboardAwardService:_advanceUser(board, userId, rank, roundStartedA
     local queued = self._delivery:QueueForUser(userId, {
         id = pending.id,
         source = "leaderboard:" .. board.id,
+        -- Anchor the generic 30-day claim period to when this award round ended. A retry
+        -- must never extend an offline player's deadline.
+        created_at = pending.window_ended_at,
         bundle = pending.bundle,
         notification = {
             event = "award_delivered",
