@@ -1,4 +1,5 @@
 local AwardDelivery = loadModule("src/Shared/Game/AwardDelivery.lua")
+local rewardsConfig = loadModule("configs/rewards.lua")
 
 return function()
     describe("AwardDelivery", function()
@@ -14,6 +15,53 @@ return function()
             expect(message.kind).to.equal("award_delivery")
             expect(message.version).to.equal(1)
         end)
+
+        it("stamps a stable 30-day claim deadline and expires at the boundary", function()
+            local seconds = AwardDelivery.DEFAULT_UNCLAIMED_EXPIRY_SECONDS
+            expect(rewardsConfig.delivery.unclaimed_expiry_seconds).to.equal(seconds)
+            local message = AwardDelivery.message({
+                id = "leaderboard:range_current:100",
+                created_at = 100,
+                bundle = { currencies = { gems = 100 } },
+            }, {
+                now = 500,
+                expiry_seconds = seconds,
+            })
+
+            expect(message.award.created_at).to.equal(100)
+            expect(message.award.queued_at).to.equal(500)
+            expect(message.award.expires_at).to.equal(100 + seconds)
+            expect(AwardDelivery.isExpired(message.award, 100 + seconds - 1)).to.equal(false)
+            expect(AwardDelivery.isExpired(message.award, 100 + seconds)).to.equal(true)
+        end)
+
+        it("does not renew an explicit deadline when a stable award is retried", function()
+            local message = AwardDelivery.message({
+                id = "leaderboard:range_current:100",
+                created_at = 100,
+                expires_at = 200,
+                bundle = { currencies = { gems = 100 } },
+            }, {
+                now = 190,
+                expiry_seconds = 999,
+            })
+
+            expect(message.award.expires_at).to.equal(200)
+            expect(message.award.queued_at).to.equal(190)
+        end)
+
+        it(
+            "keeps legacy timestamp-free messages valid without inventing an expiry on receipt",
+            function()
+                local message = AwardDelivery.message({
+                    id = "legacy",
+                    bundle = { currencies = { gems = 1 } },
+                })
+                local ok = AwardDelivery.validateMessage(message)
+                expect(ok).to.equal(true)
+                expect(AwardDelivery.isExpired(message.award, 999999)).to.equal(false)
+            end
+        )
 
         it("rejects malformed messages without claiming unrelated profile messages", function()
             local ok, reason = AwardDelivery.validateMessage({ kind = "trade_receipt" })

@@ -12,6 +12,9 @@ return {
         -- Stable ids make retried ProfileStore messages idempotent. Keep a bounded profile ledger;
         -- producers must never reuse an id after it has aged out of this history.
         claimed_id_limit = 500,
+        -- A player has 30 days from the award's creation time to return and claim it. Expired
+        -- ProfileStore messages are acknowledged without granting when the profile is next active.
+        unclaimed_expiry_seconds = 30 * 24 * 60 * 60,
     },
     -- Bucket used for reward items when an item entry omits its own bucket.
     default_item_bucket = "consumables",

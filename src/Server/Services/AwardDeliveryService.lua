@@ -107,6 +107,23 @@ function AwardDeliveryService:_deliver(player, profile, message, processed)
         return
     end
 
+    if AwardDelivery.isExpired(award, os.time()) then
+        processed()
+        self._dataService:RequestSave(player, "award_discard_expired:" .. award.id, {
+            critical = true,
+        })
+        self._logger:Info("Discarded unclaimed durable award after expiry", {
+            context = "AwardDeliveryService",
+            player = player.Name,
+            userId = player.UserId,
+            awardId = award.id,
+            source = award.source,
+            expiresAt = award.expires_at,
+        })
+        finish()
+        return
+    end
+
     local ok, result = pcall(function()
         return self._rewardService:Grant(
             player,
@@ -155,7 +172,11 @@ function AwardDeliveryService:QueueForUser(userId, award)
         return { ok = false, reason = "invalid_user_id" }
     end
 
-    local ok, messageOrError = pcall(AwardDelivery.message, award)
+    local delivery = self._config.delivery or {}
+    local ok, messageOrError = pcall(AwardDelivery.message, award, {
+        now = os.time(),
+        expiry_seconds = delivery.unclaimed_expiry_seconds,
+    })
     if not ok then
         return { ok = false, reason = "invalid_award", error = tostring(messageOrError) }
     end
@@ -184,7 +205,11 @@ function AwardDeliveryService:QueueForUser(userId, award)
         awardId = award.id,
         source = award.source,
     })
-    return { ok = true, awardId = award.id }
+    return {
+        ok = true,
+        awardId = award.id,
+        expiresAt = messageOrError.award.expires_at,
+    }
 end
 
 return AwardDeliveryService

@@ -37,7 +37,9 @@ to that same boundary. The cadence is TEMP 30 minutes at `:00` / `:30`; producti
 is 48 hours. Each public top-10 entrant retains their lowest numeric rank for that
 whole round. The exact configured Top 10 bundle is delivered durably online or on
 the next return, and a queued click-through receipt explicitly shows the held
-Gauntlet Champion Egg before play continues. Neither `ChallengeRuns` nor award
+Gauntlet Champion Egg before play continues. Unclaimed durable awards expire 30
+days after they were earned; returning after that deadline discards the pending
+message without a grant. Neither `ChallengeRuns` nor award
 delivery state belongs on the ProfileStore template. Internal IDs still publish;
 `hide_internal_accounts` hides them on the public page (TEMP off so Macros can test).
 See [Hall of Worlds](HALL_OF_WORLDS.md). Hall arch lightning lives in an
