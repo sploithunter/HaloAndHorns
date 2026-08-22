@@ -146,11 +146,12 @@ return function()
             expect(ChallengeRun.bestRoom(4, 0)).to.equal(4)
         end)
 
-        it("ranks the best room inside a sliding window", function()
-            local window, cap, sweep = ChallengeRun.leaderboardWindow(challengeCfg)
-            expect(window).to.equal(30 * 60)
+        it("ranks the best room inside the configured release window", function()
+            local window, cap, sweep, boundary = ChallengeRun.leaderboardWindow(challengeCfg)
+            expect(window).to.equal(24 * 60 * 60)
             expect(cap >= 1).to.equal(true)
             expect(sweep).to.equal(5 * 60)
+            expect(boundary).to.equal("mountain_midnight")
             expect(ChallengeRun.recentChanged({ { room = 12, at = 1 } }, { { room = 12, at = 1 } })).to.equal(
                 false
             )
@@ -192,6 +193,39 @@ return function()
             }, now, window)
             expect(startedAt).to.equal(3 * window)
             expect(best).to.equal(18)
+        end)
+
+        it("aligns release rounds to Mountain midnight across DST", function()
+            local window = 24 * 60 * 60
+            local boundary = "mountain_midnight"
+            local now = 1787409863
+            expect(ChallengeRun.fixedWindowStart(now, window, boundary)).to.equal(1787378400)
+            expect(ChallengeRun.fixedWindowEnd(1787378400, window, boundary)).to.equal(1787464800)
+
+            local best, startedAt = ChallengeRun.fixedWindowBest({
+                { room = 99, at = 1787378399 },
+                { room = 21, at = 1787378400 },
+                { room = 34, at = now },
+            }, now, window, boundary)
+            expect(startedAt).to.equal(1787378400)
+            expect(best).to.equal(34)
+
+            expect(ChallengeRun.fixedWindowEnd(1772953200, window, boundary)).to.equal(1773036000)
+            expect(ChallengeRun.fixedWindowEnd(1793512800, window, boundary)).to.equal(1793602800)
+        end)
+
+        it("retains the full 25-hour fall-back round when pruning attempts", function()
+            local window = 24 * 60 * 60
+            local boundary = "mountain_midnight"
+            local nearFallRoundEnd = 1793602799
+            local recent = ChallengeRun.pruneWindow({
+                { room = 80, at = 1793512799 },
+                { room = 60, at = 1793512800 },
+                { room = 50, at = nearFallRoundEnd },
+            }, nearFallRoundEnd, window, 48, boundary)
+            expect(#recent).to.equal(2)
+            expect(recent[1].at).to.equal(1793512800)
+            expect(recent[2].at).to.equal(nearFallRoundEnd)
         end)
 
         it("treats a fully downed squad as a wipe and blocks revives", function()

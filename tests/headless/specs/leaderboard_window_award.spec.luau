@@ -90,6 +90,34 @@ return function()
             end
         )
 
+        it("settles at the exact supplied DST-aware round end", function()
+            local state = WindowAward.advance(nil, {
+                rank = 2,
+                window_started_at = 1772953200,
+            }, {
+                now = 1772953200,
+                window_seconds = 24 * 60 * 60,
+                window_ends_at = 1773036000,
+                board_id = "range_current",
+                board_name = "The Range",
+                tiers = TIERS,
+            })
+
+            state = WindowAward.advance(state, nil, {
+                now = 1773036000,
+                window_seconds = 24 * 60 * 60,
+                window_ends_at = 1773036000,
+                board_id = "range_current",
+                board_name = "The Range",
+                tiers = TIERS,
+            })
+
+            expect(state.active).to.equal(nil)
+            expect(state.pending.window_started_at).to.equal(1772953200)
+            expect(state.pending.window_ended_at).to.equal(1773036000)
+            expect(state.pending.rank).to.equal(2)
+        end)
+
         it("freezes an expired active window while an older outbox award is pending", function()
             local state = advance(nil, 1, 100)
             state = advance(state, 4, 400)

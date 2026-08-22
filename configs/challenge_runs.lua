@@ -13,15 +13,16 @@ return {
     -- Current boards: best cleared room in one fixed, clock-aligned round.
     -- Persist GameData.ChallengeRuns.<mode>.recent only when a run exists.
     leaderboard = {
-        -- Production is 48 hours. TEMP 30 minutes (:00/:30) so we can exercise
-        -- settlement + return delivery without letting a public board live forever.
-        window_seconds = 30 * 60,
+        -- Release cadence: one America/Denver calendar day, midnight to midnight.
+        -- The boundary policy, not a fixed UTC offset, keeps midnight correct across DST.
+        window_seconds = 24 * 60 * 60,
         fixed_rounds = true,
+        round_boundary = "mountain_midnight",
         recent_cap = 48,
-        -- Expire stale window scores: server start, BindToClose, and this interval.
+        -- Rotate stale round scores: server start, BindToClose, and this interval.
         sweep_seconds = 5 * 60,
-        -- Rewards pay LeaderboardScoring.publicTop only. Hidden internal
-        -- accounts are never paid once hide_internal_accounts is back on.
+        -- Rewards pay LeaderboardScoring.publicTop only. Release-hidden internal
+        -- accounts never enter the award observation path.
     },
 
     modes = {

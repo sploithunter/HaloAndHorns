@@ -1,10 +1,11 @@
 # Beta Tester Reward Campaigns
 
-Status: week one is closed to new claims and week-two Signal Seal claiming is enabled from Saturday
-2026-08-15 00:00 through Saturday 2026-08-22 00:00 Mountain time. The Events panel shows the same
-explicit window as **Beta Test Week Two**. Already-reserved and granted awards from either campaign
-continue to reconcile after public claiming closes. Weeks three through five are fully authored and
-admin-testable in Studio, but remain closed to production claims until their scheduled launch weeks.
+Status: weeks one and two are closed to new claims. Week-three Patch Phoenix claiming is enabled
+from Saturday 2026-08-22 00:00 through Saturday 2026-08-29 00:00 Mountain time, with the end
+exclusive. The Events panel shows the same explicit window as **Beta Test Week Three**.
+Already-reserved and granted awards from earlier campaigns continue to reconcile after public
+claiming closes. Weeks four and five remain closed to production claims until their launch weeks.
+All `claim.studio_enabled` overrides are false in the release configuration.
 
 ## Player contract
 
@@ -38,8 +39,8 @@ can resize the same species, but a campaign may name a distinct Huge species.
 
 - Campaign id: `beta_week_1_2026`; public `claim.enabled = false`. Its expired timestamps and full
   definition remain in the SSOT so existing awards continue to reconcile.
-- `claim.studio_enabled = true` opens the same reservation and level-gated grant flow only when
-  `RunService:IsStudio()` is true; it never opens production claiming.
+- The release configuration keeps `claim.studio_enabled = false`; use the explicit Admin grant and
+  reset controls for Studio regression tests without reopening public campaign reservations.
 - One Beta Tester Egg at claimed level 2 hatches the exclusive Grass/Melee robot dog **Beta Byte**;
   the same held egg or resulting pet becomes Golden at 5
   and Rainbow at 10. The hatch has a 1% same-species Huge roll.
@@ -68,6 +69,16 @@ can resize the same species, but a campaign may name a distinct Huge species.
   ordinary level-two Studio run does not receive every future egg. Historical award reconciliation
   is unaffected.
 
+## Week three: Patch Phoenix
+
+- Campaign id: `beta_week_3_2026`; public claiming runs Saturday 2026-08-22 00:00 through Saturday
+  2026-08-29 00:00 Mountain time, with the end exclusive.
+- One Patch Phoenix Egg at claimed level 2 hatches the exclusive Lava/Ranged **Patch Phoenix**. The
+  same held egg or resulting pet becomes Golden at 5 and Rainbow at 10, with a 1% same-species Huge
+  roll. Egg odds are fixed, so player luck does not affect the result.
+- Patch Phoenix provides the deterministic **Windfall** (`drop_rate`) farming aura while deployed.
+  `claim.studio_enabled` remains false for release; Admin controls remain the Studio test path.
+
 ## Five-week farming identities
 
 Each tester exclusive carries exactly one authored player-facing Natural farming aura. It is part of
@@ -83,11 +94,11 @@ the five-week collection identity without making the reward a general combat car
 | Core Digger | Prospector | currency earned from crystals |
 | Cache Bandit | XP Surge | all player XP |
 
-Signal Seal's campaign is live for week two. Patch Phoenix, Core Digger, and Cache Bandit have
+Patch Phoenix's campaign is live for week three. Patch Phoenix, Core Digger, and Cache Bandit have
 normal/Golden models and transparent card art; Rainbow reuses the normal asset with the standard
 runtime treatment. Their one-pet inventory eggs use distinct art, immutable award provenance, and
-the same level-2/5/10 plus 1% Huge contract. Future public claims are disabled while
-`studio_enabled = true` preserves the full regression path.
+the same level-2/5/10 plus 1% Huge contract. Future public claims and all Studio reservation
+overrides are disabled; explicit Admin grants preserve the full regression path.
 XP Surge is intentionally last and Prospector second-to-last so early tester rounds assess baseline
 leveling and crystal-income balance rather than a reward-modified economy.
 Huge tester rewards retain `huge`, serial, identity, and award provenance when their campaign tier

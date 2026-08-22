@@ -26,8 +26,7 @@ return {
                 -- (06:00 UTC). The end is exclusive so week two can take over cleanly.
                 starts_at = 1786168800,
                 ends_at = 1786773600,
-                -- Keep Studio on the same reservation/grant path for repeatable testing.
-                studio_enabled = true,
+                studio_enabled = false,
             },
         },
 
@@ -43,12 +42,12 @@ return {
             rainbow_level = 10,
             huge_chance = 0.01,
             claim = {
-                enabled = true,
+                enabled = false,
                 -- Saturday 2026-08-15 00:00 through Saturday 2026-08-22 00:00 Mountain
                 -- (06:00 UTC). The end is exclusive so week three can take over cleanly.
                 starts_at = 1786773600,
                 ends_at = 1787378400,
-                studio_enabled = true,
+                studio_enabled = false,
             },
         },
 
@@ -62,7 +61,7 @@ return {
             rainbow_level = 10,
             huge_chance = 0.01,
             claim = {
-                enabled = false,
+                enabled = true,
                 starts_at = 1787378400,
                 ends_at = 1787983200,
                 -- Exercise future campaigns through their explicit admin grant controls.

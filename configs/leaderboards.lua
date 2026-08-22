@@ -128,17 +128,15 @@ return {
         refresh_seconds = 90,
         debounce_seconds = 20,
         derive_debounce_seconds = 1,
-        -- Studio Play can GetSortedAsync the live OrderedDataStores. Writes stay
-        -- gated by each board's studio_enabled so testers never publish —
-        -- except this TEMP so Macros can land on the Range/TG signs.
-        studio_read_global = true,
-        studio_write_global = true,
-        -- Internal IDs are always written. hide=true omits them from the
-        -- public top 10. TEMP false so Macros can be seen while we test.
-        hide_internal_accounts = false,
+        -- Release safety: Studio neither reads nor writes live production boards.
+        studio_read_global = false,
+        studio_write_global = false,
+        -- Internal IDs are still stored for deterministic publisher behavior, but the
+        -- canonical configs/internal_accounts.lua set is omitted from public ranks and awards.
+        hide_internal_accounts = true,
     },
 
-    -- Display-only hide list. Scores still publish. IDs live in
+    -- Optional extra hide list for public ranks and awards. Scores still publish. IDs live in
     -- configs/internal_accounts.lua (not Colorado* names). Optional extras
     -- can be appended here.
 
@@ -258,12 +256,10 @@ return {
             },
             awards = {
                 enabled = true,
-                -- TEMP Studio access supports the 30-minute pre-release test. Disable with the
-                -- other Studio live-store exceptions before publication.
-                studio_enabled = true,
+                studio_enabled = false,
                 state_store = "LB_RangeAwardWindows_v1",
                 observation_debounce_seconds = 5 * 60,
-                -- Production cadence is 48 hours. The pre-release window remains 30 minutes.
+                -- Daily Mountain-midnight cadence comes from challenge_runs.leaderboard.
                 -- Every rank has an exact bundle, delivered through the durable award queue.
                 tiers = championAwardTiers(),
             },
@@ -283,7 +279,7 @@ return {
             },
             awards = {
                 enabled = true,
-                studio_enabled = true,
+                studio_enabled = false,
                 state_store = "LB_TrainingAwardWindows_v1",
                 observation_debounce_seconds = 5 * 60,
                 tiers = championAwardTiers(),

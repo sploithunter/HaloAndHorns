@@ -68,7 +68,14 @@ function LeaderboardWindowAward.advance(state, observation, options)
         end
     end
 
-    local activeExpired = active and now >= active.started_at + windowSeconds
+    local configuredEnd = math.floor(tonumber(options.window_ends_at) or 0)
+    local activeEndsAt = nil
+    if active then
+        activeEndsAt = if configuredEnd > active.started_at
+            then configuredEnd
+            else active.started_at + windowSeconds
+    end
+    local activeExpired = active and now >= activeEndsAt
     local blockedByOlderPending = activeExpired and nextState.pending ~= nil
     if activeExpired then
         if nextState.pending == nil then
@@ -80,7 +87,7 @@ function LeaderboardWindowAward.advance(state, observation, options)
                     board_name = options.board_name,
                     rank = active.best_rank,
                     window_started_at = active.started_at,
-                    window_ended_at = active.started_at + windowSeconds,
+                    window_ended_at = activeEndsAt,
                     bundle = copyMap(tier.reward),
                     reward_label = tier.label,
                 }

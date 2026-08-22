@@ -490,8 +490,8 @@ return {
         enforce_level_requirements = true,
         enforce_first_time_buyer = true,
         test_mode = {
-            enabled = true, -- Allow free purchases in Studio
-            bypass_robux = true,
+            enabled = false,
+            bypass_robux = false,
             log_transactions = true,
         },
     },
