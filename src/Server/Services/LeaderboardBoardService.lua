@@ -153,7 +153,7 @@ function LeaderboardBoardService:_bind(host)
         header,
         "Title",
         UDim2.fromOffset(32, 10),
-        UDim2.new(1, isChallenge and -264 or -64, 0, 54),
+        UDim2.new(1, isChallenge and -294 or -64, 0, 54),
         definition.display_name,
         42
     )
@@ -161,7 +161,7 @@ function LeaderboardBoardService:_bind(host)
         header,
         "Subtitle",
         UDim2.fromOffset(34, 60),
-        UDim2.new(1, -68, 0, 32),
+        UDim2.new(1, isChallenge and -304 or -68, 0, 32),
         definition.subtitle or "Global leaders",
         21
     )
@@ -170,13 +170,14 @@ function LeaderboardBoardService:_bind(host)
     if isChallenge then
         local countdown = label(
             header,
-            "ResetClock",
-            UDim2.new(1, -242, 0, 18),
-            UDim2.fromOffset(214, 34),
-            "RESET IN --:--:--",
-            19,
+            "RoundClock",
+            UDim2.new(1, -278, 0, 12),
+            UDim2.fromOffset(250, 64),
+            "--:--:--",
+            42,
             Enum.TextXAlignment.Right
         )
+        countdown.Font = Enum.Font.GothamBlack
         countdown.TextColor3 =
             color(definition.style and definition.style.accent, Color3.fromRGB(255, 205, 70))
     end
@@ -244,7 +245,7 @@ function LeaderboardBoardService:_countdownText(roundStartedAt, now)
     local hours = math.floor(remaining / 3600)
     local minutes = math.floor((remaining % 3600) / 60)
     local seconds = remaining % 60
-    return string.format("RESET IN %02d:%02d:%02d", hours, minutes, seconds)
+    return string.format("%02d:%02d:%02d", hours, minutes, seconds)
 end
 
 function LeaderboardBoardService:_updateCountdowns(now)
@@ -253,7 +254,7 @@ function LeaderboardBoardService:_updateCountdowns(now)
             self._bindings[host] = nil
         elseif binding.isChallenge and binding.roundStartedAt then
             local header = binding.root:FindFirstChild("Header")
-            local clock = header and header:FindFirstChild("ResetClock")
+            local clock = header and header:FindFirstChild("RoundClock")
             if clock then
                 clock.Text = self:_countdownText(binding.roundStartedAt, now)
             end

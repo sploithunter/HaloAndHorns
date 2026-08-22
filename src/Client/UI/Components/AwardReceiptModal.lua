@@ -36,6 +36,7 @@ end
 
 local function addStroke(parent, color, thickness)
     local stroke = Instance.new("UIStroke")
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Color = color
     stroke.Thickness = thickness
     stroke.Parent = parent
