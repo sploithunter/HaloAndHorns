@@ -1,7 +1,8 @@
 --[[
-    LeaderboardAwardService — rolling placement windows for configured global boards.
+    LeaderboardAwardService — fixed-round placement awards for configured global boards.
 
-    A per-board DataStore record tracks each entrant's best (lowest numeric) public rank.
+    A per-board DataStore record tracks each entrant's best (lowest numeric) public rank
+    for the same clock-aligned round shown on the physical board.
     Expired records become an immutable pending award, then queue through the generic
     AwardDeliveryService. If a player is offline, settlement runs when they return; a
     stable award id and an outbox-style pending record make every retry safe.

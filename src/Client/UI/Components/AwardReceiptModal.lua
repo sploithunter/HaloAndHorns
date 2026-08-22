@@ -56,7 +56,7 @@ local function eggDisplay(eggId, quantity)
     if not eggId then
         return "Rewards added", ""
     end
-    local egg = petsConfig.eggs and petsConfig.eggs[eggId]
+    local egg = petsConfig.egg_sources and petsConfig.egg_sources[eggId]
     local name = egg and egg.name or "Award Item"
     if quantity and quantity > 1 then
         name = string.format("%s ×%d", name, quantity)
@@ -214,13 +214,20 @@ local function showNext()
     confirm.BorderSizePixel = 0
     confirm.Text = "Got it!"
     confirm.TextColor3 = Color3.new(1, 1, 1)
-    confirm.TextSize = 25
-    confirm.Font = Enum.Font.GothamBlack
+    confirm.TextSize = 22
+    confirm.TextStrokeTransparency = 1
+    confirm.Font = Enum.Font.GothamBold
     confirm.AutoButtonColor = true
     confirm.Selectable = true
     confirm.ZIndex = 4
     addCorner(confirm, 18)
     addStroke(confirm, Color3.fromRGB(122, 255, 151), 3)
+    local selectionImage = Instance.new("Frame")
+    selectionImage.Name = "RoundedSelection"
+    selectionImage.BackgroundTransparency = 1
+    addCorner(selectionImage, 18)
+    addStroke(selectionImage, GOLD, 4)
+    confirm.SelectionImageObject = selectionImage
     confirm.Parent = card
 
     local closed = false
@@ -242,7 +249,9 @@ local function showNext()
 
     gui.Parent = playerGui
     UIViewportScale.attach(card, { min = 0.55 })
-    GuiService.SelectedObject = confirm
+    if player:GetAttribute("InputMode") == "gamepad" then
+        GuiService.SelectedObject = confirm
+    end
 end
 
 function AwardReceiptModal.show(ctx)

@@ -1,10 +1,10 @@
 --[[
-    LeaderboardWindowAward — pure rolling-window placement award state.
+    LeaderboardWindowAward — pure fixed-round placement award state.
 
-    Each player's window begins when they first enter an award roster. During the
-    window we retain the LOWEST NUMERIC rank (their best placement). When the
-    window expires, that placement becomes one durable pending award. A new rolling
-    window may begin immediately while the old award waits for queue acknowledgement.
+    Each player's state is stamped with the public board's authoritative round
+    start. During that round we retain the LOWEST NUMERIC rank (their best
+    placement). When the round expires, that placement becomes one durable pending
+    award. A new round may begin while the old award waits for queue acknowledgement.
 ]]
 
 local LeaderboardWindowAward = {}

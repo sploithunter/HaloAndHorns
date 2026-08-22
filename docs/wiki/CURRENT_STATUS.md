@@ -28,15 +28,18 @@ A downed slot stays down for the run (no Ready/Summon
 timer) and cannot be refilled. Entry-tile kit-up is white slots only. Overworld
 red slots stay reserved for 60s. Neither field spawns farmable crate or
 crystal-node debris (the MissionCrate placeholder was a sideways crystal).
-Best room persists under `GameData.ChallengeRuns`, plus a sliding-window `recent`
-list that feeds the current Range / Training Ground OrderedDataStores.
-A run writes and publishes immediately; window expiry sweeps at server
-start, every 5 minutes, and BindToClose. Neither field belongs on the
-ProfileStore template. Internal IDs still publish; `hide_internal_accounts`
-hides them on the public page (TEMP off so Macros can test). The score and award window is TEMP
-30 minutes (production 48 hours). Each public top-10 entrant retains their best numeric rank during
-their personal rolling window; expiry queues 100 gems for rank 1, 50 for ranks 2–3, or 25 for ranks
-4–10. Delivery is durable across offline sessions and shows a personal award banner on return.
+Best room persists under `GameData.ChallengeRuns`, plus a compact `recent`
+attempt list. The public Range / Training Ground boards use fixed, clock-aligned
+award rounds rather than sliding score expiry: entrants remain visible for the
+complete round even while offline, then both the visible cache and logical
+OrderedDataStore rotate atomically at the boundary. The board header counts down
+to that same boundary. The cadence is TEMP 30 minutes at `:00` / `:30`; production
+is 48 hours. Each public top-10 entrant retains their lowest numeric rank for that
+whole round. The exact configured Top 10 bundle is delivered durably online or on
+the next return, and a queued click-through receipt explicitly shows the held
+Gauntlet Champion Egg before play continues. Neither `ChallengeRuns` nor award
+delivery state belongs on the ProfileStore template. Internal IDs still publish;
+`hide_internal_accounts` hides them on the public page (TEMP off so Macros can test).
 See [Hall of Worlds](HALL_OF_WORLDS.md). Hall arch lightning lives in an
 `ArchLightning` group inside each Hall gate visual (plus the Home Hall
 arch and `HellFaceGateTest`). The last Plaza endcap is closed by a Coming
