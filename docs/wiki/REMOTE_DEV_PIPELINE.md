@@ -227,6 +227,12 @@ control-disable path needs one live Studio confirmation. Not a hard limit.
 4. For release: create an Open Cloud API key (publish scope) and export
    `ROBLOX_OPEN_CLOUD_KEY`, plus set the universe/place IDs.
 
+After **every Studio reboot**, call `list_roblox_studios` again. The Studio MCP
+instance id changes on reboot; select/use the newly returned id (a state call is
+enough to establish the target) before any inspection, Luau execution, or Play
+control. Never reuse the pre-reboot id or treat an empty/stale result as a reason
+to bypass the MCP path.
+
 ## Running the pipeline
 
 ```bash
