@@ -4207,3 +4207,6 @@ first-session cohort rates.
 - Removed the Desert cactus `FloraAnchor` that intersected the relocated Training Ground fixture.
   The disabled Hall entry barrier now follows the authored arch with a collision-safe lower panel
   and a segmented semicircular cap instead of protruding through the curved shoulders.
+- Corrected the Home challenge recovery pass to preserve designer-moved visible fixtures, derive
+  both invisible mission-pad positions from their Range/Training arches, and clear cactus anchors
+  against the visible Training doorway rather than a stale pad transform.
