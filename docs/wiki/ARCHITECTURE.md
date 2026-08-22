@@ -131,7 +131,8 @@ filtered out of production registries.
   next return, it grants through `RewardService`, records the id under the lazy
   `GameData.AwardDelivery` ledger, acknowledges the message, and requests one critical profile save;
   grant + claim id + acknowledgement therefore commit together. Leaderboard settlements use it now,
-  and future offline exchange receipts should call the same `QueueForUser` boundary.
+  and future offline exchange receipts should call the same `QueueForUser` boundary. After the
+  authoritative mutation, the client queues a click-through receipt instead of a transient banner.
 - `LeaderboardService` owns event-driven leaderboard scoring and OrderedDataStore publication. It
   never enumerates saved profiles: join, relevant counter/inventory changes, leave, and server
   shutdown replace only the current player's key. Global reads cache the top 100 scores while
@@ -140,7 +141,8 @@ filtered out of production registries.
   models tagged `LeaderboardBoard` with a `BoardId` attribute. The same top-100 cache awards compact
   People-list activity titles: Dragonlord, Farmer, Slayer, Commander, or Hatcher. Best numerical
   placement wins when a player qualifies for several; egg hatches are status-only and do not add a
-  fifth physical board.
+  fifth physical board. Range / Training are the exception to lifetime storage: fixed award rounds
+  use round-suffixed OrderedDataStores and an authoritative header countdown, then rotate as one unit.
 - `LeaderboardAwardService` observes only successful global public snapshots for configured award
   boards. Per-board DataStore state holds each entrant's rolling-window best numeric rank plus an
   outbox-style pending award. Pending bundles are immutable, stable ids make cross-server retries

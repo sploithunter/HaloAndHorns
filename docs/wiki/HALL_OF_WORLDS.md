@@ -284,18 +284,21 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   slot lock becomes a 60s overworld lock. Squad wipe
   (every squad pet down) records the last **cleared** room and tears down, same as leaving
   through the entrance.
-- Persist `GameData.ChallengeRuns.<mode>.best_room` and a sliding-window `recent`
+- Persist `GameData.ChallengeRuns.<mode>.best_room` and a compact `recent`
   attempt list only when a run exists. Do **not** put `ChallengeRuns` on the
   ProfileStore template (same Reconcile trap as Tutorial). Current boards
-  `range_current` / `training_ground_current` publish the windowed best
-  room when a run ends (and on join). Window expiry sweeps at server
-  start, every 5 minutes, and BindToClose. Internal IDs still write;
+  `range_current` / `training_ground_current` publish the fixed-round best
+  room when a run ends. Entrants stay on the board for the whole award round,
+  including while offline. At the boundary the service switches to a new
+  round-suffixed logical OrderedDataStore and clears the visible cache as one
+  operation; it never waits for each saved attempt to expire. Internal IDs still write;
   `hide_internal_accounts` only omits them from the visible top 10
-  (TEMP off for Macros testing). Window is TEMP 30 minutes (production 48 hours).
-  The server retains each entrant's best numeric rank during their rolling award window, then
+  (TEMP off for Macros testing). The header countdown uses the same boundary.
+  Rounds are TEMP 30 minutes at `:00` / `:30` (production 48 hours).
+  The server retains each entrant's best numeric rank during that fixed award round, then
   durably queues the exact configured Top 10 bundle. Delivery occurs immediately when online or on
-  the next return, with a personal award banner; stable ids make retries idempotent. Backend only —
-  no HUD countdown yet. Both boards share the Gauntlet Champion reward ladder: ranks 1–10 pay
+  the next return, with a queued click-through receipt showing the Champion Egg; stable ids make
+  retries idempotent. Both boards share the Gauntlet Champion reward ladder: ranks 1–10 pay
   1,500/1,200/1,000/800/700/600/500/450/400/350 Gems and at least one held Champion Egg. Higher
   ranks add more eggs, origin-usable Single/Dual enhancements, Double XP/Coins, and Future Call
   tokens; rank 1 also receives a direct Crowned Chimera. The 30-minute window remains pre-release

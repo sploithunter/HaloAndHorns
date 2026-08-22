@@ -26,12 +26,17 @@ local items = require(ReplicatedStorage.Configs:WaitForChild("items"))
 local potions = require(ReplicatedStorage.Configs:WaitForChild("potions"))
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
+local AwardReceiptModal = require(script.Parent.Parent.UI.Components.AwardReceiptModal)
 local AscensionPresentation = require(script.Parent.AscensionPresentation)
 
 local GameEvents = {}
 
 -- reaction kind -> handler(spec, ctx). Add a new kind here and it's instantly usable from config.
 local REACTIONS = {}
+
+REACTIONS.award_receipt = function(_, ctx)
+    AwardReceiptModal.show(ctx)
+end
 
 -- sound: spec is a key into configs/sounds.lua; play it one-shot on its configured bus.
 REACTIONS.sound = function(soundKey)

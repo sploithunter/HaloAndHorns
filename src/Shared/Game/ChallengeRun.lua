@@ -274,6 +274,32 @@ function ChallengeRun.windowBest(recent, now, windowSeconds)
     return best
 end
 
+-- Range / Training boards use fixed clock-aligned rounds rather than a sliding
+-- public window. With a 30-minute test cadence this returns the top and bottom
+-- of every hour in every whole-hour timezone. The old attempts may remain in
+-- the player's compact recent list for award recovery, but they cannot appear
+-- on the current round's board.
+function ChallengeRun.fixedWindowStart(now, windowSeconds)
+    now = math.max(0, math.floor(num(now, 0)))
+    windowSeconds = math.max(1, math.floor(num(windowSeconds, DEFAULT_WINDOW_SECONDS)))
+    return now - (now % windowSeconds)
+end
+
+function ChallengeRun.fixedWindowBest(recent, now, windowSeconds)
+    local startedAt = ChallengeRun.fixedWindowStart(now, windowSeconds)
+    local best = 0
+    for _, entry in ipairs(type(recent) == "table" and recent or {}) do
+        if type(entry) == "table" then
+            local room = math.max(0, math.floor(num(entry.room, 0)))
+            local at = math.floor(num(entry.at, 0))
+            if room > best and at >= startedAt then
+                best = room
+            end
+        end
+    end
+    return best, startedAt
+end
+
 -- Keep only in-window attempts that can still be the unique max after a
 -- better older run expires. Cap drops the lowest rooms, never the current max.
 function ChallengeRun.pruneWindow(recent, now, windowSeconds, cap)

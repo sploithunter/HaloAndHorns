@@ -17,6 +17,7 @@ local KNOWN_KINDS = {
     vfx = true,
     float = true,
     banner = true, -- lingering screen-center card (achievements etc.)
+    award_receipt = true, -- queued click-through confirmation for durable server awards
     world_visual = true, -- ANNOTATION, not a reaction: the world itself is the visual
     world_sound = true, -- SERVER-side positional sound at the player (everyone nearby hears)
     world_sound_range = true, -- optional RollOffMaxDistance for world_sound (studs)
@@ -42,6 +43,7 @@ return function()
                     local visual = entry.vfx
                         or entry.float
                         or entry.banner
+                        or entry.award_receipt
                         or entry.effect_transfer
                         or entry.world_visual
                     if not visual then

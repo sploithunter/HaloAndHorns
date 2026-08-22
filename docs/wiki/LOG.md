@@ -1,5 +1,17 @@
 # Log
 
+## 2026-08-22 — Challenge boards and awards share fixed rounds
+
+- Replaced the per-attempt sliding public Range / Training window with fixed,
+  clock-aligned award rounds. Entrants remain visible while offline for the full
+  round; a new round-suffixed OrderedDataStore and empty cache take over atomically
+  at the boundary. Test cadence is 30 minutes (`:00` / `:30`), production 48 hours.
+- Aligned placement award state and stable award ids to the same round start, and
+  added a prominent `HH:MM:SS` header clock driven by that authoritative boundary.
+- Durable awards now queue a click-through receipt after grant/save. Gauntlet
+  receipts show the Champion Egg thumbnail, quantity, exact rank/reward summary,
+  and remain until the player selects **Got it!**.
+
 ## 2026-08-21 — Recovered the stranded post-PR Hall work
 
 - PR #251 merged remote beta head `db21c81`, but the completed follow-up commits

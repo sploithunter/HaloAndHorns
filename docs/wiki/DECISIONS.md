@@ -627,21 +627,23 @@ field, claimed/earned Level unchanged. Kill XP still pays from earned
 Level (`xp_from = "earned_level"`, optional `xp_mult`) so Range is not a
 leveling machine. Training Ground does not pin and skips the overworld
 `min_engage_level` onramp (`skip_engage_gate`) so a reachable door fights.
-Current Range / Training Ground boards are a 48-hour sliding window of
-best cleared room (`challenge_window`), published through the existing
-one-player OrderedDataStore pipeline. Persist and publish when a run
-records a room — not on player exit. The window is the only timer:
-sweep at server start, every 5 minutes, and BindToClose. Persist
-`recent` attempts only when a run exists — not on the ProfileStore
-template. Immutable creator/test IDs in `internal_accounts` still publish;
-`hide_internal_accounts` hides them on the public page only. Do not
-RemoveAsync those keys. TEMP: hide is off and Studio may write so Macros
-can appear on the Range/TG signs. Window is TEMP 30 minutes (production 48 hours).
-Each player's award window begins on their first public top-10 observation and retains the lowest
-numeric rank (best placement) reached in that rolling window. Expiry creates a stable-id outbox
-award; a generic ProfileStore message delivers it on the active session or next return through
-RewardService, with the claim ledger and message acknowledgement saved atomically. The configured
-tiers are rank 1 = 100 gems, ranks 2–3 = 50, ranks 4–10 = 25. Hidden IDs are never observed or paid
+Current Range / Training Ground boards are fixed, clock-aligned award rounds of
+best cleared room, published through the existing one-player OrderedDataStore
+pipeline. An entrant remains visible for the complete round even when offline.
+At the boundary every server drops the old cache and reads a new round-suffixed
+logical OrderedDataStore, so the board clears atomically without enumerating
+profiles or relying on each attempt's age. The board header counts down from the
+same configured boundary. Persist `recent` attempts only when a run exists — not
+on the ProfileStore template. The cadence is TEMP 30 minutes (`:00` / `:30`);
+production is 48 hours. Immutable creator/test IDs still publish;
+`hide_internal_accounts` hides them on the public page only. TEMP: hide is off
+and Studio may write so Macros can appear on the Range/TG signs.
+Each player's award state uses that same round start and retains the lowest numeric
+rank (best placement) reached in the round. Expiry creates a stable-id outbox award;
+a generic ProfileStore message delivers it on the active session or next return
+through RewardService, with the claim ledger and message acknowledgement saved
+atomically. Durable deliveries open queued click-through receipts; the Gauntlet
+receipt names and pictures the Champion Egg. Hidden IDs are never observed or paid
 once `hide_internal_accounts` is back on; the exclusion remains TEMP disabled for testing.
 Each of the four origins keeps its own saved power kit plus a shared last
 catalog squad under `GameData.RangeDefaults`; do not put that field on the ProfileStore

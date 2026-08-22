@@ -1,7 +1,8 @@
 --[[
-    LeaderboardAwardService — rolling placement windows for configured global boards.
+    LeaderboardAwardService — fixed-round placement awards for configured global boards.
 
-    A per-board DataStore record tracks each entrant's best (lowest numeric) public rank.
+    A per-board DataStore record tracks each entrant's best (lowest numeric) public rank
+    for the same clock-aligned round shown on the physical board.
     Expired records become an immutable pending award, then queue through the generic
     AwardDeliveryService. If a player is offline, settlement runs when they return; a
     stable award id and an outbox-style pending record make every retry safe.
@@ -54,7 +55,7 @@ function LeaderboardAwardService:Start()
         task.spawn(function()
             if Readiness.awaitAttribute(player, "DataLoaded", true, 20) and player.Parent then
                 for _, board in pairs(self._boards) do
-                    self:_scheduleAdvance(board, player.UserId, nil)
+                    self:_scheduleAdvance(board, player.UserId, nil, nil)
                 end
             end
         end)
@@ -73,7 +74,7 @@ function LeaderboardAwardService:Start()
         for key, due in pairs(self._due) do
             if now >= due.at then
                 self._due[key] = nil
-                self:_scheduleAdvance(due.board, due.userId, nil)
+                self:_scheduleAdvance(due.board, due.userId, nil, nil)
             end
         end
     end)
@@ -133,6 +134,7 @@ function LeaderboardAwardService:_observeSnapshot(boardId, snapshot)
     end
 
     local now = os.time()
+    local roundStartedAt = math.floor(tonumber(snapshot.roundStartedAt) or 0)
     local debounce =
         math.max(30, math.floor(tonumber((board.awards or {}).observation_debounce_seconds) or 300))
     for _, entry in ipairs(snapshot.entries or {}) do
@@ -143,13 +145,13 @@ function LeaderboardAwardService:_observeSnapshot(boardId, snapshot)
             local last = self._lastObservation[key]
             if not last or last.rank ~= rank or now - last.at >= debounce then
                 self._lastObservation[key] = { rank = rank, at = now }
-                self:_scheduleAdvance(board, userId, rank)
+                self:_scheduleAdvance(board, userId, rank, roundStartedAt)
             end
         end
     end
 end
 
-function LeaderboardAwardService:_scheduleAdvance(board, userId, rank)
+function LeaderboardAwardService:_scheduleAdvance(board, userId, rank, roundStartedAt)
     local key = board.id .. ":" .. tostring(userId)
     if self._updating[key] then
         return
@@ -157,7 +159,7 @@ function LeaderboardAwardService:_scheduleAdvance(board, userId, rank)
     self._updating[key] = true
     task.spawn(function()
         local ok, err = pcall(function()
-            self:_advanceUser(board, userId, rank)
+            self:_advanceUser(board, userId, rank, roundStartedAt)
         end)
         self._updating[key] = nil
         if not ok then
@@ -192,7 +194,7 @@ function LeaderboardAwardService:_scheduleDue(board, userId, state)
     }
 end
 
-function LeaderboardAwardService:_advanceUser(board, userId, rank)
+function LeaderboardAwardService:_advanceUser(board, userId, rank, roundStartedAt)
     local store = self:_storeFor(board)
     if not store then
         return
@@ -210,7 +212,10 @@ function LeaderboardAwardService:_advanceUser(board, userId, rank)
             if current == nil and rank == nil then
                 return nil
             end
-            return LeaderboardWindowAward.advance(current, rank and { rank = rank } or nil, {
+            return LeaderboardWindowAward.advance(current, rank and {
+                rank = rank,
+                window_started_at = roundStartedAt > 0 and roundStartedAt or now,
+            } or nil, {
                 now = now,
                 window_seconds = self:_windowSeconds(),
                 board_id = board.id,
@@ -241,6 +246,7 @@ function LeaderboardAwardService:_advanceUser(board, userId, rank)
         bundle = pending.bundle,
         notification = {
             event = "award_delivered",
+            title = "Gauntlet Champion Award",
             name = string.format(
                 "🏆 %s award — best rank #%d: %s",
                 tostring(pending.board_name or board.display_name or board.id),
@@ -260,11 +266,7 @@ function LeaderboardAwardService:_advanceUser(board, userId, rank)
             -- UpdateAsync transform interprets its second return as the userIds
             -- metadata array, so returning that boolean makes Roblox reject the
             -- write with AttributeFormatError instead of clearing the outbox.
-            local acknowledgedState = LeaderboardWindowAward.acknowledge(
-                current,
-                pending.id,
-                ackAt
-            )
+            local acknowledgedState = LeaderboardWindowAward.acknowledge(current, pending.id, ackAt)
             return acknowledgedState
         end)
     end)

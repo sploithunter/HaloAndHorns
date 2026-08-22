@@ -1,10 +1,10 @@
 --[[
-    LeaderboardWindowAward — pure rolling-window placement award state.
+    LeaderboardWindowAward — pure fixed-round placement award state.
 
-    Each player's window begins when they first enter an award roster. During the
-    window we retain the LOWEST NUMERIC rank (their best placement). When the
-    window expires, that placement becomes one durable pending award. A new rolling
-    window may begin immediately while the old award waits for queue acknowledgement.
+    Each player's state is stamped with the public board's authoritative round
+    start. During that round we retain the LOWEST NUMERIC rank (their best
+    placement). When the round expires, that placement becomes one durable pending
+    award. A new round may begin while the old award waits for queue acknowledgement.
 ]]
 
 local LeaderboardWindowAward = {}
@@ -91,12 +91,15 @@ function LeaderboardWindowAward.advance(state, observation, options)
     end
 
     local rank = positiveInteger(observation and observation.rank)
+    local observedWindowStart = observation
+            and math.max(0, math.floor(tonumber(observation.window_started_at) or now))
+        or now
     -- One outbox slot is deliberate. If a prior award cannot queue for longer than a full
     -- window, freeze the expired placement rather than letting later ranks leak into it.
     if rank and not blockedByOlderPending then
         if not active then
             active = {
-                started_at = now,
+                started_at = observedWindowStart,
                 best_rank = rank,
             }
             nextState.active = active
