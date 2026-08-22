@@ -4199,7 +4199,9 @@ first-session cohort rates.
   normalizes stale Hall resumes to Home Spawn and removes only Hall route unlock ids; owned pets,
   eggs, enhancements, currencies, powers, rewards, and non-Hall unlocks are preserved.
 - Restored the pre-Hall Homeworld tutorial as version 4 with semantic migrations from every prior
-  step ordering. The Home Hall portal becomes a frosted closed-for-repairs barrier.
+  step ordering. The Home Hall portal becomes a frosted **Hall of Worlds — Coming Soon** barrier.
+- Made rollback placement select the tagged Home-map `PlayerSpawn` deterministically instead of
+  relying on unordered global tag discovery when multiple spawn hooks share an area id.
 - Via Studio MCP, reparented the complete original Range fixture to Homeworld Lava and Training
   Ground fixture to Homeworld Desert. Mission pads, gate lightning, titles, guides, leaderboards,
   tags, attributes, and scripts remain attached to the original Instances; added an idempotent

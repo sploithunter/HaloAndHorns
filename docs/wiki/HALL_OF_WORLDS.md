@@ -16,7 +16,7 @@ a routing rollback, not a player-data rollback.
   `Spawn`, and changes only `GameData.LastArea`; pets, eggs, enhancements, currencies, powers,
   rewards, and the dormant Hall ledger are untouched.
 - `hall_of_worlds.entry_enabled = false` rejects Hall travel/guest visits and seals the Home Hall
-  portal as a collidable frosted-Ice **CLOSED FOR REPAIRS** wall. World Travel follows ordinary
+  portal as a collidable frosted-Ice **HALL OF WORLDS — COMING SOON** wall. World Travel follows ordinary
   Homeworld unlock rules.
 - Tutorial v4 restores the original Homeworld order and targets: Earth egg, Home mining, squad,
   Earth-cave fight, Berserk Brew, Rally, then Resonance binding/cast/enhancement. Versioned semantic

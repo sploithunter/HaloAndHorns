@@ -63,6 +63,15 @@ return function()
             expect(changedAgain).to.equal(false)
         end)
 
+        it("pins rollback placement to the authored Home PlayerSpawn", function()
+            local source = readFile("src/Server/Services/ZoneService.lua")
+            expect(source:find('CollectionService:GetTagged("PlayerSpawn")', 1, true)).to.be.ok()
+            expect(source:find("hook:IsDescendantOf(home)", 1, true)).to.be.ok()
+            expect(source:find('a.Name == "SpawnLocation"', 1, true)).to.be.ok()
+            expect(source:find("self:_spawnCFrameForZone(targetZoneId)", 1, true)).to.be.ok()
+            expect(source:find("HALL OF WORLDS\\nCOMING SOON", 1, true)).to.be.ok()
+        end)
+
         it("returns a locked Hall entry to the previous unlocked tile", function()
             local route = { "Hall_1", "Hall_2", "Hall_3", "Hall_4" }
             expect(
