@@ -15,18 +15,17 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ContentProvider = game:GetService("ContentProvider")
 local CloseButton = require(script.Parent.Parent.Components.CloseButton)
 local PanelChrome = require(script.Parent.Parent.Components.PanelChrome)
 local KeyedCardGrid = require(script.Parent.Parent.Components.KeyedCardGrid)
 local Pill = require(script.Parent.Parent.Pill)
+local InventoryPanel = require(script.Parent.InventoryPanel)
+local PetCardStyle = require(script.Parent.Parent.PetCardStyle)
 -- shared amount-picker popover (offer N copies of a stack with a slider, vs N clicks)
 local QuantitySelector = require(script.Parent.Parent.Components.QuantitySelector)
 
 local REMOTE_NAME = "GameAPICommand"
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
-local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
-local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local TradeReveal = require(ReplicatedStorage.Shared.Game.TradeReveal)
 local TradePetSort = require(ReplicatedStorage.Shared.Game.TradePetSort)
 local TradeLogic = require(ReplicatedStorage.Shared.Game.TradeLogic)
@@ -37,13 +36,6 @@ local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime)
 local gameEventsOk, GameEvents = pcall(function()
     return require(script.Parent.Parent.Parent.Systems.GameEvents)
 end)
-
-local petThumbsOk, PET_THUMBNAILS = pcall(function()
-    return require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail_assets"))
-end)
-if not petThumbsOk then
-    PET_THUMBNAILS = nil
-end
 
 local function config(name)
     local ok, value = pcall(function()
@@ -115,16 +107,15 @@ local function eternalLevelScale(rarityId, level)
     return 1 + cap * math.clamp((level - 1) / (maxLevel - 1), 0, 1)
 end
 
--- Resolve the same effective number inventory uses for sorting: configured level
--- power, Eternal floor, role aptitude, variant, live biome, and live realm.
-local function tradeDisplayPower(item)
+-- Resolve the same configured/level/Eternal base InventoryPanel puts on its card item. Inventory's
+-- shared card renderer applies role aptitude, variant, live biome, and live realm to this value.
+local function tradeCardPower(item)
     local record = type(item.record) == "table" and item.record or item
     local petType = item.id or record.id
     local variant = item.variant or record.variant or "basic"
     local petData = PETS_CONFIG.getPet and PETS_CONFIG.getPet(petType, variant)
     local level = item.level or record.level or 1
     local isHuge = item.huge == true or record.huge == true
-    local isCreator = item.creator == true or record.creator == true
     local power = PetPower.basePowerForLevel(petData, isHuge, level, PET_PROGRESSION)
 
     local eternalPercent = configuredEternalPercent(petData, record, variant)
@@ -136,6 +127,18 @@ local function tradeDisplayPower(item)
         )
         power = math.max(power, eternalPower)
     end
+
+    return power, petData
+end
+
+-- Resolve the same effective number inventory uses for sorting: configured level power, Eternal
+-- floor, role aptitude, variant, live biome, and live realm.
+local function tradeDisplayPower(item)
+    local record = type(item.record) == "table" and item.record or item
+    local petType = item.id or record.id
+    local variant = item.variant or record.variant or "basic"
+    local isCreator = item.creator == true or record.creator == true
+    local power = tradeCardPower(item)
 
     local origin = COMBAT_FX.origin or {}
     local zones = AREAS_CONFIG.zones or {}
@@ -197,6 +200,10 @@ function TradePanel.new()
     self.window = nil
     self.requestPopup = nil
     self.state = nil
+    self._inventoryPetCards = InventoryPanel.CreatePetCardRenderer({
+        cardSize = TRADE_CARD_SIZE,
+        loggerName = "TradeInventoryCards",
+    })
     -- Listen synchronously so a fast response cannot race panel construction. This connection
     -- stays live when the player picker closes, allowing decline/timeout/opened pushes to arrive.
     local remote = Signals.TradeUpdate
@@ -316,6 +323,54 @@ local function petDisplayName(item)
     local id = item.id or (item.record and item.record.id)
     local pet = id and PETS_CONFIG.pets and PETS_CONFIG.pets[id]
     return tostring((pet and pet.display_name) or id or "Pet")
+end
+
+-- Translate an escrow/source descriptor into the exact display item consumed by InventoryPanel's
+-- card renderer. Preserve the complete record so enchant and identity badges read the same fields
+-- they do in Inventory; only the renderer-facing identity/name/power fields are normalized here.
+local function inventoryPetCardItem(pet)
+    local record = type(pet.record) == "table" and pet.record or pet
+    local petType = pet.id or record.id
+    local variant = pet.variant or record.variant or "basic"
+    local petData = PETS_CONFIG.getPet and PETS_CONFIG.getPet(petType, variant)
+    local huge = pet.huge == true or record.huge == true
+    local creator = pet.creator == true or record.creator == true
+    local rarityId = huge and "huge"
+        or pet.rarity_id
+        or record.rarity_id
+        or (petData and petData.rarity_id)
+        or variant
+    local recordKey = pet.recordKey or pet.uid
+    local stack = type(recordKey) == "string" and string.find(recordKey, ":", 1, true) ~= nil
+    local familyName = (petData and (petData.family_display_name or petData.name))
+        or petDisplayName(pet)
+
+    local item = table.clone(record)
+    item.id = (stack and "stack|" or "special|") .. tostring(recordKey or petType)
+    item.uid = tostring(recordKey or pet.uid or petType)
+    item.name = (huge and "Huge " or "")
+        .. tostring(familyName)
+        .. (pet.serial and (" #" .. tostring(pet.serial)) or "")
+    item.icon = "🐾"
+    item.rarity = tostring(rarityId):gsub("^%l", string.upper)
+    item.rarityId = rarityId
+    item.color = PetCardStyle.rarityColor(rarityId, petType)
+    item.category = "Pets"
+    item.folder_source = "pets"
+    item.count = tonumber(pet.count) or tonumber(pet.quantity) or 1
+    item.power = tradeCardPower(pet)
+    item.basePower = item.power
+    item.effectivePower = item.power
+    item.level = pet.level or record.level or 1
+    item.huge = huge
+    item.creator = creator
+    item.serial = pet.serial or record.serial
+    item.locked = pet.locked == true or record.locked == true
+    item.special = not stack
+    item.petType = petType
+    item.variant = variant
+    item.use3DModel = true
+    return item
 end
 
 local function tradeKindKey(item)
@@ -554,6 +609,10 @@ function TradePanel:Destroy()
     if self._tradeUpdateConnection then
         self._tradeUpdateConnection:Disconnect()
         self._tradeUpdateConnection = nil
+    end
+    if self._inventoryPetCards then
+        self._inventoryPetCards:Destroy()
+        self._inventoryPetCards = nil
     end
 end
 
@@ -883,7 +942,6 @@ end
 
 -- The live trade window uses the same shared shell and pet-card configuration as Inventory.
 -- Authoritative TradeUpdate packets PATCH this hierarchy; they never replace the window or grids.
-local PetCardStyle = require(script.Parent.Parent.PetCardStyle)
 local PetBadge = require(script.Parent.Parent.PetBadge) -- shared enhancement-badge renderer (unified w/ inventory)
 local VARIANT_COLORS = { -- tooltip stroke accents only; cards use PetCardStyle chrome
     basic = Color3.fromRGB(120, 125, 140),
@@ -1487,247 +1545,78 @@ function TradePanel:_enhCard(parent, item, order, opts)
     return controller
 end
 
--- Inventory-style pet card. Static chrome/art is constructed once; quantity, offer state, ordering,
--- power, and click behavior are patched by the controller returned to KeyedCardGrid.
+-- The actual InventoryPanel pet-card renderer, embedded behind a trade-only hit target. Static
+-- art, all badges, and both power numbers are built once; only count/offer/click state is patched.
 function TradePanel:_petCard(parent, pet, order, opts)
-    local record = type(pet.record) == "table" and pet.record or pet
-    local card = Instance.new("TextButton")
+    local card = self._inventoryPetCards:Create(inventoryPetCardItem(pet), order, parent)
     card.Name = "TradePetCard"
-    card.Text = ""
-    card.Size = UDim2.fromOffset(TRADE_CARD_SIZE.X, TRADE_CARD_SIZE.Y)
-    card.LayoutOrder = order
-    card.ZIndex = 103
-    card.Parent = parent
-    corner(card, 12)
-    local rarityId = pet.rarity_id or record.rarity_id
-    local rarityColor = PetCardStyle.applyChrome(card, rarityId, pet.variant, pet.id)
+    local baseColor = card.BackgroundColor3
+    local quantity = card:FindFirstChild("QtyLabel")
 
-    -- Match InventoryPanel's configured circular icon backdrop and variant treatment.
-    local iconScale = math.clamp(tonumber(inventoryGridConfig.icon_scale) or 0.85, 0.1, 1.2)
-    local iconSize = math.floor(TRADE_CARD_SIZE.X * iconScale)
-    local iconBackground = Instance.new("Frame")
-    iconBackground.Name = "IconBackground"
-    iconBackground.Size = UDim2.fromOffset(iconSize, iconSize)
-    iconBackground.Position =
-        UDim2.new(0.5, -math.floor(iconSize / 2), 0, math.floor(TRADE_CARD_SIZE.Y * 0.08))
-    iconBackground.BackgroundColor3 = rarityColor
-    iconBackground.BackgroundTransparency = 0.8
-    iconBackground.BorderSizePixel = 0
-    iconBackground.ZIndex = 103
-    iconBackground.Parent = card
-    local iconCorner = Instance.new("UICorner")
-    iconCorner.CornerRadius = UDim.new(0, math.floor(TRADE_CARD_SIZE.X * 0.3))
-    iconCorner.Parent = iconBackground
-    local cardStyle = PetCardStyle.styleFor(rarityId, pet.variant)
-    if cardStyle.variantRing then
-        iconBackground.BackgroundTransparency = 0.35
-        local iconGradient = Instance.new("UIGradient")
-        iconGradient.Name = "VariantIconGradient"
-        iconGradient.Color = PetCardStyle.colorSequence(cardStyle.variantRing.colors, rarityColor)
-        iconGradient.Rotation = tonumber(cardStyle.variantRing.rotation) or 0
-        iconGradient.Parent = iconBackground
-        if cardStyle.variantRing.animated == true then
-            PetCardStyle.spin(iconGradient, tonumber(cardStyle.variantRing.rotation_seconds) or 3)
-        end
-    end
-
-    -- Flat uploaded art follows Inventory's resolver/fetch policy, preserving the loaded image
-    -- Instance across all later trade snapshots.
-    local icon
-    local variant = tostring(pet.variant or "basic")
-    local thumbId =
-        PetThumbnailResolver.resolve(PET_THUMBNAILS, tostring(pet.id), variant, pet.huge == true)
-    if thumbId then
-        local holder = Instance.new("Frame")
-        holder.Name = "PetThumbnail"
-        holder.Size = UDim2.fromScale(1, 1)
-        holder.BackgroundTransparency = 1
-
-        local pending = Instance.new("TextLabel")
-        pending.Name = "PetThumbnailPending"
-        pending.Size = UDim2.fromScale(0.8, 0.8)
-        pending.Position = UDim2.fromScale(0.1, 0.1)
-        pending.BackgroundTransparency = 1
-        pending.Text = "🐾"
-        pending.TextScaled = true
-        pending.ZIndex = 104
-        pending.Parent = holder
-
-        local flat = Instance.new("ImageLabel")
-        flat.Name = "PetFlatThumbnail"
-        flat.Size = UDim2.fromScale(1, 1)
-        flat.BackgroundTransparency = 1
-        flat.Image = thumbId
-        flat.ScaleType = Enum.ScaleType.Fit
-        flat.ZIndex = 105
-        flat.Parent = holder
-
-        local statusConnection
-        local function disconnect()
-            if statusConnection then
-                statusConnection:Disconnect()
-                statusConnection = nil
-            end
-        end
-        local function applyFetchStatus(status)
-            local action = PetThumbnailFetchPolicy.action(status.Name)
-            if action == "flat" then
-                if pending.Parent then
-                    pending:Destroy()
-                end
-                disconnect()
-            elseif action == "lazy_3d" then
-                -- A registered image has no eagerly generated viewport cache. Keep the cheap paw
-                -- visible on a terminal CDN failure rather than presenting a blank card.
-                if flat.Parent then
-                    flat:Destroy()
-                end
-                disconnect()
-            end
-        end
-        local okSignal, signal = pcall(function()
-            return ContentProvider:GetAssetFetchStatusChangedSignal(thumbId)
-        end)
-        if okSignal and signal then
-            statusConnection = signal:Connect(applyFetchStatus)
-        end
-        holder.Destroying:Once(disconnect)
-        local okStatus, status = pcall(function()
-            return ContentProvider:GetAssetFetchStatus(thumbId)
-        end)
-        if okStatus then
-            applyFetchStatus(status)
-        end
-        icon = holder
-    else
-        -- Catalog entries with no uploaded flat art retain the generated viewport fallback.
-        pcall(function()
-            local img = ReplicatedStorage:FindFirstChild("Assets")
-            img = img and img:FindFirstChild("Images")
-            img = img and img:FindFirstChild("Pets")
-            img = img and img:FindFirstChild(tostring(pet.id))
-            img = img and img:FindFirstChild(variant)
-            if img then
-                icon = img:Clone()
-            end
-        end)
-    end
-    if icon then
-        icon.Name = "PetImage"
-        icon.Size = UDim2.fromScale(1, 1)
-        icon.BackgroundTransparency = 1
-        icon.ZIndex = 104
-        icon.Parent = iconBackground
-    else
-        local fallback = Instance.new("TextLabel")
-        fallback.Size = UDim2.fromScale(0.8, 0.8)
-        fallback.Position = UDim2.fromScale(0.1, 0.1)
-        fallback.BackgroundTransparency = 1
-        fallback.Text = "🐾"
-        fallback.TextScaled = true
-        fallback.ZIndex = 104
-        fallback.Parent = iconBackground
-    end
-
-    local quantity = createQuantityBadge(card)
-
-    local name = Instance.new("TextLabel")
-    name.Name = "NameLabel"
-    local nameConfig = inventoryGridConfig.name_label or {}
-    local nameHeightScale = tonumber(nameConfig.height_scale) or 0.18
-    local nameBottomScale = tonumber(nameConfig.bottom_offset_scale) or 0.4
-    name.Size = UDim2.new(1, -8, 0, math.max(8, math.floor(TRADE_CARD_SIZE.Y * nameHeightScale)))
-    name.Position =
-        UDim2.new(0, 4, 1, -math.max(12, math.floor(TRADE_CARD_SIZE.Y * nameBottomScale)))
-    name.BackgroundTransparency = 1
-    name.Text = ""
-    name.TextColor3 = COLORS.text
-    name.TextScaled = true
-    name.Font = typeof(nameConfig.font) == "EnumItem" and nameConfig.font or Enum.Font.GothamBold
-    name.ZIndex = 105
-    name.Parent = card
-    local nc = Instance.new("UITextSizeConstraint")
-    nc.MaxTextSize = 12
-    nc.Parent = name
-
-    local power = Instance.new("TextLabel")
-    power.Name = "PowerLabel"
-    local powerConfig = inventoryGridConfig.power_label or {}
-    local powerHeightScale = tonumber(powerConfig.height_scale) or 0.14
-    local powerBottomScale = tonumber(powerConfig.bottom_offset_scale) or 0.22
-    power.Size = UDim2.new(1, -8, 0, math.max(6, math.floor(TRADE_CARD_SIZE.Y * powerHeightScale)))
-    power.Position =
-        UDim2.new(0, 4, 1, -math.max(8, math.floor(TRADE_CARD_SIZE.Y * powerBottomScale)))
-    power.BackgroundTransparency = 1
-    power.Text = ""
-    power.TextColor3 = rarityColor
-    power.TextScaled = true
-    power.Font = typeof(powerConfig.font) == "EnumItem" and powerConfig.font or Enum.Font.Gotham
-    power.ZIndex = 105
-    power.Parent = card
-    local powerStroke = Instance.new("UIStroke")
-    powerStroke.Name = "PowerOutline"
-    powerStroke.Color = Color3.fromRGB(0, 0, 0)
-    powerStroke.Thickness = 1
-    powerStroke.Transparency = 0.1
-    powerStroke.Parent = power
+    local hitTarget = Instance.new("TextButton")
+    hitTarget.Name = "TradeHitTarget"
+    hitTarget.Size = UDim2.fromScale(1, 1)
+    hitTarget.BackgroundTransparency = 1
+    hitTarget.Text = ""
+    hitTarget.AutoButtonColor = false
+    hitTarget.ZIndex = 120
+    hitTarget.Parent = card
 
     local selected = Instance.new("TextLabel")
     selected.Name = "OfferSelectionNumber"
     selected.Size = UDim2.fromOffset(20, 18)
-    selected.Position = UDim2.fromOffset(3, 3)
+    selected.Position = UDim2.new(0.5, -10, 0, 3)
     selected.BackgroundColor3 = COLORS.accept
     selected.BackgroundTransparency = 0.08
     selected.TextColor3 = COLORS.text
     selected.TextScaled = true
     selected.Font = Enum.Font.GothamBold
-    selected.ZIndex = 109
+    selected.ZIndex = 121
     selected.Visible = false
     selected.Parent = card
     corner(selected, 7)
 
     local offered = Instance.new("TextLabel")
     offered.Name = "OfferedCount"
-    offered.Size = UDim2.new(0.76, 0, 0, 14)
-    offered.Position = UDim2.fromOffset(3, 3)
+    offered.Size = UDim2.new(0.7, 0, 0, 14)
+    offered.Position = UDim2.new(0.5, 0, 0, 3)
+    offered.AnchorPoint = Vector2.new(0.5, 0)
     offered.BackgroundColor3 = Color3.fromRGB(120, 95, 20)
-    offered.BackgroundTransparency = 0.2
+    offered.BackgroundTransparency = 0.15
     offered.TextColor3 = Color3.fromRGB(255, 225, 140)
     offered.TextScaled = true
     offered.Font = Enum.Font.GothamBold
-    offered.ZIndex = 108
+    offered.ZIndex = 121
     offered.Visible = false
     offered.Parent = card
     corner(offered, 6)
 
-    local overlay = Instance.new("TextLabel")
-    overlay.Name = "LockedOverlay"
-    overlay.Size = UDim2.fromScale(1, 1)
-    overlay.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
-    overlay.BackgroundTransparency = 0.45
-    overlay.Text = "🔒"
-    overlay.TextColor3 = COLORS.text
-    overlay.TextScaled = true
-    overlay.Font = Enum.Font.GothamBold
-    overlay.ZIndex = 110
-    overlay.Visible = false
-    overlay.Parent = card
-    corner(overlay, 10)
+    local locked = Instance.new("TextLabel")
+    locked.Name = "LockedOverlay"
+    locked.Size = UDim2.fromScale(1, 1)
+    locked.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
+    locked.BackgroundTransparency = 0.45
+    locked.Text = "🔒"
+    locked.TextColor3 = COLORS.text
+    locked.TextScaled = true
+    locked.Font = Enum.Font.GothamBold
+    locked.ZIndex = 122
+    locked.Visible = false
+    locked.Parent = card
+    corner(locked, 10)
 
     local controller = { frame = card, item = pet, opts = opts }
-
-    card.MouseEnter:Connect(function()
+    hitTarget.MouseEnter:Connect(function()
         self:_showCardTooltip(card, controller.item)
         if controller.opts.onClick and not controller.item.locked then
             card.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
         end
     end)
-    card.MouseLeave:Connect(function()
+    hitTarget.MouseLeave:Connect(function()
         self:_hideCardTooltip()
-        card.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+        card.BackgroundColor3 = baseColor
     end)
-
-    card.Activated:Connect(function()
+    hitTarget.Activated:Connect(function()
         if controller.opts.onClick and not controller.item.locked then
             self:_hideCardTooltip()
             controller.opts.onClick(controller.item)
@@ -1738,14 +1627,17 @@ function TradePanel:_petCard(parent, pet, order, opts)
         controllerSelf.item = nextPet
         controllerSelf.opts = nextOpts
         card.LayoutOrder = nextOrder
-        local clickable = nextOpts.onClick ~= nil and not nextPet.locked
-        card.Active = clickable
-        card.AutoButtonColor = clickable
+        local record = type(nextPet.record) == "table" and nextPet.record or nextPet
+        local isLocked = nextPet.locked == true or record.locked == true
+        local clickable = nextOpts.onClick ~= nil and not isLocked
+        hitTarget.Active = clickable
+        hitTarget.Selectable = clickable
 
-        local count = tonumber(nextPet.count)
-            or ((tonumber(nextPet.quantity) or 1) > 1 and tonumber(nextPet.quantity))
-        quantity.Visible = count ~= nil and count > 1
-        quantity.Text = "×" .. tostring(count or 1)
+        local count = tonumber(nextPet.count) or tonumber(nextPet.quantity) or 1
+        if quantity then
+            quantity.Visible = count > 1
+            quantity.Text = "×" .. tostring(count)
+        end
 
         local offeredCount = 0
         if nextOpts.offeredCount and nextOpts.kindKey then
@@ -1755,14 +1647,7 @@ function TradePanel:_petCard(parent, pet, order, opts)
         offered.Text = tostring(offeredCount) .. " offered"
         selected.Visible = nextOpts.offerMarker == true
         selected.Text = "#" .. tostring(nextOrder)
-        overlay.Visible = nextPet.locked == true
-
-        name.Text = petDisplayName(nextPet)
-            .. (nextPet.serial and (" #" .. tostring(nextPet.serial)) or "")
-        local displayedPower = tradeDisplayPower(nextPet)
-        power.Text = displayedPower > 0
-                and ("⚔ " .. tostring(PetPowerView.displayRound(displayedPower)))
-            or ""
+        locked.Visible = isLocked
     end
     function controller.destroy(_controllerSelf)
         if card.Parent then

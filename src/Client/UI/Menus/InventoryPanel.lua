@@ -5610,28 +5610,29 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
         icon.Parent = iconBG
     end
 
-    -- Quantity badge (top-right)
+    -- Quantity badge (top-right). Keep the instance even for single-copy cards so consumers that
+    -- reconcile this inventory card in place (trade, team drafts) can patch 1 -> N -> 1 without
+    -- rebuilding the card.
     local qty = tonumber(item.count) or 1
-    if qty > 1 then
-        local qtyLabel = Instance.new("TextLabel")
-        qtyLabel.Name = "QtyLabel"
-        local qW = math.max(12, math.floor(self.cardSize.X * 0.28))
-        local qH = math.max(10, math.floor(self.cardSize.Y * 0.22))
-        local qM = math.max(2, math.floor(self.cardSize.X * 0.06))
-        qtyLabel.Size = UDim2.new(0, qW, 0, qH)
-        qtyLabel.Position = UDim2.new(1, -qW - qM, 0, qM)
-        qtyLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        qtyLabel.BorderSizePixel = 0
-        qtyLabel.Text = "×" .. tostring(qty)
-        qtyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        qtyLabel.TextScaled = true
-        qtyLabel.Font = Enum.Font.GothamBold
-        qtyLabel.ZIndex = 105
-        qtyLabel.Parent = itemFrame
-        local qc = Instance.new("UICorner")
-        qc.CornerRadius = UDim.new(0, 6)
-        qc.Parent = qtyLabel
-    end
+    local qtyLabel = Instance.new("TextLabel")
+    qtyLabel.Name = "QtyLabel"
+    local qW = math.max(12, math.floor(self.cardSize.X * 0.28))
+    local qH = math.max(10, math.floor(self.cardSize.Y * 0.22))
+    local qM = math.max(2, math.floor(self.cardSize.X * 0.06))
+    qtyLabel.Size = UDim2.new(0, qW, 0, qH)
+    qtyLabel.Position = UDim2.new(1, -qW - qM, 0, qM)
+    qtyLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    qtyLabel.BorderSizePixel = 0
+    qtyLabel.Text = "×" .. tostring(qty)
+    qtyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    qtyLabel.TextScaled = true
+    qtyLabel.Font = Enum.Font.GothamBold
+    qtyLabel.ZIndex = 105
+    qtyLabel.Visible = qty > 1
+    qtyLabel.Parent = itemFrame
+    local qc = Instance.new("UICorner")
+    qc.CornerRadius = UDim.new(0, 6)
+    qc.Parent = qtyLabel
 
     -- Equipped icon (top-left)
     local equippedIcon = Instance.new("TextLabel")
@@ -5651,6 +5652,7 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
 
     -- Name (center bottom) and strength below it (configurable spacing)
     local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NameLabel"
     local powerLabel = Instance.new("TextLabel")
 
     local nameHeightScale = 0.17
@@ -6026,6 +6028,7 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
             self._stackDataByKey[key] = item
         end
     end
+    return itemFrame
 end
 
 function InventoryPanel:_selectCategory(categoryName)
@@ -9289,6 +9292,46 @@ function InventoryPanel:_applyEquippedStyling(itemFrame, isEquipped, originalCol
             equippedIcon:Destroy()
         end
     end
+end
+
+-- Read-only adapter for inventory-style pet cards embedded in another live UI (currently Trade).
+-- It deliberately calls _createItemFrameInto instead of maintaining a second pet-card renderer:
+-- archetype/targeting/support/enchant badges, thumbnail policy, and power text therefore remain
+-- identical to Inventory. The host owns selection/click behavior and keyed lifetime.
+function InventoryPanel.CreatePetCardRenderer(options)
+    options = options or {}
+    local renderer = setmetatable({
+        logger = LoggerWrapper.new(options.loggerName or "InventoryPetCardRenderer"),
+        player = Players.LocalPlayer,
+        cardSize = options.cardSize or Vector2.new(65, 65),
+        itemFrames = {},
+        _stackFrames = {},
+        _stackDataByKey = {},
+        _lazyThumbnailFallbacks = {},
+    }, InventoryPanel)
+
+    -- The host supplies one transparent hit target so inventory actions/right-click listeners never
+    -- leak into trade. Cards still use every other part of InventoryPanel's presentation path.
+    renderer._addItemInteractions = function(_renderer, _itemFrame, _item) end
+    renderer._isItemEquipped = function(_renderer, _item)
+        return false
+    end
+    -- The trade grid uses uploaded flat thumbnails. If one fails, retain the inventory placeholder;
+    -- there is no single inventory scroll container for this adapter's three independent grids.
+    renderer._requestCull = function(_renderer) end
+
+    function renderer:Create(item, layoutOrder, parent)
+        return InventoryPanel._createItemFrameInto(self, item, layoutOrder, parent)
+    end
+
+    function renderer:Destroy()
+        table.clear(self.itemFrames)
+        table.clear(self._stackFrames)
+        table.clear(self._stackDataByKey)
+        table.clear(self._lazyThumbnailFallbacks)
+    end
+
+    return renderer
 end
 
 function InventoryPanel:Destroy()

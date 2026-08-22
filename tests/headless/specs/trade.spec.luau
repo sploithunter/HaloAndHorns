@@ -84,26 +84,38 @@ return function()
             expect(string.find(panel, 'selected.Text = "#" .. tostring(nextOrder)', 1, true) ~= nil).to.equal(
                 true
             )
-            expect(
-                string.find(panel, "quantity.Visible = count ~= nil and count > 1", 1, true) ~= nil
-            ).to.equal(true)
+            expect(string.find(panel, "quantity.Visible = count > 1", 1, true) ~= nil).to.equal(
+                true
+            )
         end)
 
-        it("uses the shared inventory shell, card metrics, and pet chrome", function()
+        it("uses the actual inventory pet-card renderer and its full badge/power path", function()
             local panel = readFile("src/Client/UI/Menus/TradePanel.lua")
+            local inventory = readFile("src/Client/UI/Menus/InventoryPanel.lua")
             expect(string.find(panel, "PanelChrome.build(gui, {", 1, true) ~= nil).to.equal(true)
             expect(string.find(panel, "UI_CONFIG.panel_configs.inventory_panel", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(panel, "InventoryPanel.CreatePetCardRenderer", 1, true) ~= nil).to.equal(
                 true
             )
             expect(
                 string.find(
                     panel,
-                    "PetCardStyle.applyChrome(card, rarityId, pet.variant, pet.id)",
+                    "self._inventoryPetCards:Create(inventoryPetCardItem(pet)",
                     1,
                     true
                 ) ~= nil
             ).to.equal(true)
-            expect(string.find(panel, "petDisplayName(nextPet)", 1, true) ~= nil).to.equal(true)
+            expect(string.find(inventory, "PetBadge.create(holder, {", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(
+                string.find(inventory, "PetBadge.createEnchantBadge(itemFrame, {", 1, true) ~= nil
+            ).to.equal(true)
+            expect(string.find(inventory, "PetPowerView.survivability", 1, true) ~= nil).to.equal(
+                true
+            )
         end)
     end)
 
