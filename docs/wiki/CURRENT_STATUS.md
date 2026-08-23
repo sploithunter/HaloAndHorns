@@ -1583,3 +1583,11 @@ Last checked: 2026-08-23
 - Three independent global top-three rankings track Mythicals, Secrets, and Exclusives given;
   Huge pets count with Exclusives. The supplied transparent icon and present model are group-owned
   and traceable through repository upload manifests.
+
+## Gift-giver point weights
+
+Last checked: 2026-08-23
+
+- All three giver rankings score qualifying pets by hatch variant: Basic = 1 point, Golden = 5,
+  and Rainbow = 25. Fresh point counters and v2 OrderedDataStores prevent legacy raw counts from
+  mixing with weighted scores; persisted pre-weight outboxes recover points from the exact pet.
