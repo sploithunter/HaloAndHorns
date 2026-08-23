@@ -23,6 +23,7 @@ local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local PackScale = require(ReplicatedStorage.Shared.Game.PackScale)
 local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath)
 local TradeLogic = require(ReplicatedStorage.Shared.Game.TradeLogic)
+local GiftLogic = require(ReplicatedStorage.Shared.Game.GiftLogic)
 local HotbarSize = require(ReplicatedStorage.Shared.Game.HotbarSize)
 
 local SettingsService = {}
@@ -38,6 +39,7 @@ function SettingsService:Init()
     self._missionsConfig = self._configLoader:LoadConfig("missions") or {}
     self._partyConfig = self._configLoader:LoadConfig("party") or {}
     self._tradeConfig = self._configLoader:LoadConfig("trade") or {}
+    self._giftsConfig = self._configLoader:LoadConfig("gifts") or {}
 
     -- Dependencies injected
 
@@ -141,6 +143,7 @@ function SettingsService:_createSettingsFolders(player)
             -- This initializer is the config-load/profile-repair fallback. Normal new profiles use
             -- DataService's template; saved valid values are never replaced here.
             TradeInvitePrivacy = "everyone",
+            GiftAcceptance = "any",
         }
     end
 
@@ -186,6 +189,7 @@ function SettingsService:_createSettingsFolders(player)
     self:_applyTrialGroupScale(player)
     self:_applyTeamInvitePrivacy(player)
     self:_applyTradeInvitePrivacy(player)
+    self:_applyGiftAcceptance(player)
 
     self._logger:Info("✅ SETTINGS - Settings folders created successfully", {
         player = player.Name,
@@ -991,6 +995,41 @@ end
 
 function SettingsService:GetTradeInvitePrivacy(player)
     return self:_applyTradeInvitePrivacy(player)
+end
+
+function SettingsService:_applyGiftAcceptance(player)
+    local data = self._dataService:GetData(player)
+    local mode = GiftLogic.sanitizePreference(
+        data and data.Settings and data.Settings.GiftAcceptance,
+        self._giftsConfig.default_acceptance
+    )
+    if data then
+        data.Settings = data.Settings or {}
+        data.Settings.GiftAcceptance = mode
+    end
+    player:SetAttribute("GiftAcceptance", mode)
+    return mode
+end
+
+function SettingsService:_setGiftAcceptance(player, value)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+    data.Settings = data.Settings or {}
+    local mode = GiftLogic.sanitizePreference(value, self._giftsConfig.default_acceptance)
+    data.Settings.GiftAcceptance = mode
+    player:SetAttribute("GiftAcceptance", mode)
+    self._dataService:RequestSave(player, "gift_acceptance", { debounceSeconds = 0 })
+    return mode
+end
+
+function SettingsService:SetGiftAcceptance(player, value)
+    return self:_setGiftAcceptance(player, value)
+end
+
+function SettingsService:GetGiftAcceptance(player)
+    return self:_applyGiftAcceptance(player)
 end
 
 return SettingsService

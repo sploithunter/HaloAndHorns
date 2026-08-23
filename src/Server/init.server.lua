@@ -725,6 +725,23 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.AwardDeliveryService,
     { "Logger", "ConfigLoader", "DataService", "RewardService" }
 )
+loader:RegisterModule(
+    "GiftDeliveryService",
+    ServerScriptService.Server.Services.GiftDeliveryService,
+    { "Logger", "ConfigLoader", "DataService", "InventoryService" }
+)
+loader:RegisterModule("GiftService", ServerScriptService.Server.Services.GiftService, {
+    "Logger",
+    "ConfigLoader",
+    "DataService",
+    "InventoryService",
+    "PetTransferService",
+    "RosterService",
+    "SettingsService",
+    "GiftDeliveryService",
+    "StatsService",
+    "TesterRewardService",
+})
 registerFeatureModule(
     "leaderboards",
     "LeaderboardAwardService",
@@ -1140,6 +1157,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
             EnhancementShopService = modules:Get("EnhancementShopService"),
             FocusService = modules:Get("FocusService"),
             FusionService = modules:Get("FusionService"),
+            GiftService = modules:Get("GiftService"),
             FutureCallService = modules:Get("FutureCallService"),
             HotbarService = modules:Get("HotbarService"),
             HoverboardService = modules:Get("HoverboardService"),
@@ -1281,6 +1299,8 @@ table.insert(requiredModules, "TradeService")
 table.insert(requiredModules, "FusionService")
 table.insert(requiredModules, "RewardService")
 table.insert(requiredModules, "AwardDeliveryService")
+table.insert(requiredModules, "GiftDeliveryService")
+table.insert(requiredModules, "GiftService")
 appendIfEnabled(requiredModules, "leaderboards", "LeaderboardAwardService")
 table.insert(requiredModules, "PromoCodeService")
 table.insert(requiredModules, "QuestService")

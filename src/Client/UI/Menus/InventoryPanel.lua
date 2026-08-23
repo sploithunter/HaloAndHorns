@@ -178,6 +178,12 @@ end)
 if not petsCfgOk then
     PETS_CONFIG = nil
 end
+local giftsCfgOk, GIFTS_CONFIG = pcall(function()
+    return require(ReplicatedStorage.Configs:WaitForChild("gifts"))
+end)
+if not giftsCfgOk then
+    GIFTS_CONFIG = nil
+end
 local petProgOk, PET_PROGRESSION = pcall(function()
     return require(ReplicatedStorage.Configs:WaitForChild("pet_progression"))
 end)
@@ -1170,6 +1176,7 @@ function InventoryPanel:Hide()
         self.frame:Destroy()
         self.frame = nil
     end
+    self._giftOpenModal = nil
     self._cardScaleButton = nil -- lived in the destroyed header
     self._tutorialReviewOpened = false
 
@@ -3328,6 +3335,11 @@ function InventoryPanel:_loadRealInventoryData()
         self:_loadEnhancementsFromFolder(enhFolder)
     end
 
+    local giftsFolder = inventoryFolder:FindFirstChild("gifts")
+    if giftsFolder then
+        self:_loadGiftsFromFolder(giftsFolder)
+    end
+
     -- Load consumables from consumables folder
     local consumablesFolder = inventoryFolder:FindFirstChild("consumables")
     if consumablesFolder then
@@ -3373,6 +3385,32 @@ function InventoryPanel:_loadRealInventoryData()
             category = self.inventoryData[1].category,
         } or "no items",
     })
+end
+
+function InventoryPanel:_loadGiftsFromFolder(giftsFolder)
+    local icon = GIFTS_CONFIG and GIFTS_CONFIG.assets and GIFTS_CONFIG.assets.inventory_icon or nil
+    for _, giftFolder in ipairs(giftsFolder:GetChildren()) do
+        if giftFolder:IsA("Folder") and giftFolder.Name ~= "Info" then
+            local sender = giftFolder:FindFirstChild("sender_name")
+            local sentAt = giftFolder:FindFirstChild("sent_at")
+            local senderName = sender and sender:IsA("StringValue") and sender.Value or "a player"
+            table.insert(self.inventoryData, {
+                id = giftFolder.Name,
+                uid = giftFolder.Name,
+                name = "Gift from " .. senderName,
+                icon = "🎁",
+                image = icon,
+                rarity = "Wrapped Pet",
+                rarityId = "exclusive",
+                color = Color3.fromRGB(70, 180, 255),
+                category = "Gifts",
+                count = 1,
+                senderName = senderName,
+                sentAt = sentAt and tonumber(sentAt.Value) or nil,
+                folder_source = "gifts",
+            })
+        end
+    end
 end
 
 function InventoryPanel:_loadPetsFromFolder(petsFolder)
@@ -7943,6 +7981,160 @@ function InventoryPanel:_showDeleteConfirmation(item)
 end
 
 -- 🎮 PRIMARY ACTIONS (Left-click)
+function InventoryPanel:_showGiftOpenConfirmation(item)
+    if self._giftOpenModal then
+        self._giftOpenModal:Destroy()
+    end
+    local modal = Instance.new("Frame")
+    modal.Name = "GiftOpenModal"
+    modal.Size = UDim2.fromOffset(420, 430)
+    modal.Position = UDim2.new(0.5, 0, 0.5, 0)
+    modal.AnchorPoint = Vector2.new(0.5, 0.5)
+    modal.BackgroundColor3 = Color3.fromRGB(28, 31, 43)
+    modal.BorderSizePixel = 0
+    modal.ZIndex = 200
+    modal.Parent = self.frame
+    self._giftOpenModal = modal
+    local modalCorner = Instance.new("UICorner")
+    modalCorner.CornerRadius = UDim.new(0, 18)
+    modalCorner.Parent = modal
+    PanelChrome.pillBorder(modal, PanelChrome.areaPill(), 206, 0, 0.08)
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -30, 0, 42)
+    title.Position = UDim2.new(0, 15, 0, 14)
+    title.BackgroundTransparency = 1
+    title.Text = "🎁 Gift from " .. (item.senderName or "a player")
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.TextScaled = true
+    title.Font = Enum.Font.GothamBold
+    title.ZIndex = 208
+    title.Parent = modal
+    local titleSize = Instance.new("UITextSizeConstraint")
+    titleSize.MaxTextSize = 25
+    titleSize.Parent = title
+
+    local viewport = Instance.new("ViewportFrame")
+    viewport.Name = "PresentViewport"
+    viewport.Size = UDim2.fromOffset(250, 250)
+    viewport.Position = UDim2.new(0.5, -125, 0, 62)
+    viewport.BackgroundTransparency = 1
+    viewport.Ambient = Color3.fromRGB(190, 190, 205)
+    viewport.LightColor = Color3.fromRGB(255, 238, 205)
+    viewport.LightDirection = Vector3.new(-1, -1, -1)
+    viewport.ZIndex = 207
+    viewport.Parent = modal
+    local camera = Instance.new("Camera")
+    camera.FieldOfView = 38
+    camera.Parent = viewport
+    viewport.CurrentCamera = camera
+
+    local modelRoot = ReplicatedStorage:FindFirstChild("Assets")
+    modelRoot = modelRoot and modelRoot:FindFirstChild("Models")
+    modelRoot = modelRoot and modelRoot:FindFirstChild("Gifts")
+    local sourceModel = modelRoot
+        and modelRoot:FindFirstChild(
+            (GIFTS_CONFIG and GIFTS_CONFIG.assets and GIFTS_CONFIG.assets.replicated_model_name)
+                or "StarlightGift"
+        )
+    if sourceModel and sourceModel:IsA("Model") then
+        local clone = sourceModel:Clone()
+        ViewportModelPlacement.centerPreservingOrientation(clone)
+        clone.Parent = viewport
+        local size = clone:GetExtentsSize()
+        local distance = math.max(size.X, size.Y, size.Z) * 1.65
+        local target = clone:GetBoundingBox().Position
+        camera.CFrame =
+            CFrame.new(target + Vector3.new(distance * 0.72, distance * 0.42, distance), target)
+    else
+        local image = Instance.new("ImageLabel")
+        image.Size = UDim2.fromScale(1, 1)
+        image.BackgroundTransparency = 1
+        image.Image = (GIFTS_CONFIG and GIFTS_CONFIG.assets and GIFTS_CONFIG.assets.inventory_icon)
+            or ""
+        image.ScaleType = Enum.ScaleType.Fit
+        image.ZIndex = 208
+        image.Parent = viewport
+    end
+
+    local status = Instance.new("TextLabel")
+    status.Size = UDim2.new(1, -36, 0, 44)
+    status.Position = UDim2.new(0, 18, 0, 310)
+    status.BackgroundTransparency = 1
+    status.Text = "Open it to reveal the pet inside."
+    status.TextColor3 = Color3.fromRGB(205, 213, 230)
+    status.TextScaled = true
+    status.TextWrapped = true
+    status.Font = Enum.Font.Gotham
+    status.ZIndex = 208
+    status.Parent = modal
+    local statusSize = Instance.new("UITextSizeConstraint")
+    statusSize.MaxTextSize = 16
+    statusSize.Parent = status
+
+    local cancel = Instance.new("TextButton")
+    cancel.Size = UDim2.fromOffset(140, 46)
+    cancel.Position = UDim2.new(0.5, -150, 1, -62)
+    cancel.BackgroundColor3 = Color3.fromRGB(82, 86, 102)
+    cancel.Text = "Later"
+    cancel.TextColor3 = Color3.new(1, 1, 1)
+    cancel.TextSize = 17
+    cancel.Font = Enum.Font.GothamBold
+    cancel.ZIndex = 208
+    cancel.Parent = modal
+    pillify(cancel)
+
+    local open = Instance.new("TextButton")
+    open.Size = UDim2.fromOffset(140, 46)
+    open.Position = UDim2.new(0.5, 10, 1, -62)
+    open.BackgroundColor3 = Color3.fromRGB(70, 180, 255)
+    open.Text = "Open Gift"
+    open.TextColor3 = Color3.new(1, 1, 1)
+    open.TextSize = 17
+    open.Font = Enum.Font.GothamBold
+    open.ZIndex = 208
+    open.Parent = modal
+    pillify(open)
+
+    cancel.Activated:Connect(function()
+        modal:Destroy()
+        if self._giftOpenModal == modal then
+            self._giftOpenModal = nil
+        end
+    end)
+    open.Activated:Connect(function()
+        open.Active = false
+        open.AutoButtonColor = false
+        open.Text = "Opening…"
+        local remote = ReplicatedStorage:FindFirstChild("GameAPICommand")
+        local ok, envelope = pcall(function()
+            return remote and remote:InvokeServer("gift.open", { giftId = item.uid })
+        end)
+        local result = ok and type(envelope) == "table" and envelope.result or nil
+        if not (result and result.ok) then
+            open.Active = true
+            open.AutoButtonColor = true
+            open.Text = "Open Gift"
+            status.Text = result
+                    and result.reason == "pet_storage_full"
+                    and "Pet storage is full. Your wrapped gift is still safe."
+                or "Could not open this gift yet. Please try again."
+            status.TextColor3 = Color3.fromRGB(255, 184, 120)
+            return
+        end
+
+        modal:Destroy()
+        self._giftOpenModal = nil
+        self:Hide()
+        local hatchOk, hatchService = pcall(function()
+            return require(ReplicatedStorage.Shared.Services.EggHatchingService)
+        end)
+        if hatchOk and hatchService and hatchService:IsHatchReady() then
+            hatchService:StartPetRevealAnimation({ result.pet })
+        end
+    end)
+end
+
 function InventoryPanel:_handlePrimaryAction(item)
     -- DEBUG SPAM SUPPRESSED
     self.logger:info("🖱️ PRIMARY ACTION", {
@@ -7951,6 +8143,11 @@ function InventoryPanel:_handlePrimaryAction(item)
         folder_source = item.folder_source,
         count = item.count,
     })
+
+    if item.folder_source == "gifts" then
+        self:_showGiftOpenConfirmation(item)
+        return
+    end
 
     if item.folder_source == "eggs" then
         -- explicit hatch (NEVER automatic — Jason): close the inventory, ask, and only

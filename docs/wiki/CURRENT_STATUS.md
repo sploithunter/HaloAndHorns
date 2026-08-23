@@ -1570,3 +1570,16 @@ Last checked: 2026-08-21
   explicitly reject the `hoverboards` category. No migration is required before release.
 - The six group-owned rocketboard passes are live at the authored R$19 baseline; config contains
   their dashboard IDs, so Kade always exercises Roblox's real prompt/simulator route.
+
+## One-way pet gifts
+
+Last checked: 2026-08-23
+
+- The Trade menu exposes persistent Any / Uncommon+ / Rare+ / Mythical+ / Off gift policies and
+  shows each online receiver's current policy before the giver selects exactly one eligible pet.
+- Delivery is noninteractive and crash-safe: the exact pet is durably escrowed before its stable
+  cross-profile message is queued, duplicates are permanently suppressed, and the receiver opens a
+  wrapped inventory present to run the normal pet reveal. A full pet inventory preserves the gift.
+- Three independent global top-three rankings track Mythicals, Secrets, and Exclusives given;
+  Huge pets count with Exclusives. The supplied transparent icon and present model are group-owned
+  and traceable through repository upload manifests.

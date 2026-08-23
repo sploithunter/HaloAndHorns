@@ -162,6 +162,14 @@ local function generateProfileTemplate(configLoader)
                 owned = { black_gold = true },
                 equipped = "black_gold",
             },
+            -- One-way pet gifts use a persisted sender outbox plus permanent
+            -- sender/receiver idempotency ledgers. Unopened presents themselves
+            -- live in Inventory.gifts, which is generated from config below.
+            Gifts = {
+                outbox = {},
+                sent = {},
+                received = {},
+            },
         },
 
         -- Settings
@@ -174,6 +182,7 @@ local function generateProfileTemplate(configLoader)
             -- from Everyone; schema migrations preserve the saved choice of existing profiles.
             TeamInvitePrivacy = "friends",
             TradeInvitePrivacy = "everyone",
+            GiftAcceptance = "any",
             -- Listed creator accounts may deliberately suppress every game-pass benefit for
             -- production balance testing. Missing/legacy values default ON.
             CreatorGamePassesEnabled = true,
@@ -814,6 +823,7 @@ function DataService:_getSaveState(player)
             lastReason = nil,
             lastRequestedAt = 0,
             lastConfirmedAt = 0,
+            lastConfirmedRequestId = 0,
         }
 
     return self.SaveRequests[player]
@@ -890,6 +900,47 @@ function DataService:RequestSave(player, reason, options)
     return true
 end
 
+-- Force a save and wait for the exact request (or the next queued request when
+-- another save is already in flight) to be confirmed by ProfileStore. Gift
+-- producers use this barrier before MessageAsync so a receiver can never claim a
+-- pet whose removal/outbox was not durably committed on the sender.
+function DataService:SaveAndConfirm(player, reason, options)
+    options = options or {}
+    local profile = self.Profiles[player]
+    if not profile or not profile:IsActive() then
+        return false, "profile_unavailable"
+    end
+
+    local saveState = self:_getSaveState(player)
+    local targetRequestId = saveState.saveRequestId + 1
+    local requested = self:RequestSave(player, reason or "save_and_confirm", {
+        debounceSeconds = 0,
+        critical = true,
+    })
+    if not requested then
+        return false, "save_rejected"
+    end
+
+    local timeoutSeconds =
+        math.max(0.1, tonumber(options.timeoutSeconds) or SAVE_CONFIRM_TIMEOUT_SECONDS)
+    local deadline = tick() + timeoutSeconds
+    repeat
+        local currentState = self.SaveRequests[player]
+        if
+            currentState
+            and (tonumber(currentState.lastConfirmedRequestId) or 0) >= targetRequestId
+        then
+            return true
+        end
+        if self.Profiles[player] ~= profile or not profile:IsActive() then
+            return false, "profile_released"
+        end
+        task.wait()
+    until tick() >= deadline
+
+    return false, "save_confirm_timeout"
+end
+
 function DataService:_saveProfileNow(player, reason)
     local profile = self.Profiles[player]
     if not profile or not profile:IsActive() then
@@ -936,6 +987,8 @@ function DataService:_saveProfileNow(player, reason)
         saveState.inFlight = false
         saveState.dirty = false
         saveState.lastConfirmedAt = tick()
+        saveState.lastConfirmedRequestId =
+            math.max(tonumber(saveState.lastConfirmedRequestId) or 0, requestId)
 
         self._logger:Debug("Profile save confirmed", {
             context = "DataService",

@@ -232,6 +232,20 @@ return {
         award_receipt = {},
     },
 
+    -- One-way gifts arrive unopened. The banner points to Inventory > Gifts;
+    -- the pet reveal happens only when the receiver opens the present.
+    gift_received = {
+        sound = "daily_claim_chime",
+        vfx = { kind = "burst", color = { 70, 180, 255 }, count = 22 },
+        banner = { seconds = 8, color = { 70, 180, 255 } },
+    },
+
+    gift_sent = {
+        sound = "daily_claim_chime",
+        vfx = { kind = "burst", color = { 255, 205, 70 }, count = 14 },
+        banner = { seconds = 4, color = { 255, 205, 70 } },
+    },
+
     -- Guided-hatch squad auto-fill. EggService delays this until the reveal sequence finishes so
     -- the summary reads as the consequence of what the player just saw, not an overlapping popup.
     tutorial_squad_autofill = {

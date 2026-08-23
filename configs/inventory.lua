@@ -8,6 +8,7 @@ return {
     -- Which inventory buckets this game uses
     enabled_buckets = {
         pets = true,
+        gifts = true, -- unopened, durable one-pet presents
         eggs = true, -- held egg ITEMS (Meet-The-Creator etc.) — hatched on demand
         enhancements = true, -- CoH-style power enhancements (drops; slot via Power Choice)
         potions = true, -- brew-charge potions (drink from the hotbar strip; tradeable)
@@ -21,6 +22,31 @@ return {
 
     -- Bucket definitions
     buckets = {
+        gifts = {
+            display_name = "Gifts",
+            icon = "🎁",
+            -- One unique record per stable gift id. Opening moves the embedded
+            -- exact pet snapshot into pets and only then removes this record.
+            base_limit = 10000,
+            storage_type = "unique",
+            stack_size = 1,
+            allow_duplicates = false,
+            item_schema = {
+                required = { "id", "gift_id", "sender_name", "pet_id", "rarity_id" },
+                optional = {
+                    "sender_user_id",
+                    "receiver_user_id",
+                    "sent_at",
+                    "record_key",
+                    "pet_variant",
+                    "pet_huge",
+                    "pet_record",
+                    "obtained_at",
+                },
+            },
+            limit_extensions = {},
+        },
+
         -- PET STORAGE — single source of truth for OWNERSHIP lives in Inventory.pets.items:
         --   • common (fungible) → one entry per kind, keyed "id:variant": { id, variant, quantity }
         --   • special (unique)  → one entry per instance, keyed by uid: { uid, id, variant, ... }
@@ -594,9 +620,10 @@ return {
         -- eggs (by name), then everything else. Reorder / add buckets (tools,
         -- consumables, resources) here without touching code.
         section_order = {
-            pets = 0,
-            enhancements = 1,
-            eggs = 2,
+            gifts = 0,
+            pets = 1,
+            enhancements = 2,
+            eggs = 3,
         },
         -- Enhancement ordering within its section (Jason): naturals first, dual origins
         -- second, single origins third. Then grouped by origin PAIR (e.g. every
@@ -632,6 +659,7 @@ return {
             description = "All items across all categories",
             folders = {
                 "pets",
+                "gifts",
                 "consumables",
                 "tools",
                 "eggs",
@@ -644,11 +672,19 @@ return {
             always_visible = true, -- Show even if no items
         },
         {
+            name = "Gifts",
+            icon = "🎁",
+            description = "Wrapped pets sent by other players",
+            folders = { "gifts" },
+            display_order = 2,
+            always_visible = false,
+        },
+        {
             name = "Pets",
             icon = "🐾",
             description = "Your collected pets and companions",
             folders = { "pets" },
-            display_order = 2,
+            display_order = 3,
             always_visible = true,
         },
         {

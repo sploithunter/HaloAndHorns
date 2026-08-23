@@ -1865,6 +1865,74 @@ function GameAPIService:_registerCommands()
         end),
     })
 
+    -- One-way pet gifts share the Trade menu but not the two-party trade
+    -- session. The recipient's saved policy is shown in the picker and
+    -- revalidated by GiftService at send time.
+    local function giftAction(method)
+        return function(context, args)
+            local service = self:_service("GiftService")
+            if not service then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return method(service, context.player, args or {})
+        end
+    end
+
+    bus:register("gift.players", {
+        description = "List online gift recipients and their current acceptance preferences.",
+        handler = giftAction(function(service, player)
+            return service:ListPlayers(player)
+        end),
+    })
+    bus:register("gift.preference", {
+        description = "Get the player's gift acceptance preference.",
+        handler = giftAction(function(service, player)
+            return service:GetPreference(player)
+        end),
+    })
+    bus:register("gift.set_preference", {
+        description = "Set gift acceptance (any, uncommon+, rare+, mythical+, or off).",
+        validate = function(args)
+            return Validators.fields(args, { mode = "string" })
+        end,
+        handler = giftAction(function(service, player, args)
+            return service:SetPreference(player, args.mode)
+        end),
+    })
+    bus:register("gift.myPets", {
+        description = "List unlocked pets eligible for a selected recipient's live preference.",
+        validate = function(args)
+            return Validators.fields(args, { targetUserId = "int" })
+        end,
+        handler = giftAction(function(service, player, args)
+            return service:ListMyPets(player, args.targetUserId)
+        end),
+    })
+    bus:register("gift.send", {
+        description = "Persist one exact pet in sender escrow, then queue its durable gift message.",
+        validate = function(args)
+            return Validators.fields(args, { targetUserId = "int", uid = "string" })
+        end,
+        handler = giftAction(function(service, player, args)
+            return service:Send(player, args.targetUserId, args.uid)
+        end),
+    })
+    bus:register("gift.state", {
+        description = "List the player's unopened wrapped gifts.",
+        handler = giftAction(function(service, player)
+            return service:GetState(player)
+        end),
+    })
+    bus:register("gift.open", {
+        description = "Open one wrapped gift and atomically transfer its exact pet record.",
+        validate = function(args)
+            return Validators.fields(args, { giftId = "string" })
+        end,
+        handler = giftAction(function(service, player, args)
+            return service:OpenGift(player, args.giftId)
+        end),
+    })
+
     bus:register("fusion.canFuse", {
         description = "Whether two pet elements may be fused (one Light + one Shadow -> Chaotic).",
         validate = function(args)

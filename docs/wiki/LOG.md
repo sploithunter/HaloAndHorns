@@ -4225,3 +4225,14 @@ first-session cohort rates.
 - Corrected the Home challenge recovery pass to preserve designer-moved visible fixtures, derive
   both invisible mission-pad positions from their Range/Training arches, and clear cactus anchors
   against the visible Training doorway rather than a stale pad transform.
+
+## 2026-08-23 — One-way pet gifts and giver rankings
+
+- Added persistent receiver gift policies (Any, Uncommon+, Rare+, Mythical+, Off) to the Trade menu,
+  where online player rows now offer either an interactive trade request or a one-pet gift.
+- Gift delivery persists the sender's exact-record outbox before queuing a stable ProfileStore
+  message. Permanent ledgers deduplicate retries; the receiver gets an unopened inventory present,
+  and opening grants the exact pet before consuming it. Full pet storage leaves the present safe.
+- Added top-three lifetime rankings for Mythicals, Secrets, and Exclusives gifted; Huge counts with
+  Exclusives. Cleaned the supplied magenta icon with the repository background-removal script,
+  converted the supplied GLB, and uploaded the group-owned icon/model with traced manifests.
