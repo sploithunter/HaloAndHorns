@@ -29,8 +29,11 @@ pet storage leaves the gift unopened. Sender and receiver idempotency ledgers do
   regenerated. The group-owned icon and model ids are traced in `scripts/gift_icon_ids.json` and
   `scripts/gift_model_ids.json`.
 - Three independent lifetime OrderedDataStore rankings publish the top three givers: Mythicals,
-  Secrets, and Exclusives. Huge pets count with Exclusives. The board ids are `gift_mythicals`,
-  `gift_secrets`, and `gift_exclusives`; an authored combined physical host can bind them later.
+  Secrets, and Exclusives. Huge pets count with Exclusives. Each qualifying Basic gift awards 1
+  point, Golden awards 5, and Rainbow awards 25. The point value is frozen in the sender outbox;
+  pre-weight outboxes reconstruct it from their exact pet snapshot. The board ids are
+  `gift_mythicals`, `gift_secrets`, and `gift_exclusives`; an authored combined physical host can
+  bind them later.
 
 ## Verification boundary
 

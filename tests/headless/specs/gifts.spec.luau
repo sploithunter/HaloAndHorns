@@ -79,12 +79,39 @@ return function()
         end)
 
         it("maps Huge explicitly into the Exclusive giver ranking", function()
-            expect(GiftLogic.leaderboardCounter("huge")).to.equal("exclusive_pets_gifted")
-            expect(GiftLogic.leaderboardCounter("exclusive")).to.equal("exclusive_pets_gifted")
-            expect(GiftLogic.leaderboardCounter("secret")).to.equal("secret_pets_gifted")
-            expect(GiftLogic.leaderboardCounter("mythic")).to.equal("mythical_pets_gifted")
+            expect(GiftLogic.leaderboardCounter("huge")).to.equal("exclusive_gift_points")
+            expect(GiftLogic.leaderboardCounter("exclusive")).to.equal("exclusive_gift_points")
+            expect(GiftLogic.leaderboardCounter("secret")).to.equal("secret_gift_points")
+            expect(GiftLogic.leaderboardCounter("mythic")).to.equal("mythical_gift_points")
             expect(GiftLogic.leaderboardCounter("legendary")).to.equal(nil)
         end)
+
+        it("weights Basic, Golden, and Rainbow gifts at 1, 5, and 25 points", function()
+            expect(GiftLogic.leaderboardPoints({ variant = "basic" })).to.equal(1)
+            expect(GiftLogic.leaderboardPoints({ variant = "golden" })).to.equal(5)
+            expect(GiftLogic.leaderboardPoints({ variant = "rainbow" })).to.equal(25)
+            expect(GiftLogic.leaderboardPoints({})).to.equal(1)
+            expect(GiftLogic.leaderboardPoints({ variant = "invented" })).to.equal(1)
+        end)
+
+        it(
+            "reconstructs point scoring for an outbox written before weights were persisted",
+            function()
+                local counter, points = GiftLogic.leaderboardScore({
+                    rarity_id = "secret",
+                    pet_record = { id = "a", variant = "rainbow" },
+                })
+                expect(counter).to.equal("secret_gift_points")
+                expect(points).to.equal(25)
+
+                local storedCounter, storedPoints = GiftLogic.leaderboardScore({
+                    rarity_id = "mythic",
+                    pet_record = { id = "b", variant = "basic" },
+                }, 5)
+                expect(storedCounter).to.equal("mythical_gift_points")
+                expect(storedPoints).to.equal(5)
+            end
+        )
     end)
 
     describe("GiftDelivery durable contract", function()
@@ -193,13 +220,13 @@ return function()
             end
         )
 
-        it("publishes three top-three giver rankings from idempotent counters", function()
+        it("publishes three top-three giver rankings from idempotent point counters", function()
             local stats = readFile("configs/stats.lua")
             local boards = readFile("configs/leaderboards.lua")
             for _, counter in ipairs({
-                "mythical_pets_gifted",
-                "secret_pets_gifted",
-                "exclusive_pets_gifted",
+                "mythical_gift_points",
+                "secret_gift_points",
+                "exclusive_gift_points",
             }) do
                 expect(stats:find(counter, 1, true) ~= nil).to.equal(true)
                 expect(boards:find('counter = "' .. counter .. '"', 1, true) ~= nil).to.equal(true)
@@ -208,6 +235,14 @@ return function()
             expect(boards:find('id = "gift_secrets"', 1, true) ~= nil).to.equal(true)
             expect(boards:find('id = "gift_mythicals"', 1, true) ~= nil).to.equal(true)
             expect(boards:find("max_entries = 3", 1, true) ~= nil).to.equal(true)
+            expect(boards:find("Basic 1 · Golden 5 · Rainbow 25", 1, true) ~= nil).to.equal(true)
+            expect(boards:find("LB_GiftExclusives_v2", 1, true) ~= nil).to.equal(true)
+
+            local service = readFile("src/Server/Services/GiftService.lua")
+            expect(service:find("counter_points = GiftLogic.leaderboardPoints", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(service:find("GiftLogic.leaderboardScore", 1, true) ~= nil).to.equal(true)
         end)
 
         it("traces the supplied icon and model through uploaded asset manifests", function()

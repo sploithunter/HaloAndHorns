@@ -4236,3 +4236,11 @@ first-session cohort rates.
 - Added top-three lifetime rankings for Mythicals, Secrets, and Exclusives gifted; Huge counts with
   Exclusives. Cleaned the supplied magenta icon with the repository background-removal script,
   converted the supplied GLB, and uploaded the group-owned icon/model with traced manifests.
+
+## 2026-08-23 — Gift leaderboard variant points
+
+- Replaced raw qualifying-gift counts with hatch-odds-weighted points: Basic = 1, Golden = 5, and
+  Rainbow = 25 across the Mythical, Secret, and Exclusive/Huge giver rankings.
+- Point counters and OrderedDataStores moved to fresh ids so raw v1 counts cannot be interpreted as
+  weighted scores. New sender outboxes freeze the point value; pre-weight outboxes reconstruct it
+  from their exact pet snapshot before the existing idempotent finalization.
