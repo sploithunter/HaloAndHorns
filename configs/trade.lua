@@ -13,9 +13,10 @@ return {
     -- the server rejects late responses, and the requester receives a timeout notice.
     invite_timeout_seconds = 30,
     -- Who may send this player a trade request. The picker exposes all three modes and the server
-    -- independently enforces the recipient's saved choice.
+    -- independently enforces the recipient's saved choice. New profiles begin open to Everyone;
+    -- existing profiles keep whichever persisted mode they already selected or migrated to.
     invite_privacy = {
-        default = "friends",
+        default = "everyone",
         modes = {
             everyone = {
                 display = "Everyone",

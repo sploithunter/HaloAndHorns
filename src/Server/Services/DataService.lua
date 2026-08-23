@@ -170,9 +170,10 @@ local function generateProfileTemplate(configLoader)
             SFXEnabled = true,
             GraphicsQuality = "Auto",
             TrialGroupScale = 1.0,
-            -- Who may send this player team/trade invites. Both menus expose the saved choice.
+            -- Team invites retain their Friends-only baseline. New profiles accept trade requests
+            -- from Everyone; schema migrations preserve the saved choice of existing profiles.
             TeamInvitePrivacy = "friends",
-            TradeInvitePrivacy = "friends",
+            TradeInvitePrivacy = "everyone",
             -- Listed creator accounts may deliberately suppress every game-pass benefit for
             -- production balance testing. Missing/legacy values default ON.
             CreatorGamePassesEnabled = true,

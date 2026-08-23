@@ -138,7 +138,9 @@ function SettingsService:_createSettingsFolders(player)
                 (self._missionsConfig.player_tuning or {}).group_scale
             ),
             TeamInvitePrivacy = "friends",
-            TradeInvitePrivacy = "friends",
+            -- This initializer is the config-load/profile-repair fallback. Normal new profiles use
+            -- DataService's template; saved valid values are never replaced here.
+            TradeInvitePrivacy = "everyone",
         }
     end
 
