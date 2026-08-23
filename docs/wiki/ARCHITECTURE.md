@@ -58,6 +58,12 @@ filtered out of production registries.
   ProfileStore release; trade uses it to atomically refund both owners on graceful disconnect.
   Hard-process crash recovery remains the write-ahead-journal work documented in
   `docs/TRADE_ESCROW_CRASH_SAFETY.md`.
+- One-way gifts use a stricter cross-profile boundary: `GiftService` removes one exact pet into a
+  persisted sender outbox and `DataService:SaveAndConfirm` must confirm that ownership change before
+  `GiftDeliveryService` queues a stable ProfileStore message. The receiver persists an unopened
+  exact-record present plus a permanent dedupe ledger before acknowledging the message. Opening
+  grants through `PetTransferService` before consuming the present, so queue retries, crashes, and
+  full pet storage cannot duplicate or silently destroy the pet. See [One-Way Pet Gifts](GIFT_SYSTEM.md).
 - Combat drop-table currencies and def-less realm coin fallbacks also terminate at
   `EconomyService`; combat math and area-coin selection remain service-owned upstream.
 - `CombatApplication` is the runtime combat-state boundary. `ApplyHit` publishes resolved

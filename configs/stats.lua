@@ -174,6 +174,21 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        mythical_pets_gifted = {
+            display_name = "Mythical Pets Gifted",
+            scope = "lifetime",
+            default = 0,
+        },
+        secret_pets_gifted = {
+            display_name = "Secret Pets Gifted",
+            scope = "lifetime",
+            default = 0,
+        },
+        exclusive_pets_gifted = {
+            display_name = "Exclusive Pets Gifted",
+            scope = "lifetime",
+            default = 0,
+        },
         -- DOOR MISSIONS (MissionInstanceService increments at Complete /
         -- chest open). The random ladder quests read these LIFETIME — career
         -- totals per Jason's "complete 10, 100, 1000, 10000" framing.

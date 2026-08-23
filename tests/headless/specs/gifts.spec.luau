@@ -1,0 +1,223 @@
+local GiftDelivery = loadModule("src/Shared/Game/GiftDelivery.lua")
+local GiftLogic = loadModule("src/Shared/Game/GiftLogic.lua")
+
+local RARITIES = {
+    "common",
+    "uncommon",
+    "rare",
+    "epic",
+    "legendary",
+    "mythic",
+    "secret",
+    "exclusive",
+    "huge",
+}
+
+local function gift(overrides)
+    local value = {
+        id = "gift-one",
+        sender_user_id = 11,
+        sender_name = "Giver",
+        receiver_user_id = 22,
+        sent_at = 100,
+        rarity_id = "secret",
+        record_key = "secret-uid",
+        pet_record = {
+            id = "abyssal_wyrm",
+            variant = "rainbow",
+            level = 17,
+            enchantments = { { id = "power", level = 3 } },
+            serial = 42,
+        },
+    }
+    for key, child in pairs(overrides or {}) do
+        value[key] = child
+    end
+    return value
+end
+
+return function()
+    describe("GiftLogic receiver preferences", function()
+        it("defaults malformed values to accept any", function()
+            expect(GiftLogic.sanitizePreference(nil)).to.equal("any")
+            expect(GiftLogic.sanitizePreference("broken")).to.equal("any")
+            expect(GiftLogic.preferenceLabel(nil)).to.equal("Any gift")
+        end)
+
+        it("enforces every rarity threshold using the supplied order", function()
+            expect(GiftLogic.accepts("any", "common", RARITIES)).to.equal(true)
+            expect(GiftLogic.accepts("off", "huge", RARITIES)).to.equal(false)
+            expect(GiftLogic.accepts("uncommon_plus", "common", RARITIES)).to.equal(false)
+            expect(GiftLogic.accepts("uncommon_plus", "uncommon", RARITIES)).to.equal(true)
+            expect(GiftLogic.accepts("rare_plus", "uncommon", RARITIES)).to.equal(false)
+            expect(GiftLogic.accepts("rare_plus", "rare", RARITIES)).to.equal(true)
+            expect(GiftLogic.accepts("mythic_plus", "legendary", RARITIES)).to.equal(false)
+            expect(GiftLogic.accepts("mythic_plus", "mythic", RARITIES)).to.equal(true)
+            expect(GiftLogic.accepts("mythic_plus", "secret", RARITIES)).to.equal(true)
+            expect(GiftLogic.accepts("mythic_plus", "exclusive", RARITIES)).to.equal(true)
+            expect(GiftLogic.accepts("mythic_plus", "huge", RARITIES)).to.equal(true)
+        end)
+
+        it("fails closed for a rarity absent from the configured order", function()
+            expect(GiftLogic.accepts("any", "creator", RARITIES)).to.equal(false)
+            local accepted, reason = GiftLogic.accepts("rare_plus", "creator", RARITIES)
+            expect(accepted).to.equal(false)
+            expect(reason).to.equal("unknown_rarity")
+        end)
+
+        it("resolves Huge and record overrides before compact-stack config fallback", function()
+            local config = {
+                getPet = function()
+                    return { rarity_id = "rare" }
+                end,
+            }
+            expect(GiftLogic.resolveRarity({ id = "a", huge = true }, config)).to.equal("huge")
+            expect(GiftLogic.resolveRarity({ id = "a", rarity_id = "secret" }, config)).to.equal(
+                "secret"
+            )
+            expect(GiftLogic.resolveRarity({ id = "a" }, config)).to.equal("rare")
+        end)
+
+        it("maps Huge explicitly into the Exclusive giver ranking", function()
+            expect(GiftLogic.leaderboardCounter("huge")).to.equal("exclusive_pets_gifted")
+            expect(GiftLogic.leaderboardCounter("exclusive")).to.equal("exclusive_pets_gifted")
+            expect(GiftLogic.leaderboardCounter("secret")).to.equal("secret_pets_gifted")
+            expect(GiftLogic.leaderboardCounter("mythic")).to.equal("mythical_pets_gifted")
+            expect(GiftLogic.leaderboardCounter("legendary")).to.equal(nil)
+        end)
+    end)
+
+    describe("GiftDelivery durable contract", function()
+        it("versions and deep-copies the exact pet message", function()
+            local source = gift()
+            local message = GiftDelivery.message(source)
+            source.pet_record.level = 99
+            source.pet_record.enchantments[1].level = 9
+
+            expect(message.kind).to.equal("gift_delivery")
+            expect(message.version).to.equal(1)
+            expect(message.gift.pet_record.level).to.equal(17)
+            expect(message.gift.pet_record.enchantments[1].level).to.equal(3)
+            expect(GiftDelivery.validateMessage(message)).to.equal(true)
+        end)
+
+        it("rejects malformed identities, rarities, and pet records", function()
+            local message = GiftDelivery.message(gift())
+            message.gift.receiver_user_id = 0
+            expect(GiftDelivery.validateMessage(message)).to.equal(false)
+            message.gift.receiver_user_id = 22
+            message.gift.rarity_id = "invented"
+            expect(GiftDelivery.validateMessage(message)).to.equal(false)
+            message.gift.rarity_id = "secret"
+            message.gift.pet_record = {}
+            expect(GiftDelivery.validateMessage(message)).to.equal(false)
+        end)
+
+        it("builds an unopened record without dropping the embedded pet", function()
+            local source = gift()
+            local wrapped = GiftDelivery.wrappedRecord(source)
+            source.pet_record.serial = 1000
+
+            expect(wrapped.id).to.equal("wrapped_pet_gift")
+            expect(wrapped.gift_id).to.equal("gift-one")
+            expect(wrapped.sender_name).to.equal("Giver")
+            expect(wrapped.pet_id).to.equal("abyssal_wyrm")
+            expect(wrapped.pet_record.serial).to.equal(42)
+        end)
+
+        it("keeps sender and receiver idempotency ledgers permanent", function()
+            local data = {}
+            expect(GiftDelivery.markReceived(data, "one")).to.equal(true)
+            expect(GiftDelivery.markReceived(data, "one")).to.equal(false)
+            expect(GiftDelivery.isReceived(data, "one")).to.equal(true)
+            expect(GiftDelivery.markSent(data, "one")).to.equal(true)
+            expect(GiftDelivery.markSent(data, "one")).to.equal(false)
+            expect(GiftDelivery.isSent(data, "one")).to.equal(true)
+        end)
+    end)
+
+    describe("gift feature wiring", function()
+        it("persists sender escrow before queuing the receiver message", function()
+            local service = readFile("src/Server/Services/GiftService.lua")
+            local sendStart = service:find("function GiftService:Send", 1, true)
+            local save = service:find("gift_outbox_before_message:", sendStart, true)
+            local queue = service:find("self:_queueOutboxEntry(player, giftId)", save, true)
+            expect(sendStart ~= nil).to.equal(true)
+            expect(save ~= nil).to.equal(true)
+            expect(queue ~= nil).to.equal(true)
+            expect(save < queue).to.equal(true)
+
+            local data = readFile("src/Server/Services/DataService.lua")
+            expect(data:find("function DataService:SaveAndConfirm", 1, true) ~= nil).to.equal(true)
+            expect(data:find("lastConfirmedRequestId", 1, true) ~= nil).to.equal(true)
+        end)
+
+        it("opens the exact pet before consuming the wrapped record", function()
+            local service = readFile("src/Server/Services/GiftService.lua")
+            local openStart = service:find("function GiftService:OpenGift", 1, true)
+            local grant = service:find("self._petTransferService:GrantRecord", openStart, true)
+            local remove = service:find("GIFTS_BUCKET,", grant, true)
+            expect(grant ~= nil).to.equal(true)
+            expect(remove ~= nil).to.equal(true)
+            expect(grant < remove).to.equal(true)
+        end)
+
+        it(
+            "wires preferences, gift commands, inventory presentation, and opening reveal",
+            function()
+                local settings = readFile("src/Server/Services/SettingsService.lua")
+                local api = readFile("src/Server/Services/GameAPIService.lua")
+                local tradePanel = readFile("src/Client/UI/Menus/TradePanel.lua")
+                local inventoryPanel = readFile("src/Client/UI/Menus/InventoryPanel.lua")
+                local inventoryConfig = readFile("configs/inventory.lua")
+
+                expect(settings:find('GiftAcceptance = "any"', 1, true) ~= nil).to.equal(true)
+                expect(settings:find("SetGiftAcceptance", 1, true) ~= nil).to.equal(true)
+                expect(api:find('bus:register("gift.set_preference"', 1, true) ~= nil).to.equal(
+                    true
+                )
+                expect(api:find('bus:register("gift.send"', 1, true) ~= nil).to.equal(true)
+                expect(api:find('bus:register("gift.open"', 1, true) ~= nil).to.equal(true)
+                expect(tradePanel:find('"uncommon_plus", "Uncommon+"', 1, true) ~= nil).to.equal(
+                    true
+                )
+                expect(tradePanel:find('self:_callBus("gift.send"', 1, true) ~= nil).to.equal(true)
+                expect(inventoryConfig:find('name = "Gifts"', 1, true) ~= nil).to.equal(true)
+                expect(inventoryPanel:find("_loadGiftsFromFolder", 1, true) ~= nil).to.equal(true)
+                expect(inventoryPanel:find('InvokeServer("gift.open"', 1, true) ~= nil).to.equal(
+                    true
+                )
+                expect(
+                    inventoryPanel:find("StartPetRevealAnimation({ result.pet })", 1, true) ~= nil
+                ).to.equal(true)
+            end
+        )
+
+        it("publishes three top-three giver rankings from idempotent counters", function()
+            local stats = readFile("configs/stats.lua")
+            local boards = readFile("configs/leaderboards.lua")
+            for _, counter in ipairs({
+                "mythical_pets_gifted",
+                "secret_pets_gifted",
+                "exclusive_pets_gifted",
+            }) do
+                expect(stats:find(counter, 1, true) ~= nil).to.equal(true)
+                expect(boards:find('counter = "' .. counter .. '"', 1, true) ~= nil).to.equal(true)
+            end
+            expect(boards:find('id = "gift_exclusives"', 1, true) ~= nil).to.equal(true)
+            expect(boards:find('id = "gift_secrets"', 1, true) ~= nil).to.equal(true)
+            expect(boards:find('id = "gift_mythicals"', 1, true) ~= nil).to.equal(true)
+            expect(boards:find("max_entries = 3", 1, true) ~= nil).to.equal(true)
+        end)
+
+        it("traces the supplied icon and model through uploaded asset manifests", function()
+            local gifts = readFile("configs/gifts.lua")
+            local iconManifest = readFile("scripts/gift_icon_ids.json")
+            local modelManifest = readFile("scripts/gift_model_ids.json")
+            expect(gifts:find("74519461902415", 1, true) ~= nil).to.equal(true)
+            expect(gifts:find("75928057436522", 1, true) ~= nil).to.equal(true)
+            expect(iconManifest:find("74519461902415", 1, true) ~= nil).to.equal(true)
+            expect(modelManifest:find("75928057436522", 1, true) ~= nil).to.equal(true)
+        end)
+    end)
+end

@@ -29,6 +29,7 @@ local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local TradeReveal = require(ReplicatedStorage.Shared.Game.TradeReveal)
 local TradePetSort = require(ReplicatedStorage.Shared.Game.TradePetSort)
 local TradeLogic = require(ReplicatedStorage.Shared.Game.TradeLogic)
+local GiftLogic = require(ReplicatedStorage.Shared.Game.GiftLogic)
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
 local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView)
 local ElementResonance = require(ReplicatedStorage.Shared.Game.ElementResonance)
@@ -52,6 +53,7 @@ local AREAS_CONFIG = config("areas")
 local ELEMENTS_CONFIG = config("elements")
 local ENCHANTS_CONFIG = config("enchants")
 local TRADE_CONFIG = config("trade")
+local GIFTS_CONFIG = config("gifts")
 local UI_CONFIG = config("ui")
 
 local inventoryGridConfig = (
@@ -566,7 +568,7 @@ function TradePanel:Show(parent)
 
     local hint = label(
         frame,
-        "Pick a player to send a trade request:",
+        "Pick a player to request a trade or give one pet:",
         UDim2.new(1, -48, 0, 24),
         UDim2.new(0, 24, 0, 84),
         COLORS.subtext,
@@ -620,10 +622,64 @@ function TradePanel:Show(parent)
         self.privacyButtons[mode] = btn
     end
 
+    local giftPrivacy = Instance.new("Frame")
+    giftPrivacy.Name = "GiftAcceptance"
+    giftPrivacy.Size = UDim2.new(1, -48, 0, 40)
+    giftPrivacy.Position = UDim2.new(0, 24, 0, 154)
+    giftPrivacy.BackgroundTransparency = 1
+    giftPrivacy.ZIndex = 102
+    giftPrivacy.Parent = frame
+    self.giftPrivacyBar = giftPrivacy
+    local giftPrivacyLabel = label(
+        giftPrivacy,
+        "Accept gifts",
+        UDim2.new(0.3, 0, 1, 0),
+        UDim2.new(0, 0, 0, 0),
+        COLORS.subtext,
+        Enum.Font.Gotham
+    )
+    giftPrivacyLabel.TextXAlignment = Enum.TextXAlignment.Left
+    giftPrivacyLabel.ZIndex = 103
+    self.giftPrivacyButtons = {}
+    local giftModes = {
+        { "any", "Any" },
+        { "uncommon_plus", "Uncommon+" },
+        { "rare_plus", "Rare+" },
+        { "mythic_plus", "Mythical+" },
+        { "off", "Off" },
+    }
+    for index, modeSpec in ipairs(giftModes) do
+        local mode, display = modeSpec[1], modeSpec[2]
+        local button = Instance.new("TextButton")
+        button.Name = mode
+        button.Size = UDim2.new(0.132, 0, 0.86, 0)
+        button.Position = UDim2.new(0.3 + (index - 1) * 0.138, 0, 0.07, 0)
+        button.BackgroundColor3 = COLORS.row
+        button.Text = display
+        button.TextColor3 = COLORS.text
+        button.TextScaled = true
+        button.Font = Enum.Font.GothamBold
+        button.ZIndex = 103
+        button.Parent = giftPrivacy
+        pillify(button, 12)
+        local constraint = Instance.new("UITextSizeConstraint")
+        constraint.MaxTextSize = 11
+        constraint.Parent = button
+        button.Activated:Connect(function()
+            local result = self:_callBus("gift.set_preference", { mode = mode })
+            if result and result.ok then
+                self._giftPreferenceOverride = result.mode
+            end
+            self:_refreshGiftPreference()
+            self:_refreshPlayers()
+        end)
+        self.giftPrivacyButtons[mode] = button
+    end
+
     local list = Instance.new("ScrollingFrame")
     list.Name = "PlayerList"
-    list.Size = UDim2.new(1, -24, 1, -204)
-    list.Position = UDim2.new(0, 12, 0, 160)
+    list.Size = UDim2.new(1, -24, 1, -250)
+    list.Position = UDim2.new(0, 12, 0, 204)
     list.BackgroundTransparency = 1
     list.BorderSizePixel = 0
     list.ScrollBarThickness = 6
@@ -655,6 +711,7 @@ function TradePanel:Show(parent)
 
     self.isVisible = true
     self:_refreshTradePrivacy()
+    self:_refreshGiftPreference()
     self:_refreshPlayers()
 end
 
@@ -673,10 +730,26 @@ function TradePanel:_refreshTradePrivacy()
     end
 end
 
+function TradePanel:_refreshGiftPreference()
+    if not self.giftPrivacyButtons then
+        return
+    end
+    local current = GiftLogic.sanitizePreference(
+        self._giftPreferenceOverride or Players.LocalPlayer:GetAttribute("GiftAcceptance"),
+        GIFTS_CONFIG.default_acceptance
+    )
+    for mode, button in pairs(self.giftPrivacyButtons) do
+        local selected = mode == current
+        button.BackgroundColor3 = selected and COLORS.accept or COLORS.row
+        button.AutoButtonColor = not selected
+    end
+end
+
 function TradePanel:Hide()
     if not self.isVisible then
         return
     end
+    self:_closeGiftPicker()
     if self.frame then
         self.frame:Destroy()
         self.frame = nil
@@ -685,6 +758,9 @@ function TradePanel:Hide()
     self.privacyBar = nil
     self.privacyButtons = nil
     self._privacyOverride = nil
+    self.giftPrivacyBar = nil
+    self.giftPrivacyButtons = nil
+    self._giftPreferenceOverride = nil
     self.isVisible = false
 end
 
@@ -773,6 +849,19 @@ function TradePanel:_refreshPlayers()
     end
     local result = self:_callBus("trade.players", {})
     local players = result and result.players or {}
+    local giftResult = self:_callBus("gift.players", {})
+    local giftPlayers = {}
+    for _, giftPlayer in ipairs((giftResult and giftResult.players) or {}) do
+        giftPlayers[giftPlayer.userId] = giftPlayer
+    end
+    for _, listedPlayer in ipairs(players) do
+        local giftPlayer = giftPlayers[listedPlayer.userId]
+        if giftPlayer then
+            listedPlayer.giftPreference = giftPlayer.giftPreference
+            listedPlayer.giftPreferenceLabel = giftPlayer.giftPreferenceLabel
+            listedPlayer.giftsEnabled = giftPlayer.giftsEnabled
+        end
+    end
     if #players == 0 then
         local empty = label(
             self.playerList,
@@ -795,7 +884,7 @@ end
 
 function TradePanel:_playerRow(p, order)
     local row = Instance.new("Frame")
-    row.Size = UDim2.new(1, -8, 0, 56)
+    row.Size = UDim2.new(1, -8, 0, 72)
     row.BackgroundColor3 = COLORS.row
     row.BorderSizePixel = 0
     row.LayoutOrder = order
@@ -812,8 +901,8 @@ function TradePanel:_playerRow(p, order)
     local name = label(
         row,
         (lvl and ("Lv %d   "):format(lvl) or "") .. p.name .. status,
-        UDim2.new(1, -140, 1, 0),
-        UDim2.new(0, 14, 0, 0),
+        UDim2.new(1, -244, 0, 38),
+        UDim2.new(0, 14, 0, 1),
         COLORS.text,
         Enum.Font.GothamBold
     )
@@ -822,9 +911,23 @@ function TradePanel:_playerRow(p, order)
     nc.MaxTextSize = 18
     nc.Parent = name
 
+    local giftStatus = label(
+        row,
+        "Gifts: " .. (p.giftPreferenceLabel or "Unavailable"),
+        UDim2.new(1, -244, 0, 24),
+        UDim2.new(0, 14, 0, 40),
+        COLORS.subtext,
+        Enum.Font.Gotham
+    )
+    giftStatus.TextXAlignment = Enum.TextXAlignment.Left
+    giftStatus.ZIndex = 103
+    local gsc = Instance.new("UITextSizeConstraint")
+    gsc.MaxTextSize = 14
+    gsc.Parent = giftStatus
+
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 110, 0, 40)
-    btn.Position = UDim2.new(1, -122, 0.5, -20)
+    btn.Size = UDim2.new(0, 100, 0, 40)
+    btn.Position = UDim2.new(1, -218, 0.5, -20)
     local blockedText = {
         friends_only = "Friends only",
         invites_off = "Off",
@@ -853,6 +956,205 @@ function TradePanel:_playerRow(p, order)
             btn.AutoButtonColor = false
         end)
     end
+
+    local giftButton = Instance.new("TextButton")
+    giftButton.Name = "GiveGift"
+    giftButton.Size = UDim2.new(0, 100, 0, 40)
+    giftButton.Position = UDim2.new(1, -110, 0.5, -20)
+    local giftsEnabled = p.giftsEnabled == true
+    giftButton.BackgroundColor3 = giftsEnabled and COLORS.gem or COLORS.pending
+    giftButton.Text = giftsEnabled and "🎁 Gift" or "Gifts off"
+    giftButton.TextColor3 = COLORS.text
+    giftButton.TextScaled = true
+    giftButton.Font = Enum.Font.GothamBold
+    giftButton.Active = giftsEnabled
+    giftButton.AutoButtonColor = giftsEnabled
+    giftButton.ZIndex = 103
+    giftButton.Parent = row
+    pillify(giftButton, 16)
+    if giftsEnabled then
+        giftButton.Activated:Connect(function()
+            self:_openGiftPicker(p)
+        end)
+    end
+end
+
+function TradePanel:_closeGiftPicker()
+    if self._giftView and self._giftView.cards then
+        self._giftView.cards:destroy()
+    end
+    self._giftView = nil
+    if self.giftWindow then
+        self.giftWindow:Destroy()
+        self.giftWindow = nil
+    end
+end
+
+function TradePanel:_giftFailureText(reason)
+    local messages = {
+        below_preference = "That pet no longer meets the receiver's preference.",
+        gifts_off = "That player has turned gifts off.",
+        item_locked = "Unlock that pet before gifting it.",
+        pet_not_found = "That pet is no longer in your inventory.",
+        player_not_found = "That player has left the server.",
+        target_not_ready = "That player's inventory is not ready yet.",
+        too_fast = "Wait a moment before sending another gift.",
+    }
+    return messages[reason] or "Gift could not be sent. Please try again."
+end
+
+function TradePanel:_confirmGift(target, item)
+    local gui = self:_ensureLiveGui()
+    local modal = Instance.new("Frame")
+    modal.Name = "GiftConfirmation"
+    modal.Size = UDim2.fromOffset(390, 210)
+    modal.Position = UDim2.new(0.5, 0, 0.5, 0)
+    modal.AnchorPoint = Vector2.new(0.5, 0.5)
+    modal.BackgroundColor3 = COLORS.panel
+    modal.ZIndex = 500
+    modal.Parent = gui
+    corner(modal, 18)
+    PanelChrome.pillBorder(modal, PanelChrome.areaPill(), 505, 0, 0.08)
+
+    local title = label(
+        modal,
+        "Send this pet as a gift?",
+        UDim2.new(1, -30, 0, 44),
+        UDim2.new(0, 15, 0, 18),
+        COLORS.text,
+        Enum.Font.GothamBold
+    )
+    title.ZIndex = 507
+    local details = label(
+        modal,
+        petDisplayName(item)
+            .. " → "
+            .. (target.name or "Player")
+            .. "\nThe receiver does not need to accept. This cannot be undone.",
+        UDim2.new(1, -36, 0, 78),
+        UDim2.new(0, 18, 0, 64),
+        COLORS.subtext,
+        Enum.Font.Gotham
+    )
+    details.TextWrapped = true
+    details.ZIndex = 507
+    local dc = Instance.new("UITextSizeConstraint")
+    dc.MaxTextSize = 16
+    dc.Parent = details
+
+    local cancel, _ = Pill.button({
+        parent = modal,
+        name = "CancelGift",
+        size = UDim2.fromOffset(135, 44),
+        position = UDim2.new(0.5, -145, 1, -58),
+        color = COLORS.cancel,
+        text = "Cancel",
+        textSize = 17,
+        zIndex = 507,
+    })
+    local send, sendLabel = Pill.button({
+        parent = modal,
+        name = "ConfirmGift",
+        size = UDim2.fromOffset(135, 44),
+        position = UDim2.new(0.5, 10, 1, -58),
+        color = COLORS.gem,
+        text = "🎁 Send",
+        textSize = 17,
+        zIndex = 507,
+    })
+    cancel.Activated:Connect(function()
+        modal:Destroy()
+    end)
+    send.Activated:Connect(function()
+        send.Active = false
+        send.AutoButtonColor = false
+        sendLabel.Text = "Sending…"
+        local result = self:_callBus("gift.send", {
+            targetUserId = target.userId,
+            uid = item.uid,
+        })
+        if result and result.ok then
+            modal:Destroy()
+            self:_closeGiftPicker()
+            self:_closeSelectionPanel()
+            if result.pending then
+                self:_toast("Gift secured — delivery will finish automatically.")
+            else
+                self:_toast(
+                    "Gift sent to " .. (result.targetName or target.name or "Player") .. "!"
+                )
+            end
+        else
+            send.Active = true
+            send.AutoButtonColor = true
+            sendLabel.Text = "🎁 Send"
+            self:_toast(self:_giftFailureText(result and result.reason))
+            self:_openGiftPicker(target)
+            modal:Destroy()
+        end
+    end)
+end
+
+function TradePanel:_openGiftPicker(target)
+    self:_closeGiftPicker()
+    local result = self:_callBus("gift.myPets", { targetUserId = target.userId })
+    if not (result and result.ok) then
+        self:_toast(self:_giftFailureText(result and result.reason))
+        return
+    end
+
+    target = {
+        userId = result.targetUserId or target.userId,
+        name = result.targetName or target.name,
+        giftPreference = result.preference,
+        giftPreferenceLabel = result.preferenceLabel,
+    }
+    local gui = self:_ensureLiveGui()
+    local window = Instance.new("Frame")
+    window.Name = "GiftPicker"
+    window.Size = UDim2.new(0.7, 0, 0.76, 0)
+    window.Position = UDim2.new(0.5, 0, 0.5, 0)
+    window.AnchorPoint = Vector2.new(0.5, 0.5)
+    window.BackgroundColor3 = COLORS.panel
+    window.ZIndex = 300
+    window.Parent = gui
+    corner(window, 20)
+    PanelChrome.pillBorder(window, PanelChrome.areaPill(), 330, 0, 0.07)
+    self.giftWindow = window
+    self:_buildHeader(window, "🎁 Gift to " .. (target.name or "Player"), function()
+        self:_closeGiftPicker()
+    end, 340)
+
+    local preference = label(
+        window,
+        "Accepts: "
+            .. (result.preferenceLabel or "Any gift")
+            .. "  ·  Choose exactly one unlocked pet",
+        UDim2.new(1, -40, 0, 30),
+        UDim2.new(0, 20, 0, 76),
+        COLORS.subtext,
+        Enum.Font.GothamBold
+    )
+    preference.TextXAlignment = Enum.TextXAlignment.Left
+    preference.ZIndex = 342
+
+    local column = self:_petColumn(window, {
+        name = "GiftSource",
+        size = UDim2.new(1, -32, 1, -120),
+        position = UDim2.new(0, 16, 0, 108),
+        tint = COLORS.row,
+        pillKey = PanelChrome.areaPill(),
+    })
+    local pets = result.pets or {}
+    TradePetSort.sort(pets, tradeDisplayPower)
+    self:_updatePetColumn(column, "Eligible pets", pets, {
+        keyFor = sourceCardKey,
+        emptyText = "No unlocked pets meet this player's current gift preference.",
+        onClick = function(item)
+            self:_confirmGift(target, item)
+        end,
+    })
+    self._giftView = column
 end
 
 ----------------------------------------------------------------------

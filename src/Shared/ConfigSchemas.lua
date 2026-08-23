@@ -65,6 +65,13 @@ local SCHEMAS = {
         token = "table",
         principal = "table",
     }),
+    gifts = schema({
+        version = "number",
+        default_acceptance = "string",
+        preferences = "table",
+        limits = "table",
+        assets = "table",
+    }),
     friend_boost = schema({
         enabled = "boolean",
         active_phase = "string",

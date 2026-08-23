@@ -33,6 +33,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
   calendar, KPI definitions, data-quality gates, ad-credit budget, and rollback runbook.
 - [Template vs Game](TEMPLATE_VS_GAME.md) — which systems are reusable template (trading, hatching, rewards…), which are Pet-Realm reference examples, which are game-only content. The pick-list for a future template extraction.
 - [Pet Inventory SSOT](PET_INVENTORY_SSOT.md) — the single-source-of-truth pet model: ownership in `Inventory.pets.items`, equip as a separate validated layer. Read before touching pet inventory/equip/trade.
+- [One-Way Pet Gifts](GIFT_SYSTEM.md) — receiver rarity policies, exact-record durable delivery,
+  wrapped inventory presentation, and the three gift-giver rankings.
 - [Studio Workflow](STUDIO_WORKFLOW.md) — Rojo, Roblox Studio, MCP, and verification workflow.
 - [Remote Dev Pipeline](REMOTE_DEV_PIPELINE.md) — develop → test → build → release from a CLI/AI agent; the layered testing methodology and hard-limit gap analysis.
 - [Automation API Design](AUTOMATION_API_DESIGN.md) — the CommandBus boundary, GameAPIService, and AutomationService that let tests drive the game below the GUI.

@@ -165,6 +165,7 @@
    "periodic": 1
   },
   "src/Server/Services/DataService.lua": {
+   "deadline": 1,
    "debounce": 1,
    "periodic": 1,
    "retry_backoff": 1,
@@ -191,6 +192,9 @@
   },
   "src/Server/Services/GameStructureService.server.lua": {
    "retry_backoff": 1
+  },
+  "src/Server/Services/GiftService.lua": {
+   "retry_backoff": 2
   },
   "src/Server/Services/GameAPIService.lua": {
    "test": 1

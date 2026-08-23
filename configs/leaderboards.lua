@@ -238,6 +238,51 @@ return {
                 ordered_store = "LB_EggsHatched_v1",
             },
         },
+        -- Gift-giver podiums are three independent top-three rankings. They are
+        -- publication-backed now; an authored combined physical host can bind
+        -- these board ids later without changing counters or saved player data.
+        {
+            id = "gift_exclusives",
+            display_name = "Most Exclusives Gifted",
+            subtitle = "Exclusive and Huge pets given",
+            status_only = true,
+            score = { kind = "counter", counter = "exclusive_pets_gifted" },
+            sort = "desc",
+            max_entries = 3,
+            global = {
+                enabled = true,
+                studio_enabled = false,
+                ordered_store = "LB_GiftExclusives_v1",
+            },
+        },
+        {
+            id = "gift_secrets",
+            display_name = "Most Secrets Gifted",
+            subtitle = "Secret pets given",
+            status_only = true,
+            score = { kind = "counter", counter = "secret_pets_gifted" },
+            sort = "desc",
+            max_entries = 3,
+            global = {
+                enabled = true,
+                studio_enabled = false,
+                ordered_store = "LB_GiftSecrets_v1",
+            },
+        },
+        {
+            id = "gift_mythicals",
+            display_name = "Most Mythicals Gifted",
+            subtitle = "Mythical pets given",
+            status_only = true,
+            score = { kind = "counter", counter = "mythical_pets_gifted" },
+            sort = "desc",
+            max_entries = 3,
+            global = {
+                enabled = true,
+                studio_enabled = false,
+                ordered_store = "LB_GiftMythicals_v1",
+            },
+        },
         -- Current Range / Training Ground: best cleared room in the fixed,
         -- clock-aligned round from configs/challenge_runs.lua.
         -- No People-list title and no podium yet (backend first).
