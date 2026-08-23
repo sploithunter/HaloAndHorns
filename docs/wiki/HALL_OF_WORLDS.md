@@ -310,6 +310,9 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   Chimera 2% (hold controller). All five are regular Exclusives at the shared 90% eternal baseline
   (Secrets 85%, Huges 120%). Standard Exclusive side rolls are 5% Golden, 0.5% Rainbow, and 1% Huge;
   player luck, paid luck, presence luck, and events never alter any of these stated odds.
+  Inventory card art for those five pets must be cleaned with
+  `scripts/remove_image_background.py --mode edge-white` before upload (same pass as Hall
+  thumbnails). The first import skipped that step and registered opaque RGB squares.
 - Wire adopts named pads in place and does not snap a user-moved pad back to fallback
   coordinates. After a gate rotate, move the pad to that arch (`scripts/studio/align_challenge_pads.luau`)
   — the E-prompt parents to the pad. Save the place after the pads/arches exist.
