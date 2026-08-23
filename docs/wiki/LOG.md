@@ -1,5 +1,12 @@
 # Log
 
+## 2026-08-23 — New players accept trade requests from Everyone
+
+- Changed the new-profile Trade request privacy default from Friends only to Everyone across the
+  config, pure fallback, profile template, and SettingsService repair initializer.
+- Kept the existing v16→v17 Friends-only migration unchanged, so saved profiles retain their
+  current Everyone / Friends only / Off choice and are not rewritten retroactively.
+
 ## 2026-08-23 — Champion pet cards use RGBA thumbnails
 
 - The first Gauntlet Champion card upload used the raw RGB Meshy PNGs, so Ribbon Ram, Medal Moth,

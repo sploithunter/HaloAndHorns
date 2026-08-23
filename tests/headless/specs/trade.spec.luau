@@ -139,9 +139,10 @@ return function()
             expect(TradeLogic.inviteExpired(nil, 1)).to.equal(true)
         end)
 
-        it("defaults request privacy to Friends Only and supports Off", function()
-            expect(config.invite_privacy.default).to.equal("friends")
-            expect(TradeLogic.invitePrivacy(nil, config)).to.equal("friends")
+        it("defaults new request privacy to Everyone and preserves explicit choices", function()
+            expect(config.invite_privacy.default).to.equal("everyone")
+            expect(TradeLogic.invitePrivacy(nil, config)).to.equal("everyone")
+            expect(TradeLogic.invitePrivacy("friends", config)).to.equal("friends")
             expect(TradeLogic.invitePrivacy("everyone", config)).to.equal("everyone")
             expect(TradeLogic.invitePrivacy("off", config)).to.equal("off")
             expect(TradeLogic.invitePrivacyLabel("off", config)).to.equal("Requests off")
@@ -181,7 +182,7 @@ return function()
             )
         end)
 
-        it("persists both social privacy settings with a Friends Only migration", function()
+        it("defaults new profiles to Everyone without remigrating saved profiles", function()
             local data = readFile("src/Server/Services/DataService.lua")
             local settings = readFile("src/Server/Services/SettingsService.lua")
             local party = readFile("src/Server/Services/PartyService.lua")
@@ -190,10 +191,19 @@ return function()
             expect(string.find(data, 'TeamInvitePrivacy = "friends"', 1, true) ~= nil).to.equal(
                 true
             )
-            expect(string.find(data, 'TradeInvitePrivacy = "friends"', 1, true) ~= nil).to.equal(
+            expect(string.find(data, 'TradeInvitePrivacy = "everyone"', 1, true) ~= nil).to.equal(
                 true
             )
             expect(string.find(data, "SchemaMigrations[16]", 1, true) ~= nil).to.equal(true)
+            local socialMigration =
+                string.match(data, "SchemaMigrations%[16%].-SchemaMigrations%[17%]")
+            expect(socialMigration ~= nil).to.equal(true)
+            expect(string.find(socialMigration, 'TradeInvitePrivacy = "friends"', 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(string.find(settings, 'TradeInvitePrivacy = "everyone"', 1, true) ~= nil).to.equal(
+                true
+            )
             expect(string.find(settings, "SetTradeInvitePrivacy", 1, true) ~= nil).to.equal(true)
             expect(
                 string.find(settings, 'RequestSave(player, "trade_invite_privacy"', 1, true) ~= nil

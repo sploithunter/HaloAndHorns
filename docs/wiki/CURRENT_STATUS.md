@@ -1547,11 +1547,12 @@ Last checked: 2026-08-18
 
 ## Social invite privacy and expiry feedback
 
-Last checked: 2026-08-21
+Last checked: 2026-08-23
 
-- Team and Trade requests default to Friends only. Each player picker owns an independent,
-  persistent Everyone / Friends only / Off control; the receiving player's saved choice is
-  enforced by the server and reflected in unavailable picker rows.
+- Team requests default to Friends only. New profiles default Trade requests to Everyone; existing
+  profiles retain their saved Everyone / Friends only / Off choice without a migration. Each player
+  picker owns an independent persistent control, and the receiving player's choice is enforced by
+  the server and reflected in unavailable picker rows.
 - Both invite types expire after 30 seconds. The sender and recipient each receive an explicit
   timeout banner, and the recipient's stale request popup closes.
 

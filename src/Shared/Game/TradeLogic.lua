@@ -40,7 +40,8 @@ end
 
 function TradeLogic.invitePrivacy(value, config)
     local privacy = privacyModes(config)
-    local default = (privacy and type(privacy.default) == "string" and privacy.default) or "friends"
+    local default = (privacy and type(privacy.default) == "string" and privacy.default)
+        or "everyone"
     if
         type(value) == "string"
         and privacy
@@ -55,7 +56,7 @@ function TradeLogic.invitePrivacy(value, config)
     if privacy and type(privacy.modes) == "table" and privacy.modes[default] then
         return default
     end
-    return "friends"
+    return "everyone"
 end
 
 function TradeLogic.invitePrivacyLabel(value, config)
