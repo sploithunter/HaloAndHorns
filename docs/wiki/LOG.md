@@ -1,5 +1,13 @@
 # Log
 
+## 2026-08-23 — Champion pet cards use RGBA thumbnails
+
+- The first Gauntlet Champion card upload used the raw RGB Meshy PNGs, so Ribbon Ram, Medal Moth,
+  Laurel Lynx, Victory Gryphon, and Crowned Chimera showed an opaque white square on inventory
+  cards. Re-ran the Hall `remove_image_background.py --mode edge-white` pass, re-uploaded the ten
+  group Decals, and replaced the registry IMAGE ids. Card art for these pets must go through that
+  edge-connected white cleanup before upload; do not register the Downloads RGB files.
+
 ## 2026-08-22 — Week 3 release configuration
 
 - Opened the Patch Phoenix tester campaign for its authored Saturday-to-Saturday Mountain window
