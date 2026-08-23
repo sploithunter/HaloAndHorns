@@ -341,7 +341,7 @@ function PrologueService:Finish(player)
         end
     end
     local zoneService = self._modules and self._modules.ZoneService
-    local destinationArea = zoneService and zoneService:GetInitialArea(player) or "Hall_1"
+    local destinationArea = zoneService and zoneService:GetInitialArea(player) or "Spawn"
     local placed, placeReason, placedArea
     if zoneService and zoneService.PlacePlayerAtZoneSpawn then
         placed, placeReason, placedArea =

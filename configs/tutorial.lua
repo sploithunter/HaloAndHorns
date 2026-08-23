@@ -20,12 +20,9 @@
 ]]
 
 return {
-    -- v3 teaches the complete Resonance loop before the cave fight, then closes with combat,
-    -- Berserk Brew, and Rally. Versioned migrations preserve the semantic lesson for active saves.
-    version = 3,
-    -- Hall-era new-player stamp. Written only onto brand-new (or Reset) tutorial records.
-    -- Legacy saves have no `track`; do not Reconcile this through the profile template.
-    hall_track = 2,
+    -- v4 restores the proven Homeworld sequence: hatch, mine, squad, first fight, combat tools,
+    -- then Resonance. Versioned migrations follow the semantic lesson for in-progress saves.
+    version = 4,
     step_migrations = {
         -- v1 -> v2 removed the redundant manual-equip gate and added explicit squad review.
         [1] = {
@@ -53,6 +50,19 @@ return {
             [9] = { step = 6 }, -- cast_power
             [10] = { step = 7 }, -- slot_power
         },
+        -- v3 -> v4 returns each active lesson to the original Homeworld ordering.
+        [3] = {
+            [1] = { step = 1 }, -- hatch_first_egg
+            [2] = { step = 2, preserve_count = true }, -- farm_crystals
+            [3] = { step = 3 }, -- hatch_another
+            [4] = { step = 4 }, -- build_squad
+            [5] = { step = 8 }, -- bind_power
+            [6] = { step = 9 }, -- cast_power
+            [7] = { step = 10 }, -- slot_power
+            [8] = { step = 5 }, -- first_fight
+            [9] = { step = 6 }, -- battle_brew
+            [10] = { step = 7 }, -- rally_call
+        },
     },
     veteran_skip = { min_claimed_level = 3 },
 
@@ -61,9 +71,9 @@ return {
             id = "hatch_first_egg",
             localization_key = "tutorial.hatch_first_egg",
             title = "Hatch your first egg",
-            body = "Your companion needs a squadmate. Follow the trail to the Wayfinder Egg and hatch one.",
-            body_gamepad = "Your companion needs a squadmate. Follow the trail to the Wayfinder Egg and press X to hatch one.",
-            target = { kind = "egg", prefer = "wayfinder_egg" },
+            body = "Your companion needs a squadmate. Follow the trail to the Earth Egg and hatch one.",
+            body_gamepad = "Your companion needs a squadmate. Follow the trail to the Earth Egg and press X to hatch one.",
+            target = { kind = "egg", prefer = "Grass" },
             complete_on = { event = "egg_hatch" },
         },
         {
@@ -86,7 +96,7 @@ return {
             title = "Grow your squad",
             body = "Spend those coins on another egg — more pets means faster mining.",
             body_gamepad = "Spend those coins on another egg. Walk to it and press X—more pets means faster mining.",
-            target = { kind = "egg", prefer = "wayfinder_egg" },
+            target = { kind = "egg", prefer = "Grass" },
             complete_on = { event = "egg_hatch" },
         },
         {
@@ -104,8 +114,55 @@ return {
             },
             complete_on = { event = "tutorial_squad_reviewed" },
         },
-        -- Teach the complete Resonance loop before combat. This prevents cave XP from opening an
-        -- Ascend choice while the player is still learning how to bind and enhance their first power.
+        -- The original Homeworld onramp puts the differentiator on screen immediately after the
+        -- familiar hatch/mine/squad loop: the trail leads to the Earth cave and the pets defend.
+        {
+            id = "first_fight",
+            localization_key = "tutorial.first_fight",
+            title = "Your first fight",
+            body = "Something stirs in the Earth cave! Walk over — your pets fight for you. Defeat it and take its coins!",
+            target = { kind = "part", name = "BaddieSpawnerEarth", label = "⬇ FIGHT" },
+            complete_on = { event = "enemy_defeated" },
+        },
+        -- Potion auto-binding uses the first eligible top-row slot, which may vary with the
+        -- player's existing bindings. Target the live Berserk Brew binding by identity.
+        {
+            id = "battle_brew",
+            localization_key = "tutorial.battle_brew",
+            title = "Drink for battle",
+            grant = { potions = { { id = "berserk_brew", count = 2 } } },
+            body = "CLICK the flashing Berserk Brew in your power bar. It makes every pet hit harder!",
+            body_gamepad = "You found two Berserk Brews! Use LB/RB to select the flashing brew, then RT to drink it.",
+            target = {
+                kind = "ui",
+                hotbar_type = "potion",
+                hotbar_target = "berserk_brew",
+                cue = "click",
+                cue_text = "CLICK HERE",
+            },
+            complete_on = { event = "potion_used" },
+        },
+        -- Rally closes the combat lesson. Rejoin reapplies its bind idempotently.
+        {
+            id = "rally_call",
+            localization_key = "tutorial.rally_call",
+            title = "Call them back",
+            grant = {
+                hotbar_bind = { slot = 11, type = "tactical", target = "rally" },
+            },
+            body = "See the FLAG at the top-left of your power bar? That's Rally — press it and your pets instantly return to your side. Your escape button when a fight goes wrong!",
+            body_gamepad = "See the FLAG at the top-left of your power bar? Select it with LB/RB and press RT to call every pet back!",
+            target = {
+                kind = "ui",
+                hotbar_type = "tactical",
+                hotbar_target = "rally",
+                cue = "click",
+                cue_text = "CLICK HERE",
+            },
+            complete_on = { event = "rally_used" },
+        },
+        -- Powers follow the familiar pet-game loop. Every player is born with Resonance; these
+        -- final lessons teach binding, casting, and enhancing the power before graduation.
         {
             id = "bind_power",
             localization_key = "tutorial.bind_power",
@@ -126,8 +183,8 @@ return {
             id = "cast_power",
             localization_key = "tutorial.cast_power",
             title = "Use Resonance",
-            body = "Now press that slot (or its number key) near resources — Resonance makes crystals and Hall caches break faster and pay more currency.",
-            body_gamepad = "Use LB/RB to select Resonance, then press RT near resources. It makes crystals and Hall caches break faster and pay more currency.",
+            body = "Now press that slot (or its number key) near crystals — Resonance makes them break faster and pay more currency.",
+            body_gamepad = "Use LB/RB to select Resonance, then press RT near crystals. It makes them break faster and pay more currency.",
             -- Resolve by binding identity, never by slot number: the preceding lesson lets the
             -- player place Resonance anywhere on the bar.
             target = {
@@ -160,54 +217,6 @@ return {
                 cue_text = "CLICK HERE",
             },
             complete_on = { event = "enhancement_slotted" },
-        },
-        -- Close with one uninterrupted combat sequence: fight, drink, then recall. The level-2
-        -- top-up happens only after Rally completes the tutorial.
-        {
-            id = "first_fight",
-            localization_key = "tutorial.first_fight",
-            title = "Your first fight",
-            body = "Something got into the barn! Head over — your pets fight for you. Drive it out and collect its Waycoins!",
-            target = { kind = "part", name = "BaddieSpawnerHallBarn", label = "⬇ FIGHT" },
-            complete_on = { event = "enemy_defeated" },
-        },
-        -- Potion auto-binding uses the first eligible top-row slot, which may vary with the
-        -- player's existing bindings. Target the live Berserk Brew binding by identity.
-        {
-            id = "battle_brew",
-            localization_key = "tutorial.battle_brew",
-            title = "Drink for battle",
-            grant = { potions = { { id = "berserk_brew", count = 2 } } },
-            body = "CLICK the flashing Berserk Brew in your power bar. It makes every pet hit harder!",
-            body_gamepad = "You found two Berserk Brews! Use LB/RB to select the flashing brew, then RT to drink it.",
-            target = {
-                kind = "ui",
-                hotbar_type = "potion",
-                hotbar_target = "berserk_brew",
-                cue = "click",
-                cue_text = "CLICK HERE",
-            },
-            complete_on = { event = "potion_used" },
-        },
-        -- Rally is the final lesson and therefore the event that triggers the completion card and
-        -- exact earned-level-2 top-up. Rejoin reapplies its bind idempotently.
-        {
-            id = "rally_call",
-            localization_key = "tutorial.rally_call",
-            title = "Call them back",
-            grant = {
-                hotbar_bind = { slot = 11, type = "tactical", target = "rally" },
-            },
-            body = "See the FLAG at the top-left of your power bar? That's Rally — press it and your pets instantly return to your side. Your escape button when a fight goes wrong!",
-            body_gamepad = "See the FLAG at the top-left of your power bar? Select it with LB/RB and press RT to call every pet back!",
-            target = {
-                kind = "ui",
-                hotbar_type = "tactical",
-                hotbar_target = "rally",
-                cue = "click",
-                cue_text = "CLICK HERE",
-            },
-            complete_on = { event = "rally_used" },
         },
     },
 

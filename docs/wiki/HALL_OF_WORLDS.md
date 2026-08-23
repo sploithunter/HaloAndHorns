@@ -5,6 +5,32 @@ challenge spaces, and calendar events. It is baked Studio geometry under
 `Workspace.Maps.FuturePath`; runtime code binds authored markers and never generates structural
 tiles during play.
 
+## Release status: disabled, geometry retained (2026-08-22)
+
+The Hall route is disabled while its production map/streaming enclosure is repaired. The map stays
+authored under `Workspace.Maps.FuturePath`, and Hall progression ledgers remain in profiles; this is
+a routing rollback, not a player-data rollback.
+
+- Every join, character respawn, and stale Hall-area entry resolves to Homeworld `Spawn`, regardless
+  of saved `LastArea`. Schema v18 removes `Hall_1`–`Hall_4` only from `UnlockedAreas`, ensures
+  `Spawn`, and changes only `GameData.LastArea`; pets, eggs, enhancements, currencies, powers,
+  rewards, and the dormant Hall ledger are untouched.
+- `hall_of_worlds.entry_enabled = false` rejects Hall travel/guest visits and seals the Home Hall
+  portal as a collidable frosted-Ice **HALL OF WORLDS — COMING SOON** wall. World Travel follows ordinary
+  Homeworld unlock rules.
+- Tutorial v4 restores the original Homeworld order and targets: Earth egg, Home mining, squad,
+  Earth-cave fight, Berserk Brew, Rally, then Resonance binding/cast/enhancement. Versioned semantic
+  migration keeps an in-progress player on the same lesson through the v3 reorder reversal.
+- The complete original Range fixture now lives in `Workspace.Maps.Home.ChallengeBindings` at Lava;
+  the complete Training Ground fixture lives in that folder at Desert. These are reparented Studio
+  Instances, not runtime clones: `MissionDoor`, `ArchLightning`, `LeaderboardBoard`, `ChallengeGuide`,
+  attributes, lightning marker groups, SurfaceGuis, and scripts remain on the originals. The
+  repeatable edit-mode migration is `scripts/studio/relocate_home_challenge_gates.luau`.
+- Challenge missions no longer request the Hall Waycoin HUD while entered from Homeworld.
+
+The route design below is retained as the repair/re-enable contract. Statements about fresh Hall
+spawn or active Hall travel are dormant while `entry_enabled` is false.
+
 ## Level 1–5 Entry Route
 
 ```text
@@ -224,7 +250,9 @@ a mesh texture or silently treat the normal model as gold.
 
 ## Range and Training Ground
 
-The reserved Challenge Field lives on **Hall_2 Tile04_corner Field**, not Worlds Plaza. Room
+The mission instances still use the reserved Challenge Field implementation. Their authored entry
+fixtures have moved to Homeworld: **The Range is in Lava** and **Training Ground is in Desert**.
+Room
 1–99 is a difficulty index **and** a fixed layout sequence: everyone's Room N is the same map
 (`seed_policy = "gauntlet_room"`, Range `room#N`, Training Ground `train#N`). Early rooms
 are one chamber. Late rooms cap at entry + up to 3 (`tile_budget = 4`). Settings Enemy
@@ -316,8 +344,9 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
 - Wire adopts named pads in place and does not snap a user-moved pad back to fallback
   coordinates. After a gate rotate, move the pad to that arch (`scripts/studio/align_challenge_pads.luau`)
   — the E-prompt parents to the pad. Save the place after the pads/arches exist.
-- Hall gate lightning is client ambience driven by the saved `ArchLightning/lightning1…18`
-  marker groups under the Range, Training Ground, both Crystal World directions, Home, and
+- Arch lightning is client ambience driven by the saved `ArchLightning/lightning1…18`
+  marker groups under the relocated Range and Training Ground fixtures, both Crystal World
+  directions, Home, and
   Hell test arches. `ArchLightning` rescans streamed hosts, hides the marker parts, and fires
   rapid jamb-to-jamb bolts only near the player. The supplied 0.48-second buzz is group-owned
   audio `80802960194213`; it is a separate positional Effects-bus sound at base volume `0.55`,
@@ -325,9 +354,10 @@ envelope cannot hold that. Do not use `shared_sequence` here — that advances T
   controls its final loudness. Playback is throttled to one nearby arch every 0.65–1.1 seconds.
   If an arch is rebuilt, run
   `scripts/studio/stamp_arch_lightning.luau` in Edit and save the place.
-- Gate signs: `RangeLeaderboard` / `RangeGuide` live on Hall_2
-  `Tile04_corner`; `TrainingGroundLeaderboard` / `TrainingGroundGuide`
-  live on `Tile07_corner`. Tag `LeaderboardBoard` (`BoardId` =
+- Gate signs: `RangeLeaderboard` / `RangeGuide` and
+  `TrainingGroundLeaderboard` / `TrainingGroundGuide` live with their original gates under
+  `Workspace.Maps.Home.ChallengeBindings`. Range carries `HomeworldChallengeArea = Lava`; Training
+  carries `HomeworldChallengeArea = Desert`. Tag `LeaderboardBoard` (`BoardId` =
   `range_current` / `training_ground_current`) or `ChallengeGuide`
   (`GuideMode`). SurfaceGuis use Front (optional `SurfaceFace`). Range
   signs face +X into the field; Training Ground signs face the other

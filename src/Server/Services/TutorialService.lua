@@ -132,15 +132,6 @@ function TutorialService:_ensureProgress(player)
     end
     if type(data.Tutorial) == "table" then
         local migrated, changed = TutorialFlow.migrateProgress(self._config, data.Tutorial)
-        -- In-progress Hall-era tutorials predating this stamp still need the track so
-        -- gates can check completion. Never stamp a finished/legacy save.
-        if migrated.done ~= true and migrated.track == nil then
-            local track = math.floor(tonumber(self._config.hall_track) or 2)
-            if track > 0 then
-                migrated.track = track
-                changed = true
-            end
-        end
         data.Tutorial = migrated
         local reconciledCompletion = reconcileCompletionFlag(data)
         if changed or reconciledCompletion then
@@ -163,7 +154,7 @@ function TutorialService:_ensureProgress(player)
         data.Tutorial = TutorialFlow.fresh(self._config)
         data.Tutorial.done = true
     else
-        data.Tutorial = TutorialFlow.fresh(self._config, { hallTrack = true })
+        data.Tutorial = TutorialFlow.fresh(self._config)
     end
     reconcileCompletionFlag(data)
     self._dataService:RequestSave(player, "tutorial_init")
@@ -434,9 +425,7 @@ function TutorialService:_push(player)
     end)
 end
 
--- Admin/testing: restart the tutorial as a brand-new Hall-era player.
--- Must stamp track 2 and clear the legacy TutorialCompleted flag, or Hall
--- gates still treat the reset profile as finished.
+-- Admin/testing: restart the tutorial at the Homeworld Earth Egg.
 function TutorialService:Reset(player)
     local data = self._dataService:GetData(player)
     if not data then
@@ -444,7 +433,7 @@ function TutorialService:Reset(player)
     end
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     data.GameData.TutorialCompleted = false
-    data.Tutorial = TutorialFlow.fresh(self._config, { hallTrack = true })
+    data.Tutorial = TutorialFlow.fresh(self._config)
     self._dataService:RequestSave(player, "tutorial_reset")
     self:_push(player)
     return { ok = true }

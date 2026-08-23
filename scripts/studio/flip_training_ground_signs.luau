@@ -5,14 +5,17 @@
 
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 
-local tile07 = workspace.Maps.FuturePath.Tiles.Tile07_corner
+local maps = assert(workspace:FindFirstChild("Maps"), "Workspace.Maps is required")
+local home = maps:FindFirstChild("Home")
+local parent = home and home:FindFirstChild("ChallengeBindings")
+    or maps.FuturePath.Tiles.Tile07_corner
 local names = { "TrainingGroundGuide", "TrainingGroundLeaderboard" }
 local yaw = CFrame.Angles(0, math.pi, 0)
 
 ChangeHistoryService:SetWaypoint("Flip Training Ground signs")
 local out = {}
 for _, name in ipairs(names) do
-    local model = tile07:FindFirstChild(name)
+    local model = parent:FindFirstChild(name)
     if not (model and model:IsA("Model")) then
         table.insert(out, { name = name, ok = false, reason = "missing" })
     else

@@ -12,6 +12,33 @@ local function unlockedSet(unlockedAreas)
     return unlocked
 end
 
+-- Release rollback seam: Hall remains authored but is not a legal resume destination. Normalize
+-- only the world-resume fields; inventories, pets, powers, rewards, and Hall progress are left
+-- untouched so the route can be repaired/re-enabled without a player-data rollback.
+function HallOfWorldsLogic.forceHomeResume(gameData, hallAreaIds, homeAreaId)
+    gameData = type(gameData) == "table" and gameData or {}
+    local home = tostring(homeAreaId or "Spawn")
+    local unlocked = unlockedSet(gameData.UnlockedAreas)
+    local changed = gameData.LastArea ~= home or unlocked[home] ~= true
+
+    for areaId in pairs(type(hallAreaIds) == "table" and hallAreaIds or {}) do
+        if unlocked[areaId] == true then
+            unlocked[areaId] = nil
+            changed = true
+        end
+    end
+    unlocked[home] = true
+
+    local values = {}
+    for areaId in pairs(unlocked) do
+        table.insert(values, areaId)
+    end
+    table.sort(values)
+    gameData.UnlockedAreas = values
+    gameData.LastArea = home
+    return gameData, changed
+end
+
 -- Last world for join/respawn. Hall tiles resume in place. Crystal World biomes,
 -- Heaven/Hell layers, and trial/mission_* ids all collapse to Crystal World Spawn.
 -- Never persist ZoneTracker CurrentArea — that is the player-list location and

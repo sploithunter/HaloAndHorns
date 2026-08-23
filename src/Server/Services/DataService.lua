@@ -29,6 +29,7 @@ local PetCompaction = require(ReplicatedStorage.Shared.Inventory.PetCompaction)
 local PetEquipMigration = require(ReplicatedStorage.Shared.Inventory.PetEquipMigration)
 local LevelCurve = require(ReplicatedStorage.Shared.Game.LevelCurve)
 local CurrencyKeys = require(ReplicatedStorage.Shared.Game.CurrencyKeys)
+local HallOfWorldsLogic = require(ReplicatedStorage.Shared.Game.HallOfWorldsLogic)
 
 local DataService = {}
 DataService.__index = DataService
@@ -39,7 +40,13 @@ local DEFAULT_SAVE_DEBOUNCE_SECONDS = 15
 local CRITICAL_SAVE_DEBOUNCE_SECONDS = 1
 local PERIODIC_SAVE_SECONDS = 60
 local SAVE_CONFIRM_TIMEOUT_SECONDS = 10
-local CURRENT_SCHEMA_VERSION = 17
+local CURRENT_SCHEMA_VERSION = 18
+local RETIRED_HALL_AREAS = {
+    Hall_1 = true,
+    Hall_2 = true,
+    Hall_3 = true,
+    Hall_4 = true,
+}
 
 local function countInventoryItems(inventory)
     local counts = {}
@@ -113,16 +120,14 @@ local function generateProfileTemplate(configLoader)
         GameData = {
             TutorialCompleted = false,
             CurrentQuest = nil,
-            -- Hall_1 is the fresh-player entry route; Spawn is the existing Crystal World.
-            -- Both remain in the unlock set because travel authorization and initial placement
-            -- are separate concerns. GameData.LastArea resumes Hall tiles; Crystal World /
-            -- Heaven / Hell / trials resume at Spawn. entered_crystal_world is the fallback.
-            UnlockedAreas = { "Hall_1", "Spawn" },
+            -- The Hall remains authored but is disabled for this release. Every profile begins
+            -- and resumes at the Homeworld Spawn; other owned/unlocked content is preserved.
+            UnlockedAreas = { "Spawn" },
             -- Natural Recall stores egg identity, not coordinates. The live EggStand is resolved on
             -- cast so authored stands may move and removed event eggs fail closed.
             LastHatchedEggId = "",
-            -- Last authorized Hall tile, or Crystal World Spawn. Never a trial / Heaven / Hell id.
-            LastArea = "",
+            -- Release resume anchor. Joins and ordinary respawns always return to Home Spawn.
+            LastArea = "Spawn",
             -- Player root position in the egg anchor's local space. This reproduces the safe side of
             -- the hatcher where the player stood without fossilizing a world coordinate.
             LastHatchedEggOffset = {},
@@ -663,6 +668,16 @@ SchemaMigrations[16] = function(_self, data)
     data.Settings.TeamInvitePrivacy = "friends"
     data.Settings.TradeInvitePrivacy = "friends"
     data.SchemaVersion = 17
+    return 1
+end
+
+-- v17 -> v18: disable Hall as a resume/travel world without touching any owned content. Players
+-- who disconnected on a Hall tile are normalized to Home Spawn, while their pets, eggs,
+-- enhancements, currencies, awards, Hall progress, and every other profile field remain intact.
+SchemaMigrations[17] = function(_self, data)
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    HallOfWorldsLogic.forceHomeResume(data.GameData, RETIRED_HALL_AREAS, "Spawn")
+    data.SchemaVersion = 18
     return 1
 end
 

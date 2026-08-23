@@ -2,6 +2,19 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Homeworld routing rollback (release candidate 2026-08-22)
+
+Hall of Worlds remains authored but entry is disabled while its map is repaired. All joins and
+character respawns resolve to Homeworld Spawn, including profiles whose saved `LastArea` was a Hall
+tile. Schema v18 strips only the four Hall route ids from `UnlockedAreas`, preserves all other world
+unlocks and player-owned data, and leaves the Hall progress ledger dormant. The Home Hall arch is
+sealed as a frosted **Hall of Worlds — Coming Soon** barrier.
+
+Tutorial v4 restores the pre-Hall Homeworld path through the Earth egg and Earth cave. The complete
+authored Range fixture was moved to Lava and the complete Training Ground fixture to Desert under
+`Workspace.Maps.Home.ChallengeBindings`; their MissionDoor pads, lightning marker groups, titles,
+guides, and public leaderboards remain attached to the original Studio Instances.
+
 ## Production streaming visibility (landed 2026-08-22)
 
 The authored world uses a 1024-stud protected streaming radius and a 1536-stud target radius.
@@ -18,7 +31,8 @@ retains its own sky, color, ambient light, clock, and increasing depth intensity
 
 ## Range / Training Ground (landed 2026-08-20)
 
-Hall_2 Tile04_corner Field hosts the shared Challenge Field gauntlet. Room 1–99 is a
+Homeworld Lava hosts The Range entry and Homeworld Desert hosts Training Ground; their missions
+continue to use the shared Challenge Field gauntlet implementation. Room 1–99 is a
 difficulty index (`ChallengeRun.packForRoom`) on a **fixed layout sequence**: Range
 `room#N`, Training Ground `train#N`. Early rooms are one chamber and two imps;
 later rooms add trash, lieutenants, then bosses. Settings Enemy Level and Trial
@@ -34,9 +48,8 @@ and they are the only legal powers for the run (auto-slotted: Hasten 6 recharge;
 3/3). The hotbar blanks to that kit and restores the saved bar on exit
 (publish-only; `profile.Hotbar` is not written).
 Hotbar auto-cast locks clear on Range enter and exit so a slot lock cannot
-follow a loaned power home. The Hall currency stack stays Gems + Waycoins
-inside Range and Training Ground (`hall_currency_hud`); exit drops `mission_*`
-so the Challenge Field does not show Crystal World coins. Training Ground uses your own pets on an easier curve
+follow a loaned power home. Range and Training Ground now use the ordinary Homeworld HUD
+(`hall_currency_hud = false`); exit drops `mission_*` as before. Training Ground uses your own pets on an easier curve
 and still allows a team. The overworld level-5 combat onramp does not apply.
 A downed slot stays down for the run (no Ready/Summon
 timer) and cannot be refilled. Entry-tile kit-up is white slots only. Overworld
@@ -1480,18 +1493,17 @@ Last checked: 2026-08-17
   Compact pill/ring modes temporarily expand through the same interval; desktop hover uses the same
   grace instead of disappearing the instant the pointer leaves.
 
-## Resonance-before-combat tutorial sequence
+## Homeworld combat-before-Resonance tutorial sequence
 
-Last checked: 2026-08-18
+Last checked: 2026-08-22
 
-- The ten-step FTUE now teaches the complete Resonance loop before sending the player to Answer the
-  Cave: hatch, mine, hatch, review squad, bind Resonance, cast Resonance, enhance Resonance, fight,
-  drink Berserk Brew, then Rally the pets home.
-- Rally is the final tutorial action. Only after it completes does the existing exact XP top-up
-  guarantee earned Level 2, preventing cave combat from overlapping an unfinished power-slot lesson.
-- Tutorial progress is version 3. Migrations now run one version at a time, preserving the semantic
-  lesson for active v1 and v2 saves rather than interpreting their persisted numeric step under the
-  new order. The retention funnel uses the same sequence while retaining its live milestone IDs.
+- The ten-step FTUE restores the original Homeworld order: Earth egg, mine, another egg, review
+  squad, Answer the Earth Cave, Berserk Brew, Rally, bind Resonance, cast Resonance, then enhance it.
+- Enhancement is the final tutorial action and triggers the existing exact XP top-up guarantee to
+  earned Level 2.
+- Tutorial progress is version 4. Migrations run one version at a time and follow the semantic
+  lesson for active v1/v2/v3 saves. The retention funnel uses the same sequence while retaining its
+  live milestone IDs.
 
 ## Actionable power and potion refusals
 

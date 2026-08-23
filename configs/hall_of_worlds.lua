@@ -8,6 +8,10 @@
 
 return {
     enabled = true,
+    -- Temporary release patch: keep the authored Hall intact, but make it unreachable and never
+    -- use it as a join/respawn destination. Range and Training Ground fixtures now live under
+    -- Workspace.Maps.Home.ChallengeBindings and retain their own MissionDoor/board/lightning tags.
+    entry_enabled = false,
     version = 2,
     minimum_level = 1,
     map_name = "FuturePath",
@@ -28,6 +32,18 @@ return {
         color = { 226, 236, 242 },
         transparency = 0.28,
         reflectance = 0.04,
+    },
+
+    -- The disabled Home entry sits inside a round-topped arch. Build the visible barrier as a
+    -- straight lower panel plus narrow cap strips that follow a semicircle; a full bounding-box
+    -- Part sticks through the arch shoulders. Fractions are relative to the authored visual's
+    -- bounding box so the seal continues to fit if the fixture is uniformly resized.
+    entry_barrier = {
+        width_fraction = 0.58,
+        bottom_inset = 0.8,
+        top_inset = 4,
+        depth = 3,
+        curve_segments = 13,
     },
 
     -- Ambient jamb-to-jamb bolts on Hall gate arches. Authored lightning*

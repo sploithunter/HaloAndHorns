@@ -11,22 +11,85 @@ local currencies = loadModule("configs/currencies.lua")
 
 return function()
     describe("HallOfWorldsLogic", function()
-        it("keeps Waycoins on the HUD for Hall tiles and Hall gauntlets", function()
+        it("keeps Waycoins on dormant Hall tiles but not Homeworld challenge runs", function()
             local modes = loadModule("configs/challenge_runs.lua").modes
+            expect(hall.entry_enabled).to.equal(false)
             expect(HallOfWorldsLogic.isHallAreaId("Hall_2")).to.equal(true)
             expect(HallOfWorldsLogic.isHallAreaId("hall_3")).to.equal(true)
             expect(HallOfWorldsLogic.isHallAreaId("mission_earth")).to.equal(false)
             expect(HallOfWorldsLogic.usesHallCurrencyHud("Hall_2", nil, modes)).to.equal(true)
             expect(HallOfWorldsLogic.usesHallCurrencyHud("mission_earth", "range", modes)).to.equal(
-                true
+                false
             )
             expect(HallOfWorldsLogic.usesHallCurrencyHud("mission_earth", "training_ground", modes)).to.equal(
-                true
+                false
             )
             expect(HallOfWorldsLogic.usesHallCurrencyHud("mission_earth", nil, modes)).to.equal(
                 false
             )
             expect(HallOfWorldsLogic.usesHallCurrencyHud("Lava", nil, modes)).to.equal(false)
+        end)
+
+        it("forces Hall resumes to Home without touching owned player data", function()
+            local pets = { items = { pet_1 = { id = "doggy" } } }
+            local gameData = {
+                LastArea = "Hall_3",
+                UnlockedAreas = { "Hall_1", "Hall_3", "Spawn", "Heaven_1" },
+                HallOfWorlds = { highest_stage = 3 },
+                InventorySentinel = pets,
+            }
+            local normalized, changed = HallOfWorldsLogic.forceHomeResume(gameData, {
+                Hall_1 = true,
+                Hall_2 = true,
+                Hall_3 = true,
+                Hall_4 = true,
+            }, "Spawn")
+
+            expect(changed).to.equal(true)
+            expect(normalized).to.equal(gameData)
+            expect(normalized.LastArea).to.equal("Spawn")
+            expect(normalized.UnlockedAreas[1]).to.equal("Heaven_1")
+            expect(normalized.UnlockedAreas[2]).to.equal("Spawn")
+            expect(#normalized.UnlockedAreas).to.equal(2)
+            expect(normalized.HallOfWorlds.highest_stage).to.equal(3)
+            expect(normalized.InventorySentinel).to.equal(pets)
+
+            local _, changedAgain = HallOfWorldsLogic.forceHomeResume(normalized, {
+                Hall_1 = true,
+                Hall_2 = true,
+                Hall_3 = true,
+                Hall_4 = true,
+            }, "Spawn")
+            expect(changedAgain).to.equal(false)
+        end)
+
+        it("labels the disabled Hall entry as coming soon", function()
+            local source = readFile("src/Server/Services/ZoneService.lua")
+            expect(source:find("HALL OF WORLDS\\nCOMING SOON", 1, true)).to.be.ok()
+        end)
+
+        it("keeps the disabled entry barrier inside its round-topped arch", function()
+            local source = readFile("src/Server/Services/ZoneService.lua")
+            local barrier = hall.entry_barrier
+            expect(barrier.width_fraction < 0.7).to.equal(true)
+            expect(barrier.curve_segments >= 11).to.equal(true)
+            expect(source:find("HallEntryArchCap", 1, true)).to.be.ok()
+            expect(source:find("math.sqrt", 1, true)).to.be.ok()
+        end)
+
+        it("keeps the relocated Training doorway clear of its cactus anchor", function()
+            local migration = readFile("scripts/studio/relocate_home_challenge_gates.luau")
+            expect(migration:find('GetTagged("FloraAnchor")', 1, true)).to.be.ok()
+            expect(migration:find('GetAttribute("Kind") == "cactus"', 1, true)).to.be.ok()
+            expect(migration:find("TrainingGroundPadGateVisual:GetPivot()", 1, true)).to.be.ok()
+            expect(migration:find("removedCactusAnchors", 1, true)).to.be.ok()
+        end)
+
+        it("seats both invisible mission pads under their movable visible arches", function()
+            local migration = readFile("scripts/studio/relocate_home_challenge_gates.luau")
+            expect(migration:find('seatPadUnderVisual("Range")', 1, true)).to.be.ok()
+            expect(migration:find('seatPadUnderVisual("TrainingGround")', 1, true)).to.be.ok()
+            expect(migration:find("local needsInitialPlacement", 1, true)).to.be.ok()
         end)
 
         it("returns a locked Hall entry to the previous unlocked tile", function()
