@@ -2,6 +2,12 @@
 
 local GiftLogic = {}
 
+local LEADERBOARD_POINTS = {
+    basic = 1,
+    golden = 5,
+    rainbow = 25,
+}
+
 GiftLogic.DEFAULT_PREFERENCE = "any"
 GiftLogic.PREFERENCES = {
     any = { label = "Any gift" },
@@ -86,13 +92,43 @@ end
 -- matching the product decision for the three-category board.
 function GiftLogic.leaderboardCounter(rarityId)
     if rarityId == "huge" or rarityId == "exclusive" then
-        return "exclusive_pets_gifted"
+        return "exclusive_gift_points"
     elseif rarityId == "secret" then
-        return "secret_pets_gifted"
+        return "secret_gift_points"
     elseif rarityId == "mythic" then
-        return "mythical_pets_gifted"
+        return "mythical_gift_points"
     end
     return nil
+end
+
+-- Variant weights mirror the 5% Golden and 1% Rainbow hatch odds. Unknown or
+-- legacy variants fail safely to the Basic value instead of inflating a score.
+function GiftLogic.leaderboardPoints(recordOrVariant)
+    local variant = recordOrVariant
+    if type(recordOrVariant) == "table" then
+        variant = recordOrVariant.variant
+    end
+    if type(variant) == "string" then
+        variant = string.lower(variant)
+    end
+    return LEADERBOARD_POINTS[variant] or LEADERBOARD_POINTS.basic
+end
+
+-- Old persisted outboxes predate counter_points. Reconstruct their score from
+-- the exact pet snapshot, while honoring a valid score already frozen at send.
+function GiftLogic.leaderboardScore(gift, storedPoints)
+    if type(gift) ~= "table" then
+        return nil, 0
+    end
+    local counterId = GiftLogic.leaderboardCounter(gift.rarity_id)
+    if not counterId then
+        return nil, 0
+    end
+    local points = math.floor(tonumber(storedPoints) or 0)
+    if points ~= 1 and points ~= 5 and points ~= 25 then
+        points = GiftLogic.leaderboardPoints(gift.pet_record)
+    end
+    return counterId, points
 end
 
 return GiftLogic

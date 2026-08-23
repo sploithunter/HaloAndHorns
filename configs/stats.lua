@@ -174,18 +174,18 @@ return {
             scope = "lifetime",
             default = 0,
         },
-        mythical_pets_gifted = {
-            display_name = "Mythical Pets Gifted",
+        mythical_gift_points = {
+            display_name = "Mythical Gift Points",
             scope = "lifetime",
             default = 0,
         },
-        secret_pets_gifted = {
-            display_name = "Secret Pets Gifted",
+        secret_gift_points = {
+            display_name = "Secret Gift Points",
             scope = "lifetime",
             default = 0,
         },
-        exclusive_pets_gifted = {
-            display_name = "Exclusive Pets Gifted",
+        exclusive_gift_points = {
+            display_name = "Exclusive Gift Points",
             scope = "lifetime",
             default = 0,
         },

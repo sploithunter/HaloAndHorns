@@ -217,10 +217,11 @@ function GiftService:_finalizeQueued(player, giftId)
     end
 
     if not GiftDelivery.isSent(data, giftId) then
-        local counterId = entry.counter_id
+        local counterId, counterPoints =
+            GiftLogic.leaderboardScore(entry.gift, entry.counter_points)
         if counterId and self._statsService then
             local ok, incremented = pcall(function()
-                return self._statsService:Increment(player, counterId, 1)
+                return self._statsService:Increment(player, counterId, counterPoints)
             end)
             if not ok or not incremented then
                 return false, "counter_failed"
@@ -401,6 +402,7 @@ function GiftService:Send(player, targetUserId, selector)
     root.outbox[giftId] = {
         gift = GiftDelivery.copy(gift),
         counter_id = GiftLogic.leaderboardCounter(rarityId),
+        counter_points = GiftLogic.leaderboardPoints(record),
         state = "escrowed",
     }
     self._inventoryService:FlushBucket(player, PETS_BUCKET, "gift_escrow:" .. giftId)
