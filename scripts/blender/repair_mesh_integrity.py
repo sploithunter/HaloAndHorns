@@ -148,7 +148,13 @@ def clean_mesh(
     boundary_count = len(boundary_edges)
     filled_faces = 0
     if boundary_edges:
-        result = bmesh.ops.holes_fill(bm, edges=boundary_edges, sides=0)
+        # Cap each simple closed boundary independently before asking Blender's
+        # bulk operators to handle irregular edge nets. Passing every boundary
+        # loop to holes_fill at once can bridge unrelated openings and leave a
+        # one-edge tear after triangulation/decimation.
+        filled_faces += add_closed_boundary_faces(bm)
+        remaining = [edge for edge in bm.edges if edge.is_boundary]
+        result = bmesh.ops.holes_fill(bm, edges=remaining, sides=0)
         filled_faces += len(result.get("faces", []))
         remaining = [edge for edge in bm.edges if edge.is_boundary]
         if remaining:
