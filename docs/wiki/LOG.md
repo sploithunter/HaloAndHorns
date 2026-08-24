@@ -4639,5 +4639,7 @@ first-session cohort rates.
 - Added a strict Blender mesh-integrity gate that welds importer-created seam duplicates in memory,
   then rejects boundary loops, wire/3+-face edges, zero-length edges, and zero-area faces before
   texture credits are spent.
+- Added a gated Retexture command that consumes the successful Image-to-3D task id and preserves its
+  optimized UVs, so approval textures the checked geometry instead of sampling a new mesh.
 - Recorded starting budgets of <=4,000 triangles for repeatable flora, 4,000 for trees unless visual
   review requires more, and approximately 9,000 for direct-import buildings.

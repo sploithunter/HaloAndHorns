@@ -17,7 +17,12 @@ Usage:
     [--texture] [--texture-image <png-or-jpg>] [--formats glb] \\
     [--env <path>] [--wait] [--dry-run]
   node scripts/meshy_smart_topology.js status \\
-    --task <id> [--output <directory>] [--env <path>] [--wait] [--download]
+    --task <id> [--type image-to-3d|retexture] [--output <directory>] \\
+    [--env <path>] [--wait] [--download]
+  node scripts/meshy_smart_topology.js retexture \\
+    --input-task <image-to-3d-id> --style-image <png-or-jpg> --output <directory> \\
+    [--ai-model latest] [--texture-resolution 2k] [--formats glb] \\
+    [--env <path>] [--wait] [--dry-run]
 
 Defaults:
   - Smart Topology model: meshy-t2
@@ -25,8 +30,9 @@ Defaults:
   - Target: 4,000 triangle faces
   - Output: GLB plus front/right/back/left previews
 
-Run the downloaded GLB through scripts/blender/check_mesh_integrity.py before starting a
-separate textured attempt. The API key is read from MESHY_API_KEY, --env, or .env.local.
+Run the downloaded GLB through scripts/blender/check_mesh_integrity.py before using retexture.
+Retexture consumes the successful geometry task directly, so it does not regenerate topology. The
+API key is read from MESHY_API_KEY, --env, or .env.local.
 `);
 }
 
@@ -156,13 +162,16 @@ function sleep(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-async function taskStatus(apiKey, taskId) {
-  return apiRequest(apiKey, `/image-to-3d/${encodeURIComponent(taskId)}`);
+async function taskStatus(apiKey, taskId, taskType = "image-to-3d") {
+  if (taskType !== "image-to-3d" && taskType !== "retexture") {
+    throw new Error("--type must be image-to-3d or retexture.");
+  }
+  return apiRequest(apiKey, `/${taskType}/${encodeURIComponent(taskId)}`);
 }
 
-async function waitForTask(apiKey, taskId) {
+async function waitForTask(apiKey, taskId, taskType = "image-to-3d") {
   while (true) {
-    const task = await taskStatus(apiKey, taskId);
+    const task = await taskStatus(apiKey, taskId, taskType);
     console.log(`${task.id}: ${task.status} ${task.progress ?? "?"}%`);
     if (TERMINAL_STATUSES.has(task.status)) return task;
     await sleep(3000);
@@ -305,7 +314,77 @@ async function create(options) {
   console.log(`created Meshy Smart Topology T2 task: ${taskId}`);
 
   if (options.wait) {
-    const task = await waitForTask(apiKey, taskId);
+    const task = await waitForTask(apiKey, taskId, "image-to-3d");
+    writeJson(path.join(output, "task.json"), publicTaskRecord(task, requestRecord));
+    if (task.status !== "SUCCEEDED") {
+      throw new Error(`Task ${taskId} ended with ${task.status}: ${task.task_error?.message || "unknown error"}`);
+    }
+    await downloadTask(task, output, requestRecord);
+  }
+}
+
+function parseTextureResolution(options) {
+  const value = String(options["texture-resolution"] || "2k").toLowerCase();
+  if (!new Set(["2k", "4k", "8k"]).has(value)) {
+    throw new Error("--texture-resolution must be 2k, 4k, or 8k.");
+  }
+  return value;
+}
+
+async function retexture(options) {
+  const inputTaskId = requireOption(options, "input-task");
+  const styleImage = imageData(requireOption(options, "style-image"));
+  const output = ensureOutputDirectory(requireOption(options, "output"));
+  const formats = parseFormats(options);
+  const aiModel = String(options["ai-model"] || "latest").toLowerCase();
+  if (!new Set(["meshy-5", "meshy-6", "meshy-7", "latest"]).has(aiModel)) {
+    throw new Error("--ai-model must be meshy-5, meshy-6, meshy-7, or latest.");
+  }
+  const textureResolution = parseTextureResolution(options);
+  const payload = {
+    input_task_id: inputTaskId,
+    image_style_url: styleImage.dataUri,
+    ai_model: aiModel,
+    enable_original_uv: true,
+    enable_pbr: false,
+    texture_resolution: textureResolution,
+    target_formats: formats,
+    alpha_thumbnail: true,
+  };
+  const requestRecord = {
+    input_task_id: inputTaskId,
+    style_image: styleImage.resolved,
+    style_image_sha256: styleImage.sha256,
+    ai_model: aiModel,
+    enable_original_uv: true,
+    enable_pbr: false,
+    texture_resolution: textureResolution,
+    target_formats: formats,
+  };
+  writeJson(path.join(output, "request.json"), requestRecord);
+
+  if (options["dry-run"]) {
+    console.log(JSON.stringify({ ...payload, image_style_url: "[data-uri]" }, null, 2));
+    return;
+  }
+
+  const apiKey = requireApiKey(options);
+  const response = await apiRequest(apiKey, "/retexture", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  const taskId = response.result;
+  writeJson(path.join(output, "task.json"), {
+    id: taskId,
+    type: "retexture",
+    status: "SUBMITTED",
+    request: requestRecord,
+    files: {},
+  });
+  console.log(`created Meshy retexture task: ${taskId}`);
+
+  if (options.wait) {
+    const task = await waitForTask(apiKey, taskId, "retexture");
     writeJson(path.join(output, "task.json"), publicTaskRecord(task, requestRecord));
     if (task.status !== "SUCCEEDED") {
       throw new Error(`Task ${taskId} ended with ${task.status}: ${task.task_error?.message || "unknown error"}`);
@@ -317,7 +396,10 @@ async function create(options) {
 async function status(options) {
   const taskId = requireOption(options, "task");
   const apiKey = requireApiKey(options);
-  const task = options.wait ? await waitForTask(apiKey, taskId) : await taskStatus(apiKey, taskId);
+  const taskType = options.type || "image-to-3d";
+  const task = options.wait
+    ? await waitForTask(apiKey, taskId, taskType)
+    : await taskStatus(apiKey, taskId, taskType);
   const output = options.output ? ensureOutputDirectory(options.output, true) : undefined;
   let requestRecord = {};
   if (output && fs.existsSync(path.join(output, "request.json"))) {
@@ -347,6 +429,7 @@ async function main() {
   }
   if (command === "balance") await balance(options);
   else if (command === "create") await create(options);
+  else if (command === "retexture") await retexture(options);
   else if (command === "status") await status(options);
   else throw new Error(`Unknown command: ${command}`);
 }

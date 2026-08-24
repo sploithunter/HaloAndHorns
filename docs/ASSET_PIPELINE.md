@@ -84,6 +84,19 @@ separate texture credits until the downloaded GLB passes the strict boundary/non
 and its four cardinal previews look correct. If a generation has a hole, retry the same reference
 at a meaningfully different triangle target; identical targets tend to reproduce the same topology.
 
+After approval, texture the exact successful geometry task rather than generating a new mesh:
+
+```sh
+node scripts/meshy_smart_topology.js retexture \
+  --input-task <successful-image-to-3d-task-id> \
+  --style-image assets/concepts/example.png \
+  --output assets/source/props/example/texture \
+  --wait
+```
+
+This uses Meshy's Retexture API with `enable_original_uv=true`; the geometry task remains the input
+and no new Smart Topology mesh is sampled.
+
 Pet Realm's current starting budgets are:
 
 - repeatable small flora: **4,000 triangles or fewer**;
