@@ -46,7 +46,12 @@ return function()
         it("returns the first failed row so the door can name the missing action", function()
             local list = {
                 { check = "pets_equipped", count = 1, fail_nudge = "Go equip pets." },
-                { check = "hotbar_bound", type = "power", target = "heal", fail_nudge = "Set Heal first!" },
+                {
+                    check = "hotbar_bound",
+                    type = "power",
+                    target = "heal",
+                    fail_nudge = "Set Heal first!",
+                },
                 { check = "hotbar_not_editing", fail_nudge = "Press Done first!" },
             }
             local empty = snapshot()
@@ -54,13 +59,17 @@ return function()
             local petsOnly = snapshot({
                 equippedSlots = { [1] = { id = "bear" } },
             })
-            expect(TutorialUnlock.firstFailure(list, petsOnly).fail_nudge).to.equal("Set Heal first!")
+            expect(TutorialUnlock.firstFailure(list, petsOnly).fail_nudge).to.equal(
+                "Set Heal first!"
+            )
             local editing = snapshot({
                 equippedSlots = { [1] = { id = "bear" } },
                 hotbar = { ["2"] = { type = "power", target = "heal" } },
                 hotbarEditing = true,
             })
-            expect(TutorialUnlock.firstFailure(list, editing).fail_nudge).to.equal("Press Done first!")
+            expect(TutorialUnlock.firstFailure(list, editing).fail_nudge).to.equal(
+                "Press Done first!"
+            )
             editing.hotbarEditing = false
             expect(TutorialUnlock.firstFailure(list, editing)).to.equal(nil)
         end)

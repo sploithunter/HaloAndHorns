@@ -140,7 +140,9 @@ return function()
             expect(PetEndurance.takenForHealthFraction(100, 1.0, 0.5)).to.equal(50)
             local taken = PetEndurance.takenForHealthFraction(100, 1.0, 0.45)
             expect(taken > 54 and taken < 56).to.equal(true)
-            expect(math.abs(PetEndurance.healthFraction(taken, 100, 1.0) - 0.45) < 1e-9).to.equal(true)
+            expect(math.abs(PetEndurance.healthFraction(taken, 100, 1.0) - 0.45) < 1e-9).to.equal(
+                true
+            )
         end)
 
         it("clamps remaining to the zero-to-one range", function()
