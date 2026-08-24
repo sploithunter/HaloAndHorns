@@ -4261,3 +4261,10 @@ first-session cohort rates.
   outer background are both alpha-transparent while retaining edge feathering and green despill.
 - Added the hidden `gifts_given` lifetime counter, which adds exactly one for every finalized gift.
   The existing rarity-specific boards retain their 1/5/25 weights; no fourth board is published.
+
+## 2026-08-24 — Player spawn spacing
+
+- Replaced exact-point character placement with deterministic, occupancy-aware ring slots around
+  each authored spawn anchor. New arrivals, respawns, and ordinary zone travel no longer stack
+  avatars on one another; the configurable 24-slot layout preserves an explicit exact-placement
+  override for specialized flows.
