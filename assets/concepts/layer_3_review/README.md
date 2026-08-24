@@ -43,3 +43,18 @@ ground plane, cast shadows, text, people, or surrounding props.
 the only inputs intended for Meshy.
 
 See `PROMPTS.md` for the exact final prompt used for every selected image.
+
+## Meshy production budgets
+
+- Repeatable small flora: 4,000 triangles or fewer.
+- Trees: start at 4,000 triangles; increase only when silhouette review justifies it.
+- Buildings: approximately 9,000 triangles, keeping each asset below the 10,000-triangle direct
+  import lane.
+
+## Geometry trials
+
+The first geometry-only trial uses `heaven/flora_halo_fern.png` with Meshy Smart Topology T2 at a
+4,000-face target. It returned 4,098 triangles for five credits and passed the strict mesh-integrity
+gate with no boundary, non-manifold, zero-length, or zero-area geometry. See
+`meshy_trials/halo_fern_t2_4000_trial.json` and the accompanying four-view review image. No texture
+has been requested yet.

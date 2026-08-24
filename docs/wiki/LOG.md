@@ -4277,3 +4277,13 @@ first-session cohort rates.
   repeat of the existing blight/rot/decay treatment.
 - Generated 16 independent low-poly building/flora concept images and a numbered review card. The
   selected originals remain pending visual approval and have not been submitted to Meshy.
+
+## 2026-08-24 — First Layer 3 Smart Topology trial
+
+- Submitted the approved Halo Fern concept to Meshy Smart Topology T2 as an untextured 4,000-face
+  geometry trial. The five-credit task returned 4,098 triangles and retained the intended curled
+  fern silhouette from front, side, and back views.
+- The strict Blender geometry gate found zero boundary edges, wire/3+-face edges, zero-length edges,
+  or zero-area faces. No retry or texture task was started pending visual review.
+- Recorded starting production budgets: repeatable flora <=4,000 triangles, trees starting at
+  4,000, and direct-import buildings at approximately 9,000.
