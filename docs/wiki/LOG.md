@@ -4244,3 +4244,10 @@ first-session cohort rates.
 - Point counters and OrderedDataStores moved to fresh ids so raw v1 counts cannot be interpreted as
   weighted scores. New sender outboxes freeze the point value; pre-weight outboxes reconstruct it
   from their exact pet snapshot before the existing idempotent finalization.
+
+## 2026-08-24 — Studio multiplayer gift delivery
+
+- Gift messages now accept Roblox Studio's negative local-player UserIds only when the server is
+  actually running in Studio. Live delivery continues to require positive integer account ids.
+- This lets the normal durable outbox and ProfileStore message path run in multi-client Studio tests;
+  gifts escrowed by the previous validation failure recover through the existing sender-join retry.
