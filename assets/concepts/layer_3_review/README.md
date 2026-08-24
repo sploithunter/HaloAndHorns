@@ -27,6 +27,14 @@ ground plane, cast shadows, text, people, or surrounding props.
 - `flora_luminous_canopy_tree.png`
 - `flora_petal_spire.png`
 - `flora_rootlight_vine.png`
+- `flora_celestial_bellgrass.png`
+- `flora_moonpetal_bush.png`
+- `flora_lumen_moss_cushion.png`
+- `flora_wingleaf_reed.png`
+- `flora_pearlroot_anemone.png`
+- `flora_emerald_ribbon_shrub.png`
+- `fauna_bloomwing_butterfly.png`
+- `fauna_pearlback_snail.png`
 
 ### Hell 3
 
@@ -38,9 +46,21 @@ ground plane, cast shadows, text, people, or surrounding props.
 - `flora_blood_reed.png`
 - `flora_ember_thorn_cluster.png`
 - `flora_obsidian_spike_plant.png`
+- `flora_razorleaf_fan.png`
+- `flora_gloom_pitcher.png`
+- `flora_crimson_watcher_bloom.png`
+- `flora_dreadspire_ribbon_grass.png`
+- `flora_violet_hook_bloom.png`
+- `flora_ironroot_crawler.png`
+- `fauna_dreadwing_beetle.png`
+- `fauna_obsidian_hornback_lizard.png`
 
 `layer_3_contact_card.png` is the derived review sheet. The independently generated originals are
 the only inputs intended for Meshy.
+
+`layer_3_flora_fauna_expansion_contact_card.png` covers assets 17–32: twelve additional flora
+props and four ambient-fauna props. These fauna are environmental dressing, not collectible pets
+or combat units. The expansion raises the non-building concept pool from 12 to 28 assets (2.3×).
 
 See `PROMPTS.md` for the exact final prompt used for every selected image.
 

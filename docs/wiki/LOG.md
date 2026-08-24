@@ -4309,3 +4309,13 @@ first-session cohort rates.
 - Uploaded the repaired GLB directly to Meshy's Retexture API and applied the concept as a 2K style
   image. The ten-credit result retained the exact 9,980-triangle topology and passed four-view
   texture review, leaving 4,500 credits.
+
+## 2026-08-24 — Layer 3 flora and ambient-fauna expansion
+
+- Added sixteen independently generated Meshy-ready concepts: six flora and two ambient fauna for
+  each of Heaven 3 and Hell 3. The non-building concept pool grows from 12 to 28 assets (2.3×).
+- Kept ambient fauna separate from collectible pets and combat units. Heaven receives a butterfly
+  and snail; Hell receives a beetle and hornback lizard.
+- Rejected the first Dreadspire grass draft because it read as a mineral spike cluster, then
+  regenerated it as curved organic ribbon grass. No expansion asset has been sent to Meshy pending
+  review of the numbered assets 17–32 contact card.

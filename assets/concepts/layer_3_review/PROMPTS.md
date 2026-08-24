@@ -152,3 +152,171 @@ regenerated selections below are represented by their final prompts only.
 > make it living demonic flora rather than minerals. Polished Roblox pets-game prop, texture baked,
 > centered on pure white with no shadow, clutter, rot, fungus, gold, crystal cluster, lava, or
 > flames.
+
+## Flora and ambient-fauna expansion
+
+All expansion renders were generated independently with the built-in image-generation tool. The
+first Dreadspire grass result read as mineral spikes and was discarded; prompt 28 is the final
+replacement prompt.
+
+### 17 — Celestial Bellgrass
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Celestial Bellgrass clump for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one fused root crown supporting five broad arching grass blades and three upright bell-shaped seed heads; pearl-white bells with cyan-white luminous interiors, jade stems, emerald blade edges; healthy botanical form with a chunky readable silhouette.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding.
+> Scene/backdrop: pure plain white background.
+> Color palette: pearl white, pale jade, emerald, restrained cyan-white glow.
+> Constraints: exactly one connected plant; no pot; no ground plane; no cast shadow; no dirt, rocks, clutter, text, people, detached pieces, gold, yellow metal, rainbow colors, or crystals; no watermark.
+
+### 18 — Moonpetal Bush
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Moonpetal Bush for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one compact connected shrub with a stout pale-jade branch crown, eight broad emerald leaves, and five large layered pearl-white moon-shaped flowers with restrained cyan-white glowing centers; dense but clearly separable forms, chunky readable silhouette.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: exactly one connected bush; no pot, ground plane, cast shadow, dirt, rocks, clutter, text, people, detached petals, gold, yellow, warm colors, rainbow, crystals, or watermark.
+
+### 19 — Lumen Moss Cushion
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Lumen Moss Cushion for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one connected rounded botanical mound made of thick overlapping emerald moss lobes, a pale-jade fused root base, and six small pearl-white star blooms with cyan-white luminous centers; low wide silhouette for ground dressing, unmistakably living moss rather than rocks or crystals.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: one unified mound; no pot, ground plane, cast shadow, dirt, stones, clutter, text, people, floating flowers, gold, yellow, rainbow colors, crystal facets, or watermark.
+
+### 20 — Wingleaf Reed
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Wingleaf Reed clump for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one fused pale-jade crown with seven tall upright leaves shaped like soft feathered wings, emerald outer blades, pearl-white inner panels, and thin cyan-white luminous veins; graceful vertical botanical silhouette, sturdy connected base.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: clearly a plant, not feathers or an angel statue; no pot, ground plane, shadow, dirt, rocks, clutter, gold, rainbow, crystals, detached leaves, text, people, or watermark.
+
+### 21 — Pearlroot Anemone
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Pearlroot Anemone plant for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one broad connected pearl-white root crown with six thick jade curling tendrils supporting a single round flower; the flower has layered emerald outer petals, pearl-white inner petals, and a soft cyan-white luminous center; chunky radial silhouette, botanical and alive.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: one unified plant; no underwater scene, pot, ground plane, cast shadow, dirt, rocks, clutter, gold, yellow, rainbow, crystals, detached tendrils, text, people, or watermark.
+
+### 22 — Emerald Ribbon Shrub
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Emerald Ribbon Shrub for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one compact fused pale-jade base growing four thick emerald ribbon-like leaves that loop and cross into a rounded airy shrub, with small pearl-white buds integrated along the leaves and restrained cyan-white glowing veins; bold connected silhouette from every side.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: botanical leaves, not fabric or metal; no trellis, pot, ground plane, shadow, dirt, rocks, clutter, loose pieces, gold, yellow, rainbow, crystals, text, people, or watermark.
+
+### 23 — Bloomwing Butterfly
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox ambient fauna concept
+> Primary request: Create exactly one low-poly Bloomwing Butterfly for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one small environmental butterfly in a neutral resting pose with wings fully readable, chunky pearl-white body, four broad emerald-and-pale-jade petal-shaped wings, restrained cyan-white luminous vein patterns, short simple antennae, friendly natural proportions.
+> Style/medium: polished low-poly Roblox pets-game ambient creature prop, game-ready baked texture appearance, clearly fauna rather than a collectible pet.
+> Composition/framing: centered three-quarter product view, whole creature visible with generous padding on pure white.
+> Constraints: one creature only; no flower, branch, pedestal, ground plane, cast shadow, scene, accessories, halo, gold, yellow, rainbow, dominant crystals, text, people, extra insects, or watermark; connected Meshy-friendly silhouette.
+
+### 24 — Pearlback Garden Snail
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox ambient fauna concept
+> Primary request: Create exactly one low-poly Pearlback Garden Snail for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one small environmental snail in a neutral crawling pose, stout pale-jade body, simple friendly feelers, and one large rounded pearl-white shell with an organic emerald spiral and a restrained cyan-white glow along the groove; chunky readable silhouette and stable connected underside.
+> Style/medium: polished low-poly Roblox pets-game ambient creature prop, game-ready baked texture appearance, clearly fauna rather than a collectible pet.
+> Composition/framing: centered three-quarter product view, whole creature visible with generous padding on pure white.
+> Constraints: one creature only; no leaf, flower, trail, pedestal, ground plane, cast shadow, accessories, halo, gold, yellow, rainbow, crystal shell, text, people, extra creatures, or watermark; connected Meshy-friendly geometry.
+
+### 25 — Razorleaf Fan
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Razorleaf Fan plant for Hell Layer 3, the Dreadspire.
+> Subject: one fused charcoal-black organic crown with seven broad fan-arranged leaves, matte obsidian upper surfaces, bruise-violet undersides, hard-crimson luminous center veins, and severe serrated botanical edges; vigorous living demonic flora with a stable chunky silhouette.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: clearly a living plant, not weapons or crystal shards; no pot, ground plane, cast shadow, dirt, rocks, clutter, gold, yellow, orange, rot, swamp, decay, fungus, gore, lava, flames, text, people, detached pieces, or watermark.
+
+### 26 — Gloom Pitcher
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Gloom Pitcher plant for Hell Layer 3, the Dreadspire.
+> Subject: one connected compact plant with a thick charcoal stem crown, four stiff obsidian blade leaves, and three heavy hanging pitcher flowers; pitchers are bruise-violet with black rims and restrained hard-crimson light inside, elegant and healthy supernatural flora, chunky connected forms.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: no liquid, drool, gore, teeth, pot, ground plane, cast shadow, dirt, rocks, clutter, gold, yellow, orange, rot, swamp, decay, fungus, lava, flames, text, people, extra plants, or watermark.
+
+### 27 — Crimson Watcher Bloom
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Crimson Watcher Bloom for Hell Layer 3, the Dreadspire.
+> Subject: one connected upright demonic flower with a stout charcoal stem, four angular obsidian leaves, and one large circular bloom of layered bruise-violet petals surrounding a simple hard-crimson luminous oval center; bold clean silhouette, elegant healthy supernatural flora, no literal eyeball anatomy.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: one flower only; no eye veins, gore, teeth, pot, ground plane, cast shadow, dirt, rocks, clutter, gold, yellow, orange, rot, swamp, decay, fungus, lava, flames, text, people, detached petals, or watermark.
+
+### 28 — Dreadspire Ribbon Grass
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Dreadspire Ribbon Grass clump for Hell Layer 3.
+> Subject: one fused rounded organic plant crown with nine thick flexible sword-shaped leaves that visibly curve and curl outward like living grass; every leaf has a smooth continuous blade, rounded folded edges, a tapered botanical tip, charcoal-black surface, bruise-violet underside, and a thin hard-crimson central vein. Low wide repeatable ground-dressing silhouette.
+> Style/medium: polished low-poly Roblox pets-game botanical prop, texture-baked appearance; organic plant anatomy is more important than sharpness.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: unmistakably living grass leaves; absolutely no straight crystal shards, stone spikes, weapons, faceted mineral base, pot, ground plane, cast shadow, rocks, dirt, gold, orange, rot, swamp, decay, fungus, gore, lava, flames, text, people, or watermark; one connected clump.
+
+### 29 — Violet Hook Bloom
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Violet Hook Bloom for Hell Layer 3, the Dreadspire.
+> Subject: one connected compact plant with a fused charcoal root crown, three thick angular stems ending in large downward-curving hooked flowers; flowers have layered bruise-violet petals, matte obsidian outer hooks, and small hard-crimson luminous centers; sparse black blade leaves, vigorous supernatural botanical anatomy.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: flowers are hooked petals, not claws, mouths, teeth, or weapons; no pot, ground plane, cast shadow, dirt, rocks, clutter, gold, yellow, orange, rot, swamp, decay, fungus, gore, lava, flames, text, people, extra plants, or watermark; unified base.
+
+### 30 — Ironroot Crawler
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment flora concept
+> Primary request: Create exactly one low-poly Ironroot Crawler plant for Hell Layer 3, the Dreadspire.
+> Subject: one low connected creeping plant made of five thick charcoal-black roots braided across a compact fused crown, with stout obsidian thorn nubs, sparse bruise-violet leaf blades, and narrow hard-crimson light lines following two roots; horizontal ground-cover silhouette, healthy supernatural flora.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding on pure white.
+> Constraints: organic roots and leaves, not chains, bones, rocks, or dead branches; no pot, ground plane, cast shadow, dirt, clutter, gold, yellow, orange, rot, swamp, decay, fungus, gore, lava, flames, text, people, detached pieces, or watermark.
+
+### 31 — Dreadwing Beetle
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox ambient fauna concept
+> Primary request: Create exactly one low-poly Dreadwing Beetle for Hell Layer 3, the Dreadspire.
+> Subject: one compact environmental beetle in a neutral standing pose, chunky charcoal-black body, matte obsidian shell plates, short sturdy legs joined close to the body, two folded bruise-violet wing covers, and narrow hard-crimson luminous seams; readable insect silhouette, formidable but not grotesque.
+> Style/medium: polished low-poly Roblox pets-game ambient creature prop, game-ready baked texture appearance, clearly fauna rather than a collectible pet.
+> Composition/framing: centered three-quarter product view, whole creature visible with generous padding on pure white.
+> Constraints: one insect only; no pedestal, ground plane, cast shadow, scene, accessories, gold, yellow, orange, rot, swamp, decay, fungus, gore, lava, flames, text, people, extra insects, or watermark; connected Meshy-friendly geometry.
+
+### 32 — Obsidian Hornback Lizard
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox ambient fauna concept
+> Primary request: Create exactly one low-poly Obsidian Hornback Lizard for Hell Layer 3, the Dreadspire.
+> Subject: one small environmental lizard in a low neutral four-legged stance, stout charcoal body, matte obsidian back plates, three short blunt bruise-violet dorsal horns, restrained hard-crimson luminous stripe from neck to tail, broad feet and a thick gently curved tail; healthy living creature, strong readable silhouette.
+> Style/medium: polished low-poly Roblox pets-game ambient creature prop, game-ready baked texture appearance, clearly fauna rather than a collectible pet.
+> Composition/framing: centered three-quarter product view, whole creature visible with generous padding on pure white.
+> Constraints: one creature only; no dragon wings, collar, armor, accessories, pedestal, ground plane, cast shadow, scene, gold, yellow, orange, rot, swamp, decay, fungus, gore, lava, flames, text, people, extra creatures, or watermark; all limbs connected and Meshy-friendly.
