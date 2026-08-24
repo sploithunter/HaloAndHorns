@@ -4296,3 +4296,16 @@ first-session cohort rates.
 - The textured GLB passed the same strict integrity gate with zero boundary, non-manifold, or
   degenerate geometry. Total Meshy spend for the finished trial was 15 credits (5 geometry + 10
   texture), leaving 4,525 credits.
+
+## 2026-08-24 — Empyrean Bloom Shrine building trial
+
+- Ran three untextured Meshy Smart Topology T2 attempts at 9,000, 9,600, and 9,300 targets. All
+  contained large open boundary loops; the 9,600 attempt also exceeded the 10,000-triangle direct
+  import ceiling. Total geometry spend was 15 credits.
+- Selected the visually strongest 9,300-target result and repaired it in Blender. The final
+  9,980-triangle GLB retains the open recessed doorway and four-sided shrine silhouette while
+  passing the strict gate as one connected component with zero boundary, non-manifold, or
+  degenerate geometry.
+- Uploaded the repaired GLB directly to Meshy's Retexture API and applied the concept as a 2K style
+  image. The ten-credit result retained the exact 9,980-triangle topology and passed four-view
+  texture review, leaving 4,500 credits.

@@ -1,7 +1,7 @@
 # Layer 3 concept review
 
-Independent low-poly reference renders for Meshy review. No concept in this folder has been sent
-to Meshy yet.
+Independent low-poly reference renders for Meshy review. Approved assets may proceed through the
+geometry-first Meshy trial documented below.
 
 ## Canonical visual split
 
@@ -64,3 +64,12 @@ as its 2K style image. The ten-credit texture task consumed the exact successful
 retained its 4,098 triangles, and passed the same integrity gate. See
 `meshy_trials/halo_fern_t2_4000_texture_trial.json` and
 `meshy_trials/halo_fern_t2_4000_texture_review.png`.
+
+The first building trial used the Empyrean Bloom Shrine. Three untextured T2 attempts at changed
+targets all contained large open boundaries; the 9,300-target version best preserved the doorway
+and silhouette, so it was repaired locally rather than rerolled again. The repaired GLB is one
+connected, watertight 9,980-triangle component below the direct-import ceiling. Meshy retextured
+that exact uploaded GLB at 2K without changing its topology. See
+`meshy_trials/empyrean_bloom_shrine_t2_9300_trial.json`,
+`meshy_trials/empyrean_bloom_shrine_t2_9300_texture_trial.json`, and the accompanying four-view
+review sheet.
