@@ -326,10 +326,13 @@ def orient_roblox_obj_forward(objects: list[bpy.types.Object]) -> None:
         obj.rotation_euler.z += math.pi
 
 
-def uses_imported_obj_materials(mesh_path: Path, explicit_texture: Path | None) -> bool:
+def uses_imported_materials(mesh_path: Path, explicit_texture: Path | None) -> bool:
     if explicit_texture is not None:
         return False
-    if mesh_path.suffix.lower() != ".obj":
+    suffix = mesh_path.suffix.lower()
+    if suffix in {".glb", ".gltf"}:
+        return True
+    if suffix != ".obj":
         return False
     mtl_candidates = (
         mesh_path.with_suffix(".mtl"),
@@ -351,13 +354,14 @@ def render_preview(
     clear_scene()
     objects = import_mesh(mesh_path)
     explicit = Path(texture_path).expanduser().resolve() if texture_path else None
-    if uses_imported_obj_materials(mesh_path, explicit):
-        print(f"Using OBJ/MTL materials from {mesh_path.parent.name}/")
-        strip_roblox_outline_faces(objects)
-        if is_bear_homeworld_export(mesh_path):
-            remap_homeworld_face_uvs(objects)
-        fix_obj_mtl_materials(mesh_path)
-        orient_roblox_obj_forward(objects)
+    if uses_imported_materials(mesh_path, explicit):
+        print(f"Using embedded/imported materials from {mesh_path.name}")
+        if mesh_path.suffix.lower() == ".obj":
+            strip_roblox_outline_faces(objects)
+            if is_bear_homeworld_export(mesh_path):
+                remap_homeworld_face_uvs(objects)
+            fix_obj_mtl_materials(mesh_path)
+            orient_roblox_obj_forward(objects)
     else:
         texture = find_texture(mesh_path, str(explicit) if explicit else None)
         if texture is None:

@@ -4631,3 +4631,25 @@ first-session cohort rates.
   reference hashes, Meshy task IDs, input-geometry hashes, final GLB hashes, triangle counts, and
   integrity results. Heavy local GLBs remain under the intentionally ignored `assets/source/pets/`
   tree; the manifest preserves the server-side task lineage.
+
+## 2026-08-24 — Meshy Smart Topology geometry gate
+
+- Added a generic Meshy T2 image-to-3D helper that defaults to an untextured 4,000-triangle GLB,
+  downloads cardinal previews, and records the task and source-image hash without storing API keys.
+- Added a strict Blender mesh-integrity gate that welds importer-created seam duplicates in memory,
+  then rejects boundary loops, wire/3+-face edges, zero-length edges, and zero-area faces before
+  texture credits are spent.
+- Added a gated Retexture command that consumes the successful Image-to-3D task id and preserves its
+  optimized UVs, so approval textures the checked geometry instead of sampling a new mesh.
+- Recorded starting budgets of <=4,000 triangles for repeatable flora, 4,000 for trees unless visual
+  review requires more, and approximately 9,000 for direct-import buildings.
+
+## 2026-08-24 — Local Meshy repair and texture handoff
+
+- Added a non-destructive Blender repair helper that welds seams, fills boundaries, optionally
+  performs voxel reconstruction, removes isolated single-face debris, and enforces a configurable
+  triangle ceiling.
+- Extended the Retexture helper to upload a local repaired GLB by data URI, allowing the checked
+  local topology—not the broken original task output—to receive a new Meshy UV layout and texture.
+- Fixed GLB review rendering to preserve embedded materials instead of accidentally applying a
+  neighboring preview PNG as the model texture.
