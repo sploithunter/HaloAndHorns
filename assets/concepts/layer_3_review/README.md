@@ -41,3 +41,5 @@ ground plane, cast shadows, text, people, or surrounding props.
 
 `layer_3_contact_card.png` is the derived review sheet. The independently generated originals are
 the only inputs intended for Meshy.
+
+See `PROMPTS.md` for the exact final prompt used for every selected image.

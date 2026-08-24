@@ -173,12 +173,12 @@ in config — build to harmonize with them.
 | **Home** | The vibrant natural world | Saturated greens, honest biome colors per spoke | The first-90-seconds layer: most polish here. |
 | Heaven_1 | First ascent — gilded meadows | Gold trim on natural forms, soft whites | Warm, inviting. |
 | Heaven_2 | Cloudlands | Marble, white stone, drifting cloud props | Current maps' quality floor to beat. |
-| Heaven_3 | Crystal gardens | Prismatic crystal, pale gold, glass | |
+| Heaven_3 | The Empyrean Bloom — living celestial garden | Pearl-white, jade, emerald, cyan-white light; roots, petals, organic canopies | No gold (shiny-pet readability) and no dominant crystal treatment (Heaven_2 already owns it). |
 | Heaven_4 | Astral courts | White-gold architecture, light beams | Grand, vertical flourishes. |
 | Heaven_5 | The Empyrean | Near-white radiance, floating geometry | Apex prestige — screenshot bait. |
 | Hell_1 | First descent — scorched | Ash, ember cracks, charred versions of Home's props | Familiar-but-wrong. |
 | Hell_2 | The furnace | Basalt, lava veins, chains, spikes | Matches existing hell trial dressing. |
-| Hell_3 | Jagged spired wastes | Obsidian spires, red-glow accents | "Demon-infested hellscape" sky exists. |
+| Hell_3 | The Dreadspire — jagged infernal ruins | Obsidian, charcoal, hard crimson, bruise-violet | "Demon-infested hellscape" sky exists. Keep the environment architectural and thorned, not another rot/swamp/decay layer. |
 | Hell_4 | The gloaming | Desaturated near-dark, isolated ember lights | Sun/moon disabled. Light sources scarce ON PURPOSE. |
 | Hell_5 | The abyss | Near-black, silhouette-only geometry, rare red glows | Lantern-pet territory. Readability comes from emissive accents, not ambient light. |
 

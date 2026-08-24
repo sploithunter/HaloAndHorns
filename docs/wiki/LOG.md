@@ -4268,3 +4268,12 @@ first-session cohort rates.
   each authored spawn anchor. New arrivals, respawns, and ordinary zone travel no longer stack
   avatars on one another; the configurable 24-slot layout preserves an explicit exact-placement
   override for specialized flows.
+
+## 2026-08-24 — Layer 3 environment concept review
+
+- Reconciled the Heaven 3 map brief with the no-gold shiny-pet readability rule: The Empyrean
+  Bloom is a living pearl/jade/emerald/cyan-white celestial garden rather than another crystal
+  layer. Kept Hell 3 as The Dreadspire's obsidian/crimson/bruise-violet infernal ruins, avoiding a
+  repeat of the existing blight/rot/decay treatment.
+- Generated 16 independent low-poly building/flora concept images and a numbered review card. The
+  selected originals remain pending visual approval and have not been submitted to Meshy.
