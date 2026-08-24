@@ -20,7 +20,8 @@ Usage:
     --task <id> [--type image-to-3d|retexture] [--output <directory>] \\
     [--env <path>] [--wait] [--download]
   node scripts/meshy_smart_topology.js retexture \\
-    --input-task <image-to-3d-id> --style-image <png-or-jpg> --output <directory> \\
+    (--input-task <image-to-3d-id> | --model <local-glb>) \\
+    --style-image <png-or-jpg> --output <directory> \\
     [--ai-model latest] [--texture-resolution 2k] [--formats glb] \\
     [--env <path>] [--wait] [--dry-run]
 
@@ -31,8 +32,8 @@ Defaults:
   - Output: GLB plus front/right/back/left previews
 
 Run the downloaded GLB through scripts/blender/check_mesh_integrity.py before using retexture.
-Retexture consumes the successful geometry task directly, so it does not regenerate topology. The
-API key is read from MESHY_API_KEY, --env, or .env.local.
+Retexture consumes either the successful geometry task or an uploaded local GLB, so it does not
+regenerate topology. The API key is read from MESHY_API_KEY, --env, or .env.local.
 `);
 }
 
@@ -131,6 +132,20 @@ function imageData(filePath) {
     resolved,
     sha256: crypto.createHash("sha256").update(bytes).digest("hex"),
     dataUri: `data:${imageMime(resolved)};base64,${bytes.toString("base64")}`,
+  };
+}
+
+function modelData(filePath) {
+  const resolved = path.resolve(filePath);
+  if (!fs.existsSync(resolved)) throw new Error(`Model not found: ${resolved}`);
+  if (path.extname(resolved).toLowerCase() !== ".glb") {
+    throw new Error("--model currently supports local GLB files only.");
+  }
+  const bytes = fs.readFileSync(resolved);
+  return {
+    resolved,
+    sha256: crypto.createHash("sha256").update(bytes).digest("hex"),
+    dataUri: `data:application/octet-stream;base64,${bytes.toString("base64")}`,
   };
 }
 
@@ -332,7 +347,15 @@ function parseTextureResolution(options) {
 }
 
 async function retexture(options) {
-  const inputTaskId = requireOption(options, "input-task");
+  const inputTaskId = options["input-task"];
+  const modelPath = options.model;
+  if ((inputTaskId && modelPath) || (!inputTaskId && !modelPath)) {
+    throw new Error("Provide exactly one of --input-task <id> or --model <local-glb>.");
+  }
+  if (inputTaskId === true || modelPath === true) {
+    throw new Error("--input-task and --model require values.");
+  }
+  const model = modelPath ? modelData(modelPath) : null;
   const styleImage = imageData(requireOption(options, "style-image"));
   const output = ensureOutputDirectory(requireOption(options, "output"));
   const formats = parseFormats(options);
@@ -342,21 +365,23 @@ async function retexture(options) {
   }
   const textureResolution = parseTextureResolution(options);
   const payload = {
-    input_task_id: inputTaskId,
+    ...(inputTaskId ? { input_task_id: inputTaskId } : { model_url: model.dataUri }),
     image_style_url: styleImage.dataUri,
     ai_model: aiModel,
-    enable_original_uv: true,
+    enable_original_uv: Boolean(inputTaskId),
     enable_pbr: false,
     texture_resolution: textureResolution,
     target_formats: formats,
     alpha_thumbnail: true,
   };
   const requestRecord = {
-    input_task_id: inputTaskId,
+    ...(inputTaskId
+      ? { input_task_id: inputTaskId }
+      : { model: model.resolved, model_sha256: model.sha256 }),
     style_image: styleImage.resolved,
     style_image_sha256: styleImage.sha256,
     ai_model: aiModel,
-    enable_original_uv: true,
+    enable_original_uv: Boolean(inputTaskId),
     enable_pbr: false,
     texture_resolution: textureResolution,
     target_formats: formats,
@@ -364,7 +389,17 @@ async function retexture(options) {
   writeJson(path.join(output, "request.json"), requestRecord);
 
   if (options["dry-run"]) {
-    console.log(JSON.stringify({ ...payload, image_style_url: "[data-uri]" }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          ...payload,
+          ...(payload.model_url ? { model_url: "[data-uri]" } : {}),
+          image_style_url: "[data-uri]",
+        },
+        null,
+        2,
+      ),
+    );
     return;
   }
 

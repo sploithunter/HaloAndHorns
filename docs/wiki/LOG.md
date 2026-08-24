@@ -4643,3 +4643,13 @@ first-session cohort rates.
   optimized UVs, so approval textures the checked geometry instead of sampling a new mesh.
 - Recorded starting budgets of <=4,000 triangles for repeatable flora, 4,000 for trees unless visual
   review requires more, and approximately 9,000 for direct-import buildings.
+
+## 2026-08-24 — Local Meshy repair and texture handoff
+
+- Added a non-destructive Blender repair helper that welds seams, fills boundaries, optionally
+  performs voxel reconstruction, removes isolated single-face debris, and enforces a configurable
+  triangle ceiling.
+- Extended the Retexture helper to upload a local repaired GLB by data URI, allowing the checked
+  local topology—not the broken original task output—to receive a new Meshy UV layout and texture.
+- Fixed GLB review rendering to preserve embedded materials instead of accidentally applying a
+  neighboring preview PNG as the model texture.
