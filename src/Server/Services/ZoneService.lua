@@ -86,6 +86,7 @@ function ZoneService:Init()
     self._spawnSpreadConfig = self._areasConfig.player_spawn_spread or {}
     self._hallConfig = self._configLoader:LoadConfig("hall_of_worlds")
     self._hallEntryEnabled = not (self._hallConfig and self._hallConfig.entry_enabled == false)
+    self._combatTutorialConfig = self._configLoader:LoadConfig("combat_tutorial")
     self._hallRouteAreaSet = {}
     for _, routeArea in ipairs((self._hallConfig and self._hallConfig.route) or {}) do
         if type(routeArea.area_id) == "string" then
@@ -1145,6 +1146,49 @@ function ZoneService:_alignCopiedGatePortal(hook)
     })
 end
 
+function ZoneService:_isCombatTutorialEntryHook(hook)
+    local entry = self._combatTutorialConfig and self._combatTutorialConfig.entry
+    if not (entry and entry.enabled ~= false and hook and hook:IsA("BasePart")) then
+        return false
+    end
+    return hook.Name == tostring(entry.hook_name or "")
+end
+
+-- Hall routing stays disabled. The Home Hall arch becomes the combat-tutorial
+-- mission door instead of the frosted Coming Soon wall.
+function ZoneService:_openCombatTutorialEntry(hook)
+    -- The copied Home Hall visual sits ~50 studs from HallOfWorldsPortal (stale
+    -- WorldPivot). The Coming Soon seal used to drag the hook into the opening;
+    -- skipping that left the MissionDoor prompt on the offset volume.
+    self:_alignCopiedGatePortal(hook)
+
+    local entry = self._combatTutorialConfig and self._combatTutorialConfig.entry or {}
+    hook:SetAttribute("HallEntryDisabled", nil)
+    hook:SetAttribute("MissionId", tostring(entry.mission_id or "combat_tutorial"))
+    hook.CanTouch = false
+    hook.CanCollide = false
+    hook.CanQuery = true
+
+    local travelPrompt = hook:FindFirstChild(TRAVEL_PROMPT_NAME, true)
+    if travelPrompt and travelPrompt:IsA("ProximityPrompt") then
+        travelPrompt:Destroy()
+    end
+
+    if not CollectionService:HasTag(hook, "MissionDoor") then
+        CollectionService:AddTag(hook, "MissionDoor")
+    end
+
+    local title = hook.Parent and hook.Parent:FindFirstChild("HallOfWorldsGateTitle")
+    local label = tostring(entry.title or "COMBAT TRAINING")
+    if title then
+        for _, descendant in ipairs(title:GetDescendants()) do
+            if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
+                descendant.Text = label
+            end
+        end
+    end
+end
+
 function ZoneService:_isDisabledHallEntryHook(hook)
     if self:IsHallEntryEnabled() or not (hook and hook:IsA("BasePart")) then
         return false
@@ -1251,6 +1295,10 @@ function ZoneService:_connectTravelHooks()
 
     for _, hook in ipairs(hooks) do
         if hook:IsA("BasePart") then
+            if self:_isCombatTutorialEntryHook(hook) then
+                self:_openCombatTutorialEntry(hook)
+                continue
+            end
             if self:_isDisabledHallEntryHook(hook) then
                 self:_sealDisabledHallEntryHook(hook)
                 continue

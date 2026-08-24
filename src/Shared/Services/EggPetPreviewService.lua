@@ -26,6 +26,7 @@ local UserInputService = game:GetService("UserInputService")
 -- Dependencies
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local PetAbility = require(ReplicatedStorage.Shared.Game.PetAbility)
+local PetFunctionMark = require(ReplicatedStorage.Shared.Game.PetFunctionMark)
 local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
 local petConfig = Locations.getConfig("pets")
@@ -748,7 +749,11 @@ function EggPetPreviewService:CreatePetIdentityBadges(petFrame, petInfo)
             )
             local auraScope = PetTargeting.auraScope(ability, PET_ROLES)
             local badge = PetBadge.create(abilityButton, {
-                element = PetBadge.elementForPetType(petType),
+                element = PetFunctionMark.badgeElement(
+                    ability.kind,
+                    PetBadge.elementForPetType(petType),
+                    POWER_ICONS
+                ),
                 symbol = meta.symbol,
                 ring = POWER_ICONS.targeting_ring[auraScope],
                 zIndex = abilityButton.ZIndex,

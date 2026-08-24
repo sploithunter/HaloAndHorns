@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUtc": "2026-08-24T20:00:00Z",
+  "capturedAtLocal": "2026-08-24 2:00 PM MDT",
+  "source": {
+    "product": "Roblox Creator Hub",
+    "page": "Analytics → Funnels",
+    "experience": "Halo and Horns",
+    "universeId": 10307183003,
+    "placeId": 77766176054993,
+    "note": "Live published onboarding funnel as shown in Creator Hub. This is NOT the local v7 42-step combat-training onboarding list. Step names last changed 2026-08-23."
+  },
+  "windows": {
+    "last_7_days": {
+      "totalUsers": 7812,
+      "totalConversionPercent": 0.24,
+      "biggestDrop": "Step 12. First quest complete",
+      "steps": [
+        {"step": 1, "name": "Joined game", "users": 7812, "stepCompletion": 100.00, "churn": 0.00, "totalConversion": 100.00},
+        {"step": 2, "name": "Tutorial: Hatch first egg", "users": 5032, "stepCompletion": 64.41, "churn": 35.59, "totalConversion": 64.41},
+        {"step": 3, "name": "Tutorial: Mine crystals", "users": 4748, "stepCompletion": 94.36, "churn": 5.64, "totalConversion": 60.78},
+        {"step": 4, "name": "Tutorial: Grow team", "users": 3119, "stepCompletion": 65.69, "churn": 34.31, "totalConversion": 39.93},
+        {"step": 5, "name": "Tutorial: Build squad", "users": 1968, "stepCompletion": 63.10, "churn": 36.90, "totalConversion": 25.19},
+        {"step": 6, "name": "Tutorial: Bind Resonance", "users": 1063, "stepCompletion": 54.01, "churn": 45.99, "totalConversion": 13.61},
+        {"step": 7, "name": "Tutorial: Cast Resonance", "users": 890, "stepCompletion": 83.73, "churn": 16.27, "totalConversion": 11.39},
+        {"step": 8, "name": "Tutorial: Enhance Resonance", "users": 661, "stepCompletion": 74.27, "churn": 25.73, "totalConversion": 8.46},
+        {"step": 9, "name": "Tutorial: Win first fight", "users": 515, "stepCompletion": 77.91, "churn": 22.09, "totalConversion": 6.59},
+        {"step": 10, "name": "Tutorial: Use battle brew", "users": 477, "stepCompletion": 92.62, "churn": 7.38, "totalConversion": 6.11},
+        {"step": 11, "name": "Tutorial: Use Rally / Complete", "users": 391, "stepCompletion": 81.97, "churn": 18.03, "totalConversion": 5.01},
+        {"step": 12, "name": "First quest complete", "users": 60, "stepCompletion": 15.35, "churn": 84.65, "totalConversion": 0.77},
+        {"step": 13, "name": "First steps complete", "users": 20, "stepCompletion": 33.33, "churn": 66.67, "totalConversion": 0.26},
+        {"step": 14, "name": "First area unlocked", "users": 19, "stepCompletion": 95.00, "churn": 5.00, "totalConversion": 0.24}
+      ]
+    },
+    "last_28_days": {
+      "totalUsers": 9653,
+      "totalConversionPercent": 0.54,
+      "biggestDrop": "Step 12. First quest complete",
+      "nameLastChanged": "2026-08-23",
+      "steps": [
+        {"step": 1, "name": "Joined game", "users": 9653, "stepCompletion": 100.00, "churn": 0.00, "totalConversion": 100.00},
+        {"step": 2, "name": "Tutorial: Hatch first egg", "users": 6148, "stepCompletion": 63.69, "churn": 36.31, "totalConversion": 63.69},
+        {"step": 3, "name": "Tutorial: Mine crystals", "users": 5710, "stepCompletion": 92.88, "churn": 7.12, "totalConversion": 59.15},
+        {"step": 4, "name": "Tutorial: Grow team", "users": 3894, "stepCompletion": 68.20, "churn": 31.80, "totalConversion": 40.34},
+        {"step": 5, "name": "Tutorial: Build squad", "users": 2548, "stepCompletion": 65.43, "churn": 34.57, "totalConversion": 26.40},
+        {"step": 6, "name": "Tutorial: Win first fight", "users": 1513, "stepCompletion": 59.38, "churn": 40.62, "totalConversion": 15.67},
+        {"step": 7, "name": "Tutorial: Use battle brew", "users": 1150, "stepCompletion": 76.01, "churn": 23.99, "totalConversion": 11.91},
+        {"step": 8, "name": "Tutorial: Use Rally", "users": 863, "stepCompletion": 75.04, "churn": 24.96, "totalConversion": 8.94},
+        {"step": 9, "name": "Tutorial: Bind Resonance", "users": 693, "stepCompletion": 80.30, "churn": 19.70, "totalConversion": 7.18},
+        {"step": 10, "name": "Tutorial: Cast Resonance", "users": 633, "stepCompletion": 91.34, "churn": 8.66, "totalConversion": 6.56},
+        {"step": 11, "name": "Tutorial: Use Rally / Complete", "users": 534, "stepCompletion": 84.36, "churn": 15.64, "totalConversion": 5.53},
+        {"step": 12, "name": "First quest complete", "users": 130, "stepCompletion": 24.34, "churn": 75.66, "totalConversion": 1.35},
+        {"step": 13, "name": "First Steps complete", "users": 58, "stepCompletion": 44.62, "churn": 55.38, "totalConversion": 0.60},
+        {"step": 14, "name": "First area unlocked", "users": 52, "stepCompletion": 89.66, "churn": 10.34, "totalConversion": 0.54}
+      ]
+    },
+    "last_1_day": {
+      "totalUsers": 4128,
+      "totalConversionPercent": 0.12,
+      "biggestDrop": "Step 12. First quest complete",
+      "steps": [
+        {"step": 1, "name": "Joined game", "users": 4128, "stepCompletion": 100.00, "churn": 0.00, "totalConversion": 100.00},
+        {"step": 2, "name": "Tutorial: Hatch first egg", "users": 2580, "stepCompletion": 62.50, "churn": 37.50, "totalConversion": 62.50},
+        {"step": 3, "name": "Tutorial: Mine crystals", "users": 2388, "stepCompletion": 92.56, "churn": 7.44, "totalConversion": 57.85},
+        {"step": 4, "name": "Tutorial: Grow team", "users": 1447, "stepCompletion": 60.59, "churn": 39.41, "totalConversion": 35.05},
+        {"step": 5, "name": "Tutorial: Build squad", "users": 871, "stepCompletion": 60.19, "churn": 39.81, "totalConversion": 21.10},
+        {"step": 6, "name": "Tutorial: Win first fight", "users": 488, "stepCompletion": 56.03, "churn": 43.97, "totalConversion": 11.82},
+        {"step": 7, "name": "Tutorial: Use battle brew", "users": 364, "stepCompletion": 74.59, "churn": 25.41, "totalConversion": 8.82},
+        {"step": 8, "name": "Tutorial: Use Rally", "users": 297, "stepCompletion": 81.59, "churn": 18.41, "totalConversion": 7.19},
+        {"step": 9, "name": "Tutorial: Bind Resonance", "users": 222, "stepCompletion": 74.75, "churn": 25.25, "totalConversion": 5.38},
+        {"step": 10, "name": "Tutorial: Cast Resonance", "users": 203, "stepCompletion": 91.44, "churn": 8.56, "totalConversion": 4.92},
+        {"step": 11, "name": "Tutorial: Enhance Resonance / Complete", "users": 139, "stepCompletion": 68.47, "churn": 31.53, "totalConversion": 3.37},
+        {"step": 12, "name": "First quest complete", "users": 14, "stepCompletion": 10.07, "churn": 89.93, "totalConversion": 0.34},
+        {"step": 13, "name": "First Steps complete", "users": 5, "stepCompletion": 35.71, "churn": 64.29, "totalConversion": 0.12},
+        {"step": 14, "name": "First area unlocked", "users": 5, "stepCompletion": 100.00, "churn": 0.00, "totalConversion": 0.12}
+      ]
+    }
+  }
+}

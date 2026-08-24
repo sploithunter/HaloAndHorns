@@ -28,6 +28,7 @@ local StatusBadges = require(script.Parent.Parent.UI.StatusBadges)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local EnemyCon = require(ReplicatedStorage.Shared.Game.EnemyCon)
 local POWER_ICONS = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("power_icons"))
+local PetFunctionMark = require(ReplicatedStorage.Shared.Game.PetFunctionMark)
 
 local EnemyHud = {}
 
@@ -410,6 +411,25 @@ function EnemyHud.start()
                     "neutral",
                     m:GetAttribute("Role") or "melee"
                 )
+                local mark = PetFunctionMark.forKind(m:GetAttribute("FunctionKind"), POWER_ICONS)
+                HudCard.applyFunctionMark(card, mark)
+                if mark and card.functionIcon then
+                    local has = PetBadge.apply(
+                        card.functionIcon,
+                        card.functionRing,
+                        mark.element,
+                        nil,
+                        { symbol = mark.symbol, ring = "aura" }
+                    )
+                    if card.functionMark then
+                        card.functionMark.BackgroundTransparency = has and 1 or 0
+                    end
+                elseif card.functionIcon then
+                    card.functionIcon.Image = ""
+                    if card.functionRing then
+                        card.functionRing.Image = ""
+                    end
+                end
                 local hp = m:GetAttribute("HP") or 0
                 local maxHp = math.max(1, m:GetAttribute("MaxHP") or 1)
                 local frac = math.clamp(hp / maxHp, 0, 1)

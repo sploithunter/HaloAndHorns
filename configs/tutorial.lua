@@ -20,9 +20,12 @@
 ]]
 
 return {
-    -- v4 restores the proven Homeworld sequence: hatch, mine, squad, first fight, combat tools,
-    -- then Resonance. Versioned migrations follow the semantic lesson for in-progress saves.
-    version = 4,
+    -- v6: after Resonance, the Earth cave IS combat training. Brew lives inside
+    -- that track. Rally stays the last Homeworld beat after they walk back out.
+    version = 6,
+    -- XP still accrues. Claim/COMMIT/altar wait until Rally finishes so the
+    -- Resonance enhance lesson cannot land inside a level-up beat.
+    hold_level_claim = true,
     step_migrations = {
         -- v1 -> v2 removed the redundant manual-equip gate and added explicit squad review.
         [1] = {
@@ -50,7 +53,7 @@ return {
             [9] = { step = 6 }, -- cast_power
             [10] = { step = 7 }, -- slot_power
         },
-        -- v3 -> v4 returns each active lesson to the original Homeworld ordering.
+        -- v3 -> v4 returned each active lesson to the fight-then-Resonance ordering.
         [3] = {
             [1] = { step = 1 }, -- hatch_first_egg
             [2] = { step = 2, preserve_count = true }, -- farm_crystals
@@ -62,6 +65,33 @@ return {
             [8] = { step = 5 }, -- first_fight
             [9] = { step = 6 }, -- battle_brew
             [10] = { step = 7 }, -- rally_call
+        },
+        -- v4 -> v5 puts Resonance back after squad; combat tail stays 8–10 for now.
+        [4] = {
+            [1] = { step = 1 }, -- hatch_first_egg
+            [2] = { step = 2, preserve_count = true }, -- farm_crystals
+            [3] = { step = 3 }, -- hatch_another
+            [4] = { step = 4 }, -- build_squad
+            [5] = { step = 8 }, -- first_fight
+            [6] = { step = 9 }, -- battle_brew
+            [7] = { step = 10 }, -- rally_call
+            [8] = { step = 5 }, -- bind_power
+            [9] = { step = 6 }, -- cast_power
+            [10] = { step = 7 }, -- slot_power
+        },
+        -- v5 -> v6 folds the cave fight + brew into the combat-training cave.
+        -- Rally stays the last Homeworld beat after they exit.
+        [5] = {
+            [1] = { step = 1 },
+            [2] = { step = 2, preserve_count = true },
+            [3] = { step = 3 },
+            [4] = { step = 4 },
+            [5] = { step = 5 },
+            [6] = { step = 6 },
+            [7] = { step = 7 },
+            [8] = { step = 8 }, -- first_fight (now the cave-training handoff)
+            [9] = { step = 8 }, -- battle_brew absorbed into the cave track
+            [10] = { step = 9 }, -- rally_call
         },
     },
     veteran_skip = { min_claimed_level = 3 },
@@ -103,66 +133,52 @@ return {
             id = "build_squad",
             localization_key = "tutorial.build_squad",
             title = "Build your squad",
-            body = "This is where you choose which pets fight beside you. Open Pets and take a look—you can keep your current squad.",
-            body_gamepad = "This is where you choose which pets fight beside you. Press D-pad Left to open Pets, then use A to choose.",
-            body_with_unequipped = "You have more pets to choose from now. Open Pets and choose who fights beside you. Swap someone if you want—or keep your current squad.",
+            -- GRANT-ON-ENTER: a Rainbow Kitty so Inventory has an obviously stronger
+            -- pick than the early hatches. The lesson walks unequip → pick → Activate.
+            grant = {
+                pets = {
+                    { id = "kitty", variant = "rainbow", source = "tutorial_build_squad" },
+                },
+            },
+            body = "The top row is your equipped squad — those pets fight and mine with you. Everyone else waits in Inventory. Open Pets and we'll swap one on.",
+            body_gamepad = "The top row is your equipped squad. Press D-pad Left to open Pets — we'll swap one on.",
+            body_with_unequipped = "You have a Rainbow Kitty waiting in Inventory — your strongest pet. Open Pets: take one off the equipped row, put the Kitty on, then Activate.",
+            guide = {
+                open = {
+                    title = "Build your squad",
+                    body = "The top row is your equipped squad — those pets fight and mine with you. Everyone else waits in Inventory. Open Pets and we'll swap one on.",
+                    body_gamepad = "The top row is your equipped squad. Press D-pad Left to open Pets — we'll swap one on.",
+                    cue_text = "CLICK HERE",
+                },
+                unequip = {
+                    title = "Take one off",
+                    body = "Click the X on an equipped pet to unequip it. That frees a squad slot.",
+                    body_gamepad = "Select an equipped pet and press A to take it off. That frees a squad slot.",
+                    cue_text = "TAKE OFF",
+                },
+                pick = {
+                    title = "Pick your strongest",
+                    body = "Click the strongest pet in Inventory — your Rainbow Kitty. You can pick any pet, even the one you just took off.",
+                    body_gamepad = "Select the strongest pet in Inventory — your Rainbow Kitty — and press A. You can pick any pet, even the one you just took off.",
+                    cue_text = "CLICK HERE",
+                },
+                activate = {
+                    title = "Activate",
+                    body = "Press Activate to send the new squad out. The top row is who fights; Inventory is everyone else.",
+                    body_gamepad = "Press Activate (A) to send the new squad out. The top row is who fights; Inventory is everyone else.",
+                    cue_text = "ACTIVATE",
+                },
+            },
             target = {
                 kind = "ui",
                 name = "PetsButton",
-                cue = "click",
+                cue = "equip_squad",
                 cue_text = "CLICK HERE",
             },
             complete_on = { event = "tutorial_squad_reviewed" },
         },
-        -- The original Homeworld onramp puts the differentiator on screen immediately after the
-        -- familiar hatch/mine/squad loop: the trail leads to the Earth cave and the pets defend.
-        {
-            id = "first_fight",
-            localization_key = "tutorial.first_fight",
-            title = "Your first fight",
-            body = "Something stirs in the Earth cave! Walk over — your pets fight for you. Defeat it and take its coins!",
-            target = { kind = "part", name = "BaddieSpawnerEarth", label = "⬇ FIGHT" },
-            complete_on = { event = "enemy_defeated" },
-        },
-        -- Potion auto-binding uses the first eligible top-row slot, which may vary with the
-        -- player's existing bindings. Target the live Berserk Brew binding by identity.
-        {
-            id = "battle_brew",
-            localization_key = "tutorial.battle_brew",
-            title = "Drink for battle",
-            grant = { potions = { { id = "berserk_brew", count = 2 } } },
-            body = "CLICK the flashing Berserk Brew in your power bar. It makes every pet hit harder!",
-            body_gamepad = "You found two Berserk Brews! Use LB/RB to select the flashing brew, then RT to drink it.",
-            target = {
-                kind = "ui",
-                hotbar_type = "potion",
-                hotbar_target = "berserk_brew",
-                cue = "click",
-                cue_text = "CLICK HERE",
-            },
-            complete_on = { event = "potion_used" },
-        },
-        -- Rally closes the combat lesson. Rejoin reapplies its bind idempotently.
-        {
-            id = "rally_call",
-            localization_key = "tutorial.rally_call",
-            title = "Call them back",
-            grant = {
-                hotbar_bind = { slot = 11, type = "tactical", target = "rally" },
-            },
-            body = "See the FLAG at the top-left of your power bar? That's Rally — press it and your pets instantly return to your side. Your escape button when a fight goes wrong!",
-            body_gamepad = "See the FLAG at the top-left of your power bar? Select it with LB/RB and press RT to call every pet back!",
-            target = {
-                kind = "ui",
-                hotbar_type = "tactical",
-                hotbar_target = "rally",
-                cue = "click",
-                cue_text = "CLICK HERE",
-            },
-            complete_on = { event = "rally_used" },
-        },
-        -- Powers follow the familiar pet-game loop. Every player is born with Resonance; these
-        -- final lessons teach binding, casting, and enhancing the power before graduation.
+        -- Powers follow the familiar pet-game loop after squad review. Resonance is innate;
+        -- these lessons teach binding, casting, and enhancing before the combat tail.
         {
             id = "bind_power",
             localization_key = "tutorial.bind_power",
@@ -217,6 +233,42 @@ return {
                 cue_text = "CLICK HERE",
             },
             complete_on = { event = "enhancement_slotted" },
+        },
+        -- Combat training lives in the Earth cave (configs/combat_tutorial.lua).
+        -- Press E at the mouth starts that track. Completing it (and walking
+        -- back out) fires combat_tutorial_complete and continues to Rally.
+        {
+            id = "first_fight",
+            localization_key = "tutorial.first_fight",
+            title = "Combat training",
+            body = "The Earth cave is a training ground. Press E to enter and learn how to fight.",
+            body_gamepad = "The Earth cave is a training ground. Press X to enter and learn how to fight.",
+            target = {
+                kind = "part",
+                name = "BaddieSpawnerEarth",
+                root = "Maps.Home",
+                label = "⬇ FIGHT",
+            },
+            complete_on = { event = "combat_tutorial_complete" },
+        },
+        -- Rally closes the Homeworld loop after they exit the cave. Rejoin reapplies its bind.
+        {
+            id = "rally_call",
+            localization_key = "tutorial.rally_call",
+            title = "Call them back",
+            grant = {
+                hotbar_bind = { slot = 11, type = "tactical", target = "rally" },
+            },
+            body = "See the FLAG at the top-left of your power bar? That's Rally — press it and your pets instantly return to your side. Your escape button when a fight goes wrong!",
+            body_gamepad = "See the FLAG at the top-left of your power bar? Select it with LB/RB and press RT to call every pet back!",
+            target = {
+                kind = "ui",
+                hotbar_type = "tactical",
+                hotbar_target = "rally",
+                cue = "click",
+                cue_text = "CLICK HERE",
+            },
+            complete_on = { event = "rally_used" },
         },
     },
 

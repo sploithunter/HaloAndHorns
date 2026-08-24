@@ -13,6 +13,7 @@
     Progress is server-authoritative; this never advances anything.
 ]]
 
+local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -28,6 +29,10 @@ local TUTORIAL_CFG
 pcall(function()
     TUTORIAL_CFG = require(ReplicatedStorage.Configs:WaitForChild("tutorial"))
 end)
+local COMBAT_TUTORIAL_CFG
+pcall(function()
+    COMBAT_TUTORIAL_CFG = require(ReplicatedStorage.Configs:WaitForChild("combat_tutorial"))
+end)
 
 local GOLD = Color3.fromRGB(255, 205, 70)
 local PLAYER_LIST_PEEK_SECONDS = 10
@@ -42,6 +47,7 @@ local pulseStroke -- UIStroke on the current ui target
 local pulseArrow -- blinking arrow floating above the current ui target (small buttons need a louder cue)
 local pulseTarget -- exact GuiObject currently highlighted
 local pulseTargetWasClipped -- restored when guidance ends
+local cueOverlay -- ScreenGui above menus so inventory-clipped callouts stay visible
 local stepToken = 0 -- bumps every state push; loops check it to die
 local pulseGeneration = 0 -- invalidates an in-step cue when a multi-phase lesson changes target
 
@@ -319,13 +325,34 @@ local function nearestSmallCrystal()
 end
 
 -- Named world-part finder (target.kind == "part"): resolves a BasePart by
--- name anywhere under Workspace.Maps (the First Fight cave spawner). Streaming
--- note: the beacon/trail machinery re-runs its finder, so a part that streams
--- in as the player approaches picks up automatically.
-local function namedPartFinder(name)
+-- name. Prefer an authored root (Maps.Home for the Earth cave) so realm-layer
+-- clones of BaddieSpawnerEarth don't steal the FIGHT arrow.
+local function namedPartFinder(name, rootPath)
     return function()
+        if type(rootPath) == "string" and rootPath ~= "" then
+            local node = Workspace
+            for segment in string.gmatch(rootPath, "[^.]+") do
+                node = node and node:FindFirstChild(segment)
+            end
+            local rooted = node and node:FindFirstChild(name, true)
+            if rooted then
+                return rooted
+            end
+        end
         local maps = Workspace:FindFirstChild("Maps")
-        return maps and maps:FindFirstChild(name, true)
+        local home = maps and maps:FindFirstChild("Home")
+        local inHome = home and home:FindFirstChild(name, true)
+        if inHome then
+            return inHome
+        end
+        local inMaps = maps and maps:FindFirstChild(name, true)
+        if inMaps then
+            return inMaps
+        end
+        -- Combat training (and other door missions) stamp tiles under
+        -- MissionInstances, not Workspace.Maps.
+        local missions = Workspace:FindFirstChild("MissionInstances")
+        return missions and missions:FindFirstChild(name, true)
     end
 end
 
@@ -531,6 +558,50 @@ end
 -- options.arrow: add a visible pointer above the target (PRIMARY ui targets only). A secondary ui pulse (the
 -- farm step's Farm-Near cue alongside the crystal beacon) gets just the stroke — an arrow there reads
 -- as a second "do this" when the real target is the crystal (Jason: "you put an arrow at farm near").
+local function resolveInjuredSlot(pg)
+    local slot = tonumber(Players.LocalPlayer:GetAttribute("CombatTutorialWoundSlot"))
+    if slot and slot > 0 then
+        return pg:FindFirstChild("Slot_" .. slot, true)
+    end
+    return nil
+end
+
+local function resolveTutorialEnemy(pg)
+    local bid = tonumber(Players.LocalPlayer:GetAttribute("CombatTutorialTargetEnemy"))
+    if bid and bid > 0 then
+        return pg:FindFirstChild("Enemy_" .. bid, true)
+    end
+    return nil
+end
+
+local function ancestorClips(object)
+    local node = object and object.Parent
+    while node and not node:IsA("LayerCollector") do
+        if node:IsA("GuiObject") and node.ClipsDescendants then
+            return true
+        end
+        node = node.Parent
+    end
+    return false
+end
+
+local function ensureCueOverlay(pg)
+    if cueOverlay and cueOverlay.Parent then
+        return cueOverlay
+    end
+    cueOverlay = Instance.new("ScreenGui")
+    cueOverlay.Name = "TutorialCueOverlay"
+    cueOverlay.ResetOnSpawn = false
+    -- Same inset space as MenuOverlay so AbsolutePosition on a card maps 1:1.
+    cueOverlay.IgnoreGuiInset = false
+    -- MenuOverlay is 120; inventory lives there. Sit above that so TAKE OFF
+    -- is the same on-top sign as Pets / Activate, not a clipped triangle.
+    cueOverlay.DisplayOrder = 130
+    cueOverlay.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    cueOverlay.Parent = pg
+    return cueOverlay
+end
+
 local function findUiTarget(pg, name, options)
     if options.hotbarTarget then
         local hotbar = pg:FindFirstChild("HotbarBar")
@@ -546,6 +617,24 @@ local function findUiTarget(pg, name, options)
                 then
                     return candidate
                 end
+            end
+        end
+        return nil
+    end
+    if name == "InjuredSlot" or options.injuredSlot then
+        return resolveInjuredSlot(pg)
+    end
+    if name == "TutorialEnemy" then
+        return resolveTutorialEnemy(pg)
+    end
+    if options.tutorialGuide then
+        for _, candidate in ipairs(pg:GetDescendants()) do
+            if
+                candidate:IsA("GuiObject")
+                and candidate:GetAttribute("TutorialGuide") == options.tutorialGuide
+                and candidate.AbsoluteSize.X > 0
+            then
+                return candidate
             end
         end
         return nil
@@ -567,7 +656,17 @@ local function showUiPulse(token, name, options)
         while token == stepToken and generation == pulseGeneration and not target do
             target = findUiTarget(pg, name, options)
             if not target then
-                task.wait(1)
+                -- InjuredSlot waits on a server attribute; poll faster than hotbar/Edit.
+                task.wait(
+                    (
+                        name == "InjuredSlot"
+                        or name == "TutorialEnemy"
+                        or options.injuredSlot
+                        or options.tutorialGuide
+                    )
+                            and 0.2
+                        or 1
+                )
             end
         end
         if token ~= stepToken or generation ~= pulseGeneration or not target then
@@ -592,18 +691,43 @@ local function showUiPulse(token, name, options)
         -- Parent the callout to the resolved object itself, so it cannot drift from the binding on
         -- scaled/mobile layouts. Hotbar slots normally clip their icon to a circle; temporarily
         -- release that clip so the callout can sit outside, then restore it in clearGuidance.
+        -- Inventory cards live in a ScrollingFrame: parenting there clips the sign to a sliver.
+        -- Lift those onto a DisplayOrder overlay so the same TAKE OFF / CLICK HERE sign sits
+        -- on top of the menu (Jason: keep the sign consistent; do the Z work).
         pulseTarget = target
-        pulseTargetWasClipped = target.ClipsDescendants
-        target.ClipsDescendants = false
+        -- Boolean: the card lives under a ScrollingFrame (or other clipper). Do not treat this
+        -- as the ScreenGui — indexing that flag for GuiInset crashed and hid TAKE OFF / CLICK HERE.
+        local useOverlay = ancestorClips(target)
+        if not useOverlay then
+            pulseTargetWasClipped = target.ClipsDescendants
+            target.ClipsDescendants = false
+        end
+
+        local cueSide = options.cueSide
+        local isLeft = cueSide == "left"
+        local isRight = cueSide == "right"
+        -- Side-of-bar: sit just outside BarBg so the callout names that card.
+        -- BarBg is a 40px inset on HudCard; the 6–8px gap is a local alignment nudge.
+        local bar = (isLeft or isRight) and target:FindFirstChild("BarBg")
+        local barLeft = (bar and bar.Position.X.Offset) or 0
+        local leftX = barLeft - 6
+        local cueText = tostring(options.cueText or "CLICK HERE")
+        local sideCue = isLeft or isRight
 
         pulseArrow = Instance.new("TextLabel")
         pulseArrow.Name = "TutorialArrow"
         pulseArrow.BackgroundColor3 = Color3.fromRGB(16, 18, 28)
         pulseArrow.BackgroundTransparency = if options.clickCue then 0.08 else 1
-        pulseArrow.AnchorPoint = Vector2.new(0.5, 1)
-        pulseArrow.Position = UDim2.new(0.5, 0, 0, -6)
+        pulseArrow.AnchorPoint = if isLeft
+            then Vector2.new(1, 0.5)
+            elseif isRight then Vector2.new(0, 0.5)
+            else Vector2.new(0.5, 1)
+        pulseArrow.Position = if isLeft
+            then UDim2.new(0, leftX, 0.5, 0)
+            elseif isRight then UDim2.new(1, 8, 0.5, 0)
+            else UDim2.new(0.5, 0, 0, -6)
         pulseArrow.Size = if options.clickCue
-            then UDim2.fromOffset(150, 68)
+            then (if sideCue then UDim2.fromOffset(150, 44) else UDim2.fromOffset(150, 68))
             else UDim2.fromOffset(68, 44)
         pulseArrow.Font = Enum.Font.GothamBlack
         pulseArrow.TextSize = if options.clickCue then 23 else 38
@@ -611,10 +735,13 @@ local function showUiPulse(token, name, options)
         pulseArrow.TextStrokeColor3 = Color3.new(0, 0, 0)
         pulseArrow.TextStrokeTransparency = 0.3
         pulseArrow.Text = if options.clickCue
-            then tostring(options.cueText or "CLICK HERE") .. "\n▼"
+            then (if isLeft
+                then cueText .. "  ►"
+                elseif isRight then "◄  " .. cueText
+                else cueText .. "\n▼")
             else "⬇"
-        pulseArrow.ZIndex = 50
-        pulseArrow.Parent = target
+        pulseArrow.ZIndex = if useOverlay then 20 else 50
+        pulseArrow.Parent = if useOverlay then ensureCueOverlay(pg) else target
         if options.clickCue then
             local calloutCorner = Instance.new("UICorner")
             calloutCorner.CornerRadius = UDim.new(0, 12)
@@ -623,6 +750,32 @@ local function showUiPulse(token, name, options)
             calloutStroke.Color = GOLD
             calloutStroke.Thickness = 4
             calloutStroke.Parent = pulseArrow
+        end
+
+        local function placeOverlay(bob)
+            if not (pulseArrow and target.Parent) then
+                return
+            end
+            local abs = target.AbsolutePosition
+            -- MenuOverlay does not ignore the topbar. AbsolutePosition is inset-relative.
+            -- TutorialCueOverlay matches that (IgnoreGuiInset=false). Read the ScreenGui
+            -- parent — never the useOverlay boolean (that error hid CLICK HERE).
+            local host = pulseArrow.Parent
+            if host and host:IsA("LayerCollector") and host.IgnoreGuiInset then
+                abs += GuiService:GetGuiInset()
+            end
+            local size = target.AbsoluteSize
+            if isLeft then
+                pulseArrow.Position = UDim2.fromOffset(abs.X - 6 - bob, abs.Y + size.Y * 0.5)
+            elseif isRight then
+                pulseArrow.Position =
+                    UDim2.fromOffset(abs.X + size.X + 8 + bob, abs.Y + size.Y * 0.5)
+            else
+                pulseArrow.Position = UDim2.fromOffset(abs.X + size.X * 0.5, abs.Y - 6 - bob)
+            end
+        end
+        if useOverlay then
+            placeOverlay(0)
         end
 
         local t0 = os.clock()
@@ -634,7 +787,16 @@ local function showUiPulse(token, name, options)
                 -- nearly invisible against Grass/Home's bright ground at the exact moment a new
                 -- player needed it.
                 pulseArrow.TextTransparency = if options.clickCue then 0 else 0.05 + 0.55 * s
-                pulseArrow.Position = UDim2.new(0.5, 0, 0, -6 - math.floor(8 * s))
+                local bob = math.floor(8 * s)
+                if useOverlay then
+                    placeOverlay(bob)
+                elseif isLeft then
+                    pulseArrow.Position = UDim2.new(0, leftX - bob, 0.5, 0)
+                elseif isRight then
+                    pulseArrow.Position = UDim2.new(1, 8 + bob, 0.5, 0)
+                else
+                    pulseArrow.Position = UDim2.new(0.5, 0, 0, -6 - bob)
+                end
             end
             RunService.RenderStepped:Wait()
         end
@@ -645,7 +807,87 @@ end
 -- incorrectly survived while the player was choosing a slot and obscured the picker's own guides.
 -- Resolve each phase from live UI state instead:
 --   Edit (not editing, no Resonance) -> no callout while choosing -> Done after Resonance is bound.
-local function showBindPowerGuidance(token)
+-- Power up Resonance is five clicks. A single PowersButton cue dies once the
+-- menu opens. Walk live PowerChoice state the same way bind-power walks Edit:
+--   Powers -> Resonance row -> empty slot -> Potency -> Apply
+local function showSlotPowerGuidance(token)
+    local cueText = TutorialLocalization.text(
+        TutorialLanguageState.getLocaleId(),
+        "tutorial.cue.click_here",
+        "CLICK HERE"
+    )
+    task.spawn(function()
+        local pg = Players.LocalPlayer:WaitForChild("PlayerGui")
+        local phase
+        while token == stepToken do
+            local menuOpen = _G.PowerChoiceMenuOpen == true
+            local menu = menuOpen and pg:FindFirstChild("PowerChoiceMenu", true)
+            local enhanceFor = menu and menu:GetAttribute("EnhanceFor")
+            local targetSlot = menu and tonumber(menu:GetAttribute("EnhanceTargetSlot")) or 0
+            local stagedType = menu and menu:GetAttribute("EnhanceStagedType")
+            if type(stagedType) ~= "string" or stagedType == "" then
+                stagedType = nil
+            end
+            local nextPhase
+            if not menuOpen then
+                nextPhase = "open"
+            elseif type(enhanceFor) ~= "string" or enhanceFor == "" then
+                nextPhase = "pick_power"
+            elseif stagedType then
+                nextPhase = "apply"
+            elseif targetSlot > 0 then
+                nextPhase = "pick_potency"
+            else
+                nextPhase = "pick_slot"
+            end
+
+            local targetGone = pulseTarget ~= nil and pulseTarget.Parent == nil
+            if nextPhase ~= phase or targetGone then
+                phase = nextPhase
+                clearUiGuidance()
+                if phase == "open" then
+                    showUiPulse(token, "PowersButton", {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                    })
+                elseif phase == "pick_power" then
+                    showUiPulse(token, nil, {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                        tutorialGuide = "Resonance",
+                    })
+                elseif phase == "pick_slot" then
+                    showUiPulse(token, nil, {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                        tutorialGuide = "EnhanceEmptySlot",
+                    })
+                elseif phase == "pick_potency" then
+                    showUiPulse(token, nil, {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                        tutorialGuide = "EnhancePotency",
+                    })
+                elseif phase == "apply" then
+                    showUiPulse(token, nil, {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                        tutorialGuide = "EnhanceApply",
+                    })
+                end
+            end
+            RunService.RenderStepped:Wait()
+        end
+    end)
+end
+
+local function showBindPowerGuidance(token, powerId)
+    powerId = powerId or "resonance"
     task.spawn(function()
         local pg = Players.LocalPlayer:WaitForChild("PlayerGui")
         local phase
@@ -653,14 +895,14 @@ local function showBindPowerGuidance(token)
             local hotbar = pg:FindFirstChild("HotbarBar")
             local editButton = hotbar and hotbar:FindFirstChild("Edit", true)
             local editing = editButton and editButton:GetAttribute("HotbarEditing") == true
-            local resonanceBound = findUiTarget(pg, nil, {
+            local powerBound = findUiTarget(pg, nil, {
                 hotbarType = "power",
-                hotbarTarget = "resonance",
+                hotbarTarget = powerId,
             }) ~= nil
             local nextPhase
-            if editing and resonanceBound then
+            if editing and powerBound then
                 nextPhase = "done"
-            elseif not editing and not resonanceBound then
+            elseif not editing and not powerBound then
                 nextPhase = "edit"
             else
                 nextPhase = "choose"
@@ -686,8 +928,247 @@ local function showBindPowerGuidance(token)
     end)
 end
 
-local function configuredStep(stepId)
+local configuredStep
+
+local function tankLessonGuide(step)
+    local guide = type(step) == "table" and step.guide or nil
+    return type(guide) == "table" and guide or {}
+end
+
+local function applyTankLessonCapsule(state, step, phase)
+    if not (titleLabel and bodyLabel) then
+        return
+    end
+    local localeId = TutorialLanguageState.getLocaleId()
+    local entry = tankLessonGuide(step)[phase]
+    if type(entry) ~= "table" then
+        return
+    end
+    local baseKey = (step.localization_key or "combat_tutorial.ready_tank") .. ".guide." .. phase
+    titleLabel.Text =
+        TutorialLocalization.text(localeId, baseKey .. ".title", entry.title or state.title or "")
+    local useGamepad = Players.LocalPlayer:GetAttribute("InputMode") == "gamepad"
+        and entry.body_gamepad
+    bodyLabel.Text = TutorialLocalization.text(
+        localeId,
+        useGamepad and (baseKey .. ".body_gamepad") or (baseKey .. ".body"),
+        useGamepad and entry.body_gamepad or entry.body or ""
+    )
+end
+
+-- Open Pets → take off the last/weakest doggy → click the strongest tank (or
+-- Best Pets → Tank) → Activate (closes Pets) → ENTER. Inventory draft is
+-- client-local until Activate, so this walks live UI the same way bind-power does.
+local function showEquipTankGuidance(token, state)
+    local step = configuredStep(state and state.id) or {}
+    local guide = tankLessonGuide(step)
+    task.spawn(function()
+        local phase
+        local showingDoor = false
+        while token == stepToken do
+            local player = Players.LocalPlayer
+            local menuOpen = player:GetAttribute("LargeMenuOpen") == true
+            local tankReady = player:GetAttribute("CombatTutorialTankReady") == true
+            local draftHasTank = player:GetAttribute("CombatTutorialDraftHasTank") == true
+            local draftFull = player:GetAttribute("CombatTutorialDraftFull") == true
+            local draftDirty = player:GetAttribute("CombatTutorialDraftDirty") == true
+            local nextPhase
+            if not menuOpen then
+                if tankReady or (draftHasTank and not draftDirty) then
+                    nextPhase = "enter"
+                else
+                    nextPhase = "open"
+                end
+            elseif draftHasTank and not draftDirty then
+                nextPhase = "close"
+            elseif draftHasTank then
+                nextPhase = "activate"
+            elseif draftFull then
+                nextPhase = "unequip"
+            else
+                nextPhase = "pick"
+            end
+
+            local targetGone = pulseTarget ~= nil and pulseTarget.Parent == nil
+            if nextPhase ~= phase or targetGone then
+                phase = nextPhase
+                clearGuidance()
+                showingDoor = false
+                applyTankLessonCapsule(state, step, phase)
+                local entry = guide[phase] or {}
+                local cueText = TutorialLocalization.text(
+                    TutorialLanguageState.getLocaleId(),
+                    "tutorial.cue.click_here",
+                    entry.cue_text or "CLICK HERE"
+                )
+                if phase == "open" then
+                    showUiPulse(token, "PetsButton", {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                    })
+                elseif phase == "unequip" then
+                    showUiPulse(token, nil, {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                        tutorialGuide = "UnequipWeakest",
+                    })
+                elseif phase == "pick" then
+                    showUiPulse(token, nil, {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                        tutorialGuide = "StrongestTank",
+                    })
+                elseif phase == "activate" then
+                    showUiPulse(token, "ActivateDraft", {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                    })
+                elseif phase == "close" then
+                    showUiPulse(token, "CloseButton", {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                    })
+                elseif phase == "enter" then
+                    local finder = namedPartFinder("CombatTutorialDoorSeal")
+                    showEggBeacon(
+                        token,
+                        finder,
+                        TutorialLocalization.text(
+                            TutorialLanguageState.getLocaleId(),
+                            "tutorial.target.go",
+                            "⬇ ENTER"
+                        )
+                    )
+                    showEggPath(token, finder)
+                    showingDoor = true
+                end
+            elseif not showingDoor then
+                applyTankLessonCapsule(state, step, phase)
+            end
+            RunService.RenderStepped:Wait()
+        end
+    end)
+end
+
+-- Open Pets → take one off the equipped row → click the strongest inventory
+-- pet (Rainbow Kitty) → Activate. Completes only after that swap is committed.
+local function showEquipSquadGuidance(token, state)
+    local step = configuredStep(state and state.id) or {}
+    local guide = tankLessonGuide(step)
+    task.spawn(function()
+        local phase
+        while token == stepToken do
+            local player = Players.LocalPlayer
+            local menuOpen = player:GetAttribute("LargeMenuOpen") == true
+            local didUnequip = player:GetAttribute("TutorialSquadDidUnequip") == true
+            local didEquip = player:GetAttribute("TutorialSquadDidEquip") == true
+            local nextPhase
+            if not menuOpen then
+                nextPhase = "open"
+            elseif not didUnequip then
+                nextPhase = "unequip"
+            elseif not didEquip then
+                nextPhase = "pick"
+            else
+                nextPhase = "activate"
+            end
+
+            local targetGone = pulseTarget ~= nil and pulseTarget.Parent == nil
+            if nextPhase ~= phase or targetGone then
+                phase = nextPhase
+                clearGuidance()
+                applyTankLessonCapsule(state, step, phase)
+                local entry = guide[phase] or {}
+                local cueText = TutorialLocalization.text(
+                    TutorialLanguageState.getLocaleId(),
+                    "tutorial.cue.click_here",
+                    entry.cue_text or "CLICK HERE"
+                )
+                if phase == "open" then
+                    showUiPulse(token, "PetsButton", {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                    })
+                elseif phase == "unequip" then
+                    showUiPulse(token, nil, {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                        tutorialGuide = "UnequipWeakest",
+                    })
+                elseif phase == "pick" then
+                    showUiPulse(token, nil, {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                        tutorialGuide = "StrongestPet",
+                    })
+                elseif phase == "activate" then
+                    showUiPulse(token, "ActivateDraft", {
+                        arrow = true,
+                        clickCue = true,
+                        cueText = cueText,
+                    })
+                end
+            else
+                applyTankLessonCapsule(state, step, phase)
+            end
+            RunService.RenderStepped:Wait()
+        end
+    end)
+end
+
+-- KILL THIS on the marked healer until they click it. Hide after click.
+-- Show again only when the server says pets left that healer (not when HUD
+-- assist expires).
+local function showHealerFocusGuidance(token, state)
+    local target = state.target or {}
+    local cueText = TutorialLocalization.text(
+        TutorialLanguageState.getLocaleId(),
+        "tutorial.cue.click_here",
+        target.cue_text or "KILL THIS"
+    )
+    task.spawn(function()
+        local showing
+        while token == stepToken do
+            -- Strict true: nil after the healer dies used to keep polling Enemy_<bid>
+            -- for a card that no longer exists (pets can auto-kill without a click).
+            local want = Players.LocalPlayer:GetAttribute("CombatTutorialHealerCue") == true
+            local bid = tonumber(Players.LocalPlayer:GetAttribute("CombatTutorialTargetEnemy"))
+            if not bid or bid <= 0 then
+                want = false
+            end
+            local targetGone = pulseTarget ~= nil and pulseTarget.Parent == nil
+            if want ~= showing or (want and targetGone) then
+                showing = want
+                clearUiGuidance()
+                if want then
+                    showUiPulse(token, target.name or "TutorialEnemy", {
+                        arrow = true,
+                        clickCue = true,
+                        cueSide = target.cue_side,
+                        cueText = cueText,
+                    })
+                end
+            end
+            RunService.RenderStepped:Wait()
+        end
+    end)
+end
+
+configuredStep = function(stepId)
     for _, step in ipairs((TUTORIAL_CFG and TUTORIAL_CFG.steps) or {}) do
+        if step.id == stepId then
+            return step
+        end
+    end
+    for _, step in ipairs((COMBAT_TUTORIAL_CFG and COMBAT_TUTORIAL_CFG.steps) or {}) do
         if step.id == stepId then
             return step
         end
@@ -725,8 +1206,15 @@ local function renderActiveState(state)
     bodyLabel.Text = TutorialLocalization.text(localeId, bodyKey, body)
 end
 
+local function activeCompletionConfig()
+    if Players.LocalPlayer:GetAttribute("InCombatTutorial") == true then
+        return (COMBAT_TUTORIAL_CFG and COMBAT_TUTORIAL_CFG.completion) or {}
+    end
+    return (TUTORIAL_CFG and TUTORIAL_CFG.completion) or {}
+end
+
 local function renderCompletionState()
-    local doneCfg = (TUTORIAL_CFG and TUTORIAL_CFG.completion) or {}
+    local doneCfg = activeCompletionConfig()
     local baseKey = doneCfg.localization_key or "tutorial.completion"
     local localeId = TutorialLanguageState.getLocaleId()
     stepLabel.Text =
@@ -781,7 +1269,7 @@ local function apply(state)
             -- LIVE completion (not a veteran/rejoin done-state): hold the spot for the
             -- handoff card — "quests unlocked, climb to Level 2" — then yield to quests.
             -- The celebration stinger/burst rides the tutorial_complete game event.
-            local doneCfg = (TUTORIAL_CFG and TUTORIAL_CFG.completion) or {}
+            local doneCfg = activeCompletionConfig()
             local token = stepToken
             completionCardVisible = true
             renderCompletionState()
@@ -834,7 +1322,7 @@ local function apply(state)
         )
         showEggPath(stepToken, nearestSmallCrystal)
     elseif target.kind == "part" and type(target.name) == "string" then
-        local finder = namedPartFinder(target.name)
+        local finder = namedPartFinder(target.name, target.root)
         local targetKey = if state.id == "first_fight"
             then "tutorial.target.fight"
             else "tutorial.target.go"
@@ -848,12 +1336,24 @@ local function apply(state)
             )
         )
         showEggPath(stepToken, finder)
+    elseif target.kind == "ui" and target.cue == "bind" then
+        showBindPowerGuidance(stepToken, target.hotbar_target)
     elseif state.id == "bind_power" then
-        showBindPowerGuidance(stepToken)
+        showBindPowerGuidance(stepToken, "resonance")
+    elseif state.id == "slot_power" then
+        showSlotPowerGuidance(stepToken)
+    elseif target.kind == "ui" and target.cue == "equip_tank" then
+        showEquipTankGuidance(stepToken, state)
+    elseif target.kind == "ui" and target.cue == "equip_squad" then
+        showEquipSquadGuidance(stepToken, state)
+    elseif target.kind == "ui" and target.cue == "healer_focus" then
+        showHealerFocusGuidance(stepToken, state)
     elseif target.kind == "ui" then
         showUiPulse(stepToken, target.name, {
             arrow = true,
             clickCue = target.cue == "click",
+            cueSide = target.cue_side,
+            injuredSlot = target.injured_slot == true,
             cueText = TutorialLocalization.text(
                 TutorialLanguageState.getLocaleId(),
                 "tutorial.cue.click_here",
@@ -871,7 +1371,7 @@ end
 -- bumped per behavior change: printed at start so a LIVE session's running BYTECODE is
 -- identifiable (rojo syncs Source into running sessions but required modules never
 -- re-execute — we chased "stale build vs real bug" three times today)
-local BUILD = "tutorial-localization v9 locale-aware (2026-08-18)"
+local BUILD = "slot-power click-here walk (2026-08-24)"
 
 function TutorialController.start()
     if started then

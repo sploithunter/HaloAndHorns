@@ -523,6 +523,23 @@ return {
         float = { color = { 255, 90, 90 } },
     },
 
+    -- Combat tutorial: player clicked the frost door before the lobby lesson.
+    combat_tutorial_door_blocked = {
+        banner = { seconds = 2.5, color = { 255, 200, 70 } },
+    },
+
+    -- Combat tutorial: pets left the marked healer after they had been on it.
+    combat_tutorial_healer_lost = {
+        banner = { seconds = 3, color = { 255, 160, 70 } },
+    },
+
+    -- Combat tutorial finished the last room. Text = ctx.name.
+    combat_tutorial_complete = {
+        sound = "celebratory_jingle",
+        vfx = { kind = "burst", color = { 255, 215, 90 }, count = 24 },
+        banner = { seconds = 4, color = { 255, 215, 90 } },
+    },
+
     -- An EXCLUSIVE boss egg was picked up (server: DropService _collect,
     -- kind "egg_item"). Jason: "it's a big deal" — full fireworks, gold
     -- burst, the float carries "<Egg> acquired!" from ctx.

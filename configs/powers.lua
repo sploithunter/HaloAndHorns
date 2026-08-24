@@ -274,6 +274,9 @@ return {
         -- selected squad card); healing_field = a self-AoE that hits the squad with a smaller
         -- upfront + a sustaining tail. Tuning starting points — adjust freely.
         restoring_sands = { family = "heal", magnitude = 600, duration = 0 }, -- single-pet instant heal
+        -- Innate long-recharge single-pet mend. Same heal family as Restoring Sands; the
+        -- power def owns the long cooldown and the purple exclusive badge.
+        innate_heal = { family = "heal", magnitude = 400, duration = 0 },
         healing_field = {
             family = "heal",
             field = true, -- a STATIONARY heal ZONE dropped at the player's feet (not a squad-wide heal)
@@ -448,10 +451,11 @@ return {
     powers = {
         -- INNATE: every player owns Resonance from spawn — granted outside the level-pick pool, NOT
         -- selectable in the picker, and it does NOT consume one of the 6 power slots (innate = true).
-        -- Auto-binds to hotbar slot 1. The tutorial's "cast your power" lesson fires off it. An active
-        -- farming cast (no toggle) so that lesson can't soft-lock. See docs/INNATE_RESONANCE_POWER.md.
+        -- Hidden for the whole combat-training mission so Heal is the first power they bind.
+        -- See docs/INNATE_RESONANCE_POWER.md.
         resonance = {
             innate = true,
+            hidden_while = { in_combat_tutorial = true },
             display_name = "Resonance",
             focus_cost = 20,
             cooldown_seconds = 10,
@@ -461,6 +465,24 @@ return {
             target = "targeted_aoe",
             unlock_level = 1, -- sorts to the TOP of NATURAL (above Magnet's L2) — your first power
             subtitle = "Innate · Farming",
+        },
+        -- Second innate: a long-recharge single-pet heal. Exclusive/purple disc matches the
+        -- existing pet-heal badge. Not selectable in the level picker and does not consume a slot.
+        -- Withheld until the first combat-training enter so Homeworld bind_power only offers
+        -- Resonance (no Heal edge cases, no auto-slot onto the bar). Unlocks for good after that;
+        -- still not auto-bound, so bind_heal teaches the Edit → slot → Done loop.
+        heal = {
+            innate = true,
+            hidden_while = { until_combat_tutorial = true },
+            display_name = "Heal",
+            focus_cost = 15,
+            cooldown_seconds = 90,
+            effect = "innate_heal",
+            target = "single_pet",
+            glyph = "heal",
+            element = "exclusive",
+            unlock_level = 1,
+            subtitle = "Innate · Single-Pet Heal",
         },
 
         -- GENERIC powers (generic = true): any archetype can pick them; white disc (no element).

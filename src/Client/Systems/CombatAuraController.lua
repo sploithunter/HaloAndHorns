@@ -606,8 +606,18 @@ local function hookEnemy(enemy)
     list[#list + 1] = enemy:GetAttributeChangedSignal("DebuffUntil"):Connect(function()
         refreshEnemyDebuff(enemy)
     end)
+    list[#list + 1] = enemy:GetAttributeChangedSignal("CombatShield"):Connect(function()
+        refreshArmor(enemy)
+    end)
+    list[#list + 1] = enemy:GetAttributeChangedSignal("CombatShieldUntil"):Connect(function()
+        refreshArmor(enemy)
+    end)
+    list[#list + 1] = enemy:GetAttributeChangedSignal("CombatShieldPowerId"):Connect(function()
+        refreshArmor(enemy)
+    end)
     refreshEnemyDebuff(enemy)
     refreshEnemyBurn(enemy)
+    refreshArmor(enemy)
 end
 
 -- Watch a folder's children (current + future), hooking each and unhooking on removal.

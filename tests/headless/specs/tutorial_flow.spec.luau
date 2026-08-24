@@ -31,6 +31,25 @@ return function()
             end
         end)
 
+        it("holds level claim until the Homeworld tutorial is done", function()
+            expect(cfg.hold_level_claim).to.equal(true)
+            expect(TutorialFlow.allowsLevelClaim(cfg, { done = false }, {})).to.equal(false)
+            expect(TutorialFlow.allowsLevelClaim(cfg, { done = true }, {})).to.equal(true)
+            expect(TutorialFlow.allowsLevelClaim(cfg, { done = false }, {
+                TutorialCompleted = true,
+            })).to.equal(true)
+            expect(TutorialFlow.allowsLevelClaim(cfg, nil, {})).to.equal(true)
+            expect(
+                TutorialFlow.allowsLevelClaim({ hold_level_claim = false }, { done = false }, {})
+            ).to.equal(true)
+            local progression = readFile("src/Server/Services/PlayerProgressionService.lua")
+            expect(progression:find("_tutorialAllowsClaim", 1, true)).to.be.ok()
+            expect(progression:find("tutorial_in_progress", 1, true)).to.be.ok()
+            expect(progression:find("r.canClaim and self:_tutorialAllowsClaim(player)", 1, true)).to.be.ok()
+            local tutorial = readFile("src/Server/Services/TutorialService.lua")
+            expect(tutorial:find("progression:_publish(player)", 1, true)).to.be.ok()
+        end)
+
         it("wires a retryable, once-only level guarantee to genuine completion", function()
             local source = readFile("src/Server/Services/TutorialService.lua")
             expect(source:find("data.Tutorial.completionLevelTarget = target", 1, true)).to.be.ok()
@@ -43,10 +62,17 @@ return function()
             local source = readFile("src/Server/Services/TutorialService.lua")
             expect(source:find("hallTrack = true", 1, true)).to.equal(nil)
             expect(source:find("data.GameData.TutorialCompleted = false", 1, true)).to.be.ok()
+            expect(source:find("data.CombatTutorial = nil", 1, true)).to.be.ok()
+            expect(source:find("data.CombatTutorialLoadout = nil", 1, true)).to.be.ok()
             local admin = readFile("src/Server/Services/AdminToolsService.lua")
             expect(admin:find("playerData.GameData.TutorialCompleted = false", 1, true)).to.be.ok()
             expect(admin:find('playerData.GameData.UnlockedAreas = { "Spawn" }', 1, true)).to.be.ok()
             expect(admin:find('playerData.GameData.LastArea = "Spawn"', 1, true)).to.be.ok()
+            expect(admin:find("ResetForBeginning", 1, true)).to.be.ok()
+            expect(admin:find("CombatTutorialService", 1, true)).to.be.ok()
+            local combat = readFile("src/Server/Services/CombatTutorialService.lua")
+            expect(combat:find("function CombatTutorialService:ResetForBeginning", 1, true)).to.be.ok()
+            expect(combat:find("session.skipRewind = true", 1, true)).to.be.ok()
         end)
 
         it("restores the authored Homeworld lesson order and targets", function()
@@ -55,19 +81,25 @@ return function()
                 "farm_crystals",
                 "hatch_another",
                 "build_squad",
-                "first_fight",
-                "battle_brew",
-                "rally_call",
                 "bind_power",
                 "cast_power",
                 "slot_power",
+                "first_fight",
+                "rally_call",
             }
+            expect(cfg.version).to.equal(6)
             for index, id in ipairs(expected) do
                 expect(cfg.steps[index].id).to.equal(id)
             end
             expect(cfg.steps[1].target.prefer).to.equal("Grass")
             expect(cfg.steps[3].target.prefer).to.equal("Grass")
-            expect(cfg.steps[5].target.name).to.equal("BaddieSpawnerEarth")
+            expect(cfg.steps[5].target.name).to.equal("Edit")
+            expect(cfg.steps[8].target.name).to.equal("BaddieSpawnerEarth")
+            expect(cfg.steps[8].target.root).to.equal("Maps.Home")
+            expect(cfg.steps[8].body).to.equal(
+                "The Earth cave is a training ground. Press E to enter and learn how to fight."
+            )
+            expect(cfg.steps[8].complete_on.event).to.equal("combat_tutorial_complete")
         end)
 
         it("keeps guided auto-fill and squad review on server-authoritative seams", function()
@@ -83,24 +115,24 @@ return function()
 
             local client = readFile("src/Client/UI/Menus/InventoryPanel.lua")
             expect(client:find('FireServer("opened")', 1, true)).to.be.ok()
-            expect(client:find("self:_commitDraft(closeAndReport)", 1, true)).to.be.ok()
+            expect(client:find("_reportSquadLessonReviewed", 1, true)).to.be.ok()
+            expect(client:find("_squadLessonPracticed", 1, true)).to.be.ok()
             expect(client:find('FireServer("reviewed")', 1, true)).to.be.ok()
         end)
 
         it("makes the battle brew's exact hotbar slot impossible to miss", function()
+            local combat = loadModule("configs/combat_tutorial.lua")
             local battleBrew
-            for _, step in ipairs(cfg.steps) do
+            for _, step in ipairs(combat.steps) do
                 if step.id == "battle_brew" then
                     battleBrew = step
                     break
                 end
             end
             expect(battleBrew).to.be.ok()
-            expect(battleBrew.target.name).to.equal(nil)
             expect(battleBrew.target.hotbar_type).to.equal("potion")
             expect(battleBrew.target.hotbar_target).to.equal("berserk_brew")
             expect(battleBrew.target.cue).to.equal("click")
-            expect(battleBrew.target.cue_text).to.equal("CLICK HERE")
 
             local client = readFile("src/Client/Systems/TutorialController.lua")
             expect(client:find("options.clickCue and 5 or 3", 1, true)).to.be.ok()
@@ -145,7 +177,6 @@ return function()
 
         it("gives every actionable tutorial button an anchored CLICK HERE cue", function()
             local expectedTargets = {
-                build_squad = "PetsButton",
                 bind_power = "Edit",
                 slot_power = "PowersButton",
             }
@@ -160,10 +191,65 @@ return function()
                     found[step.id] = true
                 end
             end
-            expect(found.build_squad).to.equal(true)
             expect(found.bind_power).to.equal(true)
             expect(found.slot_power).to.equal(true)
         end)
+
+        it("walks Build your squad through unequip, strongest pet, and Activate", function()
+            local buildSquad
+            for _, step in ipairs(cfg.steps) do
+                if step.id == "build_squad" then
+                    buildSquad = step
+                    break
+                end
+            end
+            expect(buildSquad).to.be.ok()
+            expect(buildSquad.target.kind).to.equal("ui")
+            expect(buildSquad.target.name).to.equal("PetsButton")
+            expect(buildSquad.target.cue).to.equal("equip_squad")
+            expect(buildSquad.target.cue_text).to.equal("CLICK HERE")
+            expect(buildSquad.grant.pets[1].id).to.equal("kitty")
+            expect(buildSquad.grant.pets[1].variant).to.equal("rainbow")
+            expect(buildSquad.guide.unequip).to.be.ok()
+            expect(buildSquad.guide.pick).to.be.ok()
+            expect(buildSquad.guide.activate).to.be.ok()
+
+            local client = readFile("src/Client/Systems/TutorialController.lua")
+            local inventory = readFile("src/Client/UI/Menus/InventoryPanel.lua")
+            local server = readFile("src/Server/Services/TutorialService.lua")
+            expect(client:find('cue == "equip_squad"', 1, true)).to.be.ok()
+            expect(client:find("showEquipSquadGuidance", 1, true)).to.be.ok()
+            expect(client:find('tutorialGuide = "StrongestPet"', 1, true)).to.be.ok()
+            expect(inventory:find('TutorialGuide", "StrongestPet"', 1, true)).to.be.ok()
+            expect(inventory:find("_squadLessonPracticed", 1, true)).to.be.ok()
+            expect(inventory:find("_reportSquadLessonReviewed", 1, true)).to.be.ok()
+            expect(server:find("grant.pets", 1, true)).to.be.ok()
+            expect(server:find("PetGrantService", 1, true)).to.be.ok()
+        end)
+
+        it(
+            "walks Power up Resonance through Powers, Resonance, slot, Potency, and Apply",
+            function()
+                local client = readFile("src/Client/Systems/TutorialController.lua")
+                local menu = readFile("src/Client/UI/Menus/PowerChoiceMenu.lua")
+                expect(client:find('state.id == "slot_power"', 1, true)).to.be.ok()
+                expect(client:find("showSlotPowerGuidance", 1, true)).to.be.ok()
+                expect(client:find('nextPhase = "pick_power"', 1, true)).to.be.ok()
+                expect(client:find('nextPhase = "pick_slot"', 1, true)).to.be.ok()
+                expect(client:find('nextPhase = "pick_potency"', 1, true)).to.be.ok()
+                expect(client:find('nextPhase = "apply"', 1, true)).to.be.ok()
+                expect(client:find('tutorialGuide = "Resonance"', 1, true)).to.be.ok()
+                expect(client:find('tutorialGuide = "EnhanceEmptySlot"', 1, true)).to.be.ok()
+                expect(client:find('tutorialGuide = "EnhancePotency"', 1, true)).to.be.ok()
+                expect(client:find('tutorialGuide = "EnhanceApply"', 1, true)).to.be.ok()
+                expect(menu:find("_syncEnhanceTutorialAttrs", 1, true)).to.be.ok()
+                expect(menu:find('TutorialGuide", "Resonance"', 1, true)).to.be.ok()
+                expect(menu:find('TutorialGuide", "EnhanceEmptySlot"', 1, true)).to.be.ok()
+                expect(menu:find('TutorialGuide", "EnhancePotency"', 1, true)).to.be.ok()
+                expect(menu:find('TutorialGuide", "EnhanceApply"', 1, true)).to.be.ok()
+                expect(menu:find('Name = "EnhanceApply"', 1, true)).to.be.ok()
+            end
+        )
 
         it("sequences the power-binding cue through Edit, selection, and Done", function()
             local client = readFile("src/Client/Systems/TutorialController.lua")
@@ -174,7 +260,7 @@ return function()
             expect(client:find('nextPhase = "choose"', 1, true)).to.be.ok()
             expect(hotbar:find('SetAttribute("HotbarEditing", editMode)', 1, true)).to.be.ok()
             expect(hotbar:find("Signals.TutorialHotbarDone:FireServer()", 1, true)).to.be.ok()
-            expect(hotbar:find('arrow.Name = "TutorialResonanceArrow"', 1, true)).to.be.ok()
+            expect(hotbar:find("TutorialResonanceArrow", 1, true)).to.be.ok()
             expect(hotbar:find("arrowScale.Scale = 0.88 + 0.24 * a", 1, true)).to.be.ok()
             expect(server:find('bind.target == "resonance"', 1, true)).to.be.ok()
             expect(server:find('fireGameEvent(player, "tutorial_hotbar_finished"', 1, true)).to.be.ok()
@@ -304,13 +390,12 @@ return function()
                 { "coin_payout", { amount = 60 } },
                 { "coin_payout", { amount = 60 } }, -- farm_crystals (100 coins)
                 "egg_hatch", -- hatch_another
-                "tutorial_squad_reviewed", -- build_squad (Pets panel reviewed + server commit)
-                "enemy_defeated", -- first_fight (the Earth cave creature)
-                "potion_used", -- battle_brew (drink from the top-right slot)
-                "rally_used", -- rally_call (the flag at the top-left, slot 11)
+                "tutorial_squad_reviewed", -- build_squad (unequip + equip + Activate)
                 "tutorial_hotbar_finished", -- bind_power (Resonance bound, then Done pressed)
                 "power_cast", -- cast_power
-                "enhancement_slotted", -- slot_power → done
+                "enhancement_slotted", -- slot_power
+                "combat_tutorial_complete", -- first_fight (Earth cave training)
+                "rally_used", -- rally_call (the flag at the top-left, slot 11) → done
             })
             expect(p.done).to.equal(true)
             expect(TutorialFlow.current(cfg, p)).to.equal(nil)
@@ -334,7 +419,7 @@ return function()
                 done = false,
             })
             expect(changed).to.equal(true)
-            expect(farm.version).to.equal(4)
+            expect(farm.version).to.equal(6)
             expect(farm.step).to.equal(2)
             expect(farm.count).to.equal(72)
 
@@ -344,8 +429,8 @@ return function()
                 count = 0,
                 done = false,
             })
-            expect(fighter.version).to.equal(4)
-            expect(fighter.step).to.equal(5) -- follows first_fight through every reorder
+            expect(fighter.version).to.equal(6)
+            expect(fighter.step).to.equal(8) -- first_fight stays on the combat tail
 
             local binder = TutorialFlow.migrateProgress(cfg, {
                 version = 2,
@@ -353,8 +438,8 @@ return function()
                 count = 0,
                 done = false,
             })
-            expect(binder.version).to.equal(4)
-            expect(binder.step).to.equal(8) -- remains on bind_power after combat
+            expect(binder.version).to.equal(6)
+            expect(binder.step).to.equal(5) -- bind_power follows Resonance after squad
 
             local v3Binder = TutorialFlow.migrateProgress(cfg, {
                 version = 3,
@@ -362,8 +447,17 @@ return function()
                 count = 0,
                 done = false,
             })
-            expect(v3Binder.version).to.equal(4)
-            expect(v3Binder.step).to.equal(8)
+            expect(v3Binder.version).to.equal(6)
+            expect(v3Binder.step).to.equal(5)
+
+            local v4Fighter = TutorialFlow.migrateProgress(cfg, {
+                version = 4,
+                step = 5,
+                count = 0,
+                done = false,
+            })
+            expect(v4Fighter.version).to.equal(6)
+            expect(v4Fighter.step).to.equal(8)
         end)
 
         it("normalizes nil/corrupt progress", function()
@@ -425,10 +519,8 @@ return function()
             local p = { version = 2, step = 4, count = 0, done = false }
             local full = TutorialFlow.stateFor(cfg, p, { hasUnequippedPets = false })
             local alternatives = TutorialFlow.stateFor(cfg, p, { hasUnequippedPets = true })
-            expect(string.find(full.body, "take a look", 1, true) ~= nil).to.equal(true)
-            expect(string.find(alternatives.body, "more pets to choose from", 1, true) ~= nil).to.equal(
-                true
-            )
+            expect(string.find(full.body, "equipped squad", 1, true) ~= nil).to.equal(true)
+            expect(string.find(alternatives.body, "Rainbow Kitty", 1, true) ~= nil).to.equal(true)
             expect(alternatives.id).to.equal("build_squad")
         end)
     end)

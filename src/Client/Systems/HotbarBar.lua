@@ -1071,9 +1071,14 @@ function HotbarBar.start()
     -- push arrives so the sweep is smooth (server untilTime is only 1s-granular).
     local powerCooldowns = {} -- powerId -> { startClock, cooldown }
     Signals.Power_Cooldown.OnClientEvent:Connect(function(p)
-        if type(p) == "table" and p.power and (p.cooldown or 0) > 0 then
-            powerCooldowns[p.power] = { startClock = os.clock(), cooldown = p.cooldown }
+        if type(p) ~= "table" or not p.power then
+            return
         end
+        if (tonumber(p.cooldown) or 0) <= 0 or (tonumber(p.untilTime) or 0) <= os.time() then
+            powerCooldowns[p.power] = nil
+            return
+        end
+        powerCooldowns[p.power] = { startClock = os.clock(), cooldown = p.cooldown }
     end)
     RunService.Heartbeat:Connect(function()
         local nowC = os.clock()
@@ -1497,8 +1502,9 @@ function HotbarBar.start()
         end
 
         header("Powers")
-        -- A fresh player (no power bound yet) gets a blinking gold arrow + stroke on Resonance so it
-        -- stands out among the tactical choices (Jason). Clears when the picker closes.
+        -- Point the picker arrow at the power the current lesson is teaching. Homeworld
+        -- bind_power → Resonance; combat bind_heal → Heal. A fresh Homeworld player with
+        -- nothing bound still gets Resonance. Combat training never defaults to Resonance.
         local anyPowerBound = false
         if lastHotbarState and type(lastHotbarState.hotbar) == "table" then
             for _, b in pairs(lastHotbarState.hotbar) do
@@ -1508,12 +1514,23 @@ function HotbarBar.start()
                 end
             end
         end
+        local stepId = localPlayer:GetAttribute("TutorialStepId")
+        local teachPower = if stepId == "bind_heal"
+            then "heal"
+            elseif stepId == "bind_power" then "resonance"
+            else nil
+        if
+            not teachPower
+            and not anyPowerBound
+            and localPlayer:GetAttribute("InCombatTutorial") ~= true
+        then
+            teachPower = "resonance"
+        end
         for _, id in ipairs(available.powers or {}) do
             local row = entry({ type = "power", target = id })
-            local teachingResonance = localPlayer:GetAttribute("TutorialStepId") == "bind_power"
-            if id == "resonance" and (teachingResonance or not anyPowerBound) and row then
+            if teachPower and id == teachPower and row then
                 local arrow = Instance.new("TextLabel")
-                arrow.Name = "TutorialResonanceArrow"
+                arrow.Name = id == "resonance" and "TutorialResonanceArrow" or "TutorialBindArrow"
                 arrow.BackgroundTransparency = 1
                 arrow.AnchorPoint = Vector2.new(1, 0.5)
                 arrow.Position = UDim2.fromScale(0.98, 0.5)
@@ -1704,6 +1721,7 @@ function HotbarBar.start()
         editBtn.BackgroundColor3 = editMode and Color3.fromRGB(235, 170, 60)
             or Color3.fromRGB(60, 63, 76)
         setEditAttention(editMode)
+        Signals.Hotbar_EditMode:FireServer(editMode)
     end
     editBtn.Activated:Connect(function()
         if challengeOverlayActive() then
@@ -1717,8 +1735,11 @@ function HotbarBar.start()
             closePicker()
         end
         paintEdit()
-        if not editMode and localPlayer:GetAttribute("TutorialStepId") == "bind_power" then
-            Signals.TutorialHotbarDone:FireServer()
+        if not editMode then
+            local stepId = localPlayer:GetAttribute("TutorialStepId")
+            if stepId == "bind_power" or stepId == "bind_heal" then
+                Signals.TutorialHotbarDone:FireServer()
+            end
         end
     end)
 

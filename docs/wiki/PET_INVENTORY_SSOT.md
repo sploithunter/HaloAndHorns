@@ -114,6 +114,7 @@ by schema version **7**; the overall player-profile schema is currently version 
   Control prefers Hold, Root, Slow, Shred, then Curse. Stable identity is the final tie-breaker.
   Every click fills one empty draft slot, respects unique UIDs and remaining common-stack quantity,
   and still requires the normal atomic **Activate** action to deploy the resulting squad.
+  A successful Activate closes the Pets panel; a rejected or timed-out deploy stays open.
 - **Guided hatches may fill empty slots, never replace them.** During the two configured FTUE hatch
   steps, the server takes successfully minted, non-auto-deleted result refs in canonical reveal
   order and asks `InventoryService` to fill only validated empty squad slots. Excess results remain

@@ -907,6 +907,20 @@ return {
                 arguments = { { name = "request", type = "table" } },
             },
         },
+        Hotbar_EditMode = {
+            name = "Hotbar_EditMode",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 30,
+            handler = "HotbarService.SetEditMode",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "editing", type = "boolean" } },
+            },
+        },
         Hotbar_RequestState = {
             name = "Hotbar_RequestState",
             transport = "reliable_event",

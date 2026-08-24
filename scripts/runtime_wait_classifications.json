@@ -161,6 +161,11 @@
    "frame_budget": 3,
    "periodic": 2
   },
+  "src/Server/Services/CombatTutorialService.lua": {
+   "animation": 1,
+   "periodic": 3,
+   "retry_backoff": 4
+  },
   "src/Server/Services/DailyRewardZoneService.lua": {
    "periodic": 1
   },

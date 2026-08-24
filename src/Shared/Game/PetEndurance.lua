@@ -110,4 +110,12 @@ function PetEndurance.healthFraction(damageTaken, petPower, factor)
     return f
 end
 
+-- Absolute CombatDamageTaken that leaves the bar at `remaining` (0 = empty, 1 = full).
+-- Used by authored wounds so a tutorial can land in the yellow band without inventing a new HP flag.
+function PetEndurance.takenForHealthFraction(petPower, factor, remaining)
+    local max = PetEndurance.maxEndurance(petPower, factor)
+    local frac = math.clamp(tonumber(remaining) or 0, 0, 1)
+    return max * (1 - frac)
+end
+
 return PetEndurance

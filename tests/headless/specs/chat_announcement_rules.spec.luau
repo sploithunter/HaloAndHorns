@@ -50,6 +50,7 @@ return function()
                 ranks[rarityId] = rank
             end
             expect(ranks[liveConfig.hatch.minimum_rarity]).to.equal(ranks.mythic)
+            expect(ranks[liveConfig.gift.minimum_rarity]).to.equal(ranks.mythic)
             expect(ranks[liveConfig.hatch.global_rarity]).to.equal(ranks.huge)
             expect(ranks[liveConfig.hatch.global_rarity] > ranks[liveConfig.hatch.minimum_rarity]).to.equal(
                 true
@@ -150,6 +151,27 @@ return function()
         end)
     end)
 
+    describe("ChatAnnouncementRules gift", function()
+        it("does not announce below Mythical", function()
+            expect(Rules.gift("Colorado", "Splite", "legendary", pets, config)).to.equal(nil)
+        end)
+
+        it("announces Mythical and higher without naming the pet", function()
+            expect(Rules.gift("Colorado", "Splite", "mythic", pets, config).text).to.equal(
+                "Colorado sent Splite a mythical gift!"
+            )
+            expect(Rules.gift("Colorado", "Splite", "secret", pets, config).text).to.equal(
+                "Colorado sent Splite a secret gift!"
+            )
+            expect(Rules.gift("Colorado", "Splite", "exclusive", pets, config).text).to.equal(
+                "Colorado sent Splite an exclusive gift!"
+            )
+            expect(Rules.gift("Colorado", "Splite", "huge", pets, config).text).to.equal(
+                "Colorado sent Splite a huge gift!"
+            )
+        end)
+    end)
+
     describe("ChatAnnouncementRules creator luck", function()
         it("uses the activating creator and exact 2x launch copy", function()
             local payload = Rules.creatorLuck("Colorado Plays", 2, config)
@@ -210,6 +232,22 @@ return function()
                 string.find(
                     readFile("src/Server/Services/MeetCreatorService.lua"),
                     "self._chatAnnouncementService:AnnounceHatches",
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(
+                string.find(
+                    readFile("src/Server/Services/GiftService.lua"),
+                    "self:_announceGift(player, entry.gift)",
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
+            expect(
+                string.find(
+                    readFile("src/Server/Services/ChatAnnouncementService.lua"),
+                    "function ChatAnnouncementService:AnnounceGift",
                     1,
                     true
                 ) ~= nil

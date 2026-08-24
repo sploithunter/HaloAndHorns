@@ -80,4 +80,5 @@ return {
     world_travel = "Teleports you to a world / zone hub.",
     xp_surge = "+XP gain for a duration.",
     magnet = "Widens the radius that auto-collects crystals/ore.",
+    heal = "Mends one selected pet. Long recharge — save it for a real hit.",
 }

@@ -1902,6 +1902,11 @@ function InventoryService:_getMaxEquippedSlots(player, category, configuredSlots
     return finalSlots
 end
 
+function InventoryService:GetPetEquipMaxSlots(player)
+    local configured = self._inventoryConfig.equipped and self._inventoryConfig.equipped.pets
+    return self:_getMaxEquippedSlots(player, "pets", configured and configured.slots or 1)
+end
+
 -- ═══════════════════════════════════════════════════════════════════════════════════
 -- 🌐 NETWORK SIGNAL HANDLERS
 -- ═══════════════════════════════════════════════════════════════════════════════════
@@ -2478,7 +2483,7 @@ end
 function InventoryService:_handleSetEquippedPets(player, data)
     local refs = data and data.refs
     local requestId = data and data.requestId
-    if gauntletRosterLocked(player) then
+    if gauntletRosterLocked(player) and not (data and data.force) then
         return { ok = false, requestId = requestId, reason = "gauntlet_roster_locked" }
     end
     if type(refs) ~= "table" then
@@ -2494,7 +2499,7 @@ function InventoryService:_handleSetEquippedPets(player, data)
     playerData.Equipped = playerData.Equipped or {}
 
     local newEquipped, summary = PetInventoryView.buildEquipped(items, refs, maxSlots, {
-        lockedSlots = self:_lockedPetSlots(player),
+        lockedSlots = (data and data.ignoreLocks) and nil or self:_lockedPetSlots(player),
         previous = playerData.Equipped.pets,
     })
     if summary.rejected > 0 then
@@ -2515,11 +2520,15 @@ function InventoryService:_handleSetEquippedPets(player, data)
     end
 
     playerData.Equipped.pets = newEquipped
-    self:RebuildPetProjections(player)
+    if not (data and data.deferFlush) then
+        self:RebuildPetProjections(player)
+    end
     fireGameEvent(player, "pet_equipped", {
         action = summary.accepted > 0 and "equipped" or "unequipped",
     })
-    self._dataService:RequestSave(player, "squad_set", { critical = true })
+    if not (data and data.deferFlush) then
+        self._dataService:RequestSave(player, "squad_set", { critical = true })
+    end
     self._logger:Info("✅ Draft squad committed", {
         player = player.Name,
         count = summary.accepted,
@@ -2531,6 +2540,26 @@ function InventoryService:_handleSetEquippedPets(player, data)
         count = summary.accepted,
         rejected = summary.rejected,
     }
+end
+
+-- Server overlay (combat tutorial): replace Equipped.pets from refs. `force`
+-- bypasses the gauntlet roster lock so enter/exit can swap the saved list.
+-- `ignoreLocks` lets a recovering slot take the overlay pet (then exit
+-- restores the snapshot and clears lockouts).
+function InventoryService:ReplaceEquippedPets(player, refs, opts)
+    opts = type(opts) == "table" and opts or {}
+    if not opts.force and gauntletRosterLocked(player) then
+        return { ok = false, reason = "gauntlet_roster_locked" }
+    end
+    if type(refs) ~= "table" then
+        return { ok = false, reason = "invalid_refs" }
+    end
+    return self:_handleSetEquippedPets(player, {
+        refs = refs,
+        force = opts.force == true,
+        ignoreLocks = opts.ignoreLocks == true,
+        deferFlush = opts.deferFlush == true,
+    })
 end
 
 -- Guided-hatch convenience only: fill empty squad slots from server-minted pet refs in reveal

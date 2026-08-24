@@ -20,6 +20,7 @@ local THUMBNAILS = require(ReplicatedStorage.Configs:WaitForChild("pet_thumbnail
 local PETS = require(ReplicatedStorage.Configs:WaitForChild("pets"))
 local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
+local PetFunctionMark = require(ReplicatedStorage.Shared.Game.PetFunctionMark)
 
 local StarterPetController = {}
 local started = false
@@ -283,7 +284,11 @@ local function makeCard(parent, choice, index)
 
         local auraScope = PetTargeting.auraScope(aura, PET_ROLES)
         PetBadge.create(supportBadgeHolder, {
-            element = PetBadge.elementForPetType(choice.id),
+            element = PetFunctionMark.badgeElement(
+                aura.kind,
+                PetBadge.elementForPetType(choice.id),
+                POWER_ICONS
+            ),
             symbol = supportMeta.symbol,
             ring = POWER_ICONS.targeting_ring and POWER_ICONS.targeting_ring[auraScope],
             zIndex = 8,

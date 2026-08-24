@@ -636,7 +636,27 @@ loader:RegisterModule(
         "InventoryService",
         "PotionService",
         "HotbarService",
+        "PetGrantService",
     }, "player_progression", "PlayerProgressionService")
+)
+-- CombatTutorialService: isolated combat-training track (configs/combat_tutorial).
+loader:RegisterModule(
+    "CombatTutorialService",
+    ServerScriptService.Server.Services.CombatTutorialService,
+    {
+        "Logger",
+        "ConfigLoader",
+        "DataService",
+        "PotionService",
+        "EnemyService",
+        "MissionInstanceService",
+        "TutorialService",
+        "InventoryService",
+        "HotbarService",
+        "PetGrantService",
+        "PowerService",
+        "FocusService",
+    }
 )
 -- RetentionService: persisted activation milestones + Roblox onboarding/custom analytics.
 loader:RegisterModule(
@@ -741,6 +761,7 @@ loader:RegisterModule("GiftService", ServerScriptService.Server.Services.GiftSer
     "GiftDeliveryService",
     "StatsService",
     "TesterRewardService",
+    "ChatAnnouncementService",
 })
 registerFeatureModule(
     "leaderboards",
@@ -1100,6 +1121,7 @@ local loadSuccess, loadOrderOrError = pcall(function()
                 FoundersChoiceService = modules:Get("FoundersChoiceService"),
                 PrologueService = modules:Get("PrologueService"),
                 StarterPetService = modules:Get("StarterPetService"),
+                CombatTutorialService = modules:Get("CombatTutorialService"),
             })
         end
         modules:Get("PowerService"):BindPeerServices({
@@ -1291,6 +1313,7 @@ table.insert(requiredModules, "PotionService")
 table.insert(requiredModules, "FutureCallService")
 table.insert(requiredModules, "PotionShopService")
 table.insert(requiredModules, "TutorialService")
+table.insert(requiredModules, "CombatTutorialService")
 table.insert(requiredModules, "RetentionService")
 table.insert(requiredModules, "HotbarService")
 table.insert(requiredModules, "RosterService")

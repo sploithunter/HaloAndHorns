@@ -74,12 +74,22 @@ coverage/
 *.obj
 *.mtl
 /assets/source/pets/
+/assets/source/references/pets/
 /assets/source/eggs/
 /assets/source/props/
+/assets/source/hoverboards/
+/assets/source/rocketboards/
+/assets/source/surfboards/
 /assets/exports/pets/
 /assets/exports/eggs/
 /assets/exports/props/
+/assets/exports/hall_world/
+/assets/exports/hoverboards/
+/assets/exports/rocketboards/
+/assets/exports/surfboards/
+/assets/ad_labels/
 /assets/model_test/
+.luaurc
 /assets/ui/imports/manifest_*.txt __pycache__/
 
 __pycache__/

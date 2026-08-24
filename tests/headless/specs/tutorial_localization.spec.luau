@@ -49,6 +49,20 @@ return function()
                             missingBody
                         )
                     ).never.to.equal(missingBody)
+                    if type(step.guide) == "table" then
+                        for phase, entry in pairs(step.guide) do
+                            if type(entry) == "table" and type(entry.title) == "string" then
+                                local missingGuide = "missing-guide-" .. step.id .. "-" .. phase
+                                expect(
+                                    TutorialLocalization.text(
+                                        localeId,
+                                        step.localization_key .. ".guide." .. phase .. ".title",
+                                        missingGuide
+                                    )
+                                ).never.to.equal(missingGuide)
+                            end
+                        end
+                    end
                 end
             end
         end)

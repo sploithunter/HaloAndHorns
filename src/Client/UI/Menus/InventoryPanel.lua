@@ -106,12 +106,14 @@ local BestPetSelector = require(ReplicatedStorage.Shared.Inventory.BestPetSelect
 local RangeCatalogView = require(ReplicatedStorage.Shared.Game.RangeCatalogView)
 local RangeLoadoutSession = require(script.Parent.Parent.Parent.Systems.RangeLoadoutSession)
 local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
+local TutorialSquad = require(ReplicatedStorage.Shared.Game.TutorialSquad)
 local PetThumbnailFetchPolicy = require(ReplicatedStorage.Shared.UI.PetThumbnailFetchPolicy)
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local ViewportModelPlacement = require(ReplicatedStorage.Shared.UI.ViewportModelPlacement)
 local InventoryDraftView = require(script.Parent.InventoryDraftView) -- pure draft count reconciliation (specced)
 local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting) -- damage/power scope → badge ring
 local PetAbility = require(ReplicatedStorage.Shared.Game.PetAbility) -- aura + on-hit control badge SSOT
+local PetFunctionMark = require(ReplicatedStorage.Shared.Game.PetFunctionMark)
 local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura) -- shared variant-scaled aura math
 local EnchantRuntime = require(ReplicatedStorage.Shared.Game.EnchantRuntime) -- effective type-scaled enchant math
@@ -725,6 +727,27 @@ function InventoryPanel:Show(parent)
                     self:_schedulePetRefresh()
                 end)
         end
+        if not self._combatTutorialListener then
+            self._combatTutorialListener = Players.LocalPlayer
+                :GetAttributeChangedSignal("InCombatTutorial")
+                :Connect(function()
+                    if self.isVisible then
+                        self:_resetDraftToDeployed()
+                        self:_refreshCategoryTabs()
+                        self:_updateItemsDisplay()
+                    end
+                end)
+        end
+        if not self._tankLessonListener then
+            self._tankLessonListener = Players.LocalPlayer
+                :GetAttributeChangedSignal("TutorialStepId")
+                :Connect(function()
+                    if self.isVisible then
+                        self:_stampTankLessonGuides()
+                        self:_stampSquadLessonGuides()
+                    end
+                end)
+        end
         self:_setupEquippedFolderListeners() -- Listen for equipped changes
         self:SetupRealTimeUpdates() -- Listen for inventory changes (pets)
         self:_setupBucketListeners() -- Live-update the open non-pet bucket (enhancements/etc.)
@@ -733,8 +756,8 @@ function InventoryPanel:Show(parent)
     end
 
     self.isVisible = true
-    -- The FTUE's squad lesson is an inspection lesson, not a forced edit. Remember that the panel
-    -- was explicitly opened during this step; only a user-facing close request may complete it.
+    -- The FTUE's squad lesson walks unequip → pick → Activate. Remember that the panel
+    -- was opened during this step so Activate can complete it after a real swap.
     self._tutorialReviewOpened = (not self:_isRangeCatalog())
         and Players.LocalPlayer:GetAttribute("TutorialStepId") == "build_squad"
     self._tutorialReviewReported = false
@@ -1153,6 +1176,8 @@ function InventoryPanel:Hide()
     if not self.isVisible then
         return
     end
+    self:_clearTankLessonPlayerState()
+    self:_clearSquadLessonPlayerState()
 
     -- per-card right-click listeners are GLOBAL UIS connections — without this they
     -- outlive the panel and right-click steering spawns orphan context menus
@@ -1999,10 +2024,17 @@ function InventoryPanel:_createTeamBar(searchContainer)
     self._activateButton = activate
     activate.Activated:Connect(function()
         if self._tutorialReviewOpened and not self._tutorialReviewReported then
-            self:_requestClose()
-        else
-            self:_commitDraft()
+            if self:_squadLessonPracticed() then
+                self:_commitDraft(function()
+                    self:_reportSquadLessonReviewed()
+                    self:Hide()
+                end)
+            end
+            return
         end
+        self:_commitDraft(function()
+            self:Hide()
+        end)
     end)
 end
 
@@ -2206,8 +2238,14 @@ function InventoryPanel:_seedDraftFromEquipped()
             end
         end
     end
+    -- Combat training only hides other species in the inventory grid. Do not
+    -- rewrite the live equipped list here — that showed bunny/doggy/bear as 0/3.
     self._draftRefs = refs
     self._draftDirty = false -- a fresh seed matches what's deployed
+    if self:_isSquadLesson() then
+        self._tutorialSquadDidUnequip = false
+        self._tutorialSquadDidEquip = false
+    end
 end
 
 -- The equipped-layer ref for an inventory pet item ("stack|<stackKey>" or a unique uid).
@@ -2257,6 +2295,260 @@ end
 
 function InventoryPanel:_isRangeCatalog()
     return type(self._rangeSession) == "table" and type(self._rangeSession.ctx) == "table"
+end
+
+function InventoryPanel:_combatTutorialRows()
+    local ok, cfg = pcall(function()
+        return require(
+            ReplicatedStorage.Configs:FindFirstChild("combat_tutorial")
+                or ReplicatedStorage.Configs:WaitForChild("combat_tutorial")
+        )
+    end)
+    return (ok and TutorialSquad.grantRows(cfg)) or TutorialSquad.grantRows(nil)
+end
+
+function InventoryPanel:_isCombatTutorialKit()
+    local player = self.player or Players.LocalPlayer
+    return player ~= nil and player:GetAttribute("InCombatTutorial") == true
+end
+
+function InventoryPanel:_isTankLesson()
+    local player = self.player or Players.LocalPlayer
+    return player ~= nil
+        and player:GetAttribute("InCombatTutorial") == true
+        and player:GetAttribute("TutorialStepId") == "ready_tank"
+end
+
+function InventoryPanel:_clearTankLessonPlayerState()
+    local player = self.player or Players.LocalPlayer
+    if not player then
+        return
+    end
+    player:SetAttribute("CombatTutorialDraftHasTank", nil)
+    player:SetAttribute("CombatTutorialDraftFull", nil)
+    player:SetAttribute("CombatTutorialDraftDirty", nil)
+    -- CombatTutorialTankReady survives Hide so the door cue stays after Activate.
+    if not self:_isTankLesson() then
+        player:SetAttribute("CombatTutorialTankReady", nil)
+    end
+end
+
+function InventoryPanel:_draftFrames()
+    local frames = {}
+    if not self.equippedGrid then
+        return frames
+    end
+    for _, child in ipairs(self.equippedGrid:GetChildren()) do
+        if child:IsA("Frame") and child:GetAttribute("PetRole") ~= nil then
+            frames[#frames + 1] = child
+        end
+    end
+    table.sort(frames, function(a, b)
+        return (tonumber(a.LayoutOrder) or 0) < (tonumber(b.LayoutOrder) or 0)
+    end)
+    return frames
+end
+
+function InventoryPanel:_weakestDraftFrame()
+    local weakest
+    for _, frame in ipairs(self:_draftFrames()) do
+        if not weakest then
+            weakest = frame
+        else
+            local aHealth = tonumber(frame:GetAttribute("PetHealth")) or 0
+            local bHealth = tonumber(weakest:GetAttribute("PetHealth")) or 0
+            local aDamage = tonumber(frame:GetAttribute("PetDamage")) or 0
+            local bDamage = tonumber(weakest:GetAttribute("PetDamage")) or 0
+            if aHealth < bHealth or (aHealth == bHealth and aDamage < bDamage) then
+                weakest = frame
+            elseif aHealth == bHealth and aDamage == bDamage then
+                if (tonumber(frame.LayoutOrder) or 0) > (tonumber(weakest.LayoutOrder) or 0) then
+                    weakest = frame
+                end
+            end
+        end
+    end
+    return weakest
+end
+
+function InventoryPanel:_draftHasRole(role)
+    for _, frame in ipairs(self:_draftFrames()) do
+        if frame:GetAttribute("PetRole") == role then
+            return true
+        end
+    end
+    return false
+end
+
+function InventoryPanel:_removeWeakestDraftMember()
+    local weakest = self:_weakestDraftFrame()
+    if not weakest or type(self._draftRefs) ~= "table" then
+        return false
+    end
+    local index = tonumber(weakest.LayoutOrder)
+    if not index or index < 1 or index > #self._draftRefs then
+        index = #self._draftRefs
+    end
+    if index < 1 then
+        return false
+    end
+    table.remove(self._draftRefs, index)
+    self._draftDirty = true
+    return true
+end
+
+function InventoryPanel:_stampTankLessonGuides()
+    local player = self.player or Players.LocalPlayer
+    if not self:_isTankLesson() then
+        self:_clearTankLessonPlayerState()
+        return
+    end
+    local frames = self:_draftFrames()
+    local hasTank = self:_draftHasRole("tank")
+    local full = #frames >= self:_squadSlotCount()
+    if player then
+        player:SetAttribute("CombatTutorialDraftHasTank", hasTank)
+        player:SetAttribute("CombatTutorialDraftFull", full)
+        player:SetAttribute("CombatTutorialDraftDirty", self._draftDirty == true)
+        if hasTank and self._draftDirty ~= true then
+            player:SetAttribute("CombatTutorialTankReady", true)
+        elseif not hasTank then
+            player:SetAttribute("CombatTutorialTankReady", nil)
+        end
+    end
+    if hasTank then
+        return
+    end
+    if full then
+        local weakest = self:_weakestDraftFrame()
+        if weakest then
+            weakest:SetAttribute("TutorialGuide", "UnequipWeakest")
+        end
+        return
+    end
+    local best
+    if self.inventoryGrid then
+        for _, child in ipairs(self.inventoryGrid:GetChildren()) do
+            if child:IsA("Frame") and child:GetAttribute("PetRole") == "tank" then
+                if not best then
+                    best = child
+                else
+                    local aHealth = tonumber(child:GetAttribute("PetHealth")) or 0
+                    local bHealth = tonumber(best:GetAttribute("PetHealth")) or 0
+                    local aDamage = tonumber(child:GetAttribute("PetDamage")) or 0
+                    local bDamage = tonumber(best:GetAttribute("PetDamage")) or 0
+                    if aHealth > bHealth or (aHealth == bHealth and aDamage > bDamage) then
+                        best = child
+                    end
+                end
+            end
+        end
+    end
+    if best then
+        best:SetAttribute("TutorialGuide", "StrongestTank")
+    end
+end
+
+function InventoryPanel:_isSquadLesson()
+    local player = self.player or Players.LocalPlayer
+    return player ~= nil
+        and player:GetAttribute("InCombatTutorial") ~= true
+        and player:GetAttribute("TutorialStepId") == "build_squad"
+end
+
+function InventoryPanel:_clearSquadLessonPlayerState()
+    local player = self.player or Players.LocalPlayer
+    if not player then
+        return
+    end
+    player:SetAttribute("TutorialSquadDidUnequip", nil)
+    player:SetAttribute("TutorialSquadDidEquip", nil)
+    player:SetAttribute("TutorialSquadDraftDirty", nil)
+end
+
+function InventoryPanel:_squadLessonPracticed()
+    return self._tutorialSquadDidUnequip == true and self._tutorialSquadDidEquip == true
+end
+
+function InventoryPanel:_reportSquadLessonReviewed()
+    if self._tutorialReviewReported then
+        return
+    end
+    self._tutorialReviewReported = true
+    if self.signals and self.signals.TutorialSquadReviewed then
+        self.signals.TutorialSquadReviewed:FireServer("reviewed")
+    end
+end
+
+function InventoryPanel:_strongestInventoryFrame()
+    local best
+    if not self.inventoryGrid then
+        return nil
+    end
+    for _, child in ipairs(self.inventoryGrid:GetChildren()) do
+        if child:IsA("Frame") and child:GetAttribute("PetRole") ~= nil then
+            if not best then
+                best = child
+            else
+                local aDamage = tonumber(child:GetAttribute("PetDamage")) or 0
+                local bDamage = tonumber(best:GetAttribute("PetDamage")) or 0
+                local aHealth = tonumber(child:GetAttribute("PetHealth")) or 0
+                local bHealth = tonumber(best:GetAttribute("PetHealth")) or 0
+                if aDamage > bDamage or (aDamage == bDamage and aHealth > bHealth) then
+                    best = child
+                end
+            end
+        end
+    end
+    return best
+end
+
+function InventoryPanel:_stampSquadLessonGuides()
+    local player = self.player or Players.LocalPlayer
+    if not self:_isSquadLesson() then
+        self:_clearSquadLessonPlayerState()
+        return
+    end
+    if player then
+        player:SetAttribute("TutorialSquadDidUnequip", self._tutorialSquadDidUnequip == true)
+        player:SetAttribute("TutorialSquadDidEquip", self._tutorialSquadDidEquip == true)
+        player:SetAttribute("TutorialSquadDraftDirty", self._draftDirty == true)
+    end
+    if self._tutorialSquadDidUnequip ~= true then
+        local weakest = self:_weakestDraftFrame()
+        if weakest then
+            weakest:SetAttribute("TutorialGuide", "UnequipWeakest")
+            return
+        end
+        -- Nothing on the row: skip the take-off beat and point at Inventory.
+        self._tutorialSquadDidUnequip = true
+        if player then
+            player:SetAttribute("TutorialSquadDidUnequip", true)
+        end
+    end
+    if self._tutorialSquadDidEquip ~= true then
+        local best = self:_strongestInventoryFrame()
+        if best then
+            best:SetAttribute("TutorialGuide", "StrongestPet")
+        end
+    end
+end
+
+function InventoryPanel:_petAllowedNow(item)
+    if not self:_isCombatTutorialKit() then
+        return true
+    end
+    if type(item) ~= "table" or item.folder_source ~= "pets" then
+        return true
+    end
+    return TutorialSquad.isAllowedItem(item, self:_combatTutorialRows())
+end
+
+function InventoryPanel:_refAllowedNow(ref)
+    if not self:_isCombatTutorialKit() then
+        return true
+    end
+    return TutorialSquad.refAllowed(ref, self:_combatTutorialRows())
 end
 
 function InventoryPanel:_gauntletRosterLocked()
@@ -2445,6 +2737,9 @@ function InventoryPanel:_toggleDraftMember(item, isDraftCard)
     if self._draftRefs == nil then
         self:_seedDraftFromEquipped()
     end
+    if not isDraftCard and not self:_petAllowedNow(item) then
+        return
+    end
     local ref = self:_draftRefForItem(item)
     if not ref then
         return
@@ -2458,6 +2753,9 @@ function InventoryPanel:_toggleDraftMember(item, isDraftCard)
             if list[i] == ref then
                 table.remove(list, i)
                 self._draftDirty = true -- diverges from deployed until Activate
+                if self:_isSquadLesson() then
+                    self._tutorialSquadDidUnequip = true
+                end
                 break
             end
         end
@@ -2488,9 +2786,15 @@ function InventoryPanel:_toggleDraftMember(item, isDraftCard)
         end
         table.insert(list, ref)
         self._draftDirty = true
+        if self:_isSquadLesson() then
+            self._tutorialSquadDidEquip = true
+        end
     elseif drafted == 0 then
         table.insert(list, ref) -- a unique can be drafted once (remove via its draft slot)
         self._draftDirty = true
+        if self:_isSquadLesson() then
+            self._tutorialSquadDidEquip = true
+        end
     end
     self:_updateItemsDisplay()
 end
@@ -2534,6 +2838,9 @@ end
 -- the same quantity after the inventory card has been reduced by the draft.
 function InventoryPanel:_bestPetCandidate(item, role, seenRefs)
     if type(item) ~= "table" or item.folder_source ~= "pets" or not item.petType then
+        return nil
+    end
+    if not self:_petAllowedNow(item) then
         return nil
     end
 
@@ -2605,9 +2912,20 @@ function InventoryPanel:_quickFillBestPet(role)
         self:_seedDraftFromEquipped()
     end
     if #self._draftRefs >= self:_squadSlotCount() then
-        self:_flashActivateFull()
-        self:_flashBestPetButton(role, "Full", Color3.fromRGB(150, 50, 50))
-        return
+        -- Tank lesson only: Best Pets → Tank may replace the weakest doggy so
+        -- the shortcut works on a full 3/3 squad. Other roles still flash Full.
+        if
+            role == "tank"
+            and self:_isTankLesson()
+            and not self:_draftHasRole("tank")
+            and self:_removeWeakestDraftMember()
+        then
+            -- slot freed; fall through and add the strongest tank
+        else
+            self:_flashActivateFull()
+            self:_flashBestPetButton(role, "Full", Color3.fromRGB(150, 50, 50))
+            return
+        end
     end
 
     local catalog = table.clone(self.inventoryData or {})
@@ -2766,20 +3084,16 @@ function InventoryPanel:_requestClose(after)
         return
     end
     if self._tutorialReviewOpened and not self._tutorialReviewReported then
-        local closeAndReport = function()
-            after()
-            self._tutorialReviewReported = true
-            if self.signals and self.signals.TutorialSquadReviewed then
-                self.signals.TutorialSquadReviewed:FireServer("reviewed")
-            end
+        -- Closing without a swap does not complete the lesson. Activate after
+        -- unequip + equip is the only path that reports reviewed.
+        if self:_squadLessonPracticed() and self._draftDirty then
+            self:_commitDraft(function()
+                after()
+                self:_reportSquadLessonReviewed()
+            end)
+            return
         end
-        -- During the lesson, closing a dirty draft means Activate-and-close. The server ack drives
-        -- `_commitDraft`'s callback, so the tutorial cannot complete on a rejected squad.
-        if self._draftDirty then
-            self:_commitDraft(closeAndReport)
-        else
-            closeAndReport()
-        end
+        after()
         return
     end
     if self._draftDirty then
@@ -3217,6 +3531,9 @@ function InventoryPanel:_calculateFolderCounts()
     local countStacksAsSingle = settings.count_stacks_as_single ~= false -- default true
 
     for _, item in ipairs(self.inventoryData) do
+        if not self:_petAllowedNow(item) then
+            continue
+        end
         local folderName = item.folder_source or "unknown"
         local increment = 1
         if item.category == "Pets" and not countStacksAsSingle then
@@ -3235,7 +3552,12 @@ function InventoryPanel:_calculateFolderCounts()
         for _, slot in ipairs(equippedPets:GetChildren()) do
             if slot:IsA("StringValue") and typeof(slot.Value) == "string" then
                 local parts = string.split(slot.Value, "|")
-                if #parts >= 2 and parts[1] == "stack" and self._stackDataByKey[parts[2]] then
+                if
+                    #parts >= 2
+                    and parts[1] == "stack"
+                    and self._stackDataByKey[parts[2]]
+                    and self:_refAllowedNow(slot.Value)
+                then
                     folderCounts["pets"] = (folderCounts["pets"] or 0) + 1
                 end
             end
@@ -5236,7 +5558,7 @@ function InventoryPanel:_updateItemsDisplay()
             self.searchTerm == "" or self:_itemSearchText(item):find(self.searchTerm, 1, true)
         )
 
-        if (matchesCategory or equippedBypass) and matchesSearch then
+        if (matchesCategory or equippedBypass) and matchesSearch and self:_petAllowedNow(item) then
             table.insert(filteredItems, item)
             if isStackItem then
                 local filteredRef = self:_canonicalStackRef(self:_draftRefForItem(item))
@@ -5264,6 +5586,7 @@ function InventoryPanel:_updateItemsDisplay()
             and remaining > 0
             and matchesCategory
             and matchesSearch
+            and self:_petAllowedNow(item)
         then
             table.insert(filteredItems, item)
             filteredStackRefs[ref] = true
@@ -5395,7 +5718,7 @@ function InventoryPanel:_updateItemsDisplay()
                 if #parts >= 2 and parts[1] == "stack" then
                     local stackKey = parts[2]
                     local stackData = self._stackDataByKey and self._stackDataByKey[stackKey]
-                    if stackData then
+                    if stackData and self:_refAllowedNow(equippedUid) then
                         local ghost = table.clone(stackData)
                         ghost.id = "equipped_instance|" .. equippedUid
                         ghost.uid = equippedUid
@@ -5418,6 +5741,8 @@ function InventoryPanel:_updateItemsDisplay()
     -- Grid just (re)built — pause every off-screen card's viewport. Deferred so card AbsolutePositions
     -- are laid out first; the scroll/resize signals keep it current after that.
     self:_requestCull()
+    self:_stampTankLessonGuides()
+    self:_stampSquadLessonGuides()
 end
 
 function InventoryPanel:_getCategoryFolders(categoryName)
@@ -5963,7 +6288,11 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
                 local ringShape = POWER_ICONS.targeting_ring
                     and POWER_ICONS.targeting_ring[auraScope]
                 local badge = PetBadge.create(holder, {
-                    element = PetBadge.elementForPetType(item.petType),
+                    element = PetFunctionMark.badgeElement(
+                        ability.kind,
+                        PetBadge.elementForPetType(item.petType),
+                        POWER_ICONS
+                    ),
                     symbol = meta.symbol,
                     ring = ringShape,
                     zIndex = holder.ZIndex,
@@ -6065,6 +6394,36 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
             itemFrame:SetAttribute("LockId", item.uid)
         end
         itemFrame:SetAttribute("LockEquipped", itemFrame.Parent == self.equippedGrid)
+    end
+    if item.folder_source == "pets" or item.category == "Pets" then
+        local roleId
+        if PetPowerView and item.petType then
+            local okRole, role = pcall(function()
+                return PetPowerView.roleInfo(item.petType, item.role)
+            end)
+            if okRole and role then
+                roleId = role.id
+            end
+        end
+        if not roleId then
+            roleId = PET_ROLES and PET_ROLES.by_type and PET_ROLES.by_type[item.petType]
+                or (PET_ROLES and PET_ROLES.default)
+        end
+        if type(roleId) == "string" then
+            itemFrame:SetAttribute("PetRole", roleId)
+        end
+        local profile =
+            resolvePetProfile(item.power, item.petType, item.variant, item.creator, item)
+        itemFrame:SetAttribute(
+            "PetDamage",
+            profile and tonumber(profile.combatEffective)
+                or displaySortPower(item.power, item.petType, item.variant, item.creator, item)
+                or 0
+        )
+        local okHealth, health = pcall(function()
+            return PetPowerView and PetPowerView.survivability(item.power, item.petType, item.role)
+        end)
+        itemFrame:SetAttribute("PetHealth", (okHealth and tonumber(health)) or 0)
     end
     -- Store reference
     table.insert(self.itemFrames, itemFrame)
@@ -8212,6 +8571,9 @@ function InventoryPanel:_togglePetEquipped(item)
 
     if self:_gauntletRosterLocked() then
         self.logger:warn("Pet equip blocked: gauntlet roster locked")
+        return
+    end
+    if not self:_petAllowedNow(item) then
         return
     end
 

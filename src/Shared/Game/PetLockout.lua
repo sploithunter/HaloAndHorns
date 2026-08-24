@@ -173,6 +173,12 @@ function PetLockout.lockedSlotSet(state, now)
     return locked
 end
 
+-- Combat tutorial exit: stand the saved squad back up. Downs recover and
+-- summon immediately; XP / items earned inside are not rolled back.
+function PetLockout.clearAll()
+    return PetLockout.empty()
+end
+
 -- Range / Training Ground exit: a run-long slot lock becomes a normal overworld lock.
 function PetLockout.endGauntletSlotLocks(state, now, slotSeconds)
     state = norm(state)

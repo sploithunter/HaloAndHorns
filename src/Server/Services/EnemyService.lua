@@ -640,6 +640,7 @@ function EnemyService:AddAggro(model, key, amount)
         -- AGGRO MODEL v2: scale the enemy's threat by the enemy-side dial, and splash a fraction to
         -- its co-located band (hit one, the team notices). Flag-off = unchanged.
         local v2 = self:_aggroV2()
+        local incoming = amount
         if v2 then
             amount = amount * AggroModel.threatMult(v2, "enemy")
             self:_splashEnemyBand(entry, key, amount, v2)
@@ -649,6 +650,17 @@ function EnemyService:AddAggro(model, key, amount)
         -- range and "they don't care" — perception watched the PLAYER only). Damage is its own
         -- acquisition path: a hit wakes the enemy on the attacking pet's OWNER. Perception stays ambient.
         self:_acquireFromAttacker(entry, key)
+        -- Outgoing damage also engages the PET. InCombat / battle music / farm-pause read the
+        -- pet-side table, and incoming hits alone cannot hold engage_floor against decay when
+        -- the foe barely scratches (combat-training dog is 1 damage / 1.8s). A connected swing
+        -- is the honest "we are fighting" signal; a parked invader you never hit still decays off.
+        if v2 and typeof(key) == "Instance" and key:IsA("Model") then
+            local direct = AggroModel.threatFromDamage(v2, "pet", incoming)
+            if direct > 0 then
+                AggroTable.add(self:_petAggroTable(key), idVal.Value, direct)
+                self:_splashPetSquad(key, key.Parent, idVal.Value, direct, v2)
+            end
+        end
     end
 end
 
@@ -998,6 +1010,13 @@ function EnemyService:_attachEnemyDecor(model, body, enemyId, def, targetId)
     -- Role (tank/melee/ranged/support) so the client HUD can show the enemy's ARCHETYPE the same
     -- way pet cards do — uses the same role vocabulary as pets (pet_roles / power_icons role_symbol).
     model:SetAttribute("Role", def.role or "melee")
+    -- Combat job beyond Role (healers are support AND green-plus). Tutorial + live + invader
+    -- healers all author auto_heal; the client HUD reads this one attribute.
+    if type(def.auto_heal) == "table" then
+        model:SetAttribute("FunctionKind", "heal")
+    elseif type(def.FunctionKind) == "string" then
+        model:SetAttribute("FunctionKind", def.FunctionKind)
+    end
     local nameBb = Instance.new("BillboardGui")
     nameBb.Name = "NameTag"
     nameBb.Size = UDim2.new(8, 0, 1.1, 0)
@@ -1234,6 +1253,100 @@ end
 -- cleanup path (threat tables, pet release, model). Mission-instance teardown
 -- uses this so waves born inside a mission die with it instead of loitering
 -- forever at the slot (docs/MISSION_WORLDGEN.md §5.2).
+function EnemyService:DespawnModel(model)
+    if not model then
+        return false
+    end
+    local bid = model:FindFirstChild("BreakableID")
+    local id = bid and (tonumber(bid.Value) or bid.Value)
+    if id and self._enemies[id] then
+        self._missionTeardownSweep = true
+        self:_despawnEnemy(id)
+        self._missionTeardownSweep = false
+        return true
+    end
+    for targetId, entry in pairs(self._enemies) do
+        if entry.model == model then
+            self._missionTeardownSweep = true
+            self:_despawnEnemy(targetId)
+            self._missionTeardownSweep = false
+            return true
+        end
+    end
+    if model.Parent then
+        model:Destroy()
+    end
+    return true
+end
+
+-- Pin this player's squad on one enemy: assist does not lapse for pinSeconds,
+-- every pet's TargetID is forced, and other pet-threat rows are wiped so
+-- auto-target cannot peel off onto a louder dog.
+function EnemyService:FocusSquadOnEnemy(player, targetId, opts)
+    opts = type(opts) == "table" and opts or {}
+    targetId = tonumber(targetId)
+    if not (player and player.Parent and targetId and targetId ~= 0) then
+        return false
+    end
+    local entry = self._enemies[targetId]
+    local model = entry and entry.model
+    if not (entry and model and model.Parent and (model:GetAttribute("HP") or 0) > 0) then
+        return false
+    end
+    local pinSeconds = math.max(1, tonumber(opts.pinSeconds) or 600)
+    local threat = math.max(1, tonumber(opts.threat) or 10000)
+    player:SetAttribute("CombatAssistTarget", targetId)
+    player:SetAttribute("CombatAssistUntil", os.clock() + pinSeconds)
+    self:_setAggroOwner(entry, player.Name)
+    local folder = Workspace:FindFirstChild("PlayerPets")
+        and Workspace.PlayerPets:FindFirstChild(player.Name)
+    if not folder then
+        return true
+    end
+    for _, pet in ipairs(folder:GetChildren()) do
+        if pet:IsA("Model") and pet:GetAttribute("CombatDowned") ~= true then
+            local tid = pet:FindFirstChild("TargetID")
+            local tt = pet:FindFirstChild("TargetType")
+            if tid then
+                tid.Value = targetId
+            end
+            if tt then
+                tt.Value = "Enemy"
+            end
+            local tbl = self:_petAggroTable(pet)
+            AggroTable.clearAll(tbl)
+            AggroTable.set(tbl, targetId, threat)
+            if entry.aggro then
+                AggroTable.reinforce(entry.aggro, pet, threat)
+            end
+        end
+    end
+    return true
+end
+
+-- Teaching-room leftovers (tagged CombatTutorialEnemy). Persistent tutorial
+-- packs must leave through this teardown path, not model:Destroy(), or the
+-- HUD and the next spawn still see the old pack.
+function EnemyService:DespawnForCombatTutorial(userId)
+    local doomed = {}
+    for targetId, entry in pairs(self._enemies) do
+        local model = entry.model
+        if model then
+            local tagged = model:GetAttribute("CombatTutorialEnemy") == true
+            local owner = model:GetAttribute("CombatTutorialOwner")
+            if tagged and (userId == nil or owner == nil or owner == userId) then
+                doomed[#doomed + 1] = targetId
+            end
+        end
+    end
+    self._missionTeardownSweep = true
+    for _, targetId in ipairs(doomed) do
+        self:_despawnEnemy(targetId)
+    end
+    self._missionTeardownSweep = false
+    return #doomed
+end
+
 function EnemyService:DespawnEnemiesInBounds(minV, maxV)
     local removed = 0
     self._missionTeardownSweep = true
@@ -3613,6 +3726,26 @@ function EnemyService:_findPlayerPetBySlot(player, slotIndex)
         end
     end
     return nil
+end
+
+-- Stamp the out-of-combat regen clock so an authored CombatDamageTaken write does not
+-- immediately trickle back (canRegen treats a missing lastHit as epoch 0).
+function EnemyService:NotePetHit(pet)
+    if not (pet and pet:IsA("Model")) then
+        return
+    end
+    local pc = self._petCombat[pet]
+    if not pc then
+        pc = {}
+        self._petCombat[pet] = pc
+    end
+    pc.lastHit = os.clock()
+    self:_updateEnduranceBar(
+        pet,
+        tonumber(pet:GetAttribute("CombatDamageTaken")) or 0,
+        self:_petPower(pet),
+        (self._combatConfig and self._combatConfig.pet_down_threshold_factor) or 1
+    )
 end
 
 -- Admin testing: force a slot's pet DOWN with reason "down" so the full lockout (uid 5-min / slot

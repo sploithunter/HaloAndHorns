@@ -38,6 +38,7 @@ local SCHEMAS = {
         hatch = "table",
         team = "table",
         level_up = "table",
+        gift = "table",
         limits = "table",
     }),
     controls = schema({ keybinds = "table", enemy_cycle = "table" }),
@@ -178,6 +179,7 @@ local SCHEMAS = {
     retention = schema({
         version = "number",
         onboarding = "table",
+        activation = "table",
         custom_event = "table",
         event_store = "table",
     }),
@@ -204,6 +206,7 @@ local SCHEMAS = {
         max_offer_items = "number",
     }),
     tutorial = schema({ veteran_skip = "table", steps = "table", completion = "table" }),
+    combat_tutorial = schema({ version = "number", steps = "table", entry = "table" }),
     ui_theme = schema({ default_color = "string", areas = "table", palettes = "table" }),
     veteran = schema({ xp_per_level = "number", rewards = "table" }),
     zone_tracker = schema({

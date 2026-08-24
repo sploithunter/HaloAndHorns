@@ -70,6 +70,12 @@ function PotionService:Start()
     end)
 end
 
+function PotionService:ClearSipLocks(player)
+    if player then
+        self._lastDrink[player.UserId] = {}
+    end
+end
+
 function PotionService:_canUse(player, potionId)
     local uid = player.UserId
     self._lastDrink[uid] = self._lastDrink[uid] or {}
@@ -232,6 +238,33 @@ function PotionService:_applyMeter(player, meterId, charge)
         player:SetAttribute(attr .. "PowerId", nil)
         player:SetAttribute("Brew_" .. meterId, nil)
     end
+end
+
+-- Tutorial / overlay helper: keep the live charge at least `minCharge` and restart
+-- the drain clock. Does not consume a potion. Used so lobby sipping is not wasted
+-- by the walk to the arena.
+function PotionService:EnsureCharge(player, meterId, minCharge)
+    if not (player and player.Parent) then
+        return false
+    end
+    local m = self:_meterCfg(meterId)
+    if not m or m.target == "enemy" then
+        return false
+    end
+    local want = BrewMeter.clamp01(minCharge)
+    local uid = player.UserId
+    self._meters[uid] = self._meters[uid] or {}
+    local have = tonumber(self._meters[uid][meterId]) or 0
+    if have < want then
+        have = want
+        self._meters[uid][meterId] = have
+    end
+    if have <= 0 then
+        return false
+    end
+    self:_applyMeter(player, meterId, have)
+    self:_push(player)
+    return true
 end
 
 -- Apply one enemy meter through the canonical additive vulnerability writer. Charge belongs to the

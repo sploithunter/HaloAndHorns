@@ -38,6 +38,10 @@ pet storage leaves the gift unopened. Sender and receiver idempotency ledgers do
   bind them later.
 - `gifts_given` adds exactly one for every successfully finalized gift. It is stored now for a
   future all-gifts ranking but deliberately has no board configuration yet.
+- Mythical and higher gifts announce in the server chat on first successful
+  finalize, without naming the pet: `Colorado sent Splite a mythical gift!`
+  The line is server-wide (`FireAllClients`), not a whisper. Roblox chat is a
+  weak social channel, so the game has to say the notable gift out loud.
 
 ## Verification boundary
 

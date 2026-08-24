@@ -552,6 +552,7 @@ function RetentionLogic.ensure(state, eligible, now)
     state.Milestones = type(state.Milestones) == "table" and state.Milestones or {}
     state.ReturnTracking = type(state.ReturnTracking) == "table" and state.ReturnTracking or {}
     state.AnalyticsFunnelStep = math.max(0, math.floor(tonumber(state.AnalyticsFunnelStep) or 0))
+    state.ActivationFunnelStep = math.max(0, math.floor(tonumber(state.ActivationFunnelStep) or 0))
     return state
 end
 
@@ -574,12 +575,44 @@ function RetentionLogic.record(state, id, category, meta)
     return true
 end
 
+function RetentionLogic.funnelLists(config)
+    return {
+        { key = "onboarding", steps = ((config or {}).onboarding or {}).steps },
+        { key = "activation", steps = ((config or {}).activation or {}).steps },
+    }
+end
+
 function RetentionLogic.matchingSteps(config, eventName, ctx)
+    local seen = {}
     local out = {}
-    for index, step in ipairs(((config or {}).onboarding or {}).steps or {}) do
-        if matches(step, eventName, ctx) then
-            out[#out + 1] = { index = index, id = step.id, name = step.name }
+    for _, funnel in ipairs(RetentionLogic.funnelLists(config)) do
+        for index, step in ipairs(funnel.steps or {}) do
+            if not seen[step.id] and matches(step, eventName, ctx) then
+                seen[step.id] = true
+                out[#out + 1] = {
+                    index = index,
+                    id = step.id,
+                    name = step.name,
+                    funnel = funnel.key,
+                }
+            end
         end
+    end
+    return out
+end
+
+-- Returns the achieved steps immediately after AnalyticsFunnelStep. The caller submits these
+-- in order and advances AnalyticsFunnelStep only after each successful AnalyticsService call.
+local function pendingSteps(steps, state, cursor)
+    local out = {}
+    local index = math.max(0, math.floor(tonumber(cursor) or 0)) + 1
+    while steps[index] and state.Milestones and state.Milestones[steps[index].id] do
+        out[#out + 1] = {
+            index = index,
+            id = steps[index].id,
+            name = steps[index].name,
+        }
+        index += 1
     end
     return out
 end
@@ -590,18 +623,24 @@ function RetentionLogic.pendingFunnelSteps(config, state)
     if not (state and state.Eligible) then
         return {}
     end
-    local steps = ((config or {}).onboarding or {}).steps or {}
-    local out = {}
-    local index = math.max(0, math.floor(tonumber(state.AnalyticsFunnelStep) or 0)) + 1
-    while steps[index] and state.Milestones and state.Milestones[steps[index].id] do
-        out[#out + 1] = {
-            index = index,
-            id = steps[index].id,
-            name = steps[index].name,
-        }
-        index += 1
+    return pendingSteps(
+        ((config or {}).onboarding or {}).steps or {},
+        state,
+        state.AnalyticsFunnelStep
+    )
+end
+
+-- Lifetime activation funnel. Not first-session-only: first quest is optional and
+-- often happens after session 1. Still submits only the contiguous prefix.
+function RetentionLogic.pendingActivationSteps(config, state)
+    if not state then
+        return {}
     end
-    return out
+    return pendingSteps(
+        ((config or {}).activation or {}).steps or {},
+        state,
+        state.ActivationFunnelStep
+    )
 end
 
 function RetentionLogic.snapshot(config, state)
@@ -637,11 +676,26 @@ function RetentionLogic.snapshot(config, state)
         end
         return a.id < b.id
     end)
+    local activation = {}
+    for index, step in ipairs(((config or {}).activation or {}).steps or {}) do
+        local record = milestones[step.id]
+        activation[#activation + 1] = {
+            step = index,
+            id = step.id,
+            name = step.name,
+            reached = record ~= nil,
+            at = record and record.at or nil,
+            session = record and record.session or nil,
+            seconds = record and record.seconds or nil,
+        }
+    end
     return {
         eligible = state.Eligible == true,
         instrumentedAt = state.InstrumentedAt,
         analyticsFunnelStep = state.AnalyticsFunnelStep or 0,
+        activationFunnelStep = state.ActivationFunnelStep or 0,
         funnel = funnel,
+        activation = activation,
         milestones = all,
     }
 end

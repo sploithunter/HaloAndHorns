@@ -113,6 +113,7 @@ function AdminToolsService:BindPeerServices(services)
     self._foundersChoiceService = services.FoundersChoiceService
     self._testerRewardService = services.TesterRewardService
     self._prologueService = services.PrologueService
+    self._combatTutorialService = services.CombatTutorialService
 end
 
 function AdminToolsService:_handleSpawnEnemy(adminPlayer, data)
@@ -867,7 +868,14 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
 
     -- 5d) Tutorial restarts + enhancements wiped — "reset to beginning" means the NEW-PLAYER
     --     experience (Jason hit this: his tutorial stayed done=true through this reset because
-    --     only levelup.resetRun knew about it).
+    --     only levelup.resetRun knew about it). Combat training is a separate profile
+    --     (CombatTutorial) — leaving it in place kept testers on 26/32 after this reset.
+    local combatTut = self._combatTutorialService
+    if combatTut and combatTut.ResetForBeginning then
+        pcall(function()
+            combatTut:ResetForBeginning(targetPlayer)
+        end)
+    end
     local tut = self._tutorialService
     if tut and tut.Reset then
         pcall(function()
@@ -931,6 +939,14 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     end
     if self._starterPetService and self._starterPetService.Refresh then
         self._starterPetService:Refresh(targetPlayer)
+    end
+
+    -- Level last so a mid-reset grant (combat-training completion, leftover XP)
+    -- cannot leave the HUD at earned 20 after a "beginning" wipe.
+    if prog and prog.SetLevel then
+        pcall(function()
+            prog:SetLevel(targetPlayer, 1)
+        end)
     end
 
     self._logger:Warn("🔄 ADMIN RESET TO BEGINNING (KEEP HUGE)", {

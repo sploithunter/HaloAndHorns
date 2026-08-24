@@ -21,6 +21,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Retention Analytics](RETENTION_ANALYTICS.md) — onboarding funnel, player milestones, admin access, and internal-account ID exclusions.
 - [Tutorial Localization](TUTORIAL_LOCALIZATION.md) — Roblox locale detection, supported tutorial
   languages, persisted Auto/English preference, and safe English fallback.
+- [Combat Tutorial](COMBAT_TUTORIAL.md) — live Homeworld combat beat in the Earth
+  cave (lobby → ENTER → fight → pillar), then Rally at Level 2.
 - [Founder's Choice](FOUNDERS_CHOICE.md) — exact first-10,000 cohort reservation, permanent
   pass-benefit selection, entitlement-source union, purchase reconciliation, and shop UX.
 - [Beta Tester Rewards](TESTER_REWARDS.md) — one-egg campaign grants, level-based Golden/Rainbow

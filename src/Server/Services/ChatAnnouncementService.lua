@@ -1,7 +1,7 @@
 --[[
     Authoritative system-message spine for the Roblox chat window.
 
-    Local Mythical+ hatch, level-up, and sidekick notices travel over ChatAnnouncement. Huge hatch
+    Local Mythical+ hatch, gift, level-up, and sidekick notices travel over ChatAnnouncement. Huge hatch
     notices additionally relay through MessagingService so every live server sees them.
     Cross-server delivery is best-effort; the source server always displays the notice first.
 ]]
@@ -157,6 +157,20 @@ function ChatAnnouncementService:AnnounceLevel(player, level)
     payload.announcementId = ("%s:%s"):format(game.JobId or "", HttpService:GenerateGUID(false))
     payload.createdAt = os.time()
     self:_remember(payload.announcementId)
+    self:_broadcast(payload)
+end
+
+function ChatAnnouncementService:AnnounceGift(senderName, receiverName, rarityId, giftId)
+    local payload = Rules.gift(senderName, receiverName, rarityId, self._petsConfig, self._config)
+    if not payload then
+        return
+    end
+    payload.version = self._config.version
+    payload.announcementId = ("gift:%s"):format(tostring(giftId or HttpService:GenerateGUID(false)))
+    payload.createdAt = os.time()
+    if not self:_remember(payload.announcementId) then
+        return
+    end
     self:_broadcast(payload)
 end
 

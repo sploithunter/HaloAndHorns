@@ -12,6 +12,7 @@ local Players = game:GetService("Players")
 
 local LevelCurve = require(ReplicatedStorage.Shared.Game.LevelCurve)
 local LevelTrack = require(ReplicatedStorage.Shared.Game.LevelTrack)
+local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local XpReward = require(ReplicatedStorage.Shared.Game.XpReward)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local VeteranTrack = require(ReplicatedStorage.Shared.Game.VeteranTrack)
@@ -68,6 +69,10 @@ function PlayerProgressionService:Init()
         return self._configLoader:LoadConfig("veteran")
     end)
     self._veteranConfig = (okVet and type(vet) == "table" and vet) or nil
+    local okTutorial, tutorial = pcall(function()
+        return self._configLoader:LoadConfig("tutorial")
+    end)
+    self._tutorialConfig = (okTutorial and type(tutorial) == "table" and tutorial) or {}
 
     local teamPower = self._config.team_power or {}
     local stage = teamPower.stage or "boosts"
@@ -93,6 +98,15 @@ end
 
 function PlayerProgressionService:IsEnabled()
     return self._config and self._config.enabled ~= false
+end
+
+function PlayerProgressionService:_tutorialAllowsClaim(player)
+    local data = self._dataService and self._dataService:GetData(player)
+    return TutorialFlow.allowsLevelClaim(
+        self._tutorialConfig,
+        data and data.Tutorial,
+        data and data.GameData
+    )
 end
 
 -- Publish derived level/XP to player attributes so the client HUD can read them
@@ -810,7 +824,7 @@ function PlayerProgressionService:GetClaimState(player)
         earnedLevel = earned,
         pendingLevels = r.pendingLevels,
         pendingTraining = self:GetPendingTraining(player),
-        canClaim = r.canClaim,
+        canClaim = r.canClaim and self:_tutorialAllowsClaim(player),
         nextLevel = r.nextLevel,
         nextRequiresAltar = nextEntry and nextEntry.requiresAltar or false,
         atMax = r.atMax,
@@ -824,6 +838,9 @@ end
 -- Count of TRAINING levels owed (in (claimed, earned]) — power/slot/milestone levels that must
 -- be claimed at the Ascension Altar. Drives the HUD nudge + the altar prompt.
 function PlayerProgressionService:GetPendingTraining(player)
+    if not self:_tutorialAllowsClaim(player) then
+        return 0
+    end
     local claimed = self:GetClaimedLevel(player)
     local earned = self:GetEarnedLevel(player)
     local maxLevel = math.floor(tonumber(self._xpConfig.max_level) or 0)
@@ -950,6 +967,9 @@ function PlayerProgressionService:_advanceAuto(player)
     if not player or not self._dataService then
         return
     end
+    if not self:_tutorialAllowsClaim(player) then
+        return
+    end
     local maxLevel = math.floor(tonumber(self._xpConfig.max_level) or 0)
     local guard = 0
     local applied = 0
@@ -1000,6 +1020,9 @@ function PlayerProgressionService:ClaimLevel(player, expectedLevel, silent)
 
     if expectedLevel ~= nil and math.floor(tonumber(expectedLevel) or -1) ~= claimed then
         return { ok = false, reason = "stale_level", claimedLevel = claimed }
+    end
+    if not self:_tutorialAllowsClaim(player) then
+        return { ok = false, reason = "tutorial_in_progress", claimedLevel = claimed }
     end
     if claimed >= earned then
         return { ok = false, reason = "nothing_to_claim", claimedLevel = claimed }

@@ -101,8 +101,11 @@ Effective value = `base[x] * side.<x>_mult`. ConfigLoader needs a matching `_val
 
 ## Integration points (verified in code)
 - **pet → enemy damage** already flows through `EnemyService:AddAggro(model, key, amount)` (public,
-  called from the pet mining/attack path) → credits `entry.aggro`. *Add splash to the band + the
-  `enemy` side mult here.*
+  called from the pet mining/attack path) → credits `entry.aggro` **and** the attacking pet's
+  table toward that enemy (plus squad splash). Incoming 1-damage bites cannot hold
+  `engage_floor` against 4/s decay, so outgoing connected swings are what flip `InCombat` /
+  battle music. An absorb still credits (the swing connected). Parked foes you never hit
+  still decay off.
 - **enemy → pet damage** flows through `EnemyService:_hitPet(...)` (pets use `PetEndurance`, not HP).
   *Credit the pet-side table + squad splash + `pet` side mult here.*
 - **`InCombat` consumers**: `AutoTargetService:733` (`if player:GetAttribute("InCombat")` → farm
