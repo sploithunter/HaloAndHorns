@@ -1,4 +1,14 @@
 return {
+    -- ZoneService fans player arrivals around the authored spawn anchor instead
+    -- of placing every character on the exact same point.
+    player_spawn_spread = {
+        enabled = true,
+        ring_spacing = 8,
+        ring_count = 2,
+        slots_per_ring = 8,
+        minimum_separation = 6,
+        vertical_tolerance = 12,
+    },
     zones = {
         hall_world = {
             id = "hall_world",

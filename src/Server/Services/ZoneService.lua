@@ -12,6 +12,7 @@ local CollectionService = game:GetService("CollectionService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local HallOfWorldsLogic = require(ReplicatedStorage.Shared.Game.HallOfWorldsLogic)
+local PlayerSpawnSpread = require(ReplicatedStorage.Shared.Game.PlayerSpawnSpread)
 local PrologueSpawnGate = require(ReplicatedStorage.Shared.Game.PrologueSpawnGate)
 local WorldContext = require(ReplicatedStorage.Shared.Game.WorldContext)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
@@ -82,6 +83,7 @@ function ZoneService:Init()
     self._worldBindingService = self._modules.WorldBindingService
     self._statsService = self._modules.StatsService
     self._areasConfig = self._configLoader:LoadConfig("areas")
+    self._spawnSpreadConfig = self._areasConfig.player_spawn_spread or {}
     self._hallConfig = self._configLoader:LoadConfig("hall_of_worlds")
     self._hallEntryEnabled = not (self._hallConfig and self._hallConfig.entry_enabled == false)
     self._hallRouteAreaSet = {}
@@ -690,6 +692,34 @@ function ZoneService:_awaitSpawnSafetyDecision(player)
     return false
 end
 
+function ZoneService:_spreadSpawnCFrame(player, areaId, spawnCFrame)
+    local config = self._spawnSpreadConfig or {}
+    if config.enabled == false then
+        return spawnCFrame
+    end
+
+    local occupied = {}
+    local verticalTolerance = math.max(0, tonumber(config.vertical_tolerance) or 12)
+    for _, otherPlayer in ipairs(Players:GetPlayers()) do
+        if otherPlayer ~= player then
+            local otherRoot = getRootPart(otherPlayer)
+            local otherArea = self._worldBindingService:GetActiveArea(otherPlayer)
+            if otherRoot and (otherArea == nil or otherArea == areaId) then
+                local localPosition = spawnCFrame:PointToObjectSpace(otherRoot.Position)
+                if math.abs(localPosition.Y) <= verticalTolerance then
+                    table.insert(occupied, {
+                        x = localPosition.X,
+                        z = localPosition.Z,
+                    })
+                end
+            end
+        end
+    end
+
+    local offset = PlayerSpawnSpread.choose(player.UserId, occupied, config)
+    return spawnCFrame * CFrame.new(offset.x, 0, offset.z)
+end
+
 function ZoneService:PlacePlayerAtZoneSpawn(player, zoneId, options)
     local spawnCFrame, areaId =
         self._worldBindingService:GetSpawnCFrameForZone(zoneId or DEFAULT_START_AREA)
@@ -702,7 +732,12 @@ function ZoneService:PlacePlayerAtZoneSpawn(player, zoneId, options)
         return false, "character_not_ready"
     end
 
-    rootPart.CFrame = spawnCFrame
+    local destinationCFrame = spawnCFrame
+    if not (options and options.spread == false) then
+        destinationCFrame = self:_spreadSpawnCFrame(player, areaId, spawnCFrame)
+    end
+
+    rootPart.CFrame = destinationCFrame
     rootPart.AssemblyLinearVelocity = Vector3.zero
     rootPart.AssemblyAngularVelocity = Vector3.zero
     self._worldBindingService:SetActiveArea(player, areaId)
