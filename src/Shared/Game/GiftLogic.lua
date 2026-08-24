@@ -8,7 +8,7 @@ local LEADERBOARD_POINTS = {
     rainbow = 25,
 }
 
-GiftLogic.ALL_GIFT_COUNTER = "all_gift_points"
+GiftLogic.ALL_GIFT_COUNTER = "gifts_given"
 
 GiftLogic.DEFAULT_PREFERENCE = "any"
 GiftLogic.PREFERENCES = {
@@ -159,8 +159,8 @@ function GiftLogic.leaderboardScore(gift, storedPoints)
     return counterId, points
 end
 
--- Every gift contributes to the future all-gifts ranking, while Mythical,
--- Secret, and Exclusive/Huge also contribute to their existing category.
+-- Every gift adds one to the future all-gifts total. Mythical, Secret, and
+-- Exclusive/Huge separately retain their hatch-odds-weighted category score.
 function GiftLogic.giverScores(gift, storedPoints)
     if type(gift) ~= "table" then
         return {}
@@ -170,7 +170,7 @@ function GiftLogic.giverScores(gift, storedPoints)
         points = GiftLogic.leaderboardPoints(gift.pet_record)
     end
     local scores = {
-        { counter_id = GiftLogic.ALL_GIFT_COUNTER, points = points },
+        { counter_id = GiftLogic.ALL_GIFT_COUNTER, points = 1 },
     }
     local categoryCounter = GiftLogic.leaderboardCounter(gift.rarity_id)
     if categoryCounter then

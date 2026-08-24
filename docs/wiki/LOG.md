@@ -4259,5 +4259,5 @@ first-session cohort rates.
   icons were cleaned, converted, and uploaded under project-group ownership with traced manifests.
 - Extended the repository chroma-key tool with `all-green` mode so enclosed bow openings and the
   outer background are both alpha-transparent while retaining edge feathering and green despill.
-- Added the hidden `all_gift_points` lifetime counter for every finalized gift using the existing
-  Basic 1 / Golden 5 / Rainbow 25 weights. No fourth leaderboard is published yet.
+- Added the hidden `gifts_given` lifetime counter, which adds exactly one for every finalized gift.
+  The existing rarity-specific boards retain their 1/5/25 weights; no fourth board is published.

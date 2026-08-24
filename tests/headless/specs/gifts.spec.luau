@@ -110,22 +110,22 @@ return function()
             expect(presentation.replicated_model_name).to.equal("Crimson")
         end)
 
-        it("tracks every weighted gift plus any qualifying category", function()
+        it("counts every gift once plus any weighted qualifying category", function()
             local standard = GiftLogic.giverScores({
                 rarity_id = "legendary",
                 pet_record = { variant = "golden" },
             })
             expect(#standard).to.equal(1)
-            expect(standard[1].counter_id).to.equal("all_gift_points")
-            expect(standard[1].points).to.equal(5)
+            expect(standard[1].counter_id).to.equal("gifts_given")
+            expect(standard[1].points).to.equal(1)
 
             local secret = GiftLogic.giverScores({
                 rarity_id = "secret",
                 pet_record = { variant = "rainbow" },
             })
             expect(#secret).to.equal(2)
-            expect(secret[1].counter_id).to.equal("all_gift_points")
-            expect(secret[1].points).to.equal(25)
+            expect(secret[1].counter_id).to.equal("gifts_given")
+            expect(secret[1].points).to.equal(1)
             expect(secret[2].counter_id).to.equal("secret_gift_points")
             expect(secret[2].points).to.equal(25)
         end)
@@ -322,8 +322,8 @@ return function()
                 true
             )
             expect(service:find("GiftLogic.giverScores", 1, true) ~= nil).to.equal(true)
-            expect(stats:find("all_gift_points", 1, true) ~= nil).to.equal(true)
-            expect(boards:find('counter = "all_gift_points"', 1, true) == nil).to.equal(true)
+            expect(stats:find("gifts_given", 1, true) ~= nil).to.equal(true)
+            expect(boards:find('counter = "gifts_given"', 1, true) == nil).to.equal(true)
         end)
 
         it("traces every supplied icon and model through uploaded asset manifests", function()

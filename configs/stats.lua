@@ -174,10 +174,10 @@ return {
             scope = "lifetime",
             default = 0,
         },
-        -- Captured now for a future all-gifts ranking; intentionally not
-        -- published as a board yet. Uses Basic 1 / Golden 5 / Rainbow 25.
-        all_gift_points = {
-            display_name = "All Gift Points",
+        -- Raw total captured now for a future all-gifts ranking;
+        -- intentionally not published as a board yet.
+        gifts_given = {
+            display_name = "Gifts Given",
             scope = "lifetime",
             default = 0,
         },

@@ -36,8 +36,8 @@ pet storage leaves the gift unopened. Sender and receiver idempotency ledgers do
   pre-weight outboxes reconstruct it from their exact pet snapshot. The board ids are
   `gift_mythicals`, `gift_secrets`, and `gift_exclusives`; an authored combined physical host can
   bind them later.
-- `all_gift_points` applies the same 1/5/25 weighting to every successfully finalized gift. It is
-  stored now for a future all-gifts ranking but deliberately has no board configuration yet.
+- `gifts_given` adds exactly one for every successfully finalized gift. It is stored now for a
+  future all-gifts ranking but deliberately has no board configuration yet.
 
 ## Verification boundary
 

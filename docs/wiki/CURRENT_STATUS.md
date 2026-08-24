@@ -1592,5 +1592,4 @@ Last checked: 2026-08-24
 - All three giver rankings score qualifying pets by hatch variant: Basic = 1 point, Golden = 5,
   and Rainbow = 25. Fresh point counters and v2 OrderedDataStores prevent legacy raw counts from
   mixing with weighted scores; persisted pre-weight outboxes recover points from the exact pet.
-- The same weighted score is now accumulated for every gift in `all_gift_points`, without exposing
-  an all-gifts board yet.
+- A raw total adds one for every gift in `gifts_given`, without exposing an all-gifts board yet.
