@@ -163,7 +163,7 @@
   },
   "src/Server/Services/CombatTutorialService.lua": {
    "animation": 1,
-   "periodic": 3,
+   "periodic": 4,
    "retry_backoff": 4
   },
   "src/Server/Services/DailyRewardZoneService.lua": {
