@@ -140,6 +140,31 @@ return function()
             expect(GiftDelivery.validateMessage(message)).to.equal(false)
         end)
 
+        it("accepts negative Studio test identities only when explicitly enabled", function()
+            local studioGift = gift({
+                sender_user_id = -2,
+                receiver_user_id = -1,
+            })
+            local message = GiftDelivery.message(studioGift, {
+                allow_studio_user_ids = true,
+            })
+
+            expect(GiftDelivery.validateMessage(message)).to.equal(false)
+            expect(GiftDelivery.validateMessage(message, {
+                allow_studio_user_ids = true,
+            })).to.equal(true)
+            expect(GiftDelivery.isValidUserId(-1, {
+                allow_studio_user_ids = true,
+            })).to.equal(true)
+            expect(GiftDelivery.isValidUserId(-1)).to.equal(false)
+            expect(GiftDelivery.isValidUserId(0, {
+                allow_studio_user_ids = true,
+            })).to.equal(false)
+            expect(GiftDelivery.isValidUserId(-1.5, {
+                allow_studio_user_ids = true,
+            })).to.equal(false)
+        end)
+
         it("builds an unopened record without dropping the embedded pet", function()
             local source = gift()
             local wrapped = GiftDelivery.wrappedRecord(source)
@@ -177,6 +202,24 @@ return function()
             local data = readFile("src/Server/Services/DataService.lua")
             expect(data:find("function DataService:SaveAndConfirm", 1, true) ~= nil).to.equal(true)
             expect(data:find("lastConfirmedRequestId", 1, true) ~= nil).to.equal(true)
+        end)
+
+        it("allows Studio test-player IDs without weakening live delivery validation", function()
+            local service = readFile("src/Server/Services/GiftDeliveryService.lua")
+            expect(service:find("allow_studio_user_ids = RunService:IsStudio()", 1, true) ~= nil).to.equal(
+                true
+            )
+            expect(
+                service:find("GiftDelivery.isValidUserId(id, MESSAGE_VALIDATION_OPTIONS)", 1, true)
+                    ~= nil
+            ).to.equal(true)
+            expect(
+                service:find(
+                    "GiftDelivery.validateMessage(message, MESSAGE_VALIDATION_OPTIONS)",
+                    1,
+                    true
+                ) ~= nil
+            ).to.equal(true)
         end)
 
         it("opens the exact pet before consuming the wrapped record", function()

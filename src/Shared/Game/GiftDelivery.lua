@@ -28,17 +28,24 @@ local function deepCopy(value)
     return copy
 end
 
-local function positiveInteger(value)
-    return type(value) == "number" and value > 0 and value == math.floor(value)
+local function validUserId(value, options)
+    if type(value) ~= "number" or value == 0 or value ~= math.floor(value) then
+        return false
+    end
+    return value > 0 or (value < 0 and options ~= nil and options.allow_studio_user_ids == true)
 end
 
-function GiftDelivery.message(gift)
+function GiftDelivery.isValidUserId(value, options)
+    return validUserId(value, options)
+end
+
+function GiftDelivery.message(gift, options)
     local message = {
         kind = GiftDelivery.MESSAGE_KIND,
         version = GiftDelivery.MESSAGE_VERSION,
         gift = deepCopy(gift),
     }
-    local ok, reason = GiftDelivery.validateMessage(message)
+    local ok, reason = GiftDelivery.validateMessage(message, options)
     if not ok then
         error("invalid gift: " .. tostring(reason))
     end
@@ -49,7 +56,7 @@ function GiftDelivery.isMessage(message)
     return type(message) == "table" and message.kind == GiftDelivery.MESSAGE_KIND
 end
 
-function GiftDelivery.validateMessage(message)
+function GiftDelivery.validateMessage(message, options)
     if not GiftDelivery.isMessage(message) then
         return false, "wrong_kind"
     end
@@ -63,10 +70,10 @@ function GiftDelivery.validateMessage(message)
     if type(gift.id) ~= "string" or gift.id == "" then
         return false, "invalid_gift_id"
     end
-    if not positiveInteger(gift.sender_user_id) then
+    if not validUserId(gift.sender_user_id, options) then
         return false, "invalid_sender"
     end
-    if not positiveInteger(gift.receiver_user_id) then
+    if not validUserId(gift.receiver_user_id, options) then
         return false, "invalid_receiver"
     end
     if type(gift.sender_name) ~= "string" or gift.sender_name == "" then

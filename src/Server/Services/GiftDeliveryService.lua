@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local AssetFetch = require(ReplicatedStorage.Shared.Utils.AssetFetch)
 local GiftDelivery = require(ReplicatedStorage.Shared.Game.GiftDelivery)
@@ -10,6 +11,12 @@ local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 
 local GiftDeliveryService = {}
 GiftDeliveryService.__index = GiftDeliveryService
+
+local MESSAGE_VALIDATION_OPTIONS = {
+    -- Studio multiplayer clients use negative integer UserIds. They are valid
+    -- ProfileStore keys for local testing, but must never be accepted live.
+    allow_studio_user_ids = RunService:IsStudio(),
+}
 
 function GiftDeliveryService:Init()
     self._logger = self._modules.Logger
@@ -119,7 +126,7 @@ function GiftDeliveryService:_attach(player)
 end
 
 function GiftDeliveryService:_deliver(player, profile, message, processed)
-    local valid, reason = GiftDelivery.validateMessage(message)
+    local valid, reason = GiftDelivery.validateMessage(message, MESSAGE_VALIDATION_OPTIONS)
     if not valid or message.gift.receiver_user_id ~= player.UserId then
         self._logger:Error("Discarding invalid durable gift message", {
             context = "GiftDeliveryService",
@@ -213,11 +220,11 @@ function GiftDeliveryService:_deliver(player, profile, message, processed)
 end
 
 function GiftDeliveryService:QueueForUser(userId, gift)
-    local id = math.floor(tonumber(userId) or 0)
-    if id <= 0 then
+    local id = tonumber(userId) or 0
+    if not GiftDelivery.isValidUserId(id, MESSAGE_VALIDATION_OPTIONS) then
         return { ok = false, reason = "invalid_user_id" }
     end
-    local ok, messageOrError = pcall(GiftDelivery.message, gift)
+    local ok, messageOrError = pcall(GiftDelivery.message, gift, MESSAGE_VALIDATION_OPTIONS)
     if not ok then
         return { ok = false, reason = "invalid_gift", error = tostring(messageOrError) }
     end
