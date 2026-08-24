@@ -24,9 +24,11 @@ pet storage leaves the gift unopened. Sender and receiver idempotency ledgers do
 ## Presentation and rankings
 
 - Inventory has a Gifts category. A present hides the pet identity until opened, previews the
-  wrapped model, then uses the existing pet-reveal animation.
-- The supplied icon was keyed with `scripts/remove_image_background.py --mode edge-magenta`, not
-  regenerated. The group-owned icon and model ids are traced in `scripts/gift_icon_ids.json` and
+  wrapped model, then uses the existing pet-reveal animation. Legendary and below use the original
+  blue wrapper; Mythical uses purple, Secret uses crimson, and Exclusive/Huge uses gold.
+- Supplied icons are keyed with `scripts/remove_image_background.py`, not regenerated. Green-screen
+  art with enclosed holes uses `--mode all-green` so bow interiors are transparent too. Every
+  group-owned icon and model id is traced in `scripts/gift_icon_ids.json` and
   `scripts/gift_model_ids.json`.
 - Three independent lifetime OrderedDataStore rankings publish the top three givers: Mythicals,
   Secrets, and Exclusives. Huge pets count with Exclusives. Each qualifying Basic gift awards 1
@@ -34,11 +36,13 @@ pet storage leaves the gift unopened. Sender and receiver idempotency ledgers do
   pre-weight outboxes reconstruct it from their exact pet snapshot. The board ids are
   `gift_mythicals`, `gift_secrets`, and `gift_exclusives`; an authored combined physical host can
   bind them later.
+- `gifts_given` adds exactly one for every successfully finalized gift. It is stored now for a
+  future all-gifts ranking but deliberately has no board configuration yet.
 
 ## Verification boundary
 
 Headless tests cover every preference threshold, malformed rarities, exact-record message copying,
 message validation, permanent deduplication ledgers, save-before-message ordering,
 open-before-consume ordering, command/UI wiring, top-three board configuration, and uploaded-asset
-traceability. A true delivery smoke still needs two live Studio clients because the production path
-uses cross-profile ProfileStore messages.
+traceability. Studio multiplayer exercises the real durable path with Studio-only negative test
+UserIds; live servers continue to accept only positive Roblox account ids.

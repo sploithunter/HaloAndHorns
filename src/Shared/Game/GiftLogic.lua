@@ -8,6 +8,8 @@ local LEADERBOARD_POINTS = {
     rainbow = 25,
 }
 
+GiftLogic.ALL_GIFT_COUNTER = "gifts_given"
+
 GiftLogic.DEFAULT_PREFERENCE = "any"
 GiftLogic.PREFERENCES = {
     any = { label = "Any gift" },
@@ -88,6 +90,32 @@ function GiftLogic.resolveRarity(record, petsConfig)
     return nil
 end
 
+-- Wrapper colors disclose only the receiver-facing rarity band, never the pet.
+-- Legendary and below retain the original blue Starlight present.
+function GiftLogic.presentationTier(rarityId)
+    if rarityId == "huge" or rarityId == "exclusive" then
+        return "exclusive"
+    elseif rarityId == "secret" then
+        return "secret"
+    elseif rarityId == "mythic" then
+        return "mythical"
+    end
+    return "standard"
+end
+
+function GiftLogic.resolvePresentation(rarityId, assets)
+    local tierId = GiftLogic.presentationTier(rarityId)
+    if type(assets) ~= "table" then
+        return tierId, {}
+    end
+    local presentations = assets.presentations
+    if type(presentations) == "table" and type(presentations[tierId]) == "table" then
+        return tierId, presentations[tierId]
+    end
+    -- Backward-compatible fallback for an older gifts config with one wrapper.
+    return "standard", assets
+end
+
 -- Three independent giver rankings. Huge is explicitly part of Exclusive,
 -- matching the product decision for the three-category board.
 function GiftLogic.leaderboardCounter(rarityId)
@@ -129,6 +157,26 @@ function GiftLogic.leaderboardScore(gift, storedPoints)
         points = GiftLogic.leaderboardPoints(gift.pet_record)
     end
     return counterId, points
+end
+
+-- Every gift adds one to the future all-gifts total. Mythical, Secret, and
+-- Exclusive/Huge separately retain their hatch-odds-weighted category score.
+function GiftLogic.giverScores(gift, storedPoints)
+    if type(gift) ~= "table" then
+        return {}
+    end
+    local points = math.floor(tonumber(storedPoints) or 0)
+    if points ~= 1 and points ~= 5 and points ~= 25 then
+        points = GiftLogic.leaderboardPoints(gift.pet_record)
+    end
+    local scores = {
+        { counter_id = GiftLogic.ALL_GIFT_COUNTER, points = 1 },
+    }
+    local categoryCounter = GiftLogic.leaderboardCounter(gift.rarity_id)
+    if categoryCounter then
+        table.insert(scores, { counter_id = categoryCounter, points = points })
+    end
+    return scores
 end
 
 return GiftLogic

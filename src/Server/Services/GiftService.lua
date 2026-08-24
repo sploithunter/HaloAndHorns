@@ -205,6 +205,36 @@ function GiftService:_detachPet(player, recordKey)
     end
 end
 
+function GiftService:_applyGiverScores(player, gift, storedPoints)
+    if not self._statsService then
+        return true
+    end
+    local scores = GiftLogic.giverScores(gift, storedPoints)
+    local previous = {}
+    local ok, incremented = pcall(function()
+        for _, score in ipairs(scores) do
+            local counterId = score.counter_id
+            previous[counterId] = self._statsService:Get(player, counterId)
+            if not self._statsService:Increment(player, counterId, score.points) then
+                return false
+            end
+        end
+        return true
+    end)
+    if ok and incremented then
+        return true
+    end
+
+    -- Stats mutations do not yield, so reverting before the sent ledger is
+    -- marked keeps a failed multi-counter update atomic for outbox retries.
+    for counterId, value in pairs(previous) do
+        pcall(function()
+            self._statsService:Set(player, counterId, value)
+        end)
+    end
+    return false
+end
+
 function GiftService:_finalizeQueued(player, giftId)
     local data = self._dataService:GetData(player)
     if not data then
@@ -217,15 +247,8 @@ function GiftService:_finalizeQueued(player, giftId)
     end
 
     if not GiftDelivery.isSent(data, giftId) then
-        local counterId, counterPoints =
-            GiftLogic.leaderboardScore(entry.gift, entry.counter_points)
-        if counterId and self._statsService then
-            local ok, incremented = pcall(function()
-                return self._statsService:Increment(player, counterId, counterPoints)
-            end)
-            if not ok or not incremented then
-                return false, "counter_failed"
-            end
+        if not self:_applyGiverScores(player, entry.gift, entry.counter_points) then
+            return false, "counter_failed"
         end
         GiftDelivery.markSent(data, giftId)
     end
@@ -504,6 +527,7 @@ function GiftService:OpenGift(player, giftId)
         timeoutSeconds = (self._config.limits or {}).save_confirm_timeout_seconds,
     })
     local record = wrapped.pet_record
+    local _, presentation = GiftLogic.resolvePresentation(wrapped.rarity_id, self._config.assets)
     return finish({
         ok = true,
         giftId = giftId,
@@ -517,8 +541,8 @@ function GiftService:OpenGift(player, giftId)
             huge = record.huge == true,
             record = GiftDelivery.copy(record),
         },
-        presentModelAsset = (self._config.assets or {}).present_model_asset,
-        presentIcon = (self._config.assets or {}).inventory_icon,
+        presentModelAsset = presentation.present_model_asset,
+        presentIcon = presentation.inventory_icon,
     })
 end
 

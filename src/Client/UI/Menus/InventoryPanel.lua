@@ -99,6 +99,7 @@ local ConfigLoader = require(ReplicatedStorage.Shared.ConfigLoader)
 -- Single source of truth for configured base power (huge-aware), shared with the
 -- server so the displayed power matches the power that mines/fights.
 local PetPower = require(ReplicatedStorage.Shared.Game.PetPower)
+local GiftLogic = require(ReplicatedStorage.Shared.Game.GiftLogic)
 local InventoryCategories = require(ReplicatedStorage.Shared.Game.InventoryCategories) -- pure tab visibility (specced)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
 local BestPetSelector = require(ReplicatedStorage.Shared.Inventory.BestPetSelector)
@@ -3388,25 +3389,36 @@ function InventoryPanel:_loadRealInventoryData()
 end
 
 function InventoryPanel:_loadGiftsFromFolder(giftsFolder)
-    local icon = GIFTS_CONFIG and GIFTS_CONFIG.assets and GIFTS_CONFIG.assets.inventory_icon or nil
     for _, giftFolder in ipairs(giftsFolder:GetChildren()) do
         if giftFolder:IsA("Folder") and giftFolder.Name ~= "Info" then
             local sender = giftFolder:FindFirstChild("sender_name")
             local sentAt = giftFolder:FindFirstChild("sent_at")
+            local rarityValue = giftFolder:FindFirstChild("rarity_id")
+            local rarityId = rarityValue and rarityValue:IsA("StringValue") and rarityValue.Value
+                or nil
+            local presentationTier, presentation =
+                GiftLogic.resolvePresentation(rarityId, GIFTS_CONFIG and GIFTS_CONFIG.assets)
+            local accent = presentation.accent_rgb or { 70, 180, 255 }
             local senderName = sender and sender:IsA("StringValue") and sender.Value or "a player"
             table.insert(self.inventoryData, {
                 id = giftFolder.Name,
                 uid = giftFolder.Name,
                 name = "Gift from " .. senderName,
                 icon = "🎁",
-                image = icon,
-                rarity = "Wrapped Pet",
-                rarityId = "exclusive",
-                color = Color3.fromRGB(70, 180, 255),
+                image = presentation.inventory_icon,
+                rarity = presentation.label or "Wrapped Pet",
+                rarityId = rarityId or "exclusive",
+                color = Color3.fromRGB(
+                    tonumber(accent[1]) or 70,
+                    tonumber(accent[2]) or 180,
+                    tonumber(accent[3]) or 255
+                ),
                 category = "Gifts",
                 count = 1,
                 senderName = senderName,
                 sentAt = sentAt and tonumber(sentAt.Value) or nil,
+                presentationTier = presentationTier,
+                presentModelName = presentation.replicated_model_name,
                 folder_source = "gifts",
             })
         end
@@ -8034,7 +8046,8 @@ function InventoryPanel:_showGiftOpenConfirmation(item)
     modelRoot = modelRoot and modelRoot:FindFirstChild("Gifts")
     local sourceModel = modelRoot
         and modelRoot:FindFirstChild(
-            (GIFTS_CONFIG and GIFTS_CONFIG.assets and GIFTS_CONFIG.assets.replicated_model_name)
+            item.presentModelName
+                or (GIFTS_CONFIG and GIFTS_CONFIG.assets and GIFTS_CONFIG.assets.replicated_model_name)
                 or "StarlightGift"
         )
     if sourceModel and sourceModel:IsA("Model") then
@@ -8050,7 +8063,8 @@ function InventoryPanel:_showGiftOpenConfirmation(item)
         local image = Instance.new("ImageLabel")
         image.Size = UDim2.fromScale(1, 1)
         image.BackgroundTransparency = 1
-        image.Image = (GIFTS_CONFIG and GIFTS_CONFIG.assets and GIFTS_CONFIG.assets.inventory_icon)
+        image.Image = item.image
+            or (GIFTS_CONFIG and GIFTS_CONFIG.assets and GIFTS_CONFIG.assets.inventory_icon)
             or ""
         image.ScaleType = Enum.ScaleType.Fit
         image.ZIndex = 208
@@ -8087,7 +8101,7 @@ function InventoryPanel:_showGiftOpenConfirmation(item)
     local open = Instance.new("TextButton")
     open.Size = UDim2.fromOffset(140, 46)
     open.Position = UDim2.new(0.5, 10, 1, -62)
-    open.BackgroundColor3 = Color3.fromRGB(70, 180, 255)
+    open.BackgroundColor3 = item.color or Color3.fromRGB(70, 180, 255)
     open.Text = "Open Gift"
     open.TextColor3 = Color3.new(1, 1, 1)
     open.TextSize = 17

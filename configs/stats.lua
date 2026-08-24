@@ -174,6 +174,13 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        -- Raw total captured now for a future all-gifts ranking;
+        -- intentionally not published as a board yet.
+        gifts_given = {
+            display_name = "Gifts Given",
+            scope = "lifetime",
+            default = 0,
+        },
         mythical_gift_points = {
             display_name = "Mythical Gift Points",
             scope = "lifetime",

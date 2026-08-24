@@ -1573,7 +1573,7 @@ Last checked: 2026-08-21
 
 ## One-way pet gifts
 
-Last checked: 2026-08-23
+Last checked: 2026-08-24
 
 - The Trade menu exposes persistent Any / Uncommon+ / Rare+ / Mythical+ / Off gift policies and
   shows each online receiver's current policy before the giver selects exactly one eligible pet.
@@ -1581,13 +1581,15 @@ Last checked: 2026-08-23
   cross-profile message is queued, duplicates are permanently suppressed, and the receiver opens a
   wrapped inventory present to run the normal pet reveal. A full pet inventory preserves the gift.
 - Three independent global top-three rankings track Mythicals, Secrets, and Exclusives given;
-  Huge pets count with Exclusives. The supplied transparent icon and present model are group-owned
-  and traceable through repository upload manifests.
+  Huge pets count with Exclusives. Wrapper colors are blue for Legendary and below, purple for
+  Mythical, crimson for Secret, and gold for Exclusive/Huge. All supplied transparent icons and
+  present models are group-owned and traceable through repository upload manifests.
 
 ## Gift-giver point weights
 
-Last checked: 2026-08-23
+Last checked: 2026-08-24
 
 - All three giver rankings score qualifying pets by hatch variant: Basic = 1 point, Golden = 5,
   and Rainbow = 25. Fresh point counters and v2 OrderedDataStores prevent legacy raw counts from
   mixing with weighted scores; persisted pre-weight outboxes recover points from the exact pet.
+- A raw total adds one for every gift in `gifts_given`, without exposing an all-gifts board yet.
