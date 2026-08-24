@@ -248,7 +248,7 @@
       "rarity": "secret",
       "hook": "sand-origin healer and shielder",
       "target_triangles": 9000,
-      "design": "A prestigious elegant winged quadruped sand dragon with one gentle expressive head, a sleek pearl-white body with jade and cyan oasis markings, bright cyan eyes, four clean silver-gray paws, large folded wing sails shaped like protective shields, swept silver horns framing a floating emerald oasis gem at the chest, and a long tail ending in soft water-ribbon fins. Its silhouette should read as a healer and protector, refined rather than oversized."
+      "design": "A prestigious elegant winged quadruped sand dragon with one gentle expressive head, a sleek pearl-white body with jade and cyan oasis markings, bright cyan eyes, four clean silver-gray paws, large folded wing sails shaped like protective shields, swept silver horns framing an emerald oasis gem securely set into the chest, and a long tail ending in soft water-ribbon fins. Its silhouette should read as a healer and protector, refined rather than oversized."
     },
     {
       "number": 21,
@@ -416,7 +416,7 @@
       "rarity": "uncommon",
       "hook": "thorn-spirit saps foes",
       "target_triangles": 5000,
-      "design": "A cute ominous bipedal flower spirit with one expressive face, an obsidian seedpod body, bruise-violet thorn-petal hair, glowing red eyes, two simple arms, two sturdy root-like legs, a broken crimson ring behind its head, and a short cape of dark leaves."
+      "design": "A cute ominous bipedal flower spirit with one expressive face, an obsidian seedpod body, bruise-violet thorn-petal hair, glowing red eyes, two simple arms, two sturdy root-like legs, compact crimson thorn accents integrated into the shoulders, and a short cape of dark leaves."
     },
     {
       "number": 35,
@@ -452,7 +452,7 @@
       "rarity": "uncommon",
       "hook": "living totem weakens foes",
       "target_triangles": 5000,
-      "design": "A compact ominous living totem golem with one expressive carved face, an obsidian body, bruise-violet inset panels, glowing red eyes, two broad arms, two sturdy legs, a broken crimson ring behind the head, and no pedestal or separate base."
+      "design": "A compact ominous living totem golem with one expressive carved face, an obsidian body, bruise-violet inset panels, glowing red eyes, two broad arms, two sturdy legs, two broken crimson-black arcs mounted securely at the shoulders, and no pedestal or separate base."
     },
     {
       "number": 38,
@@ -488,7 +488,7 @@
       "rarity": "secret",
       "hook": "sand-origin curse, shred, and drain support",
       "target_triangles": 9000,
-      "design": "A prestigious elegant winged quadruped sand dragon with one cunning expressive head, a sleek obsidian body with bruise-violet and crimson curse markings, glowing red eyes, four clean black paws, large folded black-glass wing sails shaped like inverted protective shields, swept charcoal horns framing a floating crimson drain gem at the chest, and a long tail ending in dark ribbon fins. Its silhouette should read as a curse-and-drain support creature, refined rather than oversized."
+      "design": "A prestigious elegant winged quadruped sand dragon with one cunning expressive head, a sleek obsidian body with bruise-violet and crimson curse markings, glowing red eyes, four clean black paws, large folded black-glass wing sails shaped like inverted protective shields, swept charcoal horns framing a crimson drain gem securely set into the chest, and a long tail ending in dark ribbon fins. Its silhouette should read as a curse-and-drain support creature, refined rather than oversized."
     }
   ],
   "dragon_contract": {

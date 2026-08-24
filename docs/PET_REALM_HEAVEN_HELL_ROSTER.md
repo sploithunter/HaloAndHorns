@@ -397,7 +397,11 @@ tank scale.
 | Obsidian Tortoise | Regen-denial | Rare | black-stone shell projects a healing-denial field |
 | **★ Dreadglass Dragon** | **Support (capstone)** | **SECRET** | obsidian sand dragon whose aura curses and shreds foes while draining life for the team. Rebirth #9 of 11 |
 
-## Heaven 4 — "The Sunspire Reaches" — full pool (Desert dragon)
+## Heaven 4 — "The Sunspire Reaches" — legacy draft (dragon origin TBD)
+
+> **Stale after the Layer 3 rotation correction:** this pool still contains the former Desert
+> dragon assignment. Keep it as concept inventory only until Layer 4 is resequenced; do not
+> implement Alabaster Dragon as a second Desert dragon.
 
 Near-blinding radiant desert — salt-flat white, alabaster, sun-fused quartz. **Palette: white /
 alabaster / sun-white / quartz** (no gold — the Heaven-4 dragon was renamed off "Gilded" for
@@ -440,7 +444,11 @@ exactly this reason). Dragon rotates to **Desert → Alabaster Dragon** (rebirth
 | Sunspring Camel | Regen | Rare | oasis aura, team heal-over-time |
 | **★ Alabaster Dragon** | **Support (capstone)** | **SECRET** | colossal radiant desert dragon crowned with a halo'd sun-disk — its oasis-breath **heals and shields the whole team** (the buffer-dragon, no gold). Rebirth #5 of 11 |
 
-## Hell 4 — "The Scorchglass" — full pool (Desert dragon)
+## Hell 4 — "The Scorchglass" — legacy draft (dragon origin TBD)
+
+> **Stale after the Layer 3 rotation correction:** this pool still contains the former Desert
+> dragon assignment. Keep it as concept inventory only until Layer 4 is resequenced; do not
+> implement Glass Dragon as a second Desert dragon.
 
 Blackened glass desert — obsidian shards, ember-on-black, ash dunes. **Palette: black-glass /
 obsidian / ember.** Dragon rotates to **Desert → Glass Dragon** (rebirth #10), the **Support**

@@ -25,6 +25,20 @@ This folder owns the source concepts and audit trail for the Heaven 3 / Hell 3 p
 7. Texture that identical validated geometry twice: once from Basic and once from Golden.
 8. Rainbow has no authored image or mesh; it remains the runtime script treatment.
 
+## Review and production outputs
+
+- Accepted white-background references: `basic/` and `gold/`.
+- Transparent inventory-card art: `cards/basic/` and `cards/gold/`.
+- Labeled 2D review sheets: `review/layer_3_basic_cards_contact_sheet.png` and
+  `review/layer_3_gold_cards_contact_sheet.png`.
+- Local Meshy outputs: `assets/source/pets/layer_3/<slug>/`. This tree is intentionally ignored by
+  Git because pet source models are heavy; `production_manifest.json` records the recoverable Meshy
+  task IDs, selected mesh audit, and texture outputs.
+- Authoritative local models: `assets/source/pets/layer_3/<slug>/final/basic.glb` and `gold.glb`.
+  The sibling integrity and task JSON files identify the exact accepted output.
+- Final 3D review sheets are generated from Meshy's textured-model previews and live under
+  `review/models/`.
+
 ## Geometry budgets
 
 - Common and Uncommon: 5,000 target triangles.

@@ -1,0 +1,45 @@
+assets_dir: /Users/jason/Documents/HaloAndHorns-Layer3Pets/assets/concepts/layer_3_pets/cards/gold
+icon_count: 40
+
+ash_ibis_gold.png
+bloom_ibis_gold.png
+bloomlight_sprite_gold.png
+celestial_moth_gold.png
+dread_hart_gold.png
+dread_mongoose_gold.png
+dread_wisp_gold.png
+dreadbloom_sprite_gold.png
+dreadcinder_imp_gold.png
+dreadfire_hawk_gold.png
+dreadglass_dragon_gold.png
+dreadguard_bear_gold.png
+dreadlance_seraph_gold.png
+dreadspire_mammoth_gold.png
+dreadthorn_grovekeeper_gold.png
+dreadveil_moth_gold.png
+duskfrost_seal_gold.png
+empyrean_firehawk_gold.png
+empyrean_grovekeeper_gold.png
+empyrean_mammoth_gold.png
+glory_mongoose_gold.png
+gloryleaf_lamb_gold.png
+gloryscale_salamander_gold.png
+gloryspark_cherub_gold.png
+halo_bear_gold.png
+halo_hart_gold.png
+halo_wisp_gold.png
+ironbark_rhino_gold.png
+light_tortoise_gold.png
+lightbark_rhino_gold.png
+lumen_seal_gold.png
+oasis_dragon_gold.png
+obsidian_tortoise_gold.png
+obsidian_totem_gold.png
+radiant_lance_seraph_gold.png
+radiant_totem_gold.png
+ruinmane_lion_gold.png
+ruinscale_salamander_gold.png
+seraph_lion_gold.png
+thornleaf_lamb_gold.png
+
+contact_sheet: layer_3_gold_cards_contact_sheet.png
