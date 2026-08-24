@@ -4631,3 +4631,13 @@ first-session cohort rates.
   reference hashes, Meshy task IDs, input-geometry hashes, final GLB hashes, triangle counts, and
   integrity results. Heavy local GLBs remain under the intentionally ignored `assets/source/pets/`
   tree; the manifest preserves the server-side task lineage.
+
+## 2026-08-24 — Meshy Smart Topology geometry gate
+
+- Added a generic Meshy T2 image-to-3D helper that defaults to an untextured 4,000-triangle GLB,
+  downloads cardinal previews, and records the task and source-image hash without storing API keys.
+- Added a strict Blender mesh-integrity gate that welds importer-created seam duplicates in memory,
+  then rejects boundary loops, wire/3+-face edges, zero-length edges, and zero-area faces before
+  texture credits are spent.
+- Recorded starting budgets of <=4,000 triangles for repeatable flora, 4,000 for trees unless visual
+  review requires more, and approximately 9,000 for direct-import buildings.

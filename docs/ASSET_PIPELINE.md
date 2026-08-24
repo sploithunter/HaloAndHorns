@@ -64,6 +64,36 @@ node scripts/meshy_asset.js make-icon zebra.basic
 node scripts/meshy_asset.js mark elephant.basic --status rejected --notes "bad side texture wrap"
 ```
 
+For generic props and foliage, use Smart Topology T2 as a geometry-first gate:
+
+```sh
+node scripts/meshy_smart_topology.js create \
+  --image assets/concepts/example.png \
+  --output assets/source/props/example/meshy_4000 \
+  --target-polycount 4000 \
+  --wait
+
+/Applications/Blender.app/Contents/MacOS/Blender --background \
+  --python scripts/blender/check_mesh_integrity.py -- \
+  --input assets/source/props/example/meshy_4000/model.glb \
+  --report assets/source/props/example/meshy_4000/integrity.json
+```
+
+The Smart Topology helper deliberately defaults to `should_texture=false`. Do not spend the
+separate texture credits until the downloaded GLB passes the strict boundary/non-manifold check
+and its four cardinal previews look correct. If a generation has a hole, retry the same reference
+at a meaningfully different triangle target; identical targets tend to reproduce the same topology.
+
+Pet Realm's current starting budgets are:
+
+- repeatable small flora: **4,000 triangles or fewer**;
+- trees: start at **4,000 triangles**, increasing only when silhouette review justifies it;
+- buildings: target approximately **9,000 triangles** to stay below the 10,000-triangle direct
+  import lane.
+
+The game can use larger split/imported assemblies, but the automated direct-import lane should not
+quietly exceed these per-mesh targets.
+
 Inspect a downloaded model before Roblox import:
 
 ```sh
