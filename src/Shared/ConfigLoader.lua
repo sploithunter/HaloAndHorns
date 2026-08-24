@@ -1460,6 +1460,50 @@ function ConfigLoader:_validateAreasConfig(config)
         return ok, err
     end
 
+    if config.player_spawn_spread ~= nil then
+        local spread = config.player_spawn_spread
+        ok, err = self:_requireType("areas", spread, "table", "player_spawn_spread")
+        if not ok then
+            return ok, err
+        end
+        if spread.enabled ~= nil and type(spread.enabled) ~= "boolean" then
+            return self:_configError("areas", "player_spawn_spread.enabled", "expected boolean")
+        end
+        for _, key in ipairs({
+            "ring_spacing",
+            "ring_count",
+            "slots_per_ring",
+            "minimum_separation",
+        }) do
+            if spread[key] ~= nil then
+                ok, err =
+                    self:_requirePositiveNumber("areas", spread[key], "player_spawn_spread." .. key)
+                if not ok then
+                    return ok, err
+                end
+            end
+        end
+        for _, key in ipairs({ "ring_count", "slots_per_ring" }) do
+            if spread[key] ~= nil and spread[key] % 1 ~= 0 then
+                return self:_configError(
+                    "areas",
+                    "player_spawn_spread." .. key,
+                    "expected positive integer"
+                )
+            end
+        end
+        if spread.vertical_tolerance ~= nil then
+            ok, err = self:_requireNonNegativeNumber(
+                "areas",
+                spread.vertical_tolerance,
+                "player_spawn_spread.vertical_tolerance"
+            )
+            if not ok then
+                return ok, err
+            end
+        end
+    end
+
     ok, err = self:_requireType("areas", config.zones, "table", "zones")
     if not ok then
         return ok, err
