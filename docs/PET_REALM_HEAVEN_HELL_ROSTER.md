@@ -301,27 +301,28 @@ rules):
 |--------------|-----------|-----------|
 | Fire (H1 / Hell1) | Empyrean / Abyssal | **Blaster** — breath volleys at range |
 | Ice (H2 / Hell2) | Aurora / Rimewraith | **Melee / control** — wades in, freezes |
-| Grass (H3 / Hell3) | Verdant / Blight | **Tank** — colossal HP + heal (heaven) / drain (hell) aura |
-| Desert (H4 / Hell4) | Alabaster / Glass | **Support** — heal/shield/buff aura (heaven) · curse/drain (hell): the buffer-dragon |
+| Desert (H3 / Hell3) | Oasis / Dreadglass | **Support** — heal/shield/buff aura (heaven) · curse/drain (hell): the buffer-dragon |
+| Layer 4 | **TBD** | The former sand-dragon assignment is stale after the Layer 3 rotation correction. |
 | Apex (H5 / Hell5) | Seraph / Void | **Hybrid** — the all-rounder grand finale |
 
 Odds & base power for layers 3–5 follow the same table as layer 2 (Common 12 / Uncommon 16 /
 Rare 22 / Mythic apex 44 @ 1-in-320 / Secret dragon 46 @ ~1-in-2000); only the depth multiplier
 climbs (`WorldContext.difficultyFor`).
 
-## Heaven 3 — "The Empyrean Bloom" — full pool (Grass dragon)
+## Heaven 3 — "The Empyrean Bloom" — full pool (Desert dragon)
 
 The cosmic garden — radiance deepens toward pure light; living emerald-light blooms float in a
-white sky. **Palette: white / pearl / living emerald-light** (no gold). Dragon rotates to
-**Grass → Verdant Dragon** (rebirth #4), a colossal living-light **tank** dragon (huge HP +
-radiant regen aura).
+white sky. **Palette: white / pearl / living emerald-light** (no gold). The first three realm
+steps already use the Grass, Fire/Lava, and Ice dragon origins, so Layer 3 rotates to
+**Desert → Oasis Dragon** (rebirth #4), a radiant **support** dragon whose visible identity is
+healing and shielding rather than tank scale.
 
 ### 🔥 Fire — damage
 | Pet | Role | Rarity | Hook |
 |-----|------|--------|------|
 | Gloryspark Cherub | Melee | Common | mote of white flame |
 | Seraph Lion | Bruiser | Uncommon | haloed light-lion |
-| Radiant Lance | Blaster | Rare | white sunfire lances |
+| Radiant Lance Seraph | Blaster | Rare | celestial kirin-seraph firing white sunfire lances |
 | Gloryscale Salamander | Offense buff | Uncommon | sheathes squad in glory-light |
 | Empyrean Firehawk | Blaster apex | Mythic | great radiant fire-hawk, white-flame dives |
 
@@ -334,67 +335,73 @@ radiant regen aura).
 | **Halo Bear** | **Tank** | Rare | haloed polar bear — Ice's wall |
 | Empyrean Mammoth | Tank / control apex | Mythic | vast radiant-tusked mammoth — stomps & slows |
 
-### 🌿 Grass — sustain — **dragon origin**
+### 🌿 Grass — sustain
 | Pet | Role | Rarity | Hook |
 |-----|------|--------|------|
 | Gloryleaf Lamb | Heal | Common | lamb of green light |
 | Halo Hart | Melee | Common | radiant stag-fawn |
 | Lightbark Rhino | Tank | Uncommon | light-plated rhino, charges & holds |
 | Bloomlight Sprite | Yield / luck | Uncommon | harvest-spirit |
-| **★ Verdant Dragon** | **Tank / heal (capstone)** | **SECRET** | colossal living-light tree-dragon, huge HP + radiant regen aura. Rebirth #4 of 11 |
+| Empyrean Grovekeeper | Tank / heal apex | Mythic | massive non-dragon garden guardian, huge HP + radiant regen aura |
 
-### 🏜️ Desert — support (oasis / radiant)
+### 🏜️ Desert — support (oasis / radiant) — **dragon origin**
 | Pet | Role | Rarity | Hook |
 |-----|------|--------|------|
 | Bloom Ibis | Heal | Common | radiant ibis, gentle heal pulse |
 | Radiant Totem | Shield / buff | Uncommon | living light-totem, team barrier |
 | Glory Mongoose | Offense buff | Uncommon | desert scout that rallies squad damage |
 | Light Tortoise | Regen | Rare | sun-spring shell, team heal-over-time |
-| Empyrean Sphinx | Support apex | Mythic | benevolent oracle-sphinx, blesses the team |
+| **★ Oasis Dragon** | **Support (capstone)** | **SECRET** | radiant sand dragon whose oasis aura heals and shields the whole team. Rebirth #4 of 11 |
 
-## Hell 3 — "The Blightmire" — full pool (Grass dragon)
+## Hell 3 — "The Dreadspire" — full pool (Desert dragon)
 
-The rotting deep — decay, bile, bone, and drowned light. **Palette: rot-green / black / bruise-
-violet.** Give→take inversion holds. Dragon rotates to **Grass → Blight Dragon** (rebirth #9), a
-rotting bog **tank** dragon (huge HP + life-leech aura).
+Jagged demonic wastes and ruined infernal architecture in obsidian, charcoal, hard crimson, and
+bruise-violet. This layer deliberately avoids the blight/rot/decay treatment already owned by Hell
+2. Give→take inversion still holds. Layer 3 rotates to **Desert → Dreadglass Dragon** (rebirth
+#9), a dark **support** dragon whose visible identity is curse, shred, and life-drain rather than
+tank scale.
 
-### 🔥 Fire — damage (plague-fire)
+### 🔥 Fire — damage (ruin-fire)
 | Pet | Role | Rarity | Hook |
 |-----|------|--------|------|
-| Blightcinder Imp | Melee | Common | sickly green-fire imp |
-| Plaguemane Lion | Bruiser | Uncommon | boil-maned lion |
-| Pyreblight Phoenix | Blaster | Rare | green pyre-bolts |
-| Rotbrand Salamander | Curse | Uncommon | brands foes with rot |
-| Pestilence Harpy | Blaster apex | Mythic | rot-winged harpy, plague-screech volleys |
+| Dreadcinder Imp | Melee | Common | charcoal imp with hard crimson cinders |
+| Ruinmane Lion | Bruiser | Uncommon | obsidian lion with a violet-crimson energy mane |
+| Dreadlance Seraph | Blaster | Rare | fallen kirin-seraph firing crimson light lances |
+| Ruinscale Salamander | Curse | Uncommon | brands foes with a weakening ruin-mark |
+| Dreadfire Hawk | Blaster apex | Mythic | vast obsidian war-hawk with crimson dive volleys |
 
-### ❄️ Ice — control (rot-frost)
+### ❄️ Ice — control (dread-frost)
 | Pet | Role | Rarity | Hook |
 |-----|------|--------|------|
-| Murkfrost Seal | Melee | Common | bog-frost seal |
-| Plague Wisp | Control | Uncommon | miasma slows & fears |
-| Carrion Moth | Blaster | Uncommon | rot-spore wings |
-| **Murk Bear** | **Tank** | Rare | bog-frost polar bear — Ice's rotted wall |
-| Blight Mammoth | Tank / control apex | Mythic | drowned bog-mammoth — stomps & slows |
+| Duskfrost Seal | Melee | Common | black-ice seal pup with violet glow |
+| Dread Wisp | Control | Uncommon | ringing shadow-light slows and fears |
+| Dreadveil Moth | Blaster | Uncommon | bruise-violet wings shedding black sparks |
+| **Dreadguard Bear** | **Tank** | Rare | obsidian-frost polar bear — Ice's armored wall |
+| Dreadspire Mammoth | Tank / control apex | Mythic | fortress-plated mammoth — stomps and slows |
 
-### 🌿 Grass — drain — **dragon origin**
+### 🌿 Grass — drain
 | Pet | Role | Rarity | Hook |
 |-----|------|--------|------|
-| Blightleaf Lamb | Life-drain heal | Common | rotted lamb, leech-heals |
-| Murk Hart | Melee | Common | gaunt bog-stag |
-| Rothide Rhino | Tank | Uncommon | rotting armored rhino, charges & holds |
-| Plaguebloom Sprite | Wither-curse | Uncommon | saps foes' output |
-| **★ Blight Dragon** | **Tank / drain (capstone)** | **SECRET** | rotting bog-dragon, huge HP + life-leech aura. Rebirth #9 of 11 |
+| Thornleaf Lamb | Life-drain heal | Common | dark leaf-armored lamb that leech-heals |
+| Dread Hart | Melee | Common | obsidian-antlered infernal stag |
+| Ironbark Rhino | Tank | Uncommon | charcoal bark-plated rhino, charges and holds |
+| Dreadbloom Sprite | Wither-curse | Uncommon | violet thorn-spirit that saps foes' output |
+| Dreadthorn Grovekeeper | Tank / drain apex | Mythic | massive non-dragon thorn guardian, huge HP + life-drain aura |
 
-### 🏜️ Desert — support (rot-carrion / give→take)
+### 🏜️ Desert — support (ruin / give→take) — **dragon origin**
 | Pet | Role | Rarity | Hook |
 |-----|------|--------|------|
-| Carrion Ibis | Drain-heal | Common | rot-ibis, heals the squad off the fallen |
-| Plague Totem | Curse | Uncommon | rotting totem that weakens nearby foes |
-| Murk Mongoose | Debuff | Uncommon | saps enemy damage for the team |
-| Plaguedust Camel | Regen-denial | Rare | stops enemy healing |
-| Pestilent Sphinx | Support apex (curse) | Mythic | cursed oracle-sphinx, blights every foe |
+| Ash Ibis | Drain-heal | Common | charcoal ibis that heals the squad off the fallen |
+| Obsidian Totem | Curse | Uncommon | living black-stone totem that weakens nearby foes |
+| Dread Mongoose | Debuff | Uncommon | armored scout that saps enemy damage for the team |
+| Obsidian Tortoise | Regen-denial | Rare | black-stone shell projects a healing-denial field |
+| **★ Dreadglass Dragon** | **Support (capstone)** | **SECRET** | obsidian sand dragon whose aura curses and shreds foes while draining life for the team. Rebirth #9 of 11 |
 
-## Heaven 4 — "The Sunspire Reaches" — full pool (Desert dragon)
+## Heaven 4 — "The Sunspire Reaches" — legacy draft (dragon origin TBD)
+
+> **Stale after the Layer 3 rotation correction:** this pool still contains the former Desert
+> dragon assignment. Keep it as concept inventory only until Layer 4 is resequenced; do not
+> implement Alabaster Dragon as a second Desert dragon.
 
 Near-blinding radiant desert — salt-flat white, alabaster, sun-fused quartz. **Palette: white /
 alabaster / sun-white / quartz** (no gold — the Heaven-4 dragon was renamed off "Gilded" for
@@ -437,7 +444,11 @@ exactly this reason). Dragon rotates to **Desert → Alabaster Dragon** (rebirth
 | Sunspring Camel | Regen | Rare | oasis aura, team heal-over-time |
 | **★ Alabaster Dragon** | **Support (capstone)** | **SECRET** | colossal radiant desert dragon crowned with a halo'd sun-disk — its oasis-breath **heals and shields the whole team** (the buffer-dragon, no gold). Rebirth #5 of 11 |
 
-## Hell 4 — "The Scorchglass" — full pool (Desert dragon)
+## Hell 4 — "The Scorchglass" — legacy draft (dragon origin TBD)
+
+> **Stale after the Layer 3 rotation correction:** this pool still contains the former Desert
+> dragon assignment. Keep it as concept inventory only until Layer 4 is resequenced; do not
+> implement Glass Dragon as a second Desert dragon.
 
 Blackened glass desert — obsidian shards, ember-on-black, ash dunes. **Palette: black-glass /
 obsidian / ember.** Dragon rotates to **Desert → Glass Dragon** (rebirth #10), the **Support**

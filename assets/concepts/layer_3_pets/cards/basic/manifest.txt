@@ -1,0 +1,45 @@
+assets_dir: /Users/jason/Documents/HaloAndHorns-Layer3Pets/assets/concepts/layer_3_pets/cards/basic
+icon_count: 40
+
+ash_ibis_basic.png
+bloom_ibis_basic.png
+bloomlight_sprite_basic.png
+celestial_moth_basic.png
+dread_hart_basic.png
+dread_mongoose_basic.png
+dread_wisp_basic.png
+dreadbloom_sprite_basic.png
+dreadcinder_imp_basic.png
+dreadfire_hawk_basic.png
+dreadglass_dragon_basic.png
+dreadguard_bear_basic.png
+dreadlance_seraph_basic.png
+dreadspire_mammoth_basic.png
+dreadthorn_grovekeeper_basic.png
+dreadveil_moth_basic.png
+duskfrost_seal_basic.png
+empyrean_firehawk_basic.png
+empyrean_grovekeeper_basic.png
+empyrean_mammoth_basic.png
+glory_mongoose_basic.png
+gloryleaf_lamb_basic.png
+gloryscale_salamander_basic.png
+gloryspark_cherub_basic.png
+halo_bear_basic.png
+halo_hart_basic.png
+halo_wisp_basic.png
+ironbark_rhino_basic.png
+light_tortoise_basic.png
+lightbark_rhino_basic.png
+lumen_seal_basic.png
+oasis_dragon_basic.png
+obsidian_tortoise_basic.png
+obsidian_totem_basic.png
+radiant_lance_seraph_basic.png
+radiant_totem_basic.png
+ruinmane_lion_basic.png
+ruinscale_salamander_basic.png
+seraph_lion_basic.png
+thornleaf_lamb_basic.png
+
+contact_sheet: layer_3_basic_cards_contact_sheet.png

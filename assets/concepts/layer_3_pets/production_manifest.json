@@ -1,0 +1,2355 @@
+{
+  "schema_version": 1,
+  "production_date": "2026-08-24",
+  "generator": "Meshy Smart Topology T2 plus Meshy Retexture",
+  "final_meshy_credit_balance": 3060,
+  "contracts": {
+    "assets": 40,
+    "variants": 80,
+    "one_geometry_input_per_basic_gold_pair": true,
+    "strict_limits": {
+      "max_triangles": 9999,
+      "max_boundary_edges": 0,
+      "max_non_manifold_edges": 0
+    },
+    "dragons": [
+      {
+        "slug": "oasis_dragon",
+        "realm": "heaven",
+        "origin": "desert",
+        "rarity": "secret",
+        "role": "Support capstone"
+      },
+      {
+        "slug": "dreadglass_dragon",
+        "realm": "hell",
+        "origin": "desert",
+        "rarity": "secret",
+        "role": "Support capstone"
+      }
+    ]
+  },
+  "review_sheets": {
+    "basic_cards": "assets/concepts/layer_3_pets/review/layer_3_basic_cards_contact_sheet.png",
+    "gold_cards": "assets/concepts/layer_3_pets/review/layer_3_gold_cards_contact_sheet.png",
+    "basic_models": "assets/concepts/layer_3_pets/review/models/layer_3_basic_models_contact_sheet.png",
+    "gold_models": "assets/concepts/layer_3_pets/review/models/layer_3_gold_models_contact_sheet.png"
+  },
+  "assets": [
+    {
+      "number": 1,
+      "name": "Gloryspark Cherub",
+      "slug": "gloryspark_cherub",
+      "realm": "heaven",
+      "origin": "fire",
+      "role": "Melee",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/gloryspark_cherub.png",
+        "basic_sha256": "11baf4ceed91502888f3244e7e82f9e0c448a3cfc8f82a4afe7d6d5368bc4fe4",
+        "gold": "assets/concepts/layer_3_pets/gold/gloryspark_cherub_gold.png",
+        "gold_sha256": "092fee1a888d980ee2fe68a6a9eea64c8ed7feb72e76e26a6fae29f9d5a23e26",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/gloryspark_cherub_basic.png",
+        "basic_card_sha256": "78ad1bea23f427e2289569073e30157674d711701f2e87b26a5bc1fb04209eb3",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/gloryspark_cherub_gold.png",
+        "gold_card_sha256": "6c2eac0ab209b5e16f506cfbd6ff670833714dec19714b2bfa19e6dcedba1d30"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/gloryspark_cherub/meshy_t2_4800_attempt_2",
+          "task_id": "01a035cf-dbdf-78af-bec2-60bc1eec795e",
+          "target_triangles": 4800,
+          "status": "SUCCEEDED",
+          "credits": 5
+        },
+        {
+          "directory": "assets/source/pets/layer_3/gloryspark_cherub/meshy_t2_5000_attempt_1",
+          "task_id": "01a035cc-8346-7d6a-891d-a7ebcd53730f",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e3-278e-7731-bace-217bf33c5d6c",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "cdcd9297a4fe27c3125766e2c319adc9584ec589506be557a0175f7df87cc36b",
+          "style_image_sha256": "11baf4ceed91502888f3244e7e82f9e0c448a3cfc8f82a4afe7d6d5368bc4fe4",
+          "final_glb": "assets/source/pets/layer_3/gloryspark_cherub/final/basic.glb",
+          "final_glb_sha256": "5261bd75275d33a5f2002f78025757b39bcbc0fb94c7ee95731a1bd099bd9f7e",
+          "triangles": 9764,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e3-2789-7731-83f6-7496337d27ef",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "cdcd9297a4fe27c3125766e2c319adc9584ec589506be557a0175f7df87cc36b",
+          "style_image_sha256": "092fee1a888d980ee2fe68a6a9eea64c8ed7feb72e76e26a6fae29f9d5a23e26",
+          "final_glb": "assets/source/pets/layer_3/gloryspark_cherub/final/gold.glb",
+          "final_glb_sha256": "0204dab9da7e334d6022d85282d3657cbad9d92f33ed3b3fec22fdfc05a3b403",
+          "triangles": 9764,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 2,
+      "name": "Seraph Lion",
+      "slug": "seraph_lion",
+      "realm": "heaven",
+      "origin": "fire",
+      "role": "Bruiser",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/seraph_lion.png",
+        "basic_sha256": "ad9761a94ea7ef4045013b60524372302eb6074bfca7643533a08d52197928fe",
+        "gold": "assets/concepts/layer_3_pets/gold/seraph_lion_gold.png",
+        "gold_sha256": "6197f014946199cb1a46427bb7072cd2f31ff89c04050931f9eb0c66c0841943",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/seraph_lion_basic.png",
+        "basic_card_sha256": "73dea62c933f6075ff2936511ccc1e1f977d9645fab394fcd4aafc5253f75b50",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/seraph_lion_gold.png",
+        "gold_card_sha256": "a7fe3af6592176862d69066387575b25a3f67ef8670f0a983ce304bb5a8f7c63"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/seraph_lion/meshy_t2_4800_attempt_2",
+          "task_id": "01a035cf-dbd8-7e22-9102-c2bedc25e979",
+          "target_triangles": 4800,
+          "status": "SUCCEEDED",
+          "credits": 5
+        },
+        {
+          "directory": "assets/source/pets/layer_3/seraph_lion/meshy_t2_5000_attempt_1",
+          "task_id": "01a035cc-8334-7d69-8082-fc4afcba7219",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e3-278b-7337-b57f-8ea0fa02e3dc",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "70cdcb127c78c48650c93fe1d0fc0546a2bc5e2703dfe181f3f22ed160af58f0",
+          "style_image_sha256": "ad9761a94ea7ef4045013b60524372302eb6074bfca7643533a08d52197928fe",
+          "final_glb": "assets/source/pets/layer_3/seraph_lion/final/basic.glb",
+          "final_glb_sha256": "39d9d5a6b699bd2b6b4f80838cbc1786f8fc863a57e44c76535e67d0e11f9ecb",
+          "triangles": 4968,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e3-2789-7337-a84e-5392cb69e7d1",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "70cdcb127c78c48650c93fe1d0fc0546a2bc5e2703dfe181f3f22ed160af58f0",
+          "style_image_sha256": "6197f014946199cb1a46427bb7072cd2f31ff89c04050931f9eb0c66c0841943",
+          "final_glb": "assets/source/pets/layer_3/seraph_lion/final/gold.glb",
+          "final_glb_sha256": "9a3f0ec954f6967dc6bd7395dcbe10d70397265d5fd27686484abad764345b93",
+          "triangles": 4968,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 3,
+      "name": "Radiant Lance Seraph",
+      "slug": "radiant_lance_seraph",
+      "realm": "heaven",
+      "origin": "fire",
+      "role": "Blaster",
+      "rarity": "rare",
+      "target_triangles": 6500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/radiant_lance_seraph.png",
+        "basic_sha256": "4fff90311038ab584f6c72258138dab4716a3c6c02644fac3fe568072d5f59ef",
+        "gold": "assets/concepts/layer_3_pets/gold/radiant_lance_seraph_gold.png",
+        "gold_sha256": "1aad8e9ed38a1024b139eba15683df5c4b8e9c03258c9f99ac976a473c4bdbf0",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/radiant_lance_seraph_basic.png",
+        "basic_card_sha256": "a89e29ba9baa1212be20201b3f4b3fd793fe2172d049a9f9ab8e4017567ac86d",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/radiant_lance_seraph_gold.png",
+        "gold_card_sha256": "9ff869230c9ccb6965221e0db1e11c204fa6a862340f945ccb2cb77505548649"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/radiant_lance_seraph/meshy_t2_6300_attempt_2",
+          "task_id": "01a035cf-dbcd-78ae-a768-290e6c0ad5c8",
+          "target_triangles": 6300,
+          "status": "SUCCEEDED",
+          "credits": 5
+        },
+        {
+          "directory": "assets/source/pets/layer_3/radiant_lance_seraph/meshy_t2_6500_attempt_1",
+          "task_id": "01a035cc-8334-7d6a-999c-f7b9f8cd9ea6",
+          "target_triangles": 6500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e3-278f-7337-9127-cc35afa69899",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "60cb3f71b44347a703863199daea347d2afae35002c6339b4af73ebd7166993c",
+          "style_image_sha256": "4fff90311038ab584f6c72258138dab4716a3c6c02644fac3fe568072d5f59ef",
+          "final_glb": "assets/source/pets/layer_3/radiant_lance_seraph/final/basic.glb",
+          "final_glb_sha256": "b7042c6d9a95793f63427fab7eefb461aeddb690d4b9ed05f7a83ce2c0222fdf",
+          "triangles": 9752,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e3-d28e-7373-ab83-a45ded80d794",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "60cb3f71b44347a703863199daea347d2afae35002c6339b4af73ebd7166993c",
+          "style_image_sha256": "1aad8e9ed38a1024b139eba15683df5c4b8e9c03258c9f99ac976a473c4bdbf0",
+          "final_glb": "assets/source/pets/layer_3/radiant_lance_seraph/final/gold.glb",
+          "final_glb_sha256": "2b1460004a5b279237092defbfccaec24448aa20441c78a09db000963893f51f",
+          "triangles": 9752,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 4,
+      "name": "Gloryscale Salamander",
+      "slug": "gloryscale_salamander",
+      "realm": "heaven",
+      "origin": "fire",
+      "role": "Offense buff",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/gloryscale_salamander.png",
+        "basic_sha256": "88772fa5ced3c4c86355b26d819b752fb6180713fdd943ce760902119c836bba",
+        "gold": "assets/concepts/layer_3_pets/gold/gloryscale_salamander_gold.png",
+        "gold_sha256": "35033de8857cd92890d69739d1b0bdeaabc5e84919b04fe665cbb16af588a5af",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/gloryscale_salamander_basic.png",
+        "basic_card_sha256": "c76f315a0e352e89e6159d7fad6e6c529647c4012e9a076140d57ac8f8f1d677",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/gloryscale_salamander_gold.png",
+        "gold_card_sha256": "23443ca0657e3e70a41936ffc274bd4556e09da5d2966868ba40b75c53af09d1"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/gloryscale_salamander/meshy_t2_4800_attempt_2",
+          "task_id": "01a035cf-dbd6-78ae-970a-dfad7b84765e",
+          "target_triangles": 4800,
+          "status": "SUCCEEDED",
+          "credits": 5
+        },
+        {
+          "directory": "assets/source/pets/layer_3/gloryscale_salamander/meshy_t2_5000_attempt_1",
+          "task_id": "01a035cc-83a1-7d6a-9b87-73e5a09924fd",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e3-e005-777c-9f20-c8ed6a292b8a",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "6ed07e26b84a952e69855382965fc48c93a5e0b162d2b90438ee0af482622771",
+          "style_image_sha256": "88772fa5ced3c4c86355b26d819b752fb6180713fdd943ce760902119c836bba",
+          "final_glb": "assets/source/pets/layer_3/gloryscale_salamander/final/basic.glb",
+          "final_glb_sha256": "dfb1b29793a24b64b205ec11e0f8f98033ff14754f8afed2f10893161fd8b15c",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e3-e420-7dab-b306-44d3b5dfaa50",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "6ed07e26b84a952e69855382965fc48c93a5e0b162d2b90438ee0af482622771",
+          "style_image_sha256": "35033de8857cd92890d69739d1b0bdeaabc5e84919b04fe665cbb16af588a5af",
+          "final_glb": "assets/source/pets/layer_3/gloryscale_salamander/final/gold.glb",
+          "final_glb_sha256": "2a3e06b3552ddc6d0b3975aece6a49d89fddf20a0760b2525d4f9000e7e004aa",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 5,
+      "name": "Empyrean Firehawk",
+      "slug": "empyrean_firehawk",
+      "realm": "heaven",
+      "origin": "fire",
+      "role": "Blaster apex",
+      "rarity": "mythical",
+      "target_triangles": 8500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/empyrean_firehawk.png",
+        "basic_sha256": "04a828e009041f46113739881ffd2f4364c3af0b0a6ee01e44555c8db21868b9",
+        "gold": "assets/concepts/layer_3_pets/gold/empyrean_firehawk_gold.png",
+        "gold_sha256": "169e0014341c283e7d759b40f0b21119514adb5660097f7e69e4b5c1c6785789",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/empyrean_firehawk_basic.png",
+        "basic_card_sha256": "6d912e525d2ebb15c9e77db7811f598af7f6ede3e18aaa791513de27fbf6e021",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/empyrean_firehawk_gold.png",
+        "gold_card_sha256": "ff90317714a3c560e83bd1215d1dbd4738d6c1ff5be99a9090a61451d7217683"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/empyrean_firehawk/meshy_t2_8300_attempt_2",
+          "task_id": "01a035cf-dbd6-78af-94e0-d38d2324f06f",
+          "target_triangles": 8300,
+          "status": "SUCCEEDED",
+          "credits": 5
+        },
+        {
+          "directory": "assets/source/pets/layer_3/empyrean_firehawk/meshy_t2_8500_attempt_1",
+          "task_id": "01a035cc-833c-725d-92f2-f38abb56f413",
+          "target_triangles": 8500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e3-eae0-7378-a1f4-7e274ed6e4b1",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "beb4111c4e24b5b931d6ce5c6030f06f2e4d813ab596d480bdc8bf81a9063bc4",
+          "style_image_sha256": "04a828e009041f46113739881ffd2f4364c3af0b0a6ee01e44555c8db21868b9",
+          "final_glb": "assets/source/pets/layer_3/empyrean_firehawk/final/basic.glb",
+          "final_glb_sha256": "f58c37509c049cc228ef5205c55140dc737bb7cfc7d03775c454ad18390a852d",
+          "triangles": 9734,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e3-f45d-7378-9c3c-f6f7c5cb61c5",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "beb4111c4e24b5b931d6ce5c6030f06f2e4d813ab596d480bdc8bf81a9063bc4",
+          "style_image_sha256": "169e0014341c283e7d759b40f0b21119514adb5660097f7e69e4b5c1c6785789",
+          "final_glb": "assets/source/pets/layer_3/empyrean_firehawk/final/gold.glb",
+          "final_glb_sha256": "a8bdd91ef7c2fe94a368e79e9dfcfa37c0e47f22e9133be1f8cee23e8586ed1e",
+          "triangles": 9734,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 6,
+      "name": "Lumen Seal",
+      "slug": "lumen_seal",
+      "realm": "heaven",
+      "origin": "ice",
+      "role": "Melee",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/lumen_seal.png",
+        "basic_sha256": "3fb3e8af69329f9eff4f4d132d0d5d7b640d5291912d7a20e8b0ad8b72901d84",
+        "gold": "assets/concepts/layer_3_pets/gold/lumen_seal_gold.png",
+        "gold_sha256": "ca11812a826afe424246b3eb71a98fb1ce1820e73901ab0e8b327fcbde5c36b0",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/lumen_seal_basic.png",
+        "basic_card_sha256": "e18f6ae7069a479ee052f482a5e4fca65174baf5cb3cae2c715e3bb434e52640",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/lumen_seal_gold.png",
+        "gold_card_sha256": "6570c493a41a37240a5ba4cc20bb1c5e06b9db7e99ffadddfec288d59f05924f"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/lumen_seal/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dc-9278-7673-ab48-da48db52649e",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e4-cba9-73e0-bc1b-a616af3268f1",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "836e57aecfa94699d5d22b4722e6ab0cd7f1f03163c97dac3b35bdb09cc12ce5",
+          "style_image_sha256": "3fb3e8af69329f9eff4f4d132d0d5d7b640d5291912d7a20e8b0ad8b72901d84",
+          "final_glb": "assets/source/pets/layer_3/lumen_seal/final/basic.glb",
+          "final_glb_sha256": "bef327b9ea958202f9b3ff3f6000712709f0d89d1ade3ac59c18ae2a807484a7",
+          "triangles": 9748,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e4-cd17-7dd2-bd89-74066f185fcf",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "836e57aecfa94699d5d22b4722e6ab0cd7f1f03163c97dac3b35bdb09cc12ce5",
+          "style_image_sha256": "ca11812a826afe424246b3eb71a98fb1ce1820e73901ab0e8b327fcbde5c36b0",
+          "final_glb": "assets/source/pets/layer_3/lumen_seal/final/gold.glb",
+          "final_glb_sha256": "f116c0ad76753656a01b067b607e3ede08911efc0402cd0a20f88b0073b6f96f",
+          "triangles": 9748,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 7,
+      "name": "Halo Wisp",
+      "slug": "halo_wisp",
+      "realm": "heaven",
+      "origin": "ice",
+      "role": "Control",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/halo_wisp.png",
+        "basic_sha256": "ff342a6ef191adef2c93b54a6518c0dee82b4cf6a3ff6ee6b0088b7b22097e1a",
+        "gold": "assets/concepts/layer_3_pets/gold/halo_wisp_gold.png",
+        "gold_sha256": "29fa90ebe83708916b1828a08e7b7aeb28f199c624b03dff9145c9d714bfd662",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/halo_wisp_basic.png",
+        "basic_card_sha256": "0d14f79a774506b1ab8ed44091fb0f6ffb1f43780096b54206d3c033168c48fe",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/halo_wisp_gold.png",
+        "gold_card_sha256": "46a5dfc18879289bd2a9dbd45174dac9bf380dc50d778d5e8b191810bb0e0b96"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/halo_wisp/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dc-9277-75bc-9304-72da88fc9370",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e4-cdab-7dd2-956e-a2ce06789b99",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "b4256b813dad8cc6b7742996f97ce2fc38d5aa359aedb6430ac072cf575d3b70",
+          "style_image_sha256": "ff342a6ef191adef2c93b54a6518c0dee82b4cf6a3ff6ee6b0088b7b22097e1a",
+          "final_glb": "assets/source/pets/layer_3/halo_wisp/final/basic.glb",
+          "final_glb_sha256": "75b176614ca52efa6e032bee1c7a709d16533cbb068bbfe3c585052e49d3998c",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e4-ce7a-7dd2-be42-e94e165c920a",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "b4256b813dad8cc6b7742996f97ce2fc38d5aa359aedb6430ac072cf575d3b70",
+          "style_image_sha256": "29fa90ebe83708916b1828a08e7b7aeb28f199c624b03dff9145c9d714bfd662",
+          "final_glb": "assets/source/pets/layer_3/halo_wisp/final/gold.glb",
+          "final_glb_sha256": "72fc95f2cc59f301e1a68b3006fe7f2c7c6c66a303ab195435efbfe95e169481",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 8,
+      "name": "Celestial Moth",
+      "slug": "celestial_moth",
+      "realm": "heaven",
+      "origin": "ice",
+      "role": "Blaster",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/celestial_moth.png",
+        "basic_sha256": "5380df5f434d2b32882beb2b05c931a61a069a842e60aefc7fa8adc00f2b35e3",
+        "gold": "assets/concepts/layer_3_pets/gold/celestial_moth_gold.png",
+        "gold_sha256": "3f1d5a8e992818b9ce5b249589a92b47e4fc4b212181baf238d9ce3ecfdeea2c",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/celestial_moth_basic.png",
+        "basic_card_sha256": "da343733d151636cea9ae710739bfc37b6a3f7e4046b9598cc76774866f5db14",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/celestial_moth_gold.png",
+        "gold_card_sha256": "56022823f20564b1fd135ff91ecb7c45feeb3ea31c2b7b4cb29fa84584cdce98"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/celestial_moth/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dc-9278-7674-9e3d-24540c20ea98",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e4-d2f9-77a0-8b1e-20c2900850e1",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "6a23730d19a0f3e42e4aeeaab68693a1b4aa2dea16a08cc7e00e309358ab1634",
+          "style_image_sha256": "5380df5f434d2b32882beb2b05c931a61a069a842e60aefc7fa8adc00f2b35e3",
+          "final_glb": "assets/source/pets/layer_3/celestial_moth/final/basic.glb",
+          "final_glb_sha256": "2aec222435eb058fab35eef77c58150c5139cf35f097749ff434e88801b437ec",
+          "triangles": 9758,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e5-9953-77c0-a12c-14ba1bde9387",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "6a23730d19a0f3e42e4aeeaab68693a1b4aa2dea16a08cc7e00e309358ab1634",
+          "style_image_sha256": "3f1d5a8e992818b9ce5b249589a92b47e4fc4b212181baf238d9ce3ecfdeea2c",
+          "final_glb": "assets/source/pets/layer_3/celestial_moth/final/gold.glb",
+          "final_glb_sha256": "2f4de70421d416c44fe518cdd713e1f6342cdd948e63cacfc4cfbecc38aa870c",
+          "triangles": 9758,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 9,
+      "name": "Halo Bear",
+      "slug": "halo_bear",
+      "realm": "heaven",
+      "origin": "ice",
+      "role": "Tank",
+      "rarity": "rare",
+      "target_triangles": 6500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/halo_bear.png",
+        "basic_sha256": "db4bf4126c0fa28b534d076c95b808d6467caad44036d0394c53f262594d1295",
+        "gold": "assets/concepts/layer_3_pets/gold/halo_bear_gold.png",
+        "gold_sha256": "bb1e77e47fb618f55806a511d2b5f8bbdaa9c0944eae10c3d24e8f6dc7d37163",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/halo_bear_basic.png",
+        "basic_card_sha256": "55f41f7cdfdb6a611c8f1228343c8640121f312f73c33fcc1f84bcf1b8cd098a",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/halo_bear_gold.png",
+        "gold_card_sha256": "ab61e70cf1ca444c2d598fa47b86e9575622556f7eb2485d0f71c51f55b89b25"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/halo_bear/meshy_t2_6500_attempt_1",
+          "task_id": "01a035dc-9278-710c-b4e2-2cfdd0e5ddaa",
+          "target_triangles": 6500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e5-b780-78f1-9d47-4d2352232988",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "537240f0c79340de8d4bcfc81b450febe6fcdb7e3d1ea5490dccf42560f2c219",
+          "style_image_sha256": "db4bf4126c0fa28b534d076c95b808d6467caad44036d0394c53f262594d1295",
+          "final_glb": "assets/source/pets/layer_3/halo_bear/final/basic.glb",
+          "final_glb_sha256": "e31fb2689a959cc08187edf6e02cf18f09b8abc4ac8ccc82c221d4c9636182d6",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e5-c416-7df8-8823-cc2f9b0aa257",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "537240f0c79340de8d4bcfc81b450febe6fcdb7e3d1ea5490dccf42560f2c219",
+          "style_image_sha256": "bb1e77e47fb618f55806a511d2b5f8bbdaa9c0944eae10c3d24e8f6dc7d37163",
+          "final_glb": "assets/source/pets/layer_3/halo_bear/final/gold.glb",
+          "final_glb_sha256": "24be11c5c6b76562c741fbf632bac4b7e2cf271d7951cbe4f37a1b7be0562fc6",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 10,
+      "name": "Empyrean Mammoth",
+      "slug": "empyrean_mammoth",
+      "realm": "heaven",
+      "origin": "ice",
+      "role": "Tank / control apex",
+      "rarity": "mythical",
+      "target_triangles": 8500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/empyrean_mammoth.png",
+        "basic_sha256": "f99940a9809488a7edc3490a4a95b373c5103e41a0f89a2f6595f9d7c9bcfe2a",
+        "gold": "assets/concepts/layer_3_pets/gold/empyrean_mammoth_gold.png",
+        "gold_sha256": "b2da8211a812489db8c2685fcb206ec9e56b1cf96ab7778ddce82e4b99d3ec9e",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/empyrean_mammoth_basic.png",
+        "basic_card_sha256": "76eaae532729741b3e8665087c19059b15195bf40ed4c6f937de8e20eb543257",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/empyrean_mammoth_gold.png",
+        "gold_card_sha256": "629c008008b2940e3515273989eedfe06f3856ab6d2770453b201f443400fd62"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/empyrean_mammoth/meshy_t2_8500_attempt_1",
+          "task_id": "01a035dc-9279-7674-855e-051bf8bafed9",
+          "target_triangles": 8500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e5-c6ad-77c7-951a-6360296361ef",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "de45d7e8e619b3990e2fa9b326569296ba74e4dcfe2ac54399ca01aaffc21779",
+          "style_image_sha256": "f99940a9809488a7edc3490a4a95b373c5103e41a0f89a2f6595f9d7c9bcfe2a",
+          "final_glb": "assets/source/pets/layer_3/empyrean_mammoth/final/basic.glb",
+          "final_glb_sha256": "6cfb79a3b9a6efb95a030c9b364dc084964e7fb164ed258bdbfadd8352661b98",
+          "triangles": 9762,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e5-cc6a-77ca-a06c-37c950bd9972",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "de45d7e8e619b3990e2fa9b326569296ba74e4dcfe2ac54399ca01aaffc21779",
+          "style_image_sha256": "b2da8211a812489db8c2685fcb206ec9e56b1cf96ab7778ddce82e4b99d3ec9e",
+          "final_glb": "assets/source/pets/layer_3/empyrean_mammoth/final/gold.glb",
+          "final_glb_sha256": "7e4aa2b2db1f255a3c9a4673631c28ef4781d9b700fe61f23ad4a2b3d11d3f7f",
+          "triangles": 9762,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 11,
+      "name": "Gloryleaf Lamb",
+      "slug": "gloryleaf_lamb",
+      "realm": "heaven",
+      "origin": "grass",
+      "role": "Heal",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/gloryleaf_lamb.png",
+        "basic_sha256": "4269c2edcd436cccb5565f309999871776315f6375a6ddc79feebaf17d5f2f30",
+        "gold": "assets/concepts/layer_3_pets/gold/gloryleaf_lamb_gold.png",
+        "gold_sha256": "c88427d01b0af8890a3186c4365c20039b83e7d4f13e67309e3d12c91256f35d",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/gloryleaf_lamb_basic.png",
+        "basic_card_sha256": "b96db75bdc202387795f194eff16bbb67324f31a66294d198d8861b10128f7a6",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/gloryleaf_lamb_gold.png",
+        "gold_card_sha256": "cf29aa08bb9473f8fe7da1e542c891458f6383d18c81eec99bc85e5c5c57d784"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/gloryleaf_lamb/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dc-ddff-7682-9140-991faa1ddcbf",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e6-62c7-7e2c-bc11-19e4c2cd0aa7",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "61d4a85222d23cdf3d27e90c26f1b84c27ad9110567fcad5d76cd36520e6fc6c",
+          "style_image_sha256": "4269c2edcd436cccb5565f309999871776315f6375a6ddc79feebaf17d5f2f30",
+          "final_glb": "assets/source/pets/layer_3/gloryleaf_lamb/final/basic.glb",
+          "final_glb_sha256": "09312e820d5ee4ac55dc4c1201063dda77e3a7de9e765d65c5927c8d68c98692",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e6-9883-7452-b85c-a09530363fa6",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "61d4a85222d23cdf3d27e90c26f1b84c27ad9110567fcad5d76cd36520e6fc6c",
+          "style_image_sha256": "c88427d01b0af8890a3186c4365c20039b83e7d4f13e67309e3d12c91256f35d",
+          "final_glb": "assets/source/pets/layer_3/gloryleaf_lamb/final/gold.glb",
+          "final_glb_sha256": "b26c26ba0322de616fc897db72b5a0150fd670b84a19911010e7fb4c4e1ff324",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 12,
+      "name": "Halo Hart",
+      "slug": "halo_hart",
+      "realm": "heaven",
+      "origin": "grass",
+      "role": "Melee",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/halo_hart.png",
+        "basic_sha256": "76a48a2d53f7fc07a034384cb6b4f8de32134b08900d538e5e3f57bcf8b2fe63",
+        "gold": "assets/concepts/layer_3_pets/gold/halo_hart_gold.png",
+        "gold_sha256": "5056f00c50a3fdbaf08c47ea30f10e073fcdee7bd2d7dbff656d11110b66e2c0",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/halo_hart_basic.png",
+        "basic_card_sha256": "88378b7c788dbbfd27726ad97ebb794ec59eca9b58ecd2a7abba223afe216ca9",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/halo_hart_gold.png",
+        "gold_card_sha256": "f91ef413b02150444b4db81eadaae0eec1ba4370759c14c919e15a97f5614c8d"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/halo_hart/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dc-df3a-7682-aff0-d398b2b1bbcb",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e6-b0d4-781f-a358-89bacc0fd1cb",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "f875e4d8d008579676d3a2990ad91c184fff444f1e80a263c8f59fd45948be90",
+          "style_image_sha256": "76a48a2d53f7fc07a034384cb6b4f8de32134b08900d538e5e3f57bcf8b2fe63",
+          "final_glb": "assets/source/pets/layer_3/halo_hart/final/basic.glb",
+          "final_glb_sha256": "57e5f3868acbc1871ec97de6d1c1a0b14cf52c8b716c2bcfae5890c32a09d9a9",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e6-c378-7e5e-9262-0a8c9d80905b",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "f875e4d8d008579676d3a2990ad91c184fff444f1e80a263c8f59fd45948be90",
+          "style_image_sha256": "5056f00c50a3fdbaf08c47ea30f10e073fcdee7bd2d7dbff656d11110b66e2c0",
+          "final_glb": "assets/source/pets/layer_3/halo_hart/final/gold.glb",
+          "final_glb_sha256": "28069aff9bee573c28e0a50fb7f7bb741e541d24a18fc86996023ea8ff581d92",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 13,
+      "name": "Lightbark Rhino",
+      "slug": "lightbark_rhino",
+      "realm": "heaven",
+      "origin": "grass",
+      "role": "Tank",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/lightbark_rhino.png",
+        "basic_sha256": "08648ffd2ff0f2993344eed4bd06ba7f2df293ef81275f453e075ba694e3ff53",
+        "gold": "assets/concepts/layer_3_pets/gold/lightbark_rhino_gold.png",
+        "gold_sha256": "3766fa0c5b7146a99a788266e008b2dd858c28cb5ea07bc610d41e0c46378ed6",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/lightbark_rhino_basic.png",
+        "basic_card_sha256": "0a5ddf34b783d25dc72433526a7078190365813face07c0578729fbfb2fbd9eb",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/lightbark_rhino_gold.png",
+        "gold_card_sha256": "5a08fbbf93caaf5cdf96d4822ab9be0717a0a5b5cf5357b6706f95dd980fe559"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/lightbark_rhino/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dc-e0d3-7bdc-8952-e34a1bd3e049",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e6-cb25-7e61-8359-2ea7fd0c3d77",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "d11b5421e7762aa7d8af1dab3e1770fa20f75cc8a7a22193d2ad80303465697d",
+          "style_image_sha256": "08648ffd2ff0f2993344eed4bd06ba7f2df293ef81275f453e075ba694e3ff53",
+          "final_glb": "assets/source/pets/layer_3/lightbark_rhino/final/basic.glb",
+          "final_glb_sha256": "51b454fc023ac8bdd6c29f99b4417ac160fbb6e924d5f27fb8b868959f241ecf",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e7-3761-7e82-8422-c0e3e87feb24",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "d11b5421e7762aa7d8af1dab3e1770fa20f75cc8a7a22193d2ad80303465697d",
+          "style_image_sha256": "3766fa0c5b7146a99a788266e008b2dd858c28cb5ea07bc610d41e0c46378ed6",
+          "final_glb": "assets/source/pets/layer_3/lightbark_rhino/final/gold.glb",
+          "final_glb_sha256": "840107e3978109a608748b1529d542520e1589e6f3e4c411b9f495fe8dc8a7ff",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 14,
+      "name": "Bloomlight Sprite",
+      "slug": "bloomlight_sprite",
+      "realm": "heaven",
+      "origin": "grass",
+      "role": "Yield / luck",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/bloomlight_sprite.png",
+        "basic_sha256": "205ffd69f04b4989da1d3f1e780a4ecf4f9f04750cdb874d2ddcfe121588a3dc",
+        "gold": "assets/concepts/layer_3_pets/gold/bloomlight_sprite_gold.png",
+        "gold_sha256": "be099a4150346ce6cdc8e71b364d7952ef589cf9b0821577c5dab8a9a4dd71ba",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/bloomlight_sprite_basic.png",
+        "basic_card_sha256": "d67498ab0199a6f879b801602b381990d5736523311d86ee2c78ee255a328590",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/bloomlight_sprite_gold.png",
+        "gold_card_sha256": "223fff430d6f5129b27c7b735941584118c0d233ad0aa38991601c389f6ce88b"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/bloomlight_sprite/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dc-e412-7120-8619-ae08af56d1b3",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e7-61ea-7946-a0f7-3ebf3c13456d",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "5f09e9d1ae7cfe0b7c4f647af11b1f5de6073d554efbdd1813a0534796dbd876",
+          "style_image_sha256": "205ffd69f04b4989da1d3f1e780a4ecf4f9f04750cdb874d2ddcfe121588a3dc",
+          "final_glb": "assets/source/pets/layer_3/bloomlight_sprite/final/basic.glb",
+          "final_glb_sha256": "234994ff354aabcc3ce9c7988b90d49bc306c4390c5c13838ca10aed8b898f69",
+          "triangles": 5392,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e7-6df2-7855-a9f3-72d888ead8bc",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "5f09e9d1ae7cfe0b7c4f647af11b1f5de6073d554efbdd1813a0534796dbd876",
+          "style_image_sha256": "be099a4150346ce6cdc8e71b364d7952ef589cf9b0821577c5dab8a9a4dd71ba",
+          "final_glb": "assets/source/pets/layer_3/bloomlight_sprite/final/gold.glb",
+          "final_glb_sha256": "3bc69839fd66dd028073c9bc174f3bc2f7f999555a303a90c4f6e75af87f472e",
+          "triangles": 5392,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 15,
+      "name": "Empyrean Grovekeeper",
+      "slug": "empyrean_grovekeeper",
+      "realm": "heaven",
+      "origin": "grass",
+      "role": "Tank / heal apex",
+      "rarity": "mythical",
+      "target_triangles": 8500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/empyrean_grovekeeper.png",
+        "basic_sha256": "2aa80c03d74d9e7611674409135e1c8c92a7c7ea443fa9ebf681a95101d0ca76",
+        "gold": "assets/concepts/layer_3_pets/gold/empyrean_grovekeeper_gold.png",
+        "gold_sha256": "2ef9037484d0272cd3d3b4adbbf8425408d2fbe4eb5cc957d885329058361843",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/empyrean_grovekeeper_basic.png",
+        "basic_card_sha256": "b82b498e65a31b334243d0de6cad6919fa5283c07bc5b8d5f8bd5461c8b4adc7",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/empyrean_grovekeeper_gold.png",
+        "gold_card_sha256": "796a78516a12174ffd579f3224152b3e6587709320d26ba4aa95e767df9e322c"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/empyrean_grovekeeper/meshy_t2_8500_attempt_1",
+          "task_id": "01a035dc-f776-75d0-9a06-2368429560ee",
+          "target_triangles": 8500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e7-8cc5-785b-ac9e-478052c45511",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "bbb32de2d2fce64aae56bfe0aab9c9a6d66e25275bf2264fdae78dcbe48c271f",
+          "style_image_sha256": "2aa80c03d74d9e7611674409135e1c8c92a7c7ea443fa9ebf681a95101d0ca76",
+          "final_glb": "assets/source/pets/layer_3/empyrean_grovekeeper/final/basic.glb",
+          "final_glb_sha256": "bacaadd1788c51f1f0c31eecd999f955965b061a3399a1a07fceba1baa201221",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e7-ae58-794d-b802-ef8df1525520",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "bbb32de2d2fce64aae56bfe0aab9c9a6d66e25275bf2264fdae78dcbe48c271f",
+          "style_image_sha256": "2ef9037484d0272cd3d3b4adbbf8425408d2fbe4eb5cc957d885329058361843",
+          "final_glb": "assets/source/pets/layer_3/empyrean_grovekeeper/final/gold.glb",
+          "final_glb_sha256": "e722c887397aa3fe938015418e8b1e745d3b1064c03256305f4e767466b04b48",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 16,
+      "name": "Bloom Ibis",
+      "slug": "bloom_ibis",
+      "realm": "heaven",
+      "origin": "desert",
+      "role": "Heal",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/bloom_ibis.png",
+        "basic_sha256": "608fdc42a75d5429639bb3e513edf046327c1df3ac2acf56239ebfe0f579d5fe",
+        "gold": "assets/concepts/layer_3_pets/gold/bloom_ibis_gold.png",
+        "gold_sha256": "0bccb4d03e6ea751453a7f80a3bbc1debb3dab8a44e58f2946fe49320626d563",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/bloom_ibis_basic.png",
+        "basic_card_sha256": "873a9cfbae0115ad53f98195a7764e6f3e71721b33667e2b33af518bac531212",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/bloom_ibis_gold.png",
+        "gold_card_sha256": "c7086910342c945553bec14ff766ce2a0ff9e32657a60561fce383084f61395d"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/bloom_ibis/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dd-1848-7bdf-b50c-99498d7912fe",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e8-1a08-7eb1-830a-9deeea8f7ef8",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "70b1dd3c37796f5e4ed1f84d23160bf61ed77b33b6367a9ebefbe843b4b3a2ab",
+          "style_image_sha256": "608fdc42a75d5429639bb3e513edf046327c1df3ac2acf56239ebfe0f579d5fe",
+          "final_glb": "assets/source/pets/layer_3/bloom_ibis/final/basic.glb",
+          "final_glb_sha256": "a196bfa35057a610524478aabfbe2a2886143678f330ced63b28a0455c7a728f",
+          "triangles": 9764,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e8-1e16-7898-b8d6-4cb1631670aa",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "70b1dd3c37796f5e4ed1f84d23160bf61ed77b33b6367a9ebefbe843b4b3a2ab",
+          "style_image_sha256": "0bccb4d03e6ea751453a7f80a3bbc1debb3dab8a44e58f2946fe49320626d563",
+          "final_glb": "assets/source/pets/layer_3/bloom_ibis/final/gold.glb",
+          "final_glb_sha256": "c42c0e8317283b8327baaeecec45a6b297fa149a2b8f87b2aa47d061cfbd6816",
+          "triangles": 9764,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 17,
+      "name": "Radiant Totem",
+      "slug": "radiant_totem",
+      "realm": "heaven",
+      "origin": "desert",
+      "role": "Shield / buff",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/radiant_totem.png",
+        "basic_sha256": "152f3c9b831a4c1e4168b006006f497eb76ece6cf519460b495f81e3a4c48683",
+        "gold": "assets/concepts/layer_3_pets/gold/radiant_totem_gold.png",
+        "gold_sha256": "36c66769799cd0f12071ad310324d616f073cc2f88965143d02eafc53a173e8d",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/radiant_totem_basic.png",
+        "basic_card_sha256": "15baa4ba5f6e308bd9666721fed21c6931a47c9f3e18d3683f5c6b254bcb0f92",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/radiant_totem_gold.png",
+        "gold_card_sha256": "fa1701362193368c6d651084c176f2fa8112a492da8ecb099e15dfafddace673"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/radiant_totem/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dd-1843-75d5-8806-8ec607605b0e",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e8-2b3c-7eb1-872f-707ef13136d2",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "60c266c0433c758e11c18d6acf6407d776ade199b12aef1a04f0de49ed8f1beb",
+          "style_image_sha256": "152f3c9b831a4c1e4168b006006f497eb76ece6cf519460b495f81e3a4c48683",
+          "final_glb": "assets/source/pets/layer_3/radiant_totem/final/basic.glb",
+          "final_glb_sha256": "ff466dd4d6ebcf544ff67a9b1d26e7c801b5b10ca07fcfcfea650dcdb9733a20",
+          "triangles": 5394,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e8-58b1-7ec0-9935-f878f880df09",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "60c266c0433c758e11c18d6acf6407d776ade199b12aef1a04f0de49ed8f1beb",
+          "style_image_sha256": "36c66769799cd0f12071ad310324d616f073cc2f88965143d02eafc53a173e8d",
+          "final_glb": "assets/source/pets/layer_3/radiant_totem/final/gold.glb",
+          "final_glb_sha256": "23948bb997eeb9cbc36bd459a67963f955281932ce1bb1999143165b8808d6e9",
+          "triangles": 5394,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 18,
+      "name": "Glory Mongoose",
+      "slug": "glory_mongoose",
+      "realm": "heaven",
+      "origin": "desert",
+      "role": "Offense buff",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/glory_mongoose.png",
+        "basic_sha256": "8b15b73d16ea21ada068fbe65d49aba6ee7c8eb72cd9071b351f8203fe7ad2b5",
+        "gold": "assets/concepts/layer_3_pets/gold/glory_mongoose_gold.png",
+        "gold_sha256": "7a7ac584b238b492434dc158a390554251104ad8be4e9d2dbabed83984028d8e",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/glory_mongoose_basic.png",
+        "basic_card_sha256": "847b646f4cf450410560b55cc75b57a9aac2e94fb8d8eb55242d067f99339a16",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/glory_mongoose_gold.png",
+        "gold_card_sha256": "2beb0f40a8eaf16fc473e934c0f519302bd5622093d59efb7d5d7ef4b05b0abd"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/glory_mongoose/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dd-1c21-75d5-bf81-7d2657058c82",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e8-8571-74b4-83ff-a7c74968b70f",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "85df076492da414863d71cec79af1c4e29c0d85b9352c860d602013ebecf26da",
+          "style_image_sha256": "8b15b73d16ea21ada068fbe65d49aba6ee7c8eb72cd9071b351f8203fe7ad2b5",
+          "final_glb": "assets/source/pets/layer_3/glory_mongoose/final/basic.glb",
+          "final_glb_sha256": "97a46889e7282909c9691c7c2e83bbd0e00cc425f527bb7c3876fd5bf119f2cd",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e8-e2ea-74c9-92e0-c37a04160a92",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "85df076492da414863d71cec79af1c4e29c0d85b9352c860d602013ebecf26da",
+          "style_image_sha256": "7a7ac584b238b492434dc158a390554251104ad8be4e9d2dbabed83984028d8e",
+          "final_glb": "assets/source/pets/layer_3/glory_mongoose/final/gold.glb",
+          "final_glb_sha256": "262d3338d4576dce0cc07215ce9ccbad55dc8890c82703363d4a3cd3f77efefb",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 19,
+      "name": "Light Tortoise",
+      "slug": "light_tortoise",
+      "realm": "heaven",
+      "origin": "desert",
+      "role": "Regen",
+      "rarity": "rare",
+      "target_triangles": 6500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/light_tortoise.png",
+        "basic_sha256": "eb885774f8b87ccdb1be3e929fb410c138fc1de62b046c669b10ab36b93a2c49",
+        "gold": "assets/concepts/layer_3_pets/gold/light_tortoise_gold.png",
+        "gold_sha256": "27108e5ef0cd4097d779ab7235dd91c9f629a19e6c0a17ba9da1538f84f8f940",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/light_tortoise_basic.png",
+        "basic_card_sha256": "347f38fc54d53b9e1f7bbbbdcdf5eb906c4bcc274dbf38492d0ec45fb0599a56",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/light_tortoise_gold.png",
+        "gold_card_sha256": "60c40ba03f60d443c1aa89832c573519949ee9e48d426544e23b953b68acebc8"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/light_tortoise/meshy_t2_6500_attempt_1",
+          "task_id": "01a035dd-3154-75d7-b395-6352dfa7105f",
+          "target_triangles": 6500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e8-e745-7993-89e2-7437b181b406",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "8ab0325a7b214435e11df306783cc54e87482c727f42c78331d42d7614901628",
+          "style_image_sha256": "eb885774f8b87ccdb1be3e929fb410c138fc1de62b046c669b10ab36b93a2c49",
+          "final_glb": "assets/source/pets/layer_3/light_tortoise/final/basic.glb",
+          "final_glb_sha256": "8471f5bdb1739d052e7867e058e128474d461d95a241d247b931726ee5c2edeb",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e9-0c54-78f2-b6fe-619d654c0926",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "8ab0325a7b214435e11df306783cc54e87482c727f42c78331d42d7614901628",
+          "style_image_sha256": "27108e5ef0cd4097d779ab7235dd91c9f629a19e6c0a17ba9da1538f84f8f940",
+          "final_glb": "assets/source/pets/layer_3/light_tortoise/final/gold.glb",
+          "final_glb_sha256": "73e6741dc760a5aa4b2908634a25bf28c02e6a8ac1da30d823f5fef3cf4ed564",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 20,
+      "name": "Oasis Dragon",
+      "slug": "oasis_dragon",
+      "realm": "heaven",
+      "origin": "desert",
+      "role": "Support capstone",
+      "rarity": "secret",
+      "target_triangles": 9000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/oasis_dragon.png",
+        "basic_sha256": "158882e4dba40a524b8d5018752cfaf270a10be2e879ace4704383b8b0a87ebe",
+        "gold": "assets/concepts/layer_3_pets/gold/oasis_dragon_gold.png",
+        "gold_sha256": "12f79f14a239dc13270d57141055cca396117e4fa18c4b7d8210acc784178dbe",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/oasis_dragon_basic.png",
+        "basic_card_sha256": "f04694cc615f00847124982dcb1deabf0967b4a0811a14f7ec59107d7b6e5428",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/oasis_dragon_gold.png",
+        "gold_card_sha256": "9c73035634a23c7cc701f5f2373ecff49f325c197d66458d0148d4ca65a6ba3e"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/oasis_dragon/meshy_t2_9000_attempt_1",
+          "task_id": "01a035dd-3598-713d-8af6-17556b0d081b",
+          "target_triangles": 9000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e9-1791-78fa-b9e6-c58c67d5ecb4",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "3836e36c8d8f24488b241c2663c7d297904b3323f7287015841876f422381cab",
+          "style_image_sha256": "158882e4dba40a524b8d5018752cfaf270a10be2e879ace4704383b8b0a87ebe",
+          "final_glb": "assets/source/pets/layer_3/oasis_dragon/final/basic.glb",
+          "final_glb_sha256": "e5c03f5b98427203b1a6e3d455c7c6c1fed2dc7d369a19a798b9b2ba041bb8d6",
+          "triangles": 9752,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e9-5a5b-74ed-af88-cc8199cba3be",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "3836e36c8d8f24488b241c2663c7d297904b3323f7287015841876f422381cab",
+          "style_image_sha256": "12f79f14a239dc13270d57141055cca396117e4fa18c4b7d8210acc784178dbe",
+          "final_glb": "assets/source/pets/layer_3/oasis_dragon/final/gold.glb",
+          "final_glb_sha256": "52d256b09c635f6fa194ebd238b42ce5f13776694e60bbc1cacc81c1aca32790",
+          "triangles": 9752,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 21,
+      "name": "Dreadcinder Imp",
+      "slug": "dreadcinder_imp",
+      "realm": "hell",
+      "origin": "fire",
+      "role": "Melee",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dreadcinder_imp.png",
+        "basic_sha256": "2c9acd18810d0f5179146ad3406df6ee558eacaf8f96ac7357fbd020db5912cb",
+        "gold": "assets/concepts/layer_3_pets/gold/dreadcinder_imp_gold.png",
+        "gold_sha256": "4388eaa9b3efb38107446a116c21d45b4fc540a98ebc654ffaeb45cc22347fd1",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dreadcinder_imp_basic.png",
+        "basic_card_sha256": "d591aab26a8031488cabd89fea208f45111caa03c686ec8656c5de32ededa785",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dreadcinder_imp_gold.png",
+        "gold_card_sha256": "336d88037057bc4acaa9630fb5e034a4d4d81ce26aba472055c6a6a2ae83315a"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dreadcinder_imp/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dd-5911-7153-8054-52ee3600b4d4",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e9-ab80-79c8-bd31-76feea8893f3",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "96a1556cf34145a9d9a0b7f213804724f32a9f720545ae48c2ffdc03f431d054",
+          "style_image_sha256": "2c9acd18810d0f5179146ad3406df6ee558eacaf8f96ac7357fbd020db5912cb",
+          "final_glb": "assets/source/pets/layer_3/dreadcinder_imp/final/basic.glb",
+          "final_glb_sha256": "b503719ddfd286017cb92ce82f7874a17e20d6383f07096ea92b56f5533a539d",
+          "triangles": 9762,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e9-bbe0-7f0e-b3f7-144bc5018d07",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "96a1556cf34145a9d9a0b7f213804724f32a9f720545ae48c2ffdc03f431d054",
+          "style_image_sha256": "4388eaa9b3efb38107446a116c21d45b4fc540a98ebc654ffaeb45cc22347fd1",
+          "final_glb": "assets/source/pets/layer_3/dreadcinder_imp/final/gold.glb",
+          "final_glb_sha256": "a26b125c52b9e779620e647c57e2093e69c2e6d112f97401736dde8cfd027c7a",
+          "triangles": 9762,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 22,
+      "name": "Ruinmane Lion",
+      "slug": "ruinmane_lion",
+      "realm": "hell",
+      "origin": "fire",
+      "role": "Bruiser",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/ruinmane_lion.png",
+        "basic_sha256": "a5b67d911294eb9826353ead2a062a00c8355155d1dc9111cd3b459661c811cc",
+        "gold": "assets/concepts/layer_3_pets/gold/ruinmane_lion_gold.png",
+        "gold_sha256": "99a3874322f56c68d1d50e876734f7cb113499ef80af03c4ae2d2d03479a625d",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/ruinmane_lion_basic.png",
+        "basic_card_sha256": "7d29d1127d60795285bea8cb497cff6f9d8ceddf746f13fcb8da5f95225627ab",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/ruinmane_lion_gold.png",
+        "gold_card_sha256": "1a4d7ab5c4914bd4cff5abe33e6d321189dc886d810e846290c44b89ec309bf7"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/ruinmane_lion/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dd-5907-7153-928a-0ed0db84ca62",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035e9-c919-792f-bd25-866a4a9f587a",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "ae58c5ac25d366b8550c3f98cbe96ea0dcbe0f6af526366bd4c4877b81f7beba",
+          "style_image_sha256": "a5b67d911294eb9826353ead2a062a00c8355155d1dc9111cd3b459661c811cc",
+          "final_glb": "assets/source/pets/layer_3/ruinmane_lion/final/basic.glb",
+          "final_glb_sha256": "64c6ed1918e07473619b72dd0a70cbc9f05904fe61c5fd3ddd69d9b823bfa54f",
+          "triangles": 9760,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035e9-d34a-7f11-b211-a6fbe430ca1b",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "ae58c5ac25d366b8550c3f98cbe96ea0dcbe0f6af526366bd4c4877b81f7beba",
+          "style_image_sha256": "99a3874322f56c68d1d50e876734f7cb113499ef80af03c4ae2d2d03479a625d",
+          "final_glb": "assets/source/pets/layer_3/ruinmane_lion/final/gold.glb",
+          "final_glb_sha256": "47b1de58baa938b12aac3c861ba38316407ef321dc0efdc2a57b254ee521198a",
+          "triangles": 9760,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 23,
+      "name": "Dreadlance Seraph",
+      "slug": "dreadlance_seraph",
+      "realm": "hell",
+      "origin": "fire",
+      "role": "Blaster",
+      "rarity": "rare",
+      "target_triangles": 6500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dreadlance_seraph.png",
+        "basic_sha256": "f92611af22247f657ba7cbd452690e7071388cfe55e0f47b46a7cbe175338de6",
+        "gold": "assets/concepts/layer_3_pets/gold/dreadlance_seraph_gold.png",
+        "gold_sha256": "a48a3c3909d08a1697db497003daee3ab7397041100995c18eedf038346ee033",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dreadlance_seraph_basic.png",
+        "basic_card_sha256": "cbdc8ad431de2d746616b3791040fd757448b37b1fd545d483e1dcea2d75efcb",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dreadlance_seraph_gold.png",
+        "gold_card_sha256": "94b0d5f342086cb3a7f51142f85380ca4e3b6a927add6125e42d8138bc88193d"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dreadlance_seraph/meshy_t2_6500_attempt_1",
+          "task_id": "01a035dd-5bd1-7be8-b5be-45f39b6600df",
+          "target_triangles": 6500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ea-0c90-7939-abd1-9423f89e5a8a",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "1e460e7d0aedd7935244aec8f7589b8b23eb5edf0d443f638a7e3ca3ee80392b",
+          "style_image_sha256": "f92611af22247f657ba7cbd452690e7071388cfe55e0f47b46a7cbe175338de6",
+          "final_glb": "assets/source/pets/layer_3/dreadlance_seraph/final/basic.glb",
+          "final_glb_sha256": "3cfa031701686a110376fc55f240ddab9f1909137abeb90e6ed316ef40f39444",
+          "triangles": 7066,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ea-75f3-79eb-a67d-11189592ba51",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "1e460e7d0aedd7935244aec8f7589b8b23eb5edf0d443f638a7e3ca3ee80392b",
+          "style_image_sha256": "a48a3c3909d08a1697db497003daee3ab7397041100995c18eedf038346ee033",
+          "final_glb": "assets/source/pets/layer_3/dreadlance_seraph/final/gold.glb",
+          "final_glb_sha256": "e5f6dd4237fe6287fe25e5171888ee4968e032e76eb497d04d88c6fcef2b0d28",
+          "triangles": 7066,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 24,
+      "name": "Ruinscale Salamander",
+      "slug": "ruinscale_salamander",
+      "realm": "hell",
+      "origin": "fire",
+      "role": "Curse",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/ruinscale_salamander.png",
+        "basic_sha256": "69f384a2bbdabfe188b732c1cc3d0a80e4e2eafeffde83452b5e78f8f6539964",
+        "gold": "assets/concepts/layer_3_pets/gold/ruinscale_salamander_gold.png",
+        "gold_sha256": "50dd56f97294ea35b6ef128124b1feb5231ec58848eece924cde19eefde87e12",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/ruinscale_salamander_basic.png",
+        "basic_card_sha256": "0e2066583f3e95c912a92f0efc716a0229617659c4c12817d2a51409b966dc65",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/ruinscale_salamander_gold.png",
+        "gold_card_sha256": "94ce359c16a95c901b939724b3cca14cd3f5cf132688c987322614ba295ebb29"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/ruinscale_salamander/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dd-6bd2-7bea-bea6-c75f07dddd79",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ea-7977-752c-8504-90ad46444185",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "073a2f50f8b6bdd8dd2461e9181e8136fe5b61c3621d03b50d6ad0209a0cf319",
+          "style_image_sha256": "69f384a2bbdabfe188b732c1cc3d0a80e4e2eafeffde83452b5e78f8f6539964",
+          "final_glb": "assets/source/pets/layer_3/ruinscale_salamander/final/basic.glb",
+          "final_glb_sha256": "d7e602a50cbbfda1c85b20eb04f688cf7b59b38461d10d48235bbefc0652003a",
+          "triangles": 9760,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ea-8725-7972-bfd4-1ad740915d8a",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "073a2f50f8b6bdd8dd2461e9181e8136fe5b61c3621d03b50d6ad0209a0cf319",
+          "style_image_sha256": "50dd56f97294ea35b6ef128124b1feb5231ec58848eece924cde19eefde87e12",
+          "final_glb": "assets/source/pets/layer_3/ruinscale_salamander/final/gold.glb",
+          "final_glb_sha256": "622e79b918f6e20f18faa01dc426c3b29d4bdfa63423b0150aaad6eb7e71a58e",
+          "triangles": 9760,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 25,
+      "name": "Dreadfire Hawk",
+      "slug": "dreadfire_hawk",
+      "realm": "hell",
+      "origin": "fire",
+      "role": "Blaster apex",
+      "rarity": "mythical",
+      "target_triangles": 8500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dreadfire_hawk.png",
+        "basic_sha256": "3a7990fa207d28ebbaf08ac6bcc57f93f84847fcc946f47cd2fa1e988e692fd0",
+        "gold": "assets/concepts/layer_3_pets/gold/dreadfire_hawk_gold.png",
+        "gold_sha256": "70f61836228d3a54747ffc0a61055387c2a934d60981ea434561edf337c59fb0",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dreadfire_hawk_basic.png",
+        "basic_card_sha256": "0a3d83044485a7af82119708f8f66312e99efd13bb39fc67003e117ddc117544",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dreadfire_hawk_gold.png",
+        "gold_card_sha256": "a70320cebff00ebc6be583e58b3b687f51636569e8243f4a7890807cdebace91"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dreadfire_hawk/meshy_t2_8500_attempt_1",
+          "task_id": "01a035dd-7d03-76b3-89df-2a09ab38fb81",
+          "target_triangles": 8500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035fe-502b-79df-b5ef-6eeb4f5bc978",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "2bd781abc9694fecaed8fbef833a5ddac40775987381407c015227783c99c5ae",
+          "style_image_sha256": "3a7990fa207d28ebbaf08ac6bcc57f93f84847fcc946f47cd2fa1e988e692fd0",
+          "final_glb": "assets/source/pets/layer_3/dreadfire_hawk/final/basic.glb",
+          "final_glb_sha256": "147ac5bcfaa5f46332438c95f0c93e9a684b71e82ee43d57bf60b6d9d9070954",
+          "triangles": 9734,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035fe-5034-7e0b-911f-aa28c2b0ae85",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "2bd781abc9694fecaed8fbef833a5ddac40775987381407c015227783c99c5ae",
+          "style_image_sha256": "70f61836228d3a54747ffc0a61055387c2a934d60981ea434561edf337c59fb0",
+          "final_glb": "assets/source/pets/layer_3/dreadfire_hawk/final/gold.glb",
+          "final_glb_sha256": "e4f887d1477deb31fdde35c05991ad4389d3944fb572cf1cb49b3fbf3337b943",
+          "triangles": 9734,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 26,
+      "name": "Duskfrost Seal",
+      "slug": "duskfrost_seal",
+      "realm": "hell",
+      "origin": "ice",
+      "role": "Melee",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/duskfrost_seal.png",
+        "basic_sha256": "5745fa56d15a1c83ab50e1f839612c6ee74553fab6a5a3f0f0049d79dcf22eb8",
+        "gold": "assets/concepts/layer_3_pets/gold/duskfrost_seal_gold.png",
+        "gold_sha256": "3392264eec19c07b58fecd84d7fe6b3a2c10dd11173b1a4dcd8cf375fcf10778",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/duskfrost_seal_basic.png",
+        "basic_card_sha256": "001359472ca9682eb88657c54344c83ae5a611c2097e15da51f9a3e774945709",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/duskfrost_seal_gold.png",
+        "gold_card_sha256": "dfc7f79607b6e8e2e17fd32939c74e4ed20dd59483694f9e7ca9cb760bfe1cf7"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/duskfrost_seal/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dd-f345-76e0-a7d8-a017e86eaed0",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035eb-2957-7998-9723-d97bacbffc1d",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "678c711477393c935903c5a8dd4651d289a0a196701606ef25ee373d7949098e",
+          "style_image_sha256": "5745fa56d15a1c83ab50e1f839612c6ee74553fab6a5a3f0f0049d79dcf22eb8",
+          "final_glb": "assets/source/pets/layer_3/duskfrost_seal/final/basic.glb",
+          "final_glb_sha256": "47c0b3bcd10b1f7cca69979ca3126ed330a9ba0931b354f142aa8ae8895773f9",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035eb-503f-79ae-81d2-aed16bad6325",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "678c711477393c935903c5a8dd4651d289a0a196701606ef25ee373d7949098e",
+          "style_image_sha256": "3392264eec19c07b58fecd84d7fe6b3a2c10dd11173b1a4dcd8cf375fcf10778",
+          "final_glb": "assets/source/pets/layer_3/duskfrost_seal/final/gold.glb",
+          "final_glb_sha256": "e8ec4413ea0c041d3ff192ddf9cf570cb4eb5cb7371e945905e5ff8047575201",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 27,
+      "name": "Dread Wisp",
+      "slug": "dread_wisp",
+      "realm": "hell",
+      "origin": "ice",
+      "role": "Control",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dread_wisp.png",
+        "basic_sha256": "ffcdd8368ce6ee3884eb83308feb7ddf3f253a738f7de3d7caec0b0b6f0d06fe",
+        "gold": "assets/concepts/layer_3_pets/gold/dread_wisp_gold.png",
+        "gold_sha256": "b5469c7e5f4c062f1249912ddffb540fb56bbc74346a95e907a9ed9ad8688b60",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dread_wisp_basic.png",
+        "basic_card_sha256": "636ce640a6285f28c8fb38bfeba491fa255ea638bed12667d9a3f41625475890",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dread_wisp_gold.png",
+        "gold_card_sha256": "25314daf71ba4ebdb44a60222e6a2959ec48895a9fa319d5d41358a035b71ea9"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dread_wisp/meshy_t2_5000_attempt_1",
+          "task_id": "01a035dd-f38a-7194-9955-003024fa6f2a",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035eb-5968-79b0-93c7-4354855b5652",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "88f1bc047564042a963599119be3fc2924db6d4f62504a9858aad13627904939",
+          "style_image_sha256": "ffcdd8368ce6ee3884eb83308feb7ddf3f253a738f7de3d7caec0b0b6f0d06fe",
+          "final_glb": "assets/source/pets/layer_3/dread_wisp/final/basic.glb",
+          "final_glb_sha256": "d0e7359e3d45a53bf10673118e10fda0ae3d29d4f37673fd9886a43d6cdf0349",
+          "triangles": 5292,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035eb-6cf5-79b5-a0f6-537b33b8e5d4",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "88f1bc047564042a963599119be3fc2924db6d4f62504a9858aad13627904939",
+          "style_image_sha256": "b5469c7e5f4c062f1249912ddffb540fb56bbc74346a95e907a9ed9ad8688b60",
+          "final_glb": "assets/source/pets/layer_3/dread_wisp/final/gold.glb",
+          "final_glb_sha256": "eca77f3f6591b3acce4369e830539c3bfdb3301ec3caa7aa74213b7eae44dc5b",
+          "triangles": 5292,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 28,
+      "name": "Dreadveil Moth",
+      "slug": "dreadveil_moth",
+      "realm": "hell",
+      "origin": "ice",
+      "role": "Blaster",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dreadveil_moth.png",
+        "basic_sha256": "326ec7fc619af8a5392e48cc4905560471889e2fda783c65f7b2040df4f2215c",
+        "gold": "assets/concepts/layer_3_pets/gold/dreadveil_moth_gold.png",
+        "gold_sha256": "2b00d2932f66a6a544555672645068a8a4ce045f6bf7f0c835eb07484feaac63",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dreadveil_moth_basic.png",
+        "basic_card_sha256": "8f94a1b6f8ca4d763bb5a1f109c9a4b78faf5122d96cf8bd5ea6916ccf36d269",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dreadveil_moth_gold.png",
+        "gold_card_sha256": "ce4095bfae760d2c84085d5089ab1dbbe043d2465f8c700d7e9c865e8cc09e56"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dreadveil_moth/meshy_t2_5000_attempt_1",
+          "task_id": "01a035de-0379-7617-991e-12c7214363c1",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035eb-7d02-7a1d-bf1d-e50cdac60b91",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "00cdef8646e87f0df40ef2d90362b6f8977c016ff7a2a0b7fc6968190fad7529",
+          "style_image_sha256": "326ec7fc619af8a5392e48cc4905560471889e2fda783c65f7b2040df4f2215c",
+          "final_glb": "assets/source/pets/layer_3/dreadveil_moth/final/basic.glb",
+          "final_glb_sha256": "7bf2991efb9cc810945225f65ff4103de212932a8d4f204fbffad917628d2217",
+          "triangles": 5476,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035eb-cf62-7f86-b650-014e7eef6baa",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "00cdef8646e87f0df40ef2d90362b6f8977c016ff7a2a0b7fc6968190fad7529",
+          "style_image_sha256": "2b00d2932f66a6a544555672645068a8a4ce045f6bf7f0c835eb07484feaac63",
+          "final_glb": "assets/source/pets/layer_3/dreadveil_moth/final/gold.glb",
+          "final_glb_sha256": "7dd44d951e1d050e48240efc5e5735ee96558045880e024dcc1c111111e261dd",
+          "triangles": 5476,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 29,
+      "name": "Dreadguard Bear",
+      "slug": "dreadguard_bear",
+      "realm": "hell",
+      "origin": "ice",
+      "role": "Tank",
+      "rarity": "rare",
+      "target_triangles": 6500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dreadguard_bear.png",
+        "basic_sha256": "5f67c6b880d8dbc10c36e2522d164de59a8f3a4a4407e16ed5f63cf2e67016f3",
+        "gold": "assets/concepts/layer_3_pets/gold/dreadguard_bear_gold.png",
+        "gold_sha256": "7c37fe8f8075c2e70692535dec45fddf4b6cf69fa980f27103483f25f9b53e38",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dreadguard_bear_basic.png",
+        "basic_card_sha256": "b003260c7822689574a9bbdd3155177c6416e84fd10b06e4d1aa1b59c9ff232f",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dreadguard_bear_gold.png",
+        "gold_card_sha256": "ba93e0a2b3ff16488702c8f70d8501d344ca0d956aba353ef485d520fcf0bff0"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dreadguard_bear/meshy_t2_6500_attempt_1",
+          "task_id": "01a035de-0628-7617-91af-99f76e702a1c",
+          "target_triangles": 6500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035eb-f091-7598-b6d4-5117fcf6f53f",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "733bb480eb810dce55b09e790ac4354d57e4eec97aead733997fa7dc0803391e",
+          "style_image_sha256": "5f67c6b880d8dbc10c36e2522d164de59a8f3a4a4407e16ed5f63cf2e67016f3",
+          "final_glb": "assets/source/pets/layer_3/dreadguard_bear/final/basic.glb",
+          "final_glb_sha256": "b8404b4be6a366ab9d74992040de2dc496544470e030ae53377f3fa64804b782",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035eb-fbab-7a40-b29f-ec3e9a442686",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "733bb480eb810dce55b09e790ac4354d57e4eec97aead733997fa7dc0803391e",
+          "style_image_sha256": "7c37fe8f8075c2e70692535dec45fddf4b6cf69fa980f27103483f25f9b53e38",
+          "final_glb": "assets/source/pets/layer_3/dreadguard_bear/final/gold.glb",
+          "final_glb_sha256": "7e9286b13c3304d430e0eb069e3fd9aad0ab7bb07481263eacee920f25367cc9",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 30,
+      "name": "Dreadspire Mammoth",
+      "slug": "dreadspire_mammoth",
+      "realm": "hell",
+      "origin": "ice",
+      "role": "Tank / control apex",
+      "rarity": "mythical",
+      "target_triangles": 8500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dreadspire_mammoth.png",
+        "basic_sha256": "189292262ad1251e9dc984e7ebcea31d1cc1f56732f005bc660b33266ad64a19",
+        "gold": "assets/concepts/layer_3_pets/gold/dreadspire_mammoth_gold.png",
+        "gold_sha256": "7fb007a59d3275285b24e7e89648f42ea821af14c8d37ebc947ae911526e3821",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dreadspire_mammoth_basic.png",
+        "basic_card_sha256": "6dea17ca64813678ca2286ba7baed22740fe1d49cc4aa9d66fb45565c63d1cbe",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dreadspire_mammoth_gold.png",
+        "gold_card_sha256": "52aed69af9fe79e067e5c227aa9c9e8eef818b851985edd78097b18d358125bd"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dreadspire_mammoth/meshy_t2_8500_attempt_1",
+          "task_id": "01a035de-0b12-7197-87e2-653f93b6272d",
+          "target_triangles": 8500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ec-063a-79ef-b69f-eec1d3d94280",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "5035a14df128048f9350b7ede74ba715160c6ddeb91f947aa45418d975a7320d",
+          "style_image_sha256": "189292262ad1251e9dc984e7ebcea31d1cc1f56732f005bc660b33266ad64a19",
+          "final_glb": "assets/source/pets/layer_3/dreadspire_mammoth/final/basic.glb",
+          "final_glb_sha256": "40b27fbab41f257e0f57809563fbec3b05c60c5a04cc2c50921e58f16c2ec670",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ec-1519-7a47-a04f-8e7419e8a686",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "5035a14df128048f9350b7ede74ba715160c6ddeb91f947aa45418d975a7320d",
+          "style_image_sha256": "7fb007a59d3275285b24e7e89648f42ea821af14c8d37ebc947ae911526e3821",
+          "final_glb": "assets/source/pets/layer_3/dreadspire_mammoth/final/gold.glb",
+          "final_glb_sha256": "0dfb0d33b552cc1a062e3b731dea8e44a5afbbcebad0ea28d95c2c4d603b07e7",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 31,
+      "name": "Thornleaf Lamb",
+      "slug": "thornleaf_lamb",
+      "realm": "hell",
+      "origin": "grass",
+      "role": "Life-drain heal",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/thornleaf_lamb.png",
+        "basic_sha256": "7282d58d72f2cf94ea685a1d956448ac3b77d8f1668bb1c1b93787643110c2b9",
+        "gold": "assets/concepts/layer_3_pets/gold/thornleaf_lamb_gold.png",
+        "gold_sha256": "16308bba27590d01fe08b33490ed760fbcdb261c6e28950b007797f27088f442",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/thornleaf_lamb_basic.png",
+        "basic_card_sha256": "a80aca8c9eb78e9d812da50d7b7dc78c1230b0fe6a2354e3d0c379ae5c919bc1",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/thornleaf_lamb_gold.png",
+        "gold_card_sha256": "b284141f13e4762cd72c76a3b024f09c8111d5442341d5f0e8a68362a2247a74"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/thornleaf_lamb/meshy_t2_5000_attempt_1",
+          "task_id": "01a035de-5bda-7703-afd8-30e47cb356ae",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ec-79f9-7fb3-93fa-7f1a6e18120b",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "bb5a5a2d73f679c80210e06b6d7f72b76e4abeba9eba8fc2b70cff1e9bcbb04d",
+          "style_image_sha256": "7282d58d72f2cf94ea685a1d956448ac3b77d8f1668bb1c1b93787643110c2b9",
+          "final_glb": "assets/source/pets/layer_3/thornleaf_lamb/final/basic.glb",
+          "final_glb_sha256": "2f758cf2f893ad2494f3195d3c2ec89e9a21dc1698d8e404ea3023834354b2ef",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ec-ad44-7fc0-8cc5-fc9c1cccdf20",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "bb5a5a2d73f679c80210e06b6d7f72b76e4abeba9eba8fc2b70cff1e9bcbb04d",
+          "style_image_sha256": "16308bba27590d01fe08b33490ed760fbcdb261c6e28950b007797f27088f442",
+          "final_glb": "assets/source/pets/layer_3/thornleaf_lamb/final/gold.glb",
+          "final_glb_sha256": "62c1c775ff82fcbe948a4075b40436eadb7441c4a8ee5b630d0eba334928f9ae",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 32,
+      "name": "Dread Hart",
+      "slug": "dread_hart",
+      "realm": "hell",
+      "origin": "grass",
+      "role": "Melee",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dread_hart.png",
+        "basic_sha256": "271cb4b187695a5584356d2900285608ab8513d0ba72c5f35f4bdc33b1a9a87d",
+        "gold": "assets/concepts/layer_3_pets/gold/dread_hart_gold.png",
+        "gold_sha256": "3293229ae370b09e77adcb4eb082cffcce1353875efc225f9360d1a51357752e",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dread_hart_basic.png",
+        "basic_card_sha256": "3a7c9f5d33203a552fa10b6db76153f456cf97f94cfd9864abfbb9c37c538712",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dread_hart_gold.png",
+        "gold_card_sha256": "8dbeb1822e6d68d93f446655d55cc66e8c7f1d009c9ecd7a9738075e884389a7"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dread_hart/meshy_t2_5000_attempt_1",
+          "task_id": "01a035de-6f01-7646-ae8c-020d892cd435",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ec-b8b7-7a6c-9296-2cb0ee26c101",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "8eed41020dc446554a033b2c00a325f2e406e360a369ca18d92150b2bf2c1a85",
+          "style_image_sha256": "271cb4b187695a5584356d2900285608ab8513d0ba72c5f35f4bdc33b1a9a87d",
+          "final_glb": "assets/source/pets/layer_3/dread_hart/final/basic.glb",
+          "final_glb_sha256": "5615c15eeb69aa3dda463d5d1171ef212fa5f2e10fca6f054fe8b8a62f37780d",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ec-c888-7a6f-a910-7958851543ec",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "8eed41020dc446554a033b2c00a325f2e406e360a369ca18d92150b2bf2c1a85",
+          "style_image_sha256": "3293229ae370b09e77adcb4eb082cffcce1353875efc225f9360d1a51357752e",
+          "final_glb": "assets/source/pets/layer_3/dread_hart/final/gold.glb",
+          "final_glb_sha256": "ef29c23f9bc7fc2c49ef6c0b56ada13f522d1c70825a9a1a85e92941130a0e3f",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 33,
+      "name": "Ironbark Rhino",
+      "slug": "ironbark_rhino",
+      "realm": "hell",
+      "origin": "grass",
+      "role": "Tank",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/ironbark_rhino.png",
+        "basic_sha256": "395d7572be80c734057f7dde3ac9394d4173a57f9b3cdca0640016d99b8e535d",
+        "gold": "assets/concepts/layer_3_pets/gold/ironbark_rhino_gold.png",
+        "gold_sha256": "aaecdd648c925fda5d2800132c79d12df306072cee004b5eac3c88b22c09a698",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/ironbark_rhino_basic.png",
+        "basic_card_sha256": "e384eb865788e798b81d3a1f85d5f176029d359afb797cc0c5a1abd298f13091",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/ironbark_rhino_gold.png",
+        "gold_card_sha256": "3ad20000d9d1cccf6bfc6238e5c14ff57d6cb5dfbde3cc0552450514790bc4a3"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/ironbark_rhino/meshy_t2_5000_attempt_1",
+          "task_id": "01a035de-6f1e-7646-9c8b-1e6e17280681",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ec-d376-7a12-b40c-0c3d4a442c8d",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "58397e60ac682e8593e3dfffcc817e6dc4b0fd7fd637e3b13b5ed4815154e4a2",
+          "style_image_sha256": "395d7572be80c734057f7dde3ac9394d4173a57f9b3cdca0640016d99b8e535d",
+          "final_glb": "assets/source/pets/layer_3/ironbark_rhino/final/basic.glb",
+          "final_glb_sha256": "ee0a4e984178f04f040ed748acc84438ec74811342e91a0a4dad3f32b862ed59",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ed-1fca-7a27-b4ec-06abd87e3086",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "58397e60ac682e8593e3dfffcc817e6dc4b0fd7fd637e3b13b5ed4815154e4a2",
+          "style_image_sha256": "aaecdd648c925fda5d2800132c79d12df306072cee004b5eac3c88b22c09a698",
+          "final_glb": "assets/source/pets/layer_3/ironbark_rhino/final/gold.glb",
+          "final_glb_sha256": "5c539f0160044078ef5ca1e074dd2283522cb723cb40b8aaf4586001698ba8c4",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 34,
+      "name": "Dreadbloom Sprite",
+      "slug": "dreadbloom_sprite",
+      "realm": "hell",
+      "origin": "grass",
+      "role": "Wither-curse",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dreadbloom_sprite.png",
+        "basic_sha256": "307fa35a56e4443c4985f3d8aeb69b922846cb50a1e39ced5b1bd6cab793f7bd",
+        "gold": "assets/concepts/layer_3_pets/gold/dreadbloom_sprite_gold.png",
+        "gold_sha256": "e028f92f4a73136bf67c364c33d715bc5d7d17c00f07bf4fa275ff9626793e2d",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dreadbloom_sprite_basic.png",
+        "basic_card_sha256": "b58e8667fa53ad8a3dad596953d1b169f5f6f64290b4f11c70516db50d372f72",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dreadbloom_sprite_gold.png",
+        "gold_card_sha256": "2ebc27949791c1528c91a4e53f33553bf8ad26893e5cfb636445b00f9b38d4fe"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dreadbloom_sprite/meshy_t2_5000_attempt_1",
+          "task_id": "01a035de-7543-71b9-9ff5-36af51253a96",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ed-7ae5-7ff4-82fa-d699af2d8e6c",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "9476eacf7efc8ff42c6e741272c028d9cd827a3adc6c8dd28a808e1509adb845",
+          "style_image_sha256": "307fa35a56e4443c4985f3d8aeb69b922846cb50a1e39ced5b1bd6cab793f7bd",
+          "final_glb": "assets/source/pets/layer_3/dreadbloom_sprite/final/basic.glb",
+          "final_glb_sha256": "f73f62c7b6274ed13d0befa95b836fdd1fcdd47d1009532231f7b3609fd92636",
+          "triangles": 5366,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ed-82ad-7ff7-b7e0-d093424619f6",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "9476eacf7efc8ff42c6e741272c028d9cd827a3adc6c8dd28a808e1509adb845",
+          "style_image_sha256": "e028f92f4a73136bf67c364c33d715bc5d7d17c00f07bf4fa275ff9626793e2d",
+          "final_glb": "assets/source/pets/layer_3/dreadbloom_sprite/final/gold.glb",
+          "final_glb_sha256": "6f17f1ddd83a7d3b967496038bbeeec6cee93fc62f660f6f342d79e1aae987f6",
+          "triangles": 5366,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 35,
+      "name": "Dreadthorn Grovekeeper",
+      "slug": "dreadthorn_grovekeeper",
+      "realm": "hell",
+      "origin": "grass",
+      "role": "Tank / drain apex",
+      "rarity": "mythical",
+      "target_triangles": 8500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dreadthorn_grovekeeper.png",
+        "basic_sha256": "4e65ddf226b7a3657dce76ba2a135445485c080c4c0f5d530f4c6d86061a3b08",
+        "gold": "assets/concepts/layer_3_pets/gold/dreadthorn_grovekeeper_gold.png",
+        "gold_sha256": "3c606e6af0faa68358df1eadc5d3f426ff2e6085505f00d27eda4644247bdd04",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dreadthorn_grovekeeper_basic.png",
+        "basic_card_sha256": "612d890e83a6f6525364c773e56fa1aa0baaa4b41bfa21c055ba6ba77dea4c33",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dreadthorn_grovekeeper_gold.png",
+        "gold_card_sha256": "07ac08181babdd7558993a1b9e08e244e4e83287e1a52621c750cccee38d3246"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dreadthorn_grovekeeper/meshy_t2_8500_attempt_1",
+          "task_id": "01a035de-75e8-7c34-8173-b74cf3022159",
+          "target_triangles": 8500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ed-857d-75ff-be3a-1c64052834c2",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "4c23a22096fbe475793a7862468adaa30643d3edb8374472757913c638098089",
+          "style_image_sha256": "4e65ddf226b7a3657dce76ba2a135445485c080c4c0f5d530f4c6d86061a3b08",
+          "final_glb": "assets/source/pets/layer_3/dreadthorn_grovekeeper/final/basic.glb",
+          "final_glb_sha256": "09918a55ae735a490ca8e798262628dcd8a54980135a6606555e535f53bfc315",
+          "triangles": 9736,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ed-86b2-7a3c-8c33-daf16b67c440",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "4c23a22096fbe475793a7862468adaa30643d3edb8374472757913c638098089",
+          "style_image_sha256": "3c606e6af0faa68358df1eadc5d3f426ff2e6085505f00d27eda4644247bdd04",
+          "final_glb": "assets/source/pets/layer_3/dreadthorn_grovekeeper/final/gold.glb",
+          "final_glb_sha256": "1b788456af8d7bbbe6d046c66864ae2bbccbcf39d974b8ee144ed1eb68b15326",
+          "triangles": 9736,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 36,
+      "name": "Ash Ibis",
+      "slug": "ash_ibis",
+      "realm": "hell",
+      "origin": "desert",
+      "role": "Drain-heal",
+      "rarity": "common",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/ash_ibis.png",
+        "basic_sha256": "18da8d2ba85263fad71f55f6539a746969be5955ab04aa721af3560e3c085194",
+        "gold": "assets/concepts/layer_3_pets/gold/ash_ibis_gold.png",
+        "gold_sha256": "9aac82494288952b8c1c70cd6c72f1277ea5a1e3a7ca93b98f548094210ae2d4",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/ash_ibis_basic.png",
+        "basic_card_sha256": "a866b5db1c7fc190a93196c0e69e5f6c7cf5976359de5eb5f7c876730d2f3d3b",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/ash_ibis_gold.png",
+        "gold_card_sha256": "533dd736b1d74c64aafbe1e9604abc8c9d50490d3b13b76a15f670e4eabc27a7"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/ash_ibis/meshy_t2_5000_attempt_1",
+          "task_id": "01a035de-95ae-7c41-b1f7-59a59ba6df84",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ed-f6cc-7628-97f4-875f202dbee8",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "49872b76c8b1df867d4a1390e1003f845fb36b9c6d7d05073478f2a8d3e23613",
+          "style_image_sha256": "18da8d2ba85263fad71f55f6539a746969be5955ab04aa721af3560e3c085194",
+          "final_glb": "assets/source/pets/layer_3/ash_ibis/final/basic.glb",
+          "final_glb_sha256": "80b580b4db874de3a822fae3c71fa179c6d291ab6fb54966abda08917c7e9d3c",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035fd-c286-7df8-b285-0b2c357a95cf",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "49872b76c8b1df867d4a1390e1003f845fb36b9c6d7d05073478f2a8d3e23613",
+          "style_image_sha256": "9aac82494288952b8c1c70cd6c72f1277ea5a1e3a7ca93b98f548094210ae2d4",
+          "final_glb": "assets/source/pets/layer_3/ash_ibis/final/gold.glb",
+          "final_glb_sha256": "8cbaba2ceddfb6d83d9ab5811d93da8b6cf3ae2d1e6d3c2bf045f05329b3624d",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 37,
+      "name": "Obsidian Totem",
+      "slug": "obsidian_totem",
+      "realm": "hell",
+      "origin": "desert",
+      "role": "Curse",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/obsidian_totem.png",
+        "basic_sha256": "d859f202442116e81ae061f77c3d39d286863cfa5ef2ecac8aed827d0536eddf",
+        "gold": "assets/concepts/layer_3_pets/gold/obsidian_totem_gold.png",
+        "gold_sha256": "bb3e2ec1a62dc0b338c8c0f06a3c8e45125c67512460b96b807fd135ed50ed05",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/obsidian_totem_basic.png",
+        "basic_card_sha256": "a260a0ecca7c930538b96224ea5d49cf84f528f91bca57a18d5660dbafaec962",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/obsidian_totem_gold.png",
+        "gold_card_sha256": "ceb2ba8400929d9a73bc5d4d9763e96e3ce0253cb751a0fda28e80fb353a5b62"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/obsidian_totem/meshy_t2_5000_attempt_1",
+          "task_id": "01a035de-a960-7c44-99e9-fc8acc9a5987",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ee-28e6-7630-a9d4-d793d0a04a98",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "94d73f51ef9ea9b253855dc4f8d1811a24c390baf5fec0e93416d9bb93b7763c",
+          "style_image_sha256": "d859f202442116e81ae061f77c3d39d286863cfa5ef2ecac8aed827d0536eddf",
+          "final_glb": "assets/source/pets/layer_3/obsidian_totem/final/basic.glb",
+          "final_glb_sha256": "e44e0f5168347e5596ee36c0c91786b6f6c66ae19b3fa9d525315e82489e0e2d",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ee-3dc4-7a76-ab3a-11da92c845f5",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "94d73f51ef9ea9b253855dc4f8d1811a24c390baf5fec0e93416d9bb93b7763c",
+          "style_image_sha256": "bb3e2ec1a62dc0b338c8c0f06a3c8e45125c67512460b96b807fd135ed50ed05",
+          "final_glb": "assets/source/pets/layer_3/obsidian_totem/final/gold.glb",
+          "final_glb_sha256": "1dda93d8e8e9663662e40c92ea5e4e8ea4b9139f73dd6e85b55a5c0032136898",
+          "triangles": 9768,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 38,
+      "name": "Dread Mongoose",
+      "slug": "dread_mongoose",
+      "realm": "hell",
+      "origin": "desert",
+      "role": "Debuff",
+      "rarity": "uncommon",
+      "target_triangles": 5000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dread_mongoose.png",
+        "basic_sha256": "0e890f79b6be67c1e3c4d5d23174e5d88908563145c81f41932865de86e2559b",
+        "gold": "assets/concepts/layer_3_pets/gold/dread_mongoose_gold.png",
+        "gold_sha256": "d7656432049ebae57d3cd51e1cab3262d55723e2619c3554d653f1fd907ed775",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dread_mongoose_basic.png",
+        "basic_card_sha256": "089edea9e47e7e04fae28547526b419ff2723893e99b35734b863ce68b9f0a46",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dread_mongoose_gold.png",
+        "gold_card_sha256": "5c1075b1c3e07402698bdc788bb5046b58f8e7680ae1421354b3a72c0db420c5"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dread_mongoose/meshy_t2_5000_attempt_1",
+          "task_id": "01a035de-ad26-7c44-9255-1fea3aa07fd4",
+          "target_triangles": 5000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ee-61c7-7639-878f-c000ba796669",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "e2eec2c7861783b61f0d11de436a1eea334656d0c5377ff98a9971a4b16c9dd7",
+          "style_image_sha256": "0e890f79b6be67c1e3c4d5d23174e5d88908563145c81f41932865de86e2559b",
+          "final_glb": "assets/source/pets/layer_3/dread_mongoose/final/basic.glb",
+          "final_glb_sha256": "422a253e82662ff4b76e359cbf5e76b27c1d518c9bf0a6754ac980a0b5e4c4bd",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ee-c069-7658-8286-4ad61d3ad828",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "e2eec2c7861783b61f0d11de436a1eea334656d0c5377ff98a9971a4b16c9dd7",
+          "style_image_sha256": "d7656432049ebae57d3cd51e1cab3262d55723e2619c3554d653f1fd907ed775",
+          "final_glb": "assets/source/pets/layer_3/dread_mongoose/final/gold.glb",
+          "final_glb_sha256": "3acaff3150fb900d0b5513aa983083761c15430d2346ba8819dd699a293c4453",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 39,
+      "name": "Obsidian Tortoise",
+      "slug": "obsidian_tortoise",
+      "realm": "hell",
+      "origin": "desert",
+      "role": "Regen-denial",
+      "rarity": "rare",
+      "target_triangles": 6500,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/obsidian_tortoise.png",
+        "basic_sha256": "c729316bb9e6de4ff03e2ccb4b3936b0b68888a482366159fbb691c67a23aed0",
+        "gold": "assets/concepts/layer_3_pets/gold/obsidian_tortoise_gold.png",
+        "gold_sha256": "4db04eb3a9dfee629c29824eef946a91046d507cce881095b4bddd0f414a78f7",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/obsidian_tortoise_basic.png",
+        "basic_card_sha256": "ae71c0cca6a03e38e319e559de65748c875123ee54219a92fa611b1730d71666",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/obsidian_tortoise_gold.png",
+        "gold_card_sha256": "3d6e65612c4ab9defbd0c0771a00a2b1768a9fb6eada2f28d70e4f7b1da03b34"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/obsidian_tortoise/meshy_t2_6500_attempt_1",
+          "task_id": "01a035de-b38f-7653-bc15-250f2a0f7ddf",
+          "target_triangles": 6500,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ee-c823-7ac3-8a9b-7a36dd03aa2b",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "df17f4df7d8a363f2cead36830913fbdd8a34311493a50846a2b9b9eceacdc9f",
+          "style_image_sha256": "c729316bb9e6de4ff03e2ccb4b3936b0b68888a482366159fbb691c67a23aed0",
+          "final_glb": "assets/source/pets/layer_3/obsidian_tortoise/final/basic.glb",
+          "final_glb_sha256": "16d20a7a495138296fc09834b6ddf8f5eb3e1640245ac303e723be15bb1642c9",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ee-dac8-7042-abe7-8f0929f38242",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "df17f4df7d8a363f2cead36830913fbdd8a34311493a50846a2b9b9eceacdc9f",
+          "style_image_sha256": "4db04eb3a9dfee629c29824eef946a91046d507cce881095b4bddd0f414a78f7",
+          "final_glb": "assets/source/pets/layer_3/obsidian_tortoise/final/gold.glb",
+          "final_glb_sha256": "187a8e714f99cc86c2264fdfa3d0c3e3043440d13d40a4affb5f9066cfcec983",
+          "triangles": 9766,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    },
+    {
+      "number": 40,
+      "name": "Dreadglass Dragon",
+      "slug": "dreadglass_dragon",
+      "realm": "hell",
+      "origin": "desert",
+      "role": "Support capstone",
+      "rarity": "secret",
+      "target_triangles": 9000,
+      "references": {
+        "basic": "assets/concepts/layer_3_pets/basic/dreadglass_dragon.png",
+        "basic_sha256": "f3d3f795c69802e39beddecd595d83b96ac3d63e754ecd9812c6656b72a03f76",
+        "gold": "assets/concepts/layer_3_pets/gold/dreadglass_dragon_gold.png",
+        "gold_sha256": "fd4c4b441a01429473f753aaf5cad1ece201bf76444e675924977788d1fe6269",
+        "basic_card": "assets/concepts/layer_3_pets/cards/basic/dreadglass_dragon_basic.png",
+        "basic_card_sha256": "88e45dee397dde77fdfa54943869e0df4d49ed74b606626d8823991c66399e42",
+        "gold_card": "assets/concepts/layer_3_pets/cards/gold/dreadglass_dragon_gold.png",
+        "gold_card_sha256": "1766447d95f00234731c943c51a88254d1076e0629508882bb050712c6ea9221"
+      },
+      "geometry_attempts": [
+        {
+          "directory": "assets/source/pets/layer_3/dreadglass_dragon/meshy_t2_9000_attempt_1",
+          "task_id": "01a035de-c610-71d0-a8fe-511fcabd4bfc",
+          "target_triangles": 9000,
+          "status": "SUCCEEDED",
+          "credits": 5
+        }
+      ],
+      "variants": {
+        "basic": {
+          "task_id": "01a035ef-1417-7aa0-84e1-e520361fdbca",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "bd52a3895595e3a9e50d90f6622f91e1ba7ba903bce39c14e160304a6bd680cc",
+          "style_image_sha256": "f3d3f795c69802e39beddecd595d83b96ac3d63e754ecd9812c6656b72a03f76",
+          "final_glb": "assets/source/pets/layer_3/dreadglass_dragon/final/basic.glb",
+          "final_glb_sha256": "2329a734199ecd08250751557bea53876360366a7f9ef7b9afd0d0cbc508cf3d",
+          "triangles": 9764,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        },
+        "gold": {
+          "task_id": "01a035ef-2b0f-766d-8abd-4279aabd741d",
+          "task_status": "SUCCEEDED",
+          "credits": 10,
+          "texture_input_geometry_sha256": "bd52a3895595e3a9e50d90f6622f91e1ba7ba903bce39c14e160304a6bd680cc",
+          "style_image_sha256": "fd4c4b441a01429473f753aaf5cad1ece201bf76444e675924977788d1fe6269",
+          "final_glb": "assets/source/pets/layer_3/dreadglass_dragon/final/gold.glb",
+          "final_glb_sha256": "82728773e04e8cd9c4dfbb52f5e0c6dd3cd5541dd119cdb76b8476474152f627",
+          "triangles": 9764,
+          "boundary_edges": 0,
+          "non_manifold_edges": 0,
+          "integrity_passed": true
+        }
+      }
+    }
+  ]
+}

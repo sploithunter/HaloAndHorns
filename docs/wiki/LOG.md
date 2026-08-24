@@ -4616,3 +4616,18 @@ first-session cohort rates.
   each authored spawn anchor. New arrivals, respawns, and ordinary zone travel no longer stack
   avatars on one another; the configurable 24-slot layout preserves an explicit exact-placement
   override for specialized flows.
+
+## 2026-08-24 — Heaven 3 and Hell 3 pet production
+
+- Produced 40 Layer 3 pet families (20 Heaven, 20 Hell) with independently generated Basic
+  references, exact-pose Golden recolors, and 80 alpha-transparent inventory cards. The roster has
+  exactly one dragon per layer: Oasis Dragon and Dreadglass Dragon are Desert-origin Secret support
+  pets; no other Layer 3 family is a dragon.
+- Generated one Meshy Smart Topology T2 geometry per family, rejected open outputs, and repaired the
+  selected copies locally before texturing. Every authoritative Basic/Golden pair was textured from
+  the same geometry hash, and all 80 final GLBs pass the strict zero-boundary/zero-non-manifold gate
+  below 10,000 triangles.
+- Added labeled 2D and final-model contact sheets plus a recoverable production manifest containing
+  reference hashes, Meshy task IDs, input-geometry hashes, final GLB hashes, triangle counts, and
+  integrity results. Heavy local GLBs remain under the intentionally ignored `assets/source/pets/`
+  tree; the manifest preserves the server-side task lineage.
