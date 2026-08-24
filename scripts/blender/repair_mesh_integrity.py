@@ -126,6 +126,26 @@ def remove_small_face_components(bm: bmesh.types.BMesh, minimum_faces: int) -> i
     return removed
 
 
+def remove_nonmanifold_extra_faces(bm: bmesh.types.BMesh) -> int:
+    """Peel the smallest flap faces until no edge has more than two owners."""
+    removed = 0
+    while True:
+        bad_edges = [edge for edge in bm.edges if len(edge.link_faces) > 2]
+        if not bad_edges:
+            return removed
+        bad_set = set(bad_edges)
+        candidates = {face for edge in bad_edges for face in edge.link_faces}
+        victim = min(
+            candidates,
+            key=lambda face: (
+                -sum(1 for edge in face.edges if edge in bad_set),
+                face.calc_area(),
+            ),
+        )
+        bmesh.ops.delete(bm, geom=[victim], context="FACES")
+        removed += 1
+
+
 def clean_mesh(
     obj: bpy.types.Object,
     *,
@@ -136,6 +156,22 @@ def clean_mesh(
     bm = bmesh.new()
     bm.from_mesh(obj.data)
     bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=weld_distance)
+    bm.verts.ensure_lookup_table()
+    bm.verts.index_update()
+    seen_faces: set[tuple[int, ...]] = set()
+    duplicate_faces = []
+    for face in bm.faces:
+        key = tuple(sorted(vertex.index for vertex in face.verts))
+        if key in seen_faces:
+            duplicate_faces.append(face)
+        else:
+            seen_faces.add(key)
+    if duplicate_faces:
+        # Retexture can split UV seams into coincident vertices and occasionally
+        # emit the same geometric triangle twice. After welding, those copies
+        # create 3+-face edges even though the source geometry was manifold.
+        bmesh.ops.delete(bm, geom=duplicate_faces, context="FACES")
+    nonmanifold_faces = remove_nonmanifold_extra_faces(bm)
     degenerate_faces = [
         face
         for face in bm.faces
@@ -179,6 +215,8 @@ def clean_mesh(
     return {
         "boundary_edges_found": boundary_count,
         "fill_faces_added": filled_faces,
+        "duplicate_faces_removed": len(duplicate_faces),
+        "nonmanifold_faces_removed": nonmanifold_faces,
         "degenerate_faces_removed": len(degenerate_faces),
         "small_component_faces_removed": removed_component_faces,
     }
