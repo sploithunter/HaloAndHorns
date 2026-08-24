@@ -1207,5 +1207,47 @@ return {
                 max_half_extent = 400,
             },
         },
+
+        -- Isolated combat tutorial. Uses Training Ground Room 1 (entry + one chamber).
+        -- Population and room advance are scripted by CombatTutorialService.
+        -- `earth` has no kit palette — grass is the Earth-cave look. Decor
+        -- matches Heaven/Hell trials (same gray_box kit). CombatTutorialService
+        -- repaints the palette each lobby loop so they see the trial skins.
+        combat_tutorial = {
+            display = "Combat Training",
+            kit = "gray_box",
+            theme = "grass",
+            seed_policy = "gauntlet_room",
+            tutorial = true,
+            objective = { kind = "clear_then_beacon" },
+            gauntlet = { mode = "combat_tutorial", rooms = 1 },
+            packs = {
+                {
+                    weight = 10,
+                    intro = true,
+                    units = {
+                        { enemy = "lava_imp", count = 1 },
+                    },
+                },
+            },
+            decor = {
+                props_min = 2,
+                props_max = 5,
+                farmable_props = false,
+                crystal_nodes = false,
+                color_jitter = 0.08,
+                wall_decor_min = 2,
+                wall_decor_max = 4,
+                feature_chance = 0.6,
+            },
+            solver_overrides = {
+                tile_budget = 2,
+                target_depth = { min = 1, max = 1 },
+                class_weights_by_band = {
+                    { upto = 1.0, corridor = 0, room = 1, junction = 0 },
+                },
+                max_half_extent = 400,
+            },
+        },
     },
 }

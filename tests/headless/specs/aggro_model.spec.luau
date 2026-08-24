@@ -108,6 +108,23 @@ return function()
             expect(AggroModel.engaged(1, true, CFG)).to.equal(false)
             expect(AggroModel.engaged(0.5, true, CFG)).to.equal(false)
         end)
+
+        -- Combat-training dog is 1 damage / 1.8s. Incoming pet-side threat cannot
+        -- reach engage_floor against 4/s decay, so InCombat/music must credit the
+        -- pet's connected swing (outgoing), not only bites taken.
+        it("a 1-damage bite cannot hold engage_floor against decay", function()
+            local hit = AggroModel.threatFromDamage(CFG, "pet", 1)
+            expect(hit).to.equal(1)
+            expect(AggroModel.engaged(hit, false, CFG)).to.equal(false)
+            local afterCadence = math.max(0, hit - AggroModel.decayRate(CFG, "pet", 1) * 1.8)
+            expect(afterCadence).to.equal(0)
+        end)
+
+        it("a connected pet swing reaches engage_floor", function()
+            expect(AggroModel.engaged(AggroModel.threatFromDamage(CFG, "pet", 50), false, CFG)).to.equal(
+                true
+            )
+        end)
     end)
 
     describe("AggroModel defaults (missing/partial cfg)", function()

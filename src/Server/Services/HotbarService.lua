@@ -12,6 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local HotbarLogic = require(ReplicatedStorage.Shared.Game.HotbarLogic)
 local ArchetypeLogic = require(ReplicatedStorage.Shared.Game.ArchetypeLogic)
+local PowerAvailability = require(ReplicatedStorage.Shared.Game.PowerAvailability)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 
@@ -58,6 +59,11 @@ function HotbarService:Init()
             self:_pushState(player) -- echo the authoritative result
         end)
     end)
+    Signals.Hotbar_EditMode.OnServerEvent:Connect(function(player, editing)
+        pcall(function()
+            self:SetEditMode(player, editing)
+        end)
+    end)
     -- Admin testing: grant + bind the CURRENT area's full power set to the hotbar.
     game:GetService("Players").PlayerRemoving:Connect(function(player)
         self._challengeBinds[player] = nil
@@ -95,6 +101,12 @@ local AREA_ARCHETYPE = {
 -- be cast for testing. Re-run after switching area to get that area's set.
 function HotbarService:_overlayActive(player)
     return self._challengeBinds[player] ~= nil
+end
+
+-- Client-authoritative edit UI. Replicated so tutorial door checks can see it.
+function HotbarService:SetEditMode(player, editing)
+    player:SetAttribute("HotbarEditing", editing == true)
+    return { ok = true, editing = editing == true }
 end
 
 function HotbarService:AdminGrantArea(player)
@@ -159,8 +171,9 @@ function HotbarService:_assignablePalette(player)
     end
     -- INNATE powers (Resonance) are owned-free and NOT written to data.Powers, but they're castable and
     -- MUST be bindable from the Edit picker (the tutorial teaches binding Resonance there). Surface them.
+    local availability = PowerAvailability.snapshotForPlayer(player)
     for id, def in pairs((self._powersConfig and self._powersConfig.powers) or {}) do
-        if def.innate and not seen[id] then
+        if def.innate and not seen[id] and PowerAvailability.isAvailable(def, availability) then
             powers[#powers + 1] = id
             seen[id] = true
         end
@@ -364,6 +377,15 @@ function HotbarService:_writeBind(player, index, bind)
     local decision = HotbarLogic.canRebind(index, bind, self._config)
     if not decision.ok then
         return { ok = false, reason = decision.reason }
+    end
+    if type(bind) == "table" and bind.type == "power" then
+        local def = self._powersConfig.powers and self._powersConfig.powers[tostring(bind.target)]
+        if
+            def
+            and not PowerAvailability.isAvailable(def, PowerAvailability.snapshotForPlayer(player))
+        then
+            return { ok = false, reason = "not_available" }
+        end
     end
     local hotbar = self:_ensureDefaults(data)
     hotbar[tostring(index)] = bind -- nil clears

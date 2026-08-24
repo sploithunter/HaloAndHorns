@@ -1030,8 +1030,14 @@ function PetFollowService:_mine(player, pet, breakable)
     })
 
     -- Damage builds aggro: hurting an enemy makes it want to attack this pet (the threat
-    -- table the enemy targets from). Only enemies carry an EnemyId; crystals don't.
-    if breakable:GetAttribute("EnemyId") and applied.contributed > 0 then
+    -- table the enemy targets from) and engages the pet (InCombat / battle music). Only
+    -- enemies carry an EnemyId; crystals don't. An absorb still connected — credit the
+    -- swing so a shielded training dog keeps the fight on.
+    local aggroCredit = applied.contributed
+    if aggroCredit <= 0 and applied.outcome == "absorbed" then
+        aggroCredit = dmg
+    end
+    if breakable:GetAttribute("EnemyId") and aggroCredit > 0 then
         local enemyService = self:_enemyService()
         if enemyService then
             local factor = (
@@ -1039,7 +1045,7 @@ function PetFollowService:_mine(player, pet, breakable)
                 and self._combatConfig.engagement.aggro
                 and self._combatConfig.engagement.aggro.damage_factor
             ) or 1
-            enemyService:AddAggro(breakable, pet, applied.contributed * factor)
+            enemyService:AddAggro(breakable, pet, aggroCredit * factor)
         end
     end
 

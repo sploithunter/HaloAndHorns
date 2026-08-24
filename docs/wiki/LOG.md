@@ -1,5 +1,353 @@
 # Log
 
+## 2026-08-24 — Healer click pins pets; empty leftover still clears
+
+- Clicking the training healer now pins the squad on it (assist + wipe
+  other pet threat) so dogs cannot steal aggro mid-lesson.
+- `healer_fight` treats an empty field after the pack spawned as a clear,
+  even if a stuck-disengage despawn never fired `enemy_defeated`.
+
+## 2026-08-24 — Build-your-squad is a real swap walk
+
+- `build_squad` now grants a Rainbow Kitty and walks Open Pets → unequip one
+  equipped pet → pick the strongest inventory pet → Activate. Closing the
+  panel without that swap no longer completes the step.
+
+## 2026-08-24 — Archived Creator Hub funnels; split Activation
+
+- Saved the 7-day / 28-day / 1-day Creator Hub funnel snapshots under
+  `docs/wiki/raw/retention/`. Onboarding now ends at Rally. Optional first
+  quest / First Steps / first area use a named Activation funnel from join.
+
+## 2026-08-24 — Combat training lobby clears combat clocks
+
+- Pillar and leave-resume lobby returns now reset Heal/Revive cooldowns,
+  pet recovery, and Focus so testers do not wait on a used Heal or a
+  revived pet before the next room.
+
+## 2026-08-24 — Mythical+ gifts announce in chat
+
+- A finalized Mythical, Secret, Exclusive, or Huge gift now posts a
+  server chat line such as `Colorado sent Splite a mythical gift!`
+  The pet stays unnamed until the present is opened. The line is for
+  everyone on the server: Roblox chat will not carry that moment on its own.
+
+## 2026-08-24 — Admin reset restarts combat training
+
+- Reset-to-beginning now wipes `CombatTutorial` (and the loan/heal/reward
+  flags), leaves the cave instance, and SetLevel(1) again at the end.
+  Leftover teaching packs despawn through EnemyService plus a live cap
+  cull so two healers cannot stack on ENTER.
+
+## 2026-08-24 — Hold level claim until Rally
+
+- XP still accrues during the tutorial. Claim, COMMIT, altar, and filler
+  auto-claim wait until Homeworld `Tutorial.done` so Power up Resonance
+  cannot land inside a level-up beat.
+
+## 2026-08-24 — Combat training is the fine onboarding funnel
+
+- The Roblox onboarding funnel now includes all 32 combat-training beats
+  after Resonance enhance. Mid-fight leave rewinds only to that loop's
+  lobby (`leave_resume`) so prep can run again.
+
+## 2026-08-24 — Power up Resonance walks four in-menu clicks
+
+- After POWERS opens, CLICK HERE moves to Resonance, then the empty slot,
+  then Potency, then Apply. Same live-UI walker as bind-power / tank.
+
+## 2026-08-24 — Combat training packs stay one healer, three others
+
+- Repeat testers at Level 3 stacked a leftover healer on the authored pack.
+  Teaching rooms now clamp to one healer and three other pets, pin enemy
+  level at 1, and despawn this player's leftovers on spawn and leave.
+
+## 2026-08-24 — Combat training uses trial palettes and decor
+
+- The gray-box kit already has Heaven/Hell/element skins. Combat training
+  was `theme = earth` (no palette) with zero props. It now opens as grass
+  with trial-density decor, then repaints each lobby loop so they see
+  lava, heaven, hell, desert, and ice without restamping the room.
+
+## 2026-08-24 — Cave E opens a mission slot, not the Home lair
+
+- Press E at the Earth cave opens `combat_tutorial` in the existing 10
+  far-X instance slots (same as Range / Training Ground). The landing pad
+  no longer has Leave Mission on E — that sent testers straight back to
+  the cave. Tutorial missions also skip the gauntlet wipe watch.
+
+## 2026-08-24 — Cave mouth is Press E, not a frost READY wall
+
+- The Hall gate was a ProximityPrompt billboard. The cave mouth is that
+  again. Walking up no longer auto-starts training or stamps the frost
+  slab on the grass. E warps into EarthLair; READY/ENTER stays inside.
+
+## 2026-08-24 — Earth cave Enter prompt + Homeworld-only anchor
+
+- Combat-training copy is now for a new player: walk in and learn how to
+  fight. Entry is a visible Enter prompt on a mouth pad at the Home cave,
+  not a silent radius on whichever `BaddieSpawnerEarth` `FindFirstChild`
+  hits first (every realm layer clones that name). Isolated-track `done`
+  leftovers reopen while Homeworld is still on `first_fight`.
+
+## 2026-08-24 — Combat training moves into the Earth cave
+
+- The live tutorial now sends players into the grass/Earth cave after
+  Resonance. That cave no longer spawns ambient waves. The lobby / frost
+  door / arena / pillar stamp there. Finishing warps them back outside at
+  Level 2; Rally stays the last Homeworld beat. Hall arch entry is off.
+
+## 2026-08-24 — Healer hunt does not ask for a click on a dead card
+
+- Pets can auto-pick the Training Healer. When it dies, KILL THIS used to
+  stay up (or jump to a leftover dog). Auto-focus now counts as committed;
+  a dead healer clears the cue and never fires "click it again".
+
+## 2026-08-24 — CLICK HERE vanished after the inset scoot
+
+- `placeOverlay` read `overlay.IgnoreGuiInset` while `overlay` was the
+  `ancestorClips` boolean. That threw and killed the tank-lesson sign. The
+  flag is now `useOverlay`; inset is read from the ScreenGui parent.
+
+## 2026-08-24 — Heal / armor / debuff marks at the end of the bar
+
+- Support is still one role chip. Combat function is a second chip at the right
+  end of the HudCard bar: green plus for heal/drain, blue armor for defense,
+  red broken-shield for shred/curse. Inventory / egg-preview / starter-pet
+  support badges use the same function colours. Enemy healers stamp
+  `FunctionKind=heal` from `auto_heal`. Config: `power_icons.function_mark`.
+
+## 2026-08-24 — Tank-lesson signs sit on the card, not a topbar above it
+
+- TAKE OFF / CLICK HERE live on `TutorialCueOverlay`. That overlay ignored the
+  GUI inset while MenuOverlay does not, so AbsolutePosition placed both signs
+  a topbar-height too high. The overlay now shares the menu's inset space.
+
+## 2026-08-24 — Combat training completes with a thank-you reward
+
+- The last room is two dogs and a healer — plain and winnable. The final
+  pillar marks the track done. Isolated play grants 250 Earth Coins + potions
+  once (`CombatTutorialRewardGranted`). Level 2 is authored on
+  `completion.grant_earned_level` and stays off until this lesson is folded
+  into the live tutorial.
+
+## 2026-08-24 — Finale shields are real Dune Shields, not a teaching lock
+
+- The unguided room used `shield = true` (1e6 pool, refreshed), so the dogs
+  never died. It now applies the same 400 / 12s absorb a pet Dune Shield
+  uses, once, plus a healer. Heal / Weakening rooms still use the lock.
+
+## 2026-08-24 — Finale room is an open unshielded pack
+
+- `together_fight` had shielded dogs a Weakening Vial never stripped, so the
+  room stalled. It is now three plain dogs — no shields, no healer, no cues.
+
+## 2026-08-24 — Healer room waits for the leftover dogs
+
+- Killing the Training Healer used to light the lobby pillar while two dogs
+  were still up. `healer_fight` now matches Heal / Weakening: finish the
+  pack (`combat_tutorial_room_cleared`) before the exit offer.
+
+## 2026-08-24 — Activate closes the Pets menu
+
+- A successful squad Activate now hides inventory. The tank lesson goes
+  Activate → ENTER; Close is only a fallback if the menu is still open.
+
+## 2026-08-24 — Healer-hunt cue waits for pets to leave, not HUD unselect
+
+- `healer_hunt` hid `KILL THIS` only while the HUD assist was selected, so it
+  came back every few seconds. The cue now hides on click and returns only
+  when pets are no longer attacking that healer. Assist expiry is ignored.
+  A banner fires on that lost transition: click the healer again.
+
+## 2026-08-24 — Tank TAKE OFF sign sits above the inventory clip
+
+- Squad cards live in `ItemsScroll`, so a child callout was clipped to a
+  sliver above the last doggy. Inventory tutorial cues now parent to a
+  DisplayOrder 130 overlay and keep the same on-top TAKE OFF / CLICK HERE
+  sign as the other beats.
+
+## 2026-08-24 — Stacked-brew door plate counts remaining sips
+
+- The lobby frost door on `stack_brew` now reads DRINK FIVE MORE / FOUR / THREE
+  / TWO / ONE as each Berserk Brew lands. The blocked-click nudge matches.
+
+## 2026-08-24 — Tank lesson walks inventory click-by-click
+
+- `ready_tank` no longer leaves them in Pets with no cue. Open Pets → take off
+  the last/weakest doggy → click the strongest tank (or Best Pets → Tank) →
+  Activate → close → ENTER. Best Pets → Tank may replace the weakest doggy
+  during this lesson so the shortcut works on a full 3/3 squad.
+
+## 2026-08-24 — Stacked Berserk + three doggies for the tank swap
+
+- Five Berserk sips were working (PetDamageBuffPotion) but the stacked fight
+  used a 900 HP dog and a pre-equipped bear, so it felt slower than the 275
+  HP dogs. Stack fight is 400 HP, the meter refreshes on enter, and the
+  loaned squad starts as three doggies. The tank lesson resets to those
+  three and then requires a bear.
+
+## 2026-08-24 — Lobby breadcrumb waits for the actual pack
+
+- Heal-room and Weakening Vial rooms were lighting the lobby trail while
+  training dogs were still up. Room-clear no longer treats an empty enemy
+  scan as a win; it counts the spawned pack. `weaken_fight` now matches
+  `heal_fight`: throw the vial, finish the dogs, then the pillar.
+
+## 2026-08-24 — Heal-room shields drop after the mend, then the dogs must die
+
+- Heal-room absorb is only there so they Heal first. `cast_heal` drops
+  shields; `heal_fight` waits for `combat_tutorial_room_cleared` before the
+  pillar lights. The inner door stays sealed so they cannot leave mid-fight.
+
+## 2026-08-24 — Combat training splits into tool loops plus an unguided finale
+
+- Heal is its own lobby → fight → pillar loop. Debuff, five-of-ten Berserk
+  sips, tank equip, kill-the-healer, then an arrow-free "on your own" room
+  follow. `more_coming` still holds. Mixed packs use `spawn.units`.
+
+## 2026-08-24 — Heal stays hidden until combat training
+
+- Innate Heal uses `hidden_while.until_combat_tutorial` so Homeworld
+  `bind_power` only offers Resonance. First combat-training enter stamps
+  `CombatTutorialHealUnlocked` (survives leave and `restart_on_enter`).
+  Heal is still not auto-bound, so `bind_heal` still teaches Edit → slot.
+
+## 2026-08-24 — Combat training plays battle music once pets connect
+
+- `InCombat` (the event `AreaMusicController` swaps on) is derived from pet-side
+  threat. The Training Dog's 1-damage bites cannot hold `engage_floor` against
+  decay, and pet swings used to credit only the enemy table — so the fight
+  looked live with no battle music. `AddAggro` now also engages the attacking
+  pet; an absorb still counts as a connected swing.
+
+## 2026-08-24 — Combat training teaches enemy select + Weakening Vial
+
+- After Heal, the same shielded dogs stay unbeatable. The track grants two
+  Weakening Vials, asks for a left-rail enemy-card click, then a throw. The
+  absorb shield drops only when that vial is used.
+
+## 2026-08-24 — Combat training wounds one pet for the heal-target lesson
+
+- `select_pet` now authors a yellow-band wound on one live squad pet
+  (`CombatDamageTaken` via `PetEndurance.takenForHealthFraction`) instead of
+  waiting for a random hit. The `CLICK HERE` cue resolves that card
+  (`InjuredSlot`) and sits to the left of its health bar.
+
+## 2026-08-24 — Combat training no longer blanks the equipped strip
+
+- Inventory kit filter only hides other species in the grid. It no longer
+  rewrites the squad draft, which had shown a live bunny/doggy/bear team as 0/3.
+
+## 2026-08-24 — Combat training pet filter is by species
+
+- Inventory allow-list is bunny / doggy / bear / kitty, any variant. Matching
+  only the loaned `basic:` stack key hid the kit (Pets 0).
+
+## 2026-08-24 — Combat training inventory shows only the loaned kit
+
+- While `InCombatTutorial`, Inventory hides every pet that is not a loaned
+  bunny/doggy/bear/kitty basic stack. Best Pets and the squad draft use the
+  same allow-list. Client-only; the server still restores the saved squad
+  on exit.
+
+## 2026-08-24 — Combat training temp-grants three of each starter pet
+
+- Combat tutorial snapshots `Equipped.pets` and loans three bunny / doggy /
+  bear / kitty commons so the lobby inventory can mix a full 3-slot squad.
+  Exit, disconnect, or a later join strips only those loaned counts and
+  respawns the saved squad with downs recovered. Not Range GhostPets.
+
+## 2026-08-24 — Mission map defaults to the upper left third
+
+- MissionMap no longer opens on the lower-right playfield. It starts at the
+  top of the left third (`AnchorPoint` 0,0 / scale 0.14, 0), left of the
+  PlayerBar and under the Roblox top bar. Drag is unchanged.
+
+## 2026-08-24 — Homeworld tutorial v5 restores Resonance before combat
+
+- The Hall emergency rollback (v4) had re-imported the older fight-then-Resonance
+  order. v5 puts Resonance bind/cast/slot after squad again. Steps 8–10 stay the
+  current cave/brew/Rally tail until the isolated combat tutorial replaces them
+  with a longer funnel. Retention onboarding order matches; milestone IDs are
+  unchanged.
+
+## 2026-08-24 — Combat tutorial withholds Resonance and points at Heal
+
+- Resonance stays innate on Homeworld, but `hidden_while.in_combat_tutorial`
+  removes it from the bind picker, Powers menu, and casts while inside
+  combat training. The assign-slot arrow follows the current lesson
+  (`bind_heal` → Heal, `bind_power` → Resonance).
+
+## 2026-08-24 — Combat tutorial door unlock is a named checklist
+
+- Door ENTER and `bind_heal` now wait on an AND-list of named checks in
+  `TutorialUnlock` (`pets_equipped`, `hotbar_bound`, `hotbar_not_editing`,
+  plus `squad_full` / `squad_has_role` for later tank/healer lessons). The
+  first failed row stamps the plate and banners the missing action
+  ("Go equip pets.", "Press Done first!"). Binding Heal while still in
+  edit mode no longer unlocks the door.
+
+## 2026-08-24 — Combat tutorial Heal bind unlocks the door
+
+- `bind_heal` now finishes when Heal is actually on the saved hotbar
+  (`power_bound`, already-bound on step enter, or Done). The door was staying
+  on SET HEAL FIRST because it only listened for Edit → Done.
+
+## 2026-08-24 — Combat tutorial READY/ENTER pulse survives step changes
+
+- Watcher refresh was incrementing `doorPulseToken` and killing the READY/ENTER
+  loop after a lobby lesson. The plate now reapplies on lock-door steps so the
+  pulse keeps running after Drink (and later lobby gates).
+
+## 2026-08-24 — Combat tutorial door says why it is locked
+
+- Ready beats pulse READY / ENTER. Lobby lessons stamp the missing action on
+  the plate (DRINK FIRST, SET HEAL FIRST). A premature click shows a short
+  banner nudge instead of silently ignoring.
+
+## 2026-08-24 — Combat tutorial loops lobby → door → fight
+
+- The pillar now warps back to the lobby and reseals ENTER. Brew and Heal bind
+  happen in that safe lobby; ENTER only works on ready steps, so lobby work
+  cannot be skipped. Pattern repeats: lobby lesson → door → fight → pillar.
+
+## 2026-08-24 — Combat tutorial first kill gates on the objective pillar
+
+- After the Training Dog dies, the track holds on `advance_stage` instead of
+  jumping to Berserk Brew. The existing tutorial breadcrumb aims at
+  `ObjectiveBeacon` (finder now searches MissionInstances). A hold-0 Advance
+  prompt lights that pillar; it does not warp to the lobby or restamp the room.
+
+## 2026-08-24 — Combat tutorial first fight fields in the objective room
+
+- Arena spawn now walks the mission instance for a `MissionSpawn` part
+  (`ObjectiveRoom` preferred). The stamper never puts that part on `hooks`, so
+  ENTER was falling back to the player and dropping the dog in the lobby.
+
+## 2026-08-24 — Combat tutorial restarts on enter; door seal retries
+
+- Each combat-tutorial mission enter starts at ready (`restart_on_enter`) so the
+  script can be iterated without Stop/Play. The frost ENTER slab retries until
+  the mission instance exists; it no longer marks sealed before a slab is created.
+
+## 2026-08-24 — Combat tutorial ENTER then spawn
+
+- Ready is now the first lesson: the frost door stays sealed and no enemy fields on
+  mission enter. Clicking ENTER unseals and advances; `first_fight` then spawns a
+  very weak earth melee (`rabid_dog` / Training Dog at the Homeworld onramp-jackalope
+  275 HP / 1 dmg scale) in the opened room.
+
+## 2026-08-24 — Isolated combat tutorial from the Home Hall arch
+
+- Added a separate `combat_tutorial` track (config + `CombatTutorialService`) that does not
+  replace Homeworld tutorial v4. The disabled Hall portal is now a Combat Training mission door
+  into Training Ground Room 1 (`train#1`). Inner door stays sealed until Heal is bound.
+- Heal-room whelps use the existing Dune Shield absorb pool (huge timed `CombatShield`) so they
+  cannot be killed during the select/heal lesson. `CombatApplication.ApplyDamage` soaks that pool
+  on HP targets; the service clears the shield when the heal lesson lands. The track holds on
+  `more_coming` and is not marked complete.
+
 ## 2026-08-23 — New players accept trade requests from Everyone
 
 - Changed the new-profile Trade request privacy default from Friends only to Everyone across the

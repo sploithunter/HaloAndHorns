@@ -2,7 +2,7 @@
     Pure rules and copy for server-authored chat announcements.
 
     This module never calls Roblox services, so the rarity threshold, scope, pet naming,
-    and sidekick-only team rule stay headless-testable.
+    gift copy, and sidekick-only team rule stay headless-testable.
 ]]
 
 local ChatAnnouncementRules = {}
@@ -193,6 +193,40 @@ function ChatAnnouncementRules.creatorLuck(playerName, multiplier, announcementC
         text = ("🍀 %s joined! Hatch luck is now %gx!!!"):format(
             boundedString(playerName, "A creator"),
             activeMultiplier
+        ),
+    }
+end
+
+function ChatAnnouncementRules.gift(
+    senderName,
+    receiverName,
+    rarityId,
+    petsConfig,
+    announcementConfig
+)
+    local giftConfig = announcementConfig and announcementConfig.gift or {}
+    local ranks = rankMap(petsConfig)
+    local minimum = giftConfig.minimum_rarity or "mythic"
+    if type(rarityId) ~= "string" or not ranks[rarityId] or not ranks[minimum] then
+        return nil
+    end
+    if ranks[rarityId] < ranks[minimum] then
+        return nil
+    end
+
+    local rarity = petsConfig and petsConfig.rarities and petsConfig.rarities[rarityId] or {}
+    local rarityName = boundedString(rarity.name, rarityId:gsub("^%l", string.upper))
+    local article = rarityName:match("^[AEIOUaeiou]") and "an" or "a"
+    return {
+        kind = "gift",
+        scope = "server",
+        rarityId = rarityId,
+        colorHex = colorHex(rarity.color),
+        text = ("%s sent %s %s %s gift!"):format(
+            boundedString(senderName, "A player"),
+            boundedString(receiverName, "a player"),
+            article,
+            rarityName:lower()
         ),
     }
 end

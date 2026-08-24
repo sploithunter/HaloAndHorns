@@ -26,6 +26,9 @@ return {
     founders_legacy = {
         color_hex = "#FFC637",
     },
+    gift = {
+        minimum_rarity = "mythic",
+    },
     limits = {
         text_characters = 240,
         id_characters = 128,

@@ -295,5 +295,32 @@ return {
                 },
             },
         },
+
+        -- Isolated combat tutorial. Reuses Training Ground Room 1 maps (train#1).
+        -- No public board, no ChallengeRuns persist, no level-5 engage gate.
+        -- Own-loadout stamp: CombatTutorialService temp-grants the starter
+        -- commons from combat_tutorial.loaned_squad (mix-and-match in inventory).
+        combat_tutorial = {
+            loadout = "own",
+            display = "Combat Training",
+            hall_currency_hud = false,
+            skip_engage_gate = true,
+            persist_runs = false,
+            tutorial = true,
+            curve = {
+                rooms = 1,
+                hp_growth = 1,
+                dmg_growth = 1,
+                beats = {
+                    {
+                        upto = 1,
+                        intro_only = true,
+                        count_mult = 1,
+                        tile_budget = 2,
+                        target_depth = { min = 1, max = 1 },
+                    },
+                },
+            },
+        },
     },
 }

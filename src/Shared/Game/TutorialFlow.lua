@@ -103,6 +103,61 @@ function TutorialFlow.isVeteran(config, claimedLevel, ownsPets)
     return (tonumber(claimedLevel) or 0) >= (tonumber(skip.min_claimed_level) or math.huge)
 end
 
+-- Hold CLAIM (Power Choice / altar), not XP, until the Homeworld tutorial is
+-- done. A live lesson plus a pending claim puts CLICK HERE on Resonance while
+-- COMMIT owns the menu. Veterans and pre-tutorial saves stay unlocked.
+function TutorialFlow.allowsLevelClaim(config, progress, gameData)
+    if not (config and config.hold_level_claim == true) then
+        return true
+    end
+    if type(gameData) == "table" and gameData.TutorialCompleted == true then
+        return true
+    end
+    if type(progress) ~= "table" then
+        return true
+    end
+    return progress.done == true
+end
+
+function TutorialFlow.stepIndex(config, stepId)
+    if type(stepId) ~= "string" or stepId == "" then
+        return nil
+    end
+    for index, step in ipairs((config and config.steps) or {}) do
+        if step.id == stepId then
+            return index, step
+        end
+    end
+    return nil
+end
+
+-- Mid-fight leave: rewind to that loop's lobby so prep (brew, tank, vials)
+-- runs again. Never advances. Clears counts and grants from the resume
+-- step through the abandoned step so those grants can re-fire.
+function TutorialFlow.rewindTo(config, progress, stepId)
+    progress = TutorialFlow.normalizeProgress(progress, config and config.version)
+    if progress.done then
+        return progress, false
+    end
+    local target = TutorialFlow.stepIndex(config, stepId)
+    if not target or target >= progress.step then
+        return progress, false
+    end
+    local granted = type(progress.granted) == "table" and progress.granted or nil
+    if granted then
+        for index = target, progress.step do
+            local step = (config.steps or {})[index]
+            if step and type(step.id) == "string" then
+                granted[step.id] = nil
+            end
+        end
+        progress.granted = granted
+    end
+    progress.step = target
+    progress.count = 0
+    return progress, true
+end
+
 -- The active step record (+ its index), or nil when the tutorial is finished.
 function TutorialFlow.current(config, progress)
     progress = TutorialFlow.normalizeProgress(progress, config and config.version)
@@ -131,6 +186,16 @@ function TutorialFlow.advance(config, progress, eventName, ctx)
     if eventName ~= cond.event then
         return progress, false
     end
+    if type(cond.potion) == "string" then
+        if type(ctx) ~= "table" or ctx.potion ~= cond.potion then
+            return progress, false
+        end
+    end
+    if type(cond.enemy) == "string" then
+        if type(ctx) ~= "table" or ctx.enemy ~= cond.enemy then
+            return progress, false
+        end
+    end
     -- sum_ctx: accumulate a NUMBER from the event ctx instead of counting events —
     -- the farm step sums coin_payout amounts so "count" reads as COINS EARNED and the
     -- player keeps mining until they can afford the next egg (Jason's coin gate).
@@ -151,6 +216,26 @@ function TutorialFlow.advance(config, progress, eventName, ctx)
         progress.done = true
     end
     return progress, true
+end
+
+-- Door-plate copy for a counted lobby lesson (e.g. drink five Berserk Brews).
+-- remaining_plates[left] / remaining_nudges[left] win while sips are still owed.
+function TutorialFlow.doorButtonCopy(step, progress)
+    local button = step and step.door_button
+    if type(button) ~= "table" then
+        return nil, nil
+    end
+    local need = tonumber(step.complete_on and step.complete_on.count) or 1
+    local have = math.max(0, math.floor(tonumber(progress and progress.count) or 0))
+    local left = math.max(0, need - have)
+    if left <= 0 then
+        return button.text, button.nudge
+    end
+    local plates = button.remaining_plates
+    local nudges = button.remaining_nudges
+    local text = type(plates) == "table" and plates[left] or button.text
+    local nudge = type(nudges) == "table" and nudges[left] or button.nudge
+    return text, nudge
 end
 
 -- The client-facing view the service pushes (no config tables leak to the wire).

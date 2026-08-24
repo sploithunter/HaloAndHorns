@@ -128,6 +128,13 @@ function AggroTable.clearNegatives(state)
     end
 end
 
+-- Drop every entry (tutorial focus-fire: wipe other threats, then pin one target).
+function AggroTable.clearAll(state)
+    for key in pairs(state.values) do
+        state.values[key] = nil
+    end
+end
+
 -- Total POSITIVE threat in the table — the unit's aggro HEAT (how hard the other side is
 -- pressing it right now). The rage tipping point's input (docs/AGGRO_MODEL.md): heat past
 -- rage.tip ⇒ berserk. Negative (feared) entries are terror, not pressure — excluded.

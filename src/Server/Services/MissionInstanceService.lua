@@ -338,6 +338,14 @@ function MissionInstanceService:_sweepOrphans()
     end
 end
 
+function MissionInstanceService:GetRecordForPlayer(player)
+    local instanceId = player and player:GetAttribute("InMission")
+    if type(instanceId) ~= "string" or instanceId == "" then
+        return nil
+    end
+    return self._instances[instanceId]
+end
+
 function MissionInstanceService:_onPlayerLeaving(player)
     self:_cancelStream(player)
     local instanceId = player:GetAttribute("InMission")
@@ -603,7 +611,11 @@ function MissionInstanceService:Open(player, missionId, opts)
     -- exit prompt on the entrance pad (CoH: you leave through the door you
     -- came in). Lives inside the container, so teardown removes it. Only the
     -- instance's own team can trigger it.
-    self:_attachExitPrompt(spawnPad, mission, teamKey, instanceId)
+    -- Combat training lands you on this pad after Press E. A Leave Mission
+    -- prompt here would eat the same E and dump them back at the cave.
+    if not mission.tutorial then
+        self:_attachExitPrompt(spawnPad, mission, teamKey, instanceId)
+    end
     local returnCFrames = {}
     local savedZoom = {}
     local missionAggressionPolicy = mission.aggression_policy
@@ -715,8 +727,10 @@ function MissionInstanceService:Open(player, missionId, opts)
     -- STATIC population (CoH model): field a seeded, fixed pack at every
     -- MissionSpawn anchor, once. No proximity waves, no respawn — the
     -- homeworld BaddieSpawner system never runs inside missions.
+    -- Scripted tutorial missions skip this: CombatTutorialService fields
+    -- each pack as the step machine advances.
     record.enemies = {}
-    do
+    if not mission.tutorial then
         local points = self:_missionSpawnPoints(container, record.gauntletCurve)
         local objectivePointIndex
         for i, point in ipairs(points) do
@@ -1063,7 +1077,10 @@ function MissionInstanceService:Open(player, missionId, opts)
     --                        Bastion... you don't have to defeat everything");
     --                        the rest of the map is optional speed-bumps
     local kind = mission.objective and mission.objective.kind
-    if kind == "reach_beacon" or kind == "clear_then_beacon" or kind == "defeat_named" then
+    if
+        not mission.tutorial
+        and (kind == "reach_beacon" or kind == "clear_then_beacon" or kind == "defeat_named")
+    then
         local beacons = hooks.MissionObjective or {}
         local gated = kind ~= "reach_beacon"
         -- the gate's watch list: everything for clear, ONE model for named.
@@ -1238,7 +1255,7 @@ function MissionInstanceService:Open(player, missionId, opts)
                 task.wait(0.5)
             end
         end)
-        if record.gauntlet then
+        if record.gauntlet and not mission.tutorial then
             self:_watchGauntletWipe(record)
         end
     end
@@ -1354,9 +1371,12 @@ function MissionInstanceService:_close(instanceId, reason)
         record.wipeConnections = nil
     end
     if record.gauntlet then
-        pcall(function()
-            self:_persistChallengeBest(record)
-        end)
+        local mission = self._config and self._config.missions[record.missionId]
+        if ChallengeRun.persistsRuns(self:_challengeModeCfg(mission)) then
+            pcall(function()
+                self:_persistChallengeBest(record)
+            end)
+        end
         pcall(function()
             self:_restoreGauntletLoadouts(record)
         end)
@@ -2605,6 +2625,91 @@ local THEME_PALETTES = {
     },
 }
 
+-- Combat training reuses one stamped kit and walks trial palettes (grass /
+-- heaven / hell / lava / ice / desert) between lessons. Safe to call again.
+function MissionInstanceService:RepaintTheme(player, theme)
+    if type(theme) ~= "string" or theme == "" then
+        return false
+    end
+    local record = self:GetRecordForPlayer(player)
+    if not (record and record.container) then
+        return false
+    end
+    self:_paintThemePalette(record.container, theme)
+    for _, member in ipairs(membersOf(record.teamKey)) do
+        member:SetAttribute("MissionTheme", theme)
+        member:SetAttribute("MissionArea", theme)
+    end
+    return true
+end
+
+function MissionInstanceService:_paintThemePalette(container, theme)
+    local palette = THEME_PALETTES[theme]
+    if not (container and palette) then
+        return false
+    end
+    for _, inst in ipairs(container:GetDescendants()) do
+        if inst:IsA("Model") and inst.Name == "WallBanner" and palette.banner then
+            local tint = palette.banner
+            for _, dd in ipairs(inst:GetDescendants()) do
+                if dd:IsA("SpecialMesh") then
+                    dd.VertexColor = Vector3.new(tint.R, tint.G, tint.B)
+                elseif dd:IsA("MeshPart") then
+                    dd.TextureID = ""
+                    dd.Color = tint
+                end
+            end
+        elseif inst:IsA("BasePart") then
+            local n = inst.Name
+            if n == "Floor" then
+                inst.Color = palette.floor
+                if palette.floorMaterial then
+                    inst.Material = Enum.Material[palette.floorMaterial]
+                end
+            elseif n:sub(1, 5) == "Wall_" or n:sub(1, 7) == "Header_" or n == "Backing" then
+                inst.Color = palette.wall
+                if palette.wallMaterial then
+                    inst.Material = Enum.Material[palette.wallMaterial]
+                end
+            elseif n:sub(1, 7) == "Pillar_" then
+                inst.Color = palette.pillar
+                if palette.pillarMaterial then
+                    inst.Material = Enum.Material[palette.pillarMaterial]
+                end
+            elseif n == "ObjectiveBeacon" then
+                inst.Color = palette.beacon
+            elseif n:sub(1, 11) == "TorchFlame_" then
+                inst.Color = palette.torchFlame
+                if palette.torchMaterial then
+                    inst.Material = Enum.Material[palette.torchMaterial]
+                end
+                local light = inst:FindFirstChildOfClass("PointLight")
+                if light then
+                    light.Color = palette.torchLight
+                    if palette.torchBrightness then
+                        light.Brightness = palette.torchBrightness
+                    end
+                    if palette.torchRange then
+                        light.Range = palette.torchRange
+                    end
+                end
+                local fire = inst:FindFirstChildOfClass("Fire")
+                if palette.fire then
+                    if not fire then
+                        fire = Instance.new("Fire")
+                        fire.Parent = inst
+                    end
+                    fire.Color = palette.fire.color
+                    fire.SecondaryColor = palette.fire.secondary
+                    fire.Size = palette.fire.size
+                    fire.Heat = palette.fire.heat
+                end
+            end
+        end
+    end
+    return true
+end
+
 -- One-time (lazy): swap the preloaded MissionCrate placeholder visual for
 -- the Synty crate prefab when the place carries it. Runtime store
 -- augmentation, AssetPreloadService pattern; retried until the store exists.
@@ -2965,56 +3070,7 @@ function MissionInstanceService:_applyDressing(
 
     -- theme base coat first: walls/floors/pillars/torches across EVERY tile
     -- (caps + corridors included), so the realm identity is total
-    if palette then
-        for _, inst in ipairs(container:GetDescendants()) do
-            if inst:IsA("BasePart") then
-                local n = inst.Name
-                if n == "Floor" then
-                    inst.Color = palette.floor
-                    if palette.floorMaterial then
-                        inst.Material = Enum.Material[palette.floorMaterial]
-                    end
-                elseif n:sub(1, 5) == "Wall_" or n:sub(1, 7) == "Header_" or n == "Backing" then
-                    inst.Color = palette.wall
-                    if palette.wallMaterial then
-                        inst.Material = Enum.Material[palette.wallMaterial]
-                    end
-                elseif n:sub(1, 7) == "Pillar_" then
-                    inst.Color = palette.pillar
-                    if palette.pillarMaterial then
-                        inst.Material = Enum.Material[palette.pillarMaterial]
-                    end
-                elseif n == "ObjectiveBeacon" then
-                    inst.Color = palette.beacon
-                elseif n:sub(1, 11) == "TorchFlame_" then
-                    inst.Color = palette.torchFlame
-                    if palette.torchMaterial then
-                        inst.Material = Enum.Material[palette.torchMaterial]
-                    end
-                    local light = inst:FindFirstChildOfClass("PointLight")
-                    if light then
-                        light.Color = palette.torchLight
-                        if palette.torchBrightness then
-                            light.Brightness = palette.torchBrightness
-                        end
-                        if palette.torchRange then
-                            light.Range = palette.torchRange
-                        end
-                    end
-                    -- the altar's REAL fire on every remaining torch (soft
-                    -- render, themed colorway — kills the placeholder read)
-                    if palette.fire and not inst:FindFirstChildOfClass("Fire") then
-                        local fire = Instance.new("Fire")
-                        fire.Color = palette.fire.color
-                        fire.SecondaryColor = palette.fire.secondary
-                        fire.Size = palette.fire.size
-                        fire.Heat = palette.fire.heat
-                        fire.Parent = inst
-                    end
-                end
-            end
-        end
-    end
+    self:_paintThemePalette(container, theme)
 
     -- tint: walls/headers/pillars one factor, floor another — rooms stop
     -- reading as copies of each other

@@ -173,6 +173,9 @@ end
 
 function BaddieSpawnerService:_trigger(part, player, rng)
     local binding = self:_bindingFor(part)
+    if binding and binding.disabled == true then
+        return
+    end
     local wave = self:_pickWave(rng, self:_factionFor(part))
     if not wave then
         return
@@ -559,6 +562,8 @@ function BaddieSpawnerService:Start()
                 end
                 if not part.Parent then
                     self._spawners[part] = nil
+                elseif self:_bindingFor(part) and self:_bindingFor(part).disabled == true then
+                    -- Authored training cave (Earth): combat tutorial owns the pack.
                 elseif self:_isRealmCave(part) then
                     -- REALM CAVES belong to the roaming patrol (EnemyService), which fields
                     -- realm-appropriate enemies (heaven enemies in heaven, hell in hell). The homeworld

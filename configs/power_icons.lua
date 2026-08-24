@@ -157,6 +157,7 @@ local M = {
         aoe_damage = { symbol = "ranged_impact", target = "enemy_aoe" }, -- eruption (ranged AoE)
         -- Generic / farming / luck / utility roster (white disc unless the power sets an element):
         heal = { symbol = "plus", target = "self" }, -- restore endurance
+        innate_heal = { symbol = "plus", target = "ally" }, -- innate single-pet Heal (purple exclusive disc)
         coin_yield = { symbol = "coins_up", target = "self" }, -- Prospector
         windfall = { symbol = "gift_up", target = "self" }, -- Windfall
         magnet = { symbol = "magnet", target = "self" }, -- Magnet (drop pull)
@@ -190,11 +191,48 @@ local M = {
         fire_nova = { symbol = "nuke", target = "self" }, -- player_field burn AoE
     },
 
+    -- Combat FUNCTION mark (Jason: read the job at a glance, beyond the Support "S" chip).
+    -- Heal / armor / debuff share one HUD-bar-end chip and recolor inventory support badges.
+    -- Colour is the FUNCTION, not the pet's origin — healers must read green. Kinds left out of
+    -- by_kind (luck, offense, hold, …) keep origin-tinted support badges. Extensible: add a
+    -- group + map the aura kind; do not invent a sixth role id.
+    function_mark = {
+        groups = {
+            heal = {
+                symbol = "plus",
+                element = "earth", -- green discs
+                color = { 70, 205, 95 },
+                label = "Heal",
+            },
+            armor = {
+                symbol = "armor_chest",
+                element = "ice", -- blue discs
+                color = { 81, 136, 255 },
+                label = "Armor",
+            },
+            debuff = {
+                symbol = "shield_broken",
+                element = "fire", -- red discs (shred + curse share one "hurts the foe" chip)
+                color = { 255, 82, 89 },
+                label = "Debuff",
+            },
+        },
+        by_kind = {
+            heal = "heal",
+            drain = "heal", -- hell leech still mends allies
+            defense = "armor",
+            shred = "debuff",
+            curse = "debuff",
+        },
+        -- HUD / inventory pick the first matching group in this order when a pet has many auras.
+        priority = { "heal", "armor", "debuff" },
+    },
+
     -- Support PET aura kind (configs/pet_roles.lua support_auras) -> its complete inventory-badge
     -- presentation. Keeping label + symbol together makes a newly authored aura fail one coverage
     -- test instead of silently losing its badge because a client-only lookup was not updated.
-    -- Disc colour comes from the PET through PetBadge.elementForPetType; it is never hard-coded by
-    -- aura kind (exclusive pets such as Ashwing/Lumen Dove therefore stay purple).
+    -- Disc colour: function_mark.groups[by_kind[kind]].element when mapped (heal=green), else the
+    -- PET through PetBadge.elementForPetType so exclusives (Ashwing/Lumen Dove) stay purple.
     support_badge = {
         heal = { symbol = "plus", label = "Heal", tooltip = "Restores the most-injured pet." },
         defense = {

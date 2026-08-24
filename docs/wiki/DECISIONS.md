@@ -664,3 +664,12 @@ existing mission behavior but their complete authored fixture Instances move int
 and Desert respectively. Map geometry and bindings move in Studio; runtime discovers the same tags
 and attributes. Historical Hall tooling must never create replacement copies once
 `Home.ChallengeBindings` exists.
+
+## Split onboarding from optional activation (2026-08-24)
+
+The Roblox onboarding funnel ends at tutorial complete (Rally, including
+the combat-training beats). First quest, First Steps, and first area are
+optional, so they must not sit after Rally in the same sequential chart —
+that reports "tutorial finishers who skipped an optional quest" as a
+cliff. Those goals use a separate named Activation funnel that starts at
+join, so conversion is of all players.

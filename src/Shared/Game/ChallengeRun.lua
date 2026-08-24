@@ -84,7 +84,7 @@ end
 
 function ChallengeRun.layoutContext(room, mode)
     local n = math.max(1, math.floor(tonumber(room) or 1))
-    if mode == "training_ground" then
+    if mode == "training_ground" or mode == "combat_tutorial" then
         return "train#" .. n
     end
     return "room#" .. n
@@ -669,6 +669,36 @@ end
 -- real pets, at whatever earned level can reach the door.
 function ChallengeRun.skipsEngageGate(modeCfg)
     return type(modeCfg) == "table" and modeCfg.skip_engage_gate == true
+end
+
+-- Catalog Range parks the owned squad and fields GhostPets.
+function ChallengeRun.loansSquad(modeCfg)
+    return type(modeCfg) == "table" and modeCfg.loadout == "catalog"
+end
+
+function ChallengeRun.overlaysPowers(modeCfg)
+    return type(modeCfg) == "table" and modeCfg.loadout == "catalog"
+end
+
+-- Shallow copy of Equipped.pets slot refs. Combat training snapshots this
+-- list, then puts it back on exit without touching ownership or XP.
+function ChallengeRun.copyEquippedPets(equipped)
+    local out = {}
+    if type(equipped) ~= "table" then
+        return out
+    end
+    for slot, ref in pairs(equipped) do
+        if type(slot) == "string" and type(ref) == "string" and ref ~= "" then
+            out[slot] = ref
+        end
+    end
+    return out
+end
+
+-- Combat tutorial reuses the gauntlet stamp but must not write ChallengeRuns
+-- or public boards. Omitted persist_runs keeps the default (persist).
+function ChallengeRun.persistsRuns(modeCfg)
+    return not (type(modeCfg) == "table" and modeCfg.persist_runs == false)
 end
 
 -- Combat onramp (configs/combat.lua engagement.min_engage_level) must

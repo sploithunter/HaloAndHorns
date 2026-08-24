@@ -49,6 +49,8 @@ return {
         -- the player's current-area currency (Waycoins in Hall_1) instead of Grass Crystals.
         bindings = {
             HallBarn = { faction = "earth", use_area_currency_loot = true },
+            -- Earth cave is the live combat-training venue. Ambient waves stay off.
+            Earth = { faction = "earth", disabled = true },
         },
         -- VARIETY (Jason): weighted compositions, not just "3 imps / 1 bear". Mixed-role packs make
         -- the role + surround systems sing — a healer behind a tank reads totally differently from a

@@ -624,6 +624,22 @@ end
 local PREVIEW_UP = Color3.fromRGB(120, 220, 120) -- the staged change helps this axis
 local PREVIEW_DOWN = Color3.fromRGB(225, 130, 120) -- … or hurts it (e.g. a longer recharge)
 
+function PowerChoiceMenu:_syncEnhanceTutorialAttrs()
+    local root = self.frame
+    if not root then
+        return
+    end
+    if self.enhanceFor then
+        root:SetAttribute("EnhanceFor", self.enhanceFor)
+    else
+        root:SetAttribute("EnhanceFor", nil)
+    end
+    root:SetAttribute("EnhanceTargetSlot", self._enhTargetSlot or 0)
+    local staged = self._enhStaged
+    local typ = staged and staged.item and staged.item.type
+    root:SetAttribute("EnhanceStagedType", typ or "")
+end
+
 function PowerChoiceMenu:_toggleEnhance(powerId)
     if self.enhanceFor == powerId then
         self.enhanceFor = nil
@@ -847,11 +863,13 @@ function PowerChoiceMenu:_renderEnhanceStrip()
         self.originCol.Visible = listsVisible
     end
     if not (powerId and self.frame and self.live) then
+        self:_syncEnhanceTutorialAttrs()
         return
     end
     local state = callBus("enh.get", {})
     if not (state and state.ok) then
         self.enhanceFor = nil
+        self:_syncEnhanceTutorialAttrs()
         return
     end
     local slots = (state.slots or {})[powerId] or {}
@@ -878,8 +896,13 @@ function PowerChoiceMenu:_renderEnhanceStrip()
     st.Parent = strip
     strip.Parent = self.frame
     self.enhStrip = strip
+    if self._enhTargetPower ~= powerId then
+        self._enhTargetPower, self._enhTargetSlot, self._enhStaged = powerId, nil, nil
+    end
+    self:_syncEnhanceTutorialAttrs()
 
     local filled, total, firstEmpty = 0, 0, nil
+    local emptyNamed = false
     for i, slot in ipairs(slots) do
         if type(slot) == "table" then
             total += 1
@@ -918,9 +941,6 @@ function PowerChoiceMenu:_renderEnhanceStrip()
     })
 
     -- ===== SLOTS row: big badges, click to target (gold halo), staged ghost =====
-    if self._enhTargetPower ~= powerId then
-        self._enhTargetPower, self._enhTargetSlot, self._enhStaged = powerId, nil, nil
-    end
     local SLOT_W, SLOT_H, SLOT_GAP = 0.085, 0.16, 0.02
     local rowW = total * SLOT_W + math.max(0, total - 1) * SLOT_GAP
     local slotX = 0.5 - rowW / 2
@@ -1005,6 +1025,11 @@ function PowerChoiceMenu:_renderEnhanceStrip()
                 ec.CornerRadius = UDim.new(1, 0)
                 ec.Parent = empty
                 empty.Parent = hit
+                if not emptyNamed then
+                    hit.Name = "EnhanceEmptySlot"
+                    hit:SetAttribute("TutorialGuide", "EnhanceEmptySlot")
+                    emptyNamed = true
+                end
             end
             slotX += SLOT_W + SLOT_GAP
         end
@@ -1092,6 +1117,10 @@ function PowerChoiceMenu:_renderEnhanceStrip()
             btn.Text = ""
             btn.ZIndex = 7
             btn.Parent = strip
+            if item.type == "potency" and not strip:FindFirstChild("EnhancePotency") then
+                btn.Name = "EnhancePotency"
+                btn:SetAttribute("TutorialGuide", "EnhancePotency")
+            end
             enhBadge(btn, UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), rec).ZIndex = 7
             -- the STAGED pick wears the same gold halo as the targeted slot (Jason:
             -- "when I click what I want to fill it with I should also have a circle")
@@ -1379,6 +1408,8 @@ function PowerChoiceMenu:_renderEnhanceStrip()
             lv.Parent = ghost
         end
         local applyBtn = Instance.new("TextButton")
+        applyBtn.Name = "EnhanceApply"
+        applyBtn:SetAttribute("TutorialGuide", "EnhanceApply")
         applyBtn.Size = UDim2.fromScale(0.12, 0.08)
         applyBtn.AnchorPoint = Vector2.new(1, 1)
         applyBtn.Position = UDim2.fromScale(0.84, 0.98)
@@ -1900,6 +1931,9 @@ function PowerChoiceMenu:_fillColumn(holder, pool)
             )
         local wrap = Instance.new("TextButton")
         wrap.Name = "Row_" .. r.id
+        if r.id == "resonance" then
+            wrap:SetAttribute("TutorialGuide", "Resonance")
+        end
         wrap.LayoutOrder = i
         wrap.Size = UDim2.new(0.99, 0, 0, rowPixelHeight())
         wrap.BackgroundTransparency = 1

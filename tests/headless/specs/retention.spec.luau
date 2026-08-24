@@ -1,6 +1,7 @@
 local RetentionLogic = loadModule("src/Shared/Game/RetentionLogic.lua")
 local retention = loadModule("configs/retention.lua")
 local tutorial = loadModule("configs/tutorial.lua")
+local combatTutorial = loadModule("configs/combat_tutorial.lua")
 
 return function()
     describe("retention funnel config", function()
@@ -16,11 +17,51 @@ return function()
         end)
 
         it("covers every tutorial step in tutorial order", function()
-            for index, step in ipairs(tutorial.steps) do
-                local funnelStep = retention.onboarding.steps[index + 1]
-                expect(funnelStep.event).to.equal("tutorial_step_completed")
-                expect(funnelStep.match.stepId).to.equal(step.id)
+            local byStepId = {}
+            for index, step in ipairs(retention.onboarding.steps) do
+                if step.event == "tutorial_step_completed" and step.match then
+                    byStepId[step.match.stepId] = index
+                end
             end
+            local lastHome = 0
+            for _, step in ipairs(tutorial.steps) do
+                if step.id ~= "first_fight" then
+                    expect(byStepId[step.id]).to.be.ok()
+                    expect(byStepId[step.id] > lastHome).to.equal(true)
+                    lastHome = byStepId[step.id]
+                end
+            end
+            expect(byStepId.slot_power < byStepId.combat_ready).to.equal(true)
+            local lastCombat = byStepId.slot_power
+            for _, step in ipairs(combatTutorial.steps) do
+                local stepId = "combat_" .. step.id
+                expect(byStepId[stepId]).to.be.ok()
+                expect(byStepId[stepId] > lastCombat).to.equal(true)
+                lastCombat = byStepId[stepId]
+            end
+            expect(byStepId.first_fight > lastCombat).to.equal(true)
+            expect(byStepId.rally_call > byStepId.first_fight).to.equal(true)
+        end)
+
+        it("ends onboarding at Rally and measures optional goals on Activation", function()
+            expect(retention.version).to.equal(7)
+            local last = retention.onboarding.steps[#retention.onboarding.steps]
+            expect(last.id).to.equal("tutorial_rally_call")
+            local seen = {}
+            for _, step in ipairs(retention.onboarding.steps) do
+                seen[step.id] = true
+            end
+            expect(seen.first_quest_completed).to.equal(nil)
+            expect(seen.first_steps_completed).to.equal(nil)
+            expect(seen.first_area_unlocked).to.equal(nil)
+            expect(retention.activation.name).to.equal("Activation")
+            expect(retention.activation.steps[1].id).to.equal("joined")
+            expect(retention.activation.steps[2].id).to.equal("first_quest_completed")
+            expect(retention.activation.steps[3].id).to.equal("first_steps_completed")
+            expect(retention.activation.steps[4].id).to.equal("first_area_unlocked")
+            local service = readFile("src/Server/Services/RetentionService.lua")
+            expect(service:find("LogFunnelStepEvent", 1, true)).to.be.ok()
+            expect(service:find("_flushActivation", 1, true)).to.be.ok()
         end)
     end)
 
@@ -450,6 +491,16 @@ return function()
             local state = RetentionLogic.ensure(nil, false, 100)
             RetentionLogic.record(state, "joined", "onboarding", { at = 100 })
             expect(#RetentionLogic.pendingFunnelSteps(retention, state)).to.equal(0)
+        end)
+
+        it("submits activation from join even when onboarding is ineligible", function()
+            local state = RetentionLogic.ensure(nil, false, 100)
+            RetentionLogic.record(state, "joined", "onboarding", { at = 100 })
+            RetentionLogic.record(state, "first_quest_completed", "activation", { at = 140 })
+            local pending = RetentionLogic.pendingActivationSteps(retention, state)
+            expect(#pending).to.equal(2)
+            expect(pending[1].id).to.equal("joined")
+            expect(pending[2].id).to.equal("first_quest_completed")
         end)
     end)
 end

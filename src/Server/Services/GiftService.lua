@@ -28,6 +28,7 @@ function GiftService:Init()
     self._deliveryService = self._modules.GiftDeliveryService
     self._statsService = self._modules.StatsService
     self._testerRewardService = self._modules.TesterRewardService
+    self._chatAnnouncementService = self._modules.ChatAnnouncementService
     self._config = self._configLoader:LoadConfig("gifts") or {}
     self._petsConfig = self._configLoader:LoadConfig("pets") or {}
     self._tradeConfig = self._configLoader:LoadConfig("trade") or {}
@@ -205,6 +206,18 @@ function GiftService:_detachPet(player, recordKey)
     end
 end
 
+function GiftService:_announceGift(player, gift)
+    local chat = self._chatAnnouncementService
+    if not (chat and chat.AnnounceGift and type(gift) == "table") then
+        return
+    end
+    local receiver = Players:GetPlayerByUserId(math.floor(tonumber(gift.receiver_user_id) or 0))
+    local receiverName = (receiver and (receiver.DisplayName or receiver.Name))
+        or gift.receiver_name
+    local senderName = (player and (player.DisplayName or player.Name)) or gift.sender_name
+    chat:AnnounceGift(senderName, receiverName, gift.rarity_id, gift.id)
+end
+
 function GiftService:_applyGiverScores(player, gift, storedPoints)
     if not self._statsService then
         return true
@@ -251,6 +264,7 @@ function GiftService:_finalizeQueued(player, giftId)
             return false, "counter_failed"
         end
         GiftDelivery.markSent(data, giftId)
+        self:_announceGift(player, entry.gift)
     end
     root.outbox[giftId] = nil
     return self._dataService:SaveAndConfirm(player, "gift_finalize:" .. giftId, {
@@ -402,6 +416,7 @@ function GiftService:Send(player, targetUserId, selector)
         sender_user_id = player.UserId,
         sender_name = player.DisplayName or player.Name,
         receiver_user_id = target.UserId,
+        receiver_name = target.DisplayName or target.Name,
         sent_at = os.time(),
         rarity_id = rarityId,
         record_key = pet.recordKey,

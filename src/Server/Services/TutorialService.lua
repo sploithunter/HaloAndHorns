@@ -45,6 +45,7 @@ function TutorialService:Init()
     self._potionService = self._modules and self._modules.PotionService
     self._hotbarService = self._modules and self._modules.HotbarService
     self._inventoryService = self._modules and self._modules.InventoryService
+    self._petGrantService = self._modules and self._modules.PetGrantService
     self._config = self._configLoader:LoadConfig("tutorial")
     self._squadReviewOpened = setmetatable({}, { __mode = "k" })
 
@@ -77,6 +78,7 @@ function TutorialService:Start()
         if action == "opened" then
             self._squadReviewOpened[player] = true
         elseif action == "reviewed" and self._squadReviewOpened[player] then
+            -- Client only fires "reviewed" after unequip + equip + Activate.
             self._squadReviewOpened[player] = nil
             fireGameEvent(player, "tutorial_squad_reviewed", { source = "pets_panel" })
         end
@@ -165,6 +167,12 @@ function TutorialService:_onEvent(player, name, ctx)
     if not (player and player.Parent) or not self._dataService:IsDataLoaded(player) then
         return
     end
+    -- Combat tutorial owns the bus while the player is inside that track.
+    -- Homeworld lessons must not advance on the same enemy_defeated / potion_used.
+    -- combat_tutorial_complete is the handoff back to Rally / Level 2.
+    if player:GetAttribute("InCombatTutorial") == true and name ~= "combat_tutorial_complete" then
+        return
+    end
     local data = self:_ensureProgress(player)
     if not data or data.Tutorial.done then
         return
@@ -208,6 +216,10 @@ function TutorialService:_onEvent(player, name, ctx)
     if progress.done then
         -- finishing the LAST step is its own moment: stinger + burst (configs/game_events)
         fireGameEvent(player, "tutorial_complete", {})
+        local progression = self._playerProgressionService
+        if progression and progression._publish then
+            progression:_publish(player)
+        end
     end
     if self._logger then
         self._logger:Info("Tutorial advanced", {
@@ -269,8 +281,8 @@ function TutorialService:_applyCompletionLevelGrant(player, data)
 end
 
 -- On ENTERING a step that carries a `grant`, apply it ONCE (idempotent via data.Tutorial.granted).
--- The slot step uses it: 3 natural Potency enhancements + an inherent slot on Resonance so a level-1
--- player has somewhere to drop one. Config-driven so future steps can reward without code.
+-- The slot step uses it for Potency; build_squad grants a Rainbow Kitty so Inventory has an
+-- obviously stronger pick. Config-driven so future steps can reward without code.
 function TutorialService:_applyStepGrant(player, data)
     if not (data and data.Tutorial) or data.Tutorial.done then
         return
@@ -341,6 +353,40 @@ function TutorialService:_applyStepGrant(player, data)
         end
     end
 
+    if type(grant.pets) == "table" then
+        local grantSvc = self._petGrantService
+        if grantSvc and grantSvc.GrantPet then
+            for _, petGrant in ipairs(grant.pets) do
+                local ok, res = pcall(function()
+                    return grantSvc:GrantPet(player, {
+                        petType = petGrant.id or petGrant.petType,
+                        variant = petGrant.variant or "basic",
+                        source = petGrant.source or ("tutorial_" .. id),
+                        locked = petGrant.locked == true,
+                    })
+                end)
+                if not ok or (type(res) == "table" and res.ok == false) then
+                    grantFailed = true
+                    if self._logger then
+                        self._logger:Warn("tutorial pet grant FAILED", {
+                            player = player.Name,
+                            pet = tostring(petGrant.id or petGrant.petType),
+                            variant = tostring(petGrant.variant),
+                            err = not ok and tostring(res) or tostring(res and res.error),
+                        })
+                    end
+                end
+            end
+        else
+            grantFailed = true
+            if self._logger then
+                self._logger:Warn("tutorial pet grant SKIPPED — PetGrantService not injected", {
+                    step = tostring(step.id),
+                })
+            end
+        end
+    end
+
     if type(grant.enhancements) == "table" then
         local enh = self._enhancementService
         if enh and enh.Grant then
@@ -379,6 +425,9 @@ function TutorialService:_applyStepGrant(player, data)
 end
 
 function TutorialService:_push(player)
+    if player and player:GetAttribute("InCombatTutorial") == true then
+        return
+    end
     local data = self._dataService:GetData(player)
     if not data then
         return
@@ -434,6 +483,11 @@ function TutorialService:Reset(player)
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     data.GameData.TutorialCompleted = false
     data.Tutorial = TutorialFlow.fresh(self._config)
+    data.CombatTutorial = nil
+    data.CombatTutorialLoadout = nil
+    data.CombatTutorialHealUnlocked = nil
+    data.CombatTutorialRewardGranted = nil
+    player:SetAttribute("CombatTutorialHealUnlocked", nil)
     self._dataService:RequestSave(player, "tutorial_reset")
     self:_push(player)
     return { ok = true }

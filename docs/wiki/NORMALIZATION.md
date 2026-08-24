@@ -33,7 +33,8 @@ Canonical: `src/Client/UI/PetBadge.lua` (disc + ring + symbol) + `configs/power_
 ## Domain 3 — UI components  (bars/cards/badges mostly shared)
 
 Canonical: `OverheadBar` (world fill bars), `HudCard` + `StatusBadges` (combat cards), `PetBadge`
-(icon badges), `PetCardStyle` (pet-card chrome), `Pill` (capsule primitive: corner+gradient+stroke,
+(icon badges), `PetFunctionMark` (heal/armor/debuff chip + colour; config in
+`power_icons.function_mark`), `PetCardStyle` (pet-card chrome), `Pill` (capsule primitive: corner+gradient+stroke,
 `button`/`frame`/`applyTo`), `FillBar` (on-screen fill bars). Consolidation targets:
 
 > **Pattern to extract on next use — "icon-pill"** (Jason, 2026-06): round `Pill` + a circular icon

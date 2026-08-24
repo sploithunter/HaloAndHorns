@@ -44,8 +44,11 @@ function MissionMap.start()
     -- ---- panel shell ------------------------------------------------------
     local panel = Instance.new("Frame")
     panel.Name = "Panel"
-    panel.AnchorPoint = Vector2.new(1, 1)
-    panel.Position = UDim2.fromScale(0.985, 0.8)
+    -- Default: top of the playfield in the left third, left of the PlayerBar.
+    -- Top-left anchor so scale resize stays put. This ScreenGui keeps the
+    -- Roblox inset, so Y=0 sits just under the top bar (playtest drag dock).
+    panel.AnchorPoint = Vector2.new(0, 0)
+    panel.Position = UDim2.fromScale(0.14, 0)
     panel.Size = UDim2.fromScale(0.19, 0.32)
     panel.BackgroundTransparency = 1
     panel.Visible = false

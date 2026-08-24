@@ -114,6 +114,34 @@ function CombatApplication.ApplyDamage(target, amount, context)
         target:SetAttribute("CombatDamageTaken", after)
     else
         before = math.max(0, tonumber(target:GetAttribute("HP")) or 0)
+        -- Existing absorb pool: duration-0 (CombatShieldUntil unset) persists until
+        -- depleted or cleared. Pets already soak in EnemyService; this is the HP path
+        -- so a tutorial / authored enemy shield just works.
+        local shieldUntil = tonumber(target:GetAttribute("CombatShieldUntil")) or 0
+        local shieldExpired = shieldUntil > 0 and shieldUntil <= os.time()
+        local shield = (not shieldExpired) and (tonumber(target:GetAttribute("CombatShield")) or 0)
+            or 0
+        if shieldExpired and (tonumber(target:GetAttribute("CombatShield")) or 0) > 0 then
+            target:SetAttribute("CombatShield", 0)
+        end
+        if shield > 0 and amount > 0 then
+            local absorbed = math.min(shield, amount)
+            target:SetAttribute("CombatShield", shield - absorbed)
+            amount -= absorbed
+            if absorbed > 0 then
+                publish(target, "absorbed", absorbed, context)
+            end
+            if amount <= 0 then
+                return {
+                    outcome = "absorbed",
+                    amount = 0,
+                    contributed = 0,
+                    before = before,
+                    after = before,
+                    hp = before,
+                }
+            end
+        end
         local applied = PetCombat.applyDamage(before, amount)
         after = applied.hp
         amount = applied.contributed

@@ -2,8 +2,10 @@
     RetentionService — persistent activation milestones + Roblox Analytics funnel.
 
     It observes the existing server GameEvents bus, so quest/zone/tutorial owners stay unaware of
-    analytics. New-player onboarding steps go to LogOnboardingFunnelStepEvent; all first-time
-    milestones go to one low-cardinality custom event with category/id breakdown fields.
+    analytics.     New-player onboarding steps go to LogOnboardingFunnelStepEvent and end at
+    Rally. Optional first quest / First Steps / first area go to
+    LogFunnelStepEvent as the Activation funnel. All first-time milestones also
+    go to one low-cardinality custom event with category/id breakdown fields.
 ]]
 
 local AnalyticsService = game:GetService("AnalyticsService")
@@ -703,19 +705,47 @@ function RetentionService:_flushFunnel(player, state)
     return changed
 end
 
+function RetentionService:_flushActivation(player, state)
+    local cfg = self._config.activation or {}
+    if RunService:IsStudio() or cfg.enabled == false then
+        return false
+    end
+    local sessionId = "activation:" .. tostring(player.UserId)
+    local changed = false
+    for _, step in ipairs(RetentionLogic.pendingActivationSteps(self._config, state)) do
+        local ok = pcall(function()
+            AnalyticsService:LogFunnelStepEvent(
+                player,
+                cfg.name or "Activation",
+                sessionId,
+                step.index,
+                step.name,
+                customFields("activation", step.id)
+            )
+        end)
+        if not ok then
+            break
+        end
+        state.ActivationFunnelStep = step.index
+        changed = true
+    end
+    return changed
+end
+
 function RetentionService:_recordMilestone(player, id, category, detail)
     local state = self:_state(player)
     if not state then
         return false
     end
     if not RetentionLogic.record(state, id, category, self:_meta(player, detail)) then
-        if self:_flushFunnel(player, state) then
+        if self:_flushFunnel(player, state) or self:_flushActivation(player, state) then
             self._dataService:RequestSave(player, "retention_funnel")
         end
         return false
     end
     self:_logCustom(player, category, id)
     self:_flushFunnel(player, state)
+    self:_flushActivation(player, state)
     self._dataService:RequestSave(player, "retention_milestone")
     return true
 end
@@ -727,7 +757,7 @@ function RetentionService:_recordEvent(player, name, ctx)
     self:_appendRawEvent(player, name, ctx)
     self:_aggregateEvent(player, name, ctx)
     for _, step in ipairs(RetentionLogic.matchingSteps(self._config, name, ctx)) do
-        self:_recordMilestone(player, step.id, "onboarding")
+        self:_recordMilestone(player, step.id, step.funnel or "onboarding")
     end
 
     if name == "quest_complete" and type(ctx) == "table" and type(ctx.quest) == "string" then

@@ -15,12 +15,14 @@ a routing rollback, not a player-data rollback.
   of saved `LastArea`. Schema v18 removes `Hall_1`–`Hall_4` only from `UnlockedAreas`, ensures
   `Spawn`, and changes only `GameData.LastArea`; pets, eggs, enhancements, currencies, powers,
   rewards, and the dormant Hall ledger are untouched.
-- `hall_of_worlds.entry_enabled = false` rejects Hall travel/guest visits and seals the Home Hall
-  portal as a collidable frosted-Ice **HALL OF WORLDS — COMING SOON** wall. World Travel follows ordinary
-  Homeworld unlock rules.
-- Tutorial v4 restores the original Homeworld order and targets: Earth egg, Home mining, squad,
-  Earth-cave fight, Berserk Brew, Rally, then Resonance binding/cast/enhancement. Versioned semantic
-  migration keeps an in-progress player on the same lesson through the v3 reorder reversal.
+- `hall_of_worlds.entry_enabled = false` still rejects Hall travel/guest visits. The Home Hall
+  arch is no longer the frosted Coming Soon wall: it is the **COMBAT TRAINING** mission door
+  (`combat_tutorial`, Training Ground Room 1). Other disabled Hall hooks still ice-seal. World
+  Travel follows ordinary Homeworld unlock rules.
+- Tutorial v5 restores the v3 Homeworld order: Earth egg, Home mining, squad, Resonance
+  bind/cast/enhancement, then the Earth-cave fight, Berserk Brew, and Rally. The isolated
+  combat tutorial will replace that combat tail. Versioned semantic migration keeps an
+  in-progress player on the same lesson through the v4 rollback reversal.
 - The complete original Range fixture now lives in `Workspace.Maps.Home.ChallengeBindings` at Lava;
   the complete Training Ground fixture lives in that folder at Desert. These are reparented Studio
   Instances, not runtime clones: `MissionDoor`, `ArchLightning`, `LeaderboardBoard`, `ChallengeGuide`,

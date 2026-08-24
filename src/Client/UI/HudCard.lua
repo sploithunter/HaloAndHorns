@@ -9,6 +9,7 @@
     row anchored toward screen centre.
 
     createCard(parent, opts) -> refs { frame, stroke, roleChip, roleGlyph, roleIcon, roleRing,
+                                       functionMark, functionIcon, functionRing,
                                        barBg, fill, name, note, status }
         opts.name        — Instance name (e.g. "Slot_2" / "Enemy_57")
         opts.layoutOrder — UIListLayout order
@@ -36,6 +37,12 @@ HudCard.STROKE_IDLE = Color3.fromRGB(70, 76, 96)
 
 -- How far the chip pokes off the card's inner edge (the "gems-pill" look): anchor-X fraction.
 HudCard.BADGE_OVERHANG = 0.35
+
+-- Health-bar chrome (not viewport placement): role chip eats the left, function mark the right.
+HudCard.BAR_LEFT = 40 -- role chip width + gap
+HudCard.BAR_RIGHT_IDLE = 8 -- bar end inset when no function mark
+HudCard.BAR_RIGHT_MARK = 30 -- 20px function chip + 2px gap + 8px card inset
+HudCard.FUNCTION_MARK = 20 -- circular chip size at the bar's right end
 
 function HudCard.healthColor(f)
     f = math.clamp(f, 0, 1)
@@ -72,6 +79,33 @@ function HudCard.applyHighlight(card, mode)
         card.stroke.Transparency = 0.5
         card.stroke.Thickness = 1.5
         card.frame.BackgroundTransparency = 0.1
+    end
+end
+
+-- Show/hide the right-end function chip and shrink the bar so the fill does not run under it.
+-- `mark` is a PetFunctionMark table or nil. Callers paint functionIcon/functionRing via PetBadge.
+function HudCard.applyFunctionMark(card, mark)
+    local visible = type(mark) == "table"
+    if card.functionMark then
+        card.functionMark.Visible = visible
+        if visible and type(mark.color) == "table" then
+            card.functionMark.BackgroundColor3 =
+                Color3.fromRGB(mark.color[1] or 80, mark.color[2] or 80, mark.color[3] or 80)
+            card.functionMark.BackgroundTransparency = 0
+        else
+            card.functionMark.BackgroundTransparency = 1
+        end
+    end
+    -- Left 40 = role chip; right pad grows only when the function chip is on so melee/tank
+    -- bars keep their full width. ShieldBg is the same width as the HP bar.
+    local rightPad = visible and HudCard.BAR_RIGHT_MARK or HudCard.BAR_RIGHT_IDLE
+    local barWidth = -(HudCard.BAR_LEFT + rightPad)
+    if card.barBg then
+        card.barBg.Size = UDim2.new(1, barWidth, 0, 20)
+    end
+    local shield = card.frame and card.frame:FindFirstChild("ShieldBg")
+    if shield then
+        shield.Size = UDim2.new(1, barWidth, 0, shield.Size.Y.Offset)
     end
 end
 
@@ -154,8 +188,9 @@ function HudCard.createCard(parent, opts)
     -- green→yellow→red fill, the NAME inside it, and a right-aligned NOTE.
     local barBg = Instance.new("Frame")
     barBg.Name = "BarBg"
-    barBg.Position = UDim2.fromOffset(40, 9)
-    barBg.Size = UDim2.new(1, -48, 0, 20)
+    -- 40px clears the overhanging role chip; -48 = 40 left + 8 idle right inset.
+    barBg.Position = UDim2.fromOffset(HudCard.BAR_LEFT, 9)
+    barBg.Size = UDim2.new(1, -(HudCard.BAR_LEFT + HudCard.BAR_RIGHT_IDLE), 0, 20)
     barBg.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
     barBg.BorderSizePixel = 0
     barBg.ClipsDescendants = true
@@ -200,6 +235,43 @@ function HudCard.createCard(parent, opts)
     noteLbl.ZIndex = 3
     noteLbl.Parent = barBg
 
+    -- Function mark: heal / armor / debuff chip at the RIGHT END of the bar (Jason), sibling of
+    -- BarBg so ClipsDescendants cannot hide it. 4px inset keeps the circle on the card, not past it.
+    local functionMark = Instance.new("Frame")
+    functionMark.Name = "Function"
+    functionMark.AnchorPoint = Vector2.new(1, 0.5)
+    functionMark.Position = UDim2.new(1, -4, 0.5, 0)
+    functionMark.Size = UDim2.fromOffset(HudCard.FUNCTION_MARK, HudCard.FUNCTION_MARK)
+    functionMark.BackgroundColor3 = Color3.fromRGB(70, 205, 95)
+    functionMark.BackgroundTransparency = 1
+    functionMark.BorderSizePixel = 0
+    functionMark.Visible = false
+    functionMark.ZIndex = 4
+    functionMark.Parent = frame
+    local functionCorner = Instance.new("UICorner")
+    functionCorner.CornerRadius = UDim.new(1, 0)
+    functionCorner.Parent = functionMark
+    local functionIcon = Instance.new("ImageLabel")
+    functionIcon.Name = "Icon"
+    functionIcon.BackgroundTransparency = 1
+    functionIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+    functionIcon.Position = UDim2.fromScale(0.5, 0.5)
+    functionIcon.Size = UDim2.fromScale(0.92, 0.92)
+    functionIcon.ScaleType = Enum.ScaleType.Fit
+    functionIcon.ZIndex = 5
+    functionIcon.Image = ""
+    functionIcon.Parent = functionMark
+    local functionRing = Instance.new("ImageLabel")
+    functionRing.Name = "Ring"
+    functionRing.BackgroundTransparency = 1
+    functionRing.AnchorPoint = Vector2.new(0.5, 0.5)
+    functionRing.Position = UDim2.fromScale(0.5, 0.5)
+    functionRing.Size = UDim2.fromScale(1, 1)
+    functionRing.ScaleType = Enum.ScaleType.Fit
+    functionRing.ZIndex = 6
+    functionRing.Image = ""
+    functionRing.Parent = functionMark
+
     -- Status-badge row: anchored at the card's INNER edge, growing toward screen centre as
     -- buffs/debuffs stack. Default (right-rail cards) hangs off the LEFT edge and grows left; pass
     -- opts.badgeSide="right" (LEFT-rail cards, e.g. enemies on the left) to hang off the RIGHT edge
@@ -226,6 +298,9 @@ function HudCard.createCard(parent, opts)
         roleGlyph = roleGlyph,
         roleIcon = roleIcon,
         roleRing = roleRing,
+        functionMark = functionMark,
+        functionIcon = functionIcon,
+        functionRing = functionRing,
         barBg = barBg,
         fill = fill,
         name = nameLbl,

@@ -11,9 +11,11 @@
 ]]
 
 return {
-    -- v4 restores the Homeworld combat-before-Resonance FTUE. Historical raw events/dashboard
-    -- dates and stable milestone IDs remain intact; new cohorts use this aligned step ordering.
-    version = 4,
+    -- v7: onboarding ends at Rally. Optional first quest / First Steps / first
+    -- area move to the Activation named funnel so they are not compared as
+    -- mandatory tutorial steps. Combat-training beats stay in onboarding.
+    -- Roblox onboarding allows 100 steps; skipped steps count as completed.
+    version = 7,
     onboarding = {
         enabled = true,
         steps = {
@@ -43,24 +45,6 @@ return {
                 match = { stepId = "build_squad" },
             },
             {
-                id = "tutorial_first_fight",
-                name = "Tutorial: Win first fight",
-                event = "tutorial_step_completed",
-                match = { stepId = "first_fight" },
-            },
-            {
-                id = "tutorial_battle_brew",
-                name = "Tutorial: Use battle brew",
-                event = "tutorial_step_completed",
-                match = { stepId = "battle_brew" },
-            },
-            {
-                id = "tutorial_rally_call",
-                name = "Tutorial: Use Rally",
-                event = "tutorial_step_completed",
-                match = { stepId = "rally_call" },
-            },
-            {
                 id = "tutorial_bind_power",
                 name = "Tutorial: Bind Resonance",
                 event = "tutorial_step_completed",
@@ -73,12 +57,227 @@ return {
                 match = { stepId = "cast_power" },
             },
             {
-                -- Stable live milestone ID retained for the final tutorial lesson.
+                -- Stable live milestone ID retained for the Resonance-enhance lesson.
                 id = "tutorial_completed",
                 name = "Tutorial: Enhance Resonance / Complete",
                 event = "tutorial_step_completed",
                 match = { stepId = "slot_power" },
             },
+            {
+                id = "combat_ready",
+                name = "Combat: Ready to fight",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_ready" },
+            },
+            {
+                id = "combat_first_fight",
+                name = "Combat: First training dog",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_first_fight" },
+            },
+            {
+                id = "combat_advance_stage",
+                name = "Combat: First pillar",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_advance_stage" },
+            },
+            {
+                id = "combat_battle_brew",
+                name = "Combat: Drink Berserk Brew",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_battle_brew" },
+            },
+            {
+                id = "combat_ready_brew",
+                name = "Combat: Enter brew fight",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_ready_brew" },
+            },
+            {
+                id = "combat_brew_fight",
+                name = "Combat: Brew fight",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_brew_fight" },
+            },
+            {
+                id = "combat_advance_brew",
+                name = "Combat: Brew pillar",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_advance_brew" },
+            },
+            {
+                id = "combat_bind_heal",
+                name = "Combat: Bind Heal",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_bind_heal" },
+            },
+            {
+                id = "combat_ready_heal",
+                name = "Combat: Enter heal fight",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_ready_heal" },
+            },
+            {
+                id = "combat_select_pet",
+                name = "Combat: Choose who to heal",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_select_pet" },
+            },
+            {
+                id = "combat_cast_heal",
+                name = "Combat: Cast Heal",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_cast_heal" },
+            },
+            {
+                id = "combat_heal_fight",
+                name = "Combat: Finish heal room",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_heal_fight" },
+            },
+            {
+                id = "combat_advance_heal",
+                name = "Combat: Heal pillar",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_advance_heal" },
+            },
+            {
+                id = "combat_ready_weaken",
+                name = "Combat: Enter weaken fight",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_ready_weaken" },
+            },
+            {
+                id = "combat_select_enemy",
+                name = "Combat: Choose who to weaken",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_select_enemy" },
+            },
+            {
+                id = "combat_throw_weaken",
+                name = "Combat: Throw Weakening Vial",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_throw_weaken" },
+            },
+            {
+                id = "combat_weaken_fight",
+                name = "Combat: Finish weaken room",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_weaken_fight" },
+            },
+            {
+                id = "combat_advance_weaken",
+                name = "Combat: Weaken pillar",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_advance_weaken" },
+            },
+            {
+                id = "combat_stack_brew",
+                name = "Combat: Stack Berserk Brews",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_stack_brew" },
+            },
+            {
+                id = "combat_ready_stack",
+                name = "Combat: Enter stacked fight",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_ready_stack" },
+            },
+            {
+                id = "combat_stack_fight",
+                name = "Combat: Stacked brew fight",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_stack_fight" },
+            },
+            {
+                id = "combat_advance_stack",
+                name = "Combat: Stack pillar",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_advance_stack" },
+            },
+            {
+                id = "combat_ready_tank",
+                name = "Combat: Equip a tank",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_ready_tank" },
+            },
+            {
+                id = "combat_tank_fight",
+                name = "Combat: Tank fight",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_tank_fight" },
+            },
+            {
+                id = "combat_advance_tank",
+                name = "Combat: Tank pillar",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_advance_tank" },
+            },
+            {
+                id = "combat_ready_healer",
+                name = "Combat: Enter healer room",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_ready_healer" },
+            },
+            {
+                id = "combat_healer_hunt",
+                name = "Combat: Kill the healer",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_healer_hunt" },
+            },
+            {
+                id = "combat_healer_fight",
+                name = "Combat: Finish healer room",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_healer_fight" },
+            },
+            {
+                id = "combat_advance_healer",
+                name = "Combat: Healer pillar",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_advance_healer" },
+            },
+            {
+                id = "combat_ready_together",
+                name = "Combat: Enter last room",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_ready_together" },
+            },
+            {
+                id = "combat_together_fight",
+                name = "Combat: Unguided room",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_together_fight" },
+            },
+            {
+                id = "combat_advance_together",
+                name = "Combat: Last pillar",
+                event = "tutorial_step_completed",
+                match = { stepId = "combat_advance_together" },
+            },
+            {
+                id = "tutorial_first_fight",
+                name = "Tutorial: Finish cave combat training",
+                event = "tutorial_step_completed",
+                match = { stepId = "first_fight" },
+            },
+            {
+                id = "tutorial_rally_call",
+                name = "Tutorial: Use Rally / Complete",
+                event = "tutorial_step_completed",
+                match = { stepId = "rally_call" },
+            },
+        },
+    },
+    -- Optional post-tutorial goals. Sequential onboarding cannot measure these
+    -- fairly: Roblox treats skipped steps as complete, and first quest is not
+    -- required. This named funnel starts at join so conversion is of all
+    -- players, not of tutorial finishers.
+    activation = {
+        enabled = true,
+        name = "Activation",
+        steps = {
+            { id = "joined", name = "Joined game", event = "retention_joined" },
             {
                 id = "first_quest_completed",
                 name = "First quest complete",

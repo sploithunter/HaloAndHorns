@@ -408,10 +408,15 @@ through it.
 
 ## Part F — Build order from here
 
-> **Support-badge contract (shipped 2026-07-13):** `power_icons.support_badge` owns the label and
-> symbol for every `pet_roles.support_auras` kind. Inventory derives colour from the pet through
-> `PetBadge.elementForPetType` and uses `PetBadge.create`, so a new aura cannot silently gain a
-> separate rendering path or lose its badge without failing headless coverage.
+> **Support-badge contract (shipped 2026-07-13, function colour 2026-08-24):**
+> `power_icons.support_badge` owns the label and symbol for every
+> `pet_roles.support_auras` kind. Disc colour comes from
+> `power_icons.function_mark` when the kind is heal/drain/defense/shred/curse
+> (healers are green), else from the pet through `PetBadge.elementForPetType`
+> (exclusives stay purple). Inventory / egg-preview / starter-pet use
+> `PetBadge.create`. HudCard also stamps the same mark at the right end of the
+> health bar. A new aura cannot silently gain a separate rendering path or lose
+> its badge without failing headless coverage.
 
 1. **Upload + wire the 14 pending symbols** (esp. `coins_up`, `plus`, `clover_lucky`, `gift_up`,
    `capacitor`, `history`, `arrow_right`) across the 5 colors → `power_icons.lua discs`.

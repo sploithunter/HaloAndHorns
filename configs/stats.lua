@@ -289,6 +289,11 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        combat_tutorials_completed = {
+            display_name = "Combat Training Runs Completed",
+            scope = "lifetime",
+            default = 0,
+        },
     },
 
     -- EVENT-FED COUNTERS (Jason: "it's free data — if there's an event, we can just

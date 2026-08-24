@@ -58,6 +58,7 @@ return function()
             expect(ChallengeRun.layoutContext(nil)).to.equal("room#1")
             expect(ChallengeRun.layoutContext(1, "range")).to.equal("room#1")
             expect(ChallengeRun.layoutContext(1, "training_ground")).to.equal("train#1")
+            expect(ChallengeRun.layoutContext(1, "combat_tutorial")).to.equal("train#1")
             expect(ChallengeRun.layoutContext(4, "training_ground")).never.to.equal(
                 ChallengeRun.layoutContext(4, "range")
             )
@@ -342,7 +343,10 @@ return function()
             expect(ChallengeRun.passesEngageGate(nil, 4, 5)).to.equal(false)
             expect(ChallengeRun.passesEngageGate(50, 3, 1)).to.equal(true)
             expect(ChallengeRun.skipsEngageGate(challengeCfg.modes.training_ground)).to.equal(true)
+            expect(ChallengeRun.skipsEngageGate(challengeCfg.modes.combat_tutorial)).to.equal(true)
             expect(ChallengeRun.skipsEngageGate(challengeCfg.modes.range)).to.equal(false)
+            expect(ChallengeRun.persistsRuns(challengeCfg.modes.training_ground)).to.equal(true)
+            expect(ChallengeRun.persistsRuns(challengeCfg.modes.combat_tutorial)).to.equal(false)
             expect(ChallengeRun.usesHallCurrencyHud(challengeCfg.modes.range)).to.equal(false)
             expect(ChallengeRun.usesHallCurrencyHud(challengeCfg.modes.training_ground)).to.equal(
                 false

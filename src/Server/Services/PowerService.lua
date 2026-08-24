@@ -19,6 +19,7 @@ local PetRevive = require(script.Parent.Parent.PetRevive)
 local Enhancements = require(ReplicatedStorage.Shared.Game.Enhancements)
 local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 local PowerSelection = require(ReplicatedStorage.Shared.Game.PowerSelection)
+local PowerAvailability = require(ReplicatedStorage.Shared.Game.PowerAvailability)
 local ArchetypeLogic = require(ReplicatedStorage.Shared.Game.ArchetypeLogic)
 local AmplifiedBurst = require(ReplicatedStorage.Shared.Game.AmplifiedBurst)
 local PowerRegistry = require(ReplicatedStorage.Shared.Game.PowerRegistry)
@@ -353,6 +354,26 @@ end
 -- Public re-stamp (called after respec / admin grant from other services).
 function PowerService:ReapplyPassives(player)
     self:_applyOwnedPassives(player)
+end
+
+-- Teaching-room lobby return: drop every running power clock and tell the
+-- hotbar so Heal / Revive are immediately usable again.
+function PowerService:ClearCooldowns(player)
+    if not player then
+        return
+    end
+    local cds = self._cooldowns[player]
+    if type(cds) ~= "table" then
+        return
+    end
+    for powerId in pairs(cds) do
+        Signals.Power_Cooldown:FireClient(player, {
+            power = powerId,
+            untilTime = 0,
+            cooldown = 0,
+        })
+    end
+    self._cooldowns[player] = {}
 end
 
 -- ADMIN POWER BAR — cast any power at MIN (bare) or MAX (single-origin full slotting), through the
@@ -1225,7 +1246,7 @@ function PowerService:_recallArrival(player, plan)
 end
 
 -- Heal one pet by `amount` endurance (shared by heal / fortify / heal_blind / summon families).
-function PowerService:_healPet(player, pet, amount, now)
+function PowerService:_healPet(player, pet, amount, now, powerId)
     if not (pet and pet:IsA("Model")) or pet:GetAttribute("CombatDowned") then
         return
     end
@@ -1234,13 +1255,21 @@ function PowerService:_healPet(player, pet, amount, now)
     if amount <= 0 or taken <= 0 then
         return
     end
-    CombatApplication.ApplyPowerHeal(pet, amount, {
+    local result = CombatApplication.ApplyPowerHeal(pet, amount, {
         resource = "pet_endurance",
         minimumTaken = ResSickness.floorFor(pet:GetAttributes(), now),
         fxUntil = now + 3,
         sourcePlayer = player,
+        powerId = powerId,
         kind = "power_heal",
     })
+    if result and (tonumber(result.amount) or 0) > 0 then
+        fireGameEvent(player, "pet_healed", {
+            power = powerId,
+            amount = result.amount,
+            before = result.before,
+        })
+    end
 end
 
 -- Shared GROUND RUNE for player AoE powers: the uploaded MagicCircle symbol on a flat shared-world
@@ -1866,7 +1895,7 @@ function PowerService:_applyEffect(player, kind, now, powerId, prepared)
             -- (team_aoe — pets cluster, so squad-wide reads as the around-you AoE).
             -- _targetPets already drops downed pets.
             for _, pet in ipairs(self:_targetPets(player, powerId)) do
-                self:_healPet(player, pet, mag, now)
+                self:_healPet(player, pet, mag, now, powerId)
             end
             -- Oasis: a heal-over-time tail follows the big upfront pulse (`hot`/tick for `hot_seconds`).
             if tonumber(kind.hot) then
@@ -2938,6 +2967,10 @@ function PowerService:Cast(player, powerId, opts)
         if not ChallengeRun.allowsPower(challengeAllow, powerId) then
             return { ok = false, reason = "not_owned" }
         end
+    elseif not adminBypass and def.innate then
+        if not PowerAvailability.isAvailable(def, PowerAvailability.snapshotForPlayer(player)) then
+            return { ok = false, reason = "not_available" }
+        end
     elseif not adminBypass and not def.innate then
         -- INNATE powers (e.g. Resonance) are owned by EVERYONE by default — they're never written to
         -- data.Powers (so they don't consume a level-grant slot or appear in the picker), so the
@@ -3323,8 +3356,9 @@ function PowerService:GetState(player, levelOverride)
         ownedForDisplay[#ownedForDisplay + 1] = s
         seen[s] = true
     end
+    local availability = PowerAvailability.snapshotForPlayer(player)
     for id, def in pairs(self._powersConfig.powers or {}) do
-        if def.innate and not seen[id] then
+        if def.innate and not seen[id] and PowerAvailability.isAvailable(def, availability) then
             ownedForDisplay[#ownedForDisplay + 1] = id
             seen[id] = true
         end

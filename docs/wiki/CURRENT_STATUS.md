@@ -2,6 +2,113 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Healer hunt pins pets; leftover despawn cannot lock the room (2026-08-24)
+
+Clicking the training healer pins the squad on it. If a leftover dog
+vanishes without `enemy_defeated`, the room still clears so the pillar
+can light.
+
+## Build your squad walks a real swap (2026-08-24)
+
+The early inventory lesson grants a Rainbow Kitty and points CLICK HERE
+through unequip, the strongest inventory pet, and Activate. Equipped pets
+are the top row; extras wait in Inventory. Closing without a swap does
+not complete the step.
+
+## Onboarding vs Activation funnels (2026-08-24)
+
+Creator Hub 7/28/1-day funnels from 2:00 PM MDT are archived. Onboarding
+ends at Rally (including the 32 combat beats after publish). Optional
+first quest / First Steps / first area are a separate Activation funnel.
+
+## Combat training lobby refresh (2026-08-24)
+
+Returning to the training lobby clears Heal/Revive clocks, pet recovery,
+and Focus so the next room is a fresh start.
+
+## Mythical+ gift chat (2026-08-24)
+
+Finalized Mythical and higher gifts announce in the server chat without
+naming the pet (`Colorado sent Splite a mythical gift!`).
+
+## Admin reset restarts combat training (2026-08-24)
+
+Reset-to-beginning now clears combat-training progress and kicks the
+tester out of the cave. Teaching packs despawn through EnemyService and
+cull extras so a leftover healer cannot stack on the next ENTER.
+
+## Hold level claim until Rally (2026-08-24)
+
+Players can earn XP during the tutorial but cannot claim a level (Powers
+COMMIT, altar, or field filler) until Homeworld tutorial is done. POWERS
+stays on enhance so the Resonance lesson is clickable.
+
+## Combat training funnel + leave-resume (2026-08-24)
+
+Onboarding now records each combat-training beat. Leaving mid-fight rewinds
+only to that loop's lobby, not the start of the cave.
+
+## Homeworld Resonance slot cues (2026-08-24)
+
+Power up Resonance keeps the POWERS button cue, then walks CLICK HERE onto
+Resonance, the empty enhance slot, Potency, and Apply.
+
+## Combat tutorial (live in the Earth cave 2026-08-24)
+
+An isolated combat-training track lives beside Homeworld tutorial v5. The disabled Home Hall
+arch is a Combat Training mission door into Training Ground Room 1. Heal-room enemies use a
+huge existing absorb shield; that shield drops after the player heals a damaged pet. The track
+holds on "more coming" and is not marked complete. ENTER on the frost door is the ready
+step; the first weak melee (Training Dog) spawns in the opened room after that click.
+Each hall entry restarts the track (`restart_on_enter`) until save paths are wired.
+The track loops lobby → ENTER door → fight → pillar back to the lobby. Lobby
+lessons stay behind the sealed door so they finish before the next fight. The
+door plate alternates READY/ENTER when you can go, and names the first
+missing checklist item if you click early (pets equipped, Heal bound,
+hotbar not in edit mode). Resonance is withheld for the combat-training
+mission so the first bind lesson points at Heal.
+See [Combat Tutorial](COMBAT_TUTORIAL.md).
+Combat training now temp-grants three bunny, doggy, bear, and kitty commons
+and restores the saved equipped list on exit. The heal-target lesson wounds
+one live pet to a yellow bar and points `CLICK HERE` at the left of that card.
+After Heal the training shields drop and they must finish the dogs before
+the pillar lights. Separate loops teach Weakening Vial, sipping
+five of ten Berserk Brews, equipping a tank, killing a healer first, then an
+unguided room that puts those tools together. Battle music follows the
+normal `InCombat` attribute; pet swings now credit pet-side threat so the
+1-damage Training Dog still counts as a fight. Heal is withheld until the
+first combat-training enter so Homeworld Resonance bind is a single-power
+lesson.
+Teaching packs stay capped at one healer and three other pets at any
+player level; leftovers despawn before the next authored pack.
+The lobby breadcrumb now waits until the spawned training pack is actually
+down. Weakening Vial has the same finish-the-dogs beat as Heal (`weaken_fight`).
+Combat training starts on three doggies. The stacked-Berserk dog is 400 HP
+and the brew meter is refreshed on enter so five sips read as faster kills.
+The tank lesson resets to those doggies and then requires a bear.
+The tank lesson now walks inventory click-by-click (take off the last doggy,
+strongest tank or Best Pets → Tank, Activate, ENTER).
+The stacked-brew door plate counts down remaining sips (DRINK FIVE MORE → ONE).
+Inventory tank cues use a DisplayOrder overlay so TAKE OFF stays the same on-top sign.
+The healer-hunt `KILL THIS` cue hides after click or when pets already have
+that healer. It never asks for another click after the healer dies. A banner
+asks them to click again only if live pets leave a still-alive healer.
+Successful Pets Activate closes the inventory panel.
+The healer room now waits for the leftover dogs after the healer dies
+(`healer_fight`) before the pillar lights.
+The unguided finale is two dogs and a healer. Clearing it and taking the
+pillar completes combat training and grants a once-only thank-you (coins +
+potions). The Level 2 top-up is authored for when this track is the live tutorial.
+Tank-lesson overlay signs now share MenuOverlay's inset space so TAKE OFF /
+CLICK HERE sit on the card instead of a topbar above it.
+
+## Pet function marks (2026-08-24)
+
+Healers, armor buffers, and debuffers now carry a job chip at the right end of
+the squad/enemy health bar — green heal, blue armor, red debuff — so they are
+not just another Support icon. The same colours tint those pets' inventory
+support badges. See `power_icons.function_mark` and `PetFunctionMark`.
+
 ## Homeworld routing rollback (release candidate 2026-08-22)
 
 Hall of Worlds remains authored but entry is disabled while its map is repaired. All joins and
@@ -10,7 +117,8 @@ tile. Schema v18 strips only the four Hall route ids from `UnlockedAreas`, prese
 unlocks and player-owned data, and leaves the Hall progress ledger dormant. The Home Hall arch is
 sealed as a frosted **Hall of Worlds — Coming Soon** barrier.
 
-Tutorial v4 restores the pre-Hall Homeworld path through the Earth egg and Earth cave. The complete
+Tutorial v5 restores the v3 Resonance-before-combat Homeworld path (the v4 Hall rollback had
+re-imported the older fight-then-Resonance order). The complete
 authored Range fixture was moved to Lava and the complete Training Ground fixture to Desert under
 `Workspace.Maps.Home.ChallengeBindings`; their MissionDoor pads, lightning marker groups, titles,
 guides, and public leaderboards remain attached to the original Studio Instances.
@@ -1493,17 +1601,28 @@ Last checked: 2026-08-17
   Compact pill/ring modes temporarily expand through the same interval; desktop hover uses the same
   grace instead of disappearing the instant the pointer leaves.
 
-## Homeworld combat-before-Resonance tutorial sequence
+## Homeworld Resonance-then-combat tutorial sequence
 
-Last checked: 2026-08-22
+Last checked: 2026-08-24
 
-- The ten-step FTUE restores the original Homeworld order: Earth egg, mine, another egg, review
-  squad, Answer the Earth Cave, Berserk Brew, Rally, bind Resonance, cast Resonance, then enhance it.
-- Enhancement is the final tutorial action and triggers the existing exact XP top-up guarantee to
-  earned Level 2.
-- Tutorial progress is version 4. Migrations run one version at a time and follow the semantic
-  lesson for active v1/v2/v3 saves. The retention funnel uses the same sequence while retaining its
-  live milestone IDs.
+- Tutorial v6: Earth egg, mine, another egg, review squad, bind / cast / enhance
+  Resonance, then the Earth cave is the full combat-training loop. Rally is the
+  last Homeworld beat after they walk back out at earned Level 2.
+- `BaddieSpawnerEarth` ambient waves are disabled. The cave stamps lobby, frost
+  door, arena spawn, and pillar. The Hall arch is not an entry.
+- Completing Rally still fires the Homeworld completion card. Level 2 is granted
+  when combat training finishes (idempotent if Rally also records the target).
+- Migrations run one version at a time (v1–v5). Retention still matches
+  `first_fight` as the cave-training handoff.
+- Cave entry is an Enter prompt on a Homeworld mouth pad (`Maps.Home` only).
+  FIGHT still points at the Home cave. Isolated `CombatTutorial.done` leftovers
+  reopen while Homeworld is on `first_fight`.
+- Cave mouth is Hall-style Press E only. The frost READY slab is no longer
+  the cave facade; E warps into EarthLair.
+- Cave E now opens a far-X `combat_tutorial` mission slot (10 concurrent).
+  The landing pad has no Leave Mission prompt.
+- Combat training uses the trial gray-box skins: grass on enter, then
+  lava / heaven / hell / desert / ice as the lessons advance.
 
 ## Actionable power and potion refusals
 
@@ -1584,6 +1703,7 @@ Last checked: 2026-08-24
   Huge pets count with Exclusives. Wrapper colors are blue for Legendary and below, purple for
   Mythical, crimson for Secret, and gold for Exclusive/Huge. All supplied transparent icons and
   present models are group-owned and traceable through repository upload manifests.
+- Mythical and higher gifts announce in server chat on first finalize, without naming the pet.
 
 ## Gift-giver point weights
 

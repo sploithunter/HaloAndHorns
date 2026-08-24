@@ -80,6 +80,27 @@ local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntim
 local PetThumbnailResolver = require(ReplicatedStorage.Shared.UI.PetThumbnailResolver)
 local HudCard = require(script.Parent.Parent.UI.HudCard)
 local StatusBadges = require(script.Parent.Parent.UI.StatusBadges)
+local PetFunctionMark = require(ReplicatedStorage.Shared.Game.PetFunctionMark)
+
+-- Heal / armor / debuff chip at the right end of the HP bar (Jason: beyond the Support role icon).
+local function paintFunctionMark(card, petType)
+    local mark = PetFunctionMark.forPet(petType, PET_ROLES, PETS, POWER_ICONS)
+    HudCard.applyFunctionMark(card, mark)
+    if mark and card.functionIcon then
+        local has = PetBadge.apply(card.functionIcon, card.functionRing, mark.element, nil, {
+            symbol = mark.symbol,
+            ring = "aura",
+        })
+        if card.functionMark then
+            card.functionMark.BackgroundTransparency = has and 1 or 0
+        end
+    elseif card.functionIcon then
+        card.functionIcon.Image = ""
+        if card.functionRing then
+            card.functionRing.Image = ""
+        end
+    end
+end
 
 local thumbnailRegistry = {}
 pcall(function()
@@ -1289,6 +1310,7 @@ function SquadHud.start()
                         pc.roleChip.BackgroundTransparency = hasBadge and 1 or 0
                         pc.roleGlyph.Visible = not hasBadge
                         pc.roleGlyph.Text = role.glyph
+                        paintFunctionMark(pc, pet:GetAttribute("PetType"))
                         -- shield pool bar + status badges, mirrored from own cards (every
                         -- attribute replicates globally). Badges resolve against the pet's
                         -- OWNER — player-level buff channels live on them, not the caster.
@@ -1646,6 +1668,7 @@ function SquadHud.start()
                     card.roleChip.BackgroundTransparency = hasBadge and 1 or 0
                     card.roleGlyph.Visible = not hasBadge
                     card.roleGlyph.Text = role.glyph
+                    paintFunctionMark(card, pet:GetAttribute("PetType"))
                     -- spread marker: contagious burn (DotSpreadMax stamped at spawn, or the legacy
                     -- "contagion" scope) wears a contagion glyph over the geometry ring. SSOT with the
                     -- combat loop (it arms spread from the same DotSpreadMax) and the inventory card.
