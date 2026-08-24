@@ -57,4 +57,10 @@ The first geometry-only trial uses `heaven/flora_halo_fern.png` with Meshy Smart
 4,000-face target. It returned 4,098 triangles for five credits and passed the strict mesh-integrity
 gate with no boundary, non-manifold, zero-length, or zero-area geometry. See
 `meshy_trials/halo_fern_t2_4000_trial.json` and the accompanying four-view review image. No texture
-has been requested yet.
+was requested until that geometry received visual approval.
+
+The approved geometry was then textured through Meshy's Retexture API using the original concept
+as its 2K style image. The ten-credit texture task consumed the exact successful geometry task,
+retained its 4,098 triangles, and passed the same integrity gate. See
+`meshy_trials/halo_fern_t2_4000_texture_trial.json` and
+`meshy_trials/halo_fern_t2_4000_texture_review.png`.

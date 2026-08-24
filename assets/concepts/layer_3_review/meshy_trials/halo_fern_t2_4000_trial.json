@@ -28,5 +28,6 @@
     "note": "The heavy-art source directory is intentionally gitignored; the GLB and full reports remain in the stable Layer 3 worktree."
   },
   "review_image": "assets/concepts/layer_3_review/meshy_trials/halo_fern_t2_4000_geometry_review.png",
-  "texture_status": "NOT_REQUESTED"
+  "texture_status": "SUCCEEDED",
+  "texture_trial": "assets/concepts/layer_3_review/meshy_trials/halo_fern_t2_4000_texture_trial.json"
 }

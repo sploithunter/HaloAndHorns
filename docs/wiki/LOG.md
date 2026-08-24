@@ -4287,3 +4287,12 @@ first-session cohort rates.
   or zero-area faces. No retry or texture task was started pending visual review.
 - Recorded starting production budgets: repeatable flora <=4,000 triangles, trees starting at
   4,000, and direct-import buildings at approximately 9,000.
+
+## 2026-08-24 — First Layer 3 texture trial
+
+- Textured the approved Halo Fern geometry through Meshy's Retexture API using the original concept
+  as a 2K image style. The ten-credit task consumed the successful geometry task id rather than
+  sampling a new mesh, retained all 4,098 triangles, and reproduced the emerald/cyan-white design.
+- The textured GLB passed the same strict integrity gate with zero boundary, non-manifold, or
+  degenerate geometry. Total Meshy spend for the finished trial was 15 credits (5 geometry + 10
+  texture), leaving 4,525 credits.
