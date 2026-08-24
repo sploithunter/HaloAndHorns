@@ -4319,3 +4319,15 @@ first-session cohort rates.
 - Rejected the first Dreadspire grass draft because it read as a mineral spike cluster, then
   regenerated it as curved organic ribbon grass. No expansion asset has been sent to Meshy pending
   review of the numbered assets 17–32 contact card.
+
+## 2026-08-24 — Layer 3 flora and ambient-fauna 3D production
+
+- Produced all twelve approved flora and four ambient-fauna concepts as 2K textured GLBs through
+  the Meshy Smart Topology T2 geometry-first pipeline. All sixteen final exports are below 4,000
+  triangles and pass the strict zero-boundary, zero-non-manifold, and zero-degenerate geometry gate.
+- Selected nine native Meshy meshes, conservatively repaired three, and voxel-closed four thin/open
+  forms before retexturing the exact repaired GLBs. Geometry attempts plus textures cost 365 Meshy
+  credits, leaving 4,135.
+- Ambient fauna remain non-attackable environmental props with no health, targeting, damage, or
+  drops. Their future behavior is lightweight wandering/bobbing and optional simple wing or limb
+  movement, independent of the pet and enemy combat systems.

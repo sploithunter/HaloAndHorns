@@ -1,0 +1,390 @@
+{
+  "schema_version": 1,
+  "date": "2026-08-24",
+  "pipeline": {
+    "geometry_model": "Meshy Smart Topology T2",
+    "texture_model": "latest",
+    "texture_resolution": "2k",
+    "format": "glb"
+  },
+  "credit_summary": {
+    "starting_balance": 4500,
+    "first_pass_geometry": 80,
+    "changed_target_geometry_retries": 125,
+    "textures": 160,
+    "total_spent": 365,
+    "expected_ending_balance": 4135
+  },
+  "selection_summary": {
+    "assets": 16,
+    "native_meshy": 9,
+    "conservative_repairs": 3,
+    "voxel_repairs": 4,
+    "all_textured_integrity_passed": true
+  },
+  "fauna_contract": {
+    "attackable": false,
+    "combat_target": false,
+    "role": "ambient prop",
+    "future_motion": "lightweight whole-model wandering/bobbing; optional simple wing or limb motion"
+  },
+  "review_images": [
+    "assets/concepts/layer_3_review/meshy_trials/layer_3_flora_fauna_geometry_review.png",
+    "assets/concepts/layer_3_review/meshy_trials/layer_3_flora_fauna_texture_review.png"
+  ],
+  "assets": [
+    {
+      "name": "Celestial Bellgrass",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_celestial_bellgrass.png",
+      "concept_sha256": "6ee009075b8ca6178be4aef1613e2bfa580abd8da4186b28eb8be675eaa58fcd",
+      "geometry": {
+        "task_id": "01a034a4-5514-727f-9786-70f9428b3378",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/heaven/celestial_bellgrass/meshy_t2_3600_attempt_3_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 3936,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a8-1426-7a6f-abf3-42f7c0e39431",
+        "selected_path": "assets/source/props/layer_3/heaven/celestial_bellgrass/meshy_t2_3600_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "8cf3d7b0cae51e76f5514bd65ba4eef0c574726ce376100d798a47f52373e441",
+        "triangles": 3934,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Moonpetal Bush",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_moonpetal_bush.png",
+      "concept_sha256": "ba6370f2e583dc416360fa1cba1c7f5c9065c0671d97d1a90c18bafbf08b53e4",
+      "geometry": {
+        "task_id": "01a034a0-11e5-7f9b-8c9f-a0f080525a43",
+        "target_triangles": 4000,
+        "selected_path": "assets/source/props/layer_3/heaven/moonpetal_bush/meshy_t2_4000_attempt_1/model.glb",
+        "repair": "none",
+        "triangles": 4228,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a8-1427-7a6f-a35f-a673d5f92302",
+        "selected_path": "assets/source/props/layer_3/heaven/moonpetal_bush/meshy_t2_4000_texture_attempt_1/model.glb",
+        "model_sha256": "ec5b002188cf80988b813c864953590d8c332614bdfa6bbeac86adbb048b475e",
+        "triangles": 4228,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Lumen Moss Cushion",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_lumen_moss_cushion.png",
+      "concept_sha256": "939ee68cce893d957144f6331bbcec6884b59e592f571e42d3f2662fddf01cb7",
+      "geometry": {
+        "task_id": "01a034a4-5516-727f-bacd-22c5654a0aa1",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/heaven/lumen_moss_cushion/meshy_t2_3600_attempt_3_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 3946,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a8-142a-7a6f-82e7-5413ee88121f",
+        "selected_path": "assets/source/props/layer_3/heaven/lumen_moss_cushion/meshy_t2_3600_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "028b3d70c2d21bd307ef040d65e657e1bde14809f2201c0a5c08cc087f6a1a61",
+        "triangles": 3946,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Wingleaf Reed",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_wingleaf_reed.png",
+      "concept_sha256": "df37001fc8528c9a89498d018fac8fc67f22d67ff179be0f3fd8e7e5fd75b80c",
+      "geometry": {
+        "task_id": "01a034a4-5512-7160-8f2c-c1243cbc185e",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/heaven/wingleaf_reed/meshy_t2_3600_attempt_3_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 3966,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a8-1421-7239-8967-7cb2c6e4db93",
+        "selected_path": "assets/source/props/layer_3/heaven/wingleaf_reed/meshy_t2_3600_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "75f94192874ae2ff9b128a0d94d306322616d98abfb3bbed2af64fa5dc7efe1a",
+        "triangles": 3966,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Pearlroot Anemone",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_pearlroot_anemone.png",
+      "concept_sha256": "0a24f5be0f27c7328799c22c409e44a80bc503ef366ed8e657fe61fd3497548e",
+      "geometry": {
+        "task_id": "01a034a4-5511-78f4-8243-863f33f9495f",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/heaven/pearlroot_anemone/meshy_t2_3600_attempt_3_repaired/model.glb",
+        "repair": "conservative",
+        "triangles": 3856,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a8-e6c8-727c-a764-64725b5af376",
+        "selected_path": "assets/source/props/layer_3/heaven/pearlroot_anemone/meshy_t2_3600_repaired_texture_attempt_1/model.glb",
+        "model_sha256": "0e8c4f38120c5d348197c73bea1786b07f3a4dfafabe7a023c81fa1825b82d5a",
+        "triangles": 3856,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Emerald Ribbon Shrub",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_emerald_ribbon_shrub.png",
+      "concept_sha256": "ee321f4a228726e24137aa4c047f1e94ea5c2ea8df8ad8d6f93a7358ae7aa276",
+      "geometry": {
+        "task_id": "01a034a2-de1d-71f9-ad1b-9c222a2c8509",
+        "target_triangles": 3800,
+        "selected_path": "assets/source/props/layer_3/heaven/emerald_ribbon_shrub/meshy_t2_3800_attempt_2/model.glb",
+        "repair": "none",
+        "triangles": 4040,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a8-e6c9-73f5-b089-37338ef2922e",
+        "selected_path": "assets/source/props/layer_3/heaven/emerald_ribbon_shrub/meshy_t2_3800_texture_attempt_1/model.glb",
+        "model_sha256": "e3c0f3abb0ddf634625b6d41d7bbfc7531ae232cb26511b6076050d02e95160f",
+        "triangles": 4040,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Bloomwing Butterfly",
+      "realm": "heaven",
+      "kind": "fauna",
+      "concept_path": "assets/concepts/layer_3_review/heaven/fauna_bloomwing_butterfly.png",
+      "concept_sha256": "1b68a24c791277bccdd6ed6b284333b8f14500850180956fce02f6650ee8e9f0",
+      "geometry": {
+        "task_id": "01a034a4-d77d-7920-904b-6d4f55a16a21",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/heaven/bloomwing_butterfly/meshy_t2_3600_attempt_3/model.glb",
+        "repair": "none",
+        "triangles": 2920,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a8-e6c9-73f6-965d-9ea2034ffa04",
+        "selected_path": "assets/source/props/layer_3/heaven/bloomwing_butterfly/meshy_t2_3600_texture_attempt_1/model.glb",
+        "model_sha256": "e62702ba3902db84fb1fc2a862e6c97206d27ec92ffe7a05d03bcb56112452d7",
+        "triangles": 2918,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Pearlback Snail",
+      "realm": "heaven",
+      "kind": "fauna",
+      "concept_path": "assets/concepts/layer_3_review/heaven/fauna_pearlback_snail.png",
+      "concept_sha256": "0e62ec0ab4a804b0a808ddc122043fb9daee75226f362d1493544f9da5ddff09",
+      "geometry": {
+        "task_id": "01a034a4-d780-72bc-ab53-cc55be21850c",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/heaven/pearlback_snail/meshy_t2_3600_attempt_3_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 3968,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a8-e6cf-7ac6-9cb8-f28efd7cc2aa",
+        "selected_path": "assets/source/props/layer_3/heaven/pearlback_snail/meshy_t2_3600_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "5299496fa55e91d0e0b59ec2a0db27e060ed6a627ef41aa54c481d039956f4aa",
+        "triangles": 3962,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Razorleaf Fan",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_razorleaf_fan.png",
+      "concept_sha256": "a6fd1080ae92dc0bf88330f00ec0b43b8a180470db7441c0760be575708b930d",
+      "geometry": {
+        "task_id": "01a034a2-de27-79d1-9d56-86748ae16d16",
+        "target_triangles": 3800,
+        "selected_path": "assets/source/props/layer_3/hell/razorleaf_fan/meshy_t2_3800_attempt_2/model.glb",
+        "repair": "none",
+        "triangles": 4120,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a9-db99-72ce-90da-0c8f19d023ab",
+        "selected_path": "assets/source/props/layer_3/hell/razorleaf_fan/meshy_t2_3800_texture_attempt_1/model.glb",
+        "model_sha256": "c31d25c3aab3eecf3ba498490dddd06f359f563e56c593d215fa32759e138c2a",
+        "triangles": 4120,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Gloom Pitcher",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_gloom_pitcher.png",
+      "concept_sha256": "8ca850b0ffac64e0089cd178b1322dd7a7fe3a58bc35b846e83536774ca798b7",
+      "geometry": {
+        "task_id": "01a034a4-d788-7a56-bb0e-a94f7ba55989",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/hell/gloom_pitcher/meshy_t2_3600_attempt_3_repaired/model.glb",
+        "repair": "conservative",
+        "triangles": 3656,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a9-db94-72ce-8d96-4948f130741b",
+        "selected_path": "assets/source/props/layer_3/hell/gloom_pitcher/meshy_t2_3600_repaired_texture_attempt_1/model.glb",
+        "model_sha256": "8e7d817ae94a1eff26e132fa793c9a83f51d1bfb05b3bef4390e9e0bf548478a",
+        "triangles": 3656,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Crimson Watcher Bloom",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_crimson_watcher_bloom.png",
+      "concept_sha256": "857740a2346463e00ec0962c5b233e3d3c331f46c8c13b34fab0d74e0c977bfb",
+      "geometry": {
+        "task_id": "01a034a3-4985-7221-a96a-d1247e4e2744",
+        "target_triangles": 3800,
+        "selected_path": "assets/source/props/layer_3/hell/crimson_watcher_bloom/meshy_t2_3800_attempt_2/model.glb",
+        "repair": "none",
+        "triangles": 3978,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a9-db84-7451-a2ca-2668c0d0d57d",
+        "selected_path": "assets/source/props/layer_3/hell/crimson_watcher_bloom/meshy_t2_3800_texture_attempt_1/model.glb",
+        "model_sha256": "e6f054c230083d5bc0283c0e56a73fc41e23aa177f4c129ae4a68d8dd1612ce3",
+        "triangles": 3978,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Dreadspire Ribbon Grass",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_dreadspire_ribbon_grass.png",
+      "concept_sha256": "5af3c6c1fb4028e29b1cf0e79abbad226944e44deff952d6c98e19881ac77255",
+      "geometry": {
+        "task_id": "01a034a3-4983-70fa-9e04-bbb3be508dc4",
+        "target_triangles": 3800,
+        "selected_path": "assets/source/props/layer_3/hell/dreadspire_ribbon_grass/meshy_t2_3800_attempt_2/model.glb",
+        "repair": "none",
+        "triangles": 4102,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034a9-db9c-7cdf-a916-0f1b013f0c76",
+        "selected_path": "assets/source/props/layer_3/hell/dreadspire_ribbon_grass/meshy_t2_3800_texture_attempt_1/model.glb",
+        "model_sha256": "dd0f23eb3010a5c0054ec74e7a8a3488a44e848b6ffa3074f4e000f51edf0400",
+        "triangles": 4100,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Violet Hook Bloom",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_violet_hook_bloom.png",
+      "concept_sha256": "8581384fed82729a4ea0cede440a09ee05187efcfae47179e1647c9fef27a758",
+      "geometry": {
+        "task_id": "01a034a4-d77f-72bc-96bc-8a6c4efd2e87",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/hell/violet_hook_bloom/meshy_t2_3600_attempt_3_repaired/model.glb",
+        "repair": "conservative",
+        "triangles": 3880,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034aa-adb7-749f-a2b5-06ed6ca95d27",
+        "selected_path": "assets/source/props/layer_3/hell/violet_hook_bloom/meshy_t2_3600_repaired_texture_attempt_1/model.glb",
+        "model_sha256": "aa2833201e5f3c9b0bf9ebb853a99b696ca9c6d58d873f9e44e5f9c6bd0180dc",
+        "triangles": 3880,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Ironroot Crawler",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_ironroot_crawler.png",
+      "concept_sha256": "77f08cf3bdc8360d8b2977d0dc3de99002bc015fc7f91755396e89bec08973ec",
+      "geometry": {
+        "task_id": "01a034a5-8296-7956-bb6c-e8206fc9be6b",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/hell/ironroot_crawler/meshy_t2_3600_attempt_3/model.glb",
+        "repair": "none",
+        "triangles": 3834,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034aa-adc3-7c33-8294-c033b27ec0d0",
+        "selected_path": "assets/source/props/layer_3/hell/ironroot_crawler/meshy_t2_3600_texture_attempt_1/model.glb",
+        "model_sha256": "e1c718c18722b109b53d07dbf3648dc9b4a2303f5aa21d103f153a8068d77848",
+        "triangles": 3834,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Dreadwing Beetle",
+      "realm": "hell",
+      "kind": "fauna",
+      "concept_path": "assets/concepts/layer_3_review/hell/fauna_dreadwing_beetle.png",
+      "concept_sha256": "4af30f13ca3b050ba3aa408ceeb4cc9b62b6c76d9ae5536142e348393f2c4f65",
+      "geometry": {
+        "task_id": "01a034a5-82a1-7a82-8e7f-7f3374e86baf",
+        "target_triangles": 3600,
+        "selected_path": "assets/source/props/layer_3/hell/dreadwing_beetle/meshy_t2_3600_attempt_3/model.glb",
+        "repair": "none",
+        "triangles": 3806,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034aa-adbf-73b6-a0f8-e1abe3b7a642",
+        "selected_path": "assets/source/props/layer_3/hell/dreadwing_beetle/meshy_t2_3600_texture_attempt_1/model.glb",
+        "model_sha256": "4a9450daeaf297da5854555ab11815616f1edb5252209837559411ee6da97394",
+        "triangles": 3796,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "Obsidian Hornback Lizard",
+      "realm": "hell",
+      "kind": "fauna",
+      "concept_path": "assets/concepts/layer_3_review/hell/fauna_obsidian_hornback_lizard.png",
+      "concept_sha256": "0486251c39a21c18dd890423229602f934eab5bcdcc36e0c6481054fbc7cacb7",
+      "geometry": {
+        "task_id": "01a034a3-c944-712c-bf14-268f3f5c5102",
+        "target_triangles": 3800,
+        "selected_path": "assets/source/props/layer_3/hell/obsidian_hornback_lizard/meshy_t2_3800_attempt_2/model.glb",
+        "repair": "none",
+        "triangles": 4204,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a034aa-adbd-7d2a-9e43-33b55be4428b",
+        "selected_path": "assets/source/props/layer_3/hell/obsidian_hornback_lizard/meshy_t2_3800_texture_attempt_1/model.glb",
+        "model_sha256": "a03549b262e16e37129ccd2538fcc62df5b9d706376563250264cdd924e6ffcb",
+        "triangles": 4204,
+        "integrity_passed": true
+      }
+    }
+  ]
+}
+

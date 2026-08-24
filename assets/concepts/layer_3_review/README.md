@@ -60,7 +60,9 @@ the only inputs intended for Meshy.
 
 `layer_3_flora_fauna_expansion_contact_card.png` covers assets 17–32: twelve additional flora
 props and four ambient-fauna props. These fauna are environmental dressing, not collectible pets
-or combat units. The expansion raises the non-building concept pool from 12 to 28 assets (2.3×).
+or combat units. They must not receive health, targeting, damage, drops, or other combat hooks;
+their eventual motion is lightweight ambient wandering/bobbing with optional simple wing or limb
+movement. The expansion raises the non-building concept pool from 12 to 28 assets (2.3×).
 
 See `PROMPTS.md` for the exact final prompt used for every selected image.
 
@@ -93,3 +95,16 @@ that exact uploaded GLB at 2K without changing its topology. See
 `meshy_trials/empyrean_bloom_shrine_t2_9300_trial.json`,
 `meshy_trials/empyrean_bloom_shrine_t2_9300_texture_trial.json`, and the accompanying four-view
 review sheet.
+
+## Flora and ambient-fauna production batch
+
+Assets 17–32 were produced as 2K textured GLBs through the same geometry-first gate. Every selected
+mesh is below 4,000 triangles and passes with zero boundary edges, non-manifold edges, zero-length
+edges, or zero-area faces. Nine outputs passed directly from Meshy, three required conservative
+local repair, and four thin/open forms required voxel closure before retexturing the exact repaired
+GLB. The completed textured exports also pass the strict gate.
+
+See `meshy_trials/layer_3_flora_fauna_production_batch.json` for task ids, hashes, selected local
+GLB paths, triangle counts, repair provenance, and the 365-credit batch accounting. Review the
+front/right sheets in `meshy_trials/layer_3_flora_fauna_geometry_review.png` and
+`meshy_trials/layer_3_flora_fauna_texture_review.png`.
