@@ -94,6 +94,42 @@ return function()
             expect(GiftLogic.leaderboardPoints({ variant = "invented" })).to.equal(1)
         end)
 
+        it("maps wrapper colors without revealing pets below their rarity band", function()
+            expect(GiftLogic.presentationTier("legendary")).to.equal("standard")
+            expect(GiftLogic.presentationTier("mythic")).to.equal("mythical")
+            expect(GiftLogic.presentationTier("secret")).to.equal("secret")
+            expect(GiftLogic.presentationTier("exclusive")).to.equal("exclusive")
+            expect(GiftLogic.presentationTier("huge")).to.equal("exclusive")
+
+            local tier, presentation = GiftLogic.resolvePresentation("secret", {
+                presentations = {
+                    secret = { replicated_model_name = "Crimson" },
+                },
+            })
+            expect(tier).to.equal("secret")
+            expect(presentation.replicated_model_name).to.equal("Crimson")
+        end)
+
+        it("tracks every weighted gift plus any qualifying category", function()
+            local standard = GiftLogic.giverScores({
+                rarity_id = "legendary",
+                pet_record = { variant = "golden" },
+            })
+            expect(#standard).to.equal(1)
+            expect(standard[1].counter_id).to.equal("all_gift_points")
+            expect(standard[1].points).to.equal(5)
+
+            local secret = GiftLogic.giverScores({
+                rarity_id = "secret",
+                pet_record = { variant = "rainbow" },
+            })
+            expect(#secret).to.equal(2)
+            expect(secret[1].counter_id).to.equal("all_gift_points")
+            expect(secret[1].points).to.equal(25)
+            expect(secret[2].counter_id).to.equal("secret_gift_points")
+            expect(secret[2].points).to.equal(25)
+        end)
+
         it(
             "reconstructs point scoring for an outbox written before weights were persisted",
             function()
@@ -285,17 +321,33 @@ return function()
             expect(service:find("counter_points = GiftLogic.leaderboardPoints", 1, true) ~= nil).to.equal(
                 true
             )
-            expect(service:find("GiftLogic.leaderboardScore", 1, true) ~= nil).to.equal(true)
+            expect(service:find("GiftLogic.giverScores", 1, true) ~= nil).to.equal(true)
+            expect(stats:find("all_gift_points", 1, true) ~= nil).to.equal(true)
+            expect(boards:find('counter = "all_gift_points"', 1, true) == nil).to.equal(true)
         end)
 
-        it("traces the supplied icon and model through uploaded asset manifests", function()
+        it("traces every supplied icon and model through uploaded asset manifests", function()
             local gifts = readFile("configs/gifts.lua")
             local iconManifest = readFile("scripts/gift_icon_ids.json")
             local modelManifest = readFile("scripts/gift_model_ids.json")
-            expect(gifts:find("74519461902415", 1, true) ~= nil).to.equal(true)
-            expect(gifts:find("75928057436522", 1, true) ~= nil).to.equal(true)
-            expect(iconManifest:find("74519461902415", 1, true) ~= nil).to.equal(true)
-            expect(modelManifest:find("75928057436522", 1, true) ~= nil).to.equal(true)
+            for _, assetId in ipairs({
+                "74519461902415",
+                "100900758738930",
+                "131574195765765",
+                "110223776207323",
+            }) do
+                expect(gifts:find(assetId, 1, true) ~= nil).to.equal(true)
+                expect(iconManifest:find(assetId, 1, true) ~= nil).to.equal(true)
+            end
+            for _, assetId in ipairs({
+                "75928057436522",
+                "117665017287463",
+                "138682808296676",
+                "125462665041651",
+            }) do
+                expect(gifts:find(assetId, 1, true) ~= nil).to.equal(true)
+                expect(modelManifest:find(assetId, 1, true) ~= nil).to.equal(true)
+            end
         end)
     end)
 end

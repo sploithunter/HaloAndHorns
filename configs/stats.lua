@@ -174,6 +174,13 @@ return {
             scope = "lifetime",
             default = 0,
         },
+        -- Captured now for a future all-gifts ranking; intentionally not
+        -- published as a board yet. Uses Basic 1 / Golden 5 / Rainbow 25.
+        all_gift_points = {
+            display_name = "All Gift Points",
+            scope = "lifetime",
+            default = 0,
+        },
         mythical_gift_points = {
             display_name = "Mythical Gift Points",
             scope = "lifetime",

@@ -4251,3 +4251,13 @@ first-session cohort rates.
   actually running in Studio. Live delivery continues to require positive integer account ids.
 - This lets the normal durable outbox and ProfileStore message path run in multi-client Studio tests;
   gifts escrowed by the previous validation failure recover through the existing sender-join retry.
+
+## 2026-08-24 — Rarity-band gift wrappers and all-gifts tracking
+
+- Added distinct surprise wrappers without revealing the pet: blue for Legendary and below, purple
+  for Mythical, crimson for Secret, and gold for Exclusive/Huge. The three new GLBs and green-screen
+  icons were cleaned, converted, and uploaded under project-group ownership with traced manifests.
+- Extended the repository chroma-key tool with `all-green` mode so enclosed bow openings and the
+  outer background are both alpha-transparent while retaining edge feathering and green despill.
+- Added the hidden `all_gift_points` lifetime counter for every finalized gift using the existing
+  Basic 1 / Golden 5 / Rainbow 25 weights. No fourth leaderboard is published yet.

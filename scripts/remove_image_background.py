@@ -21,6 +21,7 @@ def parse_args() -> argparse.Namespace:
             "all-white",
             "edge-green",
             "ring-green",
+            "all-green",
             "edge-magenta",
         ],
         default="edge-white",
@@ -29,7 +30,8 @@ def parse_args() -> argparse.Namespace:
             "ring-white: edge background plus center hole (for ring/frame UI art); "
             "all-white: every near-white pixel; "
             "edge-green: green-screen background connected to image edges; "
-            "ring-green: green-screen edge background plus center hole."
+            "ring-green: green-screen edge background plus center hole; "
+            "all-green: every green-screen pixel (for enclosed holes in non-green art); "
         ),
     )
     parser.add_argument(
@@ -434,6 +436,22 @@ def main() -> None:
                 red, green, blue = despill_green(red, green, blue, next_alpha)
                 pixels.append((red, green, blue, next_alpha))
                 continue
+
+        if args.mode == "all-green":
+            next_alpha = min(
+                alpha,
+                green_screen_alpha(
+                    red,
+                    green,
+                    blue,
+                    args.green_min,
+                    args.green_dominance,
+                    args.softness,
+                ),
+            )
+            red, green, blue = despill_green(red, green, blue, next_alpha)
+            pixels.append((red, green, blue, next_alpha))
+            continue
 
         next_alpha = min(alpha, background_alpha(red, green, blue, args.threshold, args.softness))
         pixels.append((red, green, blue, next_alpha))

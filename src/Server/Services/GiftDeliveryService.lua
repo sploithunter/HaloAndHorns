@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 
 local AssetFetch = require(ReplicatedStorage.Shared.Utils.AssetFetch)
 local GiftDelivery = require(ReplicatedStorage.Shared.Game.GiftDelivery)
+local GiftLogic = require(ReplicatedStorage.Shared.Game.GiftLogic)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 
@@ -51,62 +52,79 @@ function GiftDeliveryService:Start()
 end
 
 function GiftDeliveryService:_preloadPresentModel()
-    local asset = (self._config.assets or {}).present_model_asset
-    local assetId = tonumber(tostring(asset or ""):match("%d+"))
     local assetsRoot = ReplicatedStorage:FindFirstChild("Assets")
     local modelsRoot = assetsRoot and assetsRoot:FindFirstChild("Models")
-    if not assetId or not modelsRoot then
+    if not modelsRoot then
         return
     end
 
     local giftsFolder = modelsRoot:FindFirstChild("Gifts") or Instance.new("Folder")
     giftsFolder.Name = "Gifts"
     giftsFolder.Parent = modelsRoot
-    local modelName = (self._config.assets or {}).replicated_model_name or "StarlightGift"
-    if giftsFolder:FindFirstChild(modelName) then
-        return
-    end
 
-    local ok, loadedOrError = pcall(function()
-        return AssetFetch.load(assetId)
-    end)
-    if not ok or not loadedOrError then
-        self._logger:Warn("Gift present model preload failed; icon fallback remains available", {
-            context = "GiftDeliveryService",
-            assetId = assetId,
-            error = tostring(loadedOrError),
-        })
-        return
+    local assets = self._config.assets or {}
+    local presentations = assets.presentations
+    if type(presentations) ~= "table" then
+        presentations = { standard = assets }
     end
+    local tierIds = {}
+    for tierId in pairs(presentations) do
+        table.insert(tierIds, tierId)
+    end
+    table.sort(tierIds)
 
-    local loaded = loadedOrError
-    local sourceModel = loaded:IsA("Model") and loaded or loaded:FindFirstChildOfClass("Model")
-    local model
-    if sourceModel then
-        model = sourceModel:Clone()
-    else
-        local part = loaded:FindFirstChildWhichIsA("BasePart", true)
-        if part then
-            model = Instance.new("Model")
-            local clone = part:Clone()
-            clone.Parent = model
-            model.PrimaryPart = clone
+    for _, tierId in ipairs(tierIds) do
+        local presentation = presentations[tierId]
+        local assetId = tonumber(tostring(presentation.present_model_asset or ""):match("%d+"))
+        local modelName = presentation.replicated_model_name
+            or (tierId == "standard" and "StarlightGift" or "StarlightGift_" .. tierId)
+        if assetId and not giftsFolder:FindFirstChild(modelName) then
+            local ok, loadedOrError = pcall(function()
+                return AssetFetch.load(assetId)
+            end)
+            if not ok or not loadedOrError then
+                self._logger:Warn(
+                    "Gift present model preload failed; icon fallback remains available",
+                    {
+                        context = "GiftDeliveryService",
+                        tier = tierId,
+                        assetId = assetId,
+                        error = tostring(loadedOrError),
+                    }
+                )
+                continue
+            end
+
+            local loaded = loadedOrError
+            local sourceModel = loaded:IsA("Model") and loaded
+                or loaded:FindFirstChildOfClass("Model")
+            local model
+            if sourceModel then
+                model = sourceModel:Clone()
+            else
+                local part = loaded:FindFirstChildWhichIsA("BasePart", true)
+                if part then
+                    model = Instance.new("Model")
+                    local clone = part:Clone()
+                    clone.Parent = model
+                    model.PrimaryPart = clone
+                end
+            end
+            loaded:Destroy()
+            if model then
+                model.Name = modelName
+                for _, descendant in ipairs(model:GetDescendants()) do
+                    if descendant:IsA("BasePart") then
+                        descendant.Anchored = true
+                        descendant.CanCollide = false
+                        descendant.CanTouch = false
+                        descendant.CanQuery = false
+                    end
+                end
+                model.Parent = giftsFolder
+            end
         end
     end
-    loaded:Destroy()
-    if not model then
-        return
-    end
-    model.Name = modelName
-    for _, descendant in ipairs(model:GetDescendants()) do
-        if descendant:IsA("BasePart") then
-            descendant.Anchored = true
-            descendant.CanCollide = false
-            descendant.CanTouch = false
-            descendant.CanQuery = false
-        end
-    end
-    model.Parent = giftsFolder
 end
 
 function GiftDeliveryService:_attach(player)
@@ -204,11 +222,12 @@ function GiftDeliveryService:_deliver(player, profile, message, processed)
     end
 
     processed()
+    local _, presentation = GiftLogic.resolvePresentation(gift.rarity_id, self._config.assets)
     fireGameEvent(player, "gift_received", {
         name = "🎁 A gift from " .. gift.sender_name .. " is waiting in Inventory > Gifts!",
         giftId = gift.id,
         senderName = gift.sender_name,
-        icon = (self._config.assets or {}).inventory_icon,
+        icon = presentation.inventory_icon,
     })
     self._logger:Info("Durable pet gift delivered as an unopened present", {
         context = "GiftDeliveryService",
