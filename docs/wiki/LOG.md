@@ -4889,3 +4889,56 @@ first-session cohort rates.
 - Temporarily opened the Heaven 3 and Hell 3 physical realm portals for active map testing through
   `realm_portals.testing_open_layers`; the production Soul, token, level, World Travel, and saved
   progression rules remain unchanged.
+
+## 2026-08-25 — Layer 3 ambient-fauna motion correction
+
+- Reduced the three Heaven 3 Bloomwing Butterflies from 3.2–3.8 studs to 0.85–1.15 studs and moved
+  all three routes from scattered plaza/map positions into the authored garden.
+- Replaced elapsed-angle rotation with tangent-facing elliptical paths and reused the shared pet/
+  enemy `Gait` module for procedural bounce and bank. Live Studio verification confirmed all three
+  butterflies move through the garden at their authored scale without rotating in place.
+
+## 2026-08-25 — Layer 3 walkthrough runtime completion
+
+- Wired the eight published Layer 3 eggs and all 40 published pet families into runtime config;
+  Heaven 3/Hell 3 stands now resolve their own meshes, cards, 1,300-coin hatch pools, roles, and
+  approved support/area kits instead of falling back to Layer 1.
+- Added all eight Layer 3 origin zones at 1.5M origin coins and their presence-gated crystal worlds
+  at the Layer 3 elevations. Live Studio verification created 100 level-7+ crystals in both tested
+  realms, and the locked Heaven 3 prompt displayed the expected 1500K cost.
+- Compared Heaven 2/3 terrain voxel-by-voxel, isolated the omitted entry-side region, and restored
+  1,703 non-Air voxels additively. Hell 3 had no matching deficit. Added a repeatable bounded repair
+  script rather than duplicating the whole terrain layer.
+- Added generic per-anchor fauna yaw correction and set the three Pearlback Snails to 180 degrees;
+  their visual forward axis now follows their actual route. The expanded Layer 3 runtime contract
+  passes 2,222 headless tests and was verified through the live Rojo-connected Studio session.
+
+## 2026-08-25 — Realm physical-layer reconciliation
+
+- Traced the apparent return of old Hell 3 stands, eggs, and free unlocks to a split state:
+  `CurrentLayer` remained `hell_3` while the character was physically on Home, so the visible
+  content and `CurrentArea` correctly came from Home.
+- Centralized stream-before-pivot travel and added one-second physical-layer reconciliation in
+  `LayerService`, including post-respawn recovery. Live Studio verification forced a Hell 3 player onto Home;
+  the service restored Y -6000 and `CurrentArea = Hell_3_Grass`, where Dreadthorn remained locked
+  at 1.5M and the Layer 3 egg/stand were present.
+
+## 2026-08-25 — Hell 3 emissive environment accents
+
+- Added a shared, config-driven environment glow treatment that lifts authored colored texture
+  accents with Neon and optionally adds one no-shadow PointLight inside a model.
+- Applied it selectively to Hell 3's Dreadthorn trees, accent plants, thorn cacti, Dreadwing
+  Beetles, and Obsidian Hornback Lizards. The live map contains 28 restrained dynamic dressing
+  lights; dense secondary plants use Neon only.
+- Live Studio verification confirmed the black silhouettes remain dark while red veins glow and
+  cast localized color onto the ground. Moving fauna retain their small attached lights.
+
+## 2026-08-25 — Layer 3 fast-load prebake refresh
+
+- Captured `ReplicatedStorage.Assets.Models` from a fully booted Play session and sanitized it into
+  the Rojo-served `assets/place/Models.rbxm` snapshot. The bake contains all 183 pet folders, 47
+  eggs, four gift models, and the Layer 3 environment assets; all 740 asset roots have geometry and
+  all 21 rigged roots retain Bones plus an AnimationController.
+- A fresh Rojo-fed Play boot kept exactly one `Assets.Models` root and reported
+  `model pass done in 0.0s — adopted=596 fetched=0`; all 48 authored egg stands populated in the
+  same boot.
