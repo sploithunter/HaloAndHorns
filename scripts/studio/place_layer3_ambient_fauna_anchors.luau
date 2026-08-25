@@ -11,37 +11,40 @@ local SPECS = {
         {
             name = "BloomwingButterfly_1",
             model = "bloomwing_butterfly",
-            position = Vector3.new(-75, 6001.358, 315),
+            position = Vector3.new(-47.5, 6001.997, 317.5),
             motion = "hover",
-            radius = 3.2,
-            hover = 2.6,
-            bob = 0.45,
-            speed = 0.72,
-            size = 3.6,
+            radius_x = 9,
+            radius_z = 6.5,
+            hover = 1.6,
+            bob = 0.18,
+            speed = 0.32,
+            size = 1.15,
             phase = 0.2,
         },
         {
             name = "BloomwingButterfly_2",
             model = "bloomwing_butterfly",
-            position = Vector3.new(-120, 6001.358, 335),
+            position = Vector3.new(-47.5, 6001.997, 317.5),
             motion = "hover",
-            radius = 2.7,
-            hover = 2.2,
-            bob = 0.38,
-            speed = 0.58,
-            size = 3.2,
+            radius_x = 7,
+            radius_z = 10,
+            hover = 2.1,
+            bob = 0.16,
+            speed = 0.27,
+            size = 1,
             phase = 2.3,
         },
         {
             name = "BloomwingButterfly_3",
             model = "bloomwing_butterfly",
-            position = Vector3.new(-200, 6001.358, 500),
+            position = Vector3.new(-47.5, 6001.997, 317.5),
             motion = "hover",
-            radius = 3.5,
-            hover = 2.8,
-            bob = 0.5,
-            speed = 0.64,
-            size = 3.8,
+            radius_x = 5,
+            radius_z = 4,
+            hover = 1.25,
+            bob = 0.14,
+            speed = 0.4,
+            size = 0.85,
             phase = 4.4,
         },
         {
@@ -186,6 +189,8 @@ for layerName, specs in pairs(SPECS) do
         anchor:SetAttribute("ModelName", spec.model)
         anchor:SetAttribute("Motion", spec.motion)
         anchor:SetAttribute("MoveRadius", spec.radius)
+        anchor:SetAttribute("PathRadiusX", spec.radius_x or spec.radius)
+        anchor:SetAttribute("PathRadiusZ", spec.radius_z or spec.radius)
         anchor:SetAttribute("HoverHeight", spec.hover)
         anchor:SetAttribute("BobHeight", spec.bob)
         anchor:SetAttribute("Speed", spec.speed)
