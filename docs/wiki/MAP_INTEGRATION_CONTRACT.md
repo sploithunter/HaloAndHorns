@@ -136,6 +136,15 @@ proximity authorization, inventory mutation, and currency mutation remain config
 
 Builder-authored egg visuals are map fixtures too. A visible model can have any builder-friendly name, then a setup pass stamps the intended interaction anchor part with `EggStand`, `EggId`/`EggType`, optional `AreaId`/`SpawnId`, `AuthoredVisual = true`, and `SpawnMode = "authored"`. For large hatchers, tag the egg/rock part players approach rather than the full decorative container so proximity distance and billboards attach to the right spot. `scripts/studio/audit_authored_map_candidates.luau` lists likely imported objects, and `scripts/studio/stamp_authored_egg_stands.luau` is the current repeatable helper for the assisted mapping pass. Blank/template maps still use synthetic invisible egg hooks and spawned placeholder egg models.
 
+Flora follows an anchor-only authored contract. Each invisible `FloraAnchor` BasePart owns `Kind`,
+`Variant`, and authored-height `Scale`; `FloraService` selects and places the runtime model from
+`configs/flora.lua`. Do not retain a copied visible tree/rock/plant beside the anchor. In particular,
+an `ObjectValue` named `FloraSpawn` linking an old visual to its anchor is migration metadata, not
+permission for both objects to survive. Layer 3 removes those linked visuals through
+`scripts/studio/remove_layer3_authored_flora_visuals.luau`; its exact runtime dressing can be
+inspected with `scripts/studio/preview_layer3_flora.luau`, whose `_Layer3FloraPreview` folders must
+be deleted before saving the place.
+
 Ascension altars use an invisible child part named `AscensionAltarHost`, tagged
 `AscensionAltar`, as their interaction contract. `AscensionAltarService` creates the prompt and
 level-training behavior at that host; altar meshes and `NativeFX` remain Studio-owned. Home's

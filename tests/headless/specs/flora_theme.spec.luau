@@ -4,6 +4,7 @@
 ]]
 
 local FloraTheme = loadModule("src/Shared/Game/FloraTheme.lua")
+local realConfig = loadModule("configs/flora.lua")
 
 return function()
     local cfg = {
@@ -94,6 +95,66 @@ return function()
             expect(FloraTheme.realmOf("heaven_2")).to.equal("heaven")
             expect(FloraTheme.realmOf("hell_5")).to.equal("hell")
             expect(FloraTheme.realmOf("base")).to.equal(nil)
+        end)
+    end)
+
+    describe("Layer 3 production theme", function()
+        it("uses the new Heaven flora for every plant anchor variant", function()
+            for _, variant in ipairs({
+                "cloudtiplant",
+                "grass_tuft",
+                "field_flower_bush",
+                "meadow_bush",
+            }) do
+                local resolved = FloraTheme.resolve(realConfig, "heaven_3", "plant", variant)
+                expect(type(resolved)).to.equal("table")
+                expect(#resolved > 1).to.equal(true)
+            end
+        end)
+
+        it("uses the new Hell flora for every plant anchor variant", function()
+            for _, variant in ipairs({ "grass_tuft", "field_flower_bush", "meadow_bush" }) do
+                local resolved = FloraTheme.resolve(realConfig, "hell_3", "plant", variant)
+                expect(type(resolved)).to.equal("table")
+                expect(#resolved >= 4).to.equal(true)
+            end
+        end)
+
+        it("uses the new Layer 3 rocks and cacti", function()
+            local heavenRocks = FloraTheme.resolve(realConfig, "heaven_3", "rock", "ice_rock")
+            expect(type(heavenRocks)).to.equal("table")
+            expect(#heavenRocks).to.equal(2)
+
+            local hellRocks = FloraTheme.resolve(realConfig, "hell_3", "rock", "rockstone")
+            expect(type(hellRocks)).to.equal("table")
+            expect(#hellRocks).to.equal(2)
+
+            expect(FloraTheme.resolve(realConfig, "heaven_3", "cactus", "cactus")).to.equal(
+                "empyrean_bloom_cactus"
+            )
+            expect(FloraTheme.resolve(realConfig, "hell_3", "cactus", "cactus")).to.equal(
+                "dreadspire_thorn_cactus"
+            )
+        end)
+
+        it("mixes each signature Layer 3 tree into the copied biome anchors", function()
+            for _, layer in ipairs({ "heaven_3", "hell_3" }) do
+                local signature = if layer == "heaven_3"
+                    then "luminous_canopy_tree"
+                    else "dreadthorn_tree"
+                for _, variant in ipairs({ "baobab_tree", "oak_tree", "pine_tree", "tree1" }) do
+                    local resolved = FloraTheme.resolve(realConfig, layer, "tree", variant)
+                    if type(resolved) == "table" then
+                        local found = false
+                        for _, modelName in ipairs(resolved) do
+                            found = found or modelName == signature
+                        end
+                        expect(found).to.equal(true)
+                    else
+                        expect(resolved).to.equal(signature)
+                    end
+                end
+            end
         end)
     end)
 end

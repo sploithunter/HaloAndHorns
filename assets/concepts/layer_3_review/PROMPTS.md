@@ -320,3 +320,80 @@ replacement prompt.
 > Style/medium: polished low-poly Roblox pets-game ambient creature prop, game-ready baked texture appearance, clearly fauna rather than a collectible pet.
 > Composition/framing: centered three-quarter product view, whole creature visible with generous padding on pure white.
 > Constraints: one creature only; no dragon wings, collar, armor, accessories, pedestal, ground plane, cast shadow, scene, gold, yellow, orange, rot, swamp, decay, fungus, gore, lava, flames, text, people, extra creatures, or watermark; all limbs connected and Meshy-friendly.
+
+## Layer 3 anchor-gap props
+
+The programmatic FloraAnchor audit identified rock and large desert/cactus silhouettes that were
+not present in the original concept set. Each of these six references was generated independently.
+
+### 33 — Pearlroot Boulder
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment rock concept
+> Primary request: Create exactly one low-poly Pearlroot Boulder for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one broad rounded pearl-white stone with a stable flat base, wrapped by two thick connected pale-jade living roots and three restrained cyan-white luminous botanical vein lines; chunky durable silhouette, unmistakably a natural boulder rather than a crystal.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding.
+> Scene/backdrop: pure plain white background.
+> Color palette: pearl white, cool pale jade, emerald accents, restrained cyan-white glow.
+> Constraints: exactly one connected boulder; no ground plane, cast shadow, dirt, clutter, text, people, detached pieces, gold, yellow metal, rainbow colors, crystal facets, geode opening, flowers, or watermark.
+
+### 34 — Bloomstone Shelf
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment rock concept
+> Primary request: Create exactly one low-poly Bloomstone Shelf for Heaven Layer 3, the Empyrean Bloom.
+> Subject: one low wide asymmetrical pearl-stone outcrop with a stable flat underside, three thick rounded tiers, a connected pale-jade root crest, and restrained cyan-white luminous leaf-vein markings molded into the stone; chunky durable silhouette, clearly a rock rather than a plant or crystal.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding.
+> Scene/backdrop: pure plain white background.
+> Color palette: cool pearl white, pale jade, emerald, restrained cyan-white glow.
+> Constraints: exactly one connected rock outcrop; no ground plane, cast shadow, dirt, clutter, text, people, detached pieces, gold, yellow metal, rainbow colors, crystal facets, geode, flowers, or watermark.
+
+### 35 — Empyrean Bloom Cactus
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment cactus concept
+> Primary request: Create exactly one low-poly Empyrean Bloom Cactus for Heaven Layer 3.
+> Subject: one sturdy connected pale-jade desert cactus with a thick central column, two broad upward arms, layered emerald botanical pads integrated into the body, pearl-white flower buds with cyan-white luminous centers, and a visible fused root crown; friendly healthy living silhouette, no metallic elements.
+> Style/medium: polished low-poly Roblox pets-game prop, chunky game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding.
+> Scene/backdrop: pure plain white background.
+> Color palette: pale jade, deep emerald, pearl white, restrained cyan-white glow.
+> Constraints: one connected cactus only; thick durable forms; no pot, ground plane, cast shadow, dirt, rocks, clutter, text, people, detached flowers, gold, yellow metal, rainbow colors, crystal facets, weapons, or watermark.
+
+### 36 — Dreadspire Faultstone
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment rock concept
+> Primary request: Create exactly one low-poly Dreadspire Faultstone for Hell Layer 3.
+> Subject: one heavy asymmetrical charcoal-black boulder with a stable flat base, layered matte-obsidian armor plates, a few deep hard-crimson glowing fault lines, and two restrained bruise-violet stone ridges integrated into the mass; chunky durable silhouette, supernatural geology rather than a crystal cluster.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding.
+> Scene/backdrop: pure plain white background.
+> Color palette: charcoal black, matte obsidian, hard crimson, bruise violet.
+> Constraints: exactly one connected boulder; no ground plane, cast shadow, dirt, clutter, text, people, detached shards, gold, yellow, orange, bronze, rot, swamp, decay, fungus, gore, lava, flames, geode, crystal cluster, or watermark.
+
+### 37 — Dreadspire Razorstone
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment rock concept
+> Primary request: Create exactly one low-poly Dreadspire Razorstone for Hell Layer 3.
+> Subject: one low wide connected obsidian outcrop with a stable flat base, three broad angular charcoal slabs swept in one direction, bruise-violet undersides, and a few narrow hard-crimson glowing seams; severe readable silhouette but thick and durable, clearly natural supernatural rock rather than a crystal plant.
+> Style/medium: polished low-poly Roblox pets-game prop, game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding.
+> Scene/backdrop: pure plain white background.
+> Color palette: charcoal black, matte obsidian, bruise violet, restrained hard crimson.
+> Constraints: exactly one connected rock outcrop; no ground plane, cast shadow, dirt, clutter, text, people, detached shards, gold, yellow, orange, bronze, rot, swamp, decay, fungus, gore, lava, flames, geode, crystal cluster, weapons, or watermark.
+
+### 38 — Dreadspire Thorn Cactus
+
+> Use case: stylized-concept
+> Asset type: Meshy-ready Roblox environment cactus concept
+> Primary request: Create exactly one low-poly Dreadspire Thorn Cactus for Hell Layer 3.
+> Subject: one thick connected charcoal-black desert cactus with a stout central column, two broad angular upward arms, matte-obsidian skin plates, short blunt integrated thorns, bruise-violet rib undersides, and narrow hard-crimson luminous seams; healthy supernatural cactus, formidable but botanical, with a fused stable root crown.
+> Style/medium: polished low-poly Roblox pets-game prop, chunky game-ready baked texture appearance.
+> Composition/framing: centered three-quarter product view, whole asset visible with generous padding.
+> Scene/backdrop: pure plain white background.
+> Color palette: charcoal black, matte obsidian, bruise violet, restrained hard crimson.
+> Constraints: one connected cactus only; thick durable forms; no pot, ground plane, cast shadow, dirt, rocks, clutter, text, people, detached spikes, gold, yellow, orange, bronze, rot, swamp, decay, fungus, gore, lava, flames, crystal cluster, weapons, or watermark.

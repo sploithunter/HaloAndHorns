@@ -4,11 +4,15 @@ Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2
 
 ## Layer 3 Roblox asset publishing (2026-08-25)
 
-The group-owned upload pass is complete for all production-ready Layer 3 assets: 80 pet model/
-texture variants, 80 pet cards, eight eggs, two realm egg stands, and 18 environment props. Every
-published asset has a resolved raw MeshId/ImageId in the tracked registries; no entry is pending.
-Dreadguard Bear Golden uses a dedicated mesh because its topology differs from Basic. Eleven flora
-concepts and three building concepts remain 2D-only and are not represented as uploadable models.
+The group-owned upload pass is complete for all Layer 3 assets: 80 pet model/texture variants,
+80 pet cards, eight eggs, two realm egg stands, and 38 environment props (29 flora, four ambient
+fauna, and five landmarks). Every published asset has a resolved raw MeshId/ImageId in the tracked
+registries; no entry or approved environment concept is pending. Dreadguard Bear Golden uses a
+dedicated mesh because its topology differs from Basic.
+
+Layer 3's eight authored egg fixtures now use the realm-specific stand meshes. Its 141 flora
+anchors are source-of-truth: 46 stale copied visuals were removed, and runtime config supplies the
+complete Heaven 3/Hell 3 plant, tree, rock, and cactus palettes from the prebaked Models bundle.
 
 ## Healer hunt pins pets; leftover despawn cannot lock the room (2026-08-24)
 
