@@ -109,6 +109,9 @@ return {
         owner_user_ids = {
             3200870803, -- coloradoplays — experience owner
         },
+        -- Official Studio testers only. An open-beta campaign egg/pet
+        -- does not make someone a Tester on the People list.
+        tester_user_ids = {},
     },
 
     social = {

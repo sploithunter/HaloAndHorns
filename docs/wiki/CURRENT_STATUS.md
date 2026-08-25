@@ -163,7 +163,8 @@ chooser. Status shows that worn badge.
 VIP/staff sit as one name badge. Persist `GameData.CombatRank`.
 People list (2026-08-25): custom smoked list replaces CoreGui. Tab or
 the header collapses it. One name badge (owner Colorado C+blaster,
-then developer / content creator / tester / founder ⭐ / VIP). A row
+then developer / content creator / official tester / founder ⭐ / VIP).
+Tester is `roles.tester_user_ids`, not an open-beta campaign pet. A row
 opens a slide-out (headshot, every role they hold, how the Status
 title is earned, Examine Avatar = live character). The list row still
 shows one name mark. Leaderboard Status is `Farm #N` (or Slayer /
