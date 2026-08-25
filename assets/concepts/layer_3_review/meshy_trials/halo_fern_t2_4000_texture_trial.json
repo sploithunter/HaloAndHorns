@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "asset": "halo_fern",
+  "concept_image": "assets/concepts/layer_3_review/heaven/flora_halo_fern.png",
+  "concept_sha256": "d5af6399e5409b51e58abe9bd8f639d4664bc84130bb3306d749232b00973a04",
+  "meshy": {
+    "task_id": "01a0347b-1f73-7110-bd09-14481717535c",
+    "input_geometry_task_id": "01a0346c-a5e9-7d4a-93d7-91a786cda7e6",
+    "status": "SUCCEEDED",
+    "consumed_credits": 10,
+    "task_type": "retexture",
+    "ai_model": "latest",
+    "texture_resolution": "2k",
+    "enable_original_uv": true,
+    "enable_pbr": false,
+    "output_triangles": 4098
+  },
+  "integrity": {
+    "passed": true,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0,
+    "face_components": 69
+  },
+  "local_source": {
+    "glb": "assets/source/props/layer_3/heaven/halo_fern/meshy_t2_4000_texture_attempt_1/model.glb",
+    "glb_sha256": "e83948232bdb9cfc3934499952be1180739d523ca3c3fb24e9a35ba73d3cbf60",
+    "note": "The heavy-art source directory is intentionally gitignored; the textured GLB and full reports remain in the stable Layer 3 worktree."
+  },
+  "review_image": "assets/concepts/layer_3_review/meshy_trials/halo_fern_t2_4000_texture_review.png"
+}

@@ -76,6 +76,15 @@ return function()
                 true
             )
         end)
+
+        it("scales curse strength below one without reversing it", function()
+            expect(SupportAura.scaleDebuffMultiplier(0.8, 1)).to.equal(0.8)
+            expect(SupportAura.scaleDebuffMultiplier(0.8, 1.25)).to.equal(0.75)
+            expect(math.abs(SupportAura.scaleDebuffMultiplier(0.8, 1.5) - 0.7) < 1e-9).to.equal(
+                true
+            )
+            expect(SupportAura.scaleDebuffMultiplier(0.2, 3)).to.equal(0)
+        end)
     end)
 
     -- The ONE implementation of the rage rules — EnemyService (live stamp) and

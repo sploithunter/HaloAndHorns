@@ -118,6 +118,21 @@ return {
         max_spread = 4,
     },
 
+    -- Structural Huge bonus for a species whose NORMAL attack is already area-targeting. A
+    -- single-target species becomes targeted AoE when Huge; an already-AoE species keeps its area
+    -- geometry and also gains this spreading burn. Individual pets may override with
+    -- `huge_attack_dot`; existing `attack_dot` values are inherited before these defaults.
+    huge_aoe_contagion = {
+        fraction = 0.15,
+        tick = 1.0,
+        duration = 4,
+        spread = {
+            radius = 8,
+            interval = 1.5,
+            max = 4,
+        },
+    },
+
     -- ROAMING PATROL BANDS (Hell realms — "heaven battling evil"): a persistent pack per origin area
     -- that patrols a procedural route. Reuses everything — SpawnEnemy places members, the idle LOITER
     -- (engagement.loiter) drifts them around entry.home, and we just walk that shared `home` anchor

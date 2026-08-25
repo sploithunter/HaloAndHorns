@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "asset": "empyrean_bloom_shrine",
+  "concept_image": "assets/concepts/layer_3_review/heaven/building_empyrean_bloom_shrine.png",
+  "concept_sha256": "95498c6647210edffaf583020b70e33f95d7a5f467e5dd332e4c332e66c200de",
+  "meshy": {
+    "model_type": "smart-topology",
+    "ai_model": "meshy-t2",
+    "should_texture": false,
+    "consumed_credits": 15,
+    "attempts": [
+      {
+        "task_id": "01a0347d-e7ac-7cb1-a376-aaf5c28ecf6e",
+        "target_polycount": 9000,
+        "output_triangles": 8374,
+        "integrity_passed": false,
+        "boundary_edges": 516,
+        "edges_with_three_or_more_faces": 0
+      },
+      {
+        "task_id": "01a0347e-ae21-7c94-93ee-b9a126a31f8e",
+        "target_polycount": 9600,
+        "output_triangles": 10046,
+        "integrity_passed": false,
+        "boundary_edges": 306,
+        "edges_with_three_or_more_faces": 10
+      },
+      {
+        "task_id": "01a0347f-2c1b-7cd6-a7d2-a788433cc910",
+        "target_polycount": 9300,
+        "output_triangles": 9119,
+        "integrity_passed": false,
+        "boundary_edges": 771,
+        "edges_with_three_or_more_faces": 0,
+        "selected_for_repair": true
+      }
+    ]
+  },
+  "repair": {
+    "method": "Blender boundary fill, voxel reconstruction, triangle-ceiling decimation, and isolated-face cleanup",
+    "output_triangles": 9980,
+    "integrity": {
+      "passed": true,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_three_or_more_faces": 0,
+      "zero_length_edges": 0,
+      "zero_area_faces": 0,
+      "face_components": 1
+    }
+  },
+  "local_source": {
+    "glb": "assets/source/props/layer_3/heaven/empyrean_bloom_shrine/meshy_t2_9300_repaired/model.glb",
+    "glb_sha256": "313c4003ace27f70fac73c977d7dab6acbf849ed197e3d827a9b9484b91d43c7",
+    "note": "The heavy-art source directory is intentionally gitignored; all attempts, repair stages, and full reports remain in the stable Layer 3 worktree."
+  },
+  "texture_status": "SUCCEEDED",
+  "texture_trial": "assets/concepts/layer_3_review/meshy_trials/empyrean_bloom_shrine_t2_9300_texture_trial.json"
+}

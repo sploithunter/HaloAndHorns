@@ -14,6 +14,7 @@
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local LayerAccess = require(ReplicatedStorage.Shared.Game.LayerAccess)
 
 local PROMPT_NAME = "RealmPortalPrompt"
 
@@ -96,6 +97,9 @@ function RealmPortalService:_levelGate(player, target)
     if not target or target == "base" then
         return true, 0
     end
+    if LayerAccess.isTestingOpen(target, self._layersConfig) then
+        return true, 0
+    end
     local access = self._layersConfig.access and self._layersConfig.access[target]
     local required = access and tonumber(access.requires_level)
     if not required or required <= 1 then
@@ -163,6 +167,9 @@ function RealmPortalService:_ensurePrompt(part, def)
     self:_clearLockBadge(part)
     local access = self._layersConfig.access and self._layersConfig.access[def.layer]
     local req = access and tonumber(access.requires_level)
+    if LayerAccess.isTestingOpen(def.layer, self._layersConfig) then
+        req = nil
+    end
     -- "Heaven 1\nLv 7" — level on its OWN line under the name so it never wraps mid-word (Jason).
     local label = layerDisplayName(def.layer)
     if req and req > 1 then

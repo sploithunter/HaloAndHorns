@@ -1,0 +1,19 @@
+{
+  "_comment": "Group-owned Roblox assets for the Heaven 3 and Hell 3 replacement egg stands. Model asset ids are insertion containers; mesh_id and texture_image are the runtime MeshPart ids resolved in Studio Edit mode.",
+  "heaven3_egg_stand": {
+    "model_asset": "107235026268961",
+    "mesh_id": "rbxassetid://103416941338986",
+    "texture_decal": "71818311991257",
+    "texture_image": "rbxassetid://124952214941560",
+    "creator_group": "15872767",
+    "uploaded_on": "2026-08-25"
+  },
+  "hell3_egg_stand": {
+    "model_asset": "123190461137250",
+    "mesh_id": "rbxassetid://127005495897025",
+    "texture_decal": "83856885050675",
+    "texture_image": "rbxassetid://103193080758066",
+    "creator_group": "15872767",
+    "uploaded_on": "2026-08-25"
+  }
+}

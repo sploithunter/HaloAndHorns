@@ -4753,3 +4753,139 @@ first-session cohort rates.
   local topology—not the broken original task output—to receive a new Meshy UV layout and texture.
 - Fixed GLB review rendering to preserve embedded materials instead of accidentally applying a
   neighboring preview PNG as the model texture.
+
+## 2026-08-24 — Layer 3 eggs, stands, and complementary pet kits
+
+- Produced four Heaven 3 and four Hell 3 origin eggs through the required white-source →
+  generative chroma-screen → repository-scripted alpha workflow, plus one reusable 3D egg stand per
+  realm. All ten selected GLBs stay below the 10,000-triangle direct-import limit and have front/back
+  review sheets and recoverable Meshy task lineage.
+- Every selected model passed the strict topology gate before texturing. Seven textured GLBs remain
+  strict-pass; Heaven Grass, Hell Ice, and Hell Desert repeatedly regain only microscopic
+  post-texture seam artifacts, recorded precisely rather than misreported as zero-defect.
+- Reserved Layer 3 role and support-aura mappings for all 40 already-produced pets. The gameplay
+  plan keeps ordinary attacks mostly single-target, uses cooldown-based splash for four blasters,
+  and reserves continuous area geometry for apex kits.
+- Extended the structural Huge contract: a single-target species still becomes targeted AoE, while
+  a species that already has area geometry keeps it and gains a configurable contagious burn.
+  Runtime attributes and inventory/squad markers now derive from the same pure resolver.
+
+## 2026-08-24 — Layer 3 egg-stand replacement contract
+
+- Verified in Studio that the four Heaven 3 and four Hell 3 egg stands are exact copies of their
+  Layer 2 counterparts. The new realm-specific stand models replace those eight visible assemblies
+  in place while preserving the area-named models, transforms, attributes, tags, and `UIanchor`;
+  the Layer 2 originals remain unchanged and no additional Layer 3 stand set is created.
+
+## 2026-08-25 — Layer 3 support rarity budget and drain identity
+
+- Rebalanced Layer 3 support around total kit value: focused Legendary offense/luck/curse effects
+  now exceed lower-rarity equivalents, while the two Legendary tortoises deliberately keep smaller
+  support magnitudes in exchange for distinct area identities. Light Tortoise reserves radiant
+  damage-aura geometry for its eventual asset-backed pet record; Obsidian Tortoise now projects a
+  live area heal-block field.
+- Drain remains damage-free and retains its ally mend, but now prevents affected enemies from
+  receiving healer casts or passive regeneration. Scope graduates from focused Common drains to
+  the Mythical Grovekeeper aura and Secret Dreadglass targeted-AoE cluster.
+- Added the red `plus_down` drain/anti-heal ability mark, enemy HUD status, and overhead badge.
+  Golden/Rainbow curse and shred magnitude now scales through the existing variant law; anti-heal
+  duration and cadence remain fixed.
+## 2026-08-24 — Layer 3 environment concept review
+
+- Reconciled the Heaven 3 map brief with the no-gold shiny-pet readability rule: The Empyrean
+  Bloom is a living pearl/jade/emerald/cyan-white celestial garden rather than another crystal
+  layer. Kept Hell 3 as The Dreadspire's obsidian/crimson/bruise-violet infernal ruins, avoiding a
+  repeat of the existing blight/rot/decay treatment.
+- Generated 16 independent low-poly building/flora concept images and a numbered review card. The
+  selected originals remain pending visual approval and have not been submitted to Meshy.
+
+## 2026-08-24 — First Layer 3 Smart Topology trial
+
+- Submitted the approved Halo Fern concept to Meshy Smart Topology T2 as an untextured 4,000-face
+  geometry trial. The five-credit task returned 4,098 triangles and retained the intended curled
+  fern silhouette from front, side, and back views.
+- The strict Blender geometry gate found zero boundary edges, wire/3+-face edges, zero-length edges,
+  or zero-area faces. No retry or texture task was started pending visual review.
+- Recorded starting production budgets: repeatable flora <=4,000 triangles, trees starting at
+  4,000, and direct-import buildings at approximately 9,000.
+
+## 2026-08-24 — First Layer 3 texture trial
+
+- Textured the approved Halo Fern geometry through Meshy's Retexture API using the original concept
+  as a 2K image style. The ten-credit task consumed the successful geometry task id rather than
+  sampling a new mesh, retained all 4,098 triangles, and reproduced the emerald/cyan-white design.
+- The textured GLB passed the same strict integrity gate with zero boundary, non-manifold, or
+  degenerate geometry. Total Meshy spend for the finished trial was 15 credits (5 geometry + 10
+  texture), leaving 4,525 credits.
+
+## 2026-08-24 — Empyrean Bloom Shrine building trial
+
+- Ran three untextured Meshy Smart Topology T2 attempts at 9,000, 9,600, and 9,300 targets. All
+  contained large open boundary loops; the 9,600 attempt also exceeded the 10,000-triangle direct
+  import ceiling. Total geometry spend was 15 credits.
+- Selected the visually strongest 9,300-target result and repaired it in Blender. The final
+  9,980-triangle GLB retains the open recessed doorway and four-sided shrine silhouette while
+  passing the strict gate as one connected component with zero boundary, non-manifold, or
+  degenerate geometry.
+- Uploaded the repaired GLB directly to Meshy's Retexture API and applied the concept as a 2K style
+  image. The ten-credit result retained the exact 9,980-triangle topology and passed four-view
+  texture review, leaving 4,500 credits.
+
+## 2026-08-24 — Layer 3 flora and ambient-fauna expansion
+
+- Added sixteen independently generated Meshy-ready concepts: six flora and two ambient fauna for
+  each of Heaven 3 and Hell 3. The non-building concept pool grows from 12 to 28 assets (2.3×).
+- Kept ambient fauna separate from collectible pets and combat units. Heaven receives a butterfly
+  and snail; Hell receives a beetle and hornback lizard.
+- Rejected the first Dreadspire grass draft because it read as a mineral spike cluster, then
+  regenerated it as curved organic ribbon grass. No expansion asset has been sent to Meshy pending
+  review of the numbered assets 17–32 contact card.
+
+## 2026-08-24 — Layer 3 flora and ambient-fauna 3D production
+
+- Produced all twelve approved flora and four ambient-fauna concepts as 2K textured GLBs through
+  the Meshy Smart Topology T2 geometry-first pipeline. All sixteen final exports are below 4,000
+  triangles and pass the strict zero-boundary, zero-non-manifold, and zero-degenerate geometry gate.
+- Selected nine native Meshy meshes, conservatively repaired three, and voxel-closed four thin/open
+  forms before retexturing the exact repaired GLBs. Geometry attempts plus textures cost 365 Meshy
+  credits, leaving 4,135.
+- Ambient fauna remain non-attackable environmental props with no health, targeting, damage, or
+  drops. Their future behavior is lightweight wandering/bobbing and optional simple wing or limb
+  movement, independent of the pet and enemy combat systems.
+
+## 2026-08-25 — Layer 3 Roblox asset publishing
+
+- Published group-owned Roblox assets for all production-ready Layer 3 content: 80 pet model/
+  texture variants, 80 pet inventory cards, eight eggs, two realm egg stands, and 18 environment
+  props. Resolved every Model/Decal through Studio Edit mode and recorded raw MeshId/ImageId values;
+  no tracked upload remains pending.
+- Reused Basic pet geometry for Golden recolors after a geometry/UV audit. Dreadguard Bear Golden
+  retained its separate topology and separately published mesh. Eleven flora concepts and three
+  building concepts remain 2D-only production backlog and were not uploaded.
+
+## 2026-08-25 — Layer 3 map dressing and environment completion
+
+- Replaced all eight Heaven 3/Hell 3 egg-fixture visuals in Studio with the realm-specific stand
+  assets while preserving names, tags, attributes, interaction anchors, and UI children. The
+  repeatable `replace_layer3_egg_stands.luau` script is idempotent and leaves Layers 1/2 untouched.
+- Audited all 141 Layer 3 `FloraAnchor` parts. Removed 46 copied visible flora models linked by
+  `FloraSpawn` ObjectValues so each anchor has one runtime owner, then completed the Layer 3 config
+  palette for plants, signature trees, rocks, and cacti. The Studio preview spawned all 73 Heaven
+  and 68 Hell anchors with zero missing models; 2,213 headless tests pass.
+- Produced the remaining fourteen approved flora/building concepts plus six newly identified
+  rock/cactus anchor gaps through Smart Topology T2, strict Blender integrity checks, and exact-mesh
+  2K retexture. All 20 final upload FBXs are watertight, non-manifold-free, and below 10,000
+  triangles. Geometry retries, repairs, textures, and the corrected Blood Reed retexture used 390
+  Meshy credits, leaving approximately 3,745.
+- Published the 20 new models and textures to group 15872767, resolved their raw MeshId/ImageId and
+  natural bounds through Studio, and expanded the tracked environment registry/prebaked bundle to
+  38 assets: 29 flora, four ambient fauna, and five landmarks. No approved environment concept
+  remains 2D-only or pending upload.
+- Placed four realm-specific Layer 3 landmarks in Studio and preserved the two replaced generic
+  houses under `ServerStorage.Layer3LandmarkOriginals` for recoverability.
+- Added twelve tagged ambient-fauna anchors (six per realm) and a lightweight deterministic motion
+  service. The spawned butterflies, snails, beetles, and hornback lizards are anchored,
+  non-colliding, non-queryable environmental props with no combat or reward hooks.
+- Temporarily opened the Heaven 3 and Hell 3 physical realm portals for active map testing through
+  `realm_portals.testing_open_layers`; the production Soul, token, level, World Travel, and saved
+  progression rules remain unchanged.

@@ -505,5 +505,117 @@
    "texture": "assets/exports/eggs/gauntlet_champion_egg/Meshy_AI_gauntlet_champion_egg_0821212653_texture.png"
   },
   "uploadedBy": "upload_eggs.js 2026-08-21"
+ },
+ "heaven3_fire_egg": {
+  "icon_decal": "85799719751502",
+  "icon_image": "98863446737962",
+  "model_asset": "86811984655091",
+  "mesh_id": "rbxassetid://91935114884673",
+  "mesh_image": "rbxassetid://107295234564410",
+  "creator": "Open Simulator Group (15872767)",
+  "sources": {
+   "icon": "assets/source/eggs/heaven3_fire_egg.png",
+   "fbx": "assets/exports/eggs/heaven3_fire_egg/model_9999tris_baked.fbx",
+   "texture": "assets/exports/eggs/heaven3_fire_egg/model.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-25"
+ },
+ "heaven3_ice_egg": {
+  "icon_decal": "88031233645241",
+  "icon_image": "132479309184504",
+  "model_asset": "97002148599875",
+  "mesh_id": "rbxassetid://72594981350736",
+  "mesh_image": "rbxassetid://128919915905376",
+  "creator": "Open Simulator Group (15872767)",
+  "sources": {
+   "icon": "assets/source/eggs/heaven3_ice_egg.png",
+   "fbx": "assets/exports/eggs/heaven3_ice_egg/model_9999tris_baked.fbx",
+   "texture": "assets/exports/eggs/heaven3_ice_egg/model.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-25"
+ },
+ "heaven3_grass_egg": {
+  "icon_decal": "136018898213051",
+  "icon_image": "114549077502563",
+  "model_asset": "75389163785053",
+  "mesh_id": "rbxassetid://79016160176504",
+  "mesh_image": "rbxassetid://119008753003956",
+  "creator": "Open Simulator Group (15872767)",
+  "sources": {
+   "icon": "assets/source/eggs/heaven3_grass_egg.png",
+   "fbx": "assets/exports/eggs/heaven3_grass_egg/model_9999tris_baked.fbx",
+   "texture": "assets/exports/eggs/heaven3_grass_egg/model.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-25"
+ },
+ "heaven3_desert_egg": {
+  "icon_decal": "115713647097136",
+  "icon_image": "94284613789599",
+  "model_asset": "128013403739624",
+  "mesh_id": "rbxassetid://139743668604749",
+  "mesh_image": "rbxassetid://83104442715829",
+  "creator": "Open Simulator Group (15872767)",
+  "sources": {
+   "icon": "assets/source/eggs/heaven3_desert_egg.png",
+   "fbx": "assets/exports/eggs/heaven3_desert_egg/model_9999tris_baked.fbx",
+   "texture": "assets/exports/eggs/heaven3_desert_egg/model.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-25"
+ },
+ "hell3_fire_egg": {
+  "icon_decal": "139003209977671",
+  "icon_image": "133709102020323",
+  "model_asset": "109931371072559",
+  "mesh_id": "rbxassetid://112325478054212",
+  "mesh_image": "rbxassetid://85932181978557",
+  "creator": "Open Simulator Group (15872767)",
+  "sources": {
+   "icon": "assets/source/eggs/hell3_fire_egg.png",
+   "fbx": "assets/exports/eggs/hell3_fire_egg/model_9999tris_baked.fbx",
+   "texture": "assets/exports/eggs/hell3_fire_egg/model.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-25"
+ },
+ "hell3_ice_egg": {
+  "icon_decal": "80493507779218",
+  "icon_image": "126542668552255",
+  "model_asset": "109433355344191",
+  "mesh_id": "rbxassetid://78475913272497",
+  "mesh_image": "rbxassetid://116607794725818",
+  "creator": "Open Simulator Group (15872767)",
+  "sources": {
+   "icon": "assets/source/eggs/hell3_ice_egg.png",
+   "fbx": "assets/exports/eggs/hell3_ice_egg/model_9999tris_baked.fbx",
+   "texture": "assets/exports/eggs/hell3_ice_egg/model.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-25"
+ },
+ "hell3_grass_egg": {
+  "icon_decal": "87694106186823",
+  "icon_image": "92188213843324",
+  "model_asset": "132472586154102",
+  "mesh_id": "rbxassetid://114756995416189",
+  "mesh_image": "rbxassetid://118603970417096",
+  "creator": "Open Simulator Group (15872767)",
+  "sources": {
+   "icon": "assets/source/eggs/hell3_grass_egg.png",
+   "fbx": "assets/exports/eggs/hell3_grass_egg/model_9999tris_baked.fbx",
+   "texture": "assets/exports/eggs/hell3_grass_egg/model.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-25"
+ },
+ "hell3_desert_egg": {
+  "icon_decal": "72888837591995",
+  "icon_image": "73440883631775",
+  "model_asset": "140611340840194",
+  "mesh_id": "rbxassetid://87127630973664",
+  "mesh_image": "rbxassetid://116019683064591",
+  "creator": "Open Simulator Group (15872767)",
+  "sources": {
+   "icon": "assets/source/eggs/hell3_desert_egg.png",
+   "fbx": "assets/exports/eggs/hell3_desert_egg/model_9999tris_baked.fbx",
+   "texture": "assets/exports/eggs/hell3_desert_egg/model.png"
+  },
+  "uploadedBy": "upload_eggs.js 2026-08-25"
  }
 }

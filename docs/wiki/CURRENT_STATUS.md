@@ -53,6 +53,22 @@ Committed picks now have a share readout: dashboard `powerPicks`, Creator Hub
 
 `combat.combat_trace` is false. Flip it on only for a balance pass.
 
+## Layer 3 Roblox asset publishing (2026-08-25)
+
+The group-owned upload pass is complete for all Layer 3 assets: 80 pet model/texture variants,
+80 pet cards, eight eggs, two realm egg stands, and 38 environment props (29 flora, four ambient
+fauna, and five landmarks). Every published asset has a resolved raw MeshId/ImageId in the tracked
+registries; no entry or approved environment concept is pending. Dreadguard Bear Golden uses a
+dedicated mesh because its topology differs from Basic.
+
+Layer 3's eight authored egg fixtures now use the realm-specific stand meshes. Its 141 flora
+anchors are source-of-truth: 46 stale copied visuals were removed, and runtime config supplies the
+complete Heaven 3/Hell 3 plant, tree, rock, and cactus palettes from the prebaked Models bundle.
+Four realm landmarks are placed in Studio, and twelve tagged ambient-fauna anchors spawn six
+non-combat moving props per realm. `heaven_3` and `hell_3` are temporarily open through the
+physical realm portals for active testing; their production Soul, token, and player-level
+requirements remain unchanged.
+
 ## Healer hunt pins pets; leftover despawn cannot lock the room (2026-08-24)
 
 Clicking the training healer pins the squad on it. If a leftover dog
@@ -1767,3 +1783,33 @@ Last checked: 2026-08-24
   and Rainbow = 25. Fresh point counters and v2 OrderedDataStores prevent legacy raw counts from
   mixing with weighted scores; persisted pre-weight outboxes recover points from the exact pet.
 - A raw total adds one for every gift in `gifts_given`, without exposing an all-gifts board yet.
+
+## Layer 3 eggs and pet-kit configuration
+
+Last checked: 2026-08-24
+
+- Eight Layer 3 origin eggs and two realm stands are production-complete locally, including alpha
+  cards, selected textured GLBs below 10,000 triangles, integrity reports, and contact sheets.
+  Roblox publication and live `configs/pets.lua` egg records remain pending asset IDs; no fake ids
+  are present in runtime config.
+- Studio replacement contract: swap the visible assembly of the four existing Heaven 3 stands for
+  the Heaven 3 model and the four existing Hell 3 stands for the Hell 3 model, preserving each
+  area-named fixture and its transform, attributes, tags, and `UIanchor`. These eight fixtures are
+  currently Layer 2 duplicates; do not add parallel stands or alter Heaven 2/Hell 2.
+- All 40 Layer 3 pets have reserved role/support mappings. The approved design direction is a mix of
+  ordinary single attacks, four intermittent splash blasters, apex continuous-area kits, live
+  control, and Heaven sustain/farming versus Hell drain/debuff support.
+- Layer 3 support now uses a total-value rarity budget rather than requiring every individual
+  support number to rise. The Legendary Light Tortoise trades down to a 5% focused heal for planned
+  persistent radiant AoE damage; the Legendary Obsidian Tortoise trades down to a 15% focused curse
+  for a live area heal-block field. Focused Legendary buffs/curses were strengthened above their
+  Rare/Uncommon counterparts.
+- Drain is damage-free but now heals an ally and suppresses healer casts plus passive regeneration
+  on its affected enemy scope. Common drains are focused, the Mythical Dreadthorn Grovekeeper uses
+  an aura, and the Secret Dreadglass Dragon suppresses its targeted-AoE cluster. A replicated red
+  heal-down badge appears on affected enemies and on drain/anti-heal ability marks.
+- Curse and shred now consume the existing Basic/Golden/Rainbow effect multipliers; suppression
+  remains binary and never extends its duration or recharge for a variant.
+- Huge pets now differentiate progression: base-single species gain the existing targeted splash;
+  base-area species retain AoE and additionally gain a spreading burn with global defaults and an
+  optional per-pet `huge_attack_dot` override.

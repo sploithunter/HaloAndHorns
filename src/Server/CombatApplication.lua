@@ -16,6 +16,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PetCombat = require(ReplicatedStorage.Shared.Game.PetCombat)
+local HealingSuppression = require(ReplicatedStorage.Shared.Game.HealingSuppression)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local CombatApplication = {}
@@ -191,6 +192,27 @@ function CombatApplication.ApplyPowerHeal(target, amount, context)
     amount = math.max(0, tonumber(amount) or 0)
     if not (target and target.Parent) or amount <= 0 then
         return { outcome = "heal", amount = 0, before = 0, after = 0 }
+    end
+
+    -- Drain's anti-heal status applies only to ordinary HP recovery. Pet endurance healing and
+    -- explicitly scripted restoration remain separate resources/contracts.
+    if
+        context.resource ~= "pet_endurance"
+        and context.ignoreHealSuppression ~= true
+        and HealingSuppression.isActive(
+            target:GetAttribute(HealingSuppression.ATTRIBUTE),
+            os.time()
+        )
+    then
+        local hp = math.max(0, tonumber(target:GetAttribute("HP")) or 0)
+        return {
+            outcome = "heal",
+            amount = 0,
+            before = hp,
+            after = hp,
+            hp = hp,
+            suppressed = true,
+        }
     end
 
     local before

@@ -9,6 +9,8 @@
 
     Aura kinds (the zone flavours + self powers), all dev-tunable in pet_roles.lua:
       heal     — mend the most-hurt ally (Grass / bunny). { interval, fraction|amount }
+      drain    — mend the most-hurt ally and suppress healing on the focused enemy/area.
+      antiheal — suppress enemy healing without an allied mend or direct damage.
       defense  — team damage reduction; writes TeamDefenseBuff on allies (Ice / penguin).
       offense  — team +damage on the owner; boosts mining AND combat (Lava / emberimp).
       yield    — team +coin payout on mining (Desert / meerkat). { interval, mult, duration }
@@ -30,6 +32,7 @@
     SupportAura.variantEffectMultiplier(variantName, rolesConfig) -> number
     SupportAura.scaleMagnitude(value, variantName, rolesConfig) -> number
     SupportAura.scaleMultiplier(mult, variantName, rolesConfig) -> number
+    SupportAura.scaleDebuffMultiplier(mult, variantMult) -> number
     SupportAura.isEnraged(aura, healthFraction) -> boolean
     SupportAura.rageMultiplier(aura, healthFraction, variantMult) -> mult >= 1 | nil
     SupportAura.rageFraction(auras, healthFraction, variantMult) -> additive fraction >= 0
@@ -92,6 +95,15 @@ function SupportAura.scaleMultiplier(mult, variantName, rolesConfig)
     return 1
         + ((tonumber(mult) or 1) - 1)
             * SupportAura.variantEffectMultiplier(variantName, rolesConfig)
+end
+
+-- Reduction multipliers scale the EFFECT below 1.0. A 0.8 curse is -20%; at Golden 1.25 it
+-- becomes -25% (0.75), and at Rainbow 1.5 it becomes -30% (0.70). This is deliberately separate
+-- from scaleMultiplier, whose inputs are bonuses above 1.0.
+function SupportAura.scaleDebuffMultiplier(mult, variantMult)
+    local base = math.clamp(tonumber(mult) or 1, 0, 1)
+    local weight = math.max(0, tonumber(variantMult) or 1)
+    return math.clamp(1 - (1 - base) * weight, 0, 1)
 end
 
 -- ── RAGE (kind = "rage") — the ONE implementation of the rage rules ──────────

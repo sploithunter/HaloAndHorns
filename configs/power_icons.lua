@@ -204,6 +204,12 @@ local M = {
                 color = { 70, 205, 95 },
                 label = "Heal",
             },
+            antiheal = {
+                symbol = "plus_down",
+                element = "fire", -- red heal-down disc
+                color = { 255, 82, 89 },
+                label = "Heal Block",
+            },
             armor = {
                 symbol = "armor_chest",
                 element = "ice", -- blue discs
@@ -219,13 +225,14 @@ local M = {
         },
         by_kind = {
             heal = "heal",
-            drain = "heal", -- hell leech still mends allies
+            drain = "antiheal", -- still mends allies, but its enemy-facing identity is heal denial
+            antiheal = "antiheal",
             defense = "armor",
             shred = "debuff",
             curse = "debuff",
         },
         -- HUD / inventory pick the first matching group in this order when a pet has many auras.
-        priority = { "heal", "armor", "debuff" },
+        priority = { "antiheal", "heal", "armor", "debuff" },
     },
 
     -- Support PET aura kind (configs/pet_roles.lua support_auras) -> its complete inventory-badge
@@ -306,9 +313,14 @@ local M = {
             tooltip = "Restores the player's Focus over time.",
         }, -- Lumen Dove Inner Light
         drain = {
-            symbol = "plus",
-            label = "Drain Heal",
-            tooltip = "Drains an enemy to heal an injured ally.",
+            symbol = "plus_down",
+            label = "Drain",
+            tooltip = "Heals an injured ally and prevents the affected enemy from healing.",
+        },
+        antiheal = {
+            symbol = "plus_down",
+            label = "Heal Block",
+            tooltip = "Prevents affected enemies from receiving healing or regenerating.",
         },
         shred = {
             symbol = "shield_broken",

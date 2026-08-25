@@ -524,6 +524,13 @@ loader:RegisterModule(
     ServerScriptService.Server.Services.FloraService,
     { "Logger", "ConfigLoader" }
 )
+-- AmbientFaunaService: non-combat Layer 3 butterflies/snails/beetles/lizards
+-- spawned from authored anchors with lightweight deterministic motion loops.
+loader:RegisterModule(
+    "AmbientFaunaService",
+    ServerScriptService.Server.Services.AmbientFaunaService,
+    { "Logger" }
+)
 -- Phase 3 party core (Halo & Horns): active squad, spirit form, stack pool.
 loader:RegisterModule(
     "ActiveSquadService",

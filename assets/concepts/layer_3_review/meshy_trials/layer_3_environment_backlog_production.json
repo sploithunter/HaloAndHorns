@@ -1,0 +1,648 @@
+{
+  "schema_version": 1,
+  "date": "2026-08-25",
+  "pipeline": {
+    "geometry_model": "Meshy Smart Topology T2",
+    "texture_model": "latest",
+    "texture_resolution": "2k",
+    "format": "glb"
+  },
+  "credit_summary": {
+    "initial_geometry": 100,
+    "changed_target_geometry_retries": 80,
+    "textures": 200,
+    "blood_reed_texture_retry": 10,
+    "total_spent": 390,
+    "expected_balance_from_4135": 3745
+  },
+  "selection_summary": {
+    "assets": 20,
+    "native_meshy": 6,
+    "conservative_repairs": 4,
+    "voxel_repairs": 10,
+    "all_textured_integrity_passed": true
+  },
+  "review_image": "assets/concepts/layer_3_review/meshy_trials/layer_3_environment_textured_review.png",
+  "assets": [
+    {
+      "name": "empyrean_hibiscus",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_empyrean_hibiscus.png",
+      "concept_sha256": "f23aa9e76ec40c4711787bb304f271b7401a7ef542f18420c3eabf2bedcf8d6e",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03975-3a13-7778-a54e-a18478d2da2f",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/heaven/empyrean_hibiscus/meshy_t2_3800_attempt_1/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/heaven/empyrean_hibiscus/meshy_t2_3800_attempt_1/model.glb",
+        "repair": "none",
+        "triangles": 4136,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a0397f-f698-761c-b6d0-c7997cd39097",
+        "path": "assets/source/props/layer_3/heaven/empyrean_hibiscus/meshy_t2_3800_texture_attempt_1/model.glb",
+        "model_sha256": "15961b2e2695386c5faf1232570bffacd75c70bd77b5d5016c0b750b7f4fd25a",
+        "triangles": 4136,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "jade_lantern_bloom",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_jade_lantern_bloom.png",
+      "concept_sha256": "117d864f36f48e73b6b61f48c3d4332065f9badecb5d85b01675aa69a7ba4bf9",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03977-a022-7f6b-9922-07553739def2",
+          "target_triangles": 3500,
+          "path": "assets/source/props/layer_3/heaven/jade_lantern_bloom/meshy_t2_3500_attempt_2/model.glb"
+        },
+        {
+          "task_id": "01a03975-3a16-72b3-96d2-d3a215be893f",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/heaven/jade_lantern_bloom/meshy_t2_3800_attempt_1/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/heaven/jade_lantern_bloom/meshy_t2_3800_attempt_1_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 4462,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a0397f-f68e-7b26-9c3e-efee54cdefe9",
+        "path": "assets/source/props/layer_3/heaven/jade_lantern_bloom/meshy_t2_3800_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "42c5ac398d082b814e493705b9d8e24f09b5ff9f143124ad8c0abbfd1fb7c9bf",
+        "triangles": 4460,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "luminous_canopy_tree",
+      "realm": "heaven",
+      "kind": "tree",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_luminous_canopy_tree.png",
+      "concept_sha256": "4916c369195f00a10f7566cddb3de131117478928456e260e550cd5b96d0defd",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03975-3a14-72b3-bbc3-e05588b22d88",
+          "target_triangles": 4000,
+          "path": "assets/source/props/layer_3/heaven/luminous_canopy_tree/meshy_t2_4000_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a03975-d474-77b1-9b5a-d1c93982c564",
+          "target_triangles": 4300,
+          "path": "assets/source/props/layer_3/heaven/luminous_canopy_tree/meshy_t2_4300_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/heaven/luminous_canopy_tree/meshy_t2_4300_attempt_2_repaired/model.glb",
+        "repair": "conservative",
+        "triangles": 3974,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a0397f-f698-761d-99dc-8cb8269b76e7",
+        "path": "assets/source/props/layer_3/heaven/luminous_canopy_tree/meshy_t2_4300_repaired_texture_attempt_1/model.glb",
+        "model_sha256": "e0a24c4ca2b5edf76825d22011a534d6109c7f5ca8c9e158a1c9b9ac5094f11b",
+        "triangles": 3974,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "petal_spire",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_petal_spire.png",
+      "concept_sha256": "8b3e4fb32a9d47189b534af579f458cf3276ffad115a26ceea6cffb6e2e43ff2",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03975-3a13-72f9-9753-cedd420f5715",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/heaven/petal_spire/meshy_t2_3800_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a03977-a020-7856-bd2e-537ed994b7cd",
+          "target_triangles": 4200,
+          "path": "assets/source/props/layer_3/heaven/petal_spire/meshy_t2_4200_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/heaven/petal_spire/meshy_t2_3800_attempt_1_repaired/model.glb",
+        "repair": "conservative",
+        "triangles": 4116,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a0397f-f68e-763a-9757-7f5a035b0be9",
+        "path": "assets/source/props/layer_3/heaven/petal_spire/meshy_t2_3800_repaired_texture_attempt_1/model.glb",
+        "model_sha256": "0c419a65431a978b5222c17952e85c986322f1a40db2d07488b68223d99433b1",
+        "triangles": 4116,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "rootlight_vine",
+      "realm": "heaven",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/heaven/flora_rootlight_vine.png",
+      "concept_sha256": "5bf8c08bd10ce16186b80e8fb6447cf18002dfb78c038071dc29d8b2b2709f51",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03977-a018-73b2-8529-e0899ca51bb2",
+          "target_triangles": 3400,
+          "path": "assets/source/props/layer_3/heaven/rootlight_vine/meshy_t2_3400_attempt_2/model.glb"
+        },
+        {
+          "task_id": "01a03975-84ac-7eb8-b21b-935e3806f747",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/heaven/rootlight_vine/meshy_t2_3800_attempt_1/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/heaven/rootlight_vine/meshy_t2_3800_attempt_1_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 4458,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03980-ba90-767a-a349-08c28e54fe7d",
+        "path": "assets/source/props/layer_3/heaven/rootlight_vine/meshy_t2_3800_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "364708c055cf28bb46d0403d18a1f5693bb291c4220bdc34fd670ab49d3efbe5",
+        "triangles": 4458,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "living_root_pavilion",
+      "realm": "heaven",
+      "kind": "building",
+      "concept_path": "assets/concepts/layer_3_review/heaven/building_living_root_pavilion.png",
+      "concept_sha256": "9760c6a3f152405124d9b57014af72d2ffa72605f79a611b9463e5aa0cc1fd00",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03975-84c7-779e-b419-d48111e0b27b",
+          "target_triangles": 9000,
+          "path": "assets/source/props/layer_3/heaven/living_root_pavilion/meshy_t2_9000_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a03977-a020-7855-98c8-57b52b04b7c3",
+          "target_triangles": 9300,
+          "path": "assets/source/props/layer_3/heaven/living_root_pavilion/meshy_t2_9300_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/heaven/living_root_pavilion/meshy_t2_9000_attempt_1_repaired/model.glb",
+        "repair": "conservative",
+        "triangles": 9658,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03980-ba68-767a-b5b1-b46c65c6c44b",
+        "path": "assets/source/props/layer_3/heaven/living_root_pavilion/meshy_t2_9000_repaired_texture_attempt_1/model.glb",
+        "model_sha256": "e4ef68e818fd4a464a5d501977edf713a9370c3a2434a769f458e116952979ca",
+        "triangles": 9658,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "pearlroot_boulder",
+      "realm": "heaven",
+      "kind": "rock",
+      "concept_path": "assets/concepts/layer_3_review/heaven/rock_pearlroot_boulder.png",
+      "concept_sha256": "4c2aeea7af3199dd697ce4c30d6ec30a9b131a8e9dac35c09f34017edb9333cc",
+      "geometry_attempts": [
+        {
+          "task_id": "01a0397c-a68a-79d8-b3ac-b902fccc7be7",
+          "target_triangles": 3600,
+          "path": "assets/source/props/layer_3/heaven/pearlroot_boulder/meshy_t2_3600_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a0397e-63c7-75d9-8a67-569f16eb1fe5",
+          "target_triangles": 4000,
+          "path": "assets/source/props/layer_3/heaven/pearlroot_boulder/meshy_t2_4000_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/heaven/pearlroot_boulder/meshy_t2_4000_attempt_2/model.glb",
+        "repair": "none",
+        "triangles": 4356,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03981-2de6-7217-8d0b-8289364a70f2",
+        "path": "assets/source/props/layer_3/heaven/pearlroot_boulder/meshy_t2_4000_texture_attempt_1/model.glb",
+        "model_sha256": "f9cf25a965acf3ae31c613a2dc15b68b66f0765f25302a8ae447cadb560d9888",
+        "triangles": 4356,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "bloomstone_shelf",
+      "realm": "heaven",
+      "kind": "rock",
+      "concept_path": "assets/concepts/layer_3_review/heaven/rock_bloomstone_shelf.png",
+      "concept_sha256": "6055be11dd29df610d3f64f4c9c47c85bc18e5be6728165073fe99b8bac32d6a",
+      "geometry_attempts": [
+        {
+          "task_id": "01a0397c-a68e-74f0-adc8-c6707e7a7b34",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/heaven/bloomstone_shelf/meshy_t2_3800_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a0397e-63d1-7136-81de-beb9d4e5f50e",
+          "target_triangles": 4200,
+          "path": "assets/source/props/layer_3/heaven/bloomstone_shelf/meshy_t2_4200_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/heaven/bloomstone_shelf/meshy_t2_3800_attempt_1_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 4466,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03981-2df9-7ba9-a354-57170985818b",
+        "path": "assets/source/props/layer_3/heaven/bloomstone_shelf/meshy_t2_3800_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "81f3545d86c258d56da01a43e454b296e17a75c8785217fdae5ae745c4320291",
+        "triangles": 4466,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "empyrean_bloom_cactus",
+      "realm": "heaven",
+      "kind": "cactus",
+      "concept_path": "assets/concepts/layer_3_review/heaven/cactus_empyrean_bloom.png",
+      "concept_sha256": "55bb7224b16da821e5ad6869d0781b71124129e5ff7d5d5cb7e18ff7aea097ef",
+      "geometry_attempts": [
+        {
+          "task_id": "01a0397c-a68b-753d-b3ee-10cb80796e6b",
+          "target_triangles": 4000,
+          "path": "assets/source/props/layer_3/heaven/empyrean_bloom_cactus/meshy_t2_4000_attempt_1/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/heaven/empyrean_bloom_cactus/meshy_t2_4000_attempt_1/model.glb",
+        "repair": "none",
+        "triangles": 4044,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03981-2de5-76a3-8c47-96bb160b3985",
+        "path": "assets/source/props/layer_3/heaven/empyrean_bloom_cactus/meshy_t2_4000_texture_attempt_1/model.glb",
+        "model_sha256": "6bb059eb47127673713e9cef845efb7afa59dd9881eff726870c5226b9d24102",
+        "triangles": 4044,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "dreadthorn_tree",
+      "realm": "hell",
+      "kind": "tree",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_dreadthorn_tree.png",
+      "concept_sha256": "cb93d27629c323d9ae3b67228adb7d377ce3af10f6beb84acab78ff2c8d67bc4",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03975-84f9-72c7-bdfe-38085a5667cc",
+          "target_triangles": 4000,
+          "path": "assets/source/props/layer_3/hell/dreadthorn_tree/meshy_t2_4000_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a03977-f54a-737e-a3a9-3175f6737c55",
+          "target_triangles": 4400,
+          "path": "assets/source/props/layer_3/hell/dreadthorn_tree/meshy_t2_4400_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/dreadthorn_tree/meshy_t2_4400_attempt_2_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 4650,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03980-ba7b-7641-8d05-266568db19d7",
+        "path": "assets/source/props/layer_3/hell/dreadthorn_tree/meshy_t2_4400_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "a6fabfcf81e07fdab142a4523e9cd07cb881dd8091842c600580226626d43c89",
+        "triangles": 4650,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "abyss_orchid",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_abyss_orchid.png",
+      "concept_sha256": "dc8eb382513fcc62f4feefd4226062f4deac2dcad0d3dfcb55eac71f59b80ca0",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03977-f4fe-737e-8227-598a299dd3cd",
+          "target_triangles": 3200,
+          "path": "assets/source/props/layer_3/hell/abyss_orchid/meshy_t2_3200_attempt_2/model.glb"
+        },
+        {
+          "task_id": "01a03975-84f0-7eb8-838c-a446fe938739",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/hell/abyss_orchid/meshy_t2_3800_attempt_1/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/abyss_orchid/meshy_t2_3200_attempt_2/model.glb",
+        "repair": "none",
+        "triangles": 2962,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03980-baa4-7641-8b1b-149d540ee256",
+        "path": "assets/source/props/layer_3/hell/abyss_orchid/meshy_t2_3200_texture_attempt_1/model.glb",
+        "model_sha256": "f9ad61925141e23e34e7d8b1325cecd2208cfc14c4a50a659485cd03459beed7",
+        "triangles": 2962,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "violet_bramble",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_violet_bramble.png",
+      "concept_sha256": "aa959474807224a64ffe6195a1d4a94ff11dafbe1302180beca7173dc9cb7078",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03975-cf02-77b1-82d8-3efed583971b",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/hell/violet_bramble/meshy_t2_3800_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a03977-f51a-7f87-9e3d-0a6cfa9859aa",
+          "target_triangles": 4200,
+          "path": "assets/source/props/layer_3/hell/violet_bramble/meshy_t2_4200_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/violet_bramble/meshy_t2_3800_attempt_1_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 4440,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03981-97a0-769f-806f-fdf14451ed4d",
+        "path": "assets/source/props/layer_3/hell/violet_bramble/meshy_t2_3800_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "920f09d6711f49310ffacca3d6e03d161aafbb73e7cacd8832c76edaa3d47989",
+        "triangles": 4440,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "blood_reed",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_blood_reed.png",
+      "concept_sha256": "8d045291a65026b34af5777d5c27e140e7f93ef66da3f4e8a2961cde60f08df1",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03975-cf14-7ec5-80fd-f1dac05b5265",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/hell/blood_reed/meshy_t2_3800_attempt_1/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/blood_reed/meshy_t2_3800_attempt_1/model.glb",
+        "repair": "none",
+        "triangles": 4128,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03986-4132-73f7-9cf0-6942d58fce9d",
+        "path": "assets/source/props/layer_3/hell/blood_reed/meshy_t2_3800_texture_attempt_2/model.glb",
+        "model_sha256": "f5f38341290459b660d1bcdc51e9e62b6336f57d0f8436e7ba0a8a4e4a50c7b8",
+        "triangles": 4128,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "ember_thorn_cluster",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_ember_thorn_cluster.png",
+      "concept_sha256": "d53d19a0320863ce8000bdb37ed45f9f5ab9dca030eb3b1cef191e6614964750",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03975-cf09-7321-9ca4-b9da3b4ca560",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/hell/ember_thorn_cluster/meshy_t2_3800_attempt_1/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/ember_thorn_cluster/meshy_t2_3800_attempt_1/model.glb",
+        "repair": "none",
+        "triangles": 3976,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03981-979f-76eb-b88c-589cc6c9aa5e",
+        "path": "assets/source/props/layer_3/hell/ember_thorn_cluster/meshy_t2_3800_texture_attempt_1/model.glb",
+        "model_sha256": "9c61fde58676451321057484c4b83102bb3c82ed49fdaf51e1142b33c324d81e",
+        "triangles": 3976,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "obsidian_spike_plant",
+      "realm": "hell",
+      "kind": "flora",
+      "concept_path": "assets/concepts/layer_3_review/hell/flora_obsidian_spike_plant.png",
+      "concept_sha256": "9894643165dcf64397b167120f669686d840015cf16b3341afd3ed242a4bdfc2",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03977-f526-7878-99a7-81ee9a7cea34",
+          "target_triangles": 3500,
+          "path": "assets/source/props/layer_3/hell/obsidian_spike_plant/meshy_t2_3500_attempt_2/model.glb"
+        },
+        {
+          "task_id": "01a03975-cf01-77b1-b286-18c6df679641",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/hell/obsidian_spike_plant/meshy_t2_3800_attempt_1/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/obsidian_spike_plant/meshy_t2_3800_attempt_1_repaired/model.glb",
+        "repair": "conservative",
+        "triangles": 3486,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03981-97a5-7247-a33b-2cc296ad2ead",
+        "path": "assets/source/props/layer_3/hell/obsidian_spike_plant/meshy_t2_3800_repaired_texture_attempt_1/model.glb",
+        "model_sha256": "0996366af2dc087ab77f7406086195dceefd627ddd8d33fc612b136f4ed59c6a",
+        "triangles": 3486,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "dreadspire_watch_shrine",
+      "realm": "hell",
+      "kind": "building",
+      "concept_path": "assets/concepts/layer_3_review/hell/building_dreadspire_watch_shrine.png",
+      "concept_sha256": "9dc6ba66ae5e29bee95e21235ba2ad1365ed154bb5bc6660906a1b3f359c8c53",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03976-3735-72ee-a093-d306c5494c15",
+          "target_triangles": 9000,
+          "path": "assets/source/props/layer_3/hell/dreadspire_watch_shrine/meshy_t2_9000_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a03978-3a37-7fac-bb1f-aaef77f0933f",
+          "target_triangles": 9400,
+          "path": "assets/source/props/layer_3/hell/dreadspire_watch_shrine/meshy_t2_9400_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/dreadspire_watch_shrine/meshy_t2_9000_attempt_1_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 9956,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03982-95d5-76ec-ae12-c90cb62fcaa7",
+        "path": "assets/source/props/layer_3/hell/dreadspire_watch_shrine/meshy_t2_9000_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "f4093ec57f847ff32e7ad5cfc159646c4e17a69d28567073a3ceacb15ff4dae1",
+        "triangles": 9956,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "obsidian_gatehouse",
+      "realm": "hell",
+      "kind": "building",
+      "concept_path": "assets/concepts/layer_3_review/hell/building_obsidian_gatehouse.png",
+      "concept_sha256": "0a2ce3431e7d1a50baae786b6cd774bdd114225816fd81b1e7973d6b257f7e1c",
+      "geometry_attempts": [
+        {
+          "task_id": "01a03976-372f-734b-85ae-873b0a9b7d2b",
+          "target_triangles": 9000,
+          "path": "assets/source/props/layer_3/hell/obsidian_gatehouse/meshy_t2_9000_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a03978-3a36-787f-8c2b-6ceafa36e011",
+          "target_triangles": 9600,
+          "path": "assets/source/props/layer_3/hell/obsidian_gatehouse/meshy_t2_9600_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/obsidian_gatehouse/meshy_t2_9000_attempt_1_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 9958,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03982-95da-72bd-a2f4-bca049da462d",
+        "path": "assets/source/props/layer_3/hell/obsidian_gatehouse/meshy_t2_9000_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "214b62039c61cfd1fc7aa544f79c5614b04487d5bef2da5e87ae01503f3afd5f",
+        "triangles": 9958,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "dreadspire_faultstone",
+      "realm": "hell",
+      "kind": "rock",
+      "concept_path": "assets/concepts/layer_3_review/hell/rock_dreadspire_faultstone.png",
+      "concept_sha256": "d8f2585c1027612e1b958f757ce276241cd98e2caaed41a3219aafd830ca7e2e",
+      "geometry_attempts": [
+        {
+          "task_id": "01a0397c-a68e-70d3-b681-59126859f5ae",
+          "target_triangles": 3600,
+          "path": "assets/source/props/layer_3/hell/dreadspire_faultstone/meshy_t2_3600_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a0397e-63d1-7137-ad3b-bde8f1e6cd25",
+          "target_triangles": 3900,
+          "path": "assets/source/props/layer_3/hell/dreadspire_faultstone/meshy_t2_3900_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/dreadspire_faultstone/meshy_t2_3600_attempt_1_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 4468,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03981-2def-7ba9-96f7-e3605cdd2e5f",
+        "path": "assets/source/props/layer_3/hell/dreadspire_faultstone/meshy_t2_3600_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "45962af7e4881f6a5207b8ec40d8381a1d2ad8467fabd7cd311ab89667265807",
+        "triangles": 4468,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "dreadspire_razorstone",
+      "realm": "hell",
+      "kind": "rock",
+      "concept_path": "assets/concepts/layer_3_review/hell/rock_dreadspire_razorstone.png",
+      "concept_sha256": "fdbcb91309b6263c38f43df9d38cc69a0ee83a81abccfe06070928240cf4dc95",
+      "geometry_attempts": [
+        {
+          "task_id": "01a0397e-63cf-7136-bf2d-46e7fe36bf6c",
+          "target_triangles": 3400,
+          "path": "assets/source/props/layer_3/hell/dreadspire_razorstone/meshy_t2_3400_attempt_2/model.glb"
+        },
+        {
+          "task_id": "01a0397d-5702-752a-b74e-19d766edec46",
+          "target_triangles": 3800,
+          "path": "assets/source/props/layer_3/hell/dreadspire_razorstone/meshy_t2_3800_attempt_1/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/dreadspire_razorstone/meshy_t2_3400_attempt_2_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 4468,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03982-0ec5-7bf1-beb9-c22b450b84ca",
+        "path": "assets/source/props/layer_3/hell/dreadspire_razorstone/meshy_t2_3400_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "dea8aec69df80f20b425963ee3269628c9ef1dddcfd9292a6dccfe8b9cde094a",
+        "triangles": 4468,
+        "integrity_passed": true
+      }
+    },
+    {
+      "name": "dreadspire_thorn_cactus",
+      "realm": "hell",
+      "kind": "cactus",
+      "concept_path": "assets/concepts/layer_3_review/hell/cactus_dreadspire_thorn.png",
+      "concept_sha256": "4e4148cae2e955fe16b084c7cb67a0044284ba6a31be570472a1fdf2d532cab7",
+      "geometry_attempts": [
+        {
+          "task_id": "01a0397d-5702-7a17-b6fe-f9fdc6a1e499",
+          "target_triangles": 4000,
+          "path": "assets/source/props/layer_3/hell/dreadspire_thorn_cactus/meshy_t2_4000_attempt_1/model.glb"
+        },
+        {
+          "task_id": "01a0397e-b0fd-75ac-9c29-bb1be5f4ef0a",
+          "target_triangles": 4400,
+          "path": "assets/source/props/layer_3/hell/dreadspire_thorn_cactus/meshy_t2_4400_attempt_2/model.glb"
+        }
+      ],
+      "selected_geometry": {
+        "path": "assets/source/props/layer_3/hell/dreadspire_thorn_cactus/meshy_t2_4400_attempt_2_repaired_voxel/model.glb",
+        "repair": "voxel",
+        "triangles": 4760,
+        "integrity_passed": true
+      },
+      "texture": {
+        "task_id": "01a03982-0eca-7709-a22f-eb7297a73c70",
+        "path": "assets/source/props/layer_3/hell/dreadspire_thorn_cactus/meshy_t2_4400_repaired_voxel_texture_attempt_1/model.glb",
+        "model_sha256": "2b91b5e27b38ae61d3c79e4b49bd5eecd52f36da82fd112bbd0cd49db4011060",
+        "triangles": 4760,
+        "integrity_passed": true
+      }
+    }
+  ]
+}
