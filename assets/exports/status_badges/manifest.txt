@@ -1,0 +1,11 @@
+size: 256x256
+padding: 8px
+square: True
+
+noob.png	256x256	<- noob.png	(edge-magenta)
+novice.png	256x256	<- Novice.png	(edge-magenta)
+adventurer.png	256x256	<- Adventurer.png	(edge-magenta)
+hero.png	256x256	<- Hero.png	(edge-green)
+master.png	256x256	<- Master.png	(edge-green)
+legend.png	256x256	<- Legend.png	(edge-green)
+huge_hatcher.png	256x256	<- Huge_Hatcher.png	(edge-green)

@@ -39,6 +39,9 @@ return {
     -- Track metadata: id -> { title, order, unlock_level }. order = display priority; unlock_level =
     -- the earned Level at which the track appears (hidden below it). first_steps auto-activates.
     tracks = {
+        -- Offered when Homeworld first_fight is acknowledged. Optional: they
+        -- can switch away and reopen it. Completing the Earth cave claims it.
+        combat_training = { title = "Combat Training", order = -1, unlock_level = 1 },
         first_steps = { title = "First Steps", order = 0, unlock_level = 1 },
         mining = { title = "Deep Mining", order = 1, unlock_level = 2 },
         hatchery = { title = "The Hatchery", order = 2, unlock_level = 3 },
@@ -78,6 +81,19 @@ return {
     },
 
     defs = {
+        ct_earth_cave = {
+            track = "combat_training",
+            order = 1,
+            name = "Combat Training",
+            description = "Enter the Earth cave and finish combat training. Press E at the cave mouth.",
+            condition = {
+                type = "counter_at_least",
+                counter = "combat_tutorials_completed",
+                value = 1,
+            },
+            reward = { experience = 50, currencies = { gems = 5 } },
+        },
+
         -- ===================== FIRST STEPS (auto-activated onramp → Level 4) =====================
         -- Picks up where the tutorial ends. since_start so tutorial casts/breaks can't pre-complete it
         -- (Jason hit "Boost the Patch" 5/3 from tutorial casts). Teaches the core loop: power → mine →

@@ -62,6 +62,9 @@ return function()
             )
             expect(networkConfig.packets.PotionShopOpened.topic).to.equal("potions.shop_opened")
             expect(networkConfig.packets.SaveDisplayPreferences.authorization).to.equal("player")
+            expect(networkConfig.packets.SetStatusBadge.handler).to.equal(
+                "PlayerProgressionService.SetStatusBadge"
+            )
             expect(networkConfig.packets.ForceRegenerateAssets.authorization).to.equal("admin")
             expect(networkConfig.packets.UnlockZoneRequest.handler).to.equal(
                 "ZoneService.UnlockZone"
@@ -150,6 +153,9 @@ return function()
             expect(networkConfig.packets.CombatTutorialRedoAnswer.name).to.equal(
                 "CombatTutorialRedoAnswer"
             )
+            expect(networkConfig.packets.CombatTutorialDoorAction.name).to.equal(
+                "CombatTutorialDoorAction"
+            )
             expect(networkConfig.packets.EnchantPetResult.name).to.equal("EnchantPetResult")
             expect(networkConfig.packets.EnchantStationOpened.name).to.equal("EnchantStationOpened")
             expect(networkConfig.packets.AdminToolResult.name).to.equal("AdminToolResult")
@@ -206,6 +212,7 @@ return function()
             expect(signals.ToggleToolEquipped.name).to.equal("ToggleToolEquipped")
             expect(signals.EnchantPetRequest.name).to.equal("EnchantPetRequest")
             expect(signals.SaveDisplayPreferences.name).to.equal("SaveDisplayPreferences")
+            expect(signals.SetStatusBadge.name).to.equal("SetStatusBadge")
             expect(signals.ForceRegenerateAssets.name).to.equal("ForceRegenerateAssets")
             expect(signals.UnlockZoneRequest.name).to.equal("UnlockZoneRequest")
             expect(signals.Hoverboard_Toggle.name).to.equal("Hoverboard_Toggle")
@@ -296,6 +303,7 @@ return function()
             expect(signals.RealmTravelOffer.name).to.equal("RealmTravelOffer")
             expect(signals.CombatTutorialRedoOffer.name).to.equal("CombatTutorialRedoOffer")
             expect(signals.CombatTutorialRedoAnswer.name).to.equal("CombatTutorialRedoAnswer")
+            expect(signals.CombatTutorialDoorAction.name).to.equal("CombatTutorialDoorAction")
             expect(signals.EnchantPetResult.name).to.equal("EnchantPetResult")
             expect(signals.EnchantStationOpened.name).to.equal("EnchantStationOpened")
             expect(signals.PotionShopOpened.name).to.equal("PotionShopOpened")
@@ -320,7 +328,7 @@ return function()
             expect(signals.FoundersChoiceStateRequest.name).to.equal("FoundersChoiceStateRequest")
             expect(signals.FoundersChoiceSelect.name).to.equal("FoundersChoiceSelect")
             expect(signals.FoundersChoiceState.name).to.equal("FoundersChoiceState")
-            expect(#created).to.equal(134)
+            expect(#created).to.equal(137)
         end)
 
         it("omits Studio-only packets from a production registry", function()

@@ -46,6 +46,7 @@ function TutorialService:Init()
     self._hotbarService = self._modules and self._modules.HotbarService
     self._inventoryService = self._modules and self._modules.InventoryService
     self._petGrantService = self._modules and self._modules.PetGrantService
+    self._questService = self._modules and self._modules.QuestService
     self._config = self._configLoader:LoadConfig("tutorial")
     self._squadReviewOpened = setmetatable({}, { __mode = "k" })
 
@@ -104,6 +105,17 @@ function TutorialService:Start()
                 return
             end
         end
+    end)
+    Signals.TutorialCombatTrainingAck.OnServerEvent:Connect(function(player)
+        if not self._dataService:IsDataLoaded(player) then
+            return
+        end
+        local data = self:_ensureProgress(player)
+        local step = data and TutorialFlow.current(self._config, data.Tutorial)
+        if not (step and step.id == "first_fight") then
+            return
+        end
+        fireGameEvent(player, "combat_training_quest_ack", { source = "handoff_banner" })
     end)
     Players.PlayerAdded:Connect(function(player)
         task.spawn(function()
@@ -230,6 +242,24 @@ function TutorialService:_unlockInnateHeal(player, data)
     return changed
 end
 
+function TutorialService:_offerCombatTrainingQuest(player, data)
+    if not data then
+        return
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    if data.GameData.CombatTrainingQuestOffered == true then
+        return
+    end
+    data.GameData.CombatTrainingQuestOffered = true
+    local quests = self._questService
+    if quests and quests.SetActiveTrack then
+        pcall(function()
+            quests:SetActiveTrack(player, "combat_training")
+        end)
+    end
+    self._dataService:RequestSave(player, "combat_training_quest_offered", { critical = true })
+end
+
 function TutorialService:_ensureRallyBound(player)
     local hotbar = self._hotbarService
     if not (hotbar and hotbar.EnsureBindAt) then
@@ -285,6 +315,13 @@ function TutorialService:_onEvent(player, name, ctx)
     self:_applyStepGrant(player, data) -- reward on ENTER (e.g. slot step grants potency + a slot)
     self:_applyCompletionLevelGrant(player, data)
     self:_push(player)
+    if
+        completedStep
+        and completedStep.id == "first_fight"
+        and name == "combat_training_quest_ack"
+    then
+        self:_offerCombatTrainingQuest(player, data)
+    end
     if completedStep and (progress.done or progress.step ~= completedIndex) then
         -- One semantic completion event keeps cross-cutting consumers independent from the
         -- tutorial's internal count/sum rules.

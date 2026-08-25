@@ -8,6 +8,7 @@ return function()
             expect(manager:find("if hasPanel then", 1, true) ~= nil).to.equal(true)
             expect(manager:find("self._playerListGuard:Suppress()", 1, true) ~= nil).to.equal(true)
             expect(manager:find("self._playerListGuard:Restore()", 1, true) ~= nil).to.equal(true)
+            expect(manager:find("self._customPeopleList", 1, true) ~= nil).to.equal(true)
             expect(
                 manager:find("overlayGui.ChildAdded:Connect(updateOverlayState)", 1, true) ~= nil
             ).to.equal(true)

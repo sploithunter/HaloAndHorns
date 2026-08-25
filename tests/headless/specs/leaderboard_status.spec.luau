@@ -20,6 +20,12 @@ return function()
             expect(best.boardId).to.equal("defeats")
         end)
 
+        it("formats a hover placement line", function()
+            expect(LeaderboardStatus.hoverLine("Farm", 16, "Crystal LB")).to.equal(
+                "Farm #16 (#16 Crystal LB)"
+            )
+        end)
+
         it("uses config order to break an exact placement tie", function()
             local best = LeaderboardStatus.bestForUser(42, boards, {
                 dragons = { { userId = 42, rank = 3 } },

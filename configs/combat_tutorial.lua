@@ -247,8 +247,8 @@ return {
             yes_text = "Redo",
             no_text = "Not now",
         },
-        -- E on the frost door (or the pad if the seal is down). Confirm so
-        -- the cave-enter E cannot dump them back out on landing.
+        -- Leave is a SurfaceGui on the frost door, not a camera Billboard
+        -- or E prompt. Confirm so a misclick does not dump them out.
         leave_prompt = {
             prompt_name = "CombatTutorialLobbyLeave",
             action_text = "Continue later",
@@ -304,8 +304,8 @@ return {
         attack = { damage = 1, cadence = 1.8, sundering = 0 },
     },
 
-    -- Inner-door seal: opaque frost plus a SurfaceGui ENTER hit target.
-    -- Transparency 0.28 (Hall Coming Soon) reads as empty in a bright tile kit.
+    -- Inner-door seal: two SurfaceGuis on the frost (lesson + Continue later).
+    -- No camera Billboard. Transparency 0.28 reads as empty in a bright kit.
     door = {
         look = {
             material = "Ice",
@@ -321,6 +321,8 @@ return {
             height = 110,
             pixels_per_stud = 40,
             height_from_floor = 5,
+            leave_height = 72,
+            leave_gap = 18,
         },
         -- Shared ENTER gate. Every ready beat must pass this whole list.
         -- Rows name a check in src/Shared/Game/TutorialUnlock.lua.
@@ -345,6 +347,7 @@ return {
     beacon = {
         part_name = "ObjectiveBeacon",
         action_text = "Advance",
+        object_text = "Combat Training",
         hold_duration = 0,
         max_distance = 12,
         label = "⬇ ADVANCE",

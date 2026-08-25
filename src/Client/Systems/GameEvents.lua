@@ -324,7 +324,9 @@ REACTIONS.float = function(spec, ctx)
     -- set `seconds` to linger — the daily-reward float runs ~8s so it reads at a glance.
     local seconds = tonumber(spec.seconds) or 1.6
     local bb = Instance.new("BillboardGui")
-    bb.Size = UDim2.fromOffset(spec.size or 360, 44)
+    -- Width/height are config-owned billboard chrome (not viewport placement).
+    -- Height is the glyph size: TextScaled fills this box.
+    bb.Size = UDim2.fromOffset(spec.size or 360, tonumber(spec.height) or 44)
     bb.StudsOffset = Vector3.new(0, 3, 0)
     bb.AlwaysOnTop = true
     bb.Adornee = adornee
@@ -362,7 +364,14 @@ REACTIONS.failure_float = function(spec, ctx)
     if not text then
         return
     end
-    REACTIONS.float(spec, { name = text })
+    -- Bonk refusals need to read larger than farm "+N" floats. Config
+    -- may still override size/height per event.
+    REACTIONS.float({
+        seconds = spec.seconds,
+        color = spec.color,
+        size = spec.size or 460,
+        height = spec.height or 60,
+    }, { name = text })
 end
 
 -- effect_transfer: make a consumable explain itself spatially. Its universal badge blooms at

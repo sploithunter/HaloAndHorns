@@ -1,0 +1,383 @@
+--[[
+    PeopleList — pure presentation for the custom People list.
+
+    One prefix only (first match in configs/people_list.lua). Status text
+    stays in PlayerListStatus (no VIP/Founder icons — those sit on the name).
+]]
+
+local CombatRank = require(script.Parent.CombatRank)
+local LeaderboardStatus = require(script.Parent.LeaderboardStatus)
+local PlayerListStatus = require(script.Parent.PlayerListStatus)
+
+local function titleCopy(entry)
+    if type(entry) == "table" then
+        local body = entry.body or entry.hover
+        local hover = entry.hover or entry.body
+        return {
+            body = type(body) == "string" and body or nil,
+            hover = type(hover) == "string" and hover or nil,
+            icon = type(entry.icon) == "string" and entry.icon ~= "" and entry.icon or nil,
+        }
+    end
+    if type(entry) == "string" and entry ~= "" then
+        return { body = entry, hover = entry }
+    end
+    return { body = nil, hover = nil }
+end
+
+local function joinHover(...)
+    local parts = {}
+    for i = 1, select("#", ...) do
+        local part = select(i, ...)
+        if type(part) == "string" and part ~= "" then
+            table.insert(parts, part)
+        end
+    end
+    return table.concat(parts, ", ")
+end
+
+local PeopleList = {}
+
+local function flagOn(flags, id, attribute)
+    if type(flags) ~= "table" then
+        return false
+    end
+    if flags[id] == true then
+        return true
+    end
+    if type(attribute) == "string" and flags[attribute] == true then
+        return true
+    end
+    return false
+end
+
+function PeopleList.prefix(config, flags)
+    local rows = config and config.prefixes
+    if type(rows) ~= "table" then
+        return nil
+    end
+    for _, row in ipairs(rows) do
+        if type(row) == "table" and flagOn(flags, row.id, row.attribute) then
+            local glyph = type(row.glyph) == "string" and row.glyph or ""
+            local icon = type(row.icon) == "table" and row.icon or nil
+            if glyph ~= "" or icon then
+                return {
+                    id = row.id,
+                    glyph = glyph,
+                    icon = icon,
+                    hover = type(row.hover) == "string" and row.hover or nil,
+                    attribute = row.attribute,
+                }
+            end
+        end
+    end
+    return nil
+end
+
+function PeopleList.prefixGlyphs(config, flags)
+    local glyphs = {}
+    local badge = PeopleList.prefix(config, flags)
+    if badge and type(badge.glyph) == "string" and badge.glyph ~= "" then
+        table.insert(glyphs, badge.glyph)
+    end
+    return glyphs
+end
+
+function PeopleList.prefixString(config, flags)
+    return table.concat(PeopleList.prefixGlyphs(config, flags), " ")
+end
+
+function PeopleList.displayName(config, flags, name)
+    local label = tostring(name or "")
+    if label == "" then
+        label = "Player"
+    end
+    local prefix = PeopleList.prefixString(config, flags)
+    if prefix ~= "" then
+        return prefix .. " " .. label
+    end
+    return label
+end
+
+function PeopleList.flagsFromPlayer(player)
+    if not player then
+        return {}
+    end
+    return {
+        owner = player:GetAttribute("IsOwner") == true,
+        developer = player:GetAttribute("IsAdmin") == true,
+        content_creator = player:GetAttribute("IsCreator") == true,
+        creator = player:GetAttribute("IsCreator") == true,
+        tester = player:GetAttribute("IsBetaTester") == true,
+        founder = player:GetAttribute("FounderLegacyActive") == true,
+        vip = player:GetAttribute("HasVIPPass") == true,
+        IsOwner = player:GetAttribute("IsOwner") == true,
+        IsAdmin = player:GetAttribute("IsAdmin") == true,
+        IsBetaTester = player:GetAttribute("IsBetaTester") == true,
+        IsCreator = player:GetAttribute("IsCreator") == true,
+        HasVIPPass = player:GetAttribute("HasVIPPass") == true,
+        FounderLegacyActive = player:GetAttribute("FounderLegacyActive") == true,
+    }
+end
+
+function PeopleList.titleIcon(peopleConfig, statusText)
+    local inspect = peopleConfig and peopleConfig.inspect or {}
+    local text = tostring(statusText or "")
+    if text == "Huge Hatcher" then
+        local icon = inspect.huge_hatcher_icon
+        if type(icon) == "string" and icon ~= "" then
+            return icon
+        end
+        return nil
+    end
+    local copy = titleCopy((inspect.level_titles or {})[text])
+    return copy.icon
+end
+
+function PeopleList.inspect(ranksConfig, peopleConfig, combatRankId, statusText)
+    local inspect = peopleConfig and peopleConfig.inspect or {}
+    local text = tostring(statusText or "")
+    local titleIcon = PeopleList.titleIcon(peopleConfig, text)
+    if titleIcon then
+        local copy = titleCopy((inspect.level_titles or {})[text])
+        local body = copy.body
+        if text == "Huge Hatcher" then
+            body = inspect.huge_hatcher
+        end
+        if type(body) ~= "string" or body == "" then
+            body = inspect.default_body or "Progress title."
+        end
+        return {
+            title = text ~= "" and text or (inspect.default_title or "Status"),
+            body = body,
+            icon = titleIcon,
+        }
+    end
+    local rank = CombatRank.rankById(ranksConfig, combatRankId)
+    if rank then
+        local body = rank.inspect
+        if type(body) ~= "string" or body == "" then
+            body = "Acquired in Combat Training."
+        end
+        return {
+            title = rank.label or text,
+            body = body,
+            icon = CombatRank.iconAsset(rank),
+        }
+    end
+    local titles = inspect.level_titles or {}
+    local copy = titleCopy(titles[text])
+    local body = copy.body
+    if type(body) ~= "string" or body == "" then
+        body = inspect.default_body or "Progress title."
+    end
+    return {
+        title = text ~= "" and text or (inspect.default_title or "Status"),
+        body = body,
+        icon = copy.icon,
+    }
+end
+
+local function entryLabel(entry)
+    if type(entry) ~= "table" then
+        return ""
+    end
+    if type(entry.label) == "string" and entry.label ~= "" then
+        return entry.label
+    end
+    if type(entry.hover) == "string" and entry.hover ~= "" then
+        return entry.hover
+    end
+    local id = tostring(entry.id or "")
+    if id == "" then
+        return ""
+    end
+    return string.upper(string.sub(id, 1, 1)) .. string.sub(id, 2)
+end
+
+function PeopleList.roleLabel(config, flags)
+    local badge = PeopleList.prefix(config, flags)
+    if not badge then
+        return ""
+    end
+    if type(badge.hover) == "string" and badge.hover ~= "" then
+        return badge.hover
+    end
+    return entryLabel(badge)
+end
+
+-- Every matching prefix for the slide-out card. The list row still
+-- shows one mark. Founder already covers the VIP pass bundle.
+function PeopleList.entitlements(config, flags)
+    local rows = config and config.prefixes
+    if type(rows) ~= "table" then
+        return {}
+    end
+    local founder = flagOn(flags, "founder", "FounderLegacyActive")
+    local out = {}
+    for _, row in ipairs(rows) do
+        if type(row) == "table" and flagOn(flags, row.id, row.attribute) then
+            if not (row.id == "vip" and founder) then
+                local label = entryLabel(row)
+                if label ~= "" then
+                    table.insert(out, {
+                        id = row.id,
+                        label = label,
+                        glyph = type(row.glyph) == "string" and row.glyph or "",
+                        icon = type(row.icon) == "table" and row.icon or nil,
+                    })
+                end
+            end
+        end
+    end
+    return out
+end
+
+function PeopleList.hoverStatus(config, ranksConfig, playerState)
+    playerState = playerState or {}
+    if type(playerState.chosenTitle) == "string" and playerState.chosenTitle ~= "" then
+        if type(playerState.chosenSource) == "string" and playerState.chosenSource ~= "" then
+            if playerState.chosenKind == "leaderboard" then
+                return playerState.chosenSource
+            end
+            return playerState.chosenTitle .. " (" .. playerState.chosenSource .. ")"
+        end
+        return playerState.chosenTitle
+    end
+    local title = playerState.leaderboardTitle
+    local rank = tonumber(playerState.leaderboardRank)
+    if type(title) == "string" and title ~= "" then
+        if rank then
+            return LeaderboardStatus.hoverLine(
+                playerState.leaderboardHoverTitle or title,
+                rank,
+                playerState.leaderboardHoverBoard or "LB"
+            )
+        end
+        return title
+    end
+    if type(playerState.combatRank) == "string" and playerState.combatRank ~= "" then
+        local source = ranksConfig and ranksConfig.hover_source or "Combat Training 1"
+        return playerState.combatRank .. " (" .. source .. ")"
+    end
+    if playerState.hugeHatcher == true then
+        local inspect = config and config.inspect or {}
+        local source = inspect.huge_hatcher or "Hatched a Huge"
+        return "Huge Hatcher (" .. source .. ")"
+    end
+    local status = PlayerListStatus.status({
+        level = playerState.level,
+        hugeHatcher = playerState.hugeHatcher,
+    })
+    local inspect = config and config.inspect or {}
+    local copy = titleCopy((inspect.level_titles or {})[status])
+    local source = copy.hover
+    if type(source) ~= "string" or source == "" then
+        return status
+    end
+    return status .. " (" .. source .. ")"
+end
+
+function PeopleList.hover(config, ranksConfig, playerState)
+    playerState = playerState or {}
+    local name = tostring(playerState.displayName or "")
+    if name == "" then
+        name = "Player"
+    end
+    return joinHover(
+        name,
+        PeopleList.roleLabel(config, playerState.flags),
+        PeopleList.hoverStatus(config, ranksConfig, playerState)
+    )
+end
+
+function PeopleList.topOffset(config, state)
+    -- Fixed slot under the quest pill. The tutorial capsule shares this
+    -- corner, so drop the list under that card while the lesson is up.
+    state = state or {}
+    if state.tutorialOwnsCorner == true then
+        return tonumber(config and config.tutorial_top_inset) or 146
+    end
+    return tonumber(config and config.top_inset) or 60
+end
+
+function PeopleList.shouldShow(state)
+    state = state or {}
+    if state.largeMenuOpen == true then
+        return false
+    end
+    return true
+end
+
+function PeopleList.row(config, ranksConfig, playerState)
+    playerState = playerState or {}
+    local status = PlayerListStatus.status({
+        level = playerState.level,
+        chosenTitle = playerState.chosenTitle,
+        leaderboardTitle = playerState.leaderboardTitle,
+        combatRank = playerState.combatRank,
+        hugeHatcher = playerState.hugeHatcher,
+    })
+    return {
+        name = PeopleList.displayName(config, playerState.flags, playerState.displayName),
+        badge = PeopleList.prefix(config, playerState.flags),
+        rank = PlayerListStatus.rank(playerState.level, playerState.veteranLevel),
+        status = status,
+        location = PlayerListStatus.location({
+            area = playerState.area,
+            layer = playerState.layer,
+            realm = playerState.realm,
+            inMission = playerState.inMission,
+        }),
+        inspect = PeopleList.inspect(ranksConfig, config, playerState.combatRankId, status),
+        hover = PeopleList.hover(config, ranksConfig, playerState),
+    }
+end
+
+function PeopleList.cardPlacement(config, state)
+    local card = config and config.card or {}
+    local listWidth = tonumber(config and config.width) or 397
+    local right = tonumber(config and config.right_inset) or 4
+    local gap = tonumber(card.gap) or 8
+    return {
+        top = PeopleList.topOffset(config, state),
+        -- ScreenGui sibling of the list: list width + gap + list right inset.
+        right = right + listWidth + gap,
+        width = tonumber(card.width) or 228,
+    }
+end
+
+function PeopleList.hoverPlacement(config, state, rowMidY)
+    local listWidth = tonumber(config and config.width) or 397
+    local right = tonumber(config and config.right_inset) or 4
+    -- Same right-edge dock as the list. The 8px gap is the only pixel
+    -- nudge: sit the tip just left of the name column.
+    return {
+        right = right + listWidth + 8,
+        top = PeopleList.topOffset(config, state) + (tonumber(rowMidY) or 0),
+    }
+end
+
+function PeopleList.profile(config, ranksConfig, playerState)
+    playerState = playerState or {}
+    local row = PeopleList.row(config, ranksConfig, playerState)
+    local card = config and config.card or {}
+    local displayName = tostring(playerState.displayName or "")
+    if displayName == "" then
+        displayName = "Player"
+    end
+    local username = tostring(playerState.username or "")
+    return {
+        displayName = displayName,
+        username = username ~= "" and ("@" .. username) or "",
+        badgeHeading = card.badge_heading or "How you get this",
+        rolesHeading = card.roles_heading or "Roles",
+        entitlements = PeopleList.entitlements(config, playerState.flags),
+        examineLabel = card.examine_label or "Examine Avatar",
+        inspect = row.inspect,
+        status = row.status,
+        badge = row.badge,
+    }
+end
+
+return PeopleList

@@ -2,6 +2,19 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Adventure status crests uploaded (2026-08-25)
+
+Noob through Legend plus Huge Hatcher are group-owned Image ids on the
+Status chip, picker, and People-list inspect card. Leaderboard titles
+still have no crest.
+
+## Combat Training Later → Quest (2026-08-25)
+
+After Resonance, TUTORIAL 8/9 still points at the Earth cave. **Later**
+on that card opens the Okay banner and moves Combat Training into Quest.
+Finishing the cave still continues to Rally. The People list stays
+visible during the tutorial (docked under the capsule).
+
 ## Auto-cast glow ring (2026-08-25)
 
 Right-click / long-press lock is a pulsing green ring around the power
@@ -142,8 +155,21 @@ hotbar not in edit mode). Resonance is withheld for the combat-training
 mission so the first bind lesson points at Heal.
 See [Combat Tutorial](COMBAT_TUTORIAL.md).
 Combat ranks (2026-08-25): eight Halo-flavored titles grant on pillar
-steps (Spark → Skilled). A placeholder crest flies to a chip left of
-the People list. Persist `GameData.CombatRank`. Not a leaderboard.
+steps (Spark → Skilled). A crest flies to a chip at the 14px top,
+left of the quest bar. Click the chip to wear any earned Training,
+Adventure, or Leaderboard title. A newly earned title replaces the
+worn pick so the chip and nametag update without reopening the
+chooser. Status shows that worn badge.
+VIP/staff sit as one name badge. Persist `GameData.CombatRank`.
+People list (2026-08-25): custom smoked list replaces CoreGui. Tab or
+the header collapses it. One name badge (owner Colorado C+blaster,
+then developer / content creator / tester / founder ⭐ / VIP). A row
+opens a slide-out (headshot, every role they hold, how the Status
+title is earned, Examine Avatar = live character). The list row still
+shows one name mark. Hover shows Name, Role, Status (source).
+Friend/Block stay on that card. Report stays on Esc.
+Lobby leave (2026-08-25): frost door has two SurfaceGuis — the lesson
+plate and Continue later (confirm, then exit). No camera Billboard.
 Combat training now temp-grants three bunny, doggy, bear, and kitty commons
 and restores the saved equipped list on exit. The heal-target lesson wounds
 one live pet to a yellow bar and points `CLICK HERE` at the left of that card.

@@ -306,6 +306,7 @@ return {
         met_creator = "creators_met",
         level_earned = "levels_earned",
         area_unlocked = "areas_unlocked",
+        combat_tutorial_complete = "combat_tutorials_completed",
         -- Realm journey (the Crossing quests): entry + per-realm unlocks.
         entered_heaven = "heaven_visits",
         entered_hell = "hell_visits",

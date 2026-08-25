@@ -20,6 +20,7 @@ local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
 local Principal = require(ReplicatedStorage.Shared.Game.Principal)
 local PlayerListStatus = require(ReplicatedStorage.Shared.Game.PlayerListStatus)
+local StatusBadge = require(ReplicatedStorage.Shared.Game.StatusBadge)
 local EarlyBoostSampler = require(ReplicatedStorage.Shared.Game.EarlyBoostSampler)
 
 local PlayerProgressionService = {}
@@ -73,6 +74,14 @@ function PlayerProgressionService:Init()
         return self._configLoader:LoadConfig("tutorial")
     end)
     self._tutorialConfig = (okTutorial and type(tutorial) == "table" and tutorial) or {}
+    local okPeople, people = pcall(function()
+        return self._configLoader:LoadConfig("people_list")
+    end)
+    self._peopleConfig = (okPeople and type(people) == "table" and people) or {}
+    local okRanks, ranks = pcall(function()
+        return self._configLoader:LoadConfig("combat_ranks")
+    end)
+    self._ranksConfig = (okRanks and type(ranks) == "table" and ranks) or {}
 
     local teamPower = self._config.team_power or {}
     local stage = teamPower.stage or "boosts"
@@ -132,6 +141,7 @@ function PlayerProgressionService:Start()
                     )
                 end
                 self:_publish(player)
+                self:_publishStatusBadge(player)
                 -- Catch up any banked FILLER levels on join (e.g. earned offline); training
                 -- levels still stall for the altar.
                 self:_advanceAuto(player)
@@ -170,8 +180,13 @@ function PlayerProgressionService:Start()
             "HasVIPPass",
             "FounderLegacyActive",
             "LeaderboardStatusTitle",
+            "LeaderboardStatusRank",
+            "LeaderboardStatusHoverTitle",
+            "LeaderboardStatusHoverBoard",
             "HasHatchedHuge",
             "VetLevel",
+            "CombatRankLabel",
+            "StatusBadgeLabel",
         }) do
             player:GetAttributeChangedSignal(attribute):Connect(function()
                 if player.Parent then
@@ -182,10 +197,28 @@ function PlayerProgressionService:Start()
                 end
             end)
         end
+        for _, name in ipairs({
+            "CombatRank",
+            "CombatRankEarned",
+            "LeaderboardStatusTitle",
+            "HasHatchedHuge",
+            "Level",
+        }) do
+            player:GetAttributeChangedSignal(name):Connect(function()
+                if player.Parent then
+                    self:_publishStatusBadge(player)
+                end
+            end)
+        end
     end
     Players.PlayerAdded:Connect(hook)
     for _, player in ipairs(Players:GetPlayers()) do
         hook(player)
+    end
+    if Signals.SetStatusBadge then
+        Signals.SetStatusBadge.OnServerEvent:Connect(function(player, request)
+            self:SetStatusBadge(player, request)
+        end)
     end
 end
 
@@ -413,6 +446,97 @@ end
 -- Roblox's built-in player list only displays values parented under a lowercase
 -- `leaderstats` folder. These compact values are replicated presentation mirrors,
 -- never persistence/source-of-truth fields.
+function PlayerProgressionService:_statusBadgeState(player, data)
+    data = data or (self._dataService and self._dataService:GetData(player))
+    local combat = data and data.GameData and data.GameData.CombatRank
+    return {
+        earnedCombat = type(combat) == "table" and combat.earned or nil,
+        earnedCsv = player:GetAttribute("CombatRankEarned"),
+        combatRankId = player:GetAttribute("CombatRank"),
+        level = tonumber(player:GetAttribute("Level")) or 1,
+        hugeHatcher = player:GetAttribute("HasHatchedHuge") == true,
+        leaderboardTitle = player:GetAttribute("LeaderboardStatusTitle"),
+        leaderboardRank = player:GetAttribute("LeaderboardStatusRank"),
+        leaderboardHoverTitle = player:GetAttribute("LeaderboardStatusHoverTitle"),
+        leaderboardHoverBoard = player:GetAttribute("LeaderboardStatusHoverBoard"),
+        leaderboardBoardId = player:GetAttribute("LeaderboardStatusBoardId"),
+    }
+end
+
+function PlayerProgressionService:_publishStatusBadge(player)
+    if not player then
+        return
+    end
+    local data = self._dataService and self._dataService:GetData(player)
+    local gameData = data and data.GameData
+    local pick = gameData and gameData.StatusBadge
+    local seen = gameData and gameData.StatusBadgeSeen
+    local chosen, nextSeen = StatusBadge.choose(
+        self._peopleConfig,
+        self._ranksConfig,
+        self:_statusBadgeState(player, data),
+        pick,
+        seen
+    )
+    if data then
+        data.GameData = type(gameData) == "table" and gameData or {}
+        local needSave = false
+        if chosen and not StatusBadge.samePick(pick, chosen) then
+            data.GameData.StatusBadge = { kind = chosen.kind, id = chosen.id }
+            needSave = true
+        end
+        if not StatusBadge.sameSeen(seen, nextSeen) then
+            data.GameData.StatusBadgeSeen = nextSeen
+            needSave = true
+        end
+        if needSave and self._dataService then
+            self._dataService:RequestSave(player, "status_badge")
+        end
+    end
+    if not chosen then
+        player:SetAttribute("StatusBadgeKind", nil)
+        player:SetAttribute("StatusBadgeId", nil)
+        player:SetAttribute("StatusBadgeLabel", nil)
+        player:SetAttribute("StatusBadgeSource", nil)
+        return
+    end
+    if player:GetAttribute("StatusBadgeKind") ~= chosen.kind then
+        player:SetAttribute("StatusBadgeKind", chosen.kind)
+    end
+    if player:GetAttribute("StatusBadgeId") ~= chosen.id then
+        player:SetAttribute("StatusBadgeId", chosen.id)
+    end
+    if player:GetAttribute("StatusBadgeLabel") ~= chosen.label then
+        player:SetAttribute("StatusBadgeLabel", chosen.label)
+    end
+    if player:GetAttribute("StatusBadgeSource") ~= chosen.source then
+        player:SetAttribute("StatusBadgeSource", chosen.source)
+    end
+end
+
+function PlayerProgressionService:SetStatusBadge(player, request)
+    if not player then
+        return { ok = false, reason = "no_player" }
+    end
+    local data = self._dataService and self._dataService:GetData(player)
+    if not data then
+        return { ok = false, reason = "data_not_loaded" }
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    local pick = StatusBadge.normalize(request)
+    local state = self:_statusBadgeState(player, data)
+    local options = StatusBadge.options(self._peopleConfig, self._ranksConfig, state)
+    local chosen = pick and StatusBadge.find(options, pick.kind, pick.id)
+    if not chosen then
+        return { ok = false, reason = "not_earned" }
+    end
+    data.GameData.StatusBadge = { kind = chosen.kind, id = chosen.id }
+    self._dataService:RequestSave(player, "status_badge")
+    self:_publishStatusBadge(player)
+    self:_publishNativePlayerList(player, tonumber(player:GetAttribute("Level")) or 1)
+    return { ok = true, kind = chosen.kind, id = chosen.id }
+end
+
 function PlayerProgressionService:_publishNativePlayerList(player, level)
     local leaderstats = player:FindFirstChild("leaderstats")
     if leaderstats and not leaderstats:IsA("Folder") then
@@ -483,7 +607,9 @@ function PlayerProgressionService:_publishNativePlayerList(player, level)
         level = level,
         vip = player:GetAttribute("HasVIPPass") == true,
         founder = player:GetAttribute("FounderLegacyActive") == true,
+        chosenTitle = player:GetAttribute("StatusBadgeLabel"),
         leaderboardTitle = player:GetAttribute("LeaderboardStatusTitle"),
+        combatRank = player:GetAttribute("CombatRankLabel"),
         hugeHatcher = player:GetAttribute("HasHatchedHuge") == true,
     })
     location.Value = PlayerListStatus.location({

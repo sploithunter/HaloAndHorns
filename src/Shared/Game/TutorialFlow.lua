@@ -280,6 +280,24 @@ function TutorialFlow.current(config, progress)
     return step, progress.step
 end
 
+-- A step can name one `event` and/or an `events` list (any match completes).
+function TutorialFlow.eventMatches(cond, eventName)
+    if type(cond) ~= "table" or type(eventName) ~= "string" or eventName == "" then
+        return false
+    end
+    if cond.event == eventName then
+        return true
+    end
+    if type(cond.events) == "table" then
+        for _, name in ipairs(cond.events) do
+            if name == eventName then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 -- Feed one bus event. Returns (newProgress, changed).
 function TutorialFlow.advance(config, progress, eventName, ctx)
     progress = TutorialFlow.normalizeProgress(progress, config and config.version)
@@ -292,7 +310,7 @@ function TutorialFlow.advance(config, progress, eventName, ctx)
         return progress, true
     end
     local cond = step.complete_on or {}
-    if eventName ~= cond.event then
+    if not TutorialFlow.eventMatches(cond, eventName) then
         return progress, false
     end
     if type(cond.potion) == "string" then
@@ -374,6 +392,7 @@ function TutorialFlow.stateFor(config, progress, context)
         body = step[bodyField],
         body_key = localizationKey .. "." .. bodyField,
         target = step.target or { kind = "none" },
+        handoff = type(step.handoff) == "table" and step.handoff or nil,
         count = progress.count,
         need = need,
     }

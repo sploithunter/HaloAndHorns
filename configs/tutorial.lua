@@ -20,8 +20,9 @@
 ]]
 
 return {
-    -- v6: after Resonance, the Earth cave IS combat training. Brew lives inside
-    -- that track. Rally stays the last Homeworld beat after they walk back out.
+    -- v6: after Resonance, first_fight hands Combat Training to Quest (Okay
+    -- banner, no FIGHT trail). Finishing the Earth cave still advances. Rally
+    -- stays the last Homeworld beat.
     version = 6,
     -- XP still accrues. Claim/COMMIT/altar wait until Rally finishes so the
     -- Resonance enhance lesson cannot land inside a level-up beat.
@@ -244,9 +245,8 @@ return {
             },
             complete_on = { event = "enhancement_slotted" },
         },
-        -- Combat training lives in the Earth cave (configs/combat_tutorial.lua).
-        -- Press E at the mouth starts that track. Completing it (and walking
-        -- back out) fires combat_tutorial_complete and continues to Rally.
+        -- Combat training lives in the Earth cave. The FIGHT trail stays
+        -- until they enter, or they tap Later and Okay the Quest banner.
         {
             id = "first_fight",
             localization_key = "tutorial.first_fight",
@@ -259,7 +259,16 @@ return {
                 root = "Maps.Home",
                 label = "⬇ FIGHT",
             },
-            complete_on = { event = "combat_tutorial_complete" },
+            handoff = {
+                later_label = "Later",
+                title = "TO CONTINUE THE TUTORIAL",
+                body = "It's in Quest.\n\nOpen Quest anytime to start Combat Training — the Earth cave — and learn how to fight.",
+                ok_label = "Okay",
+            },
+            complete_on = {
+                event = "combat_tutorial_complete",
+                events = { "combat_tutorial_complete", "combat_training_quest_ack" },
+            },
         },
         -- Rally closes the Homeworld loop after they exit the cave. Rejoin reapplies its bind.
         {

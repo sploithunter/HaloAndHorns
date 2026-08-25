@@ -44,6 +44,20 @@ return function()
     end)
 
     describe("quest XP wiring", function()
+        it("offers Combat Training as its own Quest after the Homeworld Okay banner", function()
+            local quests = loadModule("configs/quests.lua")
+            expect(quests.tracks.combat_training.title).to.equal("Combat Training")
+            expect(quests.defs.ct_earth_cave.track).to.equal("combat_training")
+            expect(quests.defs.ct_earth_cave.condition.counter).to.equal(
+                "combat_tutorials_completed"
+            )
+            expect(quests.defs.ct_earth_cave.condition.value).to.equal(1)
+            local stats = loadModule("configs/stats.lua")
+            expect(stats.event_counters.combat_tutorial_complete).to.equal(
+                "combat_tutorials_completed"
+            )
+        end)
+
         it("preserves the First Steps total while paying every claim", function()
             local quests = loadModule("configs/quests.lua")
             local total = 0

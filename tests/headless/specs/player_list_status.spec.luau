@@ -27,18 +27,48 @@ return function()
             expect(PlayerListStatus.status({ level = 50 })).to.equal("Legend")
         end)
 
-        it("keeps compact entitlement icons ahead of the progression title", function()
+        it("keeps entitlement icons off Status so the name can carry them", function()
             expect(PlayerListStatus.status({ level = 1, vip = true, founder = true })).to.equal(
-                "👑 ⭐ Noob"
+                "Noob"
             )
         end)
 
-        it("prefers an earned leaderboard title while retaining entitlement icons", function()
+        it("prefers an earned leaderboard title over level titles", function()
             expect(PlayerListStatus.status({
                 level = 50,
                 vip = true,
                 leaderboardTitle = "Slayer",
-            })).to.equal("👑 Slayer")
+            })).to.equal("Slayer")
+        end)
+
+        it("shows a combat-training title for early-game progress without entitlements", function()
+            expect(PlayerListStatus.status({
+                level = 50,
+                combatRank = "Kindled",
+            })).to.equal("Kindled")
+            expect(PlayerListStatus.status({
+                level = 1,
+                vip = true,
+                founder = true,
+                combatRank = "Kindled",
+            })).to.equal("Kindled")
+        end)
+
+        it("keeps an earned leaderboard title ahead of combat rank", function()
+            expect(PlayerListStatus.status({
+                level = 50,
+                vip = true,
+                combatRank = "Kindled",
+                leaderboardTitle = "Slayer",
+            })).to.equal("Slayer")
+        end)
+
+        it("prefers combat rank over Huge-hatcher so cave progress stays visible", function()
+            expect(PlayerListStatus.status({
+                level = 50,
+                hugeHatcher = true,
+                combatRank = "Kindled",
+            })).to.equal("Kindled")
         end)
 
         it("shows a persistent Huge-hatcher achievement above ordinary level titles", function()
@@ -49,7 +79,7 @@ return function()
                 level = 50,
                 vip = true,
                 hugeHatcher = true,
-            })).to.equal("👑 Huge Hatcher")
+            })).to.equal("Huge Hatcher")
         end)
 
         it("keeps a rarer leaderboard title ahead of Huge-hatcher status", function()

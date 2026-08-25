@@ -265,6 +265,7 @@ function MeetCreatorService:_refreshServerLuck(triggerPlayer)
             p:SetAttribute("ServerLuckBuffUntil", nil)
             p:SetAttribute("ServerLuckSource", nil)
         end
+        p:SetAttribute("IsCreator", self:_isCreator(p))
         p:SetAttribute("CreatorServerLuckBuff", source == "creator" and multiplier or nil)
         p:SetAttribute("CreatorServerLuckBuffUntil", source == "creator" and (now + 86400) or nil)
         p:SetAttribute("FounderServerLuckBuff", source == "founder" and multiplier or nil)

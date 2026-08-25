@@ -10,11 +10,13 @@
     reward. Level 2 top-up stays off until this lesson is the live tutorial.
 ]]
 
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local CombatRank = require(ReplicatedStorage.Shared.Game.CombatRank)
+local StatusBadge = require(ReplicatedStorage.Shared.Game.StatusBadge)
 local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local TutorialPack = require(ReplicatedStorage.Shared.Game.TutorialPack)
 local TutorialSquad = require(ReplicatedStorage.Shared.Game.TutorialSquad)
@@ -32,6 +34,7 @@ local CombatTutorialService = {}
 CombatTutorialService.__index = CombatTutorialService
 
 local DOOR_SEAL_NAME = "CombatTutorialDoorSeal"
+local DOOR_ACTION_TAG = "CombatTutorialDoorAction"
 local BEACON_PROMPT_NAME = "CombatTutorialAdvancePrompt"
 local CAVE_ENTER_PROMPT_NAME = "CombatTutorialCaveEnter"
 local LOBBY_LEAVE_PROMPT_NAME = "CombatTutorialLobbyLeave"
@@ -278,6 +281,9 @@ function CombatTutorialService:Start()
     end)
     Signals.TutorialHotbarDone.OnServerEvent:Connect(function(player)
         self:_onHotbarDone(player)
+    end)
+    Signals.CombatTutorialDoorAction.OnServerEvent:Connect(function(player, action)
+        self:_onDoorAction(player, action)
     end)
     Signals.CombatTutorialRedoAnswer.OnServerEvent:Connect(function(player, accepted)
         local kind = self._pendingConfirm[player]
@@ -581,50 +587,82 @@ end
 function CombatTutorialService:_syncLobbyLeavePrompt(player)
     local host = self:_lobbyLeaveHost(player)
     local pad = self:_lobbyLeavePad(player)
-    if pad and pad ~= host then
+    if pad then
         self:_setLeavePromptEnabled(pad, false)
+        local leftover = pad:FindFirstChild(self:_lobbyLeavePromptName())
+        if leftover then
+            leftover:Destroy()
+        end
     end
-    if not host then
-        return
-    end
-    local promptName = self:_lobbyLeavePromptName()
-    local prompt = host:FindFirstChild(promptName)
-    local inLobby = self:_isInLobby(player)
-    if not inLobby then
+    if host then
         self:_setLeavePromptEnabled(host, false)
-        return
+        local leftover = host:FindFirstChild(self:_lobbyLeavePromptName())
+        if leftover then
+            leftover:Destroy()
+        end
+        local billboard = host:FindFirstChild("CombatTutorialDoorBillboard")
+        if billboard then
+            billboard:Destroy()
+        end
     end
-    local look = (self._config.venue and self._config.venue.leave_prompt) or {}
-    if not prompt then
-        prompt = Instance.new("ProximityPrompt")
-        prompt.Name = promptName
-        prompt.HoldDuration = math.max(0, tonumber(look.hold_duration) or 0.25)
-        prompt.MaxActivationDistance = math.max(8, tonumber(look.max_distance) or 24)
-        prompt.RequiresLineOfSight = false
-        prompt.KeyboardKeyCode = Enum.KeyCode.E
-        prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
-        prompt.Parent = host
-        prompt.Triggered:Connect(function(who)
-            if who ~= player or not self:_isInLobby(who) then
-                return
-            end
-            local session = self._sessions[who]
-            local readyAt = session and tonumber(session.lobbyLeaveReadyAt)
-            if readyAt and os.clock() < readyAt then
-                return
-            end
-            self:_offerConfirm(
-                who,
-                "leave",
-                (self._config.venue and self._config.venue.leave_confirm) or {}
-            )
-        end)
-    end
-    prompt.ActionText = tostring(look.action_text or "Continue later")
-    prompt.ObjectText = tostring(look.object_text or "Combat Training")
+    local inLobby = self:_isInLobby(player)
     local session = self._sessions[player]
     local readyAt = session and tonumber(session.lobbyLeaveReadyAt)
-    prompt.Enabled = not readyAt or os.clock() >= readyAt
+    local leaveOn = inLobby and (not readyAt or os.clock() >= readyAt)
+    self:_forEachLeaveGui(player, function(gui)
+        gui.Enabled = leaveOn
+        local click = gui.Parent and gui.Parent:FindFirstChildOfClass("ClickDetector")
+        if click then
+            click.MaxActivationDistance = leaveOn and 24 or 0
+        end
+    end)
+end
+
+function CombatTutorialService:_requestLeave(player)
+    if not self:_isInLobby(player) then
+        return
+    end
+    local session = self._sessions[player]
+    local readyAt = session and tonumber(session.lobbyLeaveReadyAt)
+    if readyAt and os.clock() < readyAt then
+        return
+    end
+    self:_offerConfirm(
+        player,
+        "leave",
+        (self._config.venue and self._config.venue.leave_confirm) or {}
+    )
+end
+
+function CombatTutorialService:_onDoorLesson(player)
+    if player:GetAttribute("InCombatTutorial") ~= true then
+        return
+    end
+    if self:_stepAcceptsEnter(player) then
+        self:_unsealDoors(player)
+        fireGameEvent(player, "combat_tutorial_entered_arena", { source = "door_button" })
+        return
+    end
+    local spec = self:_doorPlateForPlayer(player)
+    fireGameEvent(player, "combat_tutorial_door_blocked", {
+        name = spec.nudge or "Finish this first!",
+        source = "door_button",
+    })
+end
+
+function CombatTutorialService:_onDoorAction(player, action)
+    if action == "leave" then
+        self:_requestLeave(player)
+        return
+    end
+    if action == "lesson" then
+        self:_onDoorLesson(player)
+    end
+end
+
+function CombatTutorialService:_leaveButtonText()
+    local look = (self._config.venue and self._config.venue.leave_prompt) or {}
+    return tostring(look.action_text or "Continue later")
 end
 
 function CombatTutorialService:_leaveCaveMission(player)
@@ -864,11 +902,14 @@ function CombatTutorialService:ResetForBeginning(player)
         data.CombatTutorialRewardGranted = nil
         if type(data.GameData) == "table" then
             data.GameData.CombatRank = nil
+            data.GameData.StatusBadge = {}
+            data.GameData.StatusBadgeSeen = {}
         end
     end
     player:SetAttribute("CombatTutorialHealUnlocked", nil)
-    player:SetAttribute("CombatRank", nil)
-    player:SetAttribute("CombatRankLabel", nil)
+    -- Picker reads CombatRankEarned; nilling only CombatRank left every
+    -- Training title still wearable after admin reset.
+    self:_publishCombatRank(player, nil)
     player:SetAttribute("InCombatTutorial", nil)
     player:SetAttribute("CombatTutorialWoundSlot", nil)
     player:SetAttribute("CombatTutorialTargetEnemy", nil)
@@ -1927,62 +1968,130 @@ function CombatTutorialService:_doorLook()
     }
 end
 
-function CombatTutorialService:_stampEnterButton(slab, face)
-    local buttonCfg = (self._config.door and self._config.door.button) or {}
-    local name = "CombatTutorialEnter_" .. face.Name
-    local existing = slab:FindFirstChild(name)
-    if existing then
-        existing:Destroy()
-    end
-
-    local gui = Instance.new("SurfaceGui")
-    gui.Name = name
-    gui.Face = face
-    gui.AlwaysOnTop = false
-    gui.LightInfluence = 0
-    -- ClickDetector on the frost slab is the server hit target. A capturing
-    -- SurfaceGui would swallow the click on the client and never reach it.
-    gui.Active = false
-    gui.ResetOnSpawn = false
-    gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-    gui.PixelsPerStud = tonumber(buttonCfg.pixels_per_stud) or 40
-    gui.ZOffset = 0.05
-    gui.Parent = slab
-
-    local button = Instance.new("TextButton")
-    button.Name = "Enter"
-    button.AnchorPoint = Vector2.new(0.5, 0.5)
-    -- SurfaceGui Y=0 is the top of the face. Sit the pill at chest height
-    -- above the slab's floor edge, not the geometric center (that buried it).
-    local fromFloor = tonumber(buttonCfg.height_from_floor) or 5
-    local y = 1 - math.clamp(fromFloor / math.max(slab.Size.Y, 1), 0.18, 0.72)
-    button.Position = UDim2.fromScale(0.5, y)
-    button.Size = UDim2.fromOffset(buttonCfg.width or 420, buttonCfg.height or 110)
-    button.BackgroundColor3 = Color3.fromRGB(232, 176, 48)
+function CombatTutorialService:_decorateDoorButton(button, action, look)
+    look = look or {}
     button.BackgroundTransparency = 0.05
     button.BorderSizePixel = 0
     button.AutoButtonColor = true
     button.Font = Enum.Font.GothamBlack
-    button.Text = tostring(buttonCfg.text or "ENTER")
-    button.TextColor3 = Color3.fromRGB(64, 46, 8)
     button.TextScaled = true
+    button.BackgroundColor3 = look.color or Color3.fromRGB(232, 176, 48)
+    button.TextColor3 = look.text_color or Color3.fromRGB(64, 46, 8)
+    button:SetAttribute("DoorAction", action)
+    CollectionService:AddTag(button, DOOR_ACTION_TAG)
+
+    if not button:FindFirstChildOfClass("UICorner") then
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0.5, 0)
+        corner.Parent = button
+    end
+    if not button:FindFirstChildOfClass("UIStroke") then
+        local stroke = Instance.new("UIStroke")
+        stroke.Thickness = 3
+        stroke.Color = look.stroke or Color3.fromRGB(120, 78, 8)
+        stroke.Parent = button
+    end
+    if not button:FindFirstChildOfClass("UIPadding") then
+        local pad = Instance.new("UIPadding")
+        pad.PaddingLeft = UDim.new(0.08, 0)
+        pad.PaddingRight = UDim.new(0.08, 0)
+        pad.PaddingTop = UDim.new(0.16, 0)
+        pad.PaddingBottom = UDim.new(0.16, 0)
+        pad.Parent = button
+    end
+    return button
+end
+
+function CombatTutorialService:_stampDoorSurface(slab, face, kind, yScale, height, look)
+    local buttonCfg = (self._config.door and self._config.door.button) or {}
+    local name = "CombatTutorial" .. kind .. "_" .. face.Name
+    local existing = slab:FindFirstChild(name)
+    if existing then
+        existing:Destroy()
+    end
+    local legacy = slab:FindFirstChild("CombatTutorialEnter_" .. face.Name)
+    if legacy then
+        legacy:Destroy()
+    end
+
+    local pps = tonumber(buttonCfg.pixels_per_stud) or 40
+    local widthStuds = (tonumber(buttonCfg.width) or 420) / pps
+    local heightStuds = height / pps
+    local normal = Vector3.FromNormalId(face)
+    local extent = math.abs(normal.X) * slab.Size.X * 0.5
+        + math.abs(normal.Y) * slab.Size.Y * 0.5
+        + math.abs(normal.Z) * slab.Size.Z * 0.5
+    local y = (0.5 - yScale) * slab.Size.Y
+    local plate = Instance.new("Part")
+    plate.Name = name
+    plate.Size = Vector3.new(widthStuds, heightStuds, 0.2)
+    plate.CFrame = CFrame.lookAt(
+        slab.CFrame * (normal * (extent + 0.12) + Vector3.new(0, y, 0)),
+        slab.CFrame * (normal * (extent + 1.12) + Vector3.new(0, y, 0)),
+        slab.CFrame.UpVector
+    )
+    plate.Anchored = true
+    plate.CanCollide = false
+    plate.CanQuery = true
+    plate.CanTouch = false
+    plate.CastShadow = false
+    plate.Transparency = 1
+    plate.Parent = slab
+
+    -- Visual only. Active SurfaceGuis on the full door ate READY clicks.
+    local gui = Instance.new("SurfaceGui")
+    gui.Name = name
+    gui.Face = Enum.NormalId.Front
+    gui.AlwaysOnTop = false
+    gui.LightInfluence = 0
+    gui.Active = false
+    gui.ResetOnSpawn = false
+    gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+    gui.PixelsPerStud = pps
+    gui.Parent = plate
+
+    local button = Instance.new("TextButton")
+    button.Name = kind
+    button.Size = UDim2.fromScale(1, 1)
+    button.Text = look.text
     button.Parent = gui
+    self:_decorateDoorButton(button, look.action, look)
 
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0.5, 0)
-    corner.Parent = button
+    local click = Instance.new("ClickDetector")
+    click.Name = "CombatTutorialDoorClick"
+    click.MaxActivationDistance = 24
+    click.Parent = plate
+    click.MouseClick:Connect(function(player)
+        self:_onDoorAction(player, look.action)
+    end)
+end
 
-    local stroke = Instance.new("UIStroke")
-    stroke.Thickness = 3
-    stroke.Color = Color3.fromRGB(120, 78, 8)
-    stroke.Parent = button
+function CombatTutorialService:_stampEnterButton(slab, face)
+    local buttonCfg = (self._config.door and self._config.door.button) or {}
+    local lessonH = tonumber(buttonCfg.height) or 110
+    local leaveH = tonumber(buttonCfg.leave_height) or 72
+    local gap = tonumber(buttonCfg.leave_gap) or 18
+    -- SurfaceGui Y=0 is the top of the face. Lesson pill at chest height;
+    -- Continue later is its own SurfaceGui just below.
+    local fromFloor = tonumber(buttonCfg.height_from_floor) or 5
+    local y = 1 - math.clamp(fromFloor / math.max(slab.Size.Y, 1), 0.18, 0.72)
+    local facePx = math.max(slab.Size.Y, 1) * (tonumber(buttonCfg.pixels_per_stud) or 40)
+    local leaveY = math.clamp(y + (lessonH * 0.5 + gap + leaveH * 0.5) / facePx, 0.2, 0.94)
 
-    local pad = Instance.new("UIPadding")
-    pad.PaddingLeft = UDim.new(0.08, 0)
-    pad.PaddingRight = UDim.new(0.08, 0)
-    pad.PaddingTop = UDim.new(0.16, 0)
-    pad.PaddingBottom = UDim.new(0.16, 0)
-    pad.Parent = button
+    self:_stampDoorSurface(slab, face, "Lesson", y, lessonH, {
+        action = "lesson",
+        text = tostring(buttonCfg.text or "ENTER"),
+        color = Color3.fromRGB(232, 176, 48),
+        text_color = Color3.fromRGB(64, 46, 8),
+        stroke = Color3.fromRGB(120, 78, 8),
+    })
+    self:_stampDoorSurface(slab, face, "Leave", leaveY, leaveH, {
+        action = "leave",
+        text = self:_leaveButtonText(),
+        color = Color3.fromRGB(48, 52, 68),
+        text_color = Color3.fromRGB(230, 230, 236),
+        stroke = Color3.fromRGB(18, 20, 28),
+    })
 end
 
 function CombatTutorialService:_dressSeal(slab)
@@ -2000,33 +2109,14 @@ function CombatTutorialService:_dressSeal(slab)
 
     self:_stampEnterButton(slab, Enum.NormalId.Front)
     self:_stampEnterButton(slab, Enum.NormalId.Back)
-
+    local leftoverBillboard = slab:FindFirstChild("CombatTutorialDoorBillboard")
+    if leftoverBillboard then
+        leftoverBillboard:Destroy()
+    end
     local click = slab:FindFirstChildOfClass("ClickDetector")
-    if not click then
-        click = Instance.new("ClickDetector")
-        click.Name = "CombatTutorialEnterClick"
-        click.MaxActivationDistance = 24
-        click.Parent = slab
+    if click then
+        click:Destroy()
     end
-    if click:GetAttribute("CombatTutorialBound") then
-        return
-    end
-    click:SetAttribute("CombatTutorialBound", true)
-    click.MouseClick:Connect(function(player)
-        if player:GetAttribute("InCombatTutorial") ~= true then
-            return
-        end
-        if self:_stepAcceptsEnter(player) then
-            self:_unsealDoors(player)
-            fireGameEvent(player, "combat_tutorial_entered_arena", { source = "door_button" })
-            return
-        end
-        local spec = self:_doorPlateForPlayer(player)
-        fireGameEvent(player, "combat_tutorial_door_blocked", {
-            name = spec.nudge or "Finish this first!",
-            source = "door_button",
-        })
-    end)
 end
 
 function CombatTutorialService:_currentStep(player)
@@ -2079,7 +2169,7 @@ function CombatTutorialService:_doorPlateForPlayer(player)
     }
 end
 
-function CombatTutorialService:_forEachDoorButton(player, fn)
+function CombatTutorialService:_forEachDoorDescendant(player, fn)
     local _, container = self:_missionContainer(player)
     if not container then
         return
@@ -2087,12 +2177,26 @@ function CombatTutorialService:_forEachDoorButton(player, fn)
     for _, desc in ipairs(container:GetDescendants()) do
         if desc.Name == DOOR_SEAL_NAME then
             for _, child in ipairs(desc:GetDescendants()) do
-                if child:IsA("TextButton") and child.Name == "Enter" then
-                    fn(child)
-                end
+                fn(child)
             end
         end
     end
+end
+
+function CombatTutorialService:_forEachDoorButton(player, fn)
+    self:_forEachDoorDescendant(player, function(child)
+        if child:IsA("TextButton") and child.Name == "Lesson" then
+            fn(child)
+        end
+    end)
+end
+
+function CombatTutorialService:_forEachLeaveGui(player, fn)
+    self:_forEachDoorDescendant(player, function(child)
+        if child:IsA("SurfaceGui") and string.find(child.Name, "^CombatTutorialLeave_") then
+            fn(child)
+        end
+    end)
 end
 
 function CombatTutorialService:_paintDoorButtons(player, spec, text)
@@ -2355,35 +2459,49 @@ function CombatTutorialService:_bindAdvancePrompt(player, beacon)
     if not (player and beacon) then
         return
     end
-    local existing = beacon:FindFirstChild(BEACON_PROMPT_NAME)
-    if existing then
-        existing:Destroy()
+    -- Range / Training Ground keep one MissionCompletePrompt. Destroying
+    -- this every cave-door poll rebuilds the default prompt UI and the
+    -- COMBAT TRAINING / Advance labels bounce.
+    local leftover = beacon:FindFirstChild("MissionCompletePrompt")
+    if leftover then
+        leftover:Destroy()
     end
     local authored = (self._config and self._config.beacon) or {}
-    local prompt = Instance.new("ProximityPrompt")
-    prompt.Name = BEACON_PROMPT_NAME
-    prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
+    local prompt = beacon:FindFirstChild(BEACON_PROMPT_NAME)
+    if not (prompt and prompt:IsA("ProximityPrompt")) then
+        if prompt then
+            prompt:Destroy()
+        end
+        prompt = Instance.new("ProximityPrompt")
+        prompt.Name = BEACON_PROMPT_NAME
+        prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
+        prompt.RequiresLineOfSight = false
+        prompt.Triggered:Connect(function(who)
+            if who ~= player or player:GetAttribute("InCombatTutorial") ~= true then
+                return
+            end
+            if not self._dataService:IsDataLoaded(player) then
+                return
+            end
+            local data = self:_ensureProgress(player)
+            local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
+            if not (step and step.activate_beacon) then
+                return
+            end
+            fireGameEvent(player, "combat_tutorial_advance", { source = "objective_beacon" })
+        end)
+        prompt.Parent = beacon
+    end
     prompt.ActionText = tostring(authored.action_text or "Advance")
-    prompt.ObjectText = (self._config.entry and self._config.entry.title) or "Combat Training"
+    prompt.ObjectText = tostring(
+        authored.object_text
+            or (self._config.entry and self._config.entry.title)
+            or "Combat Training"
+    )
     prompt.HoldDuration = math.max(0, tonumber(authored.hold_duration) or 0)
     prompt.MaxActivationDistance = math.max(6, tonumber(authored.max_distance) or 12)
-    prompt.RequiresLineOfSight = false
     prompt.Enabled = beacon:GetAttribute("ObjectiveActive") == true
     prompt.Parent = beacon
-    prompt.Triggered:Connect(function(who)
-        if who ~= player or player:GetAttribute("InCombatTutorial") ~= true then
-            return
-        end
-        if not self._dataService:IsDataLoaded(player) then
-            return
-        end
-        local data = self:_ensureProgress(player)
-        local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
-        if not (step and step.activate_beacon) then
-            return
-        end
-        fireGameEvent(player, "combat_tutorial_advance", { source = "objective_beacon" })
-    end)
 end
 
 function CombatTutorialService:_setBeaconActive(player, active)
@@ -2551,6 +2669,23 @@ function CombatTutorialService:_ensureWatchers(player)
     local data = self._dataService:GetData(player)
     local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
     local session = self:_session(player)
+    local stepId = step and step.id or nil
+    -- Cave-door poll calls _enter every 0.4s while inside. Restarting these
+    -- loops would rebuild the pillar prompt like Range never does.
+    if stepId and session.watchStepId == stepId then
+        if step.activate_beacon == true then
+            local beacon = self:_objectiveBeacon(player)
+            if beacon and not beacon:FindFirstChild(BEACON_PROMPT_NAME) then
+                self:_setBeaconActive(player, true)
+            end
+        end
+        if step.lock_door == true and not self:_hasDoorSeal(player) then
+            self:_sealDoors(player)
+            self:_applyDoorPlate(player)
+        end
+        return
+    end
+    session.watchStepId = stepId
     self:_clearSessionLoops(session)
     if player.Parent then
         player:SetAttribute("CombatTutorialWoundSlot", nil)
@@ -2727,6 +2862,12 @@ function CombatTutorialService:_ensureWatchers(player)
 end
 
 function CombatTutorialService:_publishCombatRank(player, state)
+    local earned = StatusBadge.earnedCsv(state)
+    if earned ~= "" then
+        player:SetAttribute("CombatRankEarned", earned)
+    else
+        player:SetAttribute("CombatRankEarned", nil)
+    end
     local rank = CombatRank.rankById(self._ranksConfig, state and state.current)
     if rank then
         player:SetAttribute("CombatRank", rank.id)

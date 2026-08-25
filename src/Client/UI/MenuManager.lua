@@ -151,6 +151,12 @@ function MenuManager.new()
     end, function(enabled)
         StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, enabled)
     end)
+    self._customPeopleList = false
+    pcall(function()
+        local ConfigLoader = require(Locations.ConfigLoader)
+        local people = ConfigLoader:LoadConfig("people_list")
+        self._customPeopleList = people and people.enabled == true
+    end)
 
     -- Initialize overlay
     self:_createOverlay()
@@ -214,7 +220,12 @@ function MenuManager:_createOverlay()
         -- tutorial objective can yield while a panel is present and restore themselves after
         -- direct X/ESC closes without coupling to every individual panel implementation.
         player:SetAttribute("LargeMenuOpen", hasPanel)
-        if hasPanel then
+        -- Custom People list watches LargeMenuOpen. Do not re-enable CoreGui.
+        if self._customPeopleList then
+            if not hasPanel then
+                FocusNavigator.close()
+            end
+        elseif hasPanel then
             local suppressed, suppressError = self._playerListGuard:Suppress()
             if not suppressed then
                 self.logger:warn("Could not temporarily hide Roblox player list", {
@@ -842,12 +853,15 @@ function MenuManager:Destroy()
 
     Players.LocalPlayer:SetAttribute("LargeMenuOpen", false)
 
-    -- Destruction can race a panel's own cleanup; always make one final restoration attempt.
-    local restored, restoreError = self._playerListGuard:Restore()
-    if not restored then
-        self.logger:warn("Could not restore Roblox player list while destroying menus", {
-            error = tostring(restoreError),
-        })
+    -- Destruction can race a panel's own cleanup; restore CoreGui only when
+    -- we still own the native list.
+    if not self._customPeopleList then
+        local restored, restoreError = self._playerListGuard:Restore()
+        if not restored then
+            self.logger:warn("Could not restore Roblox player list while destroying menus", {
+                error = tostring(restoreError),
+            })
+        end
     end
 
     self.logger:info("MenuManager destroyed")

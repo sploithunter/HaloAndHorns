@@ -51,30 +51,46 @@ function PlayerListStatus.rank(level, veteranLevel)
     return tostring(math.max(1, math.floor(tonumber(level) or 1)))
 end
 
-function PlayerListStatus.status(state)
-    state = state or {}
-    local parts = {}
-    if state.vip == true then
-        table.insert(parts, "👑")
-    end
-    if state.founder == true then
-        table.insert(parts, "⭐")
-    end
+function PlayerListStatus.titles()
+    return STATUS_TITLES
+end
 
-    if type(state.leaderboardTitle) == "string" and state.leaderboardTitle ~= "" then
-        table.insert(parts, state.leaderboardTitle)
-    elseif state.hugeHatcher == true then
-        table.insert(parts, "Huge Hatcher")
-    else
-        local level = math.max(1, math.floor(tonumber(state.level) or 1))
-        for _, title in ipairs(STATUS_TITLES) do
-            if level >= title.minLevel then
-                table.insert(parts, title.label)
-                break
-            end
+function PlayerListStatus.unlockedTitles(level)
+    local n = math.max(1, math.floor(tonumber(level) or 1))
+    local unlocked = {}
+    for i = #STATUS_TITLES, 1, -1 do
+        local title = STATUS_TITLES[i]
+        if n >= title.minLevel then
+            table.insert(unlocked, title)
         end
     end
-    return table.concat(parts, " ")
+    return unlocked
+end
+
+function PlayerListStatus.status(state)
+    state = state or {}
+    if type(state.chosenTitle) == "string" and state.chosenTitle ~= "" then
+        return state.chosenTitle
+    end
+    -- VIP / Founder / staff glyphs live on the name in the custom People list.
+    if type(state.leaderboardTitle) == "string" and state.leaderboardTitle ~= "" then
+        return state.leaderboardTitle
+    end
+    if type(state.combatRank) == "string" and state.combatRank ~= "" then
+        -- Cave titles (Spark → Skilled) are the early-game "where you're at"
+        -- read. They never replace Rank or an earned top-100 title.
+        return state.combatRank
+    end
+    if state.hugeHatcher == true then
+        return "Huge Hatcher"
+    end
+    local level = math.max(1, math.floor(tonumber(state.level) or 1))
+    for _, title in ipairs(STATUS_TITLES) do
+        if level >= title.minLevel then
+            return title.label
+        end
+    end
+    return "Noob"
 end
 
 function PlayerListStatus.location(state)
