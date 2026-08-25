@@ -4948,3 +4948,9 @@ first-session cohort rates.
 - A fresh Rojo-fed Play boot kept exactly one `Assets.Models` root and reported
   `model pass done in 0.0s — adopted=596 fetched=0`; all 48 authored egg stands populated in the
   same boot.
+
+## 2026-08-25 — Layer 3 elemental area music
+
+- Added eight group-owned environmental loops, one for each Fire, Ice, Grass, and Desert zone in
+  Heaven 3 and Hell 3. `area_music` maps every Layer 3 area to a distinct catalog key, while the
+  existing combat override and missing-asset fallback behavior remain unchanged.
