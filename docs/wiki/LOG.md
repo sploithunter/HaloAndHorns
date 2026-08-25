@@ -4789,3 +4789,11 @@ first-session cohort rates.
 - Temporarily opened the Heaven 3 and Hell 3 physical realm portals for active map testing through
   `realm_portals.testing_open_layers`; the production Soul, token, level, World Travel, and saved
   progression rules remain unchanged.
+
+## 2026-08-25 — Layer 3 ambient-fauna motion correction
+
+- Reduced the three Heaven 3 Bloomwing Butterflies from 3.2–3.8 studs to 0.85–1.15 studs and moved
+  all three routes from scattered plaza/map positions into the authored garden.
+- Replaced elapsed-angle rotation with tangent-facing elliptical paths and reused the shared pet/
+  enemy `Gait` module for procedural bounce and bank. Live Studio verification confirmed all three
+  butterflies move through the garden at their authored scale without rotating in place.
