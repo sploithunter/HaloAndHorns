@@ -15,6 +15,7 @@ local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local LayerAccess = require(ReplicatedStorage.Shared.Game.LayerAccess)
+local RealmPortalPresentation = require(ReplicatedStorage.Shared.Game.RealmPortalPresentation)
 
 local PROMPT_NAME = "RealmPortalPrompt"
 
@@ -56,15 +57,6 @@ local function layerFolderName(layerId)
         return realm:sub(1, 1):upper() .. realm:sub(2) .. "_" .. n
     end
     return layerId
-end
-
--- Player-facing name for a portal label: "heaven_1" -> "Heaven 1".
-local function layerDisplayName(layerId)
-    local realm, n = tostring(layerId):match("^(%a+)_(%d+)$")
-    if realm then
-        return realm:sub(1, 1):upper() .. realm:sub(2) .. " " .. n
-    end
-    return tostring(layerId)
 end
 
 -- A layer is enterable only if its geometry exists, else the player falls into the void. The
@@ -165,16 +157,9 @@ function RealmPortalService:_ensurePrompt(part, def)
     -- and its level gate read at a glance even before touching (Jason: "if they're unlocked we should
     -- still have a label"). The touch path still enforces the level for a too-low player.
     self:_clearLockBadge(part)
-    local access = self._layersConfig.access and self._layersConfig.access[def.layer]
-    local req = access and tonumber(access.requires_level)
-    if LayerAccess.isTestingOpen(def.layer, self._layersConfig) then
-        req = nil
-    end
     -- "Heaven 1\nLv 7" — level on its OWN line under the name so it never wraps mid-word (Jason).
-    local label = layerDisplayName(def.layer)
-    if req and req > 1 then
-        label = label .. "\nLv " .. req
-    end
+    -- A temporary testing bypass removes the player lock, not this destination's authored level.
+    local label = RealmPortalPresentation.caption(def.layer, self._layersConfig)
     local tint = tostring(def.layer):match("^hell") and Color3.fromRGB(255, 150, 100)
         or Color3.fromRGB(255, 235, 150)
     self:_addLockBadge(part, label, false, tint)
@@ -187,7 +172,7 @@ function RealmPortalService:_ensurePrompt(part, def)
     prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
     prompt.Name = PROMPT_NAME
     prompt.ActionText = "Travel"
-    prompt.ObjectText = layerDisplayName(def.layer)
+    prompt.ObjectText = RealmPortalPresentation.displayName(def.layer)
     prompt.HoldDuration = 0.35
     prompt.MaxActivationDistance = 14
     prompt.RequiresLineOfSight = false

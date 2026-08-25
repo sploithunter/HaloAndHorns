@@ -1,9 +1,8 @@
 # Layer 3 egg and pet gameplay plan
 
-This is the import-ready gameplay selection for the existing 40-pet Layer 3 roster. It deliberately
-does not add placeholder `rbxassetid://0` definitions to `configs/pets.lua`: the pet and egg records
-should be added only when their Roblox mesh, Basic texture, Golden texture, and card IDs exist.
-Role mappings and live support-aura behavior are already reserved in `configs/pet_roles.lua`.
+This is the implemented gameplay selection for the 40-pet Layer 3 roster. Published Roblox mesh,
+Basic texture, Golden texture, and card IDs are wired into `configs/pets.lua`; no placeholder IDs
+are used. Role mappings and live support-aura behavior live in `configs/pet_roles.lua`.
 
 ## Egg configuration
 

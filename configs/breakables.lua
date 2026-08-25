@@ -92,6 +92,80 @@ local ORE_FAMILIES = {
     },
 }
 
+local REALM_ORE_BY_ORIGIN = {
+    lava = {
+        display = "Emberstone",
+        surface = "Lava",
+        center = { x = -206, z = 67 },
+        area_size = { x = 340, z = 420 },
+        radius = 150,
+    },
+    ice = {
+        display = "Frostshard",
+        surface = "Ice",
+        center = { x = -374, z = 377 },
+        area_size = { x = 300, z = 300 },
+        radius = 130,
+    },
+    desert = {
+        display = "Sunglass",
+        surface = "Desert",
+        center = { x = -126, z = 474 },
+        area_size = { x = 310, z = 280 },
+        radius = 120,
+    },
+    grass = {
+        display = "Bloomstone",
+        surface = "Grass",
+        center = { x = -150, z = 266 },
+        area_size = { x = 330, z = 240 },
+        radius = 100,
+    },
+}
+
+local function layer3RealmOre(origin, surfaceY)
+    local spec = REALM_ORE_BY_ORIGIN[origin]
+    local spawnTable = {}
+    for _, tier in ipairs({ "Small", "Medium", "Large" }) do
+        local weight = if tier == "Small" then 4 elseif tier == "Medium" then 2 else 1
+        for variant = 1, 3 do
+            table.insert(spawnTable, {
+                name = spec.display .. tier .. "V" .. variant,
+                weight = weight,
+            })
+        end
+    end
+    return {
+        health_mult = 4,
+        max = 100,
+        interval = 8,
+        spawn_area = {
+            name = "SpawnArea",
+            size = { x = spec.area_size.x, y = 1, z = spec.area_size.z },
+            position = { x = spec.center.x, y = surfaceY, z = spec.center.z },
+        },
+        spawn_settings = {
+            upright = true,
+            surface_y = surfaceY,
+            use_spawner_bounds = true,
+            surface_mode = "surface",
+            surface_match_name = spec.surface,
+            surface_raycast_height = 140,
+            surface_normal_min_y = 0.5,
+            spawn_area_margin = 24,
+            spawn_center = { x = spec.center.x, z = spec.center.z },
+            spawn_radius = spec.radius,
+            spawn_exclusion_radius = 12,
+            embed_ratio = 0,
+            min_distance = 12,
+            spawn_attempts = 90,
+            respawn_min_seconds = 5,
+            respawn_max_seconds = 60,
+        },
+        spawn_table = spawnTable,
+    }
+end
+
 -- Size tiers: payoff scales with size. `scale` multiplies the mesh (when real single-mesh
 -- art lands); placement offsets mirror the crystals so each tier sits right on the floor.
 -- `scale` is used for PLACEHOLDER families (the blue-crystal meshes are already sized per
@@ -1137,6 +1211,16 @@ local M = {
                 { name = "BloomstoneLargeV3", weight = 1 },
             },
         },
+        -- Layer 3 repeats the per-origin crystal families at the new map elevations. The area ids
+        -- are deliberate: BreakableSpawner presence-gates each origin against its 1.5M unlock.
+        Heaven_3_Lava = layer3RealmOre("lava", 6000),
+        Heaven_3_Ice = layer3RealmOre("ice", 6000),
+        Heaven_3_Desert = layer3RealmOre("desert", 6000),
+        Heaven_3_Grass = layer3RealmOre("grass", 6000),
+        Hell_3_Lava = layer3RealmOre("lava", -5999),
+        Hell_3_Ice = layer3RealmOre("ice", -5999),
+        Hell_3_Desert = layer3RealmOre("desert", -5999),
+        Hell_3_Grass = layer3RealmOre("grass", -5999),
         Meadow = {
             value_mult = 2, -- base-realm crystal yield; realms keep their own scaling
             max = 8,

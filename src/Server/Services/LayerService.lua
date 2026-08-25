@@ -14,6 +14,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local LayerAccess = require(ReplicatedStorage.Shared.Game.LayerAccess)
 local RealmTokens = require(ReplicatedStorage.Shared.Game.RealmTokens)
@@ -28,6 +29,98 @@ function LayerService:Init()
     self._dataService = self._modules and self._modules.DataService
     self._economyService = self._modules and self._modules.EconomyService
     self._layersConfig = self._configLoader:LoadConfig("layers")
+    self._settledPlayers = {}
+    self._physicalReconciles = {}
+end
+
+function LayerService:_nearestLayerOffset(y)
+    local nearestOffset = 0
+    local nearestDistance = math.abs(y)
+    for _, definition in pairs(self._layersConfig.access or {}) do
+        local candidate = tonumber(definition.y_offset)
+        if candidate then
+            local distance = math.abs(y - candidate)
+            if distance < nearestDistance then
+                nearestDistance = distance
+                nearestOffset = candidate
+            end
+        end
+    end
+    return nearestOffset
+end
+
+-- Stream the destination to the character-owning client before moving it. Keep this in one helper
+-- so portal travel and realm respawns cannot drift into different streaming behavior.
+function LayerService:_streamAndPivot(player, character, destination, reason)
+    local streamOk, streamErr = pcall(function()
+        player:RequestStreamAroundAsync(
+            destination.Position,
+            self._layersConfig.stream_wait_seconds or 8
+        )
+    end)
+    if not streamOk and self._logger then
+        self._logger:Warn("Layer destination streaming request failed", {
+            player = player.Name,
+            reason = reason,
+            error = tostring(streamErr),
+        })
+    end
+
+    if player.Character ~= character or not character.Parent then
+        return false
+    end
+
+    local moveOk, moveErr = pcall(function()
+        character:PivotTo(destination)
+    end)
+    if not moveOk and self._logger then
+        self._logger:Warn("Layer character move failed", {
+            player = player.Name,
+            reason = reason,
+            error = tostring(moveErr),
+        })
+    end
+    return moveOk
+end
+
+-- Last-resort invariant repair. Portal travel normally keeps CurrentLayer and the character's
+-- stacked-map Y offset synchronized. If Roblox resets the character onto a Home SpawnLocation (or
+-- any other path moves only one side), the player otherwise sees Home eggs under realm lighting
+-- and Home's Spawn area appears free. Reconcile that split state at a deliberately slow cadence.
+function LayerService:_reconcilePhysicalLayer(player)
+    if
+        self._physicalReconciles[player]
+        or not self._settledPlayers[player]
+        or player:GetAttribute("InMission") == true
+    then
+        return
+    end
+
+    local data = self._dataService:GetData(player)
+    local layerId = data and data.CurrentLayer or "base"
+    local targetOffset = tonumber(((self._layersConfig.access or {})[layerId] or {}).y_offset) or 0
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then
+        return
+    end
+
+    local physicalOffset = self:_nearestLayerOffset(root.Position.Y)
+    local dy = targetOffset - physicalOffset
+    if dy == 0 then
+        return
+    end
+
+    self._physicalReconciles[player] = true
+    task.spawn(function()
+        self:_streamAndPivot(
+            player,
+            character,
+            character:GetPivot() + Vector3.new(0, dy, 0),
+            "physical_layer_reconcile_" .. layerId
+        )
+        self._physicalReconciles[player] = nil
+    end)
 end
 
 -- On join, settle the player's layer + PUBLISH the layer attributes (CurrentLayer/CurrentRealm/
@@ -50,6 +143,7 @@ function LayerService:_settleOnJoin(player)
         data.CurrentLayer = "base"
     end
     self:_publishLayer(player, data.CurrentLayer or "base")
+    self._settledPlayers[player] = true
 end
 
 function LayerService:Start()
@@ -87,6 +181,22 @@ function LayerService:Start()
         task.spawn(function()
             self:_settleOnJoin(player)
         end)
+    end)
+    Players.PlayerRemoving:Connect(function(player)
+        self._settledPlayers[player] = nil
+        self._physicalReconciles[player] = nil
+    end)
+
+    local reconcileElapsed = 0
+    RunService.Heartbeat:Connect(function(dt)
+        reconcileElapsed += dt
+        if reconcileElapsed < 1 then
+            return
+        end
+        reconcileElapsed = 0
+        for _, player in ipairs(Players:GetPlayers()) do
+            self:_reconcilePhysicalLayer(player)
+        end
     end)
 end
 
@@ -302,31 +412,12 @@ function LayerService:UseLayer(player, layerId, opts)
         end
 
         if destCFrame then
-            pcall(function()
-                local hrp = char.PrimaryPart
-
-                -- StreamingEnabled gotcha (2026-07-08 fall-through report): the client OWNS
-                -- character physics, so arriving before the destination streamed to that client
-                -- means falling through geometry only the server has. Order matters:
-                --   1. stream the destination BEFORE moving — the wait happens while they still
-                --      stand at the portal (reads as the portal charging, not a hang). NOTE the
-                --      API is RequestStreamAroundAsync; the old RequestStreamingAround call was
-                --      a nonexistent method whose error a pcall silently ate, which is why the
-                --      "hint" never worked.
-                pcall(function()
-                    player:RequestStreamAroundAsync(
-                        destCFrame.Position,
-                        self._layersConfig.stream_wait_seconds or 8
-                    )
-                end)
-
-                --   2. move. Correctness is EVENT-BASED (Jason: "no timeout
-                --      shenanigans"): the place property StreamingIntegrityMode =
-                --      PauseOutsideLoadedArea freezes the client's physics in an
-                --      unstreamed region and releases it the instant the geometry
-                --      arrives — the old anchored tail (a timeout in a hat) is gone.
-                char:PivotTo(destCFrame)
-            end)
+            -- StreamingEnabled gotcha (2026-07-08 fall-through report): the client OWNS character
+            -- physics, so the destination must stream before the pivot. PauseOutsideLoadedArea is
+            -- the event-based safety net while any final geometry arrives.
+            self._physicalReconciles[player] = true
+            self:_streamAndPivot(player, char, destCFrame, "layer_use_" .. layerId)
+            self._physicalReconciles[player] = nil
         end
     end
 

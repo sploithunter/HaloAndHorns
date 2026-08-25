@@ -18,6 +18,12 @@ non-combat moving props per realm. `heaven_3` and `hell_3` are temporarily open 
 physical realm portals for active testing; their production Soul, token, and player-level
 requirements remain unchanged.
 
+The Layer 3 runtime configuration is now live for walkthrough testing: eight realm-specific eggs
+resolve on the authored stands, all 40 published pets are hatchable, and each Heaven 3/Hell 3
+origin has a 1.5M coin unlock plus a presence-gated crystal world. Heaven 3's omitted terrain edge
+was restored from the corresponding Heaven 2 voxel region, and Pearlback Snails use an anchor-level
+180-degree visual correction so their authored faces point along travel.
+
 ## Healer hunt pins pets; leftover despawn cannot lock the room (2026-08-24)
 
 Clicking the training healer pins the squad on it. If a leftover dog
@@ -1729,6 +1735,22 @@ Last checked: 2026-08-24
   and Rainbow = 25. Fresh point counters and v2 OrderedDataStores prevent legacy raw counts from
   mixing with weighted scores; persisted pre-weight outboxes recover points from the exact pet.
 - A raw total adds one for every gift in `gifts_given`, without exposing an all-gifts board yet.
+
+## Realm layer-state integrity
+
+Last checked: 2026-08-25
+
+- `LayerService` now keeps logical `CurrentLayer` and the character's physical stacked-map Y offset
+  synchronized after respawns and other desync paths. Live Hell 3 recovery restored the character
+  from Home to Y -6000 and restored the locked `Hell_3_Grass` area prompt.
+
+## Hell 3 environment glow
+
+Last checked: 2026-08-25
+
+- Selected Hell 3 flora and both ambient-fauna families use emissive textured MeshParts; 28
+  signature instances also carry low-cost, no-shadow red/purple PointLights. Live verification
+  preserved the black silhouettes while making their authored color veins readable in the dark.
 
 ## Layer 3 eggs and pet-kit configuration
 

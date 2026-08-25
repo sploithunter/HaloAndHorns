@@ -11,14 +11,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local AmbientFaunaMotion = require(ReplicatedStorage.Shared.Game.AmbientFaunaMotion)
+local EnvironmentGlow = require(ReplicatedStorage.Shared.Game.EnvironmentGlow)
+local Gait = require(ReplicatedStorage.Shared.Game.Gait)
 
 local TAG = "AmbientFaunaAnchor"
-local UPDATE_STEP = 1 / 20
+local UPDATE_STEP = 1 / 30
 
 type MotionSpec = {
     radius: number?,
+    radius_x: number?,
+    radius_z: number?,
     hover_height: number?,
-    bob_height: number?,
     speed: number?,
     phase: number?,
 }
@@ -28,6 +31,10 @@ type Actor = {
     basePosition: Vector3,
     motion: string,
     motionSpec: MotionSpec,
+    gait: any,
+    gaitState: { phase: number, amp: number },
+    facingYawRadians: number,
+    lastPathPosition: Vector3?,
 }
 
 local AmbientFaunaService = {}
@@ -35,6 +42,8 @@ AmbientFaunaService.__index = AmbientFaunaService
 
 function AmbientFaunaService:Init()
     self._logger = self._modules and self._modules.Logger
+    self._configLoader = self._modules and self._modules.ConfigLoader
+    self._floraConfig = self._configLoader and self._configLoader:LoadConfig("flora") or {}
     self._actors = {} :: { Actor }
     self._elapsed = 0
     self._accumulator = 0
@@ -104,6 +113,11 @@ function AmbientFaunaService:_spawn(anchor: BasePart, faunaFolder: Instance): bo
         model.WorldPivot = CFrame.new(bbox.Position)
     end
 
+    EnvironmentGlow.apply(
+        model,
+        self._floraConfig.glow_models and self._floraConfig.glow_models[modelName]
+    )
+
     local floor = anchor.Position - Vector3.new(0, 0.2, 0)
     local actor: Actor = {
         model = model,
@@ -111,11 +125,40 @@ function AmbientFaunaService:_spawn(anchor: BasePart, faunaFolder: Instance): bo
         motion = tostring(anchor:GetAttribute("Motion") or "ground"),
         motionSpec = {
             radius = tonumber(anchor:GetAttribute("MoveRadius")) or 2,
+            radius_x = tonumber(anchor:GetAttribute("PathRadiusX")),
+            radius_z = tonumber(anchor:GetAttribute("PathRadiusZ")),
             hover_height = tonumber(anchor:GetAttribute("HoverHeight")) or 0,
-            bob_height = tonumber(anchor:GetAttribute("BobHeight")) or 0.08,
             speed = tonumber(anchor:GetAttribute("Speed")) or 0.25,
             phase = tonumber(anchor:GetAttribute("Phase")) or 0,
         },
+        gait = Gait.resolve(if anchor:GetAttribute("Motion") == "hover"
+            then {
+                style = "flap",
+                bob_height = tonumber(anchor:GetAttribute("BobHeight")) or 0.16,
+                tilt_degrees = 8,
+                stride_length = 2.2,
+                ref_speed = 3,
+                ease_rate = 10,
+                hover = true,
+                idle_amp = 0.65,
+                flap_hz = 1.5,
+            }
+            else {
+                style = "waddle",
+                bob_height = tonumber(anchor:GetAttribute("BobHeight")) or 0.05,
+                tilt_degrees = 5,
+                stride_length = 1.8,
+                ref_speed = 2,
+                ease_rate = 10,
+            }),
+        gaitState = {
+            phase = tonumber(anchor:GetAttribute("Phase")) or 0,
+            amp = 0,
+        },
+        -- Some imported meshes face -Z in their authored space. Keep the route math shared and
+        -- correct the visual once at the anchor instead of reversing its travel direction.
+        facingYawRadians = math.rad(tonumber(anchor:GetAttribute("FacingYawDegrees")) or 0),
+        lastPathPosition = nil,
     }
     model:SetAttribute("AmbientFauna", true)
     model:SetAttribute("SourceAnchor", anchor:GetFullName())
@@ -124,12 +167,27 @@ function AmbientFaunaService:_spawn(anchor: BasePart, faunaFolder: Instance): bo
     return true
 end
 
-function AmbientFaunaService:_update()
+function AmbientFaunaService:_update(deltaTime: number)
     for _, actor in ipairs(self._actors) do
         if actor.model.Parent then
             local sample = AmbientFaunaMotion.sample(actor.motion, self._elapsed, actor.motionSpec)
             local position = actor.basePosition + Vector3.new(sample.x, sample.y, sample.z)
-            actor.model:PivotTo(CFrame.new(position) * CFrame.Angles(0, sample.yaw, 0))
+            local lastPosition = actor.lastPathPosition
+            local stepDistance = if lastPosition
+                then Vector3.new(position.X - lastPosition.X, 0, position.Z - lastPosition.Z).Magnitude
+                else 0
+            actor.lastPathPosition = position
+
+            -- Share the exact procedural gait core used by PetFollowController. The clean path
+            -- CFrame faces the route tangent; bounce and bank layer on top without feeding back
+            -- into the next path sample.
+            local facing = Vector3.new(sample.facing_x, 0, sample.facing_z)
+            local clean = CFrame.lookAt(position, position + facing)
+            local bob, roll, yaw =
+                Gait.advance(actor.gaitState, actor.gait, stepDistance, deltaTime)
+            actor.model:PivotTo(
+                CFrame.new(0, bob, 0) * clean * CFrame.Angles(0, actor.facingYawRadians + yaw, roll)
+            )
         end
     end
 end
@@ -153,7 +211,7 @@ function AmbientFaunaService:Start()
             end
         end
     end
-    self:_update()
+    self:_update(UPDATE_STEP)
     self:_log(failed > 0 and "Warn" or "Info", "fauna spawned", {
         spawned = spawned,
         failed = failed,
@@ -163,8 +221,9 @@ function AmbientFaunaService:Start()
         self._elapsed += deltaTime
         self._accumulator += deltaTime
         if self._accumulator >= UPDATE_STEP then
-            self._accumulator %= UPDATE_STEP
-            self:_update()
+            local updateDelta = self._accumulator
+            self._accumulator = 0
+            self:_update(updateDelta)
         end
     end)
 end
