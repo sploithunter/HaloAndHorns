@@ -292,9 +292,10 @@ Later polish:
   Heaven; Ruinfire, Dreadfrost, Dreadthorn, and Dreadglass for Hell. Each has a white source, a
   palette-safe chroma edit, and a script-keyed transparent card. No generative alpha removal was
   used.
-- Produced one reusable Heaven 3 stand and one reusable Hell 3 stand. Four area-named copies of the
-  appropriate realm stand are sufficient because `EggStandPlacement` resolves by realm, depth, and
-  area name.
+- Produced one reusable Heaven 3 stand and one reusable Hell 3 stand. Each model replaces the
+  visible assembly of all four existing area-named stands in its Layer 3 realm; preserve the stand
+  model, transform, attributes, tags, and `UIanchor`. The existing Heaven 3 and Hell 3 stands are
+  temporary Layer 2 duplicates, not additional fixtures, and the Layer 2 originals remain intact.
 - The proposed Layer 3 egg price is 1,300 origin coins, continuing 500 → 900 progression while
   accounting for the configured reward multiplier increase from 16 to 22. Standard weights remain
   50 / 26 / 6 / 1.5 / 0.26; each realm's Desert Secret replaces the last weight with 0.02.

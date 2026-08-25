@@ -4669,3 +4669,10 @@ first-session cohort rates.
 - Extended the structural Huge contract: a single-target species still becomes targeted AoE, while
   a species that already has area geometry keeps it and gains a configurable contagious burn.
   Runtime attributes and inventory/squad markers now derive from the same pure resolver.
+
+## 2026-08-24 — Layer 3 egg-stand replacement contract
+
+- Verified in Studio that the four Heaven 3 and four Hell 3 egg stands are exact copies of their
+  Layer 2 counterparts. The new realm-specific stand models replace those eight visible assemblies
+  in place while preserving the area-named models, transforms, attributes, tags, and `UIanchor`;
+  the Layer 2 originals remain unchanged and no additional Layer 3 stand set is created.

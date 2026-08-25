@@ -1722,6 +1722,10 @@ Last checked: 2026-08-24
   cards, selected textured GLBs below 10,000 triangles, integrity reports, and contact sheets.
   Roblox publication and live `configs/pets.lua` egg records remain pending asset IDs; no fake ids
   are present in runtime config.
+- Studio replacement contract: swap the visible assembly of the four existing Heaven 3 stands for
+  the Heaven 3 model and the four existing Hell 3 stands for the Hell 3 model, preserving each
+  area-named fixture and its transform, attributes, tags, and `UIanchor`. These eight fixtures are
+  currently Layer 2 duplicates; do not add parallel stands or alter Heaven 2/Hell 2.
 - All 40 Layer 3 pets have reserved role/support mappings. The approved design direction is a mix of
   ordinary single attacks, four intermittent splash blasters, apex continuous-area kits, live
   control, and Heaven sustain/farming versus Hell drain/debuff support.
