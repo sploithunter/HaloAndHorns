@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "asset": "halo_fern",
+  "concept_image": "assets/concepts/layer_3_review/heaven/flora_halo_fern.png",
+  "concept_sha256": "d5af6399e5409b51e58abe9bd8f639d4664bc84130bb3306d749232b00973a04",
+  "meshy": {
+    "task_id": "01a0346c-a5e9-7d4a-93d7-91a786cda7e6",
+    "status": "SUCCEEDED",
+    "consumed_credits": 5,
+    "model_type": "smart-topology",
+    "ai_model": "meshy-t2",
+    "target_polycount": 4000,
+    "should_texture": false,
+    "output_triangles": 4098
+  },
+  "integrity": {
+    "passed": true,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0,
+    "face_components": 69
+  },
+  "local_source": {
+    "glb": "assets/source/props/layer_3/heaven/halo_fern/meshy_t2_4000_attempt_1/model.glb",
+    "glb_sha256": "b11c59c702809d089f534a0cf6ebd35fba342e5dcfe32347bee3d76a5dbdd251",
+    "note": "The heavy-art source directory is intentionally gitignored; the GLB and full reports remain in the stable Layer 3 worktree."
+  },
+  "review_image": "assets/concepts/layer_3_review/meshy_trials/halo_fern_t2_4000_geometry_review.png",
+  "texture_status": "SUCCEEDED",
+  "texture_trial": "assets/concepts/layer_3_review/meshy_trials/halo_fern_t2_4000_texture_trial.json"
+}

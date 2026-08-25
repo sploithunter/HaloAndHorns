@@ -1,0 +1,167 @@
+{
+  "_comment": "Group-owned Roblox assets for the completed Layer 3 environment batch. Model asset ids are insertion containers; mesh_id and texture_image are the resolved MeshPart ids.",
+  "assets": {
+    "bloomwing_butterfly": {
+      "realm": "heaven_3",
+      "model_asset": "89982324346270",
+      "mesh_id": "rbxassetid://87029063863480",
+      "texture_decal": "114146323949405",
+      "texture_image": "rbxassetid://75785324808818",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "celestial_bellgrass": {
+      "realm": "heaven_3",
+      "model_asset": "109782436587542",
+      "mesh_id": "rbxassetid://111351900760403",
+      "texture_decal": "72782777882836",
+      "texture_image": "rbxassetid://93603453200081",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "crimson_watcher_bloom": {
+      "realm": "hell_3",
+      "model_asset": "89011734336429",
+      "mesh_id": "rbxassetid://127025799718999",
+      "texture_decal": "120821215453547",
+      "texture_image": "rbxassetid://115430283143631",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "dreadspire_ribbon_grass": {
+      "realm": "hell_3",
+      "model_asset": "121438787682125",
+      "mesh_id": "rbxassetid://74624714408940",
+      "texture_decal": "97528967386144",
+      "texture_image": "rbxassetid://90069509785535",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "dreadwing_beetle": {
+      "realm": "hell_3",
+      "model_asset": "83066206619112",
+      "mesh_id": "rbxassetid://88890068389918",
+      "texture_decal": "102692161182699",
+      "texture_image": "rbxassetid://120985109422780",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "emerald_ribbon_shrub": {
+      "realm": "heaven_3",
+      "model_asset": "134872168877253",
+      "mesh_id": "rbxassetid://115573486277861",
+      "texture_decal": "117805114396745",
+      "texture_image": "rbxassetid://112255564304390",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "empyrean_bloom_shrine": {
+      "realm": "heaven_3",
+      "model_asset": "100662494836813",
+      "mesh_id": "rbxassetid://128039004361616",
+      "texture_decal": "83414699460704",
+      "texture_image": "rbxassetid://104704077385945",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "gloom_pitcher": {
+      "realm": "hell_3",
+      "model_asset": "111768412199639",
+      "mesh_id": "rbxassetid://100760078513327",
+      "texture_decal": "102895481757937",
+      "texture_image": "rbxassetid://100140437422000",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "halo_fern": {
+      "realm": "heaven_3",
+      "model_asset": "140606343015242",
+      "mesh_id": "rbxassetid://128952194269010",
+      "texture_decal": "82930828976331",
+      "texture_image": "rbxassetid://129260016970745",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "ironroot_crawler": {
+      "realm": "hell_3",
+      "model_asset": "75981372426650",
+      "mesh_id": "rbxassetid://119012352403649",
+      "texture_decal": "75882209854604",
+      "texture_image": "rbxassetid://90170180972098",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "lumen_moss_cushion": {
+      "realm": "heaven_3",
+      "model_asset": "87709274141974",
+      "mesh_id": "rbxassetid://122100754014204",
+      "texture_decal": "76331296836525",
+      "texture_image": "rbxassetid://122260964720624",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "moonpetal_bush": {
+      "realm": "heaven_3",
+      "model_asset": "83522213199002",
+      "mesh_id": "rbxassetid://117988827307449",
+      "texture_decal": "122899627501470",
+      "texture_image": "rbxassetid://92554869683270",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "obsidian_hornback_lizard": {
+      "realm": "hell_3",
+      "model_asset": "122838239013569",
+      "mesh_id": "rbxassetid://125303219727090",
+      "texture_decal": "83634185133239",
+      "texture_image": "rbxassetid://127001176079905",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "pearlback_snail": {
+      "realm": "heaven_3",
+      "model_asset": "118172967652040",
+      "mesh_id": "rbxassetid://108790521538398",
+      "texture_decal": "122470728098388",
+      "texture_image": "rbxassetid://97005497897866",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "pearlroot_anemone": {
+      "realm": "heaven_3",
+      "model_asset": "95915196623779",
+      "mesh_id": "rbxassetid://114556829837211",
+      "texture_decal": "74513052847133",
+      "texture_image": "rbxassetid://128316021417172",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "razorleaf_fan": {
+      "realm": "hell_3",
+      "model_asset": "82872355582067",
+      "mesh_id": "rbxassetid://73086786653926",
+      "texture_decal": "79003062422478",
+      "texture_image": "rbxassetid://89422117464468",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "violet_hook_bloom": {
+      "realm": "hell_3",
+      "model_asset": "84019968092033",
+      "mesh_id": "rbxassetid://99648319177706",
+      "texture_decal": "137900139123188",
+      "texture_image": "rbxassetid://139199239868577",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "wingleaf_reed": {
+      "realm": "heaven_3",
+      "model_asset": "116514889587243",
+      "mesh_id": "rbxassetid://110377338902326",
+      "texture_decal": "98211844509361",
+      "texture_image": "rbxassetid://84241065881683",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    }
+  }
+}

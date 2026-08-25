@@ -39,6 +39,14 @@ This folder owns the source concepts and audit trail for the Heaven 3 / Hell 3 p
 - Final 3D review sheets are generated from Meshy's textured-model previews and live under
   `review/models/`.
 
+## Roblox publishing
+
+All forty Basic meshes, forty Golden textures, and eighty transparent inventory cards were
+published group-owned on 2026-08-25. `scripts/pet_mesh_ids.json` records the resolved raw MeshId
+and texture ImageId for every 3D variant; `scripts/layer3_pet_card_image_ids.json` records the
+resolved card ImageIds. Golden variants reuse their Basic mesh except Dreadguard Bear, whose
+authored Golden topology requires its separately published mesh.
+
 ## Geometry budgets
 
 - Common and Uncommon: 5,000 target triangles.
