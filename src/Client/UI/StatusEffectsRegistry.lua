@@ -209,6 +209,15 @@ local ENEMY_EFFECTS = {
         ringElement = "earth", -- standard tinted ring (no more ringless disc)
     },
     {
+        key = "heal_suppressed",
+        source = "enemy",
+        untilAttr = "HealSuppressedUntil",
+        color = Color3.fromRGB(255, 82, 89),
+        label = "NO HEAL",
+        icon = POWER_ICONS.discFor("fire", "plus_down"),
+        ringElement = "fire",
+    },
+    {
         key = "hex",
         source = "enemy",
         untilAttr = "DebuffUntil",

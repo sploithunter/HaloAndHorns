@@ -201,6 +201,51 @@ local function showDebuffIcon(target, secs)
     end)
 end
 
+-- Drain/anti-heal gets its own unambiguous red heal-down disc. It is independent of the generic
+-- power-debuff channel, so a Dreadglass target can visibly carry heal block, shred, and curse at
+-- the same time instead of one status hiding another.
+local healSuppressionIcons = setmetatable({}, { __mode = "k" })
+local function hideHealSuppressionIcon(target)
+    local rec = healSuppressionIcons[target]
+    if rec then
+        healSuppressionIcons[target] = nil
+        pcall(function()
+            rec.gui:Destroy()
+        end)
+    end
+end
+
+local function showHealSuppressionIcon(target, secs)
+    if not secs or secs <= 0 then
+        hideHealSuppressionIcon(target)
+        return
+    end
+    local rec = healSuppressionIcons[target]
+    if not (rec and rec.gui.Parent) then
+        local pp = target.PrimaryPart or target:FindFirstChildWhichIsA("BasePart")
+        if not pp then
+            return
+        end
+        local up = 4
+        local okE, ext = pcall(function()
+            return target:GetExtentsSize()
+        end)
+        if okE and ext then
+            up = ext.Y * 0.5 + 2
+        end
+        local bb = Instance.new("BillboardGui")
+        bb.Name = "HealSuppressedIcon"
+        bb.AlwaysOnTop = true
+        bb.Size = UDim2.fromOffset(32, 32)
+        -- Offset beside the ordinary debuff badge so simultaneous Dreadglass effects remain legible.
+        bb.StudsOffset = Vector3.new(1.4, up, 0)
+        bb.Adornee = pp
+        PetBadge.create(bb, { element = "fire", symbol = "plus_down", ring = "aura" })
+        bb.Parent = pp
+        healSuppressionIcons[target] = { gui = bb }
+    end
+end
+
 local originCfg = {}
 local reskinDefs = {} -- config.reskins: reskin key ("stone"/"lava"/...) -> { material, color }
 local powersCfg = {} -- configs/powers.lua: powerId -> def (for power-driven shield element)
@@ -494,6 +539,7 @@ local function unhook(entity)
         handles[entity] = nil
     end
     hideArmorIcon(entity)
+    hideHealSuppressionIcon(entity)
 end
 
 -- Player-level damage buff -> a buff aura on every owned pet for the remaining duration.
@@ -537,6 +583,11 @@ local function refreshEnemyDebuff(enemy)
         stopSlot(enemy, "debuff")
         hideDebuffIcon(enemy)
     end
+end
+
+local function refreshEnemyHealSuppression(enemy)
+    local secs = remaining(enemy, "HealSuppressedUntil")
+    showHealSuppressionIcon(enemy, secs)
 end
 
 -- Wildfire: real Roblox Fire on an enemy while it's BURNING (BurnUntil), so the contagion is visible
@@ -594,6 +645,9 @@ local function hookEnemy(enemy)
     list[#list + 1] = enemy:GetAttributeChangedSignal("BurnUntil"):Connect(function()
         refreshEnemyBurn(enemy)
     end)
+    list[#list + 1] = enemy:GetAttributeChangedSignal("HealSuppressedUntil"):Connect(function()
+        refreshEnemyHealSuppression(enemy)
+    end)
     list[#list + 1] = enemy:GetAttributeChangedSignal("RootedUntil"):Connect(function()
         refreshEnemyDebuff(enemy)
     end)
@@ -616,6 +670,7 @@ local function hookEnemy(enemy)
         refreshArmor(enemy)
     end)
     refreshEnemyDebuff(enemy)
+    refreshEnemyHealSuppression(enemy)
     refreshEnemyBurn(enemy)
     refreshArmor(enemy)
 end

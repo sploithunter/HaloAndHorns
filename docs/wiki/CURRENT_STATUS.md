@@ -1729,6 +1729,17 @@ Last checked: 2026-08-24
 - All 40 Layer 3 pets have reserved role/support mappings. The approved design direction is a mix of
   ordinary single attacks, four intermittent splash blasters, apex continuous-area kits, live
   control, and Heaven sustain/farming versus Hell drain/debuff support.
+- Layer 3 support now uses a total-value rarity budget rather than requiring every individual
+  support number to rise. The Legendary Light Tortoise trades down to a 5% focused heal for planned
+  persistent radiant AoE damage; the Legendary Obsidian Tortoise trades down to a 15% focused curse
+  for a live area heal-block field. Focused Legendary buffs/curses were strengthened above their
+  Rare/Uncommon counterparts.
+- Drain is damage-free but now heals an ally and suppresses healer casts plus passive regeneration
+  on its affected enemy scope. Common drains are focused, the Mythical Dreadthorn Grovekeeper uses
+  an aura, and the Secret Dreadglass Dragon suppresses its targeted-AoE cluster. A replicated red
+  heal-down badge appears on affected enemies and on drain/anti-heal ability marks.
+- Curse and shred now consume the existing Basic/Golden/Rainbow effect multipliers; suppression
+  remains binary and never extends its duration or recharge for a variant.
 - Huge pets now differentiate progression: base-single species gain the existing targeted splash;
   base-area species retain AoE and additionally gain a spreading burn with global defaults and an
   optional per-pet `huge_attack_dot` override.

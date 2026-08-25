@@ -41,6 +41,15 @@ return function()
             expect(count(source, "function CombatApplication.ApplyDamage")).to.equal(1)
             expect(count(source, "function CombatApplication.ApplyPowerHeal")).to.equal(1)
             expect(count(source, "Signals.Combat_Result:FireAllClients")).to.equal(1)
+            expect(count(source, "HealingSuppression.isActive")).to.equal(1)
+        end)
+
+        it("blocks every ordinary enemy recovery path while drain suppression is live", function()
+            local source = readFile("src/Server/Services/EnemyService.lua")
+            -- Passive regeneration and enemy-healer target selection each consult the same status.
+            expect(count(source, "HealingSuppression.isActive")).to.equal(2)
+            expect(count(source, "HealingSuppression.extend")).to.equal(1)
+            expect(count(source, "_auraHealingSuppression")).to.equal(3)
         end)
 
         it("retires feature-specific floating-number emissions", function()

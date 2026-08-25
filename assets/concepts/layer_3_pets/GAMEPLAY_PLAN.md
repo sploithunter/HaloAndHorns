@@ -35,10 +35,10 @@ gain contagion when Huge under the central `PetTargeting.hugeAttackDot` rule.
 
 | Origin | Heaven 3 selection | Hell 3 selection |
 | --- | --- | --- |
-| Fire | Gloryspark Cherub — melee, single. Seraph Lion — bruiser/tank, single. Radiant Lance Seraph — ranged, 7s periodic splash. Gloryscale Salamander — offense aura, single. Empyrean Firehawk — ranged apex, `targeted_aoe` plus a plain 18%/4s burn. | Dreadcinder Imp — melee, single. Ruinmane Lion — bruiser/tank, single. Dreadlance Seraph — ranged, 7s periodic splash. Ruinscale Salamander — curse, single. Dreadfire Hawk — ranged apex, `targeted_aoe` plus a plain 18%/4s burn. |
+| Fire | Gloryspark Cherub — melee, single. Seraph Lion — bruiser/tank, single. Radiant Lance Seraph — ranged, 7s periodic splash. Gloryscale Salamander — Legendary +20% offense aura, single. Empyrean Firehawk — ranged apex, `targeted_aoe` plus a plain 18%/4s burn. | Dreadcinder Imp — melee, single. Ruinmane Lion — bruiser/tank, single. Dreadlance Seraph — ranged, 7s periodic splash. Ruinscale Salamander — Legendary 25% curse, single. Dreadfire Hawk — ranged apex, `targeted_aoe` plus a plain 18%/4s burn. |
 | Ice | Lumen Seal — melee, single. Halo Wisp — control, 3.25s root every 11s. Celestial Moth — ranged, 8s periodic splash. Halo Bear — tank, single. Empyrean Mammoth — tank apex, `targeted_aoe` with a 2s slow on the splashed cluster. | Duskfrost Seal — melee, single. Dread Wisp — control, 3.25s root every 11s. Dreadveil Moth — ranged, 8s periodic splash. Dreadguard Bear — tank, single. Dreadspire Mammoth — tank apex, `targeted_aoe` with a 2s slow on the splashed cluster. |
-| Grass | Gloryleaf Lamb — heal, single. Halo Hart — melee, single. Lightbark Rhino — tank, single. Bloomlight Sprite — luck, single. Empyrean Grovekeeper — tank apex with `aura` damage and a 10% heal pulse. | Thornleaf Lamb — drain-heal, single. Dread Hart — melee, single. Ironbark Rhino — tank, single. Dreadbloom Sprite — curse, single. Dreadthorn Grovekeeper — tank apex with `aura` damage, a plain burn, and a 10% drain-heal pulse. |
-| Desert | Bloom Ibis — heal, single. Radiant Totem — defense, single. Glory Mongoose — offense, single. Light Tortoise — regeneration, single. Oasis Dragon — Secret support capstone, `targeted_aoe`, 10% heal plus defense auras. | Ash Ibis — drain-heal, single. Obsidian Totem — curse, single. Dread Mongoose — curse, single. Obsidian Tortoise — regeneration denial represented by the live light curse seam. Dreadglass Dragon — Secret support capstone, `targeted_aoe`, 10% drain-heal plus shred and strong curse auras. |
+| Grass | Gloryleaf Lamb — Common 8% heal, single. Halo Hart — melee, single. Lightbark Rhino — tank, single. Bloomlight Sprite — Legendary +20% luck aura. Empyrean Grovekeeper — Mythical tank apex with `aura` damage and a 10% heal pulse. | Thornleaf Lamb — Common 8% drain-heal plus focused heal suppression. Dread Hart — melee, single. Ironbark Rhino — tank, single. Dreadbloom Sprite — Legendary 25% curse, single. Dreadthorn Grovekeeper — Mythical tank apex with `aura` damage, a plain burn, a 10% drain-heal pulse, and area heal suppression. |
+| Desert | Bloom Ibis — Common 8% heal, single. Radiant Totem — Uncommon defense aura. Glory Mongoose — Rare +16.67% offense aura. Light Tortoise — Legendary discovery hybrid: intentionally modest 5% focused heal plus persistent radiant `aura` damage. Oasis Dragon — Secret support capstone, `targeted_aoe`, 10% heal plus defense auras. | Ash Ibis — Common 8% drain-heal plus focused heal suppression. Obsidian Totem — Uncommon 15% curse. Dread Mongoose — Rare 20% curse. Obsidian Tortoise — Legendary discovery hybrid: lighter 15% focused curse plus a damage-free area heal-block field. Dreadglass Dragon — Secret support capstone, `targeted_aoe`, 10% drain-heal plus cluster heal suppression, shred, and strong curse auras. |
 
 Suggested periodic ability definitions when the pet records land:
 
@@ -54,6 +54,21 @@ Dreadthorn Grovekeeper can use the same plain burn. It must not include `spread`
 only its Huge form receives spread. The mammoths should use `attack_control = { kind = "slow",
 duration = 2, factor = 0.65 }`, which applies to the primary and splash targets through the existing
 on-hit control seam.
+
+The Light Tortoise should author `attack_targeting = "aura"` with a deliberately conservative
+`attack_aoe` so its 5% heal remains the price of gaining persistent area damage. The Obsidian
+Tortoise keeps ordinary single-target attacks; its area value comes from the anti-heal support
+field instead. This is an intentional discovery pair, not a rule that every Legendary must have
+larger support numbers than every Common.
+
+## Support value budget
+
+Rarity raises a pet's total value budget, not every individual number. A rarer pet may earn that
+budget through stronger magnitude, wider targeting, damage, protection, control, or a deliberate
+hybrid. Lower support magnitude is valid only when an explicit compensating capability is recorded
+and tested. Drain remains damage-free: it heals an ally while preventing affected enemies from
+receiving healer casts or passive regeneration. Basic/Golden/Rainbow scale heal, buff, shred, and
+curse magnitude at 1.0/1.25/1.5; suppression duration and recharge never scale by variant.
 
 ## Huge rule
 

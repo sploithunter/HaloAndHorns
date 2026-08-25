@@ -54,6 +54,8 @@ local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local TargetPriority = require(ReplicatedStorage.Shared.Game.TargetPriority)
 local SupportAura = require(ReplicatedStorage.Shared.Game.SupportAura)
+local PetTargeting = require(ReplicatedStorage.Shared.Game.PetTargeting)
+local HealingSuppression = require(ReplicatedStorage.Shared.Game.HealingSuppression)
 local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView) -- effective combat power (empower carry pick)
 local PetAbilityRuntime = require(ReplicatedStorage.Shared.Game.PetAbilityRuntime)
 local DamageOverTime = require(ReplicatedStorage.Shared.Game.DamageOverTime) -- DoT burn ticks
@@ -3700,7 +3702,14 @@ function EnemyService:_enemyRegenPass(now, dt, eng)
                 if entry.lastSeenHp and hp < entry.lastSeenHp then
                     entry.lastDamagedAt = now
                 end
-                if hp < maxHp and now - (entry.lastDamagedAt or 0) >= delay then
+                if
+                    hp < maxHp
+                    and now - (entry.lastDamagedAt or 0) >= delay
+                    and not HealingSuppression.isActive(
+                        model:GetAttribute(HealingSuppression.ATTRIBUTE),
+                        os.time()
+                    )
+                then
                     hp = math.min(maxHp, hp + perSec * dt)
                     model:SetAttribute("HP", hp)
                 end
@@ -4175,11 +4184,86 @@ function EnemyService:GetEnemyGroup(focusModel)
     return out
 end
 
+-- Resolve who receives a drain/anti-heal pulse. Ordinary drain suppresses the focused enemy;
+-- targeted_aoe suppresses the focus cluster; aura suppresses enemies around the provider. Scope is
+-- the same config vocabulary that draws the ability badge ring.
+function EnemyService:_healingSuppressionTargets(folder, aura, provider)
+    local player = Players:FindFirstChild(folder.Name)
+    if not player then
+        return {}
+    end
+    local focus = self:_focusEnemy(player)
+    local scope = PetTargeting.auraScope(aura, self._petRoles)
+    if scope == "single" then
+        return focus and { focus } or {}
+    end
+
+    local centerModel = scope == "targeted_aoe" and focus or provider
+    local centerPart = centerModel
+        and (centerModel.PrimaryPart or centerModel:FindFirstChildWhichIsA("BasePart"))
+    if not centerPart then
+        return focus and { focus } or {}
+    end
+
+    local radius = math.max(0, tonumber(aura.radius) or 12)
+    local maxTargets = math.max(1, math.floor(tonumber(aura.max_targets) or 5))
+    local candidates = {}
+    for targetId, entry in pairs(self._enemies) do
+        local model = entry.model
+        local part = model
+            and model.Parent
+            and (model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart"))
+        if model and part and (model:GetAttribute("HP") or 0) > 0 then
+            local distance = (part.Position - centerPart.Position).Magnitude
+            if distance <= radius then
+                candidates[#candidates + 1] = {
+                    model = model,
+                    distance = distance,
+                    id = tostring(targetId),
+                    focus = model == focus,
+                }
+            end
+        end
+    end
+    table.sort(candidates, function(a, b)
+        if a.focus ~= b.focus then
+            return a.focus
+        end
+        if a.distance ~= b.distance then
+            return a.distance < b.distance
+        end
+        return a.id < b.id
+    end)
+
+    local out = {}
+    for i = 1, math.min(maxTargets, #candidates) do
+        out[i] = candidates[i].model
+    end
+    return out
+end
+
+function EnemyService:_auraHealingSuppression(folder, aura, provider)
+    local duration = tonumber(aura.heal_suppression_duration)
+        or (aura.kind == "antiheal" and tonumber(aura.duration))
+        or 3
+    local now = os.time()
+    for _, model in ipairs(self:_healingSuppressionTargets(folder, aura, provider)) do
+        model:SetAttribute(
+            HealingSuppression.ATTRIBUTE,
+            HealingSuppression.extend(
+                model:GetAttribute(HealingSuppression.ATTRIBUTE),
+                now,
+                duration
+            )
+        )
+    end
+end
+
 -- Hell COMBAT-debuff aura: stamp a debuff on the squad's focus enemy.
 --   shred = VulnerableMult (enemy takes more from EVERYONE — the same seam the shred power/on-hit use).
 --   curse = WeakenMult (enemy DEALS less — consumed in _hitPet). Refresh-to-stronger / longer so a
 -- small buffer never overwrites a big one and re-stamping just refreshes (never compounds).
-function EnemyService:_auraEnemyDebuff(folder, aura)
+function EnemyService:_auraEnemyDebuff(folder, aura, variantMult)
     local player = Players:FindFirstChild(folder.Name)
     if not player then
         return
@@ -4203,7 +4287,11 @@ function EnemyService:_auraEnemyDebuff(folder, aura)
         VulnMark.apply(
             model,
             "shred",
-            OnHitEffects.vulnerable(1 + curFrac, curFrac > 0, tonumber(aura.amount) or 0.25),
+            OnHitEffects.vulnerable(
+                1 + curFrac,
+                curFrac > 0,
+                (tonumber(aura.amount) or 0.25) * (tonumber(variantMult) or 1)
+            ),
             untilT
         )
     elseif aura.kind == "curse" then
@@ -4213,7 +4301,7 @@ function EnemyService:_auraEnemyDebuff(folder, aura)
             OnHitEffects.weaken(
                 model:GetAttribute("WeakenMult"),
                 active,
-                tonumber(aura.mult) or 0.7
+                SupportAura.scaleDebuffMultiplier(aura.mult or 0.7, variantMult)
             )
         )
         model:SetAttribute("WeakenUntil", untilT)
@@ -4432,7 +4520,7 @@ function EnemyService:_supportPass(now)
         -- (2 meerkats => 2x the coin-yield contribution, clamped by the axis cap downstream).
         -- count = # contributing buffers (badge piles); weight = variant-scaled units
         -- (basic 1.0 / golden 1.25 / rainbow 1.5 — the math multiplier downstream)
-        local counts, weights, rep = {}, {}, {}
+        local counts, weights, rep, providers = {}, {}, {}, {}
         for _, pet in ipairs(folder:GetChildren()) do
             -- MEZ (#269): a HELD buffer is severed from the support graph — its auras stop
             -- flowing to the band until the hold lapses (hold the healer = the counter-play).
@@ -4449,6 +4537,12 @@ function EnemyService:_supportPass(now)
                         counts[aura.kind] = (counts[aura.kind] or 0) + 1
                         weights[aura.kind] = (weights[aura.kind] or 0) + vmult
                         rep[aura.kind] = rep[aura.kind] or aura
+                        providers[aura.kind] = providers[aura.kind] or {}
+                        table.insert(providers[aura.kind], {
+                            pet = pet,
+                            aura = aura,
+                            variantMult = vmult,
+                        })
                     end
                 end
             end
@@ -4464,10 +4558,17 @@ function EnemyService:_supportPass(now)
             if not gate[kind] or now >= gate[kind] then
                 gate[kind] = now + (aura.interval or 1.5)
                 if kind == "heal" or kind == "drain" then
-                    -- "drain" = Hell's life-drain heal (give→take flavor): mechanically a team mend,
-                    -- so it routes through the same _auraHeal path as Heaven's heal.
-                    for _ = 1, count do -- N healers => N mends (variant scales each mend)
-                        self:_auraHeal(folder, aura, weight / count)
+                    -- Each provider keeps its own tuning and variant. Drain retains the ally mend,
+                    -- deals no damage, and additionally blocks recovery on its enemy target(s).
+                    for _, provider in ipairs(providers[kind] or {}) do
+                        self:_auraHeal(folder, provider.aura, provider.variantMult)
+                        if kind == "drain" then
+                            self:_auraHealingSuppression(folder, provider.aura, provider.pet)
+                        end
+                    end
+                elseif kind == "antiheal" then
+                    for _, provider in ipairs(providers[kind] or {}) do
+                        self:_auraHealingSuppression(folder, provider.aura, provider.pet)
                     end
                 elseif kind == "hold" then
                     for _ = 1, count do -- N controllers => N enemies pinned (each picks a fresh one)
@@ -4481,8 +4582,8 @@ function EnemyService:_supportPass(now)
                     -- Hell combat-debuff auras (enemy-targeting): each buffer stamps the squad's
                     -- focus enemy. shred = +damage-taken, curse = -enemy-damage. Keep-stronger so
                     -- multiple buffers refresh rather than compound.
-                    for _ = 1, count do
-                        self:_auraEnemyDebuff(folder, aura)
+                    for _, provider in ipairs(providers[kind] or {}) do
+                        self:_auraEnemyDebuff(folder, provider.aura, provider.variantMult)
                     end
                 elseif kind == "defense" then
                     self:_auraDefense(folder, aura, count, weight)
@@ -4967,7 +5068,15 @@ function EnemyService:_enemyHealPass(now)
                     if otid ~= tid and oe.model and oe.model.Parent then
                         local hp = oe.model:GetAttribute("HP") or 0
                         local maxhp = oe.model:GetAttribute("MaxHP") or 1
-                        if hp > 0 and hp < maxhp and (oe.pos - entry.pos).Magnitude <= range then
+                        if
+                            hp > 0
+                            and hp < maxhp
+                            and (oe.pos - entry.pos).Magnitude <= range
+                            and not HealingSuppression.isActive(
+                                oe.model:GetAttribute(HealingSuppression.ATTRIBUTE),
+                                os.time()
+                            )
+                        then
                             local frac = hp / maxhp
                             if not worstFrac or frac < worstFrac then
                                 worstFrac, target = frac, oe.model
@@ -6499,6 +6608,16 @@ end
 -- bubble/armor drops), and the server absorb path reads 0. Cheap: writes fire only on the single
 -- tick a live buff actually lapses. Re-casts push *Until forward, so a fresh buff is never swept.
 function EnemyService:_buffExpiryPass(nowTime)
+    -- Timed anti-heal is also cleared here so the replicated attribute write becomes the status
+    -- badge's end event. Reapplications extend the timestamp before this pass can sweep it.
+    for _, entry in pairs(self._enemies) do
+        local model = entry.model
+        local until_ = model and tonumber(model:GetAttribute(HealingSuppression.ATTRIBUTE)) or 0
+        if model and model.Parent and until_ > 0 and until_ <= nowTime then
+            model:SetAttribute(HealingSuppression.ATTRIBUTE, 0)
+        end
+    end
+
     local playerPets = Workspace:FindFirstChild("PlayerPets")
     if not playerPets then
         return

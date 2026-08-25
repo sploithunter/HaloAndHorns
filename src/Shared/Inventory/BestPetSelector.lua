@@ -17,6 +17,7 @@ local SUPPORT_KIND_PRIORITY = {
     heal = 100,
     drain = 95,
     defense = 90,
+    antiheal = 88,
     focus = 86,
     recharge = 84,
     haste = 82,

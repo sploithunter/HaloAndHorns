@@ -12,6 +12,12 @@ local ICONS = {
     function_mark = {
         groups = {
             heal = { symbol = "plus", element = "earth", color = { 70, 205, 95 }, label = "Heal" },
+            antiheal = {
+                symbol = "plus_down",
+                element = "fire",
+                color = { 255, 82, 89 },
+                label = "Heal Block",
+            },
             armor = {
                 symbol = "armor_chest",
                 element = "ice",
@@ -27,23 +33,26 @@ local ICONS = {
         },
         by_kind = {
             heal = "heal",
-            drain = "heal",
+            drain = "antiheal",
+            antiheal = "antiheal",
             defense = "armor",
             shred = "debuff",
             curse = "debuff",
         },
-        priority = { "heal", "armor", "debuff" },
+        priority = { "antiheal", "heal", "armor", "debuff" },
     },
 }
 
 describe("PetFunctionMark", function()
-    it("maps heal and drain to the green heal group", function()
+    it("maps heal green and drain to the red heal-block group", function()
         local heal = PetFunctionMark.forKind("heal", ICONS)
         local drain = PetFunctionMark.forKind("drain", ICONS)
         expect(heal.group).to.equal("heal")
         expect(heal.element).to.equal("earth")
         expect(heal.symbol).to.equal("plus")
-        expect(drain.group).to.equal("heal")
+        expect(drain.group).to.equal("antiheal")
+        expect(drain.element).to.equal("fire")
+        expect(drain.symbol).to.equal("plus_down")
     end)
 
     it("maps defense to armor and shred/curse to one debuff chip", function()
@@ -114,6 +123,7 @@ describe("power_icons.function_mark", function()
                 if
                     kind == "heal"
                     or kind == "drain"
+                    or kind == "antiheal"
                     or kind == "defense"
                     or kind == "shred"
                     or kind == "curse"
