@@ -23,6 +23,15 @@ LayerAccess.Reason = {
     InsufficientTokens = "insufficient_tokens",
 }
 
+-- Explicit physical-portal test switch. Kept separate from canAccess so admin,
+-- world-travel, and production progression math continue to judge the authored
+-- Soul/token/level requirements.
+function LayerAccess.isTestingOpen(layerId, config)
+    local portals = config and config.realm_portals
+    local open = portals and portals.testing_open_layers
+    return type(open) == "table" and open[layerId] == true
+end
+
 -- Magnitude depth of a layer (base = 0, heaven_3 = 3, hell_2 = 2). Drives the
 -- "deeper_only" traversal sink: a move is charged only when target depth > from depth.
 function LayerAccess.layerDepth(layerId)

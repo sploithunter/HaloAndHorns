@@ -13,6 +13,10 @@ dedicated mesh because its topology differs from Basic.
 Layer 3's eight authored egg fixtures now use the realm-specific stand meshes. Its 141 flora
 anchors are source-of-truth: 46 stale copied visuals were removed, and runtime config supplies the
 complete Heaven 3/Hell 3 plant, tree, rock, and cactus palettes from the prebaked Models bundle.
+Four realm landmarks are placed in Studio, and twelve tagged ambient-fauna anchors spawn six
+non-combat moving props per realm. `heaven_3` and `hell_3` are temporarily open through the
+physical realm portals for active testing; their production Soul, token, and player-level
+requirements remain unchanged.
 
 ## Healer hunt pins pets; leftover despawn cannot lock the room (2026-08-24)
 

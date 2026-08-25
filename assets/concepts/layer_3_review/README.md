@@ -67,8 +67,8 @@ the only inputs intended for Meshy.
 `layer_3_flora_fauna_expansion_contact_card.png` covers assets 17–32: twelve additional flora
 props and four ambient-fauna props. These fauna are environmental dressing, not collectible pets
 or combat units. They must not receive health, targeting, damage, drops, or other combat hooks;
-their eventual motion is lightweight ambient wandering/bobbing with optional simple wing or limb
-movement. The expansion raises the non-building concept pool from 12 to 28 assets (2.3×).
+their runtime motion is lightweight deterministic wandering/bobbing, independent of the combat
+systems. The expansion raises the non-building concept pool from 12 to 28 assets (2.3×).
 
 See `PROMPTS.md` for the exact final prompt used for every selected image.
 
@@ -129,3 +129,7 @@ Smart Topology T2, strict topology checks, and exact-mesh 2K retexture. All 20 f
 FBXs are watertight, non-manifold-free, and below 10,000 triangles. The batch used 390 Meshy credits
 and is recorded in `meshy_trials/layer_3_environment_backlog_production.json`; the final contact
 sheet is `meshy_trials/layer_3_environment_textured_review.png`.
+
+The completed Studio dressing pass places four landmarks and twelve tagged ambient-fauna anchors
+(three of each fauna species, six per realm). `AmbientFaunaService` clones the prebaked visuals and
+keeps them non-combat and non-interactive while applying their small hover or ground loops.

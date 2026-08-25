@@ -145,6 +145,20 @@ permission for both objects to survive. Layer 3 removes those linked visuals thr
 inspected with `scripts/studio/preview_layer3_flora.luau`, whose `_Layer3FloraPreview` folders must
 be deleted before saving the place.
 
+Ambient fauna use invisible BaseParts tagged `AmbientFaunaAnchor`. Each anchor supplies
+`ModelName`, `Motion` (`hover` or `ground`), `MoveRadius`, `HoverHeight`, `BobHeight`, `Speed`,
+`VisualSize`, and `Phase`; `AmbientFaunaService` clones the matching
+`Assets.Models.AmbientFauna` visual and owns its deterministic 20 Hz motion. These models are
+environmental dressing only: every part is anchored and non-colliding/non-touching/non-queryable,
+and fauna have no health, target, damage, or drop hooks. The repeatable Layer 3 authoring pass is
+`scripts/studio/place_layer3_ambient_fauna_anchors.luau`.
+
+The physical realm portals may temporarily bypass their per-player gate through
+`layers.realm_portals.testing_open_layers`. This switch affects only the named portal geometry and
+client lock presentation; it must not modify `layers.access`, `LayerAccess.canAccess`, World
+Travel, or persisted player progression. Heaven 3 and Hell 3 are currently open this way for map
+testing.
+
 Ascension altars use an invisible child part named `AscensionAltarHost`, tagged
 `AscensionAltar`, as their interaction contract. `AscensionAltarService` creates the prompt and
 level-training behavior at that host; altar meshes and `NativeFX` remain Studio-owned. Home's

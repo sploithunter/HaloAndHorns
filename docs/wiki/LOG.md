@@ -4781,3 +4781,11 @@ first-session cohort rates.
   natural bounds through Studio, and expanded the tracked environment registry/prebaked bundle to
   38 assets: 29 flora, four ambient fauna, and five landmarks. No approved environment concept
   remains 2D-only or pending upload.
+- Placed four realm-specific Layer 3 landmarks in Studio and preserved the two replaced generic
+  houses under `ServerStorage.Layer3LandmarkOriginals` for recoverability.
+- Added twelve tagged ambient-fauna anchors (six per realm) and a lightweight deterministic motion
+  service. The spawned butterflies, snails, beetles, and hornback lizards are anchored,
+  non-colliding, non-queryable environmental props with no combat or reward hooks.
+- Temporarily opened the Heaven 3 and Hell 3 physical realm portals for active map testing through
+  `realm_portals.testing_open_layers`; the production Soul, token, level, World Travel, and saved
+  progression rules remain unchanged.

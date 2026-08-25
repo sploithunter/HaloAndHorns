@@ -99,6 +99,13 @@ return {
         admin_unlock = true, -- retained; no effect on the touch path now that locked=false
         lock_badge_studs = 10, -- "COMING SOON" badge size on still-unbuilt realm portals
         bypass_access = true,
+        -- Temporary physical-gate bypass for active content testing. This does not
+        -- rewrite the production Soul/token/level requirements in `access`; it only
+        -- removes the per-player level lock from the named built realm portals.
+        testing_open_layers = {
+            heaven_3 = true,
+            hell_3 = true,
+        },
         prompt_hold = 0,
         max_distance = 14,
         -- Portal_Halo1-5 -> heaven_1-5, Portal_Horn1-5 -> hell_1-5. Each jumps DIRECTLY to its
