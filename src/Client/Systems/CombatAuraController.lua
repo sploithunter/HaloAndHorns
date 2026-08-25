@@ -205,7 +205,6 @@ end
 -- power-debuff channel, so a Dreadglass target can visibly carry heal block, shred, and curse at
 -- the same time instead of one status hiding another.
 local healSuppressionIcons = setmetatable({}, { __mode = "k" })
-local healSuppressionTok = 0
 local function hideHealSuppressionIcon(target)
     local rec = healSuppressionIcons[target]
     if rec then
@@ -221,12 +220,8 @@ local function showHealSuppressionIcon(target, secs)
         hideHealSuppressionIcon(target)
         return
     end
-    healSuppressionTok += 1
-    local myTok = healSuppressionTok
     local rec = healSuppressionIcons[target]
-    if rec and rec.gui.Parent then
-        rec.token = myTok
-    else
+    if not (rec and rec.gui.Parent) then
         local pp = target.PrimaryPart or target:FindFirstChildWhichIsA("BasePart")
         if not pp then
             return
@@ -247,18 +242,8 @@ local function showHealSuppressionIcon(target, secs)
         bb.Adornee = pp
         PetBadge.create(bb, { element = "fire", symbol = "plus_down", ring = "aura" })
         bb.Parent = pp
-        healSuppressionIcons[target] = { gui = bb, token = myTok }
+        healSuppressionIcons[target] = { gui = bb }
     end
-    task.delay(secs + 0.2, function()
-        local active = healSuppressionIcons[target]
-        if
-            active
-            and active.token == myTok
-            and (target:GetAttribute("HealSuppressedUntil") or 0) <= os.time()
-        then
-            hideHealSuppressionIcon(target)
-        end
-    end)
 end
 
 local originCfg = {}

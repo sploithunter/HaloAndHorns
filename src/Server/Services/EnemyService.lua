@@ -6608,6 +6608,16 @@ end
 -- bubble/armor drops), and the server absorb path reads 0. Cheap: writes fire only on the single
 -- tick a live buff actually lapses. Re-casts push *Until forward, so a fresh buff is never swept.
 function EnemyService:_buffExpiryPass(nowTime)
+    -- Timed anti-heal is also cleared here so the replicated attribute write becomes the status
+    -- badge's end event. Reapplications extend the timestamp before this pass can sweep it.
+    for _, entry in pairs(self._enemies) do
+        local model = entry.model
+        local until_ = model and tonumber(model:GetAttribute(HealingSuppression.ATTRIBUTE)) or 0
+        if model and model.Parent and until_ > 0 and until_ <= nowTime then
+            model:SetAttribute(HealingSuppression.ATTRIBUTE, 0)
+        end
+    end
+
     local playerPets = Workspace:FindFirstChild("PlayerPets")
     if not playerPets then
         return
