@@ -66,20 +66,12 @@ function AdminService:_syncPlayerAdminAttributes(player)
 
     local isAdmin = self:IsAuthorized(player)
     player:SetAttribute("IsAdmin", isAdmin)
-    local isOwner = false
     local peopleOk, peopleCfg = pcall(function()
         return self._configLoader:LoadConfig("people_list")
     end)
-    local owners = peopleOk and peopleCfg and peopleCfg.roles and peopleCfg.roles.owner_user_ids
-    if type(owners) == "table" then
-        for _, userId in ipairs(owners) do
-            if player.UserId == userId then
-                isOwner = true
-                break
-            end
-        end
-    end
-    player:SetAttribute("IsOwner", isOwner)
+    local roles = peopleOk and peopleCfg and peopleCfg.roles or {}
+    player:SetAttribute("IsOwner", self:_userIdListed(roles.owner_user_ids, player.UserId))
+    player:SetAttribute("IsBetaTester", self:_userIdListed(roles.tester_user_ids, player.UserId))
 
     if self._logger then
         self._logger:Info("Admin attributes synced", {
@@ -88,6 +80,18 @@ function AdminService:_syncPlayerAdminAttributes(player)
             isAdmin = isAdmin,
         })
     end
+end
+
+function AdminService:_userIdListed(ids, userId)
+    if type(ids) ~= "table" then
+        return false
+    end
+    for _, id in ipairs(ids) do
+        if userId == id then
+            return true
+        end
+    end
+    return false
 end
 
 -- Check if a player is authorized as an admin

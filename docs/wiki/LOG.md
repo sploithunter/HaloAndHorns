@@ -1,5 +1,11 @@
 # Log
 
+## 2026-08-25 — Tester is an official allowlist
+
+- People-list Tester (β) is no longer granted for an open-beta campaign
+  egg or pet. Official Studio testers go in
+  `configs/people_list.lua` `roles.tester_user_ids`. Empty until named.
+
 ## 2026-08-25 — Farmer card shows Farm #N
 
 - People-list Farmer (and other board titles) now use the live
