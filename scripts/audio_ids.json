@@ -89,5 +89,13 @@
   "swamp_static": "111140016293110",
   "egg_hatch_pop": "88272087527866",
   "egg_roll_snare": "123130070946645",
-  "arch_lightning_buzz": "80802960194213"
+  "arch_lightning_buzz": "80802960194213",
+  "heaven3_desert": "73431157403503",
+  "heaven3_fire": "133687473391978",
+  "heaven3_grass": "136913778612174",
+  "heaven3_ice": "72133998616058",
+  "hell3_desert": "83383101346831",
+  "hell3_fire": "89260679201263",
+  "hell3_grass": "133807144899572",
+  "hell3_ice": "135557307778250"
 }

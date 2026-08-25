@@ -48,5 +48,25 @@ return function()
         it("does not consume the Roblox-rejected Hell combat upload", function()
             expect(containsValue(sounds, REJECTED_HELL_COMBAT_ID)).to.equal(false)
         end)
+
+        it("gives every Layer 3 elemental zone its own uploaded track", function()
+            local expected = {
+                Heaven_3_Lava = "heaven3_fire",
+                Heaven_3_Ice = "heaven3_ice",
+                Heaven_3_Grass = "heaven3_grass",
+                Heaven_3_Desert = "heaven3_desert",
+                Hell_3_Lava = "hell3_fire",
+                Hell_3_Ice = "hell3_ice",
+                Hell_3_Grass = "hell3_grass",
+                Hell_3_Desert = "hell3_desert",
+            }
+            local used = {}
+            for area, key in pairs(expected) do
+                expect(sounds.area_music[area]).to.equal(key)
+                assertMusicKey(key, "area_music." .. area)
+                expect(used[key]).to.equal(nil)
+                used[key] = true
+            end
+        end)
     end)
 end

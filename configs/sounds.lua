@@ -354,6 +354,18 @@ return {
         heaven_sands_b = { id = "rbxassetid://98035120998310", volume = 0.45 },
         -- Hell Grass / swamp trial bed (Jason 2026-07-15 "Swamp Static" — way better than spa):
         swamp_static = { id = "rbxassetid://111140016293110", volume = 0.45 },
+
+        -- LAYER 3 (Jason, 2026-08-25): one authored environmental loop for every
+        -- elemental zone in Heaven 3 and Hell 3. Group-owned; sources live beside
+        -- the earlier realm music in assets/audio/music.
+        heaven3_fire = { id = "rbxassetid://133687473391978", volume = 0.45 },
+        heaven3_ice = { id = "rbxassetid://72133998616058", volume = 0.45 },
+        heaven3_grass = { id = "rbxassetid://136913778612174", volume = 0.45 },
+        heaven3_desert = { id = "rbxassetid://73431157403503", volume = 0.45 },
+        hell3_fire = { id = "rbxassetid://89260679201263", volume = 0.45 },
+        hell3_ice = { id = "rbxassetid://135557307778250", volume = 0.45 },
+        hell3_grass = { id = "rbxassetid://133807144899572", volume = 0.45 },
+        hell3_desert = { id = "rbxassetid://83383101346831", volume = 0.45 },
     },
 
     -- COMBAT MUSIC: while the local player is InCombat (server-set Player attribute), AreaMusicController
@@ -420,6 +432,14 @@ return {
         Hell_2_Ice = "iron_gates_b",
         Hell_2_Desert = "ember_menace_a",
         Hell_2_Grass = "lava_homeworld_b", -- (Jason: hell L2)
+        Heaven_3_Lava = "heaven3_fire",
+        Heaven_3_Ice = "heaven3_ice",
+        Heaven_3_Grass = "heaven3_grass",
+        Heaven_3_Desert = "heaven3_desert",
+        Hell_3_Lava = "hell3_fire",
+        Hell_3_Ice = "hell3_ice",
+        Hell_3_Grass = "hell3_grass",
+        Hell_3_Desert = "hell3_desert",
 
         -- MISSION pseudo-areas (ZoneTracker publishes mission_<MissionArea>
         -- while InMission). Door trials: mission_hell / mission_heaven.
