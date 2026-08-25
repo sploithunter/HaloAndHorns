@@ -162,6 +162,186 @@
       "texture_image": "rbxassetid://84241065881683",
       "creator_group": "15872767",
       "uploaded_on": "2026-08-25"
+    },
+    "bloomstone_shelf": {
+      "realm": "heaven_3",
+      "model_asset": "99592016883829",
+      "mesh_id": "rbxassetid://116124780706332",
+      "texture_decal": "133880099853206",
+      "texture_image": "rbxassetid://101203371691953",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "empyrean_bloom_cactus": {
+      "realm": "heaven_3",
+      "model_asset": "92340308448476",
+      "mesh_id": "rbxassetid://99133333348196",
+      "texture_decal": "104984200620459",
+      "texture_image": "rbxassetid://129364457320153",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "empyrean_hibiscus": {
+      "realm": "heaven_3",
+      "model_asset": "91944508765077",
+      "mesh_id": "rbxassetid://139581091979515",
+      "texture_decal": "103478358899706",
+      "texture_image": "rbxassetid://96752454810183",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "jade_lantern_bloom": {
+      "realm": "heaven_3",
+      "model_asset": "97525548295326",
+      "mesh_id": "rbxassetid://72919567301637",
+      "texture_decal": "118944251712002",
+      "texture_image": "rbxassetid://95263422404171",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "living_root_pavilion": {
+      "realm": "heaven_3",
+      "model_asset": "86910500091958",
+      "mesh_id": "rbxassetid://78359625214912",
+      "texture_decal": "136038798194248",
+      "texture_image": "rbxassetid://117117402781191",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "luminous_canopy_tree": {
+      "realm": "heaven_3",
+      "model_asset": "129845713867591",
+      "mesh_id": "rbxassetid://119316024217454",
+      "texture_decal": "113682825951449",
+      "texture_image": "rbxassetid://102861530137899",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "pearlroot_boulder": {
+      "realm": "heaven_3",
+      "model_asset": "128925513562256",
+      "mesh_id": "rbxassetid://138647038166357",
+      "texture_decal": "118146113727739",
+      "texture_image": "rbxassetid://113942819225746",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "petal_spire": {
+      "realm": "heaven_3",
+      "model_asset": "118378199790211",
+      "mesh_id": "rbxassetid://116874406545201",
+      "texture_decal": "111816086873756",
+      "texture_image": "rbxassetid://80542393970787",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "rootlight_vine": {
+      "realm": "heaven_3",
+      "model_asset": "133661128733556",
+      "mesh_id": "rbxassetid://107344848199747",
+      "texture_decal": "121210547250041",
+      "texture_image": "rbxassetid://74056277045236",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "abyss_orchid": {
+      "realm": "hell_3",
+      "model_asset": "78111910299197",
+      "mesh_id": "rbxassetid://77195850219787",
+      "texture_decal": "125102265139610",
+      "texture_image": "rbxassetid://134976531000259",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "blood_reed": {
+      "realm": "hell_3",
+      "model_asset": "114822408636080",
+      "mesh_id": "rbxassetid://71722021312705",
+      "texture_decal": "82527212365261",
+      "texture_image": "rbxassetid://110107449639439",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "dreadspire_faultstone": {
+      "realm": "hell_3",
+      "model_asset": "127198710217123",
+      "mesh_id": "rbxassetid://136174608177334",
+      "texture_decal": "114914406132176",
+      "texture_image": "rbxassetid://108877632238093",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "dreadspire_razorstone": {
+      "realm": "hell_3",
+      "model_asset": "111270804096202",
+      "mesh_id": "rbxassetid://122696844835449",
+      "texture_decal": "87929516390868",
+      "texture_image": "rbxassetid://72580473312587",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "dreadspire_thorn_cactus": {
+      "realm": "hell_3",
+      "model_asset": "115450618548911",
+      "mesh_id": "rbxassetid://72870499573028",
+      "texture_decal": "103628757461081",
+      "texture_image": "rbxassetid://93235015118397",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "dreadspire_watch_shrine": {
+      "realm": "hell_3",
+      "model_asset": "116087475469526",
+      "mesh_id": "rbxassetid://137677480732411",
+      "texture_decal": "96379078148667",
+      "texture_image": "rbxassetid://135515035995097",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "dreadthorn_tree": {
+      "realm": "hell_3",
+      "model_asset": "107359899087561",
+      "mesh_id": "rbxassetid://133374030392058",
+      "texture_decal": "130725808208388",
+      "texture_image": "rbxassetid://137603758442997",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "ember_thorn_cluster": {
+      "realm": "hell_3",
+      "model_asset": "113332495335938",
+      "mesh_id": "rbxassetid://77222837515252",
+      "texture_decal": "124119213643356",
+      "texture_image": "rbxassetid://108721356315253",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "obsidian_gatehouse": {
+      "realm": "hell_3",
+      "model_asset": "104018506045014",
+      "mesh_id": "rbxassetid://94485677423438",
+      "texture_decal": "93790106634755",
+      "texture_image": "rbxassetid://81665797035375",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "obsidian_spike_plant": {
+      "realm": "hell_3",
+      "model_asset": "124834078723373",
+      "mesh_id": "rbxassetid://76823491669807",
+      "texture_decal": "78756449732795",
+      "texture_image": "rbxassetid://114210338004397",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
+    },
+    "violet_bramble": {
+      "realm": "hell_3",
+      "model_asset": "122809019311326",
+      "mesh_id": "rbxassetid://100841353832506",
+      "texture_decal": "139590312751245",
+      "texture_image": "rbxassetid://107707019241475",
+      "creator_group": "15872767",
+      "uploaded_on": "2026-08-25"
     }
   }
 }

@@ -4762,3 +4762,30 @@ first-session cohort rates.
 - Reused Basic pet geometry for Golden recolors after a geometry/UV audit. Dreadguard Bear Golden
   retained its separate topology and separately published mesh. Eleven flora concepts and three
   building concepts remain 2D-only production backlog and were not uploaded.
+
+## 2026-08-25 — Layer 3 map dressing and environment completion
+
+- Replaced all eight Heaven 3/Hell 3 egg-fixture visuals in Studio with the realm-specific stand
+  assets while preserving names, tags, attributes, interaction anchors, and UI children. The
+  repeatable `replace_layer3_egg_stands.luau` script is idempotent and leaves Layers 1/2 untouched.
+- Audited all 141 Layer 3 `FloraAnchor` parts. Removed 46 copied visible flora models linked by
+  `FloraSpawn` ObjectValues so each anchor has one runtime owner, then completed the Layer 3 config
+  palette for plants, signature trees, rocks, and cacti. The Studio preview spawned all 73 Heaven
+  and 68 Hell anchors with zero missing models; 2,213 headless tests pass.
+- Produced the remaining fourteen approved flora/building concepts plus six newly identified
+  rock/cactus anchor gaps through Smart Topology T2, strict Blender integrity checks, and exact-mesh
+  2K retexture. All 20 final upload FBXs are watertight, non-manifold-free, and below 10,000
+  triangles. Geometry retries, repairs, textures, and the corrected Blood Reed retexture used 390
+  Meshy credits, leaving approximately 3,745.
+- Published the 20 new models and textures to group 15872767, resolved their raw MeshId/ImageId and
+  natural bounds through Studio, and expanded the tracked environment registry/prebaked bundle to
+  38 assets: 29 flora, four ambient fauna, and five landmarks. No approved environment concept
+  remains 2D-only or pending upload.
+- Placed four realm-specific Layer 3 landmarks in Studio and preserved the two replaced generic
+  houses under `ServerStorage.Layer3LandmarkOriginals` for recoverability.
+- Added twelve tagged ambient-fauna anchors (six per realm) and a lightweight deterministic motion
+  service. The spawned butterflies, snails, beetles, and hornback lizards are anchored,
+  non-colliding, non-queryable environmental props with no combat or reward hooks.
+- Temporarily opened the Heaven 3 and Hell 3 physical realm portals for active map testing through
+  `realm_portals.testing_open_layers`; the production Soul, token, level, World Travel, and saved
+  progression rules remain unchanged.

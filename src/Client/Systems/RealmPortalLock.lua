@@ -17,6 +17,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local LayerAccess = require(ReplicatedStorage.Shared.Game.LayerAccess)
 
 local RealmPortalLock = {}
 
@@ -59,7 +60,7 @@ local function portalMap(cfg)
     for _, def in ipairs(rp.portals) do
         local a = def.layer and access[def.layer]
         local req = a and tonumber(a.requires_level)
-        if def.part and req and req > 1 then
+        if def.part and req and req > 1 and not LayerAccess.isTestingOpen(def.layer, cfg) then
             out[def.part] = req
         end
     end

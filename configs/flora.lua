@@ -82,6 +82,82 @@ return {
             ["plant/field_flower_bush"] = "rotten_mushroom",
             ["plant/meadow_bush"] = { "putrid_bush", "toxic_vine" },
         },
+        -- Layer 3 owns a complete flora palette. Signature trees are mixed
+        -- with a small number of compatible realm trees so the copied anchor
+        -- layout does not read as a single repeated silhouette; rocks and
+        -- cacti use only the new Layer 3 models.
+        heaven_3 = {
+            ["tree/baobab_tree"] = { "luminous_canopy_tree", "cherry_heaven_tree_1" },
+            ["tree/joshua_tree_7500tris"] = { "luminous_canopy_tree", "cloud_sapling" },
+            ["tree/oak_tree"] = "luminous_canopy_tree",
+            ["tree/pine_tree"] = { "luminous_canopy_tree", "frosted_pine_1" },
+            ["tree/pinetree1"] = { "luminous_canopy_tree", "frosted_pine_2" },
+            ["tree/scorched_tree"] = { "luminous_canopy_tree", "cherry_heaven_tree_1" },
+            ["tree/tree1"] = {
+                "luminous_canopy_tree",
+                "cloud_sapling",
+                "cherry_heaven_tree_2",
+            },
+            ["tree/tree2"] = { "luminous_canopy_tree", "cloud_sapling" },
+            ["tree/world_tree_10k"] = { "luminous_canopy_tree", "cherry_heaven_tree_1" },
+            rock = { "pearlroot_boulder", "bloomstone_shelf" },
+            cactus = "empyrean_bloom_cactus",
+            ["plant/cloudtiplant"] = {
+                "halo_fern",
+                "wingleaf_reed",
+                "celestial_bellgrass",
+                "rootlight_vine",
+            },
+            ["plant/grass_tuft"] = {
+                "wingleaf_reed",
+                "lumen_moss_cushion",
+                "celestial_bellgrass",
+                "petal_spire",
+            },
+            ["plant/field_flower_bush"] = {
+                "celestial_bellgrass",
+                "moonpetal_bush",
+                "pearlroot_anemone",
+                "empyrean_hibiscus",
+                "jade_lantern_bloom",
+            },
+            ["plant/meadow_bush"] = {
+                "emerald_ribbon_shrub",
+                "moonpetal_bush",
+                "halo_fern",
+                "rootlight_vine",
+                "jade_lantern_bloom",
+            },
+        },
+        hell_3 = {
+            ["tree/baobab_tree"] = { "dreadthorn_tree", "withered_sapling" },
+            ["tree/desert_tree"] = { "dreadthorn_tree", "withered_sapling" },
+            ["tree/oak_tree"] = "dreadthorn_tree",
+            ["tree/pine_tree"] = { "dreadthorn_tree", "coldfire_pine" },
+            ["tree/scorched_tree"] = { "dreadthorn_tree", "lava_eye_tree" },
+            ["tree/tree1"] = { "dreadthorn_tree", "withered_sapling", "scorched_tree" },
+            rock = { "dreadspire_faultstone", "dreadspire_razorstone" },
+            cactus = "dreadspire_thorn_cactus",
+            ["plant/grass_tuft"] = {
+                "dreadspire_ribbon_grass",
+                "ironroot_crawler",
+                "blood_reed",
+                "ember_thorn_cluster",
+            },
+            ["plant/field_flower_bush"] = {
+                "crimson_watcher_bloom",
+                "violet_hook_bloom",
+                "abyss_orchid",
+                "blood_reed",
+            },
+            ["plant/meadow_bush"] = {
+                "gloom_pitcher",
+                "razorleaf_fan",
+                "obsidian_spike_plant",
+                "violet_bramble",
+                "ember_thorn_cluster",
+            },
+        },
     },
     realms = {
         -- Baobab purge (Jason 2026-07-16): base renders oaks (layers.base);

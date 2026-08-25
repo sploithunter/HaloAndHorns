@@ -33,6 +33,9 @@ ground plane, cast shadows, text, people, or surrounding props.
 - `flora_wingleaf_reed.png`
 - `flora_pearlroot_anemone.png`
 - `flora_emerald_ribbon_shrub.png`
+- `rock_pearlroot_boulder.png`
+- `rock_bloomstone_shelf.png`
+- `cactus_empyrean_bloom.png`
 - `fauna_bloomwing_butterfly.png`
 - `fauna_pearlback_snail.png`
 
@@ -52,6 +55,9 @@ ground plane, cast shadows, text, people, or surrounding props.
 - `flora_dreadspire_ribbon_grass.png`
 - `flora_violet_hook_bloom.png`
 - `flora_ironroot_crawler.png`
+- `rock_dreadspire_faultstone.png`
+- `rock_dreadspire_razorstone.png`
+- `cactus_dreadspire_thorn.png`
 - `fauna_dreadwing_beetle.png`
 - `fauna_obsidian_hornback_lizard.png`
 
@@ -61,8 +67,8 @@ the only inputs intended for Meshy.
 `layer_3_flora_fauna_expansion_contact_card.png` covers assets 17–32: twelve additional flora
 props and four ambient-fauna props. These fauna are environmental dressing, not collectible pets
 or combat units. They must not receive health, targeting, damage, drops, or other combat hooks;
-their eventual motion is lightweight ambient wandering/bobbing with optional simple wing or limb
-movement. The expansion raises the non-building concept pool from 12 to 28 assets (2.3×).
+their runtime motion is lightweight deterministic wandering/bobbing, independent of the combat
+systems. The expansion raises the non-building concept pool from 12 to 28 assets (2.3×).
 
 See `PROMPTS.md` for the exact final prompt used for every selected image.
 
@@ -111,8 +117,19 @@ front/right sheets in `meshy_trials/layer_3_flora_fauna_geometry_review.png` and
 
 ## Roblox publishing
 
-The sixteen completed flora/ambient-fauna assets plus the Empyrean Bloom Shrine and Halo Fern were
-published group-owned on 2026-08-25. `scripts/layer3_prop_assets.json` records each Model asset,
-raw MeshId, texture Decal, and resolved ImageId. Eleven approved flora concepts and the remaining
-three building concepts are still 2D-only production backlog and therefore have no Roblox asset
-record yet.
+All 38 environment assets were published group-owned on 2026-08-25. The batch contains 29 flora,
+four ambient fauna, and five landmarks. `scripts/layer3_prop_assets.json` records each Model asset,
+raw MeshId, texture Decal, and resolved ImageId; no approved environment concept remains 2D-only.
+
+The Layer 3 map-dressing audit added six independent anchor-gap concepts: two rock silhouettes and
+one large desert/cactus silhouette per realm. These are assets 33-38 in `PROMPTS.md`; they follow
+the same plain-white Meshy reference contract and were generated with the built-in image workflow.
+Those six assets and the remaining fourteen approved flora/building concepts were produced through
+Smart Topology T2, strict topology checks, and exact-mesh 2K retexture. All 20 final Roblox upload
+FBXs are watertight, non-manifold-free, and below 10,000 triangles. The batch used 390 Meshy credits
+and is recorded in `meshy_trials/layer_3_environment_backlog_production.json`; the final contact
+sheet is `meshy_trials/layer_3_environment_textured_review.png`.
+
+The completed Studio dressing pass places four landmarks and twelve tagged ambient-fauna anchors
+(three of each fauna species, six per realm). `AmbientFaunaService` clones the prebaked visuals and
+keeps them non-combat and non-interactive while applying their small hover or ground loops.
