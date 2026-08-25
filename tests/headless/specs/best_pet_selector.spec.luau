@@ -50,6 +50,18 @@ return function()
             })
             expect(BestPetSelector.best({ offense, heal }, "support").key).to.equal("heal")
         end)
+
+        it("recognizes area heal denial as meaningful support utility", function()
+            local singleCurse = pet("single-curse", "support", 10, 100, {
+                { kind = "curse", scope = "single", mult = 0.7 },
+            })
+            local decayField = pet("decay-field", "support", 10, 100, {
+                { kind = "antiheal", scope = "aura", duration = 3 },
+            })
+            expect(BestPetSelector.best({ singleCurse, decayField }, "support").key).to.equal(
+                "decay-field"
+            )
+        end)
     end)
 
     describe("BestPetSelector control roles", function()

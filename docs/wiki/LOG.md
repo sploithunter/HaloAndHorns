@@ -4676,3 +4676,17 @@ first-session cohort rates.
   Layer 2 counterparts. The new realm-specific stand models replace those eight visible assemblies
   in place while preserving the area-named models, transforms, attributes, tags, and `UIanchor`;
   the Layer 2 originals remain unchanged and no additional Layer 3 stand set is created.
+
+## 2026-08-25 — Layer 3 support rarity budget and drain identity
+
+- Rebalanced Layer 3 support around total kit value: focused Legendary offense/luck/curse effects
+  now exceed lower-rarity equivalents, while the two Legendary tortoises deliberately keep smaller
+  support magnitudes in exchange for distinct area identities. Light Tortoise reserves radiant
+  damage-aura geometry for its eventual asset-backed pet record; Obsidian Tortoise now projects a
+  live area heal-block field.
+- Drain remains damage-free and retains its ally mend, but now prevents affected enemies from
+  receiving healer casts or passive regeneration. Scope graduates from focused Common drains to
+  the Mythical Grovekeeper aura and Secret Dreadglass targeted-AoE cluster.
+- Added the red `plus_down` drain/anti-heal ability mark, enemy HUD status, and overhead badge.
+  Golden/Rainbow curse and shred magnitude now scales through the existing variant law; anti-heal
+  duration and cadence remain fixed.

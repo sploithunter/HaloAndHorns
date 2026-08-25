@@ -267,6 +267,7 @@ return {
         hold = "single",
         heal = "single",
         drain = "single", -- Hell's life-drain heal (routes through the heal path)
+        antiheal = "single", -- damage-free healing suppression; entries may widen to aura/AoE
         shred = "single", -- Hell combat debuff — stamps the squad's focus enemy (VulnerableMult)
         curse = "single", -- Hell combat debuff — stamps the squad's focus enemy (WeakenMult)
         rage = "single",
@@ -380,12 +381,12 @@ return {
         gloryscale_salamander = {
             kind = "offense",
             interval = 2.0,
-            mult = 1.1667,
+            mult = 1.2, -- Legendary: stronger focused roster value than the Rare mongoose's +16.7%
             duration = 6,
         },
         halo_wisp = { kind = "root", interval = 11, duration = 3.25 },
         gloryleaf_lamb = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 },
-        bloomlight_sprite = { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 },
+        bloomlight_sprite = { kind = "luck", interval = 2.0, mult = 1.2, duration = 6 },
         empyrean_grovekeeper = {
             kind = "heal",
             interval = 2.0,
@@ -395,27 +396,54 @@ return {
         bloom_ibis = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 },
         radiant_totem = { kind = "defense", interval = 2.0, amount = 53.3, duration = 6 },
         glory_mongoose = { kind = "offense", interval = 2.0, mult = 1.1667, duration = 6 },
+        -- Legendary discovery hybrid: intentionally weaker focused healing than the Common ibis,
+        -- compensated by persistent radiant AoE attack geometry when its pets.lua record lands.
         light_tortoise = { kind = "heal", interval = 2.0, fraction = 0.05, duration = 6 },
         oasis_dragon = {
             { kind = "heal", interval = 2.0, fraction = 0.1, duration = 6 },
             { kind = "defense", interval = 2.0, amount = 53.3, duration = 6 },
         },
-        ruinscale_salamander = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
+        ruinscale_salamander = { kind = "curse", mult = 0.75, interval = 2.0, duration = 6 },
         dread_wisp = { kind = "root", interval = 11, duration = 3.25 },
         thornleaf_lamb = { kind = "drain", interval = 2.0, fraction = 0.08, duration = 6 },
-        dreadbloom_sprite = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
+        dreadbloom_sprite = { kind = "curse", mult = 0.75, interval = 2.0, duration = 6 },
         dreadthorn_grovekeeper = {
             kind = "drain",
             interval = 2.0,
             fraction = 0.1,
             duration = 6,
+            targeting = "aura",
+            radius = 12,
+            max_targets = 5,
+            heal_suppression_duration = 3,
         },
         ash_ibis = { kind = "drain", interval = 2.0, fraction = 0.08, duration = 6 },
-        obsidian_totem = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
+        obsidian_totem = { kind = "curse", mult = 0.85, interval = 2.0, duration = 6 },
         dread_mongoose = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
-        obsidian_tortoise = { kind = "curse", mult = 0.85, interval = 2.0, duration = 6 },
+        -- Legendary discovery hybrid: its focused curse is deliberately lighter than the Rare
+        -- mongoose, but it projects a damage-free anti-heal field around itself.
+        obsidian_tortoise = {
+            { kind = "curse", mult = 0.85, interval = 2.0, duration = 6 },
+            {
+                kind = "antiheal",
+                interval = 2.0,
+                duration = 3,
+                targeting = "aura",
+                radius = 12,
+                max_targets = 5,
+            },
+        },
         dreadglass_dragon = {
-            { kind = "drain", interval = 2.0, fraction = 0.1, duration = 6 },
+            {
+                kind = "drain",
+                interval = 2.0,
+                fraction = 0.1,
+                duration = 6,
+                targeting = "targeted_aoe",
+                radius = 12,
+                max_targets = 5,
+                heal_suppression_duration = 3,
+            },
             { kind = "shred", amount = 0.25, interval = 2.0, duration = 6 },
             { kind = "curse", mult = 0.7, interval = 2.0, duration = 6 },
         },
