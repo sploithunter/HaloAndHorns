@@ -48,6 +48,12 @@ with an earlier Meshy download without rerunning `scripts/check_model_integrity.
 - `review/layer_3_geometry_contact_sheet.png` — front/back geometry before texturing.
 - `review/layer_3_textured_models_contact_sheet.png` — front/back selected textured GLBs.
 
+## Roblox publishing
+
+All eight eggs and both realm stands were published group-owned on 2026-08-25. The resolved model,
+raw MeshId, Decal, and ImageId records live in `scripts/egg_assets.json` and
+`scripts/layer3_stand_assets.json`; neither registry contains a pending asset.
+
 The reusable models are `heaven3_egg_stand` and `hell3_egg_stand`. In Studio, replace the visible
 assembly inside each existing Layer 3 area stand (`Lava`, `Ice`, `Grass`, `Desert`) with the matching
 realm model. Preserve each stand's name, transform, attributes, tags, and `UIanchor` so

@@ -4752,3 +4752,13 @@ first-session cohort rates.
 - Ambient fauna remain non-attackable environmental props with no health, targeting, damage, or
   drops. Their future behavior is lightweight wandering/bobbing and optional simple wing or limb
   movement, independent of the pet and enemy combat systems.
+
+## 2026-08-25 — Layer 3 Roblox asset publishing
+
+- Published group-owned Roblox assets for all production-ready Layer 3 content: 80 pet model/
+  texture variants, 80 pet inventory cards, eight eggs, two realm egg stands, and 18 environment
+  props. Resolved every Model/Decal through Studio Edit mode and recorded raw MeshId/ImageId values;
+  no tracked upload remains pending.
+- Reused Basic pet geometry for Golden recolors after a geometry/UV audit. Dreadguard Bear Golden
+  retained its separate topology and separately published mesh. Eleven flora concepts and three
+  building concepts remain 2D-only production backlog and were not uploaded.

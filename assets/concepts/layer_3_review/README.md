@@ -108,3 +108,11 @@ See `meshy_trials/layer_3_flora_fauna_production_batch.json` for task ids, hashe
 GLB paths, triangle counts, repair provenance, and the 365-credit batch accounting. Review the
 front/right sheets in `meshy_trials/layer_3_flora_fauna_geometry_review.png` and
 `meshy_trials/layer_3_flora_fauna_texture_review.png`.
+
+## Roblox publishing
+
+The sixteen completed flora/ambient-fauna assets plus the Empyrean Bloom Shrine and Halo Fern were
+published group-owned on 2026-08-25. `scripts/layer3_prop_assets.json` records each Model asset,
+raw MeshId, texture Decal, and resolved ImageId. Eleven approved flora concepts and the remaining
+three building concepts are still 2D-only production backlog and therefore have no Roblox asset
+record yet.

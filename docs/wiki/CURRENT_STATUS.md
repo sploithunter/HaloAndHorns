@@ -2,6 +2,14 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Layer 3 Roblox asset publishing (2026-08-25)
+
+The group-owned upload pass is complete for all production-ready Layer 3 assets: 80 pet model/
+texture variants, 80 pet cards, eight eggs, two realm egg stands, and 18 environment props. Every
+published asset has a resolved raw MeshId/ImageId in the tracked registries; no entry is pending.
+Dreadguard Bear Golden uses a dedicated mesh because its topology differs from Basic. Eleven flora
+concepts and three building concepts remain 2D-only and are not represented as uploadable models.
+
 ## Healer hunt pins pets; leftover despawn cannot lock the room (2026-08-24)
 
 Clicking the training healer pins the squad on it. If a leftover dog
