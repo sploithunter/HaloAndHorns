@@ -169,6 +169,13 @@ client lock presentation; it must not modify `layers.access`, `LayerAccess.canAc
 Travel, or persisted player progression. Heaven 3 and Hell 3 are currently open this way for map
 testing.
 
+`CurrentLayer` and the character's nearest stacked-map Y offset are one invariant. A character
+whose logical layer is `hell_3` but whose body is at Home will see Home eggs under Hell lighting,
+and Home's default `Spawn` unlock will masquerade as an unlocked Hell area. `LayerService` streams
+and restores the current layer after respawn and also runs a one-second reconciliation check for
+other split-state paths. Mission characters are excluded because their instance geometry does not
+live on the realm stack.
+
 Ascension altars use an invisible child part named `AscensionAltarHost`, tagged
 `AscensionAltar`, as their interaction contract. `AscensionAltarService` creates the prompt and
 level-training behavior at that host; altar meshes and `NativeFX` remain Studio-owned. Home's

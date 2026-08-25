@@ -4812,3 +4812,13 @@ first-session cohort rates.
 - Added generic per-anchor fauna yaw correction and set the three Pearlback Snails to 180 degrees;
   their visual forward axis now follows their actual route. The expanded Layer 3 runtime contract
   passes 2,222 headless tests and was verified through the live Rojo-connected Studio session.
+
+## 2026-08-25 — Realm physical-layer reconciliation
+
+- Traced the apparent return of old Hell 3 stands, eggs, and free unlocks to a split state:
+  `CurrentLayer` remained `hell_3` while the character was physically on Home, so the visible
+  content and `CurrentArea` correctly came from Home.
+- Centralized stream-before-pivot travel and added one-second physical-layer reconciliation in
+  `LayerService`, including post-respawn recovery. Live Studio verification forced a Hell 3 player onto Home;
+  the service restored Y -6000 and `CurrentArea = Hell_3_Grass`, where Dreadthorn remained locked
+  at 1.5M and the Layer 3 egg/stand were present.

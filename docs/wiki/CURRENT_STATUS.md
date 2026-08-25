@@ -1736,6 +1736,14 @@ Last checked: 2026-08-24
   mixing with weighted scores; persisted pre-weight outboxes recover points from the exact pet.
 - A raw total adds one for every gift in `gifts_given`, without exposing an all-gifts board yet.
 
+## Realm layer-state integrity
+
+Last checked: 2026-08-25
+
+- `LayerService` now keeps logical `CurrentLayer` and the character's physical stacked-map Y offset
+  synchronized after respawns and other desync paths. Live Hell 3 recovery restored the character
+  from Home to Y -6000 and restored the locked `Hell_3_Grass` area prompt.
+
 ## Layer 3 eggs and pet-kit configuration
 
 Last checked: 2026-08-24
