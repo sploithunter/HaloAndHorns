@@ -81,6 +81,21 @@ return function()
             expect(EggStandResolver.eggFor("hell_2", "Ice", MATRIX)).to.equal("hell2_ice_egg")
         end)
 
+        it("resolves both Layer 3 realms to their published egg sets", function()
+            expect(EggStandResolver.eggFor("heaven_3", "Lava", MATRIX)).to.equal("heaven3_fire_egg")
+            expect(EggStandResolver.eggFor("heaven_3", "Ice", MATRIX)).to.equal("heaven3_ice_egg")
+            expect(EggStandResolver.eggFor("heaven_3", "Grass", MATRIX)).to.equal(
+                "heaven3_grass_egg"
+            )
+            expect(EggStandResolver.eggFor("heaven_3", "Desert", MATRIX)).to.equal(
+                "heaven3_desert_egg"
+            )
+            expect(EggStandResolver.eggFor("hell_3", "Lava", MATRIX)).to.equal("hell3_fire_egg")
+            expect(EggStandResolver.eggFor("hell_3", "Ice", MATRIX)).to.equal("hell3_ice_egg")
+            expect(EggStandResolver.eggFor("hell_3", "Grass", MATRIX)).to.equal("hell3_grass_egg")
+            expect(EggStandResolver.eggFor("hell_3", "Desert", MATRIX)).to.equal("hell3_desert_egg")
+        end)
+
         it("is case-insensitive and returns the matched area", function()
             local egg, area = EggStandResolver.eggFor("base", "myICEpedestal", MATRIX)
             expect(egg).to.equal("ice_egg")

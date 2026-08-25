@@ -18,6 +18,12 @@ non-combat moving props per realm. `heaven_3` and `hell_3` are temporarily open 
 physical realm portals for active testing; their production Soul, token, and player-level
 requirements remain unchanged.
 
+The Layer 3 runtime configuration is now live for walkthrough testing: eight realm-specific eggs
+resolve on the authored stands, all 40 published pets are hatchable, and each Heaven 3/Hell 3
+origin has a 1.5M coin unlock plus a presence-gated crystal world. Heaven 3's omitted terrain edge
+was restored from the corresponding Heaven 2 voxel region, and Pearlback Snails use an anchor-level
+180-degree visual correction so their authored faces point along travel.
+
 ## Healer hunt pins pets; leftover despawn cannot lock the room (2026-08-24)
 
 Clicking the training healer pins the squad on it. If a leftover dog

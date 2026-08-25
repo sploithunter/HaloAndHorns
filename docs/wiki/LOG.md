@@ -4797,3 +4797,18 @@ first-session cohort rates.
 - Replaced elapsed-angle rotation with tangent-facing elliptical paths and reused the shared pet/
   enemy `Gait` module for procedural bounce and bank. Live Studio verification confirmed all three
   butterflies move through the garden at their authored scale without rotating in place.
+
+## 2026-08-25 — Layer 3 walkthrough runtime completion
+
+- Wired the eight published Layer 3 eggs and all 40 published pet families into runtime config;
+  Heaven 3/Hell 3 stands now resolve their own meshes, cards, 1,300-coin hatch pools, roles, and
+  approved support/area kits instead of falling back to Layer 1.
+- Added all eight Layer 3 origin zones at 1.5M origin coins and their presence-gated crystal worlds
+  at the Layer 3 elevations. Live Studio verification created 100 level-7+ crystals in both tested
+  realms, and the locked Heaven 3 prompt displayed the expected 1500K cost.
+- Compared Heaven 2/3 terrain voxel-by-voxel, isolated the omitted entry-side region, and restored
+  1,703 non-Air voxels additively. Hell 3 had no matching deficit. Added a repeatable bounded repair
+  script rather than duplicating the whole terrain layer.
+- Added generic per-anchor fauna yaw correction and set the three Pearlback Snails to 180 degrees;
+  their visual forward axis now follows their actual route. The expanded Layer 3 runtime contract
+  passes 2,222 headless tests and was verified through the live Rojo-connected Studio session.

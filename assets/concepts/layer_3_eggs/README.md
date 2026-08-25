@@ -57,6 +57,6 @@ raw MeshId, Decal, and ImageId records live in `scripts/egg_assets.json` and
 The reusable models are `heaven3_egg_stand` and `hell3_egg_stand`. In Studio, replace the visible
 assembly inside each existing Layer 3 area stand (`Lava`, `Ice`, `Grass`, `Desert`) with the matching
 realm model. Preserve each stand's name, transform, attributes, tags, and `UIanchor` so
-`EggStandPlacement` can resolve the egg from `realm_area_eggs` once Layer 3 Roblox asset IDs are
-published. The current Layer 3 stands are temporary copies of the Layer 2 fixtures; do not add a
+`EggStandPlacement` resolves each fixture through the live Layer 3 `realm_area_eggs` matrix. The
+Layer 3 fixtures now use their realm-specific stand visuals and published egg records; do not add a
 second set of stands and do not modify the Layer 2 originals.

@@ -159,6 +159,10 @@ module used by pets and enemies; do not derive orientation directly from elapsed
 three Bloomwing Butterflies are deliberately miniature (0.85–1.15 studs) and confined to distinct
 loops within the authored garden rather than the player walkway.
 
+An imported fauna mesh that faces backward in local space may set `FacingYawDegrees` on its anchor;
+the motion service applies that visual-only correction after tangent facing. Pearlback Snails use
+180 degrees. Do not reverse their path or special-case the shared motion math.
+
 The physical realm portals may temporarily bypass their per-player gate through
 `layers.realm_portals.testing_open_layers`. This switch affects only the named portal geometry and
 client lock presentation; it must not modify `layers.access`, `LayerAccess.canAccess`, World
@@ -198,6 +202,11 @@ inspect `Workspace.Terrain` independently. The initial Hall integration left one
 terrain island and two malformed vertical terrain sheets far outside every authored map bound;
 those orphan components were removed in Studio on 2026-08-18. Do not recreate them when rerunning
 the map generator or applying the Hall lane offset.
+
+The Heaven 3 duplication omitted the south/entry terrain section present in Heaven 2. The bounded,
+additive repair is `scripts/studio/restore_heaven3_missing_terrain.luau`: it copies only non-Air
+source voxels at the exact +2,000-stud layer offset and is safe to rerun. The audited target changed
+from 0 to 1,703 occupied voxels; Hell 3 had no corresponding deficit and must not be pasted over.
 
 ## Links
 

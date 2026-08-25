@@ -58,6 +58,7 @@ local SPECS = {
             speed = 0.13,
             size = 2.5,
             phase = 0.8,
+            facing_yaw = 180,
         },
         {
             name = "PearlbackSnail_2",
@@ -70,6 +71,7 @@ local SPECS = {
             speed = 0.11,
             size = 2.7,
             phase = 3.1,
+            facing_yaw = 180,
         },
         {
             name = "PearlbackSnail_3",
@@ -82,6 +84,7 @@ local SPECS = {
             speed = 0.14,
             size = 2.4,
             phase = 5.2,
+            facing_yaw = 180,
         },
     },
     Hell_3 = {
@@ -196,6 +199,7 @@ for layerName, specs in pairs(SPECS) do
         anchor:SetAttribute("Speed", spec.speed)
         anchor:SetAttribute("VisualSize", spec.size)
         anchor:SetAttribute("Phase", spec.phase)
+        anchor:SetAttribute("FacingYawDegrees", spec.facing_yaw or 0)
         anchor.Parent = folder
         CollectionService:AddTag(anchor, "AmbientFaunaAnchor")
     end

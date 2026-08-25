@@ -1,3 +1,29 @@
+local function layer3RealmArea(id, element, displayName, order, y, centerX, centerZ, sizeX, sizeZ)
+    return {
+        id = id,
+        kind = "area",
+        element = element,
+        zone_level = 7,
+        mining_currency = element .. "_coins",
+        display_name = displayName,
+        order = order,
+        unlock = {
+            unlocked_by_default = false,
+            required_zone = "Desert",
+            currency = element .. "_coins",
+            cost = 1500000,
+        },
+        boosts = {},
+        synthetic = {
+            center = { x = centerX, y = y, z = centerZ },
+            size = { x = sizeX, y = 4, z = sizeZ },
+            floor_y = y + 0.5,
+            spawn_position = { x = centerX, y = y + 6, z = centerZ },
+            egg_stands = {},
+        },
+    }
+end
+
 return {
     -- ZoneService fans player arrivals around the authored spawn anchor instead
     -- of placing every character on the exact same point.
@@ -709,5 +735,95 @@ return {
                 egg_stands = {},
             },
         },
+        -- Layer 3 per-origin unlocks. All four origins remain independent once the Home Desert
+        -- gate is open, matching Layers 1 and 2; the deeper price is 1.5M origin coins.
+        Heaven_3_Lava = layer3RealmArea(
+            "Heaven_3_Lava",
+            "lava",
+            "Gloryfire Crucible",
+            22,
+            6000,
+            -206,
+            67,
+            361,
+            458
+        ),
+        Heaven_3_Ice = layer3RealmArea(
+            "Heaven_3_Ice",
+            "ice",
+            "Halo Frost",
+            23,
+            6000,
+            -374,
+            377,
+            321,
+            338
+        ),
+        Heaven_3_Desert = layer3RealmArea(
+            "Heaven_3_Desert",
+            "desert",
+            "Oasis Sands",
+            24,
+            6000,
+            -126,
+            474,
+            331,
+            318
+        ),
+        Heaven_3_Grass = layer3RealmArea(
+            "Heaven_3_Grass",
+            "grass",
+            "Empyrean Grove",
+            25,
+            6000,
+            -150,
+            266,
+            351,
+            278
+        ),
+        Hell_3_Lava = layer3RealmArea(
+            "Hell_3_Lava",
+            "lava",
+            "Ruinfire Crucible",
+            26,
+            -5999,
+            -206,
+            67,
+            361,
+            458
+        ),
+        Hell_3_Ice = layer3RealmArea(
+            "Hell_3_Ice",
+            "ice",
+            "Dreadfrost",
+            27,
+            -5999,
+            -374,
+            377,
+            321,
+            338
+        ),
+        Hell_3_Desert = layer3RealmArea(
+            "Hell_3_Desert",
+            "desert",
+            "Dreadglass Sands",
+            28,
+            -5999,
+            -126,
+            474,
+            331,
+            318
+        ),
+        Hell_3_Grass = layer3RealmArea(
+            "Hell_3_Grass",
+            "grass",
+            "Dreadthorn Grove",
+            29,
+            -5999,
+            -150,
+            266,
+            351,
+            278
+        ),
     },
 }

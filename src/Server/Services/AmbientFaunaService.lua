@@ -32,6 +32,7 @@ type Actor = {
     motionSpec: MotionSpec,
     gait: any,
     gaitState: { phase: number, amp: number },
+    facingYawRadians: number,
     lastPathPosition: Vector3?,
 }
 
@@ -146,6 +147,9 @@ function AmbientFaunaService:_spawn(anchor: BasePart, faunaFolder: Instance): bo
             phase = tonumber(anchor:GetAttribute("Phase")) or 0,
             amp = 0,
         },
+        -- Some imported meshes face -Z in their authored space. Keep the route math shared and
+        -- correct the visual once at the anchor instead of reversing its travel direction.
+        facingYawRadians = math.rad(tonumber(anchor:GetAttribute("FacingYawDegrees")) or 0),
         lastPathPosition = nil,
     }
     model:SetAttribute("AmbientFauna", true)
@@ -173,7 +177,9 @@ function AmbientFaunaService:_update(deltaTime: number)
             local clean = CFrame.lookAt(position, position + facing)
             local bob, roll, yaw =
                 Gait.advance(actor.gaitState, actor.gait, stepDistance, deltaTime)
-            actor.model:PivotTo(CFrame.new(0, bob, 0) * clean * CFrame.Angles(0, yaw, roll))
+            actor.model:PivotTo(
+                CFrame.new(0, bob, 0) * clean * CFrame.Angles(0, actor.facingYawRadians + yaw, roll)
+            )
         end
     end
 end
