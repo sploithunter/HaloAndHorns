@@ -1,5 +1,94 @@
 # Log
 
+## 2026-08-25 — Card lists every role
+
+- The People-list row still shows one name mark. The slide-out card
+  lists Owner / Developer / Creator / Tester / Founder / VIP. Founder
+  still covers VIP so the crown is not repeated.
+
+## 2026-08-25 — Admin reset clears Training badges
+
+- Reset-to-beginning now publishes an empty combat-rank state (including
+  `CombatRankEarned`) and wipes `StatusBadge` / `StatusBadgeSeen`. The
+  chip chooser was still listing Spark–Skilled after a reset.
+
+## 2026-08-25 — New Status badge auto-wears
+
+- Earning a Training, Adventure, Huge Hatcher, or Leaderboard title
+  replaces the worn pick even if the chip chooser had another title
+  selected. First join seeds `GameData.StatusBadgeSeen` without
+  swapping. People-list hover docks left of the name, above the chip.
+
+## 2026-08-25 — Adventure status crests uploaded
+
+- Keyed Noob / Novice / Adventurer / Hero / Master / Legend / Huge
+  Hatcher, uploaded group-owned, resolved Decal→Image, wired into
+  `configs/people_list.lua`. Chip and picker show the crest.
+
+## 2026-08-25 — Combat Training Later, not auto
+
+- `first_fight` keeps the FIGHT trail. The Okay Quest banner only
+  opens from **Later** on that card — not the instant Resonance ends.
+  Cave complete still advances to Rally.
+
+## 2026-08-25 — Status chip chooser
+
+- The Skilled pill stays on the 14px top, left of the quest bar. Click
+  it to wear any earned Training, Adventure, or Leaderboard title.
+  Saved as `GameData.StatusBadge`.
+
+## 2026-08-25 — People-list Status hover
+
+- Hovering a row shows `Name, Role, Status (source)`. Noob is
+  `Noob (New but going somewhere!)`. Combat titles use Combat
+  Training 1. Leaderboard titles use `Farm #16 (#16 Crystal LB)`.
+
+## 2026-08-25 — People-list slide-out card
+
+- Clicking a row slides a card out left of the list: headshot, name,
+  how the Status title is earned, Examine Avatar (live in-game
+  character clone, not Roblox inspect), Friend / Block.
+
+## 2026-08-25 — Founder star means the full pass bundle
+
+- Founder's Legacy grants every game pass, including VIP, plus the
+  founder benefit. The People-list ⭐ sits above the VIP crown because
+  the star already covers that whole bundle.
+
+## 2026-08-25 — Founder star sits above VIP
+
+## 2026-08-25 — One People-list name badge
+
+- Name shows a single mark, first match: owner (Creator Colorado disc —
+  flag C + blaster, no ring), developer, content creator, beta tester,
+  VIP. Founder's Legacy is not a People-list badge.
+
+## 2026-08-25 — Custom People list replaces CoreGui
+
+- Disabled Roblox's PlayerList. Ours keeps Rank / Status / Location, smoked
+  so a long team does not brick the view. Tab or the header collapses it
+  (mobile uses the same header tap). Name prefixes: owner, developer,
+  beta tester, creator, VIP, Founder. Status click explains a combat
+  title. Name opens Friend / Block. Report stays on Esc.
+
+## 2026-08-25 — Combat Training pillar E no longer bounces
+
+- Range / Training Ground keep one `MissionCompletePrompt`. Combat
+  training was destroying `CombatTutorialAdvancePrompt` on every 0.4s
+  cave-door poll (`_enter` → `_ensureWatchers`). The default prompt UI
+  rebuilt and the labels slid. Reuse the prompt; skip a second Next Room
+  prompt on tutorial missions.
+
+## 2026-08-25 — Frost door is two SurfaceGuis
+
+- Lesson plate and Continue later are separate SurfaceGuis on the seal.
+  Continue later confirms, then leaves. No camera Billboard, no door E.
+
+## 2026-08-25 — Combat rank in People-list Status
+
+- Status shows Spark → Skilled after VIP/Founder icons. Leaderboard
+  titles stay ahead. Nametag is centered with a gap after the crest.
+
 ## 2026-08-25 — Combat-training funnel v8
 
 - Onboarding stays the Homeworld spine through Rally. The 32 cave beats

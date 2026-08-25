@@ -266,6 +266,7 @@ function TesterRewardService:Reconcile(player, reason)
     if stateChanged then
         self._dataService:RequestSave(player, "tester_reward_reconcile", { critical = true })
     end
+    self:_publishPeopleListBadge(player, data)
     self._logger:Debug("Tester rewards reconciled", {
         player = player.Name,
         reason = reason,
@@ -273,6 +274,37 @@ function TesterRewardService:Reconcile(player, reason)
         granted = #granted,
     })
     return { ok = true, granted = granted, claimedLevel = claimedLevel }
+end
+
+function TesterRewardService:_publishPeopleListBadge(player, data)
+    local tester = false
+    local root = data and data.GameData and data.GameData.TesterRewards
+    if type(root) == "table" and type(root.campaigns) == "table" then
+        for _, state in pairs(root.campaigns) do
+            if type(state) == "table" and (tonumber(state.granted_count) or 0) > 0 then
+                tester = true
+                break
+            end
+        end
+    end
+    if not tester then
+        local inventory = data and data.Inventory
+        for _, bucketName in ipairs({ "eggs", "pets" }) do
+            local items = inventory and inventory[bucketName] and inventory[bucketName].items
+            if type(items) == "table" then
+                for _, record in pairs(items) do
+                    if type(record) == "table" and type(record.award_id) == "string" then
+                        tester = true
+                        break
+                    end
+                end
+            end
+            if tester then
+                break
+            end
+        end
+    end
+    player:SetAttribute("IsBetaTester", tester)
 end
 
 -- Resolve one held award egg immediately before hatching. The record is reconciled first, so an

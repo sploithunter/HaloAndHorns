@@ -3,7 +3,9 @@
 Last checked: 2026-08-25
 
 Live Homeworld combat beat (`configs/tutorial.lua` v6). After Resonance is
-bound, cast, and enhanced, `first_fight` sends the player into the Earth cave.
+bound, cast, and enhanced, `first_fight` points the FIGHT trail at the
+Earth cave. **Later** on that card opens the Okay banner and parks Combat
+Training in Quest. Finishing the cave still advances to Rally.
 That cave no longer fields ambient waves (`enemies.spawners.bindings.Earth.disabled`).
 The combat-training loop (lobby → ENTER → fight → pillar) runs in a
 mission-slot instance. The last pillar warps them back to the cave mouth, grants earned
@@ -30,19 +32,20 @@ Cave enter did not exist in tutorial v1–v5. The old combat start was
 
 The Earth cave mouth (`Maps.Home.EarthLair`) always shows **Press E to
 Enter** (gamepad X). Homeworld `first_fight` points the FIGHT beacon
-there. Walk straight in unless `CombatTutorial.done` — only a finished
+there. **Later** parks that pointer on the Combat Training quest after
+Okay. Walk straight in unless `CombatTutorial.done` — only a finished
 cave asks **Redo / Not now**. Homeworld `Tutorial.done` is not enough
 (admin reset and grandfather leftovers were showing Redo on a new run). E opens a `combat_tutorial` mission
 slot on the far-X band (`missions.slots`: 10 concurrent, 3072 studs
 apart at x=24000) — the same pool as Range / Training Ground. Realm
 layers already own vertical stacking, so instances go sideways, not up.
-The frost door (or the lobby pad if the seal is down) has **Continue
-later** (E / gamepad X) after a short landing grace so cave-enter E
-cannot bounce them out. Confirm: **Your progress is saved. Come back
-anytime.** Arena fights and the pillar do not show it. The door plate
-stays the lesson (SET HEAL FIRST / ENTER) — click continues or nudges;
-E leaves. Progress is kept (`leave_resume` on
-mid-fight disconnect still applies). The Hall arch is **not** an entry.
+The frost door has two **SurfaceGuis** (front and back of the seal): the
+lesson plate (SET HEAL FIRST / ENTER) and **Continue later**. No camera
+Billboard and no door E prompt. Continue later confirms: **Your progress
+is saved. Come back anytime.** Arena fights and the pillar hide leave.
+Click the lesson plate to continue or nudge. Progress is kept
+(`leave_resume` on mid-fight disconnect still applies). The Hall arch is
+**not** an entry.
 `restart_on_enter` is off so an unfinished cave visit keeps progress.
 
 ## Mission
@@ -65,7 +68,11 @@ mid-fight disconnect still applies). The Hall arch is **not** an entry.
   reseals the door. Same map — no gauntlet restamp. Lobby return
   (`refresh_on_lobby`) clears Heal/Revive cooldowns, pet recovery clocks,
   res-sickness, lockouts, sip locks, and refills Focus so the next room
-  starts fresh.
+  starts fresh. The pillar E is one reused `CombatTutorialAdvancePrompt`
+  (same idea as Range / Training Ground's one `MissionCompletePrompt`).
+  Tutorial missions do not also get Next Room. Clicking a People-list
+  row opens the slide-out; that card explains which Combat Training
+  pillar granted the title.
 - `restart_on_enter = false`: cave visits keep `profile.CombatTutorial` so the
   live funnel can continue.
 - Arena packs spawn on the objective-room `MissionSpawn` part (found by name +
@@ -100,7 +107,9 @@ public leaderboard and not stacked `GrantTitle` strings.
 | `advance_together` | Skilled |
 
 Persist `GameData.CombatRank = { current, earned }` plus attributes
-`CombatRank` / `CombatRankLabel`. First earn plays the crest (keyed PNG
+`CombatRank` / `CombatRankLabel` / `CombatRankEarned`. Admin reset
+clears those and the worn `StatusBadge` pick so the chip chooser is
+empty Training again. First earn plays the crest (keyed PNG
 → fly to a chip left of the People list + nametag). The lobby warp waits
 for that fly so the frost **ENTER** door is the continue path. Lobby
 **Leave** exits with progress kept; cave E resumes the same step. Redo is

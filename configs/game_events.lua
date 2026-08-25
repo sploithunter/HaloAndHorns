@@ -46,6 +46,10 @@ return {
         failure_float = {
             seconds = 2.4,
             color = { 255, 220, 105 },
+            -- Default farm float is 360x44. Every bonk refusal uses this
+            -- larger box so the line reads against grass and sky.
+            size = 460,
+            height = 60,
             default = "That power can't be used here.",
             messages = {
                 no_crystals_in_range = "No resources in range — move closer.",
@@ -81,6 +85,8 @@ return {
         failure_float = {
             seconds = 2.4,
             color = { 255, 220, 105 },
+            size = 460,
+            height = 60,
             default = "That item can't be used here.",
             messages = {
                 no_enemy_target = "No enemy target — engage an enemy first.",
@@ -623,6 +629,8 @@ return {
         failure_float = {
             seconds = 2.8,
             color = { 255, 220, 105 },
+            size = 460,
+            height = 60,
             default = "You can't enter that right now.",
             messages = {
                 team_busy = "Your team is already in a trial. Leave the team or wait for them.",
@@ -638,6 +646,8 @@ return {
         failure_float = {
             seconds = 2.8,
             color = { 255, 220, 105 },
+            size = 460,
+            height = 60,
             default = "Leave your team to enter The Range.",
             messages = {
                 teamed = "Leave your team to enter The Range.",

@@ -299,6 +299,17 @@ function QuestService:_firstStepsIncomplete(data)
     return false
 end
 
+function QuestService:_combatTrainingOffered(data)
+    return type(data) == "table"
+        and type(data.GameData) == "table"
+        and data.GameData.CombatTrainingQuestOffered == true
+end
+
+function QuestService:_combatTrainingClaimed(data)
+    local ledger = claims(data)
+    return (ledger.ct_earth_cave or 0) > 0
+end
+
 -- ACTIVE-FOCUS invariant (Jason): a quest is the single ACTIVE task. Keep the focus right:
 --   • First Steps AUTO-ACTIVATES as the focus until it's done — but only AFTER the tutorial (so its
 --     since_start windows baseline post-tutorial; otherwise tutorial casts pre-complete "Boost the
@@ -314,8 +325,21 @@ function QuestService:_ensureFocus(player, data, level)
     if desired and (not meta or (tonumber(meta.unlock_level) or 1) > level) then
         desired = nil -- stale / hidden focus → clear
     end
-    if tutorialDone and self:_firstStepsIncomplete(data) then
-        desired = "first_steps" -- onramp owns the focus until complete
+    -- Combat Training is the post-handoff focus so the tracker matches the
+    -- Okay banner. Do not steal an explicit later pick, and do not override
+    -- Combat Training with First Steps until they claim (or switch away).
+    if
+        tutorialDone
+        and self:_combatTrainingOffered(data)
+        and not self:_combatTrainingClaimed(data)
+    then
+        if desired == nil then
+            desired = "combat_training"
+        end
+    elseif tutorialDone and self:_firstStepsIncomplete(data) then
+        if desired ~= "combat_training" or self:_combatTrainingClaimed(data) then
+            desired = "first_steps" -- onramp owns the focus until complete
+        end
     end
     if desired ~= data.QuestActiveTrack then
         self:SetActiveTrack(player, desired)
@@ -403,7 +427,9 @@ function QuestService:List(player)
         -- HIDDEN UNTIL UNLOCK: a track below its unlock_level doesn't appear at all (Jason: "it's not
         -- even available"). Crossing the level surfaces it + fires the announce above.
         local unlockLevel = (meta and tonumber(meta.unlock_level)) or 1
-        if not meta or unlockLevel <= level then
+        if track == "combat_training" and not self:_combatTrainingOffered(data) then
+            -- Hidden until the Homeworld Okay banner (or cave finish) offers it.
+        elseif not meta or unlockLevel <= level then
             table.insert(out, {
                 id = id,
                 def = def,

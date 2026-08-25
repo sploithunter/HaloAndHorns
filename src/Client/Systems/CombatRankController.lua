@@ -13,16 +13,19 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 local CombatRank = require(ReplicatedStorage.Shared.Game.CombatRank)
+local StatusBadge = require(ReplicatedStorage.Shared.Game.StatusBadge)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local CombatRankController = {}
 local started = false
 local ranksConfig
+local peopleConfig
 local gui
 local chip
 local chipGlyph
 local chipIcon
 local chipLabel
+local picker
 local ceremonyGeneration = 0
 local nametags = {}
 
@@ -45,29 +48,161 @@ local function currentRank()
     return CombatRank.rankById(ranksConfig, player and player:GetAttribute("CombatRank"))
 end
 
-local function applyChip(rank)
+local function badgeState(player)
+    player = player or Players.LocalPlayer
+    return {
+        earnedCsv = player:GetAttribute("CombatRankEarned"),
+        combatRankId = player:GetAttribute("CombatRank"),
+        level = player:GetAttribute("Level"),
+        hugeHatcher = player:GetAttribute("HasHatchedHuge") == true,
+        leaderboardTitle = player:GetAttribute("LeaderboardStatusTitle"),
+        leaderboardRank = player:GetAttribute("LeaderboardStatusRank"),
+        leaderboardHoverTitle = player:GetAttribute("LeaderboardStatusHoverTitle"),
+        leaderboardHoverBoard = player:GetAttribute("LeaderboardStatusHoverBoard"),
+        leaderboardBoardId = player:GetAttribute("LeaderboardStatusBoardId"),
+    }
+end
+
+local function currentBadge(player)
+    player = player or Players.LocalPlayer
+    local pick = {
+        kind = player:GetAttribute("StatusBadgeKind"),
+        id = player:GetAttribute("StatusBadgeId"),
+    }
+    return StatusBadge.resolve(peopleConfig, ranksConfig, badgeState(player), pick)
+end
+
+local function applyChip(badge)
     if not chip then
         return
     end
-    if not rank then
+    badge = badge or currentBadge()
+    if not badge then
+        local rank = currentRank()
+        if rank then
+            badge = {
+                label = rank.label,
+                color = rank.color,
+                icon = CombatRank.iconAsset(rank),
+            }
+        end
+    end
+    if not badge then
         chip.Visible = false
         return
     end
     chip.Visible = true
-    chip.UIStroke.Color = rgb(rank.color)
-    local icon = CombatRank.iconAsset(rank)
-    if icon then
-        chipIcon.Image = icon
+    chip.UIStroke.Color = rgb(badge.color)
+    if type(badge.icon) == "string" and badge.icon ~= "" then
+        chipIcon.Image = badge.icon
         chipIcon.Visible = true
         chipGlyph.Visible = false
     else
+        -- Leaderboard titles have no crest yet. Gotham has no ✦, so hide
+        -- the glyph slot rather than drawing an empty box.
+        chipIcon.Image = ""
         chipIcon.Visible = false
-        chipGlyph.Visible = true
-        chipGlyph.Text = tostring(rank.glyph or "✦")
-        chipGlyph.TextColor3 = rgb(rank.color)
+        chipGlyph.Visible = false
     end
-    chipLabel.Text = tostring(rank.label or "")
-    chipLabel.TextColor3 = rgb(rank.color)
+    chipLabel.Text = tostring(badge.label or "")
+    chipLabel.TextColor3 = rgb(badge.color)
+end
+
+local function hidePicker()
+    if picker then
+        picker.Visible = false
+        for _, child in ipairs(picker:GetChildren()) do
+            if child:IsA("TextButton") or child:IsA("TextLabel") then
+                child:Destroy()
+            end
+        end
+    end
+end
+
+local function openPicker()
+    if not picker then
+        return
+    end
+    local options = StatusBadge.options(peopleConfig, ranksConfig, badgeState())
+    if #options == 0 then
+        return
+    end
+    hidePicker()
+    picker.Visible = true
+    local rowZ = picker.ZIndex + 1
+    local y = 4
+    local lastGroup = nil
+    for _, option in ipairs(options) do
+        if option.group ~= lastGroup then
+            lastGroup = option.group
+            local heading = Instance.new("TextLabel")
+            heading.BackgroundTransparency = 1
+            heading.Size = UDim2.new(1, -10, 0, 16)
+            heading.Position = UDim2.fromOffset(6, y)
+            heading.Font = Enum.Font.GothamBold
+            heading.TextSize = 11
+            heading.TextXAlignment = Enum.TextXAlignment.Left
+            heading.TextColor3 = Color3.fromRGB(200, 206, 218)
+            heading.Text = option.group
+            heading.ZIndex = rowZ
+            heading.Parent = picker
+            y += 16
+        end
+        local btn = Instance.new("TextButton")
+        btn.AutoButtonColor = true
+        btn.BackgroundColor3 = Color3.fromRGB(36, 40, 52)
+        btn.BackgroundTransparency = 0.05
+        btn.BorderSizePixel = 0
+        btn.Size = UDim2.new(1, -10, 0, 24)
+        btn.Position = UDim2.fromOffset(5, y)
+        btn.Text = ""
+        btn.ZIndex = rowZ
+        btn.Parent = picker
+        local pad = Instance.new("UIPadding")
+        pad.PaddingLeft = UDim.new(0, 6)
+        pad.PaddingRight = UDim.new(0, 6)
+        pad.Parent = btn
+        local row = Instance.new("UIListLayout")
+        row.FillDirection = Enum.FillDirection.Horizontal
+        row.HorizontalAlignment = Enum.HorizontalAlignment.Left
+        row.VerticalAlignment = Enum.VerticalAlignment.Center
+        row.Padding = UDim.new(0, 6)
+        row.SortOrder = Enum.SortOrder.LayoutOrder
+        row.Parent = btn
+        if type(option.icon) == "string" and option.icon ~= "" then
+            local crest = Instance.new("ImageLabel")
+            crest.BackgroundTransparency = 1
+            crest.LayoutOrder = 1
+            crest.Size = UDim2.fromOffset(18, 18)
+            crest.ScaleType = Enum.ScaleType.Fit
+            crest.Image = option.icon
+            crest.ZIndex = rowZ + 1
+            crest.Parent = btn
+        end
+        local name = Instance.new("TextLabel")
+        name.BackgroundTransparency = 1
+        name.LayoutOrder = 2
+        name.Size = UDim2.new(1, -28, 1, 0)
+        name.Font = Enum.Font.GothamBold
+        name.TextSize = 13
+        name.TextXAlignment = Enum.TextXAlignment.Left
+        name.TextColor3 = rgb(option.color)
+        name.Text = tostring(option.label)
+        name.ZIndex = rowZ + 1
+        name.Parent = btn
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 4)
+        corner.Parent = btn
+        local kind, id = option.kind, option.id
+        btn.Activated:Connect(function()
+            hidePicker()
+            if Signals.SetStatusBadge then
+                Signals.SetStatusBadge:FireServer({ kind = kind, id = id })
+            end
+        end)
+        y += 26
+    end
+    picker.Size = UDim2.fromOffset(tonumber(ceremonyKnobs().chip_width) or 160, y + 6)
 end
 
 local function ensureHud()
@@ -82,22 +217,42 @@ local function ensureHud()
     gui.ResetOnSpawn = false
     gui.IgnoreGuiInset = true
     gui.DisplayOrder = 91
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     gui.Parent = pg
 
-    -- Sit immediately left of Roblox's People list (397px wide, 4px from the
-    -- right, 14px from the rounded-screen top — same measured inset as
-    -- QuestTrackerStyle). Scale/anchors cannot express that CoreGui width.
-    chip = Instance.new("Frame")
+    -- Sit immediately left of the quest pill on the 14px top. Width/insets
+    -- come from people_list so they stay aligned with that column.
+    -- Scale/anchors cannot express that measured column width.
+    local listWidth = 397
+    local listRight = 4
+    local chipTop = tonumber(knobs.chip_top) or 14
+    pcall(function()
+        local Locations = require(ReplicatedStorage.Shared.Locations)
+        local people = require(Locations.ConfigLoader):LoadConfig("people_list")
+        listWidth = tonumber(people and people.width) or listWidth
+        listRight = tonumber(people and people.right_inset) or listRight
+        peopleConfig = people or peopleConfig
+    end)
+    chip = Instance.new("TextButton")
     chip.Name = "Chip"
+    chip.AutoButtonColor = false
     chip.AnchorPoint = Vector2.new(1, 0)
-    chip.Position = UDim2.new(1, -(397 + 4 + 8), 0, 14)
+    chip.Position = UDim2.new(1, -(listWidth + listRight + 8), 0, chipTop)
     chip.Size =
         UDim2.fromOffset(tonumber(knobs.chip_width) or 148, tonumber(knobs.chip_height) or 36)
     chip.BackgroundColor3 = Color3.fromRGB(18, 16, 24)
     chip.BackgroundTransparency = 0.08
     chip.BorderSizePixel = 0
     chip.Visible = false
+    chip.Text = ""
     chip.Parent = gui
+    chip.Activated:Connect(function()
+        if picker and picker.Visible then
+            hidePicker()
+        else
+            openPicker()
+        end
+    end)
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(1, 0)
     corner.Parent = chip
@@ -107,11 +262,23 @@ local function ensureHud()
     stroke.Transparency = 0.15
     stroke.Parent = chip
 
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft = UDim.new(0, 8)
+    pad.PaddingRight = UDim.new(0, 10)
+    pad.Parent = chip
+    local row = Instance.new("UIListLayout")
+    row.FillDirection = Enum.FillDirection.Horizontal
+    row.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    row.VerticalAlignment = Enum.VerticalAlignment.Center
+    row.Padding = UDim.new(0, tonumber(knobs.icon_text_gap) or 8)
+    row.SortOrder = Enum.SortOrder.LayoutOrder
+    row.Parent = chip
+
     chipGlyph = Instance.new("TextLabel")
     chipGlyph.Name = "Glyph"
     chipGlyph.BackgroundTransparency = 1
+    chipGlyph.LayoutOrder = 1
     chipGlyph.Size = UDim2.fromOffset(28, 28)
-    chipGlyph.Position = UDim2.fromOffset(6, 4)
     chipGlyph.Font = Enum.Font.GothamBold
     chipGlyph.TextSize = 18
     chipGlyph.Parent = chip
@@ -119,8 +286,8 @@ local function ensureHud()
     chipIcon = Instance.new("ImageLabel")
     chipIcon.Name = "Icon"
     chipIcon.BackgroundTransparency = 1
+    chipIcon.LayoutOrder = 1
     chipIcon.Size = UDim2.fromOffset(28, 28)
-    chipIcon.Position = UDim2.fromOffset(6, 4)
     chipIcon.ScaleType = Enum.ScaleType.Fit
     chipIcon.Visible = false
     chipIcon.Parent = chip
@@ -128,12 +295,37 @@ local function ensureHud()
     chipLabel = Instance.new("TextLabel")
     chipLabel.Name = "Label"
     chipLabel.BackgroundTransparency = 1
-    chipLabel.Position = UDim2.fromOffset(32, 0)
-    chipLabel.Size = UDim2.new(1, -38, 1, 0)
+    chipLabel.LayoutOrder = 2
+    chipLabel.Size = UDim2.new(1, -46, 1, 0)
     chipLabel.Font = Enum.Font.GothamBold
     chipLabel.TextSize = 16
     chipLabel.TextXAlignment = Enum.TextXAlignment.Left
     chipLabel.Parent = chip
+
+    picker = Instance.new("Frame")
+    picker.Name = "Picker"
+    picker.Visible = false
+    picker.AnchorPoint = Vector2.new(1, 0)
+    picker.Position = UDim2.new(
+        1,
+        -(listWidth + listRight + 8),
+        0,
+        chipTop + (tonumber(knobs.chip_height) or 36) + 6
+    )
+    picker.Size = UDim2.fromOffset(tonumber(knobs.chip_width) or 160, 0)
+    picker.BackgroundColor3 = Color3.fromRGB(16, 18, 26)
+    picker.BackgroundTransparency = 0.04
+    picker.BorderSizePixel = 0
+    picker.ZIndex = 10
+    picker.Active = true
+    picker.Parent = gui
+    local pickCorner = Instance.new("UICorner")
+    pickCorner.CornerRadius = UDim.new(0, 8)
+    pickCorner.Parent = picker
+    local pickStroke = Instance.new("UIStroke")
+    pickStroke.Color = Color3.fromRGB(220, 224, 236)
+    pickStroke.Transparency = 0.4
+    pickStroke.Parent = picker
 end
 
 local function attachNametag(player)
@@ -142,12 +334,9 @@ local function attachNametag(player)
         existing:Destroy()
         nametags[player] = nil
     end
-    local rank = CombatRank.rankById(ranksConfig, player:GetAttribute("CombatRank"))
-    local label = player:GetAttribute("CombatRankLabel")
+    local badge = currentBadge(player)
+    local label = badge and badge.label
     if type(label) ~= "string" or label == "" then
-        label = rank and rank.label
-    end
-    if not (rank and type(label) == "string" and label ~= "") then
         return
     end
     local character = player.Character
@@ -156,6 +345,7 @@ local function attachNametag(player)
         return
     end
     local knobs = ceremonyKnobs()
+    local gap = tonumber(knobs.icon_text_gap) or 8
     local bb = Instance.new("BillboardGui")
     bb.Name = "CombatRankTag"
     bb.Adornee = head
@@ -165,27 +355,41 @@ local function attachNametag(player)
     bb.StudsOffset = Vector3.new(0, tonumber(knobs.nametag_studs) or 2.55, 0)
     bb.ResetOnSpawn = false
     bb.Parent = head
-    local icon = CombatRank.iconAsset(rank)
+
+    local row = Instance.new("Frame")
+    row.Name = "Row"
+    row.BackgroundTransparency = 1
+    row.Size = UDim2.fromScale(1, 1)
+    row.Parent = bb
+    local layout = Instance.new("UIListLayout")
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    layout.VerticalAlignment = Enum.VerticalAlignment.Center
+    layout.Padding = UDim.new(0, gap)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = row
+
+    local icon = type(badge.icon) == "string" and badge.icon ~= "" and badge.icon or nil
     if icon then
         local image = Instance.new("ImageLabel")
         image.BackgroundTransparency = 1
+        image.LayoutOrder = 1
         image.Size = UDim2.fromOffset(20, 20)
-        image.Position = UDim2.fromOffset(4, 1)
         image.ScaleType = Enum.ScaleType.Fit
         image.Image = icon
-        image.Parent = bb
+        image.Parent = row
     end
     local text = Instance.new("TextLabel")
     text.BackgroundTransparency = 1
-    text.Position = icon and UDim2.fromOffset(26, 0) or UDim2.fromOffset(0, 0)
-    text.Size = icon and UDim2.new(1, -28, 1, 0) or UDim2.fromScale(1, 1)
+    text.LayoutOrder = 2
+    text.Size = UDim2.fromOffset(80, 22)
     text.Font = Enum.Font.GothamBold
     text.TextSize = 14
-    text.Text = icon and label or (tostring(rank.glyph or "✦") .. "  " .. label)
-    text.TextColor3 = rgb(rank.color)
+    text.Text = label
+    text.TextColor3 = rgb(badge.color)
     text.TextStrokeTransparency = 0.35
     text.TextXAlignment = Enum.TextXAlignment.Left
-    text.Parent = bb
+    text.Parent = row
     nametags[player] = bb
 end
 
@@ -193,11 +397,18 @@ local function watchPlayer(player)
     local function refresh()
         attachNametag(player)
         if player == Players.LocalPlayer then
-            applyChip(currentRank())
+            applyChip(currentBadge(player))
         end
     end
     player:GetAttributeChangedSignal("CombatRank"):Connect(refresh)
     player:GetAttributeChangedSignal("CombatRankLabel"):Connect(refresh)
+    player:GetAttributeChangedSignal("CombatRankEarned"):Connect(refresh)
+    player:GetAttributeChangedSignal("StatusBadgeLabel"):Connect(refresh)
+    player:GetAttributeChangedSignal("StatusBadgeKind"):Connect(refresh)
+    player:GetAttributeChangedSignal("StatusBadgeId"):Connect(refresh)
+    player:GetAttributeChangedSignal("Level"):Connect(refresh)
+    player:GetAttributeChangedSignal("HasHatchedHuge"):Connect(refresh)
+    player:GetAttributeChangedSignal("LeaderboardStatusTitle"):Connect(refresh)
     player.CharacterAdded:Connect(function()
         task.defer(refresh)
     end)
@@ -366,13 +577,14 @@ local function playCeremony(rank)
         if generation ~= ceremonyGeneration or not cluster.Parent then
             return
         end
-        -- Land on the chip dock: left of the 397px People list, 14px from top.
+        -- Land on the chip dock: left of the quest pill, 14px top.
+        local landTop = tonumber(ceremonyKnobs().chip_top) or 14
         local land = TweenService:Create(
             cluster,
             TweenInfo.new(fly, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
             {
                 AnchorPoint = Vector2.new(1, 0),
-                Position = UDim2.new(1, -(397 + 4 + 8), 0, 14),
+                Position = UDim2.new(1, -(397 + 4 + 8), 0, landTop),
                 Size = UDim2.fromOffset(
                     tonumber(knobs.chip_width) or 148,
                     tonumber(knobs.chip_height) or 36
@@ -419,7 +631,7 @@ local function playCeremony(rank)
                 return
             end
             overlay:Destroy()
-            applyChip(rank)
+            applyChip(currentBadge())
         end)
     end)
 end
@@ -430,8 +642,11 @@ function CombatRankController.start()
     end
     started = true
     ranksConfig = require(ReplicatedStorage.Configs:WaitForChild("combat_ranks"))
+    pcall(function()
+        peopleConfig = require(ReplicatedStorage.Configs:WaitForChild("people_list"))
+    end)
     ensureHud()
-    applyChip(currentRank())
+    applyChip(currentBadge())
 
     for _, player in ipairs(Players:GetPlayers()) do
         watchPlayer(player)

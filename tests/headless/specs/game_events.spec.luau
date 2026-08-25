@@ -79,6 +79,18 @@ return function()
             expect(feedback.messages.no_crystals_in_range).to.equal(
                 "No resources in range — move closer."
             )
+            expect(feedback.size).to.equal(460)
+            expect(feedback.height).to.equal(60)
+            for _, eventName in ipairs({
+                "power_cast_failed",
+                "potion_use_failed",
+                "mission_enter_blocked",
+                "range_solo_required",
+            }) do
+                local row = gameEvents[eventName].failure_float
+                expect(row.size).to.equal(460)
+                expect(row.height).to.equal(60)
+            end
 
             local dispatcher = readFile("src/Client/Systems/GameEvents.lua")
             expect(dispatcher:find("REACTIONS.failure_float", 1, true) ~= nil).to.equal(true)

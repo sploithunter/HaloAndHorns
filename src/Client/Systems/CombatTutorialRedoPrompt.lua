@@ -2,7 +2,7 @@
     CombatTutorialRedoPrompt — Yes/No for combat-training cave prompts.
 
     Redo: E at the Earth cave after they already finished the track.
-    Leave: E on the lobby pad — leave without completing?
+    Leave: Continue later on the frost-door SurfaceGui — leave without completing?
 
     Styled like RealmTravelPrompt (dark rounded panel, gold stroke, Gotham).
 ]]

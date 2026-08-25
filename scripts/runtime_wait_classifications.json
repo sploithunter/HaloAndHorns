@@ -68,6 +68,9 @@
   "src/Client/Systems/MissionMap.lua": {
    "periodic": 1
   },
+  "src/Client/Systems/PeopleListController.lua": {
+   "retry_backoff": 1
+  },
   "src/Client/Systems/PlayerBar.lua": {
    "retry_backoff": 1
   },

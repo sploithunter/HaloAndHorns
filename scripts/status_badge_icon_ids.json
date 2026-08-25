@@ -1,0 +1,31 @@
+{
+  "_note": "Adventure + Huge Hatcher status crests. Open Cloud Decal ids plus resolved Image ids (InsertService:LoadAsset → Decal.Texture). ImageLabel.Image must use imageId, not decal.",
+  "noob": {
+    "decal": "112343297048579",
+    "imageId": "rbxassetid://109253922126750"
+  },
+  "novice": {
+    "decal": "91344550365886",
+    "imageId": "rbxassetid://127026500451476"
+  },
+  "adventurer": {
+    "decal": "125253867375895",
+    "imageId": "rbxassetid://129328186554395"
+  },
+  "hero": {
+    "decal": "117183338505784",
+    "imageId": "rbxassetid://103517372435641"
+  },
+  "master": {
+    "decal": "114388925866993",
+    "imageId": "rbxassetid://132111995758746"
+  },
+  "legend": {
+    "decal": "109710431325037",
+    "imageId": "rbxassetid://98082259621432"
+  },
+  "huge_hatcher": {
+    "decal": "113120104044999",
+    "imageId": "rbxassetid://105338046020621"
+  }
+}

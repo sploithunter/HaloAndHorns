@@ -43,6 +43,7 @@ local function applyVisibility()
         QuestTrackerStyle._pane.Visible = not QuestTrackerStyle._dismissed
             and player:GetAttribute("LargeMenuOpen") ~= true
             and player:GetAttribute("TutorialCornerOwned") ~= true
+            and player:GetAttribute("TutorialHandoffOpen") ~= true
         applyPresentation()
     end
 end
@@ -360,8 +361,9 @@ function QuestTrackerStyle.start()
         trackerGui.IgnoreGuiInset = true
         trackerGui.Parent = pg
 
-        -- Anchor at the upper-right safe edge. These measured offsets match Roblox's PlayerList
-        -- outer frame: 4px from the right edge, 14px from the rounded-screen top, and 397px wide.
+        -- Anchor at the upper-right safe edge. These measured offsets match
+        -- configs/people_list.lua (same column as the custom People list):
+        -- 4px from the right edge, 14px from the rounded-screen top, 397px wide.
         local dock = Instance.new("Frame")
         dock.Name = "QuestTrackerDock"
         dock.AnchorPoint = Vector2.new(1, 0)
@@ -739,6 +741,7 @@ function QuestTrackerStyle.start()
         end)
         player:GetAttributeChangedSignal("LargeMenuOpen"):Connect(applyVisibility)
         player:GetAttributeChangedSignal("TutorialCornerOwned"):Connect(applyVisibility)
+        player:GetAttributeChangedSignal("TutorialHandoffOpen"):Connect(applyVisibility)
 
         QuestTrackerStyle._pane = pane
         ensureTipOverlay()

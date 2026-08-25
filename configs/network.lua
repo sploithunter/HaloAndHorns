@@ -342,6 +342,20 @@ return {
                 arguments = { { name = "preferences", type = "table" } },
             },
         },
+        SetStatusBadge = {
+            name = "SetStatusBadge",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 20,
+            handler = "PlayerProgressionService.SetStatusBadge",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
+            },
+        },
         ForceRegenerateAssets = {
             name = "ForceRegenerateAssets",
             transport = "reliable_event",
@@ -1203,6 +1217,17 @@ return {
             handler = "TutorialService.HotbarDone",
             schema = { kind = "tuple", arguments = {} },
         },
+        TutorialCombatTrainingAck = {
+            name = "TutorialCombatTrainingAck",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 5,
+            handler = "TutorialService.CombatTrainingAck",
+            schema = { kind = "tuple", arguments = {} },
+        },
         StarterPetStateRequest = {
             name = "StarterPetStateRequest",
             transport = "reliable_event",
@@ -1515,6 +1540,20 @@ return {
             schema = {
                 kind = "tuple",
                 arguments = { { name = "accepted", type = "boolean" } },
+            },
+        },
+        CombatTutorialDoorAction = {
+            name = "CombatTutorialDoorAction",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 8,
+            handler = "CombatTutorialService.DoorAction",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "action", type = "string" } },
             },
         },
         EnchantPetResult = {

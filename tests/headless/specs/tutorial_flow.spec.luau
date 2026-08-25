@@ -73,6 +73,8 @@ return function()
             local combat = readFile("src/Server/Services/CombatTutorialService.lua")
             expect(combat:find("function CombatTutorialService:ResetForBeginning", 1, true)).to.be.ok()
             expect(combat:find("session.skipRewind = true", 1, true)).to.be.ok()
+            expect(combat:find("_publishCombatRank(player, nil)", 1, true)).to.be.ok()
+            expect(combat:find("StatusBadgeSeen = {}", 1, true)).to.be.ok()
         end)
 
         it("restores the authored Homeworld lesson order and targets", function()
@@ -96,6 +98,8 @@ return function()
             expect(cfg.steps[5].target.name).to.equal("Edit")
             expect(cfg.steps[8].target.name).to.equal("EarthLair")
             expect(cfg.steps[8].target.root).to.equal("Maps.Home")
+            expect(cfg.steps[8].handoff.later_label).to.equal("Later")
+            expect(cfg.steps[8].handoff.ok_label).to.equal("Okay")
             expect(cfg.steps[8].body).to.equal(
                 "The Earth cave is a training ground. Press E to enter and learn how to fight."
             )
@@ -332,6 +336,7 @@ return function()
                 expect(client:find("PLAYER_LIST_PEEK_SECONDS = 10", 1, true)).to.be.ok()
                 expect(client:find("playerListGuard:Suppress()", 1, true)).to.be.ok()
                 expect(client:find("playerListGuard:Restore()", 1, true)).to.be.ok()
+                expect(client:find('SetAttribute("PeopleListPeek"', 1, true)).to.be.ok()
                 expect(client:find('peekButton.Name = "ShowPlayersTemporarily"', 1, true)).to.be.ok()
                 expect(
                     client:find("peekButton.Activated:Connect(showPlayerListTemporarily)", 1, true)
@@ -351,6 +356,18 @@ return function()
                 expect(menus:find('SetAttribute("LargeMenuOpen", false)', 1, true)).to.be.ok()
             end
         )
+
+        it("hands Combat Training to Quest behind a blocking Okay banner", function()
+            local client = readFile("src/Client/Systems/TutorialController.lua")
+            local server = readFile("src/Server/Services/TutorialService.lua")
+            expect(client:find('handoffGui.Name = "TutorialHandoffGui"', 1, true)).to.be.ok()
+            expect(client:find('laterBtn.Name = "Later"', 1, true)).to.be.ok()
+            expect(client:find("Signals.TutorialCombatTrainingAck:FireServer()", 1, true)).to.be.ok()
+            expect(client:find('SetAttribute("TutorialHandoffOpen", true)', 1, true)).to.be.ok()
+            expect(server:find("Signals.TutorialCombatTrainingAck.OnServerEvent", 1, true)).to.be.ok()
+            expect(server:find('fireGameEvent(player, "combat_training_quest_ack"', 1, true)).to.be.ok()
+            expect(server:find("CombatTrainingQuestOffered", 1, true)).to.be.ok()
+        end)
     end)
 
     describe("advance (the whole new-player path)", function()
@@ -394,7 +411,7 @@ return function()
                 "tutorial_hotbar_finished", -- bind_power (Resonance bound, then Done pressed)
                 "power_cast", -- cast_power
                 "enhancement_slotted", -- slot_power
-                "combat_tutorial_complete", -- first_fight (Earth cave training)
+                "combat_training_quest_ack", -- first_fight (Quest handoff)
                 "rally_used", -- rally_call (the flag at the top-left, slot 11) → done
             })
             expect(p.done).to.equal(true)
@@ -403,6 +420,20 @@ return function()
             local p2, changed = TutorialFlow.advance(cfg, p, "egg_hatch")
             expect(changed).to.equal(false)
             expect(p2.done).to.equal(true)
+        end)
+
+        it("also lets finishing the Earth cave clear the Quest handoff", function()
+            local p = feed(nil, {
+                "egg_hatch",
+                { "coin_payout", { amount = 100 } },
+                "egg_hatch",
+                "tutorial_squad_reviewed",
+                "tutorial_hotbar_finished",
+                "power_cast",
+                "enhancement_slotted",
+                "combat_tutorial_complete",
+            })
+            expect(TutorialFlow.current(cfg, p).id).to.equal("rally_call")
         end)
 
         it("egg_hatch does NOT skip the mining gate between two hatch steps", function()

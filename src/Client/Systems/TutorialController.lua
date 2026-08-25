@@ -56,6 +56,8 @@ local currentState
 local completionCardVisible = false
 local languageBannerShown = false
 local capsuleWantedVisible = false
+local handoffGui, handoffTitle, handoffBody, handoffOk, laterBtn
+local showHandoffBanner
 local playerListPeekUntil = 0
 local playerListPeekConnection
 local playerListGuard = CoreGuiStateGuard.new(function()
@@ -74,6 +76,8 @@ local function syncCapsuleVisibility()
         and player:GetAttribute("LargeMenuOpen") ~= true
     local peekingAtPlayers = tutorialOwnsCorner and os.clock() < playerListPeekUntil
     capsule.Visible = tutorialOwnsCorner and not peekingAtPlayers
+
+    player:SetAttribute("PeopleListPeek", peekingAtPlayers == true)
 
     if tutorialOwnsCorner and not peekingAtPlayers then
         local suppressed, suppressError = playerListGuard:Suppress()
@@ -204,9 +208,147 @@ local function buildCapsule(pg)
     peekButton.Parent = capsule
     peekButton.Activated:Connect(showPlayerListTemporarily)
 
+    laterBtn = Instance.new("TextButton")
+    laterBtn.Name = "Later"
+    laterBtn.AnchorPoint = Vector2.new(1, 1)
+    laterBtn.Position = UDim2.new(1, -10, 1, -8)
+    laterBtn.Size = UDim2.fromOffset(88, 28)
+    laterBtn.BackgroundColor3 = Color3.fromRGB(255, 205, 70)
+    laterBtn.BorderSizePixel = 0
+    laterBtn.AutoButtonColor = true
+    laterBtn.Visible = false
+    laterBtn.ZIndex = 20
+    laterBtn.Font = Enum.Font.GothamBold
+    laterBtn.TextSize = 16
+    laterBtn.TextColor3 = Color3.fromRGB(28, 22, 16)
+    laterBtn.Text = "Later"
+    laterBtn.Parent = capsule
+    local laterCorner = Instance.new("UICorner")
+    laterCorner.CornerRadius = UDim.new(0, 8)
+    laterCorner.Parent = laterBtn
+    laterBtn.Activated:Connect(function()
+        if type(currentState) == "table" then
+            showHandoffBanner(currentState)
+        end
+    end)
+
     capsule.Parent = dock
     gui.Parent = pg
     require(script.Parent.Parent.UI.UIViewportScale).attach(capsule)
+
+    handoffGui = Instance.new("ScreenGui")
+    handoffGui.Name = "TutorialHandoffGui"
+    handoffGui.ResetOnSpawn = false
+    handoffGui.IgnoreGuiInset = true
+    handoffGui.DisplayOrder = 125
+    handoffGui.Enabled = false
+    handoffGui.Parent = pg
+
+    local scrim = Instance.new("Frame")
+    scrim.Name = "Scrim"
+    scrim.Size = UDim2.fromScale(1, 1)
+    scrim.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
+    scrim.BackgroundTransparency = 0.28
+    scrim.BorderSizePixel = 0
+    scrim.Parent = handoffGui
+
+    local card = Instance.new("Frame")
+    card.Name = "Banner"
+    card.AnchorPoint = Vector2.new(0.5, 0.5)
+    card.Position = UDim2.fromScale(0.5, 0.42)
+    card.Size = UDim2.new(0.72, 0, 0, 280)
+    card.BackgroundColor3 = Color3.fromRGB(24, 22, 34)
+    card.BackgroundTransparency = 0.04
+    card.BorderSizePixel = 0
+    card.Parent = handoffGui
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 22)
+    cardCorner.Parent = card
+    local cardStroke = Instance.new("UIStroke")
+    cardStroke.Color = GOLD
+    cardStroke.Thickness = 4
+    cardStroke.Parent = card
+    require(script.Parent.Parent.UI.UIViewportScale).attach(card)
+
+    handoffTitle = Instance.new("TextLabel")
+    handoffTitle.BackgroundTransparency = 1
+    handoffTitle.Size = UDim2.new(1, -48, 0, 72)
+    handoffTitle.Position = UDim2.fromOffset(24, 22)
+    handoffTitle.Font = Enum.Font.GothamBlack
+    handoffTitle.TextSize = 42
+    handoffTitle.TextWrapped = true
+    handoffTitle.TextColor3 = GOLD
+    handoffTitle.TextXAlignment = Enum.TextXAlignment.Center
+    handoffTitle.TextYAlignment = Enum.TextYAlignment.Center
+    handoffTitle.Parent = card
+
+    handoffBody = Instance.new("TextLabel")
+    handoffBody.BackgroundTransparency = 1
+    handoffBody.Size = UDim2.new(1, -56, 0, 96)
+    handoffBody.Position = UDim2.fromOffset(28, 100)
+    handoffBody.Font = Enum.Font.GothamBold
+    handoffBody.TextSize = 26
+    handoffBody.TextWrapped = true
+    handoffBody.TextColor3 = Color3.fromRGB(236, 236, 244)
+    handoffBody.TextXAlignment = Enum.TextXAlignment.Center
+    handoffBody.TextYAlignment = Enum.TextYAlignment.Top
+    handoffBody.Parent = card
+
+    handoffOk = Instance.new("TextButton")
+    handoffOk.Name = "Okay"
+    handoffOk.AnchorPoint = Vector2.new(0.5, 1)
+    handoffOk.Position = UDim2.new(0.5, 0, 1, -22)
+    handoffOk.Size = UDim2.fromOffset(220, 56)
+    handoffOk.BackgroundColor3 = Color3.fromRGB(255, 205, 70)
+    handoffOk.BorderSizePixel = 0
+    handoffOk.AutoButtonColor = true
+    handoffOk.Font = Enum.Font.GothamBlack
+    handoffOk.TextSize = 26
+    handoffOk.TextColor3 = Color3.fromRGB(28, 22, 16)
+    handoffOk.Text = "Okay"
+    handoffOk.Parent = card
+    local okCorner = Instance.new("UICorner")
+    okCorner.CornerRadius = UDim.new(0, 14)
+    okCorner.Parent = handoffOk
+    handoffOk.Activated:Connect(function()
+        Signals.TutorialCombatTrainingAck:FireServer()
+    end)
+end
+
+local function hideHandoffBanner()
+    Players.LocalPlayer:SetAttribute("TutorialHandoffOpen", false)
+    if handoffGui then
+        handoffGui.Enabled = false
+    end
+end
+
+showHandoffBanner = function(state)
+    if not handoffGui then
+        return
+    end
+    local localeId = TutorialLanguageState.getLocaleId()
+    local spec = state.handoff or {}
+    local baseKey = state.localization_key or "tutorial.first_fight"
+    if type(state.id) == "string" then
+        baseKey = "tutorial." .. state.id
+    end
+    handoffTitle.Text = TutorialLocalization.text(
+        localeId,
+        baseKey .. ".handoff.title",
+        spec.title or "TO CONTINUE THE TUTORIAL"
+    )
+    handoffBody.Text = TutorialLocalization.text(
+        localeId,
+        baseKey .. ".handoff.body",
+        spec.body or "It's in Quest."
+    )
+    handoffOk.Text =
+        TutorialLocalization.text(localeId, baseKey .. ".handoff.ok", spec.ok_label or "Okay")
+    handoffGui.Enabled = true
+    Players.LocalPlayer:SetAttribute("TutorialHandoffOpen", true)
+    if Players.LocalPlayer:GetAttribute("InputMode") == "gamepad" then
+        GuiService.SelectedObject = handoffOk
+    end
 end
 
 local pathFolder -- ground breadcrumb trail (egg steps)
@@ -1262,6 +1404,10 @@ local function apply(state)
     clearGuidance()
     currentState = state
     if type(state) ~= "table" or state.done then
+        if laterBtn then
+            laterBtn.Visible = false
+        end
+        hideHandoffBanner()
         Players.LocalPlayer:SetAttribute("TutorialStepId", nil)
         local wasActive = tutorialActive
         tutorialActive = false
@@ -1291,6 +1437,27 @@ local function apply(state)
     Players.LocalPlayer:SetAttribute("TutorialStepId", state.id)
     tutorialActive = true
     completionCardVisible = false
+    local inCave = Players.LocalPlayer:GetAttribute("InCombatTutorial") == true
+    if laterBtn then
+        laterBtn.Visible = type(state.handoff) == "table" and not inCave
+        if laterBtn.Visible then
+            local spec = state.handoff or {}
+            laterBtn.Text = TutorialLocalization.text(
+                TutorialLanguageState.getLocaleId(),
+                "tutorial." .. tostring(state.id) .. ".handoff.later",
+                spec.later_label or "Later"
+            )
+        end
+    end
+    if
+        type(state.handoff) == "table"
+        and not inCave
+        and Players.LocalPlayer:GetAttribute("TutorialHandoffOpen") == true
+    then
+        showHandoffBanner(state)
+    else
+        hideHandoffBanner()
+    end
     renderActiveState(state)
     setCapsuleWantedVisible(true)
     maybeShowLanguageBanner()
@@ -1371,7 +1538,7 @@ end
 -- bumped per behavior change: printed at start so a LIVE session's running BYTECODE is
 -- identifiable (rojo syncs Source into running sessions but required modules never
 -- re-execute — we chased "stale build vs real bug" three times today)
-local BUILD = "slot-power click-here walk (2026-08-24)"
+local BUILD = "combat-training later handoff (2026-08-25)"
 
 function TutorialController.start()
     if started then
@@ -1397,6 +1564,7 @@ function TutorialController.start()
         if inPrologue() then
             parked = state
             clearGuidance()
+            hideHandoffBanner()
             if capsule then
                 syncCapsuleVisibility()
             end
@@ -1442,6 +1610,13 @@ function TutorialController.start()
         maybeShowLanguageBanner()
     end)
     me:GetAttributeChangedSignal("TutorialLanguageReady"):Connect(maybeShowLanguageBanner)
+    me:GetAttributeChangedSignal("InCombatTutorial"):Connect(function()
+        if type(currentState) == "table" and not currentState.done then
+            gatedApply(currentState)
+        else
+            hideHandoffBanner()
+        end
+    end)
 
     Signals.TutorialState.OnClientEvent:Connect(gatedApply)
     -- pull current state — the server's join-time push may predate this connection

@@ -1859,6 +1859,11 @@ function MissionInstanceService:_attachExitPrompt(spawnPad, mission, teamKey, in
 end
 
 function MissionInstanceService:_attachBeaconPrompts(record, mission, beacons, gated)
+    -- Combat training owns the pillar (Advance). A second Next Room prompt
+    -- on the same ObjectiveBeacon fights the default prompt UI.
+    if mission and mission.tutorial then
+        return {}
+    end
     local teamKey = record.teamKey
     local instanceId = record.instanceId
     local missionId = record.missionId

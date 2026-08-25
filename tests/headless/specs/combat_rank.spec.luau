@@ -47,6 +47,7 @@ return function()
                 expect(PILLARS[rank.grant_step]).to.equal(rank.id)
             end
             expect(ranks.ranks[#ranks.ranks].id).to.equal("skilled")
+            expect(ranks.ceremony.chip_top).to.equal(14)
         end)
 
         it("maps every pillar grant_step to a live combat-tutorial step", function()
@@ -105,6 +106,15 @@ return function()
             expect(state.earned.spark).to.equal(true)
             expect(state.earned.kindled).to.equal(true)
             expect(state.earned.warden).to.equal(nil)
+        end)
+    end)
+
+    describe("wiring", function()
+        it("admin reset clears earned ranks and the worn Status pick", function()
+            local combat = readFile("src/Server/Services/CombatTutorialService.lua")
+            expect(combat:find("data.GameData.CombatRank = nil", 1, true)).to.be.ok()
+            expect(combat:find("_publishCombatRank(player, nil)", 1, true)).to.be.ok()
+            expect(combat:find("StatusBadgeSeen = {}", 1, true)).to.be.ok()
         end)
     end)
 end

@@ -32,6 +32,10 @@ function LeaderboardStatus.bestForUser(userId, boards, entriesByBoard, rankLimit
                             rank = rank,
                             boardId = board.id,
                             boardOrder = boardOrder,
+                            hoverTitle = type(board.hover_title) == "string" and board.hover_title
+                                or title,
+                            hoverBoard = type(board.hover_board) == "string" and board.hover_board
+                                or board.display_name,
                         }
                     end
                     break
@@ -41,6 +45,16 @@ function LeaderboardStatus.bestForUser(userId, boards, entriesByBoard, rankLimit
     end
 
     return best
+end
+
+function LeaderboardStatus.hoverLine(title, rank, boardLabel)
+    local place = math.max(1, math.floor(tonumber(rank) or 1))
+    local name = tostring(title or "")
+    local board = tostring(boardLabel or "LB")
+    if name == "" then
+        name = "Rank"
+    end
+    return string.format("%s #%d (#%d %s)", name, place, place, board)
 end
 
 return LeaderboardStatus

@@ -162,6 +162,11 @@ local function generateProfileTemplate(configLoader)
                 owned = { black_gold = true },
                 equipped = "black_gold",
             },
+            -- Worn People-list / chip title. { kind, id } from StatusBadge.
+            -- StatusBadgeSeen is the last published option-key list so a
+            -- newly earned title can replace the worn pick.
+            StatusBadge = {},
+            StatusBadgeSeen = {},
             -- One-way pet gifts use a persisted sender outbox plus permanent
             -- sender/receiver idempotency ledgers. Unopened presents themselves
             -- live in Inventory.gifts, which is generated from config below.

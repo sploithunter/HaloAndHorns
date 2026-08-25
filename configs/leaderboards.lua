@@ -144,6 +144,8 @@ return {
         {
             id = "most_dragons",
             status_title = "Dragonlord",
+            hover_title = "Dragon",
+            hover_board = "Dragon LB",
             display_name = "Most Dragons",
             subtitle = "Dragons currently owned",
             origin = "grass",
@@ -173,6 +175,8 @@ return {
         {
             id = "crystal_crusher",
             status_title = "Farmer",
+            hover_title = "Farm",
+            hover_board = "Crystal LB",
             display_name = "Crystal Crusher",
             subtitle = "Lifetime crystals destroyed",
             origin = "desert",
@@ -190,6 +194,8 @@ return {
         {
             id = "enemies_defeated",
             status_title = "Slayer",
+            hover_title = "Slayer",
+            hover_board = "Combat LB",
             display_name = "Enemies Defeated",
             subtitle = "Lifetime meaningful defeats",
             origin = "lava",
@@ -207,6 +213,8 @@ return {
         {
             id = "team_power",
             status_title = "Commander",
+            hover_title = "Commander",
+            hover_board = "Team LB",
             display_name = "Team Power",
             subtitle = "Strongest legal squad",
             origin = "ice",
@@ -229,6 +237,8 @@ return {
             subtitle = "Lifetime eggs hatched",
             status_only = true,
             status_title = "Hatcher",
+            hover_title = "Hatch",
+            hover_board = "Hatch LB",
             score = { kind = "counter", counter = "eggs_hatched" },
             sort = "desc",
             max_entries = 10,

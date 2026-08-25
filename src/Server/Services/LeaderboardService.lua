@@ -477,8 +477,24 @@ function LeaderboardService:_refreshPlayerStatusTitles()
             )
         end
         local title = best and best.title or nil
+        local rank = best and best.rank or nil
+        local hoverTitle = best and best.hoverTitle or nil
+        local hoverBoard = best and best.hoverBoard or nil
+        local boardId = best and best.boardId or nil
         if player:GetAttribute("LeaderboardStatusTitle") ~= title then
             player:SetAttribute("LeaderboardStatusTitle", title)
+        end
+        if player:GetAttribute("LeaderboardStatusRank") ~= rank then
+            player:SetAttribute("LeaderboardStatusRank", rank)
+        end
+        if player:GetAttribute("LeaderboardStatusHoverTitle") ~= hoverTitle then
+            player:SetAttribute("LeaderboardStatusHoverTitle", hoverTitle)
+        end
+        if player:GetAttribute("LeaderboardStatusHoverBoard") ~= hoverBoard then
+            player:SetAttribute("LeaderboardStatusHoverBoard", hoverBoard)
+        end
+        if player:GetAttribute("LeaderboardStatusBoardId") ~= boardId then
+            player:SetAttribute("LeaderboardStatusBoardId", boardId)
         end
     end
 end

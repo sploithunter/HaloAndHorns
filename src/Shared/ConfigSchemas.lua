@@ -154,6 +154,12 @@ local SCHEMAS = {
     level_track = schema({ version = "string", max_level = "number", milestones = "table" }),
     leveling = schema({ xp_rewards = "table", combat_xp = "table", scale = "table" }),
     logging = schema({ global = "table", performance_monitor = "table", services = "table" }),
+    people_list = schema({
+        version = "number",
+        enabled = "boolean",
+        prefixes = "table",
+        look = "table",
+    }),
     party = schema({ max_size = "number", loot_rule = "string", mvp_bonus_percent = "number" }),
     pet_follow = schema({ ring_mining = "table", formation = "table", movement = "table" }),
     pet_power = schema({
