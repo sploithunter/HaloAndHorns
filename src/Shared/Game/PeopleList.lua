@@ -134,9 +134,73 @@ function PeopleList.titleIcon(peopleConfig, statusText)
     return copy.icon
 end
 
-function PeopleList.inspect(ranksConfig, peopleConfig, combatRankId, statusText)
-    local inspect = peopleConfig and peopleConfig.inspect or {}
+local function leaderboardTitle(playerState)
+    local title = playerState and playerState.leaderboardTitle
+    if type(title) == "string" and title ~= "" then
+        return title
+    end
+    return nil
+end
+
+-- Worn or auto Farmer / Slayer / etc. Live rank wins over a stale
+-- StatusBadgeSource that landed before LeaderboardStatusRank was set.
+function PeopleList.leaderboardSource(playerState)
+    playerState = playerState or {}
+    local rank = tonumber(playerState.leaderboardRank)
+    local title = playerState.leaderboardHoverTitle or playerState.leaderboardTitle
+    if rank and type(title) == "string" and title ~= "" then
+        return LeaderboardStatus.hoverLine(title, rank, playerState.leaderboardHoverBoard or "LB")
+    end
+    if type(playerState.chosenSource) == "string" and playerState.chosenSource ~= "" then
+        return playerState.chosenSource
+    end
+    return leaderboardTitle(playerState)
+end
+
+function PeopleList.leaderboardShort(playerState)
+    playerState = playerState or {}
+    local rank = tonumber(playerState.leaderboardRank)
+    local title = playerState.leaderboardHoverTitle or playerState.leaderboardTitle
+    if rank and type(title) == "string" and title ~= "" then
+        return string.format("%s #%d", title, rank)
+    end
+    return nil
+end
+
+function PeopleList.isLeaderboardStatus(playerState, statusText)
+    playerState = playerState or {}
+    if playerState.chosenKind == "leaderboard" then
+        return true
+    end
+    local title = leaderboardTitle(playerState)
+    if not title then
+        return false
+    end
+    if type(playerState.chosenTitle) == "string" and playerState.chosenTitle ~= "" then
+        return playerState.chosenTitle == title
+    end
     local text = tostring(statusText or "")
+    return text == "" or text == title
+end
+
+function PeopleList.inspect(ranksConfig, peopleConfig, combatRankId, statusText, playerState)
+    playerState = playerState or {}
+    local inspect = peopleConfig and peopleConfig.inspect or {}
+    local text = tostring(statusText or playerState.chosenTitle or "")
+    if PeopleList.isLeaderboardStatus(playerState, text) then
+        local title = playerState.chosenTitle or leaderboardTitle(playerState) or text
+        local body = PeopleList.leaderboardSource(playerState)
+        if type(body) ~= "string" or body == "" then
+            body = inspect.leaderboard
+                or inspect.default_body
+                or "Current top-100 world-board placement."
+        end
+        return {
+            title = (type(title) == "string" and title ~= "" and title)
+                or (inspect.default_title or "Status"),
+            body = body,
+        }
+    end
     local titleIcon = PeopleList.titleIcon(peopleConfig, text)
     if titleIcon then
         local copy = titleCopy((inspect.level_titles or {})[text])
@@ -154,7 +218,9 @@ function PeopleList.inspect(ranksConfig, peopleConfig, combatRankId, statusText)
         }
     end
     local rank = CombatRank.rankById(ranksConfig, combatRankId)
-    if rank then
+    local rankMatches = rank
+        and (text == "" or rank.label == text or playerState.chosenKind == "combat")
+    if rank and rankMatches then
         local body = rank.inspect
         if type(body) ~= "string" or body == "" then
             body = "Acquired in Combat Training."
@@ -235,25 +301,20 @@ end
 
 function PeopleList.hoverStatus(config, ranksConfig, playerState)
     playerState = playerState or {}
+    if PeopleList.isLeaderboardStatus(playerState, playerState.chosenTitle) then
+        local line = PeopleList.leaderboardSource(playerState)
+        if line then
+            return line
+        end
+    end
     if type(playerState.chosenTitle) == "string" and playerState.chosenTitle ~= "" then
         if type(playerState.chosenSource) == "string" and playerState.chosenSource ~= "" then
-            if playerState.chosenKind == "leaderboard" then
-                return playerState.chosenSource
-            end
             return playerState.chosenTitle .. " (" .. playerState.chosenSource .. ")"
         end
         return playerState.chosenTitle
     end
     local title = playerState.leaderboardTitle
-    local rank = tonumber(playerState.leaderboardRank)
     if type(title) == "string" and title ~= "" then
-        if rank then
-            return LeaderboardStatus.hoverLine(
-                playerState.leaderboardHoverTitle or title,
-                rank,
-                playerState.leaderboardHoverBoard or "LB"
-            )
-        end
         return title
     end
     if type(playerState.combatRank) == "string" and playerState.combatRank ~= "" then
@@ -311,13 +372,17 @@ end
 
 function PeopleList.row(config, ranksConfig, playerState)
     playerState = playerState or {}
-    local status = PlayerListStatus.status({
+    local title = PlayerListStatus.status({
         level = playerState.level,
         chosenTitle = playerState.chosenTitle,
         leaderboardTitle = playerState.leaderboardTitle,
         combatRank = playerState.combatRank,
         hugeHatcher = playerState.hugeHatcher,
     })
+    local status = title
+    if PeopleList.isLeaderboardStatus(playerState, title) then
+        status = PeopleList.leaderboardShort(playerState) or title
+    end
     return {
         name = PeopleList.displayName(config, playerState.flags, playerState.displayName),
         badge = PeopleList.prefix(config, playerState.flags),
@@ -329,7 +394,13 @@ function PeopleList.row(config, ranksConfig, playerState)
             realm = playerState.realm,
             inMission = playerState.inMission,
         }),
-        inspect = PeopleList.inspect(ranksConfig, config, playerState.combatRankId, status),
+        inspect = PeopleList.inspect(
+            ranksConfig,
+            config,
+            playerState.combatRankId,
+            title,
+            playerState
+        ),
         hover = PeopleList.hover(config, ranksConfig, playerState),
     }
 end

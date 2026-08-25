@@ -120,6 +120,7 @@ return {
     inspect = {
         default_title = "Status",
         default_body = "Progress title. Combat Training titles come from the cave pillars.",
+        leaderboard = "Current top-100 placement on that world board.",
         huge_hatcher = "Hatched a Huge",
         huge_hatcher_icon = "rbxassetid://105338046020621",
         level_titles = {

@@ -32,6 +32,9 @@ return function()
             expect(people.inspect.level_titles.Noob.icon).to.equal("rbxassetid://109253922126750")
             expect(people.inspect.level_titles.Legend.icon).to.equal("rbxassetid://98082259621432")
             expect(people.inspect.huge_hatcher_icon).to.equal("rbxassetid://105338046020621")
+            expect(people.inspect.leaderboard).to.equal(
+                "Current top-100 placement on that world board."
+            )
         end)
 
         it("shows one name badge in owner → staff → founder → VIP order", function()
@@ -120,6 +123,21 @@ return function()
                 leaderboardHoverBoard = "Crystal LB",
             })).to.equal("Sploithunter, Dev, Farm #16 (#16 Crystal LB)")
         end)
+
+        it("uses the live farm rank when the worn source is stale", function()
+            expect(PeopleList.hover(cfg(), ranks(), {
+                displayName = "Tricentennial State",
+                chosenTitle = "Farmer",
+                chosenKind = "leaderboard",
+                chosenSource = "Farmer",
+                leaderboardTitle = "Farmer",
+                leaderboardRank = 7,
+                leaderboardHoverTitle = "Farm",
+                leaderboardHoverBoard = "Crystal LB",
+                combatRank = "Spark",
+                combatRankId = "spark",
+            })).to.equal("Tricentennial State, Farm #7 (#7 Crystal LB)")
+        end)
     end)
 
     describe("PeopleList.inspect", function()
@@ -136,6 +154,22 @@ return function()
             expect(card.title).to.equal("Hero")
             expect(card.icon).to.equal("rbxassetid://103517372435641")
             expect(card.body:find("regular", 1, true)).to.be.ok()
+        end)
+
+        it("explains Farmer placement instead of a Spark crest", function()
+            local card = PeopleList.inspect(ranks(), cfg(), "spark", "Farmer", {
+                chosenTitle = "Farmer",
+                chosenKind = "leaderboard",
+                chosenSource = "Farmer",
+                leaderboardTitle = "Farmer",
+                leaderboardRank = 7,
+                leaderboardHoverTitle = "Farm",
+                leaderboardHoverBoard = "Crystal LB",
+                combatRankId = "spark",
+            })
+            expect(card.title).to.equal("Farmer")
+            expect(card.body).to.equal("Farm #7 (#7 Crystal LB)")
+            expect(card.icon).to.equal(nil)
         end)
     end)
 
@@ -195,6 +229,25 @@ return function()
             expect(profile.inspect.title).to.equal("Legend")
             expect(profile.inspect.body:find("Level cap", 1, true)).to.be.ok()
             expect(profile.inspect.body:find("Combat Training", 1, true)).to.equal(nil)
+        end)
+
+        it("puts Farm #N on the Farmer card instead of Spark", function()
+            local profile = PeopleList.profile(cfg(), ranks(), {
+                displayName = "Tricentennial State",
+                chosenTitle = "Farmer",
+                chosenKind = "leaderboard",
+                chosenSource = "Farmer",
+                leaderboardTitle = "Farmer",
+                leaderboardRank = 7,
+                leaderboardHoverTitle = "Farm",
+                leaderboardHoverBoard = "Crystal LB",
+                combatRank = "Spark",
+                combatRankId = "spark",
+            })
+            expect(profile.status).to.equal("Farm #7")
+            expect(profile.inspect.title).to.equal("Farmer")
+            expect(profile.inspect.body).to.equal("Farm #7 (#7 Crystal LB)")
+            expect(profile.inspect.body:find("first fight", 1, true)).to.equal(nil)
         end)
     end)
 
@@ -270,6 +323,7 @@ return function()
             expect(controller:find("RolesHeading", 1, true)).to.be.ok()
             expect(controller:find("profile.entitlements", 1, true)).to.be.ok()
             expect(controller:find('GetAttribute("StatusBadgeLabel")', 1, true)).to.be.ok()
+            expect(controller:find('GetAttribute("LeaderboardStatusRank")', 1, true)).to.be.ok()
             expect(controller:find("character:Clone", 1, true)).to.be.ok()
             expect(controller:find("InspectPlayerFromUserId", 1, true)).to.equal(nil)
             expect(controller:find("PeopleListToggle", 1, true)).to.be.ok()

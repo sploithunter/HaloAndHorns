@@ -201,6 +201,10 @@ function PlayerProgressionService:Start()
             "CombatRank",
             "CombatRankEarned",
             "LeaderboardStatusTitle",
+            "LeaderboardStatusRank",
+            "LeaderboardStatusHoverTitle",
+            "LeaderboardStatusHoverBoard",
+            "LeaderboardStatusBoardId",
             "HasHatchedHuge",
             "Level",
         }) do

@@ -1,5 +1,12 @@
 # Log
 
+## 2026-08-25 — Farmer card shows Farm #N
+
+- People-list Farmer (and other board titles) now use the live
+  `Farm #7` placement. Hover and "How you get this" no longer fall
+  through to Spark. Status column shows `Farm #N`. Badge source
+  republishes when the rank attribute lands after the title.
+
 ## 2026-08-25 — Death flop/pop honor SFX volume
 
 - Enemy death sounds (flop thud, pop, and the other fall styles) now
