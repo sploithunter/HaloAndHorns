@@ -146,12 +146,18 @@ inspected with `scripts/studio/preview_layer3_flora.luau`, whose `_Layer3FloraPr
 be deleted before saving the place.
 
 Ambient fauna use invisible BaseParts tagged `AmbientFaunaAnchor`. Each anchor supplies
-`ModelName`, `Motion` (`hover` or `ground`), `MoveRadius`, `HoverHeight`, `BobHeight`, `Speed`,
-`VisualSize`, and `Phase`; `AmbientFaunaService` clones the matching
-`Assets.Models.AmbientFauna` visual and owns its deterministic 20 Hz motion. These models are
+`ModelName`, `Motion` (`hover` or `ground`), `MoveRadius` (or elliptical `PathRadiusX` and
+`PathRadiusZ`), `HoverHeight`, `BobHeight`, `Speed`, `VisualSize`, and `Phase`;
+`AmbientFaunaService` clones the matching
+`Assets.Models.AmbientFauna` visual and owns its deterministic 30 Hz motion. These models are
 environmental dressing only: every part is anchored and non-colliding/non-touching/non-queryable,
 and fauna have no health, target, damage, or drop hooks. The repeatable Layer 3 authoring pass is
 `scripts/studio/place_layer3_ambient_fauna_anchors.luau`.
+
+Fauna face the tangent of their authored route and layer their motion through the shared `Gait`
+module used by pets and enemies; do not derive orientation directly from elapsed time. Heaven 3's
+three Bloomwing Butterflies are deliberately miniature (0.85–1.15 studs) and confined to distinct
+loops within the authored garden rather than the player walkway.
 
 The physical realm portals may temporarily bypass their per-player gate through
 `layers.realm_portals.testing_open_layers`. This switch affects only the named portal geometry and
