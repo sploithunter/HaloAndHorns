@@ -45,6 +45,7 @@ local AggroLeash = require(ReplicatedStorage.Shared.Game.AggroLeash)
 local AggroModel = require(ReplicatedStorage.Shared.Game.AggroModel) -- unified aggro game (configs/aggro.lua)
 local PowerIcons = require(ReplicatedStorage.Configs:WaitForChild("power_icons")) -- world debuff disc
 local Sounds = require(ReplicatedStorage.Configs:WaitForChild("sounds")) -- positional hold/freeze SFX
+local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
 local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
@@ -1566,6 +1567,9 @@ function EnemyService:_playDefeatDeath(model, entry)
         sound.PlaybackSpeed = tonumber(def.playback_speed) or 1
         sound.RollOffMode = Enum.RollOffMode.InverseTapered
         sound.RollOffMaxDistance = 90
+        -- Catalog marks bus = effects; without the group the death flop/pop
+        -- ignore the SFX slider (Jason: first time hearing them in combat).
+        SoundGroups.assign(sound, (def.bus or "effects"))
         sound.Parent = pp
         sound:Play()
         Debris:AddItem(sound, 8)
@@ -4387,6 +4391,7 @@ function EnemyService:_auraHold(folder, aura)
         s.Volume = tonumber(def.volume) or 0.5
         s.RollOffMode = Enum.RollOffMode.InverseTapered
         s.RollOffMaxDistance = 120
+        SoundGroups.assign(s, (def.bus or "effects"))
         s.Parent = pp
         s:Play()
         Debris:AddItem(s, 10)

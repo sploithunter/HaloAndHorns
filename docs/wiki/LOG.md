@@ -1,5 +1,11 @@
 # Log
 
+## 2026-08-25 — Death flop/pop honor SFX volume
+
+- Enemy death sounds (flop thud, pop, and the other fall styles) now
+  assign the effects SoundGroup. Catalog already said `bus = effects`,
+  but the live Sound was ungrouped so the slider could not mute them.
+
 ## 2026-08-25 — Card lists every role
 
 - The People-list row still shows one name mark. The slide-out card
