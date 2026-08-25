@@ -4832,3 +4832,13 @@ first-session cohort rates.
   lights; dense secondary plants use Neon only.
 - Live Studio verification confirmed the black silhouettes remain dark while red veins glow and
   cast localized color onto the ground. Moving fauna retain their small attached lights.
+
+## 2026-08-25 — Layer 3 fast-load prebake refresh
+
+- Captured `ReplicatedStorage.Assets.Models` from a fully booted Play session and sanitized it into
+  the Rojo-served `assets/place/Models.rbxm` snapshot. The bake contains all 183 pet folders, 47
+  eggs, four gift models, and the Layer 3 environment assets; all 740 asset roots have geometry and
+  all 21 rigged roots retain Bones plus an AnimationController.
+- A fresh Rojo-fed Play boot kept exactly one `Assets.Models` root and reported
+  `model pass done in 0.0s — adopted=596 fetched=0`; all 48 authored egg stands populated in the
+  same boot.
