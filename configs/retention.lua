@@ -11,11 +11,12 @@
 ]]
 
 return {
-    -- v7: onboarding ends at Rally. Optional first quest / First Steps / first
-    -- area move to the Activation named funnel so they are not compared as
-    -- mandatory tutorial steps. Combat-training beats stay in onboarding.
+    -- v8: onboarding is the Homeworld spine (join → Resonance → enter cave →
+    -- finish cave → Rally). The 32 combat-training beats are a named
+    -- Combat Training funnel so Creator Hub conversion is of people who
+    -- entered the cave, not of every joiner. Activation stays optional goals.
     -- Roblox onboarding allows 100 steps; skipped steps count as completed.
-    version = 7,
+    version = 8,
     onboarding = {
         enabled = true,
         steps = {
@@ -62,6 +63,37 @@ return {
                 name = "Tutorial: Enhance Resonance / Complete",
                 event = "tutorial_step_completed",
                 match = { stepId = "slot_power" },
+            },
+            {
+                id = "combat_started",
+                name = "Combat: Enter cave",
+                event = "combat_tutorial_started",
+            },
+            {
+                id = "tutorial_first_fight",
+                name = "Tutorial: Finish cave combat training",
+                event = "tutorial_step_completed",
+                match = { stepId = "first_fight" },
+            },
+            {
+                id = "tutorial_rally_call",
+                name = "Tutorial: Use Rally / Complete",
+                event = "tutorial_step_completed",
+                match = { stepId = "rally_call" },
+            },
+        },
+    },
+    -- Room-by-room cave drop-off. Step 1 is cave enter so Total % is of
+    -- people who started training, not of every joiner (that is why the
+    -- 42-step onboarding chart read as 0.04%).
+    combat_training = {
+        enabled = true,
+        name = "Combat Training",
+        steps = {
+            {
+                id = "combat_started",
+                name = "Combat: Enter cave",
+                event = "combat_tutorial_started",
             },
             {
                 id = "combat_ready",
@@ -255,18 +287,6 @@ return {
                 event = "tutorial_step_completed",
                 match = { stepId = "combat_advance_together" },
             },
-            {
-                id = "tutorial_first_fight",
-                name = "Tutorial: Finish cave combat training",
-                event = "tutorial_step_completed",
-                match = { stepId = "first_fight" },
-            },
-            {
-                id = "tutorial_rally_call",
-                name = "Tutorial: Use Rally / Complete",
-                event = "tutorial_step_completed",
-                match = { stepId = "rally_call" },
-            },
         },
     },
     -- Optional post-tutorial goals. Sequential onboarding cannot measure these
@@ -300,6 +320,13 @@ return {
     custom_event = {
         enabled = true,
         name = "RetentionMilestone",
+    },
+    -- Creator Hub Explore event for committed power picks. CustomField01 = power id,
+    -- CustomField02 = claimed level at pick. Internal accounts are omitted so tester
+    -- farms do not dominate the share. Studio stays quiet.
+    power_pick_event = {
+        enabled = true,
+        name = "PowerPicked",
     },
     event_store = {
         enabled = true,

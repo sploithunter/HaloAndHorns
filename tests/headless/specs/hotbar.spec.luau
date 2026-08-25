@@ -11,6 +11,15 @@ local ArchetypeLogic = loadModule("src/Shared/Game/ArchetypeLogic.lua")
 local geoPowers = ArchetypeLogic.availablePowers("geomancer", archetypes)
 
 return function()
+    describe("hotbar auto-cast tell", function()
+        it("authors a ring around the disc, not a corner glyph", function()
+            local look = config.auto_cast
+            expect(look.thickness > 2).to.equal(true)
+            expect(look.scale > 1).to.equal(true)
+            expect(#look.color).to.equal(3)
+        end)
+    end)
+
     describe("HotbarLogic.defaultBindings (archetype fill)", function()
         -- config-agnostic: define the slot layout locally so this tests the LOGIC and survives the
         -- live config emptying roster/tactical defaults (powers come from picks; commands via Edit).

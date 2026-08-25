@@ -135,13 +135,14 @@ function TutorialService:_ensureProgress(player)
     if type(data.Tutorial) == "table" then
         local migrated, changed = TutorialFlow.migrateProgress(self._config, data.Tutorial)
         data.Tutorial = migrated
+        local grandfathered = self:_applyGrandfather(player, data)
         local reconciledCompletion = reconcileCompletionFlag(data)
-        if changed or reconciledCompletion then
+        if changed or grandfathered or reconciledCompletion then
             self._dataService:RequestSave(
                 player,
                 reconciledCompletion and "tutorial_completion_reconcile"
-                    or "tutorial_version_migration",
-                { critical = reconciledCompletion }
+                    or (grandfathered and "tutorial_grandfather" or "tutorial_version_migration"),
+                { critical = reconciledCompletion or grandfathered }
             )
         end
         return data
@@ -158,9 +159,88 @@ function TutorialService:_ensureProgress(player)
     else
         data.Tutorial = TutorialFlow.fresh(self._config)
     end
+    self:_applyGrandfather(player, data)
     reconcileCompletionFlag(data)
     self._dataService:RequestSave(player, "tutorial_init")
     return data
+end
+
+function TutorialService:_applyGrandfather(player, data)
+    if not (data and data.Tutorial) then
+        return false
+    end
+    local milestones = data.Analytics
+        and data.Analytics.Retention
+        and data.Analytics.Retention.Milestones
+    local progress, decision = TutorialFlow.reconcileGrandfather(self._config, data.Tutorial, {
+        combatTutorial = data.CombatTutorial,
+        tutorialCompleted = data.GameData and data.GameData.TutorialCompleted == true,
+        tutorialFirstFight = type(milestones) == "table" and milestones.tutorial_first_fight ~= nil,
+    })
+    data.Tutorial = progress
+    local changed = false
+    if decision.completeTutorial then
+        changed = true
+        self:_ensureRallyBound(player)
+    end
+    if decision.unlockHeal then
+        if self:_unlockInnateHeal(player, data) then
+            changed = true
+        end
+    end
+    return changed
+end
+
+function TutorialService:_unlockInnateHeal(player, data)
+    local changed = false
+    if data.CombatTutorialHealUnlocked ~= true then
+        data.CombatTutorialHealUnlocked = true
+        changed = true
+    end
+    player:SetAttribute("CombatTutorialHealUnlocked", true)
+    local hotbar = self._hotbarService
+    if hotbar and hotbar.GetState and hotbar.EnsureBindAt then
+        local already = false
+        local state = hotbar:GetState(player)
+        local binds = (state and state.hotbar) or data.Hotbar or {}
+        for _, bind in pairs(binds) do
+            if type(bind) == "table" and bind.type == "power" and bind.target == "heal" then
+                already = true
+                break
+            end
+        end
+        if not already then
+            local slotCount = (state and state.slot_count) or 10
+            for i = 1, slotCount do
+                if binds[tostring(i)] == nil and binds[i] == nil then
+                    hotbar:EnsureBindAt(
+                        player,
+                        i,
+                        { type = "power", target = "heal" },
+                        "tutorial_heal_grandfather"
+                    )
+                    changed = true
+                    break
+                end
+            end
+        end
+    elseif hotbar and hotbar.PushState then
+        hotbar:PushState(player)
+    end
+    return changed
+end
+
+function TutorialService:_ensureRallyBound(player)
+    local hotbar = self._hotbarService
+    if not (hotbar and hotbar.EnsureBindAt) then
+        return
+    end
+    hotbar:EnsureBindAt(
+        player,
+        11,
+        { type = "tactical", target = "rally" },
+        "tutorial_rally_grandfather"
+    )
 end
 
 function TutorialService:_onEvent(player, name, ctx)

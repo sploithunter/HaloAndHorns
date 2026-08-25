@@ -4,7 +4,7 @@
     Eligibility is tutorial complete + claimed Level 2. Mounted state is a player
     attribute, never a save field. Combat, missions, and death force a
     dismount. Walking Hall_1–Hall_4 (old gate lines) is not a teleport and
-    must not dismount. Speed is max(normal effective walk, configured cruise).
+    must not dismount. Speed is max(normal effective walk, cruise * player scale).
 ]]
 
 local Players = game:GetService("Players")
@@ -193,6 +193,7 @@ function HoverboardService:ResetForBeginning(player)
     player:SetAttribute("HoverboardSkin", nil)
     player:SetAttribute("HoverboardEligible", false)
     player:SetAttribute("HoverboardWalkSpeed", nil)
+    player:SetAttribute("HoverboardSpeedScale", nil)
     local inv = player:FindFirstChild("Inventory")
     local folder = inv and inv:FindFirstChild("hoverboards")
     if folder then
@@ -247,6 +248,23 @@ end
 
 function HoverboardService:GetSave(player)
     return self:_save(player)
+end
+
+function HoverboardService:SetSpeedScale(player, scale)
+    if typeof(player) ~= "Instance" or not player:IsA("Player") then
+        return { ok = false, reason = "invalid_player" }
+    end
+    local save = self:_save(player)
+    local nextScale = HoverboardLogic.clampSpeedScale(scale, self._config.speed)
+    save.speed_scale = nextScale
+    player:SetAttribute("HoverboardSpeedScale", nextScale)
+    if self._dataService and self._dataService.RequestSave then
+        self._dataService:RequestSave(player, "hoverboard_speed")
+    end
+    if player:GetAttribute("HoverboardMounted") == true then
+        self:_applySpeed(player)
+    end
+    return { ok = true, scale = nextScale }
 end
 
 function HoverboardService:Equip(player, skinId)
@@ -338,6 +356,11 @@ function HoverboardService:_refresh(player)
     end
     local eligible = self:_isEligible(player)
     player:SetAttribute("HoverboardEligible", eligible == true)
+    local save = self:_save(player)
+    player:SetAttribute(
+        "HoverboardSpeedScale",
+        HoverboardLogic.clampSpeedScale(save.speed_scale, self._config.speed)
+    )
     self:_applySkin(player)
     if not eligible then
         self:_setMounted(player, false)
@@ -385,7 +408,8 @@ function HoverboardService:_applySpeed(player)
         end
         local skin = type(self._config.skins) == "table" and self._config.skins[skinKey]
         local cruise = HoverboardLogic.skinCruiseSpeed(skin, self._config.cruise_speed)
-        local speed = HoverboardLogic.mountedSpeed(base, mult, cruise)
+        local scale = HoverboardLogic.clampSpeedScale(save and save.speed_scale, self._config.speed)
+        local speed = HoverboardLogic.mountedSpeed(base, mult, cruise, scale)
         humanoid.WalkSpeed = speed
         player:SetAttribute("HoverboardWalkSpeed", speed)
     else

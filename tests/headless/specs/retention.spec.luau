@@ -16,35 +16,57 @@ return function()
             expect(#retention.onboarding.steps <= 100).to.equal(true)
         end)
 
-        it("covers every tutorial step in tutorial order", function()
+        it("covers every homeworld tutorial step in tutorial order", function()
             local byStepId = {}
+            local combatStartedIndex = nil
             for index, step in ipairs(retention.onboarding.steps) do
                 if step.event == "tutorial_step_completed" and step.match then
                     byStepId[step.match.stepId] = index
                 end
+                if step.id == "combat_started" then
+                    combatStartedIndex = index
+                end
             end
             local lastHome = 0
             for _, step in ipairs(tutorial.steps) do
-                if step.id ~= "first_fight" then
+                if step.id ~= "first_fight" and step.id ~= "rally_call" then
                     expect(byStepId[step.id]).to.be.ok()
                     expect(byStepId[step.id] > lastHome).to.equal(true)
                     lastHome = byStepId[step.id]
                 end
             end
-            expect(byStepId.slot_power < byStepId.combat_ready).to.equal(true)
-            local lastCombat = byStepId.slot_power
+            expect(combatStartedIndex).to.be.ok()
+            expect(combatStartedIndex > lastHome).to.equal(true)
+            expect(byStepId.first_fight > combatStartedIndex).to.equal(true)
+            expect(byStepId.rally_call > byStepId.first_fight).to.equal(true)
+            expect(byStepId.combat_ready).to.equal(nil)
+        end)
+
+        it("measures room-by-room cave drop-off on Combat Training", function()
+            local seen = {}
+            local byStepId = {}
+            expect(retention.combat_training.enabled).to.equal(true)
+            expect(retention.combat_training.name).to.equal("Combat Training")
+            expect(retention.combat_training.steps[1].id).to.equal("combat_started")
+            for index, step in ipairs(retention.combat_training.steps) do
+                expect(type(step.id)).to.equal("string")
+                expect(seen[step.id]).to.equal(nil)
+                seen[step.id] = index
+                if step.event == "tutorial_step_completed" and step.match then
+                    byStepId[step.match.stepId] = index
+                end
+            end
+            local lastCombat = 1
             for _, step in ipairs(combatTutorial.steps) do
                 local stepId = "combat_" .. step.id
                 expect(byStepId[stepId]).to.be.ok()
                 expect(byStepId[stepId] > lastCombat).to.equal(true)
                 lastCombat = byStepId[stepId]
             end
-            expect(byStepId.first_fight > lastCombat).to.equal(true)
-            expect(byStepId.rally_call > byStepId.first_fight).to.equal(true)
         end)
 
         it("ends onboarding at Rally and measures optional goals on Activation", function()
-            expect(retention.version).to.equal(7)
+            expect(retention.version).to.equal(8)
             local last = retention.onboarding.steps[#retention.onboarding.steps]
             expect(last.id).to.equal("tutorial_rally_call")
             local seen = {}
@@ -196,6 +218,50 @@ return function()
             expect(counters.starterChoice.selected).to.equal(1)
             expect(counters.starterChoice.totalSecondsToSelect).to.equal(8.5)
             expect(counters.starterChoice.byPet.kitty).to.equal(1)
+        end)
+
+        it("counts committed power picks in every session and reports share", function()
+            local counters = RetentionLogic.newAggregate()
+            local first = {}
+            local veteran = {}
+            RetentionLogic.aggregateEvent(
+                counters,
+                first,
+                "power_selected",
+                { power = "rage", level = 2 },
+                12,
+                true
+            )
+            RetentionLogic.aggregateEvent(
+                counters,
+                first,
+                "power_selected",
+                { power = "rage", level = 4 },
+                20,
+                true
+            )
+            RetentionLogic.aggregateEvent(
+                counters,
+                veteran,
+                "power_selected",
+                { power = "heal", level = 8 },
+                40,
+                false
+            )
+            expect(counters.powerPicks.total).to.equal(3)
+            expect(counters.powerPicks.byPower.rage).to.equal(2)
+            expect(counters.powerPicks.byPower.heal).to.equal(1)
+            expect(counters.powerPicks.byLevel["2"]).to.equal(1)
+            expect(counters.powerPicks.byLevel["8"]).to.equal(1)
+            expect(RetentionLogic.dashboardSummary(counters).powerPickTotal).to.equal(3)
+
+            local shares = RetentionLogic.powerPickShares(counters)
+            expect(shares.total).to.equal(3)
+            expect(shares.rows[1].power).to.equal("rage")
+            expect(shares.rows[1].count).to.equal(2)
+            expect(shares.rows[1].share).to.equal(2 / 3)
+            expect(shares.rows[2].power).to.equal("heal")
+            expect(shares.rows[2].share).to.equal(1 / 3)
         end)
 
         it("keeps veteran sessions in general counters but out of the new-player funnel", function()

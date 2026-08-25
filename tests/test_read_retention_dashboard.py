@@ -55,6 +55,10 @@ class RetentionDashboardTests(unittest.TestCase):
                             "selected": 1,
                             "byPet": {"kitty": 1},
                         },
+                        "powerPicks": {
+                            "total": 3,
+                            "byPower": {"rage": 2, "heal": 1},
+                        },
                     },
                 },
                 {
@@ -80,6 +84,10 @@ class RetentionDashboardTests(unittest.TestCase):
                             "selected": 3,
                             "byPet": {"bear": 2, "kitty": 1},
                         },
+                        "powerPicks": {
+                            "total": 1,
+                            "byPower": {"rage": 1},
+                        },
                     },
                 },
             ],
@@ -96,6 +104,8 @@ class RetentionDashboardTests(unittest.TestCase):
         self.assertEqual(payload["summary"]["distinctD8To30Returners"], 1)
         self.assertEqual(payload["tutorialFunnel"][0]["reached"], 3)
         self.assertEqual(payload["starterChoice"]["byPet"], {"kitty": 2, "bear": 2})
+        self.assertEqual(payload["powerPicks"]["total"], 4)
+        self.assertEqual(payload["powerPicks"]["byPower"], {"rage": 3, "heal": 1})
         self.assertEqual(payload["builds"]["place:100"]["summary"]["newPlayers"], 2)
         self.assertEqual(payload["builds"]["place:101"]["summary"]["newPlayers"], 3)
 

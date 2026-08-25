@@ -14,6 +14,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local CombatRank = require(ReplicatedStorage.Shared.Game.CombatRank)
 local TutorialFlow = require(ReplicatedStorage.Shared.Game.TutorialFlow)
 local TutorialPack = require(ReplicatedStorage.Shared.Game.TutorialPack)
 local TutorialSquad = require(ReplicatedStorage.Shared.Game.TutorialSquad)
@@ -33,6 +34,7 @@ CombatTutorialService.__index = CombatTutorialService
 local DOOR_SEAL_NAME = "CombatTutorialDoorSeal"
 local BEACON_PROMPT_NAME = "CombatTutorialAdvancePrompt"
 local CAVE_ENTER_PROMPT_NAME = "CombatTutorialCaveEnter"
+local LOBBY_LEAVE_PROMPT_NAME = "CombatTutorialLobbyLeave"
 
 local function venueOffset(list)
     if type(list) ~= "table" then
@@ -255,11 +257,13 @@ function CombatTutorialService:Init()
     self._rewardService = self._modules and self._modules.RewardService
     self._playerProgressionService = self._modules and self._modules.PlayerProgressionService
     self._config = self._configLoader:LoadConfig("combat_tutorial")
+    self._ranksConfig = self._configLoader:LoadConfig("combat_ranks")
     self._homeTutorial = self._configLoader:LoadConfig("tutorial")
     self._enemiesConfig = self._configLoader:LoadConfig("enemies")
     self._petRoles = self._configLoader:LoadConfig("pet_roles")
     self._combatConfig = self._configLoader:LoadConfig("combat")
     self._sessions = setmetatable({}, { __mode = "k" })
+    self._pendingConfirm = setmetatable({}, { __mode = "k" })
 
     fireGameEvent.tap(function(player, name, ctx)
         self:_onEvent(player, name, ctx)
@@ -274,6 +278,22 @@ function CombatTutorialService:Start()
     end)
     Signals.TutorialHotbarDone.OnServerEvent:Connect(function(player)
         self:_onHotbarDone(player)
+    end)
+    Signals.CombatTutorialRedoAnswer.OnServerEvent:Connect(function(player, accepted)
+        local kind = self._pendingConfirm[player]
+        self._pendingConfirm[player] = nil
+        if accepted ~= true then
+            return
+        end
+        if kind == "leave" then
+            self:_leaveCaveMission(player)
+            return
+        end
+        if self:_needsRedoConfirm(player) then
+            self:_openCaveMission(player, { redo = true })
+            return
+        end
+        self:_openCaveMission(player)
     end)
 
     local function watch(player)
@@ -300,6 +320,7 @@ function CombatTutorialService:_watchPlayer(player)
         end
         if self:_isInside(player) then
             self:_enter(player)
+            self:_syncLobbyLeavePrompt(player)
         else
             self:_leave(player)
         end
@@ -308,6 +329,10 @@ function CombatTutorialService:_watchPlayer(player)
     player:GetAttributeChangedSignal("GauntletMode"):Connect(sync)
     if Readiness.awaitAttribute(player, "DataLoaded", true, 20) and player.Parent then
         self:_restoreHealUnlock(player)
+        local data = self:_ensureProgress(player)
+        if data then
+            self:_syncCombatRank(player, data, nil)
+        end
         if not self:_isInside(player) then
             self:_restoreLoanedSquad(player)
         end
@@ -350,17 +375,14 @@ function CombatTutorialService:_caveMissionId()
     return MODE_ID
 end
 
-function CombatTutorialService:_openCaveMission(player)
-    if not (player and player.Parent) then
+function CombatTutorialService:_openCaveMission(player, opts)
+    if not self:_canEnterCave(player) then
         return
     end
-    if not self:_homeworldWantsTraining(player) then
+    if self:_needsRedoConfirm(player) and not (opts and opts.redo == true) then
         return
     end
-    if player:GetAttribute("InMission") or player:GetAttribute("InCombatTutorial") == true then
-        return
-    end
-    self:_prepareLiveTrack(player)
+    self:_prepareLiveTrack(player, opts and opts.redo == true)
     local svc = self._missionInstanceService
     if not (svc and svc.Open) then
         return
@@ -371,22 +393,33 @@ function CombatTutorialService:_openCaveMission(player)
     end
 end
 
+local function asPromptHost(inst)
+    if inst and inst:IsA("BasePart") then
+        return inst
+    end
+    if inst and inst:IsA("Model") then
+        return inst.PrimaryPart or inst:FindFirstChildWhichIsA("BasePart", true)
+    end
+    return nil
+end
+
 function CombatTutorialService:_venueAnchor()
     local venue = self._config.venue or {}
-    local name = venue.anchor_name or "BaddieSpawnerEarth"
+    local name = venue.anchor_name or "EarthLair"
     local root = resolveWorkspacePath(venue.anchor_root or "Maps.Home")
     if root then
-        local part = root:FindFirstChild(name, true)
-        if part and part:IsA("BasePart") then
-            return part
+        local host = asPromptHost(root:FindFirstChild(name, true))
+        if host then
+            return host
         end
     end
     local maps = workspace:FindFirstChild("Maps")
     local home = maps and maps:FindFirstChild("Home")
     if home then
-        local part = home:FindFirstChild(name, true)
-        if part and part:IsA("BasePart") then
-            return part
+        local host = asPromptHost(home:FindFirstChild(name, true))
+            or asPromptHost(home:FindFirstChild("BaddieSpawnerEarth", true))
+        if host then
+            return host
         end
     end
     return nil
@@ -397,41 +430,15 @@ function CombatTutorialService:_caveEnterPromptName()
     return (look and look.prompt_name) or CAVE_ENTER_PROMPT_NAME
 end
 
-function CombatTutorialService:_anyoneWantsCaveEnter()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if
-            self:_homeworldWantsTraining(player)
-            and player:GetAttribute("InCombatTutorial") ~= true
-            and player:GetAttribute("InMission") == nil
-        then
-            return true
-        end
-    end
-    return false
-end
-
 function CombatTutorialService:_unbindCaveEnter()
-    if self:_anyoneWantsCaveEnter() then
-        return
-    end
-    local host = self:_venueAnchor()
-    local prompt = host and host:FindFirstChild(self:_caveEnterPromptName())
-    if prompt then
-        prompt:Destroy()
-    end
     local leftover = workspace:FindFirstChild("CombatTutorialCaveMouth", true)
     if leftover then
         leftover:Destroy()
     end
 end
 
-function CombatTutorialService:_offerCaveEnter(player)
-    if not (self:_isCaveDoor() and self:_homeworldWantsTraining(player)) then
-        self:_unbindCaveEnter()
-        return
-    end
-    if player:GetAttribute("InCombatTutorial") == true or player:GetAttribute("InMission") then
-        self:_unbindCaveEnter()
+function CombatTutorialService:_offerCaveEnter(_player)
+    if not self:_isCaveDoor() then
         return
     end
     local host = self:_venueAnchor()
@@ -443,6 +450,7 @@ function CombatTutorialService:_offerCaveEnter(player)
         return
     end
     -- Same billboard as the Hall MissionDoor: default E prompt, not a frost slab.
+    -- Always on — finished players get a redo confirm; everyone else walks in.
     local look = (self._config.venue and self._config.venue.enter_prompt) or {}
     local prompt = Instance.new("ProximityPrompt")
     prompt.Name = promptName
@@ -455,26 +463,198 @@ function CombatTutorialService:_offerCaveEnter(player)
     prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
     prompt.Parent = host
     prompt.Triggered:Connect(function(who)
-        if not (who and who.Parent) then
-            return
-        end
-        if not self:_homeworldWantsTraining(who) then
-            return
-        end
-        if who:GetAttribute("InCombatTutorial") == true or who:GetAttribute("InMission") then
-            return
-        end
-        self:_openCaveMission(who)
+        self:_onCaveEnterTriggered(who)
     end)
 end
 
-function CombatTutorialService:_prepareLiveTrack(player)
+function CombatTutorialService:_onCaveEnterTriggered(player)
+    if not self:_canEnterCave(player) then
+        return
+    end
+    if self:_needsRedoConfirm(player) then
+        self:_offerConfirm(
+            player,
+            "redo",
+            (self._config.venue and self._config.venue.redo_confirm) or {}
+        )
+        return
+    end
+    self:_openCaveMission(player)
+end
+
+function CombatTutorialService:_canEnterCave(player)
+    if not (player and player.Parent) then
+        return false
+    end
+    if not self._dataService or not self._dataService:IsDataLoaded(player) then
+        return false
+    end
+    if player:GetAttribute("InCombatTutorial") == true or player:GetAttribute("InMission") then
+        return false
+    end
+    return self._dataService:GetData(player) ~= nil
+end
+
+function CombatTutorialService:_offerConfirm(player, kind, copy)
+    if not (player and player.Parent) then
+        return
+    end
+    copy = type(copy) == "table" and copy or {}
+    self._pendingConfirm[player] = kind
+    local defaults = {
+        redo = {
+            title = "Combat Training",
+            body = "You've already finished this. Redo the training?",
+            yes_text = "Redo",
+            no_text = "Not now",
+        },
+        leave = {
+            title = "Continue later?",
+            body = "Your progress is saved. Come back anytime.",
+            yes_text = "Leave",
+            no_text = "Stay",
+        },
+    }
+    local fallback = defaults[kind] or defaults.redo
+    Signals.CombatTutorialRedoOffer:FireClient(player, {
+        kind = kind,
+        title = tostring(copy.title or fallback.title),
+        body = tostring(copy.body or fallback.body),
+        yes_text = tostring(copy.yes_text or fallback.yes_text),
+        no_text = tostring(copy.no_text or fallback.no_text),
+    })
+end
+
+function CombatTutorialService:_isInLobby(player)
+    if not (player and player:GetAttribute("InCombatTutorial") == true) then
+        return false
+    end
+    if not self._dataService or not self._dataService:IsDataLoaded(player) then
+        return false
+    end
+    local data = self._dataService:GetData(player)
+    local step = data and TutorialFlow.current(self._config, data.CombatTutorial)
+    return TutorialFlow.isCombatLobbyStep(step)
+end
+
+function CombatTutorialService:_lobbyLeavePad(player)
+    local mis = self._missionInstanceService
+    local record = mis and mis.GetRecordForPlayer and mis:GetRecordForPlayer(player)
+    local pad = spawnPadOf(record)
+    if pad and pad:IsA("BasePart") then
+        return pad
+    end
+    local _, container = self:_missionContainer(player)
+    pad = container and container:FindFirstChild("SpawnPad", true)
+    if pad and pad:IsA("BasePart") then
+        return pad
+    end
+    return nil
+end
+
+function CombatTutorialService:_lobbyLeaveHost(player)
+    local _, container = self:_missionContainer(player)
+    if container then
+        local seal = container:FindFirstChild(DOOR_SEAL_NAME, true)
+        if seal and seal:IsA("BasePart") then
+            return seal
+        end
+    end
+    return self:_lobbyLeavePad(player)
+end
+
+function CombatTutorialService:_lobbyLeavePromptName()
+    local look = self._config.venue and self._config.venue.leave_prompt
+    return (look and look.prompt_name) or LOBBY_LEAVE_PROMPT_NAME
+end
+
+function CombatTutorialService:_setLeavePromptEnabled(part, enabled)
+    if not part then
+        return
+    end
+    local prompt = part:FindFirstChild(self:_lobbyLeavePromptName())
+    if prompt then
+        prompt.Enabled = enabled == true
+    end
+end
+
+function CombatTutorialService:_syncLobbyLeavePrompt(player)
+    local host = self:_lobbyLeaveHost(player)
+    local pad = self:_lobbyLeavePad(player)
+    if pad and pad ~= host then
+        self:_setLeavePromptEnabled(pad, false)
+    end
+    if not host then
+        return
+    end
+    local promptName = self:_lobbyLeavePromptName()
+    local prompt = host:FindFirstChild(promptName)
+    local inLobby = self:_isInLobby(player)
+    if not inLobby then
+        self:_setLeavePromptEnabled(host, false)
+        return
+    end
+    local look = (self._config.venue and self._config.venue.leave_prompt) or {}
+    if not prompt then
+        prompt = Instance.new("ProximityPrompt")
+        prompt.Name = promptName
+        prompt.HoldDuration = math.max(0, tonumber(look.hold_duration) or 0.25)
+        prompt.MaxActivationDistance = math.max(8, tonumber(look.max_distance) or 24)
+        prompt.RequiresLineOfSight = false
+        prompt.KeyboardKeyCode = Enum.KeyCode.E
+        prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
+        prompt.Parent = host
+        prompt.Triggered:Connect(function(who)
+            if who ~= player or not self:_isInLobby(who) then
+                return
+            end
+            local session = self._sessions[who]
+            local readyAt = session and tonumber(session.lobbyLeaveReadyAt)
+            if readyAt and os.clock() < readyAt then
+                return
+            end
+            self:_offerConfirm(
+                who,
+                "leave",
+                (self._config.venue and self._config.venue.leave_confirm) or {}
+            )
+        end)
+    end
+    prompt.ActionText = tostring(look.action_text or "Continue later")
+    prompt.ObjectText = tostring(look.object_text or "Combat Training")
+    local session = self._sessions[player]
+    local readyAt = session and tonumber(session.lobbyLeaveReadyAt)
+    prompt.Enabled = not readyAt or os.clock() >= readyAt
+end
+
+function CombatTutorialService:_leaveCaveMission(player)
+    if not self:_isInLobby(player) then
+        return
+    end
+    local instanceId = player:GetAttribute("InMission")
+    local mis = self._missionInstanceService
+    if type(instanceId) == "string" and instanceId ~= "" and mis and mis.Abandon then
+        mis:Abandon(instanceId)
+        return
+    end
+    self:_leave(player)
+end
+
+function CombatTutorialService:_needsRedoConfirm(player)
+    local data = self._dataService and self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+    return TutorialFlow.caveEnterNeedsConfirm(data.Tutorial, data.CombatTutorial, data.GameData)
+end
+
+function CombatTutorialService:_prepareLiveTrack(player, redo)
     local data = self._dataService and self._dataService:GetData(player)
     if not data then
         return
     end
     local combat = data.CombatTutorial
-    if combat and combat.done == true and self:_homeworldWantsTraining(player) then
+    if redo == true or (combat and combat.done == true) then
         data.CombatTutorial = TutorialFlow.fresh(self._config)
         self._dataService:RequestSave(player, "combat_tutorial_reopen")
     end
@@ -682,8 +862,13 @@ function CombatTutorialService:ResetForBeginning(player)
         data.CombatTutorialLoadout = nil
         data.CombatTutorialHealUnlocked = nil
         data.CombatTutorialRewardGranted = nil
+        if type(data.GameData) == "table" then
+            data.GameData.CombatRank = nil
+        end
     end
     player:SetAttribute("CombatTutorialHealUnlocked", nil)
+    player:SetAttribute("CombatRank", nil)
+    player:SetAttribute("CombatRankLabel", nil)
     player:SetAttribute("InCombatTutorial", nil)
     player:SetAttribute("CombatTutorialWoundSlot", nil)
     player:SetAttribute("CombatTutorialTargetEnemy", nil)
@@ -771,6 +956,7 @@ function CombatTutorialService:_enter(player)
         return
     end
     player:SetAttribute("InCombatTutorial", true)
+    fireGameEvent(player, "combat_tutorial_started", { source = "cave" })
     local session = self:_session(player)
     if not session.enteredFrom then
         local character = player.Character
@@ -798,6 +984,9 @@ function CombatTutorialService:_enter(player)
     self:_rewindLeaveResume(player)
     local data = self:_ensureProgress(player)
     self:_applyStepSideEffects(player, data, true)
+    local look = (self._config.venue and self._config.venue.leave_prompt) or {}
+    session.lobbyLeaveReadyAt = os.clock() + math.max(0, tonumber(look.enable_after) or 0.8)
+    self:_syncLobbyLeavePrompt(player)
     self:_push(player)
     self:_ensureWatchers(player)
 end
@@ -1020,10 +1209,26 @@ function CombatTutorialService:_onEvent(player, name, ctx)
         if completedStep.drop_shields then
             self:_dropShields(player)
         end
-        if completedStep.return_to_exit then
-            self:_returnToExit(player)
-        elseif completedStep.return_to_lobby then
-            self:_returnToLobby(player)
+        -- Rank pops at the pillar; warp after the crest flies so the next door
+        -- is the continue path, not a mid-ceremony yank.
+        local granted = self:_syncCombatRank(player, data, completedStep.id)
+        local function afterRank()
+            if not player.Parent or player:GetAttribute("InCombatTutorial") ~= true then
+                return
+            end
+            if completedStep.return_to_exit then
+                self:_returnToExit(player)
+            elseif completedStep.return_to_lobby then
+                self:_returnToLobby(player)
+            end
+        end
+        if granted then
+            local knobs = self._ranksConfig.ceremony
+            local delay = (tonumber(knobs and knobs.hold_seconds) or 0.7)
+                + (tonumber(knobs and knobs.fly_seconds) or 0.85)
+            task.delay(delay, afterRank)
+        else
+            afterRank()
         end
     end
     self:_applyStepSideEffects(player, data, false)
@@ -1181,6 +1386,7 @@ function CombatTutorialService:_applyStepSideEffects(player, data, isEnter)
     end
     self:_setBeaconActive(player, step.activate_beacon == true)
     self:_applyDoorPlate(player)
+    self:_syncLobbyLeavePrompt(player)
 end
 
 function CombatTutorialService:_doorShouldLock(progress)
@@ -2518,6 +2724,51 @@ function CombatTutorialService:_ensureWatchers(player)
     if step.lock_door == true then
         self:_applyDoorPlate(player)
     end
+end
+
+function CombatTutorialService:_publishCombatRank(player, state)
+    local rank = CombatRank.rankById(self._ranksConfig, state and state.current)
+    if rank then
+        player:SetAttribute("CombatRank", rank.id)
+        player:SetAttribute("CombatRankLabel", rank.label)
+        return
+    end
+    player:SetAttribute("CombatRank", nil)
+    player:SetAttribute("CombatRankLabel", nil)
+end
+
+function CombatTutorialService:_syncCombatRank(player, data, ceremonyStepId)
+    if not (player and data and self._ranksConfig) then
+        return false
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    local state = CombatRank.normalize(data.GameData.CombatRank)
+    local rank = ceremonyStepId and CombatRank.rankForStep(self._ranksConfig, ceremonyStepId)
+    if rank then
+        local nextState, isNew = CombatRank.grant(state, self._ranksConfig, rank.id)
+        if isNew then
+            data.GameData.CombatRank = nextState
+            self._dataService:RequestSave(player, "combat_rank")
+            self:_publishCombatRank(player, nextState)
+            fireGameEvent(player, "combat_rank_achieved", {
+                name = tostring(rank.label) .. " achieved.",
+                rankId = rank.id,
+                label = rank.label,
+            })
+            return true
+        end
+    end
+    local synced, changed =
+        CombatRank.syncFromTutorial(state, self._ranksConfig, self._config, data.CombatTutorial)
+    if changed then
+        data.GameData.CombatRank = synced
+        self._dataService:RequestSave(player, "combat_rank_sync")
+        state = synced
+    else
+        data.GameData.CombatRank = state
+    end
+    self:_publishCombatRank(player, state)
+    return false
 end
 
 function CombatTutorialService:_push(player)

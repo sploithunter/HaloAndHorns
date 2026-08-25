@@ -44,6 +44,7 @@ local localPlayer = Players.LocalPlayer
 -- The player self-power buffs to surface, in display order. label = short tag under the icon.
 local BUFFS = {
     { attr = "PetDamageBuff", label = "DMG" }, -- Mountain's Strength
+    { attr = "PetDamageBuffPotion", label = "DMG" }, -- Berserk Brew (own source; adds to the power)
     {
         attr = "TitanTeamDamageBuff",
         label = "TITAN",

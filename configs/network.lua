@@ -1490,6 +1490,33 @@ return {
                 arguments = { { name = "offer", type = "table" } },
             },
         },
+        CombatTutorialRedoOffer = {
+            name = "CombatTutorialRedoOffer",
+            transport = "reliable_event",
+            direction = "server_to_client",
+            authorization = "server",
+            environments = { production = true, studio = true, test = true },
+            delivery = "player",
+            topic = "tutorial.combat_redo_offered",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "offer", type = "table" } },
+            },
+        },
+        CombatTutorialRedoAnswer = {
+            name = "CombatTutorialRedoAnswer",
+            transport = "reliable_event",
+            direction = "client_to_server",
+            authorization = "player",
+            environments = { production = true, studio = true, test = true },
+            delivery = "request",
+            rate_limit = 5,
+            handler = "CombatTutorialService.RedoAnswer",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "accepted", type = "boolean" } },
+            },
+        },
         EnchantPetResult = {
             name = "EnchantPetResult",
             transport = "reliable_event",

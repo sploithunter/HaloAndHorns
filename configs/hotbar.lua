@@ -105,4 +105,14 @@ return {
     --     {slot=7,type="roster",target="Roster 1"}, {slot=8,type="tactical",target="scatter"},
     --     {slot=9,type="tactical",target="focus_fire"}, {slot=10,type="tactical",target="regroup"} }
     default_binds = nil,
+
+    -- Right-click / long-press auto-cast tell. A corner glyph was invisible
+    -- on the purple discs; a pulsing ring around the whole slot is the lock.
+    auto_cast = {
+        color = { 90, 255, 150 },
+        glow = { 200, 255, 220 },
+        thickness = 3.5,
+        pulse_hz = 1.6,
+        scale = 1.14,
+    },
 }

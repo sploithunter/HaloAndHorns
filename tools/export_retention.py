@@ -175,6 +175,41 @@ def ratio(numerator: Any, denominator: Any) -> float | None:
     return float(numerator or 0) / denominator if denominator > 0 else None
 
 
+def power_pick_share_rows(
+    by_power: dict[str, Any] | None, total: int | None = None
+) -> list[dict[str, Any]]:
+    counts = {
+        str(power): int(count or 0)
+        for power, count in (by_power or {}).items()
+        if int(count or 0) > 0
+    }
+    computed_total = int(total) if total is not None else sum(counts.values())
+    rows = []
+    for power, count in sorted(counts.items(), key=lambda item: (-item[1], item[0])):
+        rows.append(
+            {
+                "power": power,
+                "count": count,
+                "share": ratio(count, computed_total),
+            }
+        )
+    return rows
+
+
+def power_pick_rows(chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    counts: dict[str, int] = {}
+    for chunk in chunks:
+        for event in chunk.get("events", []) or []:
+            if not isinstance(event, dict) or event.get("name") != "power_selected":
+                continue
+            context = event.get("context") if isinstance(event.get("context"), dict) else {}
+            power = context.get("power")
+            if not isinstance(power, str) or power == "":
+                continue
+            counts[power] = counts.get(power, 0) + 1
+    return power_pick_share_rows(counts)
+
+
 def summary_from(aggregates: list[dict[str, Any]]) -> dict[str, Any]:
     counters = combined_counters(aggregates)
     sessions_ended = counters.get("sessionsEnded", 0)
@@ -355,6 +390,11 @@ def write_exports(
         event_count_rows(aggregates),
         ["event_name", "count"],
     )
+    write_csv(
+        output_dir / "power_picks.csv",
+        power_pick_rows(chunks),
+        ["power", "count", "share"],
+    )
 
     cohort_rows = []
     for cohort_date in sorted(
@@ -409,6 +449,7 @@ def write_exports(
             "tutorial_funnel.csv",
             "level_exit.csv",
             "event_counts.csv",
+            "power_picks.csv",
             "cohort_summary.csv",
         ],
     }

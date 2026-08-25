@@ -474,6 +474,7 @@ end
 do
     local ok, err = pcall(function()
         require(script.Systems.GameEvents).start()
+        require(script.Systems.CombatRankController).start()
     end)
     if not ok then
         Logger:Warn("Failed to start GameEvents", { error = tostring(err) })
@@ -601,6 +602,7 @@ do
         require(script.Systems.StarterPetController).start()
         require(script.Systems.FoundersChoiceController).start()
         require(script.Systems.TutorialController).start()
+        require(script.Systems.CombatTutorialRedoPrompt).start()
         require(script.Systems.AudioPrefs).start()
     end)
     if not ok then

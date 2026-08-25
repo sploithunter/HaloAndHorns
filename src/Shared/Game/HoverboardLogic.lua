@@ -14,10 +14,36 @@ function HoverboardLogic.isEligible(claimedLevel, tutorialCompleted, unlock)
     return ok == true
 end
 
-function HoverboardLogic.mountedSpeed(baseWalkSpeed, speedMultiplier, cruiseSpeed)
+function HoverboardLogic.clampSpeedScale(scale, knobs)
+    knobs = type(knobs) == "table" and knobs or {}
+    local lo = tonumber(knobs.min_scale) or 0.2
+    local hi = tonumber(knobs.max_scale) or 1
+    if hi < lo then
+        hi = lo
+    end
+    local fallback = tonumber(knobs.default_scale) or 1
+    local n = tonumber(scale)
+    if not n then
+        n = fallback
+    end
+    if n < lo then
+        return lo
+    end
+    if n > hi then
+        return hi
+    end
+    return n
+end
+
+function HoverboardLogic.mountedSpeed(baseWalkSpeed, speedMultiplier, cruiseSpeed, speedScale)
     local normal = math.max(0, tonumber(baseWalkSpeed) or 0)
         * math.max(0, tonumber(speedMultiplier) or 1)
-    return math.max(normal, math.max(0, tonumber(cruiseSpeed) or 0))
+    local scale = tonumber(speedScale)
+    if not scale or scale <= 0 then
+        scale = 1
+    end
+    local cruise = math.max(0, tonumber(cruiseSpeed) or 0) * scale
+    return math.max(normal, cruise)
 end
 
 function HoverboardLogic.skinCruiseSpeed(skin, defaultCruise)
@@ -102,9 +128,11 @@ function HoverboardLogic.normalizeSave(save, defaultSkin)
     if type(equipped) ~= "string" or owned[equipped] ~= true then
         equipped = defaultSkin
     end
+    local speedScale = tonumber(save.speed_scale)
     return {
         owned = owned,
         equipped = equipped,
+        speed_scale = speedScale,
     }
 end
 

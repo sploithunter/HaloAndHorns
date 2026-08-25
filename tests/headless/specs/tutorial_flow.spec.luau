@@ -94,7 +94,7 @@ return function()
             expect(cfg.steps[1].target.prefer).to.equal("Grass")
             expect(cfg.steps[3].target.prefer).to.equal("Grass")
             expect(cfg.steps[5].target.name).to.equal("Edit")
-            expect(cfg.steps[8].target.name).to.equal("BaddieSpawnerEarth")
+            expect(cfg.steps[8].target.name).to.equal("EarthLair")
             expect(cfg.steps[8].target.root).to.equal("Maps.Home")
             expect(cfg.steps[8].body).to.equal(
                 "The Earth cave is a training ground. Press E to enter and learn how to fight."
@@ -458,6 +458,130 @@ return function()
             })
             expect(v4Fighter.version).to.equal(6)
             expect(v4Fighter.step).to.equal(8)
+        end)
+
+        it(
+            "grandfathers the old first-enemy beat and leaves pre-fight players on the new track",
+            function()
+                expect(TutorialFlow.startedFirstEnemy(3, 8, 1)).to.equal(true)
+                expect(TutorialFlow.startedFirstEnemy(3, 8, 0)).to.equal(false)
+                expect(TutorialFlow.startedFirstEnemy(2, 6, 0)).to.equal(true)
+                expect(TutorialFlow.startedFirstEnemy(1, 5, 1)).to.equal(true)
+
+                local mouth = TutorialFlow.migrateProgress(cfg, {
+                    version = 5,
+                    step = 8,
+                    count = 0,
+                    done = false,
+                })
+                expect(mouth.firstEnemy).to.equal(nil)
+                local mouthDecision
+                mouth, mouthDecision = TutorialFlow.reconcileGrandfather(cfg, mouth, {})
+                expect(mouth.done).to.equal(false)
+                expect(mouthDecision.unlockHeal).to.equal(false)
+                expect(TutorialFlow.current(cfg, mouth).id).to.equal("first_fight")
+
+                local v3Fight = TutorialFlow.migrateProgress(cfg, {
+                    version = 3,
+                    step = 8,
+                    count = 1,
+                    done = false,
+                })
+                expect(v3Fight.firstEnemy).to.equal(true)
+                local v3Decision
+                v3Fight, v3Decision = TutorialFlow.reconcileGrandfather(cfg, v3Fight, {})
+                expect(v3Fight.done).to.equal(true)
+                expect(v3Decision.unlockHeal).to.equal(true)
+
+                local brewer = TutorialFlow.migrateProgress(cfg, {
+                    version = 5,
+                    step = 9,
+                    count = 0,
+                    done = false,
+                })
+                expect(brewer.firstEnemy).to.equal(true)
+                expect(TutorialFlow.reconcileGrandfather(cfg, brewer, {}).done).to.equal(true)
+
+                local remapped, remappedDecision = TutorialFlow.reconcileGrandfather(cfg, {
+                    version = 6,
+                    step = 8,
+                    count = 0,
+                    done = false,
+                }, { tutorialFirstFight = true })
+                expect(remapped.done).to.equal(false)
+                expect(remappedDecision.unlockHeal).to.equal(false)
+
+                local strayKills, strayDecision = TutorialFlow.reconcileGrandfather(cfg, {
+                    version = 6,
+                    step = 8,
+                    count = 0,
+                    done = false,
+                }, { enemiesDefeated = 23 })
+                expect(strayKills.done).to.equal(false)
+                expect(strayDecision.unlockHeal).to.equal(false)
+
+                local finished, finishedDecision = TutorialFlow.reconcileGrandfather(cfg, {
+                    version = 6,
+                    step = 1,
+                    done = true,
+                }, {})
+                expect(finished.done).to.equal(true)
+                expect(finishedDecision.completeTutorial).to.equal(false)
+                expect(finishedDecision.unlockHeal).to.equal(true)
+
+                local inNewTrack, inNewDecision = TutorialFlow.reconcileGrandfather(cfg, {
+                    version = 6,
+                    step = 8,
+                    count = 0,
+                    done = false,
+                }, {
+                    combatTutorial = { version = 1, step = 4 },
+                    enemiesDefeated = 2,
+                })
+                expect(inNewTrack.done).to.equal(false)
+                expect(inNewDecision.unlockHeal).to.equal(false)
+
+                local beforeFight, beforeDecision = TutorialFlow.reconcileGrandfather(cfg, {
+                    version = 6,
+                    step = 5,
+                    count = 0,
+                    done = false,
+                }, {})
+                expect(beforeFight.done).to.equal(false)
+                expect(beforeDecision.unlockHeal).to.equal(false)
+                expect(TutorialFlow.current(cfg, beforeFight).id).to.equal("bind_power")
+            end
+        )
+
+        it("treats ready/brew/bind as lobby and fights/pillars as not", function()
+            local combat = loadModule("configs/combat_tutorial.lua")
+            expect(TutorialFlow.isCombatLobbyStep(combat.steps[1])).to.equal(true)
+            expect(TutorialFlow.isCombatLobbyStep(combat.steps[2])).to.equal(false)
+            expect(TutorialFlow.isCombatLobbyStep(combat.steps[3])).to.equal(false)
+            expect(TutorialFlow.isCombatLobbyStep(combat.steps[4])).to.equal(true)
+            expect(TutorialFlow.isCombatLobbyStep(nil)).to.equal(false)
+        end)
+
+        it("asks to redo the cave only after combat training itself is done", function()
+            expect(TutorialFlow.caveEnterNeedsConfirm({ done = false }, nil, {})).to.equal(false)
+            expect(TutorialFlow.caveEnterNeedsConfirm({
+                done = false,
+                step = 8,
+            }, { version = 10, step = 4, done = false }, {})).to.equal(false)
+            expect(TutorialFlow.caveEnterNeedsConfirm({ done = true }, nil, {})).to.equal(false)
+            expect(TutorialFlow.caveEnterNeedsConfirm({ done = false }, nil, {
+                TutorialCompleted = true,
+            })).to.equal(false)
+            expect(TutorialFlow.caveEnterNeedsConfirm({ done = true }, {
+                version = 10,
+                step = 1,
+                done = true,
+            }, {})).to.equal(true)
+            expect(TutorialFlow.caveEnterNeedsConfirm({ done = true }, {
+                version = 10,
+                step = 12,
+                done = false,
+            }, {})).to.equal(false)
         end)
 
         it("normalizes nil/corrupt progress", function()

@@ -21,7 +21,7 @@ return {
     -- [AggroTrace], [FearTrace], [PowerCast] taunt/rage/fear) that we read while tuning combat. Left
     -- in the code (Jason: "we need them for combat") but flag-gated so they don't spam a normal run —
     -- flip to true for a balancing pass.
-    combat_trace = true,
+    combat_trace = false,
     -- [GlassTrace] SUB-FLAG: the per-hit pet-endurance line fires on EVERY landed enemy hit — in a
     -- 12-enemy brawl that's a flood (it contributed to a frame-time spike). Needs combat_trace AND
     -- this. The *** DOWNED *** / DOWN markers stay on combat_trace alone (rare + always valuable).

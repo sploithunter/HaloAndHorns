@@ -419,7 +419,10 @@ return {
     -- An enemy your pets contributed to went down (server: EnemyService:_onDefeated, per
     -- contributor). FREQUENT during farming — small silent burst only; no stinger by design.
     enemy_defeated = {
-        vfx = { kind = "burst", color = { 235, 90, 90 }, count = 6 },
+        -- Corpse drama is on the enemy (Dying + combat_deaths). This is a
+        -- small personal burst so the kill still pops for the contributor.
+        vfx = { kind = "burst", color = { 255, 140, 80 }, count = 12 },
+        world_visual = true,
     },
 
     -- A downed pet was revived by the Revive power (server: PowerService revive family).
@@ -533,6 +536,13 @@ return {
         banner = { seconds = 3, color = { 255, 160, 70 } },
     },
 
+    -- Combat-training pillar rank. Ceremony (crest fly) is client-owned;
+    -- this row is the sting + burst. Text = ctx.name ("Kindled achieved.").
+    combat_rank_achieved = {
+        sound = { key = "celebratory_jingle", volume = 0.5 },
+        vfx = { kind = "burst", color = { 255, 210, 100 }, count = 18 },
+    },
+
     -- Combat tutorial finished the last room. Text = ctx.name.
     combat_tutorial_complete = {
         sound = "celebratory_jingle",
@@ -567,7 +577,8 @@ return {
     -- A potion was DRUNK (server: PotionService.Drink). Tutorial's battle_brew
     -- completes on this; styling is config-only like every bus event.
     potion_used = {
-        float = { color = { 190, 130, 240 } },
+        float = { color = { 255, 90, 60 }, size = 200 },
+        vfx = { kind = "burst", color = { 255, 90, 50 }, count = 18 },
         effect_transfer = {},
         sound = "power_up_stronger",
     },
@@ -643,7 +654,7 @@ return {
     --                   this one exists for server consumers — the tutorial taps it)
     --   tutorial_level_awarded — tutorial completion guarantee processed {level, xpAdded}; raw
     --                            analytics only, including a zero top-up if already earned
-    --   power_selected — a power pick committed {power} (PowerService:Select)
+    --   power_selected — a power pick committed {power, level} (PowerService:Select)
     --   power_cast    — a power cast succeeded {power} (PowerService:Cast; frequent — keep silent)
     --   power_bound   — a POWER was bound to a hotbar slot {power, slot} (HotbarService:Rebind; the
     --                   tutorial taps it for the "set your power" step, and a bind sound can hook here)

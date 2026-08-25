@@ -18,6 +18,22 @@ return {
     -- tick the drain this often (server heartbeat coalesce); UI interpolates the pie between ticks
     tick_seconds = 1,
 
+    -- HUD / body juice for stacked sips (pure ramps: src/Shared/Game/BrewJuice.lua).
+    -- First sip (~0.5) is a glow. Second sip (~0.75) starts the badge shake and leak.
+    overcharge = {
+        glow_at = 0.05,
+        glow_full = 0.55,
+        shake_at = 0.62,
+        shake_full = 0.92,
+        leak_at = 0.74,
+        leak_full = 0.98,
+        shake_px = 3,
+        punch_seconds = 0.28,
+        punch_px = 5,
+        halo_scale = 1.22,
+        leak_scale = 1.48,
+    },
+
     -- Authored potion tents are presentation hooks; PotionShopService discovers these exact model
     -- names and attaches the server-owned prompt/transaction boundary at runtime. Current stock is
     -- intentionally explicit so adding a future potion does not silently put it on sale.

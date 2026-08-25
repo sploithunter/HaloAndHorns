@@ -70,6 +70,7 @@ local EnemyLeash = require(ReplicatedStorage.Shared.Game.EnemyLeash)
 local MissionRankScale = require(ReplicatedStorage.Shared.Game.MissionRankScale)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
+local CombatDeath = require(ReplicatedStorage.Shared.Game.CombatDeath)
 
 local EnemyService = {}
 EnemyService.__index = EnemyService
@@ -178,6 +179,7 @@ function EnemyService:Init()
     self._petsConfig = self._configLoader:LoadConfig("pets")
     self._levelingConfig = self._configLoader:LoadConfig("leveling")
     self._originConfig = (self._configLoader:LoadConfig("combat_fx") or {}).origin or {}
+    self._deathConfig = self._configLoader:LoadConfig("combat_deaths")
     self._powersConfig = self._configLoader:LoadConfig("powers") -- combat_vfx.on_hit (e.g. dodge pops)
     self._aggroConfig = self._configLoader:LoadConfig("aggro") -- unified aggro model (flag-gated v2)
     -- Territorial engagement: the SAME area bounds ZoneTrackerService uses for the player's
@@ -1523,10 +1525,52 @@ function EnemyService:_onDefeated(targetId)
     end
 
     self:_releasePets(targetId)
-    model:Destroy()
+    self:_playDefeatDeath(model, entry)
     if self._logger then
         self._logger:Info("Enemy defeated", { enemyId = entry.enemyId, targetId = targetId })
     end
+end
+
+function EnemyService:_playDefeatDeath(model, entry)
+    if not (model and model.Parent) then
+        return
+    end
+    local style = CombatDeath.pick(self._deathConfig, math.random, {
+        rank = model:GetAttribute("EnemyTier") or (entry and entry.def and entry.def.tier),
+    })
+    local seconds = math.max(
+        0.4,
+        tonumber(style and style.seconds)
+            or tonumber(self._deathConfig and self._deathConfig.hold_seconds)
+            or 0.9
+    )
+    model:SetAttribute("Dying", true)
+    model:SetAttribute("DeathStyle", style and style.id or "flop")
+    model:SetAttribute("DeathAt", Workspace:GetServerTimeNow())
+    model:SetAttribute("DeathSeconds", seconds)
+    model:SetAttribute("MoveTarget", nil)
+    for _, part in ipairs(model:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+            part.CanQuery = false
+        end
+    end
+    local pp = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true)
+    local soundKey = style and style.sound
+    local def = soundKey and Sounds[soundKey]
+    if pp and def and def.id then
+        local sound = Instance.new("Sound")
+        sound.Name = "DeathSound"
+        sound.SoundId = def.id
+        sound.Volume = tonumber(def.volume) or 0.5
+        sound.PlaybackSpeed = tonumber(def.playback_speed) or 1
+        sound.RollOffMode = Enum.RollOffMode.InverseTapered
+        sound.RollOffMaxDistance = 90
+        sound.Parent = pp
+        sound:Play()
+        Debris:AddItem(sound, 8)
+    end
+    Debris:AddItem(model, seconds + 0.2)
 end
 
 -- ===== Defensive inverse mining (slice 1b): enemy attacks pets; pets attack back =====
