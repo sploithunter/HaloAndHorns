@@ -1,0 +1,35 @@
+{
+  "_note": "Combat-training rank crests. Open Cloud Decal ids plus resolved Image ids (InsertService:LoadAsset → Decal.Texture). ImageLabel.Image must use imageId, not decal.",
+  "spark": {
+    "decal": "79659104270763",
+    "imageId": "rbxassetid://112297371350788"
+  },
+  "kindled": {
+    "decal": "116506362969809",
+    "imageId": "rbxassetid://119300402391304"
+  },
+  "warden": {
+    "decal": "137532389130291",
+    "imageId": "rbxassetid://102820129566164"
+  },
+  "hexed": {
+    "decal": "102051148962716",
+    "imageId": "rbxassetid://117358589145840"
+  },
+  "surge": {
+    "decal": "125293490134800",
+    "imageId": "rbxassetid://76797304884917"
+  },
+  "bulwark": {
+    "decal": "87562773602430",
+    "imageId": "rbxassetid://91663146631343"
+  },
+  "hunter": {
+    "decal": "79036098882912",
+    "imageId": "rbxassetid://130516613680536"
+  },
+  "skilled": {
+    "decal": "75530470662577",
+    "imageId": "rbxassetid://114240874759864"
+  }
+}

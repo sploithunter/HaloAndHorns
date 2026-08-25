@@ -2,6 +2,57 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Auto-cast glow ring (2026-08-25)
+
+Right-click / long-press lock is a pulsing green ring around the power
+disc. The old corner ⟳ did not read on purple badges.
+
+## Board speed slider (2026-08-25)
+
+Right-click or long-press Board for a 20–100% cruise slider. Rocket 128
+at 25% is 32. Persists on the hoverboard save.
+
+## Brew overcharge juice (2026-08-24)
+
+First Berserk sip glows the badge and puts fire on the player + pets.
+A second sip shakes the disc and leaks a barely-contained halo. Intensity
+follows `Brew_damage` via `BrewJuice` (`configs/potions.lua` overcharge).
+
+## Dramatic enemy deaths (2026-08-24)
+
+Enemy defeats play a short corpse pose plus a positional sting. Seven
+styles (flop / pop / shatter / whirl / sink / launch / robux). The
+robux style bursts gold cubes one-by-one onto the ground for ~2s.
+
+## Combat-training lobby Leave (2026-08-24)
+
+Lobby pad E asks to leave without completing. Arena and pillar do not.
+
+## Cave E is always on (2026-08-24)
+
+Earth-cave Enter is not gated on `first_fight` or stray Homeworld
+kills. Walk in unless they already finished the cave — then Redo.
+
+## Cave E uses EarthLair (2026-08-24)
+
+Stray Homeworld kills no longer complete a fresh first_fight. The Enter
+prompt is on EarthLair (40 studs), not the interior spawn part.
+
+## Cave-training grandfather (2026-08-24)
+
+Old first-enemy (v1–v5 `first_fight`) counts as the combat start. Those
+players get Heal and are marked done. Players who have not fought yet
+can enter the new cave.
+
+## Power pick percentages (2026-08-24)
+
+Committed picks now have a share readout: dashboard `powerPicks`, Creator Hub
+`PowerPicked`, and export `power_picks.csv` from the existing raw event stream.
+
+## Combat traces quiet (2026-08-24)
+
+`combat.combat_trace` is false. Flip it on only for a balance pass.
+
 ## Healer hunt pins pets; leftover despawn cannot lock the room (2026-08-24)
 
 Clicking the training healer pins the squad on it. If a leftover dog
@@ -68,6 +119,9 @@ missing checklist item if you click early (pets equipped, Heal bound,
 hotbar not in edit mode). Resonance is withheld for the combat-training
 mission so the first bind lesson points at Heal.
 See [Combat Tutorial](COMBAT_TUTORIAL.md).
+Combat ranks (2026-08-25): eight Halo-flavored titles grant on pillar
+steps (Spark → Skilled). A placeholder crest flies to a chip left of
+the People list. Persist `GameData.CombatRank`. Not a leaderboard.
 Combat training now temp-grants three bunny, doggy, bear, and kitty commons
 and restores the saved equipped list on exit. The heal-target lesson wounds
 one live pet to a yellow bar and points `CLICK HERE` at the left of that card.

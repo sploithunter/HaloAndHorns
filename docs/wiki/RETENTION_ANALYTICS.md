@@ -38,6 +38,16 @@ These are first-session distinct counts, so the selector's conversion, average d
 role preference are available without downloading raw chunks. They deliberately do not alter the
 already-live Roblox onboarding funnel step order.
 
+Committed power picks (`power_selected`, `{power, level}`) are counted in every session, not just
+the first. Daily shards expose `powerPicks.total`, `byPower`, and `byLevel`. Share is
+`count / total` among committed picks — not pick-rate-among-offered, because the POWERS menu
+shows the remaining pool rather than a rolled subset. After publish, Creator Hub → Analytics →
+Events → `PowerPicked` breaks down Custom Field 1 = power id and Custom Field 2 = claimed
+level. Internal accounts are omitted from that custom event and from the dashboard. Historical
+`RetentionEvents_v1` already contains `power_selected`; `tools/export_retention.py` writes
+`power_picks.csv` from those raw events so a percentage readout does not have to wait for new
+shards.
+
 Tutorial definition v5 (2026-08-24) is the Resonance-before-combat restore after the
 v4 Hall rollback. Funnel step **order** matches that path; live milestone **IDs** stay
 stable (`tutorial_completed` still means enhance Resonance / `slot_power`).
@@ -182,13 +192,14 @@ python3 tools/export_retention.py \
 
 The exporter writes lossless `chunks.jsonl`, event-grain `events.jsonl`, analyst-friendly
 `events.csv`, raw `aggregates.jsonl`, `summary.json`, `tutorial_funnel.csv`, `level_exit.csv`,
-`event_counts.csv`, `cohort_summary.csv`, and a count manifest. The key is read only from the
+`event_counts.csv`, `power_picks.csv`, `cohort_summary.csv`, and a count manifest. The key is read only from the
 environment and is never written to an output file.
 
 ## Admin access
 
 - Aggregate: Creator Dashboard → Analytics → Funnels / Explore. The custom event is
-  `RetentionMilestone`, broken down by category and milestone id.
+  `RetentionMilestone`, broken down by category and milestone id. Power pick share is
+  `PowerPicked`, broken down by power id (Custom Field 1).
 - Daily operational dashboard: `RetentionDashboard_v1`, the fixed-key
   `tools/read_retention_dashboard.py` reader, or the admin-only `retention.dashboard` Game API
   command.

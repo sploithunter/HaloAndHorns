@@ -21,6 +21,23 @@ return function()
             )
         end)
 
+        it("scales cruise from the Board slider without dropping below walk", function()
+            local knobs = hoverboard.speed
+            expect(knobs.min_scale).to.equal(0.2)
+            expect(knobs.max_scale).to.equal(1)
+            expect(HoverboardLogic.clampSpeedScale(0.05, knobs)).to.equal(0.2)
+            expect(HoverboardLogic.clampSpeedScale(2, knobs)).to.equal(1)
+            expect(HoverboardLogic.clampSpeedScale(nil, knobs)).to.equal(1)
+            expect(HoverboardLogic.mountedSpeed(16, 1, 128, 0.25)).to.equal(32)
+            expect(HoverboardLogic.mountedSpeed(16, 1, 64, 0.2)).to.equal(16)
+            local saved = HoverboardLogic.normalizeSave({
+                owned = { rocket_blue = true },
+                equipped = "rocket_blue",
+                speed_scale = 0.4,
+            }, "black_gold")
+            expect(saved.speed_scale).to.equal(0.4)
+        end)
+
         it("suppresses the board in combat, missions, and precision interactions", function()
             expect(HoverboardLogic.shouldSuppress({ in_combat = true })).to.equal(true)
             expect(HoverboardLogic.shouldSuppress({ in_mission = true })).to.equal(true)

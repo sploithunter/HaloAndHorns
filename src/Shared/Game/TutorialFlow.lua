@@ -45,6 +45,11 @@ function TutorialFlow.normalizeProgress(progress, version)
     if tonumber(progress.track) then
         normalized.track = math.max(1, math.floor(tonumber(progress.track)))
     end
+    -- v6 grandfather: they already scored the v3 first-enemy beat (old
+    -- first_fight kills, brew, or Rally). Cave enter did not exist then.
+    if progress.firstEnemy == true or progress.caveStarted == true then
+        normalized.firstEnemy = true
+    end
     return normalized
 end
 
@@ -73,6 +78,17 @@ function TutorialFlow.migrateProgress(config, progress)
 
     while normalized.version < targetVersion do
         if not normalized.done then
+            -- Stamp the old first-enemy beat before remapping. Cave enter did
+            -- not exist; first_fight was "defeat an enemy" (v3 step 8 / v2 step 5).
+            if
+                TutorialFlow.startedFirstEnemy(
+                    normalized.version,
+                    normalized.step,
+                    normalized.count
+                )
+            then
+                normalized.firstEnemy = true
+            end
             local migrations = config and config.step_migrations
             local mapping = migrations and migrations[normalized.version]
             if not mapping and normalized.version == 1 then
@@ -88,6 +104,99 @@ function TutorialFlow.migrateProgress(config, progress)
         normalized.version += 1
     end
     return normalized, true
+end
+
+-- first_fight index on each Homeworld version. After that beat came brew / Rally.
+-- v6 first_fight is the cave-training handoff, not a kill count.
+local FIRST_FIGHT_INDEX = {
+    [1] = 5,
+    [2] = 5,
+    [3] = 8,
+    [4] = 5,
+    [5] = 8,
+}
+
+function TutorialFlow.startedFirstEnemy(version, step, count)
+    local fightAt = FIRST_FIGHT_INDEX[math.floor(tonumber(version) or 0)]
+    if not fightAt then
+        return false
+    end
+    step = math.floor(tonumber(step) or 0)
+    if step > fightAt then
+        return true
+    end
+    return step == fightAt and (tonumber(count) or 0) > 0
+end
+
+-- Old first-enemy beat (v1–v5 combat start). A live CombatTutorial save is the
+-- new track — leave those players alone so they can finish or keep going.
+function TutorialFlow.firstEnemyEvidence(config, progress, evidence)
+    progress = TutorialFlow.normalizeProgress(progress, config and config.version)
+    evidence = type(evidence) == "table" and evidence or {}
+    if progress.done == true or evidence.tutorialCompleted == true then
+        return true, "tutorial_done"
+    end
+    if progress.firstEnemy == true then
+        return true, "first_enemy"
+    end
+    if type(evidence.combatTutorial) == "table" then
+        return false, nil
+    end
+    local step = TutorialFlow.current(config, progress)
+    if step and step.id == "rally_call" then
+        return true, "old_rally"
+    end
+    if step and step.id == "first_fight" and (tonumber(progress.count) or 0) > 0 then
+        return true, "first_fight_kills"
+    end
+    -- Do not use tutorial_first_fight here. Admin reset keeps that milestone
+    -- and would mark a fresh first_fight done (Redo dialog on a reset / new run).
+    -- Live enemies_defeated also must not count — stray Homeworld kills hid E.
+    return false, nil
+end
+
+-- Give Heal to anyone who already finished or already scored the old first
+-- enemy. Leave pre-fight players on the Homeworld path so they can enter the
+-- new cave if they want. Never leave them waiting on combat_tutorial_complete.
+function TutorialFlow.reconcileGrandfather(config, progress, evidence)
+    progress = TutorialFlow.normalizeProgress(progress, config and config.version)
+    evidence = type(evidence) == "table" and evidence or {}
+    local started, reason = TutorialFlow.firstEnemyEvidence(config, progress, evidence)
+    local alreadyDone = progress.done == true or evidence.tutorialCompleted == true
+    local completeTutorial = started and not alreadyDone
+    if completeTutorial then
+        progress.done = true
+        progress.firstEnemy = true
+    end
+    return progress,
+        {
+            completeTutorial = completeTutorial,
+            unlockHeal = alreadyDone or started,
+            bindHeal = alreadyDone or started,
+            reason = alreadyDone and "already_done" or reason,
+        }
+end
+
+-- Cave E is always on. Ask Redo only after they actually finished the cave.
+-- Homeworld Tutorial.done / TutorialCompleted is not enough — grandfather,
+-- veteran skip, and admin-reset leftovers all set those without a cave run.
+function TutorialFlow.caveEnterNeedsConfirm(_homeProgress, combatProgress, _gameData)
+    return type(combatProgress) == "table" and combatProgress.done == true
+end
+
+-- Lobby lessons (ready / brew / bind). Arena fights and the pillar stay
+-- inside the room — Leave E is lobby-only, like Range.
+function TutorialFlow.isCombatLobbyStep(step)
+    if type(step) ~= "table" then
+        return false
+    end
+    if type(step.spawn) == "table" and step.spawn.where == "arena" then
+        return false
+    end
+    if step.return_to_lobby == true or step.activate_beacon == true then
+        return false
+    end
+    return true
 end
 
 function TutorialFlow.total(config)

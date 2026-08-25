@@ -26,6 +26,8 @@ local SCHEMAS = {
     buffs = schema({ axes = "table", default_cap = "number" }),
     build_info = schema({ version = "string", commit = "string", branch = "string" }),
     combat = schema({ auto_target = "string", group_scaling = "table" }),
+    combat_deaths = schema({ hold_seconds = "number", styles = "table" }),
+    combat_ranks = schema({ version = "number", ranks = "table" }),
     combat_fx = schema({ origin = "table", reskins = "table", attached = "table" }),
     challenge_runs = schema({
         rooms = "number",
@@ -95,6 +97,7 @@ local SCHEMAS = {
         enabled = "boolean",
         unlock = "table",
         cruise_speed = "number",
+        speed = "table",
         hover_height = "number",
         stance_yaw_degrees = "number",
         mount = "table",
@@ -131,7 +134,12 @@ local SCHEMAS = {
     -- The playable cold open (docs/PROLOGUE.md).
     prologue = schema({ enabled = "boolean", room = "table", duration = "number" }),
     guardians = schema({ model_asset = "table", colossus = "table", djinn = "table" }),
-    hotbar = schema({ slot_count = "number", bind_types = "table", tactical_commands = "table" }),
+    hotbar = schema({
+        slot_count = "number",
+        bind_types = "table",
+        tactical_commands = "table",
+        auto_cast = "table",
+    }),
     internal_accounts = schema({
         version = "number",
         excluded_name_prefixes = "table",
@@ -158,6 +166,7 @@ local SCHEMAS = {
     pill_ui = schema({ frames = "table", panels = "table", rings = "table" }),
     potions = schema({
         tick_seconds = "number",
+        overcharge = "table",
         shop = "table",
         meters = "table",
         potions = "table",
@@ -179,8 +188,10 @@ local SCHEMAS = {
     retention = schema({
         version = "number",
         onboarding = "table",
+        combat_training = "table",
         activation = "table",
         custom_event = "table",
+        power_pick_event = "table",
         event_store = "table",
     }),
     shop = schema({ offers = "table" }),

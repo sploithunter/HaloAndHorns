@@ -13,9 +13,16 @@ return {
         tutorial_required = true,
         required_level = 2,
     },
-    -- Floor under ordinary travel. Mounted speed is max(WalkSpeed * Eff_Speed, cruise).
+    -- Floor under ordinary travel. Mounted speed is max(WalkSpeed * Eff_Speed, cruise * scale).
     -- 64 is a skate-cruise (~4× default walk) so the Hall fields do not take a jog.
+    -- Right-click / long-press Board opens a slider; scale persists on the save.
     cruise_speed = 64,
+    speed = {
+        min_scale = 0.2,
+        max_scale = 1,
+        default_scale = 1,
+        long_press = 0.45,
+    },
     -- Clearance from ground to the deck. HRP lift adds the usual R15 hip offset on top.
     hover_height = 3.6,
     stance_yaw_degrees = 90,

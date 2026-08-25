@@ -77,6 +77,27 @@ class ExportRetentionApiTests(unittest.TestCase):
             )
         )
 
+    def test_power_pick_rows_report_share_from_raw_events(self):
+        rows = export_retention.power_pick_rows(
+            [
+                {
+                    "events": [
+                        {"name": "power_selected", "context": {"power": "rage", "level": 2}},
+                        {"name": "power_selected", "context": {"power": "rage"}},
+                        {"name": "power_selected", "context": {"power": "heal"}},
+                        {"name": "quest_complete", "context": {"quest": "fs_boost"}},
+                    ]
+                }
+            ]
+        )
+        self.assertEqual(
+            rows,
+            [
+                {"power": "rage", "count": 2, "share": 2 / 3},
+                {"power": "heal", "count": 1, "share": 1 / 3},
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

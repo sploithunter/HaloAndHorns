@@ -1,5 +1,105 @@
 # Log
 
+## 2026-08-25 — Continue later on the frost door
+
+- Lobby leave is E on the sealed frost door (**Continue later**), not
+  only the pad behind them. SET HEAL FIRST stays the click-to-continue
+  plate.
+
+## 2026-08-25 — Combat rank crests
+
+- Keyed the eight commissioned crests (`normalize_icons` + enclosed
+  magenta/blue punch on Spark/Kindled), uploaded group-owned, wired
+  Image ids into `configs/combat_ranks.lua`. Ceremony flies the crest,
+  then the lobby door is the continue path.
+
+## 2026-08-25 — Combat ranks (first slice)
+
+- Eight pillar titles (Spark → Skilled) grant on `advance_*` steps.
+  Current rank lives on `GameData.CombatRank`; first earn flies a
+  placeholder crest to a People-list chip. Redo is silent; veterans
+  already through the cave get Skilled with no ceremony.
+
+## 2026-08-25 — Auto-cast glow ring
+
+- Right-click / long-press lock is a pulsing green ring around the
+  whole hotbar disc. The 14px corner ⟳ was invisible on purple powers.
+
+## 2026-08-25 — Board speed slider
+
+- Right-click or long-press **Board** opens a 20–100% cruise slider.
+  Scale persists on `GameData.Hoverboard.speed_scale`. The ride liner
+  now honors `HoverboardWalkSpeed` instead of forcing full skin cruise.
+
+## 2026-08-25 — Robux-cube death
+
+- Seventh combatant death: `robux`. The body empties while gold Robux
+  cubes pop out one by one, scatter on the ground, and fade after ~2s.
+  Cube count / stagger / lifetime live on `configs/combat_deaths.lua`.
+
+## 2026-08-24 — Brew overcharge juice
+
+- Stacked Berserk Brews now shake the hotbar badge and leak a halo
+  (`BrewJuice` ramps in `configs/potions.lua` overcharge). First sip is
+  glow + punch; second sip starts the shake.
+- The player wears a charge-scaled fire aura (`PetDamageBuffPotion` in
+  `buff_auras.lua`) with a ForceField shell that leaks when stacked.
+  Pets get the same CombatFX buff they already had for Mountain's
+  Strength — brew was only writing `PetDamageBuffPotionUntil`.
+
+## 2026-08-24 — Dramatic enemy deaths
+
+- Kills no longer pop the model. Six poses (flop / pop / shatter / whirl /
+  sink / launch) play on the corpse with a positional stand-in SFX.
+- Dedicated clip prompts live on `configs/combat_deaths.lua` styles.
+
+## 2026-08-24 — Combat-training lobby Leave + confirm
+
+- Lobby pad E leaves like Range, after a confirm: leave without
+  completing? Arena / pillar do not show it. Landing waits 0.8s so the
+  cave-enter E cannot bounce them out.
+
+## 2026-08-24 — Redo only after a finished cave
+
+- Cave Redo confirm keys off `CombatTutorial.done` only. Homeworld
+  `Tutorial.done` / leftover `tutorial_first_fight` after admin reset
+  was asking Redo on a fresh run.
+
+## 2026-08-24 — Cave E always on; redo if finished
+
+- Earth cave E is for everyone. Incomplete Homeworld (or a mid-cave
+  save) enters immediately. Finished Homeworld / finished cave asks
+  Redo before restarting.
+- FIGHT beacon and the Enter prompt both sit on EarthLair.
+
+## 2026-08-24 — Cave E missed after stray-kill grandfather
+
+- Fresh first_fight + live `enemies_defeated` no longer completes the
+  tutorial. That hid the cave E for centenialstate after 23 Homeworld kills.
+- Cave enter prompt now sits on EarthLair with a 40-stud reach, not the
+  interior 4-stud BaddieSpawnerEarth.
+
+## 2026-08-24 — Grandfather live saves onto cave-training Heal
+
+- Pre-fight players stay on Homeworld and can enter the new cave.
+- v1–v5 players who already scored the old first-enemy beat (or finished)
+  are marked done and get Heal + Rally so they cannot stick on the new
+  cave-complete event.
+- A live `CombatTutorial` save is the new track and is not auto-completed.
+
+## 2026-08-24 — Power pick share in retention + Creator Hub
+
+- Daily dashboard shards now count every `power_selected` as `powerPicks.total` /
+  `byPower` / `byLevel` (all sessions). CLI prints percentages.
+- Production also logs `PowerPicked` to AnalyticsService (field 1 = power, field 2 =
+  claimed level). Internal accounts stay out. Export writes `power_picks.csv` from
+  existing raw events so historical share is readable before the new shards land.
+
+## 2026-08-24 — Combat balance traces off for a quiet run
+
+- `combat.combat_trace` is false again. RageTip / Defeat / CombatXP stay in
+  code for a balancing pass; they no longer flood Output on a normal Play.
+
 ## 2026-08-24 — Healer click pins pets; empty leftover still clears
 
 - Clicking the training healer now pins the squad on it (assist + wipe

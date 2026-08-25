@@ -3477,7 +3477,7 @@ function PowerService:Select(player, powerId, levelOverride)
             hotbar:_pushState(player)
         end
     end)
-    fireGameEvent(player, "power_selected", { power = powerId }) -- bus source (tutorial etc.)
+    fireGameEvent(player, "power_selected", { power = powerId, level = level }) -- bus source (tutorial etc.)
     return { ok = true, powers = selected }
 end
 

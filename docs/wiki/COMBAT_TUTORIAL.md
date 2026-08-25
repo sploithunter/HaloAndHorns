@@ -1,6 +1,6 @@
 # Combat Tutorial
 
-Last checked: 2026-08-24
+Last checked: 2026-08-25
 
 Live Homeworld combat beat (`configs/tutorial.lua` v6). After Resonance is
 bound, cast, and enhanced, `first_fight` sends the player into the Earth cave.
@@ -10,19 +10,40 @@ mission-slot instance. The last pillar warps them back to the cave mouth, grants
 Level 2, then Homeworld continues with Rally. Progress is
 `profile.CombatTutorial` — never a ProfileStore template field.
 
+## Live-save grandfather
+
+Cave enter did not exist in tutorial v1–v5. The old combat start was
+`first_fight` (defeat an enemy): v1/v2/v4 step 5, v3/v5 step 8.
+
+- Not there yet (hatch through Resonance, or `first_fight` with no kill):
+  they stay on Homeworld. Cave E is always available; this path walks
+  straight in.
+- Already scored that beat (old first_fight count, brew, Rally, or a
+  `tutorial_first_fight` milestone): Homeworld is marked done. Heal and
+  Rally are bound so they cannot stick waiting for `combat_tutorial_complete`.
+  Live `enemies_defeated` does not count — stray Homeworld kills were
+  completing a fresh first_fight and hiding the cave E.
+- Already complete (including veteran skip): Heal is unlocked and bound.
+- A live `CombatTutorial` save is the new track and is left alone.
+
 ## Entry
 
-Homeworld `first_fight` targets `Maps.Home.BaddieSpawnerEarth` (realm layers
-clone that name — do not `FindFirstChild` from Workspace). The mouth uses
-the same Hall MissionDoor billboard: default **Press E to Enter**
-(gamepad X). E opens a `combat_tutorial` mission slot on the far-X
-band (`missions.slots`: 10 concurrent, 3072 studs apart at x=24000) —
-the same pool as Range / Training Ground. Realm layers already own
-vertical stacking, so instances go sideways, not up. The landing pad
-does **not** get a Leave Mission E prompt (that bounced testers back
-to the cave). Isolated-track `CombatTutorial.done` leftovers reopen if
-Homeworld is still on `first_fight`. The Hall arch is **not** an entry.
-`restart_on_enter` is off so cave visits keep progress.
+The Earth cave mouth (`Maps.Home.EarthLair`) always shows **Press E to
+Enter** (gamepad X). Homeworld `first_fight` points the FIGHT beacon
+there. Walk straight in unless `CombatTutorial.done` — only a finished
+cave asks **Redo / Not now**. Homeworld `Tutorial.done` is not enough
+(admin reset and grandfather leftovers were showing Redo on a new run). E opens a `combat_tutorial` mission
+slot on the far-X band (`missions.slots`: 10 concurrent, 3072 studs
+apart at x=24000) — the same pool as Range / Training Ground. Realm
+layers already own vertical stacking, so instances go sideways, not up.
+The frost door (or the lobby pad if the seal is down) has **Continue
+later** (E / gamepad X) after a short landing grace so cave-enter E
+cannot bounce them out. Confirm: **Your progress is saved. Come back
+anytime.** Arena fights and the pillar do not show it. The door plate
+stays the lesson (SET HEAL FIRST / ENTER) — click continues or nudges;
+E leaves. Progress is kept (`leave_resume` on
+mid-fight disconnect still applies). The Hall arch is **not** an entry.
+`restart_on_enter` is off so an unfinished cave visit keeps progress.
 
 ## Mission
 
@@ -61,6 +82,32 @@ Homeworld is still on `first_fight`. The Hall arch is **not** an entry.
   the track. Pillar steps keep progress. Each completed combat beat fires
   `tutorial_step_completed` as `combat_<id>` into the onboarding funnel.
 
+## Combat ranks
+
+Eight Halo-flavored titles, one per finished fight loop, granted on the
+pillar (`advance_*`) — never on a lobby sip. Current rank only. Not a
+public leaderboard and not stacked `GrantTitle` strings.
+
+| Pillar | Rank |
+|---|---|
+| `advance_stage` | Spark |
+| `advance_brew` | Kindled |
+| `advance_heal` | Warden |
+| `advance_weaken` | Hexed |
+| `advance_stack` | Surge |
+| `advance_tank` | Bulwark |
+| `advance_healer` | Hunter |
+| `advance_together` | Skilled |
+
+Persist `GameData.CombatRank = { current, earned }` plus attributes
+`CombatRank` / `CombatRankLabel`. First earn plays the crest (keyed PNG
+→ fly to a chip left of the People list + nametag). The lobby warp waits
+for that fly so the frost **ENTER** door is the continue path. Lobby
+**Leave** exits with progress kept; cave E resumes the same step. Redo is
+silent. `CombatTutorial.done` backfills **Skilled** with no ceremony.
+Admin reset-to-beginning clears the rank. Config: `configs/combat_ranks.lua`.
+Later tutorials can replace the current title.
+
 ## First slice
 
 Each taught tool is its own lobby → ENTER → fight → pillar loop.
@@ -68,7 +115,8 @@ Each taught tool is its own lobby → ENTER → fight → pillar loop.
 1. `ready` — lobby; frost door sealed; ENTER
 2. `first_fight` — one weak Training Dog in the arena
 3. `advance_stage` — pillar; warp to lobby and reseal
-4. `battle_brew` — lobby; drink Berserk Brew (door stays sealed)
+4. `battle_brew` — lobby; drink Berserk Brew (door stays sealed). The
+   first sip glows the badge and puts a fire aura on the player and pets.
 5. `ready_brew` — ENTER
 6. `brew_fight` — one weak dog
 7. `advance_brew` — pillar; warp to lobby and reseal
@@ -98,7 +146,8 @@ Each taught tool is its own lobby → ENTER → fight → pillar loop.
 18. `advance_weaken` — pillar after the room is clear
 19. `stack_brew` — grant ten Berserk Brews; drink at least five (capsule `n / 5`).
     Sips fill the damage meter; `drain_seconds` stays 60. The frost-door plate
-    counts down: DRINK FIVE MORE → FOUR → THREE → TWO → ONE.
+    counts down: DRINK FIVE MORE → FOUR → THREE → TWO → ONE. Extra sips
+    shake the badge and leak a barely-contained halo (`BrewJuice`).
 20. `ready_stack` — ENTER. `ensure_meter` refreshes the Berserk pie so lobby
     sipping is not wasted by the walk in.
 21. `stack_fight` — 400 HP dog (was 900). Five sips are ~2.4× damage, so this

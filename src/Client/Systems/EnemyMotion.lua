@@ -24,8 +24,10 @@ local Players = game:GetService("Players")
 local Gait = require(ReplicatedStorage.Shared.Game.Gait)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
 local HitReact = require(ReplicatedStorage.Shared.Game.HitReact)
+local CombatDeath = require(ReplicatedStorage.Shared.Game.CombatDeath)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatHitFX = require(ReplicatedStorage.Shared.Effects.CombatHitFX)
+local TweenService = game:GetService("TweenService")
 
 local EnemyMotion = {}
 
@@ -43,6 +45,7 @@ function EnemyMotion.start()
     end
     local combat = require(ReplicatedStorage.Configs:WaitForChild("combat"))
     local enemiesCfg = require(ReplicatedStorage.Configs:WaitForChild("enemies"))
+    local deathsCfg = require(ReplicatedStorage.Configs:WaitForChild("combat_deaths"))
     local leveling = require(ReplicatedStorage.Configs:WaitForChild("leveling"))
     local eng = combat.engagement or {}
     local rate = eng.render_lerp_rate or 12
@@ -154,6 +157,118 @@ function EnemyMotion.start()
         return g
     end
 
+    local function toColor3(rgb, fallback)
+        if type(rgb) == "table" then
+            return Color3.fromRGB(rgb[1] or 235, rgb[2] or 90, rgb[3] or 90)
+        end
+        return fallback or Color3.fromRGB(235, 90, 90)
+    end
+
+    -- Tiny gold Robux cubes: pop out one by one, arc onto the ground, fade.
+    local function spawnRobuxCubes(origin, style)
+        local cubes = style.cubes or {}
+        local size = math.max(0.16, tonumber(cubes.size) or 0.36)
+        local image = tostring(cubes.image or "rbxasset://textures/ui/common/robux.png")
+        local color = toColor3(style.color, Color3.fromRGB(245, 205, 55))
+        local groundY = origin.Y - 1.15
+        local plan = CombatDeath.cubePlan(style, math.random)
+        for _, step in ipairs(plan) do
+            task.delay(step.delay, function()
+                local part = Instance.new("Part")
+                part.Name = "DeathRobuxCube"
+                part.Size = Vector3.new(size, size, size)
+                part.Anchored = true
+                part.CanCollide = false
+                part.CanQuery = false
+                part.CastShadow = false
+                part.Material = Enum.Material.SmoothPlastic
+                part.Color = color
+                part.CFrame = CFrame.new(origin)
+                part.Parent = Workspace
+                local gui = Instance.new("SurfaceGui")
+                gui.Face = Enum.NormalId.Front
+                gui.LightInfluence = 0
+                gui.Parent = part
+                local img = Instance.new("ImageLabel")
+                img.BackgroundTransparency = 1
+                img.Size = UDim2.fromScale(1, 1)
+                img.Image = image
+                img.ImageColor3 = Color3.fromRGB(40, 28, 8)
+                img.Parent = gui
+                local land = Vector3.new(origin.X + step.x, groundY, origin.Z + step.z)
+                local mid = Vector3.new(
+                    (origin.X + land.X) * 0.5,
+                    origin.Y + step.peak,
+                    (origin.Z + land.Z) * 0.5
+                )
+                local up = TweenService:Create(part, TweenInfo.new(0.28, Enum.EasingStyle.Quad), {
+                    CFrame = CFrame.new(mid) * CFrame.Angles(0.4, step.delay * 8, 0.2),
+                })
+                local down = TweenService:Create(
+                    part,
+                    TweenInfo.new(0.38, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+                    {
+                        CFrame = CFrame.new(land) * CFrame.Angles(0.15, step.delay * 14, 0.1),
+                    }
+                )
+                up.Completed:Connect(function()
+                    down:Play()
+                end)
+                up:Play()
+                task.delay(math.max(0.6, step.lifetime - 0.45), function()
+                    if not part.Parent then
+                        return
+                    end
+                    TweenService:Create(part, TweenInfo.new(0.45, Enum.EasingStyle.Quad), {
+                        Transparency = 1,
+                        Size = part.Size * 0.35,
+                    }):Play()
+                end)
+                task.delay(step.lifetime + 0.15, function()
+                    if part.Parent then
+                        part:Destroy()
+                    end
+                end)
+            end)
+        end
+    end
+
+    local function spawnDeathBurst(origin, style)
+        if type(style) == "table" and type(style.cubes) == "table" then
+            spawnRobuxCubes(origin, style)
+            return
+        end
+        local color = toColor3(style and style.color, Color3.fromRGB(235, 90, 90))
+        for i = 1, 14 do
+            local part = Instance.new("Part")
+            part.Size = Vector3.new(0.28, 0.28, 0.28)
+            part.Anchored = true
+            part.CanCollide = false
+            part.CanQuery = false
+            part.CastShadow = false
+            part.Material = Enum.Material.Neon
+            part.Color = color
+            part.CFrame = CFrame.new(origin)
+            part.Parent = Workspace
+            local ang = (i / 14) * math.pi * 2
+            local dist = 2.8 + (i % 4)
+            TweenService
+                :Create(part, TweenInfo.new(0.7, Enum.EasingStyle.Quad), {
+                    CFrame = CFrame.new(
+                        origin
+                            + Vector3.new(math.cos(ang) * dist, 1.6 + (i % 3), math.sin(ang) * dist)
+                    ),
+                    Transparency = 1,
+                })
+                :Play()
+            task.delay(0.8, function()
+                if part.Parent then
+                    part:Destroy()
+                end
+            end)
+        end
+    end
+
     -- model -> { base = CFrame (no gait), phase, amp }. Weak keys so enemies drop out.
     local state = setmetatable({}, { __mode = "k" })
     -- HIT-REACT (Jason: don't stay frozen when struck): a pet swing fires Combat_PetHit
@@ -229,44 +344,80 @@ function EnemyMotion.start()
         for _, model in ipairs(models) do
             if model:IsA("Model") and model.PrimaryPart then
                 updateLabel(model) -- difficulty-coloured name tag (every enemy, moving or not)
-                local target = model:GetAttribute("MoveTarget")
-                if target then
-                    local face = model:GetAttribute("MoveFace")
-                    local goal
-                    if face and (face - target).Magnitude > 1e-3 then
-                        goal = CFrame.lookAt(target, face)
-                    else
-                        goal = CFrame.new(target)
-                    end
-
+                if model:GetAttribute("Dying") == true then
                     local st = state[model]
                     if not st then
                         st = { base = model:GetPivot(), phase = 0, amp = 0 }
                         state[model] = st
                     end
-
-                    -- 1) Smoothed base position (no gait — kept clean for next lerp).
-                    local base = st.base:Lerp(goal, alpha)
-                    local stepDist = (Vector3.new(base.X, 0, base.Z) - Vector3.new(
-                        st.base.X,
-                        0,
-                        st.base.Z
-                    )).Magnitude
-                    st.base = base
-
-                    -- 2) Layer the procedural gait (shared with pets) on the clean base.
-                    local gait = resolveGait(model:GetAttribute("EnemyId"))
-                    local bob, roll, yaw = Gait.advance(st, gait, stepDist, dt)
-                    local cf = CFrame.new(0, bob, 0) * base * CFrame.Angles(0, yaw, roll)
-                    -- 3) Hit-react flinch: world-space recoil + a local twist, decaying to 0.
-                    local fs = flinch[model]
-                    if fs then
-                        local fx, fz, fyaw = HitReact.sample(fs, os.clock())
-                        if fx ~= 0 or fz ~= 0 or fyaw ~= 0 then
-                            cf = (cf + Vector3.new(fx, 0, fz)) * CFrame.Angles(0, fyaw, 0)
+                    if not st.deathBurst then
+                        st.deathBurst = true
+                        setOverheadsEnabled(model.PrimaryPart, false)
+                        local styleId = model:GetAttribute("DeathStyle") or "flop"
+                        local style = CombatDeath.styleById(deathsCfg, styleId)
+                        local origin = model:GetPivot().Position + Vector3.new(0, 1.2, 0)
+                        spawnDeathBurst(origin, style)
+                    end
+                    local started = tonumber(model:GetAttribute("DeathAt"))
+                        or Workspace:GetServerTimeNow()
+                    local dur = math.max(0.35, tonumber(model:GetAttribute("DeathSeconds")) or 0.85)
+                    local t = math.clamp((Workspace:GetServerTimeNow() - started) / dur, 0, 1)
+                    local pose = CombatDeath.sample(model:GetAttribute("DeathStyle") or "flop", t)
+                    local cf, scale, fade = CombatDeath.applyPose(st.base, pose)
+                    if model.ScaleTo and math.abs(scale - (st.deathScale or 1)) > 0.02 then
+                        pcall(function()
+                            model:ScaleTo(scale)
+                        end)
+                        st.deathScale = scale
+                    end
+                    if fade > 0 then
+                        for _, part in ipairs(model:GetDescendants()) do
+                            if part:IsA("BasePart") then
+                                part.LocalTransparencyModifier = fade
+                            end
                         end
                     end
                     model:PivotTo(cf)
+                else
+                    local target = model:GetAttribute("MoveTarget")
+                    if target then
+                        local face = model:GetAttribute("MoveFace")
+                        local goal
+                        if face and (face - target).Magnitude > 1e-3 then
+                            goal = CFrame.lookAt(target, face)
+                        else
+                            goal = CFrame.new(target)
+                        end
+
+                        local st = state[model]
+                        if not st then
+                            st = { base = model:GetPivot(), phase = 0, amp = 0 }
+                            state[model] = st
+                        end
+
+                        -- 1) Smoothed base position (no gait — kept clean for next lerp).
+                        local base = st.base:Lerp(goal, alpha)
+                        local stepDist = (Vector3.new(base.X, 0, base.Z) - Vector3.new(
+                            st.base.X,
+                            0,
+                            st.base.Z
+                        )).Magnitude
+                        st.base = base
+
+                        -- 2) Layer the procedural gait (shared with pets) on the clean base.
+                        local gait = resolveGait(model:GetAttribute("EnemyId"))
+                        local bob, roll, yaw = Gait.advance(st, gait, stepDist, dt)
+                        local cf = CFrame.new(0, bob, 0) * base * CFrame.Angles(0, yaw, roll)
+                        -- 3) Hit-react flinch: world-space recoil + a local twist, decaying to 0.
+                        local fs = flinch[model]
+                        if fs then
+                            local fx, fz, fyaw = HitReact.sample(fs, os.clock())
+                            if fx ~= 0 or fz ~= 0 or fyaw ~= 0 then
+                                cf = (cf + Vector3.new(fx, 0, fz)) * CFrame.Angles(0, fyaw, 0)
+                            end
+                        end
+                        model:PivotTo(cf)
+                    end
                 end
             end
         end

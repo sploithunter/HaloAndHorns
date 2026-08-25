@@ -1,0 +1,12 @@
+size: 256x256
+padding: 8px
+square: True
+
+spark.png	256x256	<- spark.png	(all-magenta, enclosed hole punched)
+kindled.png	256x256	<- kindled.png	(all-blue, enclosed hole punched)
+warden.png	256x256	<- warden.png	(edge-magenta)
+hexed.png	256x256	<- hexed.png	(edge-green)
+surge.png	256x256	<- surge.png	(edge-green)
+bulwark.png	256x256	<- bulwark.png	(edge-green)
+hunter.png	256x256	<- hunter.png	(edge-green)
+skilled.png	256x256	<- skilled.png	(edge-green)

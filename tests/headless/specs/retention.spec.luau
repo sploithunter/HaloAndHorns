@@ -198,6 +198,50 @@ return function()
             expect(counters.starterChoice.byPet.kitty).to.equal(1)
         end)
 
+        it("counts committed power picks in every session and reports share", function()
+            local counters = RetentionLogic.newAggregate()
+            local first = {}
+            local veteran = {}
+            RetentionLogic.aggregateEvent(
+                counters,
+                first,
+                "power_selected",
+                { power = "rage", level = 2 },
+                12,
+                true
+            )
+            RetentionLogic.aggregateEvent(
+                counters,
+                first,
+                "power_selected",
+                { power = "rage", level = 4 },
+                20,
+                true
+            )
+            RetentionLogic.aggregateEvent(
+                counters,
+                veteran,
+                "power_selected",
+                { power = "heal", level = 8 },
+                40,
+                false
+            )
+            expect(counters.powerPicks.total).to.equal(3)
+            expect(counters.powerPicks.byPower.rage).to.equal(2)
+            expect(counters.powerPicks.byPower.heal).to.equal(1)
+            expect(counters.powerPicks.byLevel["2"]).to.equal(1)
+            expect(counters.powerPicks.byLevel["8"]).to.equal(1)
+            expect(RetentionLogic.dashboardSummary(counters).powerPickTotal).to.equal(3)
+
+            local shares = RetentionLogic.powerPickShares(counters)
+            expect(shares.total).to.equal(3)
+            expect(shares.rows[1].power).to.equal("rage")
+            expect(shares.rows[1].count).to.equal(2)
+            expect(shares.rows[1].share).to.equal(2 / 3)
+            expect(shares.rows[2].power).to.equal("heal")
+            expect(shares.rows[2].share).to.equal(1 / 3)
+        end)
+
         it("keeps veteran sessions in general counters but out of the new-player funnel", function()
             local counters = RetentionLogic.newAggregate()
             local seen = {}

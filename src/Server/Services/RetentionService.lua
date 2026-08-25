@@ -3,8 +3,9 @@
 
     It observes the existing server GameEvents bus, so quest/zone/tutorial owners stay unaware of
     analytics.     New-player onboarding steps go to LogOnboardingFunnelStepEvent and end at
-    Rally. Optional first quest / First Steps / first area go to
-    LogFunnelStepEvent as the Activation funnel. All first-time milestones also
+    Rally (Homeworld spine only). Cave room-by-room beats go to LogFunnelStepEvent
+    as Combat Training. Optional first quest / First Steps / first area go to
+    the Activation funnel. All first-time milestones also
     go to one low-cardinality custom event with category/id breakdown fields.
 ]]
 
@@ -681,6 +682,31 @@ function RetentionService:_logCustom(player, category, id)
     end)
 end
 
+function RetentionService:_logPowerPick(player, powerId, level)
+    local cfg = self._config.power_pick_event or {}
+    if RunService:IsStudio() or cfg.enabled == false then
+        return
+    end
+    if
+        RetentionLogic.isInternalPlayer(
+            player.UserId,
+            player.Name,
+            self._excludedUserIds,
+            self._excludedNamePrefixes
+        )
+    then
+        return
+    end
+    pcall(function()
+        AnalyticsService:LogCustomEvent(player, cfg.name or "PowerPicked", 1, {
+            [Enum.AnalyticsCustomFieldKeys.CustomField01.Name] = tostring(powerId),
+            [Enum.AnalyticsCustomFieldKeys.CustomField02.Name] = tostring(
+                tonumber(level) and math.floor(level) or "unknown"
+            ),
+        })
+    end)
+end
+
 function RetentionService:_flushFunnel(player, state)
     local cfg = self._config.onboarding or {}
     if RunService:IsStudio() or cfg.enabled == false then
@@ -732,13 +758,44 @@ function RetentionService:_flushActivation(player, state)
     return changed
 end
 
+function RetentionService:_flushCombatTraining(player, state)
+    local cfg = self._config.combat_training or {}
+    if RunService:IsStudio() or cfg.enabled == false then
+        return false
+    end
+    local sessionId = "combat:" .. tostring(player.UserId)
+    local changed = false
+    for _, step in ipairs(RetentionLogic.pendingCombatTrainingSteps(self._config, state)) do
+        local ok = pcall(function()
+            AnalyticsService:LogFunnelStepEvent(
+                player,
+                cfg.name or "Combat Training",
+                sessionId,
+                step.index,
+                step.name,
+                customFields("combat_training", step.id)
+            )
+        end)
+        if not ok then
+            break
+        end
+        state.CombatFunnelStep = step.index
+        changed = true
+    end
+    return changed
+end
+
 function RetentionService:_recordMilestone(player, id, category, detail)
     local state = self:_state(player)
     if not state then
         return false
     end
     if not RetentionLogic.record(state, id, category, self:_meta(player, detail)) then
-        if self:_flushFunnel(player, state) or self:_flushActivation(player, state) then
+        if
+            self:_flushFunnel(player, state)
+            or self:_flushActivation(player, state)
+            or self:_flushCombatTraining(player, state)
+        then
             self._dataService:RequestSave(player, "retention_funnel")
         end
         return false
@@ -746,6 +803,7 @@ function RetentionService:_recordMilestone(player, id, category, detail)
     self:_logCustom(player, category, id)
     self:_flushFunnel(player, state)
     self:_flushActivation(player, state)
+    self:_flushCombatTraining(player, state)
     self._dataService:RequestSave(player, "retention_milestone")
     return true
 end
@@ -764,6 +822,8 @@ function RetentionService:_recordEvent(player, name, ctx)
         self:_recordMilestone(player, "quest:" .. ctx.quest, "quest", ctx.quest)
     elseif name == "area_unlocked" and type(ctx) == "table" and type(ctx.areaId) == "string" then
         self:_recordMilestone(player, "area:" .. ctx.areaId, "area", ctx.areaId)
+    elseif name == "power_selected" and type(ctx) == "table" and type(ctx.power) == "string" then
+        self:_logPowerPick(player, ctx.power, ctx.level)
     end
 end
 
@@ -905,6 +965,7 @@ function RetentionService:GetDashboard(dateUtc)
         definitions = self:_dashboardDefinitions(),
         builds = builds,
         summary = RetentionLogic.dashboardSummary(counters),
+        powerPicks = RetentionLogic.powerPickShares(counters),
         counters = counters,
     }
 end

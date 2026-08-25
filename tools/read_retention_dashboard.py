@@ -106,6 +106,7 @@ def dashboard_payload(
         "summary": summary,
         "tutorialFunnel": export_retention.tutorial_rows(buckets),
         "starterChoice": counters.get("starterChoice", {}),
+        "powerPicks": counters.get("powerPicks", {}),
         "earnedLevels": counters.get("earnedLevels", {}),
         "claimedLevels": counters.get("claimedLevels", {}),
         "newPlayerExitEarnedLevels": counters.get("newPlayerExitEarnedLevels", {}),
@@ -193,6 +194,14 @@ def print_dashboard(payload: dict[str, Any]) -> None:
         f"{choice.get('selected', 0)}/{choice.get('shown', 0)} selected; "
         f"{json.dumps(choice.get('byPet', {}), sort_keys=True)}"
     )
+    picks = payload.get("powerPicks") or {}
+    pick_rows = export_retention.power_pick_share_rows(
+        picks.get("byPower") if isinstance(picks, dict) else {},
+        int(picks.get("total") or 0) if isinstance(picks, dict) else 0,
+    )
+    print(f"Power picks: {int(picks.get('total') or 0)} total")
+    for row in pick_rows:
+        print(f"  {row['power']}: {row['count']} ({percent(row['share'])})")
     print(
         "Levels earned: "
         f"{json.dumps(payload.get('earnedLevels', {}), sort_keys=True)}"

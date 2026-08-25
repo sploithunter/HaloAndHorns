@@ -7,7 +7,8 @@
       pet  CombatShield > 0      -> element force-field BUBBLE only (no reskin)           [absorb/shield]
       pet  DefenseBuffUntil      -> element material RESKIN only (no bubble)              [defense_buff/armor]
       pet  HealFxUntil           -> heal aura for the remaining duration                 [heal]
-      player PetDamageBuffUntil  -> damage buff aura on every owned pet                   [buff]
+      player PetDamageBuffUntil / PetDamageBuffPotionUntil
+                                 -> damage buff aura on every owned pet                   [buff]
       enemy VulnerableUntil      -> debuff aura while vulnerable                          [vulnerable]
       enemy RootedUntil          -> debuff aura while rooted                              [root]
 
@@ -504,7 +505,10 @@ local function refreshPlayerDamageBuff(petsFolder)
     -- The buff channel lives on the pets' OWNER — resolve them from the folder name so the
     -- aura renders identically for every player's squad (entity-state = attributes, any pet).
     local owner = Players:FindFirstChild(petsFolder.Name) or localPlayer
-    local secs = remaining(owner, "PetDamageBuffUntil")
+    local secs = math.max(
+        remaining(owner, "PetDamageBuffUntil"),
+        remaining(owner, "PetDamageBuffPotionUntil")
+    )
     for _, pet in ipairs(petsFolder:GetChildren()) do
         if pet:IsA("Model") then
             if secs > 0.05 then
@@ -673,6 +677,9 @@ function CombatAuraController.start()
             local owner = Players:FindFirstChild(folder.Name)
             if owner then
                 owner:GetAttributeChangedSignal("PetDamageBuffUntil"):Connect(function()
+                    refreshPlayerDamageBuff(folder)
+                end)
+                owner:GetAttributeChangedSignal("PetDamageBuffPotionUntil"):Connect(function()
                     refreshPlayerDamageBuff(folder)
                 end)
             end

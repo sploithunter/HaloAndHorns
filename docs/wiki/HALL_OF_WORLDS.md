@@ -405,8 +405,9 @@ V1 intentionally does not enable the dormant mount-inventory category:
 - the server owns eligibility and mounted state while the client owns hover pose, lean,
   ride trails, and board animation. Skate and surf keep one deck wake. Rockets emit
   two nozzle trails tinted with each skin `accent_color`;
-- mounted speed is `max(normal effective movement speed, configured hoverboard cruise speed)`
-  (cruise is 64, about 4× default walk);
+- mounted speed is `max(normal effective movement speed, cruise × player scale)`
+  (cruise is 64 skate / 128 rocket). Right-click or long-press **Board**
+  opens a 20–100% slider; the scale persists on `GameData.Hoverboard.speed_scale`;
 - hover height is ground → deck clearance (`hover_height` 3.6) plus hip. The
   downward probe is a fixed 28-stud search; skipped steep/underside hits must
   not shrink that budget or the mount hop freezes in the air until the rider

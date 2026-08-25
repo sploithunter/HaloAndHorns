@@ -228,13 +228,40 @@ return {
         mission_id = "combat_tutorial",
         -- Realm layers clone the same part name. Only the Homeworld cave is live.
         anchor_root = "Maps.Home",
-        anchor_name = "BaddieSpawnerEarth",
+        -- EarthLair is the visible mouth. BaddieSpawnerEarth is a 4-stud
+        -- interior part; a 14-stud E on that part never reaches the entrance.
+        anchor_name = "EarthLair",
+        -- E stays on the mouth for everyone. Walk in unless they already
+        -- finished this cave track — only then ask to redo.
+        always_offer = true,
         enter_prompt = {
             prompt_name = "CombatTutorialCaveEnter",
             action_text = "Enter",
             object_text = "Combat Training",
             hold_duration = 0.25,
-            max_distance = 14,
+            max_distance = 40,
+        },
+        redo_confirm = {
+            title = "Combat Training",
+            body = "You've already finished this. Redo the training?",
+            yes_text = "Redo",
+            no_text = "Not now",
+        },
+        -- E on the frost door (or the pad if the seal is down). Confirm so
+        -- the cave-enter E cannot dump them back out on landing.
+        leave_prompt = {
+            prompt_name = "CombatTutorialLobbyLeave",
+            action_text = "Continue later",
+            object_text = "Combat Training",
+            hold_duration = 0.25,
+            max_distance = 24,
+            enable_after = 0.8,
+        },
+        leave_confirm = {
+            title = "Continue later?",
+            body = "Your progress is saved. Come back anytime.",
+            yes_text = "Leave",
+            no_text = "Stay",
         },
     },
 

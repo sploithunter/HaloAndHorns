@@ -2037,6 +2037,21 @@ function GameAPIService:_registerCommands()
             return s:Buy(context.player, args)
         end,
     })
+    bus:register("hoverboard.speed", {
+        description = "Set the persisted hoverboard cruise scale (Board slider).",
+        validate = function(args)
+            return Validators.fields(args, {
+                scale = { type = "number", min = 0, max = 1 },
+            })
+        end,
+        handler = function(context, args)
+            local s = self:_service("HoverboardService")
+            if not s then
+                return { ok = false, reason = "service_unavailable" }
+            end
+            return s:SetSpeedScale(context.player, args.scale)
+        end,
+    })
     bus:register("hoverboard.equip", {
         description = "Equip an owned hoverboard from inventory (no shop range).",
         validate = function(args)

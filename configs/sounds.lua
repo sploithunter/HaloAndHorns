@@ -246,6 +246,51 @@ return {
         bus = "effects",
     },
 
+    -- Enemy death candy (configs/combat_deaths.lua). Stand-in clips until
+    -- dedicated uploads replace the ids. Prompts live on each death style.
+    death_flop = {
+        id = "rbxassetid://74319961707223", -- stand-in: pet_down_thud
+        volume = 0.55,
+        playback_speed = 1.08,
+        bus = "effects",
+    },
+    death_pop = {
+        id = "rbxassetid://114572398311789", -- stand-in: egg_hatch_pop
+        volume = 0.7,
+        playback_speed = 1.15,
+        bus = "effects",
+    },
+    death_shatter = {
+        id = "rbxassetid://93258219658109", -- stand-in: freeze_hold crack
+        volume = 0.55,
+        playback_speed = 1.25,
+        bus = "effects",
+    },
+    death_whirl = {
+        id = "rbxassetid://88708868978364", -- stand-in: boom_swoosh
+        volume = 0.45,
+        playback_speed = 1.2,
+        bus = "effects",
+    },
+    death_sink = {
+        id = "rbxassetid://90412394528626", -- stand-in: deep_earthen_impact
+        volume = 0.5,
+        playback_speed = 0.85,
+        bus = "effects",
+    },
+    death_launch = {
+        id = "rbxassetid://88708868978364", -- stand-in: boom_swoosh
+        volume = 0.6,
+        playback_speed = 0.92,
+        bus = "effects",
+    },
+    death_robux = {
+        id = "rbxassetid://133263123825856", -- stand-in: coin_collect
+        volume = 0.55,
+        playback_speed = 1.18,
+        bus = "effects",
+    },
+
     -- Mission crate break (group-owned upload; scripts/audio_ids.json crate_smash).
     -- Authored onto MissionCrate mesh as bigBreakSound so the death handler plays it
     -- positionally. Catalog key keeps the id out of MissionInstanceService.

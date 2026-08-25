@@ -95,6 +95,16 @@ return {
         },
     },
     veteran_skip = { min_claimed_level = 3 },
+    -- Live-save contract when combat training replaced the old first-enemy beat.
+    -- Cave enter did not exist in v1–v5. Players who already scored that beat
+    -- (or finished) get Heal + Rally and are marked done so they cannot stick
+    -- on combat_tutorial_complete. Players who have not fought yet stay on
+    -- the Homeworld path and can enter the new cave. See
+    -- TutorialFlow.reconcileGrandfather.
+    grandfather = {
+        unlock_heal = true,
+        complete_if_first_enemy = true,
+    },
 
     steps = {
         {
@@ -245,7 +255,7 @@ return {
             body_gamepad = "The Earth cave is a training ground. Press X to enter and learn how to fight.",
             target = {
                 kind = "part",
-                name = "BaddieSpawnerEarth",
+                name = "EarthLair",
                 root = "Maps.Home",
                 label = "⬇ FIGHT",
             },

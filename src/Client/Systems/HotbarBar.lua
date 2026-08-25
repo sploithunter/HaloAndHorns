@@ -33,6 +33,7 @@ local HOTBAR_CONFIG = require(ReplicatedStorage.Configs:WaitForChild("hotbar"))
 -- config so every power reads.
 local PowerDescribe = require(ReplicatedStorage.Shared.Game.PowerDescribe)
 local PotionDescribe = require(ReplicatedStorage.Shared.Game.PotionDescribe)
+local BrewJuice = require(ReplicatedStorage.Shared.Game.BrewJuice)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local UITheme = require(script.Parent.Parent.UI.UITheme)
 local PanelChrome = require(script.Parent.Parent.UI.Components.PanelChrome)
@@ -441,6 +442,128 @@ function HotbarBar.start()
         card.potCount = count
     end
 
+    -- Overcharge chrome: a halo that leaks past the disc, plus a second ring that
+    -- pulses when charge is high. Parent is the slot; ClipsDescendants flips off
+    -- so the "barely contained" leak can sit around the badge.
+    local function ensureOverchargeChrome(card)
+        if card.brewHalo then
+            return
+        end
+        card.frame.ClipsDescendants = false
+        local halo = Instance.new("Frame")
+        halo.Name = "BrewHalo"
+        halo.AnchorPoint = Vector2.new(0.5, 0.5)
+        halo.Position = UDim2.fromScale(0.5, 0.5)
+        halo.Size = UDim2.fromScale(1.18, 1.18)
+        halo.BackgroundColor3 = Color3.fromRGB(255, 80, 50)
+        halo.BackgroundTransparency = 1
+        halo.ZIndex = 1
+        halo.Visible = false
+        halo.Parent = card.frame
+        local hc = Instance.new("UICorner")
+        hc.CornerRadius = UDim.new(1, 0)
+        hc.Parent = halo
+        local stroke = Instance.new("UIStroke")
+        stroke.Name = "BrewContain"
+        stroke.Thickness = 3
+        stroke.Color = Color3.fromRGB(255, 140, 70)
+        stroke.Transparency = 1
+        stroke.Parent = halo
+        local leak = Instance.new("Frame")
+        leak.Name = "BrewLeak"
+        leak.AnchorPoint = Vector2.new(0.5, 0.5)
+        leak.Position = UDim2.fromScale(0.5, 0.5)
+        leak.Size = UDim2.fromScale(1.42, 1.42)
+        leak.BackgroundTransparency = 1
+        leak.ZIndex = 1
+        leak.Visible = false
+        leak.Parent = card.frame
+        local lc = Instance.new("UICorner")
+        lc.CornerRadius = UDim.new(1, 0)
+        lc.Parent = leak
+        local leakStroke = Instance.new("UIStroke")
+        leakStroke.Name = "BrewLeakStroke"
+        leakStroke.Thickness = 2
+        leakStroke.Color = Color3.fromRGB(255, 210, 90)
+        leakStroke.Transparency = 1
+        leakStroke.Parent = leak
+        card.brewHalo = halo
+        card.brewStroke = stroke
+        card.brewLeak = leak
+        card.brewLeakStroke = leakStroke
+        card.ringRest = { x = 0.5, y = 0.5 }
+    end
+
+    local function meterColor3(meterId)
+        local m = potionMeters[meterId]
+        local rgb = m and m.color
+        if type(rgb) == "table" then
+            return Color3.fromRGB(rgb[1] or 220, rgb[2] or 70, rgb[3] or 70)
+        end
+        return Color3.fromRGB(220, 70, 70)
+    end
+
+    local function hideOvercharge(card)
+        if card.brewHalo then
+            card.brewHalo.Visible = false
+            card.brewLeak.Visible = false
+            card.brewStroke.Transparency = 1
+            card.brewLeakStroke.Transparency = 1
+        end
+        if card.icon then
+            card.icon.Position = UDim2.fromScale(0.5, 0.5)
+        end
+        if card.ring and card.ringRest then
+            card.ring.Position = UDim2.fromScale(card.ringRest.x, card.ringRest.y)
+        end
+        card.lastBrewCharge = 0
+        card.brewPunchUntil = 0
+    end
+
+    local function applyOvercharge(card, charge, nowC)
+        local knobs = POTIONS.overcharge or {}
+        local juice = BrewJuice.sample(charge, knobs)
+        if charge > (card.lastBrewCharge or 0) + 0.04 then
+            card.brewPunchUntil = nowC + (tonumber(knobs.punch_seconds) or 0.28)
+        end
+        card.lastBrewCharge = charge
+        if juice.glow <= 0 and nowC >= (card.brewPunchUntil or 0) then
+            hideOvercharge(card)
+            return
+        end
+        ensureOverchargeChrome(card)
+        local color = meterColor3(card.potMeter)
+        local punchDur = tonumber(knobs.punch_seconds) or 0.28
+        local punchLeft = (card.brewPunchUntil or 0) - nowC
+        local punch = punchLeft > 0 and math.clamp(punchLeft / punchDur, 0, 1) or 0
+        local shake = juice.shake * (tonumber(knobs.shake_px) or 3)
+            + punch * (tonumber(knobs.punch_px) or 5)
+        local ox = math.sin(nowC * 41) * shake
+        local oy = math.cos(nowC * 53) * shake
+        card.icon.Position = UDim2.new(0.5, ox, 0.5, oy)
+        local rest = card.ringRest or { x = 0.5, y = 0.5 }
+        card.ring.Position = UDim2.new(rest.x, ox, rest.y, oy)
+        local pulse = 1 + juice.leak * 0.1 * (0.5 + 0.5 * math.sin(nowC * 10))
+        card.brewHalo.Visible = true
+        card.brewHalo.BackgroundColor3 = color
+        card.brewHalo.BackgroundTransparency = 1 - (0.18 + juice.glow * 0.22 + juice.leak * 0.12)
+        card.brewHalo.Size = UDim2.fromScale(
+            (tonumber(knobs.halo_scale) or 1.22) * pulse,
+            (tonumber(knobs.halo_scale) or 1.22) * pulse
+        )
+        card.brewStroke.Color = color:Lerp(Color3.fromRGB(255, 230, 140), juice.leak * 0.55)
+        card.brewStroke.Transparency = 0.55 - juice.glow * 0.25 - juice.leak * 0.2
+        card.brewStroke.Thickness = 2.5 + juice.leak * 2.5 + punch * 2
+        card.brewLeak.Visible = juice.leak > 0 or punch > 0.4
+        card.brewLeak.Size = UDim2.fromScale(
+            (tonumber(knobs.leak_scale) or 1.48) * (1 + juice.leak * 0.08 * math.sin(nowC * 7)),
+            (tonumber(knobs.leak_scale) or 1.48) * (1 + juice.leak * 0.08 * math.cos(nowC * 7))
+        )
+        card.brewLeakStroke.Color = Color3.fromRGB(255, 210, 90)
+        card.brewLeakStroke.Transparency = 0.78 - juice.leak * 0.35 - punch * 0.2
+        card.brewLeakStroke.Thickness = 1.5 + juice.leak * 2
+    end
+
     -- Cooldown overlay on a (circular) slot, reusing the golden/rainbow-pet shimmer:
     -- while recharging the icon dims, a rainbow UIGradient ring spins around it (same
     -- look as the inventory variant ring), and a seconds countdown shows the exact time
@@ -515,13 +638,23 @@ function HotbarBar.start()
     -- Auto-cast lock is slot-based, not power-based. A Range loaned kit overwrites
     -- those slots, so a leftover lock would fire Hasten (or anything else) that the
     -- player never locked. Clear every lock on catalog enter and exit.
+    local function paintAutoLock(card, on)
+        if not card then
+            return
+        end
+        if card.lock then
+            card.lock.Visible = on == true
+        end
+        if card.lockRing then
+            card.lockRing.Visible = on == true
+        end
+    end
+
     local function clearAutoLocks()
         table.clear(locked)
         table.clear(lastAuto)
         for _, card in pairs(cards) do
-            if card.lock then
-                card.lock.Visible = false
-            end
+            paintAutoLock(card, false)
         end
     end
 
@@ -562,9 +695,7 @@ function HotbarBar.start()
             return
         end
         locked[slot] = not locked[slot] or nil
-        if card.lock then
-            card.lock.Visible = locked[slot] == true
-        end
+        paintAutoLock(card, locked[slot] == true)
     end
 
     -- Hover tooltip shared by power and potion slots. Both descriptions are derived from their live
@@ -743,21 +874,50 @@ function HotbarBar.start()
             key.Text = keyLabel(slot)
             key.Parent = b
 
-            -- Auto-cast lock badge (top-right): shown when the slot is locked to auto-fire on cooldown.
-            local lockBadge = Instance.new("TextLabel")
-            lockBadge.Name = "Lock"
-            lockBadge.ZIndex = 4
-            lockBadge.AnchorPoint = Vector2.new(1, 0)
-            lockBadge.BackgroundTransparency = 1
-            lockBadge.Position = UDim2.new(1, -3, 0, 0)
-            lockBadge.Size = UDim2.fromOffset(14, 14)
-            lockBadge.Font = Enum.Font.GothamBold
-            lockBadge.TextSize = 12
-            lockBadge.TextColor3 = Color3.fromRGB(120, 235, 140) -- green = "running"
-            lockBadge.TextStrokeTransparency = 0.3
-            lockBadge.Text = "⟳"
-            lockBadge.Visible = false
-            lockBadge.Parent = b
+            -- Auto-cast lock: a pulsing ring around the disc. The old 14px ⟳
+            -- sat in the corner and vanished on purple power art.
+            b.ClipsDescendants = false
+            local lockLook = HOTBAR_CONFIG.auto_cast or {}
+            local lockRgb = lockLook.color or { 90, 255, 150 }
+            local lockGlow = lockLook.glow or { 200, 255, 220 }
+            local lockScale = tonumber(lockLook.scale) or 1.14
+            local lockRing = Instance.new("Frame")
+            lockRing.Name = "AutoLock"
+            lockRing.AnchorPoint = Vector2.new(0.5, 0.5)
+            lockRing.Position = UDim2.fromScale(0.5, 0.5)
+            lockRing.Size = UDim2.fromScale(lockScale, lockScale)
+            lockRing.BackgroundTransparency = 1
+            lockRing.ZIndex = 6
+            lockRing.Visible = false
+            lockRing.Parent = b
+            local lockCorner = Instance.new("UICorner")
+            lockCorner.CornerRadius = UDim.new(1, 0)
+            lockCorner.Parent = lockRing
+            local lockStroke = Instance.new("UIStroke")
+            lockStroke.Name = "AutoLockStroke"
+            lockStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            lockStroke.Color = Color3.fromRGB(lockRgb[1], lockRgb[2], lockRgb[3])
+            lockStroke.Thickness = tonumber(lockLook.thickness) or 3.5
+            lockStroke.Transparency = 0.15
+            lockStroke.Parent = lockRing
+            local lockHalo = Instance.new("Frame")
+            lockHalo.Name = "AutoLockHalo"
+            lockHalo.AnchorPoint = Vector2.new(0.5, 0.5)
+            lockHalo.Position = UDim2.fromScale(0.5, 0.5)
+            lockHalo.Size = UDim2.fromScale(1.08, 1.08)
+            lockHalo.BackgroundTransparency = 1
+            lockHalo.ZIndex = 5
+            lockHalo.Parent = lockRing
+            local haloCorner = Instance.new("UICorner")
+            haloCorner.CornerRadius = UDim.new(1, 0)
+            haloCorner.Parent = lockHalo
+            local lockHaloStroke = Instance.new("UIStroke")
+            lockHaloStroke.Name = "AutoLockHaloStroke"
+            lockHaloStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            lockHaloStroke.Color = Color3.fromRGB(lockGlow[1], lockGlow[2], lockGlow[3])
+            lockHaloStroke.Thickness = (tonumber(lockLook.thickness) or 3.5) + 3
+            lockHaloStroke.Transparency = 0.55
+            lockHaloStroke.Parent = lockHalo
 
             local lbl = Instance.new("TextLabel")
             lbl.Name = "Bind"
@@ -836,7 +996,9 @@ function HotbarBar.start()
                 bindObj = nil,
                 icon = iconImg,
                 ring = ringImg,
-                lock = lockBadge, -- the auto-cast "⟳" badge; toggleAutoLock toggles its .Visible
+                lock = lockRing, -- auto-cast glow ring; paintAutoLock toggles .Visible
+                lockStroke = lockStroke,
+                lockHalo = lockHaloStroke,
                 selection = selection,
             }
         end
@@ -886,9 +1048,7 @@ function HotbarBar.start()
                     locked[slot] = nil
                     lastAuto[slot] = nil
                 end
-                if card.lock then
-                    card.lock.Visible = locked[slot] == true
-                end
+                paintAutoLock(card, locked[slot] == true)
                 if bind and bind.type == "token" then
                     local token = tokenById[bind.target] or ITEM_BY_ID[bind.target] or {}
                     local authored = ITEM_BY_ID[bind.target] or {}
@@ -944,7 +1104,8 @@ function HotbarBar.start()
                         card.ring.Image = POWER_ICONS.rings[badge.ring] or POWER_ICONS.rings.aura
                         card.ring.ImageColor3 = POWER_ICONS.elementColor3(badge.element, "dark")
                         local off = POWER_ICONS.ringCentering(badge.ring)
-                        card.ring.Position = UDim2.new(0.5 + (off.x or 0), 0, 0.5 + (off.y or 0), 0)
+                        card.ringRest = { x = 0.5 + (off.x or 0), y = 0.5 + (off.y or 0) }
+                        card.ring.Position = UDim2.new(card.ringRest.x, 0, card.ringRest.y, 0)
                         card.ring.Size = UDim2.fromScale(off.scale or 1, off.scale or 1)
                         card.ring.Visible = true
                         card.potGlyph.Visible = false
@@ -968,6 +1129,7 @@ function HotbarBar.start()
                     card.potGlyph.Visible = false
                     card.potCount.Visible = false
                 end
+                hideOvercharge(card)
                 -- Power slots render the universal badge: element disc + tinted directional ring
                 -- (the ring's SHAPE = targeting). Falls back to the old flat icon, then to text.
                 local badge = bind and bind.type == "power" and PetBadge.forPower(bind.target)
@@ -1102,6 +1264,7 @@ function HotbarBar.start()
                     else
                         card.cool(1)
                     end
+                    applyOvercharge(card, charge, nowC)
                     local owned = 0
                     if card.potCount then -- keep the count live as you drink / as pushes land
                         local p = potionByPotion[b.target]
@@ -1115,6 +1278,9 @@ function HotbarBar.start()
                     ready = threshold ~= nil and charge < threshold and owned > 0
                 else
                     card.cool(1) -- ready / not a power -> hide the clock
+                    if card.brewHalo then
+                        hideOvercharge(card)
+                    end
                 end
                 -- AUTO-CAST: a locked, bound slot re-fires the instant it's off cooldown. The 0.5s
                 -- guard bridges the gap between firing and the server's Power_Cooldown push (so we
@@ -1123,6 +1289,19 @@ function HotbarBar.start()
                     if nowC - (lastAuto[slot] or 0) > 0.5 then
                         lastAuto[slot] = nowC
                         Signals.Hotbar_Activate:FireServer({ slot = slot })
+                    end
+                end
+                if card.lockRing and card.lockRing.Visible then
+                    local hz = tonumber((HOTBAR_CONFIG.auto_cast or {}).pulse_hz) or 1.6
+                    local pulse = 0.55 + 0.45 * (0.5 + 0.5 * math.sin(nowC * hz * math.pi * 2))
+                    local thick = tonumber((HOTBAR_CONFIG.auto_cast or {}).thickness) or 3.5
+                    if card.lockStroke then
+                        card.lockStroke.Transparency = 0.08 + (1 - pulse) * 0.35
+                        card.lockStroke.Thickness = thick + pulse * 1.4
+                    end
+                    if card.lockHalo then
+                        card.lockHalo.Transparency = 0.4 + (1 - pulse) * 0.35
+                        card.lockHalo.Thickness = thick + 2.5 + pulse * 2
                     end
                 end
             end

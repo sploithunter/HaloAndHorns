@@ -23,6 +23,10 @@ local HoverboardLogic = require(ReplicatedStorage.Shared.Game.HoverboardLogic)
 local HoverboardController = {}
 
 function HoverboardController.Toggle()
+    if HoverboardController._ignoreNextToggle then
+        HoverboardController._ignoreNextToggle = false
+        return
+    end
     if HoverboardController._toggle then
         HoverboardController._toggle()
     end
@@ -885,6 +889,233 @@ function HoverboardController.start()
         return world.Unit
     end
 
+    local speedGui
+    local speedBound = false
+    local speedPushAt = 0
+    local pendingScale
+    local speedDragConn
+
+    local function callBus(name, args)
+        local remote = ReplicatedStorage:FindFirstChild("GameAPICommand")
+        if not remote then
+            return nil
+        end
+        local ok, envelope = pcall(function()
+            return remote:InvokeServer(name, args or {})
+        end)
+        if ok and type(envelope) == "table" then
+            return envelope.result
+        end
+        return nil
+    end
+
+    local function hideSpeedSlider()
+        if speedDragConn then
+            speedDragConn:Disconnect()
+            speedDragConn = nil
+        end
+        if speedGui then
+            speedGui:Destroy()
+            speedGui = nil
+        end
+    end
+
+    local function pushSpeedScale(scale)
+        pendingScale = scale
+        player:SetAttribute("HoverboardSpeedScale", scale)
+        if player:GetAttribute("HoverboardMounted") == true then
+            local liveConfig = loadConfig()
+            local cruise = HoverboardLogic.skinCruiseSpeed(
+                selectedSkin(liveConfig, player),
+                liveConfig.cruise_speed
+            )
+            local preview = HoverboardLogic.mountedSpeed(16, 1, cruise, scale)
+            player:SetAttribute("HoverboardWalkSpeed", preview)
+        end
+        local now = os.clock()
+        if now - speedPushAt < 0.08 then
+            return
+        end
+        speedPushAt = now
+        task.spawn(function()
+            callBus("hoverboard.speed", { scale = pendingScale })
+        end)
+    end
+
+    local function showSpeedSlider()
+        if player:GetAttribute("HoverboardEligible") ~= true or not button then
+            return
+        end
+        hideSpeedSlider()
+        local knobs = loadConfig().speed or {}
+        local lo = tonumber(knobs.min_scale) or 0.2
+        local hi = tonumber(knobs.max_scale) or 1
+        local scale =
+            HoverboardLogic.clampSpeedScale(player:GetAttribute("HoverboardSpeedScale"), knobs)
+        local pg = player:FindFirstChild("PlayerGui")
+        if not pg then
+            return
+        end
+        local gui = Instance.new("ScreenGui")
+        gui.Name = "HoverboardSpeedSlider"
+        gui.ResetOnSpawn = false
+        gui.IgnoreGuiInset = true
+        gui.DisplayOrder = 80
+        gui.Parent = pg
+        speedGui = gui
+        local scrim = Instance.new("TextButton")
+        scrim.Name = "Scrim"
+        scrim.Text = ""
+        scrim.AutoButtonColor = false
+        scrim.BackgroundTransparency = 1
+        scrim.Size = UDim2.fromScale(1, 1)
+        scrim.ZIndex = 1
+        scrim.Parent = gui
+        scrim.Activated:Connect(function()
+            if pendingScale then
+                callBus("hoverboard.speed", { scale = pendingScale })
+            end
+            hideSpeedSlider()
+        end)
+        local panel = Instance.new("Frame")
+        panel.Name = "Panel"
+        panel.AnchorPoint = Vector2.new(0.5, 1)
+        panel.Size = UDim2.fromOffset(220, 72)
+        panel.BackgroundColor3 = Color3.fromRGB(22, 24, 32)
+        panel.BackgroundTransparency = 0.08
+        panel.ZIndex = 2
+        panel.Parent = gui
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 10)
+        corner.Parent = panel
+        local stroke = Instance.new("UIStroke")
+        stroke.Color = Color3.fromRGB(255, 210, 90)
+        stroke.Thickness = 1.5
+        stroke.Transparency = 0.35
+        stroke.Parent = panel
+        local title = Instance.new("TextLabel")
+        title.BackgroundTransparency = 1
+        title.Position = UDim2.fromOffset(12, 6)
+        title.Size = UDim2.new(1, -24, 0, 22)
+        title.Font = Enum.Font.GothamBold
+        title.TextSize = 14
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.TextColor3 = Color3.fromRGB(255, 236, 190)
+        title.ZIndex = 3
+        title.Parent = panel
+        local function paintTitle()
+            title.Text = string.format("Board speed  %d%%", math.floor(scale * 100 + 0.5))
+        end
+        paintTitle()
+        local track = Instance.new("TextButton")
+        track.Name = "Track"
+        track.Text = ""
+        track.AutoButtonColor = false
+        track.AnchorPoint = Vector2.new(0, 0.5)
+        track.Position = UDim2.new(0, 14, 1, -22)
+        track.Size = UDim2.new(1, -28, 0, 10)
+        track.BackgroundColor3 = Color3.fromRGB(50, 54, 68)
+        track.ZIndex = 3
+        track.Parent = panel
+        local trackCorner = Instance.new("UICorner")
+        trackCorner.CornerRadius = UDim.new(1, 0)
+        trackCorner.Parent = track
+        local fill = Instance.new("Frame")
+        fill.Name = "Fill"
+        fill.BackgroundColor3 = Color3.fromRGB(255, 190, 70)
+        fill.BorderSizePixel = 0
+        fill.Size = UDim2.new((scale - lo) / math.max(1e-4, hi - lo), 0, 1, 0)
+        fill.ZIndex = 4
+        fill.Parent = track
+        local fillCorner = Instance.new("UICorner")
+        fillCorner.CornerRadius = UDim.new(1, 0)
+        fillCorner.Parent = fill
+        local function setFromX(x)
+            local width = math.max(1, track.AbsoluteSize.X)
+            local alpha = math.clamp((x - track.AbsolutePosition.X) / width, 0, 1)
+            scale = lo + (hi - lo) * alpha
+            scale = math.floor(scale * 100 + 0.5) / 100
+            fill.Size = UDim2.new((scale - lo) / math.max(1e-4, hi - lo), 0, 1, 0)
+            paintTitle()
+            pushSpeedScale(scale)
+        end
+        local dragging = false
+        track.InputBegan:Connect(function(input)
+            if
+                input.UserInputType == Enum.UserInputType.MouseButton1
+                or input.UserInputType == Enum.UserInputType.Touch
+            then
+                dragging = true
+                setFromX(input.Position.X)
+            end
+        end)
+        track.InputEnded:Connect(function(input)
+            if
+                input.UserInputType == Enum.UserInputType.MouseButton1
+                or input.UserInputType == Enum.UserInputType.Touch
+            then
+                dragging = false
+                if pendingScale then
+                    callBus("hoverboard.speed", { scale = pendingScale })
+                end
+            end
+        end)
+        if speedDragConn then
+            speedDragConn:Disconnect()
+        end
+        speedDragConn = UserInputService.InputChanged:Connect(function(input)
+            if not dragging or not speedGui then
+                return
+            end
+            if
+                input.UserInputType == Enum.UserInputType.MouseMovement
+                or input.UserInputType == Enum.UserInputType.Touch
+            then
+                setFromX(input.Position.X)
+            end
+        end)
+        local function placePanel()
+            local ap = button.AbsolutePosition
+            local as = button.AbsoluteSize
+            panel.Position = UDim2.fromOffset(ap.X + as.X * 0.5, ap.Y - 10)
+        end
+        placePanel()
+        button:GetPropertyChangedSignal("AbsolutePosition"):Connect(placePanel)
+    end
+
+    local function bindSpeedSlider(host)
+        if speedBound or not host then
+            return
+        end
+        speedBound = true
+        host.MouseButton2Click:Connect(function()
+            showSpeedSlider()
+        end)
+        local pressToken = 0
+        local holdSeconds = tonumber((loadConfig().speed or {}).long_press) or 0.45
+        host.InputBegan:Connect(function(input)
+            if
+                input.UserInputType ~= Enum.UserInputType.Touch
+                and input.UserInputType ~= Enum.UserInputType.MouseButton1
+            then
+                return
+            end
+            pressToken += 1
+            local mine = pressToken
+            task.delay(holdSeconds, function()
+                if pressToken == mine then
+                    HoverboardController._ignoreNextToggle = true
+                    showSpeedSlider()
+                end
+            end)
+        end)
+        local function cancelPress()
+            pressToken += 1
+        end
+        host.InputEnded:Connect(cancelPress)
+        host.MouseLeave:Connect(cancelPress)
+    end
+
     local function paintButton()
         if not button then
             return
@@ -910,6 +1141,7 @@ function HoverboardController.start()
         if not button then
             return
         end
+        bindSpeedSlider(button)
         paintButton()
     end
 
@@ -1292,7 +1524,11 @@ function HoverboardController.start()
             liveConfig.cruise_speed
         )
         local attrSpeed = tonumber(player:GetAttribute("HoverboardWalkSpeed"))
-        local speed = math.max(attrSpeed or 0, skinCruise)
+        local scale = HoverboardLogic.clampSpeedScale(
+            player:GetAttribute("HoverboardSpeedScale"),
+            liveConfig.speed
+        )
+        local speed = attrSpeed or HoverboardLogic.mountedSpeed(16, 1, skinCruise, scale)
         local dir = cameraMove()
         if dir.Magnitude > 0.05 then
             lastTravel = dir

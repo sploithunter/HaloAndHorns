@@ -146,6 +146,13 @@ function RetentionLogic.newAggregate()
             totalSecondsToSelect = 0,
             byPet = {},
         },
+        -- All-session committed power picks (PowerService:Select → power_selected).
+        -- Share = count / total; not first-session-only because picks continue after L2.
+        powerPicks = {
+            total = 0,
+            byPower = {},
+            byLevel = {},
+        },
         distinctReturners = {
             d1 = 0,
             d2_7 = 0,
@@ -271,6 +278,20 @@ function RetentionLogic.aggregateEvent(counters, seen, name, ctx, seconds, first
             or {}
         increment(counters.promoCodes.byCode, ctx.codeId)
         increment(counters.promoCodes.byCampaign, ctx.campaign)
+    elseif name == "power_selected" and type(ctx.power) == "string" and ctx.power ~= "" then
+        counters.powerPicks = type(counters.powerPicks) == "table" and counters.powerPicks
+            or { total = 0, byPower = {}, byLevel = {} }
+        counters.powerPicks.total = (tonumber(counters.powerPicks.total) or 0) + 1
+        counters.powerPicks.byPower = type(counters.powerPicks.byPower) == "table"
+                and counters.powerPicks.byPower
+            or {}
+        increment(counters.powerPicks.byPower, ctx.power)
+        if tonumber(ctx.level) then
+            counters.powerPicks.byLevel = type(counters.powerPicks.byLevel) == "table"
+                    and counters.powerPicks.byLevel
+                or {}
+            increment(counters.powerPicks.byLevel, math.floor(ctx.level))
+        end
     end
 
     if name == "tutorial_complete" and not seen.tutorialComplete then
@@ -491,6 +512,7 @@ function RetentionLogic.dashboardSummary(counters)
     local newEnded = tonumber(counters.newPlayerSessionsEnded) or 0
     local starterChoice = type(counters.starterChoice) == "table" and counters.starterChoice or {}
     local choices = tonumber(starterChoice.selected) or 0
+    local powerPicks = type(counters.powerPicks) == "table" and counters.powerPicks or {}
     local promoCodes = type(counters.promoCodes) == "table" and counters.promoCodes or {}
     local returners = type(counters.distinctReturners) == "table" and counters.distinctReturners
         or {}
@@ -515,6 +537,7 @@ function RetentionLogic.dashboardSummary(counters)
         starterChoiceSelected = choices,
         starterChoiceConversionRate = ratio(choices, starterChoice.shown),
         averageStarterChoiceSeconds = ratio(starterChoice.totalSecondsToSelect, choices),
+        powerPickTotal = tonumber(powerPicks.total) or 0,
         promoCodeAttributed = tonumber(promoCodes.attributed) or 0,
         promoCodesRedeemed = tonumber(promoCodes.redeemed) or 0,
         distinctD1Returners = tonumber(returners.d1) or 0,
@@ -523,6 +546,38 @@ function RetentionLogic.dashboardSummary(counters)
         distinctD2To7RetentionRate = ratio(returners.d2_7, newPlayers),
         distinctD8To30Returners = tonumber(returners.d8_30) or 0,
         distinctD8To30RetentionRate = ratio(returners.d8_30, newPlayers),
+    }
+end
+
+function RetentionLogic.powerPickShares(counters)
+    local picks = type(counters) == "table" and counters.powerPicks or nil
+    picks = type(picks) == "table" and picks or {}
+    local byPower = type(picks.byPower) == "table" and picks.byPower or {}
+    local total = tonumber(picks.total)
+    if not total or total <= 0 then
+        total = 0
+        for _, count in pairs(byPower) do
+            total += tonumber(count) or 0
+        end
+    end
+    local rows = {}
+    for power, count in pairs(byPower) do
+        count = tonumber(count) or 0
+        table.insert(rows, {
+            power = tostring(power),
+            count = count,
+            share = ratio(count, total),
+        })
+    end
+    table.sort(rows, function(a, b)
+        if a.count ~= b.count then
+            return a.count > b.count
+        end
+        return a.power < b.power
+    end)
+    return {
+        total = total,
+        rows = rows,
     }
 end
 
@@ -553,6 +608,7 @@ function RetentionLogic.ensure(state, eligible, now)
     state.ReturnTracking = type(state.ReturnTracking) == "table" and state.ReturnTracking or {}
     state.AnalyticsFunnelStep = math.max(0, math.floor(tonumber(state.AnalyticsFunnelStep) or 0))
     state.ActivationFunnelStep = math.max(0, math.floor(tonumber(state.ActivationFunnelStep) or 0))
+    state.CombatFunnelStep = math.max(0, math.floor(tonumber(state.CombatFunnelStep) or 0))
     return state
 end
 
@@ -578,6 +634,7 @@ end
 function RetentionLogic.funnelLists(config)
     return {
         { key = "onboarding", steps = ((config or {}).onboarding or {}).steps },
+        { key = "combat_training", steps = ((config or {}).combat_training or {}).steps },
         { key = "activation", steps = ((config or {}).activation or {}).steps },
     }
 end
@@ -643,6 +700,19 @@ function RetentionLogic.pendingActivationSteps(config, state)
     )
 end
 
+-- Cave room-by-room funnel. Lifetime, not first-session-only — same
+-- contiguous-prefix rule as Activation.
+function RetentionLogic.pendingCombatTrainingSteps(config, state)
+    if not state then
+        return {}
+    end
+    return pendingSteps(
+        ((config or {}).combat_training or {}).steps or {},
+        state,
+        state.CombatFunnelStep
+    )
+end
+
 function RetentionLogic.snapshot(config, state)
     state = type(state) == "table" and state or {}
     local milestones = type(state.Milestones) == "table" and state.Milestones or {}
@@ -689,13 +759,28 @@ function RetentionLogic.snapshot(config, state)
             seconds = record and record.seconds or nil,
         }
     end
+    local combatTraining = {}
+    for index, step in ipairs(((config or {}).combat_training or {}).steps or {}) do
+        local record = milestones[step.id]
+        combatTraining[#combatTraining + 1] = {
+            step = index,
+            id = step.id,
+            name = step.name,
+            reached = record ~= nil,
+            at = record and record.at or nil,
+            session = record and record.session or nil,
+            seconds = record and record.seconds or nil,
+        }
+    end
     return {
         eligible = state.Eligible == true,
         instrumentedAt = state.InstrumentedAt,
         analyticsFunnelStep = state.AnalyticsFunnelStep or 0,
         activationFunnelStep = state.ActivationFunnelStep or 0,
+        combatFunnelStep = state.CombatFunnelStep or 0,
         funnel = funnel,
         activation = activation,
+        combatTraining = combatTraining,
         milestones = all,
     }
 end
