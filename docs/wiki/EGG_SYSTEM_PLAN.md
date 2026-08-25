@@ -285,3 +285,18 @@ Later polish:
 - Resolved: Golden and Charged mode have first-pass config/server/client/test paths. Balance values remain template defaults.
 - Resolved: Skip Hatch is specifically an animation-suppression preference for auto-hatching and should not be overridden by special hatch outcomes. Special hatches can still carry reveal metadata and stronger effects when animations are enabled.
 - Should area currencies replace coins/crystals entirely per area, or should core currency stay global with area materials as side currencies?
+
+## 2026-08-24 — Layer 3 origin eggs
+
+- Produced eight distinct Layer 3 eggs: Gloryfire, Halo Frost, Empyrean Grove, and Oasis for
+  Heaven; Ruinfire, Dreadfrost, Dreadthorn, and Dreadglass for Hell. Each has a white source, a
+  palette-safe chroma edit, and a script-keyed transparent card. No generative alpha removal was
+  used.
+- Produced one reusable Heaven 3 stand and one reusable Hell 3 stand. Four area-named copies of the
+  appropriate realm stand are sufficient because `EggStandPlacement` resolves by realm, depth, and
+  area name.
+- The proposed Layer 3 egg price is 1,300 origin coins, continuing 500 → 900 progression while
+  accounting for the configured reward multiplier increase from 16 to 22. Standard weights remain
+  50 / 26 / 6 / 1.5 / 0.26; each realm's Desert Secret replaces the last weight with 0.02.
+- Roblox IDs are intentionally not stubbed. Add `heaven_3` / `hell_3` realm-area mappings and live
+  egg definitions only after the selected models, textures, and cards are published.

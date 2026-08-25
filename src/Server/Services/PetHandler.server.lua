@@ -46,6 +46,10 @@ local petRolesConfig = nil
 pcall(function()
     petRolesConfig = require(ReplicatedStorage.Configs.pet_roles)
 end)
+local combatConfig = nil
+pcall(function()
+    combatConfig = require(ReplicatedStorage.Configs.combat)
+end)
 
 -- Prevent concurrent loadEquipped runs per-player (which can destroy freshly spawned models)
 local activeLoads: { [Player]: boolean } = {}
@@ -1475,6 +1479,44 @@ function loadEquipped(Player)
                                             }
                                         )
                                     )
+                                    -- A species that already has area geometry before becoming Huge
+                                    -- graduates to AoE-contagion. Stamp the resolved burn on the live
+                                    -- clone so PetFollowService and the squad badge consume the same
+                                    -- attributes. Single-target species still receive only the normal
+                                    -- Huge targeted splash above.
+                                    local hugeDot = PetTargeting.hugeAttackDot(
+                                        rawEntry,
+                                        roleId,
+                                        petRolesConfig,
+                                        combatConfig and combatConfig.huge_aoe_contagion
+                                    )
+                                    if hugeDot then
+                                        PetModel:SetAttribute(
+                                            "DotFraction",
+                                            tonumber(hugeDot.fraction) or 0
+                                        )
+                                        PetModel:SetAttribute(
+                                            "DotTick",
+                                            tonumber(hugeDot.tick) or 1
+                                        )
+                                        PetModel:SetAttribute(
+                                            "DotDuration",
+                                            tonumber(hugeDot.duration) or 0
+                                        )
+                                        local spread = hugeDot.spread or {}
+                                        PetModel:SetAttribute(
+                                            "DotSpreadRadius",
+                                            tonumber(spread.radius) or 0
+                                        )
+                                        PetModel:SetAttribute(
+                                            "DotSpreadInterval",
+                                            tonumber(spread.interval) or 0
+                                        )
+                                        PetModel:SetAttribute(
+                                            "DotSpreadMax",
+                                            math.floor(tonumber(spread.max) or 0)
+                                        )
+                                    end
                                 end
                                 if
                                     (tonumber(Player:GetAttribute("TitanTeamDamageBuff")) or 0) > 0

@@ -181,6 +181,12 @@ end)
 if not petsCfgOk then
     PETS_CONFIG = nil
 end
+local combatCfgOk, COMBAT_CONFIG = pcall(function()
+    return require(ReplicatedStorage.Configs:WaitForChild("combat"))
+end)
+if not combatCfgOk then
+    COMBAT_CONFIG = nil
+end
 local giftsCfgOk, GIFTS_CONFIG = pcall(function()
     return require(ReplicatedStorage.Configs:WaitForChild("gifts"))
 end)
@@ -6203,7 +6209,15 @@ function InventoryPanel:_createItemFrameInto(item, layoutOrder, parentContainer)
                     holder:Destroy() -- no disc art for this (element, role) -> fall back to text chip
                 elseif
                     PetTargeting.isContagious(
-                        petDef and petDef.attack_dot,
+                        (
+                            item.huge == true
+                            and PetTargeting.hugeAttackDot(
+                                petDef,
+                                role.id,
+                                PET_ROLES,
+                                COMBAT_CONFIG and COMBAT_CONFIG.huge_aoe_contagion
+                            )
+                        ) or (petDef and petDef.attack_dot),
                         petDef and petDef.attack_targeting
                     )
                 then
