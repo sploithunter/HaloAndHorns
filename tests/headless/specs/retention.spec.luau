@@ -16,35 +16,57 @@ return function()
             expect(#retention.onboarding.steps <= 100).to.equal(true)
         end)
 
-        it("covers every tutorial step in tutorial order", function()
+        it("covers every homeworld tutorial step in tutorial order", function()
             local byStepId = {}
+            local combatStartedIndex = nil
             for index, step in ipairs(retention.onboarding.steps) do
                 if step.event == "tutorial_step_completed" and step.match then
                     byStepId[step.match.stepId] = index
                 end
+                if step.id == "combat_started" then
+                    combatStartedIndex = index
+                end
             end
             local lastHome = 0
             for _, step in ipairs(tutorial.steps) do
-                if step.id ~= "first_fight" then
+                if step.id ~= "first_fight" and step.id ~= "rally_call" then
                     expect(byStepId[step.id]).to.be.ok()
                     expect(byStepId[step.id] > lastHome).to.equal(true)
                     lastHome = byStepId[step.id]
                 end
             end
-            expect(byStepId.slot_power < byStepId.combat_ready).to.equal(true)
-            local lastCombat = byStepId.slot_power
+            expect(combatStartedIndex).to.be.ok()
+            expect(combatStartedIndex > lastHome).to.equal(true)
+            expect(byStepId.first_fight > combatStartedIndex).to.equal(true)
+            expect(byStepId.rally_call > byStepId.first_fight).to.equal(true)
+            expect(byStepId.combat_ready).to.equal(nil)
+        end)
+
+        it("measures room-by-room cave drop-off on Combat Training", function()
+            local seen = {}
+            local byStepId = {}
+            expect(retention.combat_training.enabled).to.equal(true)
+            expect(retention.combat_training.name).to.equal("Combat Training")
+            expect(retention.combat_training.steps[1].id).to.equal("combat_started")
+            for index, step in ipairs(retention.combat_training.steps) do
+                expect(type(step.id)).to.equal("string")
+                expect(seen[step.id]).to.equal(nil)
+                seen[step.id] = index
+                if step.event == "tutorial_step_completed" and step.match then
+                    byStepId[step.match.stepId] = index
+                end
+            end
+            local lastCombat = 1
             for _, step in ipairs(combatTutorial.steps) do
                 local stepId = "combat_" .. step.id
                 expect(byStepId[stepId]).to.be.ok()
                 expect(byStepId[stepId] > lastCombat).to.equal(true)
                 lastCombat = byStepId[stepId]
             end
-            expect(byStepId.first_fight > lastCombat).to.equal(true)
-            expect(byStepId.rally_call > byStepId.first_fight).to.equal(true)
         end)
 
         it("ends onboarding at Rally and measures optional goals on Activation", function()
-            expect(retention.version).to.equal(7)
+            expect(retention.version).to.equal(8)
             local last = retention.onboarding.steps[#retention.onboarding.steps]
             expect(last.id).to.equal("tutorial_rally_call")
             local seen = {}

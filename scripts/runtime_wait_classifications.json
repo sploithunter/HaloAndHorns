@@ -30,8 +30,14 @@
   "src/Client/Systems/CombatAuraController.lua": {
    "cooldown": 5
   },
+  "src/Client/Systems/CombatRankController.lua": {
+   "animation": 1
+  },
   "src/Client/Systems/CurrencyStyle.lua": {
    "retry_backoff": 1
+  },
+  "src/Client/Systems/EnemyMotion.lua": {
+   "animation": 4
   },
   "src/Client/Systems/EventLiveLabel.lua": {
    "periodic": 1
@@ -46,6 +52,7 @@
    "periodic": 3
   },
   "src/Client/Systems/HoverboardController.lua": {
+   "debounce": 1,
    "frame_budget": 1
   },
   "src/Client/Systems/LevelUpController.lua": {
@@ -162,7 +169,7 @@
    "periodic": 2
   },
   "src/Server/Services/CombatTutorialService.lua": {
-   "animation": 1,
+   "animation": 2,
    "periodic": 4,
    "retry_backoff": 4
   },

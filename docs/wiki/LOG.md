@@ -1,5 +1,11 @@
 # Log
 
+## 2026-08-25 — Combat-training funnel v8
+
+- Onboarding stays the Homeworld spine through Rally. The 32 cave beats
+  are the named Combat Training funnel so Creator Hub conversion is of
+  people who entered the cave.
+
 ## 2026-08-25 — Continue later on the frost door
 
 - Lobby leave is E on the sealed frost door (**Continue later**), not

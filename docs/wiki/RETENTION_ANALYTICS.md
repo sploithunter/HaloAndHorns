@@ -8,13 +8,16 @@ to publish semantic events through `FireGameEvent`; the retention service maps t
 
 ## What is measured
 
-The native Roblox onboarding funnel starts at join, contains every Homeworld
-and combat-training tutorial completion, and **ends at Rally**. First quest
-(`fs_boost`), First Steps (`fs_cave`), and the first paid area unlock are
-optional, so they live on a separate named **Activation** funnel
-(`LogFunnelStepEvent`) that also starts at join. Out-of-order achievements
-are persisted immediately but submitted only when the contiguous prefix
-exists, because Roblox treats skipped funnel steps as completed.
+The native Roblox onboarding funnel starts at join, follows the Homeworld
+spine through Resonance, cave enter, cave finish, and **ends at Rally**.
+Room-by-room cave drop-off lives on a separate named **Combat Training**
+funnel so Creator Hub conversion is of people who entered the cave, not of
+every joiner. First quest (`fs_boost`), First Steps (`fs_cave`), and the
+first paid area unlock are optional, so they live on a separate named
+**Activation** funnel (`LogFunnelStepEvent`) that also starts at join.
+Out-of-order achievements are persisted immediately but submitted only when
+the contiguous prefix exists, because Roblox treats skipped funnel steps as
+completed.
 
 Creator Hub snapshots from 2026-08-24 (7-day / 28-day / 1-day) are archived
 at [raw/retention/2026-08-24_creator_hub_funnels.md](raw/retention/2026-08-24_creator_hub_funnels.md).
@@ -52,13 +55,18 @@ Tutorial definition v5 (2026-08-24) is the Resonance-before-combat restore after
 v4 Hall rollback. Funnel step **order** matches that path; live milestone **IDs** stay
 stable (`tutorial_completed` still means enhance Resonance / `slot_power`).
 
-Retention config v7 (2026-08-24) keeps the 32 combat-training beats between
-`tutorial_completed` and `tutorial_first_fight`, then ends onboarding at
+Retention config v7 (2026-08-24) kept the 32 combat-training beats between
+`tutorial_completed` and `tutorial_first_fight`, then ended onboarding at
 Rally. Combat events use prefixed step ids (`combat_ready`, …) so they
 cannot collide with Homeworld `first_fight`. Compare cohorts by
 `placeVersion`; do not read old step 9 as the new combat lobby. The
 published Creator Hub chart on 2026-08-24 is still the 14-step list
 without those combat beats.
+
+Retention config v8 (2026-08-25) moves those 32 beats onto the named
+Combat Training funnel. Onboarding is again join → Resonance → enter cave
+→ finish cave → Rally. Compare v7 vs v8 cohorts by `placeVersion`; do not
+read onboarding step 9 as a combat lobby beat.
 
 Tutorial definition v2 is the 2026-08-10 FTUE reorder boundary. It replaces the redundant
 `tutorial_equip_pet` milestone with `tutorial_build_squad`; the canonical opening is now first egg,
