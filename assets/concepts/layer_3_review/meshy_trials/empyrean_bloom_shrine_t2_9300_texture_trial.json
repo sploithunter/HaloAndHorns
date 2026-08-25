@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "asset": "empyrean_bloom_shrine",
+  "concept_image": "assets/concepts/layer_3_review/heaven/building_empyrean_bloom_shrine.png",
+  "concept_sha256": "95498c6647210edffaf583020b70e33f95d7a5f467e5dd332e4c332e66c200de",
+  "meshy": {
+    "task_id": "01a03484-1946-7ecd-b324-ad2066250a51",
+    "input_model_sha256": "313c4003ace27f70fac73c977d7dab6acbf849ed197e3d827a9b9484b91d43c7",
+    "status": "SUCCEEDED",
+    "consumed_credits": 10,
+    "task_type": "retexture",
+    "ai_model": "latest",
+    "texture_resolution": "2k",
+    "enable_original_uv": false,
+    "enable_pbr": false,
+    "output_triangles": 9980
+  },
+  "integrity": {
+    "passed": true,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_three_or_more_faces": 0,
+    "zero_length_edges": 0,
+    "zero_area_faces": 0,
+    "face_components": 1
+  },
+  "local_source": {
+    "glb": "assets/source/props/layer_3/heaven/empyrean_bloom_shrine/meshy_t2_9300_repaired_texture_attempt_1/model.glb",
+    "glb_sha256": "7264addd5022ceda2c9cff098d9e23395c1652e226e66954c32764c159186737",
+    "note": "The heavy-art source directory is intentionally gitignored; the textured GLB and full reports remain in the stable Layer 3 worktree."
+  },
+  "review_image": "assets/concepts/layer_3_review/meshy_trials/empyrean_bloom_shrine_t2_9300_texture_review.png",
+  "review_image_sha256": "2703a6b716cad4267546f841136eac58e9af4b99e720f9afd063a502c4477a8c"
+}

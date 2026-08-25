@@ -4690,3 +4690,65 @@ first-session cohort rates.
 - Added the red `plus_down` drain/anti-heal ability mark, enemy HUD status, and overhead badge.
   Golden/Rainbow curse and shred magnitude now scales through the existing variant law; anti-heal
   duration and cadence remain fixed.
+## 2026-08-24 — Layer 3 environment concept review
+
+- Reconciled the Heaven 3 map brief with the no-gold shiny-pet readability rule: The Empyrean
+  Bloom is a living pearl/jade/emerald/cyan-white celestial garden rather than another crystal
+  layer. Kept Hell 3 as The Dreadspire's obsidian/crimson/bruise-violet infernal ruins, avoiding a
+  repeat of the existing blight/rot/decay treatment.
+- Generated 16 independent low-poly building/flora concept images and a numbered review card. The
+  selected originals remain pending visual approval and have not been submitted to Meshy.
+
+## 2026-08-24 — First Layer 3 Smart Topology trial
+
+- Submitted the approved Halo Fern concept to Meshy Smart Topology T2 as an untextured 4,000-face
+  geometry trial. The five-credit task returned 4,098 triangles and retained the intended curled
+  fern silhouette from front, side, and back views.
+- The strict Blender geometry gate found zero boundary edges, wire/3+-face edges, zero-length edges,
+  or zero-area faces. No retry or texture task was started pending visual review.
+- Recorded starting production budgets: repeatable flora <=4,000 triangles, trees starting at
+  4,000, and direct-import buildings at approximately 9,000.
+
+## 2026-08-24 — First Layer 3 texture trial
+
+- Textured the approved Halo Fern geometry through Meshy's Retexture API using the original concept
+  as a 2K image style. The ten-credit task consumed the successful geometry task id rather than
+  sampling a new mesh, retained all 4,098 triangles, and reproduced the emerald/cyan-white design.
+- The textured GLB passed the same strict integrity gate with zero boundary, non-manifold, or
+  degenerate geometry. Total Meshy spend for the finished trial was 15 credits (5 geometry + 10
+  texture), leaving 4,525 credits.
+
+## 2026-08-24 — Empyrean Bloom Shrine building trial
+
+- Ran three untextured Meshy Smart Topology T2 attempts at 9,000, 9,600, and 9,300 targets. All
+  contained large open boundary loops; the 9,600 attempt also exceeded the 10,000-triangle direct
+  import ceiling. Total geometry spend was 15 credits.
+- Selected the visually strongest 9,300-target result and repaired it in Blender. The final
+  9,980-triangle GLB retains the open recessed doorway and four-sided shrine silhouette while
+  passing the strict gate as one connected component with zero boundary, non-manifold, or
+  degenerate geometry.
+- Uploaded the repaired GLB directly to Meshy's Retexture API and applied the concept as a 2K style
+  image. The ten-credit result retained the exact 9,980-triangle topology and passed four-view
+  texture review, leaving 4,500 credits.
+
+## 2026-08-24 — Layer 3 flora and ambient-fauna expansion
+
+- Added sixteen independently generated Meshy-ready concepts: six flora and two ambient fauna for
+  each of Heaven 3 and Hell 3. The non-building concept pool grows from 12 to 28 assets (2.3×).
+- Kept ambient fauna separate from collectible pets and combat units. Heaven receives a butterfly
+  and snail; Hell receives a beetle and hornback lizard.
+- Rejected the first Dreadspire grass draft because it read as a mineral spike cluster, then
+  regenerated it as curved organic ribbon grass. No expansion asset has been sent to Meshy pending
+  review of the numbered assets 17–32 contact card.
+
+## 2026-08-24 — Layer 3 flora and ambient-fauna 3D production
+
+- Produced all twelve approved flora and four ambient-fauna concepts as 2K textured GLBs through
+  the Meshy Smart Topology T2 geometry-first pipeline. All sixteen final exports are below 4,000
+  triangles and pass the strict zero-boundary, zero-non-manifold, and zero-degenerate geometry gate.
+- Selected nine native Meshy meshes, conservatively repaired three, and voxel-closed four thin/open
+  forms before retexturing the exact repaired GLBs. Geometry attempts plus textures cost 365 Meshy
+  credits, leaving 4,135.
+- Ambient fauna remain non-attackable environmental props with no health, targeting, damage, or
+  drops. Their future behavior is lightweight wandering/bobbing and optional simple wing or limb
+  movement, independent of the pet and enemy combat systems.
