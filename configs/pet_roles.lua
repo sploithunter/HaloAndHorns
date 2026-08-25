@@ -192,6 +192,50 @@ return {
         gloom_jackal = "support", -- debuff
         frostdust_camel = "support", -- regen-denial
         dread_couatl = "support", -- apex curse
+        -- ===== Layer 3 (Heaven 3 / Hell 3) =====
+        -- Basic melee lines remain honest single-target pets; the roster's authored support,
+        -- control, tank, and blaster hooks supply the complementary team choices. Exactly one
+        -- dragon per realm: both Desert secrets are support capstones.
+        gloryspark_cherub = "melee",
+        seraph_lion = "tank", -- bruiser
+        radiant_lance_seraph = "ranged",
+        gloryscale_salamander = "support",
+        empyrean_firehawk = "ranged",
+        lumen_seal = "melee",
+        halo_wisp = "control",
+        celestial_moth = "ranged",
+        halo_bear = "tank",
+        empyrean_mammoth = "tank",
+        gloryleaf_lamb = "support",
+        halo_hart = "melee",
+        lightbark_rhino = "tank",
+        bloomlight_sprite = "support",
+        empyrean_grovekeeper = "tank",
+        bloom_ibis = "support",
+        radiant_totem = "support",
+        glory_mongoose = "support",
+        light_tortoise = "support",
+        oasis_dragon = "support",
+        dreadcinder_imp = "melee",
+        ruinmane_lion = "tank", -- bruiser
+        dreadlance_seraph = "ranged",
+        ruinscale_salamander = "support",
+        dreadfire_hawk = "ranged",
+        duskfrost_seal = "melee",
+        dread_wisp = "control",
+        dreadveil_moth = "ranged",
+        dreadguard_bear = "tank",
+        dreadspire_mammoth = "tank",
+        thornleaf_lamb = "support",
+        dread_hart = "melee",
+        ironbark_rhino = "tank",
+        dreadbloom_sprite = "support",
+        dreadthorn_grovekeeper = "tank",
+        ash_ibis = "support",
+        obsidian_totem = "support",
+        dread_mongoose = "support",
+        obsidian_tortoise = "support",
+        dreadglass_dragon = "support",
     },
 
     -- Per-zone BUFFER auras (City-of-Heroes support). Resolved by SupportAura.forPet
@@ -329,6 +373,52 @@ return {
         gloom_jackal = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 }, -- desert debuff
         frostdust_camel = { kind = "curse", mult = 0.85, interval = 2.0, duration = 6 }, -- desert regen-denial (light curse; no enemy regen yet)
         dread_couatl = { kind = "curse", mult = 0.7, interval = 2.0, duration = 6 }, -- desert apex curse (strongest)
+        -- ===== Layer 3 support/control identities =====
+        -- Heaven continues the farming/sustain vocabulary but spreads it across all four origin
+        -- eggs. Hell mirrors those slots with drain and focus-enemy debuffs. The Desert dragons are
+        -- the only dragons in this layer and act as multi-aura Secret capstones.
+        gloryscale_salamander = {
+            kind = "offense",
+            interval = 2.0,
+            mult = 1.1667,
+            duration = 6,
+        },
+        halo_wisp = { kind = "root", interval = 11, duration = 3.25 },
+        gloryleaf_lamb = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 },
+        bloomlight_sprite = { kind = "luck", interval = 2.0, mult = 1.1667, duration = 6 },
+        empyrean_grovekeeper = {
+            kind = "heal",
+            interval = 2.0,
+            fraction = 0.1,
+            duration = 6,
+        },
+        bloom_ibis = { kind = "heal", interval = 2.0, fraction = 0.08, duration = 6 },
+        radiant_totem = { kind = "defense", interval = 2.0, amount = 53.3, duration = 6 },
+        glory_mongoose = { kind = "offense", interval = 2.0, mult = 1.1667, duration = 6 },
+        light_tortoise = { kind = "heal", interval = 2.0, fraction = 0.05, duration = 6 },
+        oasis_dragon = {
+            { kind = "heal", interval = 2.0, fraction = 0.1, duration = 6 },
+            { kind = "defense", interval = 2.0, amount = 53.3, duration = 6 },
+        },
+        ruinscale_salamander = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
+        dread_wisp = { kind = "root", interval = 11, duration = 3.25 },
+        thornleaf_lamb = { kind = "drain", interval = 2.0, fraction = 0.08, duration = 6 },
+        dreadbloom_sprite = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
+        dreadthorn_grovekeeper = {
+            kind = "drain",
+            interval = 2.0,
+            fraction = 0.1,
+            duration = 6,
+        },
+        ash_ibis = { kind = "drain", interval = 2.0, fraction = 0.08, duration = 6 },
+        obsidian_totem = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
+        dread_mongoose = { kind = "curse", mult = 0.8, interval = 2.0, duration = 6 },
+        obsidian_tortoise = { kind = "curse", mult = 0.85, interval = 2.0, duration = 6 },
+        dreadglass_dragon = {
+            { kind = "drain", interval = 2.0, fraction = 0.1, duration = 6 },
+            { kind = "shred", amount = 0.25, interval = 2.0, duration = 6 },
+            { kind = "curse", mult = 0.7, interval = 2.0, duration = 6 },
+        },
         -- Bear: RAGE — an inherent power the pet casts on ITSELF (Jason: per-SPECIES
         -- assignment like the zone buffers, NOT a tank-role trait — "I don't want all
         -- tanks to have rage"). The starter tank gets angry as it soaks: at or below

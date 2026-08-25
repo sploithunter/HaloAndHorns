@@ -4653,3 +4653,19 @@ first-session cohort rates.
   local topology—not the broken original task output—to receive a new Meshy UV layout and texture.
 - Fixed GLB review rendering to preserve embedded materials instead of accidentally applying a
   neighboring preview PNG as the model texture.
+
+## 2026-08-24 — Layer 3 eggs, stands, and complementary pet kits
+
+- Produced four Heaven 3 and four Hell 3 origin eggs through the required white-source →
+  generative chroma-screen → repository-scripted alpha workflow, plus one reusable 3D egg stand per
+  realm. All ten selected GLBs stay below the 10,000-triangle direct-import limit and have front/back
+  review sheets and recoverable Meshy task lineage.
+- Every selected model passed the strict topology gate before texturing. Seven textured GLBs remain
+  strict-pass; Heaven Grass, Hell Ice, and Hell Desert repeatedly regain only microscopic
+  post-texture seam artifacts, recorded precisely rather than misreported as zero-defect.
+- Reserved Layer 3 role and support-aura mappings for all 40 already-produced pets. The gameplay
+  plan keeps ordinary attacks mostly single-target, uses cooldown-based splash for four blasters,
+  and reserves continuous area geometry for apex kits.
+- Extended the structural Huge contract: a single-target species still becomes targeted AoE, while
+  a species that already has area geometry keeps it and gains a configurable contagious burn.
+  Runtime attributes and inventory/squad markers now derive from the same pure resolver.

@@ -1713,3 +1713,18 @@ Last checked: 2026-08-24
   and Rainbow = 25. Fresh point counters and v2 OrderedDataStores prevent legacy raw counts from
   mixing with weighted scores; persisted pre-weight outboxes recover points from the exact pet.
 - A raw total adds one for every gift in `gifts_given`, without exposing an all-gifts board yet.
+
+## Layer 3 eggs and pet-kit configuration
+
+Last checked: 2026-08-24
+
+- Eight Layer 3 origin eggs and two realm stands are production-complete locally, including alpha
+  cards, selected textured GLBs below 10,000 triangles, integrity reports, and contact sheets.
+  Roblox publication and live `configs/pets.lua` egg records remain pending asset IDs; no fake ids
+  are present in runtime config.
+- All 40 Layer 3 pets have reserved role/support mappings. The approved design direction is a mix of
+  ordinary single attacks, four intermittent splash blasters, apex continuous-area kits, live
+  control, and Heaven sustain/farming versus Hell drain/debuff support.
+- Huge pets now differentiate progression: base-single species gain the existing targeted splash;
+  base-area species retain AoE and additionally gain a spreading burn with global defaults and an
+  optional per-pet `huge_attack_dot` override.

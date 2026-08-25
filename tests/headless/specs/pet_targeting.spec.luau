@@ -65,6 +65,49 @@ return function()
             expect(PetTargeting.isArea("aoe")).to.equal(true)
             expect(PetTargeting.isArea("aura")).to.equal(true)
         end)
+
+        it(
+            "gives a base-AoE Huge a contagious burn while a base-single Huge gets no burn",
+            function()
+                local defaults = {
+                    fraction = 0.15,
+                    tick = 1,
+                    duration = 4,
+                    spread = { radius = 8, interval = 1.5, max = 4 },
+                }
+                expect(PetTargeting.hugeAttackDot({}, "ranged", ROLES, defaults)).to.equal(nil)
+
+                local dot = PetTargeting.hugeAttackDot(
+                    { attack_targeting = "targeted_aoe" },
+                    "ranged",
+                    ROLES,
+                    defaults
+                )
+                expect(dot.fraction).to.equal(0.15)
+                expect(dot.duration).to.equal(4)
+                expect(dot.spread.radius).to.equal(8)
+                expect(dot.spread.max).to.equal(4)
+            end
+        )
+
+        it("preserves an area pet's authored burn and lets huge_attack_dot tune it", function()
+            local dot = PetTargeting.hugeAttackDot({
+                attack_targeting = "aura",
+                attack_dot = {
+                    fraction = 0.22,
+                    tick = 0.8,
+                    duration = 5,
+                    spread = { radius = 9, interval = 2, max = 3 },
+                },
+                huge_attack_dot = { fraction = 0.3, spread = { max = 6 } },
+            }, "tank", ROLES, { spread = { radius = 8, interval = 1.5, max = 4 } })
+            expect(dot.fraction).to.equal(0.3)
+            expect(dot.tick).to.equal(0.8)
+            expect(dot.duration).to.equal(5)
+            expect(dot.spread.radius).to.equal(9)
+            expect(dot.spread.interval).to.equal(2)
+            expect(dot.spread.max).to.equal(6)
+        end)
     end)
 
     describe("PetTargeting.auraScope (power targeting -> ability badge ring)", function()

@@ -126,6 +126,12 @@ The helper sends the local GLB as a data URI and allows Meshy to create a fresh 
 the only supported texture path after topology-changing local repair; using the original task id
 would silently texture the unrepaired server copy.
 
+Always rerun the strict integrity check on the downloaded **textured** GLB. Retexture may preserve
+the visible shape while reintroducing a microscopic UV-boundary seam into geometry that passed
+before upload. A second identical retexture can reproduce the same seam deterministically. Keep
+the clean pre-texture report, the final report, and front/back renders together; never describe a
+post-texture result as strict-pass merely because its input passed.
+
 Pet Realm's current starting budgets are:
 
 - repeatable small flora: **4,000 triangles or fewer**;

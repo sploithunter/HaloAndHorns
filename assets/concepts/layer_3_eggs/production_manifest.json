@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "produced_on": "2026-08-24",
+  "pipeline": {
+    "source": "imagegen white-background source",
+    "card_edit": "imagegen recolor-preserving chroma-screen edit",
+    "alpha": "scripts/remove_image_background.py with edge keying and softness 12",
+    "geometry": "Meshy Smart Topology T2",
+    "validation": "scripts/check_model_integrity.py plus front/back rendered inspection",
+    "source_glb_root": "assets/source/eggs/layer_3"
+  },
+  "assets": [
+    {
+      "slug": "heaven3_fire_egg",
+      "display_name": "Gloryfire Egg",
+      "kind": "egg",
+      "realm": "heaven_3",
+      "origin": "lava",
+      "chroma": "magenta",
+      "retexture_task_id": "01a03630-dfca-7eb2-857b-ae89f0115d73",
+      "triangles": 4822,
+      "integrity": { "boundary_edges": 0, "non_manifold_edges": 0, "strict_pass": true }
+    },
+    {
+      "slug": "heaven3_ice_egg",
+      "display_name": "Halo Frost Egg",
+      "kind": "egg",
+      "realm": "heaven_3",
+      "origin": "ice",
+      "chroma": "magenta",
+      "retexture_task_id": "01a03630-dfa9-7eb2-adeb-8336986ccdcd",
+      "triangles": 9954,
+      "integrity": { "boundary_edges": 0, "non_manifold_edges": 0, "strict_pass": true }
+    },
+    {
+      "slug": "heaven3_grass_egg",
+      "display_name": "Empyrean Grove Egg",
+      "kind": "egg",
+      "realm": "heaven_3",
+      "origin": "grass",
+      "chroma": "magenta",
+      "retexture_task_id": "01a03636-0ce2-700b-9b61-6ddc38d09cf0",
+      "triangles": 9954,
+      "integrity": { "boundary_edges": 4, "non_manifold_edges": 0, "strict_pass": false, "note": "microscopic post-texture seam; clean pre-texture geometry and no visible gaping hole" }
+    },
+    {
+      "slug": "heaven3_desert_egg",
+      "display_name": "Oasis Egg",
+      "kind": "egg",
+      "realm": "heaven_3",
+      "origin": "desert",
+      "chroma": "magenta",
+      "retexture_task_id": "01a03630-dfbc-7f04-befb-4e683b7e5294",
+      "triangles": 5536,
+      "integrity": { "boundary_edges": 0, "non_manifold_edges": 0, "strict_pass": true }
+    },
+    {
+      "slug": "hell3_fire_egg",
+      "display_name": "Ruinfire Egg",
+      "kind": "egg",
+      "realm": "hell_3",
+      "origin": "lava",
+      "chroma": "green",
+      "retexture_task_id": "01a03630-dfaa-7eb2-b532-1c70add3daf1",
+      "triangles": 9956,
+      "integrity": { "boundary_edges": 0, "non_manifold_edges": 0, "strict_pass": true }
+    },
+    {
+      "slug": "hell3_ice_egg",
+      "display_name": "Dreadfrost Egg",
+      "kind": "egg",
+      "realm": "hell_3",
+      "origin": "ice",
+      "chroma": "green",
+      "retexture_task_id": "01a03636-0ce5-700b-ab88-748b1db453ac",
+      "triangles": 9948,
+      "integrity": { "boundary_edges": 4, "non_manifold_edges": 0, "strict_pass": false, "note": "microscopic post-texture seam; clean pre-texture geometry and no visible gaping hole" }
+    },
+    {
+      "slug": "hell3_grass_egg",
+      "display_name": "Dreadthorn Egg",
+      "kind": "egg",
+      "realm": "hell_3",
+      "origin": "grass",
+      "chroma": "green",
+      "retexture_task_id": "01a03630-dfaa-786e-8b96-4b6e1eff9422",
+      "triangles": 9938,
+      "integrity": { "boundary_edges": 0, "non_manifold_edges": 0, "strict_pass": true }
+    },
+    {
+      "slug": "hell3_desert_egg",
+      "display_name": "Dreadglass Egg",
+      "kind": "egg",
+      "realm": "hell_3",
+      "origin": "desert",
+      "chroma": "green",
+      "retexture_task_id": "01a03636-0ce2-7fcf-bd1e-882ff5c13287",
+      "triangles": 9956,
+      "integrity": { "boundary_edges": 0, "non_manifold_edges": 1, "strict_pass": false, "note": "microscopic post-texture topology artifact; clean pre-texture geometry and no visible gaping hole" }
+    },
+    {
+      "slug": "heaven3_egg_stand",
+      "display_name": "Heaven 3 Egg Stand",
+      "kind": "stand",
+      "realm": "heaven_3",
+      "retexture_task_id": "01a03630-dfca-786e-bcee-38b9d0113052",
+      "triangles": 9958,
+      "integrity": { "boundary_edges": 0, "non_manifold_edges": 0, "strict_pass": true }
+    },
+    {
+      "slug": "hell3_egg_stand",
+      "display_name": "Hell 3 Egg Stand",
+      "kind": "stand",
+      "realm": "hell_3",
+      "retexture_task_id": "01a03630-dfbe-7494-a0d5-c3a2429c018d",
+      "triangles": 9958,
+      "integrity": { "boundary_edges": 0, "non_manifold_edges": 0, "strict_pass": true }
+    }
+  ]
+}

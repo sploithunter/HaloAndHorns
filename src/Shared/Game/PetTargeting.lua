@@ -23,6 +23,7 @@
       PetTargeting.attackScope(explicit, roleId, rolesConfig) -> scope
       PetTargeting.mechanicalAttackScope(petDef, roleId, rolesConfig, options) -> scope
       PetTargeting.displayAttackScope(petDef, roleId, rolesConfig, options) -> scope
+      PetTargeting.hugeAttackDot(petDef, roleId, rolesConfig, defaults) -> dot?
       PetTargeting.auraScope(aura, rolesConfig)               -> scope
       PetTargeting.isContagious(attackDot, explicitTargeting) -> boolean
 ]]
@@ -85,6 +86,52 @@ function PetTargeting.mechanicalAttackScope(petDef, roleId, rolesConfig, options
     end
 
     return scope
+end
+
+-- A Huge whose BASE species already attacks an area keeps that geometry and graduates to
+-- AoE-contagion. The ordinary Huge rule already gives a single-target species a targeted splash;
+-- this second benefit is intentionally reserved for pets that earned area geometry before becoming
+-- Huge. An authored huge_attack_dot may tune the Huge burn, while omitted values inherit first from
+-- the base attack_dot and then from the global combat default. Returns a fresh table (never mutates
+-- config) or nil when the base species is not area-targeting.
+function PetTargeting.hugeAttackDot(petDef, roleId, rolesConfig, defaults)
+    petDef = type(petDef) == "table" and petDef or {}
+    defaults = type(defaults) == "table" and defaults or {}
+
+    local baseScope = PetTargeting.mechanicalAttackScope(petDef, roleId, rolesConfig)
+    if not PetTargeting.isArea(baseScope) then
+        return nil
+    end
+
+    local baseDot = type(petDef.attack_dot) == "table" and petDef.attack_dot or {}
+    local hugeDot = type(petDef.huge_attack_dot) == "table" and petDef.huge_attack_dot or {}
+    local baseSpread = type(baseDot.spread) == "table" and baseDot.spread or {}
+    local hugeSpread = type(hugeDot.spread) == "table" and hugeDot.spread or {}
+    local defaultSpread = type(defaults.spread) == "table" and defaults.spread or {}
+
+    return {
+        fraction = tonumber(hugeDot.fraction) or tonumber(baseDot.fraction) or tonumber(
+            defaults.fraction
+        ) or 0,
+        tick = tonumber(hugeDot.tick) or tonumber(baseDot.tick) or tonumber(defaults.tick) or 1,
+        duration = tonumber(hugeDot.duration) or tonumber(baseDot.duration) or tonumber(
+            defaults.duration
+        ) or 0,
+        spread = {
+            radius = tonumber(hugeSpread.radius) or tonumber(baseSpread.radius) or tonumber(
+                defaultSpread.radius
+            ) or 0,
+            interval = tonumber(hugeSpread.interval) or tonumber(baseSpread.interval) or tonumber(
+                defaultSpread.interval
+            ) or 0,
+            max = math.floor(
+                tonumber(hugeSpread.max)
+                    or tonumber(baseSpread.max)
+                    or tonumber(defaultSpread.max)
+                    or 0
+            ),
+        },
+    }
 end
 
 -- Player-facing attack capability. A cooldown proc with real area damage receives the targeted-AoE
