@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local AmbientFaunaMotion = require(ReplicatedStorage.Shared.Game.AmbientFaunaMotion)
+local EnvironmentGlow = require(ReplicatedStorage.Shared.Game.EnvironmentGlow)
 local Gait = require(ReplicatedStorage.Shared.Game.Gait)
 
 local TAG = "AmbientFaunaAnchor"
@@ -41,6 +42,8 @@ AmbientFaunaService.__index = AmbientFaunaService
 
 function AmbientFaunaService:Init()
     self._logger = self._modules and self._modules.Logger
+    self._configLoader = self._modules and self._modules.ConfigLoader
+    self._floraConfig = self._configLoader and self._configLoader:LoadConfig("flora") or {}
     self._actors = {} :: { Actor }
     self._elapsed = 0
     self._accumulator = 0
@@ -109,6 +112,11 @@ function AmbientFaunaService:_spawn(anchor: BasePart, faunaFolder: Instance): bo
         bbox, size = model:GetBoundingBox()
         model.WorldPivot = CFrame.new(bbox.Position)
     end
+
+    EnvironmentGlow.apply(
+        model,
+        self._floraConfig.glow_models and self._floraConfig.glow_models[modelName]
+    )
 
     local floor = anchor.Position - Vector3.new(0, 0.2, 0)
     local actor: Actor = {

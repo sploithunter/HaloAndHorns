@@ -529,7 +529,7 @@ loader:RegisterModule(
 loader:RegisterModule(
     "AmbientFaunaService",
     ServerScriptService.Server.Services.AmbientFaunaService,
-    { "Logger" }
+    { "Logger", "ConfigLoader" }
 )
 -- Phase 3 party core (Halo & Horns): active squad, spirit form, stack pool.
 loader:RegisterModule(

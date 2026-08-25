@@ -41,6 +41,88 @@ return {
     -- only touch at their lowest vertex, so burying a slice reads seated.
     sink_fraction = { rock = 0.18 },
 
+    -- Dark Hell 3 textures carry narrow red/purple accent lines. Neon lifts those authored texels
+    -- without washing out the near-black body; selected signature models also get a restrained
+    -- no-shadow PointLight through Shared.Game.EnvironmentGlow. Values are intentionally below
+    -- combat-FX brightness and comparable to the persistent crystal glow.
+    glow_models = {
+        dreadthorn_tree = {
+            neon = true,
+            color = { 255, 45, 20 },
+            brightness = 1.8,
+            range = 24,
+        },
+        dreadspire_thorn_cactus = {
+            neon = true,
+            color = { 255, 55, 20 },
+            brightness = 1,
+            range = 12,
+        },
+        dreadspire_ribbon_grass = {
+            neon = true,
+            color = { 255, 45, 20 },
+            brightness = 0.65,
+            range = 8,
+        },
+        ironroot_crawler = {
+            neon = true,
+            color = { 255, 40, 15 },
+            brightness = 0.65,
+            range = 8,
+        },
+        blood_reed = {
+            neon = true,
+            color = { 255, 35, 20 },
+            brightness = 0.8,
+            range = 9,
+        },
+        ember_thorn_cluster = {
+            neon = true,
+            color = { 255, 65, 20 },
+            brightness = 0.8,
+            range = 9,
+        },
+        crimson_watcher_bloom = {
+            neon = true,
+            color = { 255, 35, 25 },
+            brightness = 1,
+            range = 10,
+        },
+        abyss_orchid = {
+            neon = true,
+            color = { 185, 45, 255 },
+            brightness = 0.75,
+            range = 9,
+        },
+        obsidian_spike_plant = {
+            neon = true,
+            color = { 255, 35, 20 },
+            brightness = 0.8,
+            range = 10,
+        },
+        -- These silhouettes benefit from emissive texture accents but do not need another dynamic
+        -- light in the garden cluster.
+        violet_hook_bloom = { neon = true },
+        gloom_pitcher = { neon = true },
+        razorleaf_fan = { neon = true },
+        violet_bramble = { neon = true },
+
+        -- Moving Hell 3 fauna carry their glow with them. Their ranges remain smaller than their
+        -- authored routes so they read as living sparks rather than roaming area lights.
+        dreadwing_beetle = {
+            neon = true,
+            color = { 255, 45, 20 },
+            brightness = 0.6,
+            range = 7,
+        },
+        obsidian_hornback_lizard = {
+            neon = true,
+            color = { 255, 50, 20 },
+            brightness = 0.7,
+            range = 8,
+        },
+    },
+
     layers = {
         -- Home ("base") is not a realm, so it needs its own row for
         -- realm-agnostic swaps like the baobab purge.

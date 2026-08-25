@@ -163,6 +163,13 @@ An imported fauna mesh that faces backward in local space may set `FacingYawDegr
 the motion service applies that visual-only correction after tangent facing. Pearlback Snails use
 180 degrees. Do not reverse their path or special-case the shared motion math.
 
+Dark textured dressing may opt into `configs/flora.lua` `glow_models`. The shared
+`EnvironmentGlow` treatment changes MeshParts to Neon so colored texture texels lift while black
+texels remain dark, then optionally attaches one no-shadow `PointLight` to the model. Hell 3 uses
+this selectively for red/purple accent flora and its two fauna families. Keep persistent dressing
+lights below combat-FX brightness, use a range smaller than a moving fauna route, and prefer
+Neon-only entries in dense plant clusters instead of giving every prop a dynamic light.
+
 The physical realm portals may temporarily bypass their per-player gate through
 `layers.realm_portals.testing_open_layers`. This switch affects only the named portal geometry and
 client lock presentation; it must not modify `layers.access`, `LayerAccess.canAccess`, World

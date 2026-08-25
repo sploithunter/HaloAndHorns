@@ -1744,6 +1744,14 @@ Last checked: 2026-08-25
   synchronized after respawns and other desync paths. Live Hell 3 recovery restored the character
   from Home to Y -6000 and restored the locked `Hell_3_Grass` area prompt.
 
+## Hell 3 environment glow
+
+Last checked: 2026-08-25
+
+- Selected Hell 3 flora and both ambient-fauna families use emissive textured MeshParts; 28
+  signature instances also carry low-cost, no-shadow red/purple PointLights. Live verification
+  preserved the black silhouettes while making their authored color veins readable in the dark.
+
 ## Layer 3 eggs and pet-kit configuration
 
 Last checked: 2026-08-24

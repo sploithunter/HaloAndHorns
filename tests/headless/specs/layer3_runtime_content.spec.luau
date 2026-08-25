@@ -1,5 +1,6 @@
 local areas = loadModule("configs/areas.lua")
 local breakables = loadModule("configs/breakables.lua")
+local flora = loadModule("configs/flora.lua")
 local pets = loadModule("configs/pets.lua")
 
 local EGGS = {
@@ -74,5 +75,25 @@ describe("Layer 3 runtime content", function()
         expect(pets.pets.dreadthorn_grovekeeper.attack_targeting).to.equal("aura")
         expect(pets.pets.oasis_dragon.attack_targeting).to.equal("targeted_aoe")
         expect(pets.pets.dreadglass_dragon.attack_targeting).to.equal("targeted_aoe")
+    end)
+
+    it("gives selected Hell 3 flora and fauna emissive accents without shadow lights", function()
+        local glow = flora.glow_models
+        for _, modelName in ipairs({
+            "dreadthorn_tree",
+            "dreadspire_thorn_cactus",
+            "blood_reed",
+            "dreadwing_beetle",
+            "obsidian_hornback_lizard",
+        }) do
+            local spec = glow[modelName]
+            expect(spec).to.be.ok()
+            expect(spec.neon).to.equal(true)
+            expect(spec.brightness > 0).to.equal(true)
+            expect(spec.range > 0).to.equal(true)
+            expect(spec.shadows).never.to.be.ok()
+        end
+        expect(glow.violet_hook_bloom.neon).to.equal(true)
+        expect(glow.violet_hook_bloom.brightness).never.to.be.ok()
     end)
 end)

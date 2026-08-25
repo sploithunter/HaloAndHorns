@@ -4822,3 +4822,13 @@ first-session cohort rates.
   `LayerService`, including post-respawn recovery. Live Studio verification forced a Hell 3 player onto Home;
   the service restored Y -6000 and `CurrentArea = Hell_3_Grass`, where Dreadthorn remained locked
   at 1.5M and the Layer 3 egg/stand were present.
+
+## 2026-08-25 — Hell 3 emissive environment accents
+
+- Added a shared, config-driven environment glow treatment that lifts authored colored texture
+  accents with Neon and optionally adds one no-shadow PointLight inside a model.
+- Applied it selectively to Hell 3's Dreadthorn trees, accent plants, thorn cacti, Dreadwing
+  Beetles, and Obsidian Hornback Lizards. The live map contains 28 restrained dynamic dressing
+  lights; dense secondary plants use Neon only.
+- Live Studio verification confirmed the black silhouettes remain dark while red veins glow and
+  cast localized color onto the ground. Moving fauna retain their small attached lights.
