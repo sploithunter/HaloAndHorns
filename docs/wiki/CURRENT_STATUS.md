@@ -166,7 +166,9 @@ the header collapses it. One name badge (owner Colorado C+blaster,
 then developer / content creator / tester / founder ⭐ / VIP). A row
 opens a slide-out (headshot, every role they hold, how the Status
 title is earned, Examine Avatar = live character). The list row still
-shows one name mark. Hover shows Name, Role, Status (source).
+shows one name mark. Leaderboard Status is `Farm #N` (or Slayer /
+Dragonlord / etc.); hover and the card use `Farm #N (#N Crystal LB)`
+instead of a combat crest. Hover shows Name, Role, Status (source).
 Friend/Block stay on that card. Report stays on Esc.
 Lobby leave (2026-08-25): frost door has two SurfaceGuis — the lesson
 plate and Continue later (confirm, then exit). No camera Billboard.
