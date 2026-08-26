@@ -2,10 +2,10 @@
     NpcPrincipalService — spawns and drives NPC PRINCIPALS (docs/CREATOR_SUMMON.md).
 
     A principal is a second player-shaped entity: it owns a pet folder, holds a combat level,
-    and can anchor a TEMPORARY ALLIANCE. That is what makes the Creator summon more than a
-    guardian — nearby low players actually sidekick UP to it, on the shipping AllianceRules
-    path, and its squad fights because PetFollowService now ticks principals rather than
-    Players.
+    and can optionally anchor a TEMPORARY ALLIANCE. That is what makes the Creator summon more
+    than a guardian — nearby low players actually sidekick UP to it, on the shipping
+    AllianceRules path. The same principal lifecycle also supports stationary authored NPCs
+    whose squads must remain anchored to a world object instead of following their owner.
 
     WHAT THIS SERVICE OWNS
       • the character (avatar via HumanoidDescription, or a placeholder rig)
@@ -331,7 +331,10 @@ end
 -- Spawn the squad into workspace.PlayerPets/<name>. That folder IS the interface: both
 -- PetFollowService (movement/combat) and the client SquadHud read its children directly, so
 -- ghost pets need no inventory record to behave — or to render.
-function NpcPrincipalService:_spawnSquad(def, originCf)
+function NpcPrincipalService:_spawnSquad(def, originCf, opts)
+    opts = type(opts) == "table" and opts or {}
+    local folderAttributes = type(opts.folderAttributes) == "table" and opts.folderAttributes or {}
+    local petAttributes = type(opts.petAttributes) == "table" and opts.petAttributes or {}
     local root = Workspace:FindFirstChild("PlayerPets")
     if not root then
         root = Instance.new("Folder")
@@ -354,10 +357,12 @@ function NpcPrincipalService:_spawnSquad(def, originCf)
     end
     folder = Instance.new("Folder")
     folder.Name = def.name
+    for name, value in pairs(folderAttributes) do
+        folder:SetAttribute(name, value)
+    end
     -- Marker the client EnemyMotion renderer looks for: this folder's pets are driven by
     -- MoveTarget, not by an owning player's client (there isn't one).
     folder:SetAttribute("NpcSquad", true)
-    folder.Parent = root
 
     local spawned = 0
     for i, entry in ipairs(def.squad or {}) do
@@ -376,6 +381,9 @@ function NpcPrincipalService:_spawnSquad(def, originCf)
             if entry.role then
                 model:SetAttribute("PetRole", entry.role)
             end
+            for name, value in pairs(petAttributes) do
+                model:SetAttribute(name, value)
+            end
             model:PivotTo(originCf * CFrame.new(i * 4 - 6, 0, 4))
             model.Parent = folder
             spawned += 1
@@ -387,6 +395,9 @@ function NpcPrincipalService:_spawnSquad(def, originCf)
             })
         end
     end
+    -- Publish only after the folder and every pet carry their complete construction metadata.
+    -- Clients therefore never observe a half-built NPC squad or miss an opt-in down policy.
+    folder.Parent = root
     return folder, spawned
 end
 
@@ -475,8 +486,12 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
     if self._config.enabled == false then
         return false, "npc principals disabled"
     end
+    if not (owner and owner.Parent) then
+        return false, "owner unavailable"
+    end
+    local stationary = opts.stationary == true
     local hrp = owner and owner.Character and owner.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then
+    if not stationary and not hrp then
         return false, "owner has no character"
     end
     local sourceDef = opts.definition or self._config[npcId or "creator"]
@@ -500,8 +515,14 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
     self:Despawn(def.name, "replaced") -- re-summon replaces
 
     local off = def.follow_offset or {}
-    local cf = hrp.CFrame
-        * CFrame.new(tonumber(off.x) or -8, tonumber(off.y) or 0, tonumber(off.z) or 6)
+    local cf = opts.spawnCFrame
+    if not stationary then
+        cf = hrp.CFrame
+            * CFrame.new(tonumber(off.x) or -8, tonumber(off.y) or 0, tonumber(off.z) or 6)
+    end
+    if typeof(cf) ~= "CFrame" then
+        return false, "stationary principal needs spawnCFrame"
+    end
     -- Same collision guard as _spawnSquad, checked BEFORE anything is built: a real player
     -- with this name owns the Workspace model name, the pet folder, and every name-based
     -- alliance reference. Refuse rather than fight them for it.
@@ -510,9 +531,18 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
     end
 
     local model = self:_buildCharacter(def, cf)
+    if stationary then
+        -- Anchor only the assembly root. Motor6Ds and the idle animation remain intact, but
+        -- physics and a moving player can never drag this authored world anchor off station.
+        local modelRoot = model:FindFirstChild("HumanoidRootPart")
+        if modelRoot then
+            modelRoot.Anchored = true
+        end
+        model:SetAttribute("NpcStationary", true)
+    end
     model.Parent = Workspace
 
-    local folder, spawned = self:_spawnSquad(def, cf)
+    local folder, spawned = self:_spawnSquad(def, cf, opts)
     if not folder then
         model:Destroy()
         return false, "squad spawn refused"
@@ -538,7 +568,9 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
         model = model,
         folder = folder,
         owner = owner,
-        expireAt = os.clock() + (tonumber(opts.duration) or tonumber(def.duration) or 20),
+        expireAt = stationary and math.huge
+            or (os.clock() + (tonumber(opts.duration) or tonumber(def.duration) or 20)),
+        stationary = stationary,
         allied = {},
         onDespawn = type(opts.onDespawn) == "function" and opts.onDespawn or nil,
     }
@@ -549,7 +581,7 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
     -- renders by NAME from workspace.PlayerPets — so stamping the roster is the whole
     -- integration. Never clobber a REAL party (TeamId set), and leave TeamId nil: every
     -- alliance path requires TeamId == nil, so the sidekick lift keeps working.
-    if owner:GetAttribute("TeamId") == nil then
+    if opts.formTeam ~= false and owner:GetAttribute("TeamId") == nil then
         local csv = owner.Name .. "," .. def.name
         owner:SetAttribute("TeamLead", owner.Name)
         owner:SetAttribute("TeamMembers", csv)
@@ -563,7 +595,9 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
         rec.castAt[i] = os.clock() + (tonumber(entry.first) or (i * 3))
     end
 
-    self:_formAlliance(def, rec)
+    if opts.formAlliance ~= false then
+        self:_formAlliance(def, rec)
+    end
 
     self:_log("Info", "NPC principal summoned", {
         npc = def.name,
@@ -571,7 +605,26 @@ function NpcPrincipalService:Summon(owner, npcId, opts)
         pets = spawned,
         allied = #rec.allied,
     })
-    return true, { name = def.name, pets = spawned, allied = #rec.allied }
+    return true,
+        {
+            name = def.name,
+            pets = spawned,
+            allied = #rec.allied,
+            model = model,
+            folder = folder,
+        }
+end
+
+-- Authored-world principal: the existing Future Self / Creator machinery, but fixed to a supplied
+-- transform and deliberately absent from the owner's party/alliance roster. It remains alive until
+-- explicit Despawn (or owner leave) and returns the same info shape as Summon.
+function NpcPrincipalService:SpawnStationary(owner, npcId, spawnCFrame, opts)
+    local args = type(opts) == "table" and table.clone(opts) or {}
+    args.stationary = true
+    args.spawnCFrame = spawnCFrame
+    args.formTeam = false
+    args.formAlliance = false
+    return self:Summon(owner, npcId, args)
 end
 
 function NpcPrincipalService:IsActive(name)
@@ -845,7 +898,8 @@ function NpcPrincipalService:_autoFarmStep(rec, now)
     end
 end
 
--- Follow the summoner + expire. Pet mining/combat is NOT here — PetFollowService owns that.
+-- Follow the summoner + expire, or hold an authored stationary principal until explicit cleanup.
+-- Pet mining/combat is NOT here — PetFollowService owns that.
 function NpcPrincipalService:_step(now)
     for name, rec in pairs(self._active) do
         -- THE PROLOGUE HOLDS THE CURTAIN: while the summoner is still in the cold open, the
@@ -855,7 +909,7 @@ function NpcPrincipalService:_step(now)
         local inPrologue = rec.owner
             and rec.owner.Parent
             and rec.owner:GetAttribute("InPrologue") == true
-        if inPrologue then
+        if inPrologue and not rec.stationary then
             rec.expireAt = now + 30 -- keep a rolling grace window
         end
         if now >= rec.expireAt then
@@ -866,7 +920,16 @@ function NpcPrincipalService:_step(now)
                 and owner.Parent
                 and owner.Character
                 and owner.Character:FindFirstChild("HumanoidRootPart")
-            if hrp and rec.model and rec.model.PrimaryPart then
+            if not (owner and owner.Parent) then
+                self:Despawn(name, "owner_left") -- owning session left
+            elseif rec.stationary then
+                -- Authored anchors do not follow or teleport. Keeping the branch explicit prevents
+                -- future follow tuning from silently turning a hatcher/defense post into a companion.
+                local stationaryRoot = rec.model and rec.model:FindFirstChild("HumanoidRootPart")
+                if stationaryRoot and not stationaryRoot.Anchored then
+                    stationaryRoot.Anchored = true
+                end
+            elseif hrp and rec.model and rec.model.PrimaryPart then
                 local off = rec.def.follow_offset or {}
                 local goal = hrp.CFrame
                     * CFrame.new(tonumber(off.x) or -8, tonumber(off.y) or 0, tonumber(off.z) or 6)
@@ -887,8 +950,6 @@ function NpcPrincipalService:_step(now)
                 else
                     rec.model:PivotTo(goal) -- placeholder rig has no locomotion
                 end
-            elseif not (owner and owner.Parent) then
-                self:Despawn(name, "owner_left") -- summoner left
             end
             if self._active[name] then
                 self:_castStep(rec, now)

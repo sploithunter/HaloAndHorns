@@ -1286,10 +1286,11 @@ function EnemyService:DespawnModel(model)
     return true
 end
 
--- Start an ordinary threat-table fight without pinning pet targets. Authored defense encounters use
--- this when a marching enemy crosses their alert boundary: both sides receive enough initial threat
--- to close distance, then damage, decay, proximity, and tank taunts remain fully authoritative.
-function EnemyService:AlertSquadToEnemy(player, targetId, opts)
+-- Start an ordinary threat-table fight for exactly the supplied folders without pinning targets.
+-- Keeping the folder set explicit lets authored defense encounters command several independent NPC
+-- teams owned by one player; threat, tank taunts, decay, and ordinary target selection still own the
+-- fight after this one seed.
+function EnemyService:_alertPetFoldersToEnemy(player, squads, targetId, opts)
     targetId = tonumber(targetId)
     local entry = targetId and self._enemies[targetId]
     local model = entry and entry.model
@@ -1304,7 +1305,7 @@ function EnemyService:AlertSquadToEnemy(player, targetId, opts)
     local threat = math.max(1, tonumber(opts and opts.threat) or 50)
     self:_setAggroOwner(entry, player.Name)
     local alerted = 0
-    for _, squad in ipairs(self:_teamSquads(player)) do
+    for _, squad in ipairs(squads or {}) do
         for _, pet in ipairs(squad.folder:GetChildren()) do
             if
                 pet:IsA("Model")
@@ -1324,6 +1325,30 @@ function EnemyService:AlertSquadToEnemy(player, targetId, opts)
         return false, 0
     end
     return true, alerted
+end
+
+-- Seed only one pet folder. A stationary hatcher team uses this instead of drafting every other
+-- manifested principal (or the owner's real squad) through the broader team-combat seam.
+function EnemyService:AlertPetFolderToEnemy(folder, targetId, opts)
+    if not (folder and folder.Parent) then
+        return false, 0
+    end
+    local player = self:_playerForPetFolder(folder)
+    if not player then
+        return false, 0
+    end
+    return self:_alertPetFoldersToEnemy(
+        player,
+        { { player = player, folder = folder } },
+        targetId,
+        opts
+    )
+end
+
+-- Existing broad behavior for caves, parties, and manifested companions: alert every squad that
+-- belongs to the player's current combat team.
+function EnemyService:AlertSquadToEnemy(player, targetId, opts)
+    return self:_alertPetFoldersToEnemy(player, self:_teamSquads(player), targetId, opts)
 end
 
 -- Pin this player's squad on one enemy: assist does not lapse for pinSeconds,
