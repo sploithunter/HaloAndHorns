@@ -5078,3 +5078,6 @@ first-session cohort rates.
 - Added a generic directed patrol-route option for authored enemy encounters. Routes advance only
   while an enemy is idle, pause without losing progress during combat, resume after disengagement,
   and report final-waypoint arrival through a one-shot server callback.
+- Simplified that seam to the actual prototype need: each enemy has one forward destination rather
+  than a waypoint graph; its spawn-to-finish vector is the path and combat interruption still
+  resumes from the displaced position.

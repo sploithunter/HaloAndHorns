@@ -69,7 +69,7 @@ local PetLockout = require(ReplicatedStorage.Shared.Game.PetLockout)
 local ZoneResolver = require(ReplicatedStorage.Shared.Game.ZoneResolver)
 local EnemyLeash = require(ReplicatedStorage.Shared.Game.EnemyLeash)
 local EnemyRewardPolicy = require(ReplicatedStorage.Shared.Game.EnemyRewardPolicy)
-local EnemyPatrolRoute = require(ReplicatedStorage.Shared.Game.EnemyPatrolRoute)
+local EnemyMarchGoal = require(ReplicatedStorage.Shared.Game.EnemyMarchGoal)
 local MissionRankScale = require(ReplicatedStorage.Shared.Game.MissionRankScale)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
@@ -2760,14 +2760,13 @@ function EnemyService:_dropUnreachableEngagement(entry, targetId, reason)
     self:_clearChasePath(entry)
 end
 
-function EnemyService:_followAuthoredPatrolRoute(entry, targetId, model, ePos, dt)
-    local route = entry.patrolRoute
-    if not route then
+function EnemyService:_followAuthoredMarchGoal(entry, targetId, model, ePos, dt)
+    local goal = entry.marchGoal
+    if not goal then
         return false
     end
 
-    local x, z, index, completed =
-        EnemyPatrolRoute.step(route, ePos.X, ePos.Z, math.max(0, dt or 0))
+    local x, z, reached = EnemyMarchGoal.step(goal, ePos.X, ePos.Z, math.max(0, dt or 0))
     local gy = self:_groundedY(entry, x, z, ePos.Y)
     local eng = self._combatConfig and self._combatConfig.engagement or {}
     local flyer = (entry.hoverHeight or 0) > 0
@@ -2775,30 +2774,28 @@ function EnemyService:_followAuthoredPatrolRoute(entry, targetId, model, ePos, d
         return true
     end
 
-    route.index = index
     local np = self:_leashToHomeArea(entry, Vector3.new(x, gy, z))
     local moveVec = Vector3.new(np.X - ePos.X, 0, np.Z - ePos.Z)
     entry.pos = np
     model:SetAttribute("MoveTarget", np)
-    model:SetAttribute("PatrolWaypointIndex", index)
     if moveVec.Magnitude > 0.02 then
         model:SetAttribute("MoveFace", np + moveVec.Unit * 4)
     end
 
-    if completed then
-        entry.patrolRoute = nil
-        model:SetAttribute("PatrolRouteComplete", true)
-        local onCompleted = route.onCompleted
-        route.onCompleted = nil
-        if onCompleted then
-            local ok, err = pcall(onCompleted, {
+    if reached then
+        entry.marchGoal = nil
+        model:SetAttribute("MarchGoalReached", true)
+        local onReached = goal.onReached
+        goal.onReached = nil
+        if onReached then
+            local ok, err = pcall(onReached, {
                 targetId = targetId,
                 enemyId = entry.enemyId,
                 model = model,
                 position = np,
             })
             if not ok and self._logger then
-                self._logger:Warn("Enemy patrol route callback failed", {
+                self._logger:Warn("Enemy march goal callback failed", {
                     enemyId = entry.enemyId,
                     targetId = targetId,
                     error = tostring(err),
@@ -2825,9 +2822,9 @@ function EnemyService:_loiter(entry, targetId, model, ePos, dt)
     then
         return
     end
-    -- Authored routes replace random idle meander. Combat owns motion while engaged, then the
-    -- route resumes from the enemy's latest authoritative position after disengagement.
-    if self:_followAuthoredPatrolRoute(entry, targetId, model, ePos, dt) then
+    -- A forward goal replaces random idle meander. Combat owns motion while engaged, then the
+    -- enemy resumes toward the same destination from its latest authoritative position.
+    if self:_followAuthoredMarchGoal(entry, targetId, model, ePos, dt) then
         return
     end
     if not cfg or cfg.enabled == false then
@@ -6994,14 +6991,14 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     if not rewardPolicy then
         return { ok = false, reason = "invalid_reward_policy" }
     end
-    local patrolRoute = nil
-    if opts and opts.patrolRoute ~= nil then
-        patrolRoute = EnemyPatrolRoute.new(opts.patrolRoute)
-        if not patrolRoute then
-            return { ok = false, reason = "invalid_patrol_route" }
+    local marchGoal = nil
+    if opts and opts.marchGoal ~= nil then
+        marchGoal = EnemyMarchGoal.new(opts.marchGoal)
+        if not marchGoal then
+            return { ok = false, reason = "invalid_march_goal" }
         end
-        patrolRoute.onCompleted = type(opts.patrolRoute.onCompleted) == "function"
-                and opts.patrolRoute.onCompleted
+        marchGoal.onReached = type(opts.marchGoal.onReached) == "function"
+                and opts.marchGoal.onReached
             or nil
     end
     -- opts.def lets a caller field a SYNTHESIZED def (e.g. a pet-model invader, see _petEnemyDef)
@@ -7090,9 +7087,9 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         -- generated room rectangle; the movement code remains unaware of mission/map specifics.
         movementLeash = (opts and type(opts.movementLeash) == "table") and opts.movementLeash
             or nil,
-        -- Ordered authored patrol points are a generic idle-movement seam. Aggro/combat interrupts
-        -- the route without discarding it; disengagement resumes from the current position.
-        patrolRoute = patrolRoute,
+        -- One authored forward destination is a generic idle-movement seam. Aggro/combat interrupts
+        -- the march without discarding it; disengagement resumes from the current position.
+        marchGoal = marchGoal,
         encounterGroup = opts and opts.encounterGroup or nil,
         -- Generic isolated-encounter seam. The default is exactly the legacy reward/progression
         -- path; "none" suppresses it while the server-only callback still observes defeat once.
@@ -7114,9 +7111,8 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     model:SetAttribute("LeashRegion", leashRegion or "")
     model:SetAttribute("MoveTarget", position)
     model:SetAttribute("MoveFace", Vector3.new(hrp.Position.X, position.Y, hrp.Position.Z))
-    if patrolRoute then
-        model:SetAttribute("PatrolWaypointIndex", patrolRoute.index)
-        model:SetAttribute("PatrolRouteComplete", false)
+    if marchGoal then
+        model:SetAttribute("MarchGoalReached", false)
     end
     local movement = self._enemies[targetId].movementLeash
     local movementShape = movement and movement.shapes and movement.shapes[1]
