@@ -32,6 +32,27 @@ anyway." Correct, with the direction reversed: **this is the investment, and the
 its second consumer.** That's the right order — the prologue stops being scaffolding and the
 primitive earns its keep twice on day one.
 
+## Runtime modes (updated 2026-08-26)
+
+`NpcPrincipalService` now exposes two lifecycle modes over the same principal registry, pet-folder
+contract, and combat driver:
+
+- `Summon` is the Colorado/Future Self companion mode: it spawns relative to an owner, follows and
+  teleports after that owner, may stamp party/alliance state, and expires on a timer.
+- `SpawnStationary` is the authored-world mode: it anchors at a supplied `CFrame`, never follows the
+  owner, does not join their party or alliance, and lives until explicit despawn or owner leave.
+
+Stationary principals are not a separate NPC system. Their pets remain `NpcSquad` ghosts under
+`Workspace.PlayerPets/<principal name>`, and `NpcOwner` still routes combat attribution to the real
+session player. `EnemyService:AlertPetFolderToEnemy` can seed exactly one such folder without
+drafting the owner's squad or their other NPC principals.
+
+NPC pet presentation remains client-rendered, but gameplay position is no longer collapsed to the
+principal root. `PetFollowService` advances a bounded server-authoritative combat position at the
+same travel-speed cap, and both damage range and enemy pursuit consume it. This matters for static
+defense principals: a pet visibly crossing a lane must neither damage instantly from its spawn nor
+wait until the enemy reaches the hatcher.
+
 ## The Creator anchors a real alliance (Jason) — and this deletes the prologue special case
 
 > "If we did it this way, then my level 50 Colorado would sidekick somebody to level 49 in
