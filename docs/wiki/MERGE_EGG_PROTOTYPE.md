@@ -460,6 +460,20 @@ saved attribute and visible Hall pane to 156. The runtime log remained clean.
   but the four full observer columns are not a scalable presentation contract; replace them with a
   compact status/alert view plus spatial captain indicators before increasing the visible team count.
 
+## Human-play transition notes
+
+- The current opening is technically survivable, but the margin is slim: a human player only just
+  completes the first egg at the second hatcher position before the Whelps overrun the defense.
+  The actual-walk-speed automation remains an upper bound because it reacts immediately, chooses
+  routes perfectly, and loses no time interpreting the fight or selecting a captain.
+- Do not treat “the runner can do it” as sufficient opening balance. Before human combat becomes the
+  primary test, preserve a readable buffer for reaction, camera movement, coin-path variance, and
+  imperfect routing. Candidate knobs are the first two wave gaps, opening drops, Wave 2 deployment
+  delay, and early Whelp pressure; no particular correction is chosen yet.
+- The next human-play pass should record when 100 Waycoins for Position 2 are reached, when the
+  second egg is installed, and when the first red-line breach occurs. The time between installation
+  and breach is the useful safety-margin measurement.
+
 ## Explicitly deferred
 
 - Tile generation or tile streaming.

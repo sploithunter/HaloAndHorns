@@ -5351,3 +5351,14 @@ first-session cohort rates.
   into Heaven 1. Heaven then spent 57,600 almost immediately and was nearly fully advanced by Wave
   2, proving the stage transition but exposing that the current carry economy erases Heaven's build
   cadence.
+
+## 2026-08-26 — Merge an Egg human-play transition note
+
+- Recorded that the human opening has almost no slack: the player only just installs the first egg
+  at Position 2 before the Whelps overrun the defense. The perfect actual-walk-speed runner is an
+  upper bound, not a human balance target, because it has no reaction, camera, interpretation, or
+  routing delay.
+- Deferred choosing a correction. The next human-play comparison should measure the timestamps for
+  reaching Position 2's 100 Waycoins, installing its egg, and the first red-line breach; that final
+  interval is the opening safety margin. Early wave gaps, drop rate, Wave 2 deployment delay, and
+  Whelp pressure remain independent candidate knobs.
