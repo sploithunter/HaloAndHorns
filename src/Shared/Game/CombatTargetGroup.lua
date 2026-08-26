@@ -15,7 +15,10 @@ local function normalize(value)
     return nil
 end
 
-function CombatTargetGroup.compatible(left, right)
+function CombatTargetGroup.compatible(left, right, leftOpen, rightOpen)
+    if leftOpen == true or rightOpen == true then
+        return true
+    end
     left = normalize(left)
     right = normalize(right)
     if left == nil and right == nil then
