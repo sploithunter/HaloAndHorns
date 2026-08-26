@@ -46,7 +46,8 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md) — Studio-only Phase 5: one authored land strip,
   four initially empty hatcher positions, independently targeted random egg teams, a 20-wave
   endurance ladder, per-captain Home egg upgrades, a temporary enemy portal, a visible all-reserves
-  bulwark, five-egg defeat objective, and stable-slot FIFOs.
+  bulwark, five-egg defeat objective, Hall Waycoin pickups with a mode-owned magnet radius, and
+  stable-slot FIFOs.
 - [Marketing Plan](../MARKETING_PLAN.md) — the 50k-Robux test plan (creative screening → funnel gate → scale), icon/thumbnail prompt matrix, capture shot list, KPI cheat sheet, and the 500-engaged-players unlock strategy.
 - [Map Builder's Kit](../MAP_BUILDERS_KIT.md) — the production-world commissioning spec: hub-and-spoke layout, the 11-layer heaven/hell ladder (one layout, eleven skins), the full marker/binding contract, per-layer art briefs, phased delivery + acceptance checks.
 - [Mission Worldgen](../MISSION_WORLDGEN.md) — the Trials endgame SSOT: CoH door missions, deterministic tile-kit procgen, shared sequences, the 8-trial matrix, quest-steered gates, and evolving-egg centuries (§13 = shipped contract).

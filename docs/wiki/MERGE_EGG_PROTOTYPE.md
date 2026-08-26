@@ -38,9 +38,11 @@ progression, procedural layout, and multiplayer occupancy.
   live tracing measured alert-to-target assignment at about 0.1–0.25 seconds. Distant combat pursuit
   and post-combat return both use bounded pet travel rather than the formation catch-up teleport;
   principal/portal teleports, Rally, and explicit teleport abilities retain their snap behavior.
-- Enemies use `rewardPolicy = "none"`, so defeat grants no loot, XP/progression event, tracked
-  counter, potion, enhancement, or exclusive egg. Defeat and finish-line arrival are counted
-  separately; after every enemy in a wave is resolved, the next larger wave starts automatically.
+- Enemies use `rewardPolicy = "none"`, so the ordinary combat award path grants no XP/progression
+  event, tracked counter, potion, enhancement, or exclusive egg. The prototype's server-only defeat
+  callback now provides its one explicit exception: an 8-Waycoin Whelp or 30-Waycoin Brute pickup.
+  Defeat and finish-line arrival are counted separately; after every enemy in a wave is resolved,
+  the next larger wave starts automatically.
 - The red control resets every prototype unit/enemy and makes the hatch repeatable. The blue control
   exits, restores the parked squad and prior combat-assist attributes, streams Home, and returns the
   character to their exact gate-entry transform. Player leave and character reset use the same
@@ -207,6 +209,14 @@ team and queue model:
   between-wave aggro gap, `AreaMusicController` immediately rerolls from the active realm pool and
   excludes the current track when another choice exists. If combat fully ended, the next ordinary
   combat entry still avoids the last track. This changes only music selection, not wave timing.
+- Enemy defeats reuse the Hall's authored `hall_coins` pickup mesh/texture and saved Waycoin
+  balance. The prototype HUD therefore selects the Hall Gems + Waycoins stack instead of showing
+  Crystal World's origin-crystal panes. Pickups start with a mode-owned ten-stud magnet radius
+  (`MergeEggMagnetRadius = 10`) and deliberately ignore the player's ordinary Magnet power,
+  Auto Collector, pet reach, and Magnet enchants. `DropService` accepts that radius as a scoped
+  per-drop attribute while all ordinary drops retain their existing eleven-stud base and formula.
+  The attribute is a future progression seam: changing it updates every uncollected prototype coin
+  without coupling the merge-board economy to the regular character build.
 - Entry is transactional around streaming: owned pets can be parked while the strip streams, but
   the session and `InMergeEggPrototype` flag are committed only after the character visibly pivots.
   A player can no longer remain in Home while the Hall gate believes the prototype is already active.
@@ -314,6 +324,14 @@ fronts: one Ember Brute remained assigned to the online captain while four Whelp
 position. Bringing a second captain online during that fight raised the hatcher count to two before
 Wave 3; its two-front Brute-led/trash configuration also deployed without runtime errors.
 
+The first Waycoin pass showed the Hall pane and canonical coin icon while Gems remained visible and
+all four origin-crystal panes stayed hidden. Wave 1 produced three owner-only textured Waycoin
+pickups, each carrying 8 `hall_coins`, the Hall mesh `96505477571443`, texture
+`75902763288492`, a ten-stud base, the live `MergeEggMagnetRadius` attribute, and no regular-player
+modifiers. Holding the diagnostic radius at zero left all three pickups and the 148 balance intact;
+restoring it to ten collected only the nearby pickup, left two on the lane, and changed both the
+saved attribute and visible Hall pane to 156. The runtime log remained clean.
+
 ## Production direction after Phase 5
 
 - Four hatcher-owned NPC teams, independent targeting, stable-slot replacement FIFOs, and the
@@ -339,6 +357,9 @@ Wave 3; its two-front Brute-led/trash configuration also deployed without runtim
   applies in front of it, and ordinary cross-team aggro becomes eligible only for breached enemies.
 - The player remains free to move between hatchers, merge eggs, and manage the board while these NPC
   teams fight asynchronously. Player position must not be a combat leash or scheduling input.
+- Waycoin pickups are the first reason for the player to leave the board during combat. Preserve the
+  prototype-owned magnet scale when adding upgrades; do not silently inherit the regular game's
+  power/Auto Collector/enchant radius stack.
 - Keep four hatcher positions during tempo and board-cadence testing. Production may support more,
   but the four full observer columns are not a scalable presentation contract; replace them with a
   compact status/alert view plus spatial captain indicators before increasing the visible team count.

@@ -5278,3 +5278,19 @@ first-session cohort rates.
   that team and its four-Whelp second front to an empty position. A second real egg click brought
   another captain online before the configured Wave 3 two-front deployment; the runtime log stayed
   free of matching errors.
+
+## 2026-08-26 — Merge an Egg Waycoin pickup loop
+
+- Added the prototype's first active-player resource loop without reopening normal combat rewards.
+  Whelps now carry 8 Waycoins and Brutes carry 30 through the existing Hall pickup mesh/texture and
+  `DropService`; ordinary XP, counters, enhancements, potions, and exclusive eggs remain suppressed.
+- Switched the prototype currency stack from Crystal World origin panes to the Hall's Gems +
+  Waycoins presentation, including the canonical Waycoin icon and saved `hall_coins` balance.
+- Added a per-drop live-radius seam to `DropService`. Prototype pickups read
+  `MergeEggMagnetRadius`, start at 10 studs, and ignore normal player Magnet/Auto Collector/pet/
+  enchant modifiers; regular drops keep their 11-stud base and unchanged scaling.
+- Live verification hid all four origin-crystal panes, showed the canonical Hall Waycoin icon and
+  balance, and spawned three owner-only textured pickups carrying 8 Waycoins each after Wave 1.
+  A diagnostic zero radius preserved all three without credit; restoring radius 10 collected only
+  the nearby coin, changed the live/saved balance from 148 to 156, and left two pickups in the lane.
+  No matching runtime errors were reported.

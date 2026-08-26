@@ -118,6 +118,8 @@ function MergeEggPrototypeService:Init()
     self._enemyService = self._modules and self._modules.EnemyService
     self._petFollowService = self._modules and self._modules.PetFollowService
     self._eggService = self._modules and self._modules.EggService
+    self._dropService = self._modules and self._modules.DropService
+    self._economyService = self._modules and self._modules.EconomyService
     self._config = (self._configLoader and self._configLoader:LoadConfig("merge_egg_prototype"))
         or require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
     self._enemiesConfig = (self._configLoader and self._configLoader:LoadConfig("enemies"))
@@ -388,6 +390,11 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("PrototypeRainbowRolls", record and record.eggRainbowRolls or 0)
     world:SetAttribute("PrototypeHugeRolls", record and record.eggHugeRolls or 0)
     world:SetAttribute("HatcherUpgrades", record and record.hatcherUpgrades or 0)
+    world:SetAttribute("PrototypeCoinsDropped", record and record.coinsDropped or 0)
+    world:SetAttribute(
+        "PrototypeMagnetRadius",
+        record and record.player:GetAttribute("MergeEggMagnetRadius") or 0
+    )
     world:SetAttribute("FirstPetLossWave", record and record.firstPetLossWave or nil)
     world:SetAttribute(
         "FirstPetLossActiveEnemies",
@@ -1045,6 +1052,7 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.eggRainbowRolls = 0
     record.eggHugeRolls = 0
     record.hatcherUpgrades = 0
+    record.coinsDropped = 0
     self:_setPortalVisible(record, false)
 
     for _, team in ipairs(record.teams or {}) do
@@ -1074,6 +1082,7 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing)
     record.player:SetAttribute("CombatAssistUntil", record.assistUntil)
     record.player:SetAttribute("InMergeEggPrototype", nil)
     record.player:SetAttribute("MergeEggRunId", nil)
+    record.player:SetAttribute("MergeEggMagnetRadius", nil)
 
     if departing then
         if record.parked then
@@ -1180,6 +1189,7 @@ function MergeEggPrototypeService:_begin(player)
         eggRainbowRolls = 0,
         eggHugeRolls = 0,
         hatcherUpgrades = 0,
+        coinsDropped = 0,
         terminal = false,
     }
     if not self:_parkOwnedPets(record) then
@@ -1213,6 +1223,8 @@ function MergeEggPrototypeService:_begin(player)
     self._enteringRecord = nil
     self._entering = nil
     self._active = record
+    local magnetCfg = ((self._config.rewards or {}).magnet or {})
+    player:SetAttribute("MergeEggMagnetRadius", math.max(0, tonumber(magnetCfg.base_radius) or 10))
     player:SetAttribute("InMergeEggPrototype", true)
     player:SetAttribute("MergeEggRunId", record.runId)
     record.characterRemoving = player.CharacterRemoving:Connect(function()
@@ -1315,7 +1327,57 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
     })
 end
 
+function MergeEggPrototypeService:_dropEnemyCoins(record, defeat)
+    if self._active ~= record or not (defeat and typeof(defeat.position) == "Vector3") then
+        return false
+    end
+    local model = defeat.model
+    local amount =
+        math.max(0, math.floor(tonumber(model and model:GetAttribute("MergeEggCoinReward")) or 0))
+    if amount <= 0 then
+        return false
+    end
+    local rewardCfg = self._config.rewards or {}
+    local magnetCfg = rewardCfg.magnet or {}
+    local currency = tostring(rewardCfg.currency or "hall_coins")
+    local carried = false
+    if self._dropService and self._dropService.SpawnCoinDrop then
+        local ok, result = pcall(function()
+            return self._dropService:SpawnCoinDrop(
+                record.player,
+                currency,
+                amount,
+                defeat.position,
+                {
+                    baseCollectRadius = math.max(0, tonumber(magnetCfg.base_radius) or 10),
+                    collectRadiusAttribute = "MergeEggMagnetRadius",
+                    usePlayerModifiers = magnetCfg.use_player_modifiers == true,
+                    source = "merge_egg_prototype",
+                }
+            )
+        end)
+        carried = ok and result == true
+    end
+    if not carried and self._economyService and self._economyService.AddCurrency then
+        local ok, result = pcall(function()
+            return self._economyService:AddCurrency(
+                record.player,
+                currency,
+                amount,
+                "merge_egg_enemy_defeat"
+            )
+        end)
+        carried = ok and result == true
+    end
+    if carried then
+        record.coinsDropped = (record.coinsDropped or 0) + amount
+        self:_setWorldState(self:_activeWaveState(record), record)
+    end
+    return carried
+end
+
 function MergeEggPrototypeService:_onEnemyDefeated(record, defeat)
+    self:_dropEnemyCoins(record, defeat)
     self:_resolveEnemy(record, "defeated", defeat and defeat.targetId)
 end
 
@@ -1380,6 +1442,13 @@ function MergeEggPrototypeService:_spawnWaveEnemy(record, spec)
     model:SetAttribute("MergeEggAttackGroup", spec.groupIndex or 1)
     model:SetAttribute("MergeEggAttackGroupKind", spec.groupKind or "legacy")
     model:SetAttribute("MergeEggCompositionRole", spec.compositionRole or "melee")
+    local rewardCfg = self._config.rewards or {}
+    model:SetAttribute(
+        "MergeEggCoinReward",
+        spec.compositionRole == "tank"
+                and math.max(0, math.floor(tonumber(rewardCfg.tank_amount) or 30))
+            or math.max(0, math.floor(tonumber(rewardCfg.trash_amount) or 8))
+    )
     result.teamId = team.id
     record.enemies[#record.enemies + 1] = result
     record.enemyByTargetId[result.targetId] = result

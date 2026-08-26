@@ -2,6 +2,8 @@ local config = loadModule("configs/merge_egg_prototype.lua")
 local network = loadModule("configs/network.lua")
 local pets = loadModule("configs/pets.lua")
 local petRoles = loadModule("configs/pet_roles.lua")
+local currencies = loadModule("configs/currencies.lua")
+local drops = loadModule("configs/drops.lua")
 
 return function()
     describe("Merge an Egg Phase 5", function()
@@ -219,6 +221,53 @@ return function()
             expect(service:find("self:_publishTeamSlot(team, queued.slot", 1, true)).to.be.ok()
             expect(service:find("MergeEggReplacementSlots", 1, true)).to.be.ok()
             expect(service:find("PeakReplacementQueueDepth", 1, true)).to.be.ok()
+        end)
+
+        it("drops Hall Waycoins with a prototype-owned ten-stud magnet", function()
+            expect(config.rewards.currency).to.equal("hall_coins")
+            expect(config.rewards.trash_amount).to.equal(8)
+            expect(config.rewards.tank_amount).to.equal(30)
+            expect(config.rewards.magnet.base_radius).to.equal(10)
+            expect(config.rewards.magnet.use_player_modifiers).to.equal(false)
+            expect(drops.collect_radius).to.equal(11)
+            expect(drops.currency_pickups.hall_coins.mesh).to.be.ok()
+            expect(drops.currency_pickups.hall_coins.texture).to.be.ok()
+
+            local waycoin
+            for _, currency in ipairs(currencies) do
+                if currency.id == "hall_coins" then
+                    waycoin = currency
+                    break
+                end
+            end
+            expect(waycoin).to.be.ok()
+            expect(waycoin.name).to.equal("Waycoins")
+            expect(waycoin.icon).to.equal("rbxassetid://124447234465235")
+
+            local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local dropService = readFile("src/Server/Services/DropService.lua")
+            local currencyStack = readFile("src/Client/Systems/CurrencyStack.lua")
+            local server = readFile("src/Server/init.server.lua")
+            expect(service:find("function MergeEggPrototypeService:_dropEnemyCoins", 1, true)).to.be.ok()
+            expect(service:find('rewardPolicy = "none"', 1, true)).to.be.ok()
+            expect(service:find('collectRadiusAttribute = "MergeEggMagnetRadius"', 1, true)).to.be.ok()
+            expect(service:find('source = "merge_egg_prototype"', 1, true)).to.be.ok()
+            expect(service:find('"MergeEggCoinReward"', 1, true)).to.be.ok()
+            expect(service:find('"PrototypeCoinsDropped"', 1, true)).to.be.ok()
+            expect(dropService:find("function DropService:SpawnCoinDrop", 1, true)).to.be.ok()
+            expect(dropService:find("rec.collectRadiusAttribute", 1, true)).to.be.ok()
+            expect(dropService:find("rec.usePlayerModifiers == false", 1, true)).to.be.ok()
+            expect(
+                currencyStack:find('player:GetAttribute("InMergeEggPrototype") == true', 1, true)
+            ).to.be.ok()
+            expect(currencyStack:find('GetAttributeChangedSignal("InMergeEggPrototype")', 1, true)).to.be.ok()
+            expect(
+                server:find(
+                    '"EggService",\n                "DropService",\n                "EconomyService",',
+                    1,
+                    true
+                )
+            ).to.be.ok()
         end)
 
         it(

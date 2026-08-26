@@ -375,8 +375,10 @@ function DropService:_groundY(x, z, fromY, fallbackY)
 end
 
 -- Spawn physical currency pickups for an award. Returns true if drops were created (caller must
--- NOT credit), false to credit instantly (disabled / too small / no position). Never throws.
-function DropService:SpawnCoinDrop(player, currencyType, amount, position)
+-- NOT credit), false to credit instantly (disabled / too small / no position). `options` may give
+-- a mode its own base radius or live radius attribute without changing ordinary-game collection.
+-- Never throws.
+function DropService:SpawnCoinDrop(player, currencyType, amount, position, options)
     amount = tonumber(amount) or 0
     if not self:IsEnabled() then
         return false
@@ -389,6 +391,17 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position)
     end
 
     local currencyId = tostring(currencyType or "coins")
+    options = type(options) == "table" and options or {}
+    local baseCollectRadius = tonumber(options.baseCollectRadius)
+    if baseCollectRadius then
+        baseCollectRadius = math.max(0, baseCollectRadius)
+    end
+    local collectRadiusAttribute = type(options.collectRadiusAttribute) == "string"
+            and options.collectRadiusAttribute ~= ""
+            and options.collectRadiusAttribute
+        or nil
+    local usePlayerModifiers = options.usePlayerModifiers ~= false
+    local source = type(options.source) == "string" and options.source or nil
     local configuredPickup = self._config.currency_pickups
         and self._config.currency_pickups[currencyId]
     local color = self:_colorFor(currencyId)
@@ -429,6 +442,12 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position)
         -- VISIBLE too (DropVisibility hides foreign gems client-side — Jason: "it
         -- makes it really confusing if gems are everywhere and they're not yours")
         model:SetAttribute("DropOwner", player.UserId)
+        model:SetAttribute("DropCurrency", currencyId)
+        model:SetAttribute("DropAmount", math.floor(chunkAmount))
+        model:SetAttribute("DropBaseCollectRadius", baseCollectRadius)
+        model:SetAttribute("DropCollectRadiusAttribute", collectRadiusAttribute)
+        model:SetAttribute("DropUsesPlayerModifiers", usePlayerModifiers)
+        model:SetAttribute("DropSource", source)
         local rec = {
             model = model,
             part = part,
@@ -436,6 +455,10 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position)
             owner = player.UserId,
             currency = currencyId,
             amount = math.floor(chunkAmount),
+            baseCollectRadius = baseCollectRadius,
+            collectRadiusAttribute = collectRadiusAttribute,
+            usePlayerModifiers = usePlayerModifiers,
+            source = source,
             spawnAt = os.clock(),
             settling = true,
         }
@@ -1067,10 +1090,20 @@ function DropService:_step()
                 -- magnetImmune (exclusive EGG drops): the find is the moment —
                 -- walk to it; base collect radius still applies up close
                 local rarePull = plr:GetAttribute("PetAbilityRareDropPull") == true
-                local radius = rec.magnetImmune and not rarePull and baseR
-                    or self:_effectiveCollectRadius(plr, baseR, nowT)
+                local pickupBaseR = tonumber(rec.baseCollectRadius) or baseR
+                if rec.collectRadiusAttribute then
+                    pickupBaseR = tonumber(plr:GetAttribute(rec.collectRadiusAttribute))
+                        or pickupBaseR
+                end
+                pickupBaseR = math.max(0, pickupBaseR)
+                local radius
+                if (rec.magnetImmune and not rarePull) or rec.usePlayerModifiers == false then
+                    radius = pickupBaseR
+                else
+                    radius = self:_effectiveCollectRadius(plr, pickupBaseR, nowT)
+                end
                 local dist = (rec.part.Position - rootPos).Magnitude
-                if dist <= pullR then
+                if dist <= math.min(pullR, radius) then
                     self:_collect(rec)
                 elseif dist <= radius then
                     local dir = (rootPos - rec.part.Position)

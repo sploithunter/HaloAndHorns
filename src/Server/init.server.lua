@@ -1019,6 +1019,8 @@ if RunService:IsStudio() then
                 "EnemyService",
                 "PetFollowService",
                 "EggService",
+                "DropService",
+                "EconomyService",
             }
         )
     end

@@ -89,6 +89,19 @@ return {
         damage_per_escape = 1,
     },
 
+    -- Defeats pay only the prototype's board currency. The physical pickup and HUD art reuse the
+    -- Hall Waycoin identity, while collection uses a prototype-owned radius attribute so later
+    -- board upgrades can scale it without inheriting the player's regular Magnet build.
+    rewards = {
+        currency = "hall_coins",
+        trash_amount = 8,
+        tank_amount = 30,
+        magnet = {
+            base_radius = 10,
+            use_player_modifiers = false,
+        },
+    },
+
     -- Early-balance accelerator: both sides attack four times as often. Movement, regeneration,
     -- aggro decay, and wave timing remain at real speed so the lane still reads clearly.
     combat = {
