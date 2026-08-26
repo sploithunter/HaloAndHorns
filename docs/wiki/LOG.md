@@ -5138,3 +5138,23 @@ first-session cohort rates.
   moved about 250 studs from the hatcher defeated all 16 marchers with zero escapes; surviving
   enemies exercised repeated ordinary-threat alerts up to four times, all five pets returned to
   `Ready`, and Hall exit cleared the principal, team, enemies, and observer with no console errors.
+
+## 2026-08-26 — Merge an Egg Phase 3 multi-team endurance defense
+
+- Expanded the stationary hatcher contract to four independently owned five-pet folders, unique
+  combat-target groups, round-robin enemy assignments, independent lifecycle/telemetry, and a
+  read-only four-column observer. The original 3/5/8 Whelp sequence cleared 16/16 with zero escapes
+  or cross-team target mismatches, and all four teams returned to `Ready`.
+- Added a 3/5/8/12/16/24/32/48 endurance ladder with first-loss and peak-pressure telemetry. The
+  quantity-only calibration first lost a pet in wave 8 with 37 enemies active and ended 148/148
+  defeated, zero escaped, and 16/20 defenders alive; all 20 had survived through 32 enemies.
+- Added one Ember Brute tank per non-empty assignment group. At 1,600 HP and 80 armor, the first pet
+  loss moved to wave 1 with only three tanks active, establishing enemy composition as a stronger
+  pressure knob than count. Existing 15-endurance/second partial regeneration after a five-second
+  per-pet hit gap remains an intentionally untuned second knob.
+- Drew an authoritative gold bulwark 13 studs before the hatchers. A breached enemy becomes an open
+  emergency target and seeds ordinary threat into every surviving folder. A forced Team 3 breach
+  alerted all four teams and all 20 pets; the idle Team 4 committed all five while already-engaged
+  teams largely kept their higher-threat targets.
+- Replaced the third Trail Pup in every NPC team with the existing Beacon Finch ranged/blaster, so
+  the shared five-slot test roster now contains two melee, one blaster, one tank, and one controller.

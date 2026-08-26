@@ -83,19 +83,31 @@ commanded NPC teams. It still does not add the production deployment queue.
   folder and the same Ready/Deploying/Engaged/Returning/Defeated lifecycle. All 20 pets remain
   attributed to the real player for combat and cleanup, while movement and return stay anchored to
   their own principal.
+- Every principal fields the same readable test roster: two Trail Pup melee units, one Beacon Finch
+  ranged/blaster, one Pack Tortoise tank, and one Compass Fox controller. The Finch replaces the
+  third melee unit so all four NPC teams exercise independent ranged positioning.
 - Every run gives each team a unique `CombatTargetGroup`. Once either an enemy or pet opts into a
   group, bilateral acquisition requires the other actor to publish the same group. Ungrouped combat
   retains the existing global behavior, so this partition does not change normal realm fights.
-- Each wave assigns enemies round-robin across the four teams. Wave one therefore exercises a
-  deliberate 1/1/1/0 split: the fourth team remains Ready while the other three deploy. Waves two
-  and three exercise 2/1/1/1 and 2/2/2/2 assignments respectively.
+- The endurance ladder contains 3, 5, 8, 12, 16, 24, 32, and 48 enemies. Each wave assigns enemies
+  round-robin across the four teams; the first assignment in every non-empty group is an Ember
+  Brute tank and the remainder are Cinder Whelps. This keeps the pressure composition comparable
+  even when a small wave leaves one team idle.
 - Defense alerts and re-alerts address only the assigned team's folder. Ordinary bilateral threat,
   tank taunts, target choice, drive-back, disengagement, and bounded return still own behavior after
   the seed; an assignment scopes eligible combatants rather than pinning five targets.
+- A gold Neon `BulwarkLine` spans the strip 13 studs in front of the hatcher anchors. The line is
+  both the visual rule and the authoritative directional plane. Once an enemy crosses it toward the
+  finish, that enemy becomes an open emergency target and every surviving NPC folder receives the
+  same 250 ordinary-threat seed. There are no idle reserves behind the bulwark, but existing threat
+  tables still decide whether already-engaged pets peel from their current targets.
 - Team telemetry and lifecycle are independent. One folder can be Ready or Returning while another
-  is Engaged, and each publishes its assigned-enemy, target, active, defeated, and returned counts.
-- The Studio-only observer renders four columns and 20 stable pet cards. It remains read-only and
-  uses the folder/world attributes rather than a custom network feed.
+  is Engaged, and each publishes its assigned-enemy, target, active, defeated, returned, first-loss,
+  and peak-pressure counts. The encounter publishes the first pet-loss wave and active-enemy count,
+  and stops as `DefenseOverrun` if all 20 temporary pets are defeated.
+- The Studio-only observer renders four columns and 20 stable pet cards plus current/peak pressure
+  and first-loss telemetry. It remains read-only and uses folder/world attributes rather than a
+  custom network feed.
 
 ## Source and authoring
 
@@ -109,22 +121,46 @@ commanded NPC teams. It still does not add the production deployment queue.
 
 ## Live verification
 
-The 2026-08-26 Studio pass moved the player roughly 250 studs away from the hatcher to recreate the
-original long-chase failure. The complete 3/5/8 sequence defeated all 16 enemies with zero escapes.
-Five wave-three survivors exercised the re-engagement path at least once; the final survivor was
-re-seeded four times before defeat. All five pets then returned to the stationary hatcher and the
-team reached `Ready`. Hall exit removed the principal, squad folder, and prototype enemies, disabled
-the observer, restored Home, and produced no console errors.
+The 2026-08-26 Phase 3 Studio passes established three separate baselines:
 
-## Production direction after Phase 2
+- Four independent teams cleared the original 3/5/8 sequence: all 16 Whelps were defeated, none
+  escaped, no cross-group target mismatch occurred, and all four teams returned to `Ready`.
+- In the quantity-only endurance calibration (fixed Whelps, before enemy tanks), all 20 pets
+  survived through wave 7 at 32 simultaneous enemies, or eight assigned per team. The first loss
+  occurred in wave 8 with 37 enemies still active. The run defeated all 148 enemies with zero
+  escapes and ended with 16 of 20 pets alive. This provides only a provisional lower bound for
+  raw head-count pressure.
+- Adding one 1,600-HP/80-armor Ember Brute to each non-empty assignment group moved the first pet
+  loss to wave 1 with only three enemies active. By wave 2 two NPC tanks had fallen and the clear
+  took roughly a minute. Enemy role composition is therefore a much stronger balance knob than raw
+  wave size at the current values.
 
-- Phase 2 proves one hatcher-owned NPC team. The next phase instantiates four copies of this same
-  contract and adds the deployment queue; it must not create four special-case principal paths.
-- A production hatcher will field four or five independent teams through that queue. Exact capacity,
-  timing, congestion, replacement, and defeated-slot rules wait for the multi-team phase.
+A deterministic breach pass moved Team 3's Brute five studs past the gold bulwark. The enemy latched
+`CombatTargetOpen`, all four folders and all 20 live pets received the emergency alert, and Team 4—
+which had no assigned enemy—put all five pets on the Brute. Teams already fighting largely retained
+their higher-threat targets, confirming that the breach removes idle reserves without hard-pinning
+the active teams. The final authored roster also rendered one Beacon Finch in each of the four
+observer columns, and the runtime log contained no prototype or target-group errors.
+
+One balance caveat remains visible: generic per-pet regeneration starts at 15 endurance per second
+after that individual pet has gone five seconds without a hit, even while its team is still in
+combat. Low-damage Whelps can be out-healed by this behavior. Healing was deliberately left
+unchanged so tank composition and wave quantity remained separately measurable knobs.
+
+## Production direction after Phase 3
+
+- Four hatcher-owned NPC teams and independent targeting are now proven. The production queue is the
+  next separate mechanic; it should feed this common team contract rather than create special-case
+  principal paths.
+- Do not derive egg queue depth from the 8-enemies-per-team Whelp baseline alone. First tune the
+  Ember Brute's health/armor and the partial out-of-combat regeneration delay/rate, then repeat the
+  endurance ladder. That controlled run should determine replacement cadence and minimum ready-egg
+  buffer.
 - Tank/melee drive-back that pushes the whole frontline away from the hatcher is desirable lane
   behavior. A legitimately advanced team travels back to its hatcher after combat rather than
   teleporting at the generic catch-up distance.
+- The bulwark is a secondary engagement boundary, not a new focus system: strict team ownership
+  applies in front of it, and ordinary cross-team aggro becomes eligible only for breached enemies.
 - The player remains free to move between hatchers, merge eggs, and manage the board while these NPC
   teams fight asynchronously. Player position must not be a combat leash or scheduling input.
 

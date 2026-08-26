@@ -10,7 +10,7 @@
 local squad = {
     { pet = "trail_pup", variant = "basic" },
     { pet = "trail_pup", variant = "basic" },
-    { pet = "trail_pup", variant = "basic" },
+    { pet = "beacon_finch", variant = "basic" },
     { pet = "pack_tortoise", variant = "basic" },
     { pet = "compass_fox", variant = "basic" },
 }
@@ -38,6 +38,7 @@ return {
         exit_control = "ExitControl",
         enemy_spawn_area = "EnemySpawnArea",
         enemy_finish_line = "EnemyFinishLine",
+        bulwark_line = "BulwarkLine",
         bounds = {
             center_x = -16000,
             center_z = 0,
@@ -117,6 +118,9 @@ return {
         engagement_distance = 260,
         engagement_threat = 250,
         reengage_seconds = 1,
+        -- Past the authored BulwarkLine, strict team ownership ends. A breached enemy becomes an
+        -- open emergency target and every surviving hatcher folder receives an ordinary seed.
+        bulwark_threat = 250,
         spawn_inset = 5,
         finish_inset = 5,
         -- The first assignment in every non-empty team group is a real tank role. Keeping one

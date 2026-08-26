@@ -129,6 +129,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("EnemiesDefeated", record and record.defeated or 0)
     world:SetAttribute("EnemiesEscaped", record and record.escaped or 0)
     world:SetAttribute("EnemiesAlerted", record and record.alerted or 0)
+    world:SetAttribute("EnemiesBreachedBulwark", record and record.breached or 0)
     world:SetAttribute("PeakActiveEnemies", record and record.peakActiveEnemies or 0)
     world:SetAttribute("FirstPetLossWave", record and record.firstPetLossWave or nil)
     world:SetAttribute(
@@ -243,6 +244,8 @@ function MergeEggPrototypeService:_syncTeamState(record, team)
     local state = "Ready"
     if record.encounterSpawned and active == 0 then
         state = "Defeated"
+    elseif targeted > 0 then
+        state = "Engaged"
     elseif (team.assignedAlive or 0) > 0 then
         state = (team.engaged == true or targeted > 0) and "Engaged" or "Deploying"
     elseif record.encounterSpawned and returned < active then
@@ -508,6 +511,7 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.defeated = 0
     record.escaped = 0
     record.alerted = 0
+    record.breached = 0
     record.peakActiveEnemies = 0
     record.firstPetLossWave = nil
     record.firstPetLossActiveEnemies = nil
@@ -617,6 +621,7 @@ function MergeEggPrototypeService:_begin(player)
         defeated = 0,
         escaped = 0,
         alerted = 0,
+        breached = 0,
         peakActiveEnemies = 0,
         firstPetLossWave = nil,
         firstPetLossActiveEnemies = nil,
@@ -885,6 +890,56 @@ function MergeEggPrototypeService:_teamEngagedWithEnemy(team, enemy)
     return false
 end
 
+function MergeEggPrototypeService:_openBulwarkTarget(record, enemy)
+    local model = enemy and enemy.model
+    if
+        self._active ~= record
+        or not (model and model.Parent)
+        or model:GetAttribute("MergeEggBulwarkBreached") == true
+    then
+        return
+    end
+
+    model:SetAttribute("MergeEggBulwarkBreached", true)
+    model:SetAttribute("CombatTargetOpen", true)
+    record.breached += 1
+
+    local reserveTeams = 0
+    local alertedPets = 0
+    local threat = math.max(
+        1,
+        tonumber((self._config.enemy or {}).bulwark_threat)
+            or tonumber((self._config.enemy or {}).engagement_threat)
+            or 250
+    )
+    for _, team in ipairs(record.teams or {}) do
+        if team.folder and team.folder.Parent and (team.activePets or 0) > 0 then
+            local ok, count = self._enemyService:AlertPetFolderToEnemy(
+                team.folder,
+                enemy.targetId,
+                { threat = threat }
+            )
+            if ok then
+                reserveTeams += 1
+                alertedPets += count
+                team.engaged = true
+                self:_setTeamState(record, team, "Engaged")
+            end
+        end
+    end
+    model:SetAttribute("MergeEggReserveTeamCount", reserveTeams)
+    model:SetAttribute("MergeEggReserveAlertedPets", alertedPets)
+    self:_setWorldState("WaveActive", record)
+    self:_log("Info", "Merge Egg prototype bulwark breached", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+        enemy = model.Name,
+        assignedTeam = enemy.teamId,
+        reserveTeams = reserveTeams,
+        alertedPets = alertedPets,
+    })
+end
+
 function MergeEggPrototypeService:_alertApproachingEnemies(record)
     local cfg = self._config.enemy or {}
     local finishLine = findNamedPart(
@@ -894,6 +949,15 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     if not finishLine then
         return
     end
+    local bulwarkLine =
+        findNamedPart(self._world, (self._config.world or {}).bulwark_line or "BulwarkLine")
+    local towardFinish = bulwarkLine
+            and Vector3.new(
+                finishLine.Position.X - bulwarkLine.Position.X,
+                0,
+                finishLine.Position.Z - bulwarkLine.Position.Z
+            )
+        or Vector3.zero
     local alertDistance = math.max(1, tonumber(cfg.engagement_distance) or 260)
     local alertThreat = math.max(1, tonumber(cfg.engagement_threat) or 250)
     local reengageSeconds = math.max(0.25, tonumber(cfg.reengage_seconds) or 1)
@@ -941,6 +1005,21 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                         self:_setTeamState(record, team, "Engaged")
                         self:_setWorldState("WaveActive", record)
                     end
+                end
+            end
+            if
+                bulwarkLine
+                and towardFinish.Magnitude > 0
+                and model:GetAttribute("MergeEggBulwarkBreached") ~= true
+            then
+                local actualPosition = model:GetPivot().Position
+                local fromBulwark = Vector3.new(
+                    actualPosition.X - bulwarkLine.Position.X,
+                    0,
+                    actualPosition.Z - bulwarkLine.Position.Z
+                )
+                if fromBulwark:Dot(towardFinish.Unit) >= 0 then
+                    self:_openBulwarkTarget(record, enemy)
                 end
             end
         end

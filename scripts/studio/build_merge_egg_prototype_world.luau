@@ -116,6 +116,41 @@ local finishLine = part(
 )
 finishLine.CanCollide = false
 
+-- The reserve-engagement boundary is visible and authoritative: runtime projects enemy movement
+-- across this exact plane toward EnemyFinishLine. It sits 13 studs in front of HatcherSpawn.
+local bulwarkLine = part(
+    "BulwarkLine",
+    Vector3.new(84, 0.25, 2),
+    CFrame.new(ORIGIN + Vector3.new(0, 1.15, -205)),
+    GOLD,
+    Enum.Material.Neon,
+    0.1
+)
+bulwarkLine.CanCollide = false
+
+local bulwarkLabel = Instance.new("BillboardGui")
+bulwarkLabel.Name = "BulwarkLabel"
+bulwarkLabel.Size = UDim2.fromOffset(320, 42)
+bulwarkLabel.StudsOffsetWorldSpace = Vector3.new(0, 4, 0)
+bulwarkLabel.AlwaysOnTop = true
+bulwarkLabel.MaxDistance = 220
+bulwarkLabel.Parent = bulwarkLine
+
+local bulwarkText = Instance.new("TextLabel")
+bulwarkText.Size = UDim2.fromScale(1, 1)
+bulwarkText.BackgroundColor3 = Color3.fromRGB(24, 30, 43)
+bulwarkText.BackgroundTransparency = 0.2
+bulwarkText.BorderSizePixel = 0
+bulwarkText.Font = Enum.Font.GothamBold
+bulwarkText.Text = "BULWARK  •  ALL TEAMS ENGAGE"
+bulwarkText.TextColor3 = GOLD
+bulwarkText.TextScaled = true
+bulwarkText.Parent = bulwarkLabel
+
+local bulwarkCorner = Instance.new("UICorner")
+bulwarkCorner.CornerRadius = UDim.new(0, 7)
+bulwarkCorner.Parent = bulwarkText
+
 part(
     "StartPlatform",
     Vector3.new(84, 1, 72),
