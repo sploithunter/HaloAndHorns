@@ -1,9 +1,10 @@
 --[[
-    Studio-only Merge an Egg Phase 2.
+    Studio-only Merge an Egg Phase 3.
 
     This is deliberately one authored strip under Workspace.Maps. It does not use the tile kit,
-    mission layout generation, or any streaming/chunk lifecycle. One stationary NPC principal owns
-    the temporary defense squad; every principal, unit, and enemy remains session-only.
+    mission layout generation, or any streaming/chunk lifecycle. Four stationary NPC principals
+    own independently targeted temporary defense squads; every principal, unit, and enemy remains
+    session-only.
 ]]
 
 local squad = {
@@ -15,7 +16,7 @@ local squad = {
 }
 
 return {
-    version = 2,
+    version = 3,
     enabled = true,
     stream_timeout = 8,
 
@@ -23,7 +24,7 @@ return {
         hook_name = "HallOfWorldsPortal",
         prompt_name = "MergeEggPrototypeEnterPrompt",
         action_text = "Enter Prototype",
-        object_text = "Merge an Egg — Phase 2",
+        object_text = "Merge an Egg — Phase 3",
         title = "MERGE AN EGG\nPROTOTYPE",
     },
 
@@ -46,11 +47,9 @@ return {
         },
     },
 
-    -- The existing Future Self / Colorado NPC-principal lifecycle consumes this definition. The
-    -- owner avatar is a temporary visual stand-in for a purpose-built hatcher NPC asset.
+    -- The existing Future Self / Colorado NPC-principal lifecycle consumes this base definition.
+    -- The owner avatar is a temporary visual stand-in for four purpose-built hatcher NPC assets.
     principal = {
-        name = "Merge Hatcher Team 1",
-        display_name = "Hatcher Captain",
         avatar_owner = true,
         level = 1,
         squad = squad,
@@ -62,9 +61,42 @@ return {
     squad = squad,
 
     team = {
-        id = 1,
-        display_name = "NPC Team 1",
         return_ready_distance = 20,
+    },
+
+    teams = {
+        {
+            id = 1,
+            principal_name = "Merge Hatcher Team 1",
+            principal_display_name = "Hatcher Captain 1",
+            display_name = "NPC Team 1",
+            spawn_offset = { x = -24, z = 0 },
+            squad = squad,
+        },
+        {
+            id = 2,
+            principal_name = "Merge Hatcher Team 2",
+            principal_display_name = "Hatcher Captain 2",
+            display_name = "NPC Team 2",
+            spawn_offset = { x = -8, z = 0 },
+            squad = squad,
+        },
+        {
+            id = 3,
+            principal_name = "Merge Hatcher Team 3",
+            principal_display_name = "Hatcher Captain 3",
+            display_name = "NPC Team 3",
+            spawn_offset = { x = 8, z = 0 },
+            squad = squad,
+        },
+        {
+            id = 4,
+            principal_name = "Merge Hatcher Team 4",
+            principal_display_name = "Hatcher Captain 4",
+            display_name = "NPC Team 4",
+            spawn_offset = { x = 24, z = 0 },
+            squad = squad,
+        },
     },
 
     enemy = {

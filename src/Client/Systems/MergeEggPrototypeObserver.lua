@@ -1,10 +1,10 @@
 --[[
-    MergeEggPrototypeObserver — read-only Phase 2 combat telemetry.
+    MergeEggPrototypeObserver — read-only Phase 3 combat telemetry.
 
     The player's ordinary SquadHud remains reserved for their own deployable team. This Studio-only
-    rail observes the one hatcher NPC squad directly from replicated folder/model attributes: five
-    stable pet slots, endurance, current target, team lifecycle, and wave progress. It sends no
-    remotes and cannot focus enemies or command the NPC team.
+    rail renders one column per hatcher NPC from replicated folder/model attributes: five stable pet
+    slots, endurance, current target, assigned-enemy count, team lifecycle, and wave progress. It
+    sends no remotes and cannot focus enemies or command any NPC team.
 ]]
 
 local Players = game:GetService("Players")
@@ -23,6 +23,7 @@ local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local MergeEggPrototypeObserver = {}
 
 local localPlayer = Players.LocalPlayer
+local PANEL_WIDTH = 214
 local ROLE_THEME = {
     tank = { color = Color3.fromRGB(75, 145, 225), glyph = "T" },
     melee = { color = Color3.fromRGB(210, 80, 75), glyph = "M" },
@@ -52,17 +53,21 @@ local function petPower(pet)
     )
 end
 
-local function teamFolder()
+local function teamFolders()
+    local found = {}
     local root = Workspace:FindFirstChild("PlayerPets")
     for _, folder in ipairs(root and root:GetChildren() or {}) do
         if
             folder:GetAttribute("MergeEggPrototypeTeam") == true
             and tonumber(folder:GetAttribute("MergeEggOwnerUserId")) == localPlayer.UserId
         then
-            return folder
+            local id = tonumber(folder:GetAttribute("MergeEggTeamId"))
+            if id then
+                found[id] = folder
+            end
         end
     end
-    return nil
+    return found
 end
 
 local function enemyName(targetId)
@@ -90,6 +95,195 @@ local function worldProgress()
         tonumber(world:GetAttribute("WaveCount")) or #(CONFIG.waves or {})
 end
 
+local function createHeader(parent, titleText)
+    local header = Instance.new("Frame")
+    header.Name = "Header"
+    header.Size = UDim2.fromOffset(PANEL_WIDTH, 46)
+    header.BackgroundColor3 = Color3.fromRGB(24, 30, 43)
+    header.BackgroundTransparency = 0.05
+    header.BorderSizePixel = 0
+    header.LayoutOrder = 0
+    header.Parent = parent
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 7)
+    corner.Parent = header
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(85, 150, 225)
+    stroke.Transparency = 0.25
+    stroke.Thickness = 1.5
+    stroke.Parent = header
+
+    local title = Instance.new("TextLabel")
+    title.BackgroundTransparency = 1
+    title.Position = UDim2.fromOffset(10, 5)
+    title.Size = UDim2.new(1, -20, 0, 18)
+    title.Font = Enum.Font.GothamBold
+    title.Text = titleText
+    title.TextColor3 = Color3.fromRGB(235, 244, 255)
+    title.TextSize = 14
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = header
+
+    local summary = Instance.new("TextLabel")
+    summary.BackgroundTransparency = 1
+    summary.Position = UDim2.fromOffset(10, 24)
+    summary.Size = UDim2.new(1, -20, 0, 15)
+    summary.Font = Enum.Font.Gotham
+    summary.Text = "HATCH TO DEPLOY"
+    summary.TextColor3 = Color3.fromRGB(175, 190, 210)
+    summary.TextSize = 10
+    summary.TextXAlignment = Enum.TextXAlignment.Left
+    summary.Parent = header
+
+    return title, summary
+end
+
+local function createPanel(root, teamCfg, order)
+    local id = math.max(1, math.floor(tonumber(teamCfg.id) or order))
+    local frame = Instance.new("Frame")
+    frame.Name = "Team_" .. id
+    frame.Size = UDim2.fromOffset(PANEL_WIDTH, 10)
+    frame.AutomaticSize = Enum.AutomaticSize.Y
+    frame.BackgroundTransparency = 1
+    frame.LayoutOrder = order
+    frame.Parent = root
+
+    local layout = Instance.new("UIListLayout")
+    layout.FillDirection = Enum.FillDirection.Vertical
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0, 4)
+    layout.Parent = frame
+
+    local title, summary =
+        createHeader(frame, tostring(teamCfg.display_name or ("NPC Team " .. id)):upper())
+    return {
+        id = id,
+        config = teamCfg,
+        frame = frame,
+        title = title,
+        summary = summary,
+        cards = {},
+    }
+end
+
+local function clearCards(panel)
+    for slot, card in pairs(panel.cards) do
+        card.frame:Destroy()
+        panel.cards[slot] = nil
+    end
+end
+
+local function cardFor(panel, slot)
+    local card = panel.cards[slot]
+    if card then
+        return card
+    end
+    card = HudCard.createCard(panel.frame, {
+        name = string.format("NpcPet_%d_%d", panel.id, slot),
+        layoutOrder = slot,
+        width = PANEL_WIDTH,
+    })
+    card.frame.Active = false
+    card.frame.Selectable = false
+    HudCard.applyFunctionMark(card, nil)
+    HudCard.applyHighlight(card, nil)
+    panel.cards[slot] = card
+    return card
+end
+
+local function updatePetCard(card, pet, authored, factor)
+    local petType = pet and pet:GetAttribute("PetType") or authored.pet or "pet"
+    local roleId = pet and pet:GetAttribute("PetRole")
+        or (PET_ROLES.by_type and PET_ROLES.by_type[petType])
+        or PET_ROLES.default
+        or "melee"
+    local theme = ROLE_THEME[roleId] or ROLE_THEME.melee
+    local hasBadge =
+        PetBadge.apply(card.roleIcon, card.roleRing, PetBadge.elementForPetType(petType), roleId)
+    card.roleChip.BackgroundColor3 = theme.color
+    card.roleChip.BackgroundTransparency = hasBadge and 1 or 0
+    card.roleGlyph.Visible = not hasBadge
+    card.roleGlyph.Text = theme.glyph
+
+    if pet then
+        local fraction = PetEndurance.healthFraction(
+            tonumber(pet:GetAttribute("CombatDamageTaken")) or 0,
+            petPower(pet),
+            factor
+        )
+        local targetText = ""
+        local targetId = pet:FindFirstChild("TargetID")
+        local targetType = pet:FindFirstChild("TargetType")
+        if
+            targetId
+            and targetId.Value ~= 0
+            and targetType
+            and tostring(targetType.Value) == "Enemy"
+        then
+            targetText = " → " .. enemyName(targetId.Value)
+        end
+        card.name.Text = prettyName(petType) .. targetText
+        card.fill.Size = UDim2.fromScale(math.clamp(fraction, 0, 1), 1)
+        card.fill.BackgroundColor3 = HudCard.healthColor(fraction)
+        card.note.Text = string.format("%d%%", math.floor(fraction * 100 + 0.5))
+    else
+        card.name.Text = prettyName(petType)
+        card.fill.Size = UDim2.fromScale(0, 1)
+        card.fill.BackgroundColor3 = HudCard.HP_RED
+        card.note.Text = "DEFEATED"
+    end
+end
+
+local function updatePanel(panel, folder, wave, waveCount, factor)
+    if not folder then
+        panel.title.Text = tostring(panel.config.display_name or ("NPC Team " .. panel.id)):upper()
+        panel.summary.Text = "HATCH TO DEPLOY"
+        panel.summary.TextColor3 = Color3.fromRGB(175, 190, 210)
+        clearCards(panel)
+        return
+    end
+
+    local squad = panel.config.squad or CONFIG.squad or {}
+    local expected =
+        math.max(1, math.floor(tonumber(folder:GetAttribute("MergeEggExpectedPets")) or #squad))
+    local active = math.max(0, tonumber(folder:GetAttribute("MergeEggActivePets")) or 0)
+    local assigned = math.max(0, tonumber(folder:GetAttribute("MergeEggAssignedEnemies")) or 0)
+    local state = tostring(folder:GetAttribute("MergeEggTeamState") or "Ready"):upper()
+    panel.title.Text = tostring(
+        folder:GetAttribute("MergeEggTeamDisplayName") or ("NPC Team " .. panel.id)
+    ):upper()
+    panel.summary.Text = string.format(
+        "%s • %d/%d • %d FOES • W%d/%d",
+        state,
+        active,
+        expected,
+        assigned,
+        wave,
+        waveCount
+    )
+    panel.summary.TextColor3 = state == "DEFEATED" and Color3.fromRGB(240, 105, 95)
+        or state == "ENGAGED" and Color3.fromRGB(245, 190, 75)
+        or Color3.fromRGB(175, 205, 230)
+
+    local bySlot = {}
+    for _, pet in ipairs(folder:GetChildren()) do
+        if pet:IsA("Model") then
+            bySlot[petSlot(pet)] = pet
+        end
+    end
+    for slot = 1, expected do
+        updatePetCard(cardFor(panel, slot), bySlot[slot], squad[slot] or {}, factor)
+    end
+    for slot, card in pairs(panel.cards) do
+        if slot > expected then
+            card.frame:Destroy()
+            panel.cards[slot] = nil
+        end
+    end
+end
+
 function MergeEggPrototypeObserver.start()
     if not RunService:IsStudio() then
         return
@@ -104,85 +298,26 @@ function MergeEggPrototypeObserver.start()
     gui.Parent = localPlayer:WaitForChild("PlayerGui")
 
     local root = Instance.new("Frame")
-    root.Name = "Rail"
+    root.Name = "TeamRail"
     root.AnchorPoint = Vector2.new(1, 0)
     root.Position = UDim2.new(1, -8, 0, 8)
-    root.Size = UDim2.fromOffset(214, 10)
-    root.AutomaticSize = Enum.AutomaticSize.Y
+    root.Size = UDim2.fromOffset(10, 10)
+    root.AutomaticSize = Enum.AutomaticSize.XY
     root.BackgroundTransparency = 1
     root.Parent = gui
     require(script.Parent.Parent.UI.UIViewportScale).attach(root)
 
     local layout = Instance.new("UIListLayout")
-    layout.FillDirection = Enum.FillDirection.Vertical
+    layout.FillDirection = Enum.FillDirection.Horizontal
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Padding = UDim.new(0, 4)
     layout.Parent = root
 
-    local header = Instance.new("Frame")
-    header.Name = "Header"
-    header.Size = UDim2.fromOffset(214, 46)
-    header.BackgroundColor3 = Color3.fromRGB(24, 30, 43)
-    header.BackgroundTransparency = 0.05
-    header.BorderSizePixel = 0
-    header.LayoutOrder = 0
-    header.Parent = root
-    local headerCorner = Instance.new("UICorner")
-    headerCorner.CornerRadius = UDim.new(0, 7)
-    headerCorner.Parent = header
-    local headerStroke = Instance.new("UIStroke")
-    headerStroke.Color = Color3.fromRGB(85, 150, 225)
-    headerStroke.Transparency = 0.25
-    headerStroke.Thickness = 1.5
-    headerStroke.Parent = header
-
-    local title = Instance.new("TextLabel")
-    title.BackgroundTransparency = 1
-    title.Position = UDim2.fromOffset(10, 5)
-    title.Size = UDim2.new(1, -20, 0, 18)
-    title.Font = Enum.Font.GothamBold
-    title.Text = "NPC TEAM 1"
-    title.TextColor3 = Color3.fromRGB(235, 244, 255)
-    title.TextSize = 14
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = header
-
-    local summary = Instance.new("TextLabel")
-    summary.BackgroundTransparency = 1
-    summary.Position = UDim2.fromOffset(10, 24)
-    summary.Size = UDim2.new(1, -20, 0, 15)
-    summary.Font = Enum.Font.Gotham
-    summary.Text = "HATCH TO DEPLOY"
-    summary.TextColor3 = Color3.fromRGB(175, 190, 210)
-    summary.TextSize = 11
-    summary.TextXAlignment = Enum.TextXAlignment.Left
-    summary.Parent = header
-
-    local cards = {}
-    local function clearCards()
-        for slot, card in pairs(cards) do
-            card.frame:Destroy()
-            cards[slot] = nil
-        end
-    end
-
-    local function cardFor(slot)
-        local card = cards[slot]
-        if card then
-            return card
-        end
-        card = HudCard.createCard(root, {
-            name = "NpcPet_" .. slot,
-            layoutOrder = slot,
-            width = 214,
-        })
-        card.frame.Active = false
-        card.frame.Selectable = false
-        HudCard.applyFunctionMark(card, nil)
-        HudCard.applyHighlight(card, nil)
-        cards[slot] = card
-        return card
+    local panels = {}
+    for order, teamCfg in ipairs(CONFIG.teams or {}) do
+        local panel = createPanel(root, teamCfg, order)
+        panels[panel.id] = panel
     end
 
     local factor = tonumber(COMBAT.pet_down_threshold_factor) or 1
@@ -197,102 +332,16 @@ function MergeEggPrototypeObserver.start()
         local observing = localPlayer:GetAttribute("InMergeEggPrototype") == true
         gui.Enabled = observing
         if not observing then
-            clearCards()
+            for _, panel in pairs(panels) do
+                clearCards(panel)
+            end
             return
         end
 
-        local folder = teamFolder()
-        if not folder then
-            title.Text = tostring((CONFIG.team or {}).display_name or "NPC Team 1"):upper()
-            summary.Text = "HATCH TO DEPLOY"
-            clearCards()
-            return
-        end
-
-        local expected = math.max(
-            1,
-            math.floor(
-                tonumber(folder:GetAttribute("MergeEggExpectedPets")) or #(CONFIG.squad or {})
-            )
-        )
-        local active = math.max(0, tonumber(folder:GetAttribute("MergeEggActivePets")) or 0)
-        local state = tostring(folder:GetAttribute("MergeEggTeamState") or "Ready"):upper()
+        local folders = teamFolders()
         local wave, waveCount = worldProgress()
-        title.Text =
-            tostring(folder:GetAttribute("MergeEggTeamDisplayName") or "NPC Team 1"):upper()
-        summary.Text = string.format(
-            "%s  •  %d/%d PETS  •  WAVE %d/%d",
-            state,
-            active,
-            expected,
-            wave,
-            waveCount
-        )
-        summary.TextColor3 = state == "DEFEATED" and Color3.fromRGB(240, 105, 95)
-            or state == "ENGAGED" and Color3.fromRGB(245, 190, 75)
-            or Color3.fromRGB(175, 205, 230)
-
-        local bySlot = {}
-        for _, pet in ipairs(folder:GetChildren()) do
-            if pet:IsA("Model") then
-                bySlot[petSlot(pet)] = pet
-            end
-        end
-
-        for slot = 1, expected do
-            local card = cardFor(slot)
-            local pet = bySlot[slot]
-            local authored = (CONFIG.squad or {})[slot] or {}
-            local petType = pet and pet:GetAttribute("PetType") or authored.pet or "pet"
-            local roleId = pet and pet:GetAttribute("PetRole")
-                or (PET_ROLES.by_type and PET_ROLES.by_type[petType])
-                or PET_ROLES.default
-                or "melee"
-            local theme = ROLE_THEME[roleId] or ROLE_THEME.melee
-            local hasBadge = PetBadge.apply(
-                card.roleIcon,
-                card.roleRing,
-                PetBadge.elementForPetType(petType),
-                roleId
-            )
-            card.roleChip.BackgroundColor3 = theme.color
-            card.roleChip.BackgroundTransparency = hasBadge and 1 or 0
-            card.roleGlyph.Visible = not hasBadge
-            card.roleGlyph.Text = theme.glyph
-
-            if pet then
-                local fraction = PetEndurance.healthFraction(
-                    tonumber(pet:GetAttribute("CombatDamageTaken")) or 0,
-                    petPower(pet),
-                    factor
-                )
-                local targetText = ""
-                local targetId = pet:FindFirstChild("TargetID")
-                local targetType = pet:FindFirstChild("TargetType")
-                if
-                    targetId
-                    and targetId.Value ~= 0
-                    and targetType
-                    and tostring(targetType.Value) == "Enemy"
-                then
-                    targetText = " → " .. enemyName(targetId.Value)
-                end
-                card.name.Text = prettyName(petType) .. targetText
-                card.fill.Size = UDim2.fromScale(math.clamp(fraction, 0, 1), 1)
-                card.fill.BackgroundColor3 = HudCard.healthColor(fraction)
-                card.note.Text = string.format("%d%%", math.floor(fraction * 100 + 0.5))
-            else
-                card.name.Text = prettyName(petType)
-                card.fill.Size = UDim2.fromScale(0, 1)
-                card.fill.BackgroundColor3 = HudCard.HP_RED
-                card.note.Text = "DEFEATED"
-            end
-        end
-        for slot, card in pairs(cards) do
-            if slot > expected then
-                card.frame:Destroy()
-                cards[slot] = nil
-            end
+        for id, panel in pairs(panels) do
+            updatePanel(panel, folders[id], wave, waveCount, factor)
         end
     end)
 end
