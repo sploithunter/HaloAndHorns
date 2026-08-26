@@ -54,6 +54,8 @@ return {
         cadence = 2,
         march_speed = 22,
         finish_distance = 2,
+        engagement_distance = 260,
+        engagement_threat = 250,
         spawn_inset = 5,
         finish_inset = 5,
     },

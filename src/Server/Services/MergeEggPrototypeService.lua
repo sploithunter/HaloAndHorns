@@ -126,6 +126,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("WaveCount", #(self._config.waves or {}))
     world:SetAttribute("EnemiesDefeated", record and record.defeated or 0)
     world:SetAttribute("EnemiesEscaped", record and record.escaped or 0)
+    world:SetAttribute("EnemiesAlerted", record and record.alerted or 0)
 end
 
 function MergeEggPrototypeService:_attachPrompt(host, name, actionText, objectText, callback)
@@ -328,6 +329,7 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.waveIndex = 0
     record.defeated = 0
     record.escaped = 0
+    record.alerted = 0
     record.nextWaveAt = nil
     record.resolvedTargets = {}
 
@@ -431,6 +433,7 @@ function MergeEggPrototypeService:_begin(player)
         waveIndex = 0,
         defeated = 0,
         escaped = 0,
+        alerted = 0,
         nextWaveAt = nil,
         resolvedTargets = {},
         random = Random.new(),
@@ -610,8 +613,50 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     return true
 end
 
+function MergeEggPrototypeService:_alertApproachingEnemies(record)
+    local cfg = self._config.enemy or {}
+    local finishLine = findNamedPart(
+        self._world,
+        (self._config.world or {}).enemy_finish_line or "EnemyFinishLine"
+    )
+    if not finishLine then
+        return
+    end
+    local alertDistance = math.max(1, tonumber(cfg.engagement_distance) or 260)
+    local alertThreat = math.max(1, tonumber(cfg.engagement_threat) or 250)
+    for _, enemy in ipairs(record.enemies) do
+        local model = enemy.model
+        local position = model and model:GetAttribute("MoveTarget")
+        if
+            model
+            and model.Parent
+            and (tonumber(model:GetAttribute("HP")) or 0) > 0
+            and model:GetAttribute("MergeEggDefenseAlerted") ~= true
+            and typeof(position) == "Vector3"
+        then
+            local localPosition = finishLine.CFrame:PointToObjectSpace(position)
+            if math.abs(localPosition.Z) <= alertDistance then
+                local ok, alertedPets = self._enemyService:AlertSquadToEnemy(
+                    record.player,
+                    enemy.targetId,
+                    { threat = alertThreat }
+                )
+                if ok then
+                    model:SetAttribute("MergeEggDefenseAlerted", true)
+                    model:SetAttribute("MergeEggAlertedPets", alertedPets)
+                    record.alerted += 1
+                    self:_setWorldState("WaveActive", record)
+                end
+            end
+        end
+    end
+end
+
 function MergeEggPrototypeService:_step()
     local record = self._active
+    if record and record.encounterSpawned then
+        self:_alertApproachingEnemies(record)
+    end
     if not (record and record.nextWaveAt and os.clock() >= record.nextWaveAt) then
         return
     end

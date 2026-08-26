@@ -30,6 +30,10 @@ progression, procedural layout, and multiplayer occupancy.
   tank threat/implicit taunt remain authoritative. If the pets fall or aggro clears, a surviving
   enemy resumes toward the same finish from its displaced position. The prototype does not pin all
   five pets to one target; normal pet/enemy threat tables decide who responds to whom.
+- At 260 studs from the finish—roughly mid-strip—the defense boundary automatically seeds 250
+  ordinary threat on both sides for every live squad pet. This begins combat without a click and
+  survives the longer approach, but does not write pet targets or create an assist pin; normal
+  damage, decay, proximity, and the Pack Tortoise's tank taunt take over immediately.
 - Enemies use `rewardPolicy = "none"`, so defeat grants no loot, XP/progression event, tracked
   counter, potion, enhancement, or exclusive egg. Defeat and finish-line arrival are counted
   separately; after every enemy in a wave is resolved, the next larger wave starts automatically.

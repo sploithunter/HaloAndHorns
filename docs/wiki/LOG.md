@@ -5098,3 +5098,7 @@ first-session cohort rates.
   resumes after disengagement, and resolves as either defeated or escaped without rewards.
 - Live testing caught the first finish line ahead of the defenders, letting enemies score before
   guaranteed aggro. Moved it behind the hatcher/squad so crossing requires passing the defense.
+- A second live pass confirmed pets still waited for a click. Added a 140-stud non-pinning defense
+  alert with enough initial bilateral threat to close distance; tank taunts remain authoritative.
+- The first automatic alert still engaged in the defensive third of the lane. Moved it to 260 studs
+  (roughly mid-strip) and raised only its initial decaying threat to 250 for the longer approach.
