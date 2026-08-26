@@ -69,6 +69,7 @@ local PetLockout = require(ReplicatedStorage.Shared.Game.PetLockout)
 local ZoneResolver = require(ReplicatedStorage.Shared.Game.ZoneResolver)
 local EnemyLeash = require(ReplicatedStorage.Shared.Game.EnemyLeash)
 local EnemyRewardPolicy = require(ReplicatedStorage.Shared.Game.EnemyRewardPolicy)
+local EnemyPatrolRoute = require(ReplicatedStorage.Shared.Game.EnemyPatrolRoute)
 local MissionRankScale = require(ReplicatedStorage.Shared.Game.MissionRankScale)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
@@ -2759,12 +2760,58 @@ function EnemyService:_dropUnreachableEngagement(entry, targetId, reason)
     self:_clearChasePath(entry)
 end
 
-function EnemyService:_loiter(entry, model, ePos, dt)
+function EnemyService:_followAuthoredPatrolRoute(entry, targetId, model, ePos, dt)
+    local route = entry.patrolRoute
+    if not route then
+        return false
+    end
+
+    local x, z, index, completed =
+        EnemyPatrolRoute.step(route, ePos.X, ePos.Z, math.max(0, dt or 0))
+    local gy = self:_groundedY(entry, x, z, ePos.Y)
+    local eng = self._combatConfig and self._combatConfig.engagement or {}
+    local flyer = (entry.hoverHeight or 0) > 0
+    if not flyer and (gy - ePos.Y) > (eng.ground_climb_max or 10) then
+        return true
+    end
+
+    route.index = index
+    local np = self:_leashToHomeArea(entry, Vector3.new(x, gy, z))
+    local moveVec = Vector3.new(np.X - ePos.X, 0, np.Z - ePos.Z)
+    entry.pos = np
+    model:SetAttribute("MoveTarget", np)
+    model:SetAttribute("PatrolWaypointIndex", index)
+    if moveVec.Magnitude > 0.02 then
+        model:SetAttribute("MoveFace", np + moveVec.Unit * 4)
+    end
+
+    if completed then
+        entry.patrolRoute = nil
+        model:SetAttribute("PatrolRouteComplete", true)
+        local onCompleted = route.onCompleted
+        route.onCompleted = nil
+        if onCompleted then
+            local ok, err = pcall(onCompleted, {
+                targetId = targetId,
+                enemyId = entry.enemyId,
+                model = model,
+                position = np,
+            })
+            if not ok and self._logger then
+                self._logger:Warn("Enemy patrol route callback failed", {
+                    enemyId = entry.enemyId,
+                    targetId = targetId,
+                    error = tostring(err),
+                })
+            end
+        end
+    end
+    return true
+end
+
+function EnemyService:_loiter(entry, targetId, model, ePos, dt)
     local eng = self._combatConfig and self._combatConfig.engagement
     local cfg = eng and eng.loiter
-    if not cfg or cfg.enabled == false then
-        return
-    end
     -- CONTROL: loiter is a SEPARATE mover from the chase path, so it needs the same root gate or a
     -- controlled enemy that disengages (target moved away) wanders out of the snare while RootedUntil
     -- is still ticking — the root looks broken. HeldUntil = full mez, RootedUntil = snare; both freeze
@@ -2776,6 +2823,14 @@ function EnemyService:_loiter(entry, model, ePos, dt)
             os.time()
         )
     then
+        return
+    end
+    -- Authored routes replace random idle meander. Combat owns motion while engaged, then the
+    -- route resumes from the enemy's latest authoritative position after disengagement.
+    if self:_followAuthoredPatrolRoute(entry, targetId, model, ePos, dt) then
+        return
+    end
+    if not cfg or cfg.enabled == false then
         return
     end
     entry.home = entry.home or ePos
@@ -2896,7 +2951,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
             end
         end
         if not entry.aggroPlayerName then
-            self:_loiter(entry, model, ePos, dt)
+            self:_loiter(entry, targetId, model, ePos, dt)
             return -- still unaware: idle (loitering around home, not frozen)
         end
     end
@@ -6792,7 +6847,9 @@ function EnemyService:_combatTick(dt)
                 else
                     self:_engageEnemy(entry, targetId, now, eng, dt)
                 end
-                self:_updateHeldBadge(model, nowTime) -- world icon disc above a pinned (held) enemy
+                if self._enemies[targetId] then
+                    self:_updateHeldBadge(model, nowTime) -- world icon disc above a pinned (held) enemy
+                end
             end
         end
     end
@@ -6937,6 +6994,16 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     if not rewardPolicy then
         return { ok = false, reason = "invalid_reward_policy" }
     end
+    local patrolRoute = nil
+    if opts and opts.patrolRoute ~= nil then
+        patrolRoute = EnemyPatrolRoute.new(opts.patrolRoute)
+        if not patrolRoute then
+            return { ok = false, reason = "invalid_patrol_route" }
+        end
+        patrolRoute.onCompleted = type(opts.patrolRoute.onCompleted) == "function"
+                and opts.patrolRoute.onCompleted
+            or nil
+    end
     -- opts.def lets a caller field a SYNTHESIZED def (e.g. a pet-model invader, see _petEnemyDef)
     -- instead of an enemies.lua entry — the rest of the spawn path is identical (mesh/scale/hp/attack).
     local def = (opts and type(opts.def) == "table" and opts.def)
@@ -7023,6 +7090,9 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         -- generated room rectangle; the movement code remains unaware of mission/map specifics.
         movementLeash = (opts and type(opts.movementLeash) == "table") and opts.movementLeash
             or nil,
+        -- Ordered authored patrol points are a generic idle-movement seam. Aggro/combat interrupts
+        -- the route without discarding it; disengagement resumes from the current position.
+        patrolRoute = patrolRoute,
         encounterGroup = opts and opts.encounterGroup or nil,
         -- Generic isolated-encounter seam. The default is exactly the legacy reward/progression
         -- path; "none" suppresses it while the server-only callback still observes defeat once.
@@ -7044,6 +7114,10 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     model:SetAttribute("LeashRegion", leashRegion or "")
     model:SetAttribute("MoveTarget", position)
     model:SetAttribute("MoveFace", Vector3.new(hrp.Position.X, position.Y, hrp.Position.Z))
+    if patrolRoute then
+        model:SetAttribute("PatrolWaypointIndex", patrolRoute.index)
+        model:SetAttribute("PatrolRouteComplete", false)
+    end
     local movement = self._enemies[targetId].movementLeash
     local movementShape = movement and movement.shapes and movement.shapes[1]
     if movementShape and movementShape.kind == "box" then
