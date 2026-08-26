@@ -1,13 +1,21 @@
 --[[
-    Studio-only Merge an Egg Phase 1.
+    Studio-only Merge an Egg Phase 2.
 
     This is deliberately one authored strip under Workspace.Maps. It does not use the tile kit,
-    mission layout generation, or any streaming/chunk lifecycle. The prototype service is only
-    registered in Studio and every unit/enemy it creates is session-only.
+    mission layout generation, or any streaming/chunk lifecycle. One stationary NPC principal owns
+    the temporary defense squad; every principal, unit, and enemy remains session-only.
 ]]
 
+local squad = {
+    { pet = "trail_pup", variant = "basic" },
+    { pet = "trail_pup", variant = "basic" },
+    { pet = "trail_pup", variant = "basic" },
+    { pet = "pack_tortoise", variant = "basic" },
+    { pet = "compass_fox", variant = "basic" },
+}
+
 return {
-    version = 1,
+    version = 2,
     enabled = true,
     stream_timeout = 8,
 
@@ -15,7 +23,7 @@ return {
         hook_name = "HallOfWorldsPortal",
         prompt_name = "MergeEggPrototypeEnterPrompt",
         action_text = "Enter Prototype",
-        object_text = "Merge an Egg — Phase 1",
+        object_text = "Merge an Egg — Phase 2",
         title = "MERGE AN EGG\nPROTOTYPE",
     },
 
@@ -38,12 +46,25 @@ return {
         },
     },
 
-    squad = {
-        { pet = "trail_pup", variant = "basic" },
-        { pet = "trail_pup", variant = "basic" },
-        { pet = "trail_pup", variant = "basic" },
-        { pet = "pack_tortoise", variant = "basic" },
-        { pet = "compass_fox", variant = "basic" },
+    -- The existing Future Self / Colorado NPC-principal lifecycle consumes this definition. The
+    -- owner avatar is a temporary visual stand-in for a purpose-built hatcher NPC asset.
+    principal = {
+        name = "Merge Hatcher Team 1",
+        display_name = "Hatcher Captain",
+        avatar_owner = true,
+        level = 1,
+        squad = squad,
+        alliance = { enabled = false },
+        powers = {},
+        auto_farm = { enabled = false },
+    },
+
+    squad = squad,
+
+    team = {
+        id = 1,
+        display_name = "NPC Team 1",
+        return_ready_distance = 20,
     },
 
     enemy = {

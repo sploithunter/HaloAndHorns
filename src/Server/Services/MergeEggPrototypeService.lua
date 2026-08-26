@@ -1,10 +1,11 @@
 --[[
-    MergeEggPrototypeService — Studio-only Phase 1 vertical slice.
+    MergeEggPrototypeService — Studio-only Phase 2 vertical slice.
 
     One player enters through Home's otherwise-disabled Hall gate, is streamed to one authored
-    strip under Workspace.Maps, hatches exactly five manifested Wayfinder pets, and tests escalating
-    reward-free enemy waves marching toward one finish line. Reset makes the loop repeatable; Exit
-    restores the player's runtime squad and exact entry transform.
+    strip under Workspace.Maps, and hatches one stationary NPC principal with exactly five manifested
+    Wayfinder pets. Its independently addressed squad tests escalating reward-free enemy waves
+    marching toward one finish line. Reset makes the loop repeatable; Exit restores the player's
+    runtime squad and exact entry transform.
 
     There is intentionally no tile-kit or mission-instance world generation here. The map is a
     persistent Studio-authored Model and this service owns only session routing and cleanup.
@@ -127,6 +128,81 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("EnemiesDefeated", record and record.defeated or 0)
     world:SetAttribute("EnemiesEscaped", record and record.escaped or 0)
     world:SetAttribute("EnemiesAlerted", record and record.alerted or 0)
+    world:SetAttribute("ActiveTeamName", record and record.principalName or nil)
+    world:SetAttribute("ActiveTeamState", record and record.teamState or nil)
+    world:SetAttribute("ActiveTeamPets", record and record.activePets or 0)
+    world:SetAttribute("DefeatedTeamPets", record and record.defeatedPets or 0)
+end
+
+function MergeEggPrototypeService:_setTeamState(record, state)
+    if not record then
+        return
+    end
+    state = tostring(state or "Ready")
+    record.teamState = state
+    if record.teamFolder and record.teamFolder.Parent then
+        record.teamFolder:SetAttribute("MergeEggTeamState", state)
+    end
+    local worldState = self._world and self._world:GetAttribute("PrototypeState") or "ReadyToHatch"
+    if state == "Defeated" then
+        worldState = "TeamDefeated"
+    end
+    self:_setWorldState(worldState, record)
+end
+
+function MergeEggPrototypeService:_syncTeamState(record)
+    local folder = record and record.teamFolder
+    if not (folder and folder.Parent) then
+        return
+    end
+    local active = 0
+    local targeted = 0
+    local returned = 0
+    local anchorRoot = record.principalModel
+        and record.principalModel:FindFirstChild("HumanoidRootPart")
+    local anchorPosition = anchorRoot and anchorRoot.Position
+    local readyDistance =
+        math.max(1, tonumber((self._config.team or {}).return_ready_distance) or 20)
+
+    for _, pet in ipairs(folder:GetChildren()) do
+        if pet:IsA("Model") then
+            active += 1
+            local targetId = pet:FindFirstChild("TargetID")
+            if targetId and tonumber(targetId.Value) and targetId.Value ~= 0 then
+                targeted += 1
+            end
+            local position = pet:GetAttribute("NpcCombatPosition")
+            if typeof(position) ~= "Vector3" then
+                position = pet:GetPivot().Position
+            end
+            if anchorPosition then
+                local horizontal =
+                    Vector3.new(position.X - anchorPosition.X, 0, position.Z - anchorPosition.Z)
+                if horizontal.Magnitude <= readyDistance then
+                    returned += 1
+                end
+            end
+        end
+    end
+
+    local expected = #(self._config.squad or {})
+    record.activePets = active
+    record.defeatedPets = math.max(0, expected - active)
+    folder:SetAttribute("MergeEggActivePets", active)
+    folder:SetAttribute("MergeEggDefeatedPets", record.defeatedPets)
+    folder:SetAttribute("MergeEggTargetedPets", targeted)
+    folder:SetAttribute("MergeEggReturnedPets", returned)
+    folder:SetAttribute("MergeEggWave", record.waveIndex)
+
+    local state = "Ready"
+    if record.encounterSpawned and active == 0 then
+        state = "Defeated"
+    elseif record.aliveEnemies > 0 then
+        state = (record.teamEngaged == true or targeted > 0) and "Engaged" or "Deploying"
+    elseif record.encounterSpawned and returned < active then
+        state = "Returning"
+    end
+    self:_setTeamState(record, state)
 end
 
 function MergeEggPrototypeService:_attachPrompt(host, name, actionText, objectText, callback)
@@ -198,7 +274,7 @@ function MergeEggPrototypeService:_unsealHallGate()
         hook,
         tostring(gateCfg.prompt_name or "MergeEggPrototypeEnterPrompt"),
         tostring(gateCfg.action_text or "Enter Prototype"),
-        tostring(gateCfg.object_text or "Merge an Egg — Phase 1"),
+        tostring(gateCfg.object_text or "Merge an Egg — Phase 2"),
         function(player)
             self:_begin(player)
         end
@@ -211,8 +287,8 @@ function MergeEggPrototypeService:_bindWorldControls(world)
     self:_attachPrompt(
         findNamedPart(world, cfg.hatcher_control),
         HATCH_PROMPT_NAME,
-        "Hatch 5 Units",
-        "Phase 1 Test Egg",
+        "Deploy NPC Team",
+        "Phase 2 Test Egg",
         function(player)
             self:_hatch(player)
         end
@@ -221,7 +297,7 @@ function MergeEggPrototypeService:_bindWorldControls(world)
         findNamedPart(world, cfg.reset_control),
         RESET_PROMPT_NAME,
         "Reset Encounter",
-        "Merge an Egg — Phase 1",
+        "Merge an Egg — Phase 2",
         function(player)
             self:_reset(player)
         end
@@ -332,17 +408,18 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.alerted = 0
     record.nextWaveAt = nil
     record.resolvedTargets = {}
+    record.teamEngaged = false
+    record.nextTeamSyncAt = nil
 
-    local folder = self:_playerPetFolder(record.player, false)
-    for _, model in ipairs(folder and folder:GetChildren() or {}) do
-        if
-            model:IsA("Model")
-            and model:GetAttribute("MergeEggUnit") == true
-            and model:GetAttribute("MergeRunId") == record.runId
-        then
-            model:Destroy()
-        end
+    if record.principalName then
+        self._npcPrincipalService:Despawn(record.principalName, "merge_egg_reset")
     end
+    record.principalName = nil
+    record.principalModel = nil
+    record.teamFolder = nil
+    record.teamState = nil
+    record.activePets = 0
+    record.defeatedPets = 0
     record.units = {}
     record.encounterSpawned = false
     record.player:SetAttribute("CombatAssistTarget", nil)
@@ -438,6 +515,14 @@ function MergeEggPrototypeService:_begin(player)
         resolvedTargets = {},
         random = Random.new(),
         encounterSpawned = false,
+        principalName = nil,
+        principalModel = nil,
+        teamFolder = nil,
+        teamState = nil,
+        activePets = 0,
+        defeatedPets = 0,
+        teamEngaged = false,
+        nextTeamSyncAt = 0,
     }
     if not self:_parkOwnedPets(record) then
         return false, "pet_folder_unavailable"
@@ -504,6 +589,8 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
         return
     end
 
+    record.teamEngaged = false
+    self:_setTeamState(record, "Returning")
     local waveCount = #(self._config.waves or {})
     if record.waveIndex < waveCount then
         record.nextWaveAt = os.clock() + math.max(0, tonumber(self._config.wave_gap) or 2)
@@ -562,6 +649,8 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     record.waveIndex = waveIndex
     record.nextWaveAt = nil
     record.aliveEnemies = 0
+    record.teamEngaged = false
+    self:_setTeamState(record, "Deploying")
     local count = math.max(1, math.floor(tonumber(wave.count) or 1))
     local spawnInset = math.max(0, tonumber(cfg.spawn_inset) or 5)
     local finishInset = math.max(0, tonumber(cfg.finish_inset) or 5)
@@ -636,8 +725,8 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
         then
             local localPosition = finishLine.CFrame:PointToObjectSpace(position)
             if math.abs(localPosition.Z) <= alertDistance then
-                local ok, alertedPets = self._enemyService:AlertSquadToEnemy(
-                    record.player,
+                local ok, alertedPets = self._enemyService:AlertPetFolderToEnemy(
+                    record.teamFolder,
                     enemy.targetId,
                     { threat = alertThreat }
                 )
@@ -645,6 +734,8 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                     model:SetAttribute("MergeEggDefenseAlerted", true)
                     model:SetAttribute("MergeEggAlertedPets", alertedPets)
                     record.alerted += 1
+                    record.teamEngaged = true
+                    self:_setTeamState(record, "Engaged")
                     self:_setWorldState("WaveActive", record)
                 end
             end
@@ -654,10 +745,15 @@ end
 
 function MergeEggPrototypeService:_step()
     local record = self._active
+    local now = os.clock()
     if record and record.encounterSpawned then
         self:_alertApproachingEnemies(record)
+        if now >= (record.nextTeamSyncAt or 0) then
+            record.nextTeamSyncAt = now + 0.1
+            self:_syncTeamState(record)
+        end
     end
-    if not (record and record.nextWaveAt and os.clock() >= record.nextWaveAt) then
+    if not (record and record.nextWaveAt and now >= record.nextWaveAt) then
         return
     end
     local ok, reason = self:_spawnNextWave(record)
@@ -683,49 +779,77 @@ function MergeEggPrototypeService:_hatch(player)
         return false, "hatch_in_progress"
     end
     local spawn = findNamedPart(self._world, (self._config.world or {}).hatcher_spawn)
-    local folder = self:_playerPetFolder(player, true)
-    if not (spawn and folder) then
+    local principal = self._config.principal
+    if not (spawn and type(principal) == "table") then
         return false, "hatcher_unavailable"
     end
 
     record.hatching = true
-    local expected = #(self._config.squad or {})
-    local count, models =
-        self._npcPrincipalService:SpawnGhostSquad(folder, self._config.squad, spawn.CFrame, {
-            attributes = {
+    local expected = #(principal.squad or self._config.squad or {})
+    local teamCfg = self._config.team or {}
+    local principalOk, info =
+        self._npcPrincipalService:SpawnStationary(player, "merge_egg_hatcher", spawn.CFrame, {
+            definition = principal,
+            folderAttributes = {
+                MergeEggPrototypeTeam = true,
+                MergeEggOwnerUserId = player.UserId,
+                MergeEggRunId = record.runId,
+                MergeEggTeamId = tonumber(teamCfg.id) or 1,
+                MergeEggTeamDisplayName = tostring(teamCfg.display_name or "NPC Team 1"),
+                MergeEggTeamState = "Ready",
+                MergeEggExpectedPets = expected,
+            },
+            petAttributes = {
                 MergeEggUnit = true,
-                MergeRunId = record.runId,
+                MergeEggRunId = record.runId,
+                MergeEggTeamId = tonumber(teamCfg.id) or 1,
                 EphemeralDownPolicy = "destroy",
             },
         })
-    record.units = models
-    if self._active ~= record then
-        for _, model in ipairs(models) do
-            if model.Parent then
-                model:Destroy()
-            end
+    if not principalOk or type(info) ~= "table" then
+        record.hatching = false
+        return false, tostring(info or "principal_spawn_failed")
+    end
+    record.principalName = info.name
+    record.principalModel = info.model
+    record.teamFolder = info.folder
+    record.units = {}
+    for _, model in ipairs(record.teamFolder and record.teamFolder:GetChildren() or {}) do
+        if model:IsA("Model") then
+            record.units[#record.units + 1] = model
         end
+    end
+    if record.principalModel then
+        record.principalModel:SetAttribute("MergeEggPrototypeNpc", true)
+        record.principalModel:SetAttribute("MergeEggRunId", record.runId)
+        record.principalModel:SetAttribute("MergeEggTeamId", tonumber(teamCfg.id) or 1)
+    end
+    if self._active ~= record then
+        self._npcPrincipalService:Despawn(record.principalName, "merge_egg_session_ended")
         return false, "session_ended"
     end
-    if count ~= expected then
+    if tonumber(info.pets) ~= expected then
         self:_clearEncounter(record)
         return false, "unit_assets_missing"
     end
+    self:_setTeamState(record, "Ready")
     if self._petFollowService and self._petFollowService.ReleaseMiningTargets then
         self._petFollowService:ReleaseMiningTargets(player)
     end
 
-    local ok, reason = self:_spawnNextWave(record)
-    if not ok then
+    local waveOk, reason = self:_spawnNextWave(record)
+    if not waveOk then
         self:_clearEncounter(record)
         return false, reason
     end
     record.encounterSpawned = true
     record.hatching = false
+    self:_syncTeamState(record)
     self:_setWorldState("WaveActive", record)
     self:_log("Info", "Merge Egg prototype hatch started", {
         player = player.Name,
-        units = count,
+        principal = record.principalName,
+        units = info.pets,
         enemies = record.aliveEnemies,
         waves = #(self._config.waves or {}),
     })

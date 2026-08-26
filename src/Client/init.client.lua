@@ -294,6 +294,17 @@ do
     end
 end
 
+-- Merge an Egg Phase 2: Studio-only, read-only rail for the stationary hatcher NPC's team.
+-- It is separate from SquadHud so the player's eventual deployable team keeps its own identity.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MergeEggPrototypeObserver).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MergeEggPrototypeObserver", { error = tostring(err) })
+    end
+end
+
 -- Leaderboard consumer: drains + caches LeaderboardService's periodic LeaderboardUpdated
 -- broadcast so it doesn't pile up unhandled (queue-exhaustion leak). Caches snapshots for a
 -- future leaderboard UI to read (LeaderboardController.Get / .OnUpdate).
