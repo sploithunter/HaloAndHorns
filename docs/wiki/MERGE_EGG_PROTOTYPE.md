@@ -34,6 +34,10 @@ progression, procedural layout, and multiplayer occupancy.
   ordinary threat on both sides for every live squad pet. This begins combat without a click and
   survives the longer approach, but does not write pet targets or create an assist pin; normal
   damage, decay, proximity, and the Pack Tortoise's tank taunt take over immediately.
+- Existing above-floor threat remains eligible outside the ordinary ambient acquisition radius, so
+  live tracing measured alert-to-target assignment at about 0.1–0.25 seconds. Distant combat pursuit
+  and post-combat return both use bounded pet travel rather than the formation catch-up teleport;
+  principal/portal teleports, Rally, and explicit teleport abilities retain their snap behavior.
 - Enemies use `rewardPolicy = "none"`, so defeat grants no loot, XP/progression event, tracked
   counter, potion, enhancement, or exclusive egg. Defeat and finish-line arrival are counted
   separately; after every enemy in a wave is resolved, the next larger wave starts automatically.

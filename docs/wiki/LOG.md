@@ -5117,3 +5117,6 @@ first-session cohort rates.
 - Recorded the production ownership boundary without expanding Phase 1: stationary hatcher NPC
   principals will own four or five independently queued teams, leaving the player free to merge and
   manage while combat runs asynchronously. Player position must not become the production leash.
+- Final live movement verification cleared wave one with the frontline roughly 220 studs from its
+  anchor. After targets cleared, half-second pet-position samples advanced smoothly from about Z -10
+  to -19, -31, and -45 toward the Z -228 anchor; no catch-up teleport occurred.
