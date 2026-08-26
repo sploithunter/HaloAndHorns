@@ -173,8 +173,8 @@ Neon-only entries in dense plant clusters instead of giving every prop a dynamic
 The physical realm portals may temporarily bypass their per-player gate through
 `layers.realm_portals.testing_open_layers`. This switch affects only the named portal geometry and
 client lock presentation; it must not modify `layers.access`, `LayerAccess.canAccess`, World
-Travel, or persisted player progression. Heaven 3 and Hell 3 are currently open this way for map
-testing.
+Travel, or persisted player progression. Production keeps that table empty so Heaven/Hell 3
+stay locked until Level 21.
 
 `CurrentLayer` and the character's nearest stacked-map Y offset are one invariant. A character
 whose logical layer is `hell_3` but whose body is at Home will see Home eggs under Hell lighting,
