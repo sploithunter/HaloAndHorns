@@ -24,6 +24,8 @@ local MergeEggPrototypeObserver = {}
 
 local localPlayer = Players.LocalPlayer
 local PANEL_WIDTH = 214
+local COMBAT_CADENCE_MULTIPLIER =
+    math.max(0.25, tonumber((CONFIG.combat or {}).attack_cadence_multiplier) or 1)
 local ROLE_THEME = {
     tank = { color = Color3.fromRGB(75, 145, 225), glyph = "T" },
     melee = { color = Color3.fromRGB(210, 80, 75), glyph = "M" },
@@ -259,7 +261,7 @@ local function updatePanel(panel, folder, wave, waveCount, factor)
         folder:GetAttribute("MergeEggTeamDisplayName") or ("NPC Team " .. panel.id)
     ):upper()
     panel.summary.Text = string.format(
-        "%s %d/%d • F%d/P%d • W%d/%d%s",
+        "%s %d/%d • F%d/P%d • W%d/%d • %.0f×%s",
         state,
         active,
         expected,
@@ -267,6 +269,7 @@ local function updatePanel(panel, folder, wave, waveCount, factor)
         peakAssigned,
         wave,
         waveCount,
+        COMBAT_CADENCE_MULTIPLIER,
         lossText
     )
     panel.summary.TextColor3 = state == "DEFEATED" and Color3.fromRGB(240, 105, 95)

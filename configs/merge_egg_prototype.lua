@@ -65,6 +65,12 @@ return {
         return_ready_distance = 20,
     },
 
+    -- Early-balance accelerator: both sides attack four times as often. Movement, regeneration,
+    -- aggro decay, and wave timing remain at real speed so the lane still reads clearly.
+    combat = {
+        attack_cadence_multiplier = 4,
+    },
+
     -- Keep enemy stats fixed so this isolates concurrency and cumulative squad endurance. The run
     -- stops when every temporary team is defeated; no empty follow-up wave is spawned.
     endurance = {

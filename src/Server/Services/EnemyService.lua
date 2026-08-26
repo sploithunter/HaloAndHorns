@@ -51,6 +51,7 @@ local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
 local ActiveSquad = require(ReplicatedStorage.Shared.Game.ActiveSquad)
 local CombatMath = require(ReplicatedStorage.Shared.Game.CombatMath)
+local CombatCadence = require(ReplicatedStorage.Shared.Game.CombatCadence)
 local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local TargetPriority = require(ReplicatedStorage.Shared.Game.TargetPriority)
@@ -3528,7 +3529,11 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
             or (player:GetAttribute("Level") or 1)
         local missed, wasBlinded =
             self:_hitPet(biteTarget, def, now, eng, enemyLevel, petLevel, model)
-        entry.nextAttack = now + ((def and def.attack and def.attack.cadence) or 1.5)
+        entry.nextAttack = now
+            + CombatCadence.interval(
+                (def and def.attack and def.attack.cadence) or 1.5,
+                model:GetAttribute("CombatCadenceMultiplier")
+            )
         -- Broadcast the swing's VISUAL (damage is already applied above; the FX is just the swing,
         -- exactly like the pets' Combat_PetHit). Fired on EVERY attack so enemies attack the same
         -- way pets do: ranged -> a themed bolt enemy->pet, melee -> an impact at the pet. The client

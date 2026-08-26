@@ -86,6 +86,9 @@ commanded NPC teams. It still does not add the production deployment queue.
 - Every principal fields the same readable test roster: two Trail Pup melee units, one Beacon Finch
   ranged/blaster, one Pack Tortoise tank, and one Compass Fox controller. The Finch replaces the
   third melee unit so all four NPC teams exercise independent ranged positioning.
+- The prototype stamps a 4× attack-cadence multiplier on both its pets and enemies, and the observer
+  displays that rate. This accelerates direct swings only; movement, regeneration, aggro decay, and
+  wave gaps remain at real speed. Actors outside this prototype retain the default 1× cadence.
 - Every run gives each team a unique `CombatTargetGroup`. Once either an enemy or pet opts into a
   group, bilateral acquisition requires the other actor to publish the same group. Ungrouped combat
   retains the existing global behavior, so this partition does not change normal realm fights.
@@ -146,6 +149,16 @@ One balance caveat remains visible: generic per-pet regeneration starts at 15 en
 after that individual pet has gone five seconds without a hit, even while its team is still in
 combat. Low-damage Whelps can be out-healed by this behavior. Healing was deliberately left
 unchanged so tank composition and wave quantity remained separately measurable knobs.
+
+Subsequent early-balance passes run direct pet and enemy attacks at 4× cadence to make the full
+ladder observable in a shorter session. Because regeneration and other wall-clock mechanics remain
+at 1×, results from this mode measure accelerated-combat pressure and must be labeled 4× rather than
+treated as production-time survival numbers.
+
+The first 4× smoke pass stamped all 20 pets and all three wave-one enemies correctly. It recorded
+the first pet loss in wave 1 with two enemies active, then advanced into wave 2 in roughly 15 seconds
+with four enemies defeated, four active, zero escaped, and 19/20 pets alive. All four teams remained
+independently engaged and the runtime log was clean.
 
 ## Production direction after Phase 3
 

@@ -77,6 +77,15 @@ local function cloneEnemyDef(source, config)
     return def
 end
 
+local function combatCadenceMultiplier(config)
+    local combat = (config and config.combat) or {}
+    local value = tonumber(combat.attack_cadence_multiplier)
+    if not value or value <= 0 then
+        return 1
+    end
+    return math.clamp(value, 0.25, 8)
+end
+
 function MergeEggPrototypeService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
@@ -121,6 +130,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
         return
     end
     world:SetAttribute("PrototypeState", state)
+    world:SetAttribute("CombatCadenceMultiplier", combatCadenceMultiplier(self._config))
     world:SetAttribute("ActivePlayer", record and record.player.Name or nil)
     world:SetAttribute("ActiveRunId", record and record.runId or nil)
     world:SetAttribute("ActiveEnemies", record and record.aliveEnemies or 0)
@@ -847,6 +857,7 @@ function MergeEggPrototypeService:_spawnNextWave(record)
         result.model:SetAttribute("MergeEggAssignedTeamId", team.id)
         result.model:SetAttribute("MergeEggAssignedTeamName", team.displayName)
         result.model:SetAttribute("CombatTargetGroup", team.targetGroup)
+        result.model:SetAttribute("CombatCadenceMultiplier", combatCadenceMultiplier(self._config))
         result.model:SetAttribute(
             "MergeEggCompositionRole",
             teamOrdinal == 1 and tankCfg and "tank" or "melee"
@@ -1114,6 +1125,7 @@ function MergeEggPrototypeService:_hatch(player)
                     MergeEggRunId = record.runId,
                     MergeEggTeamId = id,
                     CombatTargetGroup = targetGroup,
+                    CombatCadenceMultiplier = combatCadenceMultiplier(self._config),
                     EphemeralDownPolicy = "destroy",
                 },
             }

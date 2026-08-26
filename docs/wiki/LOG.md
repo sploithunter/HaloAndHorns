@@ -5158,3 +5158,9 @@ first-session cohort rates.
   teams largely kept their higher-threat targets.
 - Replaced the third Trail Pup in every NPC team with the existing Beacon Finch ranged/blaster, so
   the shared five-slot test roster now contains two melee, one blaster, one tank, and one controller.
+- Added an opt-in 4× direct-attack cadence for the prototype's pets and enemies, with an explicit
+  observer label. Ordinary game actors remain at 1×; movement, healing, aggro decay, and wave gaps
+  deliberately remain on wall-clock time, so accelerated balance captures stay distinguishable.
+- The initial 4× Studio smoke pass advanced into wave 2 in roughly 15 seconds: first loss occurred
+  in wave 1 with two enemies active; at the sample point four enemies were defeated, four active,
+  zero escaped, and 19/20 pets remained. All four teams were independently engaged with a clean log.

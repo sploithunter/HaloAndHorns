@@ -36,6 +36,7 @@ local PRINCIPAL_CTX = {
     end,
 }
 local CombatMath = require(ReplicatedStorage.Shared.Game.CombatMath)
+local CombatCadence = require(ReplicatedStorage.Shared.Game.CombatCadence)
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
 local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
@@ -1301,6 +1302,7 @@ function PetFollowService:_mine(player, pet, breakable)
         hasteMult = hasteMult * (tonumber(pet:GetAttribute("PetHasteBuffSelf")) or 1)
     end
     hitInterval = hitInterval / math.clamp(hasteMult, 1, 2.5)
+    hitInterval = CombatCadence.interval(hitInterval, pet:GetAttribute("CombatCadenceMultiplier"))
     self._nextHit[pet] = now + hitInterval
 
     -- Drive the attack VISUAL off the real hit: tell the owning client to play this pet's
