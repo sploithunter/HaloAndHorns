@@ -67,12 +67,13 @@ local function cloneEnemyDef(source, config)
     def.attack = table.clone(source.attack or {})
     def.drop_table = {}
     def.display_name = "Prototype " .. tostring(source.display_name or config.id)
-    def.hp = math.max(1, math.floor(tonumber(config.hp) or 320))
+    def.hp = math.max(1, math.floor(tonumber(config.hp) or tonumber(source.hp) or 320))
     def.level = math.max(1, math.floor(tonumber(config.level) or 1))
-    def.armor = 0
-    def.attack.damage = math.max(0, tonumber(config.damage) or 4)
-    def.attack.cadence = math.max(0.25, tonumber(config.cadence) or 2)
-    def.attack.sundering = 0
+    def.armor = math.max(0, tonumber(config.armor) or tonumber(source.armor) or 0)
+    def.attack.damage = math.max(0, tonumber(config.damage) or tonumber(def.attack.damage) or 4)
+    def.attack.cadence =
+        math.max(0.25, tonumber(config.cadence) or tonumber(def.attack.cadence) or 2)
+    def.attack.sundering = math.max(0, tonumber(config.sundering) or 0)
     return def
 end
 
@@ -128,6 +129,12 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("EnemiesDefeated", record and record.defeated or 0)
     world:SetAttribute("EnemiesEscaped", record and record.escaped or 0)
     world:SetAttribute("EnemiesAlerted", record and record.alerted or 0)
+    world:SetAttribute("PeakActiveEnemies", record and record.peakActiveEnemies or 0)
+    world:SetAttribute("FirstPetLossWave", record and record.firstPetLossWave or nil)
+    world:SetAttribute(
+        "FirstPetLossActiveEnemies",
+        record and record.firstPetLossActiveEnemies or nil
+    )
     local activeTeams = 0
     local readyTeams = 0
     local engagedTeams = 0
@@ -207,12 +214,31 @@ function MergeEggPrototypeService:_syncTeamState(record, team)
     local expected = #(team.config.squad or self._config.squad or {})
     team.activePets = active
     team.defeatedPets = math.max(0, expected - active)
+    team.peakAssignedEnemies = math.max(team.peakAssignedEnemies or 0, team.assignedAlive or 0)
+    if record.encounterSpawned and team.defeatedPets > 0 and team.firstLossWave == nil then
+        team.firstLossWave = record.waveIndex
+        team.firstLossAssignedEnemies = team.assignedAlive or 0
+        if record.firstPetLossWave == nil then
+            record.firstPetLossWave = record.waveIndex
+            record.firstPetLossActiveEnemies = record.aliveEnemies
+        end
+        self:_log("Info", "Merge Egg prototype team took its first loss", {
+            player = record.player.Name,
+            team = team.id,
+            wave = team.firstLossWave,
+            assignedEnemies = team.firstLossAssignedEnemies,
+            activeEnemies = record.aliveEnemies,
+        })
+    end
     folder:SetAttribute("MergeEggActivePets", active)
     folder:SetAttribute("MergeEggDefeatedPets", team.defeatedPets)
     folder:SetAttribute("MergeEggTargetedPets", targeted)
     folder:SetAttribute("MergeEggReturnedPets", returned)
     folder:SetAttribute("MergeEggWave", record.waveIndex)
     folder:SetAttribute("MergeEggAssignedEnemies", team.assignedAlive or 0)
+    folder:SetAttribute("MergeEggPeakAssignedEnemies", team.peakAssignedEnemies)
+    folder:SetAttribute("MergeEggFirstLossWave", team.firstLossWave)
+    folder:SetAttribute("MergeEggFirstLossAssignedEnemies", team.firstLossAssignedEnemies)
 
     local state = "Ready"
     if record.encounterSpawned and active == 0 then
@@ -229,6 +255,56 @@ function MergeEggPrototypeService:_syncAllTeams(record)
     for _, team in ipairs(record and record.teams or {}) do
         self:_syncTeamState(record, team)
     end
+end
+
+function MergeEggPrototypeService:_allTeamsDefeated(record)
+    if not (record and record.encounterSpawned and #(record.teams or {}) > 0) then
+        return false
+    end
+    for _, team in ipairs(record.teams) do
+        if (team.activePets or 0) > 0 then
+            return false
+        end
+    end
+    return true
+end
+
+function MergeEggPrototypeService:_finishDefenseOverrun(record)
+    if self._active ~= record then
+        return
+    end
+    record.nextWaveAt = nil
+    local survivingEnemies = 0
+    for _, enemy in ipairs(record.enemies or {}) do
+        if
+            enemy.targetId ~= nil
+            and not record.resolvedTargets[enemy.targetId]
+            and enemy.model
+            and enemy.model.Parent
+        then
+            record.resolvedTargets[enemy.targetId] = true
+            record.enemyByTargetId[enemy.targetId] = nil
+            survivingEnemies += 1
+            self._enemyService:DespawnModel(enemy.model)
+        end
+    end
+    record.escaped += survivingEnemies
+    record.aliveEnemies = 0
+    for _, team in ipairs(record.teams or {}) do
+        team.assignedAlive = 0
+        team.engaged = false
+        self:_syncTeamState(record, team)
+    end
+    record.player:SetAttribute("MergeEggWaveComplete", true)
+    self:_setWorldState("DefenseOverrun", record)
+    self:_log("Info", "Merge Egg prototype defense overrun", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+        firstLossWave = record.firstPetLossWave,
+        peakActiveEnemies = record.peakActiveEnemies,
+        defeated = record.defeated,
+        escaped = record.escaped,
+    })
 end
 
 function MergeEggPrototypeService:_attachPrompt(host, name, actionText, objectText, callback)
@@ -432,6 +508,9 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.defeated = 0
     record.escaped = 0
     record.alerted = 0
+    record.peakActiveEnemies = 0
+    record.firstPetLossWave = nil
+    record.firstPetLossActiveEnemies = nil
     record.nextWaveAt = nil
     record.resolvedTargets = {}
     record.enemyByTargetId = {}
@@ -538,6 +617,9 @@ function MergeEggPrototypeService:_begin(player)
         defeated = 0,
         escaped = 0,
         alerted = 0,
+        peakActiveEnemies = 0,
+        firstPetLossWave = nil,
+        firstPetLossActiveEnemies = nil,
         nextWaveAt = nil,
         resolvedTargets = {},
         random = Random.new(),
@@ -623,6 +705,13 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
         assignedTeam.engaged = false
     end
     self:_syncAllTeams(record)
+    if
+        (self._config.endurance or {}).stop_when_all_teams_defeated == true
+        and self:_allTeamsDefeated(record)
+    then
+        self:_finishDefenseOverrun(record)
+        return
+    end
     local waveCount = #(self._config.waves or {})
     if record.waveIndex < waveCount then
         record.nextWaveAt = os.clock() + math.max(0, tonumber(self._config.wave_gap) or 2)
@@ -661,9 +750,14 @@ end
 
 function MergeEggPrototypeService:_spawnNextWave(record)
     local cfg = self._config.enemy or {}
-    local base = self._enemiesConfig.enemies and self._enemiesConfig.enemies[cfg.id]
+    local enemyDefs = self._enemiesConfig.enemies or {}
+    local base = enemyDefs[cfg.id]
+    local tankCfg = type(cfg.tank) == "table" and cfg.tank or nil
     if not base then
         return false, "enemy_config_missing"
+    end
+    if tankCfg and not enemyDefs[tankCfg.id] then
+        return false, "enemy_tank_config_missing"
     end
     local waves = self._config.waves or {}
     local waveIndex = record.waveIndex + 1
@@ -693,9 +787,18 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     local finishInset = math.max(0, tonumber(cfg.finish_inset) or 5)
 
     for index = 1, count do
-        local team = record.teams[((index - 1) % #record.teams) + 1]
+        local teamIndex = ((index - 1) % #record.teams) + 1
+        local teamOrdinal = math.floor((index - 1) / #record.teams) + 1
+        local team = record.teams[teamIndex]
         if not team then
             return false, "defense_team_missing"
+        end
+        local spawnCfg = teamOrdinal == 1 and tankCfg or cfg
+        spawnCfg = spawnCfg or cfg
+        local enemyId = tostring(spawnCfg.id or cfg.id)
+        local enemyDef = enemyDefs[enemyId]
+        if not enemyDef then
+            return false, "enemy_config_missing"
         end
         local position = randomPointOnPart(record.random, spawnArea, spawnInset, spawnInset)
             + Vector3.new(0, 3, 0)
@@ -703,8 +806,8 @@ function MergeEggPrototypeService:_spawnNextWave(record)
         -- random origin-to-finish vector is its complete path; combat may pull it off that vector.
         local destination =
             randomPointOnPart(record.random, finishLine, finishInset, finishLine.Size.Z * 0.5)
-        local result = self._enemyService:SpawnEnemy(record.player, cfg.id, {
-            def = cloneEnemyDef(base, cfg),
+        local result = self._enemyService:SpawnEnemy(record.player, enemyId, {
+            def = cloneEnemyDef(enemyDef, spawnCfg),
             position = position,
             home = position,
             movementLeash = self:_movementLeash(position),
@@ -739,12 +842,17 @@ function MergeEggPrototypeService:_spawnNextWave(record)
         result.model:SetAttribute("MergeEggAssignedTeamId", team.id)
         result.model:SetAttribute("MergeEggAssignedTeamName", team.displayName)
         result.model:SetAttribute("CombatTargetGroup", team.targetGroup)
+        result.model:SetAttribute(
+            "MergeEggCompositionRole",
+            teamOrdinal == 1 and tankCfg and "tank" or "melee"
+        )
         result.teamId = team.id
         record.enemies[#record.enemies + 1] = result
         record.enemyByTargetId[result.targetId] = result
         record.aliveEnemies += 1
         team.assignedAlive += 1
     end
+    record.peakActiveEnemies = math.max(record.peakActiveEnemies or 0, record.aliveEnemies)
     self:_syncAllTeams(record)
     self:_setWorldState("WaveActive", record)
     return true
@@ -847,6 +955,13 @@ function MergeEggPrototypeService:_step()
         if now >= (record.nextTeamSyncAt or 0) then
             record.nextTeamSyncAt = now + 0.1
             self:_syncAllTeams(record)
+            if
+                (self._config.endurance or {}).stop_when_all_teams_defeated == true
+                and self:_allTeamsDefeated(record)
+            then
+                self:_finishDefenseOverrun(record)
+                return
+            end
         end
     end
     if not (record and record.nextWaveAt and now >= record.nextWaveAt) then
@@ -945,6 +1060,9 @@ function MergeEggPrototypeService:_hatch(player)
             activePets = 0,
             defeatedPets = 0,
             assignedAlive = 0,
+            peakAssignedEnemies = 0,
+            firstLossWave = nil,
+            firstLossAssignedEnemies = nil,
             engaged = false,
         }
         record.teams[#record.teams + 1] = team

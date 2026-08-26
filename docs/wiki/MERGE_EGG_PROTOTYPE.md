@@ -1,6 +1,6 @@
 # Merge an Egg Prototype
 
-Status: Phase 2 live verified
+Status: Phase 3 live verified
 
 ## Phase 1 contract
 
@@ -73,6 +73,29 @@ Phase 2 changes ownership and observability without expanding to the production 
 - A Studio-only, read-only `NPC Team 1` rail shows all five stable slots, live endurance percentage,
   defeated tombstones, current enemy targets, team state, active count, and wave progress. Enemy HP
   remains on the existing enemy rail. The observer sends no focus or combat-control remotes.
+
+## Phase 3 contract
+
+Phase 3 scales the verified single-principal seam to four simultaneously active, independently
+commanded NPC teams. It still does not add the production deployment queue.
+
+- One hatch creates four stationary principals around `HatcherSpawn`, each with its own five-pet
+  folder and the same Ready/Deploying/Engaged/Returning/Defeated lifecycle. All 20 pets remain
+  attributed to the real player for combat and cleanup, while movement and return stay anchored to
+  their own principal.
+- Every run gives each team a unique `CombatTargetGroup`. Once either an enemy or pet opts into a
+  group, bilateral acquisition requires the other actor to publish the same group. Ungrouped combat
+  retains the existing global behavior, so this partition does not change normal realm fights.
+- Each wave assigns enemies round-robin across the four teams. Wave one therefore exercises a
+  deliberate 1/1/1/0 split: the fourth team remains Ready while the other three deploy. Waves two
+  and three exercise 2/1/1/1 and 2/2/2/2 assignments respectively.
+- Defense alerts and re-alerts address only the assigned team's folder. Ordinary bilateral threat,
+  tank taunts, target choice, drive-back, disengagement, and bounded return still own behavior after
+  the seed; an assignment scopes eligible combatants rather than pinning five targets.
+- Team telemetry and lifecycle are independent. One folder can be Ready or Returning while another
+  is Engaged, and each publishes its assigned-enemy, target, active, defeated, and returned counts.
+- The Studio-only observer renders four columns and 20 stable pet cards. It remains read-only and
+  uses the folder/world attributes rather than a custom network feed.
 
 ## Source and authoring
 

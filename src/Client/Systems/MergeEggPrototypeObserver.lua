@@ -250,18 +250,24 @@ local function updatePanel(panel, folder, wave, waveCount, factor)
         math.max(1, math.floor(tonumber(folder:GetAttribute("MergeEggExpectedPets")) or #squad))
     local active = math.max(0, tonumber(folder:GetAttribute("MergeEggActivePets")) or 0)
     local assigned = math.max(0, tonumber(folder:GetAttribute("MergeEggAssignedEnemies")) or 0)
+    local peakAssigned =
+        math.max(0, tonumber(folder:GetAttribute("MergeEggPeakAssignedEnemies")) or assigned)
+    local firstLossWave = tonumber(folder:GetAttribute("MergeEggFirstLossWave"))
+    local lossText = firstLossWave and string.format(" • L%d", firstLossWave) or ""
     local state = tostring(folder:GetAttribute("MergeEggTeamState") or "Ready"):upper()
     panel.title.Text = tostring(
         folder:GetAttribute("MergeEggTeamDisplayName") or ("NPC Team " .. panel.id)
     ):upper()
     panel.summary.Text = string.format(
-        "%s • %d/%d • %d FOES • W%d/%d",
+        "%s %d/%d • F%d/P%d • W%d/%d%s",
         state,
         active,
         expected,
         assigned,
+        peakAssigned,
         wave,
-        waveCount
+        waveCount,
+        lossText
     )
     panel.summary.TextColor3 = state == "DEFEATED" and Color3.fromRGB(240, 105, 95)
         or state == "ENGAGED" and Color3.fromRGB(245, 190, 75)

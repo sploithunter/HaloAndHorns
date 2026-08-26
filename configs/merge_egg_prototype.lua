@@ -64,6 +64,12 @@ return {
         return_ready_distance = 20,
     },
 
+    -- Keep enemy stats fixed so this isolates concurrency and cumulative squad endurance. The run
+    -- stops when every temporary team is defeated; no empty follow-up wave is spawned.
+    endurance = {
+        stop_when_all_teams_defeated = true,
+    },
+
     teams = {
         {
             id = 1,
@@ -102,6 +108,7 @@ return {
     enemy = {
         id = "lava_imp",
         hp = 320,
+        armor = 0,
         level = 1,
         damage = 4,
         cadence = 2,
@@ -112,6 +119,17 @@ return {
         reengage_seconds = 1,
         spawn_inset = 5,
         finish_inset = 5,
+        -- The first assignment in every non-empty team group is a real tank role. Keeping one
+        -- tank per group (rather than a global tank count) makes the 3/5/8/... ladder comparable
+        -- even when round-robin assignment leaves one team idle.
+        tank = {
+            id = "ember_brute",
+            hp = 1600,
+            armor = 80,
+            level = 1,
+            damage = 10,
+            cadence = 2,
+        },
     },
 
     wave_gap = 2,
@@ -119,5 +137,10 @@ return {
         { count = 3 },
         { count = 5 },
         { count = 8 },
+        { count = 12 },
+        { count = 16 },
+        { count = 24 },
+        { count = 32 },
+        { count = 48 },
     },
 }
