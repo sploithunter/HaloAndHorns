@@ -66,6 +66,12 @@ filtered out of production registries.
   full pet storage cannot duplicate or silently destroy the pet. See [One-Way Pet Gifts](GIFT_SYSTEM.md).
 - Combat drop-table currencies and def-less realm coin fallbacks also terminate at
   `EconomyService`; combat math and area-coin selection remain service-owned upstream.
+- `EnemyService:SpawnEnemy` accepts an explicit `rewardPolicy = "none"` for isolated,
+  session-only encounters. The default remains the complete normal loot, counter, event, and drop
+  path; reward-free enemies may instead use a server-only once-per-defeat callback. Temporary pet
+  models may opt into `EphemeralDownPolicy = "destroy"`, which removes them and clears combat
+  references before the profile-oriented downed/slot-lockout lifecycle. Callers must stamp that
+  policy before parenting the model into the live pet folder.
 - `CombatApplication` is the runtime combat-state boundary. `ApplyHit` publishes resolved
   hit/miss/dodge/block/absorb/immune outcomes, `ApplyDamage` mutates enemy HP or pet endurance and
   credits contribution, and `ApplyPowerHeal` mutates active/power healing. All three publish the

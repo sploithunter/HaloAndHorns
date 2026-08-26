@@ -5067,3 +5067,11 @@ first-session cohort rates.
 - Added eight group-owned environmental loops, one for each Fire, Ice, Grass, and Desert zone in
   Heaven 3 and Hell 3. `area_music` maps every Layer 3 area to a distinct catalog key, while the
   existing combat override and missing-asset fallback behavior remain unchanged.
+
+## 2026-08-26 — Isolated encounter combat seams
+
+- Added opt-in reward-free enemy spawns with a server-only defeat callback; ordinary enemies retain
+  the complete existing loot, progression-event, counter, and world-drop path by default.
+- Added an opt-in destroy-on-down lifecycle for session-only pet models and construction-time ghost
+  attributes so temporary squads never enter saved pet slot lockouts or briefly appear untagged.
+- The generic seams and their source contracts pass all 2,303 headless checks.

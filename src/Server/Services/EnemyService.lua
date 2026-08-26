@@ -68,6 +68,7 @@ local OverheadBar = require(ReplicatedStorage.Shared.UI.OverheadBar) -- shared e
 local PetLockout = require(ReplicatedStorage.Shared.Game.PetLockout)
 local ZoneResolver = require(ReplicatedStorage.Shared.Game.ZoneResolver)
 local EnemyLeash = require(ReplicatedStorage.Shared.Game.EnemyLeash)
+local EnemyRewardPolicy = require(ReplicatedStorage.Shared.Game.EnemyRewardPolicy)
 local MissionRankScale = require(ReplicatedStorage.Shared.Game.MissionRankScale)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
@@ -1409,7 +1410,7 @@ function EnemyService:_onDefeated(targetId)
             )
         )
     end
-    if combat and contrib then
+    if EnemyRewardPolicy.awardsNormalRewards(entry.rewardPolicy) and combat and contrib then
         -- TM5 SHARED CREDIT (docs/TEAMING.md pillar 5): the credited set = every damage
         -- contributor PLUS their teammates near the down site — the healer/buffer who landed
         -- no hit still gets the award (CoH-style). Contributors are paid regardless of
@@ -1527,6 +1528,24 @@ function EnemyService:_onDefeated(targetId)
 
     self:_releasePets(targetId)
     self:_playDefeatDeath(model, entry)
+    local onDefeated = entry.onDefeated
+    entry.onDefeated = nil
+    if onDefeated then
+        local ok, err = pcall(onDefeated, {
+            targetId = targetId,
+            enemyId = entry.enemyId,
+            model = model,
+            position = entry.pos,
+            rewardPolicy = entry.rewardPolicy,
+        })
+        if not ok and self._logger then
+            self._logger:Warn("Enemy onDefeated callback failed", {
+                enemyId = entry.enemyId,
+                targetId = targetId,
+                error = tostring(err),
+            })
+        end
+    end
     if self._logger then
         self._logger:Info("Enemy defeated", { enemyId = entry.enemyId, targetId = targetId })
     end
@@ -1668,12 +1687,40 @@ function EnemyService:_clearEnduranceBar(pet)
     PetEnduranceBar.clear(pet)
 end
 
+-- Remove a session-only combat unit instead of sending it through the profile-oriented downed /
+-- slot-lockout lifecycle. The spawning system opts in with EphemeralDownPolicy="destroy". Clear
+-- every strong combat reference before Destroy so an enemy cannot retain threat toward a dead
+-- Instance and a later spawned unit cannot inherit stale targeting state.
+function EnemyService:_destroyEphemeralPet(pet)
+    for _, entry in pairs(self._enemies) do
+        if entry.aggro then
+            AggroTable.clear(entry.aggro, pet)
+        end
+        if entry.targetPet == pet then
+            entry.targetPet = nil
+        end
+        if entry.taunt and entry.taunt.pet == pet then
+            entry.taunt = nil
+        end
+    end
+    self._petCombat[pet] = nil
+    self._abilityProfiles[pet] = nil
+    self:_clearEnduranceBar(pet)
+    if pet.Parent then
+        pet:Destroy()
+    end
+end
+
 -- Take a pet out of the fight. `reason` "down" (forced, long slot cooldown) or
 -- "recall" (player pulled it proactively, short cooldown). The pet hides client-side
 -- (PetFollowController) + drops its target; it stays out until the player SUMMONS it
 -- once the slot recharges (no auto-revive — recovery is a player action). The slot's
 -- recharge end is stamped on the pet as CooldownUntil (os.time) so the HUD counts down.
 function EnemyService:_downPet(pet, _now, _eng, reason)
+    if pet:GetAttribute("EphemeralDownPolicy") == "destroy" then
+        self:_destroyEphemeralPet(pet)
+        return
+    end
     pet:SetAttribute("CombatDowned", true)
     pet:SetAttribute("DownedReason", reason or "down")
     -- [GlassTrace] DOWN marker (Jason): unmissable line whenever a pet goes down, from ANY path (enemy
@@ -6886,6 +6933,10 @@ end
 -- player's local frame, on top of the base spawn distance.
 function EnemyService:SpawnEnemy(player, enemyId, opts)
     enemyId = tostring(enemyId or "lava_imp")
+    local rewardPolicy = EnemyRewardPolicy.normalize(opts and opts.rewardPolicy)
+    if not rewardPolicy then
+        return { ok = false, reason = "invalid_reward_policy" }
+    end
     -- opts.def lets a caller field a SYNTHESIZED def (e.g. a pet-model invader, see _petEnemyDef)
     -- instead of an enemies.lua entry — the rest of the spawn path is identical (mesh/scale/hp/attack).
     local def = (opts and type(opts.def) == "table" and opts.def)
@@ -6973,6 +7024,10 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         movementLeash = (opts and type(opts.movementLeash) == "table") and opts.movementLeash
             or nil,
         encounterGroup = opts and opts.encounterGroup or nil,
+        -- Generic isolated-encounter seam. The default is exactly the legacy reward/progression
+        -- path; "none" suppresses it while the server-only callback still observes defeat once.
+        rewardPolicy = rewardPolicy,
+        onDefeated = opts and type(opts.onDefeated) == "function" and opts.onDefeated or nil,
         aggro = AggroTable.new(),
         lastActiveAt = os.clock(), -- engagement timer seed (idle-despawn clock; refreshed while aggro'd)
         persistent = (opts and opts.persistent) == true, -- mission population: NEVER idle-despawns (defeat or teardown only)
