@@ -5111,3 +5111,9 @@ first-session cohort rates.
   alert with enough initial bilateral threat to close distance; tank taunts remain authoritative.
 - The first automatic alert still engaged in the defensive third of the lane. Moved it to 260 studs
   (roughly mid-strip) and raised only its initial decaying threat to 250 for the longer approach.
+- A clean timeline measured defense alert to all five live pet targets at about 0.25 seconds. Pets
+  then crossed the lane at their 26-stud/sec cap while tank/melee drive-back pushed the fight away
+  from the hatcher; this is the intended frontline motion, not an aggro delay.
+- Recorded the production ownership boundary without expanding Phase 1: stationary hatcher NPC
+  principals will own four or five independently queued teams, leaving the player free to merge and
+  manage while combat runs asynchronously. Player position must not become the production leash.

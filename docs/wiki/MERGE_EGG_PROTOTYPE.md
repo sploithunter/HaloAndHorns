@@ -51,9 +51,24 @@ progression, procedural layout, and multiplayer occupancy.
   authored world fails closed and logs the exact expected Workspace path; runtime never fabricates
   or tiles the venue.
 
+## Production direction after Phase 1
+
+- The Phase 1 ghosts remain player-principal pets only as a fast combat test. Production defense
+  teams belong to stationary hatcher NPC principals, so their formation and return anchor is the
+  hatcher—not the moving player.
+- A hatcher fields four or five independent teams through a deployment queue. Each team needs its
+  own lifecycle (queued, deploying, engaged, returning, ready/down) and combat/formation ownership;
+  exact capacity, timing, and replacement rules wait for the queue phase.
+- Tank/melee drive-back that pushes the whole frontline away from the hatcher is desirable lane
+  behavior. A legitimately advanced team travels back to its hatcher after combat rather than
+  teleporting at the generic catch-up distance.
+- The player remains free to move between hatchers, merge eggs, and manage the board while these NPC
+  teams fight asynchronously. Player position must not be a combat leash or scheduling input.
+
 ## Explicitly deferred
 
 - Tile generation or tile streaming.
 - Merge recipes, board slots, currency, rewards, persistence, or monetization.
 - Wave selection UI, production difficulty curves, matchmaking, or more than one active player.
+- Stationary hatcher principals, the four/five-team deployment queue, and production team state UI.
 - Reopening Hall of Worlds in production.
