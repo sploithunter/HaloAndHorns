@@ -843,7 +843,7 @@ function PetFollowController.start()
 
             -- Move a pet toward goalPos (Vector3), facing its heading while moving / restDir at
             -- rest, at baseRate smoothing scaled by move speed. `anim` (optional) layers a flourish.
-            local function moveToward(model, goalPos, restDir, baseRate, anim)
+            local function moveToward(model, goalPos, restDir, baseRate, anim, allowCatchupSnap)
                 -- Cast-locked (just-fired ranged pet): hold position so it can't kite freely, but
                 -- keep facing its target (restDir) so it still aims at its prey while "casting".
                 if castLockUntil[model] and dt and os.clock() < castLockUntil[model] then
@@ -872,7 +872,10 @@ function PetFollowController.start()
                     applyMotion(model, CFrame.lookAt(goalPos, goalPos + face), 0, anim)
                     return
                 end
-                if PetFormation.shouldSnap((curPos - goalPos).Magnitude, catchupDist) then
+                if
+                    allowCatchupSnap ~= false
+                    and PetFormation.shouldSnap((curPos - goalPos).Magnitude, catchupDist)
+                then
                     local face = (restDir and restDir.Magnitude > 1e-4) and restDir.Unit or upFwd
                     applyMotion(model, CFrame.lookAt(goalPos, goalPos + face), 0, anim) -- teleport
                     return
@@ -1172,7 +1175,11 @@ function PetFollowController.start()
                     local toC = Vector3.new(g.center.X - target.X, 0, g.center.Z - target.Z)
                     local dir = toC.Magnitude > 0.01 and toC.Unit or upFwd
                     -- Both mining and combat remain planted between real server-hit envelopes.
-                    moveToward(pet, target, dir, attackRate, combatAnim)
+                    -- Combat pursuit is real travel, even when an authored alert starts beyond the
+                    -- formation catch-up threshold. The snap remains available when the owner
+                    -- teleports (holdFormation routes this pet through the follower path above),
+                    -- and Shadow Step remains an explicit combat teleport in moveToward.
+                    moveToward(pet, target, dir, attackRate, combatAnim, false)
                 end
 
                 -- Mining impact FX: play a library impact at the ore on cadence (test bed + visual).
