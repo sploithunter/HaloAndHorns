@@ -5064,6 +5064,9 @@ function EnemyService:_assignPetTargets(eng)
                         or (kites and roleDef and tonumber(roleDef.attack_range))
                         or aggroRange
                     local petPos = self:_petPosition(pet, pfs)
+                    local v2 = self:_aggroV2()
+                    local petAggro = v2 and self:_petAggroTable(pet) or nil
+                    local exitFloor = (v2 and v2.base and v2.base.exit_floor) or 1
                     local candidates = {}
                     for etid, entry in pairs(live) do
                         -- onramp defense: sub-threshold squads fight what is
@@ -5085,12 +5088,19 @@ function EnemyService:_assignPetTargets(eng)
                         else
                             d = (entry.pos - petPos).Magnitude
                         end
+                        -- RANGE ACQUISITION vs THREAT RETENTION: ambient foes must enter this
+                        -- role's normal reach, but a foe already above the pet's aggro exit floor
+                        -- has been acquired. Keep it eligible outside that radius so a deliberate
+                        -- defense alert can make the pet close distance immediately without writing
+                        -- TargetID or pinning an assist target.
+                        local inEngagement = d <= reach
+                            or (petAggro and AggroTable.hasThreat(petAggro, etid, exitFloor))
                         -- TERRITORIAL: pets only auto-pick foes in the player's own area (no
                         -- reaching across a wall into another biome's pack). ALLEGIANCE GATE: a pet
                         -- only auto-targets an enemy it's hostile to (heaven/neutral pets ignore heaven
                         -- enemies -> peaceful farming in heaven; hell pets engage everything).
                         if
-                            d <= reach
+                            inEngagement
                             and self:_inTerritory(entry, player)
                             and self:_petHostileToEnemy(pet, entry, player)
                         then
@@ -5138,19 +5148,14 @@ function EnemyService:_assignPetTargets(eng)
                     -- decaying table), among the reachable candidates and above exit_floor. Only when
                     -- it has no real threat yet do we fall back to the priority modes — so a fresh pet
                     -- still initiates on the nearest, then threat takes over.
-                    local v2 = self:_aggroV2()
                     if v2 then
                         local idset = {}
                         for _, cand in ipairs(candidates) do
                             idset[cand.id] = true
                         end
-                        chosen = AggroTable.top(
-                            self:_petAggroTable(pet),
-                            (v2.base and v2.base.exit_floor) or 1,
-                            function(k)
-                                return idset[k] == true
-                            end
-                        )
+                        chosen = AggroTable.top(petAggro, exitFloor, function(k)
+                            return idset[k] == true
+                        end)
                         if chosen then
                             branch = "threat"
                         end

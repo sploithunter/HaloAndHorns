@@ -5083,6 +5083,9 @@ first-session cohort rates.
   resumes from the displaced position.
 - Added a non-pinning squad alert seam for authored defense boundaries. It seeds ordinary pet and
   enemy aggro tables so combat begins at range, while normal tank taunts and threat remain in charge.
+- Live defense-wave tracing found pet target selection applying the ordinary acquisition radius
+  after the alert had already seeded threat. Existing above-floor threat now retains eligibility
+  outside that radius; ambient acquisition, territory, allegiance, decay, and taunts are unchanged.
 
 ## 2026-08-26 — Merge an Egg Phase 1 authored-strip prototype
 

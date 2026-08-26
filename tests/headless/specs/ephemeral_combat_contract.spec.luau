@@ -67,5 +67,21 @@ return function()
             expect(block:find("self:_petAggroTable(pet)", 1, true)).to.be.ok()
             expect(block:find('FindFirstChild("TargetID")', 1, true)).to.equal(nil)
         end)
+
+        it("lets existing pet threat bypass only the ambient acquisition radius", function()
+            local source = readFile("src/Server/Services/EnemyService.lua")
+            local assign = source:find("function EnemyService:_assignPetTargets", 1, true)
+            local candidates = source:find("local candidates = {}", assign, true)
+            local retained =
+                source:find("AggroTable.hasThreat(petAggro, etid, exitFloor)", candidates, true)
+            local territory = source:find("self:_inTerritory(entry, player)", retained, true)
+            local hostility =
+                source:find("self:_petHostileToEnemy(pet, entry, player)", retained, true)
+
+            expect(assign ~= nil).to.equal(true)
+            expect(retained ~= nil and retained > candidates).to.equal(true)
+            expect(territory ~= nil and territory > retained).to.equal(true)
+            expect(hostility ~= nil and hostility > retained).to.equal(true)
+        end)
     end)
 end

@@ -76,7 +76,9 @@ filtered out of production registries.
   resumes from the displaced position after disengagement, and fires one server-only callback at
   the destination. `AlertSquadToEnemy` can seed both sides of a normal threat-table engagement for
   authored defense boundaries; unlike focus assist it never pins pet `TargetID`s, so damage, decay,
-  proximity, and tank taunts decide the fight after the initial alert.
+  proximity, and tank taunts decide the fight after the initial alert. A role's acquisition radius
+  gates only new ambient targets: an enemy already above that pet's aggro exit floor stays eligible
+  outside the radius, allowing an alert to begin pursuit without becoming a target pin.
 - `CombatApplication` is the runtime combat-state boundary. `ApplyHit` publishes resolved
   hit/miss/dodge/block/absorb/immune outcomes, `ApplyDamage` mutates enemy HP or pet endurance and
   credits contribution, and `ApplyPowerHeal` mutates active/power healing. All three publish the

@@ -43,6 +43,13 @@ function AggroTable.get(state, key)
     return state.values[key] or 0
 end
 
+-- A target already carrying threat is engaged, even when it has moved beyond the ordinary
+-- acquisition radius. Callers use this distinction to keep acquisition local without making a
+-- defense alert wait for the alerted target to wander back into proximity.
+function AggroTable.hasThreat(state, key, minValue)
+    return AggroTable.get(state, key) > (minValue or 0)
+end
+
 -- Pacify: drop an attacker from the table entirely (aggro -> 0).
 function AggroTable.clear(state, key)
     if key ~= nil then
