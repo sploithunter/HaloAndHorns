@@ -27,7 +27,8 @@ return {
         hatcher_spawn = "HatcherSpawn",
         reset_control = "ResetControl",
         exit_control = "ExitControl",
-        enemy_spawns = { "EnemySpawnA", "EnemySpawnB", "EnemySpawnC" },
+        enemy_spawn_area = "EnemySpawnArea",
+        enemy_finish_line = "EnemyFinishLine",
         bounds = {
             center_x = -16000,
             center_z = 0,
@@ -51,6 +52,16 @@ return {
         level = 1,
         damage = 4,
         cadence = 2,
-        count = 3,
+        march_speed = 22,
+        finish_distance = 2,
+        spawn_inset = 5,
+        finish_inset = 5,
+    },
+
+    wave_gap = 2,
+    waves = {
+        { count = 3 },
+        { count = 5 },
+        { count = 8 },
     },
 }

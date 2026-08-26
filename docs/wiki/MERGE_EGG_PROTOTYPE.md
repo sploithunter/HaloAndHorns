@@ -10,7 +10,7 @@ progression, procedural layout, and multiplayer occupancy.
 
 - The venue is the persistent Studio-authored Model
   `Workspace.Maps.MergeEggPrototype`: one 96×600 continuous land strip with fixed side/end walls.
-  It is not a tile-kit map and has no chunk or tile-streaming lifecycle. The small 17-part Model is
+  It is not a tile-kit map and has no chunk or tile-streaming lifecycle. The small Model is
   atomic under ordinary Workspace streaming so its continuous floor and walls arrive together.
 - In Studio, Home's otherwise-disabled `HallOfWorldsPortal` becomes the entry prompt. Production
   keeps the Hall route disabled and sealed. Entry streams the authored strip, then directly pivots
@@ -21,10 +21,18 @@ progression, procedural layout, and multiplayer occupancy.
   reaches `Workspace.PlayerPets` with `MergeEggUnit`, a run id, and
   `EphemeralDownPolicy = "destroy"`, so a defeated test unit is destroyed before saved-pet downed
   state or slot lockouts can run.
-- One wave contains three low-level prototype Cinder Whelps at fixed authored anchors. They use
-  `rewardPolicy = "none"`, so defeat grants no loot, XP/progression event, tracked counter, potion,
-  enhancement, or exclusive egg. A server-only defeat callback focuses the squad on the next live
-  target and marks completion after the third.
+- Three fixed waves field 3, 5, then 8 low-level prototype Cinder Whelps. Every enemy starts at a
+  random point in one authored spawn area and receives exactly one randomized destination across
+  the shared finish line; that origin-to-finish vector is its whole path. There is no patrol graph.
+- The finish line sits behind the hatcher and manifested squad. Enemies therefore enter guaranteed
+  engagement range before they can score; reaching it means they actually passed the defenders.
+- Normal aggro owns movement while an enemy is engaged, so pets can pull it off its forward line and
+  tank threat/implicit taunt remain authoritative. If the pets fall or aggro clears, a surviving
+  enemy resumes toward the same finish from its displaced position. The prototype does not pin all
+  five pets to one target; normal pet/enemy threat tables decide who responds to whom.
+- Enemies use `rewardPolicy = "none"`, so defeat grants no loot, XP/progression event, tracked
+  counter, potion, enhancement, or exclusive egg. Defeat and finish-line arrival are counted
+  separately; after every enemy in a wave is resolved, the next larger wave starts automatically.
 - The red control resets every prototype unit/enemy and makes the hatch repeatable. The blue control
   exits, restores the parked squad and prior combat-assist attributes, streams Home, and returns the
   character to their exact gate-entry transform. Player leave and character reset use the same
@@ -43,5 +51,5 @@ progression, procedural layout, and multiplayer occupancy.
 
 - Tile generation or tile streaming.
 - Merge recipes, board slots, currency, rewards, persistence, or monetization.
-- Wave selection, difficulty curves, production UI, matchmaking, or more than one active player.
+- Wave selection UI, production difficulty curves, matchmaking, or more than one active player.
 - Reopening Hall of Worlds in production.

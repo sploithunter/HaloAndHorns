@@ -5091,3 +5091,8 @@ first-session cohort rates.
   reset the encounter or return Home with their ordinary runtime squad restored.
 - Added the repeatable Edit-mode world authoring pass and source-contract coverage. The expanded
   suite passes all 2,308 headless checks; live Studio verification remains the final Phase 1 gate.
+- Reworked the encounter into 3/5/8-enemy waves. Each enemy now marches from a randomized spawn to
+  one randomized point on the shared finish line, yields movement to the normal aggro/tank system,
+  resumes after disengagement, and resolves as either defeated or escaped without rewards.
+- Live testing caught the first finish line ahead of the defenders, letting enemies score before
+  guaranteed aggro. Moved it behind the hatcher/squad so crossing requires passing the defense.

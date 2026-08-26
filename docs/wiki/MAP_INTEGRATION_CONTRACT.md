@@ -25,8 +25,9 @@ Studio owns:
 
 The Studio-only Merge an Egg Phase 1 venue follows this split without joining the general map-hook
 registry. Studio owns the single persistent `Workspace.Maps.MergeEggPrototype` Model and its named
-parts (`PlayerSpawn`, hatcher/reset/exit controls, and three enemy spawns). Config/service code owns
-session routing and combat. The repeatable authoring pass replaces only that exact Model and stamps
+parts (`PlayerSpawn`, hatcher/reset/exit controls, one enemy spawn area, and one finish line).
+Config/service code owns session routing and combat. The repeatable authoring pass replaces only
+that exact Model and stamps
 `UsesTileSystem = false` / `UsesTileStreaming = false`; runtime fails closed if it is absent instead
 of generating geometry. See [Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md).
 

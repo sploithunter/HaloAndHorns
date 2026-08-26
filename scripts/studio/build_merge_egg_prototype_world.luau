@@ -21,7 +21,7 @@ world:SetAttribute("MapKind", "AuthoredPrototype")
 world:SetAttribute("Phase", 1)
 world:SetAttribute("UsesTileSystem", false)
 world:SetAttribute("UsesTileStreaming", false)
--- Workspace streaming still exists globally. Treat the tiny 17-part venue as one atomic model so
+-- Workspace streaming still exists globally. Treat the tiny venue as one atomic model so
 -- the continuous floor and its walls arrive together; this is not a chunk/tile lifecycle.
 world.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 world.Parent = maps
@@ -52,6 +52,7 @@ local STONE = Color3.fromRGB(99, 108, 98)
 local GOLD = Color3.fromRGB(245, 190, 72)
 local BLUE = Color3.fromRGB(86, 180, 216)
 local RED = Color3.fromRGB(197, 82, 72)
+local BORDER = Color3.fromRGB(255, 126, 64)
 
 local floor =
     part("LandStrip", Vector3.new(96, 2, 600), CFrame.new(ORIGIN), LAND, Enum.Material.Ground)
@@ -103,11 +104,17 @@ end
 
 anchor("PlayerSpawn", Vector3.new(0, 2, -268), Vector3.new(0, 2, -220))
 anchor("HatcherSpawn", Vector3.new(0, 2, -218), Vector3.new(0, 2, -170))
-anchor("FriendlyRally", Vector3.new(0, 2, -205), Vector3.new(0, 2, -170))
-anchor("BattleCenter", Vector3.new(0, 2, -70), Vector3.new(0, 2, 0))
-anchor("EnemySpawnA", Vector3.new(0, 2, -165), Vector3.new(0, 2, -220))
-anchor("EnemySpawnB", Vector3.new(0, 2, -75), Vector3.new(0, 2, -165))
-anchor("EnemySpawnC", Vector3.new(0, 2, 15), Vector3.new(0, 2, -75))
+local spawnArea = anchor("EnemySpawnArea", Vector3.new(0, 2, 180), Vector3.new(0, 2, -200))
+spawnArea.Size = Vector3.new(84, 1, 120)
+
+local finishLine = part(
+    "EnemyFinishLine",
+    Vector3.new(84, 0.3, 4),
+    CFrame.new(ORIGIN + Vector3.new(0, 1.2, -255)),
+    BORDER,
+    Enum.Material.Neon
+)
+finishLine.CanCollide = false
 
 part(
     "StartPlatform",
