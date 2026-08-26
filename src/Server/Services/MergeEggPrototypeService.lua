@@ -713,6 +713,8 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     end
     local alertDistance = math.max(1, tonumber(cfg.engagement_distance) or 260)
     local alertThreat = math.max(1, tonumber(cfg.engagement_threat) or 250)
+    local reengageSeconds = math.max(0.25, tonumber(cfg.reengage_seconds) or 1)
+    local now = os.clock()
     for _, enemy in ipairs(record.enemies) do
         local model = enemy.model
         local position = model and model:GetAttribute("MoveTarget")
@@ -720,23 +722,56 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
             model
             and model.Parent
             and (tonumber(model:GetAttribute("HP")) or 0) > 0
-            and model:GetAttribute("MergeEggDefenseAlerted") ~= true
             and typeof(position) == "Vector3"
         then
             local localPosition = finishLine.CFrame:PointToObjectSpace(position)
             if math.abs(localPosition.Z) <= alertDistance then
-                local ok, alertedPets = self._enemyService:AlertPetFolderToEnemy(
-                    record.teamFolder,
-                    enemy.targetId,
-                    { threat = alertThreat }
-                )
-                if ok then
-                    model:SetAttribute("MergeEggDefenseAlerted", true)
-                    model:SetAttribute("MergeEggAlertedPets", alertedPets)
-                    record.alerted += 1
-                    record.teamEngaged = true
-                    self:_setTeamState(record, "Engaged")
-                    self:_setWorldState("WaveActive", record)
+                local firstAlert = model:GetAttribute("MergeEggDefenseAlerted") ~= true
+                local engaged = model:GetAttribute("AggroOwner") == record.player.Name
+                if not engaged then
+                    for _, pet in
+                        ipairs(record.teamFolder and record.teamFolder:GetChildren() or {})
+                    do
+                        if pet:IsA("Model") then
+                            local targetType = pet:FindFirstChild("TargetType")
+                            local targetId = pet:FindFirstChild("TargetID")
+                            if
+                                targetType
+                                and tostring(targetType.Value) == "Enemy"
+                                and targetId
+                                and tonumber(targetId.Value) == tonumber(enemy.targetId)
+                            then
+                                engaged = true
+                                break
+                            end
+                        end
+                    end
+                end
+                local nextAlertAt = tonumber(model:GetAttribute("MergeEggNextDefenseAlertAt")) or 0
+                -- The first alert is only a normal threat seed, not a forced target. If both sides
+                -- later drop the fight while the marcher is still in the defense lane, seed it
+                -- again; tanks and the ordinary tables remain free to redistribute that threat.
+                if firstAlert or (not engaged and now >= nextAlertAt) then
+                    local ok, alertedPets = self._enemyService:AlertPetFolderToEnemy(
+                        record.teamFolder,
+                        enemy.targetId,
+                        { threat = alertThreat }
+                    )
+                    if ok then
+                        local alertCount = (
+                            tonumber(model:GetAttribute("MergeEggDefenseAlertCount")) or 0
+                        ) + 1
+                        model:SetAttribute("MergeEggDefenseAlerted", true)
+                        model:SetAttribute("MergeEggDefenseAlertCount", alertCount)
+                        model:SetAttribute("MergeEggNextDefenseAlertAt", now + reengageSeconds)
+                        model:SetAttribute("MergeEggAlertedPets", alertedPets)
+                        if firstAlert then
+                            record.alerted += 1
+                        end
+                        record.teamEngaged = true
+                        self:_setTeamState(record, "Engaged")
+                        self:_setWorldState("WaveActive", record)
+                    end
                 end
             end
         end

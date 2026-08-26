@@ -1,6 +1,6 @@
 # Merge an Egg Prototype
 
-Status: Phase 1 Studio prototype
+Status: Phase 2 live verified
 
 ## Phase 1 contract
 
@@ -46,23 +46,59 @@ progression, procedural layout, and multiplayer occupancy.
   character to their exact gate-entry transform. Player leave and character reset use the same
   scoped cleanup.
 
+## Phase 2 contract
+
+Phase 2 changes ownership and observability without expanding to the production queue:
+
+- Deploying the test egg creates exactly one stationary `NpcPrincipalService` principal named
+  `Merge Hatcher Team 1`. It uses the existing Future Self/Colorado principal runtime with the
+  player's avatar as a temporary visual stand-in; its root remains anchored at `HatcherSpawn`, it
+  never follows or teleports to the player, it does not enter `TeamMembers`/alliance state, and it
+  has no timer. Reset, exit, character removal, and player leave explicitly despawn it.
+- The same five Wayfinders now live only in the NPC's `NpcSquad` folder. `NpcOwner` retains the
+  real player for combat attribution and cleanup, but formation, return, and leash ownership use the
+  stationary principal. The player's real squad remains parked only to isolate this test.
+- Defense alerts call `AlertPetFolderToEnemy` for that one folder. They cannot draft the parked
+  player squad or another manifested principal. After the seed, ordinary bilateral aggro, tank
+  taunt, target distribution, drive-back, and threat decay remain authoritative. Because a single
+  seed can legitimately decay during a long chase, the lane boundary seeds ordinary threat again
+  only when both the enemy has dropped its aggro owner and no hatcher pet still targets it. This
+  closes the marcher's breakaway gap without pinning a target or overriding the aggro tables.
+- NPC pets now have bounded server-authoritative combat positions at the same travel-speed cap as
+  their client presentation. Damage range and enemy pursuit use that position rather than treating
+  every pet as if it were still standing on the NPC root.
+- One team exercises the reusable lifecycle `Ready → Deploying → Engaged → Returning → Ready`,
+  plus `Defeated` when every ephemeral pet is down. Folder/world attributes publish active,
+  defeated, targeted, and returned counts without adding a custom network feed.
+- A Studio-only, read-only `NPC Team 1` rail shows all five stable slots, live endurance percentage,
+  defeated tombstones, current enemy targets, team state, active count, and wave progress. Enemy HP
+  remains on the existing enemy rail. The observer sends no focus or combat-control remotes.
+
 ## Source and authoring
 
 - Runtime/config: `configs/merge_egg_prototype.lua` and
   `src/Server/Services/MergeEggPrototypeService.lua`.
+- Read-only telemetry: `src/Client/Systems/MergeEggPrototypeObserver.lua`.
 - Repeatable Edit-mode world pass: `scripts/studio/build_merge_egg_prototype_world.luau`.
 - The service is registered only when `RunService:IsStudio()` and map binding is enabled. A missing
   authored world fails closed and logs the exact expected Workspace path; runtime never fabricates
   or tiles the venue.
 
-## Production direction after Phase 1
+## Live verification
 
-- The Phase 1 ghosts remain player-principal pets only as a fast combat test. Production defense
-  teams belong to stationary hatcher NPC principals, so their formation and return anchor is the
-  hatcher—not the moving player.
-- A hatcher fields four or five independent teams through a deployment queue. Each team needs its
-  own lifecycle (queued, deploying, engaged, returning, ready/down) and combat/formation ownership;
-  exact capacity, timing, and replacement rules wait for the queue phase.
+The 2026-08-26 Studio pass moved the player roughly 250 studs away from the hatcher to recreate the
+original long-chase failure. The complete 3/5/8 sequence defeated all 16 enemies with zero escapes.
+Five wave-three survivors exercised the re-engagement path at least once; the final survivor was
+re-seeded four times before defeat. All five pets then returned to the stationary hatcher and the
+team reached `Ready`. Hall exit removed the principal, squad folder, and prototype enemies, disabled
+the observer, restored Home, and produced no console errors.
+
+## Production direction after Phase 2
+
+- Phase 2 proves one hatcher-owned NPC team. The next phase instantiates four copies of this same
+  contract and adds the deployment queue; it must not create four special-case principal paths.
+- A production hatcher will field four or five independent teams through that queue. Exact capacity,
+  timing, congestion, replacement, and defeated-slot rules wait for the multi-team phase.
 - Tank/melee drive-back that pushes the whole frontline away from the hatcher is desirable lane
   behavior. A legitimately advanced team travels back to its hatcher after combat rather than
   teleporting at the generic catch-up distance.
@@ -74,5 +110,6 @@ progression, procedural layout, and multiplayer occupancy.
 - Tile generation or tile streaming.
 - Merge recipes, board slots, currency, rewards, persistence, or monetization.
 - Wave selection UI, production difficulty curves, matchmaking, or more than one active player.
-- Stationary hatcher principals, the four/five-team deployment queue, and production team state UI.
+- The four/five-team deployment queue, congestion policy, and production team-state UI.
+- Player-team opt-in deployment and combined NPC/player roster presentation.
 - Reopening Hall of Worlds in production.

@@ -5120,3 +5120,21 @@ first-session cohort rates.
 - Final live movement verification cleared wave one with the frontline roughly 220 studs from its
   anchor. After targets cleared, half-second pet-position samples advanced smoothly from about Z -10
   to -19, -31, and -45 toward the Z -228 anchor; no catch-up teleport occurred.
+
+## 2026-08-26 — Merge an Egg Phase 2 single-NPC defense
+
+- Reused the Future Self/Colorado `NpcPrincipalService` path for an opt-in stationary authored
+  principal: no player-follow movement, teleport leash, party/alliance stamp, or expiry timer.
+- Moved the five prototype Wayfinders into that hatcher NPC's independently addressable folder and
+  changed the defense alert to seed only that squad. If a long chase fully loses aggro on both
+  sides, the lane re-seeds ordinary threat rather than permanently suppressing the enemy after its
+  first alert. The player's real squad remains parked for isolation and cannot receive a prototype
+  target.
+- Added bounded server-authoritative NPC-pet combat travel so visible arrival, pet damage range, and
+  enemy pursuit agree instead of collapsing every pet to the stationary principal root.
+- Added the one-team Ready/Deploying/Engaged/Returning/Defeated state contract and a read-only
+  Studio observer rail for five stable pet slots, endurance, current targets, team counts, and wave
+  progress. The expanded headless suite passes all 2,322 checks. A live 3/5/8 pass with the player
+  moved about 250 studs from the hatcher defeated all 16 marchers with zero escapes; surviving
+  enemies exercised repeated ordinary-threat alerts up to four times, all five pets returned to
+  `Ready`, and Hall exit cleared the principal, team, enemies, and observer with no console errors.

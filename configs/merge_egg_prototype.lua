@@ -77,6 +77,7 @@ return {
         finish_distance = 2,
         engagement_distance = 260,
         engagement_threat = 250,
+        reengage_seconds = 1,
         spawn_inset = 5,
         finish_inset = 5,
     },
