@@ -26,6 +26,18 @@ local localPlayer = Players.LocalPlayer
 local PANEL_WIDTH = 214
 local COMBAT_CADENCE_MULTIPLIER =
     math.max(0.25, tonumber((CONFIG.combat or {}).attack_cadence_multiplier) or 1)
+local WAVE_WORDS = {
+    "ONE",
+    "TWO",
+    "THREE",
+    "FOUR",
+    "FIVE",
+    "SIX",
+    "SEVEN",
+    "EIGHT",
+    "NINE",
+    "TEN",
+}
 local ROLE_THEME = {
     tank = { color = Color3.fromRGB(75, 145, 225), glyph = "T" },
     melee = { color = Color3.fromRGB(210, 80, 75), glyph = "M" },
@@ -91,10 +103,127 @@ local function worldProgress()
     local world = maps
         and maps:FindFirstChild((CONFIG.world or {}).model_name or "MergeEggPrototype")
     if not world then
-        return 0, #(CONFIG.waves or {})
+        return 0, #(CONFIG.waves or {}), "ReadyToHatch", 0
     end
     return tonumber(world:GetAttribute("CurrentWave")) or 0,
-        tonumber(world:GetAttribute("WaveCount")) or #(CONFIG.waves or {})
+        tonumber(world:GetAttribute("WaveCount")) or #(CONFIG.waves or {}),
+        tostring(world:GetAttribute("PrototypeState") or "ReadyToHatch"),
+        math.max(0, tonumber(world:GetAttribute("ActiveEnemies")) or 0)
+end
+
+local function waveWord(wave)
+    return WAVE_WORDS[wave] or tostring(wave)
+end
+
+local function readableState(state)
+    local spaced = tostring(state or ""):gsub("(%l)(%u)", "%1 %2")
+    return spaced:upper()
+end
+
+local function createWaveMeter(parent)
+    local frame = Instance.new("Frame")
+    frame.Name = "WaveMeter"
+    frame.AnchorPoint = Vector2.new(0.5, 0)
+    local teamRailWidth = (#(CONFIG.teams or {}) * PANEL_WIDTH)
+        + (math.max(0, #(CONFIG.teams or {}) - 1) * 4)
+    frame.Position = UDim2.new(0.5, -math.floor(teamRailWidth * 0.5), 0, 88)
+    frame.Size = UDim2.fromOffset(430, 66)
+    frame.BackgroundColor3 = Color3.fromRGB(24, 30, 43)
+    frame.BackgroundTransparency = 0.05
+    frame.BorderSizePixel = 0
+    frame.Visible = false
+    frame.Parent = parent
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 9)
+    corner.Parent = frame
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(245, 190, 75)
+    stroke.Transparency = 0.15
+    stroke.Thickness = 2
+    stroke.Parent = frame
+
+    local title = Instance.new("TextLabel")
+    title.Name = "WaveTitle"
+    title.BackgroundTransparency = 1
+    title.Position = UDim2.fromOffset(12, 6)
+    title.Size = UDim2.new(1, -24, 0, 27)
+    title.Font = Enum.Font.GothamBlack
+    title.Text = "READY TO HATCH"
+    title.TextColor3 = Color3.fromRGB(255, 223, 125)
+    title.TextSize = 21
+    title.Parent = frame
+
+    local detail = Instance.new("TextLabel")
+    detail.Name = "WaveDetail"
+    detail.BackgroundTransparency = 1
+    detail.Position = UDim2.fromOffset(12, 33)
+    detail.Size = UDim2.new(1, -24, 0, 18)
+    detail.Font = Enum.Font.GothamBold
+    detail.Text = "8-WAVE ENDURANCE TEST • 4× COMBAT"
+    detail.TextColor3 = Color3.fromRGB(180, 200, 225)
+    detail.TextSize = 11
+    detail.Parent = frame
+
+    local track = Instance.new("Frame")
+    track.Name = "ProgressTrack"
+    track.Position = UDim2.new(0, 12, 1, -9)
+    track.Size = UDim2.new(1, -24, 0, 4)
+    track.BackgroundColor3 = Color3.fromRGB(58, 68, 86)
+    track.BorderSizePixel = 0
+    track.Parent = frame
+
+    local trackCorner = Instance.new("UICorner")
+    trackCorner.CornerRadius = UDim.new(1, 0)
+    trackCorner.Parent = track
+
+    local fill = Instance.new("Frame")
+    fill.Name = "ProgressFill"
+    fill.Size = UDim2.fromScale(0, 1)
+    fill.BackgroundColor3 = Color3.fromRGB(245, 190, 75)
+    fill.BorderSizePixel = 0
+    fill.Parent = track
+
+    local fillCorner = Instance.new("UICorner")
+    fillCorner.CornerRadius = UDim.new(1, 0)
+    fillCorner.Parent = fill
+
+    return {
+        frame = frame,
+        stroke = stroke,
+        title = title,
+        detail = detail,
+        fill = fill,
+    }
+end
+
+local function updateWaveMeter(meter, wave, waveCount, state, activeEnemies, announcing)
+    meter.frame.Visible = true
+    if wave <= 0 then
+        meter.title.Text = "READY TO HATCH"
+        meter.detail.Text = string.format(
+            "%d-WAVE ENDURANCE TEST • %.0f× COMBAT",
+            waveCount,
+            COMBAT_CADENCE_MULTIPLIER
+        )
+    else
+        meter.title.Text = "WAVE " .. waveWord(wave)
+        meter.detail.Text = string.format(
+            "%d / %d  •  %d ACTIVE  •  %s  •  %.0f× COMBAT",
+            wave,
+            waveCount,
+            activeEnemies,
+            readableState(state),
+            COMBAT_CADENCE_MULTIPLIER
+        )
+    end
+    meter.fill.Size = UDim2.fromScale(math.clamp(wave / math.max(1, waveCount), 0, 1), 1)
+    meter.title.TextSize = announcing and 25 or 21
+    meter.frame.BackgroundColor3 = announcing and Color3.fromRGB(66, 50, 24)
+        or Color3.fromRGB(24, 30, 43)
+    meter.stroke.Thickness = announcing and 3 or 2
+    meter.stroke.Transparency = announcing and 0 or 0.15
 end
 
 local function createHeader(parent, titleText)
@@ -329,6 +458,9 @@ function MergeEggPrototypeObserver.start()
         panels[panel.id] = panel
     end
 
+    local waveMeter = createWaveMeter(gui)
+    local lastWave = 0
+    local announceUntil = 0
     local factor = tonumber(COMBAT.pet_down_threshold_factor) or 1
     local elapsed = 0
     RunService.RenderStepped:Connect(function(dt)
@@ -341,6 +473,9 @@ function MergeEggPrototypeObserver.start()
         local observing = localPlayer:GetAttribute("InMergeEggPrototype") == true
         gui.Enabled = observing
         if not observing then
+            waveMeter.frame.Visible = false
+            lastWave = 0
+            announceUntil = 0
             for _, panel in pairs(panels) do
                 clearCards(panel)
             end
@@ -348,7 +483,21 @@ function MergeEggPrototypeObserver.start()
         end
 
         local folders = teamFolders()
-        local wave, waveCount = worldProgress()
+        local wave, waveCount, state, activeEnemies = worldProgress()
+        if wave > 0 and wave ~= lastWave then
+            lastWave = wave
+            announceUntil = os.clock() + 2.5
+        elseif wave <= 0 then
+            lastWave = 0
+        end
+        updateWaveMeter(
+            waveMeter,
+            wave,
+            waveCount,
+            state,
+            activeEnemies,
+            os.clock() < announceUntil
+        )
         for id, panel in pairs(panels) do
             updatePanel(panel, folders[id], wave, waveCount, factor)
         end

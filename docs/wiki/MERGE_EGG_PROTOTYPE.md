@@ -109,8 +109,10 @@ commanded NPC teams. It still does not add the production deployment queue.
   and peak-pressure counts. The encounter publishes the first pet-loss wave and active-enemy count,
   and stops as `DefenseOverrun` if all 20 temporary pets are defeated.
 - The Studio-only observer renders four columns and 20 stable pet cards plus current/peak pressure
-  and first-loss telemetry. It remains read-only and uses folder/world attributes rather than a
-  custom network feed.
+  and first-loss telemetry. A persistent top-center meter spells out each incoming wave (`WAVE ONE`,
+  `WAVE TWO`, and so on), briefly brightens on transition, and shows current/total waves, active
+  enemy count, encounter state, and the 4× label. It remains read-only and uses folder/world
+  attributes rather than a custom network feed.
 
 ## Source and authoring
 
