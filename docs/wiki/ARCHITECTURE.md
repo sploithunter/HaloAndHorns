@@ -74,7 +74,9 @@ filtered out of production registries.
   policy before parenting the model into the live pet folder. Spawn callers may also supply one
   authored `marchGoal`; it replaces random idle meander, pauses while combat owns enemy motion,
   resumes from the displaced position after disengagement, and fires one server-only callback at
-  the destination.
+  the destination. `AlertSquadToEnemy` can seed both sides of a normal threat-table engagement for
+  authored defense boundaries; unlike focus assist it never pins pet `TargetID`s, so damage, decay,
+  proximity, and tank taunts decide the fight after the initial alert.
 - `CombatApplication` is the runtime combat-state boundary. `ApplyHit` publishes resolved
   hit/miss/dodge/block/absorb/immune outcomes, `ApplyDamage` mutates enemy HP or pet endurance and
   credits contribution, and `ApplyPowerHeal` mutates active/power healing. All three publish the

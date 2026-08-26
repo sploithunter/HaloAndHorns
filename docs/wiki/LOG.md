@@ -5081,6 +5081,8 @@ first-session cohort rates.
 - Simplified that seam to the actual prototype need: each enemy has one forward destination rather
   than a waypoint graph; its spawn-to-finish vector is the path and combat interruption still
   resumes from the displaced position.
+- Added a non-pinning squad alert seam for authored defense boundaries. It seeds ordinary pet and
+  enemy aggro tables so combat begins at range, while normal tank taunts and threat remain in charge.
 
 ## 2026-08-26 — Merge an Egg Phase 1 authored-strip prototype
 

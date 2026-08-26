@@ -54,5 +54,18 @@ return function()
             expect(callback ~= nil and callback > step).to.equal(true)
             expect(followCall ~= nil and followCall > loiter).to.equal(true)
         end)
+
+        it("can alert both aggro tables without forcing pet target ids", function()
+            local source = readFile("src/Server/Services/EnemyService.lua")
+            local alert = source:find("function EnemyService:AlertSquadToEnemy", 1, true)
+            local focus = source:find("function EnemyService:FocusSquadOnEnemy", alert, true)
+            local block = source:sub(alert, focus - 1)
+
+            expect(alert ~= nil).to.equal(true)
+            expect(focus ~= nil and focus > alert).to.equal(true)
+            expect(block:find("AggroTable.reinforce(entry.aggro, pet, threat)", 1, true)).to.be.ok()
+            expect(block:find("self:_petAggroTable(pet)", 1, true)).to.be.ok()
+            expect(block:find('FindFirstChild("TargetID")', 1, true)).to.equal(nil)
+        end)
     end)
 end
