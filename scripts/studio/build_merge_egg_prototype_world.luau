@@ -21,6 +21,9 @@ world:SetAttribute("MapKind", "AuthoredPrototype")
 world:SetAttribute("Phase", 1)
 world:SetAttribute("UsesTileSystem", false)
 world:SetAttribute("UsesTileStreaming", false)
+-- Workspace streaming still exists globally. Treat the tiny 17-part venue as one atomic model so
+-- the continuous floor and its walls arrive together; this is not a chunk/tile lifecycle.
+world.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 world.Parent = maps
 
 local ORIGIN = Vector3.new(-16000, 0, 0)

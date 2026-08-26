@@ -10,7 +10,8 @@ progression, procedural layout, and multiplayer occupancy.
 
 - The venue is the persistent Studio-authored Model
   `Workspace.Maps.MergeEggPrototype`: one 96×600 continuous land strip with fixed side/end walls.
-  It is not a tile-kit map and has no chunk or tile-streaming lifecycle.
+  It is not a tile-kit map and has no chunk or tile-streaming lifecycle. The small 17-part Model is
+  atomic under ordinary Workspace streaming so its continuous floor and walls arrive together.
 - In Studio, Home's otherwise-disabled `HallOfWorldsPortal` becomes the entry prompt. Production
   keeps the Hall route disabled and sealed. Entry streams the authored strip, then directly pivots
   the player without changing `LastArea`, unlocks, or profile state.
