@@ -4,6 +4,7 @@ local pets = loadModule("configs/pets.lua")
 local petRoles = loadModule("configs/pet_roles.lua")
 local currencies = loadModule("configs/currencies.lua")
 local drops = loadModule("configs/drops.lua")
+local draft = loadModule("src/Shared/Game/MergeEggDraft.lua")
 local pricing = loadModule("src/Shared/Game/MergeEggPricing.lua")
 
 return function()
@@ -47,11 +48,11 @@ return function()
         end)
 
         it("deploys four empty hatcher positions before the first Grass Egg", function()
-            expect(config.version).to.equal(5)
+            expect(config.version).to.equal(6)
             expect(#config.teams).to.equal(4)
             expect(config.team.starts_with_egg).to.equal(false)
             expect(config.team.egg_id).to.equal(nil)
-            expect(table.concat(config.team.positions_by_egg_tier, ",")).to.equal("3,4,5,6")
+            expect(table.concat(config.team.positions_by_egg_tier, ",")).to.equal("3,3,3,3")
             expect(#config.team.egg_progression).to.equal(4)
             expect(config.team.egg_progression[1]).to.equal("grass_egg")
             expect(config.team.egg_progression[2]).to.equal("ice_egg")
@@ -103,6 +104,40 @@ return function()
             local hatchBody = service:sub(hatchAt, advanceAt - 1)
             expect(hatchBody:find('self:_setWorldState("AwaitingFirstEgg"', 1, true)).to.be.ok()
             expect(hatchBody:find("self:_spawnNextWave(record)", 1, true)).to.equal(nil)
+        end)
+
+        it("uses world capacity and composition-aware best-of-N egg drafts", function()
+            local loop = config.progression_loop
+            local home = loop.stages.home
+            local heaven = loop.stages.heaven_1
+            expect(loop.default_stage).to.equal("home")
+            expect(table.concat(loop.order, ",")).to.equal("home,heaven_1")
+            expect(home.team_positions).to.equal(3)
+            expect(heaven.team_positions).to.equal(4)
+            expect(table.concat(home.draft_rolls_by_tier, ",")).to.equal("1,2,3,4")
+            expect(table.concat(heaven.draft_rolls_by_tier, ",")).to.equal("1,2,3,4")
+            expect(table.concat(heaven.egg_progression, ",")).to.equal(
+                "bloom_egg,aurora_egg,solar_egg,gilded_egg"
+            )
+            expect(heaven.egg_pricing.base_amount).to.equal(1600)
+            expect(heaven.independent_starting_coins).to.equal(6400)
+            expect(pets.egg_sources.bloom_egg).to.be.ok()
+            expect(pets.egg_sources.aurora_egg).to.be.ok()
+            expect(pets.egg_sources.solar_egg).to.be.ok()
+            expect(pets.egg_sources.gilded_egg).to.be.ok()
+
+            local tank = { pet = "tank", role = "tank", combatPower = 10 }
+            local support = { pet = "support", role = "support", combatPower = 12 }
+            local blaster = { pet = "blaster", role = "ranged", combatPower = 40 }
+            expect(draft.select({ blaster, support, tank }, {})).to.equal(tank)
+            expect(draft.select({ blaster, support }, { tank })).to.equal(support)
+            expect(draft.select({ support, blaster }, { tank, support })).to.equal(blaster)
+
+            local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            expect(service:find("MergeEggDraft.select", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_draftRollsForEggTier", 1, true)).to.be.ok()
+            expect(service:find('world:SetAttribute("ProgressionStageId"', 1, true)).to.be.ok()
+            expect(service:find('world:SetAttribute("PrototypeDraftCandidateRolls"', 1, true)).to.be.ok()
         end)
 
         it(
@@ -181,9 +216,12 @@ return function()
             expect(config.enemy.tank.id).to.equal("ember_brute")
             expect(config.enemy.tank.hp > config.enemy.hp).to.equal(true)
             expect(config.world.bulwark_line).to.equal("BulwarkLine")
+            expect(config.world.breach_line).to.equal("BreachLine")
             expect(config.enemy.bulwark_threat).to.equal(250)
             expect(config.enemy.bulwark_reengage_seconds).to.equal(0.5)
             expect(config.enemy.bulwark_contact_padding).to.equal(1)
+            expect(config.enemy.breach_overrun_enemy_per_active_pet).to.equal(1)
+            expect(config.enemy.breach_overrun_minimum).to.equal(4)
             expect(config.combat.attack_cadence_multiplier).to.equal(4)
             expect(service:find("MergeEggNextDefenseAlertAt", 1, true)).to.be.ok()
             expect(service:find("not engaged and now >= nextAlertAt", 1, true)).to.be.ok()
@@ -215,36 +253,47 @@ return function()
             expect(service:find("MergeEggBulwarkLeadingDistance", 1, true)).to.be.ok()
             expect(service:find("MergeEggBulwarkMovementDistance", 1, true)).to.be.ok()
             expect(service:find("leadingDistance + contactPadding >= 0", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_ensureBreachLine", 1, true)).to.be.ok()
+            expect(service:find('model:SetAttribute("MergeEggBreachLineCrossed", true)', 1, true)).to.be.ok()
+            expect(service:find('world:SetAttribute("EnemiesPastBreachLine"', 1, true)).to.be.ok()
+            expect(service:find('world:SetAttribute("FirstBreachWave"', 1, true)).to.be.ok()
             expect(service:find('"CombatCadenceMultiplier"', 1, true)).to.be.ok()
             expect(petFollow:find("CombatCadence.interval", 1, true)).to.be.ok()
             expect(enemyService:find("CombatCadence.interval", 1, true)).to.be.ok()
             expect(service:find("FirstPetLossWave", 1, true)).to.be.ok()
             expect(service:find("PeakActiveEnemies", 1, true)).to.be.ok()
             expect(service:find('self:_setWorldState("ObjectiveLost"', 1, true)).to.be.ok()
-            expect(
-                service:find(
-                    'record.player:SetAttribute("CombatMusicCue", record.runId .. ":wave:"',
-                    1,
-                    true
-                )
-            ).to.be.ok()
+            expect(service:find('record.runId .. ":" .. stageId .. ":wave:" .. waveIndex', 1, true)).to.be.ok()
         end)
 
         it("uses five reserve eggs as defeat and random per-team replacement FIFOs", function()
             expect(config.objective.starting_eggs).to.equal(5)
             expect(config.objective.damage_per_escape).to.equal(1)
+            expect(config.objective.hatcher_egg_health).to.equal(1)
+            expect(config.objective.hatcher_egg_damage_per_arrival).to.equal(1)
             expect(config.reinforcement.enabled).to.equal(true)
             expect(config.reinforcement.hatch_seconds).to.equal(4)
             expect(config.reinforcement.queue_policy).to.equal("per_team_fifo_random_egg_roll")
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             expect(service:find("function MergeEggPrototypeService:_damageObjective", 1, true)).to.be.ok()
+            expect(
+                service:find(
+                    "function MergeEggPrototypeService:_damageInstalledHatcherEgg",
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(service:find("MergeEggNeedsRebuild", 1, true)).to.be.ok()
+            expect(service:find("HatcherEggsDestroyed", 1, true)).to.be.ok()
+            expect(service:find("HatcherEggsRebuilt", 1, true)).to.be.ok()
             expect(service:find("ObjectiveEggsRemaining", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_queueMissingPets", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_processReplacementQueues", 1, true)
             ).to.be.ok()
             expect(service:find("positionOffset = queued.slot - 1", 1, true)).to.be.ok()
-            expect(service:find("queued.definition or self:_rollPrototypePet", 1, true)).to.be.ok()
+            expect(service:find("queued.definition", 1, true)).to.be.ok()
+            expect(service:find("self:_rollDraftedPrototypePet(", 1, true)).to.be.ok()
             expect(service:find("self:_publishTeamSlot(team, queued.slot", 1, true)).to.be.ok()
             expect(service:find("MergeEggReplacementSlots", 1, true)).to.be.ok()
             expect(service:find("PeakReplacementQueueDepth", 1, true)).to.be.ok()
@@ -303,9 +352,12 @@ return function()
             function()
                 expect(config.automation.coin_runner.starting_coins).to.equal(100)
                 expect(config.automation.coin_runner.target_hatchers).to.equal(4)
-                expect(table.concat(config.team.positions_by_egg_tier, ",")).to.equal("3,4,5,6")
+                expect(config.automation.coin_runner.sequential_stages).to.equal(true)
+                expect(table.concat(config.team.positions_by_egg_tier, ",")).to.equal("3,3,3,3")
                 local experiments = config.team.balance_experiments
-                expect(experiments.default).to.equal("positions")
+                expect(experiments.default).to.equal("world_draft")
+                expect(experiments.modes.world_draft.stage_positions).to.equal(true)
+                expect(experiments.modes.world_draft.draft_quality).to.equal(true)
                 expect(table.concat(experiments.modes.positions.positions_by_egg_tier, ",")).to.equal(
                     "3,4,5,6"
                 )
@@ -323,6 +375,20 @@ return function()
                 local follow = readFile("src/Server/Services/PetFollowService.lua")
                 expect(service:find("function MergeEggPrototypeService:StartCoinRunner", 1, true)).to.be.ok()
                 expect(service:find("function MergeEggPrototypeService:_runCoinRunner", 1, true)).to.be.ok()
+                expect(
+                    service:find(
+                        "function MergeEggPrototypeService:_completeCoinRunnerStage",
+                        1,
+                        true
+                    )
+                ).to.be.ok()
+                expect(
+                    service:find(
+                        "function MergeEggPrototypeService:_transitionProgressionStage",
+                        1,
+                        true
+                    )
+                ).to.be.ok()
                 expect(
                     service:find(
                         "function MergeEggPrototypeService:_nearestPrototypeCoinDrop",
@@ -344,8 +410,16 @@ return function()
                 ).to.be.ok()
                 expect(service:find("self._automationService:NavigateTo", 1, true)).to.be.ok()
                 expect(service:find("self:AdvanceHatcherEgg(record.player", 1, true)).to.be.ok()
-                expect(service:find('"AllSandEggsBeforeEscape"', 1, true)).to.be.ok()
-                expect(service:find('"EnemyEscapedBeforeAllSandEggs"', 1, true)).to.be.ok()
+                expect(service:find('"AllProgressionStagesComplete"', 1, true)).to.be.ok()
+                expect(service:find('"InsufficientNextStageReserve"', 1, true)).to.be.ok()
+                expect(service:find('"SweepingStageDrops"', 1, true)).to.be.ok()
+                expect(service:find('return false, "unknown_progression_stage"', 1, true)).to.be.ok()
+                expect(service:find("local requestedStartWave =", 1, true)).to.be.ok()
+                expect(service:find("local requestedFocusTeamId =", 1, true)).to.be.ok()
+                expect(service:find("record.nextWaveOverride =", 1, true)).to.be.ok()
+                expect(service:find("record.waveFocusTeamId = requestedFocusTeamId", 1, true)).to.be.ok()
+                expect(service:find('world:SetAttribute("CoinRunnerStartWave"', 1, true)).to.be.ok()
+                expect(service:find('world:SetAttribute("WaveFocusTeamId"', 1, true)).to.be.ok()
                 local runnerAt =
                     service:find("function MergeEggPrototypeService:_runCoinRunner", 1, true)
                 local startAt = service:find(
@@ -372,7 +446,7 @@ return function()
             end
         )
 
-        it("grows each captain from three Earth slots to six Sand slots", function()
+        it("keeps Home at three slots while egg tiers improve future draft quality", function()
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")
             local packet = network.packets.MergeEggPrototypeUpgrade
@@ -394,7 +468,7 @@ return function()
             expect(service:find("local team = record.teamById[teamId]", 1, true)).to.be.ok()
             expect(service:find("if team.initialized ~= true and nextTier ~= 1 then", 1, true)).to.be.ok()
             expect(service:find("nextTier ~= 1", 1, true)).to.be.ok()
-            expect(service:find("self:_rollPrototypePet(record, team)", 1, true)).to.be.ok()
+            expect(service:find("self:_rollDraftedPrototypePet(", 1, true)).to.be.ok()
             expect(service:find("queued.definition = nil", 1, true)).to.be.ok()
             expect(service:find("self:_publishTeamEggSource(team)", 1, true)).to.be.ok()
             local advanceAt =
@@ -414,11 +488,13 @@ return function()
             expect(observer:find('button.Text = "CREATE → EARTH EGG"', 1, true)).to.be.ok()
             expect(
                 observer:find(
-                    'meter.title.Text = waitingForFirstEgg and "INSTALL FIRST EGG"',
+                    '.. (waitingForFirstEgg and "INSTALL FIRST EGG" or "READY TO HATCH")',
                     1,
                     true
                 )
             ).to.be.ok()
+            expect(observer:find('world:GetAttribute("ProgressionStageName")', 1, true)).to.be.ok()
+            expect(observer:find('folder:GetAttribute("MergeEggNextDraftRolls")', 1, true)).to.be.ok()
             expect(observer:find('attackGroups == 1 and "FRONT" or "FRONTS"', 1, true)).to.be.ok()
             expect(observer:find("button.Activated:Connect", 1, true)).to.be.ok()
             expect(observer:find("Signals.MergeEggPrototypeUpgrade:FireServer", 1, true)).to.be.ok()
@@ -450,11 +526,14 @@ return function()
             expect(service:find('world:SetAttribute("WaveEnemiesPending"', 1, true)).to.be.ok()
         end)
 
-        it("draws the authoritative bulwark before the hatchers", function()
+        it("draws distinct bulwark and breach lines before the hatchers", function()
             local authoring = readFile("scripts/studio/build_merge_egg_prototype_world.luau")
             expect(authoring:find('"BulwarkLine"', 1, true)).to.be.ok()
             expect(authoring:find('"BULWARK  •  ALL TEAMS ENGAGE"', 1, true)).to.be.ok()
             expect(authoring:find("Vector3.new(0, 1.15, -175)", 1, true)).to.be.ok()
+            expect(authoring:find('"BreachLine"', 1, true)).to.be.ok()
+            expect(authoring:find('"BREACH  •  EGGS EXPOSED"', 1, true)).to.be.ok()
+            expect(authoring:find("Vector3.new(0, 1.16, -205)", 1, true)).to.be.ok()
             expect(authoring:find('Instance.new("SurfaceGui")', 1, true)).to.be.ok()
             expect(authoring:find('Instance.new("BillboardGui")', 1, true)).to.equal(nil)
             expect(authoring:find('"BulwarkGroundLabel"', 1, true)).to.be.ok()
@@ -484,7 +563,7 @@ return function()
             expect(observer:find("MergeEggFirstLossWave", 1, true)).to.be.ok()
             expect(observer:find("COMBAT_CADENCE_MULTIPLIER", 1, true)).to.be.ok()
             expect(observer:find('frame.Name = "WaveMeter"', 1, true)).to.be.ok()
-            expect(observer:find('meter.title.Text = "WAVE " .. waveWord(wave)', 1, true)).to.be.ok()
+            expect(observer:find('.. " • WAVE " .. waveWord(wave)', 1, true)).to.be.ok()
             expect(observer:find('world:GetAttribute("ActiveEnemies")', 1, true)).to.be.ok()
             expect(observer:find('world:GetAttribute("ObjectiveEggsRemaining")', 1, true)).to.be.ok()
             expect(observer:find('world:GetAttribute("ReplacementQueueDepth")', 1, true)).to.be.ok()

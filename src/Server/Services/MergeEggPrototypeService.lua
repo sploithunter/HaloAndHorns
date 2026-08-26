@@ -1,9 +1,9 @@
 --[[
-    MergeEggPrototypeService — Studio-only Phase 5 vertical slice.
+    MergeEggPrototypeService — Studio-only Phase 6 vertical slice.
 
     One player enters through Home's otherwise-disabled Hall gate, is streamed to one authored
-    strip under Workspace.Maps, and deploys four empty hatcher positions. Each position progresses
-    Earth/Ice/Lava/Sand at three/four/five/six pet slots; the current egg also sources replacements.
+    strip under Workspace.Maps, and deploys four empty hatcher positions. World stages own team
+    capacity while egg tier increases composition-aware best-of-N replacement quality.
     Each independently addressed squad owns a disjoint share of the same escalating Waycoin-paying
     enemy waves, which emerge through a temporary portal and march toward one finish
     line. Reset makes the loop repeatable; Exit restores the player's runtime squad and transform.
@@ -21,6 +21,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local MergeEggDraft = require(ReplicatedStorage.Shared.Game.MergeEggDraft)
 local MergeEggPricing = require(ReplicatedStorage.Shared.Game.MergeEggPricing)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
@@ -128,6 +129,8 @@ function MergeEggPrototypeService:Init()
         or require(ReplicatedStorage.Configs:WaitForChild("enemies"))
     self._petsConfig = (self._configLoader and self._configLoader:LoadConfig("pets"))
         or require(ReplicatedStorage.Configs:WaitForChild("pets"))
+    self._petRolesConfig = (self._configLoader and self._configLoader:LoadConfig("pet_roles"))
+        or require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
     self._active = nil
     self._entering = nil
     self._enteringRecord = nil
@@ -171,6 +174,71 @@ function MergeEggPrototypeService:_activeWaveState(record)
     return record and (record.pendingEnemySpawns or 0) > 0 and "WaveDeploying" or "WaveActive"
 end
 
+function MergeEggPrototypeService:_progressionStage(context)
+    local loop = self._config.progression_loop or {}
+    local stages = loop.stages or {}
+    local stageId = type(context) == "string" and context
+        or type(context) == "table" and context.progressionStageId
+        or self._active and self._active.progressionStageId
+        or loop.default_stage
+        or "home"
+    stageId = tostring(stageId)
+    local stage = stages[stageId]
+    if type(stage) ~= "table" then
+        stageId = tostring(loop.default_stage or "home")
+        stage = stages[stageId] or {}
+    end
+    return stageId, stage
+end
+
+function MergeEggPrototypeService:_progressionStageIndex(context)
+    local stageId = self:_progressionStage(context)
+    local order = (self._config.progression_loop or {}).order or {}
+    for index, candidate in ipairs(order) do
+        if tostring(candidate) == stageId then
+            return index, #order
+        end
+    end
+    return 1, math.max(1, #order)
+end
+
+function MergeEggPrototypeService:_wavesFor(context)
+    local _, stage = self:_progressionStage(context)
+    if type(stage.waves) == "table" and #stage.waves > 0 then
+        return stage.waves
+    end
+    return self._config.waves or {}
+end
+
+function MergeEggPrototypeService:_stageEnemyConfig(context, source)
+    local _, stage = self:_progressionStage(context)
+    local scaling = stage.enemy or {}
+    local resolved = table.clone(source or {})
+    resolved.hp = math.max(
+        1,
+        math.floor(
+            (tonumber(source and source.hp) or 1)
+                * math.max(0.01, tonumber(scaling.hp_multiplier) or 1)
+        )
+    )
+    resolved.damage = math.max(
+        0,
+        (tonumber(source and source.damage) or 0)
+            * math.max(0, tonumber(scaling.damage_multiplier) or 1)
+    )
+    resolved.armor = math.max(
+        0,
+        (tonumber(source and source.armor) or 0)
+            * math.max(0, tonumber(scaling.armor_multiplier) or 1)
+    )
+    return resolved
+end
+
+function MergeEggPrototypeService:_stageRewardMultiplier(context)
+    local _, stage = self:_progressionStage(context)
+    return math.max(0, tonumber((stage.enemy or {}).reward_multiplier) or 1)
+end
+
 function MergeEggPrototypeService:_buildHatchSource(record, eggId)
     eggId = tostring(eggId or "")
     local eggData = self._petsConfig
@@ -198,8 +266,10 @@ end
 
 function MergeEggPrototypeService:_buildPrototypeHatchData(record)
     local teamCfg = self._config.team or {}
-    local source, reason =
-        self:_buildHatchSource(record, (teamCfg.egg_progression or {})[1] or "grass_egg")
+    local source, reason = self:_buildHatchSource(
+        record,
+        (self:_eggProgression(record) or teamCfg.egg_progression or {})[1] or "grass_egg"
+    )
     if not source then
         return false, reason
     end
@@ -218,17 +288,96 @@ function MergeEggPrototypeService:_rollPrototypePet(record, source)
     if not (result and result.pet) then
         return nil
     end
-    return {
+    local definition = {
         pet = tostring(result.pet),
         variant = tostring(result.variant or "basic"),
         huge = result.huge == true,
     }
+    local roles = self._petRolesConfig or {}
+    definition.role = (roles.by_type and roles.by_type[definition.pet]) or roles.default or "melee"
+    local petData = self._petsConfig.getPet
+        and self._petsConfig.getPet(definition.pet, definition.variant)
+    definition.combatPower = math.max(
+        1,
+        tonumber(definition.huge and petData and petData.huge_base_power)
+            or tonumber(petData and petData.power)
+            or 1
+    )
+    return definition
 end
 
-function MergeEggPrototypeService:_rollPrototypeSquad(record, count, source)
+function MergeEggPrototypeService:_draftRollsForEggTier(tier, context)
+    local _, stage = self:_progressionStage(context)
+    local configured = stage.draft_rolls_by_tier or {}
+    local index = math.max(1, math.floor(tonumber(tier) or 1))
+    return math.max(1, math.floor(tonumber(configured[index]) or index))
+end
+
+function MergeEggPrototypeService:_draftRoster(team, excludedSlot, selected)
+    local roster = {}
+    for slot, definition in ipairs((team and team.config and team.config.squad) or {}) do
+        if slot ~= excludedSlot and definition then
+            roster[#roster + 1] = definition
+        end
+    end
+    for _, definition in ipairs(selected or {}) do
+        roster[#roster + 1] = definition
+    end
+    return roster
+end
+
+function MergeEggPrototypeService:_recordDraftCandidate(record, team, definition)
+    record.draftCandidateRolls = (record.draftCandidateRolls or 0) + 1
+    if team then
+        team.draftCandidateRolls = (team.draftCandidateRolls or 0) + 1
+        if team.folder and team.folder.Parent then
+            team.folder:SetAttribute("MergeEggDraftCandidateRolls", team.draftCandidateRolls)
+        end
+    end
+    local variant = tostring(definition and definition.variant or "basic")
+    record.draftGoldenCandidates = (record.draftGoldenCandidates or 0)
+        + (variant == "golden" and 1 or 0)
+    record.draftRainbowCandidates = (record.draftRainbowCandidates or 0)
+        + (variant == "rainbow" and 1 or 0)
+    record.draftHugeCandidates = (record.draftHugeCandidates or 0)
+        + (definition and definition.huge == true and 1 or 0)
+end
+
+function MergeEggPrototypeService:_rollDraftedPrototypePet(
+    record,
+    team,
+    source,
+    tier,
+    excludedSlot,
+    selected
+)
+    local rollCount = self:_draftRollsForEggTier(tier, team or record)
+    local candidates = {}
+    for _ = 1, rollCount do
+        local definition = self:_rollPrototypePet(record, source)
+        if not definition then
+            return nil
+        end
+        candidates[#candidates + 1] = definition
+        self:_recordDraftCandidate(record, team, definition)
+    end
+    local chosen = MergeEggDraft.select(candidates, self:_draftRoster(team, excludedSlot, selected))
+    if chosen then
+        record.draftRejectedRolls = (record.draftRejectedRolls or 0) + math.max(0, #candidates - 1)
+        if team then
+            team.draftRejectedRolls = (team.draftRejectedRolls or 0) + math.max(0, #candidates - 1)
+            if team.folder and team.folder.Parent then
+                team.folder:SetAttribute("MergeEggDraftRejectedRolls", team.draftRejectedRolls)
+            end
+        end
+    end
+    return chosen
+end
+
+function MergeEggPrototypeService:_rollPrototypeSquad(record, team, count, source, tier)
     local squad = {}
     for _ = 1, math.max(1, math.floor(tonumber(count) or 5)) do
-        local definition = self:_rollPrototypePet(record, source)
+        local definition = self:_rollDraftedPrototypePet(record, team, source, tier, nil, squad)
         if not definition then
             return nil
         end
@@ -237,16 +386,18 @@ function MergeEggPrototypeService:_rollPrototypeSquad(record, count, source)
     return squad
 end
 
-function MergeEggPrototypeService:_eggProgression()
-    local progression = (self._config.team or {}).egg_progression
+function MergeEggPrototypeService:_eggProgression(context)
+    local _, stage = self:_progressionStage(context)
+    local progression = stage.egg_progression or (self._config.team or {}).egg_progression
     if type(progression) == "table" and #progression > 0 then
         return progression
     end
     return { "grass_egg" }
 end
 
-function MergeEggPrototypeService:_earthEggPricing()
-    local configured = (self._config.team or {}).earth_egg_pricing or {}
+function MergeEggPrototypeService:_earthEggPricing(context)
+    local _, stage = self:_progressionStage(context)
+    local configured = stage.egg_pricing or (self._config.team or {}).earth_egg_pricing or {}
     return {
         currency = tostring(configured.currency or "hall_coins"),
         baseAmount = math.max(0, math.floor(tonumber(configured.base_amount) or 100)),
@@ -265,7 +416,7 @@ function MergeEggPrototypeService:_initializedHatcherCount(record)
 end
 
 function MergeEggPrototypeService:_nextEarthEggCost(record)
-    local pricing = self:_earthEggPricing()
+    local pricing = self:_earthEggPricing(record)
     local initialized = self:_initializedHatcherCount(record)
     return {
         currency = pricing.currency,
@@ -274,8 +425,8 @@ function MergeEggPrototypeService:_nextEarthEggCost(record)
     }
 end
 
-function MergeEggPrototypeService:_eggTierCost(tier)
-    local pricing = self:_earthEggPricing()
+function MergeEggPrototypeService:_eggTierCost(tier, context)
+    local pricing = self:_earthEggPricing(context)
     local resolvedTier = math.max(1, math.floor(tonumber(tier) or 1))
     return {
         currency = pricing.currency,
@@ -288,13 +439,13 @@ end
 -- formation exists, advance the lowest egg tier so core progression stays roughly even across
 -- teams. Permanent board upgrades are deliberately outside this selector and get their own budget.
 function MergeEggPrototypeService:_nextCoreEggAction(record)
-    local progression = self:_eggProgression()
+    local progression = self:_eggProgression(record)
     local candidate
     for _, team in ipairs(record and record.teams or {}) do
         local tier = math.clamp(math.floor(tonumber(team.eggTier) or 0), 0, #progression)
         if tier < #progression then
             if team.initialized ~= true then
-                return team, self:_eggTierCost(1)
+                return team, self:_eggTierCost(1, record)
             end
             if
                 candidate == nil
@@ -308,7 +459,7 @@ function MergeEggPrototypeService:_nextCoreEggAction(record)
     if not candidate then
         return nil
     end
-    return candidate.team, self:_eggTierCost(candidate.tier + 1)
+    return candidate.team, self:_eggTierCost(candidate.tier + 1, record)
 end
 
 -- Resolve build access from the authored geometry rather than a hardcoded world axis. "Behind"
@@ -361,7 +512,7 @@ function MergeEggPrototypeService:_publishTeamEggSource(team)
     if not (folder and folder.Parent) then
         return
     end
-    local progression = self:_eggProgression()
+    local progression = self:_eggProgression(team)
     local tier = math.clamp(math.floor(tonumber(team.eggTier) or 0), 0, #progression)
     local nextId = progression[tier + 1]
     local nextData = nextId
@@ -371,12 +522,26 @@ function MergeEggPrototypeService:_publishTeamEggSource(team)
     folder:SetAttribute("MergeEggSourceId", team.eggId)
     folder:SetAttribute("MergeEggSourceName", team.eggName)
     folder:SetAttribute("MergeEggSourceTier", tier)
+    folder:SetAttribute("MergeEggInstalledHealth", math.max(0, tonumber(team.eggHealth) or 0))
+    folder:SetAttribute("MergeEggInstalledMaxHealth", math.max(1, tonumber(team.eggMaxHealth) or 1))
+    folder:SetAttribute("MergeEggNeedsRebuild", team.needsEggRebuild == true)
+    folder:SetAttribute("MergeEggDestroyedCount", team.eggsDestroyed or 0)
     folder:SetAttribute("MergeEggCanAdvance", nextId ~= nil)
     folder:SetAttribute("MergeEggCanUpgrade", nextId ~= nil) -- legacy observer compatibility
     folder:SetAttribute("MergeEggNextSourceId", nextId)
     folder:SetAttribute("MergeEggNextSourceName", nextData and nextData.name or nil)
-    local pricing = self:_earthEggPricing()
-    local nextCost = self:_eggTierCost(tier + 1)
+    folder:SetAttribute(
+        "MergeEggDraftRolls",
+        tier > 0 and self:_draftRollsForEggTier(tier, team) or 0
+    )
+    folder:SetAttribute(
+        "MergeEggNextDraftRolls",
+        nextId and self:_draftRollsForEggTier(tier + 1, team) or nil
+    )
+    folder:SetAttribute("MergeEggDraftCandidateRolls", team.draftCandidateRolls or 0)
+    folder:SetAttribute("MergeEggDraftRejectedRolls", team.draftRejectedRolls or 0)
+    local pricing = self:_earthEggPricing(team)
+    local nextCost = self:_eggTierCost(tier + 1, team)
     folder:SetAttribute("MergeEggEarthEggCurrency", pricing.currency)
     folder:SetAttribute("MergeEggEarthEggBaseCost", pricing.baseAmount)
     folder:SetAttribute("MergeEggEarthEggPriceGrowth", pricing.growth)
@@ -425,6 +590,10 @@ end
 
 function MergeEggPrototypeService:_positionsForEggTier(tier, context)
     local _, experiment = self:_balanceExperiment(context)
+    if experiment.stage_positions == true then
+        local _, stage = self:_progressionStage(context)
+        return math.max(1, math.floor(tonumber(stage.team_positions) or 3))
+    end
     local configured = experiment.positions_by_egg_tier
         or (self._config.team or {}).positions_by_egg_tier
         or {}
@@ -458,7 +627,7 @@ function MergeEggPrototypeService:_spawnInitialTeam(record, team, source)
         return true, 0
     end
     local count = self:_positionsForEggTier(1, record)
-    local squad = self:_rollPrototypeSquad(record, count, source)
+    local squad = self:_rollPrototypeSquad(record, team, count, source, 1)
     local root = team.principalModel and team.principalModel:FindFirstChild("HumanoidRootPart")
     if not (squad and root and team.folder and team.folder.Parent) then
         return false, "initial_team_unavailable"
@@ -504,7 +673,7 @@ function MergeEggPrototypeService:_expandTeamForEggTier(record, team, source, ti
         return true, 0
     end
     local added = desired - current
-    local definitions = self:_rollPrototypeSquad(record, added, source)
+    local definitions = self:_rollPrototypeSquad(record, team, added, source, tier)
     local root = team.principalModel and team.principalModel:FindFirstChild("HumanoidRootPart")
     if not (definitions and root and team.folder and team.folder.Parent) then
         return false, "team_expansion_unavailable"
@@ -552,12 +721,89 @@ function MergeEggPrototypeService:_log(level, message, data)
     end
 end
 
+function MergeEggPrototypeService:_ensureBreachLine(world)
+    local worldCfg = self._config.world or {}
+    local name = tostring(worldCfg.breach_line or "BreachLine")
+    local existing = findNamedPart(world, name)
+    if existing then
+        return existing
+    end
+    local bulwark = findNamedPart(world, worldCfg.bulwark_line or "BulwarkLine")
+    local finish = findNamedPart(world, worldCfg.enemy_finish_line or "EnemyFinishLine")
+    local hatcher = findNamedPart(world, worldCfg.hatcher_spawn or "HatcherSpawn")
+    if not (bulwark and finish and hatcher) then
+        return nil
+    end
+    local direction = Vector3.new(
+        finish.Position.X - bulwark.Position.X,
+        0,
+        finish.Position.Z - bulwark.Position.Z
+    )
+    if direction.Magnitude <= 0 then
+        return nil
+    end
+    direction = direction.Unit
+    local position = hatcher.Position - direction * 13
+    position = Vector3.new(position.X, bulwark.Position.Y + 0.01, position.Z)
+
+    local line = Instance.new("Part")
+    line.Name = name
+    line.Anchored = true
+    line.CanCollide = false
+    line.CanTouch = false
+    line.CanQuery = true
+    line.Size = Vector3.new(bulwark.Size.X, 0.25, 2)
+    line.CFrame = CFrame.new(position) * bulwark.CFrame.Rotation
+    line.Color = Color3.fromRGB(197, 82, 72)
+    line.Material = Enum.Material.Neon
+    line.Transparency = 0.05
+    line.TopSurface = Enum.SurfaceType.Smooth
+    line.BottomSurface = Enum.SurfaceType.Smooth
+    line:SetAttribute("MergeEggRuntimeBreachLine", true)
+    line.Parent = world
+
+    local labelHost = Instance.new("Part")
+    labelHost.Name = "BreachGroundLabel"
+    labelHost.Anchored = true
+    labelHost.CanCollide = false
+    labelHost.CanTouch = false
+    labelHost.CanQuery = false
+    labelHost.Size = Vector3.new(math.min(62, bulwark.Size.X), 0.08, 8)
+    labelHost.CFrame = CFrame.new(position - direction * 6) * bulwark.CFrame.Rotation
+    labelHost.Transparency = 1
+    labelHost.Parent = world
+
+    local surface = Instance.new("SurfaceGui")
+    surface.Name = "BreachGroundSurface"
+    surface.Face = Enum.NormalId.Top
+    surface.CanvasSize = Vector2.new(160, 1240)
+    surface.LightInfluence = 0
+    surface.ZOffset = 1
+    surface.Parent = labelHost
+
+    local text = Instance.new("TextLabel")
+    text.AnchorPoint = Vector2.new(0.5, 0.5)
+    text.Position = UDim2.fromScale(0.5, 0.5)
+    text.Size = UDim2.fromOffset(1180, 150)
+    text.Rotation = -90
+    text.BackgroundTransparency = 1
+    text.Font = Enum.Font.GothamBold
+    text.Text = "BREACH  •  EGGS EXPOSED"
+    text.TextColor3 = line.Color
+    text.TextStrokeColor3 = Color3.fromRGB(24, 30, 43)
+    text.TextStrokeTransparency = 0.15
+    text.TextSize = 75
+    text.Parent = surface
+    return line
+end
+
 function MergeEggPrototypeService:_resolveWorld()
     local cfg = self._config.world or {}
     local maps = Workspace:FindFirstChild(tostring(cfg.maps_root or "Maps"))
     local world = maps and maps:FindFirstChild(tostring(cfg.model_name or "MergeEggPrototype"))
     if world and world:IsA("Model") then
         self._world = world
+        self:_ensureBreachLine(world)
         return world
     end
     self:_log("Warn", "Merge Egg prototype authored world is missing", {
@@ -587,11 +833,37 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("ActiveRunId", record and record.runId or nil)
     world:SetAttribute("ActiveEnemies", record and record.aliveEnemies or 0)
     world:SetAttribute("CurrentWave", record and record.waveIndex or 0)
-    world:SetAttribute("WaveCount", #(self._config.waves or {}))
+    local stageId, stage = self:_progressionStage(record)
+    local stageIndex, stageCount = self:_progressionStageIndex(record)
+    world:SetAttribute("ProgressionStageId", stageId)
+    world:SetAttribute("ProgressionStageName", tostring(stage.display_name or stageId))
+    world:SetAttribute("ProgressionStageIndex", stageIndex)
+    world:SetAttribute("ProgressionStageCount", stageCount)
+    world:SetAttribute(
+        "ProgressionStageTeamPositions",
+        math.max(1, math.floor(tonumber(stage.team_positions) or 3))
+    )
+    world:SetAttribute("WaveCount", #self:_wavesFor(record))
+    world:SetAttribute("WaveFocusTeamId", record and record.waveFocusTeamId or nil)
+    world:SetAttribute("CoinRunnerStartWave", record and record.coinRunnerStartWave or 1)
     world:SetAttribute("EnemiesDefeated", record and record.defeated or 0)
     world:SetAttribute("EnemiesEscaped", record and record.escaped or 0)
     world:SetAttribute("EnemiesAlerted", record and record.alerted or 0)
-    world:SetAttribute("EnemiesBreachedBulwark", record and record.breached or 0)
+    world:SetAttribute("EnemiesBreachedBulwark", record and record.bulwarkCrossed or 0)
+    world:SetAttribute("EnemiesCrossedBreachLine", record and record.breached or 0)
+    world:SetAttribute("EnemiesPastBulwark", record and record.enemiesPastBulwark or 0)
+    world:SetAttribute("PeakEnemiesPastBulwark", record and record.peakEnemiesPastBulwark or 0)
+    world:SetAttribute("EnemiesPastBreachLine", record and record.enemiesPastBreachLine or 0)
+    world:SetAttribute(
+        "PeakEnemiesPastBreachLine",
+        record and record.peakEnemiesPastBreachLine or 0
+    )
+    world:SetAttribute("BreachOverrunThreshold", record and record.breachOverrunThreshold or 0)
+    world:SetAttribute("BreachOverrun", record and record.breachOverrun == true or false)
+    world:SetAttribute("FirstBreachWave", record and record.firstBreachWave or nil)
+    world:SetAttribute("FirstOverrunWave", record and record.firstOverrunWave or nil)
+    world:SetAttribute("HatcherEggsDestroyed", record and record.hatcherEggsDestroyed or 0)
+    world:SetAttribute("HatcherEggsRebuilt", record and record.hatcherEggsRebuilt or 0)
     world:SetAttribute("PeakActiveEnemies", record and record.peakActiveEnemies or 0)
     world:SetAttribute("EnemyPortalVisible", record and record.portalVisible == true or false)
     world:SetAttribute("WaveEnemiesPending", record and record.pendingEnemySpawns or 0)
@@ -601,10 +873,16 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("PrototypeGoldenRolls", record and record.eggGoldenRolls or 0)
     world:SetAttribute("PrototypeRainbowRolls", record and record.eggRainbowRolls or 0)
     world:SetAttribute("PrototypeHugeRolls", record and record.eggHugeRolls or 0)
+    world:SetAttribute("PrototypeDraftCandidateRolls", record and record.draftCandidateRolls or 0)
+    world:SetAttribute("PrototypeDraftRejectedRolls", record and record.draftRejectedRolls or 0)
+    world:SetAttribute(
+        "PrototypeDraftRollsPerHatch",
+        record and self:_draftRollsForEggTier(record.maximumEggTier or 1, record) or 1
+    )
     world:SetAttribute("HatcherEggAdvances", record and record.hatcherEggAdvances or 0)
     world:SetAttribute("HatcherUpgrades", record and record.hatcherEggAdvances or 0) -- legacy
     world:SetAttribute("PrototypeCoinsDropped", record and record.coinsDropped or 0)
-    local pricing = self:_earthEggPricing()
+    local pricing = self:_earthEggPricing(record)
     local nextEarthCost = self:_nextEarthEggCost(record)
     local accessCfg = (self._config.team or {}).build_access or {}
     world:SetAttribute("EarthEggCurrency", pricing.currency)
@@ -628,15 +906,20 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("EarthEggCoinsSpent", record and record.earthEggCoinsSpent or 0)
     world:SetAttribute("CoreEggCoinsSpent", record and record.coreEggCoinsSpent or 0)
     local sandHatchers = 0
+    local installedHatcherEggs = 0
     local totalPositions = 0
-    local maximumTier = #self:_eggProgression()
+    local maximumTier = #self:_eggProgression(record)
     for _, team in ipairs(record and record.teams or {}) do
         if math.floor(tonumber(team.eggTier) or 0) >= maximumTier then
             sandHatchers += 1
         end
+        if math.floor(tonumber(team.eggTier) or 0) > 0 then
+            installedHatcherEggs += 1
+        end
         totalPositions += math.max(0, math.floor(tonumber(team.expectedPets) or 0))
     end
     world:SetAttribute("SandEggHatcherCount", sandHatchers)
+    world:SetAttribute("InstalledHatcherEggCount", installedHatcherEggs)
     world:SetAttribute("TotalTeamPositions", totalPositions)
     world:SetAttribute("CoinRunnerRunning", record and record.coinRunnerRunning == true or false)
     world:SetAttribute("CoinRunnerState", record and record.coinRunnerState or "Off")
@@ -644,6 +927,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("CoinRunnerStopReason", record and record.coinRunnerStopReason or nil)
     world:SetAttribute("CoinRunnerTarget", record and record.coinRunnerTarget or nil)
     world:SetAttribute("CoinRunnerStartingCoins", record and record.coinRunnerStartingCoins or nil)
+    world:SetAttribute("CoinRunnerSeed", record and record.coinRunnerSeed or nil)
     world:SetAttribute("CoinRunnerEndingCoins", record and record.coinRunnerEndingCoins or nil)
     world:SetAttribute("CoinRunnerCoinsEarned", record and record.coinRunnerCoinsEarned or nil)
     world:SetAttribute("CoinRunnerCoinsSpent", record and record.coinRunnerCoinsSpent or 0)
@@ -680,7 +964,26 @@ function MergeEggPrototypeService:_setWorldState(state, record)
                 and (record.coinRunnerFirstEscapeAt == nil or record.coinRunnerAllSandAt <= record.coinRunnerFirstEscapeAt)
             or false
     )
-    world:SetAttribute("CoinRunnerSucceeded", record and record.coinRunnerAllSandAt ~= nil or false)
+    world:SetAttribute(
+        "CoinRunnerSucceeded",
+        record and record.progressionLoopComplete == true or false
+    )
+    world:SetAttribute("HomeStageComplete", record and record.homeStageComplete == true or false)
+    world:SetAttribute("HomeCompletionCoins", record and record.homeCompletionCoins or nil)
+    world:SetAttribute(
+        "HomeEntryReserveRequired",
+        record and record.homeEntryReserveRequired or nil
+    )
+    world:SetAttribute(
+        "HomeEntryReserveMet",
+        record and record.homeEntryReserveMet == true or false
+    )
+    world:SetAttribute("HomeCompletionWave", record and record.homeCompletionWave or nil)
+    world:SetAttribute(
+        "Heaven1StageComplete",
+        record and record.heaven1StageComplete == true or false
+    )
+    world:SetAttribute("Heaven1CompletionCoins", record and record.heaven1CompletionCoins or nil)
     world:SetAttribute(
         "PrototypeMagnetRadius",
         record and record.player:GetAttribute("MergeEggMagnetRadius") or 0
@@ -906,7 +1209,14 @@ end
 
 function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
     local squad = team.config.squad or {}
-    local definition = queued.definition or self:_rollPrototypePet(record, team)
+    local definition = queued.definition
+        or self:_rollDraftedPrototypePet(
+            record,
+            team,
+            team,
+            math.max(1, math.floor(tonumber(team.eggTier) or 1)),
+            queued.slot
+        )
     queued.definition = definition
     local root = team.principalModel and team.principalModel:FindFirstChild("HumanoidRootPart")
     if not (definition and root and team.folder and team.folder.Parent) then
@@ -1000,9 +1310,11 @@ function MergeEggPrototypeService:_finishDefenseOverrun(record)
         return
     end
     record.terminal = true
+    record.terminalState = "DefenseOverrun"
     record.nextWaveAt = nil
     record.pendingWaveSpawns = {}
     record.pendingEnemySpawns = 0
+    record.waveGroupCount = 0
     record.nextEnemySpawnAt = nil
     self:_setPortalVisible(record, false)
     local survivingEnemies = 0
@@ -1043,6 +1355,7 @@ function MergeEggPrototypeService:_finishObjectiveLost(record)
         return
     end
     record.terminal = true
+    record.terminalState = "ObjectiveLost"
     record.nextWaveAt = nil
     record.pendingWaveSpawns = {}
     record.pendingEnemySpawns = 0
@@ -1093,6 +1406,64 @@ function MergeEggPrototypeService:_damageObjective(record)
     end
     self:_setWorldState(self:_activeWaveState(record), record)
     return false
+end
+
+function MergeEggPrototypeService:_damageInstalledHatcherEgg(record, enemy)
+    local objectiveCfg = self._config.objective or {}
+    local assigned = enemy and record.teamById[enemy.teamId]
+    local team = assigned
+    if not (team and math.floor(tonumber(team.eggTier) or 0) > 0) then
+        team = nil
+        for _, candidate in ipairs(record.teams or {}) do
+            if math.floor(tonumber(candidate.eggTier) or 0) > 0 then
+                team = candidate
+                break
+            end
+        end
+    end
+    if not team then
+        return false
+    end
+
+    local maximum = math.max(
+        1,
+        math.floor(tonumber(team.eggMaxHealth) or tonumber(objectiveCfg.hatcher_egg_health) or 1)
+    )
+    local damage =
+        math.max(1, math.floor(tonumber(objectiveCfg.hatcher_egg_damage_per_arrival) or 1))
+    team.eggMaxHealth = maximum
+    team.eggHealth = math.max(0, math.floor(tonumber(team.eggHealth) or maximum) - damage)
+    if team.eggHealth > 0 then
+        self:_publishTeamEggSource(team)
+        return true
+    end
+
+    local destroyedTier = math.floor(tonumber(team.eggTier) or 0)
+    local destroyedEgg = team.eggId
+    team.eggTier = 0
+    team.eggId = nil
+    team.eggName = nil
+    team.hatchPlayerData = nil
+    team.needsEggRebuild = true
+    team.eggsDestroyed = (team.eggsDestroyed or 0) + 1
+    record.hatcherEggsDestroyed = (record.hatcherEggsDestroyed or 0) + 1
+    self:_applyTeamEggTierModifiers(team, 0)
+    for _, queued in ipairs(team.replacementQueue or {}) do
+        queued.definition = nil
+    end
+    for _, candidate in ipairs(record.teams or {}) do
+        self:_publishTeamEggSource(candidate)
+    end
+    self:_syncTeamState(record, team)
+    self:_log("Info", "Merge Egg prototype installed egg destroyed", {
+        player = record.player.Name,
+        wave = record.waveIndex,
+        team = team.id,
+        egg = destroyedEgg,
+        tier = destroyedTier,
+        rebuildCost = self:_eggTierCost(1, record).amount,
+    })
+    return true
 end
 
 function MergeEggPrototypeService:_attachPrompt(host, name, actionText, objectText, callback)
@@ -1164,7 +1535,7 @@ function MergeEggPrototypeService:_unsealHallGate()
         hook,
         tostring(gateCfg.prompt_name or "MergeEggPrototypeEnterPrompt"),
         tostring(gateCfg.action_text or "Enter Prototype"),
-        tostring(gateCfg.object_text or "Merge an Egg — Phase 5"),
+        tostring(gateCfg.object_text or "Merge an Egg — Phase 6"),
         function(player)
             self:_begin(player)
         end
@@ -1187,7 +1558,7 @@ function MergeEggPrototypeService:_bindWorldControls(world)
         findNamedPart(world, cfg.reset_control),
         RESET_PROMPT_NAME,
         "Reset Encounter",
-        "Merge an Egg — Phase 5",
+        "Merge an Egg — Phase 6",
         function(player)
             self:_reset(player)
         end
@@ -1339,12 +1710,27 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.escaped = 0
     record.alerted = 0
     record.breached = 0
+    record.bulwarkCrossed = 0
+    record.enemiesPastBulwark = 0
+    record.peakEnemiesPastBulwark = 0
+    record.enemiesPastBreachLine = 0
+    record.peakEnemiesPastBreachLine = 0
+    record.breachOverrunThreshold = 0
+    record.breachOverrun = false
+    record.firstBreachWave = nil
+    record.firstOverrunWave = nil
+    record.hatcherEggsDestroyed = 0
+    record.hatcherEggsRebuilt = 0
     record.peakActiveEnemies = 0
     record.firstPetLossWave = nil
     record.firstPetLossActiveEnemies = nil
     record.nextWaveAt = nil
+    record.nextWaveOverride = nil
+    record.waveFocusTeamId = nil
+    record.coinRunnerStartWave = nil
     record.pendingWaveSpawns = {}
     record.pendingEnemySpawns = 0
+    record.waveGroupCount = 0
     record.nextEnemySpawnAt = nil
     record.resolvedTargets = {}
     record.enemyByTargetId = {}
@@ -1366,6 +1752,12 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.eggGoldenRolls = 0
     record.eggRainbowRolls = 0
     record.eggHugeRolls = 0
+    record.draftCandidateRolls = 0
+    record.draftRejectedRolls = 0
+    record.draftGoldenCandidates = 0
+    record.draftRainbowCandidates = 0
+    record.draftHugeCandidates = 0
+    record.maximumEggTier = 0
     record.hatcherEggAdvances = 0
     record.coinsDropped = 0
     record.earthEggCoinsSpent = 0
@@ -1376,6 +1768,7 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.coinRunnerStopReason = nil
     record.coinRunnerTarget = nil
     record.coinRunnerStartingCoins = nil
+    record.coinRunnerSeed = nil
     record.coinRunnerEndingCoins = nil
     record.coinRunnerCoinsEarned = nil
     record.coinRunnerCoinsSpent = 0
@@ -1389,6 +1782,21 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.coinRunnerFourHatcherWave = nil
     record.coinRunnerAllSandAt = nil
     record.coinRunnerAllSandWave = nil
+    record.progressionSequential = false
+    record.progressionLoopComplete = false
+    record.progressionStageId =
+        tostring((self._config.progression_loop or {}).default_stage or "home")
+    record.progressionStageReports = {}
+    record.progressionCoinsSpentTotal = 0
+    record.progressionCoinsDroppedTotal = 0
+    record.homeStageComplete = false
+    record.homeCompletionCoins = nil
+    record.homeEntryReserveRequired = nil
+    record.homeEntryReserveMet = false
+    record.homeCompletionWave = nil
+    record.heaven1StageComplete = false
+    record.heaven1CompletionCoins = nil
+    record.terminalState = nil
     self:_setPortalVisible(record, false)
 
     for _, team in ipairs(record.teams or {}) do
@@ -1481,10 +1889,17 @@ function MergeEggPrototypeService:_begin(player)
     local objectiveEggsStarting =
         math.max(1, math.floor(tonumber((self._config.objective or {}).starting_eggs) or 5))
     local defaultExperiment = self:_balanceExperiment(nil)
+    local defaultStageId = self:_progressionStage(nil)
     local record = {
         player = player,
         runId = HttpService:GenerateGUID(false),
         balanceExperiment = defaultExperiment,
+        progressionStageId = defaultStageId,
+        progressionSequential = false,
+        progressionLoopComplete = false,
+        progressionStageReports = {},
+        progressionCoinsSpentTotal = 0,
+        progressionCoinsDroppedTotal = 0,
         returnCFrame = character:GetPivot(),
         assistTarget = player:GetAttribute("CombatAssistTarget"),
         assistUntil = player:GetAttribute("CombatAssistUntil"),
@@ -1499,10 +1914,24 @@ function MergeEggPrototypeService:_begin(player)
         escaped = 0,
         alerted = 0,
         breached = 0,
+        bulwarkCrossed = 0,
+        enemiesPastBulwark = 0,
+        peakEnemiesPastBulwark = 0,
+        enemiesPastBreachLine = 0,
+        peakEnemiesPastBreachLine = 0,
+        breachOverrunThreshold = 0,
+        breachOverrun = false,
+        firstBreachWave = nil,
+        firstOverrunWave = nil,
+        hatcherEggsDestroyed = 0,
+        hatcherEggsRebuilt = 0,
         peakActiveEnemies = 0,
         firstPetLossWave = nil,
         firstPetLossActiveEnemies = nil,
         nextWaveAt = nil,
+        nextWaveOverride = nil,
+        waveFocusTeamId = nil,
+        coinRunnerStartWave = nil,
         pendingWaveSpawns = {},
         pendingEnemySpawns = 0,
         waveGroupCount = 0,
@@ -1526,6 +1955,12 @@ function MergeEggPrototypeService:_begin(player)
         eggGoldenRolls = 0,
         eggRainbowRolls = 0,
         eggHugeRolls = 0,
+        draftCandidateRolls = 0,
+        draftRejectedRolls = 0,
+        draftGoldenCandidates = 0,
+        draftRainbowCandidates = 0,
+        draftHugeCandidates = 0,
+        maximumEggTier = 0,
         hatcherEggAdvances = 0,
         coinsDropped = 0,
         earthEggCoinsSpent = 0,
@@ -1538,6 +1973,7 @@ function MergeEggPrototypeService:_begin(player)
         coinRunnerTarget = nil,
         coinRunnerOriginalCoins = nil,
         coinRunnerStartingCoins = nil,
+        coinRunnerSeed = nil,
         coinRunnerEndingCoins = nil,
         coinRunnerCoinsEarned = nil,
         coinRunnerCoinsSpent = 0,
@@ -1551,6 +1987,14 @@ function MergeEggPrototypeService:_begin(player)
         coinRunnerFourHatcherWave = nil,
         coinRunnerAllSandAt = nil,
         coinRunnerAllSandWave = nil,
+        homeStageComplete = false,
+        homeCompletionCoins = nil,
+        homeEntryReserveRequired = nil,
+        homeEntryReserveMet = false,
+        homeCompletionWave = nil,
+        heaven1StageComplete = false,
+        heaven1CompletionCoins = nil,
+        terminalState = nil,
         terminal = false,
     }
     if not self:_parkOwnedPets(record) then
@@ -1662,7 +2106,7 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
         self:_finishDefenseOverrun(record)
         return
     end
-    local waves = self._config.waves or {}
+    local waves = self:_wavesFor(record)
     local waveCount = #waves
     if record.waveIndex < waveCount then
         local resolvedWave = waves[record.waveIndex] or {}
@@ -1682,6 +2126,7 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
 
     record.nextWaveAt = nil
     record.terminal = true
+    record.terminalState = "EncounterComplete"
     self:_setPortalVisible(record, false)
     record.player:SetAttribute("MergeEggWaveComplete", true)
     self:_setWorldState("EncounterComplete", record)
@@ -1751,6 +2196,7 @@ function MergeEggPrototypeService:_onEnemyReachedFinish(record, arrival)
     if self._active ~= record or not arrival then
         return
     end
+    self:_damageInstalledHatcherEgg(record, record.enemyByTargetId[arrival.targetId])
     self._enemyService:DespawnModel(arrival.model)
     self:_resolveEnemy(record, "escaped", arrival.targetId)
 end
@@ -1809,11 +2255,16 @@ function MergeEggPrototypeService:_spawnWaveEnemy(record, spec)
     model:SetAttribute("MergeEggAttackGroupKind", spec.groupKind or "legacy")
     model:SetAttribute("MergeEggCompositionRole", spec.compositionRole or "melee")
     local rewardCfg = self._config.rewards or {}
+    local rewardMultiplier = self:_stageRewardMultiplier(record)
     model:SetAttribute(
         "MergeEggCoinReward",
-        spec.compositionRole == "tank"
-                and math.max(0, math.floor(tonumber(rewardCfg.tank_amount) or 30))
-            or math.max(0, math.floor(tonumber(rewardCfg.trash_amount) or 8))
+        math.floor(
+            (
+                spec.compositionRole == "tank"
+                    and math.max(0, math.floor(tonumber(rewardCfg.tank_amount) or 30))
+                or math.max(0, math.floor(tonumber(rewardCfg.trash_amount) or 8))
+            ) * rewardMultiplier
+        )
     )
     result.teamId = team.id
     record.enemies[#record.enemies + 1] = result
@@ -1845,6 +2296,7 @@ function MergeEggPrototypeService:_processWaveSpawns(record, now)
         record.nextEnemySpawnAt = nil
         record.nextWaveAt = nil
         record.terminal = true
+        record.terminalState = "WaveSpawnFailed"
         self:_setPortalVisible(record, false)
         self:_setWorldState("WaveSpawnFailed", record)
         self:_log("Warn", "Merge Egg prototype wave spawn failed", {
@@ -1882,8 +2334,9 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     if tankCfg and not enemyDefs[tankCfg.id] then
         return false, "enemy_tank_config_missing"
     end
-    local waveIndex = record.waveIndex + 1
-    local wave = (self._config.waves or {})[waveIndex]
+    local waveIndex =
+        math.max(1, math.floor(tonumber(record.nextWaveOverride) or (record.waveIndex + 1)))
+    local wave = self:_wavesFor(record)[waveIndex]
     if not wave then
         return false, "wave_config_missing"
     end
@@ -1908,6 +2361,11 @@ function MergeEggPrototypeService:_spawnNextWave(record)
             assignmentTeams[#assignmentTeams + 1] = team
         end
     end
+    local focusTeamId = tonumber(record.waveFocusTeamId)
+    local focusTeam = focusTeamId and record.teamById[focusTeamId]
+    if focusTeam then
+        assignmentTeams = { focusTeam }
+    end
 
     local pending = {}
     local authoredGroups = type(wave.groups) == "table" and wave.groups or nil
@@ -1924,7 +2382,7 @@ function MergeEggPrototypeService:_spawnNextWave(record)
             end
             for groupOrdinal = 1, groupCount do
                 local isTank = groupKind == "tank" and groupOrdinal == 1
-                local spawnCfg = (isTank and tankCfg) or cfg
+                local spawnCfg = self:_stageEnemyConfig(record, (isTank and tankCfg) or cfg)
                 local enemyId = tostring(spawnCfg.id or cfg.id)
                 local enemyDef = enemyDefs[enemyId]
                 if not (team and enemyDef) then
@@ -1951,7 +2409,7 @@ function MergeEggPrototypeService:_spawnNextWave(record)
             local teamOrdinal = math.floor((index - 1) / #assignmentTeams) + 1
             local team = assignmentTeams[teamIndex]
             local isTank = teamOrdinal == 1 and tankCfg ~= nil
-            local spawnCfg = (isTank and tankCfg) or cfg
+            local spawnCfg = self:_stageEnemyConfig(record, (isTank and tankCfg) or cfg)
             local enemyId = tostring(spawnCfg.id or cfg.id)
             local enemyDef = enemyDefs[enemyId]
             if not (team and enemyDef) then
@@ -1976,9 +2434,14 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     end
 
     record.waveIndex = waveIndex
+    record.nextWaveOverride = nil
     -- AreaMusicController treats a changed cue as a request to rotate combat music without
     -- dropping combat state. Including the run id guarantees Wave 1 changes on every new session.
-    record.player:SetAttribute("CombatMusicCue", record.runId .. ":wave:" .. waveIndex)
+    local stageId = self:_progressionStage(record)
+    record.player:SetAttribute(
+        "CombatMusicCue",
+        record.runId .. ":" .. stageId .. ":wave:" .. waveIndex
+    )
     record.nextWaveAt = nil
     record.aliveEnemies = 0
     record.pendingWaveSpawns = pending
@@ -2062,7 +2525,7 @@ function MergeEggPrototypeService:_openBulwarkTarget(record, enemy, now)
 
     model:SetAttribute("MergeEggBulwarkBreached", true)
     model:SetAttribute("CombatTargetOpen", true)
-    record.breached += 1
+    record.bulwarkCrossed = (record.bulwarkCrossed or 0) + 1
 
     now = tonumber(now) or os.clock()
     local reserveTeams, alertedPets = self:_alertTeamsToBulwarkTarget(record, enemy)
@@ -2149,6 +2612,8 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     end
     local bulwarkLine =
         findNamedPart(self._world, (self._config.world or {}).bulwark_line or "BulwarkLine")
+    local breachLine =
+        findNamedPart(self._world, (self._config.world or {}).breach_line or "BreachLine")
     local towardFinish = bulwarkLine
             and Vector3.new(
                 finishLine.Position.X - bulwarkLine.Position.X,
@@ -2160,6 +2625,12 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     local alertThreat = math.max(1, tonumber(cfg.engagement_threat) or 250)
     local reengageSeconds = math.max(0.25, tonumber(cfg.reengage_seconds) or 1)
     local now = os.clock()
+    local enemiesPastBulwark = 0
+    local enemiesPastBreachLine = 0
+    local activePets = 0
+    for _, team in ipairs(record.teams or {}) do
+        activePets += math.max(0, math.floor(tonumber(team.activePets) or 0))
+    end
     for _, enemy in ipairs(record.enemies) do
         local model = enemy.model
         local team = record.teamById[enemy.teamId]
@@ -2207,11 +2678,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                     end
                 end
             end
-            if
-                bulwarkLine
-                and towardFinish.Magnitude > 0
-                and model:GetAttribute("MergeEggBulwarkBreached") ~= true
-            then
+            if bulwarkLine and towardFinish.Magnitude > 0 then
                 local direction = towardFinish.Unit
                 local pivotPosition = model:GetPivot().Position
                 local movementPosition = typeof(position) == "Vector3" and position or pivotPosition
@@ -2239,13 +2706,65 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                 model:SetAttribute("MergeEggBulwarkPivotDistance", pivotDistance)
                 model:SetAttribute("MergeEggBulwarkBoundsExtent", boundsExtent)
                 local contactPadding = math.max(0, tonumber(cfg.bulwark_contact_padding) or 1)
-                if leadingDistance + contactPadding >= 0 then
+                local pastBulwark = leadingDistance + contactPadding >= 0
+                if pastBulwark then
+                    enemiesPastBulwark += 1
+                end
+                if pastBulwark and model:GetAttribute("MergeEggBulwarkBreached") ~= true then
                     self:_openBulwarkTarget(record, enemy, now)
+                end
+                if breachLine then
+                    local breachDistance = Vector3.new(
+                        leadingPosition.X - breachLine.Position.X,
+                        0,
+                        leadingPosition.Z - breachLine.Position.Z
+                    ):Dot(direction)
+                    model:SetAttribute("MergeEggBreachLineDistance", breachDistance)
+                    local pastBreachLine = breachDistance + contactPadding >= 0
+                    if pastBreachLine then
+                        enemiesPastBreachLine += 1
+                    end
+                    if
+                        pastBreachLine
+                        and model:GetAttribute("MergeEggBreachLineCrossed") ~= true
+                    then
+                        model:SetAttribute("MergeEggBreachLineCrossed", true)
+                        record.breached = (record.breached or 0) + 1
+                        record.firstBreachWave = record.firstBreachWave or record.waveIndex
+                        self:_log("Info", "Merge Egg prototype breach line crossed", {
+                            player = record.player.Name,
+                            wave = record.waveIndex,
+                            enemy = model.Name,
+                            assignedTeam = enemy.teamId,
+                            distance = breachDistance,
+                        })
+                    end
                 end
             end
             self:_sustainBulwarkTarget(record, enemy, now)
             self:_traceBulwarkAggro(record, enemy, now)
         end
+    end
+    local overrunMinimum = math.max(1, math.floor(tonumber(cfg.breach_overrun_minimum) or 4))
+    local enemiesPerPet = math.max(0, tonumber(cfg.breach_overrun_enemy_per_active_pet) or 1)
+    local overrunThreshold = math.max(overrunMinimum, math.ceil(activePets * enemiesPerPet))
+    local overrun = enemiesPastBreachLine >= overrunThreshold
+    local changed = record.enemiesPastBulwark ~= enemiesPastBulwark
+        or record.enemiesPastBreachLine ~= enemiesPastBreachLine
+        or record.breachOverrunThreshold ~= overrunThreshold
+        or record.breachOverrun ~= overrun
+    record.enemiesPastBulwark = enemiesPastBulwark
+    record.peakEnemiesPastBulwark = math.max(record.peakEnemiesPastBulwark or 0, enemiesPastBulwark)
+    record.enemiesPastBreachLine = enemiesPastBreachLine
+    record.peakEnemiesPastBreachLine =
+        math.max(record.peakEnemiesPastBreachLine or 0, enemiesPastBreachLine)
+    record.breachOverrunThreshold = overrunThreshold
+    record.breachOverrun = overrun
+    if overrun and record.firstOverrunWave == nil then
+        record.firstOverrunWave = record.waveIndex
+    end
+    if changed then
+        self:_setWorldState(self:_activeWaveState(record), record)
     end
 end
 
@@ -2305,8 +2824,10 @@ function MergeEggPrototypeService:_hatch(player)
 
     record.hatching = true
     record.terminal = false
+    record.terminalState = nil
     local hatchCount = self:_positionsForEggTier(1, record)
-    local progression = self:_eggProgression()
+    local progression = self:_eggProgression(record)
+    local progressionStageId = self:_progressionStage(record)
     local firstEggData = self._petsConfig
         and self._petsConfig.egg_sources
         and self._petsConfig.egg_sources[progression[1]]
@@ -2345,6 +2866,7 @@ function MergeEggPrototypeService:_hatch(player)
                     MergeEggExpectedPets = expected,
                     MergeEggSourceTier = 0,
                     MergeEggBalanceExperiment = record.balanceExperiment,
+                    MergeEggProgressionStage = progressionStageId,
                     MergeEggOriginPowerMultiplier = 1,
                     MergeEggCanAdvance = true,
                     MergeEggCanUpgrade = true,
@@ -2402,8 +2924,19 @@ function MergeEggPrototypeService:_hatch(player)
             eggId = nil,
             eggName = nil,
             hatchPlayerData = nil,
+            eggHealth = 0,
+            eggMaxHealth = math.max(
+                1,
+                math.floor(tonumber((self._config.objective or {}).hatcher_egg_health) or 1)
+            ),
+            needsEggRebuild = false,
+            eggsDestroyed = 0,
+            eggsRebuilt = 0,
             balanceExperiment = record.balanceExperiment,
+            progressionStageId = progressionStageId,
             originPowerMultiplier = 1,
+            draftCandidateRolls = 0,
+            draftRejectedRolls = 0,
             lastEggAdvanceAt = nil,
         }
         record.teams[#record.teams + 1] = team
@@ -2446,7 +2979,7 @@ function MergeEggPrototypeService:_hatch(player)
         rainbow = record.eggRainbowRolls,
         huge = record.eggHugeRolls,
         pendingEnemies = record.pendingEnemySpawns,
-        waves = #(self._config.waves or {}),
+        waves = #self:_wavesFor(record),
     })
     return true
 end
@@ -2482,6 +3015,168 @@ function MergeEggPrototypeService:_nearestPrototypeCoinDrop(player)
     return nearest
 end
 
+function MergeEggPrototypeService:_stageOpeningReserve(stageId)
+    local pricing = self:_earthEggPricing(stageId)
+    local targetHatchers = math.max(1, #(self._config.teams or {}))
+    return MergeEggPricing.totalInitialPositionCost(pricing.baseAmount, targetHatchers),
+        pricing.currency
+end
+
+function MergeEggPrototypeService:_captureProgressionStage(record)
+    if record.stageReportCaptured == true then
+        return record.progressionStageReports[record.progressionStageId]
+    end
+    local stageId = self:_progressionStage(record)
+    local pricing = self:_earthEggPricing(record)
+    local endingCoins = self._economyService:GetCurrency(record.player, pricing.currency) or 0
+    local spent = math.max(0, record.coreEggCoinsSpent or 0)
+    local startingCoins = math.max(0, record.stageStartingCoins or 0)
+    local report = {
+        stageId = stageId,
+        wave = record.waveIndex,
+        completed = record.terminalState == "EncounterComplete",
+        endingCoins = endingCoins,
+        startingCoins = startingCoins,
+        earnedCoins = math.max(0, endingCoins + spent - startingCoins),
+        spentCoins = spent,
+        droppedCoins = math.max(0, record.coinsDropped or 0),
+        elapsedSeconds = math.max(0, os.clock() - (record.stageStartedAt or os.clock())),
+        escaped = record.escaped,
+        objectiveEggsRemaining = record.objectiveEggsRemaining,
+        allEggsComplete = self:_nextCoreEggAction(record) == nil,
+        firstEscapeWave = record.coinRunnerFirstEscapeWave,
+        firstBreachWave = record.firstBreachWave,
+        firstOverrunWave = record.firstOverrunWave,
+        peakEnemiesPastBreachLine = record.peakEnemiesPastBreachLine or 0,
+        draftCandidateRolls = record.draftCandidateRolls or 0,
+        draftRejectedRolls = record.draftRejectedRolls or 0,
+    }
+    record.progressionStageReports[stageId] = report
+    record.progressionCoinsSpentTotal = (record.progressionCoinsSpentTotal or 0) + spent
+    record.progressionCoinsDroppedTotal = (record.progressionCoinsDroppedTotal or 0)
+        + report.droppedCoins
+    record.stageReportCaptured = true
+    if stageId == "home" then
+        record.homeStageComplete = report.completed
+        record.homeCompletionCoins = endingCoins
+        record.homeCompletionWave = report.wave
+    elseif stageId == "heaven_1" then
+        record.heaven1StageComplete = report.completed
+        record.heaven1CompletionCoins = endingCoins
+    end
+    return report
+end
+
+function MergeEggPrototypeService:_clearProgressionStageActors(record)
+    for _, enemy in ipairs(record.enemies or {}) do
+        if enemy.model then
+            self._enemyService:DespawnModel(enemy.model)
+        end
+    end
+    for _, team in ipairs(record.teams or {}) do
+        if team.principalName then
+            self._npcPrincipalService:Despawn(team.principalName, "merge_egg_stage_transition")
+        end
+    end
+    record.enemies = {}
+    record.enemyByTargetId = {}
+    record.units = {}
+    record.teams = {}
+    record.teamById = {}
+    record.aliveEnemies = 0
+    record.waveIndex = 0
+    record.defeated = 0
+    record.escaped = 0
+    record.alerted = 0
+    record.breached = 0
+    record.bulwarkCrossed = 0
+    record.enemiesPastBulwark = 0
+    record.peakEnemiesPastBulwark = 0
+    record.enemiesPastBreachLine = 0
+    record.peakEnemiesPastBreachLine = 0
+    record.breachOverrunThreshold = 0
+    record.breachOverrun = false
+    record.firstBreachWave = nil
+    record.firstOverrunWave = nil
+    record.hatcherEggsDestroyed = 0
+    record.hatcherEggsRebuilt = 0
+    record.peakActiveEnemies = 0
+    record.firstPetLossWave = nil
+    record.firstPetLossActiveEnemies = nil
+    record.nextWaveAt = nil
+    record.nextWaveOverride = nil
+    record.waveFocusTeamId = nil
+    record.coinRunnerStartWave = nil
+    record.pendingWaveSpawns = {}
+    record.pendingEnemySpawns = 0
+    record.waveGroupCount = 0
+    record.nextEnemySpawnAt = nil
+    record.resolvedTargets = {}
+    record.nextTeamSyncAt = 0
+    local startingEggs =
+        math.max(1, math.floor(tonumber((self._config.objective or {}).starting_eggs) or 5))
+    record.objectiveEggsStarting = startingEggs
+    record.objectiveEggsRemaining = startingEggs
+    record.objectiveHits = 0
+    record.replacementsHatched = 0
+    record.peakReplacementQueueDepth = 0
+    record.longestReplacementWaitSeconds = 0
+    record.enemiesRemainingAtDefeat = 0
+    record.eggId = nil
+    record.eggName = nil
+    record.hatchPlayerData = nil
+    record.eggRolls = 0
+    record.eggGoldenRolls = 0
+    record.eggRainbowRolls = 0
+    record.eggHugeRolls = 0
+    record.draftCandidateRolls = 0
+    record.draftRejectedRolls = 0
+    record.draftGoldenCandidates = 0
+    record.draftRainbowCandidates = 0
+    record.draftHugeCandidates = 0
+    record.maximumEggTier = 0
+    record.hatcherEggAdvances = 0
+    record.coinsDropped = 0
+    record.earthEggCoinsSpent = 0
+    record.coreEggCoinsSpent = 0
+    record.coinRunnerFirstEscapeAt = nil
+    record.coinRunnerFirstEscapeHatchers = nil
+    record.coinRunnerFirstEscapeWave = nil
+    record.coinRunnerFourHatcherAt = nil
+    record.coinRunnerFourHatcherWave = nil
+    record.coinRunnerAllSandAt = nil
+    record.coinRunnerAllSandWave = nil
+    record.coinRunnerNoDropSince = nil
+    record.stageReportCaptured = false
+    record.encounterSpawned = false
+    record.terminal = false
+    record.terminalState = nil
+    record.player:SetAttribute("CombatAssistTarget", nil)
+    record.player:SetAttribute("CombatAssistUntil", nil)
+    record.player:SetAttribute("CombatMusicCue", nil)
+    record.player:SetAttribute("MergeEggWaveComplete", nil)
+    self:_setPortalVisible(record, false)
+end
+
+function MergeEggPrototypeService:_transitionProgressionStage(record, stageId)
+    self:_clearProgressionStageActors(record)
+    record.progressionStageId = tostring(stageId)
+    record.stageStartingCoins = self._economyService:GetCurrency(
+        record.player,
+        self:_earthEggPricing(record).currency
+    ) or 0
+    record.stageStartedAt = os.clock()
+    local seed = math.floor(
+        tonumber(record.coinRunnerSeed)
+            or tonumber(((self._config.automation or {}).coin_runner or {}).random_seed)
+            or 260826
+    )
+    local stageIndex = self:_progressionStageIndex(record)
+    record.random = Random.new(seed + stageIndex * 100003)
+    self:_setWorldState("StageTransition", record)
+    return self:_hatch(record.player)
+end
+
 function MergeEggPrototypeService:_nextEmptyHatcher(record)
     for _, team in ipairs(record and record.teams or {}) do
         if team.initialized ~= true and team.principalModel and team.principalModel.Parent then
@@ -2514,6 +3209,43 @@ function MergeEggPrototypeService:_waitForCoinRunnerPoll(record, generation, sec
     end
 end
 
+function MergeEggPrototypeService:_completeCoinRunnerStage(record, generation)
+    local report = self:_captureProgressionStage(record)
+    local stageId, stage = self:_progressionStage(record)
+    local nextStageId = record.progressionSequential == true and stage.next_stage or nil
+    if nextStageId then
+        local reserve, currency = self:_stageOpeningReserve(nextStageId)
+        local balance = self._economyService:GetCurrency(record.player, currency) or 0
+        report.nextStageId = tostring(nextStageId)
+        report.nextStageReserve = reserve
+        report.nextStageReserveMet = balance >= reserve
+        if stageId == "home" then
+            record.homeEntryReserveRequired = reserve
+            record.homeEntryReserveMet = balance >= reserve
+        end
+        self:_setWorldState("StageComplete", record)
+        if balance < reserve then
+            self:_finishCoinRunner(record, generation, "InsufficientNextStageReserve")
+            return false
+        end
+        local transitioned, reason = self:_transitionProgressionStage(record, nextStageId)
+        if not transitioned then
+            self:_finishCoinRunner(record, generation, "StageTransitionFailed:" .. tostring(reason))
+            return false
+        end
+        return true
+    end
+
+    record.progressionLoopComplete = report.completed == true
+    self:_setWorldState(report.completed and "ProgressionComplete" or "StageFailed", record)
+    self:_finishCoinRunner(
+        record,
+        generation,
+        report.completed and "AllProgressionStagesComplete" or tostring(record.terminalState)
+    )
+    return false
+end
+
 function MergeEggPrototypeService:_finishCoinRunner(record, generation, reason)
     if self._automationService and self._automationService.SetPlayerControlsEnabled then
         self._automationService:SetPlayerControlsEnabled(record.player, true)
@@ -2526,30 +3258,25 @@ function MergeEggPrototypeService:_finishCoinRunner(record, generation, reason)
         return
     end
 
-    local fourAt = record.coinRunnerFourHatcherAt
-    local allSandAt = record.coinRunnerAllSandAt
-    local escapeAt = record.coinRunnerFirstEscapeAt
-    local reachedAllSand = allSandAt ~= nil
-    local allSandBeforeEscape = reachedAllSand and (escapeAt == nil or allSandAt <= escapeAt)
-    local result = allSandBeforeEscape and "AllSandEggsBeforeEscape"
-        or reachedAllSand and "AllSandEggsAfterEscape"
-        or escapeAt ~= nil and "EnemyEscapedBeforeAllSandEggs"
+    if record.stageReportCaptured ~= true and record.encounterSpawned == true then
+        self:_captureProgressionStage(record)
+    end
+    local result = record.progressionLoopComplete == true and "ProgressionLoopComplete"
         or tostring(reason or "Stopped")
-    local pricing = self:_earthEggPricing()
+    local pricing = self:_earthEggPricing(record)
     local endingCoins = self._economyService:GetCurrency(record.player, pricing.currency) or 0
-    local spent = (record.coreEggCoinsSpent or 0) - (record.coinRunnerSpentAtStart or 0)
+    local spent = math.max(0, record.progressionCoinsSpentTotal or 0)
     local startingCoins = record.coinRunnerStartingCoins or 0
 
     record.coinRunnerRunning = false
-    record.coinRunnerState = reachedAllSand and "Complete" or "Failed"
+    record.coinRunnerState = record.progressionLoopComplete == true and "Complete" or "Failed"
     record.coinRunnerResult = result
     record.coinRunnerStopReason = tostring(reason or "Stopped")
     record.coinRunnerTarget = nil
     record.coinRunnerEndingCoins = endingCoins
     record.coinRunnerCoinsSpent = spent
     record.coinRunnerCoinsEarned = math.max(0, endingCoins + spent - startingCoins)
-    record.coinRunnerCoinsDropped =
-        math.max(0, (record.coinsDropped or 0) - (record.coinRunnerDroppedAtStart or 0))
+    record.coinRunnerCoinsDropped = math.max(0, record.progressionCoinsDroppedTotal or 0)
     record.coinRunnerWaveReached = record.waveIndex
     record.coinRunnerElapsedSeconds = math.max(0, os.clock() - record.coinRunnerStartedAt)
     self:_setWorldState(self._world:GetAttribute("PrototypeState") or "WaveActive", record)
@@ -2558,9 +3285,10 @@ function MergeEggPrototypeService:_finishCoinRunner(record, generation, reason)
         result = result,
         wave = record.coinRunnerWaveReached,
         hatchers = self:_initializedHatcherCount(record),
-        firstEscapeHatchers = record.coinRunnerFirstEscapeHatchers,
-        fourHatchersBeforeEscape = fourAt ~= nil and (escapeAt == nil or fourAt <= escapeAt),
-        allSandBeforeEscape = allSandBeforeEscape,
+        stage = record.progressionStageId,
+        homeComplete = record.homeStageComplete == true,
+        homeEntryReserveMet = record.homeEntryReserveMet == true,
+        heaven1Complete = record.heaven1StageComplete == true,
         startingCoins = startingCoins,
         earnedCoins = record.coinRunnerCoinsEarned,
         droppedCoins = record.coinRunnerCoinsDropped,
@@ -2579,7 +3307,24 @@ function MergeEggPrototypeService:_runCoinRunner(record, generation)
     local idleSeconds = math.max(0.05, tonumber(automationCfg.idle_poll_seconds) or 0.15)
     local maximumFailures =
         math.max(1, math.floor(tonumber(automationCfg.maximum_navigation_failures) or 8))
+    local completedDropPollSeconds =
+        math.max(0.1, tonumber(automationCfg.completed_drop_poll_seconds) or 0.6)
     local navigationFailures = 0
+
+    local function collectDrop(drop, state, target)
+        self:_setCoinRunnerState(record, state, target)
+        local navigation = self._automationService:NavigateTo(record.player, drop, {
+            threshold = dropThreshold,
+            timeout = timeout,
+            keepControlsDisabled = true,
+        })
+        if navigation.ok then
+            navigationFailures = 0
+        else
+            navigationFailures += 1
+        end
+        self:_waitForCoinRunnerPoll(record, generation, idleSeconds)
+    end
 
     while
         self._active == record
@@ -2587,12 +3332,35 @@ function MergeEggPrototypeService:_runCoinRunner(record, generation)
         and record.coinRunnerRunning == true
     do
         if record.terminal == true then
-            self:_finishCoinRunner(
-                record,
-                generation,
-                self._world:GetAttribute("PrototypeState") or "EncounterEnded"
-            )
-            return
+            if record.terminalState ~= "EncounterComplete" then
+                self:_finishCoinRunner(record, generation, record.terminalState or "EncounterEnded")
+                return
+            end
+            local drop = self:_nearestPrototypeCoinDrop(record.player)
+            if drop then
+                record.coinRunnerNoDropSince = nil
+                collectDrop(drop, "SweepingStageDrops", "Collecting every remaining Waycoin")
+            else
+                record.coinRunnerNoDropSince = record.coinRunnerNoDropSince or os.clock()
+                if os.clock() - record.coinRunnerNoDropSince >= completedDropPollSeconds then
+                    if not self:_completeCoinRunnerStage(record, generation) then
+                        return
+                    end
+                    navigationFailures = 0
+                else
+                    self:_setCoinRunnerState(
+                        record,
+                        "VerifyingStageSweep",
+                        "Waiting for the final pickups"
+                    )
+                    self:_waitForCoinRunnerPoll(record, generation, idleSeconds)
+                end
+            end
+            if navigationFailures >= maximumFailures then
+                self:_finishCoinRunner(record, generation, "NavigationFailed")
+                return
+            end
+            continue
         end
 
         local hatcherCount = self:_initializedHatcherCount(record)
@@ -2603,14 +3371,34 @@ function MergeEggPrototypeService:_runCoinRunner(record, generation)
 
         local team, nextCost = self:_nextCoreEggAction(record)
         if not team then
-            record.coinRunnerAllSandAt = os.clock()
-            record.coinRunnerAllSandWave = record.waveIndex
-            self:_finishCoinRunner(record, generation, "AllSandEggs")
-            return
+            if record.coinRunnerAllSandAt == nil then
+                record.coinRunnerAllSandAt = os.clock()
+                record.coinRunnerAllSandWave = record.waveIndex
+            end
+            local drop = self:_nearestPrototypeCoinDrop(record.player)
+            if drop then
+                collectDrop(
+                    drop,
+                    "CollectingStageReserve",
+                    "All eggs complete • building reserve"
+                )
+            else
+                self:_setCoinRunnerState(
+                    record,
+                    "HoldingAllEggs",
+                    "All eggs complete • waiting for the next drop"
+                )
+                self:_waitForCoinRunnerPoll(record, generation, idleSeconds)
+            end
+            if navigationFailures >= maximumFailures then
+                self:_finishCoinRunner(record, generation, "NavigationFailed")
+                return
+            end
+            continue
         end
         local balance = self._economyService:GetCurrency(record.player, nextCost.currency) or 0
         if balance >= nextCost.amount then
-            local progression = self:_eggProgression()
+            local progression = self:_eggProgression(record)
             local nextEggId = progression[nextCost.tier]
             local nextEgg = nextEggId
                 and self._petsConfig.egg_sources
@@ -2646,22 +3434,11 @@ function MergeEggPrototypeService:_runCoinRunner(record, generation)
         else
             local drop = self:_nearestPrototypeCoinDrop(record.player)
             if drop then
-                self:_setCoinRunnerState(
-                    record,
+                collectDrop(
+                    drop,
                     "CollectingWaycoins",
                     string.format("%d / %d Waycoins", balance, nextCost.amount)
                 )
-                local navigation = self._automationService:NavigateTo(record.player, drop, {
-                    threshold = dropThreshold,
-                    timeout = timeout,
-                    keepControlsDisabled = true,
-                })
-                if navigation.ok then
-                    navigationFailures = 0
-                else
-                    navigationFailures += 1
-                end
-                self:_waitForCoinRunnerPoll(record, generation, idleSeconds)
             else
                 self:_setCoinRunnerState(
                     record,
@@ -2693,6 +3470,17 @@ function MergeEggPrototypeService:StartCoinRunner(player, options)
     if record.coinRunnerRunning == true then
         return false, "automation_running"
     end
+    options = type(options) == "table" and options or {}
+    local loop = self._config.progression_loop or {}
+    local requestedStageId = tostring(options.stage or loop.default_stage or "home")
+    local stages = loop.stages or {}
+    if type(stages[requestedStageId]) ~= "table" then
+        return false, "unknown_progression_stage"
+    end
+    if record.encounterSpawned and record.progressionStageId ~= requestedStageId then
+        return false, "fresh_stage_required"
+    end
+    record.progressionStageId = requestedStageId
     local requestedExperiment = type(options) == "table" and options.experiment or nil
     if requestedExperiment ~= nil then
         local teamCfg = self._config.team or {}
@@ -2713,11 +3501,32 @@ function MergeEggPrototypeService:StartCoinRunner(player, options)
     if record.waveIndex ~= 0 or self:_initializedHatcherCount(record) ~= 0 then
         return false, "fresh_encounter_required"
     end
+    local requestedStartWave = math.floor(tonumber(options.startWave) or 1)
+    if requestedStartWave < 1 or requestedStartWave > #self:_wavesFor(record) then
+        return false, "invalid_start_wave"
+    end
+    local requestedFocusTeamId = options.focusTeamId and tonumber(options.focusTeamId) or nil
+    if
+        requestedFocusTeamId ~= nil
+        and (requestedFocusTeamId % 1 ~= 0 or record.teamById[requestedFocusTeamId] == nil)
+    then
+        return false, "invalid_focus_team"
+    end
 
     local automationCfg = (self._config.automation or {}).coin_runner or {}
-    record.random = Random.new(math.floor(tonumber(automationCfg.random_seed) or 260826))
-    local pricing = self:_earthEggPricing()
-    local startingCoins = math.max(0, math.floor(tonumber(automationCfg.starting_coins) or 100))
+    local stageIndex = self:_progressionStageIndex(record)
+    local requestedSeed =
+        math.floor(tonumber(options.seed) or tonumber(automationCfg.random_seed) or 260826)
+    record.coinRunnerSeed = requestedSeed
+    record.random = Random.new(requestedSeed + stageIndex * 100003)
+    local _, stage = self:_progressionStage(record)
+    local pricing = self:_earthEggPricing(record)
+    local configuredStartingCoins = options.startingCoins
+        or (requestedStageId == tostring(loop.default_stage or "home") and stage.starting_coins)
+        or stage.independent_starting_coins
+        or automationCfg.starting_coins
+        or 100
+    local startingCoins = math.max(0, math.floor(tonumber(configuredStartingCoins) or 100))
     local originalCoins = self._economyService:GetCurrency(player, pricing.currency)
     if originalCoins == nil then
         return false, "currency_unavailable"
@@ -2758,9 +3567,32 @@ function MergeEggPrototypeService:StartCoinRunner(player, options)
     record.coinRunnerFourHatcherWave = nil
     record.coinRunnerAllSandAt = nil
     record.coinRunnerAllSandWave = nil
+    record.coinRunnerStartWave = requestedStartWave
+    record.nextWaveOverride = requestedStartWave > 1 and requestedStartWave or nil
+    record.waveFocusTeamId = requestedFocusTeamId
     record.coinRunnerStartedAt = os.clock()
-    record.coinRunnerSpentAtStart = record.coreEggCoinsSpent or 0
-    record.coinRunnerDroppedAtStart = record.coinsDropped or 0
+    record.coinRunnerSpentAtStart = 0
+    record.coinRunnerDroppedAtStart = 0
+    record.progressionSequential = options.sequential ~= false
+        and requestedStageId == tostring(loop.default_stage or "home")
+        and automationCfg.sequential_stages ~= false
+        and requestedStartWave == 1
+        and requestedFocusTeamId == nil
+    record.progressionLoopComplete = false
+    record.progressionStageReports = {}
+    record.progressionCoinsSpentTotal = 0
+    record.progressionCoinsDroppedTotal = 0
+    record.stageStartingCoins = startingCoins
+    record.stageStartedAt = record.coinRunnerStartedAt
+    record.stageReportCaptured = false
+    record.coinRunnerNoDropSince = nil
+    record.homeStageComplete = false
+    record.homeCompletionCoins = nil
+    record.homeEntryReserveRequired = nil
+    record.homeEntryReserveMet = false
+    record.homeCompletionWave = nil
+    record.heaven1StageComplete = false
+    record.heaven1CompletionCoins = nil
     self._automationService:SetPlayerControlsEnabled(player, false)
     self:_setWorldState("AwaitingFirstEgg", record)
 
@@ -2830,7 +3662,7 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     if team.lastEggAdvanceAt and now - team.lastEggAdvanceAt < 0.25 then
         return false, "egg_advance_throttled"
     end
-    local progression = self:_eggProgression()
+    local progression = self:_eggProgression(record)
     local nextTier = math.floor(tonumber(team.eggTier) or 0) + 1
     local nextEggId = progression[nextTier]
     if not nextEggId then
@@ -2848,10 +3680,11 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     if not (self._economyService and self._economyService.Transact) then
         return false, "economy_unavailable"
     end
-    local eggCost = self:_eggTierCost(nextTier)
+    local eggCost = self:_eggTierCost(nextTier, record)
     local initializedBefore = self:_initializedHatcherCount(record)
     local tierBefore = math.floor(tonumber(team.eggTier) or 0)
     local wasInitialized = team.initialized == true
+    local wasRebuild = team.needsEggRebuild == true
     local commitFailure
     team.eggAdvanceInProgress = true
     local transaction = self._economyService:Transact(player, {
@@ -2906,6 +3739,15 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     team.eggId = source.eggId
     team.eggName = source.eggName
     team.hatchPlayerData = source.hatchPlayerData
+    team.eggMaxHealth =
+        math.max(1, math.floor(tonumber((self._config.objective or {}).hatcher_egg_health) or 1))
+    team.eggHealth = team.eggMaxHealth
+    team.needsEggRebuild = false
+    if wasRebuild then
+        team.eggsRebuilt = (team.eggsRebuilt or 0) + 1
+        record.hatcherEggsRebuilt = (record.hatcherEggsRebuilt or 0) + 1
+    end
+    record.maximumEggTier = math.max(record.maximumEggTier or 0, nextTier)
     self:_applyTeamEggTierModifiers(team, nextTier)
     for _, queued in ipairs(team.replacementQueue or {}) do
         queued.definition = nil

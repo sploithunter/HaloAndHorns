@@ -1,5 +1,5 @@
 --[[
-    Studio-only Merge an Egg Phase 5.
+    Studio-only Merge an Egg Phase 6.
 
     This is deliberately one authored strip under Workspace.Maps. It does not use the tile kit,
     mission layout generation, or any streaming/chunk lifecycle. Four stationary NPC principals
@@ -8,7 +8,7 @@
 ]]
 
 return {
-    version = 5,
+    version = 6,
     enabled = true,
     stream_timeout = 8,
 
@@ -16,7 +16,7 @@ return {
         hook_name = "HallOfWorldsPortal",
         prompt_name = "MergeEggPrototypeEnterPrompt",
         action_text = "Enter Prototype",
-        object_text = "Merge an Egg — Phase 5",
+        object_text = "Merge an Egg — Phase 6",
         title = "MERGE AN EGG\nPROTOTYPE",
     },
 
@@ -31,6 +31,7 @@ return {
         enemy_spawn_area = "EnemySpawnArea",
         enemy_finish_line = "EnemyFinishLine",
         bulwark_line = "BulwarkLine",
+        breach_line = "BreachLine",
         enemy_portal_visual = "EnemyPortalVisual",
         bounds = {
             center_x = -16000,
@@ -58,14 +59,19 @@ return {
     team = {
         return_ready_distance = 20,
         starts_with_egg = false,
-        -- Egg progression increases team capacity instead of rewriting shared pet combat stats.
-        -- A newly unlocked slot hatches immediately from that position's new egg source.
-        positions_by_egg_tier = { 3, 4, 5, 6 },
+        -- Capacity now belongs to the world stage. Home fields three pets per hatcher and Heaven
+        -- Layer 1 fields four; egg tier changes draft quality, not formation size.
+        positions_by_egg_tier = { 3, 3, 3, 3 },
         -- Studio balance variants keep the actual pet definitions immutable. The runner can select
         -- one with { automation = "coin_runner", experiment = <id> } for matched A/B/C runs.
         balance_experiments = {
-            default = "positions",
+            default = "world_draft",
             modes = {
+                world_draft = {
+                    stage_positions = true,
+                    draft_quality = true,
+                    origin_power_per_tier = 0,
+                },
                 positions = {
                     positions_by_egg_tier = { 3, 4, 5, 6 },
                     origin_power_per_tier = 0,
@@ -94,8 +100,8 @@ return {
             minimum_bulwark_depth = 4,
             maximum_hatcher_distance = 18,
         },
-        -- Each captain begins empty. Creating its Earth Egg hatches three pets; each better egg adds
-        -- one live position and becomes the source for that captain's future FIFO replacements.
+        -- Each captain begins empty. Creating its first egg fills the world's fixed formation;
+        -- each later egg becomes the source and increases best-of-N quality for future FIFO rolls.
         egg_progression = {
             "grass_egg",
             "ice_egg",
@@ -104,15 +110,76 @@ return {
         },
     },
 
+    -- A stage owns capacity, egg families, pricing, and balance scaling. Home completion carries
+    -- the actual collected Waycoin balance into Heaven 1. Heaven 1 can also be launched directly
+    -- with its minimum four-Egg opening reserve, so later tuning does not depend on replaying Home.
+    progression_loop = {
+        default_stage = "home",
+        order = { "home", "heaven_1" },
+        stages = {
+            home = {
+                display_name = "Home",
+                team_positions = 3,
+                egg_progression = {
+                    "grass_egg",
+                    "ice_egg",
+                    "lava_egg",
+                    "desert_egg",
+                },
+                draft_rolls_by_tier = { 1, 2, 3, 4 },
+                egg_pricing = {
+                    currency = "hall_coins",
+                    base_amount = 100,
+                    growth = 2,
+                },
+                starting_coins = 100,
+                enemy = {
+                    hp_multiplier = 1,
+                    damage_multiplier = 1,
+                    reward_multiplier = 1,
+                },
+                next_stage = "heaven_1",
+            },
+            heaven_1 = {
+                display_name = "Heaven • Layer 1",
+                team_positions = 4,
+                -- Preserve the Home origin order: Earth, Ice, Lava, Desert.
+                egg_progression = {
+                    "bloom_egg",
+                    "aurora_egg",
+                    "solar_egg",
+                    "gilded_egg",
+                },
+                draft_rolls_by_tier = { 1, 2, 3, 4 },
+                egg_pricing = {
+                    currency = "hall_coins",
+                    base_amount = 1600,
+                    growth = 2,
+                },
+                -- Four first-tier Heaven eggs. Sequential runs carry their real Home balance;
+                -- isolated Heaven runs use this conservative minimum unless explicitly overridden.
+                independent_starting_coins = 6400,
+                enemy = {
+                    hp_multiplier = 2.25,
+                    damage_multiplier = 1.5,
+                    reward_multiplier = 5,
+                },
+            },
+        },
+    },
+
     -- A Studio-only upper-bound balance runner. It temporarily gives the active prototype session
     -- the real new-player 100-Waycoin bankroll, walks the actual avatar to physical drops, returns
     -- beneath each captain, and uses the same purchase method as the billboard. Reset/exit restores
-    -- the tester's pre-run Waycoin balance.
+    -- the tester's pre-run Waycoin balance. A full loop sweeps every remaining drop after a stage,
+    -- carries the measured balance forward, and can restart Heaven 1 from its minimum reserve.
     automation = {
         coin_runner = {
             starting_coins = 100,
             random_seed = 260826,
             target_hatchers = 4,
+            sequential_stages = true,
+            completed_drop_poll_seconds = 0.6,
             navigation_timeout = 18,
             hatcher_arrival_distance = 7,
             drop_arrival_distance = 6,
@@ -122,9 +189,9 @@ return {
     },
 
     -- The shipping egg roll is now the source of every prototype pet. This queue experiment
-    -- preserves each NPC team's tier-scaled stable slots: a defeated slot enters its captain's FIFO, and
-    -- a fresh Home Grass Egg outcome hatches into that slot at the stationary captain before
-    -- traveling back to battle. Species, variant, and the rare Huge roll can change; only the slot
+    -- preserves each NPC team's world-scaled stable slots: a defeated slot enters its captain's
+    -- FIFO, then the current egg supplies one to four candidates before the composition-aware draft
+    -- picks the replacement. Species, variant, and the rare Huge roll can change; only the slot
     -- itself remains stable.
     -- Four real seconds at 4× combat approximates a 16-second production cadence for comparison.
     reinforcement = {
@@ -139,6 +206,11 @@ return {
     objective = {
         starting_eggs = 5,
         damage_per_escape = 1,
+        -- First destructible-hatcher experiment: a rear-line arrival destroys the installed egg
+        -- on its assigned lane immediately. Existing pets remain, but replacements stop until the
+        -- player rebuilds that lane from its first egg. Attack windup/durability comes later.
+        hatcher_egg_health = 1,
+        hatcher_egg_damage_per_arrival = 1,
     },
 
     -- Defeats pay only the prototype's board currency. The physical pickup and HUD art reuse the
@@ -226,6 +298,11 @@ return {
         bulwark_threat = 250,
         bulwark_reengage_seconds = 0.5,
         bulwark_contact_padding = 1,
+        -- BulwarkLine still means all teams engage. The separate red BreachLine sits before the
+        -- hatchers; crossing it is the authoritative breach. "Overrun" is a warning state, not the
+        -- final egg-loss condition: it begins when breached enemies equal the remaining defenders.
+        breach_overrun_enemy_per_active_pet = 1,
+        breach_overrun_minimum = 4,
         spawn_inset = 5,
         finish_inset = 5,
         portal_spawn_interval = 0.15,

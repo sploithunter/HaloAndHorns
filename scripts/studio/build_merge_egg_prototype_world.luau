@@ -242,6 +242,53 @@ bulwarkText.TextSize = 75
 bulwarkText.TextWrapped = false
 bulwarkText.Parent = bulwarkLabel
 
+-- This is deliberately separate from the BulwarkLine. Crossing the yellow line opens an enemy to
+-- every reserve team; crossing this red line is the actual breach telemetry boundary. The gap to
+-- EnemyFinishLine is the current no-windup prototype window before an installed hatcher egg is hit.
+local breachLine = part(
+    "BreachLine",
+    Vector3.new(84, 0.25, 2),
+    CFrame.new(ORIGIN + Vector3.new(0, 1.16, -205)),
+    RED,
+    Enum.Material.Neon,
+    0.05
+)
+breachLine.CanCollide = false
+
+local breachGroundLabel = part(
+    "BreachGroundLabel",
+    Vector3.new(62, 0.08, 8),
+    CFrame.new(ORIGIN + Vector3.new(0, 1.09, -199)),
+    Color3.fromRGB(24, 30, 43),
+    Enum.Material.SmoothPlastic,
+    1
+)
+breachGroundLabel.CanCollide = false
+
+local breachLabel = Instance.new("SurfaceGui")
+breachLabel.Name = "BreachGroundSurface"
+breachLabel.Face = Enum.NormalId.Top
+breachLabel.CanvasSize = Vector2.new(160, 1240)
+breachLabel.LightInfluence = 0
+breachLabel.ZOffset = 1
+breachLabel.Parent = breachGroundLabel
+
+local breachText = Instance.new("TextLabel")
+breachText.AnchorPoint = Vector2.new(0.5, 0.5)
+breachText.Position = UDim2.fromScale(0.5, 0.5)
+breachText.Size = UDim2.fromOffset(1180, 150)
+breachText.Rotation = -90
+breachText.BackgroundTransparency = 1
+breachText.BorderSizePixel = 0
+breachText.Font = Enum.Font.GothamBold
+breachText.Text = "BREACH  •  EGGS EXPOSED"
+breachText.TextColor3 = RED
+breachText.TextStrokeColor3 = Color3.fromRGB(24, 30, 43)
+breachText.TextStrokeTransparency = 0.15
+breachText.TextSize = 75
+breachText.TextWrapped = false
+breachText.Parent = breachLabel
+
 part(
     "StartPlatform",
     Vector3.new(84, 1, 72),

@@ -5315,3 +5315,39 @@ first-session cohort rates.
 - Left the shipping direction open. Next test: world/layer capacity (`3/4/5/6` for Home/L1/L2/L3)
   plus tier-N best-of-N queue drafts that fill tank, then healer/support, then highest-damage needs.
   This may give later egg pet pools and AoE identities more meaning than flat damage scaling.
+
+## 2026-08-26 — Merge an Egg Home → Heaven 1 progression loop
+
+- Replaced egg-owned capacity as the default with world-owned capacity: Home has three positions
+  per hatcher and Heaven Layer 1 has four. The recorded future ladder remains Layer 2 five and
+  Layer 3 six; those stages are not implemented in this pass.
+- Added a pure composition-aware draft selector. Earth/Ice/Lava/Desert tier offers 1/2/3/4 normal
+  hatch outcomes per new pet, prioritizes a missing tank, then missing support/healer, then the
+  strongest configured combat result. Candidate/rejection telemetry is separate from selected pets.
+- Extended the real-walk-speed runner past maximum Home eggs. It keeps collecting through all 20
+  waves, sweeps final drops, verifies a 6,400-Waycoin Heaven opening reserve, carries the exact
+  balance forward, and rebuilds fresh four-slot Heaven teams from Bloom/Aurora/Solar/Gilded eggs.
+- Added an isolated Heaven 1 start at the same minimum reserve so later tuning can skip Home. The
+  first-pass Heaven knobs are 1,600 base egg price, 2.25× enemy HP, 1.5× enemy damage, and 5× drops;
+  these are prototype measurements, not shipping values.
+
+## 2026-08-26 — Merge an Egg breach detection and installed-egg pressure
+
+- Split the old yellow all-teams-engage boundary from actual breach reporting. The authored strip
+  now has a separate red `BreachLine` at Z=-205, 13 studs before the hatcher anchors, with a flat
+  ground label; runtime creates the same diagnostic line when an existing Studio map has not yet
+  rerun the authoring pass.
+- Published current/peak enemies beyond the yellow bulwark and red breach line independently, plus
+  cumulative red crossings, first breach/overrun wave, and a nonterminal overrun threshold tied to
+  active defenders. The wave banner now says `BREACH` or `OVERRUN` from those authoritative values.
+- Added the first destructible-source experiment. A rear-line arrival removes an installed hatcher
+  egg, leaves its surviving pets active, pauses replacement rolls, and makes the normal first-tier
+  egg action rebuild that captain. Five abstract reserve-egg hits remain the terminal loss.
+- Added a Studio-only focused runner seam for a specified starting wave and single target team.
+  The live Home Wave 10 probe routed all 64 enemies to Team 1: 64 crossed the bulwark, 63 crossed
+  the red line, the red-line peak was 63 against threshold 4, both first-wave latches read 10, and
+  Team 1's installed egg was destroyed before five rear arrivals ended the run as `ObjectiveLost`.
+- The preceding full Home run cleared Wave 20 with all five reserves and carried 57,260 Waycoins
+  into Heaven 1. Heaven then spent 57,600 almost immediately and was nearly fully advanced by Wave
+  2, proving the stage transition but exposing that the current carry economy erases Heaven's build
+  cadence.

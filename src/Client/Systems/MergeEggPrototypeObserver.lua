@@ -1,5 +1,5 @@
 --[[
-    MergeEggPrototypeObserver — Phase 5 combat, hatch telemetry, and egg progression.
+    MergeEggPrototypeObserver — Phase 6 combat, hatch telemetry, and world progression.
 
     The player's ordinary SquadHud remains reserved for their own deployable team. This Studio-only
     rail renders one column per hatcher NPC from replicated folder/model attributes: tier-scaled pet
@@ -62,6 +62,10 @@ local EGG_THEME = {
     ice_egg = Color3.fromRGB(105, 205, 255),
     lava_egg = Color3.fromRGB(255, 120, 55),
     desert_egg = Color3.fromRGB(255, 205, 80),
+    bloom_egg = Color3.fromRGB(140, 235, 145),
+    aurora_egg = Color3.fromRGB(155, 225, 255),
+    solar_egg = Color3.fromRGB(255, 175, 75),
+    gilded_egg = Color3.fromRGB(255, 220, 105),
 }
 
 local function prettyName(value)
@@ -139,6 +143,12 @@ local function worldProgress()
             0,
             0,
             0,
+            0,
+            "Home",
+            0,
+            0,
+            false,
+            nil,
             0
     end
     return tonumber(world:GetAttribute("CurrentWave")) or 0,
@@ -157,7 +167,13 @@ local function worldProgress()
         math.max(0, tonumber(world:GetAttribute("PrototypeEggRolls")) or 0),
         math.max(0, tonumber(world:GetAttribute("PrototypeGoldenRolls")) or 0),
         math.max(0, tonumber(world:GetAttribute("PrototypeRainbowRolls")) or 0),
-        math.max(0, tonumber(world:GetAttribute("PrototypeHugeRolls")) or 0)
+        math.max(0, tonumber(world:GetAttribute("PrototypeHugeRolls")) or 0),
+        tostring(world:GetAttribute("ProgressionStageName") or "Home"),
+        math.max(0, tonumber(world:GetAttribute("EnemiesPastBreachLine")) or 0),
+        math.max(0, tonumber(world:GetAttribute("PeakEnemiesPastBreachLine")) or 0),
+        world:GetAttribute("BreachOverrun") == true,
+        tonumber(world:GetAttribute("FirstBreachWave")),
+        math.max(0, tonumber(world:GetAttribute("PrototypeDraftCandidateRolls")) or 0)
 end
 
 local function waveWord(wave)
@@ -268,12 +284,20 @@ local function updateWaveMeter(
     goldenRolls,
     rainbowRolls,
     hugeRolls,
+    stageName,
+    enemiesPastBreachLine,
+    peakEnemiesPastBreachLine,
+    breachOverrun,
+    firstBreachWave,
+    draftCandidateRolls,
     announcing
 )
     meter.frame.Visible = true
     if wave <= 0 then
         local waitingForFirstEgg = state == "AwaitingFirstEgg"
-        meter.title.Text = waitingForFirstEgg and "INSTALL FIRST EGG" or "READY TO HATCH"
+        meter.title.Text = string.upper(stageName)
+            .. " • "
+            .. (waitingForFirstEgg and "INSTALL FIRST EGG" or "READY TO HATCH")
         meter.detail.Text = string.format(
             "%d-WAVE ENDURANCE TEST • %.0f× COMBAT\n%s • EGGS %d/%d • FIFO READY",
             waveCount,
@@ -289,15 +313,20 @@ local function updateWaveMeter(
             eggsStarting
         )
     else
-        meter.title.Text = "WAVE " .. waveWord(wave)
+        local breachLabel = breachOverrun and " • OVERRUN"
+            or enemiesPastBreachLine > 0 and " • BREACH"
+            or ""
+        meter.title.Text = string.upper(stageName) .. " • WAVE " .. waveWord(wave) .. breachLabel
         meter.detail.Text = string.format(
-            "%d / %d • %d %s • %d HATCHERS • %d ACTIVE • %s • %.0f× COMBAT\nEGGS %d/%d • Q%d/P%d/H%d • ROLLS %d G%d/R%d/H%d • %s",
+            "%d / %d • %d %s • %d HATCHERS • %d ACTIVE / %d BEHIND (PEAK %d) • %s • %.0f× COMBAT\nEGGS %d/%d • Q%d/P%d/H%d • PICKS %d/%d G%d/R%d/H%d • FIRST BREACH %s • %s",
             wave,
             waveCount,
             attackGroups,
             attackGroups == 1 and "FRONT" or "FRONTS",
             initializedHatchers,
             activeEnemies,
+            enemiesPastBreachLine,
+            peakEnemiesPastBreachLine,
             readableState(state),
             COMBAT_CADENCE_MULTIPLIER,
             eggsRemaining,
@@ -306,15 +335,25 @@ local function updateWaveMeter(
             peakQueueDepth,
             replacementsHatched,
             eggRolls,
+            draftCandidateRolls,
             goldenRolls,
             rainbowRolls,
             hugeRolls,
+            firstBreachWave and ("W" .. tostring(firstBreachWave)) or "—",
             portalVisible and string.format("PORTAL %d", pendingEnemies) or "PORTAL SEALED"
         )
     end
     meter.fill.Size = UDim2.fromScale(math.clamp(wave / math.max(1, waveCount), 0, 1), 1)
     meter.title.TextSize = announcing and 25 or 21
-    meter.frame.BackgroundColor3 = announcing and Color3.fromRGB(66, 50, 24)
+    local warningColor = breachOverrun and Color3.fromRGB(235, 75, 75)
+        or enemiesPastBreachLine > 0 and Color3.fromRGB(255, 165, 65)
+        or Color3.fromRGB(245, 190, 75)
+    meter.title.TextColor3 = warningColor
+    meter.fill.BackgroundColor3 = warningColor
+    meter.stroke.Color = warningColor
+    meter.frame.BackgroundColor3 = breachOverrun and Color3.fromRGB(70, 25, 30)
+        or enemiesPastBreachLine > 0 and Color3.fromRGB(68, 45, 22)
+        or announcing and Color3.fromRGB(66, 50, 24)
         or Color3.fromRGB(24, 30, 43)
     meter.stroke.Thickness = announcing and 3 or 2
     meter.stroke.Transparency = announcing and 0 or 0.15
@@ -727,17 +766,38 @@ local function updateEggProgressionBillboard(controls, teamId, folder)
     local nextName = folder:GetAttribute("MergeEggNextSourceName")
     local nextId = folder:GetAttribute("MergeEggNextSourceId")
     local nextCost = math.max(0, tonumber(folder:GetAttribute("MergeEggNextEggCost")) or 0)
+    local currentDraftRolls =
+        math.max(0, math.floor(tonumber(folder:GetAttribute("MergeEggDraftRolls")) or 0))
+    local nextDraftRolls =
+        math.max(0, math.floor(tonumber(folder:GetAttribute("MergeEggNextDraftRolls")) or 0))
+    local needsRebuild = folder:GetAttribute("MergeEggNeedsRebuild") == true
+    local eggHealth = math.max(0, tonumber(folder:GetAttribute("MergeEggInstalledHealth")) or 0)
+    local eggMaxHealth =
+        math.max(1, tonumber(folder:GetAttribute("MergeEggInstalledMaxHealth")) or 1)
     local canAdvance = folder:GetAttribute("MergeEggCanAdvance") == true and nextName ~= nil
     local color = EGG_THEME[tostring(nextId)] or Color3.fromRGB(135, 145, 165)
-    control.current.Text = "CURRENT: " .. string.upper(currentName)
+    control.current.Text = needsRebuild and "EGG DESTROYED • REBUILD REQUIRED"
+        or string.format(
+            "CURRENT: %s • %d/%d HP • %d PICK%s",
+            string.upper(currentName),
+            eggHealth,
+            eggMaxHealth,
+            currentDraftRolls,
+            currentDraftRolls == 1 and "" or "S"
+        )
     control.stroke.Color = color
     if canAdvance then
         control.button.Active = true
         control.button.AutoButtonColor = true
         control.button.BackgroundColor3 = color
         if os.clock() >= control.lockedUntil then
-            control.button.Text =
-                string.format("CREATE %s • %d", string.upper(tostring(nextName)), nextCost)
+            control.button.Text = string.format(
+                "%s %s • %d • %d PICKS",
+                needsRebuild and "REBUILD" or "CREATE",
+                string.upper(tostring(nextName)),
+                nextCost,
+                nextDraftRolls
+            )
         end
     else
         control.button.Active = false
@@ -810,7 +870,7 @@ function MergeEggPrototypeObserver.start()
         end
 
         local folders = teamFolders()
-        local wave, waveCount, state, activeEnemies, eggsRemaining, eggsStarting, queueDepth, peakQueueDepth, replacementsHatched, portalVisible, pendingEnemies, attackGroups, initializedHatchers, eggRolls, goldenRolls, rainbowRolls, hugeRolls =
+        local wave, waveCount, state, activeEnemies, eggsRemaining, eggsStarting, queueDepth, peakQueueDepth, replacementsHatched, portalVisible, pendingEnemies, attackGroups, initializedHatchers, eggRolls, goldenRolls, rainbowRolls, hugeRolls, stageName, enemiesPastBreachLine, peakEnemiesPastBreachLine, breachOverrun, firstBreachWave, draftCandidateRolls =
             worldProgress()
         if wave > 0 and wave ~= lastWave then
             lastWave = wave
@@ -837,6 +897,12 @@ function MergeEggPrototypeObserver.start()
             goldenRolls,
             rainbowRolls,
             hugeRolls,
+            stageName,
+            enemiesPastBreachLine,
+            peakEnemiesPastBreachLine,
+            breachOverrun,
+            firstBreachWave,
+            draftCandidateRolls,
             os.clock() < announceUntil
         )
         for id, panel in pairs(panels) do

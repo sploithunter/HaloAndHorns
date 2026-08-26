@@ -1,6 +1,6 @@
 # Merge an Egg Prototype
 
-Status: Phase 5 economy/progression experiments live verified
+Status: Phase 6 Home → Heaven 1 progression and breach experiments under live verification
 
 ## Phase 1 contract
 
@@ -106,14 +106,15 @@ commanded NPC teams. It still does not add the production deployment queue.
   The line is both the visual rule and the authoritative directional plane. Crossing is measured from
   the server-authoritative `MoveTarget` plus the enemy's forward oriented-bounds extent and one stud
   of contact tolerance. It never uses the model pivot: enemy visuals are client-interpolated while
-  the server pivot normally remains at spawn. Once an enemy crosses, it becomes an open emergency target and
-  every surviving NPC folder receives the same 250 ordinary-threat floor. The floor refreshes every
-  0.5 seconds while the enemy remains breached, so a team can finish its current target and still
+  the server pivot normally remains at spawn. Once an enemy crosses, it becomes an open emergency
+  target and every surviving NPC folder receives the same 250 ordinary-threat floor. The floor
+  refreshes every 0.5 seconds while the enemy remains past the bulwark, so a team can finish its
+  current target and still
   acquire the emergency afterward.
   There are no idle reserves behind the bulwark, but existing threat tables still decide whether
   already-engaged pets peel from their current targets.
-- While the early prototype trace is enabled, every breached enemy prints each surviving pet's
-  current target, threat on the breached enemy, top threat row, reciprocal enemy threat, distance,
+- While the early prototype trace is enabled, every past-bulwark enemy prints each surviving pet's
+  current target, threat on that enemy, top threat row, reciprocal enemy threat, distance,
   hostility/territory eligibility, and downed state every two seconds. The trace also prints the
   movement, forward-edge, and stale-pivot distances so visual/server disagreement is explicit.
 - Team telemetry and lifecycle are independent. One folder can be Ready or Returning while another
@@ -140,6 +141,11 @@ the unfinished merge board or production economy:
   counter rather than world models; this keeps the test focused on whether forward pressure and
   recovery cadence are readable. An empty defense is no longer an immediate loss because queued
   replacements can recover it.
+- Each installed hatcher source now also has one experimental health point. A finish-line arrival
+  destroys its assigned team's source (or the first remaining installed source), leaves surviving
+  pets in combat, and blocks that captain's future replacement rolls until the player buys its
+  first egg again. This is deliberately immediate while the prototype tests whether destroying and
+  rebuilding production is interesting; attack windup and durability remain later knobs.
 - Every missing authored pet slot enters that captain's own FIFO. The queue preserves the exact
   species/role/slot instead of randomizing the replacement, so a team's composition remains stable
   and its tank or blaster cannot silently become a third melee unit.
@@ -147,9 +153,9 @@ the unfinished merge board or production economy:
   every four real seconds. A replacement appears at its stationary captain and travels back into
   combat through the ordinary movement/aggro systems. The rest of the team does not need to return,
   and no pet is teleported directly onto the battlefield.
-- Replacement supply is intentionally unlimited in this pass. This separates the combat-side
-  questions—queue depth, recovery time, and loss rate—from the later board-side questions of which
-  egg finishes next and whether a hatcher has enough inventory.
+- Replacement rolls remain automatic and per-team, but their supply now depends on that captain
+  retaining an installed egg. Destroying the source preserves queued slots but clears their pending
+  definitions; rebuilding resumes ordinary draft rolls without duplicating the surviving squad.
 - World telemetry publishes remaining/starting eggs, objective hits, current/peak queue depth,
   total hatches, longest replacement wait, and reinforcing-team count. Each team publishes its
   queued slots and queued/hatched totals. The wave banner shows eggs, queue depth/peak, and hatches;
@@ -257,12 +263,59 @@ team and queue model:
   - Fixed-four +20% reached Sand in Wave 9 with no escapes (306 seconds), then entered Wave 10 with
     the same five objectives, 15 live pets, and one queued replacement. One trial cannot distinguish
     10% from 20%; repeat distributions are required.
-- The next unimplemented hypothesis avoids unbounded slots and gives egg quality a distinct role:
-  world progression owns capacity (`Home=3`, `Layer 1=4`, `Layer 2=5`, `Layer 3=6`), while the egg
-  tier owns draft quality. Tier N rolls N queue candidates and selects composition-aware best:
-  fill a missing tank first, preserve a healer/support slot, then rank remaining candidates by
-  combat damage. Later-world AoE pet pools may matter more than a flat modifier. Test this separately
-  rather than mixing it into the completed modifier comparison.
+- The chosen next hypothesis avoids unbounded slots and gives egg quality a distinct role: world
+  progression owns capacity (`Home=3`, `Layer 1=4`, `Layer 2=5`, `Layer 3=6`), while egg tier owns
+  draft quality. The earlier slot and flat-modifier modes remain selectable experiment fixtures.
+
+## Phase 6 Home → Heaven 1 progression loop (2026-08-26)
+
+- Home now holds every hatcher at three stable positions. Earth/Ice/Lava/Sand tiers offer one,
+  two, three, then four ordinary hatch outcomes for each new pet; the draft first fills a missing
+  tank, then a missing support/healer role, then takes the highest configured combat-power result.
+  Unchosen outcomes are rejected session-only candidates. Canonical hatch odds, variants, Huge
+  chances, pet definitions, and live combat math are unchanged.
+- The runner no longer stops when all four Home hatchers reach Sand. It continues walking to live
+  pickups while later waves fight, then sweeps every remaining owner-only Waycoin after Wave 20.
+  Only after a quiet 0.6-second verification window does it close the Home ledger.
+- Heaven Layer 1 is a separate stage on the same test strip. It has four positions per hatcher and
+  uses Bloom/Aurora/Solar/Gilded eggs in Earth/Ice/Lava/Desert order with the same 1/2/3/4 draft
+  ladder. Its prototype egg prices are 1,600/3,200/6,400/12,800 per hatcher; four first eggs
+  therefore define a 6,400-Waycoin opening reserve. Heaven enemies start at 2.25× Home HP, 1.5×
+  damage, and 5× Waycoin payout as explicit first-pass knobs.
+- A sequential run carries the exact swept Home balance into Heaven 1 and rebuilds fresh four-slot
+  hatcher teams. Home telemetry records whether the balance met the 6,400 reserve before allowing
+  the transition. An isolated `{stage = "heaven_1"}` runner starts at that same minimum reserve by
+  default, allowing Heaven balance reruns without replaying Home; callers may supply a recorded
+  conservative Home balance instead.
+- The observer prefixes the wave banner with the current stage and distinguishes selected pets from
+  total draft candidates. Each hatcher billboard shows the current and next number of picks.
+- The first complete Home run cleared Wave 20 with all five reserve eggs and swept to 57,260
+  Waycoins after Home egg spending. Carrying that exact balance into Heaven 1 exposed the next
+  economy problem: the runner spent 57,600 on Heaven eggs almost immediately and had nearly all
+  sources advanced by Wave 2. The stage handoff works, but the current Home payout/Heaven pricing
+  collapses the intended Heaven build tempo and needs a later tuning pass.
+
+## Breach and installed-egg experiment (2026-08-26)
+
+- The gold `BulwarkLine` remains the all-teams-engage boundary at Z=-175. A separate red
+  `BreachLine` at Z=-205 sits 13 studs in front of the hatcher anchors and is labeled flat on the
+  ground `BREACH • EGGS EXPOSED`. Existing Studio maps receive the same line from a narrow runtime
+  fallback, while the repeatable authoring script creates it permanently.
+- The same movement-leading-edge calculation classifies both lines. World telemetry now separates
+  current/peak enemies past each line, cumulative crossings, first breach wave, and first overrun
+  wave. `BreachOverrun` is a visible warning when enemies beyond the red line reach the greater of
+  four or one per active defender; it is not itself terminal. Five rear finish-line hits remain the
+  terminal reserve-egg loss.
+- A Studio-only focused probe can inject any valid starting wave and route every attack group to one
+  hatcher. This is a diagnostic seam for repeatable pressure tests, not a player wave selector or a
+  production network contract.
+- Live verification injected Home Wave 10 onto Team 1 after installing only its first egg. All 64
+  enemies crossed the yellow bulwark, 63 crossed the red breach line, `FirstBreachWave` and
+  `FirstOverrunWave` both latched to 10, and the red-line peak reached 63 against a threshold of 4.
+  The first rear arrival destroyed Team 1's installed egg; subsequent arrivals exhausted the five
+  reserve eggs and ended the run as `ObjectiveLost`. This confirms the prior Wave 18 crowd was a
+  reporting bug, not a non-breach: the old UI exposed active enemies but no authoritative red-line
+  state.
 
 ## Source and authoring
 
@@ -410,8 +463,9 @@ saved attribute and visible Hall pane to 156. The runtime log remained clean.
 ## Explicitly deferred
 
 - Tile generation or tile streaming.
-- Physical objective eggs, real merge recipes, board slots, egg inventory/compatibility, currency,
-  rewards, persistence, or monetization.
+- Physical reserve-egg models and attack animations, real merge recipes, board slots, egg
+  inventory/compatibility, persistence, or monetization. Installed hatcher health is currently only
+  a one-hit session attribute.
 - Wave selection UI, production difficulty curves, matchmaking, or more than one active player.
 - Player-facing queue reordering, congestion policy, and production team-state controls.
 - Production egg-upgrade costs, board recipes, timing, persistence, and unlock requirements. The
