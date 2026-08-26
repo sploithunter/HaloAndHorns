@@ -78,9 +78,9 @@ Layer 3's eight authored egg fixtures now use the realm-specific stand meshes. I
 anchors are source-of-truth: 46 stale copied visuals were removed, and runtime config supplies the
 complete Heaven 3/Hell 3 plant, tree, rock, and cactus palettes from the prebaked Models bundle.
 Four realm landmarks are placed in Studio, and twelve tagged ambient-fauna anchors spawn six
-non-combat moving props per realm. `heaven_3` and `hell_3` are temporarily open through the
-physical realm portals for active testing; their production Soul, token, and player-level
-requirements remain unchanged.
+non-combat moving props per realm. Heaven 3 and Hell 3 physical portals
+use the same per-player lock as the other built gates: 🔒 until earned
+Level 21, then the destination label.
 
 The Layer 3 runtime configuration is now live for walkthrough testing: eight realm-specific eggs
 resolve on the authored stands, all 40 published pets are hatchable, and each Heaven 3/Hell 3

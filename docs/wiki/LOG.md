@@ -1,5 +1,10 @@
 # Log
 
+## 2026-08-26 — Heaven/Hell 3 lock until Level 21
+
+- Cleared `realm_portals.testing_open_layers`. Layer 3 physical gates
+  use the same 🔒 as the other built portals until earned Level 21.
+
 ## 2026-08-25 — Tester is an official allowlist
 
 - People-list Tester (β) is no longer granted for an open-beta campaign

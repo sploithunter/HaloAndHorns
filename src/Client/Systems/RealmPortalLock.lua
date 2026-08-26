@@ -146,6 +146,8 @@ function RealmPortalLock.start()
                         applyLayout(caption, locked and LOCKED_CAPTION or OPEN_CAPTION)
                     end
                 end
+            elseif d:IsA("ProximityPrompt") and d.Name == "RealmPortalPrompt" then
+                d.Enabled = not locked
             end
         end
     end
