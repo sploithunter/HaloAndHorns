@@ -320,6 +320,9 @@ function PetFollowController.start()
     local strikeState = setmetatable({}, { __mode = "k" })
     local strikeAngle = setmetatable({}, { __mode = "k" }) -- pet -> accumulated ring sidestep
     local strikeTarget = setmetatable({}, { __mode = "k" }) -- pet -> target whose ring is advanced
+    -- A pet that legitimately crossed the catch-up threshold for combat should also travel home.
+    -- Weak keys follow the runtime models and work for player and NPC-principal squads alike.
+    local returningFromCombat = setmetatable({}, { __mode = "k" })
     local function strikeProfile(pet)
         local roleId = petRoleId(pet)
         local petType = pet:GetAttribute("PetType")
@@ -910,9 +913,16 @@ function PetFollowController.start()
             local kiterFace = {} -- kiter pet -> its target model (so it faces what it snipes)
             for slot, pet in ipairs(pets) do
                 local tid = pet:FindFirstChild("TargetID")
+                local tt = pet:FindFirstChild("TargetType")
+                if tid and tid.Value ~= 0 then
+                    if tt and tt.Value == "Enemy" then
+                        returningFromCombat[pet] = true
+                    else
+                        returningFromCombat[pet] = nil
+                    end
+                end
                 local breakable = nil
                 if not holdFormation and tid and tid.Value ~= 0 then
-                    local tt = pet:FindFirstChild("TargetType")
                     local tw = pet:FindFirstChild("TargetWorld")
                     breakable = findBreakable(tt and tt.Value, tw and tw.Value, tid.Value)
                 end
@@ -1045,7 +1055,23 @@ function PetFollowController.start()
                 end
             end
             for _, p in ipairs(followPlace) do
-                moveToward(p.model, p.target, followerRestDir(p.model, p.target), followRate)
+                local returning = returningFromCombat[p.model] == true
+                local returnDistance = (p.model:GetPivot().Position - p.target).Magnitude
+                if returning and returnDistance <= (catchupDist or math.huge) then
+                    returningFromCombat[p.model] = nil
+                    returning = false
+                end
+                -- A real owner/portal teleport or Rally still snaps immediately. Ordinary
+                -- post-combat recovery flies back to this principal's formation instead.
+                local allowFormationSnap = holdFormation or not returning
+                moveToward(
+                    p.model,
+                    p.target,
+                    followerRestDir(p.model, p.target),
+                    followRate,
+                    nil,
+                    allowFormationSnap
+                )
             end
 
             -- Map-collision exclude set (built once/frame): everything dynamic the pet should pass

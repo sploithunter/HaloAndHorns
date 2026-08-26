@@ -5089,6 +5089,9 @@ first-session cohort rates.
 - A second timeline showed target IDs remaining stable until each enemy died, but the 260-stud alert
   crossed the 200-stud formation catch-up threshold and snapped pets forward, then home at the wave
   break. Combat targets now use bounded travel; formation and owner-teleport recovery still snap.
+- The same threshold could still snap a legitimately advanced squad home after tank drive-back moved
+  the whole fight beyond it. Post-combat return now uses bounded travel too; only a principal/portal
+  teleport, Rally, or explicit teleport ability snaps movement.
 
 ## 2026-08-26 — Merge an Egg Phase 1 authored-strip prototype
 
