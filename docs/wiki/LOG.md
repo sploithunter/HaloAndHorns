@@ -5246,3 +5246,35 @@ first-session cohort rates.
   Team 1 alone through Ice/Ember/Sand to its disabled max state, and kept Team 2 on Earth. During
   active combat a second cue changed the live SoundId from `94019382405359` to `80895188313881`.
   The final Wave 1/20 session is left running in Studio with all four controls visible and no errors.
+
+## 2026-08-26 — Merge an Egg empty-hatcher tempo baseline
+
+- Kept four fixed hatcher positions but removed their starting eggs and pets. Deploying the
+  encounter now creates four `NO EGG` captains with five visibly empty pet positions and no queued
+  replacements, allowing the opening defense tempo to be measured from zero production.
+- The first independent captain upgrade is Grass/Earth and immediately rolls that captain's five
+  initial pets. Ice, Ember/Lava, and Sand/Desert remain later source upgrades that affect only
+  unrolled future replacements rather than transforming the live team.
+- Moved the camera-facing billboards into the local `PlayerGui` and explicitly enabled their input
+  layer. This corrects the rendered-but-unclickable world buttons while retaining each captain as
+  the 3D adornee.
+- Four full observer columns remain the prototype baseline, not the eventual many-team display.
+  Before adding more hatchers, replace the full-width columns with compact alerts/status and spatial
+  indicators rather than trying to keep every team expanded on screen.
+- Live verification deployed all four tier-0 folders with zero pets/queues and four input-active
+  `UPGRADE → EARTH EGG` billboards. A real click on Captain 3 produced exactly five Grass/Earth pets
+  only for Team 3; the other three positions remained `NO EGG`. No runtime errors followed the
+  corrected `PlayerGui` billboard construction.
+- Added a setup gate after that input pass: deploying the four empty positions now holds at Wave 0
+  in `AwaitingFirstEgg`, with no enemies and a sealed portal. The first successful Grass/Earth
+  installation creates its five-pet team and is the only trigger that releases Wave 1.
+- Reframed the first three waves as explicit fronts for egg-building cadence. Wave 1 is one
+  three-Whelp trash group; Wave 2 opens a lone-Brute front plus a four-Whelp front; Wave 3 grows
+  that into one Brute-led four-enemy group plus one four-Whelp group. Initialized hatchers receive
+  fronts first, then empty positions expose missing eggs. Early intermissions are `8/8/6` seconds,
+  and the wave banner now shows active fronts and online hatcher count.
+- Live verification held deployment at Wave 0 with no enemies/portal, then a real first-egg click
+  released exactly one three-Whelp front. With only one hatcher online, Wave 2 assigned its Brute to
+  that team and its four-Whelp second front to an empty position. A second real egg click brought
+  another captain online before the configured Wave 3 two-front deployment; the runtime log stayed
+  free of matching errors.

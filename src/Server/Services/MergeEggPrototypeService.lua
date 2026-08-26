@@ -2,10 +2,11 @@
     MergeEggPrototypeService — Studio-only Phase 5 vertical slice.
 
     One player enters through Home's otherwise-disabled Hall gate, is streamed to one authored
-    strip under Workspace.Maps, and rolls four five-pet squads from the shipping Home Grass Egg.
-    Each independently addressed squad owns a disjoint share of the same escalating reward-free
-    enemy waves, which emerge through a temporary portal and march toward one finish line. Reset
-    makes the loop repeatable; Exit restores the player's runtime squad and exact entry transform.
+    strip under Workspace.Maps, and deploys four empty hatcher positions. Installing each captain's
+    first Grass/Earth Egg rolls that hatcher's five-pet team; later egg tiers change its future
+    replacements. Each independently addressed squad owns a disjoint share of the same escalating
+    reward-free enemy waves, which emerge through a temporary portal and march toward one finish
+    line. Reset makes the loop repeatable; Exit restores the player's runtime squad and transform.
 
     There is intentionally no tile-kit or mission-instance world generation here. The map is a
     persistent Studio-authored Model and this service owns only session routing and cleanup.
@@ -193,7 +194,8 @@ end
 
 function MergeEggPrototypeService:_buildPrototypeHatchData(record)
     local teamCfg = self._config.team or {}
-    local source, reason = self:_buildHatchSource(record, teamCfg.egg_id or "grass_egg")
+    local source, reason =
+        self:_buildHatchSource(record, (teamCfg.egg_progression or {})[1] or "grass_egg")
     if not source then
         return false, reason
     end
@@ -236,7 +238,7 @@ function MergeEggPrototypeService:_eggProgression()
     if type(progression) == "table" and #progression > 0 then
         return progression
     end
-    return { tostring((self._config.team or {}).egg_id or "grass_egg") }
+    return { "grass_egg" }
 end
 
 function MergeEggPrototypeService:_publishTeamEggSource(team)
@@ -245,7 +247,7 @@ function MergeEggPrototypeService:_publishTeamEggSource(team)
         return
     end
     local progression = self:_eggProgression()
-    local tier = math.clamp(math.floor(tonumber(team.eggTier) or 1), 1, #progression)
+    local tier = math.clamp(math.floor(tonumber(team.eggTier) or 0), 0, #progression)
     local nextId = progression[tier + 1]
     local nextData = nextId
         and self._petsConfig
@@ -281,6 +283,53 @@ function MergeEggPrototypeService:_publishTeamSlot(team, slot, definition)
     folder:SetAttribute("MergeEggSlotPet" .. slot, definition.pet)
     folder:SetAttribute("MergeEggSlotVariant" .. slot, definition.variant or "basic")
     folder:SetAttribute("MergeEggSlotHuge" .. slot, definition.huge == true)
+end
+
+function MergeEggPrototypeService:_spawnInitialTeam(record, team, source)
+    if team.initialized == true then
+        return true, 0
+    end
+    local count = math.max(
+        1,
+        math.floor(
+            tonumber(team.expectedPets)
+                or tonumber((self._config.team or {}).initial_hatch_count)
+                or 5
+        )
+    )
+    local squad = self:_rollPrototypeSquad(record, count, source)
+    local root = team.principalModel and team.principalModel:FindFirstChild("HumanoidRootPart")
+    if not (squad and root and team.folder and team.folder.Parent) then
+        return false, "initial_team_unavailable"
+    end
+    local spawned, models =
+        self._npcPrincipalService:SpawnGhostSquad(team.folder, squad, root.CFrame, {
+            attributes = {
+                MergeEggUnit = true,
+                MergeEggRunId = record.runId,
+                MergeEggTeamId = team.id,
+                CombatTargetGroup = team.targetGroup,
+                CombatCadenceMultiplier = combatCadenceMultiplier(self._config),
+                EphemeralDownPolicy = "destroy",
+                PrincipalLevel = tonumber((self._config.principal or {}).level) or 1,
+            },
+        })
+    if spawned ~= count then
+        for _, model in ipairs(models or {}) do
+            model:Destroy()
+        end
+        return false, "unit_assets_missing"
+    end
+
+    team.config.squad = squad
+    team.initialized = true
+    for slot, model in ipairs(models) do
+        team.units[#team.units + 1] = model
+        record.units[#record.units + 1] = model
+        self:_recordEggRoll(record, team, squad[slot])
+        self:_publishTeamSlot(team, slot, squad[slot])
+    end
+    return true, spawned
 end
 
 function MergeEggPrototypeService:_log(level, message, data)
@@ -332,10 +381,8 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("PeakActiveEnemies", record and record.peakActiveEnemies or 0)
     world:SetAttribute("EnemyPortalVisible", record and record.portalVisible == true or false)
     world:SetAttribute("WaveEnemiesPending", record and record.pendingEnemySpawns or 0)
-    world:SetAttribute(
-        "PrototypeEggId",
-        record and record.eggId or (self._config.team or {}).egg_id
-    )
+    world:SetAttribute("WaveAttackGroups", record and record.waveGroupCount or 0)
+    world:SetAttribute("PrototypeEggId", record and record.eggId or nil)
     world:SetAttribute("PrototypeEggRolls", record and record.eggRolls or 0)
     world:SetAttribute("PrototypeGoldenRolls", record and record.eggGoldenRolls or 0)
     world:SetAttribute("PrototypeRainbowRolls", record and record.eggRainbowRolls or 0)
@@ -372,11 +419,15 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     local engagedTeams = 0
     local reinforcingTeams = 0
     local defeatedTeams = 0
+    local initializedHatchers = 0
     local activePets = 0
     local defeatedPets = 0
     for _, team in ipairs(record and record.teams or {}) do
         if team.folder and team.folder.Parent then
             activeTeams += 1
+        end
+        if team.initialized == true then
+            initializedHatchers += 1
         end
         if team.state == "Ready" then
             readyTeams += 1
@@ -391,6 +442,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
         defeatedPets += team.defeatedPets or 0
     end
     world:SetAttribute("ActiveTeamCount", activeTeams)
+    world:SetAttribute("InitializedHatcherCount", initializedHatchers)
     world:SetAttribute("ReadyTeamCount", readyTeams)
     world:SetAttribute("EngagedTeamCount", engagedTeams)
     world:SetAttribute("ReinforcingTeamCount", reinforcingTeams)
@@ -418,6 +470,7 @@ function MergeEggPrototypeService:_queueMissingPets(record, team, occupiedSlots,
         cfg.enabled ~= true
         or not record.encounterSpawned
         or record.terminal == true
+        or team.initialized ~= true
         or not (team.folder and team.folder.Parent)
     then
         return
@@ -481,7 +534,7 @@ function MergeEggPrototypeService:_syncTeamState(record, team)
         end
     end
 
-    local expected = #(team.config.squad or self._config.squad or {})
+    local expected = math.max(1, math.floor(tonumber(team.expectedPets) or 5))
     local now = os.clock()
     self:_queueMissingPets(record, team, occupiedSlots, expected, now)
     local replacementSlots = {}
@@ -489,9 +542,14 @@ function MergeEggPrototypeService:_syncTeamState(record, team)
         replacementSlots[#replacementSlots + 1] = tostring(queued.slot)
     end
     team.activePets = active
-    team.defeatedPets = math.max(0, expected - active)
+    team.defeatedPets = team.initialized == true and math.max(0, expected - active) or 0
     team.peakAssignedEnemies = math.max(team.peakAssignedEnemies or 0, team.assignedAlive or 0)
-    if record.encounterSpawned and team.defeatedPets > 0 and team.firstLossWave == nil then
+    if
+        record.encounterSpawned
+        and team.initialized == true
+        and team.defeatedPets > 0
+        and team.firstLossWave == nil
+    then
         team.firstLossWave = record.waveIndex
         team.firstLossAssignedEnemies = team.assignedAlive or 0
         if record.firstPetLossWave == nil then
@@ -527,7 +585,9 @@ function MergeEggPrototypeService:_syncTeamState(record, team)
     folder:SetAttribute("MergeEggHugeRolls", team.eggHugeRolls or 0)
 
     local state = "Ready"
-    if record.encounterSpawned and active == 0 then
+    if team.initialized ~= true then
+        state = "NoEgg"
+    elseif record.encounterSpawned and active == 0 then
         state = #(team.replacementQueue or {}) > 0 and "Reinforcing" or "Defeated"
     elseif targeted > 0 then
         state = "Engaged"
@@ -819,8 +879,8 @@ function MergeEggPrototypeService:_bindWorldControls(world)
     self:_attachPrompt(
         findNamedPart(world, cfg.hatcher_control),
         HATCH_PROMPT_NAME,
-        "Deploy Four NPC Teams",
-        "Phase 5 Grass Egg",
+        "Deploy Four Empty Hatchers",
+        "Four Empty Egg Positions",
         function(player)
             self:_hatch(player)
         end
@@ -1098,6 +1158,7 @@ function MergeEggPrototypeService:_begin(player)
         nextWaveAt = nil,
         pendingWaveSpawns = {},
         pendingEnemySpawns = 0,
+        waveGroupCount = 0,
         nextEnemySpawnAt = nil,
         portalVisible = false,
         resolvedTargets = {},
@@ -1223,13 +1284,18 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
         self:_finishDefenseOverrun(record)
         return
     end
-    local waveCount = #(self._config.waves or {})
+    local waves = self._config.waves or {}
+    local waveCount = #waves
     if record.waveIndex < waveCount then
-        record.nextWaveAt = os.clock() + math.max(0, tonumber(self._config.wave_gap) or 2)
+        local resolvedWave = waves[record.waveIndex] or {}
+        local waveGap =
+            math.max(0, tonumber(resolvedWave.gap_after) or tonumber(self._config.wave_gap) or 2)
+        record.nextWaveAt = os.clock() + waveGap
         self:_setWorldState("WaveIntermission", record)
         self:_log("Info", "Merge Egg prototype wave resolved", {
             player = record.player.Name,
             wave = record.waveIndex,
+            nextWaveIn = waveGap,
             defeated = record.defeated,
             escaped = record.escaped,
         })
@@ -1311,10 +1377,9 @@ function MergeEggPrototypeService:_spawnWaveEnemy(record, spec)
     model:SetAttribute("MergeEggAssignedTeamName", team.displayName)
     model:SetAttribute("CombatTargetGroup", team.targetGroup)
     model:SetAttribute("CombatCadenceMultiplier", combatCadenceMultiplier(self._config))
-    model:SetAttribute(
-        "MergeEggCompositionRole",
-        spec.teamOrdinal == 1 and spec.tankCfg and "tank" or "melee"
-    )
+    model:SetAttribute("MergeEggAttackGroup", spec.groupIndex or 1)
+    model:SetAttribute("MergeEggAttackGroupKind", spec.groupKind or "legacy")
+    model:SetAttribute("MergeEggCompositionRole", spec.compositionRole or "melee")
     result.teamId = team.id
     record.enemies[#record.enemies + 1] = result
     record.enemyByTargetId[result.targetId] = result
@@ -1397,29 +1462,82 @@ function MergeEggPrototypeService:_spawnNextWave(record)
         return false, "defense_team_missing"
     end
 
-    local pending = {}
-    local count = math.max(1, math.floor(tonumber(wave.count) or 1))
-    for index = 1, count do
-        local teamIndex = ((index - 1) % #record.teams) + 1
-        local teamOrdinal = math.floor((index - 1) / #record.teams) + 1
-        local team = record.teams[teamIndex]
-        local spawnCfg = (teamOrdinal == 1 and tankCfg) or cfg
-        local enemyId = tostring(spawnCfg.id or cfg.id)
-        local enemyDef = enemyDefs[enemyId]
-        if not (team and enemyDef) then
-            return false, team and "enemy_config_missing" or "defense_team_missing"
+    local assignmentTeams = {}
+    for _, team in ipairs(record.teams) do
+        if team.initialized == true then
+            assignmentTeams[#assignmentTeams + 1] = team
         end
-        pending[#pending + 1] = {
-            index = index,
-            team = team,
-            teamOrdinal = teamOrdinal,
-            tankCfg = tankCfg,
-            spawnCfg = spawnCfg,
-            enemyId = enemyId,
-            enemyDef = enemyDef,
-            spawnArea = spawnArea,
-            finishLine = finishLine,
-        }
+    end
+    for _, team in ipairs(record.teams) do
+        if team.initialized ~= true then
+            assignmentTeams[#assignmentTeams + 1] = team
+        end
+    end
+
+    local pending = {}
+    local authoredGroups = type(wave.groups) == "table" and wave.groups or nil
+    if authoredGroups and #authoredGroups > 0 then
+        for groupIndex, group in ipairs(authoredGroups) do
+            local team = assignmentTeams[((groupIndex - 1) % #assignmentTeams) + 1]
+            local groupKind = tostring(group.kind or "trash")
+            local groupCount = math.max(1, math.floor(tonumber(group.count) or 1))
+            if groupKind ~= "trash" and groupKind ~= "tank" then
+                return false, "wave_group_kind_invalid"
+            end
+            if groupKind == "tank" and not tankCfg then
+                return false, "enemy_tank_config_missing"
+            end
+            for groupOrdinal = 1, groupCount do
+                local isTank = groupKind == "tank" and groupOrdinal == 1
+                local spawnCfg = (isTank and tankCfg) or cfg
+                local enemyId = tostring(spawnCfg.id or cfg.id)
+                local enemyDef = enemyDefs[enemyId]
+                if not (team and enemyDef) then
+                    return false, team and "enemy_config_missing" or "defense_team_missing"
+                end
+                pending[#pending + 1] = {
+                    index = #pending + 1,
+                    team = team,
+                    groupIndex = groupIndex,
+                    groupKind = groupKind,
+                    compositionRole = isTank and "tank" or "melee",
+                    spawnCfg = spawnCfg,
+                    enemyId = enemyId,
+                    enemyDef = enemyDef,
+                    spawnArea = spawnArea,
+                    finishLine = finishLine,
+                }
+            end
+        end
+    else
+        local count = math.max(1, math.floor(tonumber(wave.count) or 1))
+        for index = 1, count do
+            local teamIndex = ((index - 1) % #assignmentTeams) + 1
+            local teamOrdinal = math.floor((index - 1) / #assignmentTeams) + 1
+            local team = assignmentTeams[teamIndex]
+            local isTank = teamOrdinal == 1 and tankCfg ~= nil
+            local spawnCfg = (isTank and tankCfg) or cfg
+            local enemyId = tostring(spawnCfg.id or cfg.id)
+            local enemyDef = enemyDefs[enemyId]
+            if not (team and enemyDef) then
+                return false, team and "enemy_config_missing" or "defense_team_missing"
+            end
+            pending[#pending + 1] = {
+                index = index,
+                team = team,
+                groupIndex = teamIndex,
+                groupKind = tankCfg and "tank" or "trash",
+                compositionRole = isTank and "tank" or "melee",
+                spawnCfg = spawnCfg,
+                enemyId = enemyId,
+                enemyDef = enemyDef,
+                spawnArea = spawnArea,
+                finishLine = finishLine,
+            }
+        end
+    end
+    if #pending ~= math.max(1, math.floor(tonumber(wave.count) or 1)) then
+        return false, "wave_group_count_mismatch"
     end
 
     record.waveIndex = waveIndex
@@ -1430,6 +1548,8 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     record.aliveEnemies = 0
     record.pendingWaveSpawns = pending
     record.pendingEnemySpawns = #pending
+    record.waveGroupCount = authoredGroups and #authoredGroups
+        or math.min(#assignmentTeams, #pending)
     record.nextEnemySpawnAt = 0
     for _, team in ipairs(record.teams or {}) do
         team.assignedAlive = 0
@@ -1750,13 +1870,12 @@ function MergeEggPrototypeService:_hatch(player)
 
     record.hatching = true
     record.terminal = false
-    local hatchDataOk, hatchDataReason = self:_buildPrototypeHatchData(record)
-    if not hatchDataOk then
-        record.hatching = false
-        return false, hatchDataReason
-    end
     local hatchCount =
         math.max(1, math.floor(tonumber((self._config.team or {}).initial_hatch_count) or 5))
+    local progression = self:_eggProgression()
+    local firstEggData = self._petsConfig
+        and self._petsConfig.egg_sources
+        and self._petsConfig.egg_sources[progression[1]]
     local totalUnits = 0
     for index, teamCfg in ipairs(teamConfigs) do
         local id = math.max(1, math.floor(tonumber(teamCfg.id) or index))
@@ -1768,14 +1887,10 @@ function MergeEggPrototypeService:_hatch(player)
         definition.name = tostring(teamCfg.principal_name or ("Merge Hatcher Team " .. id))
         definition.display_name =
             tostring(teamCfg.principal_display_name or ("Hatcher Captain " .. id))
-        definition.squad = self:_rollPrototypeSquad(record, hatchCount)
-        if not definition.squad then
-            self:_clearEncounter(record)
-            return false, "prototype_egg_roll_failed"
-        end
-        local expected = #definition.squad
+        definition.squad = {}
+        local expected = hatchCount
         local runtimeTeamConfig = table.clone(teamCfg)
-        runtimeTeamConfig.squad = definition.squad
+        runtimeTeamConfig.squad = {}
         local targetGroup = record.runId .. ":team:" .. id
         local offset = teamCfg.spawn_offset or {}
         local spawnCFrame = spawn.CFrame
@@ -1792,9 +1907,12 @@ function MergeEggPrototypeService:_hatch(player)
                     MergeEggRunId = record.runId,
                     MergeEggTeamId = id,
                     MergeEggTeamDisplayName = tostring(teamCfg.display_name or "NPC Team 1"),
-                    MergeEggTeamState = "Ready",
+                    MergeEggTeamState = "NoEgg",
                     MergeEggExpectedPets = expected,
-                    MergeEggSourceId = record.eggId,
+                    MergeEggSourceTier = 0,
+                    MergeEggCanUpgrade = true,
+                    MergeEggNextSourceId = progression[1],
+                    MergeEggNextSourceName = firstEggData and firstEggData.name or "Earth Egg",
                     CombatTargetGroup = targetGroup,
                 },
                 petAttributes = {
@@ -1824,7 +1942,9 @@ function MergeEggPrototypeService:_hatch(player)
             principalModel = info.model,
             folder = info.folder,
             units = {},
-            state = "Ready",
+            state = "NoEgg",
+            expectedPets = expected,
+            initialized = false,
             activePets = 0,
             defeatedPets = 0,
             assignedAlive = 0,
@@ -1841,10 +1961,10 @@ function MergeEggPrototypeService:_hatch(player)
             eggGoldenRolls = 0,
             eggRainbowRolls = 0,
             eggHugeRolls = 0,
-            eggTier = 1,
-            eggId = record.eggId,
-            eggName = record.eggName,
-            hatchPlayerData = record.hatchPlayerData,
+            eggTier = 0,
+            eggId = nil,
+            eggName = nil,
+            hatchPlayerData = nil,
             lastUpgradeAt = nil,
         }
         record.teams[#record.teams + 1] = team
@@ -1861,34 +1981,26 @@ function MergeEggPrototypeService:_hatch(player)
             team.principalModel:SetAttribute("MergeEggTeamId", id)
             team.principalModel:SetAttribute("CombatTargetGroup", targetGroup)
         end
-        if tonumber(info.pets) ~= expected then
+        if tonumber(info.pets) ~= 0 then
             self:_clearEncounter(record)
-            return false, "unit_assets_missing"
-        end
-        for slot, petDefinition in ipairs(definition.squad) do
-            self:_recordEggRoll(record, team, petDefinition)
-            self:_publishTeamSlot(team, slot, petDefinition)
+            return false, "empty_hatcher_spawned_units"
         end
         self:_publishTeamEggSource(team)
         totalUnits += tonumber(info.pets) or 0
-        self:_setTeamState(record, team, "Ready")
+        self:_setTeamState(record, team, "NoEgg")
     end
     if self._petFollowService and self._petFollowService.ReleaseMiningTargets then
         self._petFollowService:ReleaseMiningTargets(player)
     end
 
-    local waveOk, reason = self:_spawnNextWave(record)
-    if not waveOk then
-        self:_clearEncounter(record)
-        return false, reason
-    end
     record.encounterSpawned = true
     record.hatching = false
     self:_syncAllTeams(record)
-    self:_setWorldState(self:_activeWaveState(record), record)
-    self:_log("Info", "Merge Egg prototype hatch started", {
+    self:_setPortalVisible(record, false)
+    self:_setWorldState("AwaitingFirstEgg", record)
+    self:_log("Info", "Merge Egg prototype setup started", {
         player = player.Name,
-        egg = record.eggId,
+        egg = "none",
         teams = #record.teams,
         units = totalUnits,
         golden = record.eggGoldenRolls,
@@ -1905,7 +2017,12 @@ function MergeEggPrototypeService:UpgradeHatcher(player, request)
         return false, "studio_only"
     end
     local record = self._active
-    if not record or record.player ~= player or not record.encounterSpawned then
+    if
+        not record
+        or record.player ~= player
+        or not record.encounterSpawned
+        or record.terminal == true
+    then
         return false, "not_active_encounter"
     end
     if type(request) ~= "table" then
@@ -1924,7 +2041,7 @@ function MergeEggPrototypeService:UpgradeHatcher(player, request)
         return false, "upgrade_throttled"
     end
     local progression = self:_eggProgression()
-    local nextTier = math.floor(tonumber(team.eggTier) or 1) + 1
+    local nextTier = math.floor(tonumber(team.eggTier) or 0) + 1
     local nextEggId = progression[nextTier]
     if not nextEggId then
         return false, "maximum_egg_reached"
@@ -1932,6 +2049,18 @@ function MergeEggPrototypeService:UpgradeHatcher(player, request)
     local source, reason = self:_buildHatchSource(record, nextEggId)
     if not source then
         return false, reason
+    end
+
+    local initialUnits = 0
+    if team.initialized ~= true then
+        if nextTier ~= 1 then
+            return false, "first_egg_required"
+        end
+        local spawnedOk, spawnedOrReason = self:_spawnInitialTeam(record, team, source)
+        if not spawnedOk then
+            return false, spawnedOrReason
+        end
+        initialUnits = tonumber(spawnedOrReason) or 0
     end
 
     team.lastUpgradeAt = now
@@ -1944,15 +2073,28 @@ function MergeEggPrototypeService:UpgradeHatcher(player, request)
     end
     record.hatcherUpgrades = (record.hatcherUpgrades or 0) + 1
     self:_publishTeamEggSource(team)
-    self:_setWorldState(
-        self._world and self._world:GetAttribute("PrototypeState") or "WaveActive",
-        record
-    )
+    self:_syncTeamState(record, team)
+    local firstWaveStarted = false
+    if record.waveIndex == 0 and initialUnits > 0 then
+        local waveOk, waveReason = self:_spawnNextWave(record)
+        if waveOk then
+            firstWaveStarted = true
+        else
+            self:_setWorldState("WaveSpawnFailed", record)
+            self:_log("Warn", "Merge Egg prototype first wave spawn failed", {
+                player = player.Name,
+                team = team.id,
+                reason = waveReason,
+            })
+        end
+    end
     self:_log("Info", "Merge Egg prototype hatcher upgraded", {
         player = player.Name,
         team = team.id,
         tier = nextTier,
         egg = team.eggId,
+        initialUnits = initialUnits,
+        firstWaveStarted = firstWaveStarted,
         replacementQueueDepth = #(team.replacementQueue or {}),
     })
     return true

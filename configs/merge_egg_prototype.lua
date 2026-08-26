@@ -57,10 +57,10 @@ return {
 
     team = {
         return_ready_distance = 20,
-        egg_id = "grass_egg",
+        starts_with_egg = false,
         initial_hatch_count = 5,
-        -- Each captain advances independently. An upgrade changes only that captain's source for
-        -- future FIFO replacement rolls; pets already on the field keep their original outcome.
+        -- Each captain begins as an empty position. Its first upgrade installs the Grass/Earth Egg
+        -- and hatches the initial five pets; later upgrades change only future FIFO replacements.
         egg_progression = {
             "grass_egg",
             "ice_egg",
@@ -160,9 +160,8 @@ return {
         spawn_inset = 5,
         finish_inset = 5,
         portal_spawn_interval = 0.15,
-        -- The first assignment in every non-empty team group is a real tank role. Keeping one
-        -- tank per group (rather than a global tank count) makes the 3/5/8/... ladder comparable
-        -- even when round-robin assignment leaves one team idle.
+        -- A tank-led attack group uses one Brute as its lead unit. Trash groups use only Whelps.
+        -- Later waves without authored groups retain one tank lead per assigned hatcher front.
         tank = {
             id = "ember_brute",
             hp = 1600,
@@ -175,9 +174,32 @@ return {
 
     wave_gap = 2,
     waves = {
-        { count = 3 },
-        { count = 5 },
-        { count = 8 },
+        -- Opening cadence teaches one readable pressure change at a time. Attack groups select
+        -- initialized hatchers first, then empty positions, so failing to install a second egg
+        -- before Wave 2 deliberately leaves its second front undefended.
+        {
+            count = 3,
+            gap_after = 8,
+            groups = {
+                { kind = "trash", count = 3 },
+            },
+        },
+        {
+            count = 5,
+            gap_after = 8,
+            groups = {
+                { kind = "tank", count = 1 },
+                { kind = "trash", count = 4 },
+            },
+        },
+        {
+            count = 8,
+            gap_after = 6,
+            groups = {
+                { kind = "tank", count = 4 },
+                { kind = "trash", count = 4 },
+            },
+        },
         { count = 12 },
         { count = 16 },
         { count = 24 },

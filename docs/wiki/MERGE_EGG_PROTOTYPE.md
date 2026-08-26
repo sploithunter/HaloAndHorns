@@ -158,15 +158,22 @@ the unfinished merge board or production economy:
 Phase 5 introduces the first real roster randomness while retaining Phase 4's deliberately simple
 team and queue model:
 
-- Every initial NPC team is five independent rolls from the shipping Home `grass_egg` (`Earth
-  Egg`) through `pets.simulateHatch`. The prototype builds the same player hatch inputs as ordinary
-  hatching, so species luck, Golden/Rainbow channels, event/buff inputs, and the orthogonal Huge
-  jackpot all remain active. It bypasses currency, inventory grants, multi-hatch entitlement caps,
-  presentation, and persistence; the 20 outcomes are session-only ghost pets.
+- The encounter deploys exactly four stationary hatcher positions with no egg and no pets. Their
+  first control reads `UPGRADE → EARTH EGG`; installing that shipping Home `grass_egg` produces the
+  captain's initial five independent rolls through `pets.simulateHatch`. Until then the team state
+  is `NO EGG`, its five pet positions remain visibly empty, and no replacement queue is created.
+  Deployment remains in `AwaitingFirstEgg` at Wave 0 with the enemy portal sealed. The first
+  successful Earth installation starts Wave 1, so the player has an unpressured setup window but
+  cannot begin the endurance test without at least one working team.
+  The prototype builds the same player hatch inputs as ordinary hatching, so species luck,
+  Golden/Rainbow channels, event/buff inputs, and the orthogonal Huge jackpot all remain active. It
+  bypasses currency, inventory grants, multi-hatch entitlement caps, presentation, and persistence;
+  all outcomes are session-only ghost pets.
 - A defeated slot still enters only its captain's FIFO, but its replacement is a new roll rather
-  than a copy of the defeated species. Each captain starts with Earth and can independently advance
-  its future replacement source through Home Ice, Ember/Lava, and Sand/Desert. An upgrade does not
-  transform live pets; it changes unrolled queued and later replacements. The slot and captain
+  than a copy of the defeated species. After its initial Earth team exists, each captain can
+  independently advance its future replacement source through Home Ice, Ember/Lava, and
+  Sand/Desert. A later upgrade does not transform live pets; it changes unrolled queued and later
+  replacements. The slot and captain
   remain stable for observer and formation readability, while species, role, variant, and Huge state
   can change. Each team continues to hatch at most one replacement every four real seconds, and all
   four FIFOs operate in parallel.
@@ -178,6 +185,14 @@ team and queue model:
   the rear spawn wall. `WaveDeploying` and a pending count remain visible until the complete wave
   has emerged; the portal then disappears and becomes non-queryable. It never replaces or disables
   the solid end wall, which remains available for tank/melee drive-back throughout combat.
+- The first three waves are authored as fronts rather than inferred only from total head count.
+  Wave 1 sends one three-Whelp trash group at the first online hatcher. Wave 2 opens two fronts: one
+  lone Ember Brute and one four-Whelp trash group. Wave 3 retains two fronts but grows the first
+  into a tank-led group of one Brute plus three Whelps and sends four Whelps on the other. Online
+  hatchers receive groups first; any additional front is assigned to an empty position and remains
+  undefended until that egg is installed. Eight-second intermissions after Waves 1 and 2, then six
+  seconds after Wave 3, provide an explicit early egg-building cadence for the temporary buttons.
+  The banner publishes front and online-hatcher counts so the test pressure is directly readable.
 - The movement leash extends to one stud inside the authored rear wall so driven-back enemies can
   use nearly the full collision surface instead of snapping forward from the old three-stud inset.
 - The endurance ladder now runs 20 waves:
@@ -288,6 +303,17 @@ while `InCombat` stayed true, proving the wave rotation crossfades to a non-repe
 The final restart entered, hatched Wave 1 of 20, rendered all four upgrade controls, and logged no
 prototype, network, UI, or music error.
 
+The first empty-hatcher pass deployed all four captains at tier 0 with zero pets and zero replacement
+queues. Every local billboard was input-active in `PlayerGui` and read `UPGRADE → EARTH EGG`. A real
+screen click on Captain 3—not an injected remote—changed only that folder to `grass_egg`, created
+exactly five random pets, and engaged its assigned enemy. Captains 1, 2, and 4 remained `NO EGG`
+with zero pets/queues. After the setup gate was added, a restart held at `AwaitingFirstEgg`, Wave 0,
+with zero active/pending enemies and a sealed portal. The first real captain click started Wave 1
+with one front and three trash enemies assigned to that online team. Wave 2 then published two
+fronts: one Ember Brute remained assigned to the online captain while four Whelps targeted an empty
+position. Bringing a second captain online during that fight raised the hatcher count to two before
+Wave 3; its two-front Brute-led/trash configuration also deployed without runtime errors.
+
 ## Production direction after Phase 5
 
 - Four hatcher-owned NPC teams, independent targeting, stable-slot replacement FIFOs, and the
@@ -299,6 +325,10 @@ prototype, network, UI, or music error.
 - Do not lock queue depth or hatch cadence from this accelerated run. Tune the Ember Brute's
   health/armor and partial out-of-combat regeneration, then compare loss rate against the four-second
   per-team FIFO and five-egg objective. Those are explicit knobs, not final balance values.
+- Treat the early `8/8/6`-second intermissions and `1/2/2` attack-front progression as the first
+  board-cadence probe, not shipping timings. The free buttons stand in for completed egg builds;
+  compare whether a player can comfortably bring a second hatcher online before Wave 2 while still
+  reading the fight.
 - When the merge board supplies physical eggs, define one simple shortage rule before adding queue
   controls. The least complex candidate remains: each team reserves its oldest empty slot, and the
   next completed egg assigned to that captain satisfies it.
@@ -309,6 +339,9 @@ prototype, network, UI, or music error.
   applies in front of it, and ordinary cross-team aggro becomes eligible only for breached enemies.
 - The player remains free to move between hatchers, merge eggs, and manage the board while these NPC
   teams fight asynchronously. Player position must not be a combat leash or scheduling input.
+- Keep four hatcher positions during tempo and board-cadence testing. Production may support more,
+  but the four full observer columns are not a scalable presentation contract; replace them with a
+  compact status/alert view plus spatial captain indicators before increasing the visible team count.
 
 ## Explicitly deferred
 
