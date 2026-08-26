@@ -69,6 +69,19 @@ return function()
             expect(block:find('FindFirstChild("TargetID")', 1, true)).to.equal(nil)
         end)
 
+        it("enforces opt-in combat target groups in both targeting directions", function()
+            local source = readFile("src/Server/Services/EnemyService.lua")
+            local enemyToPet = source:find("function EnemyService:_enemyHostileToPet", 1, true)
+            local petToEnemy = source:find("function EnemyService:_petHostileToEnemy", 1, true)
+
+            expect(enemyToPet ~= nil).to.equal(true)
+            expect(petToEnemy ~= nil and petToEnemy > enemyToPet).to.equal(true)
+            expect(source:find("CombatTargetGroup.compatible", enemyToPet, true) < petToEnemy).to.equal(
+                true
+            )
+            expect(source:find("CombatTargetGroup.compatible", petToEnemy, true)).to.be.ok()
+        end)
+
         it("reuses NPC principals as explicit stationary authored anchors", function()
             local source = readFile("src/Server/Services/NpcPrincipalService.lua")
             local spawn = source:find("function NpcPrincipalService:SpawnStationary", 1, true)

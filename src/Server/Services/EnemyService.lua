@@ -70,6 +70,7 @@ local ZoneResolver = require(ReplicatedStorage.Shared.Game.ZoneResolver)
 local EnemyLeash = require(ReplicatedStorage.Shared.Game.EnemyLeash)
 local EnemyRewardPolicy = require(ReplicatedStorage.Shared.Game.EnemyRewardPolicy)
 local EnemyMarchGoal = require(ReplicatedStorage.Shared.Game.EnemyMarchGoal)
+local CombatTargetGroup = require(ReplicatedStorage.Shared.Game.CombatTargetGroup)
 local MissionRankScale = require(ReplicatedStorage.Shared.Game.MissionRankScale)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
@@ -5910,6 +5911,14 @@ end
 -- attacks all, neutral takes the current realm's side; off-realm (homeworld) everyone attacks all.
 -- Enemy side = entry.allegiance (set for realm pet-invaders, nil/neutral elsewhere); pet side = species.
 function EnemyService:_enemyHostileToPet(entry, pet, player)
+    if
+        not CombatTargetGroup.compatible(
+            entry.model and entry.model:GetAttribute("CombatTargetGroup"),
+            pet:GetAttribute("CombatTargetGroup")
+        )
+    then
+        return false
+    end
     return Allegiance.hostile(
         entry.allegiance,
         self:_petRealmOf(pet:GetAttribute("PetType")),
@@ -5924,6 +5933,14 @@ end
 -- only to an enemy ALREADY engaged with this player's squad (entry.aggroPlayerName == the player). Non-
 -- neutral pets follow the pure allegiance gate (proactive).
 function EnemyService:_petHostileToEnemy(pet, entry, player)
+    if
+        not CombatTargetGroup.compatible(
+            pet:GetAttribute("CombatTargetGroup"),
+            entry.model and entry.model:GetAttribute("CombatTargetGroup")
+        )
+    then
+        return false
+    end
     local petRealm = self:_petRealmOf(pet:GetAttribute("PetType"))
     local proactive = Allegiance.hostile(
         petRealm,
