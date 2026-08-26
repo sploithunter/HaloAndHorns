@@ -45,6 +45,14 @@ return function()
             end
         end)
 
+        it("rotates cued combat music without an immediate repeat", function()
+            local controller = readFile("src/Client/Systems/AreaMusicController.lua")
+            expect(controller:find("local function randomCombatKey", 1, true)).to.be.ok()
+            expect(controller:find("if key ~= avoid then", 1, true)).to.be.ok()
+            expect(controller:find("local function onCombatMusicCueChanged", 1, true)).to.be.ok()
+            expect(controller:find('GetAttributeChangedSignal("CombatMusicCue")', 1, true)).to.be.ok()
+        end)
+
         it("does not consume the Roblox-rejected Hell combat upload", function()
             expect(containsValue(sounds, REJECTED_HELL_COMBAT_ID)).to.equal(false)
         end)

@@ -5226,3 +5226,23 @@ first-session cohort rates.
   1 replacements mutate Doggy/Bear into Bear/Doggy in the same slots. Wave 2 exposed five pending
   enemies through the visible portal, sealed after the last spawn, and left the rear wall collidable.
   The Studio runtime log remained free of prototype/config/portal errors.
+
+## 2026-08-26 — Merge an Egg 20-wave egg-tier endurance pass
+
+- Extended the accelerated endurance ladder from eight to twenty waves, ending at 208 enemies, so
+  random-team failure and replacement-queue pressure can be observed beyond the prior Wave 8 peak.
+- Added independent captain source tiers in canonical Home order: Earth, Ice, Ember/Lava, then
+  Sand/Desert. Each camera-facing captain billboard advances one tier; the server-authoritative
+  Studio packet changes only unrolled future FIFO replacements and never transforms live pets.
+- Published current/next source id and display name, tier, upgrade availability, and total run
+  upgrades for observer and Studio inspection. The packet is absent from the production registry.
+- Hardened Hall entry as a streaming transaction. The player is no longer marked active/inside
+  before the destination finishes streaming and the character visibly pivots; cancelled entries
+  restore parked pets and player-leave cleanup also covers the pending handoff.
+- Added per-wave combat-music cues. A new wave now rerolls from the current combat/realm pool and
+  avoids the immediately previous track whenever another option exists, including when the short
+  wave gap deliberately keeps the combat-music state alive.
+- Live verification entered transactionally, rendered all four Earth-to-Ice billboards, advanced
+  Team 1 alone through Ice/Ember/Sand to its disabled max state, and kept Team 2 on Earth. During
+  active combat a second cue changed the live SoundId from `94019382405359` to `80895188313881`.
+  The final Wave 1/20 session is left running in Studio with all four controls visible and no errors.

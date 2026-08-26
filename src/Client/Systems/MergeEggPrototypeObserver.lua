@@ -1,10 +1,11 @@
 --[[
-    MergeEggPrototypeObserver — read-only Phase 5 combat and hatch telemetry.
+    MergeEggPrototypeObserver — Phase 5 combat, hatch telemetry, and hatcher upgrades.
 
     The player's ordinary SquadHud remains reserved for their own deployable team. This Studio-only
     rail renders one column per hatcher NPC from replicated folder/model attributes: five stable pet
     slots, endurance, current target, assigned-enemy count, team lifecycle, and wave progress. It
-    sends no remotes and cannot focus enemies or command any NPC team.
+    Combat observation remains read-only. The only control is a Studio-only per-captain egg-source
+    upgrade for future replacement hatches.
 ]]
 
 local Players = game:GetService("Players")
@@ -15,6 +16,7 @@ local Workspace = game:GetService("Workspace")
 local HudCard = require(script.Parent.Parent.UI.HudCard)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
+local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local CONFIG = require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
 local COMBAT = require(ReplicatedStorage.Configs:WaitForChild("combat"))
@@ -37,6 +39,16 @@ local WAVE_WORDS = {
     "EIGHT",
     "NINE",
     "TEN",
+    "ELEVEN",
+    "TWELVE",
+    "THIRTEEN",
+    "FOURTEEN",
+    "FIFTEEN",
+    "SIXTEEN",
+    "SEVENTEEN",
+    "EIGHTEEN",
+    "NINETEEN",
+    "TWENTY",
 }
 local ROLE_THEME = {
     tank = { color = Color3.fromRGB(75, 145, 225), glyph = "T" },
@@ -44,6 +56,11 @@ local ROLE_THEME = {
     ranged = { color = Color3.fromRGB(225, 145, 65), glyph = "R" },
     support = { color = Color3.fromRGB(70, 185, 110), glyph = "+" },
     control = { color = Color3.fromRGB(155, 100, 215), glyph = "C" },
+}
+local EGG_THEME = {
+    ice_egg = Color3.fromRGB(105, 205, 255),
+    lava_egg = Color3.fromRGB(255, 120, 55),
+    desert_egg = Color3.fromRGB(255, 205, 80),
 }
 
 local function prettyName(value)
@@ -250,7 +267,7 @@ local function updateWaveMeter(
     if wave <= 0 then
         meter.title.Text = "READY TO HATCH"
         meter.detail.Text = string.format(
-            "%d-WAVE ENDURANCE TEST • %.0f× COMBAT\nGRASS EGG TEAMS • EGGS %d/%d • FIFO READY",
+            "%d-WAVE ENDURANCE TEST • %.0f× COMBAT\nHATCHER EGG TIERS • EGGS %d/%d • FIFO READY",
             waveCount,
             COMBAT_CADENCE_MULTIPLIER,
             eggsRemaining,
@@ -535,6 +552,167 @@ local function updatePanel(panel, folder, wave, waveCount, factor)
     end
 end
 
+local function hatcherPrincipal(teamId)
+    for _, child in ipairs(Workspace:GetChildren()) do
+        if
+            child:IsA("Model")
+            and child:GetAttribute("MergeEggPrototypeNpc") == true
+            and tonumber(child:GetAttribute("MergeEggTeamId")) == teamId
+        then
+            return child
+        end
+    end
+    return nil
+end
+
+local function createUpgradeBillboard(teamId, principal)
+    local adornee = principal:FindFirstChild("Head", true)
+        or principal:FindFirstChild("HumanoidRootPart", true)
+        or principal.PrimaryPart
+    if not (adornee and adornee:IsA("BasePart")) then
+        return nil
+    end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "MergeEggHatcherUpgrade_" .. teamId
+    billboard.Adornee = adornee
+    billboard.AlwaysOnTop = true
+    billboard.LightInfluence = 0
+    billboard.MaxDistance = 240
+    billboard.Size = UDim2.fromOffset(230, 72)
+    billboard.StudsOffsetWorldSpace = Vector3.new(0, 6.5, 0)
+    billboard.ResetOnSpawn = false
+    billboard.Parent = principal
+
+    local frame = Instance.new("Frame")
+    frame.Name = "UpgradeCard"
+    frame.Size = UDim2.fromScale(1, 1)
+    frame.BackgroundColor3 = Color3.fromRGB(22, 28, 40)
+    frame.BackgroundTransparency = 0.08
+    frame.BorderSizePixel = 0
+    frame.Parent = billboard
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 9)
+    corner.Parent = frame
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(105, 205, 255)
+    stroke.Transparency = 0.1
+    stroke.Thickness = 2
+    stroke.Parent = frame
+
+    local current = Instance.new("TextLabel")
+    current.Name = "CurrentEgg"
+    current.BackgroundTransparency = 1
+    current.Position = UDim2.fromOffset(8, 4)
+    current.Size = UDim2.new(1, -16, 0, 19)
+    current.Font = Enum.Font.GothamBold
+    current.Text = "CURRENT: EARTH EGG"
+    current.TextColor3 = Color3.fromRGB(225, 235, 248)
+    current.TextSize = 12
+    current.Parent = frame
+
+    local button = Instance.new("TextButton")
+    button.Name = "UpgradeButton"
+    button.Position = UDim2.fromOffset(7, 27)
+    button.Size = UDim2.new(1, -14, 0, 38)
+    button.BackgroundColor3 = Color3.fromRGB(50, 145, 205)
+    button.BorderSizePixel = 0
+    button.AutoButtonColor = true
+    button.Font = Enum.Font.GothamBlack
+    button.Text = "UPGRADE → ICE EGG"
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.TextSize = 15
+    button.Parent = frame
+
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 7)
+    buttonCorner.Parent = button
+
+    local control = {
+        teamId = teamId,
+        principal = principal,
+        folder = nil,
+        billboard = billboard,
+        stroke = stroke,
+        current = current,
+        button = button,
+        lockedUntil = 0,
+    }
+    button.Activated:Connect(function()
+        local folder = control.folder
+        if
+            os.clock() < control.lockedUntil
+            or not (folder and folder.Parent)
+            or folder:GetAttribute("MergeEggCanUpgrade") ~= true
+        then
+            return
+        end
+        control.lockedUntil = os.clock() + 0.6
+        button.Text = "UPGRADING..."
+        Signals.MergeEggPrototypeUpgrade:FireServer({ teamId = teamId })
+    end)
+    return control
+end
+
+local function destroyUpgradeBillboards(controls)
+    for id, control in pairs(controls) do
+        if control.billboard then
+            control.billboard:Destroy()
+        end
+        controls[id] = nil
+    end
+end
+
+local function updateUpgradeBillboard(controls, teamId, folder)
+    if not folder then
+        local stale = controls[teamId]
+        if stale then
+            stale.billboard:Destroy()
+            controls[teamId] = nil
+        end
+        return
+    end
+    local principal = hatcherPrincipal(teamId)
+    if not principal then
+        return
+    end
+    local control = controls[teamId]
+    if not control or not control.billboard.Parent or control.principal ~= principal then
+        if control and control.billboard then
+            control.billboard:Destroy()
+        end
+        control = createUpgradeBillboard(teamId, principal)
+        controls[teamId] = control
+    end
+    if not control then
+        return
+    end
+    control.folder = folder
+
+    local currentName = tostring(folder:GetAttribute("MergeEggSourceName") or "Earth Egg")
+    local nextName = folder:GetAttribute("MergeEggNextSourceName")
+    local nextId = folder:GetAttribute("MergeEggNextSourceId")
+    local canUpgrade = folder:GetAttribute("MergeEggCanUpgrade") == true and nextName ~= nil
+    local color = EGG_THEME[tostring(nextId)] or Color3.fromRGB(135, 145, 165)
+    control.current.Text = "CURRENT: " .. string.upper(currentName)
+    control.stroke.Color = color
+    if canUpgrade then
+        control.button.Active = true
+        control.button.AutoButtonColor = true
+        control.button.BackgroundColor3 = color
+        if os.clock() >= control.lockedUntil then
+            control.button.Text = "UPGRADE → " .. string.upper(tostring(nextName))
+        end
+    else
+        control.button.Active = false
+        control.button.AutoButtonColor = false
+        control.button.BackgroundColor3 = Color3.fromRGB(65, 72, 84)
+        control.button.Text = string.upper(currentName) .. " • MAX"
+    end
+end
+
 function MergeEggPrototypeObserver.start()
     if not RunService:IsStudio() then
         return
@@ -572,6 +750,7 @@ function MergeEggPrototypeObserver.start()
     end
 
     local waveMeter = createWaveMeter(gui)
+    local upgradeBillboards = {}
     local lastWave = 0
     local announceUntil = 0
     local factor = tonumber(COMBAT.pet_down_threshold_factor) or 1
@@ -587,6 +766,7 @@ function MergeEggPrototypeObserver.start()
         gui.Enabled = observing
         if not observing then
             waveMeter.frame.Visible = false
+            destroyUpgradeBillboards(upgradeBillboards)
             lastWave = 0
             announceUntil = 0
             for _, panel in pairs(panels) do
@@ -625,6 +805,7 @@ function MergeEggPrototypeObserver.start()
         )
         for id, panel in pairs(panels) do
             updatePanel(panel, folders[id], wave, waveCount, factor)
+            updateUpgradeBillboard(upgradeBillboards, id, folders[id])
         end
     end)
 end

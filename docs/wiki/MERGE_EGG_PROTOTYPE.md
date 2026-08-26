@@ -163,10 +163,13 @@ team and queue model:
   hatching, so species luck, Golden/Rainbow channels, event/buff inputs, and the orthogonal Huge
   jackpot all remain active. It bypasses currency, inventory grants, multi-hatch entitlement caps,
   presentation, and persistence; the 20 outcomes are session-only ghost pets.
-- A defeated slot still enters only its captain's FIFO, but its replacement is a new Grass Egg roll
-  rather than a copy of the defeated species. The slot and captain remain stable for observer and
-  formation readability; species, role, variant, and Huge state can change. Each team continues to
-  hatch at most one replacement every four real seconds, and all four FIFOs operate in parallel.
+- A defeated slot still enters only its captain's FIFO, but its replacement is a new roll rather
+  than a copy of the defeated species. Each captain starts with Earth and can independently advance
+  its future replacement source through Home Ice, Ember/Lava, and Sand/Desert. An upgrade does not
+  transform live pets; it changes unrolled queued and later replacements. The slot and captain
+  remain stable for observer and formation readability, while species, role, variant, and Huge state
+  can change. Each team continues to hatch at most one replacement every four real seconds, and all
+  four FIFOs operate in parallel.
 - The observer publishes each slot's latest rolled species/variant/Huge result and labels Golden,
   Rainbow, and Huge pets directly on their cards. Team/world telemetry counts total, Golden,
   Rainbow, and Huge rolls, allowing a run's roster quality to be compared with its first-loss and
@@ -177,16 +180,28 @@ team and queue model:
   the solid end wall, which remains available for tank/melee drive-back throughout combat.
 - The movement leash extends to one stud inside the authored rear wall so driven-back enemies can
   use nearly the full collision surface instead of snapping forward from the old three-stud inset.
-- The existing 3/5/8/12/16/24/32/48 ladder remains a test ceiling, not a promised balance target.
-  The hand-built roster's exciting Wave 8 result is historical context. With random Grass Egg
-  teams, the useful measurement is the distribution of failure waves and the roster/variant/queue
-  conditions that produced them.
+- The endurance ladder now runs 20 waves:
+  `3/5/8/12/16/24/32/48/56/64/72/80/96/112/128/144/160/176/192/208`. It is a test ceiling, not a
+  promised balance target. The hand-built roster's exciting Wave 8 result is historical context.
+  With random and upgradable egg teams, the useful measurement is the distribution of failure waves
+  and the roster/variant/source-tier/queue conditions that produced them.
+- A camera-facing billboard above each captain shows its current source and one upgrade button. The
+  client requests only the captain id through a Studio-only manifest packet; the server validates
+  session ownership, tier order, rate, and canonical hatch data before publishing the new source.
+- Each wave stamps a unique `CombatMusicCue`. If combat music is being held across the short
+  between-wave aggro gap, `AreaMusicController` immediately rerolls from the active realm pool and
+  excludes the current track when another choice exists. If combat fully ended, the next ordinary
+  combat entry still avoids the last track. This changes only music selection, not wave timing.
+- Entry is transactional around streaming: owned pets can be parked while the strip streams, but
+  the session and `InMergeEggPrototype` flag are committed only after the character visibly pivots.
+  A player can no longer remain in Home while the Hall gate believes the prototype is already active.
 
 ## Source and authoring
 
 - Runtime/config: `configs/merge_egg_prototype.lua` and
   `src/Server/Services/MergeEggPrototypeService.lua`.
-- Read-only telemetry: `src/Client/Systems/MergeEggPrototypeObserver.lua`.
+- Combat telemetry and Studio-only hatcher upgrade UI:
+  `src/Client/Systems/MergeEggPrototypeObserver.lua`.
 - Repeatable Edit-mode world pass: `scripts/studio/build_merge_egg_prototype_world.luau`.
 - The service is registered only when `RunService:IsStudio()` and map binding is enabled. A missing
   authored world fails closed and logs the exact expected Workspace path; runtime never fabricates
@@ -264,10 +279,19 @@ After the fifth spawn, pending reached zero, the state changed to `WaveActive`, 
 returned to transparency 1, and `SouthEndWall.CanCollide` remained true. The run advanced through
 combat with no prototype, config, target-group, hatch, or portal runtime errors.
 
+The 20-wave/upgrade live pass entered through the Hall prompt and did not publish
+`InMergeEggPrototype` until the character was at the strip spawn. All four captains rendered an
+Earth-to-Ice billboard. Team 1 then advanced independently through Ice, Ember, and Sand while Team
+2 remained Earth; its replicated button ended at `SAND EGG • MAX` and the world counted three
+upgrades. A live combat cue changed `AreaMusic.SoundId` from `94019382405359` to `80895188313881`
+while `InCombat` stayed true, proving the wave rotation crossfades to a non-repeating pool member.
+The final restart entered, hatched Wave 1 of 20, rendered all four upgrade controls, and logged no
+prototype, network, UI, or music error.
+
 ## Production direction after Phase 5
 
 - Four hatcher-owned NPC teams, independent targeting, stable-slot replacement FIFOs, and the
-  five-hit rear objective remain separate seams. Phase 5 feeds real Grass Egg outcomes into those
+  five-hit rear objective remain separate seams. Phase 5 feeds real Home egg outcomes into those
   queues without creating another team lifecycle or touching owned inventory.
 - Keep automatic FIFO assignment as the default until board play proves composition management is
   worth its complexity. Random species make team strength variable, while a stable captain/slot
@@ -293,5 +317,7 @@ combat with no prototype, config, target-group, hatch, or portal runtime errors.
   rewards, persistence, or monetization.
 - Wave selection UI, production difficulty curves, matchmaking, or more than one active player.
 - Player-facing queue reordering, congestion policy, and production team-state controls.
+- Production egg-upgrade costs, board recipes, timing, persistence, and unlock requirements. The
+  current camera-facing buttons are intentionally free Studio test controls.
 - Player-team opt-in deployment and combined NPC/player roster presentation.
 - Reopening Hall of Worlds in production.

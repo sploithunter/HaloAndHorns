@@ -9,9 +9,11 @@
     against rapid area changes so only the latest swap wins.
 
     COMBAT: while the server-set Player attribute `InCombat` is true, the desired track becomes a
-    RANDOM key from the combat pool instead of the area track — chosen ONCE on entry and held
-    for the whole fight. When InCombat clears we wait `combat_music_exit_delay` seconds before fading
-    back to the area track, so brief aggro flicker (enemy drops + re-acquires) doesn't restart music.
+    RANDOM key from the combat pool instead of the area track. It is held until combat ends or a
+    server-owned `CombatMusicCue` changes (wave encounters use one cue per wave). Picks avoid the
+    immediately previous combat track whenever the pool has alternatives. When InCombat clears we
+    wait `combat_music_exit_delay` seconds before fading back to the area track, so brief aggro
+    flicker (enemy drops + re-acquires) doesn't restart music.
     The pool is REALM-FLAVORED (`combat_music_by_realm`): fights in Heaven_* zones / heaven missions
     draw the heaven pool, Hell_* / hell missions the hell pool; everywhere else uses `combat_music`.
 
@@ -111,8 +113,28 @@ function AreaMusicController.start()
     local currentKey -- the track key currently playing
     local token = 0
     local inCombat = false -- are we currently in the combat-music state?
-    local combatKey -- the combat track chosen for THIS fight (held until it ends)
+    local combatKey -- the combat track held until combat ends or the next authored cue
+    local lastCombatKey -- retained across combat gaps to prevent an immediate repeat
     local exitToken = 0 -- cancels a pending "return to area music" when combat re-engages
+
+    local function randomCombatKey(pool, avoid)
+        if #pool <= 0 then
+            return nil
+        end
+        if #pool == 1 then
+            return pool[1]
+        end
+        local choices = {}
+        for _, key in ipairs(pool) do
+            if key ~= avoid then
+                choices[#choices + 1] = key
+            end
+        end
+        if #choices == 0 then
+            return pool[rng:NextInteger(1, #pool)]
+        end
+        return choices[rng:NextInteger(1, #choices)]
+    end
 
     local function trackForArea(area)
         area = tostring(area or "")
@@ -231,8 +253,9 @@ function AreaMusicController.start()
             if not inCombat then
                 inCombat = true
                 local pool = combatPool()
-                if #pool > 0 then
-                    combatKey = pool[rng:NextInteger(1, #pool)]
+                combatKey = randomCombatKey(pool, lastCombatKey)
+                if combatKey then
+                    lastCombatKey = combatKey
                 end
                 apply()
             end
@@ -249,6 +272,19 @@ function AreaMusicController.start()
                 apply()
             end)
         end
+    end
+
+    local function onCombatMusicCueChanged()
+        if not inCombat or localPlayer:GetAttribute("CombatMusicCue") == nil then
+            return
+        end
+        local nextKey = randomCombatKey(combatPool(), combatKey or lastCombatKey)
+        if not nextKey or nextKey == combatKey then
+            return
+        end
+        combatKey = nextKey
+        lastCombatKey = nextKey
+        apply()
     end
 
     -- FIRST APPLY: a prologue-bound boot must open STRAIGHT onto battle music (Jason:
@@ -279,6 +315,7 @@ function AreaMusicController.start()
     localPlayer:GetAttributeChangedSignal("HomeArea"):Connect(apply)
     localPlayer:GetAttributeChangedSignal("InCombat"):Connect(onCombatChanged)
     localPlayer:GetAttributeChangedSignal("InPrologue"):Connect(onCombatChanged)
+    localPlayer:GetAttributeChangedSignal("CombatMusicCue"):Connect(onCombatMusicCueChanged)
 end
 
 return AreaMusicController

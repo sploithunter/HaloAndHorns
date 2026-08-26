@@ -1380,6 +1380,21 @@ return {
             handler = "AutomationService.RunSuite",
             schema = { kind = "tuple", arguments = {} },
         },
+        MergeEggPrototypeUpgrade = {
+            name = "MergeEggPrototypeUpgrade",
+            transport = "reliable_event",
+            location = "replicated_storage",
+            direction = "client_to_server",
+            authorization = "studio",
+            environments = { studio = true, test = true },
+            delivery = "request",
+            rate_limit = 8,
+            handler = "MergeEggPrototypeService.UpgradeHatcher",
+            schema = {
+                kind = "tuple",
+                arguments = { { name = "request", type = "table" } },
+            },
+        },
         EggOpened = {
             name = "EggOpened",
             transport = "remote_function",

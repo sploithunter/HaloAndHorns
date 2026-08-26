@@ -59,6 +59,14 @@ return {
         return_ready_distance = 20,
         egg_id = "grass_egg",
         initial_hatch_count = 5,
+        -- Each captain advances independently. An upgrade changes only that captain's source for
+        -- future FIFO replacement rolls; pets already on the field keep their original outcome.
+        egg_progression = {
+            "grass_egg",
+            "ice_egg",
+            "lava_egg",
+            "desert_egg",
+        },
     },
 
     -- The shipping egg roll is now the source of every prototype pet. This queue experiment
@@ -175,5 +183,17 @@ return {
         { count = 24 },
         { count = 32 },
         { count = 48 },
+        { count = 56 },
+        { count = 64 },
+        { count = 72 },
+        { count = 80 },
+        { count = 96 },
+        { count = 112 },
+        { count = 128 },
+        { count = 144 },
+        { count = 160 },
+        { count = 176 },
+        { count = 192 },
+        { count = 208 },
     },
 }

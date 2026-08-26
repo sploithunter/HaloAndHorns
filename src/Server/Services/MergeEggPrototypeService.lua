@@ -20,6 +20,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local MergeEggPrototypeService = {}
 MergeEggPrototypeService.__index = MergeEggPrototypeService
@@ -124,6 +125,7 @@ function MergeEggPrototypeService:Init()
         or require(ReplicatedStorage.Configs:WaitForChild("pets"))
     self._active = nil
     self._entering = nil
+    self._enteringRecord = nil
     self._world = nil
     self._gatePrompt = nil
 end
@@ -164,9 +166,8 @@ function MergeEggPrototypeService:_activeWaveState(record)
     return record and (record.pendingEnemySpawns or 0) > 0 and "WaveDeploying" or "WaveActive"
 end
 
-function MergeEggPrototypeService:_buildPrototypeHatchData(record)
-    local teamCfg = self._config.team or {}
-    local eggId = tostring(teamCfg.egg_id or "grass_egg")
+function MergeEggPrototypeService:_buildHatchSource(record, eggId)
+    eggId = tostring(eggId or "")
     local eggData = self._petsConfig
         and self._petsConfig.egg_sources
         and self._petsConfig.egg_sources[eggId]
@@ -175,24 +176,39 @@ function MergeEggPrototypeService:_buildPrototypeHatchData(record)
         or not (self._petsConfig and self._petsConfig.simulateHatch)
         or not (self._eggService and self._eggService.BuildPlayerHatchData)
     then
-        return false, "prototype_egg_unavailable"
+        return nil, "prototype_egg_unavailable"
     end
     local ok, playerData = pcall(function()
         return self._eggService:BuildPlayerHatchData(record.player, eggId, eggData, {})
     end)
     if not ok or type(playerData) ~= "table" then
-        return false, "prototype_hatch_data_failed"
+        return nil, "prototype_hatch_data_failed"
     end
-    record.eggId = eggId
-    record.hatchPlayerData = playerData
+    return {
+        eggId = eggId,
+        eggName = tostring(eggData.name or eggId),
+        hatchPlayerData = playerData,
+    }
+end
+
+function MergeEggPrototypeService:_buildPrototypeHatchData(record)
+    local teamCfg = self._config.team or {}
+    local source, reason = self:_buildHatchSource(record, teamCfg.egg_id or "grass_egg")
+    if not source then
+        return false, reason
+    end
+    record.eggId = source.eggId
+    record.eggName = source.eggName
+    record.hatchPlayerData = source.hatchPlayerData
     return true
 end
 
-function MergeEggPrototypeService:_rollPrototypePet(record)
-    if not (record and record.eggId and record.hatchPlayerData) then
+function MergeEggPrototypeService:_rollPrototypePet(record, source)
+    source = source or record
+    if not (record and source and source.eggId and source.hatchPlayerData) then
         return nil
     end
-    local result = self._petsConfig.simulateHatch(record.eggId, record.hatchPlayerData)
+    local result = self._petsConfig.simulateHatch(source.eggId, source.hatchPlayerData)
     if not (result and result.pet) then
         return nil
     end
@@ -203,16 +219,44 @@ function MergeEggPrototypeService:_rollPrototypePet(record)
     }
 end
 
-function MergeEggPrototypeService:_rollPrototypeSquad(record, count)
+function MergeEggPrototypeService:_rollPrototypeSquad(record, count, source)
     local squad = {}
     for _ = 1, math.max(1, math.floor(tonumber(count) or 5)) do
-        local definition = self:_rollPrototypePet(record)
+        local definition = self:_rollPrototypePet(record, source)
         if not definition then
             return nil
         end
         squad[#squad + 1] = definition
     end
     return squad
+end
+
+function MergeEggPrototypeService:_eggProgression()
+    local progression = (self._config.team or {}).egg_progression
+    if type(progression) == "table" and #progression > 0 then
+        return progression
+    end
+    return { tostring((self._config.team or {}).egg_id or "grass_egg") }
+end
+
+function MergeEggPrototypeService:_publishTeamEggSource(team)
+    local folder = team and team.folder
+    if not (folder and folder.Parent) then
+        return
+    end
+    local progression = self:_eggProgression()
+    local tier = math.clamp(math.floor(tonumber(team.eggTier) or 1), 1, #progression)
+    local nextId = progression[tier + 1]
+    local nextData = nextId
+        and self._petsConfig
+        and self._petsConfig.egg_sources
+        and self._petsConfig.egg_sources[nextId]
+    folder:SetAttribute("MergeEggSourceId", team.eggId)
+    folder:SetAttribute("MergeEggSourceName", team.eggName)
+    folder:SetAttribute("MergeEggSourceTier", tier)
+    folder:SetAttribute("MergeEggCanUpgrade", nextId ~= nil)
+    folder:SetAttribute("MergeEggNextSourceId", nextId)
+    folder:SetAttribute("MergeEggNextSourceName", nextData and nextData.name or nil)
 end
 
 function MergeEggPrototypeService:_recordEggRoll(record, team, definition)
@@ -296,6 +340,7 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("PrototypeGoldenRolls", record and record.eggGoldenRolls or 0)
     world:SetAttribute("PrototypeRainbowRolls", record and record.eggRainbowRolls or 0)
     world:SetAttribute("PrototypeHugeRolls", record and record.eggHugeRolls or 0)
+    world:SetAttribute("HatcherUpgrades", record and record.hatcherUpgrades or 0)
     world:SetAttribute("FirstPetLossWave", record and record.firstPetLossWave or nil)
     world:SetAttribute(
         "FirstPetLossActiveEnemies",
@@ -475,7 +520,7 @@ function MergeEggPrototypeService:_syncTeamState(record, team)
     folder:SetAttribute("MergeEggReplacementsQueued", team.replacementsQueued or 0)
     folder:SetAttribute("MergeEggReplacementsHatched", team.replacementsHatched or 0)
     folder:SetAttribute("MergeEggNextReplacementAt", team.nextReplacementAt)
-    folder:SetAttribute("MergeEggSourceId", record.eggId)
+    self:_publishTeamEggSource(team)
     folder:SetAttribute("MergeEggRolls", team.eggRolls or 0)
     folder:SetAttribute("MergeEggGoldenRolls", team.eggGoldenRolls or 0)
     folder:SetAttribute("MergeEggRainbowRolls", team.eggRainbowRolls or 0)
@@ -504,7 +549,7 @@ end
 
 function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
     local squad = team.config.squad or {}
-    local definition = queued.definition or self:_rollPrototypePet(record)
+    local definition = queued.definition or self:_rollPrototypePet(record, team)
     queued.definition = definition
     local root = team.principalModel and team.principalModel:FindFirstChild("HumanoidRootPart")
     if not (definition and root and team.folder and team.folder.Parent) then
@@ -877,6 +922,24 @@ function MergeEggPrototypeService:_restoreOwnedPets(record)
     record.parked = nil
 end
 
+function MergeEggPrototypeService:_cancelPendingEntry(record, departing)
+    if not record or self._enteringRecord ~= record then
+        return
+    end
+    self._enteringRecord = nil
+    if self._entering == record.player then
+        self._entering = nil
+    end
+    if departing then
+        if record.parked then
+            record.parked:Destroy()
+            record.parked = nil
+        end
+    else
+        self:_restoreOwnedPets(record)
+    end
+end
+
 function MergeEggPrototypeService:_clearEncounter(record)
     if not record then
         return
@@ -915,11 +978,13 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.enemiesRemainingAtDefeat = 0
     record.terminal = false
     record.eggId = nil
+    record.eggName = nil
     record.hatchPlayerData = nil
     record.eggRolls = 0
     record.eggGoldenRolls = 0
     record.eggRainbowRolls = 0
     record.eggHugeRolls = 0
+    record.hatcherUpgrades = 0
     self:_setPortalVisible(record, false)
 
     for _, team in ipairs(record.teams or {}) do
@@ -933,6 +998,7 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.encounterSpawned = false
     record.player:SetAttribute("CombatAssistTarget", nil)
     record.player:SetAttribute("CombatAssistUntil", nil)
+    record.player:SetAttribute("CombatMusicCue", nil)
     record.player:SetAttribute("MergeEggWaveComplete", nil)
     self:_setWorldState("ReadyToHatch", record)
 end
@@ -997,13 +1063,13 @@ function MergeEggPrototypeService:_begin(player)
     if self._entering ~= player then
         return false, "entry_cancelled"
     end
-    self._entering = nil
     if not modelsReady then
         self:_log("Warn", "Merge Egg prototype entered before pet models were ready")
     end
 
     local character = player.Character
     if not (player.Parent and character and characterRoot(player)) then
+        self._entering = nil
         return false, "character_unavailable"
     end
 
@@ -1046,16 +1112,45 @@ function MergeEggPrototypeService:_begin(player)
         longestReplacementWaitSeconds = 0,
         enemiesRemainingAtDefeat = 0,
         eggId = nil,
+        eggName = nil,
         hatchPlayerData = nil,
         eggRolls = 0,
         eggGoldenRolls = 0,
         eggRainbowRolls = 0,
         eggHugeRolls = 0,
+        hatcherUpgrades = 0,
         terminal = false,
     }
     if not self:_parkOwnedPets(record) then
+        self._entering = nil
         return false, "pet_folder_unavailable"
     end
+    self._enteringRecord = record
+
+    local target = spawn.CFrame * CFrame.new(0, spawn.Size.Y * 0.5 + 3, 0)
+    pcall(function()
+        player:RequestStreamAroundAsync(target.Position, tonumber(self._config.stream_timeout) or 8)
+    end)
+    if
+        self._enteringRecord ~= record
+        or self._entering ~= player
+        or not player.Parent
+        or player.Character ~= character
+    then
+        self:_cancelPendingEntry(record, not player.Parent)
+        return false, "left_during_stream"
+    end
+    if not (character and characterRoot(player)) then
+        self:_cancelPendingEntry(record, false)
+        return false, "character_unavailable"
+    end
+
+    -- Commit the session only after streaming has returned and the character can be moved. There
+    -- must be no yield between the visible pivot and the replicated inside state: otherwise the
+    -- Hall gate can reject a second attempt while the player is still standing in Home.
+    character:PivotTo(target)
+    self._enteringRecord = nil
+    self._entering = nil
     self._active = record
     player:SetAttribute("InMergeEggPrototype", true)
     player:SetAttribute("MergeEggRunId", record.runId)
@@ -1063,20 +1158,6 @@ function MergeEggPrototypeService:_begin(player)
         self:_end(record, false, false)
     end)
     self:_setWorldState("ReadyToHatch", record)
-
-    local target = spawn.CFrame * CFrame.new(0, spawn.Size.Y * 0.5 + 3, 0)
-    pcall(function()
-        player:RequestStreamAroundAsync(target.Position, tonumber(self._config.stream_timeout) or 8)
-    end)
-    if self._active ~= record or not player.Parent then
-        return false, "left_during_stream"
-    end
-    local character = player.Character
-    if not (character and characterRoot(player)) then
-        self:_end(record, false, false)
-        return false, "character_unavailable"
-    end
-    character:PivotTo(target)
     self:_log("Info", "Merge Egg prototype session began", {
         player = player.Name,
         runId = record.runId,
@@ -1342,6 +1423,9 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     end
 
     record.waveIndex = waveIndex
+    -- AreaMusicController treats a changed cue as a request to rotate combat music without
+    -- dropping combat state. Including the run id guarantees Wave 1 changes on every new session.
+    record.player:SetAttribute("CombatMusicCue", record.runId .. ":wave:" .. waveIndex)
     record.nextWaveAt = nil
     record.aliveEnemies = 0
     record.pendingWaveSpawns = pending
@@ -1757,6 +1841,11 @@ function MergeEggPrototypeService:_hatch(player)
             eggGoldenRolls = 0,
             eggRainbowRolls = 0,
             eggHugeRolls = 0,
+            eggTier = 1,
+            eggId = record.eggId,
+            eggName = record.eggName,
+            hatchPlayerData = record.hatchPlayerData,
+            lastUpgradeAt = nil,
         }
         record.teams[#record.teams + 1] = team
         record.teamById[id] = team
@@ -1780,6 +1869,7 @@ function MergeEggPrototypeService:_hatch(player)
             self:_recordEggRoll(record, team, petDefinition)
             self:_publishTeamSlot(team, slot, petDefinition)
         end
+        self:_publishTeamEggSource(team)
         totalUnits += tonumber(info.pets) or 0
         self:_setTeamState(record, team, "Ready")
     end
@@ -1806,6 +1896,64 @@ function MergeEggPrototypeService:_hatch(player)
         huge = record.eggHugeRolls,
         pendingEnemies = record.pendingEnemySpawns,
         waves = #(self._config.waves or {}),
+    })
+    return true
+end
+
+function MergeEggPrototypeService:UpgradeHatcher(player, request)
+    if not RunService:IsStudio() then
+        return false, "studio_only"
+    end
+    local record = self._active
+    if not record or record.player ~= player or not record.encounterSpawned then
+        return false, "not_active_encounter"
+    end
+    if type(request) ~= "table" then
+        return false, "invalid_request"
+    end
+    local teamId = tonumber(request.teamId)
+    if not teamId or teamId % 1 ~= 0 then
+        return false, "invalid_team"
+    end
+    local team = record.teamById[teamId]
+    if not (team and team.folder and team.folder.Parent) then
+        return false, "team_unavailable"
+    end
+    local now = os.clock()
+    if team.lastUpgradeAt and now - team.lastUpgradeAt < 0.25 then
+        return false, "upgrade_throttled"
+    end
+    local progression = self:_eggProgression()
+    local nextTier = math.floor(tonumber(team.eggTier) or 1) + 1
+    local nextEggId = progression[nextTier]
+    if not nextEggId then
+        return false, "maximum_egg_reached"
+    end
+    local source, reason = self:_buildHatchSource(record, nextEggId)
+    if not source then
+        return false, reason
+    end
+
+    team.lastUpgradeAt = now
+    team.eggTier = nextTier
+    team.eggId = source.eggId
+    team.eggName = source.eggName
+    team.hatchPlayerData = source.hatchPlayerData
+    for _, queued in ipairs(team.replacementQueue or {}) do
+        queued.definition = nil
+    end
+    record.hatcherUpgrades = (record.hatcherUpgrades or 0) + 1
+    self:_publishTeamEggSource(team)
+    self:_setWorldState(
+        self._world and self._world:GetAttribute("PrototypeState") or "WaveActive",
+        record
+    )
+    self:_log("Info", "Merge Egg prototype hatcher upgraded", {
+        player = player.Name,
+        team = team.id,
+        tier = nextTier,
+        egg = team.eggId,
+        replacementQueueDepth = #(team.replacementQueue or {}),
     })
     return true
 end
@@ -1842,11 +1990,16 @@ function MergeEggPrototypeService:Start()
         self:_setWorldState("Idle", nil)
     end
     self:_unsealHallGate()
+    Signals.MergeEggPrototypeUpgrade.OnServerEvent:Connect(function(player, request)
+        self:UpgradeHatcher(player, request)
+    end)
     RunService.Heartbeat:Connect(function()
         self:_step()
     end)
     Players.PlayerRemoving:Connect(function(player)
-        if self._entering == player then
+        if self._enteringRecord and self._enteringRecord.player == player then
+            self:_cancelPendingEntry(self._enteringRecord, true)
+        elseif self._entering == player then
             self._entering = nil
         end
         if self._active and self._active.player == player then
