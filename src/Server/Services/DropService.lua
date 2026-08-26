@@ -940,11 +940,33 @@ function DropService:_discard(rec)
         return
     end
     rec._done = true
-    if rec.model and rec.model.Parent then
-        rec.model:Destroy()
-    elseif rec.part and rec.part.Parent then
-        rec.part:Destroy()
+    for index, active in ipairs(self._active) do
+        if active == rec then
+            table.remove(self._active, index)
+            break
+        end
     end
+    self:_recycle(rec)
+end
+
+-- Remove only matching live drops without granting them. Prototype automation uses this before it
+-- restores the tester's saved balance, preventing an old pickup from crediting after reset.
+function DropService:DiscardDrops(player, source)
+    local owner = typeof(player) == "Instance" and player.UserId or tonumber(player)
+    local discarded = 0
+    for index = #self._active, 1, -1 do
+        local rec = self._active[index]
+        if
+            rec
+            and rec._done ~= true
+            and (owner == nil or rec.owner == owner)
+            and (source == nil or rec.source == source)
+        then
+            self:_discard(rec)
+            discarded += 1
+        end
+    end
+    return discarded
 end
 
 function DropService:_collect(rec, _force)

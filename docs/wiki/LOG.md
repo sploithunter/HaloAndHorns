@@ -5294,3 +5294,24 @@ first-session cohort rates.
   A diagnostic zero radius preserved all three without credit; restoring radius 10 collected only
   the nearby coin, changed the live/saved balance from 148 to 156, and left two pickups in the lane.
   No matching runtime errors were reported.
+
+## 2026-08-26 — Merge an Egg asynchronous economy and progression comparison
+
+- Made the Studio coin runner genuinely asynchronous with combat. It walks the real avatar at live
+  speed to physical Waycoin drops and back under the selected captain; first escape now records a
+  timing failure without stopping pickup. Reset/exit clears drops and restores the pre-run wallet.
+- Corrected pricing to be per position: every Earth Egg is 100, then that position's Ice/Lava/Sand
+  costs 200/400/800. The runner now continues through all four Sand Eggs (6,000 total), and core egg
+  spend is separate from future permanent upgrade budget. Egg controls now say `CREATE`, not
+  `UPGRADE`, and server use requires the avatar behind the Bulwark and within 18 studs of the captain.
+- Raised the measured prototype payout from 8/30 to 40/120 after the baseline lost in Wave 3 with
+  one Earth team and only 62 earned Waycoins. The corrected opening funded four Earth positions by
+  Wave 3 in the measured upper-bound run.
+- Added configurable 3/4/5/6 slot progression and fixed-four +10%/+20% origin-power experiments
+  without altering pet definitions. All three reached four Sand teams in Wave 9 without an attributed
+  model failure; both fixed-four modifier runs entered Wave 10 with five objective eggs, 15 pets live,
+  and one replacement queued. A fixed-three lower-bound escape was observed as Whelp/tank split
+  variance while the models were still mechanically identical.
+- Left the shipping direction open. Next test: world/layer capacity (`3/4/5/6` for Home/L1/L2/L3)
+  plus tier-N best-of-N queue drafts that fill tank, then healer/support, then highest-damage needs.
+  This may give later egg pet pools and AoE identities more meaning than flat damage scaling.

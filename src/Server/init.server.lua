@@ -1021,6 +1021,7 @@ if RunService:IsStudio() then
                 "EggService",
                 "DropService",
                 "EconomyService",
+                "AutomationService",
             }
         )
     end

@@ -118,6 +118,10 @@ function AutomationService:_setPlayerControls(player, enabled)
     end
 end
 
+function AutomationService:SetPlayerControlsEnabled(player, enabled)
+    self:_setPlayerControls(player, enabled == true)
+end
+
 -- Resolve a navigation/teleport target to a Vector3. Accepts a Vector3, a
 -- BasePart, a Model (uses pivot), or a { x, y, z } table.
 function AutomationService:_resolveTargetPosition(target)
@@ -173,7 +177,9 @@ function AutomationService:NavigateTo(player, target, opts)
     local ok, result = pcall(function()
         return self:_followPath(player, humanoid, destination, threshold, timeout)
     end)
-    self:_setPlayerControls(player, true)
+    if opts.keepControlsDisabled ~= true then
+        self:_setPlayerControls(player, true)
+    end
 
     if not ok then
         return { ok = false, reason = "navigate_error", error = tostring(result) }

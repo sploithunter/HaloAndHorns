@@ -58,9 +58,44 @@ return {
     team = {
         return_ready_distance = 20,
         starts_with_egg = false,
-        initial_hatch_count = 5,
-        -- Each captain begins as an empty position. Its first upgrade installs the Grass/Earth Egg
-        -- and hatches the initial five pets; later upgrades change only future FIFO replacements.
+        -- Egg progression increases team capacity instead of rewriting shared pet combat stats.
+        -- A newly unlocked slot hatches immediately from that position's new egg source.
+        positions_by_egg_tier = { 3, 4, 5, 6 },
+        -- Studio balance variants keep the actual pet definitions immutable. The runner can select
+        -- one with { automation = "coin_runner", experiment = <id> } for matched A/B/C runs.
+        balance_experiments = {
+            default = "positions",
+            modes = {
+                positions = {
+                    positions_by_egg_tier = { 3, 4, 5, 6 },
+                    origin_power_per_tier = 0,
+                },
+                origin_10 = {
+                    positions_by_egg_tier = { 4, 4, 4, 4 },
+                    origin_power_per_tier = 0.10,
+                },
+                origin_20 = {
+                    positions_by_egg_tier = { 4, 4, 4, 4 },
+                    origin_power_per_tier = 0.20,
+                },
+            },
+        },
+        earth_egg_pricing = {
+            currency = "hall_coins",
+            base_amount = 100,
+            -- Reserved for paid upgrades within each position: Earth 100, Ice 200, Lava 400.
+            -- Installing the first Earth Egg in any other empty position still costs 100.
+            growth = 2,
+        },
+        -- The existing camera-facing button is only a presentation surface. The server accepts an
+        -- egg action when the avatar is both safely behind the actual BulwarkLine and physically
+        -- beneath the selected captain's button.
+        build_access = {
+            minimum_bulwark_depth = 4,
+            maximum_hatcher_distance = 18,
+        },
+        -- Each captain begins empty. Creating its Earth Egg hatches three pets; each better egg adds
+        -- one live position and becomes the source for that captain's future FIFO replacements.
         egg_progression = {
             "grass_egg",
             "ice_egg",
@@ -69,8 +104,25 @@ return {
         },
     },
 
+    -- A Studio-only upper-bound balance runner. It temporarily gives the active prototype session
+    -- the real new-player 100-Waycoin bankroll, walks the actual avatar to physical drops, returns
+    -- beneath each captain, and uses the same purchase method as the billboard. Reset/exit restores
+    -- the tester's pre-run Waycoin balance.
+    automation = {
+        coin_runner = {
+            starting_coins = 100,
+            random_seed = 260826,
+            target_hatchers = 4,
+            navigation_timeout = 18,
+            hatcher_arrival_distance = 7,
+            drop_arrival_distance = 6,
+            idle_poll_seconds = 0.15,
+            maximum_navigation_failures = 8,
+        },
+    },
+
     -- The shipping egg roll is now the source of every prototype pet. This queue experiment
-    -- preserves each NPC team's five stable slots: a defeated slot enters that captain's FIFO, and
+    -- preserves each NPC team's tier-scaled stable slots: a defeated slot enters its captain's FIFO, and
     -- a fresh Home Grass Egg outcome hatches into that slot at the stationary captain before
     -- traveling back to battle. Species, variant, and the rare Huge roll can change; only the slot
     -- itself remains stable.
@@ -92,10 +144,14 @@ return {
     -- Defeats pay only the prototype's board currency. The physical pickup and HUD art reuse the
     -- Hall Waycoin identity, while collection uses a prototype-owned radius attribute so later
     -- board upgrades can scale it without inheriting the player's regular Magnet build.
+    -- Baseline 8/30 rewards could not fund the 100-Waycoin second position before a Wave 3
+    -- objective loss (the perfect runner earned only 62). The first balance correction targets the
+    -- authored cadence directly: three Wave 1 Whelps gross 120 for position two, while Wave 2's
+    -- Brute plus four Whelps gross 280 toward positions three/four and future upgrades.
     rewards = {
         currency = "hall_coins",
-        trash_amount = 8,
-        tank_amount = 30,
+        trash_amount = 40,
+        tank_amount = 120,
         magnet = {
             base_radius = 10,
             use_player_modifiers = false,

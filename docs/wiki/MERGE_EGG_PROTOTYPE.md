@@ -1,6 +1,6 @@
 # Merge an Egg Prototype
 
-Status: Phase 5 live verified
+Status: Phase 5 economy/progression experiments live verified
 
 ## Phase 1 contract
 
@@ -40,7 +40,7 @@ progression, procedural layout, and multiplayer occupancy.
   principal/portal teleports, Rally, and explicit teleport abilities retain their snap behavior.
 - Enemies use `rewardPolicy = "none"`, so the ordinary combat award path grants no XP/progression
   event, tracked counter, potion, enhancement, or exclusive egg. The prototype's server-only defeat
-  callback now provides its one explicit exception: an 8-Waycoin Whelp or 30-Waycoin Brute pickup.
+  callback now provides its one explicit exception: a 40-Waycoin Whelp or 120-Waycoin Brute pickup.
   Defeat and finish-line arrival are counted separately; after every enemy in a wave is resolved,
   the next larger wave starts automatically.
 - The red control resets every prototype unit/enemy and makes the hatch repeatable. The blue control
@@ -161,24 +161,23 @@ Phase 5 introduces the first real roster randomness while retaining Phase 4's de
 team and queue model:
 
 - The encounter deploys exactly four stationary hatcher positions with no egg and no pets. Their
-  first control reads `UPGRADE → EARTH EGG`; installing that shipping Home `grass_egg` produces the
-  captain's initial five independent rolls through `pets.simulateHatch`. Until then the team state
-  is `NO EGG`, its five pet positions remain visibly empty, and no replacement queue is created.
+  first control reads `CREATE EARTH EGG`; installing that shipping Home `grass_egg` produces the
+  captain's initial independent rolls through `pets.simulateHatch`. Until then the team state
+  is `NO EGG`, its pet positions remain visibly empty, and no replacement queue is created.
   Deployment remains in `AwaitingFirstEgg` at Wave 0 with the enemy portal sealed. The first
   successful Earth installation starts Wave 1, so the player has an unpressured setup window but
   cannot begin the endurance test without at least one working team.
   The prototype builds the same player hatch inputs as ordinary hatching, so species luck,
   Golden/Rainbow channels, event/buff inputs, and the orthogonal Huge jackpot all remain active. It
-  bypasses currency, inventory grants, multi-hatch entitlement caps, presentation, and persistence;
-  all outcomes are session-only ghost pets.
+  bypasses inventory grants, multi-hatch entitlement caps, presentation, and persistence; all
+  outcomes are session-only ghost pets. Core egg progression itself is now Waycoin-funded.
 - A defeated slot still enters only its captain's FIFO, but its replacement is a new roll rather
   than a copy of the defeated species. After its initial Earth team exists, each captain can
-  independently advance its future replacement source through Home Ice, Ember/Lava, and
-  Sand/Desert. A later upgrade does not transform live pets; it changes unrolled queued and later
-  replacements. The slot and captain
-  remain stable for observer and formation readability, while species, role, variant, and Huge state
-  can change. Each team continues to hatch at most one replacement every four real seconds, and all
-  four FIFOs operate in parallel.
+  independently advance its source through Home Ice, Ember/Lava, and Sand/Desert. This is egg
+  progression, not a permanent upgrade system. The current source supplies unrolled replacements;
+  experimental modes may also add one live slot or apply a runtime origin multiplier on a tier
+  change. Species, role, variant, and Huge state can change. Each team continues to hatch at most
+  one replacement every four real seconds, and all four FIFOs operate in parallel.
 - The observer publishes each slot's latest rolled species/variant/Huge result and labels Golden,
   Rainbow, and Huge pets directly on their cards. Team/world telemetry counts total, Golden,
   Rainbow, and Huge rolls, allowing a run's roster quality to be compared with its first-loss and
@@ -202,7 +201,8 @@ team and queue model:
   promised balance target. The hand-built roster's exciting Wave 8 result is historical context.
   With random and upgradable egg teams, the useful measurement is the distribution of failure waves
   and the roster/variant/source-tier/queue conditions that produced them.
-- A camera-facing billboard above each captain shows its current source and one upgrade button. The
+- A camera-facing billboard above each captain shows its current source, next core-egg cost, and one
+  `CREATE` button. The
   client requests only the captain id through a Studio-only manifest packet; the server validates
   session ownership, tier order, rate, and canonical hatch data before publishing the new source.
 - Each wave stamps a unique `CombatMusicCue`. If combat music is being held across the short
@@ -221,11 +221,54 @@ team and queue model:
   the session and `InMergeEggPrototype` flag are committed only after the character visibly pivots.
   A player can no longer remain in Home while the Hall gate believes the prototype is already active.
 
+## Economy and progression experiments (2026-08-26)
+
+- Pricing is per hatcher position, not global across the board. Every empty position's Earth Egg is
+  100 Waycoins; that same position then progresses Ice 200, Lava 400, Sand 800. One complete Sand
+  position costs 1,500 and all four cost 6,000. Better eggs are core progression. Future permanent
+  upgrades—magnet radius, hatch luck, team capacity, and similar board modifiers—must have a
+  separate spend budget.
+- The server accepts a core-egg action only when the avatar is at least four studs behind the actual
+  directional Bulwark plane and within 18 planar studs of that captain. The billboard is only the
+  presentation surface; it cannot buy remotely from the battlefield.
+- A Studio-only upper-bound runner starts from 100 Waycoins, disables manual controls, and uses the
+  ordinary character navigation path at the live `WalkSpeed` (26.4 in the measured runs). It walks
+  to owner-only physical drops, reevaluates currency asynchronously with combat, returns beneath the
+  selected captain, and spends through all four Sand Eggs. The first escape latches telemetry but
+  does not stop collection. Only all-Sand completion, objective/encounter termination, reset/exit,
+  or repeated navigation failure stops it. Reset discards test drops and restores the tester's exact
+  pre-run Waycoin balance.
+- The original 8/30 payout baseline failed in Wave 3 with one Earth team: the runner spent its
+  starting 100, earned only 62 more, and lost the fifth objective egg before affording Position 2.
+  The first corrected baseline is 40 per Whelp and 120 per Brute. Wave 1 therefore grosses 120,
+  while Wave 2 grosses 280, leaving real movement time as part of the cadence.
+- Three runtime-selectable progression modes leave canonical pet definitions unchanged:
+  `positions` uses 3/4/5/6 slots by egg tier; `origin_10` and `origin_20` hold four slots and add
+  10% or 20% contextual origin power per completed egg tier. The origin multiplier is a runtime pet
+  attribute consumed as a `PetPower` context multiplier; it does not rewrite saved Power or pet
+  config tables. These are experiment fixtures, not a chosen shipping rule.
+- Single-run observations (useful, not statistically decisive):
+  - 3/4/5/6 slots reached four Sand teams in Wave 9, spent 6,000, and had no escapes (320 seconds).
+  - A discarded fixed-three +10% lower bound reached Sand in Wave 9 after one early escape
+    (365 seconds). The escape happened while both compared models were still identical Earth teams:
+    Whelps split away from the tank, so it is path/target variance rather than modifier evidence.
+  - Fixed-four +10% reached Sand in Wave 9 with no escapes (257 seconds), then entered Wave 10 with
+    all five objective eggs, 15 live pets, and one queued replacement.
+  - Fixed-four +20% reached Sand in Wave 9 with no escapes (306 seconds), then entered Wave 10 with
+    the same five objectives, 15 live pets, and one queued replacement. One trial cannot distinguish
+    10% from 20%; repeat distributions are required.
+- The next unimplemented hypothesis avoids unbounded slots and gives egg quality a distinct role:
+  world progression owns capacity (`Home=3`, `Layer 1=4`, `Layer 2=5`, `Layer 3=6`), while the egg
+  tier owns draft quality. Tier N rolls N queue candidates and selects composition-aware best:
+  fill a missing tank first, preserve a healer/support slot, then rank remaining candidates by
+  combat damage. Later-world AoE pet pools may matter more than a flat modifier. Test this separately
+  rather than mixing it into the completed modifier comparison.
+
 ## Source and authoring
 
 - Runtime/config: `configs/merge_egg_prototype.lua` and
   `src/Server/Services/MergeEggPrototypeService.lua`.
-- Combat telemetry and Studio-only hatcher upgrade UI:
+- Combat telemetry and Studio-only core egg progression UI:
   `src/Client/Systems/MergeEggPrototypeObserver.lua`.
 - Repeatable Edit-mode world pass: `scripts/studio/build_merge_egg_prototype_world.luau`.
 - The service is registered only when `RunService:IsStudio()` and map binding is enabled. A missing

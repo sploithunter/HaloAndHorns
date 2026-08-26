@@ -842,6 +842,12 @@ function PetFollowService:_mine(player, pet, breakable)
             zone = self:_zoneResonance(player, pet), -- biome RPS (pet element vs zone)
             realm = self:_realmResonance(player, pet), -- light/shadow vs current realm (cross-realm)
             diversity = self:_squadDiversity(player), -- team-comp bonus (distinct archetypes+origins)
+            -- Runtime-only progression seam for modes such as Merge an Egg. The pet definition and
+            -- saved Power stay immutable; an owning system may add a contextual origin multiplier.
+            originProgression = math.max(
+                0,
+                tonumber(pet:GetAttribute("OriginProgressionMultiplier")) or 1
+            ),
         },
     })
     local dmg = breakable:GetAttribute("EnemyId") and profile.combatEffective
