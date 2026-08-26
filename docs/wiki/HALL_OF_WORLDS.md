@@ -15,10 +15,11 @@ a routing rollback, not a player-data rollback.
   of saved `LastArea`. Schema v18 removes `Hall_1`–`Hall_4` only from `UnlockedAreas`, ensures
   `Spawn`, and changes only `GameData.LastArea`; pets, eggs, enhancements, currencies, powers,
   rewards, and the dormant Hall ledger are untouched.
-- `hall_of_worlds.entry_enabled = false` still rejects Hall travel/guest visits. The Home Hall
-  arch is no longer the frosted Coming Soon wall: it is the **COMBAT TRAINING** mission door
-  (`combat_tutorial`, Training Ground Room 1). Other disabled Hall hooks still ice-seal. World
-  Travel follows ordinary Homeworld unlock rules.
+- `hall_of_worlds.entry_enabled = false` still rejects Hall travel/guest visits. Production keeps
+  the Home Hall arch frosted and sealed; `combat_tutorial.entry.enabled = false`, so it is not the
+  combat-training mission door. In Studio only, the [Merge an Egg prototype](MERGE_EGG_PROTOTYPE.md)
+  temporarily unseals this same `HallOfWorldsPortal` as a direct session route to its authored
+  strip. World Travel follows ordinary Homeworld unlock rules.
 - Tutorial v5 restores the v3 Homeworld order: Earth egg, Home mining, squad, Resonance
   bind/cast/enhancement, then the Earth-cave fight, Berserk Brew, and Rally. The isolated
   combat tutorial will replace that combat tail. Versioned semantic migration keeps an

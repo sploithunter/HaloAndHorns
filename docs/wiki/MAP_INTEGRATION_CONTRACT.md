@@ -23,6 +23,13 @@ Studio owns:
 - invisible zones and spawn volumes
 - portals, pads, stands, podiums, and anchor placement
 
+The Studio-only Merge an Egg Phase 1 venue follows this split without joining the general map-hook
+registry. Studio owns the single persistent `Workspace.Maps.MergeEggPrototype` Model and its named
+parts (`PlayerSpawn`, hatcher/reset/exit controls, and three enemy spawns). Config/service code owns
+session routing and combat. The repeatable authoring pass replaces only that exact Model and stamps
+`UsesTileSystem = false` / `UsesTileStreaming = false`; runtime fails closed if it is absent instead
+of generating geometry. See [Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md).
+
 An AI-assisted deployment pass may normalize the Studio-owned map before Rojo sync: quarantine old scripts, regroup art, rename ambiguous imported objects, add invisible helper parts, and stamp tags/attributes. That is considered part of map integration, not a burden on the builder, as long as original art is preserved and the resulting hook contract is documented.
 
 ### Imported landmark visuals

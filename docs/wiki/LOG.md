@@ -5075,3 +5075,13 @@ first-session cohort rates.
 - Added an opt-in destroy-on-down lifecycle for session-only pet models and construction-time ghost
   attributes so temporary squads never enter saved pet slot lockouts or briefly appear untagged.
 - The generic seams and their source contracts pass all 2,303 headless checks.
+
+## 2026-08-26 — Merge an Egg Phase 1 authored-strip prototype
+
+- Scoped Phase 1 to one persistent `Workspace.Maps.MergeEggPrototype` land strip with fixed walls;
+  it explicitly does not use the tile kit, procedural layout, or tile-streaming lifecycle.
+- Added a Studio-only direct session route through Home's otherwise-disabled Hall gate. One player
+  can hatch exactly five temporary Wayfinder units against three reward-free test enemies, then
+  reset the encounter or return Home with their ordinary runtime squad restored.
+- Added the repeatable Edit-mode world authoring pass and source-contract coverage. The expanded
+  suite passes all 2,308 headless checks; live Studio verification remains the final Phase 1 gate.
