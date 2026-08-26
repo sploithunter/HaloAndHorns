@@ -80,8 +80,9 @@ filtered out of production registries.
   gates only new ambient targets: an enemy already above that pet's aggro exit floor stays eligible
   outside the radius, allowing an alert to begin pursuit without becoming a target pin.
 - Pet movement applies the catch-up snap only to owner-relative formation goals. Active combat
-  pursuit crosses long distances at the pet's bounded travel speed; owner/portal teleports still
-  force formation recovery, and explicit Shadow Step remains the combat-teleport exception.
+  pursuit and its return leg cross long distances at the pet's bounded travel speed; principal or
+  portal teleports and Rally still force formation recovery, and explicit Shadow Step remains the
+  combat-teleport exception. The state is per pet and principal-agnostic, including NPC squads.
 - `CombatApplication` is the runtime combat-state boundary. `ApplyHit` publishes resolved
   hit/miss/dodge/block/absorb/immune outcomes, `ApplyDamage` mutates enemy HP or pet endurance and
   credits contribution, and `ApplyPowerHeal` mutates active/power healing. All three publish the

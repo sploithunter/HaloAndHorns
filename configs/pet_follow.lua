@@ -291,7 +291,8 @@ return {
         -- Formation catch-up safety: if a pet ends up further than this (studs) from its owner
         -- slot — the player teleported (zone/realm change) — snap it there instead of crawling
         -- across the map. Active combat targets travel at the pet's bounded speed even beyond this
-        -- distance (except an explicit Shadow Step); an owner teleport first restores formation.
+        -- distance (except an explicit Shadow Step), and post-combat return travel stays smooth even
+        -- after a fight crosses the threshold. An owner teleport or Rally first restores formation.
         -- INVARIANT: keep this ABOVE auto_systems.lua
         -- auto_target.max_target_distance (120) so a pet only ever snaps for a real
         -- teleport, never to reach a normal far target (which it should travel to).
