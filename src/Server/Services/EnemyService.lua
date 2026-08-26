@@ -1286,6 +1286,46 @@ function EnemyService:DespawnModel(model)
     return true
 end
 
+-- Start an ordinary threat-table fight without pinning pet targets. Authored defense encounters use
+-- this when a marching enemy crosses their alert boundary: both sides receive enough initial threat
+-- to close distance, then damage, decay, proximity, and tank taunts remain fully authoritative.
+function EnemyService:AlertSquadToEnemy(player, targetId, opts)
+    targetId = tonumber(targetId)
+    local entry = targetId and self._enemies[targetId]
+    local model = entry and entry.model
+    if
+        not (player and player.Parent)
+        or not (entry and model and model.Parent)
+        or (model:GetAttribute("HP") or 0) <= 0
+    then
+        return false, 0
+    end
+
+    local threat = math.max(1, tonumber(opts and opts.threat) or 50)
+    self:_setAggroOwner(entry, player.Name)
+    local alerted = 0
+    for _, squad in ipairs(self:_teamSquads(player)) do
+        for _, pet in ipairs(squad.folder:GetChildren()) do
+            if
+                pet:IsA("Model")
+                and pet.PrimaryPart
+                and not pet:GetAttribute("CombatDowned")
+                and self:_enemyHostileToPet(entry, pet, squad.player)
+                and self:_petHostileToEnemy(pet, entry, squad.player)
+            then
+                AggroTable.reinforce(entry.aggro, pet, threat)
+                AggroTable.reinforce(self:_petAggroTable(pet), targetId, threat)
+                alerted += 1
+            end
+        end
+    end
+    if alerted == 0 then
+        self:_setAggroOwner(entry, nil)
+        return false, 0
+    end
+    return true, alerted
+end
+
 -- Pin this player's squad on one enemy: assist does not lapse for pinSeconds,
 -- every pet's TargetID is forced, and other pet-threat rows are wiped so
 -- auto-target cannot peel off onto a louder dog.
