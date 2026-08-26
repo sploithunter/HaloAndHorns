@@ -1,6 +1,6 @@
 # Merge an Egg Prototype
 
-Status: Phase 3 live verified
+Status: Phase 4 live verified
 
 ## Phase 1 contract
 
@@ -9,7 +9,7 @@ lane, and watch it fight. It deliberately excludes merging, the board/economy lo
 progression, procedural layout, and multiplayer occupancy.
 
 - The venue is the persistent Studio-authored Model
-  `Workspace.Maps.MergeEggPrototype`: one 96×600 continuous land strip with fixed side/end walls.
+  `Workspace.Maps.MergeEggPrototype`: one 96×300 continuous land strip with fixed side/end walls.
   It is not a tile-kit map and has no chunk or tile-streaming lifecycle. The small Model is
   atomic under ordinary Workspace streaming so its continuous floor and walls arrive together.
 - In Studio, Home's otherwise-disabled `HallOfWorldsPortal` becomes the entry prompt. Production
@@ -30,10 +30,10 @@ progression, procedural layout, and multiplayer occupancy.
   tank threat/implicit taunt remain authoritative. If the pets fall or aggro clears, a surviving
   enemy resumes toward the same finish from its displaced position. The prototype does not pin all
   five pets to one target; normal pet/enemy threat tables decide who responds to whom.
-- At 260 studs from the finish—roughly mid-strip—the defense boundary automatically seeds 250
-  ordinary threat on both sides for every live squad pet. This begins combat without a click and
-  survives the longer approach, but does not write pet targets or create an assist pin; normal
-  damage, decay, proximity, and the Pack Tortoise's tank taunt take over immediately.
+- At 260 studs from the finish, the defense boundary automatically seeds 250 ordinary threat on both
+  sides for every live squad pet. The shortened Phase 4 approach now starts inside that envelope, so
+  deployment begins immediately without a click; it still does not write pet targets or create an
+  assist pin. Normal damage, decay, proximity, and the Pack Tortoise's tank taunt take over.
 - Existing above-floor threat remains eligible outside the ordinary ambient acquisition radius, so
   live tracing measured alert-to-target assignment at about 0.1–0.25 seconds. Distant combat pursuit
   and post-combat return both use bounded pet travel rather than the formation catch-up teleport;
@@ -99,13 +99,21 @@ commanded NPC teams. It still does not add the production deployment queue.
 - Defense alerts and re-alerts address only the assigned team's folder. Ordinary bilateral threat,
   tank taunts, target choice, drive-back, disengagement, and bounded return still own behavior after
   the seed; an assignment scopes eligible combatants rather than pinning five targets.
-- A gold Neon `BulwarkLine` spans the strip 13 studs in front of the hatcher anchors. The line is
-  both the visual rule and the authoritative directional plane. Once an enemy crosses it toward the
-  finish, that enemy becomes an open emergency target and every surviving NPC folder receives the
-  same 250 ordinary-threat floor. The floor refreshes every 0.5 seconds while the enemy remains
-  breached, so a team can finish its current target and still acquire the emergency afterward.
+- A gold Neon `BulwarkLine` spans the strip 43 studs in front of the hatcher anchors. Its label is
+  written flat on the ground just behind the line; there is no floating billboard obscuring combat.
+  The line is both the visual rule and the authoritative directional plane. Crossing is measured from
+  the server-authoritative `MoveTarget` plus the enemy's forward oriented-bounds extent and one stud
+  of contact tolerance. It never uses the model pivot: enemy visuals are client-interpolated while
+  the server pivot normally remains at spawn. Once an enemy crosses, it becomes an open emergency target and
+  every surviving NPC folder receives the same 250 ordinary-threat floor. The floor refreshes every
+  0.5 seconds while the enemy remains breached, so a team can finish its current target and still
+  acquire the emergency afterward.
   There are no idle reserves behind the bulwark, but existing threat tables still decide whether
   already-engaged pets peel from their current targets.
+- While the early prototype trace is enabled, every breached enemy prints each surviving pet's
+  current target, threat on the breached enemy, top threat row, reciprocal enemy threat, distance,
+  hostility/territory eligibility, and downed state every two seconds. The trace also prints the
+  movement, forward-edge, and stale-pivot distances so visual/server disagreement is explicit.
 - Team telemetry and lifecycle are independent. One folder can be Ready or Returning while another
   is Engaged, and each publishes its assigned-enemy, target, active, defeated, returned, first-loss,
   and peak-pressure counts. The encounter publishes the first pet-loss wave and active-enemy count,
@@ -115,6 +123,35 @@ commanded NPC teams. It still does not add the production deployment queue.
   `WAVE TWO`, and so on), briefly brightens on transition, and shows current/total waves, active
   enemy count, encounter state, and the 4× label. It remains read-only and uses folder/world
   attributes rather than a custom network feed.
+
+## Phase 4 contract
+
+Phase 4 adds the smallest useful defeat and reinforcement loop without coupling the prototype to
+the unfinished merge board or production economy:
+
+- The strip is compressed from 600 to 300 studs by removing the unused forward half. The complete
+  rear arrangement—player controls, hatchers, bulwark, finish line, and objective spacing—stays
+  fixed. Enemy spawns move to the new forward end, shortening observation time without changing the
+  defensive geometry being tested.
+- Five protected reserve eggs are the defense objective. Each enemy that reaches the finish line
+  destroys one egg, and losing the fifth ends the run as `ObjectiveLost`. The eggs are currently a
+  counter rather than world models; this keeps the test focused on whether forward pressure and
+  recovery cadence are readable. An empty defense is no longer an immediate loss because queued
+  replacements can recover it.
+- Every missing authored pet slot enters that captain's own FIFO. The queue preserves the exact
+  species/role/slot instead of randomizing the replacement, so a team's composition remains stable
+  and its tank or blaster cannot silently become a third melee unit.
+- The four team FIFOs operate in parallel, while each individual captain hatches at most one pet
+  every four real seconds. A replacement appears at its stationary captain and travels back into
+  combat through the ordinary movement/aggro systems. The rest of the team does not need to return,
+  and no pet is teleported directly onto the battlefield.
+- Replacement supply is intentionally unlimited in this pass. This separates the combat-side
+  questions—queue depth, recovery time, and loss rate—from the later board-side questions of which
+  egg finishes next and whether a hatcher has enough inventory.
+- World telemetry publishes remaining/starting eggs, objective hits, current/peak queue depth,
+  total hatches, longest replacement wait, and reinforcing-team count. Each team publishes its
+  queued slots and queued/hatched totals. The wave banner shows eggs, queue depth/peak, and hatches;
+  a missing pet card reads `QUEUED` rather than `DEFEATED` while its replacement is pending.
 
 ## Source and authoring
 
@@ -170,15 +207,36 @@ the first pet loss in wave 1 with two enemies active, then advanced into wave 2 
 with four enemies defeated, four active, zero escaped, and 19/20 pets alive. All four teams remained
 independently engaged and the runtime log was clean.
 
-## Production direction after Phase 3
+The Phase 4 crossing regression pass held an enemy's authoritative movement position ten studs
+behind the bulwark without moving its server model. The published movement distance was `+10`, the
+forward bounds edge was `+14.8`, and the stale pivot still read `-324.6`; the enemy nevertheless
+latched `CombatTargetOpen` and alerted all 20 pets. The first trace caught the expected heartbeat
+boundary with every pet eligible and holding 250 threat but no selected target; the next trace had
+all 20 pets targeting the breached enemy. This proves the repeated milling screenshot was caused by
+reading the stale pivot, not by hostility, territory, or aggro-table rejection.
 
-- Four hatcher-owned NPC teams and independent targeting are now proven. The production queue is the
-  next separate mechanic; it should feed this common team contract rather than create special-case
-  principal paths.
-- Do not derive egg queue depth from the 8-enemies-per-team Whelp baseline alone. First tune the
-  Ember Brute's health/armor and the partial out-of-combat regeneration delay/rate, then repeat the
-  endurance ladder. That controlled run should determine replacement cadence and minimum ready-egg
-  buffer.
+The replacement pass removed Team 1's slot-2 Trail Pup. The folder immediately published queue
+slot `2`, active count `4`, and queue depth `1`; four seconds later the same species returned in
+slot 2, the team returned to five active pets, and its queue cleared. Concurrent combat produced a
+world peak queue depth of two and both replacements hatched successfully. In a separate objective
+pass, removing all four defender folders left ten wave-four enemies unopposed: exactly five escapes
+consumed the five reserve eggs, transitioned the run to `ObjectiveLost`, and despawned the remaining
+enemies. Studio reported no runtime errors in either pass.
+
+## Production direction after Phase 4
+
+- Four hatcher-owned NPC teams, independent targeting, exact-slot replacement FIFOs, and the
+  five-hit rear objective are now proven as separate seams. The next production experiment should
+  feed real completed eggs into these existing queues rather than create another team lifecycle.
+- Keep automatic exact-slot replacement as the default until board play proves that composition
+  management is worth its complexity. It makes the prototype legible: a missing tank asks for a
+  tank replacement, teams hatch independently, and the player can concentrate on merging.
+- Do not lock queue depth or hatch cadence from this accelerated run. Tune the Ember Brute's
+  health/armor and partial out-of-combat regeneration, then compare loss rate against the four-second
+  per-team FIFO and five-egg objective. Those are explicit knobs, not final balance values.
+- When real eggs arrive, define a simple shortage rule before adding queue UI. The least complex
+  candidate is: each team reserves its authored next-slot request, and the first compatible finished
+  egg satisfies the oldest request. Random hatch completion should not randomly mutate team roles.
 - Tank/melee drive-back that pushes the whole frontline away from the hatcher is desirable lane
   behavior. A legitimately advanced team travels back to its hatcher after combat rather than
   teleporting at the generic catch-up distance.
@@ -190,8 +248,9 @@ independently engaged and the runtime log was clean.
 ## Explicitly deferred
 
 - Tile generation or tile streaming.
-- Merge recipes, board slots, currency, rewards, persistence, or monetization.
+- Physical objective eggs, real merge recipes, board slots, egg inventory/compatibility, currency,
+  rewards, persistence, or monetization.
 - Wave selection UI, production difficulty curves, matchmaking, or more than one active player.
-- The four/five-team deployment queue, congestion policy, and production team-state UI.
+- Player-facing queue reordering, congestion policy, and production team-state controls.
 - Player-team opt-in deployment and combined NPC/player roster presentation.
 - Reopening Hall of Worlds in production.

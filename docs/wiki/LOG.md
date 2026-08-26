@@ -5171,3 +5171,38 @@ first-session cohort rates.
   occupied, leaving a final Ember Brute unopposed after those targets cleared. Breached enemies now
   refresh a non-accumulating 250-threat floor every 0.5 seconds, preserving normal target choice
   while guaranteeing newly free defenders still see the emergency.
+- Corrected the bulwark's position source after repeated live screenshots showed an Ember Brute
+  visibly crossing the line while healthy reserve pets remained idle. Enemy visuals are client-
+  interpolated, so their server pivots stay at spawn; breach now uses authoritative `MoveTarget`
+  plus the forward bounds extent and publishes movement/leading/pivot distances.
+- Added an explicit `[BulwarkAggro]` trace for every surviving pet behind a breach: current target,
+  target threat, top threat row, reciprocal enemy threat, distance, eligibility, hostility,
+  territory, and downed state. This makes idle/milling behavior inspectable from Studio Output.
+- Moved the gold bulwark 30 studs farther up the lane (43 studs ahead of the hatcher anchors) and
+  replaced its floating billboard with a flat ground label so the emergency boundary reads without
+  covering captains or combatants.
+
+## 2026-08-26 — Merge an Egg Phase 4 reserve and replacement loop
+
+- Added a five-egg rear objective: each escaping enemy consumes one reserve egg, the fifth escape
+  ends the run as `ObjectiveLost`, and remaining enemies despawn. This replaces total team defeat as
+  the terminal condition because an empty field can now recover through hatching.
+- Added one parallel FIFO per hatcher team. Missing authored slots queue automatically; each captain
+  hatches its oldest exact species/role/slot after four seconds, and the replacement begins at that
+  stationary captain rather than teleporting into battle. Replacement supply remains abstract and
+  unlimited so combat recovery can be measured before coupling in the merge board.
+- Extended the observer with remaining eggs, current/peak replacement queue, total hatches, and
+  orange `QUEUED` pet cards. Folder/world attributes also publish queue slots, wait time, objective
+  hits, and reinforcing-team counts for Studio inspection.
+- Live verification removed Team 1's slot-2 Trail Pup: queue slot `2` appeared immediately and the
+  same Trail Pup returned to slot 2 after four seconds. Concurrent combat peaked at two queued pets
+  and both hatched successfully. A separate no-defender pass produced exactly five escapes, reduced
+  the reserve from five to zero, and ended as `ObjectiveLost` with no runtime errors.
+- The corrected bulwark source was verified without moving the enemy model: `MoveTarget` was ten
+  studs behind the line while the server pivot remained 324.6 studs ahead. The forward edge opened
+  the emergency target, all 20 pets received valid bilateral threat, and all 20 selected the enemy
+  on the next trace sample.
+- Halved the land strip from 600 to 300 studs by keeping the hatcher/objective end fixed and removing
+  the unused forward approach. Enemy spawning moved to the new front end; the 260-stud automatic
+  alert now starts deployment immediately, making wave and replacement iteration substantially
+  faster without changing hatcher, bulwark, or finish-line spacing.

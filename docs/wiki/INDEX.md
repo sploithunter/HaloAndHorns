@@ -43,9 +43,9 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md) — how Rojo systems bind to Studio-authored worlds.
 - [Hall of Worlds](HALL_OF_WORLDS.md) — the authored but release-disabled Hall route, Homeworld
   rollback contract, and the relocated Lava Range / Desert Training Ground fixtures.
-- [Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md) — Studio-only Phase 3: one authored land strip,
-  four independently targeted hatcher teams, an escalating endurance ladder, enemy tanks, and a
-  visible all-reserves bulwark.
+- [Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md) — Studio-only Phase 4: one authored land strip,
+  four independently targeted hatcher teams, an escalating endurance ladder, a visible all-reserves
+  bulwark, five-egg defeat objective, and exact-slot replacement FIFOs.
 - [Marketing Plan](../MARKETING_PLAN.md) — the 50k-Robux test plan (creative screening → funnel gate → scale), icon/thumbnail prompt matrix, capture shot list, KPI cheat sheet, and the 500-engaged-players unlock strategy.
 - [Map Builder's Kit](../MAP_BUILDERS_KIT.md) — the production-world commissioning spec: hub-and-spoke layout, the 11-layer heaven/hell ladder (one layout, eleven skins), the full marker/binding contract, per-layer art briefs, phased delivery + acceptance checks.
 - [Mission Worldgen](../MISSION_WORLDGEN.md) — the Trials endgame SSOT: CoH door missions, deterministic tile-kit procgen, shared sequences, the 8-trial matrix, quest-steered gates, and evolving-egg centuries (§13 = shipped contract).

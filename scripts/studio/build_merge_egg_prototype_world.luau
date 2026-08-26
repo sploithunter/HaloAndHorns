@@ -54,21 +54,28 @@ local BLUE = Color3.fromRGB(86, 180, 216)
 local RED = Color3.fromRGB(197, 82, 72)
 local BORDER = Color3.fromRGB(255, 126, 64)
 
-local floor =
-    part("LandStrip", Vector3.new(96, 2, 600), CFrame.new(ORIGIN), LAND, Enum.Material.Ground)
+-- Preserve the complete hatcher/objective end and remove the long empty approach half. The strip
+-- now runs from Z -300 to Z 0, centered at -150.
+local floor = part(
+    "LandStrip",
+    Vector3.new(96, 2, 300),
+    CFrame.new(ORIGIN + Vector3.new(0, 0, -150)),
+    LAND,
+    Enum.Material.Ground
+)
 world.PrimaryPart = floor
 
 part(
     "WestWall",
-    Vector3.new(2, 14, 600),
-    CFrame.new(ORIGIN + Vector3.new(-49, 7, 0)),
+    Vector3.new(2, 14, 300),
+    CFrame.new(ORIGIN + Vector3.new(-49, 7, -150)),
     WALL,
     Enum.Material.Slate
 )
 part(
     "EastWall",
-    Vector3.new(2, 14, 600),
-    CFrame.new(ORIGIN + Vector3.new(49, 7, 0)),
+    Vector3.new(2, 14, 300),
+    CFrame.new(ORIGIN + Vector3.new(49, 7, -150)),
     WALL,
     Enum.Material.Slate
 )
@@ -82,7 +89,7 @@ part(
 part(
     "SouthEndWall",
     Vector3.new(100, 14, 2),
-    CFrame.new(ORIGIN + Vector3.new(0, 7, 301)),
+    CFrame.new(ORIGIN + Vector3.new(0, 7, 1)),
     WALL,
     Enum.Material.Slate
 )
@@ -104,8 +111,8 @@ end
 
 anchor("PlayerSpawn", Vector3.new(0, 2, -268), Vector3.new(0, 2, -220))
 anchor("HatcherSpawn", Vector3.new(0, 2, -218), Vector3.new(0, 2, -170))
-local spawnArea = anchor("EnemySpawnArea", Vector3.new(0, 2, 180), Vector3.new(0, 2, -200))
-spawnArea.Size = Vector3.new(84, 1, 120)
+local spawnArea = anchor("EnemySpawnArea", Vector3.new(0, 2, -25), Vector3.new(0, 2, -200))
+spawnArea.Size = Vector3.new(84, 1, 50)
 
 local finishLine = part(
     "EnemyFinishLine",
@@ -117,39 +124,52 @@ local finishLine = part(
 finishLine.CanCollide = false
 
 -- The reserve-engagement boundary is visible and authoritative: runtime projects enemy movement
--- across this exact plane toward EnemyFinishLine. It sits 13 studs in front of HatcherSpawn.
+-- across this exact plane toward EnemyFinishLine. It sits 43 studs in front of HatcherSpawn so a
+-- large enemy has a readable emergency zone before it can overlap a captain.
 local bulwarkLine = part(
     "BulwarkLine",
     Vector3.new(84, 0.25, 2),
-    CFrame.new(ORIGIN + Vector3.new(0, 1.15, -205)),
+    CFrame.new(ORIGIN + Vector3.new(0, 1.15, -175)),
     GOLD,
     Enum.Material.Neon,
     0.1
 )
 bulwarkLine.CanCollide = false
 
-local bulwarkLabel = Instance.new("BillboardGui")
-bulwarkLabel.Name = "BulwarkLabel"
-bulwarkLabel.Size = UDim2.fromOffset(320, 42)
-bulwarkLabel.StudsOffsetWorldSpace = Vector3.new(0, 4, 0)
-bulwarkLabel.AlwaysOnTop = true
-bulwarkLabel.MaxDistance = 220
-bulwarkLabel.Parent = bulwarkLine
+local bulwarkGroundLabel = part(
+    "BulwarkGroundLabel",
+    Vector3.new(62, 0.08, 8),
+    CFrame.new(ORIGIN + Vector3.new(0, 1.08, -181)),
+    Color3.fromRGB(24, 30, 43),
+    Enum.Material.SmoothPlastic,
+    1
+)
+bulwarkGroundLabel.CanCollide = false
+
+local bulwarkLabel = Instance.new("SurfaceGui")
+bulwarkLabel.Name = "BulwarkGroundSurface"
+bulwarkLabel.Face = Enum.NormalId.Top
+bulwarkLabel.CanvasSize = Vector2.new(160, 1240)
+bulwarkLabel.LightInfluence = 0
+bulwarkLabel.ZOffset = 1
+bulwarkLabel.Parent = bulwarkGroundLabel
 
 local bulwarkText = Instance.new("TextLabel")
-bulwarkText.Size = UDim2.fromScale(1, 1)
-bulwarkText.BackgroundColor3 = Color3.fromRGB(24, 30, 43)
-bulwarkText.BackgroundTransparency = 0.2
+bulwarkText.AnchorPoint = Vector2.new(0.5, 0.5)
+bulwarkText.Position = UDim2.fromScale(0.5, 0.5)
+bulwarkText.Size = UDim2.fromOffset(1180, 150)
+bulwarkText.Rotation = -90
+bulwarkText.BackgroundTransparency = 1
 bulwarkText.BorderSizePixel = 0
 bulwarkText.Font = Enum.Font.GothamBold
 bulwarkText.Text = "BULWARK  •  ALL TEAMS ENGAGE"
 bulwarkText.TextColor3 = GOLD
-bulwarkText.TextScaled = true
+bulwarkText.TextStrokeColor3 = Color3.fromRGB(24, 30, 43)
+bulwarkText.TextStrokeTransparency = 0.15
+bulwarkText.TextScaled = false
+bulwarkText.TextSize = 75
+bulwarkText.TextWrapped = false
 bulwarkText.Parent = bulwarkLabel
-
-local bulwarkCorner = Instance.new("UICorner")
-bulwarkCorner.CornerRadius = UDim.new(0, 7)
-bulwarkCorner.Parent = bulwarkText
 
 part(
     "StartPlatform",
@@ -183,7 +203,7 @@ part(
     Enum.Material.Neon
 )
 
-local bounds = anchor("ArenaBounds", Vector3.new(0, 8, 0))
-bounds.Size = Vector3.new(92, 16, 592)
+local bounds = anchor("ArenaBounds", Vector3.new(0, 8, -150))
+bounds.Size = Vector3.new(92, 16, 292)
 
 print("[MergeEggPrototype] authored Workspace.Maps.MergeEggPrototype")

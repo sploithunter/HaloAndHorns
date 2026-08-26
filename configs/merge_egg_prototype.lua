@@ -1,5 +1,5 @@
 --[[
-    Studio-only Merge an Egg Phase 3.
+    Studio-only Merge an Egg Phase 4.
 
     This is deliberately one authored strip under Workspace.Maps. It does not use the tile kit,
     mission layout generation, or any streaming/chunk lifecycle. Four stationary NPC principals
@@ -16,7 +16,7 @@ local squad = {
 }
 
 return {
-    version = 3,
+    version = 4,
     enabled = true,
     stream_timeout = 8,
 
@@ -24,7 +24,7 @@ return {
         hook_name = "HallOfWorldsPortal",
         prompt_name = "MergeEggPrototypeEnterPrompt",
         action_text = "Enter Prototype",
-        object_text = "Merge an Egg — Phase 3",
+        object_text = "Merge an Egg — Phase 4",
         title = "MERGE AN EGG\nPROTOTYPE",
     },
 
@@ -41,9 +41,9 @@ return {
         bulwark_line = "BulwarkLine",
         bounds = {
             center_x = -16000,
-            center_z = 0,
+            center_z = -150,
             half_x = 46,
-            half_z = 296,
+            half_z = 146,
             inset = 3,
         },
     },
@@ -65,16 +65,39 @@ return {
         return_ready_distance = 20,
     },
 
+    -- The production egg system is deliberately not coupled in yet. This first queue experiment
+    -- preserves each NPC team's authored five-slot identity: a defeated slot enters that captain's
+    -- FIFO, and the replacement hatches at the stationary captain before traveling back to battle.
+    -- Four real seconds at 4× combat approximates a 16-second production cadence for comparison.
+    reinforcement = {
+        enabled = true,
+        hatch_seconds = 4,
+        queue_policy = "per_team_fifo_exact_slot",
+    },
+
+    -- Five protected reserve eggs are the prototype's base health. A marcher that reaches the rear
+    -- line destroys one; losing the fifth ends the run. Replacement hatches are intentionally
+    -- abstract/unlimited in this pass so objective pressure and queue throughput remain separable.
+    objective = {
+        starting_eggs = 5,
+        damage_per_escape = 1,
+    },
+
     -- Early-balance accelerator: both sides attack four times as often. Movement, regeneration,
     -- aggro decay, and wave timing remain at real speed so the lane still reads clearly.
     combat = {
         attack_cadence_multiplier = 4,
     },
 
-    -- Keep enemy stats fixed so this isolates concurrency and cumulative squad endurance. The run
-    -- stops when every temporary team is defeated; no empty follow-up wave is spawned.
+    debug = {
+        trace_bulwark_aggro = true,
+        bulwark_trace_seconds = 2,
+    },
+
+    -- Keep enemy stats fixed so this isolates concurrency and cumulative squad endurance. With
+    -- replacement queues enabled, an empty field may recover; the protected egg reserve is defeat.
     endurance = {
-        stop_when_all_teams_defeated = true,
+        stop_when_all_teams_defeated = false,
     },
 
     teams = {
@@ -126,9 +149,12 @@ return {
         reengage_seconds = 1,
         -- Past the authored BulwarkLine, strict team ownership ends. A breached enemy becomes an
         -- open emergency target and every surviving hatcher folder receives a sustained ordinary
-        -- threat floor. Refreshing the floor lets a team finish its current target, then respond.
+        -- threat floor. The breach plane uses authoritative MoveTarget plus the enemy's forward
+        -- visual extent, never its stale server pivot (client interpolation owns visible movement).
+        -- Refreshing the floor lets a team finish its current target, then respond.
         bulwark_threat = 250,
         bulwark_reengage_seconds = 0.5,
+        bulwark_contact_padding = 1,
         spawn_inset = 5,
         finish_inset = 5,
         -- The first assignment in every non-empty team group is a real tank role. Keeping one

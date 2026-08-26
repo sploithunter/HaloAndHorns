@@ -1,5 +1,5 @@
 --[[
-    MergeEggPrototypeObserver — read-only Phase 3 combat telemetry.
+    MergeEggPrototypeObserver — read-only Phase 4 combat telemetry.
 
     The player's ordinary SquadHud remains reserved for their own deployable team. This Studio-only
     rail renders one column per hatcher NPC from replicated folder/model attributes: five stable pet
@@ -103,12 +103,19 @@ local function worldProgress()
     local world = maps
         and maps:FindFirstChild((CONFIG.world or {}).model_name or "MergeEggPrototype")
     if not world then
-        return 0, #(CONFIG.waves or {}), "ReadyToHatch", 0
+        local starting =
+            math.max(1, math.floor(tonumber((CONFIG.objective or {}).starting_eggs) or 5))
+        return 0, #(CONFIG.waves or {}), "ReadyToHatch", 0, starting, starting, 0, 0, 0
     end
     return tonumber(world:GetAttribute("CurrentWave")) or 0,
         tonumber(world:GetAttribute("WaveCount")) or #(CONFIG.waves or {}),
         tostring(world:GetAttribute("PrototypeState") or "ReadyToHatch"),
-        math.max(0, tonumber(world:GetAttribute("ActiveEnemies")) or 0)
+        math.max(0, tonumber(world:GetAttribute("ActiveEnemies")) or 0),
+        math.max(0, tonumber(world:GetAttribute("ObjectiveEggsRemaining")) or 0),
+        math.max(1, tonumber(world:GetAttribute("ObjectiveEggsStarting")) or 5),
+        math.max(0, tonumber(world:GetAttribute("ReplacementQueueDepth")) or 0),
+        math.max(0, tonumber(world:GetAttribute("PeakReplacementQueueDepth")) or 0),
+        math.max(0, tonumber(world:GetAttribute("ReplacementsHatched")) or 0)
 end
 
 local function waveWord(wave)
@@ -127,7 +134,7 @@ local function createWaveMeter(parent)
     local teamRailWidth = (#(CONFIG.teams or {}) * PANEL_WIDTH)
         + (math.max(0, #(CONFIG.teams or {}) - 1) * 4)
     frame.Position = UDim2.new(0.5, -math.floor(teamRailWidth * 0.5), 0, 88)
-    frame.Size = UDim2.fromOffset(430, 66)
+    frame.Size = UDim2.fromOffset(430, 82)
     frame.BackgroundColor3 = Color3.fromRGB(24, 30, 43)
     frame.BackgroundTransparency = 0.05
     frame.BorderSizePixel = 0
@@ -159,11 +166,13 @@ local function createWaveMeter(parent)
     detail.Name = "WaveDetail"
     detail.BackgroundTransparency = 1
     detail.Position = UDim2.fromOffset(12, 33)
-    detail.Size = UDim2.new(1, -24, 0, 18)
+    detail.Size = UDim2.new(1, -24, 0, 34)
     detail.Font = Enum.Font.GothamBold
     detail.Text = "8-WAVE ENDURANCE TEST • 4× COMBAT"
     detail.TextColor3 = Color3.fromRGB(180, 200, 225)
     detail.TextSize = 11
+    detail.TextWrapped = true
+    detail.TextYAlignment = Enum.TextYAlignment.Top
     detail.Parent = frame
 
     local track = Instance.new("Frame")
@@ -198,24 +207,43 @@ local function createWaveMeter(parent)
     }
 end
 
-local function updateWaveMeter(meter, wave, waveCount, state, activeEnemies, announcing)
+local function updateWaveMeter(
+    meter,
+    wave,
+    waveCount,
+    state,
+    activeEnemies,
+    eggsRemaining,
+    eggsStarting,
+    queueDepth,
+    peakQueueDepth,
+    replacementsHatched,
+    announcing
+)
     meter.frame.Visible = true
     if wave <= 0 then
         meter.title.Text = "READY TO HATCH"
         meter.detail.Text = string.format(
-            "%d-WAVE ENDURANCE TEST • %.0f× COMBAT",
+            "%d-WAVE ENDURANCE TEST • %.0f× COMBAT\nEGGS %d/%d • FIFO QUEUE READY",
             waveCount,
-            COMBAT_CADENCE_MULTIPLIER
+            COMBAT_CADENCE_MULTIPLIER,
+            eggsRemaining,
+            eggsStarting
         )
     else
         meter.title.Text = "WAVE " .. waveWord(wave)
         meter.detail.Text = string.format(
-            "%d / %d  •  %d ACTIVE  •  %s  •  %.0f× COMBAT",
+            "%d / %d  •  %d ACTIVE  •  %s  •  %.0f× COMBAT\nEGGS %d/%d • QUEUE %d (PEAK %d) • HATCHED %d",
             wave,
             waveCount,
             activeEnemies,
             readableState(state),
-            COMBAT_CADENCE_MULTIPLIER
+            COMBAT_CADENCE_MULTIPLIER,
+            eggsRemaining,
+            eggsStarting,
+            queueDepth,
+            peakQueueDepth,
+            replacementsHatched
         )
     end
     meter.fill.Size = UDim2.fromScale(math.clamp(wave / math.max(1, waveCount), 0, 1), 1)
@@ -324,7 +352,7 @@ local function cardFor(panel, slot)
     return card
 end
 
-local function updatePetCard(card, pet, authored, factor)
+local function updatePetCard(card, pet, authored, factor, queued)
     local petType = pet and pet:GetAttribute("PetType") or authored.pet or "pet"
     local roleId = pet and pet:GetAttribute("PetRole")
         or (PET_ROLES.by_type and PET_ROLES.by_type[petType])
@@ -362,8 +390,8 @@ local function updatePetCard(card, pet, authored, factor)
     else
         card.name.Text = prettyName(petType)
         card.fill.Size = UDim2.fromScale(0, 1)
-        card.fill.BackgroundColor3 = HudCard.HP_RED
-        card.note.Text = "DEFEATED"
+        card.fill.BackgroundColor3 = queued and Color3.fromRGB(225, 145, 65) or HudCard.HP_RED
+        card.note.Text = queued and "QUEUED" or "DEFEATED"
     end
 end
 
@@ -384,21 +412,26 @@ local function updatePanel(panel, folder, wave, waveCount, factor)
     local peakAssigned =
         math.max(0, tonumber(folder:GetAttribute("MergeEggPeakAssignedEnemies")) or assigned)
     local firstLossWave = tonumber(folder:GetAttribute("MergeEggFirstLossWave"))
+    local queueDepth =
+        math.max(0, tonumber(folder:GetAttribute("MergeEggReplacementQueueDepth")) or 0)
+    local replacementsHatched =
+        math.max(0, tonumber(folder:GetAttribute("MergeEggReplacementsHatched")) or 0)
     local lossText = firstLossWave and string.format(" • L%d", firstLossWave) or ""
     local state = tostring(folder:GetAttribute("MergeEggTeamState") or "Ready"):upper()
     panel.title.Text = tostring(
         folder:GetAttribute("MergeEggTeamDisplayName") or ("NPC Team " .. panel.id)
     ):upper()
     panel.summary.Text = string.format(
-        "%s %d/%d • F%d/P%d • W%d/%d • %.0f×%s",
+        "%s %d/%d • Q%d/H%d • F%d/P%d • W%d/%d%s",
         state,
         active,
         expected,
+        queueDepth,
+        replacementsHatched,
         assigned,
         peakAssigned,
         wave,
         waveCount,
-        COMBAT_CADENCE_MULTIPLIER,
         lossText
     )
     panel.summary.TextColor3 = state == "DEFEATED" and Color3.fromRGB(240, 105, 95)
@@ -406,13 +439,25 @@ local function updatePanel(panel, folder, wave, waveCount, factor)
         or Color3.fromRGB(175, 205, 230)
 
     local bySlot = {}
+    local queuedSlots = {}
+    for value in
+        string.gmatch(tostring(folder:GetAttribute("MergeEggReplacementSlots") or ""), "[^,]+")
+    do
+        queuedSlots[tonumber(value)] = true
+    end
     for _, pet in ipairs(folder:GetChildren()) do
         if pet:IsA("Model") then
             bySlot[petSlot(pet)] = pet
         end
     end
     for slot = 1, expected do
-        updatePetCard(cardFor(panel, slot), bySlot[slot], squad[slot] or {}, factor)
+        updatePetCard(
+            cardFor(panel, slot),
+            bySlot[slot],
+            squad[slot] or {},
+            factor,
+            queuedSlots[slot] == true
+        )
     end
     for slot, card in pairs(panel.cards) do
         if slot > expected then
@@ -483,7 +528,8 @@ function MergeEggPrototypeObserver.start()
         end
 
         local folders = teamFolders()
-        local wave, waveCount, state, activeEnemies = worldProgress()
+        local wave, waveCount, state, activeEnemies, eggsRemaining, eggsStarting, queueDepth, peakQueueDepth, replacementsHatched =
+            worldProgress()
         if wave > 0 and wave ~= lastWave then
             lastWave = wave
             announceUntil = os.clock() + 2.5
@@ -496,6 +542,11 @@ function MergeEggPrototypeObserver.start()
             waveCount,
             state,
             activeEnemies,
+            eggsRemaining,
+            eggsStarting,
+            queueDepth,
+            peakQueueDepth,
+            replacementsHatched,
             os.clock() < announceUntil
         )
         for id, panel in pairs(panels) do

@@ -1398,6 +1398,67 @@ function EnemyService:FocusSquadOnEnemy(player, targetId, opts)
     return true
 end
 
+-- Explicit early-prototype diagnostic: print the live pet-side and enemy-side aggro rows for one
+-- folder/target pair. Callers opt in; normal combat never emits this trace. This deliberately reads
+-- the same hostility, territory, position, and exit-floor gates as automatic target assignment so
+-- an idle pet explains whether it lacks threat or is filtering the target out.
+function EnemyService:TracePetFolderAggro(folder, targetId, context)
+    targetId = tonumber(targetId)
+    local entry = targetId and self._enemies[targetId]
+    local player = folder and self:_playerForPetFolder(folder)
+    if not (folder and folder.Parent and entry and entry.model and player) then
+        return false, 0
+    end
+    local pfs = self:_petFollowService()
+    local v2 = self:_aggroV2()
+    local exitFloor = (v2 and v2.base and v2.base.exit_floor) or 1
+    local traced = 0
+    print(
+        string.format(
+            "[BulwarkAggro] %s folder=%s team=%s enemy=%s open=%s move=%s",
+            tostring(context or "trace"),
+            folder.Name,
+            tostring(folder:GetAttribute("MergeEggTeamId") or "?"),
+            tostring(targetId),
+            tostring(entry.model:GetAttribute("CombatTargetOpen") == true),
+            tostring(entry.model:GetAttribute("MoveTarget"))
+        )
+    )
+    for _, pet in ipairs(folder:GetChildren()) do
+        if pet:IsA("Model") then
+            local table_ = self:_petAggroTable(pet)
+            local threat = AggroTable.get(table_, targetId)
+            local topId, topThreat = AggroTable.top(table_, 0, function(id)
+                return self._enemies[id] ~= nil
+            end)
+            local target = pet:FindFirstChild("TargetID")
+            local hostile = self:_petHostileToEnemy(pet, entry, player)
+            local territory = self:_inTerritory(entry, player)
+            local eligible = threat > exitFloor and hostile and territory
+            local distance = entry.pos and (entry.pos - self:_petPosition(pet, pfs)).Magnitude or -1
+            print(
+                string.format(
+                    "[BulwarkAggro] pet=%s role=%s current=%s threat=%.1f top=%s:%.1f enemyThreat=%.1f distance=%.1f eligible=%s hostile=%s territory=%s downed=%s",
+                    pet.Name,
+                    tostring(pet:GetAttribute("PetRole") or pet:GetAttribute("PetType")),
+                    tostring(target and target.Value or 0),
+                    threat,
+                    tostring(topId or 0),
+                    topThreat or 0,
+                    AggroTable.get(entry.aggro, pet),
+                    distance,
+                    tostring(eligible),
+                    tostring(hostile),
+                    tostring(territory),
+                    tostring(pet:GetAttribute("CombatDowned") == true)
+                )
+            )
+            traced += 1
+        end
+    end
+    return true, traced
+end
+
 -- Teaching-room leftovers (tagged CombatTutorialEnemy). Persistent tutorial
 -- packs must leave through this teardown path, not model:Destroy(), or the
 -- HUD and the next spawn still see the old pack.
