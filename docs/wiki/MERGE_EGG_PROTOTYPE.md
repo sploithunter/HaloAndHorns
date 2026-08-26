@@ -102,8 +102,10 @@ commanded NPC teams. It still does not add the production deployment queue.
 - A gold Neon `BulwarkLine` spans the strip 13 studs in front of the hatcher anchors. The line is
   both the visual rule and the authoritative directional plane. Once an enemy crosses it toward the
   finish, that enemy becomes an open emergency target and every surviving NPC folder receives the
-  same 250 ordinary-threat seed. There are no idle reserves behind the bulwark, but existing threat
-  tables still decide whether already-engaged pets peel from their current targets.
+  same 250 ordinary-threat floor. The floor refreshes every 0.5 seconds while the enemy remains
+  breached, so a team can finish its current target and still acquire the emergency afterward.
+  There are no idle reserves behind the bulwark, but existing threat tables still decide whether
+  already-engaged pets peel from their current targets.
 - Team telemetry and lifecycle are independent. One folder can be Ready or Returning while another
   is Engaged, and each publishes its assigned-enemy, target, active, defeated, returned, first-loss,
   and peak-pressure counts. The encounter publishes the first pet-loss wave and active-enemy count,
@@ -146,6 +148,12 @@ which had no assigned enemy—put all five pets on the Brute. Teams already figh
 their higher-threat targets, confirming that the breach removes idle reserves without hard-pinning
 the active teams. The final authored roster also rendered one Beacon Finch in each of the four
 observer columns, and the runtime log contained no prototype or target-group errors.
+
+A later live run exposed that the one-time emergency seed could decay while those teams finished
+other targets, leaving the last Brute forgotten behind the line. After changing the seed to the
+0.5-second sustained floor, the same forced Team 3 breach stayed open, repeatedly refreshed all four
+folders, and all 20 live pets acquired the Brute. Its HP fell from 1,600 to 632 during the trace and
+the group finished it before the next wave.
 
 One balance caveat remains visible: generic per-pet regeneration starts at 15 endurance per second
 after that individual pet has gone five seconds without a hit, even while its team is still in

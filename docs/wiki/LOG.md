@@ -5167,3 +5167,7 @@ first-session cohort rates.
 - Added a persistent top-center wave meter that announces spelled-out wave names, briefly highlights
   each transition, and keeps current/total wave, active-enemy count, encounter state, and the 4×
   cadence label visible throughout the accelerated balance run.
+- Fixed a late-breach reserve gap: the initial bulwark seed could decay while surviving teams were
+  occupied, leaving a final Ember Brute unopposed after those targets cleared. Breached enemies now
+  refresh a non-accumulating 250-threat floor every 0.5 seconds, preserving normal target choice
+  while guaranteeing newly free defenders still see the emergency.

@@ -125,8 +125,10 @@ return {
         engagement_threat = 250,
         reengage_seconds = 1,
         -- Past the authored BulwarkLine, strict team ownership ends. A breached enemy becomes an
-        -- open emergency target and every surviving hatcher folder receives an ordinary seed.
+        -- open emergency target and every surviving hatcher folder receives a sustained ordinary
+        -- threat floor. Refreshing the floor lets a team finish its current target, then respond.
         bulwark_threat = 250,
+        bulwark_reengage_seconds = 0.5,
         spawn_inset = 5,
         finish_inset = 5,
         -- The first assignment in every non-empty team group is a real tank role. Keeping one

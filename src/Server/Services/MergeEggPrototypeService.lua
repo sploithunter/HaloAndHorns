@@ -901,20 +901,7 @@ function MergeEggPrototypeService:_teamEngagedWithEnemy(team, enemy)
     return false
 end
 
-function MergeEggPrototypeService:_openBulwarkTarget(record, enemy)
-    local model = enemy and enemy.model
-    if
-        self._active ~= record
-        or not (model and model.Parent)
-        or model:GetAttribute("MergeEggBulwarkBreached") == true
-    then
-        return
-    end
-
-    model:SetAttribute("MergeEggBulwarkBreached", true)
-    model:SetAttribute("CombatTargetOpen", true)
-    record.breached += 1
-
+function MergeEggPrototypeService:_alertTeamsToBulwarkTarget(record, enemy)
     local reserveTeams = 0
     local alertedPets = 0
     local threat = math.max(
@@ -938,8 +925,31 @@ function MergeEggPrototypeService:_openBulwarkTarget(record, enemy)
             end
         end
     end
+    return reserveTeams, alertedPets
+end
+
+function MergeEggPrototypeService:_openBulwarkTarget(record, enemy, now)
+    local model = enemy and enemy.model
+    if
+        self._active ~= record
+        or not (model and model.Parent)
+        or model:GetAttribute("MergeEggBulwarkBreached") == true
+    then
+        return
+    end
+
+    model:SetAttribute("MergeEggBulwarkBreached", true)
+    model:SetAttribute("CombatTargetOpen", true)
+    record.breached += 1
+
+    now = tonumber(now) or os.clock()
+    local reserveTeams, alertedPets = self:_alertTeamsToBulwarkTarget(record, enemy)
+    local reengageSeconds =
+        math.max(0.25, tonumber((self._config.enemy or {}).bulwark_reengage_seconds) or 0.5)
     model:SetAttribute("MergeEggReserveTeamCount", reserveTeams)
     model:SetAttribute("MergeEggReserveAlertedPets", alertedPets)
+    model:SetAttribute("MergeEggBulwarkAlertCount", 1)
+    model:SetAttribute("MergeEggNextBulwarkAlertAt", now + reengageSeconds)
     self:_setWorldState("WaveActive", record)
     self:_log("Info", "Merge Egg prototype bulwark breached", {
         player = record.player.Name,
@@ -949,6 +959,32 @@ function MergeEggPrototypeService:_openBulwarkTarget(record, enemy)
         reserveTeams = reserveTeams,
         alertedPets = alertedPets,
     })
+end
+
+function MergeEggPrototypeService:_sustainBulwarkTarget(record, enemy, now)
+    local model = enemy and enemy.model
+    if
+        self._active ~= record
+        or not (model and model.Parent)
+        or model:GetAttribute("MergeEggBulwarkBreached") ~= true
+        or now < (tonumber(model:GetAttribute("MergeEggNextBulwarkAlertAt")) or 0)
+    then
+        return
+    end
+
+    local reengageSeconds =
+        math.max(0.25, tonumber((self._config.enemy or {}).bulwark_reengage_seconds) or 0.5)
+    local reserveTeams, alertedPets = self:_alertTeamsToBulwarkTarget(record, enemy)
+    model:SetAttribute("MergeEggReserveTeamCount", reserveTeams)
+    model:SetAttribute("MergeEggReserveAlertedPets", alertedPets)
+    model:SetAttribute(
+        "MergeEggBulwarkAlertCount",
+        (tonumber(model:GetAttribute("MergeEggBulwarkAlertCount")) or 1) + 1
+    )
+    model:SetAttribute("MergeEggNextBulwarkAlertAt", now + reengageSeconds)
+    if alertedPets > 0 then
+        self:_setWorldState("WaveActive", record)
+    end
 end
 
 function MergeEggPrototypeService:_alertApproachingEnemies(record)
@@ -984,37 +1020,39 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
             and model
             and model.Parent
             and (tonumber(model:GetAttribute("HP")) or 0) > 0
-            and typeof(position) == "Vector3"
         then
-            local localPosition = finishLine.CFrame:PointToObjectSpace(position)
-            if math.abs(localPosition.Z) <= alertDistance then
-                local firstAlert = model:GetAttribute("MergeEggDefenseAlerted") ~= true
-                local engaged = self:_teamEngagedWithEnemy(team, enemy)
-                local nextAlertAt = tonumber(model:GetAttribute("MergeEggNextDefenseAlertAt")) or 0
-                -- The first alert is only a normal threat seed, not a forced target. If both sides
-                -- later drop the fight while the marcher is still in the defense lane, seed it
-                -- again; tanks and the ordinary tables remain free to redistribute that threat.
-                if firstAlert or (not engaged and now >= nextAlertAt) then
-                    local ok, alertedPets = self._enemyService:AlertPetFolderToEnemy(
-                        team.folder,
-                        enemy.targetId,
-                        { threat = alertThreat }
-                    )
-                    if ok then
-                        local alertCount = (
-                            tonumber(model:GetAttribute("MergeEggDefenseAlertCount")) or 0
-                        ) + 1
-                        model:SetAttribute("MergeEggDefenseAlerted", true)
-                        model:SetAttribute("MergeEggDefenseAlertCount", alertCount)
-                        model:SetAttribute("MergeEggNextDefenseAlertAt", now + reengageSeconds)
-                        model:SetAttribute("MergeEggAlertedPets", alertedPets)
-                        model:SetAttribute("MergeEggAlertedTeamId", team.id)
-                        if firstAlert then
-                            record.alerted += 1
+            if typeof(position) == "Vector3" then
+                local localPosition = finishLine.CFrame:PointToObjectSpace(position)
+                if math.abs(localPosition.Z) <= alertDistance then
+                    local firstAlert = model:GetAttribute("MergeEggDefenseAlerted") ~= true
+                    local engaged = self:_teamEngagedWithEnemy(team, enemy)
+                    local nextAlertAt = tonumber(model:GetAttribute("MergeEggNextDefenseAlertAt"))
+                        or 0
+                    -- The first alert is only a normal threat seed, not a forced target. If both sides
+                    -- later drop the fight while the marcher is still in the defense lane, seed it
+                    -- again; tanks and the ordinary tables remain free to redistribute that threat.
+                    if firstAlert or (not engaged and now >= nextAlertAt) then
+                        local ok, alertedPets = self._enemyService:AlertPetFolderToEnemy(
+                            team.folder,
+                            enemy.targetId,
+                            { threat = alertThreat }
+                        )
+                        if ok then
+                            local alertCount = (
+                                tonumber(model:GetAttribute("MergeEggDefenseAlertCount")) or 0
+                            ) + 1
+                            model:SetAttribute("MergeEggDefenseAlerted", true)
+                            model:SetAttribute("MergeEggDefenseAlertCount", alertCount)
+                            model:SetAttribute("MergeEggNextDefenseAlertAt", now + reengageSeconds)
+                            model:SetAttribute("MergeEggAlertedPets", alertedPets)
+                            model:SetAttribute("MergeEggAlertedTeamId", team.id)
+                            if firstAlert then
+                                record.alerted += 1
+                            end
+                            team.engaged = true
+                            self:_setTeamState(record, team, "Engaged")
+                            self:_setWorldState("WaveActive", record)
                         end
-                        team.engaged = true
-                        self:_setTeamState(record, team, "Engaged")
-                        self:_setWorldState("WaveActive", record)
                     end
                 end
             end
@@ -1030,9 +1068,10 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                     actualPosition.Z - bulwarkLine.Position.Z
                 )
                 if fromBulwark:Dot(towardFinish.Unit) >= 0 then
-                    self:_openBulwarkTarget(record, enemy)
+                    self:_openBulwarkTarget(record, enemy, now)
                 end
             end
+            self:_sustainBulwarkTarget(record, enemy, now)
         end
     end
 end
