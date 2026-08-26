@@ -5086,6 +5086,9 @@ first-session cohort rates.
 - Live defense-wave tracing found pet target selection applying the ordinary acquisition radius
   after the alert had already seeded threat. Existing above-floor threat now retains eligibility
   outside that radius; ambient acquisition, territory, allegiance, decay, and taunts are unchanged.
+- A second timeline showed target IDs remaining stable until each enemy died, but the 260-stud alert
+  crossed the 200-stud formation catch-up threshold and snapped pets forward, then home at the wave
+  break. Combat targets now use bounded travel; formation and owner-teleport recovery still snap.
 
 ## 2026-08-26 — Merge an Egg Phase 1 authored-strip prototype
 
