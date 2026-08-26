@@ -47,6 +47,11 @@ Stationary principals are not a separate NPC system. Their pets remain `NpcSquad
 session player. `EnemyService:AlertPetFolderToEnemy` can seed exactly one such folder without
 drafting the owner's squad or their other NPC principals.
 
+Independently commanded battles may also stamp the same non-empty `CombatTargetGroup` attribute on
+a pet and an enemy. Once either actor opts in, acquisition and passive aggro require an exact group
+match in both directions; two ungrouped actors preserve ordinary combat. This prevents several NPC
+principals attributed to one session player from collapsing back into one broad battle team.
+
 NPC pet presentation remains client-rendered, but gameplay position is no longer collapsed to the
 principal root. `PetFollowService` advances a bounded server-authoritative combat position at the
 same travel-speed cap, and both damage range and enemy pursuit consume it. This matters for static
