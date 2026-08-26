@@ -71,7 +71,9 @@ filtered out of production registries.
   path; reward-free enemies may instead use a server-only once-per-defeat callback. Temporary pet
   models may opt into `EphemeralDownPolicy = "destroy"`, which removes them and clears combat
   references before the profile-oriented downed/slot-lockout lifecycle. Callers must stamp that
-  policy before parenting the model into the live pet folder.
+  policy before parenting the model into the live pet folder. Spawn callers may also supply an
+  ordered authored `patrolRoute`; it replaces random idle meander, pauses while combat owns enemy
+  motion, resumes after disengagement, and fires one server-only callback at the final waypoint.
 - `CombatApplication` is the runtime combat-state boundary. `ApplyHit` publishes resolved
   hit/miss/dodge/block/absorb/immune outcomes, `ApplyDamage` mutates enemy HP or pet endurance and
   credits contribution, and `ApplyPowerHeal` mutates active/power healing. All three publish the

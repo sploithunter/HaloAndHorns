@@ -5075,3 +5075,6 @@ first-session cohort rates.
 - Added an opt-in destroy-on-down lifecycle for session-only pet models and construction-time ghost
   attributes so temporary squads never enter saved pet slot lockouts or briefly appear untagged.
 - The generic seams and their source contracts pass all 2,303 headless checks.
+- Added a generic directed patrol-route option for authored enemy encounters. Routes advance only
+  while an enemy is idle, pause without losing progress during combat, resume after disengagement,
+  and report final-waypoint arrival through a one-shot server callback.
