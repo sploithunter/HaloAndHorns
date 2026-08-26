@@ -1,5 +1,5 @@
 --[[
-    Studio-only Merge an Egg Phase 4.
+    Studio-only Merge an Egg Phase 5.
 
     This is deliberately one authored strip under Workspace.Maps. It does not use the tile kit,
     mission layout generation, or any streaming/chunk lifecycle. Four stationary NPC principals
@@ -7,16 +7,8 @@
     session-only.
 ]]
 
-local squad = {
-    { pet = "trail_pup", variant = "basic" },
-    { pet = "trail_pup", variant = "basic" },
-    { pet = "beacon_finch", variant = "basic" },
-    { pet = "pack_tortoise", variant = "basic" },
-    { pet = "compass_fox", variant = "basic" },
-}
-
 return {
-    version = 4,
+    version = 5,
     enabled = true,
     stream_timeout = 8,
 
@@ -24,7 +16,7 @@ return {
         hook_name = "HallOfWorldsPortal",
         prompt_name = "MergeEggPrototypeEnterPrompt",
         action_text = "Enter Prototype",
-        object_text = "Merge an Egg — Phase 4",
+        object_text = "Merge an Egg — Phase 5",
         title = "MERGE AN EGG\nPROTOTYPE",
     },
 
@@ -39,12 +31,13 @@ return {
         enemy_spawn_area = "EnemySpawnArea",
         enemy_finish_line = "EnemyFinishLine",
         bulwark_line = "BulwarkLine",
+        enemy_portal_visual = "EnemyPortalVisual",
         bounds = {
             center_x = -16000,
             center_z = -150,
             half_x = 46,
-            half_z = 146,
-            inset = 3,
+            half_z = 149,
+            inset = 1,
         },
     },
 
@@ -53,26 +46,31 @@ return {
     principal = {
         avatar_owner = true,
         level = 1,
-        squad = squad,
+        squad = {},
         alliance = { enabled = false },
         powers = {},
         auto_farm = { enabled = false },
     },
 
-    squad = squad,
+    -- Required by the config schema for compatibility; Phase 5 never reads a fixed roster.
+    squad = {},
 
     team = {
         return_ready_distance = 20,
+        egg_id = "grass_egg",
+        initial_hatch_count = 5,
     },
 
-    -- The production egg system is deliberately not coupled in yet. This first queue experiment
-    -- preserves each NPC team's authored five-slot identity: a defeated slot enters that captain's
-    -- FIFO, and the replacement hatches at the stationary captain before traveling back to battle.
+    -- The shipping egg roll is now the source of every prototype pet. This queue experiment
+    -- preserves each NPC team's five stable slots: a defeated slot enters that captain's FIFO, and
+    -- a fresh Home Grass Egg outcome hatches into that slot at the stationary captain before
+    -- traveling back to battle. Species, variant, and the rare Huge roll can change; only the slot
+    -- itself remains stable.
     -- Four real seconds at 4× combat approximates a 16-second production cadence for comparison.
     reinforcement = {
         enabled = true,
         hatch_seconds = 4,
-        queue_policy = "per_team_fifo_exact_slot",
+        queue_policy = "per_team_fifo_random_egg_roll",
     },
 
     -- Five protected reserve eggs are the prototype's base health. A marcher that reaches the rear
@@ -107,7 +105,6 @@ return {
             principal_display_name = "Hatcher Captain 1",
             display_name = "NPC Team 1",
             spawn_offset = { x = -24, z = 0 },
-            squad = squad,
         },
         {
             id = 2,
@@ -115,7 +112,6 @@ return {
             principal_display_name = "Hatcher Captain 2",
             display_name = "NPC Team 2",
             spawn_offset = { x = -8, z = 0 },
-            squad = squad,
         },
         {
             id = 3,
@@ -123,7 +119,6 @@ return {
             principal_display_name = "Hatcher Captain 3",
             display_name = "NPC Team 3",
             spawn_offset = { x = 8, z = 0 },
-            squad = squad,
         },
         {
             id = 4,
@@ -131,7 +126,6 @@ return {
             principal_display_name = "Hatcher Captain 4",
             display_name = "NPC Team 4",
             spawn_offset = { x = 24, z = 0 },
-            squad = squad,
         },
     },
 
@@ -157,6 +151,7 @@ return {
         bulwark_contact_padding = 1,
         spawn_inset = 5,
         finish_inset = 5,
+        portal_spawn_interval = 0.15,
         -- The first assignment in every non-empty team group is a real tank role. Keeping one
         -- tank per group (rather than a global tank count) makes the 3/5/8/... ladder comparable
         -- even when round-robin assignment leaves one team idle.

@@ -254,6 +254,23 @@ function NpcPrincipalService:_clonePet(petId, variant)
     return model
 end
 
+-- Apply the same orthogonal Huge treatment to every ghost construction path. Randomized prototype
+-- eggs can very rarely roll Huge just like a normal hatch; stationary-principal squads must not
+-- silently lose that result merely because they use _spawnSquad instead of SpawnGhostSquad.
+function NpcPrincipalService:_applyHuge(model, entry, petsConfig)
+    if not (model and entry and entry.huge == true) then
+        return
+    end
+    local raw = petsConfig and petsConfig.pets and petsConfig.pets[entry.pet]
+    local hugeScale = raw and raw.asset_transform and tonumber(raw.asset_transform.huge_scale)
+    if hugeScale and hugeScale > 1 then
+        pcall(function()
+            model:ScaleTo(model:GetScale() * hugeScale)
+        end)
+    end
+    model:SetAttribute("Huge", true)
+end
+
 -- PUBLIC: spawn ghost pets into an EXISTING folder without wiping it (the prologue grants
 -- the player a temporary squad this way — Jason: "one of every dragon plus a huge Ent for a
 -- tank"). Each entry: { pet, variant, huge }. Huge applies the same relative ScaleTo the
@@ -302,18 +319,7 @@ function NpcPrincipalService:SpawnGhostSquad(folder, squad, originCf, opts)
             -- Damage + HUD endurance both read the Power NUMBERVALUE (the prototype carries
             -- the pet's real base_power via AddPetSystemComponents) — ghosts hit like the
             -- dragons they are, no synthetic stat.
-            if entry.huge then
-                local raw = petsConfig and petsConfig.pets and petsConfig.pets[entry.pet]
-                local hugeScale = raw
-                    and raw.asset_transform
-                    and tonumber(raw.asset_transform.huge_scale)
-                if hugeScale and hugeScale > 1 then
-                    pcall(function()
-                        model:ScaleTo(model:GetScale() * hugeScale)
-                    end)
-                end
-                model:SetAttribute("Huge", true)
-            end
+            self:_applyHuge(model, entry, petsConfig)
             model:PivotTo(originCf * CFrame.new((i - (#squad + 1) / 2) * 5, 0, 5))
             model.Parent = folder
             spawned += 1
@@ -335,6 +341,10 @@ function NpcPrincipalService:_spawnSquad(def, originCf, opts)
     opts = type(opts) == "table" and opts or {}
     local folderAttributes = type(opts.folderAttributes) == "table" and opts.folderAttributes or {}
     local petAttributes = type(opts.petAttributes) == "table" and opts.petAttributes or {}
+    local petsConfig
+    pcall(function()
+        petsConfig = require(ReplicatedStorage.Configs:WaitForChild("pets"))
+    end)
     local root = Workspace:FindFirstChild("PlayerPets")
     if not root then
         root = Instance.new("Folder")
@@ -384,6 +394,7 @@ function NpcPrincipalService:_spawnSquad(def, originCf, opts)
             for name, value in pairs(petAttributes) do
                 model:SetAttribute(name, value)
             end
+            self:_applyHuge(model, entry, petsConfig)
             model:PivotTo(originCf * CFrame.new(i * 4 - 6, 0, 4))
             model.Parent = folder
             spawned += 1

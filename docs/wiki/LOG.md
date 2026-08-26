@@ -5206,3 +5206,23 @@ first-session cohort rates.
   the unused forward approach. Enemy spawning moved to the new front end; the 260-stud automatic
   alert now starts deployment immediately, making wave and replacement iteration substantially
   faster without changing hatcher, bulwark, or finish-line spacing.
+
+## 2026-08-26 — Merge an Egg Phase 5 random Grass Egg teams and wave portal
+
+- Replaced the fixed Wayfinder rosters with five shipping Home Grass/Earth Egg rolls per NPC team.
+  The prototype reuses ordinary player luck, Golden/Rainbow, and Huge roll inputs without spending
+  currency or granting inventory; all outcomes remain session-only ghost pets.
+- Preserved one FIFO per captain and stable slot identity, but each replacement now rolls a fresh
+  Grass Egg outcome. Species/role/variant/Huge state may change, while its hatcher and formation slot
+  stay readable. Observer cards and folder/world attributes publish the latest slot result and
+  aggregate variant counts.
+- Added a temporary rear-wall portal and staggered enemy deployment. The portal remains visible only
+  while a wave still has pending enemies, then disappears without changing the solid collision wall
+  used by drive-back. The lane leash now reaches to one stud inside that wall.
+- Retained the existing eight-wave ladder as an experimental ceiling. The fixed-roster Wave 8 result
+  is not a balance promise; random-roster runs will be evaluated by their failure-wave distribution
+  and correlated hatch/queue telemetry.
+- Live verification rolled 20 pets with three Goldens and one Rainbow Bear, then observed two Team
+  1 replacements mutate Doggy/Bear into Bear/Doggy in the same slots. Wave 2 exposed five pending
+  enemies through the visible portal, sealed after the last spawn, and left the rear wall collidable.
+  The Studio runtime log remained free of prototype/config/portal errors.

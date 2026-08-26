@@ -1006,7 +1006,7 @@ if RunService:IsStudio() then
     )
 
     if isFeatureEnabled("map_binding") then
-        -- Merge an Egg Phase 1: Studio-only authored-strip prototype entered through Home's
+        -- Merge an Egg: Studio-only authored-strip prototype entered through Home's
         -- disabled Hall gate. The service is never registered in production.
         loader:RegisterModule(
             "MergeEggPrototypeService",
@@ -1018,6 +1018,7 @@ if RunService:IsStudio() then
                 "NpcPrincipalService",
                 "EnemyService",
                 "PetFollowService",
+                "EggService",
             }
         )
     end

@@ -18,7 +18,7 @@ end
 local world = Instance.new("Model")
 world.Name = "MergeEggPrototype"
 world:SetAttribute("MapKind", "AuthoredPrototype")
-world:SetAttribute("Phase", 1)
+world:SetAttribute("Phase", 5)
 world:SetAttribute("UsesTileSystem", false)
 world:SetAttribute("UsesTileStreaming", false)
 -- Workspace streaming still exists globally. Treat the tiny venue as one atomic model so
@@ -111,8 +111,79 @@ end
 
 anchor("PlayerSpawn", Vector3.new(0, 2, -268), Vector3.new(0, 2, -220))
 anchor("HatcherSpawn", Vector3.new(0, 2, -218), Vector3.new(0, 2, -170))
-local spawnArea = anchor("EnemySpawnArea", Vector3.new(0, 2, -25), Vector3.new(0, 2, -200))
-spawnArea.Size = Vector3.new(84, 1, 50)
+-- Every wave emerges from this temporary portal rather than appearing across the whole back edge.
+-- Runtime hides the visual after the final queued enemy is out; the solid end wall remains behind
+-- them as a drive-back surface.
+local spawnArea = anchor("EnemySpawnArea", Vector3.new(0, 2, -5), Vector3.new(0, 2, -200))
+spawnArea.Size = Vector3.new(24, 1, 4)
+
+local portal = Instance.new("Model")
+portal.Name = "EnemyPortalVisual"
+portal:SetAttribute("RuntimeTransientVisual", true)
+portal.Parent = world
+
+local function portalPart(name, size, offset, color, transparency)
+    local value =
+        part(name, size, CFrame.new(ORIGIN + offset), color, Enum.Material.Neon, transparency)
+    value.CanCollide = false
+    value.CanTouch = false
+    value:SetAttribute("PortalVisibleTransparency", transparency or 0)
+    value.Parent = portal
+    return value
+end
+
+portalPart(
+    "PortalCore",
+    Vector3.new(25, 12, 0.6),
+    Vector3.new(0, 7, -1.1),
+    Color3.fromRGB(116, 56, 255),
+    0.22
+)
+portalPart(
+    "PortalLeft",
+    Vector3.new(3, 16, 2),
+    Vector3.new(-14, 8, -0.8),
+    Color3.fromRGB(66, 24, 145),
+    0.05
+)
+portalPart(
+    "PortalRight",
+    Vector3.new(3, 16, 2),
+    Vector3.new(14, 8, -0.8),
+    Color3.fromRGB(66, 24, 145),
+    0.05
+)
+portalPart(
+    "PortalCrown",
+    Vector3.new(31, 3, 2),
+    Vector3.new(0, 15, -0.8),
+    Color3.fromRGB(66, 24, 145),
+    0.05
+)
+
+local portalCore = portal:FindFirstChild("PortalCore")
+local portalLight = Instance.new("PointLight")
+portalLight.Name = "PortalLight"
+portalLight.Color = Color3.fromRGB(158, 91, 255)
+portalLight.Brightness = 4
+portalLight.Range = 34
+portalLight.Parent = portalCore
+
+local portalParticles = Instance.new("ParticleEmitter")
+portalParticles.Name = "PortalParticles"
+portalParticles.Color =
+    ColorSequence.new(Color3.fromRGB(210, 170, 255), Color3.fromRGB(83, 35, 190))
+portalParticles.LightEmission = 1
+portalParticles.Lifetime = NumberRange.new(0.5, 1.1)
+portalParticles.Rate = 34
+portalParticles.Speed = NumberRange.new(0.5, 2)
+portalParticles.SpreadAngle = Vector2.new(180, 180)
+portalParticles.Size = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 0.7),
+    NumberSequenceKeypoint.new(0.5, 1.7),
+    NumberSequenceKeypoint.new(1, 0),
+})
+portalParticles.Parent = portalCore
 
 local finishLine = part(
     "EnemyFinishLine",
@@ -204,6 +275,6 @@ part(
 )
 
 local bounds = anchor("ArenaBounds", Vector3.new(0, 8, -150))
-bounds.Size = Vector3.new(92, 16, 292)
+bounds.Size = Vector3.new(92, 16, 298)
 
 print("[MergeEggPrototype] authored Workspace.Maps.MergeEggPrototype")

@@ -1,11 +1,11 @@
 --[[
-    MergeEggPrototypeService — Studio-only Phase 4 vertical slice.
+    MergeEggPrototypeService — Studio-only Phase 5 vertical slice.
 
     One player enters through Home's otherwise-disabled Hall gate, is streamed to one authored
-    strip under Workspace.Maps, and hatches four stationary NPC principals with five manifested
-    Wayfinder pets apiece. Each independently addressed squad owns a disjoint share of the same
-    escalating reward-free enemy waves marching toward one finish line. Reset makes the loop
-    repeatable; Exit restores the player's runtime squad and exact entry transform.
+    strip under Workspace.Maps, and rolls four five-pet squads from the shipping Home Grass Egg.
+    Each independently addressed squad owns a disjoint share of the same escalating reward-free
+    enemy waves, which emerge through a temporary portal and march toward one finish line. Reset
+    makes the loop repeatable; Exit restores the player's runtime squad and exact entry transform.
 
     There is intentionally no tile-kit or mission-instance world generation here. The map is a
     persistent Studio-authored Model and this service owns only session routing and cleanup.
@@ -115,14 +115,128 @@ function MergeEggPrototypeService:Init()
     self._npcPrincipalService = self._modules and self._modules.NpcPrincipalService
     self._enemyService = self._modules and self._modules.EnemyService
     self._petFollowService = self._modules and self._modules.PetFollowService
+    self._eggService = self._modules and self._modules.EggService
     self._config = (self._configLoader and self._configLoader:LoadConfig("merge_egg_prototype"))
         or require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
     self._enemiesConfig = (self._configLoader and self._configLoader:LoadConfig("enemies"))
         or require(ReplicatedStorage.Configs:WaitForChild("enemies"))
+    self._petsConfig = (self._configLoader and self._configLoader:LoadConfig("pets"))
+        or require(ReplicatedStorage.Configs:WaitForChild("pets"))
     self._active = nil
     self._entering = nil
     self._world = nil
     self._gatePrompt = nil
+end
+
+function MergeEggPrototypeService:_portalVisual()
+    local name = (self._config.world or {}).enemy_portal_visual or "EnemyPortalVisual"
+    return self._world and self._world:FindFirstChild(tostring(name), true) or nil
+end
+
+function MergeEggPrototypeService:_setPortalVisible(record, visible)
+    visible = visible == true
+    if record then
+        record.portalVisible = visible
+    end
+    local portal = self:_portalVisual()
+    for _, descendant in ipairs(portal and portal:GetDescendants() or {}) do
+        if descendant:IsA("BasePart") then
+            descendant.Transparency = visible
+                    and math.clamp(
+                        tonumber(descendant:GetAttribute("PortalVisibleTransparency")) or 0,
+                        0,
+                        1
+                    )
+                or 1
+            descendant.CanCollide = false
+            descendant.CanTouch = false
+            descendant.CanQuery = visible
+        elseif descendant:IsA("ParticleEmitter") or descendant:IsA("PointLight") then
+            descendant.Enabled = visible
+        end
+    end
+    if self._world then
+        self._world:SetAttribute("EnemyPortalVisible", visible)
+    end
+end
+
+function MergeEggPrototypeService:_activeWaveState(record)
+    return record and (record.pendingEnemySpawns or 0) > 0 and "WaveDeploying" or "WaveActive"
+end
+
+function MergeEggPrototypeService:_buildPrototypeHatchData(record)
+    local teamCfg = self._config.team or {}
+    local eggId = tostring(teamCfg.egg_id or "grass_egg")
+    local eggData = self._petsConfig
+        and self._petsConfig.egg_sources
+        and self._petsConfig.egg_sources[eggId]
+    if
+        not eggData
+        or not (self._petsConfig and self._petsConfig.simulateHatch)
+        or not (self._eggService and self._eggService.BuildPlayerHatchData)
+    then
+        return false, "prototype_egg_unavailable"
+    end
+    local ok, playerData = pcall(function()
+        return self._eggService:BuildPlayerHatchData(record.player, eggId, eggData, {})
+    end)
+    if not ok or type(playerData) ~= "table" then
+        return false, "prototype_hatch_data_failed"
+    end
+    record.eggId = eggId
+    record.hatchPlayerData = playerData
+    return true
+end
+
+function MergeEggPrototypeService:_rollPrototypePet(record)
+    if not (record and record.eggId and record.hatchPlayerData) then
+        return nil
+    end
+    local result = self._petsConfig.simulateHatch(record.eggId, record.hatchPlayerData)
+    if not (result and result.pet) then
+        return nil
+    end
+    return {
+        pet = tostring(result.pet),
+        variant = tostring(result.variant or "basic"),
+        huge = result.huge == true,
+    }
+end
+
+function MergeEggPrototypeService:_rollPrototypeSquad(record, count)
+    local squad = {}
+    for _ = 1, math.max(1, math.floor(tonumber(count) or 5)) do
+        local definition = self:_rollPrototypePet(record)
+        if not definition then
+            return nil
+        end
+        squad[#squad + 1] = definition
+    end
+    return squad
+end
+
+function MergeEggPrototypeService:_recordEggRoll(record, team, definition)
+    local variant = tostring(definition.variant or "basic")
+    record.eggRolls = (record.eggRolls or 0) + 1
+    record.eggGoldenRolls = (record.eggGoldenRolls or 0) + (variant == "golden" and 1 or 0)
+    record.eggRainbowRolls = (record.eggRainbowRolls or 0) + (variant == "rainbow" and 1 or 0)
+    record.eggHugeRolls = (record.eggHugeRolls or 0) + (definition.huge == true and 1 or 0)
+    if team then
+        team.eggRolls = (team.eggRolls or 0) + 1
+        team.eggGoldenRolls = (team.eggGoldenRolls or 0) + (variant == "golden" and 1 or 0)
+        team.eggRainbowRolls = (team.eggRainbowRolls or 0) + (variant == "rainbow" and 1 or 0)
+        team.eggHugeRolls = (team.eggHugeRolls or 0) + (definition.huge == true and 1 or 0)
+    end
+end
+
+function MergeEggPrototypeService:_publishTeamSlot(team, slot, definition)
+    local folder = team and team.folder
+    if not (folder and folder.Parent and definition) then
+        return
+    end
+    folder:SetAttribute("MergeEggSlotPet" .. slot, definition.pet)
+    folder:SetAttribute("MergeEggSlotVariant" .. slot, definition.variant or "basic")
+    folder:SetAttribute("MergeEggSlotHuge" .. slot, definition.huge == true)
 end
 
 function MergeEggPrototypeService:_log(level, message, data)
@@ -172,6 +286,16 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("EnemiesAlerted", record and record.alerted or 0)
     world:SetAttribute("EnemiesBreachedBulwark", record and record.breached or 0)
     world:SetAttribute("PeakActiveEnemies", record and record.peakActiveEnemies or 0)
+    world:SetAttribute("EnemyPortalVisible", record and record.portalVisible == true or false)
+    world:SetAttribute("WaveEnemiesPending", record and record.pendingEnemySpawns or 0)
+    world:SetAttribute(
+        "PrototypeEggId",
+        record and record.eggId or (self._config.team or {}).egg_id
+    )
+    world:SetAttribute("PrototypeEggRolls", record and record.eggRolls or 0)
+    world:SetAttribute("PrototypeGoldenRolls", record and record.eggGoldenRolls or 0)
+    world:SetAttribute("PrototypeRainbowRolls", record and record.eggRainbowRolls or 0)
+    world:SetAttribute("PrototypeHugeRolls", record and record.eggHugeRolls or 0)
     world:SetAttribute("FirstPetLossWave", record and record.firstPetLossWave or nil)
     world:SetAttribute(
         "FirstPetLossActiveEnemies",
@@ -351,6 +475,11 @@ function MergeEggPrototypeService:_syncTeamState(record, team)
     folder:SetAttribute("MergeEggReplacementsQueued", team.replacementsQueued or 0)
     folder:SetAttribute("MergeEggReplacementsHatched", team.replacementsHatched or 0)
     folder:SetAttribute("MergeEggNextReplacementAt", team.nextReplacementAt)
+    folder:SetAttribute("MergeEggSourceId", record.eggId)
+    folder:SetAttribute("MergeEggRolls", team.eggRolls or 0)
+    folder:SetAttribute("MergeEggGoldenRolls", team.eggGoldenRolls or 0)
+    folder:SetAttribute("MergeEggRainbowRolls", team.eggRainbowRolls or 0)
+    folder:SetAttribute("MergeEggHugeRolls", team.eggHugeRolls or 0)
 
     local state = "Ready"
     if record.encounterSpawned and active == 0 then
@@ -374,8 +503,9 @@ function MergeEggPrototypeService:_syncAllTeams(record)
 end
 
 function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
-    local squad = team.config.squad or self._config.squad or {}
-    local definition = squad[queued.slot]
+    local squad = team.config.squad or {}
+    local definition = queued.definition or self:_rollPrototypePet(record)
+    queued.definition = definition
     local root = team.principalModel and team.principalModel:FindFirstChild("HumanoidRootPart")
     if not (definition and root and team.folder and team.folder.Parent) then
         return false
@@ -405,8 +535,11 @@ function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
         return false
     end
     local model = models[1]
+    squad[queued.slot] = definition
     team.units[#team.units + 1] = model
     record.units[#record.units + 1] = model
+    self:_recordEggRoll(record, team, definition)
+    self:_publishTeamSlot(team, queued.slot, definition)
     team.replacementsHatched = (team.replacementsHatched or 0) + 1
     record.replacementsHatched = (record.replacementsHatched or 0) + 1
     local waitSeconds = math.max(0, now - (tonumber(queued.queuedAt) or now))
@@ -417,6 +550,8 @@ function MergeEggPrototypeService:_spawnReplacement(record, team, queued, now)
         team = team.id,
         slot = queued.slot,
         pet = definition.pet,
+        variant = definition.variant,
+        huge = definition.huge == true,
         waitSeconds = waitSeconds,
         queueDepth = self:_replacementQueueDepth(record) - 1,
     })
@@ -463,6 +598,10 @@ function MergeEggPrototypeService:_finishDefenseOverrun(record)
     end
     record.terminal = true
     record.nextWaveAt = nil
+    record.pendingWaveSpawns = {}
+    record.pendingEnemySpawns = 0
+    record.nextEnemySpawnAt = nil
+    self:_setPortalVisible(record, false)
     local survivingEnemies = 0
     for _, enemy in ipairs(record.enemies or {}) do
         if
@@ -502,6 +641,10 @@ function MergeEggPrototypeService:_finishObjectiveLost(record)
     end
     record.terminal = true
     record.nextWaveAt = nil
+    record.pendingWaveSpawns = {}
+    record.pendingEnemySpawns = 0
+    record.nextEnemySpawnAt = nil
+    self:_setPortalVisible(record, false)
     local survivingEnemies = 0
     for _, enemy in ipairs(record.enemies or {}) do
         if
@@ -545,7 +688,7 @@ function MergeEggPrototypeService:_damageObjective(record)
         self:_finishObjectiveLost(record)
         return true
     end
-    self:_setWorldState("WaveActive", record)
+    self:_setWorldState(self:_activeWaveState(record), record)
     return false
 end
 
@@ -618,7 +761,7 @@ function MergeEggPrototypeService:_unsealHallGate()
         hook,
         tostring(gateCfg.prompt_name or "MergeEggPrototypeEnterPrompt"),
         tostring(gateCfg.action_text or "Enter Prototype"),
-        tostring(gateCfg.object_text or "Merge an Egg — Phase 4"),
+        tostring(gateCfg.object_text or "Merge an Egg — Phase 5"),
         function(player)
             self:_begin(player)
         end
@@ -632,7 +775,7 @@ function MergeEggPrototypeService:_bindWorldControls(world)
         findNamedPart(world, cfg.hatcher_control),
         HATCH_PROMPT_NAME,
         "Deploy Four NPC Teams",
-        "Phase 4 Test Egg",
+        "Phase 5 Grass Egg",
         function(player)
             self:_hatch(player)
         end
@@ -641,7 +784,7 @@ function MergeEggPrototypeService:_bindWorldControls(world)
         findNamedPart(world, cfg.reset_control),
         RESET_PROMPT_NAME,
         "Reset Encounter",
-        "Merge an Egg — Phase 4",
+        "Merge an Egg — Phase 5",
         function(player)
             self:_reset(player)
         end
@@ -755,6 +898,9 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.firstPetLossWave = nil
     record.firstPetLossActiveEnemies = nil
     record.nextWaveAt = nil
+    record.pendingWaveSpawns = {}
+    record.pendingEnemySpawns = 0
+    record.nextEnemySpawnAt = nil
     record.resolvedTargets = {}
     record.enemyByTargetId = {}
     record.nextTeamSyncAt = nil
@@ -768,6 +914,13 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.longestReplacementWaitSeconds = 0
     record.enemiesRemainingAtDefeat = 0
     record.terminal = false
+    record.eggId = nil
+    record.hatchPlayerData = nil
+    record.eggRolls = 0
+    record.eggGoldenRolls = 0
+    record.eggRainbowRolls = 0
+    record.eggHugeRolls = 0
+    self:_setPortalVisible(record, false)
 
     for _, team in ipairs(record.teams or {}) do
         if team.principalName then
@@ -877,6 +1030,10 @@ function MergeEggPrototypeService:_begin(player)
         firstPetLossWave = nil,
         firstPetLossActiveEnemies = nil,
         nextWaveAt = nil,
+        pendingWaveSpawns = {},
+        pendingEnemySpawns = 0,
+        nextEnemySpawnAt = nil,
+        portalVisible = false,
         resolvedTargets = {},
         random = Random.new(),
         encounterSpawned = false,
@@ -888,6 +1045,12 @@ function MergeEggPrototypeService:_begin(player)
         peakReplacementQueueDepth = 0,
         longestReplacementWaitSeconds = 0,
         enemiesRemainingAtDefeat = 0,
+        eggId = nil,
+        hatchPlayerData = nil,
+        eggRolls = 0,
+        eggGoldenRolls = 0,
+        eggRainbowRolls = 0,
+        eggHugeRolls = 0,
         terminal = false,
     }
     if not self:_parkOwnedPets(record) then
@@ -963,8 +1126,8 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
         record.defeated += 1
     end
 
-    if record.aliveEnemies > 0 then
-        self:_setWorldState("WaveActive", record)
+    if record.aliveEnemies > 0 or (record.pendingEnemySpawns or 0) > 0 then
+        self:_setWorldState(self:_activeWaveState(record), record)
         return
     end
 
@@ -994,6 +1157,7 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
 
     record.nextWaveAt = nil
     record.terminal = true
+    self:_setPortalVisible(record, false)
     record.player:SetAttribute("MergeEggWaveComplete", true)
     self:_setWorldState("EncounterComplete", record)
     self:_log("Info", "Merge Egg prototype encounter complete", {
@@ -1016,23 +1180,129 @@ function MergeEggPrototypeService:_onEnemyReachedFinish(record, arrival)
     self:_resolveEnemy(record, "escaped", arrival.targetId)
 end
 
+function MergeEggPrototypeService:_spawnWaveEnemy(record, spec)
+    local cfg = self._config.enemy or {}
+    local spawnInset = math.max(0, tonumber(cfg.spawn_inset) or 5)
+    local finishInset = math.max(0, tonumber(cfg.finish_inset) or 5)
+    local position = randomPointOnPart(record.random, spec.spawnArea, spawnInset, spawnInset)
+        + Vector3.new(0, 3, 0)
+    -- Each enemy has only one waypoint: a randomized point across the same finish line. Its
+    -- random origin-to-finish vector is its complete path; combat may pull it off that vector.
+    local destination =
+        randomPointOnPart(record.random, spec.finishLine, finishInset, spec.finishLine.Size.Z * 0.5)
+    local result = self._enemyService:SpawnEnemy(record.player, spec.enemyId, {
+        def = cloneEnemyDef(spec.enemyDef, spec.spawnCfg),
+        position = position,
+        home = position,
+        movementLeash = self:_movementLeash(position),
+        marchGoal = {
+            destination = destination,
+            speed = math.max(1, tonumber(cfg.march_speed) or 22),
+            arriveDistance = math.max(0, tonumber(cfg.finish_distance) or 2),
+            onReached = function(arrival)
+                self:_onEnemyReachedFinish(record, arrival)
+            end,
+        },
+        rewardPolicy = "none",
+        persistent = true,
+        dormant = true,
+        ungated = true,
+        ignoreEnemyLevelOffset = true,
+        onDefeated = function(defeat)
+            self:_onEnemyDefeated(record, defeat)
+        end,
+    })
+    if not (result and result.ok and result.model) then
+        return false, result and result.reason or "enemy_spawn_failed"
+    end
+    if self._active ~= record then
+        self._enemyService:DespawnModel(result.model)
+        return false, "session_ended"
+    end
+
+    local model = result.model
+    local team = spec.team
+    model:SetAttribute("MergeEggPrototypeEnemy", true)
+    model:SetAttribute("MergeRunId", record.runId)
+    model:SetAttribute("MergeEggWave", record.waveIndex)
+    model:SetAttribute("MergeEggSpawnIndex", spec.index)
+    model:SetAttribute("MergeEggAssignedTeamId", team.id)
+    model:SetAttribute("MergeEggAssignedTeamName", team.displayName)
+    model:SetAttribute("CombatTargetGroup", team.targetGroup)
+    model:SetAttribute("CombatCadenceMultiplier", combatCadenceMultiplier(self._config))
+    model:SetAttribute(
+        "MergeEggCompositionRole",
+        spec.teamOrdinal == 1 and spec.tankCfg and "tank" or "melee"
+    )
+    result.teamId = team.id
+    record.enemies[#record.enemies + 1] = result
+    record.enemyByTargetId[result.targetId] = result
+    record.aliveEnemies += 1
+    team.assignedAlive += 1
+    record.peakActiveEnemies = math.max(record.peakActiveEnemies or 0, record.aliveEnemies)
+    return true
+end
+
+function MergeEggPrototypeService:_processWaveSpawns(record, now)
+    if not record or (record.pendingEnemySpawns or 0) <= 0 then
+        return true
+    end
+    if now < (record.nextEnemySpawnAt or 0) then
+        return true
+    end
+
+    local spec = table.remove(record.pendingWaveSpawns, 1)
+    if not spec then
+        record.pendingEnemySpawns = 0
+        self:_setPortalVisible(record, false)
+        return false, "wave_spawn_queue_missing"
+    end
+    local ok, reason = self:_spawnWaveEnemy(record, spec)
+    if not ok then
+        record.pendingWaveSpawns = {}
+        record.pendingEnemySpawns = 0
+        record.nextEnemySpawnAt = nil
+        record.nextWaveAt = nil
+        record.terminal = true
+        self:_setPortalVisible(record, false)
+        self:_setWorldState("WaveSpawnFailed", record)
+        self:_log("Warn", "Merge Egg prototype wave spawn failed", {
+            player = record.player.Name,
+            wave = record.waveIndex,
+            reason = reason,
+        })
+        return false, reason
+    end
+
+    record.pendingEnemySpawns = #record.pendingWaveSpawns
+    if record.pendingEnemySpawns == 0 then
+        record.nextEnemySpawnAt = nil
+        self:_setPortalVisible(record, false)
+        self:_setWorldState("WaveActive", record)
+    else
+        record.nextEnemySpawnAt = now
+            + math.max(0.05, tonumber((self._config.enemy or {}).portal_spawn_interval) or 0.15)
+        self:_setWorldState("WaveDeploying", record)
+    end
+    self:_syncAllTeams(record)
+    return true
+end
+
 function MergeEggPrototypeService:_spawnNextWave(record)
     if record.terminal == true then
         return false, "encounter_terminal"
     end
     local cfg = self._config.enemy or {}
     local enemyDefs = self._enemiesConfig.enemies or {}
-    local base = enemyDefs[cfg.id]
     local tankCfg = type(cfg.tank) == "table" and cfg.tank or nil
-    if not base then
+    if not enemyDefs[cfg.id] then
         return false, "enemy_config_missing"
     end
     if tankCfg and not enemyDefs[tankCfg.id] then
         return false, "enemy_tank_config_missing"
     end
-    local waves = self._config.waves or {}
     local waveIndex = record.waveIndex + 1
-    local wave = waves[waveIndex]
+    local wave = (self._config.waves or {})[waveIndex]
     if not wave then
         return false, "wave_config_missing"
     end
@@ -1042,91 +1312,48 @@ function MergeEggPrototypeService:_spawnNextWave(record)
     if not (spawnArea and finishLine) then
         return false, "enemy_march_anchor_missing"
     end
-
-    record.waveIndex = waveIndex
-    record.nextWaveAt = nil
-    record.aliveEnemies = 0
-    for _, team in ipairs(record.teams or {}) do
-        team.assignedAlive = 0
-        team.engaged = false
-    end
-    local count = math.max(1, math.floor(tonumber(wave.count) or 1))
     if #record.teams == 0 then
         return false, "defense_team_missing"
     end
-    local spawnInset = math.max(0, tonumber(cfg.spawn_inset) or 5)
-    local finishInset = math.max(0, tonumber(cfg.finish_inset) or 5)
 
+    local pending = {}
+    local count = math.max(1, math.floor(tonumber(wave.count) or 1))
     for index = 1, count do
         local teamIndex = ((index - 1) % #record.teams) + 1
         local teamOrdinal = math.floor((index - 1) / #record.teams) + 1
         local team = record.teams[teamIndex]
-        if not team then
-            return false, "defense_team_missing"
-        end
-        local spawnCfg = teamOrdinal == 1 and tankCfg or cfg
-        spawnCfg = spawnCfg or cfg
+        local spawnCfg = (teamOrdinal == 1 and tankCfg) or cfg
         local enemyId = tostring(spawnCfg.id or cfg.id)
         local enemyDef = enemyDefs[enemyId]
-        if not enemyDef then
-            return false, "enemy_config_missing"
+        if not (team and enemyDef) then
+            return false, team and "enemy_config_missing" or "defense_team_missing"
         end
-        local position = randomPointOnPart(record.random, spawnArea, spawnInset, spawnInset)
-            + Vector3.new(0, 3, 0)
-        -- Each enemy has only one waypoint: a randomized point across the same finish line. Its
-        -- random origin-to-finish vector is its complete path; combat may pull it off that vector.
-        local destination =
-            randomPointOnPart(record.random, finishLine, finishInset, finishLine.Size.Z * 0.5)
-        local result = self._enemyService:SpawnEnemy(record.player, enemyId, {
-            def = cloneEnemyDef(enemyDef, spawnCfg),
-            position = position,
-            home = position,
-            movementLeash = self:_movementLeash(position),
-            marchGoal = {
-                destination = destination,
-                speed = math.max(1, tonumber(cfg.march_speed) or 22),
-                arriveDistance = math.max(0, tonumber(cfg.finish_distance) or 2),
-                onReached = function(arrival)
-                    self:_onEnemyReachedFinish(record, arrival)
-                end,
-            },
-            rewardPolicy = "none",
-            persistent = true,
-            dormant = true,
-            ungated = true,
-            ignoreEnemyLevelOffset = true,
-            onDefeated = function(defeat)
-                self:_onEnemyDefeated(record, defeat)
-            end,
-        })
-        if not (result and result.ok and result.model) then
-            return false, result and result.reason or "enemy_spawn_failed"
-        end
-        if self._active ~= record then
-            self._enemyService:DespawnModel(result.model)
-            return false, "session_ended"
-        end
-        result.model:SetAttribute("MergeEggPrototypeEnemy", true)
-        result.model:SetAttribute("MergeRunId", record.runId)
-        result.model:SetAttribute("MergeEggWave", waveIndex)
-        result.model:SetAttribute("MergeEggSpawnIndex", index)
-        result.model:SetAttribute("MergeEggAssignedTeamId", team.id)
-        result.model:SetAttribute("MergeEggAssignedTeamName", team.displayName)
-        result.model:SetAttribute("CombatTargetGroup", team.targetGroup)
-        result.model:SetAttribute("CombatCadenceMultiplier", combatCadenceMultiplier(self._config))
-        result.model:SetAttribute(
-            "MergeEggCompositionRole",
-            teamOrdinal == 1 and tankCfg and "tank" or "melee"
-        )
-        result.teamId = team.id
-        record.enemies[#record.enemies + 1] = result
-        record.enemyByTargetId[result.targetId] = result
-        record.aliveEnemies += 1
-        team.assignedAlive += 1
+        pending[#pending + 1] = {
+            index = index,
+            team = team,
+            teamOrdinal = teamOrdinal,
+            tankCfg = tankCfg,
+            spawnCfg = spawnCfg,
+            enemyId = enemyId,
+            enemyDef = enemyDef,
+            spawnArea = spawnArea,
+            finishLine = finishLine,
+        }
     end
-    record.peakActiveEnemies = math.max(record.peakActiveEnemies or 0, record.aliveEnemies)
+
+    record.waveIndex = waveIndex
+    record.nextWaveAt = nil
+    record.aliveEnemies = 0
+    record.pendingWaveSpawns = pending
+    record.pendingEnemySpawns = #pending
+    record.nextEnemySpawnAt = 0
+    for _, team in ipairs(record.teams or {}) do
+        team.assignedAlive = 0
+        team.engaged = false
+    end
+    self:_setPortalVisible(record, true)
     self:_syncAllTeams(record)
-    self:_setWorldState("WaveActive", record)
+    self:_setWorldState("WaveDeploying", record)
     return true
 end
 
@@ -1206,7 +1433,7 @@ function MergeEggPrototypeService:_openBulwarkTarget(record, enemy, now)
     model:SetAttribute("MergeEggReserveAlertedPets", alertedPets)
     model:SetAttribute("MergeEggBulwarkAlertCount", 1)
     model:SetAttribute("MergeEggNextBulwarkAlertAt", now + reengageSeconds)
-    self:_setWorldState("WaveActive", record)
+    self:_setWorldState(self:_activeWaveState(record), record)
     self:_log("Info", "Merge Egg prototype bulwark breached", {
         player = record.player.Name,
         wave = record.waveIndex,
@@ -1239,7 +1466,7 @@ function MergeEggPrototypeService:_sustainBulwarkTarget(record, enemy, now)
     )
     model:SetAttribute("MergeEggNextBulwarkAlertAt", now + reengageSeconds)
     if alertedPets > 0 then
-        self:_setWorldState("WaveActive", record)
+        self:_setWorldState(self:_activeWaveState(record), record)
     end
 end
 
@@ -1336,7 +1563,7 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
                             end
                             team.engaged = true
                             self:_setTeamState(record, team, "Engaged")
-                            self:_setWorldState("WaveActive", record)
+                            self:_setWorldState(self:_activeWaveState(record), record)
                         end
                     end
                 end
@@ -1387,6 +1614,10 @@ function MergeEggPrototypeService:_step()
     local record = self._active
     local now = os.clock()
     if record and record.encounterSpawned and record.terminal ~= true then
+        local spawnOk = self:_processWaveSpawns(record, now)
+        if not spawnOk then
+            return
+        end
         self:_alertApproachingEnemies(record)
         if now >= (record.nextTeamSyncAt or 0) then
             record.nextTeamSyncAt = now + 0.1
@@ -1435,6 +1666,13 @@ function MergeEggPrototypeService:_hatch(player)
 
     record.hatching = true
     record.terminal = false
+    local hatchDataOk, hatchDataReason = self:_buildPrototypeHatchData(record)
+    if not hatchDataOk then
+        record.hatching = false
+        return false, hatchDataReason
+    end
+    local hatchCount =
+        math.max(1, math.floor(tonumber((self._config.team or {}).initial_hatch_count) or 5))
     local totalUnits = 0
     for index, teamCfg in ipairs(teamConfigs) do
         local id = math.max(1, math.floor(tonumber(teamCfg.id) or index))
@@ -1446,8 +1684,14 @@ function MergeEggPrototypeService:_hatch(player)
         definition.name = tostring(teamCfg.principal_name or ("Merge Hatcher Team " .. id))
         definition.display_name =
             tostring(teamCfg.principal_display_name or ("Hatcher Captain " .. id))
-        definition.squad = teamCfg.squad or principal.squad or self._config.squad or {}
+        definition.squad = self:_rollPrototypeSquad(record, hatchCount)
+        if not definition.squad then
+            self:_clearEncounter(record)
+            return false, "prototype_egg_roll_failed"
+        end
         local expected = #definition.squad
+        local runtimeTeamConfig = table.clone(teamCfg)
+        runtimeTeamConfig.squad = definition.squad
         local targetGroup = record.runId .. ":team:" .. id
         local offset = teamCfg.spawn_offset or {}
         local spawnCFrame = spawn.CFrame
@@ -1466,6 +1710,7 @@ function MergeEggPrototypeService:_hatch(player)
                     MergeEggTeamDisplayName = tostring(teamCfg.display_name or "NPC Team 1"),
                     MergeEggTeamState = "Ready",
                     MergeEggExpectedPets = expected,
+                    MergeEggSourceId = record.eggId,
                     CombatTargetGroup = targetGroup,
                 },
                 petAttributes = {
@@ -1489,7 +1734,7 @@ function MergeEggPrototypeService:_hatch(player)
         local team = {
             id = id,
             displayName = tostring(teamCfg.display_name or ("NPC Team " .. id)),
-            config = teamCfg,
+            config = runtimeTeamConfig,
             targetGroup = targetGroup,
             principalName = info.name,
             principalModel = info.model,
@@ -1508,6 +1753,10 @@ function MergeEggPrototypeService:_hatch(player)
             nextReplacementAt = nil,
             replacementsQueued = 0,
             replacementsHatched = 0,
+            eggRolls = 0,
+            eggGoldenRolls = 0,
+            eggRainbowRolls = 0,
+            eggHugeRolls = 0,
         }
         record.teams[#record.teams + 1] = team
         record.teamById[id] = team
@@ -1527,6 +1776,10 @@ function MergeEggPrototypeService:_hatch(player)
             self:_clearEncounter(record)
             return false, "unit_assets_missing"
         end
+        for slot, petDefinition in ipairs(definition.squad) do
+            self:_recordEggRoll(record, team, petDefinition)
+            self:_publishTeamSlot(team, slot, petDefinition)
+        end
         totalUnits += tonumber(info.pets) or 0
         self:_setTeamState(record, team, "Ready")
     end
@@ -1542,12 +1795,16 @@ function MergeEggPrototypeService:_hatch(player)
     record.encounterSpawned = true
     record.hatching = false
     self:_syncAllTeams(record)
-    self:_setWorldState("WaveActive", record)
+    self:_setWorldState(self:_activeWaveState(record), record)
     self:_log("Info", "Merge Egg prototype hatch started", {
         player = player.Name,
+        egg = record.eggId,
         teams = #record.teams,
         units = totalUnits,
-        enemies = record.aliveEnemies,
+        golden = record.eggGoldenRolls,
+        rainbow = record.eggRainbowRolls,
+        huge = record.eggHugeRolls,
+        pendingEnemies = record.pendingEnemySpawns,
         waves = #(self._config.waves or {}),
     })
     return true
@@ -1581,6 +1838,7 @@ function MergeEggPrototypeService:Start()
     local world = self:_resolveWorld()
     if world then
         self:_bindWorldControls(world)
+        self:_setPortalVisible(nil, false)
         self:_setWorldState("Idle", nil)
     end
     self:_unsealHallGate()

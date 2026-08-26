@@ -1,6 +1,6 @@
 # Merge an Egg Prototype
 
-Status: Phase 4 live verified
+Status: Phase 5 live verified
 
 ## Phase 1 contract
 
@@ -153,6 +153,35 @@ the unfinished merge board or production economy:
   queued slots and queued/hatched totals. The wave banner shows eggs, queue depth/peak, and hatches;
   a missing pet card reads `QUEUED` rather than `DEFEATED` while its replacement is pending.
 
+## Phase 5 contract
+
+Phase 5 introduces the first real roster randomness while retaining Phase 4's deliberately simple
+team and queue model:
+
+- Every initial NPC team is five independent rolls from the shipping Home `grass_egg` (`Earth
+  Egg`) through `pets.simulateHatch`. The prototype builds the same player hatch inputs as ordinary
+  hatching, so species luck, Golden/Rainbow channels, event/buff inputs, and the orthogonal Huge
+  jackpot all remain active. It bypasses currency, inventory grants, multi-hatch entitlement caps,
+  presentation, and persistence; the 20 outcomes are session-only ghost pets.
+- A defeated slot still enters only its captain's FIFO, but its replacement is a new Grass Egg roll
+  rather than a copy of the defeated species. The slot and captain remain stable for observer and
+  formation readability; species, role, variant, and Huge state can change. Each team continues to
+  hatch at most one replacement every four real seconds, and all four FIFOs operate in parallel.
+- The observer publishes each slot's latest rolled species/variant/Huge result and labels Golden,
+  Rainbow, and Huge pets directly on their cards. Team/world telemetry counts total, Golden,
+  Rainbow, and Huge rolls, allowing a run's roster quality to be compared with its first-loss and
+  terminal wave rather than treating all runs as equivalent.
+- Enemies now emerge one at a time at 0.15-second intervals through a temporary purple portal at
+  the rear spawn wall. `WaveDeploying` and a pending count remain visible until the complete wave
+  has emerged; the portal then disappears and becomes non-queryable. It never replaces or disables
+  the solid end wall, which remains available for tank/melee drive-back throughout combat.
+- The movement leash extends to one stud inside the authored rear wall so driven-back enemies can
+  use nearly the full collision surface instead of snapping forward from the old three-stud inset.
+- The existing 3/5/8/12/16/24/32/48 ladder remains a test ceiling, not a promised balance target.
+  The hand-built roster's exciting Wave 8 result is historical context. With random Grass Egg
+  teams, the useful measurement is the distribution of failure waves and the roster/variant/queue
+  conditions that produced them.
+
 ## Source and authoring
 
 - Runtime/config: `configs/merge_egg_prototype.lua` and
@@ -223,20 +252,32 @@ pass, removing all four defender folders left ten wave-four enemies unopposed: e
 consumed the five reserve eggs, transitioned the run to `ObjectiveLost`, and despawned the remaining
 enemies. Studio reported no runtime errors in either pass.
 
-## Production direction after Phase 4
+The Phase 5 live hatch produced 20 shipping Grass Egg outcomes across four teams, including three
+Golden pets and one Rainbow Bear from the test player's actual luck inputs. Every folder published
+five matching slot outcomes and the observer labeled the variants directly. Team 1 then lost and
+replaced two pets: its original slot-1 Doggy and slot-3 Bear became a Bear and Doggy respectively,
+proving that replacements are fresh rolls while captain and slot identity remain stable.
 
-- Four hatcher-owned NPC teams, independent targeting, exact-slot replacement FIFOs, and the
-  five-hit rear objective are now proven as separate seams. The next production experiment should
-  feed real completed eggs into these existing queues rather than create another team lifecycle.
-- Keep automatic exact-slot replacement as the default until board play proves that composition
-  management is worth its complexity. It makes the prototype legible: a missing tank asks for a
-  tank replacement, teams hatch independently, and the player can concentrate on merging.
+At the Wave 2 transition, the world entered `WaveDeploying` with five pending enemies, the portal
+core was visible at its authored 0.22 transparency, and enemies emerged at the configured stagger.
+After the fifth spawn, pending reached zero, the state changed to `WaveActive`, every portal part
+returned to transparency 1, and `SouthEndWall.CanCollide` remained true. The run advanced through
+combat with no prototype, config, target-group, hatch, or portal runtime errors.
+
+## Production direction after Phase 5
+
+- Four hatcher-owned NPC teams, independent targeting, stable-slot replacement FIFOs, and the
+  five-hit rear objective remain separate seams. Phase 5 feeds real Grass Egg outcomes into those
+  queues without creating another team lifecycle or touching owned inventory.
+- Keep automatic FIFO assignment as the default until board play proves composition management is
+  worth its complexity. Random species make team strength variable, while a stable captain/slot
+  still lets the player read where a replacement will appear and concentrate on merging.
 - Do not lock queue depth or hatch cadence from this accelerated run. Tune the Ember Brute's
   health/armor and partial out-of-combat regeneration, then compare loss rate against the four-second
   per-team FIFO and five-egg objective. Those are explicit knobs, not final balance values.
-- When real eggs arrive, define a simple shortage rule before adding queue UI. The least complex
-  candidate is: each team reserves its authored next-slot request, and the first compatible finished
-  egg satisfies the oldest request. Random hatch completion should not randomly mutate team roles.
+- When the merge board supplies physical eggs, define one simple shortage rule before adding queue
+  controls. The least complex candidate remains: each team reserves its oldest empty slot, and the
+  next completed egg assigned to that captain satisfies it.
 - Tank/melee drive-back that pushes the whole frontline away from the hatcher is desirable lane
   behavior. A legitimately advanced team travels back to its hatcher after combat rather than
   teleporting at the generic catch-up distance.
