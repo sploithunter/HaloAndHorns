@@ -18,5 +18,12 @@ return function()
             expect(CombatTargetGroup.compatible(4, "4")).to.equal(true)
             expect(CombatTargetGroup.compatible(4, 3)).to.equal(false)
         end)
+
+        it("allows either actor to opt into emergency cross-group combat", function()
+            expect(CombatTargetGroup.compatible("team-1", "team-2", true, false)).to.equal(true)
+            expect(CombatTargetGroup.compatible("team-1", "team-2", false, true)).to.equal(true)
+            expect(CombatTargetGroup.compatible("team-1", nil, true, false)).to.equal(true)
+            expect(CombatTargetGroup.compatible("team-1", "team-2", false, false)).to.equal(false)
+        end)
     end)
 end

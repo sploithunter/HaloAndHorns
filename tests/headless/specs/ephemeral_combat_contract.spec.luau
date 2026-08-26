@@ -80,6 +80,8 @@ return function()
                 true
             )
             expect(source:find("CombatTargetGroup.compatible", petToEnemy, true)).to.be.ok()
+            expect(source:find("CombatTargetOpen", enemyToPet, true) < petToEnemy).to.equal(true)
+            expect(source:find("CombatTargetOpen", petToEnemy, true)).to.be.ok()
         end)
 
         it("reuses NPC principals as explicit stationary authored anchors", function()

@@ -5914,7 +5914,9 @@ function EnemyService:_enemyHostileToPet(entry, pet, player)
     if
         not CombatTargetGroup.compatible(
             entry.model and entry.model:GetAttribute("CombatTargetGroup"),
-            pet:GetAttribute("CombatTargetGroup")
+            pet:GetAttribute("CombatTargetGroup"),
+            entry.model and entry.model:GetAttribute("CombatTargetOpen"),
+            pet:GetAttribute("CombatTargetOpen")
         )
     then
         return false
@@ -5936,7 +5938,9 @@ function EnemyService:_petHostileToEnemy(pet, entry, player)
     if
         not CombatTargetGroup.compatible(
             pet:GetAttribute("CombatTargetGroup"),
-            entry.model and entry.model:GetAttribute("CombatTargetGroup")
+            entry.model and entry.model:GetAttribute("CombatTargetGroup"),
+            pet:GetAttribute("CombatTargetOpen"),
+            entry.model and entry.model:GetAttribute("CombatTargetOpen")
         )
     then
         return false

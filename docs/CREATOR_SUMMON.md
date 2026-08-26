@@ -50,7 +50,9 @@ drafting the owner's squad or their other NPC principals.
 Independently commanded battles may also stamp the same non-empty `CombatTargetGroup` attribute on
 a pet and an enemy. Once either actor opts in, acquisition and passive aggro require an exact group
 match in both directions; two ungrouped actors preserve ordinary combat. This prevents several NPC
-principals attributed to one session player from collapsing back into one broad battle team.
+principals attributed to one session player from collapsing back into one broad battle team. An
+actor may opt into emergency cross-group acquisition with `CombatTargetOpen = true`; authored
+encounters should latch that override only after an explicit breach or comparable escalation.
 
 NPC pet presentation remains client-rendered, but gameplay position is no longer collapsed to the
 principal root. `PetFollowService` advances a bounded server-authoritative combat position at the
