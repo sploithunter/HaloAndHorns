@@ -1545,14 +1545,7 @@ function MergeEggPrototypeService:_baseEggCreationCost(context)
             0,
             math.floor(tonumber(cfg.first_upgraded_egg_cost) or pricing.baseAmount * 2.5)
         )
-        amount = MergeEggPricing.bandedTierCost(
-            firstUpgraded,
-            cfg.egg_cost_growth,
-            cfg.late_egg_cost_growth,
-            cfg.slow_growth_after_tier,
-            tier,
-            2
-        )
+        amount = MergeEggPricing.doublingTierCost(firstUpgraded, cfg.egg_cost_growth, tier, 2)
     end
     return {
         currency = pricing.currency,
@@ -1571,14 +1564,7 @@ function MergeEggPrototypeService:_baseEggUpgradeCost(context)
     local first = math.max(0, math.floor(tonumber(cfg.first_upgrade_cost) or 1000))
     return {
         currency = self:_earthEggPricing(context).currency,
-        amount = MergeEggPricing.bandedTierCost(
-            first,
-            cfg.upgrade_cost_growth,
-            cfg.late_upgrade_cost_growth,
-            cfg.slow_growth_after_tier,
-            tier,
-            1
-        ),
+        amount = MergeEggPricing.doublingTierCost(first, cfg.upgrade_cost_growth, tier, 1),
         tier = tier + 1,
     }
 end
@@ -2011,14 +1997,12 @@ function MergeEggPrototypeService:_eggTierCost(tier, context)
     local cfg = (self._config.team or {}).base_egg_generator or {}
     local amount = pricing.baseAmount
     if resolvedTier > 1 then
-        amount = MergeEggPricing.bandedTierCost(
+        amount = MergeEggPricing.doublingTierCost(
             math.max(
                 0,
                 math.floor(tonumber(cfg.first_upgraded_egg_cost) or pricing.baseAmount * 2.5)
             ),
             cfg.egg_cost_growth,
-            cfg.late_egg_cost_growth,
-            cfg.slow_growth_after_tier,
             resolvedTier,
             2
         )

@@ -388,11 +388,6 @@ return {
             -- Grass → Ice costs 1,000; every later generator advance doubles.
             first_upgrade_cost = 1000,
             upgrade_cost_growth = 2,
-            -- Preserve early doubling, then flatten before a 56-tier ladder produces unusable
-            -- floating-point prices. These late rates remain direct balance knobs.
-            slow_growth_after_tier = 8,
-            late_egg_cost_growth = 1.25,
-            late_upgrade_cost_growth = 1.25,
         },
         prototype_huge_progression = {
             normal_tier_count = #NORMAL_EGG_PROGRESSION,

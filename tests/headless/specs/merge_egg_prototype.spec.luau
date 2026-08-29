@@ -64,6 +64,9 @@ return function()
             expect(runtimeBinding:find(":Clone()", 1, true)).to.equal(nil)
             expect(runtimeBinding:find("_buildHall", 1, true)).to.equal(nil)
             expect(runtimeBinding:find("_styleBay", 1, true)).to.equal(nil)
+            expect(realmBuilder:find("local function authoredClaimFixtures", 1, true)).to.be.ok()
+            expect(realmBuilder:find("claimFixtures = claimFixtures", 1, true)).to.be.ok()
+            expect(realmBuilder:find("for _, fixture in ipairs(bay.claimFixtures or {})", 1, true)).to.be.ok()
             expect(config.world.bounds.center_z).to.equal(-150)
             expect(config.world.bounds.half_z).to.equal(149)
             expect(config.world.bounds.inset).to.equal(1)
@@ -430,9 +433,20 @@ return function()
             expect(pricing.eggTierCost(100, 2, 1)).to.equal(200)
             expect(pricing.eggTierCost(100, 2, 2)).to.equal(400)
             expect(pricing.eggTierCost(100, 2, 3)).to.equal(800)
-            expect(pricing.bandedTierCost(250, 2, 1.25, 8, 8, 2)).to.equal(16000)
-            expect(pricing.bandedTierCost(250, 2, 1.25, 8, 9, 2)).to.equal(20000)
-            expect(pricing.bandedTierCost(250, 2, 1.25, 8, 56, 2) < 1000000000).to.equal(true)
+            expect(config.team.base_egg_generator.slow_growth_after_tier).to.equal(nil)
+            expect(config.team.base_egg_generator.late_egg_cost_growth).to.equal(nil)
+            expect(config.team.base_egg_generator.late_upgrade_cost_growth).to.equal(nil)
+            local priorCost = 100
+            for tier = 2, 56 do
+                local cost = pricing.doublingTierCost(250, 2, tier, 2)
+                if tier == 2 then
+                    expect(cost).to.equal(250)
+                else
+                    expect(cost).to.equal(priorCost * 2)
+                end
+                priorCost = cost
+            end
+            expect(pricing.doublingTierCost(250, 1.25, 4, 2)).to.equal(1000)
             expect(pricing.totalInitialPositionCost(100, 4)).to.equal(400)
             expect(config.team.build_access.minimum_bulwark_depth).to.equal(4)
             expect(config.team.build_access.maximum_hatcher_distance).to.equal(18)

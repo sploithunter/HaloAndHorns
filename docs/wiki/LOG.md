@@ -6097,3 +6097,12 @@ first-session cohort rates.
   its exact Studio-authored transform. Equip Best continues to derive from that board.
 - Moved only the ten bay claim displays/prompts to their entrance-side edges and grounded them to
   the authored play-field surface, leaving the playboards untouched.
+
+## 2026-08-29 — Authored dual claim displays and strict egg-price doubling
+
+- Made bay claim binding one-to-many: runtime now updates every authored/tagged claim display in a
+  bay without relocating it, supporting both the upper terrace display and the lower stair-landing
+  display authored in Heaven Bay 1.
+- Removed the hidden tier-8 price flattening. Base egg creation follows
+  100 → 250 → 500 → 1,000 and then doubles indefinitely; base generator upgrades likewise retain
+  strict doubling through the extended prototype-huge ladder.
