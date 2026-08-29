@@ -51,9 +51,12 @@ session attributes. Finished floor fixtures live in `Workspace.GeneratedMap_Merg
 At runtime the matching authored 4×4 board is adopted as the bay's single `MergeBoard`, and
 interaction pads are aligned to the matching authored hatcher stands. The portable hovering board
 is removed for that runtime session; drag/drop, inventory sync, tutorial targets, and Equip Best
-therefore all resolve the same visible floor geometry. The central nine-card management control is
-the playable UI. The oversized legacy `EggCreateControl` and `EggBaseUpgradeControl` remain only as
-invisible compatibility anchors and must never render or accept input when the central wall exists.
+therefore all resolve the same visible floor geometry. Runtime places the adopted board in the
+floor pocket beneath the side-specific management wall using `ArenaBounds` rather than fixed world
+coordinates; this mirrors across Heaven/Hell and keeps the entrance/claim pad clear. The central
+nine-card management control is the playable UI. The oversized legacy `EggCreateControl` and
+`EggBaseUpgradeControl` remain only as invisible compatibility anchors and must never render or
+accept input when the central wall exists.
 
 Each selected bay also derives runtime containment from its authored `ArenaBounds` and
 `LandStrip`. Two 64-stud invisible side walls and one enemy-end wall are collidable, while the

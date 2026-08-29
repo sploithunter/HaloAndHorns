@@ -3498,6 +3498,38 @@ function MergeEggPrototypeService:_ensureMergeBoard(world)
     base.Transparency = 0.08
     board.PrimaryPart = base
 
+    local managementPlacement = type(cfg.authored_management_placement) == "table"
+            and cfg.authored_management_placement
+        or {}
+    if authoredBoard and managementPlacement.enabled == true then
+        local controlWall = self:_findControlWall(world)
+        local bounds = findNamedPart(world, "ArenaBounds")
+        local wallOffset = controlWall
+            and Vector3.new(
+                controlWall.Position.X - playerSpawn.Position.X,
+                0,
+                controlWall.Position.Z - playerSpawn.Position.Z
+            )
+        local lateral = wallOffset and (wallOffset - toward * wallOffset:Dot(toward))
+        if bounds and lateral and lateral.Magnitude > 0.001 then
+            lateral = lateral.Unit
+            local boundsSide = bounds.CFrame:VectorToObjectSpace(lateral)
+            local boundsHalfWidth = math.abs(boundsSide.X) * bounds.Size.X * 0.5
+                + math.abs(boundsSide.Z) * bounds.Size.Z * 0.5
+            local boardSide = base.CFrame:VectorToObjectSpace(lateral)
+            local boardHalfWidth = math.abs(boardSide.X) * base.Size.X * 0.5
+                + math.abs(boardSide.Z) * base.Size.Z * 0.5
+            local wallInset = math.max(0, tonumber(managementPlacement.wall_inset) or 1)
+            local sideOffset = math.max(0, boundsHalfWidth - boardHalfWidth - wallInset)
+            local placementForward = tonumber(managementPlacement.forward_offset) or forward
+            local target = playerSpawn.Position + toward * placementForward + lateral * sideOffset
+            local pivot = board:GetPivot()
+            target = Vector3.new(target.X, pivot.Position.Y, target.Z)
+            board:PivotTo(CFrame.new(target) * pivot.Rotation)
+            board:SetAttribute("MergeEggManagementPlacement", true)
+        end
+    end
+
     local slots = board:FindFirstChild("Slots")
     if slots and not slots:IsA("Folder") then
         slots:Destroy()
