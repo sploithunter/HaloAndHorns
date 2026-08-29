@@ -674,7 +674,8 @@ team and queue model:
   on the player. During first-bay environment authoring, `realm_layout.authoring_bay` pins Hall
   entry by `side` and `column`; it currently selects Heaven Bay 1, can switch to Hell Bay 1 by
   changing only `side`, and restores random allocation when `enabled` is false. Every bay also has
-  a server-owned claim pad. Empty pads can request that specific bay;
+  a server-owned claim pad at the entrance-side edge, clear of the authored playboard. Empty pads
+  can request that specific bay;
   occupied pads display the owner's name. Claims are released on cancelled entry, exit, character
   cleanup, and player leave. The client resolves all world-space Merge UI through the player's bay
   id plus the required `HatcherSpawn` gameplay hook instead of assuming the first Model stamped with
@@ -697,10 +698,8 @@ team and queue model:
   as that bay's only `MergeBoard`, aligns the nine interaction pads and installed eggs to the visible
   stands, and places Equip Best at the authored floor height. The client and server consequently
   share one board reference for dragging, snapping, merging, tutorial focus, and inventory display.
-  In the dedicated realm, the adopted board is relocated into the floor pocket beneath the bay's
-  management wall. Its offset is derived from `ArenaBounds` and the side-specific control wall, so
-  Heaven and Hell mirror automatically; the public entrance/claim pad and central combat lane stay
-  clear, while Equip Best follows the board toward the deployed hatchers.
+  Adoption never changes the authored board's saved Studio transform. Reparenting is allowed, but
+  runtime-derived offsets must not relocate map geometry; Equip Best follows the authored board.
 - The central nine-card management grid is authoritative. The giant green Create Earth Egg and
   giant yellow Upgrade Base Egg panels are obsolete duplicates: in the dedicated map they are
   invisible, non-queryable compatibility anchors. Coin Value, Damage, Fire Rate, Active Slots, Egg

@@ -394,13 +394,14 @@ function MergeEggRealmBuilder:_styleBay(model, bay)
         towardArena = towardArena.Magnitude > 0.01 and towardArena.Unit or spawn.CFrame.LookVector
         local right = Vector3.new(towardArena.Z, 0, -towardArena.X)
         local padPosition = spawn.Position + right * 15 - towardArena * 1
+        local padCenterY = floor.Position.Y + floor.Size.Y * 0.5 + 0.2
         local pad = makePart(
             model,
             "BayClaimPad",
             Vector3.new(18, 0.4, 8),
             CFrame.lookAt(
-                Vector3.new(padPosition.X, spawn.Position.Y - 0.25, padPosition.Z),
-                Vector3.new(padPosition.X, spawn.Position.Y - 0.25, padPosition.Z) + towardArena
+                Vector3.new(padPosition.X, padCenterY, padPosition.Z),
+                Vector3.new(padPosition.X, padCenterY, padPosition.Z) + towardArena
             ),
             Enum.Material.Neon,
             accent,
