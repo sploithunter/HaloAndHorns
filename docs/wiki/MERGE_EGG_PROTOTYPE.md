@@ -904,7 +904,10 @@ clean.
   red breach line activates every installed field that is ready; real damage activates only the
   struck egg. A field remains active for 30 seconds, then recharges for 30 seconds. Hits and breaches
   during either window do not refresh it, and each hatcher keeps an independent timer. Wave 14's
-  healer composition remains unchanged until this defense is measured.
+  healer composition remains unchanged until this defense is measured. These fields pass the
+  selected bay's authored `LandStrip` top to the shared rune primitive; an unrestricted downward
+  ray can otherwise land on the stationary Hatcher Captain and suspend the ring several studs above
+  the floor.
 - The temporary player escort uses the red breach plane as a conditional idle anchor. While the
   player works behind the line, untargeted escort pets heel near the eggs instead of obstructing the
   merge board. Crossing to the enemy side restores the player's live character as their formation

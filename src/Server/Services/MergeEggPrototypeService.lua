@@ -2208,6 +2208,8 @@ function MergeEggPrototypeService:_triggerEggHealDenial(record, team, reason, no
     end
     if self._powerService and self._powerService.SpawnGroundRune then
         local color = rgbTriplet(cfg.color, { 255, 70, 150 })
+        local floor = findNamedPart(self:_worldFor(record), "LandStrip")
+        local floorY = floor and (floor.Position.Y + floor.Size.Y * 0.5) or nil
         team.healDenialRune = self._powerService:SpawnGroundRune(
             objective:GetPivot().Position,
             math.max(1, tonumber(cfg.radius) or 12),
@@ -2220,6 +2222,7 @@ function MergeEggPrototypeService:_triggerEggHealDenial(record, team, reason, no
                 bright = 0.08,
                 spin = true,
                 spin_deg = 90,
+                floor_y = floorY,
             }
         )
     end

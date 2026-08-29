@@ -1335,6 +1335,7 @@ return function()
 
         it("activates egg-local anti-heal fields on breaches and damage", function()
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local powerService = readFile("src/Server/Services/PowerService.lua")
             local server = readFile("src/Server/init.server.lua")
             local denial = config.objective.heal_denial
 
@@ -1348,6 +1349,8 @@ return function()
             expect(service:find('self:_triggerEggHealDenial(record, team, "egg_damage"', 1, true)).to.be.ok()
             expect(service:find("HealingSuppression.extend(", 1, true)).to.be.ok()
             expect(service:find("self._powerService:SpawnGroundRune(", 1, true)).to.be.ok()
+            expect(service:find("floor_y = floorY", 1, true)).to.be.ok()
+            expect(powerService:find("tonumber(opts.floor_y)", 1, true)).to.be.ok()
             expect(service:find("team.healDenialActiveUntil + rechargeSeconds", 1, true)).to.be.ok()
             expect(server:find('"PowerService",', 1, true)).to.be.ok()
         end)

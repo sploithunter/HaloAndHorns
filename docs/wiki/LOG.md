@@ -6053,3 +6053,10 @@ first-session cohort rates.
   combat lane into the floor pocket beneath the management wall. Placement derives its mirrored
   lateral edge from the selected bay's `ArenaBounds` and authored control wall, so it remains
   bay-relative in both Heaven and Hell rather than depending on dedicated-place coordinates.
+
+## 2026-08-29 — Grounded Merge heal-denial fields
+
+- Added an optional authoritative `floor_y` to the shared PowerService ground-rune primitive and
+  supplied each occupied bay's `LandStrip` top for egg heal-denial fields. The prior downward ray
+  was striking the stationary Hatcher Captain's hair at Y=6.87; live validation now places the rune
+  slab at Y=2.516 over the authored floor top at Y=2.416.
