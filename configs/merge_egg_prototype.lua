@@ -97,6 +97,12 @@ return {
             half_z = 149,
             inset = 1,
         },
+        containment_walls = {
+            enabled = true,
+            height = 64,
+            thickness = 2,
+            close_player_entrance = false,
+        },
     },
 
     -- Permanent Studio-authored realm. `scripts/studio/bake_merge_egg_realm.luau` consumes the

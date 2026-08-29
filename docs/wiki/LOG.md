@@ -6017,3 +6017,11 @@ first-session cohort rates.
 - Restored the interactive nine-card management SurfaceGui. Only the giant green Create Earth Egg
   and giant yellow Upgrade Base Egg legacy panels are hidden; the central management cards remain
   the playable controls.
+
+## 2026-08-29 — Merge bay physical containment
+
+- Added 64-stud invisible collision walls along both sides and the enemy end of each occupied bay,
+  derived from authored `ArenaBounds`; the mall-facing player entrance remains open.
+- Fixed combat Waycoin/Gem drops to pass their owning session into the containment resolver, so
+  edge pops use the selected bay rather than legacy prototype coordinates and visibly bounce back
+  inside. A live physics probe reflected from the Heaven-1 side wall without crossing the edge.
