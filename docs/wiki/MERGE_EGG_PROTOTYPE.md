@@ -992,3 +992,17 @@ clean.
   is only a session cast-off experiment. If crossover is retained later, it is limited to the
   player's currently equipped three or four slots rather than their full owned collection.
 - Reopening Hall of Worlds in production.
+
+## Edge tower art set
+
+- The first visual family comprises Heal, Rage, and Debuff cannons. On 2026-08-29, Gravity,
+  Repulsor, and Nullifier concepts were added in the same low-poly wheeled-siege silhouette, then
+  rebuilt through the Meshy smart-topology pipeline and retextured from their corresponding concept
+  art.
+- Each new cannon is a single watertight mesh below 9,500 triangles. The group-owned Model, Mesh,
+  and Texture IDs live in `scripts/merge_cannon_model_ids.json`; the reproducible ImageGen prompts
+  live beside the concept art in `assets/concepts/merge_cannons/prompts.json`.
+- The open Merge place contains a review-only lineup at
+  `Workspace._PropReview.MergeCannons` with `GravityCannon`, `RepulsorCannon`, and
+  `NullifierCannon`. Their combat roles, pads, firing behavior, upgrades, and acquisition rules are
+  not wired yet.

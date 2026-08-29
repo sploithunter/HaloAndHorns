@@ -6060,3 +6060,13 @@ first-session cohort rates.
   supplied each occupied bay's `LandStrip` top for egg heal-denial fields. The prior downward ray
   was striking the stationary Hatcher Captain's hair at Y=6.87; live validation now places the rune
   slab at Y=2.516 over the authored floor top at Y=2.416.
+
+## 2026-08-29 — Gravity, Repulsor, and Nullifier cannon art
+
+- Added ImageGen concepts and durable prompt metadata for three more Merge edge-tower cannons,
+  preserving the existing Heal/Rage/Debuff low-poly visual family.
+- Reconstructed and retextured all three with the Meshy smart-topology pipeline, repaired each to a
+  watertight sub-9,500-triangle mesh, exported embedded-texture FBXs, and uploaded group-owned
+  Roblox Models. Resolved IDs are recorded in `scripts/merge_cannon_model_ids.json`.
+- Inserted a review-only lineup in the dedicated Merge place under
+  `Workspace._PropReview.MergeCannons`; gameplay behavior remains intentionally unwired.
