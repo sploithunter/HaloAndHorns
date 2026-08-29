@@ -1,0 +1,31 @@
+{
+  "_note": "Group-owned review Models for the Merge tower family. The local binary source/export directories are intentionally gitignored; concepts, prompts, resolved Roblox IDs, and topology measurements are durable here.",
+  "creatorGroupId": "15872767",
+  "gravity": {
+    "modelAssetId": "117227343235730",
+    "meshId": "84216404542389",
+    "textureId": "125199654859868",
+    "triangles": 9464,
+    "concept": "assets/concepts/merge_cannons/gravity_cannon.png",
+    "sourceGlb": "assets/source/props/merge_cannons/gravity/textured/model.glb",
+    "exportFbx": "assets/exports/props/merge_cannons/gravity/merge_gravity_cannon.fbx"
+  },
+  "repulsor": {
+    "modelAssetId": "121632029834795",
+    "meshId": "123147846691160",
+    "textureId": "80442912867791",
+    "triangles": 9466,
+    "concept": "assets/concepts/merge_cannons/repulsor_cannon.png",
+    "sourceGlb": "assets/source/props/merge_cannons/repulsor/textured/model.glb",
+    "exportFbx": "assets/exports/props/merge_cannons/repulsor/merge_repulsor_cannon.fbx"
+  },
+  "nullifier": {
+    "modelAssetId": "97270924486976",
+    "meshId": "125200316700851",
+    "textureId": "98389823322538",
+    "triangles": 9466,
+    "concept": "assets/concepts/merge_cannons/nullifier_cannon.png",
+    "sourceGlb": "assets/source/props/merge_cannons/nullifier/textured/model.glb",
+    "exportFbx": "assets/exports/props/merge_cannons/nullifier/merge_nullifier_cannon.fbx"
+  }
+}
