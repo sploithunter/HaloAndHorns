@@ -6080,3 +6080,13 @@ first-session cohort rates.
   now contains all resolved Model, Mesh, and Texture IDs.
 - Added the original trio to the dedicated Merge place's review lineup, completing the visual set
   while leaving gameplay placement and firing behavior unwired.
+
+## 2026-08-29 — Initial Merge tower pads
+
+- Added an idempotent Edit-mode authoring pass for two tower mounts per Merge bay, positioned from
+  the actual egg-position 1→9 axis rather than fixed world coordinates.
+- Sized the 8.4-stud armored pads from the corrected Repulsor cannon footprint, placed them outside
+  positions 1 and 9 with clearance, and gave them square metal mounting rails and side-themed edge
+  accents so they cannot be mistaken for egg stands.
+- Authored all 20 mounts into the open dedicated place under `GeneratedMap_MergeEggVoxel.TowerStations`
+  with portable bay/slot/role hooks; tower behavior remains deferred.
