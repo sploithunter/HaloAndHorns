@@ -1363,6 +1363,24 @@ return function()
             expect(follow:find("cf = CFrame.lookAt(", 1, true)).to.be.ok()
         end)
 
+        it("alerts the player escort when an enemy crosses the Bulwark", function()
+            local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local alert = service:find(
+                "function MergeEggPrototypeService:_alertTeamsToBulwarkTarget",
+                1,
+                true
+            )
+            local open =
+                service:find("function MergeEggPrototypeService:_openBulwarkTarget", alert, true)
+
+            expect(alert ~= nil).to.equal(true)
+            expect(open ~= nil and open > alert).to.equal(true)
+            expect(service:find("local playerFolder = record.petFolder", alert, true)).to.be.ok()
+            expect(service:find("playerFolder,", alert, true)).to.be.ok()
+            expect(service:find("enemy.targetId,", alert, true)).to.be.ok()
+            expect(service:find("MergeEggPlayerAlertedPets", open, true)).to.be.ok()
+        end)
+
         it("provides repeatable reset and exit cleanup", function()
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             local clear = service:find("function MergeEggPrototypeService:_clearEncounter", 1, true)

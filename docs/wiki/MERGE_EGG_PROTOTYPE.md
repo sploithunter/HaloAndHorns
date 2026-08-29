@@ -440,8 +440,12 @@ team and queue model:
   therefore acquire any nearby prototype lane through the ordinary distance/threat tables before
   an enemy crosses the Bulwark, matching the Simple escort contract. NPC hatcher folders use their
   per-lane `CombatTargetGroup` for opening assignments, then only idle teams are opened by the
-  reinforcement policy. The Bulwark remains the immediate all-teams emergency release. The
-  player's pre-session folder value is restored on mode switch, cancelled entry, and exit.
+  reinforcement policy. The Bulwark remains the immediate all-teams emergency release: its
+  sustained ordinary-threat seed addresses both every live hatcher folder and the player's current
+  escort folder. Merely opening the target-group gate is insufficient because a breach-line-held
+  squad may still sit outside ambient acquisition range. This remains an aggro seed, not a focus
+  pin; tanks and the normal threat tables retain target authority. The player's pre-session folder
+  value is restored on mode switch, cancelled entry, and exit.
 - A newly discovered Full-mode pet uses the regular single-egg reveal and pet picture, but as a
   passive nonmodal presentation whose transparent layer does not consume board/HUD input. Duplicate
   index entries enter inventory silently. `Show New Defense Pets` in Egg Settings disables these
