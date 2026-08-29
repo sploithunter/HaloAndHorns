@@ -697,6 +697,10 @@ team and queue model:
   as that bay's only `MergeBoard`, aligns the nine interaction pads and installed eggs to the visible
   stands, and places Equip Best at the authored floor height. The client and server consequently
   share one board reference for dragging, snapping, merging, tutorial focus, and inventory display.
+  In the dedicated realm, the adopted board is relocated into the floor pocket beneath the bay's
+  management wall. Its offset is derived from `ArenaBounds` and the side-specific control wall, so
+  Heaven and Hell mirror automatically; the public entrance/claim pad and central combat lane stay
+  clear, while Equip Best follows the board toward the deployed hatchers.
 - The central nine-card management grid is authoritative. The giant green Create Earth Egg and
   giant yellow Upgrade Base Egg panels are obsolete duplicates: in the dedicated map they are
   invisible, non-queryable compatibility anchors. Coin Value, Damage, Fire Rate, Active Slots, Egg

@@ -412,6 +412,14 @@ return {
             -- authored map lacks that pedestal.
             forward_offset = 24,
             anchor_to_start_platform_back_edge = true,
+            -- A dedicated authored bay has a public entrance and a side-wall management pocket.
+            -- Keep the board on the floor beneath that wall instead of covering the entrance or
+            -- combat lane. The wall lookup mirrors this placement automatically for Hell bays.
+            authored_management_placement = {
+                enabled = true,
+                forward_offset = 35,
+                wall_inset = 1,
+            },
             egg_height = 4.8,
             rotate_degrees_per_second = 28,
             empty_slot_color = { 45, 52, 64 },

@@ -6046,3 +6046,10 @@ first-session cohort rates.
   visual float caused by combining the elevated legacy StartPlatform with a one-stud GUI offset.
 - Tightened client bay resolution to require the selected bay's HatcherSpawn hook because authored
   decorative gates also carry MergeEggBayId for ownership/presentation.
+
+## 2026-08-29 — Merge board management-side placement
+
+- Moved the adopted 4×4 board and its Equip Best plate out of the public bay entrance and central
+  combat lane into the floor pocket beneath the management wall. Placement derives its mirrored
+  lateral edge from the selected bay's `ArenaBounds` and authored control wall, so it remains
+  bay-relative in both Heaven and Hell rather than depending on dedicated-place coordinates.

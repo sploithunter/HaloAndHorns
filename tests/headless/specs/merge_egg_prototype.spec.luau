@@ -443,6 +443,11 @@ return function()
             expect(#config.team.merge_board.slot_colors).to.equal(6)
             expect(config.team.merge_board.forward_offset).to.equal(24)
             expect(config.team.merge_board.anchor_to_start_platform_back_edge).to.equal(true)
+            expect(config.team.merge_board.authored_management_placement.enabled).to.equal(true)
+            expect(config.team.merge_board.authored_management_placement.forward_offset).to.equal(
+                35
+            )
+            expect(config.team.merge_board.authored_management_placement.wall_inset).to.equal(1)
             expect(config.team.merge_board.board_use_distance).to.equal(36)
             expect(config.team.merge_board.equip_best_size.x).to.equal(7)
             expect(config.team.merge_board.equip_best_size.z).to.equal(12)
