@@ -1275,8 +1275,9 @@ end
 -- Shared GROUND RUNE for player AoE powers: the uploaded MagicCircle symbol on a flat shared-world
 -- slab, tinted to the ACTION's color (color carries meaning — green heal, yellow farm-boost, …).
 -- Timing via opts: fade_in / hold / fade_out (sec), `bright` = peak opacity (0 = fully bright), `spin`
--- = slow rotation over its life. Used by both the persistent Healing Field (long hold) and momentary
--- casts like Resonance (bright flash → fade). Returns the marker part.
+-- = slow rotation over its life. A caller with an authoritative authored floor may pass `floor_y`;
+-- otherwise the shared downward ray resolves terrain as before. Used by both the persistent Healing
+-- Field (long hold) and momentary casts like Resonance (bright flash → fade). Returns the marker part.
 -- Public alias: other services borrow the same telegraph primitive (EnemyService's arch-villain
 -- slam marks its impact zone with it — one rune path, no parallel visual).
 function PowerService:SpawnGroundRune(center, radius, color, opts)
@@ -1299,8 +1300,9 @@ function PowerService:_spawnGroundRune(center, radius, color, opts)
     -- Sit the rune on the REAL floor under the centre (raycast down), like the pet aura fields — so it
     -- doesn't float or clip into uneven ground. Exclude pets / enemies / players / FX so the ray finds
     -- the map terrain.
-    local floorY = center.Y - 2.4
-    do
+    local floorY = tonumber(opts.floor_y)
+    if not floorY then
+        floorY = center.Y - 2.4
         local rp = RaycastParams.new()
         rp.FilterType = Enum.RaycastFilterType.Exclude
         rp.IgnoreWater = true
