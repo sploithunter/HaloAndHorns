@@ -33,6 +33,45 @@ local function firstPart(root, name)
     return found and found:FindFirstChildWhichIsA("BasePart", true) or nil
 end
 
+local function authoredClaimFixtures(model)
+    local fixtures = {}
+    local candidates = 0
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if
+            descendant:IsA("BasePart")
+            and (
+                descendant:GetAttribute("MergeEggBayClaimPad") == true
+                or descendant.Name == "BayClaimPad"
+            )
+        then
+            candidates += 1
+            local prompt = descendant:FindFirstChild(CLAIM_PROMPT, true)
+            local surface = descendant:FindFirstChild("BayClaimSurface", true)
+            local label = surface and surface:FindFirstChild("Label", true)
+            if
+                not (prompt and prompt:IsA("ProximityPrompt") and label and label:IsA("TextLabel"))
+            then
+                return nil, "incomplete"
+            end
+            table.insert(fixtures, {
+                pad = descendant,
+                prompt = prompt,
+                label = label,
+            })
+        end
+    end
+    if candidates == 0 then
+        return nil, "missing"
+    end
+    table.sort(fixtures, function(left, right)
+        if left.pad.Position.Y ~= right.pad.Position.Y then
+            return left.pad.Position.Y > right.pad.Position.Y
+        end
+        return left.pad:GetFullName() < right.pad:GetFullName()
+    end)
+    return fixtures
+end
+
 local function makePart(parent, name, size, cframe, material, tint, transparency)
     local part = Instance.new("Part")
     part.Name = name
@@ -179,10 +218,19 @@ local function ancestorMaps(instance)
 end
 
 local function removeBakedBayAdditions(model)
-    for _, name in ipairs({ "RealmDecor", "BayClaimPad" }) do
-        local found = model:FindFirstChild(name, true)
-        if found then
-            found:Destroy()
+    local removals = {}
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if
+            descendant.Name == "RealmDecor"
+            or descendant:GetAttribute("MergeEggBayClaimPad") == true
+            or descendant.Name == "BayClaimPad"
+        then
+            table.insert(removals, descendant)
+        end
+    end
+    for _, descendant in ipairs(removals) do
+        if descendant.Parent then
+            descendant:Destroy()
         end
     end
 end
@@ -438,34 +486,33 @@ function MergeEggRealmBuilder:_registerBay(model, bay)
     model:SetAttribute("MergeEggBayOwnerName", nil)
     model:SetAttribute("MergeEggBayAvailable", true)
 
-    local pad = firstPart(model, "BayClaimPad")
-    local prompt = pad and pad:FindFirstChild(CLAIM_PROMPT, true)
-    local surface = pad and pad:FindFirstChild("BayClaimSurface", true)
-    local label = surface and surface:FindFirstChild("Label", true)
-    if
-        not (pad and prompt and prompt:IsA("ProximityPrompt") and label and label:IsA("TextLabel"))
-    then
-        return nil, "authored_claim_fixture_missing:" .. bay.id
+    local claimFixtures, fixtureReason = authoredClaimFixtures(model)
+    if not claimFixtures then
+        return nil, "authored_claim_fixture_" .. tostring(fixtureReason) .. ":" .. bay.id
     end
 
     local record = {
         descriptor = bay,
         model = model,
         ownerUserId = nil,
-        pad = pad,
-        label = label,
-        prompt = prompt,
+        claimFixtures = claimFixtures,
+        -- Preserve the original aliases for callers that only need one wayfinding target.
+        pad = claimFixtures[1].pad,
+        label = claimFixtures[1].label,
+        prompt = claimFixtures[1].prompt,
     }
     self._bays[bay.id] = record
-    prompt.Enabled = true
-    prompt.ActionText = "Claim Bay"
-    prompt.ObjectText = bay.displayName
-    label.Text = string.upper(bay.displayName .. "\nAVAILABLE")
-    prompt.Triggered:Connect(function(player)
-        if self._claimHandler then
-            self._claimHandler(player, bay.id)
-        end
-    end)
+    for _, fixture in ipairs(claimFixtures) do
+        fixture.prompt.Enabled = true
+        fixture.prompt.ActionText = "Claim Bay"
+        fixture.prompt.ObjectText = bay.displayName
+        fixture.label.Text = string.upper(bay.displayName .. "\nAVAILABLE")
+        fixture.prompt.Triggered:Connect(function(player)
+            if self._claimHandler then
+                self._claimHandler(player, bay.id)
+            end
+        end)
+    end
     return record
 end
 
@@ -2014,13 +2061,11 @@ function MergeEggRealmBuilder:Claim(player, bayId)
     bay.model:SetAttribute("MergeEggBayOwnerUserId", userId)
     bay.model:SetAttribute("MergeEggBayOwnerName", player.Name)
     bay.model:SetAttribute("MergeEggBayAvailable", false)
-    if bay.prompt then
-        bay.prompt.Enabled = false
-        bay.prompt.ActionText = "Claimed"
-        bay.prompt.ObjectText = player.DisplayName .. "'s " .. bay.descriptor.displayName
-    end
-    if bay.label then
-        bay.label.Text = string.upper(bay.descriptor.displayName .. "\n" .. player.DisplayName)
+    for _, fixture in ipairs(bay.claimFixtures or {}) do
+        fixture.prompt.Enabled = false
+        fixture.prompt.ActionText = "Claimed"
+        fixture.prompt.ObjectText = player.DisplayName .. "'s " .. bay.descriptor.displayName
+        fixture.label.Text = string.upper(bay.descriptor.displayName .. "\n" .. player.DisplayName)
     end
     player:SetAttribute("MergeEggBayId", bayId)
     player:SetAttribute("MergeEggBaySide", bay.descriptor.side)
@@ -2055,13 +2100,11 @@ function MergeEggRealmBuilder:Release(player)
     bay.model:SetAttribute("MergeEggBayOwnerUserId", 0)
     bay.model:SetAttribute("MergeEggBayOwnerName", nil)
     bay.model:SetAttribute("MergeEggBayAvailable", true)
-    if bay.prompt then
-        bay.prompt.Enabled = true
-        bay.prompt.ActionText = "Claim Bay"
-        bay.prompt.ObjectText = bay.descriptor.displayName
-    end
-    if bay.label then
-        bay.label.Text = string.upper(bay.descriptor.displayName .. "\nAVAILABLE")
+    for _, fixture in ipairs(bay.claimFixtures or {}) do
+        fixture.prompt.Enabled = true
+        fixture.prompt.ActionText = "Claim Bay"
+        fixture.prompt.ObjectText = bay.descriptor.displayName
+        fixture.label.Text = string.upper(bay.descriptor.displayName .. "\nAVAILABLE")
     end
     player:SetAttribute("MergeEggBayId", nil)
     player:SetAttribute("MergeEggBaySide", nil)

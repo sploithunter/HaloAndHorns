@@ -673,10 +673,10 @@ team and queue model:
 - Hall entry normally allocates one unclaimed bay at random and publishes its id, side, and column
   on the player. During first-bay environment authoring, `realm_layout.authoring_bay` pins Hall
   entry by `side` and `column`; it currently selects Heaven Bay 1, can switch to Hell Bay 1 by
-  changing only `side`, and restores random allocation when `enabled` is false. Every bay also has
-  a server-owned claim pad at the entrance-side edge, clear of the authored playboard. Empty pads
-  can request that specific bay;
-  occupied pads display the owner's name. Claims are released on cancelled entry, exit, character
+  changing only `side`, and restores random allocation when `enabled` is false. Every bay has
+  authored claim displays on the upper terrace and at the lower stair landing, clear of the
+  playboard. Runtime binds every tagged display in place to the same bay claim; empty displays can
+  request that specific bay and occupied displays all show the owner's name. Claims are released on cancelled entry, exit, character
   cleanup, and player leave. The client resolves all world-space Merge UI through the player's bay
   id plus the required `HatcherSpawn` gameplay hook instead of assuming the first Model stamped with
   that id; decorative spawn gates deliberately share the id and are not valid runtime roots.
@@ -704,6 +704,10 @@ team and queue model:
   giant yellow Upgrade Base Egg panels are obsolete duplicates: in the dedicated map they are
   invisible, non-queryable compatibility anchors. Coin Value, Damage, Fire Rate, Active Slots, Egg
   HP, Spawn Level, Buy Egg, Auto-Combine, and Rebirth remain visible and interactive.
+- Base egg creation prices are `100, 250, 500, 1,000, 2,000, ...`; generator advances begin at
+  1,000 and also double. The former tier-8 switch to 1.25× growth was removed because it flattened
+  late progression and made high eggs cheaper than the combat ladder required. The pricing helper
+  enforces a minimum 2× multiplier across the full prototype-huge ladder.
 - Runtime derives three tall invisible collision barriers from each selected bay's authored
   `ArenaBounds`: both long sides plus the enemy/portal end. The player entrance stays open for
   legitimate travel through the mall. These barriers prevent jumping over the intentionally low

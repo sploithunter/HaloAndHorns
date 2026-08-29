@@ -37,6 +37,12 @@ geometry. To rebuild the blockout deliberately, run the one-bay source pass foll
 closed if that authored root or any contracted bay is missing. See
 [Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md).
 
+Claim displays are authored geometry too. A bay may expose more than one BasePart tagged with
+`MergeEggBayClaimPad`; each must contain `MergeEggBayClaimPrompt` and
+`BayClaimSurface.Label`. Runtime binds every such fixture to the same claim, owner-name, and release
+state without moving it. The current bay pattern has one display on the upper terrace and another
+at the lower stair landing.
+
 The shipping extraction now also has a dedicated place role: `configs/places.lua` maps the main
 place (`77766176054993`) and Merge place (`84544653387905`) inside universe `10307183003`.
 `PlaceRuntime` is the only code seam that identifies those roles. In the Merge role, unrelated
