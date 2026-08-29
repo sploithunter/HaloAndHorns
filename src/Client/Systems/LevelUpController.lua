@@ -98,6 +98,9 @@ function LevelUpController.start()
     self.player:GetAttributeChangedSignal("PendingTraining"):Connect(function()
         self:_refreshButton()
     end)
+    self.player:GetAttributeChangedSignal("AscensionUnlocked"):Connect(function()
+        self:_refreshButton()
+    end)
     Signals.LevelUp_Claimed.OnClientEvent:Connect(function(data)
         if data and data.auto then
             self:_toast(data) -- field auto-claim (filler) -> small toast
@@ -362,8 +365,11 @@ end
 -- ascension flow from either the world altar or the Powers menu.
 function LevelUpController:_refreshButton()
     local training = tonumber(self.player:GetAttribute("PendingTraining")) or 0
+    local ascensionUnlocked = self.player:GetAttribute("AscensionUnlocked") == true
     -- Suppressed while the level-up menu is open so the nudge never covers it.
-    self.button.Visible = training > 0 and not (_G.PowerChoiceMenuOpen == true)
+    self.button.Visible = ascensionUnlocked
+        and training > 0
+        and not (_G.PowerChoiceMenuOpen == true)
     if training > 1 then
         self.button.Text = string.format("ASCEND  (%d)", training)
     else

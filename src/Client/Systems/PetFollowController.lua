@@ -320,6 +320,9 @@ function PetFollowController.start()
     local strikeState = setmetatable({}, { __mode = "k" })
     local strikeAngle = setmetatable({}, { __mode = "k" }) -- pet -> accumulated ring sidestep
     local strikeTarget = setmetatable({}, { __mode = "k" }) -- pet -> target whose ring is advanced
+    -- A pet that legitimately crossed the catch-up threshold for combat should also travel home.
+    -- Weak keys follow the runtime models and work for player and NPC-principal squads alike.
+    local returningFromCombat = setmetatable({}, { __mode = "k" })
     local function strikeProfile(pet)
         local roleId = petRoleId(pet)
         local petType = pet:GetAttribute("PetType")
@@ -634,7 +637,11 @@ function PetFollowController.start()
             -- They reappear when the player summons them (server clears CombatDowned).
             local pets = {}
             for _, m in ipairs(petsFolder:GetChildren()) do
-                if m:IsA("Model") and m.PrimaryPart then
+                if
+                    m:IsA("Model")
+                    and m.PrimaryPart
+                    and m:GetAttribute("MergeEggObjective") ~= true
+                then
                     local downed = m:GetAttribute("CombatDowned")
                     for _, d in ipairs(m:GetDescendants()) do
                         if d:IsA("BasePart") then
@@ -667,6 +674,61 @@ function PetFollowController.start()
             end
 
             local cf = hrp.CFrame
+            -- Merge-board reserve pets defend the lane while their player works behind them. The
+            -- complete temporary squad shares one server-authored anchor at the breach line. That
+            -- anchor's look vector points toward the enemy side, so its plane also tells us when the
+            -- player has crossed forward: behind the plane, hold the eggs; beyond it, follow the
+            -- player's live frame normally. Combat choreography remains unchanged in either mode.
+            local escortAnchorPosition
+            local escortAnchorLook
+            local allEscortAnchored = #pets > 0
+            local fullMergeDefense = isLocal
+                and attrs:GetAttribute("InMergeEggPrototype") == true
+                and attrs:GetAttribute("MergeEggPlayerCombatMode") == "full"
+            if fullMergeDefense then
+                -- Full mode keeps ordinary owned pets in PlayerPets, so the anchor belongs to the
+                -- player/session instead of synthetic per-pet reserve attributes.
+                escortAnchorPosition = attrs:GetAttribute("MergeEggEscortAnchorPosition")
+                escortAnchorLook = attrs:GetAttribute("MergeEggEscortAnchorLookVector")
+                allEscortAnchored = typeof(escortAnchorPosition) == "Vector3"
+                    and typeof(escortAnchorLook) == "Vector3"
+            else
+                for _, pet in ipairs(pets) do
+                    local position = pet:GetAttribute("MergeEggEscortAnchorPosition")
+                    local look = pet:GetAttribute("MergeEggEscortAnchorLookVector")
+                    if
+                        pet:GetAttribute("MergeEggPlayerReserveUnit") ~= true
+                        or typeof(position) ~= "Vector3"
+                        or typeof(look) ~= "Vector3"
+                    then
+                        allEscortAnchored = false
+                        break
+                    end
+                    escortAnchorPosition = escortAnchorPosition or position
+                    escortAnchorLook = escortAnchorLook or look
+                end
+            end
+            local playerBeyondBreach = false
+            if allEscortAnchored and escortAnchorPosition and escortAnchorLook.Magnitude > 0.01 then
+                local towardEnemy = escortAnchorLook.Unit
+                local fromBreach = Vector3.new(
+                    hrp.Position.X - escortAnchorPosition.X,
+                    0,
+                    hrp.Position.Z - escortAnchorPosition.Z
+                )
+                playerBeyondBreach = fromBreach:Dot(towardEnemy) >= 0
+            end
+            if
+                allEscortAnchored
+                and not playerBeyondBreach
+                and escortAnchorPosition
+                and escortAnchorLook.Magnitude > 0.01
+            then
+                cf = CFrame.lookAt(
+                    escortAnchorPosition,
+                    escortAnchorPosition + escortAnchorLook.Unit
+                )
+            end
             local frame = {
                 position = { x = cf.Position.X, y = cf.Position.Y, z = cf.Position.Z },
                 look = { x = cf.LookVector.X, y = cf.LookVector.Y, z = cf.LookVector.Z },
@@ -843,7 +905,7 @@ function PetFollowController.start()
 
             -- Move a pet toward goalPos (Vector3), facing its heading while moving / restDir at
             -- rest, at baseRate smoothing scaled by move speed. `anim` (optional) layers a flourish.
-            local function moveToward(model, goalPos, restDir, baseRate, anim)
+            local function moveToward(model, goalPos, restDir, baseRate, anim, allowCatchupSnap)
                 -- Cast-locked (just-fired ranged pet): hold position so it can't kite freely, but
                 -- keep facing its target (restDir) so it still aims at its prey while "casting".
                 if castLockUntil[model] and dt and os.clock() < castLockUntil[model] then
@@ -852,11 +914,15 @@ function PetFollowController.start()
                     applyMotion(model, CFrame.lookAt(cur.Position, cur.Position + face), 0, anim)
                     return
                 end
-                local mult = PetFormation.moveSpeedMultiplier(
-                    playerSpeed,
-                    model:GetAttribute("MoveSpeedMult"),
-                    speedCfg
-                )
+                local moveSpeedMult = tonumber(model:GetAttribute("MoveSpeedMult")) or 1
+                if (tonumber(model:GetAttribute("PetSlowUntil")) or 0) > os.time() then
+                    moveSpeedMult *= math.clamp(
+                        tonumber(model:GetAttribute("PetSlowFactor")) or 1,
+                        0.05,
+                        1
+                    )
+                end
+                local mult = PetFormation.moveSpeedMultiplier(playerSpeed, moveSpeedMult, speedCfg)
                 local cur = baseCF[model] or model:GetPivot()
                 local curPos = cur.Position
                 -- Shadow Step: a pet carrying the configured teleport passive
@@ -872,7 +938,10 @@ function PetFollowController.start()
                     applyMotion(model, CFrame.lookAt(goalPos, goalPos + face), 0, anim)
                     return
                 end
-                if PetFormation.shouldSnap((curPos - goalPos).Magnitude, catchupDist) then
+                if
+                    allowCatchupSnap ~= false
+                    and PetFormation.shouldSnap((curPos - goalPos).Magnitude, catchupDist)
+                then
                     local face = (restDir and restDir.Magnitude > 1e-4) and restDir.Unit or upFwd
                     applyMotion(model, CFrame.lookAt(goalPos, goalPos + face), 0, anim) -- teleport
                     return
@@ -907,9 +976,16 @@ function PetFollowController.start()
             local kiterFace = {} -- kiter pet -> its target model (so it faces what it snipes)
             for slot, pet in ipairs(pets) do
                 local tid = pet:FindFirstChild("TargetID")
+                local tt = pet:FindFirstChild("TargetType")
+                if tid and tid.Value ~= 0 then
+                    if tt and tt.Value == "Enemy" then
+                        returningFromCombat[pet] = true
+                    else
+                        returningFromCombat[pet] = nil
+                    end
+                end
                 local breakable = nil
                 if not holdFormation and tid and tid.Value ~= 0 then
-                    local tt = pet:FindFirstChild("TargetType")
                     local tw = pet:FindFirstChild("TargetWorld")
                     breakable = findBreakable(tt and tt.Value, tw and tw.Value, tid.Value)
                 end
@@ -1042,7 +1118,23 @@ function PetFollowController.start()
                 end
             end
             for _, p in ipairs(followPlace) do
-                moveToward(p.model, p.target, followerRestDir(p.model, p.target), followRate)
+                local returning = returningFromCombat[p.model] == true
+                local returnDistance = (p.model:GetPivot().Position - p.target).Magnitude
+                if returning and returnDistance <= (catchupDist or math.huge) then
+                    returningFromCombat[p.model] = nil
+                    returning = false
+                end
+                -- A real owner/portal teleport or Rally still snaps immediately. Ordinary
+                -- post-combat recovery flies back to this principal's formation instead.
+                local allowFormationSnap = holdFormation or not returning
+                moveToward(
+                    p.model,
+                    p.target,
+                    followerRestDir(p.model, p.target),
+                    followRate,
+                    nil,
+                    allowFormationSnap
+                )
             end
 
             -- Map-collision exclude set (built once/frame): everything dynamic the pet should pass
@@ -1172,7 +1264,11 @@ function PetFollowController.start()
                     local toC = Vector3.new(g.center.X - target.X, 0, g.center.Z - target.Z)
                     local dir = toC.Magnitude > 0.01 and toC.Unit or upFwd
                     -- Both mining and combat remain planted between real server-hit envelopes.
-                    moveToward(pet, target, dir, attackRate, combatAnim)
+                    -- Combat pursuit is real travel, even when an authored alert starts beyond the
+                    -- formation catch-up threshold. The snap remains available when the owner
+                    -- teleports (holdFormation routes this pet through the follower path above),
+                    -- and Shadow Step remains an explicit combat teleport in moveToward.
+                    moveToward(pet, target, dir, attackRate, combatAnim, false)
                 end
 
                 -- Mining impact FX: play a library impact at the ore on cadence (test bed + visual).

@@ -11,6 +11,8 @@ The combat-training loop (lobby → ENTER → fight → pillar) runs in a
 mission-slot instance. The last pillar warps them back to the cave mouth, grants earned
 Level 2, then Homeworld continues with Rally. Progress is
 `profile.CombatTutorial` — never a ProfileStore template field.
+Completing this track independently unlocks Ascension even when the crystal/Homeworld tutorial is
+unfinished; completing either tutorial is sufficient.
 
 ## Live-save grandfather
 

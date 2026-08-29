@@ -296,14 +296,21 @@ Exclusive pet therefore floors at +5/+10/+15/+20/+25% from Copper through Onyx. 
 special zones do not receive this floor, so the cross-realm trade game remains unchanged. Server
 damage, inventory cards/sorting/tooltips, and the Studio stats HUD must use the shared resolver.
 
-## Magnet Enchant Scales the Complete Pickup Radius (2026-08-06)
+## Magnet Enchant Scales the Complete Player Pickup Radius (2026-08-06; revised 2026-08-27)
 
 The historical saved effect id `crystal_finder` remains stable, but its player-facing and runtime
 identity is **Magnet**, not a crystal-payout bonus. Resolve flat collection sources first
-(`base + Magnet power + Auto Collector`), take any larger absolute pet-ability reach, then multiply
+(`base + Magnet power`), take any larger absolute pet-ability reach, then multiply
 that useful radius by the configured combined equipped Magnet-enchant factor. `DropService` publishes the
 result as `CollectRadius`; clients display that server value verbatim. This makes metal/type scaling
 meaningful without introducing a second collection formula or migrating existing pet records.
+
+Auto Collector is deliberately orthogonal to Magnet. Its entitlement creates a passive,
+inventory-free collector pet outside `PlayerPets`; that actor travels to physical currency using the
+player’s published pet-speed axis and collects through its own configured 11-stud reach. It never
+adds radius, consumes an equip slot, attacks, or enters enemy aggro enumeration. While waiting at
+its follow position, its client presentation reuses the ordinary pet idle-meander behavior without
+moving the server-authoritative pickup position.
 
 ## Designated Powers Are the Differentiation Unit (2026-06-17)
 
@@ -673,3 +680,46 @@ optional, so they must not sit after Rally in the same sequential chart —
 that reports "tutorial finishers who skipped an optional quest" as a
 cliff. Those goals use a separate named Activation funnel that starts at
 join, so conversion is of all players.
+
+## Merge Defense Is Endless; Its First Catalog Recycles as Prototype Huge (2026-08-27)
+
+Preserve Waves 1–20 as a deterministic opening, then generate ten-wave checkpoint cycles without
+exceeding 32 enemy bodies. Difficulty grows through rank replacement and additive stat/reward
+multipliers rather than unbounded model counts.
+
+The current 28 Home/Heaven/Hell origins through Layer 3 run once normally and once as forced
+prototype-Huge NPC tiers, producing 56 merge tiers. Forced Huge state is ephemeral combat
+presentation only and must never become a durable player Huge, index entry, or registry record.
+
+Treat approximately Wave 140 as a balance horizon, not an endpoint. Merge-only rebirth grants an
+additive +100% of base allied Merge damage per rank without discounting eggs or multiplying drops.
+The first two authored ranks cost 50,000 and 200,000 Waycoins; no third rank exists until its price
+and progression gate are deliberately authored. Rebirth resets the active wave/checkpoint, board,
+deployed eggs, and Merge wallet, but never pets, player level, world unlocks, or Gem upgrades.
+
+## Merge Combat IDs Establish Fronts but Do Not Strand Idle Teams (2026-08-27)
+
+Keep per-team `CombatTargetGroup` values for readable opening assignments. Once the complete wave has
+been out for a short grace period, a defender with no live target may opt into open combat and
+duplicate the hardest engaged enemy. Rank wins before durability: boss, lieutenant, tank, then
+ordinary units. Preserve at most one idle reserve while enemy-group pressure is below defender-team
+capacity; commit every team when pressure reaches capacity. Any Bulwark crossing releases the
+reserve immediately for the rest of that wave. This is ordinary threat seeding, not a forced focus,
+so tanks and existing aggro tables remain authoritative.
+
+## One Atomic Merge Bay Expands into a Portable Ten-Bay Realm (2026-08-27)
+
+Keep `Workspace.Maps.MergeEggPrototype` as the only authored combat-lane source. Build five Heaven
+and five Hell bays by transforming complete clones around a shared open-rift hall; never split the
+lane into tiles or reintroduce chunk streaming. Decorations belong outside the playable lane seams
+and reuse the prebaked Flora/MissionProps registries.
+
+Random bay allocation and explicit empty-bay claims are server-owned and transient. The Home
+prototype retains one active combat session until the dedicated-place migration replaces its
+singleton runner with per-bay state; physical layout readiness is not permission to duplicate one
+`_active` table across ten owners.
+
+Persist only reconstructable checkpoint state at completed ten-wave boundaries. Save the isolated
+wallet, board inventory, base generator, deployed egg tiers, and objective count immediately;
+reroll ephemeral NPC rosters at full health on resume. Rebirth/Admin Reset clear this checkpoint,
+while Gem upgrades and Rebirth rank remain durable.

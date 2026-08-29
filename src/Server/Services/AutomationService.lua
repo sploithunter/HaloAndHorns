@@ -118,6 +118,10 @@ function AutomationService:_setPlayerControls(player, enabled)
     end
 end
 
+function AutomationService:SetPlayerControlsEnabled(player, enabled)
+    self:_setPlayerControls(player, enabled == true)
+end
+
 -- Resolve a navigation/teleport target to a Vector3. Accepts a Vector3, a
 -- BasePart, a Model (uses pivot), or a { x, y, z } table.
 function AutomationService:_resolveTargetPosition(target)
@@ -173,7 +177,9 @@ function AutomationService:NavigateTo(player, target, opts)
     local ok, result = pcall(function()
         return self:_followPath(player, humanoid, destination, threshold, timeout)
     end)
-    self:_setPlayerControls(player, true)
+    if opts.keepControlsDisabled ~= true then
+        self:_setPlayerControls(player, true)
+    end
 
     if not ok then
         return { ok = false, reason = "navigate_error", error = tostring(result) }
@@ -208,6 +214,7 @@ function AutomationService:_followPath(player, humanoid, destination, threshold,
     local index = 1
     local elapsed = 0
     local lastPos = root.Position
+    local stalledFor = 0
     while true do
         local waypoint = waypoints[index]
         humanoid:MoveTo(waypoint.Position) -- re-issued each loop to fight control cancel
@@ -242,15 +249,22 @@ function AutomationService:_followPath(player, humanoid, destination, threshold,
         )
         lastPos = root.Position
 
+        if Navigation.madeProgress(moved, STUCK_EPSILON) then
+            stalledFor = 0
+        else
+            stalledFor += dt
+        end
+
         local done
         index, done = Navigation.advanceWaypoint(index, distance, threshold, total)
         if done then
             break
         end
 
-        -- Stall guard: if we've stopped progressing well short of the goal,
-        -- surface it rather than hang.
-        if not Navigation.madeProgress(moved, STUCK_EPSILON) and elapsed > 1 then
+        -- A single quiet physics sample is normal while the humanoid turns, resolves a collision,
+        -- or crosses a waypoint. Only surface a stall after sustained lack of movement; the old
+        -- one-sample check made long prototype runs fail randomly after otherwise valid walks.
+        if stalledFor >= 1.5 and elapsed > 1 then
             return { ok = false, reason = "stalled", reached = index, total = total }
         end
     end

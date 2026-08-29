@@ -44,6 +44,23 @@ return function()
             expect(count(source, "HealingSuppression.isActive")).to.equal(1)
         end)
 
+        it("reserves merge-defense global kill credit for durable player pets", function()
+            local application = readFile("src/Server/CombatApplication.lua")
+            local enemies = readFile("src/Server/Services/EnemyService.lua")
+
+            expect(count(application, 'source:GetAttribute("PetRecordKey")')).to.equal(1)
+            expect(count(application, 'target:SetAttribute("MergeEggPlayerPetKillUserId"')).to.equal(
+                1
+            )
+            expect(count(enemies, 'model:GetAttribute("MergeEggPlayerPetKillUserId")')).to.equal(1)
+            expect(count(enemies, 'self._statsService:Increment(killer, "enemies_defeated", 1)')).to.equal(
+                1
+            )
+            expect(count(enemies, 'fireGameEvent(killer, "enemy_defeated"')).to.equal(1)
+            expect(count(enemies, "combat:AwardExperience(")).to.equal(1)
+            expect(count(enemies, 'killer:GetAttribute("AscensionUnlocked") == true')).to.equal(1)
+        end)
+
         it("blocks every ordinary enemy recovery path while drain suppression is live", function()
             local source = readFile("src/Server/Services/EnemyService.lua")
             -- Passive regeneration and enemy-healer target selection each consult the same status.
@@ -84,6 +101,20 @@ return function()
             expect(count(presenter, 'GetAttributeChangedSignal("DefenseBuffPowerId")')).to.equal(1)
             expect(count(presenter, "current.powerId == powerId")).to.equal(1)
         end)
+
+        it(
+            "renders heal pulses from the client target pivot instead of the server spawn pivot",
+            function()
+                local enemyService = readFile("src/Server/Services/EnemyService.lua")
+                local presenter = readFile("src/Client/Systems/CombatAuraController.lua")
+
+                expect(count(enemyService, "_spawnHealVisual")).to.equal(0)
+                expect(count(presenter, "function spawnHealPulse")).to.equal(1)
+                expect(count(presenter, "Signals.Combat_Result.OnClientEvent")).to.equal(1)
+                expect(count(presenter, "spawnHealPulse(result.target)")).to.equal(1)
+                expect(count(presenter, "fx.CFrame = part.CFrame")).to.equal(1)
+            end
+        )
 
         it("gates enemy actions on disarm without adding it to movement immobilization", function()
             local enemyService = readFile("src/Server/Services/EnemyService.lua")

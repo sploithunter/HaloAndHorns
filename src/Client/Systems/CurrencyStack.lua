@@ -57,6 +57,9 @@ local function currentOriginPane(player)
 end
 
 local function isHallArea(player)
+    if player:GetAttribute("InMergeEggPrototype") == true then
+        return true
+    end
     return HallOfWorldsLogic.usesHallCurrencyHud(
         player:GetAttribute("CurrentArea"),
         player:GetAttribute("GauntletMode"),
@@ -217,6 +220,7 @@ function CurrencyStack.start()
         player:GetAttributeChangedSignal("HomeArea"):Connect(applyCompactState)
         player:GetAttributeChangedSignal("GauntletMode"):Connect(applyCompactState)
         player:GetAttributeChangedSignal("InMission"):Connect(applyCompactState)
+        player:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(applyCompactState)
 
         -- Sit money's bottom just ABOVE the lower-left menu buttons. `stack` is unscaled and lives in
         -- MainContainer (which spans the whole screen, only inset-shifted), so a measured pixel offset

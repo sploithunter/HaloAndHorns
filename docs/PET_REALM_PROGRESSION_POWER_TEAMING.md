@@ -282,7 +282,12 @@ spawn rate/strength vs overage, grace period, cooldown.
 
 **Gamepass candidates that fit (all convenience, all common script targets):** auto-target
 `highest_value` (built — the `High` mode), auto-/bulk-hatch, offline/AFK earnings (capped *below*
-active), wider farm radius / multi-zone, extra target or equip slots. Price low.
+active), wider farm radius / multi-zone, extra target or equip slots. **Assassin** is the combat-side
+equivalent: the player's own squad automatically ranks a living enemy healer ahead of ordinary
+auto-target candidates. It adds no damage, range, cadence, or target eligibility; explicit player
+focus and forced threat/taunts remain authoritative, and the squad falls back to its normal strategy
+when no eligible healer exists. This same entitlement can follow the player's personal squad into
+the Merge an Egg mode without silently upgrading every NPC hatcher team. Price low.
 
 ---
 

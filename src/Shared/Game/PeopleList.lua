@@ -386,7 +386,11 @@ function PeopleList.row(config, ranksConfig, playerState)
     return {
         name = PeopleList.displayName(config, playerState.flags, playerState.displayName),
         badge = PeopleList.prefix(config, playerState.flags),
-        rank = PlayerListStatus.rank(playerState.level, playerState.veteranLevel),
+        rank = PlayerListStatus.rank(
+            playerState.level,
+            playerState.veteranLevel,
+            playerState.ascensionUnlocked
+        ),
         status = status,
         location = PlayerListStatus.location({
             area = playerState.area,

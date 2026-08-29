@@ -36,10 +36,12 @@ local PRINCIPAL_CTX = {
     end,
 }
 local CombatMath = require(ReplicatedStorage.Shared.Game.CombatMath)
+local CombatCadence = require(ReplicatedStorage.Shared.Game.CombatCadence)
 local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
 local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
 local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView)
+local MergeEggDamageScope = require(ReplicatedStorage.Shared.Game.MergeEggDamageScope)
 local BuffStack = require(ReplicatedStorage.Shared.Game.BuffStack)
 local BreakableBoost = require(ReplicatedStorage.Shared.Game.BreakableBoost)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
@@ -76,7 +78,9 @@ function PetFollowService:Init()
     self._squadDiversityConfig = self._configLoader:LoadConfig("squad_diversity") or {}
     self._diversityCache = setmetatable({}, { __mode = "k" }) -- [player]={mult,t}; weak so leavers GC
     self._nextHit = {} -- pet model -> os.clock() of next allowed mining hit
-    self._petPos = setmetatable({}, { __mode = "k" }) -- pet model -> { pos, t } (weak: dead pets GC)
+    -- Ordinary pets are reported by their owning client. NPC-principal pets have no owning client,
+    -- so the same gate stores a bounded server simulation for them (source = "npc").
+    self._petPos = setmetatable({}, { __mode = "k" }) -- pet -> { cf, t, source? }
     self._abilityProfiles = setmetatable({}, { __mode = "k" })
     self._abilityNext = setmetatable({}, { __mode = "k" })
 
@@ -232,12 +236,75 @@ function PetFollowService:_onPetPositions(player, report)
     end
 end
 
--- The latest client-reported CFrame for a pet (or nil if none/stale-cleaned).
--- EnemyService uses this to measure enemy->pet distance (anchored pets are moved
--- client-side, so the server's own pivot is stale).
+-- The latest authoritative combat CFrame for a pet. Player pets arrive from their owner client;
+-- NPC-principal pets use the server's bounded movement simulation below. EnemyService consumes the
+-- same seam, so attack range and enemy pursuit agree with the damage gate.
 function PetFollowService:GetReportedPosition(pet)
     local rec = self._petPos[pet]
     return rec and rec.cf or nil
+end
+
+local targetPosition
+
+local function approachPosition(current, goal, maxStep)
+    local delta = goal - current
+    if delta.Magnitude <= maxStep or delta.Magnitude <= 0.001 then
+        return goal
+    end
+    return current + delta.Unit * maxStep
+end
+
+-- A small authoritative counterpart to the client's rich NPC-pet presentation. It does not try to
+-- reproduce gait or exact attack-ring choreography; it answers the gameplay question "has this pet
+-- physically reached its target?" with the same travel-speed cap and a stable formation goal.
+function PetFollowService:_stepNpcCombatPosition(principal, pet, anchorRoot, breakable)
+    local now = os.clock()
+    local rec = self._petPos[pet]
+    local current = rec and rec.cf and rec.cf.Position or pet:GetPivot().Position
+    local goal
+
+    if breakable then
+        local target = targetPosition(breakable)
+        local towardAnchor =
+            Vector3.new(anchorRoot.Position.X - target.X, 0, anchorRoot.Position.Z - target.Z)
+        if towardAnchor.Magnitude <= 0.001 then
+            towardAnchor = Vector3.new(0, 0, 1)
+        end
+        local stopDistance = math.max(1, self:_attackRange(pet) * 0.7)
+        goal = target + towardAnchor.Unit * stopDistance
+    else
+        local formation = self._config.formation or {}
+        local risers = formation.risers or {}
+        local perRow = math.max(1, math.floor(tonumber(risers.per_row or formation.per_row) or 3))
+        local positionNumber = pet:FindFirstChild("PositionNumber")
+        local index =
+            math.max(1, math.floor(tonumber(positionNumber and positionNumber.Value) or 1))
+        local row = math.floor((index - 1) / perRow)
+        local column = (index - 1) % perRow
+        local columnSpacing = tonumber(risers.col_spacing or formation.col_spacing) or 4
+        local rowSpacing = tonumber(risers.row_gap or formation.row_spacing) or 4
+        local followDistance = tonumber(formation.follow_distance) or 6
+        local height = tonumber(formation.height) or 2
+        local x = (column - (perRow - 1) * 0.5) * columnSpacing
+        goal = (anchorRoot.CFrame * CFrame.new(x, height, followDistance + row * rowSpacing)).Position
+    end
+
+    local movement = self._config.movement or {}
+    local moveSpeedMult = tonumber(pet:GetAttribute("MoveSpeedMult")) or 1
+    if (tonumber(pet:GetAttribute("PetSlowUntil")) or 0) > os.time() then
+        moveSpeedMult *= math.clamp(tonumber(pet:GetAttribute("PetSlowFactor")) or 1, 0.05, 1)
+    end
+    local speed = PetFormation.moveSpeedMultiplier(
+        principal.instance:GetAttribute("PetMoveSpeed"),
+        moveSpeedMult,
+        movement.speed
+    )
+    local dt = rec and math.clamp(now - rec.t, 0, 0.25)
+        or math.max(0.01, tonumber(self._config.update_interval) or 0.1)
+    local maxStep = math.max(0.01, tonumber(movement.max_travel_speed) or 26) * speed * dt
+    local position = approachPosition(current, goal, maxStep)
+    self._petPos[pet] = { cf = CFrame.new(position), t = now, source = "npc" }
+    pet:SetAttribute("NpcCombatPosition", position)
 end
 
 -- Drop stale reports so combat falls back to the owner until the client
@@ -260,7 +327,7 @@ end
 -- at spawn while clients render motion. Static crystals have no MoveTarget and use their model.
 -- Never substitute the pet's client-reported position here: clients may present pet movement, but
 -- they do not get to choose damage geometry.
-local function targetPosition(target)
+targetPosition = function(target)
     local published = target:GetAttribute("MoveTarget")
     if typeof(published) ~= "Vector3" then
         published = nil
@@ -548,7 +615,17 @@ end
 -- contagion arms ONCE (re-arming every swing pushed the spread timer back so it never fired). The
 -- spread params (radius/interval/max) are carried onto the enemy as Contagion* so the spread pass —
 -- and every subsequent hop — propagates with the originating pet's tuning, not a global default.
-local function stampBurn(enemy, perTick, interval, duration, sourceUserId, spread, clk, element)
+local function stampBurn(
+    enemy,
+    perTick,
+    interval,
+    duration,
+    sourceUserId,
+    spread,
+    clk,
+    element,
+    playerPetKillUserId
+)
     if perTick <= 0 or duration <= 0 then
         return
     end
@@ -561,6 +638,7 @@ local function stampBurn(enemy, perTick, interval, duration, sourceUserId, sprea
     enemy:SetAttribute("DotExpireAt", clk + duration)
     enemy:SetAttribute("DotDuration", duration) -- window length, so contagion can re-arm the hop
     enemy:SetAttribute("DotSourceUserId", sourceUserId)
+    enemy:SetAttribute("DotPlayerPetKillUserId", playerPetKillUserId)
     enemy:SetAttribute("BurnFxUntil", os.time() + math.ceil(duration)) -- enemy "on fire" tell
     if element then
         enemy:SetAttribute("BurnElement", element) -- themes the client burn fx (frost = blue, etc.)
@@ -771,6 +849,21 @@ function PetFollowService:_mine(player, pet, breakable)
     -- enchant/modifier-resolved Power (ResolvePetDamage); a crystal swing is the card's ⛏ number,
     -- an enemy swing its ⚔. Everything below this point is contextual (level scale, buffs,
     -- vulnerability, armor, rolls) or pacing — never intrinsic.
+    local originProgression =
+        math.max(0, tonumber(pet:GetAttribute("OriginProgressionMultiplier")) or 1)
+    -- Full-mode Merge Defense uses the player's durable pets, so they are not present in the
+    -- prototype service's ephemeral record.playerUnits collection. Resolve the additive Gem +
+    -- Rebirth multiplier contextually here instead: it applies only while the owner is inside Merge
+    -- Defense. The two ephemeral NPC paths are excluded because MergeEggPrototypeService already
+    -- stamps their model progression and applying this factor again would double their bonus.
+    originProgression *= MergeEggDamageScope.playerPetMultiplier({
+        inMergeDefense = player:GetAttribute("InMergeEggPrototype") == true,
+        mode = player:GetAttribute("MergeEggPlayerCombatMode"),
+        mergeNpcUnit = pet:GetAttribute("MergeEggUnit") == true,
+        simpleReserveUnit = pet:GetAttribute("MergeEggPlayerReserveUnit") == true,
+        managementDamageMultiplier = player:GetAttribute("MergeDefenseManagementDamageMultiplier"),
+        rebirthDamageMultiplier = player:GetAttribute("MergeDefenseRebirthDamageMultiplier"),
+    })
     local profile = PetPowerView.profile({
         base = combat:ResolvePetDamage(player, ctx),
         petType = pet:GetAttribute("PetType"),
@@ -780,6 +873,9 @@ function PetFollowService:_mine(player, pet, breakable)
             zone = self:_zoneResonance(player, pet), -- biome RPS (pet element vs zone)
             realm = self:_realmResonance(player, pet), -- light/shadow vs current realm (cross-realm)
             diversity = self:_squadDiversity(player), -- team-comp bonus (distinct archetypes+origins)
+            -- Runtime-only progression seam for modes such as Merge an Egg. The pet definition and
+            -- saved Power stay immutable; an owning system may add a contextual origin multiplier.
+            originProgression = originProgression,
         },
     })
     local dmg = breakable:GetAttribute("EnemyId") and profile.combatEffective
@@ -875,6 +971,12 @@ function PetFollowService:_mine(player, pet, breakable)
             nowT,
             self._buffsConfig.axes and self._buffsConfig.axes.pet_damage
         )
+    -- Opposing support pets use the same authored curse aura, mirrored onto defending pets. The
+    -- stamp lives on the pet (the damage dealer), so it reduces both mining and combat output for
+    -- the aura window without changing the canonical pet definition.
+    if (tonumber(pet:GetAttribute("EnemyCurseUntil")) or 0) > nowT then
+        dmg *= math.clamp(tonumber(pet:GetAttribute("EnemyCurseMult")) or 1, 0, 1)
+    end
     -- VULNERABILITY marks: ADDITIVE across sources (VulnMark — each power/shred writes its own
     -- channel, the total = 1 + Σ live fractions, uncapped). The glass cannon's layered marks
     -- finally STACK (eruption + strike = x2.5, not last-write x1.5). Still a SEPARATE axis from
@@ -886,7 +988,11 @@ function PetFollowService:_mine(player, pet, breakable)
     -- Defensive stat: an enemy's Armor mitigates pet damage on the armor curve
     -- (crystals have no Armor -> unchanged). Vulnerability above counteracts it.
     local armorIgnore = math.clamp(tonumber(abilityProc and abilityProc.armor_ignore) or 0, 0, 1)
-    local armor = (breakable:GetAttribute("Armor") or 0) * (1 - armorIgnore)
+    local armor = tonumber(breakable:GetAttribute("Armor")) or 0
+    if (tonumber(breakable:GetAttribute("EnemyArmorBuffUntil")) or 0) > nowT then
+        armor += math.max(0, tonumber(breakable:GetAttribute("EnemyArmorBuff")) or 0)
+    end
+    armor *= 1 - armorIgnore
     if armor > 0 then
         dmg = CombatMath.mitigate(dmg, armor, self._combatConfig.armor_curve_k or 100)
     end
@@ -1020,12 +1126,14 @@ function PetFollowService:_mine(player, pet, breakable)
         )
     end
 
+    local playerPetKillUserId = pet:GetAttribute("PetRecordKey") ~= nil and player.UserId or nil
     local applied = CombatApplication.ApplyHit(breakable, {
         outcome = roll.multiplier <= 0 and "miss" or "damage",
         amount = dmg,
         crit = roll.crit,
         source = pet,
         sourcePlayer = player,
+        playerPetKillUserId = playerPetKillUserId,
         kind = "pet_attack",
     })
 
@@ -1083,7 +1191,8 @@ function PetFollowService:_mine(player, pet, breakable)
             player.UserId,
             burn.spread,
             os.clock(),
-            burnEl
+            burnEl,
+            playerPetKillUserId
         )
     end
     -- On-hit control/shred (orthogonal to the burn) on the primary target.
@@ -1166,6 +1275,7 @@ function PetFollowService:_mine(player, pet, breakable)
                         CombatApplication.ApplyDamage(other, splash, {
                             source = pet,
                             sourcePlayer = player,
+                            playerPetKillUserId = playerPetKillUserId,
                             kind = "pet_aoe",
                             element = element,
                         })
@@ -1182,7 +1292,8 @@ function PetFollowService:_mine(player, pet, breakable)
                                     player.UserId,
                                     burn.spread,
                                     os.clock(),
-                                    element -- pet element (resolved for the AoE burst above)
+                                    element, -- pet element (resolved for the AoE burst above)
+                                    playerPetKillUserId
                                 )
                             end
                             -- on-hit control/shred hits the whole splash cluster too (AoE control /
@@ -1217,6 +1328,7 @@ function PetFollowService:_mine(player, pet, breakable)
                         CombatApplication.ApplyDamage(e, splash, {
                             source = pet,
                             sourcePlayer = player,
+                            playerPetKillUserId = playerPetKillUserId,
                             kind = "team_cleave",
                         })
                     end
@@ -1240,6 +1352,7 @@ function PetFollowService:_mine(player, pet, breakable)
         hasteMult = hasteMult * (tonumber(pet:GetAttribute("PetHasteBuffSelf")) or 1)
     end
     hitInterval = hitInterval / math.clamp(hasteMult, 1, 2.5)
+    hitInterval = CombatCadence.interval(hitInterval, pet:GetAttribute("CombatCadenceMultiplier"))
     self._nextHit[pet] = now + hitInterval
 
     -- Drive the attack VISUAL off the real hit: tell the owning client to play this pet's
@@ -1402,6 +1515,7 @@ function PetFollowService:_tickPrincipal(principal)
         if pet:IsA("Model") and pet.PrimaryPart then
             self:_prepPet(pet)
             local targetId = pet:FindFirstChild("TargetID")
+            local liveTarget
             if targetId and targetId.Value ~= 0 then
                 local targetType = pet:FindFirstChild("TargetType")
                 local targetWorld = pet:FindFirstChild("TargetWorld")
@@ -1424,11 +1538,16 @@ function PetFollowService:_tickPrincipal(principal)
                     -- acquisition radius; a fight or walking away also releases the pet.
                     targetId.Value = 0
                 else
-                    -- An NPC principal's folder remains visually/behaviorally owned by
-                    -- its manifested character, but rewards and contribution belong to
-                    -- the real player who spent the token.
-                    self:_mine(rewardPlayer, pet, breakable)
+                    liveTarget = breakable
                 end
+            end
+            if Principal.isNpc(principal) then
+                self:_stepNpcCombatPosition(principal, pet, hrp, liveTarget)
+            end
+            if liveTarget then
+                -- An NPC principal's folder remains visually/behaviorally owned by its manifested
+                -- character, but rewards and contribution belong to the real owning player.
+                self:_mine(rewardPlayer, pet, liveTarget)
             end
         end
     end

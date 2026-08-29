@@ -66,6 +66,23 @@ filtered out of production registries.
   full pet storage cannot duplicate or silently destroy the pet. See [One-Way Pet Gifts](GIFT_SYSTEM.md).
 - Combat drop-table currencies and def-less realm coin fallbacks also terminate at
   `EconomyService`; combat math and area-coin selection remain service-owned upstream.
+- `EnemyService:SpawnEnemy` accepts an explicit `rewardPolicy = "none"` for isolated,
+  session-only encounters. The default remains the complete normal loot, counter, event, and drop
+  path; reward-free enemies may instead use a server-only once-per-defeat callback. Temporary pet
+  models may opt into `EphemeralDownPolicy = "destroy"`, which removes them and clears combat
+  references before the profile-oriented downed/slot-lockout lifecycle. Callers must stamp that
+  policy before parenting the model into the live pet folder. Spawn callers may also supply one
+  authored `marchGoal`; it replaces random idle meander, pauses while combat owns enemy motion,
+  resumes from the displaced position after disengagement, and fires one server-only callback at
+  the destination. `AlertSquadToEnemy` can seed both sides of a normal threat-table engagement for
+  authored defense boundaries; unlike focus assist it never pins pet `TargetID`s, so damage, decay,
+  proximity, and tank taunts decide the fight after the initial alert. A role's acquisition radius
+  gates only new ambient targets: an enemy already above that pet's aggro exit floor stays eligible
+  outside the radius, allowing an alert to begin pursuit without becoming a target pin.
+- Pet movement applies the catch-up snap only to owner-relative formation goals. Active combat
+  pursuit and its return leg cross long distances at the pet's bounded travel speed; principal or
+  portal teleports and Rally still force formation recovery, and explicit Shadow Step remains the
+  combat-teleport exception. The state is per pet and principal-agnostic, including NPC squads.
 - `CombatApplication` is the runtime combat-state boundary. `ApplyHit` publishes resolved
   hit/miss/dodge/block/absorb/immune outcomes, `ApplyDamage` mutates enemy HP or pet endurance and
   credits contribution, and `ApplyPowerHeal` mutates active/power healing. All three publish the

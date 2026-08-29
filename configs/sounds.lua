@@ -371,7 +371,9 @@ return {
     -- COMBAT MUSIC: while the local player is InCombat (server-set Player attribute), AreaMusicController
     -- crossfades from the area track to a RANDOM key in this list; when combat ends it crossfades back
     -- to the area track after combat_music_exit_delay seconds (the delay rides out brief aggro flicker so
-    -- the music doesn't restart). Grow this array freely — selection is uniform-random over its length.
+    -- the music doesn't restart). A server-owned CombatMusicCue can rotate the track inside one
+    -- continuous combat session (for example, once per wave). Picks are random but avoid the
+    -- immediately previous track whenever the active pool contains an alternative.
     combat_music = { "combat_1", "combat_2", "combat_3" },
     combat_music_exit_delay = 3.0,
 

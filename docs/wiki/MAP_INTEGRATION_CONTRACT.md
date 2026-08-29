@@ -23,6 +23,20 @@ Studio owns:
 - invisible zones and spawn volumes
 - portals, pads, stands, podiums, and anchor placement
 
+The Merge an Egg venue follows this split without joining the general map-hook registry. Studio
+owns the complete `Workspace.Maps.MergeEggRealm`: ten atomic bay Models under `Bays` plus the
+shared `CentralHall`. The current hall contract is a sunken mall with ten bay approaches, opposing
+lava/water end plazas, a central convergence landmark, bridges, and a lower waterfall park. Every
+bay carries `MergeEggBayId` and the normal named parts (`PlayerSpawn`,
+controls, `ArenaBounds`, one enemy spawn area, and one finish line). Runtime validates those hooks
+and owns temporary claims, but never clones, transforms, recolors, decorates, or replaces map
+geometry. To rebuild the blockout deliberately, run the one-bay source pass followed by
+`scripts/studio/bake_merge_egg_realm.luau`; the bake consumes the temporary
+`Workspace.Maps.MergeEggPrototype` source and stamps `MergeEggAuthoredRealm = true`,
+`UsesTileSystem = false`, and `UsesTileStreaming = false` on the permanent root. Runtime fails
+closed if that authored root or any contracted bay is missing. See
+[Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md).
+
 An AI-assisted deployment pass may normalize the Studio-owned map before Rojo sync: quarantine old scripts, regroup art, rename ambiguous imported objects, add invisible helper parts, and stamp tags/attributes. That is considered part of map integration, not a burden on the builder, as long as original art is preserved and the resulting hook contract is documented.
 
 ### Imported landmark visuals

@@ -311,6 +311,22 @@ return function()
             expect(row.inspect.body:find("first fight", 1, true)).to.be.ok()
             expect(PlayerListStatus.status({ vip = true, combatRank = "Spark" })).to.equal("Spark")
         end)
+
+        it("uses claimed rank and leaves it blank before ascension is introduced", function()
+            local hidden = PeopleList.row(cfg(), ranks(), {
+                displayName = "New Player",
+                level = 1,
+                ascensionUnlocked = false,
+            })
+            expect(hidden.rank).to.equal("")
+
+            local unlocked = PeopleList.row(cfg(), ranks(), {
+                displayName = "Trained Player",
+                level = 3,
+                ascensionUnlocked = true,
+            })
+            expect(unlocked.rank).to.equal("3")
+        end)
     end)
 
     describe("wiring", function()
@@ -318,6 +334,8 @@ return function()
             local client = readFile("src/Client/init.client.lua")
             expect(client:find("PeopleListController", 1, true)).to.be.ok()
             local controller = readFile("src/Client/Systems/PeopleListController.lua")
+            expect(controller:find('GetAttribute("ClaimedLevel")', 1, true)).to.be.ok()
+            expect(controller:find('GetAttribute("AscensionUnlocked")', 1, true)).to.be.ok()
             expect(controller:find("PromptSendFriendRequest", 1, true)).to.be.ok()
             expect(controller:find("PromptBlockPlayer", 1, true)).to.be.ok()
             expect(controller:find("Examine Avatar", 1, true)).to.be.ok()

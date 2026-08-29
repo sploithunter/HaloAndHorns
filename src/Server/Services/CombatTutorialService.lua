@@ -1183,11 +1183,13 @@ function CombatTutorialService:_ensureProgress(player)
             self._dataService:RequestSave(player, "combat_tutorial_migration")
         end
         if data.CombatTutorial.done == true then
+            player:SetAttribute("CombatTutorialDone", true)
             self:_applyCompletionReward(player, data)
         end
         return data
     end
     data.CombatTutorial = TutorialFlow.fresh(self._config)
+    player:SetAttribute("CombatTutorialDone", false)
     self._dataService:RequestSave(player, "combat_tutorial_init")
     return data
 end
@@ -1239,6 +1241,7 @@ function CombatTutorialService:_onEvent(player, name, ctx)
         }
     )
     if progress.done then
+        player:SetAttribute("CombatTutorialDone", true)
         self:_applyCompletionReward(player, data)
     end
     if completedStep and (progress.done or progress.step ~= completedIndex) then

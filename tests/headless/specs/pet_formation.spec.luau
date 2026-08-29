@@ -364,6 +364,31 @@ return function()
         end)
     end)
 
+    describe("combat pursuit catch-up contract", function()
+        it("travels out and back for combat but preserves principal teleport snaps", function()
+            local source = readFile("src/Client/Systems/PetFollowController.lua")
+            local move = source:find("local function moveToward", 1, true)
+            local snapGate = source:find("allowCatchupSnap ~= false", move, true)
+            local returnState = source:find("returningFromCombat[pet] = true", snapGate, true)
+            local follower = source:find(
+                "local allowFormationSnap = holdFormation or not returning",
+                returnState,
+                true
+            )
+            local attacker = source:find(
+                "moveToward(pet, target, dir, attackRate, combatAnim, false)",
+                follower,
+                true
+            )
+
+            expect(move ~= nil).to.equal(true)
+            expect(snapGate ~= nil and snapGate > move).to.equal(true)
+            expect(returnState ~= nil and returnState > snapGate).to.equal(true)
+            expect(follower ~= nil and follower > returnState).to.equal(true)
+            expect(attacker ~= nil and attacker > follower).to.equal(true)
+        end)
+    end)
+
     describe("PetFormation.inMiningRange", function()
         it("mines within range, withholds beyond it", function()
             expect(PetFormation.inMiningRange(5, 9)).to.equal(true)

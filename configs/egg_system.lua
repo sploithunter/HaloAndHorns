@@ -332,6 +332,14 @@ return {
                     active_description = "Active: hatch audio is suppressed.",
                     available_description = "Available: turn on Silent hatch to suppress hatch audio.",
                 },
+                merge_reveal = {
+                    label = "Defense Reveal",
+                    option = "mergeDefenseReveal",
+                    default_enabled = true,
+                    description = "Shows a passive pet reveal only when Merge defense discovers a new pet.",
+                    active_description = "Active: newly discovered defense pets reveal without blocking management controls.",
+                    available_description = "Available: turn off Defense Reveal to send new pets directly to inventory.",
+                },
             },
             help = {
                 default = "Hover a hatch mode or filter to see what it changes.",

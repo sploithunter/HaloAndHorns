@@ -43,8 +43,21 @@ This is the living project wiki for **Pet Realm — Halo & Horns**, a Rojo Roblo
 - [Map Integration Contract](MAP_INTEGRATION_CONTRACT.md) — how Rojo systems bind to Studio-authored worlds.
 - [Hall of Worlds](HALL_OF_WORLDS.md) — the authored but release-disabled Hall route, Homeworld
   rollback contract, and the relocated Lava Range / Desert Training Ground fixtures.
+- [Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md) — Phase 6: a permanent Studio-authored ten-bay
+  Heaven/Hell realm around a sunken public mall, opposing lava/water plazas and a central
+  convergence landmark, random empty-bay allocation,
+  durable Wave-10 checkpoint wallet/board/deployment state,
+  four empty hatcher positions, a rear-wall base-egg creator plus separate two-to-one merge station,
+  world-owned Home/Heaven-1 capacity, composition-aware tier-N drafts, an actual-walk-speed
+  continuous Home→Heaven 1 economy runner, eight ungated egg tiers, a Wave 10
+  restart checkpoint plus Waves 11–13 recovery ramp inside a 20-wave lieutenant/boss plan capped at
+  32 enemies, stationary 5,000-HP hatcher-egg objectives behind the breach line, a five-egg reserve,
+  stable-slot reinforcement FIFOs, and Simple synthetic-reserve versus Full durable-player-pet
+  combat modes.
 - [Marketing Plan](../MARKETING_PLAN.md) — the 50k-Robux test plan (creative screening → funnel gate → scale), icon/thumbnail prompt matrix, capture shot list, KPI cheat sheet, and the 500-engaged-players unlock strategy.
 - [Map Builder's Kit](../MAP_BUILDERS_KIT.md) — the production-world commissioning spec: hub-and-spoke layout, the 11-layer heaven/hell ladder (one layout, eleven skins), the full marker/binding contract, per-layer art briefs, phased delivery + acceptance checks.
+- Heaven/Hell flora–fauna + altar quote pack: [LAYER_1_2_FLORA_FAUNA.md](../art/LAYER_1_2_FLORA_FAUNA.md)
+  · sheets `docs/art/quote_refs/` (local textures only).
 - [Mission Worldgen](../MISSION_WORLDGEN.md) — the Trials endgame SSOT: CoH door missions, deterministic tile-kit procgen, shared sequences, the 8-trial matrix, quest-steered gates, and evolving-egg centuries (§13 = shipped contract).
 - [Area Bounds & Movement Leash](AREA_BOUNDS_LEASH.md) — the pure union clamp (`EnemyLeash`) that walls enemies inside their spawn area (sourced from live map parts; GrassSpawn = Grass ∪ SpawnCircle), plus the recorded possibility of reusing it to confine the player (flying-power containment).
 - [Pet Rigging Pipeline](PET_RIGGING_PIPELINE.md) — the canonical quadruped skeleton: one command skins any Meshy quadruped so all pets share attack clips; Blender headless pipeline, gotchas, and the Roblox import path.

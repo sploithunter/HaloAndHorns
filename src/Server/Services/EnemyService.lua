@@ -24,7 +24,6 @@ local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local PetRevive = require(script.Parent.Parent.PetRevive)
 local PetEnduranceBar = require(script.Parent.Parent.PetEnduranceBar)
 local ServerStorage = game:GetService("ServerStorage")
-local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local Debris = game:GetService("Debris")
 
@@ -51,6 +50,7 @@ local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
 local ActiveSquad = require(ReplicatedStorage.Shared.Game.ActiveSquad)
 local CombatMath = require(ReplicatedStorage.Shared.Game.CombatMath)
+local CombatCadence = require(ReplicatedStorage.Shared.Game.CombatCadence)
 local ChallengeRun = require(ReplicatedStorage.Shared.Game.ChallengeRun)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
 local TargetPriority = require(ReplicatedStorage.Shared.Game.TargetPriority)
@@ -68,6 +68,9 @@ local OverheadBar = require(ReplicatedStorage.Shared.UI.OverheadBar) -- shared e
 local PetLockout = require(ReplicatedStorage.Shared.Game.PetLockout)
 local ZoneResolver = require(ReplicatedStorage.Shared.Game.ZoneResolver)
 local EnemyLeash = require(ReplicatedStorage.Shared.Game.EnemyLeash)
+local EnemyRewardPolicy = require(ReplicatedStorage.Shared.Game.EnemyRewardPolicy)
+local EnemyMarchGoal = require(ReplicatedStorage.Shared.Game.EnemyMarchGoal)
+local CombatTargetGroup = require(ReplicatedStorage.Shared.Game.CombatTargetGroup)
 local MissionRankScale = require(ReplicatedStorage.Shared.Game.MissionRankScale)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CombatApplication = require(script.Parent.Parent.CombatApplication)
@@ -821,7 +824,12 @@ function EnemyService:_petAggroPass(now, dt, cfg)
     for _, folder in ipairs(pf:GetChildren()) do
         local player = self:_playerForPetFolder(folder)
         for _, pet in ipairs(folder:GetChildren()) do
-            if pet:IsA("Model") and pet.PrimaryPart and not pet:GetAttribute("CombatDowned") then
+            if
+                pet:IsA("Model")
+                and pet.PrimaryPart
+                and not pet:GetAttribute("CombatDowned")
+                and pet:GetAttribute("NoPetOffense") ~= true
+            then
                 local tbl = self:_petAggroTable(pet)
                 AggroTable.decay(tbl, dt, decayRate)
                 if seed > 0 then
@@ -1012,6 +1020,11 @@ function EnemyService:_attachEnemyDecor(model, body, enemyId, def, targetId)
     -- Name tag above the HP bar. The client (EnemyMotion) sets its text ("Name Lv N") and
     -- COLOUR by difficulty relative to the viewing player's level — so it's per-viewer.
     model:SetAttribute("DisplayName", def.display_name or enemyId)
+    model:SetAttribute("Element", def.element or "")
+    if def._petInvader then
+        -- Pet-model enemies retain their species identity for shared VFX/status readers.
+        model:SetAttribute("PetType", def._petInvader)
+    end
     -- Role (tank/melee/ranged/support) so the client HUD can show the enemy's ARCHETYPE the same
     -- way pet cards do — uses the same role vocabulary as pets (pet_roles / power_icons role_symbol).
     model:SetAttribute("Role", def.role or "melee")
@@ -1284,6 +1297,71 @@ function EnemyService:DespawnModel(model)
     return true
 end
 
+-- Start an ordinary threat-table fight for exactly the supplied folders without pinning targets.
+-- Keeping the folder set explicit lets authored defense encounters command several independent NPC
+-- teams owned by one player; threat, tank taunts, decay, and ordinary target selection still own the
+-- fight after this one seed.
+function EnemyService:_alertPetFoldersToEnemy(player, squads, targetId, opts)
+    targetId = tonumber(targetId)
+    local entry = targetId and self._enemies[targetId]
+    local model = entry and entry.model
+    if
+        not (player and player.Parent)
+        or not (entry and model and model.Parent)
+        or (model:GetAttribute("HP") or 0) <= 0
+    then
+        return false, 0
+    end
+
+    local threat = math.max(1, tonumber(opts and opts.threat) or 50)
+    self:_setAggroOwner(entry, player.Name)
+    local alerted = 0
+    for _, squad in ipairs(squads or {}) do
+        for _, pet in ipairs(squad.folder:GetChildren()) do
+            if
+                pet:IsA("Model")
+                and pet.PrimaryPart
+                and not pet:GetAttribute("CombatDowned")
+                and self:_enemyHostileToPet(entry, pet, squad.player)
+                and self:_petHostileToEnemy(pet, entry, squad.player)
+            then
+                AggroTable.reinforce(entry.aggro, pet, threat)
+                AggroTable.reinforce(self:_petAggroTable(pet), targetId, threat)
+                alerted += 1
+            end
+        end
+    end
+    if alerted == 0 then
+        self:_setAggroOwner(entry, nil)
+        return false, 0
+    end
+    return true, alerted
+end
+
+-- Seed only one pet folder. A stationary hatcher team uses this instead of drafting every other
+-- manifested principal (or the owner's real squad) through the broader team-combat seam.
+function EnemyService:AlertPetFolderToEnemy(folder, targetId, opts)
+    if not (folder and folder.Parent) then
+        return false, 0
+    end
+    local player = self:_playerForPetFolder(folder)
+    if not player then
+        return false, 0
+    end
+    return self:_alertPetFoldersToEnemy(
+        player,
+        { { player = player, folder = folder } },
+        targetId,
+        opts
+    )
+end
+
+-- Existing broad behavior for caves, parties, and manifested companions: alert every squad that
+-- belongs to the player's current combat team.
+function EnemyService:AlertSquadToEnemy(player, targetId, opts)
+    return self:_alertPetFoldersToEnemy(player, self:_teamSquads(player), targetId, opts)
+end
+
 -- Pin this player's squad on one enemy: assist does not lapse for pinSeconds,
 -- every pet's TargetID is forced, and other pet-threat rows are wiped so
 -- auto-target cannot peel off onto a louder dog.
@@ -1327,6 +1405,67 @@ function EnemyService:FocusSquadOnEnemy(player, targetId, opts)
         end
     end
     return true
+end
+
+-- Explicit early-prototype diagnostic: print the live pet-side and enemy-side aggro rows for one
+-- folder/target pair. Callers opt in; normal combat never emits this trace. This deliberately reads
+-- the same hostility, territory, position, and exit-floor gates as automatic target assignment so
+-- an idle pet explains whether it lacks threat or is filtering the target out.
+function EnemyService:TracePetFolderAggro(folder, targetId, context)
+    targetId = tonumber(targetId)
+    local entry = targetId and self._enemies[targetId]
+    local player = folder and self:_playerForPetFolder(folder)
+    if not (folder and folder.Parent and entry and entry.model and player) then
+        return false, 0
+    end
+    local pfs = self:_petFollowService()
+    local v2 = self:_aggroV2()
+    local exitFloor = (v2 and v2.base and v2.base.exit_floor) or 1
+    local traced = 0
+    print(
+        string.format(
+            "[BulwarkAggro] %s folder=%s team=%s enemy=%s open=%s move=%s",
+            tostring(context or "trace"),
+            folder.Name,
+            tostring(folder:GetAttribute("MergeEggTeamId") or "?"),
+            tostring(targetId),
+            tostring(entry.model:GetAttribute("CombatTargetOpen") == true),
+            tostring(entry.model:GetAttribute("MoveTarget"))
+        )
+    )
+    for _, pet in ipairs(folder:GetChildren()) do
+        if pet:IsA("Model") then
+            local table_ = self:_petAggroTable(pet)
+            local threat = AggroTable.get(table_, targetId)
+            local topId, topThreat = AggroTable.top(table_, 0, function(id)
+                return self._enemies[id] ~= nil
+            end)
+            local target = pet:FindFirstChild("TargetID")
+            local hostile = self:_petHostileToEnemy(pet, entry, player)
+            local territory = self:_inTerritory(entry, player)
+            local eligible = threat > exitFloor and hostile and territory
+            local distance = entry.pos and (entry.pos - self:_petPosition(pet, pfs)).Magnitude or -1
+            print(
+                string.format(
+                    "[BulwarkAggro] pet=%s role=%s current=%s threat=%.1f top=%s:%.1f enemyThreat=%.1f distance=%.1f eligible=%s hostile=%s territory=%s downed=%s",
+                    pet.Name,
+                    tostring(pet:GetAttribute("PetRole") or pet:GetAttribute("PetType")),
+                    tostring(target and target.Value or 0),
+                    threat,
+                    tostring(topId or 0),
+                    topThreat or 0,
+                    AggroTable.get(entry.aggro, pet),
+                    distance,
+                    tostring(eligible),
+                    tostring(hostile),
+                    tostring(territory),
+                    tostring(pet:GetAttribute("CombatDowned") == true)
+                )
+            )
+            traced += 1
+        end
+    end
+    return true, traced
 end
 
 -- Teaching-room leftovers (tagged CombatTutorialEnemy). Persistent tutorial
@@ -1409,7 +1548,8 @@ function EnemyService:_onDefeated(targetId)
             )
         )
     end
-    if combat and contrib then
+    local awardsNormalRewards = EnemyRewardPolicy.awardsNormalRewards(entry.rewardPolicy)
+    if awardsNormalRewards and combat and contrib then
         -- TM5 SHARED CREDIT (docs/TEAMING.md pillar 5): the credited set = every damage
         -- contributor PLUS their teammates near the down site — the healer/buffer who landed
         -- no hit still gets the award (CoH-style). Contributors are paid regardless of
@@ -1525,8 +1665,54 @@ function EnemyService:_onDefeated(targetId)
         end
     end
 
+    -- Merge defense pays only its authored physical coin/Gem drops. It must not turn the NPC
+    -- hatchers' autonomous battle into global kill/quest/leaderboard farming. CombatApplication
+    -- stamps the actual final damaging source, and only a durable player pet record can produce
+    -- this id. No nearby-team sharing applies to this isolated kill-credit exception.
+    if not awardsNormalRewards and model:GetAttribute("MergeEggPrototypeEnemy") == true then
+        local killerUserId = tonumber(model:GetAttribute("MergeEggPlayerPetKillUserId"))
+        local killer = killerUserId and Players:GetPlayerByUserId(killerUserId)
+        if killer and killer.Parent then
+            if killer:GetAttribute("AscensionUnlocked") == true and combat then
+                pcall(function()
+                    combat:AwardExperience(
+                        killer,
+                        entry.enemyId,
+                        model:GetAttribute("Level"),
+                        model:GetAttribute("EnemyTier"),
+                        entry.def
+                    )
+                end)
+            end
+            fireGameEvent(killer, "enemy_defeated", { enemy = entry.enemyId })
+            if self._statsService then
+                pcall(function()
+                    self._statsService:Increment(killer, "enemies_defeated", 1)
+                end)
+            end
+        end
+    end
+
     self:_releasePets(targetId)
     self:_playDefeatDeath(model, entry)
+    local onDefeated = entry.onDefeated
+    entry.onDefeated = nil
+    if onDefeated then
+        local ok, err = pcall(onDefeated, {
+            targetId = targetId,
+            enemyId = entry.enemyId,
+            model = model,
+            position = entry.pos,
+            rewardPolicy = entry.rewardPolicy,
+        })
+        if not ok and self._logger then
+            self._logger:Warn("Enemy onDefeated callback failed", {
+                enemyId = entry.enemyId,
+                targetId = targetId,
+                error = tostring(err),
+            })
+        end
+    end
     if self._logger then
         self._logger:Info("Enemy defeated", { enemyId = entry.enemyId, targetId = targetId })
     end
@@ -1668,12 +1854,40 @@ function EnemyService:_clearEnduranceBar(pet)
     PetEnduranceBar.clear(pet)
 end
 
+-- Remove a session-only combat unit instead of sending it through the profile-oriented downed /
+-- slot-lockout lifecycle. The spawning system opts in with EphemeralDownPolicy="destroy". Clear
+-- every strong combat reference before Destroy so an enemy cannot retain threat toward a dead
+-- Instance and a later spawned unit cannot inherit stale targeting state.
+function EnemyService:_destroyEphemeralPet(pet)
+    for _, entry in pairs(self._enemies) do
+        if entry.aggro then
+            AggroTable.clear(entry.aggro, pet)
+        end
+        if entry.targetPet == pet then
+            entry.targetPet = nil
+        end
+        if entry.taunt and entry.taunt.pet == pet then
+            entry.taunt = nil
+        end
+    end
+    self._petCombat[pet] = nil
+    self._abilityProfiles[pet] = nil
+    self:_clearEnduranceBar(pet)
+    if pet.Parent then
+        pet:Destroy()
+    end
+end
+
 -- Take a pet out of the fight. `reason` "down" (forced, long slot cooldown) or
 -- "recall" (player pulled it proactively, short cooldown). The pet hides client-side
 -- (PetFollowController) + drops its target; it stays out until the player SUMMONS it
 -- once the slot recharges (no auto-revive — recovery is a player action). The slot's
 -- recharge end is stamped on the pet as CooldownUntil (os.time) so the HUD counts down.
 function EnemyService:_downPet(pet, _now, _eng, reason)
+    if pet:GetAttribute("EphemeralDownPolicy") == "destroy" then
+        self:_destroyEphemeralPet(pet)
+        return
+    end
     pet:SetAttribute("CombatDowned", true)
     pet:SetAttribute("DownedReason", reason or "down")
     -- [GlassTrace] DOWN marker (Jason): unmissable line whenever a pet goes down, from ANY path (enemy
@@ -1980,6 +2194,7 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     -- MORE (flat 10% before) — the con-color system reaches the crit axis.
     -- rolls.crit_level_scale = { per_level, floor, cap }; enemy_attack only.
     local critChance = (enemyAtkRoll and enemyAtkRoll.crit_chance) or 0
+    critChance += math.max(0, tonumber(def.attack and def.attack.crit_chance) or 0)
     local critScale = eng.rolls and eng.rolls.crit_level_scale
     if critScale then
         critChance = math.clamp(
@@ -2002,7 +2217,7 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
             blind = blinded == true,
             kind = "enemy_attack",
         })
-        return true, blinded == true -- missed, wasBlinded
+        return true, blinded == true, 0 -- missed, wasBlinded, damage dealt
     end
     dmg = dmg * roll.multiplier
     -- CRIT PENETRATION substrate: the fraction of this hit that is CRIT
@@ -2068,7 +2283,7 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
             source = enemyModel,
             kind = "enemy_attack",
         })
-        return -- avoided the hit entirely
+        return false, false, 0 -- avoided the hit entirely
     end
     -- Defensive stat: the pet's Defense (its own + any active DefenseBuff from a power
     -- like Bulwark) mitigates the hit on the armor curve. A real tank survives longer.
@@ -2085,6 +2300,9 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
     if (pet:GetAttribute("TeamDefenseBuffUntil") or 0) > nowT then
         baseDefense = baseDefense + (pet:GetAttribute("TeamDefenseBuff") or 0)
     end
+    local armorIgnore = math.clamp(tonumber(def.attack and def.attack.armor_ignore) or 0, 0, 1)
+    baseDefense *= 1 - armorIgnore
+    powerDefense *= 1 - armorIgnore
     local armorK = self._combatConfig.armor_curve_k or 100
     local rawBeforeDefense = dmg
     local withoutPowerArmor = CombatMath.mitigate(rawBeforeDefense, baseDefense, armorK)
@@ -2238,6 +2456,7 @@ function EnemyService:_hitPet(pet, def, now, eng, enemyLevel, petLevel, enemyMod
             self:_downPet(pet, now, eng, "down")
         end
     end
+    return false, false, math.max(0, tonumber(hitResult.amount) or 0)
 end
 
 -- The threat a pet exerts (higher pulls aggro): an explicit Threat attribute marks
@@ -2712,12 +2931,55 @@ function EnemyService:_dropUnreachableEngagement(entry, targetId, reason)
     self:_clearChasePath(entry)
 end
 
-function EnemyService:_loiter(entry, model, ePos, dt)
+function EnemyService:_followAuthoredMarchGoal(entry, targetId, model, ePos, dt)
+    local goal = entry.marchGoal
+    if not goal then
+        return false
+    end
+
+    local x, z, reached = EnemyMarchGoal.step(goal, ePos.X, ePos.Z, math.max(0, dt or 0))
+    local gy = self:_groundedY(entry, x, z, ePos.Y)
+    local eng = self._combatConfig and self._combatConfig.engagement or {}
+    local flyer = (entry.hoverHeight or 0) > 0
+    if not flyer and (gy - ePos.Y) > (eng.ground_climb_max or 10) then
+        return true
+    end
+
+    local np = self:_leashToHomeArea(entry, Vector3.new(x, gy, z))
+    local moveVec = Vector3.new(np.X - ePos.X, 0, np.Z - ePos.Z)
+    entry.pos = np
+    model:SetAttribute("MoveTarget", np)
+    if moveVec.Magnitude > 0.02 then
+        model:SetAttribute("MoveFace", np + moveVec.Unit * 4)
+    end
+
+    if reached then
+        entry.marchGoal = nil
+        model:SetAttribute("MarchGoalReached", true)
+        local onReached = goal.onReached
+        goal.onReached = nil
+        if onReached then
+            local ok, err = pcall(onReached, {
+                targetId = targetId,
+                enemyId = entry.enemyId,
+                model = model,
+                position = np,
+            })
+            if not ok and self._logger then
+                self._logger:Warn("Enemy march goal callback failed", {
+                    enemyId = entry.enemyId,
+                    targetId = targetId,
+                    error = tostring(err),
+                })
+            end
+        end
+    end
+    return true
+end
+
+function EnemyService:_loiter(entry, targetId, model, ePos, dt)
     local eng = self._combatConfig and self._combatConfig.engagement
     local cfg = eng and eng.loiter
-    if not cfg or cfg.enabled == false then
-        return
-    end
     -- CONTROL: loiter is a SEPARATE mover from the chase path, so it needs the same root gate or a
     -- controlled enemy that disengages (target moved away) wanders out of the snare while RootedUntil
     -- is still ticking — the root looks broken. HeldUntil = full mez, RootedUntil = snare; both freeze
@@ -2729,6 +2991,14 @@ function EnemyService:_loiter(entry, model, ePos, dt)
             os.time()
         )
     then
+        return
+    end
+    -- A forward goal replaces random idle meander. Combat owns motion while engaged, then the
+    -- enemy resumes toward the same destination from its latest authoritative position.
+    if self:_followAuthoredMarchGoal(entry, targetId, model, ePos, dt) then
+        return
+    end
+    if not cfg or cfg.enabled == false then
         return
     end
     entry.home = entry.home or ePos
@@ -2767,6 +3037,196 @@ function EnemyService:_nearestPlayer(ePos, maxRange)
         end
     end
     return best, bestD
+end
+
+-- Apply the species-authored on-hit payload of a pet-model enemy to a defender pet. These fields
+-- are the inverse of PetFollowService's attack_control/attack_dot/attack_debuff path: the rolled
+-- species is selected first, then its actual kit follows it onto whichever minion/LT rank it wears.
+function EnemyService:_applyPetEnemyOnHit(pet, attack, dealt, source, now)
+    if not (pet and pet.Parent and type(attack) == "table") then
+        return
+    end
+    local nowTime = os.time()
+    local control = attack.pet_control
+    if type(control) == "table" then
+        local duration = math.max(0, tonumber(control.duration) or 0)
+        local untilTime = nowTime + duration
+        if duration > 0 and control.kind == "hold" then
+            pet:SetAttribute(
+                "PetHeldUntil",
+                math.max(tonumber(pet:GetAttribute("PetHeldUntil")) or 0, untilTime)
+            )
+            pet:SetAttribute(
+                "PetRootedUntil",
+                math.max(tonumber(pet:GetAttribute("PetRootedUntil")) or 0, untilTime)
+            )
+        elseif duration > 0 and control.kind == "root" then
+            pet:SetAttribute(
+                "PetRootedUntil",
+                math.max(tonumber(pet:GetAttribute("PetRootedUntil")) or 0, untilTime)
+            )
+        elseif duration > 0 and control.kind == "slow" then
+            local active = (tonumber(pet:GetAttribute("PetSlowUntil")) or 0) > nowTime
+            local current = active and (tonumber(pet:GetAttribute("PetSlowFactor")) or 1) or 1
+            pet:SetAttribute("PetSlowFactor", math.min(current, tonumber(control.factor) or 1))
+            pet:SetAttribute(
+                "PetSlowUntil",
+                math.max(tonumber(pet:GetAttribute("PetSlowUntil")) or 0, untilTime)
+            )
+        end
+    end
+
+    local debuff = attack.pet_debuff
+    if type(debuff) == "table" then
+        local duration = math.max(0, tonumber(debuff.duration) or 0)
+        local vulnerable = math.max(0, tonumber(debuff.vulnerable) or 0)
+        if duration > 0 and vulnerable > 0 then
+            pet:SetAttribute(
+                "EnemyExposeMult",
+                math.max(tonumber(pet:GetAttribute("EnemyExposeMult")) or 1, 1 + vulnerable)
+            )
+            pet:SetAttribute(
+                "EnemyExposeUntil",
+                math.max(tonumber(pet:GetAttribute("EnemyExposeUntil")) or 0, nowTime + duration)
+            )
+        end
+    end
+
+    local dot = attack.pet_dot
+    if type(dot) == "table" and (tonumber(dealt) or 0) > 0 then
+        local duration = math.max(0, tonumber(dot.duration) or 0)
+        local interval = math.max(0.1, tonumber(dot.tick) or tonumber(dot.interval) or 1)
+        local perTick = DamageOverTime.perTick(dealt, tonumber(dot.fraction) or 0)
+        if duration > 0 and perTick > 0 then
+            local currentExpires = tonumber(pet:GetAttribute("EnemyDotExpireAt")) or 0
+            local current = currentExpires > now
+                    and (tonumber(pet:GetAttribute("EnemyDotPerTick")) or 0)
+                or 0
+            pet:SetAttribute("EnemyDotPerTick", math.max(current, perTick))
+            pet:SetAttribute("EnemyDotInterval", interval)
+            pet:SetAttribute("EnemyDotExpireAt", now + duration)
+            pet:SetAttribute("EnemyDotNextTick", now + interval)
+            pet:SetAttribute(
+                "EnemyDotElement",
+                tostring(source and source:GetAttribute("Element") or "lava")
+            )
+            local idValue = source and source:FindFirstChild("BreakableID")
+            pet:SetAttribute("EnemyDotSourceTargetId", idValue and idValue.Value or 0)
+        end
+    end
+end
+
+-- A pet support power remains that power when its model is used by the opposing faction. Effects
+-- are mirrored onto the enemy band / defending pets, and the ordinary AreaFx channel supplies the
+-- same element-coloured cast tell used by player powers.
+function EnemyService:_petEnemyAuraPass(entry, valid, now, ePos, actionLocked)
+    local def = entry.def
+        or (self._enemiesConfig.enemies and self._enemiesConfig.enemies[entry.enemyId])
+    local auras = def and def.pet_auras
+    if actionLocked or type(auras) ~= "table" or #auras == 0 then
+        return
+    end
+    entry.petAuraAt = entry.petAuraAt or {}
+    local nowTime = os.time()
+    for index, aura in ipairs(auras) do
+        if type(aura) == "table" and now >= (entry.petAuraAt[index] or 0) then
+            entry.petAuraAt[index] = now + math.max(0.1, tonumber(aura.interval) or 2)
+            local duration = math.max(0.1, tonumber(aura.duration) or 3)
+            local untilTime = nowTime + duration
+            local radius = math.max(1, tonumber(aura.radius) or 45)
+            local radiusSquared = radius * radius
+            local allies = {}
+            for _, other in pairs(self._enemies) do
+                if
+                    other.model
+                    and other.model.Parent
+                    and (other.model:GetAttribute("HP") or 0) > 0
+                    and other.pos
+                then
+                    local delta = other.pos - ePos
+                    if delta.X * delta.X + delta.Z * delta.Z <= radiusSquared then
+                        allies[#allies + 1] = other
+                    end
+                end
+            end
+            local targetPet = AggroTable.top(entry.aggro, 0, function(pet)
+                return valid[pet] == true
+                    and (self:_petPosition(pet, self:_petFollowService()) - ePos).Magnitude
+                        <= radius
+            end)
+            local kind = tostring(aura.kind or "")
+            local applied = false
+            if kind == "haste" or kind == "offense" then
+                local mult = math.max(0.05, tonumber(aura.mult) or 1)
+                for _, other in ipairs(allies) do
+                    if kind == "haste" then
+                        other.model:SetAttribute("EnemyHasteMult", mult)
+                        other.model:SetAttribute("EnemyHasteUntil", untilTime)
+                    else
+                        other.model:SetAttribute("EnemyDmgBuffMult", mult)
+                        other.model:SetAttribute("EnemyDmgBuffUntil", untilTime)
+                    end
+                end
+                applied = #allies > 0
+            elseif kind == "empower" then
+                local best, bestDamage
+                for _, other in ipairs(allies) do
+                    local damage = tonumber(
+                        other.def and other.def.attack and other.def.attack.damage
+                    ) or 0
+                    if not bestDamage or damage > bestDamage then
+                        best, bestDamage = other, damage
+                    end
+                end
+                if best then
+                    best.model:SetAttribute(
+                        "EnemyDmgBuffMult",
+                        math.max(1, tonumber(aura.mult) or 1)
+                    )
+                    best.model:SetAttribute("EnemyDmgBuffUntil", untilTime)
+                    applied = true
+                end
+            elseif kind == "defense" then
+                local amount = math.max(0, tonumber(aura.amount) or 0)
+                for _, other in ipairs(allies) do
+                    other.model:SetAttribute("EnemyArmorBuff", amount)
+                    other.model:SetAttribute("EnemyArmorBuffUntil", untilTime)
+                end
+                applied = #allies > 0
+            elseif targetPet and (kind == "curse" or kind == "shred") then
+                if kind == "curse" then
+                    targetPet:SetAttribute(
+                        "EnemyCurseMult",
+                        math.clamp(tonumber(aura.mult) or 1, 0, 1)
+                    )
+                    targetPet:SetAttribute("EnemyCurseUntil", untilTime)
+                else
+                    targetPet:SetAttribute(
+                        "EnemyExposeMult",
+                        1 + math.max(0, tonumber(aura.amount) or 0.25)
+                    )
+                    targetPet:SetAttribute("EnemyExposeUntil", untilTime)
+                end
+                applied = true
+            elseif targetPet and (kind == "slow" or kind == "root" or kind == "hold") then
+                self:_applyPetEnemyOnHit(targetPet, { pet_control = aura }, 0, entry.model, now)
+                applied = true
+            elseif targetPet and (kind == "drain" or kind == "antiheal") then
+                targetPet:SetAttribute("EnemyHealSuppressedUntil", untilTime)
+                applied = true
+            end
+            if applied then
+                pcall(function()
+                    Signals.Power_AreaFx:FireAllClients({
+                        element = tostring(def.element or "grass"),
+                        variant = "self",
+                        center = ePos,
+                        radius = math.min(radius, 16),
+                    })
+                end)
+            end
+        end
+    end
 end
 
 -- One alive enemy, per tick: PERCEIVE a player (distance x probability) to acquire aggro, CHASE the
@@ -2849,7 +3309,7 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
             end
         end
         if not entry.aggroPlayerName then
-            self:_loiter(entry, model, ePos, dt)
+            self:_loiter(entry, targetId, model, ePos, dt)
             return -- still unaware: idle (loitering around home, not frozen)
         end
     end
@@ -3356,25 +3816,78 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
     end)
     entry.nextAttack = entry.nextAttack or 0
     if biteTarget and not actionLocked and now >= entry.nextAttack then
+        local attackDef = def
+        local abilityProc
+        if def and type(def.pet_ability_profile) == "table" then
+            abilityProc, entry.petAbilityNext =
+                PetAbilityRuntime.activate(def.pet_ability_profile, entry.petAbilityNext, now)
+        end
+        if abilityProc then
+            attackDef = table.clone(def)
+            attackDef.attack = table.clone(def.attack or {})
+            attackDef.attack.damage = (tonumber(attackDef.attack.damage) or 0)
+                * (tonumber(abilityProc.damage_multiplier) or 1)
+            attackDef.attack.crit_chance = tonumber(abilityProc.crit_chance) or 0
+            attackDef.attack.armor_ignore = tonumber(abilityProc.armor_ignore) or 0
+            if abilityProc.stun_duration and abilityProc.stun_duration > 0 then
+                attackDef.attack.pet_control = {
+                    kind = "hold",
+                    duration = abilityProc.stun_duration,
+                }
+            end
+            if
+                abilityProc.damage_over_time == true
+                and type(attackDef.attack.pet_dot) ~= "table"
+            then
+                local realityBurn = (self._combatConfig.pet_ability_runtime or {}).reality_burn
+                    or {}
+                attackDef.attack.pet_dot = {
+                    fraction = tonumber(realityBurn.fraction) or 0.2,
+                    tick = tonumber(realityBurn.interval) or 1,
+                    duration = tonumber(realityBurn.duration) or 4,
+                }
+            end
+            if abilityProc.area_damage == true and type(attackDef.attack.splash) ~= "table" then
+                local aoe = self._combatConfig.pet_aoe or {}
+                attackDef.attack.splash = {
+                    radius = tonumber(aoe.splash_radius) or 14,
+                    frac = tonumber(aoe.splash_fraction) or 0.6,
+                    max_targets = math.max(1, math.floor(tonumber(aoe.max_targets) or 5)),
+                }
+            end
+        end
         local enemyLevel = model:GetAttribute("Level") or 1
         -- Pet defends at its owner's EFFECTIVE level (teaming seam), same value its own attacks use.
         local petLevel = player:GetAttribute("EffectiveLevel")
             or biteTarget:GetAttribute("Level")
             or (player:GetAttribute("Level") or 1)
-        local missed, wasBlinded =
-            self:_hitPet(biteTarget, def, now, eng, enemyLevel, petLevel, model)
-        entry.nextAttack = now + ((def and def.attack and def.attack.cadence) or 1.5)
+        local missed, wasBlinded, dealt =
+            self:_hitPet(biteTarget, attackDef, now, eng, enemyLevel, petLevel, model)
+        if dealt and dealt > 0 then
+            self:_applyPetEnemyOnHit(biteTarget, attackDef.attack, dealt, model, now)
+        end
+        local cadenceMultiplier =
+            CombatCadence.multiplier(model:GetAttribute("CombatCadenceMultiplier"))
+        if (tonumber(model:GetAttribute("EnemyHasteUntil")) or 0) > os.time() then
+            cadenceMultiplier *= math.max(0.05, tonumber(model:GetAttribute("EnemyHasteMult")) or 1)
+        end
+        entry.nextAttack = now
+            + CombatCadence.interval(
+                (def and def.attack and def.attack.cadence) or 1.5,
+                cadenceMultiplier
+            )
         -- Broadcast the swing's VISUAL (damage is already applied above; the FX is just the swing,
         -- exactly like the pets' Combat_PetHit). Fired on EVERY attack so enemies attack the same
         -- way pets do: ranged -> a themed bolt enemy->pet, melee -> an impact at the pet. The client
         -- (EnemyMotion -> CombatHitFX) is the same path the pets use. To all clients = shared world.
-        local isRanged = def and (def.role == "ranged" or def.bolt_kind ~= nil) or false
+        local isRanged = attackDef and (attackDef.role == "ranged" or attackDef.bolt_kind ~= nil)
+            or false
         pcall(function()
             Signals.Combat_EnemyHit:FireAllClients({
                 enemy = model,
                 target = biteTarget,
                 ranged = isRanged,
-                kind = def and def.bolt_kind,
+                kind = attackDef and attackDef.bolt_kind,
                 crit = biteTarget:GetAttribute("LastHitCrit") == true,
                 miss = missed == true, -- enemy whiffed -> float "MISS" over the pet (EnemyMotion)
                 blind = wasBlinded == true, -- whiff was a Sandstorm blind -> orange, not grey
@@ -3384,18 +3897,30 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
         -- also splashes `frac` of the damage to every OTHER pet within `radius` studs of the
         -- enemy — each with its own accuracy/crit/shield/evade roll (_hitPet on a scaled def).
         -- Crowding an arch-villain is dangerous by design.
-        local splash = def and def.attack and def.attack.splash
+        local splash = attackDef and attackDef.attack and attackDef.attack.splash
         if splash then
             local sr2 = (tonumber(splash.radius) or 10) ^ 2
             local splashDef = {
-                role = def.role,
+                role = attackDef.role,
                 attack = {
-                    damage = ((def.attack and def.attack.damage) or 0)
+                    damage = ((attackDef.attack and attackDef.attack.damage) or 0)
                         * (tonumber(splash.frac) or 0.5),
+                    pet_control = attackDef.attack and attackDef.attack.pet_control,
+                    pet_dot = attackDef.attack and attackDef.attack.pet_dot,
+                    pet_debuff = attackDef.attack and attackDef.attack.pet_debuff,
+                    crit_chance = attackDef.attack and attackDef.attack.crit_chance,
+                    armor_ignore = attackDef.attack and attackDef.attack.armor_ignore,
                 },
             }
+            local splashCount = 0
+            local maxTargets = math.max(1, math.floor(tonumber(splash.max_targets) or 999))
             for pet in pairs(valid) do
-                if pet ~= biteTarget and pet.Parent and not pet:GetAttribute("CombatDowned") then
+                if
+                    splashCount < maxTargets
+                    and pet ~= biteTarget
+                    and pet.Parent
+                    and not pet:GetAttribute("CombatDowned")
+                then
                     local pp = self:_petPosition(pet, pfs)
                     local dx, dz = pp.X - ePos.X, pp.Z - ePos.Z
                     if dx * dx + dz * dz <= sr2 then
@@ -3403,8 +3928,12 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
                         local pl = (owner and owner:GetAttribute("EffectiveLevel"))
                             or pet:GetAttribute("Level")
                             or petLevel
-                        local sMissed =
+                        local sMissed, _, splashDealt =
                             self:_hitPet(pet, splashDef, now, eng, enemyLevel, pl, model)
+                        if splashDealt and splashDealt > 0 then
+                            self:_applyPetEnemyOnHit(pet, splashDef.attack, splashDealt, model, now)
+                        end
+                        splashCount += 1
                         pcall(function()
                             Signals.Combat_EnemyHit:FireAllClients({
                                 enemy = model,
@@ -3419,6 +3948,8 @@ function EnemyService:_engageEnemy(entry, targetId, now, eng, dt)
             end
         end
     end
+
+    self:_petEnemyAuraPass(entry, valid, now, ePos, actionLocked)
 
     -- SLAM (capital baddies, config: abilities.slam = { damage, radius, cooldown, telegraph,
     -- range }): a TELEGRAPHED targeted AoE. Every `cooldown`s the enemy marks a RED rune under
@@ -3695,7 +4226,12 @@ function EnemyService:_regenPass(now, dt, eng)
         local player = Players:FindFirstChild(folder.Name)
         local squadOutOfCombat = player ~= nil and player:GetAttribute("InCombat") ~= true
         for _, pet in ipairs(folder:GetChildren()) do
-            if pet:IsA("Model") and pet.PrimaryPart and not pet:GetAttribute("CombatDowned") then
+            if
+                pet:IsA("Model")
+                and pet.PrimaryPart
+                and not pet:GetAttribute("CombatDowned")
+                and pet:GetAttribute("NoNaturalRegen") ~= true
+            then
                 local taken = pet:GetAttribute("CombatDamageTaken") or 0
                 if taken > 0 then
                     local pc = self._petCombat[pet]
@@ -4010,34 +4546,6 @@ function EnemyService:_petAuras(pet)
     return SupportAura.aurasFor(pet:GetAttribute("PetType"), self._petRoles)
 end
 
--- A green heal puff above a pet (world-side "tell" that it was just healed). Expands +
--- fades over ~0.7s; cleaned by Debris.
-function EnemyService:_spawnHealVisual(pet)
-    local pp = pet.PrimaryPart
-    if not pp then
-        return
-    end
-    local fx = Instance.new("Part")
-    fx.Name = "HealFX"
-    fx.Shape = Enum.PartType.Ball
-    fx.Material = Enum.Material.Neon
-    fx.Color = Color3.fromRGB(95, 225, 120)
-    fx.Transparency = 0.35
-    fx.Anchored = true
-    fx.CanCollide = false
-    fx.CanQuery = false
-    fx.Massless = true
-    fx.Size = Vector3.new(2, 2, 2)
-    fx.CFrame = pp.CFrame
-    fx.Parent = Workspace
-    TweenService:Create(
-        fx,
-        TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        { Size = Vector3.new(8, 8, 8), Transparency = 1 }
-    ):Play()
-    Debris:AddItem(fx, 0.8)
-end
-
 -- Does this pet provide a heal aura itself? Healers are excluded as aura-heal TARGETS so a
 -- support pet can't passively mend itself (Jason: a self-healing Colorado was unkillable). The
 -- healer is meant to be the vulnerable priority target you protect — out-of-combat _regenPass
@@ -4061,6 +4569,7 @@ function EnemyService:_auraHeal(folder, heal, vmult)
         if
             ally:IsA("Model")
             and not ally:GetAttribute("CombatDowned")
+            and ally:GetAttribute("NoPetSupport") ~= true
             and not self:_isHealer(ally)
         then
             local taken = ally:GetAttribute("CombatDamageTaken") or 0
@@ -4093,9 +4602,8 @@ function EnemyService:_auraHeal(folder, heal, vmult)
     else
         self:_updateEnduranceBar(target, newTaken, self:_petPower(target), factor)
     end
-    -- Visual tell: blinking heal badge (HealFxUntil) + world heal puff, so an instant heal
-    -- is visible even though it has no duration.
-    self:_spawnHealVisual(target)
+    -- CombatApplication publishes the heal result. Each client renders its pulse from the target's
+    -- locally moved model, rather than this server's stale follow pivot.
 end
 
 -- Defense aura (Ice / penguin): a short-lived TeamDefenseBuff on EVERY ally. Consumed in
@@ -4105,7 +4613,11 @@ function EnemyService:_auraDefense(folder, aura, count, weight)
     local amount = (tonumber(aura.amount) or 0) * (weight or count or 1)
     local until_ = os.time() + (tonumber(aura.duration) or 3)
     for _, ally in ipairs(folder:GetChildren()) do
-        if ally:IsA("Model") and not ally:GetAttribute("CombatDowned") then
+        if
+            ally:IsA("Model")
+            and not ally:GetAttribute("CombatDowned")
+            and ally:GetAttribute("NoPetSupport") ~= true
+        then
             ally:SetAttribute("TeamDefenseBuff", amount)
             ally:SetAttribute("TeamDefenseBuffUntil", until_)
             ally:SetAttribute("TeamDefenseBuffStacks", count or 1) -- # contributing buffers (badge pile)
@@ -4485,7 +4997,12 @@ end
 function EnemyService:_auraEmpower(folder, aura, count)
     local candidates = {}
     for _, ally in ipairs(folder:GetChildren()) do
-        if ally:IsA("Model") and ally.PrimaryPart and not ally:GetAttribute("CombatDowned") then
+        if
+            ally:IsA("Model")
+            and ally.PrimaryPart
+            and not ally:GetAttribute("CombatDowned")
+            and ally:GetAttribute("NoPetSupport") ~= true
+        then
             -- Rank by EFFECTIVE combat power (the ⚔ number), NOT raw base: a huge tank has the
             -- biggest base but its ×0.6 combat_mult makes a blaster the real carry. Empower must
             -- lift the actual damage dealer, so resolve combatEffective through PetPowerView.
@@ -4522,7 +5039,12 @@ function EnemyService:_auraScopedBuff(folder, teamAttr, petAttr, fxAttr, aura, c
     end
     local candidates = {}
     for _, ally in ipairs(folder:GetChildren()) do
-        if ally:IsA("Model") and ally.PrimaryPart and not ally:GetAttribute("CombatDowned") then
+        if
+            ally:IsA("Model")
+            and ally.PrimaryPart
+            and not ally:GetAttribute("CombatDowned")
+            and ally:GetAttribute("NoPetSupport") ~= true
+        then
             candidates[#candidates + 1] = { key = ally, power = self:_petCombatPower(ally) }
         end
     end
@@ -4546,7 +5068,11 @@ end
 function EnemyService:_stampAuraFx(folder, fxAttr, aura, count)
     local until_ = os.time() + (tonumber(aura.duration) or 3)
     for _, ally in ipairs(folder:GetChildren()) do
-        if ally:IsA("Model") and not ally:GetAttribute("CombatDowned") then
+        if
+            ally:IsA("Model")
+            and not ally:GetAttribute("CombatDowned")
+            and ally:GetAttribute("NoPetSupport") ~= true
+        then
             ally:SetAttribute(fxAttr, until_)
             ally:SetAttribute(fxAttr .. "Stacks", count or 1) -- # contributing buffers (badge pile)
         end
@@ -4716,7 +5242,11 @@ function EnemyService:_supportPass(now)
                     end
                     if aura.attr and (target == "pets" or target == "both") then
                         for _, ally in ipairs(folder:GetChildren()) do
-                            if ally:IsA("Model") and not ally:GetAttribute("CombatDowned") then
+                            if
+                                ally:IsA("Model")
+                                and not ally:GetAttribute("CombatDowned")
+                                and ally:GetAttribute("NoPetSupport") ~= true
+                            then
                                 ally:SetAttribute(aura.attr, tonumber(aura.mult) or 1)
                                 ally:SetAttribute(aura.attr .. "Until", until_)
                             end
@@ -4724,7 +5254,11 @@ function EnemyService:_supportPass(now)
                     end
                     -- providers always wear their single caster marker
                     for _, ally in ipairs(folder:GetChildren()) do
-                        if ally:IsA("Model") and not ally:GetAttribute("CombatDowned") then
+                        if
+                            ally:IsA("Model")
+                            and not ally:GetAttribute("CombatDowned")
+                            and ally:GetAttribute("NoPetSupport") ~= true
+                        then
                             local provides = false
                             for _, a in ipairs(self:_petAuras(ally) or {}) do
                                 if a.kind == "buff" and a.attr == aura.attr then
@@ -4750,7 +5284,11 @@ function EnemyService:_supportPass(now)
                     local factor = self._combatConfig.pet_down_threshold_factor or 1
                     local until_ = os.time() + (tonumber(aura.duration) or 3)
                     for _, ally in ipairs(folder:GetChildren()) do
-                        if ally:IsA("Model") and not ally:GetAttribute("CombatDowned") then
+                        if
+                            ally:IsA("Model")
+                            and not ally:GetAttribute("CombatDowned")
+                            and ally:GetAttribute("NoPetSupport") ~= true
+                        then
                             local frac = PetEndurance.healthFraction(
                                 ally:GetAttribute("CombatDamageTaken") or 0,
                                 self:_petPower(ally),
@@ -4779,7 +5317,11 @@ function EnemyService:_supportPass(now)
                     self:_auraPlayerBuff(folder, "HatchLuckBuff", aura, count, weight)
                     local until_ = os.time() + (tonumber(aura.duration) or 3)
                     for _, ally in ipairs(folder:GetChildren()) do
-                        if ally:IsA("Model") and not ally:GetAttribute("CombatDowned") then
+                        if
+                            ally:IsA("Model")
+                            and not ally:GetAttribute("CombatDowned")
+                            and ally:GetAttribute("NoPetSupport") ~= true
+                        then
                             local allyHasLuck = false
                             for _, a in ipairs(self:_petAuras(ally) or {}) do
                                 if a.kind == "luck" then
@@ -4925,6 +5467,9 @@ function EnemyService:_assignPetTargets(eng)
                         or (kites and roleDef and tonumber(roleDef.attack_range))
                         or aggroRange
                     local petPos = self:_petPosition(pet, pfs)
+                    local v2 = self:_aggroV2()
+                    local petAggro = v2 and self:_petAggroTable(pet) or nil
+                    local exitFloor = (v2 and v2.base and v2.base.exit_floor) or 1
                     local candidates = {}
                     for etid, entry in pairs(live) do
                         -- onramp defense: sub-threshold squads fight what is
@@ -4946,12 +5491,19 @@ function EnemyService:_assignPetTargets(eng)
                         else
                             d = (entry.pos - petPos).Magnitude
                         end
+                        -- RANGE ACQUISITION vs THREAT RETENTION: ambient foes must enter this
+                        -- role's normal reach, but a foe already above the pet's aggro exit floor
+                        -- has been acquired. Keep it eligible outside that radius so a deliberate
+                        -- defense alert can make the pet close distance immediately without writing
+                        -- TargetID or pinning an assist target.
+                        local inEngagement = d <= reach
+                            or (petAggro and AggroTable.hasThreat(petAggro, etid, exitFloor))
                         -- TERRITORIAL: pets only auto-pick foes in the player's own area (no
                         -- reaching across a wall into another biome's pack). ALLEGIANCE GATE: a pet
                         -- only auto-targets an enemy it's hostile to (heaven/neutral pets ignore heaven
                         -- enemies -> peaceful farming in heaven; hell pets engage everything).
                         if
-                            d <= reach
+                            inEngagement
                             and self:_inTerritory(entry, player)
                             and self:_petHostileToEnemy(pet, entry, player)
                         then
@@ -4999,19 +5551,14 @@ function EnemyService:_assignPetTargets(eng)
                     -- decaying table), among the reachable candidates and above exit_floor. Only when
                     -- it has no real threat yet do we fall back to the priority modes — so a fresh pet
                     -- still initiates on the nearest, then threat takes over.
-                    local v2 = self:_aggroV2()
                     if v2 then
                         local idset = {}
                         for _, cand in ipairs(candidates) do
                             idset[cand.id] = true
                         end
-                        chosen = AggroTable.top(
-                            self:_petAggroTable(pet),
-                            (v2.base and v2.base.exit_floor) or 1,
-                            function(k)
-                                return idset[k] == true
-                            end
-                        )
+                        chosen = AggroTable.top(petAggro, exitFloor, function(k)
+                            return idset[k] == true
+                        end)
                         if chosen then
                             branch = "threat"
                         end
@@ -5139,7 +5686,6 @@ function EnemyService:_enemyHealPass(now)
                         fxSeconds = 2,
                         kind = "enemy_heal",
                     })
-                    self:_spawnHealVisual(target) -- works on any model with a PrimaryPart
                 end
             end
         end
@@ -5410,6 +5956,11 @@ function EnemyService:_auraDamagePass(now)
                                     local damageResult = CombatApplication.ApplyDamage(model, dmg, {
                                         source = pet,
                                         sourcePlayer = owner,
+                                        playerPetKillUserId = pet:GetAttribute("PetRecordKey")
+                                                    ~= nil
+                                                and owner
+                                                and owner.UserId
+                                            or nil,
                                         kind = "pet_aura",
                                     })
                                     local dealt = damageResult.amount
@@ -5440,6 +5991,13 @@ function EnemyService:_auraDamagePass(now)
                                             model:SetAttribute(
                                                 "DotSourceUserId",
                                                 owner and owner.UserId or 0
+                                            )
+                                            model:SetAttribute(
+                                                "DotPlayerPetKillUserId",
+                                                pet:GetAttribute("PetRecordKey") ~= nil
+                                                        and owner
+                                                        and owner.UserId
+                                                    or nil
                                             )
                                             model:SetAttribute(
                                                 "BurnFxUntil",
@@ -5530,6 +6088,10 @@ function EnemyService:_contagionPass(now)
                     best:SetAttribute("DotExpireAt", now + duration)
                     best:SetAttribute("DotDuration", duration)
                     best:SetAttribute("DotSourceUserId", src:GetAttribute("DotSourceUserId"))
+                    best:SetAttribute(
+                        "DotPlayerPetKillUserId",
+                        src:GetAttribute("DotPlayerPetKillUserId")
+                    )
                     best:SetAttribute("BurnFxUntil", os.time() + math.ceil(duration))
                     best:SetAttribute("BurnElement", src:GetAttribute("BurnElement")) -- carry the theme as it hops
                     local nextLeft = left - 1
@@ -5579,8 +6141,75 @@ function EnemyService:_dotPass(now)
                         local uid = model:GetAttribute("DotSourceUserId")
                         CombatApplication.ApplyDamage(model, perTick * count, {
                             sourceUserId = uid,
+                            playerPetKillUserId = model:GetAttribute("DotPlayerPetKillUserId"),
                             kind = "dot",
                         })
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Mirrored pet-species DoT: when a pet-model invader carries attack_dot, its landed hit stamps the
+-- defending pet with this clock-domain state. Ticks use the ordinary pet-endurance resource, update
+-- the shared bar/down lifecycle, and publish the rolled species' element for the usual combat FX.
+function EnemyService:_enemyPetDotPass(now)
+    local playerPets = Workspace:FindFirstChild("PlayerPets")
+    if not playerPets then
+        return
+    end
+    local factor = self._combatConfig.pet_down_threshold_factor or 1
+    local eng = self._combatConfig.engagement or {}
+    local pfs = self:_petFollowService()
+    for _, folder in ipairs(playerPets:GetChildren()) do
+        for _, pet in ipairs(folder:GetChildren()) do
+            if pet:IsA("Model") and pet.Parent and not pet:GetAttribute("CombatDowned") then
+                local perTick = math.max(0, tonumber(pet:GetAttribute("EnemyDotPerTick")) or 0)
+                if perTick > 0 then
+                    local expires = tonumber(pet:GetAttribute("EnemyDotExpireAt")) or 0
+                    if DamageOverTime.isExpired(expires, now) then
+                        pet:SetAttribute("EnemyDotPerTick", 0)
+                    else
+                        local count, nextAt = DamageOverTime.ticksDue(
+                            pet:GetAttribute("EnemyDotNextTick") or 0,
+                            pet:GetAttribute("EnemyDotInterval") or 1,
+                            expires,
+                            now
+                        )
+                        if count > 0 then
+                            pet:SetAttribute("EnemyDotNextTick", nextAt)
+                            local sourceEntry = self._enemies[tonumber(
+                                pet:GetAttribute("EnemyDotSourceTargetId")
+                            ) or 0]
+                            local source = sourceEntry and sourceEntry.model or nil
+                            local element = tostring(pet:GetAttribute("EnemyDotElement") or "lava")
+                            local result = CombatApplication.ApplyDamage(pet, perTick * count, {
+                                resource = "pet_endurance",
+                                source = source,
+                                element = element,
+                                kind = "enemy_pet_dot",
+                            })
+                            local pc = self._petCombat[pet]
+                            if not pc then
+                                pc = {}
+                                self._petCombat[pet] = pc
+                            end
+                            pc.lastHit = now
+                            local power = self:_petPower(pet)
+                            self:_updateEnduranceBar(pet, result.after, power, factor)
+                            pcall(function()
+                                Signals.Power_AreaFx:FireAllClients({
+                                    element = element,
+                                    variant = "self",
+                                    center = self:_petPosition(pet, pfs),
+                                    radius = 4,
+                                })
+                            end)
+                            if PetEndurance.isDowned(result.after or 0, power, factor) then
+                                self:_downPet(pet, now, eng, "down")
+                            end
+                        end
                     end
                 end
             end
@@ -5737,10 +6366,35 @@ function EnemyService:_petRealmOf(petType)
     return realm
 end
 
+-- A whole transient squad may opt into open targeting without mutating every durable pet model.
+-- Merge-defense Full mode uses this on the real player's folder so newly equipped/hatched pets
+-- inherit the same contract immediately. NPC hatcher folders do not publish it and therefore keep
+-- their strict per-lane CombatTargetGroup assignment until the Bulwark opens an enemy.
+function EnemyService:_petCombatTargetOpen(pet)
+    return pet:GetAttribute("CombatTargetOpen") == true
+        or (pet.Parent and pet.Parent:GetAttribute("CombatTargetOpen") == true)
+end
+
 -- The allegiance targeting gate (Jason's farming-vs-combat asymmetry): heaven attacks only hell, hell
 -- attacks all, neutral takes the current realm's side; off-realm (homeworld) everyone attacks all.
 -- Enemy side = entry.allegiance (set for realm pet-invaders, nil/neutral elsewhere); pet side = species.
 function EnemyService:_enemyHostileToPet(entry, pet, player)
+    if
+        pet:GetAttribute("MergeEggObjective") == true
+        and not (entry.model and entry.model:GetAttribute("MergeEggCanAttackObjective") == true)
+    then
+        return false
+    end
+    if
+        not CombatTargetGroup.compatible(
+            entry.model and entry.model:GetAttribute("CombatTargetGroup"),
+            pet:GetAttribute("CombatTargetGroup"),
+            entry.model and entry.model:GetAttribute("CombatTargetOpen"),
+            self:_petCombatTargetOpen(pet)
+        )
+    then
+        return false
+    end
     return Allegiance.hostile(
         entry.allegiance,
         self:_petRealmOf(pet:GetAttribute("PetType")),
@@ -5755,6 +6409,16 @@ end
 -- only to an enemy ALREADY engaged with this player's squad (entry.aggroPlayerName == the player). Non-
 -- neutral pets follow the pure allegiance gate (proactive).
 function EnemyService:_petHostileToEnemy(pet, entry, player)
+    if
+        not CombatTargetGroup.compatible(
+            pet:GetAttribute("CombatTargetGroup"),
+            entry.model and entry.model:GetAttribute("CombatTargetGroup"),
+            self:_petCombatTargetOpen(pet),
+            entry.model and entry.model:GetAttribute("CombatTargetOpen")
+        )
+    then
+        return false
+    end
     local petRealm = self:_petRealmOf(pet:GetAttribute("PetType"))
     local proactive = Allegiance.hostile(
         petRealm,
@@ -5860,17 +6524,16 @@ function EnemyService:_petEnemyDef(petId, petDef)
         exclusive = "boss",
     }
     -- SUPPORT INVADERS (Jason): a support pet doesn't melee — it either helps its team or stays
-    -- neutral. Easiest correct mapping: damage 0 (no attack), and if its aura is HEAL give it the
-    -- enemy-side auto_heal so it mends its band (the one support kind with an existing enemy hook).
-    -- Other auras (defense/offense/yield/luck/hold) have no enemy mechanic yet, so those are simply
-    -- neutral non-combatants.
+    -- neutral. Damage stays zero; the complete authored aura list is retained for the symmetric
+    -- enemy executor below (heal/haste/empower/curse/control and their shared power visuals).
     local roles = self._petRoles or {}
     -- by_type is the petId -> roleId map ("roles" is the role DEFINITIONS table keyed by role
     -- id — indexing it by petId was always nil, so EVERY invader synthesized as melee and
     -- heal-aura supports never mended their band; live-caught as all-melee badges in Hell 2 Ice).
     local roleId = (roles.by_type and roles.by_type[petId]) or "melee"
     local isSupport = roleId == "support"
-    local aura = roles.support_auras and roles.support_auras[petId]
+    local petAuras = SupportAura.aurasFor(petId, roles) or {}
+    local aura = petAuras[1]
     -- ROLE KITS (Jason: "any patrols that spawn tanks? … I don't think I've seen a blaster"):
     -- non-support roles get their archetype back via pet_invader_roles overlays — tank soaks,
     -- ranged stands off and fires (attack_range), control interval-roots a pet (the generic
@@ -5881,11 +6544,62 @@ function EnemyService:_petEnemyDef(petId, petDef)
         hp = math.max(1, math.floor(hp * (tonumber(kit.hp_mult) or 1)))
         dmg = math.max(1, math.floor(dmg * (tonumber(kit.dmg_mult) or 1)))
         attackRange = tonumber(kit.attack_range)
-        if type(kit.root) == "table" then
+        -- A species-authored control aura/on-hit control supersedes the generic role fallback.
+        -- Otherwise a Rimewraith Fox would inherit its real slow AND an invented root.
+        if
+            type(kit.root) == "table"
+            and #petAuras == 0
+            and type(petDef.attack_control) ~= "table"
+        then
             abilities = { root = kit.root }
         end
     end
-    local attack = { damage = dmg, cadence = tonumber(cfg.pet_enemy_cadence) or 1.5, sundering = 0 }
+    local element = tostring(petDef.origin or "grass")
+    if element == "earth" then
+        element = "grass"
+    end
+    local boltKindByElement = {
+        grass = "lightning",
+        lava = "fireball",
+        ice = "frost",
+        desert = "rock",
+    }
+    local attack = {
+        damage = dmg,
+        cadence = tonumber(cfg.pet_enemy_cadence) or 1.5,
+        sundering = 0,
+        pet_control = petDef.attack_control,
+        pet_dot = petDef.attack_dot,
+        pet_debuff = petDef.attack_debuff,
+    }
+    local attackScope = PetTargeting.mechanicalAttackScope(petDef, roleId, roles)
+    local aoe = type(petDef.attack_aoe) == "table" and petDef.attack_aoe
+        or (self._combatConfig and self._combatConfig.pet_aoe)
+        or {}
+    if attackScope == "aoe" or attackScope == "targeted_aoe" then
+        attack.splash = {
+            radius = tonumber(aoe.splash_radius) or 14,
+            frac = tonumber(aoe.splash_fraction) or 0.6,
+            max_targets = math.max(1, math.floor(tonumber(aoe.max_targets) or 5)),
+        }
+    elseif attackScope == "aura" then
+        local field = (self._combatConfig and self._combatConfig.pet_aura) or {}
+        local fraction = math.clamp(tonumber(field.fraction) or 0.5, 0, 1)
+        attack.damage = attack.damage * (1 - fraction)
+        abilities = abilities or {}
+        abilities.pulse = {
+            damage = dmg * fraction,
+            radius = tonumber(field.radius) or 12,
+            interval = tonumber(field.interval) or 1,
+            element = element,
+        }
+    end
+    local abilityProfile = PetAbilityRuntime.resolve(self._petsConfig, petId, "basic")
+    local passive = abilityProfile.passive or {}
+    attack.damage = attack.damage
+        * (tonumber(passive.all_bonus) or 1)
+        * (tonumber(passive.damage_to_owner_enemies) or 1)
+    attack.cadence = attack.cadence / math.max(0.05, tonumber(passive.attack_speed_multiplier) or 1)
     local autoHeal
     if isSupport then
         attack.damage = 0 -- support invaders don't attack
@@ -5897,6 +6611,8 @@ function EnemyService:_petEnemyDef(petId, petDef)
     end
     return {
         role = roleId,
+        element = element,
+        bolt_kind = roleId == "ranged" and boltKindByElement[element] or nil,
         attack_range = attackRange, -- ranged/blaster invaders hold out and fire (nil = melee reach)
         abilities = abilities, -- control invaders carry root; capital anchor kits overlay on top
         hp = hp,
@@ -5908,6 +6624,8 @@ function EnemyService:_petEnemyDef(petId, petDef)
         texture_asset = variant.texture_asset,
         model_scale = scale,
         attack = attack,
+        pet_auras = petAuras,
+        pet_ability_profile = abilityProfile,
         auto_heal = autoHeal, -- heal-support invaders mend their team; nil otherwise
         drop_table = {}, -- invaders aren't farmed for currency (tuning pass can add realm drops)
         _petInvader = petId,
@@ -6696,6 +7414,7 @@ function EnemyService:_combatTick(dt)
     self:_enemyRegenPass(now, dt, eng)
     self:_supportPass(now)
     self:_dotPass(now) -- tick any burns (DoT) stamped on enemies by pet attacks
+    self:_enemyPetDotPass(now) -- opposing rolled pets retain their species-authored DoT
     self:_contagionPass(now) -- spread contagion burns to the nearest un-burning enemy (the plague)
     self:_auraDamagePass(now) -- AURA pets damage enemies in a radius around themselves
     self:_enemyHealPass(now)
@@ -6745,7 +7464,9 @@ function EnemyService:_combatTick(dt)
                 else
                     self:_engageEnemy(entry, targetId, now, eng, dt)
                 end
-                self:_updateHeldBadge(model, nowTime) -- world icon disc above a pinned (held) enemy
+                if self._enemies[targetId] then
+                    self:_updateHeldBadge(model, nowTime) -- world icon disc above a pinned (held) enemy
+                end
             end
         end
     end
@@ -6886,6 +7607,20 @@ end
 -- player's local frame, on top of the base spawn distance.
 function EnemyService:SpawnEnemy(player, enemyId, opts)
     enemyId = tostring(enemyId or "lava_imp")
+    local rewardPolicy = EnemyRewardPolicy.normalize(opts and opts.rewardPolicy)
+    if not rewardPolicy then
+        return { ok = false, reason = "invalid_reward_policy" }
+    end
+    local marchGoal = nil
+    if opts and opts.marchGoal ~= nil then
+        marchGoal = EnemyMarchGoal.new(opts.marchGoal)
+        if not marchGoal then
+            return { ok = false, reason = "invalid_march_goal" }
+        end
+        marchGoal.onReached = type(opts.marchGoal.onReached) == "function"
+                and opts.marchGoal.onReached
+            or nil
+    end
     -- opts.def lets a caller field a SYNTHESIZED def (e.g. a pet-model invader, see _petEnemyDef)
     -- instead of an enemies.lua entry — the rest of the spawn path is identical (mesh/scale/hp/attack).
     local def = (opts and type(opts.def) == "table" and opts.def)
@@ -6972,7 +7707,14 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
         -- generated room rectangle; the movement code remains unaware of mission/map specifics.
         movementLeash = (opts and type(opts.movementLeash) == "table") and opts.movementLeash
             or nil,
+        -- One authored forward destination is a generic idle-movement seam. Aggro/combat interrupts
+        -- the march without discarding it; disengagement resumes from the current position.
+        marchGoal = marchGoal,
         encounterGroup = opts and opts.encounterGroup or nil,
+        -- Generic isolated-encounter seam. The default is exactly the legacy reward/progression
+        -- path; "none" suppresses it while the server-only callback still observes defeat once.
+        rewardPolicy = rewardPolicy,
+        onDefeated = opts and type(opts.onDefeated) == "function" and opts.onDefeated or nil,
         aggro = AggroTable.new(),
         lastActiveAt = os.clock(), -- engagement timer seed (idle-despawn clock; refreshed while aggro'd)
         persistent = (opts and opts.persistent) == true, -- mission population: NEVER idle-despawns (defeat or teardown only)
@@ -6989,6 +7731,9 @@ function EnemyService:SpawnEnemy(player, enemyId, opts)
     model:SetAttribute("LeashRegion", leashRegion or "")
     model:SetAttribute("MoveTarget", position)
     model:SetAttribute("MoveFace", Vector3.new(hrp.Position.X, position.Y, hrp.Position.Z))
+    if marchGoal then
+        model:SetAttribute("MarchGoalReached", false)
+    end
     local movement = self._enemies[targetId].movementLeash
     local movementShape = movement and movement.shapes and movement.shapes[1]
     if movementShape and movementShape.kind == "box" then

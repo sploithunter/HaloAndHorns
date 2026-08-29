@@ -202,6 +202,9 @@ end
 
 -- Claim the next TRAINING level for the player (the prompt is already distance-validated).
 function AscensionAltarService:_onTriggered(player)
+    if player:GetAttribute("AscensionUnlocked") ~= true then
+        return
+    end
     local prog = self._playerProgressionService
     if not prog or not prog.GetClaimState then
         return

@@ -1,9 +1,8 @@
 --[[
-    EnemyHud — the foes side of the combat HUD. A top-right strip that appears the moment a fight
-    starts and lists every enemy aggro'd onto YOUR squad, sorted nearest-first. Built from the
-    exact same HudCard chrome as the pet cards (SquadHud, right-centre), so "enemies up top, your
-    squad below" both hug the right edge and read identically. (It started left-centre but collided
-    with the currency stack, hiding the cards behind the coin pills — top-right keeps it clear.)
+    EnemyHud — the foes side of the combat HUD. A two-column top-left rail appears the moment a
+    fight starts and lists every enemy aggro'd onto YOUR squad, sorted nearest-first. Built from
+    the same HudCard chrome as the pet cards. Two columns absorb a large pull before density scaling,
+    and the currency stack is never hidden: Merge an Egg needs coins/gems visible during combat.
 
     The chain player → selected pet → enemy is made legible: the enemy your SELECTED pet is
     currently attacking — the indirect target — gets an amber border, the same colour the world
@@ -65,12 +64,15 @@ local BLINK_PERIOD = 0.5
 -- actively hurting you (Jason: "you don't know the enemies that are hurting you"; 15 hitting him at
 -- layer 2). The strip is already filtered to enemies ENGAGED with your squad, so we show them all
 -- and let the layout (grow-down + money/menu collapse) make room; the cap only stops a runaway.
-local MAX_CARDS = 20
--- Big-pull compaction: cards render full size up to DENSITY_FULL, then the whole strip scales down
--- (uniformly) so even a huge pull stays legible. Raised so the list stays FULL-SIZE longer and grows
--- DOWN into money's space (which collapses) instead of shrinking early — the density floor is the
--- last resort past that.
-local DENSITY_FULL = 10
+local CARD_WIDTH = 186
+local CARD_HEIGHT = 44
+local CARD_GAP = 4
+local ENEMY_COLUMNS = 2
+local STRIP_WIDTH = CARD_WIDTH * ENEMY_COLUMNS + CARD_GAP * (ENEMY_COLUMNS - 1)
+local MAX_CARDS = 32
+-- Two readable columns take the first response to a large fight. Only compact after ten rows;
+-- coins and gems remain visible throughout because they are active management information here.
+local DENSITY_FULL_ROWS = 10
 local DENSITY_MIN = 0.5
 
 local function enemiesFolder()
@@ -231,7 +233,7 @@ function EnemyHud.start()
     root.Name = "Strip"
     root.AnchorPoint = Vector2.new(0, 0)
     root.Position = UDim2.new(0, 8, 0, 8) -- top-left, just under the topbar (inset respected)
-    root.Size = UDim2.fromOffset(186, 10)
+    root.Size = UDim2.fromOffset(STRIP_WIDTH, 10)
     root.AutomaticSize = Enum.AutomaticSize.Y
     root.BackgroundTransparency = 1
     root.Parent = gui
@@ -240,7 +242,7 @@ function EnemyHud.start()
     scaler.Name = "Scaler"
     scaler.AnchorPoint = Vector2.new(0, 0)
     scaler.Position = UDim2.fromScale(0, 0)
-    scaler.Size = UDim2.fromOffset(186, 10)
+    scaler.Size = UDim2.fromOffset(STRIP_WIDTH, 10)
     scaler.AutomaticSize = Enum.AutomaticSize.Y
     scaler.BackgroundTransparency = 1
     scaler.Parent = root
@@ -253,18 +255,20 @@ function EnemyHud.start()
     listFrame.Name = "List"
     listFrame.AnchorPoint = Vector2.new(0, 0)
     listFrame.Position = UDim2.fromScale(0, 0)
-    listFrame.Size = UDim2.fromOffset(186, 10)
+    listFrame.Size = UDim2.fromOffset(STRIP_WIDTH, 10)
     listFrame.AutomaticSize = Enum.AutomaticSize.Y
     listFrame.BackgroundTransparency = 1
     listFrame.Parent = scaler
     local densityScale = Instance.new("UIScale")
     densityScale.Name = "DensityScale"
     densityScale.Parent = listFrame
-    local layout = Instance.new("UIListLayout")
-    layout.FillDirection = Enum.FillDirection.Vertical
+    local layout = Instance.new("UIGridLayout")
+    layout.CellSize = UDim2.fromOffset(CARD_WIDTH, CARD_HEIGHT)
+    layout.CellPadding = UDim2.fromOffset(CARD_GAP, CARD_GAP)
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.FillDirectionMaxCells = ENEMY_COLUMNS
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-    layout.Padding = UDim.new(0, 4)
     layout.Parent = listFrame
 
     local cards = {} -- bid -> card refs
@@ -320,18 +324,15 @@ function EnemyHud.start()
         return card
     end
 
-    -- COLLAPSE (Jason): as the enemy list grows DOWN into the bottom-left, money disappears first,
-    -- then the menu buttons — freeing their space for the fight; both come back as the list shrinks up.
-    -- It's SPATIAL (not an "in combat" flag): a lone off-screen support enemy = short list = money
-    -- stays visible; a 20-enemy pull = list reaches the bottom = money + menus yield. A hysteresis
-    -- margin stops flicker at the boundary. Refs resolved lazily (they persist once found).
+    -- The prototype's coins and gems are gameplay state, so the enemy rail never hides them. Menu
+    -- buttons may still yield if a truly extreme pull reaches their space.
     local moneyStack, menuPane
     local function collapseForList()
         if not (moneyStack and moneyStack.Parent) then
-            for _, sg in ipairs(localPlayer.PlayerGui:GetChildren()) do
-                local f = sg:FindFirstChild("CurrencyStack", true)
-                if f then
-                    moneyStack = f
+            for _, screen in ipairs(localPlayer.PlayerGui:GetChildren()) do
+                local found = screen:FindFirstChild("CurrencyStack", true)
+                if found then
+                    moneyStack = found
                     break
                 end
             end
@@ -353,8 +354,14 @@ function EnemyHud.start()
                 obj.Visible = true -- list shrank back (with margin so it doesn't flicker)
             end
         end
-        toggle(moneyStack) -- money first (it's higher / bottom-left, above the menu buttons)
-        toggle(menuPane) -- then the menu buttons if the list keeps growing
+        if localPlayer:GetAttribute("InMergeEggPrototype") == true then
+            if moneyStack then
+                moneyStack.Visible = true
+            end
+        else
+            toggle(moneyStack)
+        end
+        toggle(menuPane)
     end
 
     local accum = 0
@@ -458,9 +465,10 @@ function EnemyHud.start()
         -- World glow on the directed focus enemy (off when nothing's selected / it's gone).
         assistHighlight.Adornee = assistModel
         assistHighlight.Enabled = assistModel ~= nil
-        -- Shrink the strip uniformly once the pull exceeds DENSITY_FULL, so it stays bounded.
-        densityScale.Scale = math.clamp(DENSITY_FULL / math.max(1, shown), DENSITY_MIN, 1)
-        collapseForList() -- money → menus yield space as the list grows down into them (restore on shrink)
+        -- Shrink only after the two-column rail exceeds its full-size row budget.
+        local shownRows = math.ceil(shown / ENEMY_COLUMNS)
+        densityScale.Scale = math.clamp(DENSITY_FULL_ROWS / math.max(1, shownRows), DENSITY_MIN, 1)
+        collapseForList()
         -- Hide the left toggle/pass column for the duration of the fight list.
         local fighting = shown > 0
         if localPlayer:GetAttribute("EnemyHudActive") ~= fighting then

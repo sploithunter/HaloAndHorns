@@ -182,6 +182,17 @@ do
     end
 end
 
+-- Auto Collector is a separate passive, inventory-free pet. The server owns its currency target
+-- and movement; this controller only smooths the authored model for each observer.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.AutoCollectorController).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start AutoCollectorController", { error = tostring(err) })
+    end
+end
+
 -- Hall display eggs float locally while their server interaction anchors remain fixed.
 do
     local ok, err = pcall(function()
@@ -291,6 +302,17 @@ do
     end)
     if not ok then
         Logger:Warn("Failed to start EnemyHud", { error = tostring(err) })
+    end
+end
+
+-- Merge an Egg Phase 2: Studio-only, read-only rail for the stationary hatcher NPC's team.
+-- It is separate from SquadHud so the player's eventual deployable team keeps its own identity.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.MergeEggPrototypeObserver).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start MergeEggPrototypeObserver", { error = tostring(err) })
     end
 end
 

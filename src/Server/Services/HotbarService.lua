@@ -209,7 +209,9 @@ function HotbarService:_assignablePalette(player)
         local count = math.max(0, math.floor(tonumber(record.quantity) or 0))
         local unlockLevel = def and tonumber(def.unlock_level)
         local unlocked = unlockLevel == nil or earnedLevel >= unlockLevel
-        if def and def.hotbar_type == "token" and count > 0 then
+        local hiddenByAscension = itemId == "future_call_token"
+            and player:GetAttribute("AscensionUnlocked") ~= true
+        if def and def.hotbar_type == "token" and count > 0 and not hiddenByAscension then
             tokens[#tokens + 1] = {
                 id = itemId,
                 count = count,

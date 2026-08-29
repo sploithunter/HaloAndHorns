@@ -22,6 +22,7 @@ local Workspace = game:GetService("Workspace")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local CoreGuiStateGuard = require(script.Parent.Parent.UI.CoreGuiStateGuard)
+local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
 local GameEvents = require(script.Parent.GameEvents)
 local TutorialLanguageState = require(script.Parent.TutorialLanguageState)
 local TutorialLocalization = require(ReplicatedStorage.Shared.Game.TutorialLocalization)
@@ -556,61 +557,10 @@ local function showEggPath(token, finder)
         if not pathFolder then
             return nil
         end
-
-        local marker = Instance.new("Model")
-        marker.Name = "TutorialChevron"
-        marker:SetAttribute("TrailIndex", index)
-
-        -- The root lets the entire 3D arrow travel along the route without rebuilding its arms.
-        local root = Instance.new("Part")
-        root.Name = "Root"
-        root.Size = Vector3.new(0.1, 0.1, 0.1)
-        root.CFrame = CFrame.identity
-        root.Anchored = true
-        root.CanCollide = false
-        root.CanTouch = false
-        root.CanQuery = false
-        root.CastShadow = false
-        root.Transparency = 1
-        root.Parent = marker
-        marker.PrimaryPart = root
-
-        local tip = Vector3.new(0, 0, -0.82)
-        local leftTail = Vector3.new(-0.72, 0, 0.24)
-        local rightTail = Vector3.new(0.72, 0, 0.24)
-
-        local function arm(name, tail)
-            local midpoint = (tail + tip) * 0.5
-            local part = Instance.new("Part")
-            part.Name = name
-            part.Size = Vector3.new(0.32, 0.24, (tip - tail).Magnitude)
-            part.CFrame = CFrame.lookAt(midpoint, tip)
-            part.Anchored = true
-            part.CanCollide = false
-            part.CanTouch = false
-            part.CanQuery = false
-            part.CastShadow = false
-            part.Material = Enum.Material.Neon
-            part.Color = Color3.fromRGB(255, 249, 224)
-            part.Transparency = 0.08
-            part.Parent = marker
-        end
-
-        arm("LeftArm", leftTail)
-        arm("RightArm", rightTail)
-
-        local outline = Instance.new("Highlight")
-        outline.Name = "Outline"
-        outline.DepthMode = Enum.HighlightDepthMode.Occluded
-        outline.FillColor = Color3.fromRGB(255, 247, 210)
-        outline.FillTransparency = 0.62
-        outline.OutlineColor = Color3.fromRGB(35, 43, 61)
-        outline.OutlineTransparency = 0.08
-        outline.Adornee = marker
-        outline.Parent = marker
-
-        marker.Parent = pathFolder
-        return marker
+        return WorldChevron.create(pathFolder, {
+            name = "TutorialChevron",
+            trailIndex = index,
+        })
     end
 
     local markers = {}

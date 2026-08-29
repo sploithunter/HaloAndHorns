@@ -1004,6 +1004,32 @@ if RunService:IsStudio() then
         ServerScriptService.Server.Services.StudioSmokeTestService,
         studioSmokeDeps
     )
+
+    if isFeatureEnabled("map_binding") then
+        -- Merge an Egg: Studio-only authored-strip prototype entered through Home's
+        -- disabled Hall gate. The service is never registered in production.
+        loader:RegisterModule(
+            "MergeEggPrototypeService",
+            ServerScriptService.Server.Services.MergeEggPrototypeService,
+            {
+                "Logger",
+                "ConfigLoader",
+                "ZoneService",
+                "NpcPrincipalService",
+                "EnemyService",
+                "PetFollowService",
+                "EggService",
+                "DropService",
+                "EconomyService",
+                "DataService",
+                "InventoryService",
+                "PetGrantService",
+                "SettingsService",
+                "AutomationService",
+                "PowerService",
+            }
+        )
+    end
 end
 registerFeatureModule(
     "auto_target",
@@ -1352,6 +1378,9 @@ table.insert(requiredModules, "GameAPIService")
 if RunService:IsStudio() then
     table.insert(requiredModules, "StudioSmokeTestService")
     table.insert(requiredModules, "AutomationService")
+    if isFeatureEnabled("map_binding") then
+        table.insert(requiredModules, "MergeEggPrototypeService")
+    end
 end
 for _, moduleName in ipairs(requiredModules) do
     local module = loader:Get(moduleName)

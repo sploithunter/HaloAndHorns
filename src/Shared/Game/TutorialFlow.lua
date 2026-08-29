@@ -212,20 +212,35 @@ function TutorialFlow.isVeteran(config, claimedLevel, ownsPets)
     return (tonumber(claimedLevel) or 0) >= (tonumber(skip.min_claimed_level) or math.huge)
 end
 
--- Hold CLAIM (Power Choice / altar), not XP, until the Homeworld tutorial is
--- done. A live lesson plus a pending claim puts CLICK HERE on Resonance while
--- COMMIT owns the menu. Veterans and pre-tutorial saves stay unlocked.
-function TutorialFlow.allowsLevelClaim(config, progress, gameData)
+-- Ascension stays hidden until the player finishes either independent introduction: the
+-- crystal/Homeworld tutorial OR Combat Training. Persisted claimed levels above 1 prove that an
+-- older player already ascended, while profiles with neither tutorial record retain the legacy
+-- compatibility behavior rather than being relocked after an update.
+function TutorialFlow.ascensionUnlocked(config, progress, combatProgress, gameData, claimedLevel)
     if not (config and config.hold_level_claim == true) then
+        return true
+    end
+    if math.max(1, math.floor(tonumber(claimedLevel) or 1)) > 1 then
         return true
     end
     if type(gameData) == "table" and gameData.TutorialCompleted == true then
         return true
     end
-    if type(progress) ~= "table" then
+    if type(progress) == "table" and progress.done == true then
         return true
     end
-    return progress.done == true
+    if type(combatProgress) == "table" and combatProgress.done == true then
+        return true
+    end
+    if type(progress) ~= "table" and type(combatProgress) ~= "table" then
+        return true
+    end
+    return false
+end
+
+-- Hold CLAIM (Power Choice / altar), not ordinary game XP, behind the same visibility rule.
+function TutorialFlow.allowsLevelClaim(config, progress, gameData, combatProgress, claimedLevel)
+    return TutorialFlow.ascensionUnlocked(config, progress, combatProgress, gameData, claimedLevel)
 end
 
 function TutorialFlow.stepIndex(config, stepId)

@@ -224,6 +224,14 @@ local SCHEMAS = {
     }),
     tutorial = schema({ veteran_skip = "table", steps = "table", completion = "table" }),
     combat_tutorial = schema({ version = "number", steps = "table", entry = "table" }),
+    merge_egg_prototype = schema({
+        version = "number",
+        enabled = "boolean",
+        gate = "table",
+        world = "table",
+        squad = "table",
+        enemy = "table",
+    }),
     ui_theme = schema({ default_color = "string", areas = "table", palettes = "table" }),
     veteran = schema({ xp_per_level = "number", rewards = "table" }),
     zone_tracker = schema({

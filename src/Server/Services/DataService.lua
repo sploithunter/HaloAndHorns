@@ -137,7 +137,7 @@ local function generateProfileTemplate(configLoader)
             -- Guided Hall-of-Worlds combat on-ramp. Stage rewards are one-time and the
             -- checkpoint is an authored anchor name, never a fossilized world coordinate.
             HallOfWorlds = {
-                version = 2,
+                version = 3,
                 entered_crystal_world = false,
                 highest_stage = 0,
                 completed = false,
@@ -158,6 +158,24 @@ local function generateProfileTemplate(configLoader)
             TrialEggRewards = { tracks = {} },
             -- Server-authoritative promo-code claims and launch-link campaign attribution.
             PromoCodes = { claims = {}, attribution = {} },
+            -- One-time Merge defense mode notices. Ineligible entrants remain silently Simple;
+            -- their later Full unlock requires an explicit stay/switch choice instead of an
+            -- automatic combat-mode change.
+            MergeDefense = {
+                version = 4,
+                visited = false,
+                played_locked_simple = false,
+                full_intro_pending = false,
+                full_intro_acknowledged = false,
+                unlock_choice_resolved = false,
+                rebirths = 0,
+                management_upgrades = {},
+                management_gems_spent = 0,
+                tutorial_completed = false,
+                -- Compact reconstructable checkpoint; runtime pet rolls are deliberately rerolled
+                -- when a player returns, while wave, board, deployments, and wallet survive.
+                checkpoint = {},
+            },
             Hoverboard = {
                 owned = { black_gold = true },
                 equipped = "black_gold",
@@ -183,6 +201,9 @@ local function generateProfileTemplate(configLoader)
             SFXEnabled = true,
             GraphicsQuality = "Auto",
             TrialGroupScale = 1.0,
+            -- Full uses the player's owned squad in Merge Egg defense. The server resolves this
+            -- preference to Simple until Level 10 or combat-tutorial completion.
+            MergeDefenseMode = "full",
             -- Team invites retain their Friends-only baseline. New profiles accept trade requests
             -- from Everyone; schema migrations preserve the saved choice of existing profiles.
             TeamInvitePrivacy = "friends",

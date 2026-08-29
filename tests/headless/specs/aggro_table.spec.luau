@@ -79,6 +79,18 @@ return function()
         end)
     end)
 
+    describe("AggroTable.hasThreat", function()
+        it("distinguishes retained engagement from an unacquired target", function()
+            local t = AggroTable.new()
+            AggroTable.set(t, "alerted", 250)
+            AggroTable.set(t, "cooling", 1)
+
+            expect(AggroTable.hasThreat(t, "alerted", 1)).to.equal(true)
+            expect(AggroTable.hasThreat(t, "cooling", 1)).to.equal(false)
+            expect(AggroTable.hasThreat(t, "missing", 1)).to.equal(false)
+        end)
+    end)
+
     describe("AggroTable.decay", function()
         it("bleeds every entry by rate*dt and removes those that hit zero", function()
             local t = AggroTable.new()
