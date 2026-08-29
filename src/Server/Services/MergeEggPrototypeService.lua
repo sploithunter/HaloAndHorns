@@ -7233,6 +7233,7 @@ end
 function MergeEggPrototypeService:_alertTeamsToBulwarkTarget(record, enemy)
     local reserveTeams = 0
     local alertedPets = 0
+    local alertedPlayerPets = 0
     local threat = math.max(
         1,
         tonumber((self._config.enemy or {}).bulwark_threat)
@@ -7254,7 +7255,28 @@ function MergeEggPrototypeService:_alertTeamsToBulwarkTarget(record, enemy)
             end
         end
     end
-    return reserveTeams, alertedPets
+
+    -- The player's escort holds at the red breach line instead of following the avatar around the
+    -- management area. Merely opening its target-group gate is not enough: at that anchor, a real
+    -- Full-mode squad can sit outside ambient acquisition range while the four NPC folders receive
+    -- explicit Bulwark alerts. Give the player folder the same ordinary threat seed once an enemy
+    -- crosses the gold line. This is not a focus/pin; normal aggro, tank taunt, and target switching
+    -- remain authoritative after the seed. In Simple mode the same folder contains only the
+    -- temporary reserve escort because the durable squad is parked.
+    local playerFolder = record.petFolder or self:_playerPetFolder(record.player, false)
+    if playerFolder and playerFolder.Parent then
+        local ok, count = self._enemyService:AlertPetFolderToEnemy(
+            playerFolder,
+            enemy.targetId,
+            { threat = threat }
+        )
+        if ok then
+            alertedPlayerPets = count
+            alertedPets += count
+        end
+    end
+
+    return reserveTeams, alertedPets, alertedPlayerPets
 end
 
 function MergeEggPrototypeService:_openBulwarkTarget(record, enemy, now)
@@ -7280,11 +7302,13 @@ function MergeEggPrototypeService:_openBulwarkTarget(record, enemy, now)
     end
 
     now = tonumber(now) or os.clock()
-    local reserveTeams, alertedPets = self:_alertTeamsToBulwarkTarget(record, enemy)
+    local reserveTeams, alertedPets, alertedPlayerPets =
+        self:_alertTeamsToBulwarkTarget(record, enemy)
     local reengageSeconds =
         math.max(0.25, tonumber((self._config.enemy or {}).bulwark_reengage_seconds) or 0.5)
     model:SetAttribute("MergeEggReserveTeamCount", reserveTeams)
     model:SetAttribute("MergeEggReserveAlertedPets", alertedPets)
+    model:SetAttribute("MergeEggPlayerAlertedPets", alertedPlayerPets)
     model:SetAttribute("MergeEggBulwarkAlertCount", 1)
     model:SetAttribute("MergeEggNextBulwarkAlertAt", now + reengageSeconds)
     self:_setWorldState(self:_activeWaveState(record), record)
@@ -7295,6 +7319,7 @@ function MergeEggPrototypeService:_openBulwarkTarget(record, enemy, now)
         assignedTeam = enemy.teamId,
         reserveTeams = reserveTeams,
         alertedPets = alertedPets,
+        alertedPlayerPets = alertedPlayerPets,
     })
 end
 
@@ -7311,9 +7336,11 @@ function MergeEggPrototypeService:_sustainBulwarkTarget(record, enemy, now)
 
     local reengageSeconds =
         math.max(0.25, tonumber((self._config.enemy or {}).bulwark_reengage_seconds) or 0.5)
-    local reserveTeams, alertedPets = self:_alertTeamsToBulwarkTarget(record, enemy)
+    local reserveTeams, alertedPets, alertedPlayerPets =
+        self:_alertTeamsToBulwarkTarget(record, enemy)
     model:SetAttribute("MergeEggReserveTeamCount", reserveTeams)
     model:SetAttribute("MergeEggReserveAlertedPets", alertedPets)
+    model:SetAttribute("MergeEggPlayerAlertedPets", alertedPlayerPets)
     model:SetAttribute(
         "MergeEggBulwarkAlertCount",
         (tonumber(model:GetAttribute("MergeEggBulwarkAlertCount")) or 1) + 1

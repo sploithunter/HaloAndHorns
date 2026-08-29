@@ -6025,3 +6025,13 @@ first-session cohort rates.
 - Fixed combat Waycoin/Gem drops to pass their owning session into the containment resolver, so
   edge pops use the selected bay rather than legacy prototype coordinates and visibly bounce back
   inside. A live physics probe reflected from the Heaven-1 side wall without crossing the edge.
+
+## 2026-08-29 — Merge player escort Bulwark engagement
+
+- Added the player's real Full-mode or temporary Simple-mode escort folder to the sustained
+  Bulwark threat seed. Previously only the four NPC hatcher folders were alerted, so a real squad
+  holding at the red breach line could remain outside ambient acquisition range while enemies
+  crossed the gold line.
+- Live Heaven-1 validation captured a breached lieutenant with 20 total defenders seeded, including
+  eight surviving real player pets; the owned squad then published active enemy targets and stayed
+  inside the authored bay during pursuit.
