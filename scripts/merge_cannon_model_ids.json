@@ -1,6 +1,33 @@
 {
-  "_note": "Group-owned review Models for the Merge tower family. The local binary source/export directories are intentionally gitignored; concepts, prompts, resolved Roblox IDs, and topology measurements are durable here.",
+  "_note": "Group-owned review Models for the six-cannon Merge tower family. The local binary source/export directories are intentionally gitignored; concepts, prompts, resolved Roblox IDs, and topology measurements are durable here.",
   "creatorGroupId": "15872767",
+  "heal": {
+    "modelAssetId": "139934426250291",
+    "meshId": "101416290536855",
+    "textureId": "125180760410565",
+    "triangles": 9468,
+    "concept": "assets/concepts/merge_cannons/heal_cannon.png",
+    "sourceGlb": "assets/source/props/merge_cannons/heal/textured/model.glb",
+    "exportFbx": "assets/exports/props/merge_cannons/heal/merge_heal_cannon.fbx"
+  },
+  "rage": {
+    "modelAssetId": "100102545353592",
+    "meshId": "122743079797635",
+    "textureId": "112130547119678",
+    "triangles": 9468,
+    "concept": "assets/concepts/merge_cannons/rage_cannon.png",
+    "sourceGlb": "assets/source/props/merge_cannons/rage/textured/model.glb",
+    "exportFbx": "assets/exports/props/merge_cannons/rage/merge_rage_cannon.fbx"
+  },
+  "debuff": {
+    "modelAssetId": "98058587937305",
+    "meshId": "79845338311693",
+    "textureId": "122268989880172",
+    "triangles": 9464,
+    "concept": "assets/concepts/merge_cannons/debuff_cannon.png",
+    "sourceGlb": "assets/source/props/merge_cannons/debuff/textured/model.glb",
+    "exportFbx": "assets/exports/props/merge_cannons/debuff/merge_debuff_cannon.fbx"
+  },
   "gravity": {
     "modelAssetId": "117227343235730",
     "meshId": "84216404542389",

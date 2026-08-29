@@ -1,8 +1,8 @@
 {
-  "familyReferenceNames": [
-    "ChatGPT Image Aug 29, 2026, 10_31_55 AM.png",
-    "ChatGPT Image Aug 29, 2026, 10_31_49 AM.png",
-    "ChatGPT Image Aug 29, 2026, 10_31_45 AM.png"
+  "familyReferences": [
+    "assets/concepts/merge_cannons/debuff_cannon.png",
+    "assets/concepts/merge_cannons/rage_cannon.png",
+    "assets/concepts/merge_cannons/heal_cannon.png"
   ],
   "gravity": "Create a clean concept render for a fourth cannon in the exact same cohesive low-poly stylized Roblox-ready family as the three reference cannons. This one is the GRAVITY cannon: a compact wheeled siege cannon with a short, very wide faceted barrel, dark navy/black body, saturated indigo and electric cyan trim, and a clear raised gravity-vortex emblem (a small orb surrounded by two curved orbital arcs) on the barrel and front chassis badge. The muzzle should contain a recessed glowing cyan-blue gravitational core, not a normal bore. Four chunky polygonal wheels, simple crisp planar geometry, strong readable silhouette, clean hard edges, no melted or organic surfaces, no tiny filigree, no text, no labels, no characters. Match the same front-left three-quarter camera angle, scale, proportions, lighting, and pure white studio background as the references. One isolated cannon only, fully visible, centered, with a soft grounding shadow. Favor forms that image-to-3D can reconstruct cleanly under 10,000 triangles.",
   "repulsor": "Create a clean concept render for a fifth cannon in the exact same cohesive low-poly stylized Roblox-ready family as the three reference cannons. This one is the REPULSOR cannon: a compact wheeled siege cannon designed to fire a broad knockback shockwave. Use a dark charcoal body with vivid orange, warm gold, and small ivory highlights. Give it a short barrel whose muzzle flares outward like a faceted loudspeaker or shockwave horn, visibly wider at the mouth than at the rear. Put a clear raised repulsion emblem on the barrel and front chassis badge: a central diamond with three bold arrows or rays pushing outward. Four chunky polygonal wheels, simple crisp planar geometry, strong readable silhouette, clean hard edges, no melted or organic surfaces, no tiny filigree, no text, no labels, no characters. Match the same front-left three-quarter camera angle, scale, proportions, lighting, and pure white studio background as the references. One isolated cannon only, fully visible, centered, with a soft grounding shadow. Favor forms that image-to-3D can reconstruct cleanly under 10,000 triangles.",
