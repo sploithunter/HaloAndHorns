@@ -6090,3 +6090,10 @@ first-session cohort rates.
   accents so they cannot be mistaken for egg stands.
 - Authored all 20 mounts into the open dedicated place under `GeneratedMap_MergeEggVoxel.TowerStations`
   with portable bay/slot/role hooks; tower behavior remains deferred.
+
+## 2026-08-29 — Preserve authored Merge board placement
+
+- Reversed the runtime management-pocket relocation: adopting a polished 4×4 board now preserves
+  its exact Studio-authored transform. Equip Best continues to derive from that board.
+- Moved only the ten bay claim displays/prompts to their entrance-side edges and grounded them to
+  the authored play-field surface, leaving the playboards untouched.
