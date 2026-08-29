@@ -107,36 +107,6 @@ local ROLE_THEME = {
     support = { color = Color3.fromRGB(70, 185, 110), glyph = "+" },
     control = { color = Color3.fromRGB(155, 100, 215), glyph = "C" },
 }
-local EGG_THEME = {
-    grass_egg = Color3.fromRGB(90, 205, 105),
-    ice_egg = Color3.fromRGB(105, 205, 255),
-    lava_egg = Color3.fromRGB(255, 120, 55),
-    desert_egg = Color3.fromRGB(255, 205, 80),
-    bloom_egg = Color3.fromRGB(140, 235, 145),
-    aurora_egg = Color3.fromRGB(155, 225, 255),
-    solar_egg = Color3.fromRGB(255, 175, 75),
-    gilded_egg = Color3.fromRGB(255, 220, 105),
-    blight_egg = Color3.fromRGB(115, 95, 150),
-    black_ice_egg = Color3.fromRGB(80, 115, 175),
-    infernal_egg = Color3.fromRGB(185, 65, 45),
-    ash_egg = Color3.fromRGB(145, 125, 105),
-    heaven2_grass_egg = Color3.fromRGB(105, 235, 165),
-    heaven2_ice_egg = Color3.fromRGB(120, 185, 255),
-    heaven2_fire_egg = Color3.fromRGB(255, 125, 95),
-    heaven2_desert_egg = Color3.fromRGB(245, 195, 120),
-    hell2_grass_egg = Color3.fromRGB(85, 125, 115),
-    hell2_ice_egg = Color3.fromRGB(70, 105, 155),
-    hell2_fire_egg = Color3.fromRGB(160, 75, 65),
-    hell2_desert_egg = Color3.fromRGB(135, 105, 85),
-    heaven3_grass_egg = Color3.fromRGB(120, 255, 190),
-    heaven3_ice_egg = Color3.fromRGB(170, 225, 255),
-    heaven3_fire_egg = Color3.fromRGB(255, 155, 90),
-    heaven3_desert_egg = Color3.fromRGB(255, 225, 145),
-    hell3_grass_egg = Color3.fromRGB(75, 115, 95),
-    hell3_ice_egg = Color3.fromRGB(70, 90, 145),
-    hell3_fire_egg = Color3.fromRGB(150, 55, 65),
-    hell3_desert_egg = Color3.fromRGB(120, 95, 115),
-}
 local BOARD_ACTION_FAILURE_COPY = {
     insufficient_currency = "NOT ENOUGH CURRENCY",
     merge_board_too_far = "MOVE CLOSER TO THE MERGE BOARD",
@@ -873,9 +843,10 @@ local function groundPanelDimensions()
     local logicalHeight = PANEL_HEADER_HEIGHT
         + logicalSlots * PANEL_CARD_HEIGHT
         + logicalSlots * PANEL_ROW_GAP
-    -- Match the physical part's aspect ratio to the fixed logical canvas. This makes every panel
-    -- one station-cell wide without stretching its text or changing health-fill percentages.
-    local physicalDepth = physicalWidth * PANEL_WIDTH / logicalHeight
+    -- Keep every panel one station-cell wide. A minimum rearward footprint prevents the final
+    -- six-slot canvas from becoming unreadably shallow when viewed from the management area.
+    local minimumDepth = math.max(1, tonumber(panelCfg.minimum_depth) or 1)
+    local physicalDepth = math.max(minimumDepth, physicalWidth * PANEL_WIDTH / logicalHeight)
     return physicalWidth, physicalDepth, logicalHeight
 end
 
@@ -932,8 +903,13 @@ prototypeWorld = function()
     end
     local bayId = localPlayer:GetAttribute("MergeEggBayId")
     if bayId then
+        local hatcherName = (CONFIG.world or {}).hatcher_spawn or "HatcherSpawn"
         for _, candidate in ipairs(maps:GetDescendants()) do
-            if candidate:IsA("Model") and candidate:GetAttribute("MergeEggBayId") == bayId then
+            if
+                candidate:IsA("Model")
+                and candidate:GetAttribute("MergeEggBayId") == bayId
+                and candidate:FindFirstChild(hatcherName, true) ~= nil
+            then
                 return candidate
             end
         end
@@ -1305,11 +1281,6 @@ local function createGroundTeamPanels()
     displayFolder.Name = "MergeEggClientTeamDisplays"
     displayFolder.Parent = world
 
-    local startPlatform = world:FindFirstChild("StartPlatform", true)
-    local floorY = startPlatform
-            and startPlatform:IsA("BasePart")
-            and (startPlatform.Position.Y + startPlatform.Size.Y * 0.5 + 0.06)
-        or spawn.Position.Y
     local panels = {}
     for order, teamCfg in ipairs(activeTeamConfigs()) do
         -- HatcherSpawn faces the battlefield. Lay each roster out behind its egg, toward the
@@ -1327,7 +1298,26 @@ local function createGroundTeamPanels()
         -- roster upside down from the management area.
         local panelWidth, panelDepth, logicalHeight = groundPanelDimensions()
         anchor.Size = Vector3.new(panelDepth, 0.08, panelWidth)
-        anchor.CFrame = CFrame.new(position.Position.X, floorY, position.Position.Z)
+        local raycastParams = RaycastParams.new()
+        raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+        raycastParams.RespectCanCollide = true
+        local excluded = { displayFolder }
+        if localPlayer.Character then
+            excluded[#excluded + 1] = localPlayer.Character
+        end
+        local playerPets = Workspace:FindFirstChild("PlayerPets")
+        if playerPets then
+            excluded[#excluded + 1] = playerPets
+        end
+        raycastParams.FilterDescendantsInstances = excluded
+        local floorHit = Workspace:Raycast(
+            position.Position + Vector3.new(0, 32, 0),
+            Vector3.new(0, -128, 0),
+            raycastParams
+        )
+        local floorY = floorHit and floorHit.Position.Y or spawn.Position.Y
+        local anchorY = floorY + anchor.Size.Y * 0.5 + 0.01
+        anchor.CFrame = CFrame.new(position.Position.X, anchorY, position.Position.Z)
             * spawn.CFrame.Rotation
             * CFrame.Angles(0, math.rad(-90), 0)
         anchor.Transparency = 1
@@ -1340,7 +1330,7 @@ local function createGroundTeamPanels()
         surface.CanvasSize = Vector2.new(PANEL_WIDTH, logicalHeight)
         surface.LightInfluence = 0
         surface.AlwaysOnTop = false
-        surface.ZOffset = 1
+        surface.ZOffset = 0
         surface.Parent = anchor
 
         local root = Instance.new("Frame")
@@ -1540,8 +1530,6 @@ local function updatePanel(panel, folder, wave, waveCount, factor)
         or Color3.fromRGB(175, 205, 230)
     local eggHealth = math.max(0, tonumber(folder:GetAttribute("MergeEggInstalledHealth")) or 0)
     local eggMaximum = math.max(1, tonumber(folder:GetAttribute("MergeEggInstalledMaxHealth")) or 1)
-    local eggDamage =
-        math.max(0, tonumber(folder:GetAttribute("MergeEggInstalledDamageTaken")) or 0)
     local needsRebuild = folder:GetAttribute("MergeEggNeedsRebuild") == true
     local productionLocked = folder:GetAttribute("MergeEggProductionLocked") == true
     local productionLockRemaining =
@@ -1553,11 +1541,16 @@ local function updatePanel(panel, folder, wave, waveCount, factor)
             or Color3.fromRGB(175, 190, 210)
     else
         local eggFraction = math.clamp(eggHealth / eggMaximum, 0, 1)
+        local eggName = string.upper(tostring(folder:GetAttribute("MergeEggSourceName") or "EGG"))
+        local draftRolls =
+            math.max(0, math.floor(tonumber(folder:GetAttribute("MergeEggDraftRolls")) or 0))
         panel.eggStatus.Text = string.format(
-            "EGG %d / %d HP • %d DAMAGE%s",
+            "%s • %d/%d HP • %d PICK%s%s",
+            eggName,
             math.floor(eggHealth + 0.5),
             math.floor(eggMaximum + 0.5),
-            math.floor(eggDamage + 0.5),
+            draftRolls,
+            draftRolls == 1 and "" or "S",
             productionLocked
                     and string.format(" • PRODUCTION JAMMED %.1fs", productionLockRemaining)
                 or ""
@@ -1602,117 +1595,85 @@ local function updatePanel(panel, folder, wave, waveCount, factor)
     end
 end
 
-local function hatcherPrincipal(teamId)
-    for _, child in ipairs(Workspace:GetChildren()) do
-        if
-            child:IsA("Model")
-            and child:GetAttribute("MergeEggPrototypeNpc") == true
-            and tonumber(child:GetAttribute("MergeEggTeamId")) == teamId
-        then
+local function hatcherEggObjective(folder)
+    for _, child in ipairs(folder and folder:GetChildren() or {}) do
+        if child:IsA("Model") and child:GetAttribute("MergeEggObjective") == true then
             return child
         end
     end
     return nil
 end
 
-local function createEggProgressionBillboard(teamId, principal)
-    local adornee = principal:FindFirstChild("Head", true)
-        or principal:FindFirstChild("HumanoidRootPart", true)
-        or principal.PrimaryPart
+local function createEggHealthBillboard(teamId, objective)
+    local adornee = objective and objective.PrimaryPart
     if not (adornee and adornee:IsA("BasePart")) then
         return nil
     end
 
     local billboard = Instance.new("BillboardGui")
-    billboard.Name = "MergeEggHatcherEggProgression_" .. teamId
+    billboard.Name = "MergeEggHatcherHealth_" .. teamId
     billboard.Adornee = adornee
-    billboard.Active = true
+    billboard.Active = false
     billboard.AlwaysOnTop = true
     billboard.LightInfluence = 0
-    billboard.MaxDistance = 240
-    billboard.Size = UDim2.fromOffset(230, 72)
-    billboard.StudsOffsetWorldSpace = Vector3.new(0, 6.5, 0)
+    billboard.MaxDistance = 180
+    billboard.Size = UDim2.fromOffset(156, 18)
+    billboard.StudsOffsetWorldSpace = Vector3.new(0, objective:GetExtentsSize().Y * 0.5 + 0.8, 0)
     billboard.ResetOnSpawn = false
     billboard.Parent = localPlayer:WaitForChild("PlayerGui")
 
     local frame = Instance.new("Frame")
-    frame.Name = "EggProgressionCard"
+    frame.Name = "EggHealthBar"
     frame.Size = UDim2.fromScale(1, 1)
-    frame.BackgroundColor3 = Color3.fromRGB(22, 28, 40)
-    frame.BackgroundTransparency = 0.08
+    frame.BackgroundColor3 = Color3.fromRGB(27, 31, 39)
+    frame.BackgroundTransparency = 0.1
     frame.BorderSizePixel = 0
     frame.Parent = billboard
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 9)
+    corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = frame
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(105, 205, 255)
-    stroke.Transparency = 0.1
-    stroke.Thickness = 2
+    stroke.Color = Color3.fromRGB(18, 20, 26)
+    stroke.Transparency = 0.05
+    stroke.Thickness = 1.5
     stroke.Parent = frame
 
-    local current = Instance.new("TextLabel")
-    current.Name = "CurrentEgg"
-    current.BackgroundTransparency = 1
-    current.Position = UDim2.fromOffset(8, 4)
-    current.Size = UDim2.new(1, -16, 0, 19)
-    current.Font = Enum.Font.GothamBold
-    current.Text = "CURRENT: NO EGG"
-    current.TextColor3 = Color3.fromRGB(225, 235, 248)
-    current.TextSize = 12
-    current.Parent = frame
+    local fill = Instance.new("Frame")
+    fill.Name = "Fill"
+    fill.Size = UDim2.fromScale(1, 1)
+    fill.BackgroundColor3 = HudCard.HP_GREEN
+    fill.BorderSizePixel = 0
+    fill.Parent = frame
+    local fillCorner = Instance.new("UICorner")
+    fillCorner.CornerRadius = UDim.new(0, 6)
+    fillCorner.Parent = fill
 
-    local button = Instance.new("TextButton")
-    button.Name = "AdvanceEggButton"
-    button.Position = UDim2.fromOffset(7, 27)
-    button.Size = UDim2.new(1, -14, 0, 38)
-    button.BackgroundColor3 = Color3.fromRGB(50, 145, 205)
-    button.BorderSizePixel = 0
-    button.AutoButtonColor = true
-    button.Font = Enum.Font.GothamBlack
-    button.Text = "PLACE EARTH EGG"
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.TextSize = 15
-    button.Parent = frame
+    local label = Instance.new("TextLabel")
+    label.Name = "Health"
+    label.BackgroundTransparency = 1
+    label.Size = UDim2.fromScale(1, 1)
+    label.Font = Enum.Font.GothamBold
+    label.Text = "5000 / 5000"
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.TextSize = 11
+    label.TextStrokeColor3 = Color3.fromRGB(20, 22, 28)
+    label.TextStrokeTransparency = 0.25
+    label.ZIndex = 2
+    label.Parent = frame
 
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 7)
-    buttonCorner.Parent = button
-
-    local control = {
+    return {
         teamId = teamId,
-        principal = principal,
+        objective = objective,
         folder = nil,
         billboard = billboard,
-        stroke = stroke,
-        current = current,
-        button = button,
-        lockedUntil = 0,
+        fill = fill,
+        label = label,
     }
-    button.Activated:Connect(function()
-        local folder = control.folder
-        if
-            os.clock() < control.lockedUntil
-            or not (folder and folder.Parent)
-            or folder:GetAttribute("MergeEggCanAdvance") ~= true
-            or math.max(
-                    0,
-                    math.floor(tonumber(folder:GetAttribute("MergeEggRequiredEggOwned")) or 0)
-                )
-                <= 0
-        then
-            return
-        end
-        control.lockedUntil = os.clock() + 0.6
-        button.Text = "PLACING EGG..."
-        Signals.MergeEggPrototypeUpgrade:FireServer({ teamId = teamId })
-    end)
-    return control
 end
 
-local function destroyEggProgressionBillboards(controls)
+local function destroyEggHealthBillboards(controls)
     for id, control in pairs(controls) do
         if control.billboard then
             control.billboard:Destroy()
@@ -1721,7 +1682,7 @@ local function destroyEggProgressionBillboards(controls)
     end
 end
 
-local function updateEggProgressionBillboard(controls, teamId, folder)
+local function updateEggHealthBillboard(controls, teamId, folder)
     if not folder then
         local stale = controls[teamId]
         if stale then
@@ -1730,8 +1691,8 @@ local function updateEggProgressionBillboard(controls, teamId, folder)
         end
         return
     end
-    local principal = hatcherPrincipal(teamId)
-    if not principal then
+    local objective = hatcherEggObjective(folder)
+    if not (objective and objective.PrimaryPart) then
         local stale = controls[teamId]
         if stale then
             stale.billboard:Destroy()
@@ -1740,11 +1701,11 @@ local function updateEggProgressionBillboard(controls, teamId, folder)
         return
     end
     local control = controls[teamId]
-    if not control or not control.billboard.Parent or control.principal ~= principal then
+    if not control or not control.billboard.Parent or control.objective ~= objective then
         if control and control.billboard then
             control.billboard:Destroy()
         end
-        control = createEggProgressionBillboard(teamId, principal)
+        control = createEggHealthBillboard(teamId, objective)
         controls[teamId] = control
     end
     if not control then
@@ -1752,75 +1713,16 @@ local function updateEggProgressionBillboard(controls, teamId, folder)
     end
     control.folder = folder
 
-    local currentName = tostring(folder:GetAttribute("MergeEggSourceName") or "No Egg")
-    local resultName = folder:GetAttribute("MergeEggNextSourceName")
-    local resultId = folder:GetAttribute("MergeEggNextSourceId")
-    local requiredName = folder:GetAttribute("MergeEggRequiredSourceName")
-    local requiredOwned =
-        math.max(0, math.floor(tonumber(folder:GetAttribute("MergeEggRequiredEggOwned")) or 0))
-    local currentDraftRolls =
-        math.max(0, math.floor(tonumber(folder:GetAttribute("MergeEggDraftRolls")) or 0))
-    local nextDraftRolls =
-        math.max(0, math.floor(tonumber(folder:GetAttribute("MergeEggNextDraftRolls")) or 0))
-    local needsRebuild = folder:GetAttribute("MergeEggNeedsRebuild") == true
-    local currentPrototypeHuge = folder:GetAttribute("MergeEggPrototypeHugeTier") == true
-    local nextPrototypeHuge = folder:GetAttribute("MergeEggNextPrototypeHugeTier") == true
     local eggHealth = math.max(0, tonumber(folder:GetAttribute("MergeEggInstalledHealth")) or 0)
     local eggMaxHealth =
         math.max(1, tonumber(folder:GetAttribute("MergeEggInstalledMaxHealth")) or 1)
-    local canAdvance = folder:GetAttribute("MergeEggCanAdvance") == true
-        and resultName ~= nil
-        and requiredName ~= nil
-    local color = EGG_THEME[tostring(resultId)] or Color3.fromRGB(135, 145, 165)
-    control.current.Text = needsRebuild and "EGG DESTROYED • REBUILD REQUIRED"
-        or string.format(
-            "CURRENT: %s • %d/%d HP • %d PICK%s",
-            string.upper(currentName) .. (currentPrototypeHuge and " • PROTOTYPE HUGE" or ""),
-            eggHealth,
-            eggMaxHealth,
-            currentDraftRolls,
-            currentDraftRolls == 1 and "" or "S"
-        )
-    control.stroke.Color = color
-    if canAdvance and requiredOwned > 0 then
-        control.button.Active = true
-        control.button.AutoButtonColor = true
-        control.button.BackgroundColor3 = color
-        if os.clock() >= control.lockedUntil then
-            if currentName == "No Egg" or needsRebuild then
-                control.button.Text = string.format(
-                    "%s %s • OWNED %d • %d PICKS",
-                    needsRebuild and "REBUILD WITH" or "PLACE",
-                    string.upper(tostring(requiredName)),
-                    requiredOwned,
-                    nextDraftRolls
-                )
-            else
-                control.button.Text = string.format(
-                    "MERGE %s → %s%s • OWNED %d",
-                    string.upper(tostring(requiredName)),
-                    string.upper(tostring(resultName)),
-                    nextPrototypeHuge and " • PROTOTYPE HUGE" or "",
-                    requiredOwned
-                )
-            end
-        end
-    elseif canAdvance then
-        control.button.Active = false
-        control.button.AutoButtonColor = false
-        control.button.BackgroundColor3 = Color3.fromRGB(65, 72, 84)
-        control.button.Text = string.format(
-            "NEED %s → %s%s • OWNED 0",
-            string.upper(tostring(requiredName)),
-            string.upper(tostring(resultName)),
-            nextPrototypeHuge and " • PROTOTYPE HUGE" or ""
-        )
-    else
-        control.button.Active = false
-        control.button.AutoButtonColor = false
-        control.button.BackgroundColor3 = Color3.fromRGB(65, 72, 84)
-        control.button.Text = string.upper(currentName) .. " • MAX"
-    end
+    local fraction = math.clamp(eggHealth / eggMaxHealth, 0, 1)
+    control.billboard.StudsOffsetWorldSpace =
+        Vector3.new(0, objective:GetExtentsSize().Y * 0.5 + 0.8, 0)
+    control.fill.Size = UDim2.fromScale(fraction, 1)
+    control.fill.BackgroundColor3 = HudCard.healthColor(fraction)
+    control.label.Text =
+        string.format("%d / %d", math.floor(eggHealth + 0.5), math.floor(eggMaxHealth + 0.5))
 end
 
 local function createManagementBoardSurface(host)
@@ -2929,7 +2831,7 @@ function MergeEggPrototypeObserver.start()
     end)
 
     local waveMeter = createWaveMeter(gui)
-    local eggProgressionBillboards = {}
+    local eggHealthBillboards = {}
     local lastWave = 0
     local announceUntil = 0
     local factor = tonumber(COMBAT.pet_down_threshold_factor) or 1
@@ -2983,7 +2885,7 @@ function MergeEggPrototypeObserver.start()
             updateTutorialCard(tutorialCard, nil, false)
             clearTutorialClickCue()
             waveMeter.frame.Visible = false
-            destroyEggProgressionBillboards(eggProgressionBillboards)
+            destroyEggHealthBillboards(eggHealthBillboards)
             if teamDisplayFolder then
                 destroyGroundTeamPanels(panels, teamDisplayFolder)
                 teamDisplayFolder = nil
@@ -3058,7 +2960,7 @@ function MergeEggPrototypeObserver.start()
         )
         for id, panel in pairs(panels) do
             updatePanel(panel, folders[id], wave, waveCount, factor)
-            updateEggProgressionBillboard(eggProgressionBillboards, id, folders[id])
+            updateEggHealthBillboard(eggHealthBillboards, id, folders[id])
         end
     end)
 end
