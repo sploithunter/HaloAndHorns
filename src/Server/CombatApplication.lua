@@ -54,6 +54,43 @@ local function sourceUserId(context)
     return tonumber(context and context.sourceUserId)
 end
 
+-- Merge defense owns its physical coin/Gem economy and suppresses the ordinary enemy reward
+-- bundle. It still needs truthful final-hit attribution for the global kill counter: only a real,
+-- durable pet record may earn that credit. Manifested NPC squads, Simple-mode reserve ghosts,
+-- summons, and player powers do not carry PetRecordKey. DoT callers can preserve the originating
+-- pet identity through the explicit playerPetKillUserId field.
+local function playerPetKillUserId(context)
+    local explicit = tonumber(context and context.playerPetKillUserId)
+    if explicit and explicit > 0 then
+        return explicit
+    end
+    local player = context and context.sourcePlayer
+    local source = context and context.source
+    if
+        typeof(player) == "Instance"
+        and player:IsA("Player")
+        and typeof(source) == "Instance"
+        and source:IsA("Model")
+        and source:GetAttribute("PetRecordKey") ~= nil
+    then
+        return player.UserId
+    end
+    return nil
+end
+
+local function stampMergePetFinalHit(target, amount, context)
+    if
+        amount > 0
+        and target:GetAttribute("MergeEggPrototypeEnemy") == true
+        and context.resource ~= "pet_endurance"
+    then
+        -- SetAttribute(nil) deliberately clears a prior real-pet stamp when an NPC/ghost/power
+        -- lands the later hit. EnemyService reads this only after HP reaches zero, so it represents
+        -- the actual finishing source rather than any contributor.
+        target:SetAttribute("MergeEggPlayerPetKillUserId", playerPetKillUserId(context))
+    end
+end
+
 local function publish(target, outcome, amount, context)
     context = context or {}
     if context.silent == true or not VISIBLE_OUTCOMES[outcome] then
@@ -148,6 +185,7 @@ function CombatApplication.ApplyDamage(target, amount, context)
         amount = applied.contributed
         credit(target, amount, context)
         target:SetAttribute("HP", after)
+        stampMergePetFinalHit(target, amount, context)
     end
 
     if amount > 0 then
@@ -194,17 +232,27 @@ function CombatApplication.ApplyPowerHeal(target, amount, context)
         return { outcome = "heal", amount = 0, before = 0, after = 0 }
     end
 
-    -- Drain's anti-heal status applies only to ordinary HP recovery. Pet endurance healing and
-    -- explicitly scripted restoration remain separate resources/contracts.
-    if
-        context.resource ~= "pet_endurance"
-        and context.ignoreHealSuppression ~= true
-        and HealingSuppression.isActive(
-            target:GetAttribute(HealingSuppression.ATTRIBUTE),
-            os.time()
+    -- Ordinary enemy drain suppresses HP recovery through HealingSuppression. A mirrored drain
+    -- from a pet-model invader suppresses defending-pet endurance healing through its own explicit
+    -- attribute; scripted restoration may still opt out with ignoreHealSuppression.
+    local healSuppressed = context.ignoreHealSuppression ~= true
+        and (
+            (
+                context.resource ~= "pet_endurance"
+                and HealingSuppression.isActive(
+                    target:GetAttribute(HealingSuppression.ATTRIBUTE),
+                    os.time()
+                )
+            )
+            or (
+                context.resource == "pet_endurance"
+                and (tonumber(target:GetAttribute("EnemyHealSuppressedUntil")) or 0) > os.time()
+            )
         )
-    then
-        local hp = math.max(0, tonumber(target:GetAttribute("HP")) or 0)
+    if healSuppressed then
+        local hp = context.resource == "pet_endurance"
+                and math.max(0, tonumber(target:GetAttribute("CombatDamageTaken")) or 0)
+            or math.max(0, tonumber(target:GetAttribute("HP")) or 0)
         return {
             outcome = "heal",
             amount = 0,

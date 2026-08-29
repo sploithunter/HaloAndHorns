@@ -41,6 +41,7 @@ local CombatRoll = require(ReplicatedStorage.Shared.Game.CombatRoll)
 local Accuracy = require(ReplicatedStorage.Shared.Game.Accuracy)
 local LevelScale = require(ReplicatedStorage.Shared.Game.LevelScale)
 local PetPowerView = require(ReplicatedStorage.Shared.Game.PetPowerView)
+local MergeEggDamageScope = require(ReplicatedStorage.Shared.Game.MergeEggDamageScope)
 local BuffStack = require(ReplicatedStorage.Shared.Game.BuffStack)
 local BreakableBoost = require(ReplicatedStorage.Shared.Game.BreakableBoost)
 local EffectiveStats = require(ReplicatedStorage.Shared.Game.EffectiveStats)
@@ -289,9 +290,13 @@ function PetFollowService:_stepNpcCombatPosition(principal, pet, anchorRoot, bre
     end
 
     local movement = self._config.movement or {}
+    local moveSpeedMult = tonumber(pet:GetAttribute("MoveSpeedMult")) or 1
+    if (tonumber(pet:GetAttribute("PetSlowUntil")) or 0) > os.time() then
+        moveSpeedMult *= math.clamp(tonumber(pet:GetAttribute("PetSlowFactor")) or 1, 0.05, 1)
+    end
     local speed = PetFormation.moveSpeedMultiplier(
         principal.instance:GetAttribute("PetMoveSpeed"),
-        pet:GetAttribute("MoveSpeedMult"),
+        moveSpeedMult,
         movement.speed
     )
     local dt = rec and math.clamp(now - rec.t, 0, 0.25)
@@ -610,7 +615,17 @@ end
 -- contagion arms ONCE (re-arming every swing pushed the spread timer back so it never fired). The
 -- spread params (radius/interval/max) are carried onto the enemy as Contagion* so the spread pass —
 -- and every subsequent hop — propagates with the originating pet's tuning, not a global default.
-local function stampBurn(enemy, perTick, interval, duration, sourceUserId, spread, clk, element)
+local function stampBurn(
+    enemy,
+    perTick,
+    interval,
+    duration,
+    sourceUserId,
+    spread,
+    clk,
+    element,
+    playerPetKillUserId
+)
     if perTick <= 0 or duration <= 0 then
         return
     end
@@ -623,6 +638,7 @@ local function stampBurn(enemy, perTick, interval, duration, sourceUserId, sprea
     enemy:SetAttribute("DotExpireAt", clk + duration)
     enemy:SetAttribute("DotDuration", duration) -- window length, so contagion can re-arm the hop
     enemy:SetAttribute("DotSourceUserId", sourceUserId)
+    enemy:SetAttribute("DotPlayerPetKillUserId", playerPetKillUserId)
     enemy:SetAttribute("BurnFxUntil", os.time() + math.ceil(duration)) -- enemy "on fire" tell
     if element then
         enemy:SetAttribute("BurnElement", element) -- themes the client burn fx (frost = blue, etc.)
@@ -833,6 +849,21 @@ function PetFollowService:_mine(player, pet, breakable)
     -- enchant/modifier-resolved Power (ResolvePetDamage); a crystal swing is the card's ⛏ number,
     -- an enemy swing its ⚔. Everything below this point is contextual (level scale, buffs,
     -- vulnerability, armor, rolls) or pacing — never intrinsic.
+    local originProgression =
+        math.max(0, tonumber(pet:GetAttribute("OriginProgressionMultiplier")) or 1)
+    -- Full-mode Merge Defense uses the player's durable pets, so they are not present in the
+    -- prototype service's ephemeral record.playerUnits collection. Resolve the additive Gem +
+    -- Rebirth multiplier contextually here instead: it applies only while the owner is inside Merge
+    -- Defense. The two ephemeral NPC paths are excluded because MergeEggPrototypeService already
+    -- stamps their model progression and applying this factor again would double their bonus.
+    originProgression *= MergeEggDamageScope.playerPetMultiplier({
+        inMergeDefense = player:GetAttribute("InMergeEggPrototype") == true,
+        mode = player:GetAttribute("MergeEggPlayerCombatMode"),
+        mergeNpcUnit = pet:GetAttribute("MergeEggUnit") == true,
+        simpleReserveUnit = pet:GetAttribute("MergeEggPlayerReserveUnit") == true,
+        managementDamageMultiplier = player:GetAttribute("MergeDefenseManagementDamageMultiplier"),
+        rebirthDamageMultiplier = player:GetAttribute("MergeDefenseRebirthDamageMultiplier"),
+    })
     local profile = PetPowerView.profile({
         base = combat:ResolvePetDamage(player, ctx),
         petType = pet:GetAttribute("PetType"),
@@ -844,10 +875,7 @@ function PetFollowService:_mine(player, pet, breakable)
             diversity = self:_squadDiversity(player), -- team-comp bonus (distinct archetypes+origins)
             -- Runtime-only progression seam for modes such as Merge an Egg. The pet definition and
             -- saved Power stay immutable; an owning system may add a contextual origin multiplier.
-            originProgression = math.max(
-                0,
-                tonumber(pet:GetAttribute("OriginProgressionMultiplier")) or 1
-            ),
+            originProgression = originProgression,
         },
     })
     local dmg = breakable:GetAttribute("EnemyId") and profile.combatEffective
@@ -943,6 +971,12 @@ function PetFollowService:_mine(player, pet, breakable)
             nowT,
             self._buffsConfig.axes and self._buffsConfig.axes.pet_damage
         )
+    -- Opposing support pets use the same authored curse aura, mirrored onto defending pets. The
+    -- stamp lives on the pet (the damage dealer), so it reduces both mining and combat output for
+    -- the aura window without changing the canonical pet definition.
+    if (tonumber(pet:GetAttribute("EnemyCurseUntil")) or 0) > nowT then
+        dmg *= math.clamp(tonumber(pet:GetAttribute("EnemyCurseMult")) or 1, 0, 1)
+    end
     -- VULNERABILITY marks: ADDITIVE across sources (VulnMark — each power/shred writes its own
     -- channel, the total = 1 + Σ live fractions, uncapped). The glass cannon's layered marks
     -- finally STACK (eruption + strike = x2.5, not last-write x1.5). Still a SEPARATE axis from
@@ -954,7 +988,11 @@ function PetFollowService:_mine(player, pet, breakable)
     -- Defensive stat: an enemy's Armor mitigates pet damage on the armor curve
     -- (crystals have no Armor -> unchanged). Vulnerability above counteracts it.
     local armorIgnore = math.clamp(tonumber(abilityProc and abilityProc.armor_ignore) or 0, 0, 1)
-    local armor = (breakable:GetAttribute("Armor") or 0) * (1 - armorIgnore)
+    local armor = tonumber(breakable:GetAttribute("Armor")) or 0
+    if (tonumber(breakable:GetAttribute("EnemyArmorBuffUntil")) or 0) > nowT then
+        armor += math.max(0, tonumber(breakable:GetAttribute("EnemyArmorBuff")) or 0)
+    end
+    armor *= 1 - armorIgnore
     if armor > 0 then
         dmg = CombatMath.mitigate(dmg, armor, self._combatConfig.armor_curve_k or 100)
     end
@@ -1088,12 +1126,14 @@ function PetFollowService:_mine(player, pet, breakable)
         )
     end
 
+    local playerPetKillUserId = pet:GetAttribute("PetRecordKey") ~= nil and player.UserId or nil
     local applied = CombatApplication.ApplyHit(breakable, {
         outcome = roll.multiplier <= 0 and "miss" or "damage",
         amount = dmg,
         crit = roll.crit,
         source = pet,
         sourcePlayer = player,
+        playerPetKillUserId = playerPetKillUserId,
         kind = "pet_attack",
     })
 
@@ -1151,7 +1191,8 @@ function PetFollowService:_mine(player, pet, breakable)
             player.UserId,
             burn.spread,
             os.clock(),
-            burnEl
+            burnEl,
+            playerPetKillUserId
         )
     end
     -- On-hit control/shred (orthogonal to the burn) on the primary target.
@@ -1234,6 +1275,7 @@ function PetFollowService:_mine(player, pet, breakable)
                         CombatApplication.ApplyDamage(other, splash, {
                             source = pet,
                             sourcePlayer = player,
+                            playerPetKillUserId = playerPetKillUserId,
                             kind = "pet_aoe",
                             element = element,
                         })
@@ -1250,7 +1292,8 @@ function PetFollowService:_mine(player, pet, breakable)
                                     player.UserId,
                                     burn.spread,
                                     os.clock(),
-                                    element -- pet element (resolved for the AoE burst above)
+                                    element, -- pet element (resolved for the AoE burst above)
+                                    playerPetKillUserId
                                 )
                             end
                             -- on-hit control/shred hits the whole splash cluster too (AoE control /
@@ -1285,6 +1328,7 @@ function PetFollowService:_mine(player, pet, breakable)
                         CombatApplication.ApplyDamage(e, splash, {
                             source = pet,
                             sourcePlayer = player,
+                            playerPetKillUserId = playerPetKillUserId,
                             kind = "team_cleave",
                         })
                     end

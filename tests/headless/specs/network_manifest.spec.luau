@@ -79,6 +79,9 @@ return function()
                 "string"
             )
             expect(networkConfig.packets.Settings_SetPetFormation.delivery).to.equal("request")
+            expect(networkConfig.packets.Settings_SetMergeDefenseMode.handler).to.equal(
+                "SettingsService.SetMergeDefenseMode"
+            )
             expect(networkConfig.packets.PetReportPositions.rate_limit).to.equal(900)
             expect(networkConfig.packets.InitiatePurchase.handler).to.equal(
                 "MonetizationService.InitiatePurchase"
@@ -235,6 +238,9 @@ return function()
                 "Settings_SetEnemyLevelOffset"
             )
             expect(signals.Settings_SetTrialGroupScale.name).to.equal("Settings_SetTrialGroupScale")
+            expect(signals.Settings_SetMergeDefenseMode.name).to.equal(
+                "Settings_SetMergeDefenseMode"
+            )
             expect(signals.PetReportPositions.name).to.equal("PetReportPositions")
             expect(signals.InitiatePurchase.name).to.equal("InitiatePurchase")
             expect(signals.GetOwnedPasses.name).to.equal("GetOwnedPasses")
@@ -329,7 +335,23 @@ return function()
             expect(signals.FoundersChoiceSelect.name).to.equal("FoundersChoiceSelect")
             expect(signals.FoundersChoiceState.name).to.equal("FoundersChoiceState")
             expect(signals.MergeEggPrototypeUpgrade.name).to.equal("MergeEggPrototypeUpgrade")
-            expect(#created).to.equal(138)
+            expect(signals.MergeEggPrototypeBoardAction.name).to.equal(
+                "MergeEggPrototypeBoardAction"
+            )
+            expect(signals.MergeEggPrototypeBoardResult.name).to.equal(
+                "MergeEggPrototypeBoardResult"
+            )
+            expect(signals.MergeEggPrototypePlayerHatch.name).to.equal(
+                "MergeEggPrototypePlayerHatch"
+            )
+            expect(signals.MergeEggPrototypeModeNotice.name).to.equal("MergeEggPrototypeModeNotice")
+            expect(signals.MergeEggPrototypeModeNoticeResponse.name).to.equal(
+                "MergeEggPrototypeModeNoticeResponse"
+            )
+            expect(networkConfig.packets.MergeEggPrototypeModeNoticeResponse.handler).to.equal(
+                "SettingsService.ResolveMergeDefenseModeNotice"
+            )
+            expect(#created).to.equal(144)
         end)
 
         it("omits Studio-only packets from a production registry", function()

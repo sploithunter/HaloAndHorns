@@ -1678,6 +1678,8 @@ end
 
 function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
     local eggCount = #eggsData
+    local firstOptions = eggsData[1] and eggsData[1].hatchOptions or {}
+    local passive = firstOptions.passive == true
 
     for _, group in ipairs(self._activeCompletionGroups or {}) do
         group:Cancel("superseded")
@@ -1717,6 +1719,7 @@ function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
     self._persistentGui:SetAttribute("TimingCompletionWait", timingDebug.completionWait)
     self._persistentGui:SetAttribute("TimingDoStagger", timingDebug.doStagger)
     self._persistentGui:SetAttribute("AnimationSkipped", timingDebug.skipHatch)
+    self._persistentGui:SetAttribute("PassivePresentation", passive)
 
     if timingDebug.skipHatch == true then
         self._persistentGui.Enabled = false
@@ -1732,7 +1735,10 @@ function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
     end
 
     -- PHASE 1: Clear the screen cinematically
-    local animatedElements = self:ClearScreen()
+    -- A Merge-defense discovery uses the same egg→pet presentation without disabling any other
+    -- HUD. The transparent hatch frames are non-Active, so board/inventory input continues through
+    -- them while the player sees the newly discovered pet.
+    local animatedElements = passive and {} or self:ClearScreen()
 
     -- PHASE 2: Clear any existing egg frames and prepare container
     local container = self._persistentContainer
@@ -1868,7 +1874,9 @@ function EggHatchingService:StartHatchingAnimation(eggsData, onRevealComplete)
         -- Bring the HUD back before the finish so the reveal cards can visibly converge into
         -- the actual Pets button. If that button is absent/hidden, the funnel no-ops and the
         -- existing cleanup path remains intact.
-        self:RestoreScreen(animatedElements)
+        if not passive then
+            self:RestoreScreen(animatedElements)
+        end
         self:AnimateResultsIntoPetsButton(eggFrames)
         if type(onRevealComplete) == "function" then
             local callbackOk, callbackError = pcall(onRevealComplete)

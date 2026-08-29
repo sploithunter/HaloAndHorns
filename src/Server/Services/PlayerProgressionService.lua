@@ -114,7 +114,9 @@ function PlayerProgressionService:_tutorialAllowsClaim(player)
     return TutorialFlow.allowsLevelClaim(
         self._tutorialConfig,
         data and data.Tutorial,
-        data and data.GameData
+        data and data.GameData,
+        data and data.CombatTutorial,
+        self:GetClaimedLevel(player)
     )
 end
 
@@ -185,6 +187,8 @@ function PlayerProgressionService:Start()
             "LeaderboardStatusHoverBoard",
             "HasHatchedHuge",
             "VetLevel",
+            "ClaimedLevel",
+            "AscensionUnlocked",
             "CombatRankLabel",
             "StatusBadgeLabel",
         }) do
@@ -457,7 +461,7 @@ function PlayerProgressionService:_statusBadgeState(player, data)
         earnedCombat = type(combat) == "table" and combat.earned or nil,
         earnedCsv = player:GetAttribute("CombatRankEarned"),
         combatRankId = player:GetAttribute("CombatRank"),
-        level = tonumber(player:GetAttribute("Level")) or 1,
+        level = tonumber(player:GetAttribute("ClaimedLevel")) or 1,
         hugeHatcher = player:GetAttribute("HasHatchedHuge") == true,
         leaderboardTitle = player:GetAttribute("LeaderboardStatusTitle"),
         leaderboardRank = player:GetAttribute("LeaderboardStatusRank"),
@@ -606,9 +610,12 @@ function PlayerProgressionService:_publishNativePlayerList(player, level)
     local status = ensureStringValue("Status", 20, false)
     local location = ensureStringValue("Location", 10, false)
 
-    rank.Value = PlayerListStatus.rank(level, player:GetAttribute("VetLevel"))
+    local claimedLevel = tonumber(player:GetAttribute("ClaimedLevel")) or 1
+    local ascensionUnlocked = player:GetAttribute("AscensionUnlocked") == true
+    rank.Value =
+        PlayerListStatus.rank(claimedLevel, player:GetAttribute("VetLevel"), ascensionUnlocked)
     status.Value = PlayerListStatus.status({
-        level = level,
+        level = claimedLevel,
         vip = player:GetAttribute("HasVIPPass") == true,
         founder = player:GetAttribute("FounderLegacyActive") == true,
         chosenTitle = player:GetAttribute("StatusBadgeLabel"),
@@ -643,12 +650,14 @@ function PlayerProgressionService:_publish(player)
         fireGameEvent(player, "level_earned", { level = earned })
     end
     local claimed = self:GetClaimedLevel(player)
+    local ascensionUnlocked = self:_tutorialAllowsClaim(player)
     local maxLevel = math.floor(tonumber(self._xpConfig.max_level) or 0)
     local remaining = maxLevel > 0 and math.max(0, maxLevel - claimed) or math.huge
     local pending = math.min(math.max(0, earned - claimed), remaining)
     local prog = self:_claimedProgress(player, claimed)
     player:SetAttribute("Level", earned)
     player:SetAttribute("ClaimedLevel", claimed)
+    player:SetAttribute("AscensionUnlocked", ascensionUnlocked)
     -- Combat level the level-diff curves read (Accuracy + LevelScale). = earned today; teaming
     -- will override this attribute to sync sidekicks/exemplars to the team lead.
     player:SetAttribute("EffectiveLevel", self:GetEffectiveLevel(player))

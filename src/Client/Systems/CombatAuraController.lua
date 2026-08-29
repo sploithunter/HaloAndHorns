@@ -24,11 +24,14 @@
 ]]
 
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
+local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
 
 local CombatFX = require(ReplicatedStorage.Shared.Effects.CombatFX)
 local CombatOrigin = require(ReplicatedStorage.Shared.Game.CombatOrigin)
+local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PowerIcons = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local PowerBadges = require(script.Parent.Parent.UI.PowerBadges) -- the badge SSOT reader (one path)
@@ -293,6 +296,39 @@ end
 local function remaining(entity, attr)
     local untilT = entity:GetAttribute(attr) or 0
     return untilT - os.time()
+end
+
+-- Instant heal pulses must be born from the target's CLIENT-RENDERED pivot. Pet and enemy movement
+-- is locally smoothed, so a server-created anchored sphere would use the authoritative model's stale
+-- spawn pivot and flash at the wrong end of the field.
+local function spawnHealPulse(target)
+    if not (target and target:IsA("Model") and target.Parent) then
+        return
+    end
+    local part = target.PrimaryPart or target:FindFirstChildWhichIsA("BasePart")
+    if not part then
+        return
+    end
+    local fx = Instance.new("Part")
+    fx.Name = "HealFXClient"
+    fx.Shape = Enum.PartType.Ball
+    fx.Material = Enum.Material.Neon
+    fx.Color = Color3.fromRGB(95, 225, 120)
+    fx.Transparency = 0.35
+    fx.Anchored = true
+    fx.CanCollide = false
+    fx.CanTouch = false
+    fx.CanQuery = false
+    fx.CastShadow = false
+    fx.Size = Vector3.new(2, 2, 2)
+    fx.CFrame = part.CFrame
+    fx.Parent = Workspace:FindFirstChild("Effects") or Workspace
+    TweenService:Create(
+        fx,
+        TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Size = Vector3.new(8, 8, 8), Transparency = 1 }
+    ):Play()
+    Debris:AddItem(fx, 0.8)
 end
 
 -- ===== Pets =====
@@ -717,6 +753,14 @@ function CombatAuraController.start()
         return require(ReplicatedStorage.Configs:WaitForChild("powers"))
     end)
     powersCfg = (okP and powers) or {}
+
+    Signals.Combat_Result.OnClientEvent:Connect(function(result)
+        if type(result) == "table" and result.outcome == "heal" then
+            -- Deliberately ignore result.position: it is the server combat position and may lag the
+            -- locally rendered pet. The replicated target gives us the correct client pivot.
+            spawnHealPulse(result.target)
+        end
+    end)
 
     -- Pets: EVERY folder under workspace.PlayerPets — combat auras are world-state, so a
     -- teammate's (or stranger's) shield bubble renders on THIS client too (Jason: "I can see

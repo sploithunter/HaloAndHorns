@@ -988,6 +988,15 @@ function SettingsPanel:_createHatchSettings()
             self:_setHatchModeValue("silentHatch", value)
         end
     )
+
+    self:_createToggleSetting(
+        "Show New Defense Pets",
+        self:_getHatchModeValue("mergeDefenseReveal", true),
+        29,
+        function(value)
+            self:_setHatchModeValue("mergeDefenseReveal", value)
+        end
+    )
 end
 
 -- Current equipped-pet formation, read from the replicated PetFormationMode attribute the
@@ -1064,6 +1073,34 @@ function SettingsPanel:_createCombatSettings()
             Signals.Settings_SetTrialGroupScale:FireServer({ scale = value })
         end,
         groupRules.step
+    )
+
+    local mergeMode = Players.LocalPlayer:GetAttribute("MergeDefenseModePreference")
+    if Players.LocalPlayer:GetAttribute("MergeDefenseModeChoicePending") == true then
+        mergeMode = "simple"
+    end
+    if mergeMode ~= "simple" and mergeMode ~= "full" then
+        mergeMode = Players.LocalPlayer:GetAttribute("MergeDefenseMode") == "simple" and "simple"
+            or "full"
+    end
+    local fullEligible = Players.LocalPlayer:GetAttribute("MergeDefenseFullEligible") == true
+    self:_createDropdownSetting(
+        "Merge Defense Combat",
+        mergeMode,
+        {
+            { value = "simple", display = "Simple (Automatic)" },
+            {
+                value = "full",
+                display = fullEligible and "Full (Your Pets)" or "Full (Level 10 / Tutorial)",
+            },
+        },
+        32,
+        function(value)
+            if value == "full" and not fullEligible then
+                return
+            end
+            Signals.Settings_SetMergeDefenseMode:FireServer({ mode = value })
+        end
     )
 end
 

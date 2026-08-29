@@ -152,6 +152,47 @@ return {
             },
         },
 
+        -- Studio merge-defense venue. It is a persistent authored world under Workspace.Maps,
+        -- but still participates in the ordinary CurrentArea SSOT so normal travel can close its
+        -- temporary session and the People list never reports Home while the player is here.
+        merge_egg_world = {
+            id = "merge_egg_world",
+            kind = "world",
+            display_name = "Merge an Egg",
+            order = 99,
+        },
+        merge_egg_field = {
+            id = "merge_egg_field",
+            kind = "island",
+            parent = "merge_egg_world",
+            display_name = "Merge Defense Field",
+            order = 1,
+            primary_area = "MergeEggPrototype",
+        },
+        MergeEggPrototype = {
+            id = "MergeEggPrototype",
+            kind = "area",
+            element = "grass",
+            zone_level = 1,
+            mining_currency = "hall_coins",
+            parent = "merge_egg_field",
+            display_name = "Merge Defense",
+            order = 1,
+            unlock = { unlocked_by_default = true },
+            boosts = {},
+            synthetic = {
+                -- Permanent Merge realm: ten raised 96x300 defense bays, a broad sunken mall,
+                -- opposing lava/water end plazas, their convergence, and a lower waterfall park.
+                -- Keep one CurrentArea footprint across the whole venue so exploring an empty bay
+                -- never looks like leaving the game mode.
+                center = { x = -16000, y = 0, z = -325 },
+                size = { x = 1320, y = 96, z = 920 },
+                floor_y = 1,
+                spawn_position = { x = -16402, y = 5, z = -325 },
+                egg_stands = {},
+            },
+        },
+
         -- MISSION pseudo-zones (docs/MISSION_WORLDGEN.md): element-THEMED
         -- trials brand their interior — biome RPS applies (pet element vs
         -- zone element: pet selection matters) AND enhancement drops roll

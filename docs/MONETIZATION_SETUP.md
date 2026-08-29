@@ -45,7 +45,7 @@ Users must create these game passes:
 2. **Auto Collect Pass**
    - Name: "Auto Collector"
    - Price: 299 Robux
-   - Description: "Automatically collect resources near you!"
+   - Description: "A passive pet runs out and collects your dropped resources!"
    - Icon: Upload a robot icon
 
 3. **Speed Boost Pass**
@@ -146,13 +146,11 @@ return {
         {
             id = "auto_collect",
             name = "🤖 Auto Collector",
-            description = "Automatically collect resources!",
+            description = "A passive pet runs out and collects your dropped resources!",
             price_robux = 299,
             benefits = {
                 features = {
-                    auto_collect_enabled = true,
-                    auto_collect_range = 20,
-                    auto_collect_rate = 1.0
+                    auto_collect_enabled = true
                 }
             }
         },
@@ -380,4 +378,4 @@ end
 - No duplicate purchases
 - Correct benefit application
 
-This comprehensive plan ensures a robust, testable, and maintainable monetization system that follows the configuration-as-code principle. 
+This comprehensive plan ensures a robust, testable, and maintainable monetization system that follows the configuration-as-code principle.

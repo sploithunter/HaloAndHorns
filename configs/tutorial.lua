@@ -26,6 +26,8 @@ return {
     version = 6,
     -- XP still accrues. Claim/COMMIT/altar wait until Rally finishes so the
     -- Resonance enhance lesson cannot land inside a level-up beat.
+    -- Ascension is introduced only after either this crystal/Homeworld track or the independent
+    -- Combat Training track is complete. Earned XP may exist earlier, but it cannot be claimed.
     hold_level_claim = true,
     step_migrations = {
         -- v1 -> v2 removed the redundant manual-equip gate and added explicit squad review.

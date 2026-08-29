@@ -28,6 +28,7 @@ return function()
             expect(ids.Ice).to.equal(true)
             expect(ids.Desert).to.equal(true)
             expect(ids.Hall_1).to.equal(true)
+            expect(ids.MergeEggPrototype).to.equal(true)
             -- worlds/islands are organisational, never standable footprints
             expect(ids.spawn_world).never.to.be.ok()
             expect(ids.lava_island).never.to.be.ok()
@@ -52,6 +53,14 @@ return function()
             local c = center("Hall_1")
             local pos = { x = c.x, y = c.y + 5, z = c.z }
             expect(ZoneResolver.resolve(pos, bounds, { verticalBand = VB })).to.equal("Hall_1")
+        end)
+
+        it("resolves the persistent merge-defense strip as its own area", function()
+            local c = center("MergeEggPrototype")
+            local pos = { x = c.x, y = c.y + 5, z = c.z }
+            expect(ZoneResolver.resolve(pos, bounds, { verticalBand = VB })).to.equal(
+                "MergeEggPrototype"
+            )
         end)
 
         it("returns nil when far outside every area footprint", function()

@@ -1,5 +1,38 @@
 # Log
 
+## 2026-08-28 — Merge Egg architectural reference correction
+
+- Superseded the loose neon opposing-flow strip with the supplied architectural sketch as the
+  geometry reference. Preserved all ten gameplay bay contracts, but rebuilt the shared composition
+  as a symmetric civic canyon: 136-stud bay pitch/landscaped berms, a 680×180 mall ten studs below
+  the fields, ten 56-stud balustraded stairways, and a straight 18-stud river.
+- Replaced rectangular end slabs and the giant convergence orb with circular terraced water/lava
+  end caps, ice/basalt cliff masses, four bridges between bay mouths, continuous retaining walls,
+  lamps, railings, gold stair nosing, and a 26-stud steam/pearl cancellation band. Added visible
+  outer spawn-gate architecture to every bay without changing the gameplay portal hooks.
+- Baked and selected the revised `Workspace.Maps.MergeEggRealm`, then verified the authored runtime
+  copy retains 10 bays, 10 complete ten-step stairs, 10 gates, 20 invisible boundaries, 4 bridges,
+  and the center river/cancellation band. Headless suite remains 2,389/2,389 passing.
+
+## 2026-08-28 — Merge Egg opposing-flow mall baked into Studio
+
+- Replaced the facing-rift blockout with the approved editable Roblox layout while preserving the
+  ten authored combat bays: five raised Heaven bays and five raised Hell bays flank a 620×158,
+  nine-stud-sunken public mall, connected by ten 48-stud civic stairs.
+- Added raised lava and water end plazas, opposing segmented flows, five bridges, a central
+  cancellation landmark, and an outward Heaven waterfall into a lower public park with two stair
+  routes. The full 1,116×824 blockout fits inside the expanded 1,320×920 area contract.
+- Baked the permanent geometry into `Workspace.Maps.MergeEggRealm` with Studio undo waypoints and
+  verified all ten bays, stairs, flows, bridges, and bounds in the runtime copy. Headless suite:
+  2,389/2,389 passing.
+
+## 2026-08-28 — Merge Egg strip layout look (Three.js)
+
+- First visual of the sketched public plan lives in RobloxGenerateMap
+  `?scene=merge_egg_realm`: sunken river strip, plazas + waterfalls at both
+  ends, five 100×300 Heaven bays and five Hell bays flanking the common.
+  It does not replace the current facing 5×2 rift bake.
+
 ## 2026-08-26 — Heaven/Hell 3 lock until Level 21
 
 - Cleared `realm_portals.testing_open_layers`. Layer 3 physical gates
@@ -5362,3 +5395,612 @@ first-session cohort rates.
   reaching Position 2's 100 Waycoins, installing its egg, and the first red-line breach; that final
   interval is the opening safety margin. Early wave gaps, drop rate, Wave 2 deployment delay, and
   Whelp pressure remain independent candidate knobs.
+
+## 2026-08-26 — Merge an Egg Wave 2 single-front correction
+
+- The first full breach-aware rerun installed Position 2 during Wave 2 but still let four Whelps
+  cross the red line. No installed or reserve egg was hit, yet the result confirmed that the old
+  lone-Brute plus four-Whelp two-front wave left essentially no human margin.
+- Reduced Wave 2 to one front containing the lone Ember Brute. Its eight-second gap remains, and
+  Wave 3 is now the first two-front check with its existing Brute-led four-enemy group plus four
+  Whelps. This changes the opening pressure and Wave 2 gross from 280 to 120 Waycoins without
+  changing drop values, egg prices, or later waves.
+- The corrected rerun stayed breach-free through Wave 10, brought all four hatchers to Sand, and
+  retained all five reserve eggs. Wave 11 then jumped to 46 active enemies; the live run was stopped
+  before continuing under the old hard stage handoff.
+- Rejected a wave-gated egg transition. The normal run is now one uninterrupted 20-wave encounter:
+  each captain may buy all four Home and all four Heaven 1 eggs as soon as its exponential cost is
+  affordable. Wave 10 is only the Home combat checkpoint; Wave 11 changes enemies and rewards to
+  Heaven 1 scaling without resetting teams, queues, balance, or egg progress. The first Heaven egg
+  expands that captain from three to four positions and restarts the 1/2/3/4 draft-quality ladder.
+- That continuous run reached a red-line peak of 42 during Heaven 1 Wave 11 while objective hits and
+  destroyed hatcher eggs remained zero. A server trace found no enemy at the Z=-255 finish line;
+  combat and drive-back held them around Z=-193…-210, proving egg damage was still attached to the
+  obsolete arrival rule rather than the new breach state.
+- Added sustained-overrun pressure damage. Crossing alone is still recoverable, but staying at or
+  above the defender-scaled `BreachOverrun` threshold for two seconds now deals one installed-source
+  and reserve-egg hit per second until the count drops below threshold. Five total pressure/finish
+  hits end the run, and `BreachPressureHits`/`BreachDamageActive` expose the mechanism.
+
+## 2026-08-26 — Merge an Egg composition-authored wave ceiling
+
+- Retired the unbounded 20-wave head-count ladder that ended at 208 simultaneous enemies. The new
+  configuration keeps the same 20 checkpoints but caps every wave at 32, using named fronts and
+  explicit unit lists whose totals are derived automatically.
+- Added prototype Whelp, Brute, Ember Lieutenant, and Magma Wyrm archetypes plus distinct reward
+  amounts. Lieutenants enter at Wave 6 and bosses anchor Waves 10, 15, and 20, shifting later
+  difficulty toward composition instead of Studio model volume.
+- Made realm opposition explicit in data: the Heaven-defense half uses Hell attackers, while a full
+  Heaven melee/tank/lieutenant/boss roster is ready for the inverse matchup once Hell eggs enter the
+  progression. Enemies publish wave id, archetype, faction, and rank for live diagnosis.
+- Live-focused the new 13-unit Wave 10 boss composition on one three-pet team. The red-line peak
+  reached eight; sustained overrun produced five pressure hits, destroyed the only installed egg,
+  consumed all five reserve eggs, and ended `ObjectiveLost`. This verifies egg damage no longer
+  depends on an enemy reaching the obsolete rear finish trigger.
+
+## 2026-08-26 — Merge an Egg stationary objective eggs
+
+- Completed the 20-wave continuous Home → Heaven 1 baseline in about 23.1 minutes. The run reached
+  first pet loss at Wave 2, first breach at Wave 6, first overrun at Wave 16, 88 cumulative red-line
+  crossings, a red-line peak of 15, and a peak of 32 active enemies. It still completed with all
+  five reserves, zero installed sources destroyed, and all four hatchers at Gilded, proving the
+  defender-count pressure threshold was not a useful defeat model.
+- Replaced sustained-overrun timer damage with one real target-only egg model per installed source.
+  Each egg has 5,000 endurance and cannot move, attack, naturally regenerate, receive pet support,
+  occupy a pet slot, or enter formation movement. An enemy becomes eligible to acquire eggs only
+  after its leading bound crosses the red breach line; normal threat and tank taunts own targeting
+  from there.
+- Destroying an installed egg in combat consumes one of the five reserves, preserves surviving pets,
+  pauses that captain's replacement supply, and requires the ordinary first-tier purchase to rebuild
+  it. Team headers now publish current/max egg HP and cumulative damage. The finish-line path remains
+  a safety fallback, not the primary damage mechanic.
+- Doubled only prototype Waycoin model scale. Prototype drops whose burst would end outside the
+  authored strip now tween to the wall and back to a reflected inside resting point; normal game
+  drops retain their existing scale and behavior.
+- Headless verification passed 2,339/2,339. A normal Studio play startup was clean. A later console
+  error at `MergeEggPrototypeService:999` came only from an invalid `AssistantCommand` that required
+  the service outside `ModuleLoader` dependency injection; it was not a boot or gameplay path.
+
+## 2026-08-26 — Merge an Egg checkpoint recovery loop
+
+- The first stationary-objective balance run ended at Wave 14: every reserve egg was consumed and
+  the runner had no Waycoins available to rebuild. Live aggro traces showed the rear cluster was not
+  idle: enemies still targeted installed eggs from as far as 59–68 studs away. The hatcher-anchored
+  near-side combat formation was driving fights farther behind the stationary owner, then the
+  enemies were trying to re-form on their egg targets. This defensive drive-back remains intentional.
+- Added configuration-owned ten-wave checkpoints. Clearing Wave 10 opens an eight-second checkpoint
+  intermission; immediately before Wave 11 deploys, the service banks the collected Waycoin balance,
+  reserve count, hatcher egg tiers, and exact drafted rosters. Objective loss after that point can
+  restore the banked state, refresh transient pet/installed-egg combat health, and resume at Wave 11
+  after three seconds. The automated coin runner restarts automatically; the world reset prompt uses
+  the same restore path after a human-controlled failure. Failed-stretch drops and purchases roll
+  back to the checkpoint so the snapshot is deterministic.
+- Authored the first post-checkpoint recovery ramp instead of relying on hidden scaling. Waves
+  11/12/13 now contain one/two/three fronts, each one Brute plus three Whelps, with `8/8/6`-second
+  collection gaps and 4/8/12 total enemies. Wave 14 retains its existing four-front lieutenant
+  pressure. Future 21–23, 31–33, and later openings should follow the same recovery shape so a
+  checkpoint cannot become a no-income trap.
+- Chose an additional future escape valve without adding it to this NPC-only baseline: players may
+  opt to bring their existing Halo and Horns pets into the lane, potentially using their full owned
+  team to break a difficult checkpoint. Keeping this separate preserves the automated economy test.
+- Headless verification now passes 2,340/2,340 and the full `mise run ci` gate passes.
+- Live-verified the restart path in a disposable high-bankroll smoke run. Wave 11 began with
+  `CheckpointWave=10` and the authored four-enemy single front. Forcing five temporary objective
+  destructions recorded failure at Wave 11, incremented `CheckpointRestarts` to one, restored all
+  five reserves, recreated all four saved tier-8/four-pet rosters with full 5,000-HP installed eggs,
+  and resumed Wave 11. This was a mechanics smoke, not a balance result; the normal 100-Waycoin run
+  remains the economy test.
+
+## 2026-08-26 — Merge an Egg literal create/merge/place cadence
+
+- Replaced direct tier purchases with a session-only literal merge loop. A rear-wall station creates
+  one Earth Egg for 100 Waycoins, a separate side-wall station converts the lowest available pair of
+  equal eggs into one next-tier egg, and a captain consumes the exact crafted tier from inventory.
+  The cumulative material prices remain identical to the prior exponential curve, but the avatar now
+  pays the intended walking and interaction time.
+- Updated the actual-walk-speed runner to collect drops asynchronously, travel between creation and
+  merge stations, place crafted eggs, and continue through the normal 20-wave Home → Heaven 1 path.
+  World/team telemetry publishes inventory counts and created/merged/placed totals. Wave 1 still
+  waits for the first placed egg, and Wave 10 checkpoint snapshots include unplaced crafted eggs.
+- Kept player-owned pets completely outside the prototype. A later crossover, if retained, is
+  limited to the currently equipped three or four slots; the mode has no leveling or normal power
+  acquisition. Heal and manual healer focus are possible later tutorial beats, not current scope.
+- Headless verification passes 2,340/2,340; lint reports zero errors and only the repository's
+  existing warning baseline.
+- The full `mise run ci` gate passes. A clean Studio stop/start entered through the normal Hall gate
+  and launched the 100-Waycoin run. The avatar created and placed four Earth Eggs through Wave 3,
+  then created two more, walked to the side station, merged them into one Ice Egg, and placed it at
+  Captain 1 during Wave 4. At that proof point the run had six creates, one merge, five placements,
+  zero breaches, and all five reserve objectives; the normal 20-wave runner was left active.
+
+## 2026-08-26 — Merge an Egg session-only player reserve roster
+
+- Raised the per-pet draft ladders from 1/2/3/4 to 2/3/4/5. Each hatcher draft gives its weakest
+  result to a temporary player bench, then selects the hatcher winner from the remaining candidates.
+- Added an automatic player escort using the existing ghost-pet follow/combat seams: best tank,
+  ranged, and melee for everyone, plus best support only when `extra_equip_slots` is owned. This
+  reads the Game Pass feature but never reads or mutates the player's owned pet inventory.
+- Player escort losses now wait 30 real seconds before the strongest matching-role bench pet fills
+  the slot. Hatcher replacement FIFOs remain four seconds. Reset/exit and checkpoint restore cleanly
+  destroy or reconstruct the session roster, and telemetry exposes capacity, active, bench, pending,
+  cast-off, and replacement counts.
+- Live-verified the extra-slot-pass path. The first Grass hatcher generated six candidates, selected
+  three for itself, and awarded three cast-offs. A missing ranged roll left that fixed role seat open
+  while support stayed in slot four. A forced melee loss remained pending at 21 seconds, filled after
+  30 seconds, and all four escort pets acquired the same enemy while the avatar ran the coin route.
+- Headless verification passes 2,341/2,341 and the full `mise run ci` gate passes (the repository's
+  existing lint warnings remain non-blocking).
+
+## 2026-08-26 — Ten-wave boundaries are upgrade gates
+
+- Accepted the no-upgrade reserve-roster result: the runner can repeatedly reach Wave 20 but should
+  not clear it. Wave 20, 30, 40, and later ten-wave boundaries intentionally require purchases from
+  the separate upgrade system that has not been implemented yet.
+- Keep the exact battle checkpoint restore. Future upgrade progression must persist outside that
+  snapshot, allowing a player to become stronger between attempts without retaining failed-stretch
+  combat, egg-board, or Waycoin state. Do not weaken the boundary waves to make automation pass.
+
+## 2026-08-27 — Egg damage suppresses hatcher production
+
+- Every increase in an installed egg's combat damage now refreshes a config-owned five-second
+  production lock. Exact-slot replacements remain FIFO-queued but cannot hatch while the lock is
+  live, and destroyed/missing eggs cannot produce until rebuilt. The team monitor shows
+  `PRODUCTION JAMMED` with remaining time; team/world telemetry publishes damage hits, lockouts, and
+  current locked-egg count for balance runs.
+- A focused Studio test removed one active team pet and damaged its egg. At 4.2 seconds the egg
+  remained locked with 0.83 seconds left, the pet stayed missing, and one replacement remained
+  queued; at 5.3 seconds the lock cleared and the replacement hatched. The deliberately contaminated
+  test was discarded and a clean fixed-seed power/coin checkpoint sweep was launched.
+- The full gate passes: architecture checks clean, static analysis has zero errors, and headless
+  verification passes 2,341/2,341.
+
+## 2026-08-27 — Shared combat level and physical merge board
+
+- Prototype entry now snapshots the player's effective combat level and applies it to ordinary
+  enemies, tanks, all friendly ghost pets, the temporary player escort, hatcher principals, and
+  installed egg objectives. Configured lieutenants and bosses retain the normal `+1`/`+2` rank
+  offsets on top of that shared baseline; tank composition no longer inherits a mid-tier offset.
+- Added a server-owned 4×4 floor merge board with 16 non-colliding rainbow-glow slots. Session egg
+  inventory is mirrored with the real cached egg models, visually rotates client-side, and rejects
+  new base-egg creation when full. Installed hatcher objectives now reuse the same egg assets.
+- Replaced the four top-screen NPC-team columns with floor `SurfaceGui` panels on the player side of
+  the eggs. The enemy HUD now uses two columns before shrinking and never hides Gems or Waycoins.
+- No balance run was launched for this batch. Static analysis is clean and headless verification
+  passes 2,342/2,342; live visual/layout validation remains for the next requested Studio pass.
+
+## 2026-08-27 — Nine hatcher positions and opening Waycoin pickup lesson
+
+- Standardized the battle edge on nine hatcher positions: the current four occupy alternating
+  slots 2/4/6/8 and their floor team panels derive from that same placement contract, leaving five
+  interleaved positions for future purchases. Corrected the panel orientation for player-side
+  reading.
+- Normal prototype entry now starts its isolated Waycoin wallet at zero and spawns five owner-only
+  piles worth 20 each. The piles form a wide row 18 studs beyond the Bulwark on the enemy side,
+  teaching physical coin collection before the first 100-Waycoin egg; tutorial prompts remain
+  future work. Opening and combat Waycoin piles persist for ten minutes in the prototype while the
+  ordinary game retains its 30-second expiration.
+- Session reset discards and recreates the opening trail, exit restores the player's pre-entry
+  balance, and automation directly seeds the equivalent 100-Waycoin bankroll after discarding the
+  physical lesson drops. Full CI and 2,342/2,342 headless cases pass.
+
+## 2026-08-27 — Merge-pair color language
+
+- Moved the 4×4 merge board eight studs toward the Bulwark. Empty cells are now neutral Slate;
+  rainbow Neon appears only as a smaller disk directly beneath an occupied egg.
+- Sign color is tier identity rather than slot decoration: equal-tier eggs share a color and can be
+  merged. The six-color cycle starts Earth green and Ice blue, then repeats for later tiers.
+- Reversed the guessed forward nudge after live inspection: the board now derives its center from
+  `StartPlatform`, making its player-side edge meet the pedestal's rear edge exactly. Moved the
+  central deploy pillar to the side of the lane.
+- Replaced the Earth Egg hold prompt with a one-click wall `SurfaceGui`. Added server-validated
+  drag-to-companion merging plus a prototype auto-combine toggle; the toggle is the explicit future
+  Game Pass seam and cascades all available equal-tier pairs.
+
+## 2026-08-27 — Deployed eggs obey the same equal-pair rule
+
+- Corrected hatcher progression so the board supplies the matching half, not the already-upgraded
+  result: deployed Earth consumes Earth to become Ice, deployed Ice consumes Ice to become Lava,
+  and so on. Any board tier can fill an empty deployment position unchanged. Billboard copy,
+  inventory debit, price telemetry, and the coin runner now use the same required/result contract.
+- Added all nine ground deployment pads at the permanent station coordinates. Only the current
+  purchased positions `2/4/6/8` are visible and queryable; the five future positions remain present
+  but invisible. Occupied pads inherit their egg tier's merge-pair color.
+- Board eggs can now be dragged directly onto a visible deployment pad. The server validates the
+  physical board source slot and target team, permits any tier into an empty pad, and requires an
+  exact deployed-tier match for an occupied pad. Headless verification passes 2,342/2,342.
+
+## 2026-08-27 — Base-egg generator progression
+
+- Added a separate rear-wall base-generator button. It begins on Grass/Earth: creation costs 100
+  Waycoins, Grass→Ice costs 1,000, and Ice creation costs 250. Subsequent generator upgrades and
+  creation prices each double on their own tracks. Generator upgrades have no wave/hatcher cap and
+  do not convert existing eggs.
+- The active generator tier, next output, both prices, and cumulative spend publish as world
+  telemetry. Checkpoints preserve generator state and spending together with the merge board.
+- Moved each floor roster panel fully to the player side of its deployment square using the shared
+  pad dimensions, eliminating the visible egg/panel overlap. Static analysis is clean and headless
+  verification passes 2,342/2,342; clean post-reboot Studio validation is next.
+
+## 2026-08-27 — Nine-team density and global base floor
+
+- Activated all nine hatcher stations, including centered slot 5. Each roster panel is permanently
+  7.5 studs wide inside its eight-stud cell and uses a fixed 214×253 canvas, so filling adjacent
+  stations does not trigger a second layout mode or distort the shared health calculation.
+- A live nine-panel fixture rendered three pet bars per station at 100%, 50%, and 10%; every one of
+  the 27 fills retained the exact normalized fraction. All nine pads were visible/queryable and the
+  center pad resolved to Team 5.
+- Generator tier is now a global minimum rather than only a creation tier. A purchase lifts every
+  lower-tier board egg and installed hatcher to the new base level one-for-one, refreshes promoted
+  egg objectives, fills newly granted team positions, and preserves healthy existing pets.
+## 2026-08-27 — Merge prototype uses the location SSOT
+
+- Registered the persistent merge-defense strip as the configured `MergeEggPrototype` area and
+  gave it the compact People-list location `Merge Egg`.
+- Entry now publishes the existing `CurrentArea`/`CurrentWorld` state after the physical pivot.
+  Any ordinary travel away automatically cleans the temporary session, and gate admission repairs
+  a stale active record whose authoritative area is no longer the prototype. `InMergeEggPrototype`
+  remains presentation state, not entry authority.
+
+## 2026-08-27 — Owned hatcher slots and management board
+
+- Separated the nine-position physical station layout from ownership. Runs begin with four visible
+  stations at slots 2/4/6/8; unowned pads and floor panels are invisible/non-queryable. Active Slots
+  reveals and deploys center slot 5 first, then 3/7/1/9, without moving or rescaling existing
+  stations.
+- Removed the stale `#teamConfigs == 4` hatch gate that made the nine-position layout unplayable.
+  Hatching now deploys the owned config subset; live validation produced four empty captains at the
+  expected slots while the five future pads remained hidden.
+- Replaced the side-wall Auto-Combine sign with a 4×2 prototype management board. Coin Value,
+  Damage, Fire Rate, Active Slots, and Egg HP spend Gems; Spawn Level and Buy Egg retain their
+  Waycoin rules; Auto-Combine remains the future Game Pass seam. Headless verification passes
+  2,344/2,344.
+
+## 2026-08-27 — Direct board-to-frontline placement cues
+
+- Added a floor `Equip Best` button between the 4×4 merge board and deployed hatchers. One click
+  fills empty owned positions with the strongest available board eggs, then applies at most one
+  matching-tier upgrade to each remaining hatcher, weakest tier first. It neither auto-merges the
+  board nor upgrades the same hatcher multiple times in one pass.
+- Manual egg dragging now retargets a gold drop highlight and the same shared 3D chevron geometry
+  used by the tutorial. Equal board companions and owned compatible frontline pads light up under
+  the cursor; mismatched, invalid, and unpurchased positions stay unmarked.
+- The authored world keeps all nine physical pad coordinates but exposes only initially owned
+  positions 2/4/6/8. Static headless verification passes 2,344/2,344; live Studio interaction and
+  visual orientation remain the final check for this batch.
+
+## 2026-08-27 — Conditional escort heel and egg heal denial
+
+- Anchored the session-only player escort to the red breach plane only while the player remains in
+  the rear management area. Crossing forward switches the ordinary formation back to the player's
+  live character; live testing confirmed follow/heel on both sides of the line.
+- Added independent heal-denial procs to installed eggs: a breach activates every ready field and
+  actual egg damage activates only the struck field. Each shared PowerService rune applies the
+  canonical healing-suppression status within 12 studs for 30 seconds, then stays unavailable for
+  30 seconds. Repeated damage cannot refresh either window.
+- Live validation produced one Team 1 rune from test damage; a later natural breach activated Teams
+  2–4 while Team 1 correctly remained unavailable. Per-team activation counts stayed at one. Wave
+  14 was deliberately left unchanged. Full CI passes with 2,346/2,346 headless assertions.
+## 2026-08-27 — Merge-defense Gems and boss Waycoins
+
+- Added one persistent Gem roll independent of Waycoins: 2% for trash/tanks, 6% for lieutenants,
+  and 20% for bosses. Increased boss base Waycoins 3× from 800 to 2,400. Both rewards remain
+  physical, owner-only, contained prototype pickups.
+
+## 2026-08-27 — Recovery-wave income
+
+- Replaced each Brute-plus-three-Whelp front in Waves 11–13 with eight Whelps. The ramp now fields
+  8/16/24 killable enemies, remains under the 32-enemy cap, and pays 1,600/3,200/4,800 Waycoins at
+  the Heaven-layer multiplier instead of 1,200/2,400/3,600.
+
+## 2026-08-27 — Additive management upgrade cards
+
+- Standardized Coin Value, Damage, Fire Rate, and Egg HP at a fixed additive `+5%` per purchase.
+  Their cards now show only `+5%` and the current Gem price instead of a before/after total.
+
+## 2026-08-27 — Egg-relative enemy rosters
+
+- Made enemy species resolve per assigned hatcher. Home eggs use a varied Earth/Lava pool; Heaven
+  eggs face the exact corresponding Hell egg roster (Bloom→Blight, Aurora→Black Ice,
+  Solar→Infernal, Gilded→Ash). Every position now performs its own full weighted egg roll before
+  receiving its minion/lieutenant/boss rank overlay, so species roles and inherent powers survive
+  the roll. Bosses use Huge-scale models; future villain/archvillain profiles use 4×/6× silhouettes.
+- Ranked egg enemies now preserve the independently rolled species HP and apply config multipliers:
+  Lieutenant 2×, Boss 6×. Both expose a 1× initial damage multiplier. Bosses force the pet's Huge
+  presentation; neither rank changes hatch odds.
+- Connected the rolled species kit to the enemy executor: native targeting/AoE, elemental attack
+  presentation, on-hit control and DoT, support auras (including curse, armor, haste, and anti-heal),
+  and active ability procs now survive synthesis. Rank presentation no longer overwrites the rolled
+  role; Villain and Archvillain also expose neutral 1× damage knobs for later tuning.
+
+## 2026-08-27 — Persistent-defense gameplay retries
+
+- Split checkpoint recovery by purpose. Ordinary gameplay now rewinds only to the last cleared
+  multiple-of-ten wave while retaining the live Waycoin wallet, physical drops, merge board,
+  deployed egg tier/position, current defense rosters, base progression, and Gem upgrades.
+  Destroyed deployed eggs remember their permanent placement and all retained defenses respawn at
+  full health; gameplay retries start automatically after the defeat delay.
+- Preserved the former exact checkpoint snapshot as a deterministic test path. The coin runner and
+  explicit RestoreCheckpointSnapshotForTest seam can still replay a known Wave 10/20 state for
+  controlled experiments without changing the player-facing genre-standard reset.
+
+## 2026-08-27 — Reliable management clicks and authored Gem pickup
+
+- Moved the management-board and Equip Best SurfaceGuis under the local `PlayerGui` while retaining
+  their physical world Adornees. Pulling the camera back no longer drops pointer routing, and the
+  server now returns a visible success/refusal message for every board action instead of failing
+  silently.
+- Replaced the premium-Gem neon-ball fallback with the shipped textured amethyst-geode asset while
+  preserving the existing physical drop, owner visibility, magnet, bounce, and collection path.
+
+## 2026-08-27 — Passive Auto Collector pet and game-wide Magnet
+
+- Removed the Auto Collector Game Pass from the player pickup-radius formula. Player Magnet is now
+  uniformly base + Magnet power, floored by equipped pet ability reach, then multiplied by Magnet
+  enchants; merge-defense currency no longer resets or substitutes that game-wide value.
+- The entitlement now manifests an inventory-free Trail Pup under the service-owned
+  `Workspace.AutoCollectors` root. It targets only the owner's physical currency records, travels
+  at the published `Eff_Speed` multiplier, credits the wallet directly inside a fixed configured
+  11-stud reach, and never enters `PlayerPets`, squad slots, offense, or enemy aggro enumeration.
+- Idle collection pets follow their player normally. In merge defense they share the reserve
+  squad's behind-breach heel anchor until the player crosses forward; currency pursuit remains
+  asynchronous. A dedicated client controller smooths and animates the server-authored movement.
+
+## 2026-08-27 — Auto Collector idle companion behavior
+
+- Reused the ordinary pet meander state machine for an Auto Collector that has settled at its
+  follow position. The Trail Pup now pauses and takes small idle strolls instead of becoming a
+  parked prop; collecting immediately cancels the cosmetic meander, and its authoritative pickup
+  position, reach, wallet credit, non-combat status, and no-aggro rules remain unchanged.
+
+## 2026-08-27 — Equip Best truthful availability
+
+- Fixed the Merge Egg floor `Equip Best` control so its green/gray state comes from the same
+  server-side one-pass assignment plan used by the action. Board inventory alone no longer makes the
+  control green when every egg is below the deployed hatcher tiers.
+
+## 2026-08-27 — Client-positioned healing pulses
+
+- Removed EnemyService's server-anchored green healing sphere. The existing authoritative heal
+  result now triggers a client-only pulse at the target model's locally rendered pivot, preventing
+  merge-defense pets from showing healing effects at their stale server spawn positions.
+
+## 2026-08-27 — Simple and Full merge-defense player combat
+
+- Added a persisted Simple/Full merge-defense setting. Full unlocks at earned Level 10 or combat
+  tutorial completion and uses the player's durable inventory, normal combat/down/revive rules, all
+  ordinary powers, and real canonical hatches capped by both HH egg unlocks and the deployed egg.
+- Retained the weakest-castoff automatic roster as Simple mode. Both modes now hold their combat
+  pets at the breach-line escort anchor while the player works behind the line.
+- New Full-mode index discoveries use a queued, passive version of the standard single-egg reveal;
+  duplicates are silent, and Egg Settings can disable the presentation without disabling grants.
+
+## 2026-08-27 — Merge-defense kill-credit isolation
+
+- Kept authored physical Waycoin/Gem drops independent of ordinary enemy rewards, and prevented
+  NPC hatcher squads, Simple-mode ghosts, summons, and player powers from farming global enemy
+  kills in merge defense.
+- Added final-hit attribution for durable Full-mode pets. Only a real pet that deals the finishing
+  damage publishes `enemy_defeated` and increments `enemies_defeated`; contribution and nearby-team
+  sharing do not count, while AoE/aura/DoT ownership remains intact.
+
+## 2026-08-27 — Merge-defense combat-mode onboarding
+
+- Added durable first-entry and locked-Simple history. Ineligible entrants receive no notice;
+  eligible first-time entrants start Full and acknowledge once that Simple is available in Settings.
+- Replaced the automatic Simple-to-Full eligibility transition with an explicit two-button choice
+  for players who previously played while Full was locked. The server holds them in Simple until
+  they choose, persists the result immediately, and supports the same resolution through Settings.
+
+## 2026-08-27 — Full-mode pre-Bulwark aggro eligibility
+
+- Fixed durable Full-mode squads being rejected by every lane-specific `CombatTargetGroup` until
+  an enemy crossed the Bulwark and became open. The real player's pet folder is now temporarily
+  open-targeted inside Full mode, so normal proximity/threat acquisition starts the fight while NPC
+  hatcher teams remain lane-partitioned. The original folder attribute is restored on every exit.
+
+## 2026-08-27 — Endless Merge Defense and 56-tier prototype-Huge progression
+
+- Kept the authored 20-wave baseline and added a config-driven ten-wave generator from Wave 21 to a
+  practical 999999 guard. Generated cycles retain checkpoint recovery beats, stay under 32 bodies,
+  promote existing bodies into lieutenants/bosses, and scale HP/damage/rewards additively.
+- Extended the default egg ladder to all 28 current Home/Heaven/Hell origins through Layer 3, then
+  repeated them as session-only prototype-Huge NPC tiers for 56 total. Full-mode player hatches fold
+  repeated tiers back to ordinary canonical eggs and never receive the forced Huge state.
+- Added Layer 2/3 formation capacity (five/six), reciprocal Heaven/Hell opposition rosters, later
+  egg-unlock gates/themes, a flattened post-tier-8 price curve, and a disabled config seam for the
+  proposed Merge-only cost-halving rebirth. Headless coverage now verifies generated-wave caps,
+  promotions, additive scaling, the 56-tier ladder, and non-Huge durable hatch separation.
+
+## 2026-08-27 — Merge-defense idle reinforcement and tactical reserve
+
+- Kept `CombatTargetGroup` as the opening-front assignment but added a two-second, post-deployment
+  reinforcement pass. Any initialized team without a live target may open its folder and duplicate
+  the hardest engaged enemy; boss/lieutenant rank wins before tank role and durability.
+- The policy keeps at most one idle team in reserve while attack-group pressure is below active-team
+  capacity. Equal-or-higher group pressure commits everyone, and any Bulwark crossing releases the
+  reserve for the remainder of the wave. World/team attributes expose the reserve, committed
+  reinforcements, and active group count for Studio observation.
+
+## 2026-08-27 — Merge rebirth changes from cost relief to allied damage
+
+- Reversed the provisional cost-halving rebirth design after live play showed that the needed escape
+  valve is combat strength, not cheaper eggs. Rebirth now preserves the ordinary cost/drop curve and
+  is configured to add +100% of base allied Merge-defense damage per rebirth (2x/3x/4x totals),
+  without compounding or changing damage elsewhere in Halo & Horns.
+
+## 2026-08-27 — First two Merge rebirth ranks
+
+- Added a persisted Merge-only rebirth count and a ninth management-board card with a two-click
+  destructive-action confirmation. The first two exact prices are 50,000 and 200,000 Waycoins; no
+  third rank is inferred.
+- Purchasing clears the active wave/checkpoint, board, deployed eggs, and Merge wallet, restores the
+  opening pickup stacks, and preserves player-wide progression plus the now-durable Gem-upgrade table.
+  Each rank adds another +100% of base allied damage to Merge NPC and player squads only.
+- Persisted management-upgrade ranks and cumulative Gem spend with the same Merge profile record so
+  neither rebirth nor leaving and re-entering the prototype can erase a paid Gem upgrade.
+- Added a currently-empty per-rank minimum-deployed-egg-tier configuration seam so playtesting can
+  choose anti-spam requirements without rewriting the purchase flow.
+
+## 2026-08-27 — Rebirth damage covers every allied pet path
+
+- Confirmed hatcher NPC squads and Simple-mode reserve pets already receive Merge rebirth damage
+  through their ephemeral model progression stamp. Added the missing Full-mode path for the player's
+  durable equipped pets, scoped by active Merge membership and explicitly excluding both ephemeral
+  NPC paths to prevent double multiplication. No durable pet stat is changed, so the boost cannot
+  leak into ordinary Halo & Horns combat.
+
+## 2026-08-27 — Compact Merge cost notation
+
+- Standardized every Merge management-board cost label on exact comma-separated values below one
+  billion and compact `B`/`T`/`Q` notation above it. This is presentation-only while the long-term
+  choice between cost relief, Waycoin bars, or another large-number economy remains open.
+
+## 2026-08-27 — Entry-armed Merge defense and first-visit merge tutorial
+
+- Removed the yellow arming pillar from the player flow. Entering Merge Defense now initializes the
+  player's owned empty hatcher positions automatically; Wave 1 still waits for the first deployed
+  egg, and the service `_hatch` method remains available to Studio scripts.
+- Added a persisted seven-step tutorial with the existing 3D Chevron breadcrumb language: collect
+  the opening 100 Waycoins, buy and deploy the first Earth Egg, clear Wave 1, collect its payout,
+  buy a matching egg, and merge it into the deployed source. Wave 2 stays server-paused until the
+  merge is real; both drag/drop and Equip Best satisfy placement and merge steps.
+- Auto Collector owners skip manual coin-path breadcrumbs and receive Coin Pup-specific copy while
+  the server waits for the physical pickups to reach their wallet. Reset/rebirth re-arm without the
+  pillar, and an interrupted incomplete tutorial restarts cleanly.
+- Rebuilt the nine-card management wall around framed dark inset panels and overlapping currency
+  pills. Gem prices use the authored purple gem icon/palette, Waycoin prices use the Hall coin
+  icon/gold palette, and Rebirth uses its own red action treatment.
+- Animated the tutorial Chevron trail as a continuous conveyor and corrected the Buy Egg target
+  from the management wall origin to the lower-left card center on the wall's Front face.
+
+## 2026-08-27 — Flexible five-egg tutorial and universal Wave-1 funding
+
+- Replaced the old Wave-1/post-Wave-1 lesson with a server-validated setup contract: collect the
+  five opening stacks, purchase five Earth Eggs, complete at least one equal-tier combination, and
+  deploy at least one egg. Board-first and deployment-first play both count; Wave 1 waits until the
+  three recorded outcomes are true.
+- Increased the universal Wave-1 opening to five 120-Waycoin stacks (600 total). It applies after
+  tutorial completion, fresh pre-checkpoint resets, and rebirths; checkpoint 10+ retries keep their
+  retained economy instead.
+- Added live "eggs remaining" copy to the tutorial card and purchase popup plus an anchored animated
+  Buy Egg click cue. Dragging now homes its chevron on a recommended compatible destination, and
+  equal-tier board merges share deployment's horizontal proximity snap.
+
+## 2026-08-27 — Early-purchase cue and rebirth tutorial gates
+
+- Limited the large Buy Egg `CLICK HERE` treatment to purchases one through three while retaining
+  the five-egg countdown in the tutorial card and purchase popups.
+- Added rebirth count as an independent server and client tutorial gate. The persisted completion
+  bit remains the normal gate, but a reborn save can no longer replay onboarding even if that bit is
+  absent or stale.
+
+## 2026-08-27 — Admin Reset fully re-arms Merge Defense
+
+- Extended Admin Reset to Beginning to close live or pending Merge sessions before currency reset,
+  restore parked pets, and clear live rebirth/run attributes.
+- Rebuilt the persistent Merge record from first-visit defaults, including tutorial completion,
+  mode-notice state, rebirths, management upgrades, and gem spending. The Merge combat-mode setting
+  and replicated eligibility/effective-mode attributes are reset with it.
+
+## 2026-08-27 — Gem and Rebirth damage share one additive pool
+
+- Replaced the accidental multiplication between the permanent Gem damage upgrade and Merge
+  Rebirth. Their bonuses now add to base damage: +45% Gems plus +100% Rebirth is 2.45x total.
+- Routed the same Merge-only combined multiplier through hatcher NPC squads, Simple reserve pets,
+  and Full-mode durable player pets. Context attributes are removed on exit, and no durable pet stat
+  is changed.
+
+## 2026-08-27 — Merge rebirth ranks start at one
+
+- Separated the persisted paid-rebirth count from the player-facing rank: a fresh player is Rank 1
+  for free, the 50,000-Waycoin purchase reaches Rank 2, and the 200,000-Waycoin purchase reaches
+  Rank 3. Prices and future egg requirements are now keyed by target rank, and no Rank 4 transition
+  is authored. Existing saves remain compatible because the stored count still means paid rebirths.
+
+## 2026-08-27 — Ascension visibility and Merge pet-kill XP
+
+- The People list now displays claimed/Ascended rank rather than earned level and leaves Rank blank
+  until either the crystal/Homeworld tutorial or independent Combat Training is complete. The same
+  shared gate suppresses the Ascend nudge, altar action, and Future Call presentation/grants; already
+  claimed and recordless legacy profiles remain compatible.
+- Merge Defense continues to suppress ordinary shared combat rewards. Only a durable Full-mode
+  player pet's authoritatively recorded final hit earns normal combat XP and global kill credit,
+  and that XP begins only after Ascension is unlocked. NPC hatchers, Simple reserves, summons,
+  powers, participation, and nearby teammates receive none.
+
+## 2026-08-27 — Portable ten-bay Merge realm and durable checkpoints
+
+- Expanded the one authored 96×300 lane into a runtime 5×2 venue: five Heaven bays face five Hell
+  bays across two promenades, a real center rift, and five bridges. Existing Flora/MissionProps
+  decorate the non-playable bay seams; lane entrances open into the shared hall.
+- Added random empty-bay assignment, explicit claim pads, bay-relative client world lookup, complete
+  cleanup of transient claims, and one CurrentArea footprint spanning the explorable realm.
+- Added a compact profile-backed Wave-10 checkpoint with immediate critical saves. Wallet, board,
+  base tier, objectives, and deployed egg tiers now survive logout/restart; temporary squads reroll
+  on resume. Rebirth/Admin Reset clear the boundary, while Gem upgrades and Rebirth rank remain
+  durable.
+- Verified one live Studio boot: 10 correctly oriented bays, five bridges, 14-stud open rift, open
+  entrances, Heaven/Hell decoration, 413 generated realm descendants, and no startup errors. Full
+  CI passed with 2,389 headless assertions.
+
+## 2026-08-28 — Merge realm baked into the permanent Studio map
+
+- Replaced entry-time realm generation with strict binding of the authored
+  `Workspace.Maps.MergeEggRealm`; runtime now owns only validation and transient bay claims.
+- Added an idempotent Edit-mode bake that consumes the temporary 96×300 source lane and authors all
+  ten atomic bays plus the shared hall. The live Edit map now contains ten validated bays, five
+  bridges, a 14-stud rift, and no leftover top-level source fixture.
+- Measured each lane at 96×300 playable studs (about 100×302 through the perimeter walls) and the
+  decorated ten-bay blockout at roughly 580×654 studs. Play validation preserved the authored root
+  without stamping a runtime-generated replacement.
+
+## 2026-08-28
+
+- **Merge-map quote pack from local textures.** `docs/art/quote_refs/` +
+  `docs/art/LAYER_1_2_FLORA_FAUNA.md`. Sheets built from
+  `assets/concepts/layer_3_review/` flora/fauna and
+  `assets/exports/props/meshy_mission_decor/*_preview.png`. No CDN thumbs.
+
+## 2026-08-28 — First Heaven bay authoring lock
+
+- Temporarily pinned Merge realm Hall entry and fallback world resolution to `heaven_01` so the
+  first Heaven bay can be refined and validated before its environment treatment is duplicated.
+  The selector exposes `side` and `column`, so the same authoring pass can switch to Hell Bay 1;
+  disabling it restores random empty-bay allocation.
+
+## 2026-08-28 — Clean Ember Citadel landmark asset
+
+- Rebuilt the supplied non-manifold Meshy dark tower as an editable Blender asset with dark masonry,
+  iron, bronze, crimson, ember, and layered flame materials. The `.blend` retains the Meshy source
+  in a hidden comparison collection; the exported seven-part GLB is 15,978 triangles and passes the
+  strict mesh-integrity gate with no open or non-manifold geometry.
+- Added a parameterized 4-stud middle extension under
+  `assets/exports/props/ember_citadel_tall/`; it preserves the base and crown proportions while
+  extending the shaft and shifting the upper assembly upward (24.62 studs high, 15,594 triangles).
+- Built a near-double-height 40-stud variant under
+  `assets/exports/props/ember_citadel_tall_40/` for testing as a larger landmark while retaining the
+  same footprint, materials, and topology gate.
+- Rebuilt the supplied Emberfang Gate as an editable two-tower arch under
+  `assets/exports/props/emberfang_gate/`. The clean seven-material GLB uses a 21 × 6.8 footprint,
+  7,378 triangles, and passes the strict mesh-integrity check with no open or non-manifold geometry.
+- Preserved that blockout and produced a richer Emberfang Gate pass under
+  `assets/exports/props/emberfang_gate_v2/`. Recessed tower faces, repeated ribs and parapet teeth,
+  layered lancets, structural arch piers, segmented arch ribs, flying buttresses, and an integrated
+  central crown bring it to 14,346 triangles while retaining clean topology.
+- Iterated the gate against the concept through source repair, closed/rebaked visual-master, and
+  hybrid-detail experiments. Large procedural overlays failed the three-quarter comparison and
+  were discarded. The selected art-direction master is
+  `assets/exports/props/emberfang_gate_v11_refined/`: the Meshi-derived silhouette plus a restrained
+  crisp double arch and keystone (32,605 triangles). It is intentionally tracked as a visual master;
+  final Roblox retopology/budget work remains separate from the concept-match iteration.
+- Rejected that 32,605-triangle voxel master after close-up review: it amplified the donor's melted
+  stonework and could not fit Roblox's 20K MeshPart limit. Reworked the original Meshi mesh directly
+  under `assets/exports/props/emberfang_gate_crisp/`. The selected pass is 13,329 triangles,
+  welds 10,216 exact duplicate vertices, switches to deliberate flat shading, and planarizes 278
+  broad architectural patches (1,656 vertices), and removes one inherited zero-area triangle
+  without changing the silhouette or ornament count.
+- Applied the same scale-adjusted planarization workflow to the supplied Celestial Gate of Lum.
+  `assets/exports/props/celestial_gate_crisp/` is a 13,345-triangle Heaven gate with 231 flattened
+  architectural patches (1,578 vertices), flat low-poly shading, preserved white/gold/cyan UV
+  texture, and no voxel inflation. Preview lighting now scales with asset size and uses a blue Heaven
+  rim so small normalized Meshy exports are not blown out during review.

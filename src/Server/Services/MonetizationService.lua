@@ -534,7 +534,7 @@ function MonetizationService:_clearPassBenefits(player, passes)
     self._speedPassApplied = self._speedPassApplied or {}
     self._speedPassApplied[player.UserId] = {}
     player:SetAttribute("MoveSpeedBuffPass", 0)
-    player:SetAttribute("AutoCollectRange", nil)
+    player:SetAttribute("AutoCollectorEnabled", false)
 end
 
 -- Persisted creator-only switch used for production balancing. Disabled means a true no-pass state:
@@ -758,15 +758,10 @@ function MonetizationService:_applyPassBenefits(player, passConfig, options)
         end
     end
 
-    -- AUTO COLLECTOR (2026-07-14, Jason: "extend Magnet — they get the same
-    -- benefit immediately"): mirror the range as a player attribute so
-    -- DropService's collect loop adds it beside MagnetBuff (pass 30 + magnet
-    -- power 30 = the 60-stud bubble). Bespoke visuals can come later.
+    -- AUTO COLLECTOR: entitlement manifests a passive pet through DropService. It owns no
+    -- inventory record, squad slot, offense, aggro, or player-radius modifier.
     if benefits.features and benefits.features.auto_collect_enabled then
-        player:SetAttribute(
-            "AutoCollectRange",
-            tonumber(benefits.features.auto_collect_range) or 30
-        )
+        player:SetAttribute("AutoCollectorEnabled", true)
     end
 
     self._logger:Info("Game pass benefits applied", {

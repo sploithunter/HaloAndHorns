@@ -1,6 +1,7 @@
 # Merge an Egg Prototype
 
-Status: Phase 6 Home → Heaven 1 progression and breach experiments under live verification
+Status: Phase 6 endless defense in a verified permanent Studio-authored ten-bay realm; durable Wave-10
+checkpoints and 56 egg tiers await live balance verification
 
 ## Phase 1 contract
 
@@ -8,10 +9,10 @@ Phase 1 answers only the core feel question: hatch a small temporary squad, send
 lane, and watch it fight. It deliberately excludes merging, the board/economy loop, production
 progression, procedural layout, and multiplayer occupancy.
 
-- The venue is the persistent Studio-authored Model
-  `Workspace.Maps.MergeEggPrototype`: one 96×300 continuous land strip with fixed side/end walls.
-  It is not a tile-kit map and has no chunk or tile-streaming lifecycle. The small Model is
-  atomic under ordinary Workspace streaming so its continuous floor and walls arrive together.
+- The Phase-1 fixture is one 96×300 continuous land strip with fixed side/end walls. In the current
+  map, ten copies are permanent atomic bay Models under `Workspace.Maps.MergeEggRealm.Bays`; the
+  temporary `Workspace.Maps.MergeEggPrototype` source exists only between the explicit source-build
+  and realm-bake authoring passes. The bays are not tile-kit maps and have no chunk lifecycle.
 - In Studio, Home's otherwise-disabled `HallOfWorldsPortal` becomes the entry prompt. Production
   keeps the Hall route disabled and sealed. Entry streams the authored strip, then directly pivots
   the player without changing `LastArea`, unlocks, or profile state.
@@ -21,7 +22,8 @@ progression, procedural layout, and multiplayer occupancy.
   reaches `Workspace.PlayerPets` with `MergeEggUnit`, a run id, and
   `EphemeralDownPolicy = "destroy"`, so a defeated test unit is destroyed before saved-pet downed
   state or slot lockouts can run.
-- Three fixed waves field 3, 5, then 8 low-level prototype Cinder Whelps. Every enemy starts at a
+- The original Phase 1 fixture used three fixed 3/5/8 Whelp waves. The current Phase 6 plan is
+  described below. Every enemy starts at a
   random point in one authored spawn area and receives exactly one randomized destination across
   the shared finish line; that origin-to-finish vector is its whole path. There is no patrol graph.
 - The finish line sits behind the hatcher and manifested squad. Enemies therefore enter guaranteed
@@ -38,9 +40,9 @@ progression, procedural layout, and multiplayer occupancy.
   live tracing measured alert-to-target assignment at about 0.1–0.25 seconds. Distant combat pursuit
   and post-combat return both use bounded pet travel rather than the formation catch-up teleport;
   principal/portal teleports, Rally, and explicit teleport abilities retain their snap behavior.
-- Enemies use `rewardPolicy = "none"`, so the ordinary combat award path grants no XP/progression
-  event, tracked counter, potion, enhancement, or exclusive egg. The prototype's server-only defeat
-  callback now provides its one explicit exception: a 40-Waycoin Whelp or 120-Waycoin Brute pickup.
+- Enemies use `rewardPolicy = "none"`, so the ordinary combat award path grants no shared XP,
+  potion, enhancement, or exclusive egg. The prototype's server-only defeat callback provides the
+  physical Waycoin/Gem pickup exception and the narrowly attributed Full-mode pet-kill exception.
   Defeat and finish-line arrival are counted separately; after every enemy in a wave is resolved,
   the next larger wave starts automatically.
 - The red control resets every prototype unit/enemy and makes the hatch repeatable. The blue control
@@ -91,16 +93,22 @@ commanded NPC teams. It still does not add the production deployment queue.
 - The prototype stamps a 4× attack-cadence multiplier on both its pets and enemies, and the observer
   displays that rate. This accelerates direct swings only; movement, regeneration, aggro decay, and
   wave gaps remain at real speed. Actors outside this prototype retain the default 1× cadence.
-- Every run gives each team a unique `CombatTargetGroup`. Once either an enemy or pet opts into a
-  group, bilateral acquisition requires the other actor to publish the same group. Ungrouped combat
-  retains the existing global behavior, so this partition does not change normal realm fights.
+- Every run gives each team a unique opening `CombatTargetGroup`. Once either an enemy or pet opts
+  into a group, bilateral acquisition initially requires the other actor to publish the same group.
+  Ungrouped combat retains the existing global behavior, so this partition does not change normal
+  realm fights. After a wave is fully deployed and has settled for two seconds, an initialized team
+  with no live target may become an open reinforcement and duplicate the hardest engaged enemy
+  (boss, then lieutenant, then tank/durability). At most one idle team stays in reserve. If active
+  enemy groups meet or exceed active defender teams, every team commits instead.
 - The endurance ladder contains 3, 5, 8, 12, 16, 24, 32, and 48 enemies. Each wave assigns enemies
   round-robin across the four teams; the first assignment in every non-empty group is an Ember
   Brute tank and the remainder are Cinder Whelps. This keeps the pressure composition comparable
   even when a small wave leaves one team idle.
-- Defense alerts and re-alerts address only the assigned team's folder. Ordinary bilateral threat,
-  tank taunts, target choice, drive-back, disengagement, and bounded return still own behavior after
-  the seed; an assignment scopes eligible combatants rather than pinning five targets.
+- Opening defense alerts and re-alerts address only the assigned team's folder. A later idle-team
+  reinforcement seeds that explicitly opened folder against the chosen duplicate target. Ordinary
+  bilateral threat, tank taunts, target choice, drive-back, disengagement, and bounded return still
+  own behavior after either seed; an assignment scopes eligible combatants rather than pinning five
+  targets.
 - A gold Neon `BulwarkLine` spans the strip 43 studs in front of the hatcher anchors. Its label is
   written flat on the ground just behind the line; there is no floating billboard obscuring combat.
   The line is both the visual rule and the authoritative directional plane. Crossing is measured from
@@ -111,8 +119,8 @@ commanded NPC teams. It still does not add the production deployment queue.
   refreshes every 0.5 seconds while the enemy remains past the bulwark, so a team can finish its
   current target and still
   acquire the emergency afterward.
-  There are no idle reserves behind the bulwark, but existing threat tables still decide whether
-  already-engaged pets peel from their current targets.
+  The one allowed idle reserve is released immediately and remains open for the rest of the wave,
+  but existing threat tables still decide whether already-engaged pets peel from current targets.
 - While the early prototype trace is enabled, every past-bulwark enemy prints each surviving pet's
   current target, threat on that enemy, top threat row, reciprocal enemy threat, distance,
   hostility/territory eligibility, and downed state every two seconds. The trace also prints the
@@ -136,16 +144,18 @@ the unfinished merge board or production economy:
   rear arrangement—player controls, hatchers, bulwark, finish line, and objective spacing—stays
   fixed. Enemy spawns move to the new forward end, shortening observation time without changing the
   defensive geometry being tested.
-- Five protected reserve eggs are the defense objective. Each enemy that reaches the finish line
-  destroys one egg, and losing the fifth ends the run as `ObjectiveLost`. The eggs are currently a
-  counter rather than world models; this keeps the test focused on whether forward pressure and
-  recovery cadence are readable. An empty defense is no longer an immediate loss because queued
-  replacements can recover it.
-- Each installed hatcher source now also has one experimental health point. A finish-line arrival
-  destroys its assigned team's source (or the first remaining installed source), leaves surviving
-  pets in combat, and blocks that captain's future replacement rolls until the player buys its
-  first egg again. This is deliberately immediate while the prototype tests whether destroying and
-  rebuilding production is interesting; attack windup and durability remain later knobs.
+- Five protected reserve eggs remain the defense's terminal health. Each active hatcher now also
+  manifests its installed source as a real stationary combat objective at that captain. The source
+  has 5,000 endurance, no movement, no attack components, no natural regeneration, and cannot
+  receive pet support. It is excluded from pet counts, formation movement, drafting, and slot cards.
+- Enemies cannot target an installed egg before crossing the red breach line. Crossing makes eggs
+  valid targets, then the ordinary enemy threat table owns the result: nearby pressure can turn onto
+  an egg while a pet tank's normal taunt can peel the attacker back off. There is no direct scripted
+  target pin and no head-count-to-damage conversion.
+- Combat destruction removes that captain's source, consumes one protected reserve egg, leaves its
+  surviving pets in combat, and blocks replacement rolls until the player buys its first egg again.
+  A marcher that somehow reaches the legacy finish line uses the same destruction as a safety
+  fallback. Losing the fifth reserve ends the run as `ObjectiveLost`.
 - Every missing authored pet slot enters that captain's own FIFO. The queue preserves the exact
   species/role/slot instead of randomizing the replacement, so a team's composition remains stable
   and its tank or blaster cannot silently become a third melee unit.
@@ -159,7 +169,9 @@ the unfinished merge board or production economy:
 - World telemetry publishes remaining/starting eggs, objective hits, current/peak queue depth,
   total hatches, longest replacement wait, and reinforcing-team count. Each team publishes its
   queued slots and queued/hatched totals. The wave banner shows eggs, queue depth/peak, and hatches;
-  a missing pet card reads `QUEUED` rather than `DEFEATED` while its replacement is pending.
+  a missing pet card reads `QUEUED` rather than `DEFEATED` while its replacement is pending. Each
+  team header also shows installed egg current/max HP and cumulative damage so objective pressure is
+  visible without selecting the world model.
 
 ## Phase 5 contract
 
@@ -193,61 +205,101 @@ team and queue model:
   has emerged; the portal then disappears and becomes non-queryable. It never replaces or disables
   the solid end wall, which remains available for tank/melee drive-back throughout combat.
 - The first three waves are authored as fronts rather than inferred only from total head count.
-  Wave 1 sends one three-Whelp trash group at the first online hatcher. Wave 2 opens two fronts: one
-  lone Ember Brute and one four-Whelp trash group. Wave 3 retains two fronts but grows the first
-  into a tank-led group of one Brute plus three Whelps and sends four Whelps on the other. Online
+  Wave 1 sends one three-Whelp trash group at the first online hatcher. Wave 2 keeps one front but
+  introduces a lone Ember Brute. Wave 3 opens two fronts: a tank-led group of one Brute plus three
+  Whelps and a separate group of four Whelps. Online
   hatchers receive groups first; any additional front is assigned to an empty position and remains
   undefended until that egg is installed. Eight-second intermissions after Waves 1 and 2, then six
   seconds after Wave 3, provide an explicit early egg-building cadence for the temporary buttons.
   The banner publishes front and online-hatcher counts so the test pressure is directly readable.
 - The movement leash extends to one stud inside the authored rear wall so driven-back enemies can
   use nearly the full collision surface instead of snapping forward from the old three-stud inset.
-- The endurance ladder now runs 20 waves:
-  `3/5/8/12/16/24/32/48/56/64/72/80/96/112/128/144/160/176/192/208`. It is a test ceiling, not a
-  promised balance target. The hand-built roster's exciting Wave 8 result is historical context.
+- The repeatable opening contains 20 named, data-authored waves with totals
+  `3/1/8/12/16/16/20/24/20/13/8/16/24/24/19/28/28/32/32/27`. Every top-level group is one
+  independently assigned front and its `units` list names archetype plus count. Totals are derived,
+  so inserting a wave or changing “one Brute plus three Whelps” does not require a second count edit.
+  The service refuses any wave over the configured 32-enemy Studio ceiling. Difficulty above the
+  ceiling comes from composition: Ember Moth lieutenants begin in Wave 6 and Magma Wyrm bosses anchor
+  Waves 10, 15, and 20. Wave 10 remains the Home combat-layer checkpoint and Wave 11 begins Heaven 1
+  pressure, but egg purchasing is never gated by that boundary.
   With random and upgradable egg teams, the useful measurement is the distribution of failure waves
   and the roster/variant/source-tier/queue conditions that produced them.
-- A camera-facing billboard above each captain shows its current source, next core-egg cost, and one
-  `CREATE` button. The
-  client requests only the captain id through a Studio-only manifest packet; the server validates
-  session ownership, tier order, rate, and canonical hatch data before publishing the new source.
+- Enemy identity now follows the installed egg on the hatcher receiving each front rather than the
+  wave number. Home egg tiers draw a varied mix from the existing Earth/Lava enemies (Whelps,
+  Rabid Dogs, Vicious Cats, Crows, Brutes, Bears, and their support counterparts). Bloom, Aurora,
+  Solar, and Gilded defenders draw pet-model attackers from the corresponding Blight, Black Ice,
+  Infernal, and Ash Hell eggs. A mixed-tier defense can therefore face multiple enemy families in
+  one wave. Each authored position is an independent weighted hatch from that complete opposing
+  egg: three minion positions plus a lieutenant can therefore roll any four species/roles the egg
+  actually contains. The species and its inherent combat kit are selected first, then the abstract
+  wave rank applies durability/reward/presentation. Lieutenant HP is currently 2× the rolled pet;
+  Boss HP is 6× and uses Huge scale. Both are prototype multipliers rather than edits to canonical
+  pet stats. Both also expose a damage multiplier initialized at 1×. Configured villain and
+  archvillain overlays reserve 4×/6× Trials-style silhouettes. Heaven defenders map to their exact
+  Hell counterpart and Hell defenders map back to Heaven through Layer 3.
+- Pet-model attackers execute the rolled species rather than only borrowing its mesh: their native
+  role and targeting geometry, elemental bolt/area presentation, control, damage-over-time, support
+  aura, healing suppression, and configured active ability procs all cross the faction boundary.
+  Rank never forces a rolled support, blaster, or controller into the tank role.
+- A camera-facing billboard above each captain shows its current source, required next egg, owned
+  count, and one `PLACE` button. The client requests only the captain id through a Studio-only
+  manifest packet; the server validates session ownership, exact crafted tier, physical captain
+  proximity, rate, and canonical hatch data before consuming the session egg and publishing the
+  new source.
 - Each wave stamps a unique `CombatMusicCue`. If combat music is being held across the short
   between-wave aggro gap, `AreaMusicController` immediately rerolls from the active realm pool and
   excludes the current track when another choice exists. If combat fully ended, the next ordinary
   combat entry still avoids the last track. This changes only music selection, not wave timing.
 - Enemy defeats reuse the Hall's authored `hall_coins` pickup mesh/texture and saved Waycoin
-  balance. The prototype HUD therefore selects the Hall Gems + Waycoins stack instead of showing
-  Crystal World's origin-crystal panes. Pickups start with a mode-owned ten-stud magnet radius
-  (`MergeEggMagnetRadius = 10`) and deliberately ignore the player's ordinary Magnet power,
-  Auto Collector, pet reach, and Magnet enchants. `DropService` accepts that radius as a scoped
-  per-drop attribute while all ordinary drops retain their existing eleven-stud base and formula.
-  The attribute is a future progression seam: changing it updates every uncollected prototype coin
-  without coupling the merge-board economy to the regular character build.
+  balance. Bosses now pay 2,400 base Waycoins (3× the earlier 800). Every defeat also rolls one
+  persistent Gem at 2% for trash/tanks, 6% for lieutenants, and 20% for bosses. Both currencies use
+  physical owner-only pickups; Gems use the existing textured amethyst-geode pickup rather than
+  the emergency neon sphere. The prototype HUD therefore selects the Hall Gems + Waycoins stack
+  instead of showing Crystal World's origin-crystal panes. The mode no longer owns or resets a
+  pickup radius: every prototype currency record uses the player's game-wide Magnet calculation.
+  The Auto Collector pass remains separate from that radius and its passive pet may retrieve these
+  pickups like currency in any other world. Prototype Waycoin
+  models render at 2× the ordinary Hall scale. Their burst endpoint is contained to the authored
+  strip; a would-be outside endpoint visibly hits the nearest wall and tweens back to a reflected
+  inside resting point. Ordinary drops retain their existing scale and unconstrained behavior.
 - Entry is transactional around streaming: owned pets can be parked while the strip streams, but
-  the session and `InMergeEggPrototype` flag are committed only after the character visibly pivots.
-  A player can no longer remain in Home while the Hall gate believes the prototype is already active.
+  the session and `InMergeEggPrototype` presentation flag are committed only after the character
+  visibly pivots. The strip is the configured `MergeEggPrototype` area in the ordinary
+  `CurrentArea` location SSOT and renders as `Merge Egg` in the People list. Leaving through any
+  normal travel path changes `CurrentArea`, which automatically closes and cleans the temporary
+  session; gate admission also reconciles a stale record instead of trusting the private mode flag.
 
 ## Economy and progression experiments (2026-08-26)
 
-- Pricing is per hatcher position, not global across the board. Every empty position's Earth Egg is
-  100 Waycoins; that same position then progresses Ice 200, Lava 400, Sand 800. One complete Sand
-  position costs 1,500 and all four cost 6,000. Better eggs are core progression. Future permanent
-  upgrades—magnet radius, hatch luck, team capacity, and similar board modifiers—must have a
+- The literal merge timing probe sells only base Earth Eggs for 100 Waycoins. Two equal eggs always
+  merge into one egg of the next configured tier, including at a hatcher: an empty position accepts
+  any board egg unchanged, then the installed egg is one half of every later pair. Earth + Earth
+  yields installed Ice, installed Ice + board Ice yields Lava, and so on. The total material cost of
+  an installed Earth/Ice/Lava/Sand egg is therefore 100/200/400/800 rather than the obsolete 1,500-
+  Waycoin sum of buying every result tier separately. Better eggs are core progression. Future permanent
+  upgrades—hatch luck, team capacity, and similar board modifiers—must have a
   separate spend budget.
-- The server accepts a core-egg action only when the avatar is at least four studs behind the actual
-  directional Bulwark plane and within 18 planar studs of that captain. The billboard is only the
-  presentation surface; it cannot buy remotely from the battlefield.
+- A run snapshots the entering player's `EffectiveLevel` (falling back to earned `Level`) and uses
+  it as the common base for all prototype enemies, NPC-team pets, the temporary player escort, and
+  installed egg objectives. Tanks and trash remain even-level; EnemyService adds the normal rank
+  offset only for configured lieutenants and bosses. The snapshot does not change during the run.
+- The legacy captain button accepts a core-egg action only when the avatar is at least four studs
+  behind the directional Bulwark plane and within 18 planar studs of that captain. Physical board
+  drag placement instead validates the source board slot, visible purchased deployment pad, and
+  management-board distance server-side; neither path can place remotely from the battlefield.
 - A Studio-only upper-bound runner starts from 100 Waycoins, disables manual controls, and uses the
   ordinary character navigation path at the live `WalkSpeed` (26.4 in the measured runs). It walks
-  to owner-only physical drops, reevaluates currency asynchronously with combat, returns beneath the
-  selected captain, and spends through all four Sand Eggs. The first escape latches telemetry but
-  does not stop collection. Only all-Sand completion, objective/encounter termination, reset/exit,
-  or repeated navigation failure stops it. Reset discards test drops and restores the tester's exact
-  pre-run Waycoin balance.
+  to owner-only physical drops, reevaluates currency asynchronously with combat, buys Earth Eggs at
+  the rear-wall station, walks to a separate side-wall station for every two-to-one merge, then
+  returns beneath the selected captain to place the required crafted tier. The first escape latches
+  telemetry but does not stop collection. Only all-tier completion, objective/encounter termination,
+  reset/exit, or repeated navigation failure stops it. Reset discards test drops and restores the
+  tester's exact pre-run Waycoin balance.
 - The original 8/30 payout baseline failed in Wave 3 with one Earth team: the runner spent its
   starting 100, earned only 62 more, and lost the fifth objective egg before affording Position 2.
   The first corrected baseline is 40 per Whelp and 120 per Brute. Wave 1 therefore grosses 120,
-  while Wave 2 grosses 280, leaving real movement time as part of the cadence.
+  while the revised lone-Brute Wave 2 grosses another 120, leaving real movement time as part of
+  the cadence.
 - Three runtime-selectable progression modes leave canonical pet definitions unchanged:
   `positions` uses 3/4/5/6 slots by egg tier; `origin_10` and `origin_20` hold four slots and add
   10% or 20% contextual origin power per completed egg tier. The origin multiplier is a runtime pet
@@ -267,33 +319,173 @@ team and queue model:
   progression owns capacity (`Home=3`, `Layer 1=4`, `Layer 2=5`, `Layer 3=6`), while egg tier owns
   draft quality. The earlier slot and flat-modifier modes remain selectable experiment fixtures.
 
+### Candidate permanent knobs
+
+- Keep egg creation/merging and better origins as core progression, not upgrades. The clean permanent
+  upgrade axes are coin value, pet damage, attack cadence, installed-egg health, replacement hatch
+  time, gem-drop chance, hatcher count, pets per hatcher, and draft quality/luck.
+- Do not copy a separate unit `Spawn Level` upgrade into this mode. The prototype deliberately gives
+  friendlies and enemies one shared player-level baseline; egg origin and draft quality provide the
+  equivalent roster progression without reopening pet-level balance.
+- Offline Waycoins are a promising checkpoint-recovery valve. Calculate them from already-banked
+  progress (the last completed checkpoint plus the installed frontline), cap the away duration, and
+  award only Waycoins when the player returns. Offline time must not simulate waves, damage eggs,
+  grant gems, or advance checkpoints. Useful later knobs are offline efficiency and maximum banked
+  hours; begin without a paid multiplier so the base recovery economy can be measured honestly.
+- `Merge All`, passive pickup, temporary damage/fire-rate/coin potions, and rotating special-unit
+  shops are recognizable secondary systems, but they add automation or monetization complexity.
+  Keep them outside the first permanent-upgrade test until the basic checkpoint economy is proven.
+
 ## Phase 6 Home → Heaven 1 progression loop (2026-08-26)
 
-- Home now holds every hatcher at three stable positions. Earth/Ice/Lava/Sand tiers offer one,
-  two, three, then four ordinary hatch outcomes for each new pet; the draft first fills a missing
-  tank, then a missing support/healer role, then takes the highest configured combat-power result.
-  Unchosen outcomes are rejected session-only candidates. Canonical hatch odds, variants, Huge
-  chances, pet definitions, and live combat math are unchanged.
-- The runner no longer stops when all four Home hatchers reach Sand. It continues walking to live
-  pickups while later waves fight, then sweeps every remaining owner-only Waycoin after Wave 20.
-  Only after a quiet 0.6-second verification window does it close the Home ledger.
-- Heaven Layer 1 is a separate stage on the same test strip. It has four positions per hatcher and
-  uses Bloom/Aurora/Solar/Gilded eggs in Earth/Ice/Lava/Desert order with the same 1/2/3/4 draft
-  ladder. Its prototype egg prices are 1,600/3,200/6,400/12,800 per hatcher; four first eggs
-  therefore define a 6,400-Waycoin opening reserve. Heaven enemies start at 2.25× Home HP, 1.5×
-  damage, and 5× Waycoin payout as explicit first-pass knobs.
-- A sequential run carries the exact swept Home balance into Heaven 1 and rebuilds fresh four-slot
-  hatcher teams. Home telemetry records whether the balance met the 6,400 reserve before allowing
-  the transition. An isolated `{stage = "heaven_1"}` runner starts at that same minimum reserve by
-  default, allowing Heaven balance reruns without replaying Home; callers may supply a recorded
-  conservative Home balance instead.
-- The observer prefixes the wave banner with the current stage and distinguishes selected pets from
+- Home now holds every hatcher at three stable positions. Earth/Ice/Lava/Sand tiers offer two,
+  three, four, then five ordinary hatch outcomes for each new pet. The weakest outcome becomes a
+  session-only player-reserve cast-off; from the remaining outcomes, the hatcher draft first fills
+  a missing tank, then a missing support/healer role, then takes the highest configured combat-power
+  result. Canonical hatch odds, variants, Huge chances, pet definitions, and live combat math are
+  unchanged.
+- The runner no longer stops when all four Home hatchers reach Sand. Each captain immediately
+  continues through Bloom/Aurora/Solar/Gilded when its next exponential cost is affordable; there
+  is no wave, checkpoint, or combat-layer permission gate on an egg purchase. It sweeps remaining
+  pickups only after the complete 20-wave encounter.
+- The eight-tier price track is continuous per captain:
+  `100/200/400/800/1,600/3,200/6,400/12,800`. Home tiers field three positions with 2/3/4/5 draft
+  choices. Buying the first Heaven 1 egg expands that captain to four positions, and the Heaven
+  tiers restart the 2/3/4/5 draft ladder. Future layer eggs can extend the same data-driven track
+  without adding an artificial wave unlock.
+- Wave 10 is only the combat checkpoint. Wave 11 changes the banner to Heaven Layer 1 and applies
+  2.25× Home HP, 1.5× damage, and 5× Waycoin payout. Teams, egg tiers, balance, queues, and surviving
+  pets continue in place. An isolated `{stage = "heaven_1"}` runner remains available for tuning
+  that combat model without replaying the continuous path.
+- The observer prefixes the wave banner with the current combat layer and distinguishes selected pets from
   total draft candidates. Each hatcher billboard shows the current and next number of picks.
 - The first complete Home run cleared Wave 20 with all five reserve eggs and swept to 57,260
   Waycoins after Home egg spending. Carrying that exact balance into Heaven 1 exposed the next
   economy problem: the runner spent 57,600 on Heaven eggs almost immediately and had nearly all
   sources advanced by Wave 2. The stage handoff works, but the current Home payout/Heaven pricing
   collapses the intended Heaven build tempo and needs a later tuning pass.
+
+## Endless waves and the 56-tier catalog (2026-08-27)
+
+- Waves 1–20 remain immutable authored fixtures for controlled experiments. Wave 21 begins a
+  config-authored ten-wave cycle with three recovery waves and a checkpoint battle. The runtime
+  generates later cycles up to a practical `999999` session guard, while the HUD presents the run
+  as endless and fills its progress bar within the current ten-wave checkpoint.
+- Generated difficulty never increases the body count. Every generated wave remains at or below
+  the 32-model Studio ceiling; later cycles replace existing Whelps/Brutes with lieutenants/bosses
+  and apply additive per-cycle HP, damage, and reward multipliers. Combat layers change at Waves
+  10/20/30 from Home to Heaven 1/2/3; Heaven 3 remains the base layer after 30 while cycle scaling
+  continues.
+- The default egg track contains 28 current origins: four Home eggs, then the Heaven and Hell
+  Earth/Ice/Fire/Desert eggs for Layers 1, 2, and 3. Tiers 29–56 repeat that same catalog as forced
+  prototype-Huge NPC pets. The forced presentation is session-only: it is neither a genuine Huge
+  roll nor an index/registry/inventory grant. Full-mode durable player hatches fold the tier back to
+  its ordinary origin and use the canonical hatch unchanged.
+- Capacity follows the world layer rather than growing forever: Home has three positions, Layer 1
+  has four, Layer 2 has five, and Layer 3 plus prototype-Huge tiers have six. Ground roster panels
+  reserve six logical card slots from the beginning, so capacity changes do not reflow neighboring
+  stations.
+- Early creation/upgrade costs retain their familiar doubling through tier 8, then use a slower
+  config-owned growth rate so 56 tiers remain numerically representable. Wave 140 is the current
+  first-run progression horizon to balance, not a hard ending.
+- Cost presentation does not choose the eventual large-number economy. The Merge management board
+  keeps exact comma-separated labels below one billion, then abbreviates billion/trillion/quadrillion
+  as `B`, `T`, and `Q`. This is display-only; it does not halve costs, convert Waycoins into bars, or
+  alter affordability checks.
+- Merge-only rebirth is the combat escape valve when enemies overtake the current defense ceiling.
+  Every player starts at Rank 1 for free. Rank 2 costs 50,000 Waycoins and Rank 3 costs 200,000;
+  those two paid transitions produce 2x/3x total
+  allied Merge damage before Gem damage upgrades. Gem and Rebirth percentages share one additive
+  pool: nine +5% purchases plus the first +100% rebirth produce `1 + 0.45 + 1.00 = 2.45x`, not
+  `1.45 × 2`. The same combined value applies to hatcher NPC squads, Simple-mode reserve pets, and
+  Full-mode durable player pets. There is intentionally no inferred third price. The Full-mode
+  factor is read only while the player is inside Merge Defense and is never written into durable pet
+  records, so it cannot affect combat elsewhere. The rank is durable; the
+  active wave/checkpoint, board, deployed eggs, and Merge wallet reset, while player pets, level,
+  world unlocks, and the durable Gem-upgrade table remain untouched. Management upgrade ranks and
+  cumulative Gem spend now live in the Merge-defense profile record rather than only the session.
+- A ninth management-board card shows the next exact price and total damage. Rebirth requires a
+  second confirmation click because it clears the current run. Future anti-spam progression gates
+  use `rebirth.requirements.minimum_deployed_egg_tier_by_rank`; the list is deliberately empty
+  until the exact egg thresholds are selected through playtesting.
+
+## Player combat modes and defense hatches (2026-08-27)
+
+- Merge defense has two player-combat modes. `Full` is available after the player reaches earned
+  Level 10 or completes the combat tutorial; otherwise an attempted Full preference resolves to
+  `Simple`. The preference is persisted in ordinary Settings and may be changed live. Choosing
+  Simple remains valid after Full is unlocked.
+- Mode onboarding is persisted separately from the setting. An ineligible first entrant silently
+  plays Simple and records that locked-Simple experience; no banner is shown to either a fresh or
+  returning ineligible player. An eligible first-time entrant begins in Full and receives one
+  click-through notice that Simple remains available in Settings. If a locked-Simple player later
+  qualifies, the effective mode remains Simple until a blocking `Stay Simple` / `Switch to Full`
+  choice is made. Interrupted notices repeat on the next entry, while acknowledged/resolved notices
+  never repeat; changing the setting directly also resolves a pending unlock choice.
+- Full uses the player's durable inventory and normal equipped-pet records. Defense hatches grant a
+  real pet through `PetGrantService`, update the index and hatch counter, and fill only genuinely
+  empty unlocked equip slots. They never replace a chosen pet or a downed pet, so normal combat,
+  targeting, defeat, and revive management remain authoritative. Full mode does not create or park
+  synthetic reserve ghosts.
+- The defense hatch source is the highest canonical egg the player has unlocked in Halo & Horns,
+  capped by the egg installed at the producing hatcher. Grass/Earth is the ungated floor. Thus an
+  early player with an Aurora hatcher still receives an Earth hatch, while a player who has unlocked
+  Aurora may receive Aurora pets from that same hatcher. This is an independent canonical hatch,
+  not the hatcher team's draft winner or cast-off.
+- Both modes keep player combat pets at the breach-line escort anchor while the player manages the
+  board behind it. Crossing forward restores the existing follow/heel behavior; entering combat
+  still allows ordinary combat choreography to take control. The Auto Collector remains outside
+  the combat squad and retains its separate currency-pursuit behavior.
+- Full mode temporarily marks the real player's pet folder as open-targeting. Durable pets may
+  therefore acquire any nearby prototype lane through the ordinary distance/threat tables before
+  an enemy crosses the Bulwark, matching the Simple escort contract. NPC hatcher folders use their
+  per-lane `CombatTargetGroup` for opening assignments, then only idle teams are opened by the
+  reinforcement policy. The Bulwark remains the immediate all-teams emergency release. The
+  player's pre-session folder value is restored on mode switch, cancelled entry, and exit.
+- A newly discovered Full-mode pet uses the regular single-egg reveal and pet picture, but as a
+  passive nonmodal presentation whose transparent layer does not consume board/HUD input. Duplicate
+  index entries enter inventory silently. `Show New Defense Pets` in Egg Settings disables these
+  reveals without disabling the grants.
+- Full mode retains ordinary player powers. Offensive targeting and targeted AoEs enumerate
+  EnemyService enemies, while friendly pet targeting enumerates real `Workspace.PlayerPets`
+  folders. Hatcher-owned NPC pets live in their separate `Merge Hatcher Team X` folders, so they
+  cannot become targets of a player's targeted AoE.
+- Merge enemies retain their isolated physical Waycoin/Gem reward path. NPC hatcher kills,
+  Simple-mode ghost kills, summons, and player-power finishes never increment the player's global
+  `enemies_defeated` counter or publish the ordinary `enemy_defeated` event. A durable Full-mode pet
+  may earn exactly one global kill only when it lands the final damaging hit; participation and
+  nearby-team credit do not qualify. Direct, AoE, aura, burn, and contagion final hits preserve this
+  real-pet attribution. Once Ascension is unlocked by either the crystal/Homeworld tutorial or
+  Combat Training, that same qualifying final hit also runs through the ordinary combat XP curve.
+  Before that unlock, Merge grants no XP; autonomous and Simple-mode combat never grants it.
+
+## Simple-mode session reserve roster (2026-08-26)
+
+- This is the Simple-mode fallback, not owned-pet crossover, and writes nothing to inventory. Entry parks the
+  player's normal runtime pets; reset, exit, character removal, and checkpoint restore explicitly
+  destroy the prototype escort before restoring or rebuilding session state.
+- Each completed hatcher draft removes its weakest candidate first and adds that one cast-off to the
+  player's prototype bench. The hatcher chooses its own winner from the remaining candidates, so one
+  roll result is never fielded by both owners.
+- The player automatically fields the strongest available tank, ranged/blaster, and melee cast-offs.
+  `extra_equip_slots` adds a fourth support slot, matching the shipped 3→4 Game Pass benefit without
+  inheriting progression bonuses or allowing more than four slots. The four role seats stay fixed:
+  a missing core role can use another non-support combat cast-off, but support never enters a
+  three-slot lineup or displaces a core seat; an unavailable support seat remains empty.
+- These ghosts live in the real player's pet folder, so the existing follow, aggro, combat, and My
+  Team UI paths drive them while the avatar gathers Waycoins. `CombatTargetOpen` lets them join any
+  hatcher-owned fight despite the four hatcher target partitions.
+- A defeated player-escort pet is destroyed and its slot waits 30 real seconds. The strongest bench
+  pet with the same role fills it; if no role match exists, the strongest cast-off fills it. An empty
+  bench leaves the slot pending until a later hatcher draft supplies another cast-off. Hatcher FIFOs
+  remain independent at four seconds.
+- Checkpoint 10 snapshots and restores the active escort definitions, reserve bench, entitlement
+  capacity, and counters. This makes retry comparisons deterministic without persisting any pet.
+- Live validation on the extra-slot-pass account produced six Grass candidates for the first
+  three-pet hatcher: three hatcher selections, three player cast-offs, and zero discarded rolls.
+  The fixed-seat correction kept an unavailable ranged seat empty while placing a rolled support in
+  slot four. A forced melee loss was still pending after 21 seconds, filled after the 30-second
+  boundary, and all four escort pets then held the same live enemy target during the coin route.
 
 ## Breach and installed-egg experiment (2026-08-26)
 
@@ -303,30 +495,216 @@ team and queue model:
   fallback, while the repeatable authoring script creates it permanently.
 - The same movement-leading-edge calculation classifies both lines. World telemetry now separates
   current/peak enemies past each line, cumulative crossings, first breach wave, and first overrun
-  wave. `BreachOverrun` is a visible warning when enemies beyond the red line reach the greater of
-  four or one per active defender; it is not itself terminal. Five rear finish-line hits remain the
-  terminal reserve-egg loss.
+  wave. `BreachOverrun` begins when enemies beyond the red line reach the greater of four or one per
+  active defender. `BreachOverrun` is now diagnostic/banner telemetry only; it never manufactures
+  damage. Egg HP changes only through ordinary landed enemy attacks or the finish-line fallback.
+- Crossing the red line stamps that enemy as eligible to attack `MergeEggObjective` models. The
+  existing bulwark re-alert then seeds normal threat across the open defense, including installed
+  eggs. Eggs publish explicit target threat but are not implicit-taunt tanks; real pet tanks retain
+  their ordinary taunt authority and can pull an attacker away.
 - A Studio-only focused probe can inject any valid starting wave and route every attack group to one
   hatcher. This is a diagnostic seam for repeatable pressure tests, not a player wave selector or a
   production network contract.
-- Live verification injected Home Wave 10 onto Team 1 after installing only its first egg. All 64
-  enemies crossed the yellow bulwark, 63 crossed the red breach line, `FirstBreachWave` and
-  `FirstOverrunWave` both latched to 10, and the red-line peak reached 63 against a threshold of 4.
+- Live verification under the retired head-count ladder injected Home Wave 10 onto Team 1 after
+  installing only its first egg. All 64 enemies crossed the yellow bulwark, 63 crossed the red breach
+  line, `FirstBreachWave` and `FirstOverrunWave` both latched to 10, and the red-line peak reached 63
+  against a threshold of 4.
   The first rear arrival destroyed Team 1's installed egg; subsequent arrivals exhausted the five
   reserve eggs and ended the run as `ObjectiveLost`. This confirms the prior Wave 18 crowd was a
   reporting bug, not a non-breach: the old UI exposed active enemies but no authoritative red-line
   state.
+- The completed continuous Home → Heaven 1 baseline ran all 20 waves in about 23.1 minutes. It
+  reached first pet loss at Wave 2, first breach at Wave 6, first overrun at Wave 16, 88 cumulative
+  red-line crossings, a red-line peak of 15, and a peak of 32 active enemies. It nevertheless ended
+  with all five reserves, zero installed eggs destroyed, and zero abstract pressure hits while all
+  four sources reached Gilded. This conclusively rejected defender-count pressure as the damage
+  model: crossings describe danger, but actual attacks on durable egg targets must decide loss.
+- The former focused Wave 10 pressure proof remains useful only as evidence that the retired timer
+  executed; it is no longer a balance result. The next live probe must measure time-to-first-egg-hit,
+  damage by archetype, tank peel behavior, time-to-destroy, and rebuild opportunity against the new
+  5,000-HP objectives.
+
+## Literal merge-board timing probe (2026-08-26)
+
+- The early board is now a literal 4×4 floor grid. A green rear-wall button creates one base Earth
+  Egg for 100 Waycoins, and dragging one equal egg onto another produces the next configured tier.
+  Dragging a board egg onto an empty deployment pad installs it unchanged; dragging onto an occupied
+  pad requires the deployed tier and advances it once (for example, Ice onto Ice produces Lava).
+  Empty cells remain neutral. Each occupied egg receives a smaller neon sign beneath it; matching
+  tiers share a color, so matching colors identify a valid merge pair. The six-color sequence starts
+  Earth green and Ice blue, then repeats every six tiers. Board placement derives from the authored
+  `StartPlatform`: its player-side edge exactly meets the pedestal's rear edge rather than relying on
+  a guessed offset.
+- Crafted inventory is mirrored into the 16 cells using the real cached egg assets from
+  `ReplicatedStorage.Assets.Models.Eggs`. Board eggs are anchored, non-colliding, queryable, and
+  rotate locally so the avatar can run through the board while still grabbing them with the cursor.
+  The player drags one egg onto a same-color/equal-tier companion and the server validates both slot
+  identities before performing one merge. Nine thin deployment pads share the permanent station
+  layout, but ownership controls visibility and deployment: a new run exposes slots 2/4/6/8, the
+  first Active Slots purchase reveals and deploys center slot 5 immediately, and the remaining
+  purchases fill 3/7/1/9.
+  Unowned pads stay present but invisible and non-queryable. Empty owned pads use a neutral available
+  color and occupied pads use the same six-color tier identity as matching board eggs. A full board
+  rejects another base egg; merging or placing frees a cell.
+- The former side-wall auto-combine sign now hosts one 3×3 single-click management board. Coin Value,
+  Damage, Fire Rate, Active Slots, and Egg HP are session balance knobs paid in Gems. Spawn Level is
+  the existing base-generator advance and Buy Egg creates the current base tier; those two remain
+  Waycoin progression. Each percentage card advertises its fixed `+5%` purchase rather than a
+  before/after total. These bonuses are additive by level (`1 + 0.05 × level`), never compounded.
+  Damage's accumulated percentage also adds to Rebirth's percentage on that same base rather than
+  multiplying the two upgrade systems.
+  The eighth card preserves the prototype Auto-Combine/future Game Pass seam and the ninth is
+  Merge-only Rebirth. Each card is a colored rounded frame around a dark inset panel. Its purchase
+  price sits in a separate overlapping pill: purple with the authored amethyst icon for Gem costs,
+  gold with the Waycoin icon for Waycoin costs, and a red action pill for Rebirth.
+  Both this board and the floor Equip Best control attach their interactive SurfaceGuis through
+  `PlayerGui` with world Adornees, so camera zoom does not silently stop pointer delivery. Every
+  accepted or refused click receives a short on-screen result.
+  The generator begins at Grass/Earth for 100 Waycoins.
+  Grass→Ice costs 1,000, changes each newly created egg to Ice at 250, and later generator advances
+  and creation prices each double independently. Generator advancement has no wave or hatcher-tier
+  cap. Its tier is a global minimum: purchasing an advance promotes every unplaced board egg and
+  every installed hatcher below the new tier one-for-one. Healthy deployed pets remain in place;
+  newly granted positions are filled and future replacements use the promoted source.
+- Auto-Combine immediately resolves every available pair and repeats that cascade after each new
+  base egg. Manual drag-to-merge remains available independently.
+- The session inventory is server-owned and publishes per-tier counts plus created/merged/placed
+  totals as world attributes. Captain controls are inactive until the required tier is actually
+  owned; placement itself never spends currency. All Waycoin spending occurs at base-egg creation,
+  which preserves the previous exponential material curve exactly.
+- A normal Studio prototype entry snapshots the tester's persistent Waycoin balance and starts its
+  isolated wallet at zero. Five owner-only 120-Waycoin stacks appear beyond the Bulwark, so every
+  Wave-1 start provides 600 Waycoins. This is independent of tutorial completion and also applies
+  to fresh pre-checkpoint resets and rebirths; checkpoint 10+ retries do not recreate the opening.
+  Opening and combat Waycoin drops persist for ten minutes in this management mode; ordinary-game
+  drops remain at 30 seconds. Exit restores the pre-entry balance.
+  Entry now arms the encounter and creates the owned empty hatcher positions immediately; the old
+  yellow pillar remains only as a Studio scripting seam and has no player prompt. With no installed
+  egg, Wave 1 remains sealed exactly as before. A restored run with deployed eggs can therefore
+  resume without a second arming interaction.
+- The persisted first-visit tutorial uses a flowing trail of the shared world-chevron breadcrumb
+  presentation. Wall steps resolve the exact lower-left Buy Egg card, pulse that real button, and
+  attach the same large bobbing `CLICK HERE` pill used by the other tutorials rather than sending
+  the trail to the wall origin. That explicit click cue teaches purchases one through three, then
+  retires; the tutorial card and purchase result popup continue counting the required five Earth
+  Eggs down after every click. The server then
+  accepts player-directed ordering: completion requires five purchased eggs, at least one real
+  equal-tier combination (board-to-board or board-to-deployed), and at least one deployed egg. It
+  does not require all four hatchers or prescribe whether merging happens before deployment. Wave 1
+  remains sealed until those facts are true. Auto Collector owners receive Coin Pup copy instead of
+  walking breadcrumbs and advance when that pet has actually placed all 600 Waycoins in the wallet.
+  Completion is stored in `GameData.MergeDefense.tutorial_completed`; later entries keep the same
+  600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an
+  independent hard tutorial gate, so legacy or incomplete onboarding state cannot restart it after
+  rebirth. Admin **Reset to Beginning** is the deliberate exception: it closes any live/pending
+  Merge session before wallet restoration, resets the entire `MergeDefense` record (tutorial,
+  onboarding notices, rebirths, management upgrades, and spent gems), restores the default Full
+  preference/locked-Simple effective mode, and therefore re-arms a true first visit.
+- The perfect runner follows the same sequence at actual character walk speed while combat remains
+  asynchronous: collect drops → create base egg → repeat/merge as necessary → walk to the selected
+  hatcher → place. One merge press always chooses the lowest available equal pair, keeping this
+  timing experiment deterministic without adding a selection UI.
+- Outside an incomplete first-visit lesson, Wave 1 remains sealed until the first crafted egg is
+  placed. During that lesson it waits for the five-purchase/one-combination/one-deployment contract.
+  Checkpoint snapshots now include
+  base-generator tier/spending, unplaced crafted inventory, and creation/merge/placement totals
+  alongside balance, rosters, and objective state, so a failed stretch cannot duplicate or erase
+  board materials. Floor roster panels derive their player-side offset from the deployment-pad
+  geometry and begin beyond the egg square instead of overlapping it.
+
+## Permanent ten-bay realm and durable checkpoints (2026-08-28)
+
+- `Workspace.Maps.MergeEggRealm` is the permanent editable ten-bay map: five Heaven-styled lanes
+  and five Hell-styled lanes sit on opposing raised terraces around a long sunken public mall. All
+  ten bays live under its `Bays` folder; `CentralHall` owns the mall, bay approaches, retaining
+  walls, circular end plazas, opposing flows, cancellation band, bridges, and civic details. Runtime binds this
+  authored root and fails closed if it or any bay contract is absent. It does not generate map
+  geometry.
+- Each playable lane is 96×300 studs. The five bay centers use a 136-stud pitch, leaving the
+  reference's 36-ish-stud themed berm between neighboring 100-ish-stud bay envelopes. The rows use
+  a 180-stud center gap. Each bay receives its own 56-stud-wide, 10-step civic stair from the
+  terrace at Y=2 down to the mall at Y=-8. The permanent blockout currently measures roughly
+  1,003×784 studs and remains inside the 1,320×920 `MergeEggPrototype` CurrentArea envelope.
+- The common space is a 680×180-stud mall with continuous retaining walls. Circular Hell and
+  Heaven end caps feed lava and water into a straight 18-stud river; the flows meet in a 26-stud
+  steam/pearl cancellation band. Four wood-and-metal bridges align between bay mouths. The
+  player-end cap of every
+  lane remains an open public entrance, while transparent side boundaries keep players from
+  shortcutting between bays through the decoration seams.
+- Existing flora and MissionProps are cloned outside the playable lanes and along the mall to
+  establish Heaven/Hell identity without covering the board, pickups, or combat. Every bay also
+  has an architectural outer spawn gate around its existing gameplay portal. Runtime asset
+  clones are anchored, non-colliding, non-queryable, and stripped of scripts.
+- The first custom Hell landmark candidate is the rebuilt Ember Citadel under
+  `assets/exports/props/ember_citadel/`. Its `.blend` preserves the original Meshy GLB in a hidden
+  reference collection and keeps a fully editable procedural rebuild separately. The Roblox GLB is
+  consolidated to seven material-based meshes (15,978 triangles) and passes the strict topology
+  check with zero boundary, wire, non-manifold, zero-length, or zero-area geometry.
+  The same builder supports a middle-only height extension; the current 4-stud tall variant is under
+  `assets/exports/props/ember_citadel_tall/` (24.62 studs high, 15,594 triangles), with the base and
+  crown proportions preserved while the shaft, banners, and crown are shifted upward together.
+  A near-double-height 40-stud variant is under `assets/exports/props/ember_citadel_tall_40/` for
+  landmark-scale placement; it uses the same 9.8 × 9.8 footprint and clean seven-part export.
+- The matching Emberfang Gate candidate is under `assets/exports/props/emberfang_gate/`. It is a
+  separate clean rebuild from the supplied Meshi arch: two side towers, a connected pointed arch,
+  banners, spires, and restrained ember liners. The export keeps a 21 × 6.8 footprint, is 18.95 studs
+  high, and passes the strict topology gate with zero boundary or non-manifold edges.
+  The richer architectural pass is preserved separately under
+  `assets/exports/props/emberfang_gate_v2/`: 21.85 studs high and 14,346 triangles, with recessed
+  tower façades, repeated ribs/parapets, layered lancets, structural arch piers, segmented arch ribs,
+  flying buttresses, and an integrated central crown.
+  The 32,605-triangle voxel/rebake experiment under `emberfang_gate_v11_refined/` is superseded:
+  it softened the hard-surface design and exceeded Roblox's 20K MeshPart limit. The selected
+  source-preserving candidate is now `assets/exports/props/emberfang_gate_crisp/`. It keeps the
+  original UVs, texture, and silhouette at 13,329 triangles, welds exact duplicate geometry, uses
+  flat shading, and selectively snaps 278 broad axis-aligned architectural patches to shared
+  planes, and removes one inherited zero-area triangle. This is the candidate to compare in Studio
+  before any manual recolor/retopology work.
+  The matching Heaven-side candidate is `assets/exports/props/celestial_gate_crisp/`, derived from
+  the supplied Celestial Gate of Lum GLB with the same source-preserving process. It remains below
+  the Roblox MeshPart limit at 13,345 triangles, welds 10,400 exact duplicate vertices, and snaps
+  231 broad architectural patches (1,578 vertices) to shared planes while retaining the original
+  white/gold/cyan atlas and silhouette. It also retains the donor's intentionally disconnected/open
+  component structure rather than voxel-remeshing it.
+- Hall entry normally allocates one unclaimed bay at random and publishes its id, side, and column
+  on the player. During first-bay environment authoring, `realm_layout.authoring_bay` pins Hall
+  entry by `side` and `column`; it currently selects Heaven Bay 1, can switch to Hell Bay 1 by
+  changing only `side`, and restores random allocation when `enabled` is false. Every bay also has
+  a server-owned claim pad. Empty pads can request that specific bay;
+  occupied pads display the owner's name. Claims are released on cancelled entry, exit, character
+  cleanup, and player leave. The client resolves all world-space Merge UI through the player's bay
+  id instead of assuming the original top-level Model.
+- The complete ten-bay footprint is one `MergeEggPrototype` CurrentArea, so walking down the hall or
+  visiting another bay does not accidentally end the mode. Enemy movement and physical drops still
+  use the selected bay's authored `ArenaBounds`; no combat actor can leak into a neighboring lane.
+- The current Home prototype deliberately retains its proven one-active-combat-session service.
+  The ten physical bays and allocation layer are the extraction seam for the future dedicated
+  place; ten simultaneous combat state machines are not simulated by aliasing the singleton
+  `_active`/`_world` state. Multi-owner concurrency remains a separate place-runtime refactor.
+- `GameData.MergeDefense.checkpoint` now stores a compact ProfileStore-safe Wave-10 boundary:
+  checkpoint wave, isolated Merge wallet, reserve-objective count, base generator tier, unplaced
+  board inventory, and deployed egg tiers. It is written with an immediate critical save whenever
+  a checkpoint banks. Re-entry after logout reconstructs full-health hatchers at that boundary,
+  rerolls temporary NPC squads, and schedules the next wave; it never stores Instances or grants a
+  second Full-mode durable hatch while rebuilding. Gem upgrades and Rebirth ranks remain in their
+  existing durable fields. Rebirth and Admin Reset clear the checkpoint; ordinary exit/logout does
+  not.
 
 ## Source and authoring
 
 - Runtime/config: `configs/merge_egg_prototype.lua` and
   `src/Server/Services/MergeEggPrototypeService.lua`.
+- Authored layout/allocation: `src/Shared/Game/MergeEggRealmLayout.lua` and
+  `src/Server/Services/MergeEggRealmBuilder.lua`.
+- Durable checkpoint normalization: `src/Shared/Game/MergeEggCheckpoint.lua`.
 - Combat telemetry and Studio-only core egg progression UI:
   `src/Client/Systems/MergeEggPrototypeObserver.lua`.
-- Repeatable Edit-mode world pass: `scripts/studio/build_merge_egg_prototype_world.luau`.
+- Repeatable Edit-mode passes: `scripts/studio/build_merge_egg_prototype_world.luau` builds the
+  temporary one-bay source, then `scripts/studio/bake_merge_egg_realm.luau` consumes it and replaces
+  only `Workspace.Maps.MergeEggRealm`.
 - The service is registered only when `RunService:IsStudio()` and map binding is enabled. A missing
-  authored world fails closed and logs the exact expected Workspace path; runtime never fabricates
-  or tiles the venue.
+  authored realm fails closed and logs the exact expected Workspace path; runtime never fabricates,
+  transforms, or tiles the venue.
 
 ## Live verification
 
@@ -422,11 +800,10 @@ Wave 3; its two-front Brute-led/trash configuration also deployed without runtim
 
 The first Waycoin pass showed the Hall pane and canonical coin icon while Gems remained visible and
 all four origin-crystal panes stayed hidden. Wave 1 produced three owner-only textured Waycoin
-pickups, each carrying 8 `hall_coins`, the Hall mesh `96505477571443`, texture
-`75902763288492`, a ten-stud base, the live `MergeEggMagnetRadius` attribute, and no regular-player
-modifiers. Holding the diagnostic radius at zero left all three pickups and the 148 balance intact;
-restoring it to ten collected only the nearby pickup, left two on the lane, and changed both the
-saved attribute and visible Hall pane to 156. The runtime log remained clean.
+pickups, each carrying 8 `hall_coins`, the Hall mesh `96505477571443`, and texture
+`75902763288492`. That run originally tested a prototype-only ten-stud radius; the scoped override
+was removed on 2026-08-27 when the design standardized Magnet game-wide. The runtime log remained
+clean.
 
 ## Production direction after Phase 5
 
@@ -439,7 +816,7 @@ saved attribute and visible Hall pane to 156. The runtime log remained clean.
 - Do not lock queue depth or hatch cadence from this accelerated run. Tune the Ember Brute's
   health/armor and partial out-of-combat regeneration, then compare loss rate against the four-second
   per-team FIFO and five-egg objective. Those are explicit knobs, not final balance values.
-- Treat the early `8/8/6`-second intermissions and `1/2/2` attack-front progression as the first
+- Treat the early `8/8/6`-second intermissions and `1/1/2` attack-front progression as the first
   board-cadence probe, not shipping timings. The free buttons stand in for completed egg builds;
   compare whether a player can comfortably bring a second hatcher online before Wave 2 while still
   reading the fight.
@@ -449,16 +826,81 @@ saved attribute and visible Hall pane to 156. The runtime log remained clean.
 - Tank/melee drive-back that pushes the whole frontline away from the hatcher is desirable lane
   behavior. A legitimately advanced team travels back to its hatcher after combat rather than
   teleporting at the generic catch-up distance.
-- The bulwark is a secondary engagement boundary, not a new focus system: strict team ownership
-  applies in front of it, and ordinary cross-team aggro becomes eligible only for breached enemies.
+- The bulwark is a secondary engagement boundary, not a new focus system. Team ownership establishes
+  the opening fronts; after the configured grace, targetless teams may reinforce the hardest live
+  target while at most one stays in reserve. The Bulwark immediately releases that reserve, and
+  ordinary aggro tables still choose whether already-engaged pets peel.
 - The player remains free to move between hatchers, merge eggs, and manage the board while these NPC
   teams fight asynchronously. Player position must not be a combat leash or scheduling input.
-- Waycoin pickups are the first reason for the player to leave the board during combat. Preserve the
-  prototype-owned magnet scale when adding upgrades; do not silently inherit the regular game's
-  power/Auto Collector/enchant radius stack.
-- Keep four hatcher positions during tempo and board-cadence testing. Production may support more,
-  but the four full observer columns are not a scalable presentation contract; replace them with a
-  compact status/alert view plus spatial captain indicators before increasing the visible team count.
+- Waycoin pickups are the first reason for the player to leave the board during combat. Player
+  Magnet reach is game-wide and must not be reset on mode entry. Auto Collector is a separate
+  passive pet: while idle in this mode it obeys the same behind-breach heel anchor as the reserve
+  squad, but it may run out to collect physical currency.
+- The physical contract always contains nine hatcher coordinates at eight-stud spacing. Captain
+  roots, visible pads, and floor `SurfaceGui` anchors derive from the owned-slot order, so only four
+  stations deploy initially and slot 5 appears as the first purchased expansion without shifting
+  any existing station.
+- Board eggs remain directly draggable either onto an equal-tier board companion or onto an owned
+  frontline deployment pad. Pickup moves the gold tutorial chevron to a recommended destination;
+  all compatible destinations light gold, then the destination inside the horizontal snap radius
+  turns green and accepts release. Board-to-board merging now uses the same proximity snap as
+  deployment, so camera angle and egg height cannot make a visually correct drop miss. Mismatched
+  eggs and unpurchased pads never advertise as valid. The floor `Equip Best` control between board
+  and hatchers performs one fair pass only:
+  strongest eggs fill empty hatchers, then matching eggs advance the weakest occupied hatchers at
+  most once each. It does not merge board inventory or repeatedly advance one station.
+  Its green/gray state is server-authored from that exact assignment plan, not merely from board
+  inventory count; an unusable low-tier egg therefore leaves the control gray rather than promising
+  an equip action that the server will refuse.
+- Each floor roster owns a permanent 7.5-stud cross-lane footprint: one eight-stud station cell minus
+  a 0.5-stud gap. A fixed six-slot logical canvas preserves the shared `HudCard` aspect ratio for the
+  Layer-3 maximum rather than stretching when neighboring slots activate. Pet
+  fills remain `current endurance / maximum endurance`; only their world-space presentation becomes
+  narrower. The all-nine density fixture remains a presentation proof, not default ownership.
+- The combat enemy rail uses two columns before density scaling. Gems and Waycoins remain permanently
+  visible during a fight because they drive the background management loop; only non-economic menu
+  controls may yield screen space to an extreme pull.
+- Damage to an installed egg refreshes a five-second production lock for that captain. Replacement
+  slots remain queued but cannot hatch until the egg has gone five uninterrupted seconds without a
+  hit; a missing or destroyed egg cannot produce at all. The existing team window labels this state
+  `PRODUCTION JAMMED`, while world/team attributes count damage hits, distinct lockouts, and currently
+  locked eggs. Checkpoint restore installs full-health eggs with no carried lock timer.
+- Instant healing pulses are rendered by each client from the healed model's locally smoothed pivot.
+  The server remains authoritative for the heal and publishes the ordinary combat result, but never
+  anchors VFX to its stale pet-follow spawn position.
+- Every installed egg owns a 12-stud heal-denial field using the shared combat
+  `HealingSuppression` status and PowerService ground-rune visualization. The first crossing of the
+  red breach line activates every installed field that is ready; real damage activates only the
+  struck egg. A field remains active for 30 seconds, then recharges for 30 seconds. Hits and breaches
+  during either window do not refresh it, and each hatcher keeps an independent timer. Wave 14's
+  healer composition remains unchanged until this defense is measured.
+- The temporary player escort uses the red breach plane as a conditional idle anchor. While the
+  player works behind the line, untargeted escort pets heel near the eggs instead of obstructing the
+  merge board. Crossing to the enemy side restores the player's live character as their formation
+  anchor, so they follow forward normally; returning behind the line returns them to defense.
+- Every tenth wave is a progression checkpoint. The checkpoint is banked after its extended
+  intermission. In gameplay it contributes only the rewind wave number: defeat retains the live
+  Waycoin wallet, uncollected drops, merge-board eggs, base-egg progression, deployed egg
+  tiers/positions, current rosters, and every purchased Gem upgrade. Destroyed deployed eggs retain
+  their placement identity while inactive, then every retained egg/objective and combat roster
+  returns at full health before the wave after the checkpoint rolls again. Gameplay recovery is
+  automatic after the defeat delay; the rear reset control can trigger it immediately.
+- The last banked boundary is also durable across server restarts and logouts. Re-entry restores the
+  checkpoint wallet, board inventory, base tier, deployed egg tiers, and full-health objectives,
+  then rerolls session-only squads. Progress made after the last completed boundary remains the
+  risk interval and is not silently promoted into a checkpoint on logout.
+- Deterministic balance automation deliberately retains the former exact-snapshot restore. The coin
+  runner and the explicit test restore seam can replay the precise economy/board/roster state banked
+  at Wave 10/20, while ordinary play never uses that rollback policy.
+- Failure at the next ten-wave boundary is an intentional progression wall, not evidence that the
+  recovery stretch must be weakened. The current no-upgrade runner repeatedly reaching but failing
+  Wave 20 is the desired baseline: a player should need the separate upgrade system to clear 20,
+  then need further upgrades at 30, 40, and later boundaries. Exact restore is a test-only tool;
+  gameplay retries accumulate defenses and currency so a stuck player can build momentum.
+- Author waves `N+1` through `N+3` after each checkpoint as a recovery ramp with enough payout and
+  collection time to rebuild. The current Wave 11/12/13 ramp uses one/two/three eight-Whelp fronts
+  and `8/8/6`-second gaps; the 5× Heaven reward makes them worth 1,600/3,200/4,800 Waycoins. Wave 14
+  resumes the real climb.
 
 ## Human-play transition notes
 
@@ -473,16 +915,46 @@ saved attribute and visible Hall pane to 156. The runtime log remained clean.
 - The next human-play pass should record when 100 Waycoins for Position 2 are reached, when the
   second egg is installed, and when the first red-line breach occurs. The time between installation
   and breach is the useful safety-margin measurement.
+- The first measured pass under the old two-front Wave 2 crossed four Whelps over the red line even
+  though the perfect runner brought Position 2 online and eventually recovered them. Wave 2 was
+  therefore reduced to one lone-Brute front; Wave 3 now owns the first two-front test.
+- The first single-Brute rerun remained breach-free through Wave 10 with all five reserve eggs and
+  all four Home hatchers at Sand. Wave 11 immediately rose to 46 active enemies; the run was stopped
+  to replace the old hard stage handoff. Wave 11 now begins the Heaven 1 combat layer, while the
+  runner is free to buy Heaven 1 eggs before or after that checkpoint whenever it has the coins.
+- The first stationary-objective run failed at Wave 14 with no Waycoins left to rebuild. That is an
+  acceptable difficulty wall only because Wave 10 is now a real restart checkpoint; the recovery
+  ramp must still prove that a player can earn useful money before Wave 14 rather than repeatedly
+  re-entering an unwinnable state.
+- The later reserve-roster run reached and failed Wave 20 twice, restored to Checkpoint 10, and
+  reached Wave 14 again with a full four-pet player escort and a deep reserve bench. That is now the
+  accepted no-upgrade result. Do not tune Wave 20 down merely to let the automation clear it; use
+  this run to measure the amount and price of player upgrades required for the first gate.
+- A possible later crossover escape valve is deliberately narrow: the player may carry only their
+  currently equipped three or four pet slots into the lane. Do not wire owned inventory into this
+  prototype yet. This mode has no leveling and therefore no ordinary power acquisition; Heal may be
+  the only taught player action, while Resonance has no useful progression role here. Manual focus
+  fire on enemy healers was useful in testing and may become one simple targeting lesson later.
+  A candidate cross-mode **Assassin** convenience game pass gives the player's personal squad healer
+  priority during ordinary auto-target selection. It must not add combat stats, defeat tank taunts
+  or explicit focus, or grant the behavior to all four NPC hatcher teams; that would erase the healer
+  composition test rather than reduce player targeting friction.
+  Keep any opt-in separate from the NPC-only balance baseline so inherited account strength does not
+  hide a broken checkpoint economy.
 
 ## Explicitly deferred
 
 - Tile generation or tile streaming.
-- Physical reserve-egg models and attack animations, real merge recipes, board slots, egg
-  inventory/compatibility, persistence, or monetization. Installed hatcher health is currently only
-  a one-hit session attribute.
+- Merge/placement animations, selectable recipes, persistent egg inventory/compatibility, or
+  monetization. The 4×4 board now supports server-validated drag-to-equal and drag-to-deployment
+  interactions, but its deterministic two-to-one recipe still exists only to measure cadence. Installed
+  source eggs use the same real egg assets and prototype combat health; final damage feedback and
+  repair rules remain deferred.
 - Wave selection UI, production difficulty curves, matchmaking, or more than one active player.
 - Player-facing queue reordering, congestion policy, and production team-state controls.
-- Production egg-upgrade costs, board recipes, timing, persistence, and unlock requirements. The
-  current camera-facing buttons are intentionally free Studio test controls.
-- Player-team opt-in deployment and combined NPC/player roster presentation.
+- Production board recipes, timings, persistence, and unlock requirements. The current generator
+  cost schedules and two-to-one recipe are balance fixtures, not a shipping economy decision.
+- Owned-pet crossover and a final combined NPC/player roster presentation. The current player escort
+  is only a session cast-off experiment. If crossover is retained later, it is limited to the
+  player's currently equipped three or four slots rather than their full owned collection.
 - Reopening Hall of Worlds in production.

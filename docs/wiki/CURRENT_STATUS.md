@@ -2,6 +2,23 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Merge Defense permanent ten-bay realm (2026-08-28)
+
+`Workspace.Maps.MergeEggRealm` is now a permanent Studio-authored ten-bay architectural blockout:
+five raised Heaven bays and five raised Hell bays flank a formal 180-stud-wide civic mall ten studs
+below the play fields. A 36-stud landscaped berm separates neighboring bay mouths. Ten 56-stud
+balustraded stairs connect the terraces to the mall, while a straight 18-stud center river uses four
+bridges and a steam/pearl cancellation band. Circular water and lava end caps, outer spawn gates,
+continuous retaining walls, lamps, railings, and ice/basalt cliff masses establish the final
+composition. Runtime validates/binds those ten authored bays and owns only transient claims; it
+does not create, transform, or theme map geometry. Hall entry randomly claims an empty bay, and
+bay-relative UI is ready for the future dedicated place. The current combat runner remains
+single-owner until that place receives per-bay concurrent session state.
+
+Wave-10 boundaries are now profile-backed. The checkpoint wallet, board inventory, base tier, and
+deployed egg tiers survive logout/restart and rebuild as full-health objectives; Gems and Rebirths
+remain durable, while Rebirth/Admin Reset deliberately clear the saved boundary.
+
 ## Adventure status crests uploaded (2026-08-25)
 
 Noob through Legend plus Huge Hatcher are group-owned Image ids on the
@@ -164,6 +181,9 @@ VIP/staff sit as one name badge. Persist `GameData.CombatRank`.
 People list (2026-08-25): custom smoked list replaces CoreGui. Tab or
 the header collapses it. One name badge (owner Colorado C+blaster,
 then developer / content creator / official tester / founder ⭐ / VIP).
+Rank is the claimed/Ascended level, not the potentially-ahead earned level. The Rank cell and
+Ascension nudge stay hidden until either the crystal/Homeworld introduction or the independent
+Combat Training tutorial is complete; older players who already claimed a level remain unlocked.
 Tester is `roles.tester_user_ids`, not an open-beta campaign pet. A row
 opens a slide-out (headshot, every role they hold, how the Status
 title is earned, Examine Avatar = live character). The list row still
@@ -494,7 +514,7 @@ This is a Rojo Roblox project: a config-as-code template that **is becoming the 
 - `configs/enchants.lua` is the single source of truth for enchant chance and behavior. It defines rarity roll profiles, roll counts, weighted chance entries, strength low/high/scale ranges, duplicate policy, reroll cost, and modifier mappings. The initial template ports the useful ColorfulClickers concepts (`HomeWorld`, `Luck`, `SecretLuck`, `Tactics`, `Leadership`, `Efficiency`) into config-first effects and adds this-game examples for crystal rewards, coin rewards, and pet XP.
 - `EnchantService` rolls hatch-time enchants for eligible unique pets through `PetGrantService`, exposes server-authoritative manual rerolls through `EnchantPetRequest`/`EnchantPetResult`, and registers equipped unique pet enchants as `enchants` modifier providers. Live enchant consumers now include `breakable_reward`, `collect_radius`, `pet_zone_resonance`, `pet_xp`, `hatch_luck`, `secret_hatch_luck`, `pet_damage`, `team_power`, and `pet_efficiency`.
 - Enchant magnitude is resolved through shared `EnchantRuntime` logic for gameplay and UI, including rarity/Huge type scaling. Every configured equipped enchant publishes its own player-bar badge; Active Buffs composes the live modifier pipeline into Attack (Tactics), Pet Speed (Efficiency), Coin rewards, Luck, and the physical Magnet collection radius instead of displaying partial or generic aggregates.
-- The saved `crystal_finder` enchant id is retained for profile compatibility but is player-facing **Magnet**. It multiplies the complete server-owned pickup radius after base reach, the Magnet power, Auto Collector, and any larger pet-ability minimum. The exact result is published as `CollectRadius`, which the HUD displays verbatim; an Onyx Exclusive (+30%) raises the common 71-stud power+pass setup to 92.3 studs.
+- The saved `crystal_finder` enchant id is retained for profile compatibility but is player-facing **Magnet**. It multiplies the complete server-owned player pickup radius after base reach, the Magnet power, and any larger pet-ability minimum. The exact result is published as `CollectRadius`, which the HUD displays verbatim; an Onyx Exclusive (+30%) raises the common 41-stud base+power setup to 53.3 studs. Auto Collector no longer changes this value: its pass manifests an inventory-free Trail Pup outside `PlayerPets`, chases physical currency with a fixed 11-stud reach, scales travel from `Eff_Speed`, and can neither fight nor draw aggro.
 - `Home World` is a per-pet Home-biome resonance floor, not a squad-wide reward modifier. In Grass, Desert, Ice, and Lava, the pet uses `max(normal biome RPS, 1 + rolled/type-scaled Home World magnitude)`; Heaven, Hell, and special zones are unchanged. For an Exclusive pet the five metal tiers provide +5/+10/+15/+20/+25% floors, while a naturally stronger +25% matchup is never reduced.
 - Map-authored enchanter stations now bind through `EnchanterStation` hooks. The current Studio `Workspace.Enchanter` model is tagged as `basic_enchanter`, uses its `EnchantTouchPart` child as the touch/prompt volume, keeps its floating cosmetic scripts, and opens a dedicated pet enchant panel for server-authoritative rerolls.
 - Equipped unique pets now receive configurable breakable-destroy XP through `PetProgressionService:AwardBreakableDestroyed`. `BreakableSpawner` calls this after contribution rewards, and pet XP can itself be modified by enchant effects such as `scholar`.
@@ -1534,6 +1554,8 @@ gate art on the `TeleportPad`/`Portal` hooks; clean up warning-level placeholder
 ## 2026-07-27 — Level 5–9 Future Call
 
 - Ascending through claimed Level 2 awards **one Future Call token** as a visible new capability.
+  Future Call is absent before Ascension is introduced and no automatic or quest token grant may
+  bypass that gate (the admin test grant remains explicit).
   It auto-binds immediately but remains locked until earned Level 4; pressing it early displays
   **“Reach Level 4 to summon Your Future Self.”** At Level 4 it becomes usable and celebrates
   readiness without moving or replacing the player's chosen hotbar slot. Existing Level-4+

@@ -135,6 +135,35 @@ return function()
             expect(shop:find("MonetizationCatalog.petShopPasses", 1, true)).to.be.ok()
         end)
 
+        it("ships Auto Collector as a passive pet instead of a Magnet-radius bonus", function()
+            local shipped = loadModule("configs/monetization.lua")
+            local drops = loadModule("configs/drops.lua")
+            local collectorPass
+            for _, pass in ipairs(shipped.passes) do
+                if pass.id == "auto_collect" then
+                    collectorPass = pass
+                    break
+                end
+            end
+            expect(collectorPass).to.be.ok()
+            expect(collectorPass.benefits.features.auto_collect_enabled).to.equal(true)
+            expect(collectorPass.benefits.features.auto_collect_range).never.to.be.ok()
+            expect(drops.auto_collector.pet).to.equal("trail_pup")
+            expect(drops.auto_collector.collect_radius).to.equal(drops.collect_radius)
+            expect(drops.auto_collector.base_travel_speed).to.equal(26)
+            local dropService = readFile("src/Server/Services/DropService.lua")
+            local controller = readFile("src/Client/Systems/AutoCollectorController.lua")
+            local client = readFile("src/Client/init.client.lua")
+            expect(dropService:find('Workspace:FindFirstChild("AutoCollectors")', 1, true)).to.be.ok()
+            expect(dropService:find('model:SetAttribute("NoPetOffense", true)', 1, true)).to.be.ok()
+            expect(dropService:find('model:SetAttribute("NoEnemyAggro", true)', 1, true)).to.be.ok()
+            expect(controller:find('Workspace:WaitForChild("AutoCollectors", 30)', 1, true)).to.be.ok()
+            expect(controller:find("Shared.Game.PetMeander", 1, true)).to.be.ok()
+            expect(controller:find("PetMeander.step", 1, true)).to.be.ok()
+            expect(controller:find('GetAttribute("AutoCollectorMode") == "follow"', 1, true)).to.be.ok()
+            expect(client:find("AutoCollectorController", 1, true)).to.be.ok()
+        end)
+
         it(
             "routes deterministic product receipts into inventory and an empty hotbar slot",
             function()
@@ -224,7 +253,9 @@ return function()
             expect(source:find("if not forceNoPasses then", 1, true)).to.be.ok()
             expect(source:find("self:_clearPassBenefits(player, passes)", 1, true)).to.be.ok()
             expect(source:find('player:SetAttribute("MoveSpeedBuffPass", 0)', 1, true)).to.be.ok()
-            expect(source:find('player:SetAttribute("AutoCollectRange", nil)', 1, true)).to.be.ok()
+            expect(source:find('player:SetAttribute("AutoCollectorEnabled", false)', 1, true)).to.be.ok()
+            expect(source:find('player:SetAttribute("AutoCollectorEnabled", true)', 1, true)).to.be.ok()
+            expect(source:find("AutoCollectRange", 1, true)).never.to.be.ok()
         end)
 
         it("wires the creator-only persisted admin gate", function()

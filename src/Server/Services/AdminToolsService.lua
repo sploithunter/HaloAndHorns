@@ -3,6 +3,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local PetInventoryView = require(ReplicatedStorage.Shared.Inventory.PetInventoryView)
+local MergeEggPlayerCombat = require(ReplicatedStorage.Shared.Game.MergeEggPlayerCombat)
 
 local AdminToolsService = {}
 AdminToolsService.__index = AdminToolsService
@@ -114,6 +115,8 @@ function AdminToolsService:BindPeerServices(services)
     self._testerRewardService = services.TesterRewardService
     self._prologueService = services.PrologueService
     self._combatTutorialService = services.CombatTutorialService
+    self._mergeEggPrototypeService = services.MergeEggPrototypeService
+    self._settingsService = services.SettingsService
 end
 
 function AdminToolsService:_handleSpawnEnemy(adminPlayer, data)
@@ -673,6 +676,21 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
         return
     end
 
+    -- End any live/pending Merge Defense session before resetting currencies or inventory. Session
+    -- teardown restores the pre-entry wallet and parked pets, so it must precede the beginning-state
+    -- writes below rather than silently overwriting them afterward.
+    if self._mergeEggPrototypeService and self._mergeEggPrototypeService.ResetForBeginning then
+        local ok, resetReason = pcall(function()
+            return self._mergeEggPrototypeService:ResetForBeginning(targetPlayer)
+        end)
+        if not ok then
+            self._logger:Warn("admin beginning reset could not close Merge Defense", {
+                target = targetPlayer.Name,
+                err = tostring(resetReason),
+            })
+        end
+    end
+
     -- 1) Pets: replace the SSOT with only the huge survivors. Equip refs to deleted pets are
     --    dropped by RebuildPetProjections below.
     pets.items = keptKeys
@@ -739,6 +757,11 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     playerData.GameData.TesterRewards = { campaigns = {} }
     playerData.GameData.TrialEggRewards = { tracks = {} }
     playerData.GameData.PromoCodes = { claims = {}, attribution = {} }
+    -- Merge Defense is a complete beginning-state reset: onboarding/tutorial, mode notices,
+    -- rebirths, management upgrades, and spent-gem accounting all return to profile defaults.
+    playerData.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    playerData.Settings = type(playerData.Settings) == "table" and playerData.Settings or {}
+    playerData.Settings.MergeDefenseMode = "full"
     local prog = self._playerProgressionService
     if prog and prog.ResetEarlyBoostSampler then
         prog:ResetEarlyBoostSampler(targetPlayer)
@@ -929,6 +952,14 @@ function AdminToolsService:_handleResetToBeginning(adminPlayer, data)
     -- hydration re-applies the defaults (enabled=true), exactly like a fresh account.
     if type(playerData.Settings) == "table" then
         playerData.Settings.AutoSystems = nil
+    end
+    if self._settingsService and self._settingsService.ResetMergeDefenseForBeginning then
+        self._settingsService:ResetMergeDefenseForBeginning(targetPlayer)
+    else
+        targetPlayer:SetAttribute("MergeDefenseFullEligible", false)
+        targetPlayer:SetAttribute("MergeDefenseModeChoicePending", false)
+        targetPlayer:SetAttribute("MergeDefenseModePreference", "full")
+        targetPlayer:SetAttribute("MergeDefenseMode", "simple")
     end
 
     -- Close the prologue gate BEFORE the starter refresh: the relaunch below re-enters

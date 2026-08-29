@@ -14,6 +14,11 @@ return function()
         it("replaces the capped level with crossed-swords veteran rank", function()
             expect(PlayerListStatus.rank(50, 72)).to.equal("⚔️ 72")
         end)
+
+        it("hides the ascension column before either tutorial unlocks it", function()
+            expect(PlayerListStatus.rank(1, 0, false)).to.equal("")
+            expect(PlayerListStatus.rank(1, 0, true)).to.equal("1")
+        end)
     end)
 
     describe("PlayerListStatus.status", function()
@@ -97,6 +102,13 @@ return function()
             expect(PlayerListStatus.location({ layer = "base", area = "Home_Ice" })).to.equal(
                 "Home Ice"
             )
+        end)
+
+        it("identifies the merge-defense area instead of calling it Home", function()
+            expect(PlayerListStatus.location({
+                layer = "base",
+                area = "MergeEggPrototype",
+            })).to.equal("Merge Egg")
         end)
 
         it("formats deep realms compactly and unambiguously", function()

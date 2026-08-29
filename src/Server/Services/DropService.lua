@@ -35,6 +35,51 @@ local function color3(t)
     return Color3.fromRGB(t[1] or 240, t[2] or 200, t[3] or 70)
 end
 
+local function containedDropTarget(startX, startZ, targetX, targetZ, bounds)
+    if type(bounds) ~= "table" then
+        return targetX, targetZ, nil, nil, false
+    end
+    local centerX = tonumber(bounds.centerX)
+    local centerZ = tonumber(bounds.centerZ)
+    local halfX = tonumber(bounds.halfX)
+    local halfZ = tonumber(bounds.halfZ)
+    local inset = math.max(0, tonumber(bounds.inset) or 0)
+    if not (centerX and centerZ and halfX and halfZ and halfX > inset and halfZ > inset) then
+        return targetX, targetZ, nil, nil, false
+    end
+
+    local minX, maxX = centerX - halfX + inset, centerX + halfX - inset
+    local minZ, maxZ = centerZ - halfZ + inset, centerZ + halfZ - inset
+    if targetX >= minX and targetX <= maxX and targetZ >= minZ and targetZ <= maxZ then
+        return targetX, targetZ, nil, nil, false
+    end
+
+    local reflectedX = targetX < minX and (minX + (minX - targetX))
+        or targetX > maxX and (maxX - (targetX - maxX))
+        or targetX
+    local reflectedZ = targetZ < minZ and (minZ + (minZ - targetZ))
+        or targetZ > maxZ and (maxZ - (targetZ - maxZ))
+        or targetZ
+    reflectedX = math.clamp(reflectedX, minX, maxX)
+    reflectedZ = math.clamp(reflectedZ, minZ, maxZ)
+
+    local dx, dz = targetX - startX, targetZ - startZ
+    local impactT = 1
+    if targetX < minX and dx < 0 then
+        impactT = math.min(impactT, math.clamp((minX - startX) / dx, 0, 1))
+    elseif targetX > maxX and dx > 0 then
+        impactT = math.min(impactT, math.clamp((maxX - startX) / dx, 0, 1))
+    end
+    if targetZ < minZ and dz < 0 then
+        impactT = math.min(impactT, math.clamp((minZ - startZ) / dz, 0, 1))
+    elseif targetZ > maxZ and dz > 0 then
+        impactT = math.min(impactT, math.clamp((maxZ - startZ) / dz, 0, 1))
+    end
+    local impactX = math.clamp(startX + dx * impactT, minX, maxX)
+    local impactZ = math.clamp(startZ + dz * impactT, minZ, maxZ)
+    return reflectedX, reflectedZ, impactX, impactZ, true
+end
+
 function DropService:Init()
     self._logger = self._modules and self._modules.Logger
     self._configLoader = self._modules and self._modules.ConfigLoader
@@ -56,6 +101,8 @@ function DropService:Init()
     self._templates = {} -- built gem model templates, keyed "color|form"
     self._currencyTemplates = {} -- non-gem pickup templates, keyed by saved currency id
     self._collectRadiusEnchantCache = setmetatable({}, { __mode = "k" })
+    self._autoCollectors = {} -- userId -> passive collector movement state
+    self._lastStepAt = os.clock()
 
     if not self._config.enabled then
         return -- inert: BreakableSpawner credits instantly when SpawnCoinDrop returns false
@@ -64,6 +111,13 @@ function DropService:Init()
     self._folder = Instance.new("Folder")
     self._folder.Name = "CoinDrops"
     self._folder.Parent = Workspace
+    local staleCollectors = Workspace:FindFirstChild("AutoCollectors")
+    if staleCollectors then
+        staleCollectors:Destroy()
+    end
+    self._autoCollectorFolder = Instance.new("Folder")
+    self._autoCollectorFolder.Name = "AutoCollectors"
+    self._autoCollectorFolder.Parent = Workspace
     self._templateHolder = Instance.new("Folder")
     self._templateHolder.Name = "_GemTemplates"
     self._templateHolder.Parent = self._folder
@@ -84,6 +138,9 @@ function DropService:Init()
 
     self._conn = RunService.Heartbeat:Connect(function()
         self:_step()
+    end)
+    self._playerRemoving = Players.PlayerRemoving:Connect(function(player)
+        self:_removeAutoCollector(player.UserId)
     end)
 end
 
@@ -119,6 +176,267 @@ end
 
 function DropService:IsEnabled()
     return self._config and self._config.enabled == true
+end
+
+-- The Game Pass collector is deliberately manifested outside PlayerPets. That gives it the same
+-- authored pet presentation without inventory/equip records, HUD slots, combat enumeration, aggro,
+-- or offense. The normal pet prototype is already normalized by AssetPreloadService, so cloning it
+-- here preserves the exact Hall visual and variant treatment.
+function DropService:_cloneAutoCollectorModel(player)
+    local cfg = self._config.auto_collector or {}
+    local assets = ReplicatedStorage:FindFirstChild("Assets")
+    local models = assets and assets:FindFirstChild("Models")
+    local pets = models and models:FindFirstChild("Pets")
+    local typeFolder = pets and pets:FindFirstChild(tostring(cfg.pet or "trail_pup"))
+    local prototype = typeFolder
+        and (
+            typeFolder:FindFirstChild(tostring(cfg.variant or "basic"))
+            or typeFolder:FindFirstChild("basic")
+        )
+    if not prototype then
+        return nil
+    end
+    local model = prototype:Clone()
+    if not model.PrimaryPart then
+        local candidate
+        for _, descendant in ipairs(model:GetDescendants()) do
+            if descendant:IsA("BasePart") then
+                local lowerName = string.lower(descendant.Name)
+                if lowerName:find("face", 1, true) or lowerName:find("head", 1, true) then
+                    candidate = descendant
+                    break
+                end
+                candidate = candidate or descendant
+            end
+        end
+        model.PrimaryPart = candidate
+    end
+    if not model.PrimaryPart then
+        model:Destroy()
+        return nil
+    end
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            descendant.Anchored = true
+            descendant.CanCollide = false
+            descendant.CanTouch = false
+            descendant.CanQuery = false
+        end
+    end
+    model.Name = player.Name .. "_AutoCollector"
+    model:SetAttribute("AutoCollectorPet", true)
+    model:SetAttribute("AutoCollectorOwnerUserId", player.UserId)
+    model:SetAttribute("PetType", tostring(cfg.pet or "trail_pup"))
+    model:SetAttribute("PetVariant", tostring(cfg.variant or "basic"))
+    model:SetAttribute("GhostPet", true)
+    model:SetAttribute("NoPetOffense", true)
+    model:SetAttribute("NoEnemyAggro", true)
+    model:SetAttribute(
+        "AutoCollectorCollectRadius",
+        math.max(0, tonumber(cfg.collect_radius) or 11)
+    )
+    return model
+end
+
+function DropService:_removeAutoCollector(userId)
+    local state = self._autoCollectors and self._autoCollectors[userId]
+    if state and state.model then
+        state.model:Destroy()
+    end
+    if self._autoCollectors then
+        self._autoCollectors[userId] = nil
+    end
+end
+
+function DropService:_ensureAutoCollector(player, now)
+    local state = self._autoCollectors[player.UserId]
+    if state and state.model and state.model.Parent then
+        return state
+    end
+    if state and now < (state.retryAt or 0) then
+        return nil
+    end
+    local model = self:_cloneAutoCollectorModel(player)
+    if not model then
+        state = state or {}
+        state.retryAt = now + 1
+        self._autoCollectors[player.UserId] = state
+        return nil
+    end
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local rootPosition = root and root.Position
+    local position = rootPosition or Vector3.zero
+    model:PivotTo(CFrame.new(position))
+    model:SetAttribute("AutoCollectorPosition", position)
+    model:SetAttribute("AutoCollectorLookVector", Vector3.new(0, 0, -1))
+    model:SetAttribute("AutoCollectorMode", "follow")
+    model.Parent = self._autoCollectorFolder
+    state = {
+        model = model,
+        position = position,
+        look = Vector3.new(0, 0, -1),
+        nextTargetAt = 0,
+        nextPublishAt = 0,
+    }
+    self._autoCollectors[player.UserId] = state
+    return state
+end
+
+-- While the merge-defense player works behind the breach, idle companions heel at the same
+-- server-authored anchor as the reserve squad. Crossing forward restores ordinary live following.
+function DropService:_autoCollectorFollowFrame(player)
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then
+        return nil
+    end
+    local frame = root.CFrame
+    if player:GetAttribute("InMergeEggPrototype") == true then
+        local position = player:GetAttribute("MergeEggEscortAnchorPosition")
+        local look = player:GetAttribute("MergeEggEscortAnchorLookVector")
+        if
+            typeof(position) == "Vector3"
+            and typeof(look) == "Vector3"
+            and look.Magnitude > 0.01
+        then
+            local flatLook = Vector3.new(look.X, 0, look.Z)
+            if flatLook.Magnitude > 0.01 then
+                flatLook = flatLook.Unit
+                local fromAnchor =
+                    Vector3.new(root.Position.X - position.X, 0, root.Position.Z - position.Z)
+                if fromAnchor:Dot(flatLook) < 0 then
+                    frame = CFrame.lookAt(position, position + flatLook)
+                end
+            end
+        end
+    end
+    return frame
+end
+
+function DropService:_nearestAutoCollectorDrop(userId, position)
+    local nearest, nearestDistance
+    for _, rec in ipairs(self._active) do
+        if
+            rec
+            and rec._done ~= true
+            and rec.kind == nil
+            and rec.owner == userId
+            and rec.currency ~= nil
+            and rec.settling ~= true
+            and rec.part
+            and rec.part.Parent
+        then
+            local distance = (rec.part.Position - position).Magnitude
+            if not nearestDistance or distance < nearestDistance then
+                nearest = rec
+                nearestDistance = distance
+            end
+        end
+    end
+    return nearest
+end
+
+function DropService:_stepAutoCollectors(now, dt)
+    local cfg = self._config.auto_collector or {}
+    if cfg.enabled == false then
+        return
+    end
+    local entitlementAttribute = tostring(cfg.entitlement_attribute or "AutoCollectorEnabled")
+    local present = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player:GetAttribute(entitlementAttribute) == true then
+            present[player.UserId] = true
+            local state = self:_ensureAutoCollector(player, now)
+            local frame = state and self:_autoCollectorFollowFrame(player)
+            if state and frame then
+                local target = state.target
+                if
+                    not target
+                    or target._done == true
+                    or target.kind ~= nil
+                    or target.owner ~= player.UserId
+                    or target.settling == true
+                    or not (target.part and target.part.Parent)
+                    or now >= (state.nextTargetAt or 0)
+                then
+                    target = self:_nearestAutoCollectorDrop(player.UserId, state.position)
+                    state.target = target
+                    state.nextTargetAt = now
+                        + math.max(0.02, tonumber(cfg.target_refresh_seconds) or 0.1)
+                end
+
+                local goal
+                local mode = "follow"
+                if target and target.part and target.part.Parent then
+                    local targetHeight = tonumber(cfg.target_height) or 2
+                    goal = target.part.Position + Vector3.new(0, targetHeight, 0)
+                    mode = "collect"
+                else
+                    local offset = cfg.follow_offset or {}
+                    goal = (frame * CFrame.new(
+                        tonumber(offset.x) or 5,
+                        tonumber(offset.y) or 2,
+                        tonumber(offset.back) or 6
+                    )).Position
+                end
+
+                local current = state.position
+                local delta = goal - current
+                local speedMultiplier =
+                    math.max(0.05, tonumber(player:GetAttribute("Eff_Speed")) or 1)
+                local speed = math.max(0.1, tonumber(cfg.base_travel_speed) or 26) * speedMultiplier
+                local catchup = math.max(0, tonumber(cfg.catchup_distance) or 200)
+                if mode == "follow" and catchup > 0 and delta.Magnitude > catchup then
+                    current = goal
+                elseif delta.Magnitude > 0.001 then
+                    current += delta.Unit * math.min(delta.Magnitude, speed * dt)
+                end
+                state.position = current
+
+                local flatMove = Vector3.new(delta.X, 0, delta.Z)
+                local flatFrameLook = Vector3.new(frame.LookVector.X, 0, frame.LookVector.Z)
+                if flatMove.Magnitude > 0.01 then
+                    state.look = flatMove.Unit
+                elseif flatFrameLook.Magnitude > 0.01 then
+                    state.look = flatFrameLook.Unit
+                end
+
+                local radius = math.max(0, tonumber(cfg.collect_radius) or 11)
+                if
+                    target
+                    and target._done ~= true
+                    and target.part
+                    and target.part.Parent
+                    and (target.part.Position - current).Magnitude <= radius
+                then
+                    -- Collector pickup is direct-to-wallet: the physical drop does not fly to the
+                    -- character and the player's own Magnet radius is never consulted.
+                    self:_collect(target)
+                    state.target = nil
+                    state.nextTargetAt = 0
+                end
+
+                if now >= (state.nextPublishAt or 0) then
+                    state.nextPublishAt = now
+                        + math.max(0.02, tonumber(cfg.replication_seconds) or 0.05)
+                    state.model:SetAttribute("AutoCollectorPosition", state.position)
+                    state.model:SetAttribute("AutoCollectorLookVector", state.look)
+                    state.model:SetAttribute(
+                        "AutoCollectorTargetPosition",
+                        state.target and state.target.part and state.target.part.Position or nil
+                    )
+                    state.model:SetAttribute("AutoCollectorMode", mode)
+                    state.model:SetAttribute("AutoCollectorSpeedMultiplier", speedMultiplier)
+                end
+            end
+        end
+    end
+    for userId in pairs(self._autoCollectors) do
+        if not present[userId] then
+            self:_removeAutoCollector(userId)
+        end
+    end
 end
 
 -- Target widest-side studs for a gem of this form (per-form so piles/bags read bigger than singles).
@@ -402,6 +720,14 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position, optio
         or nil
     local usePlayerModifiers = options.usePlayerModifiers ~= false
     local source = type(options.source) == "string" and options.source or nil
+    local visualScale = math.max(0.1, tonumber(options.visualScale) or 1)
+    local despawnSeconds = tonumber(options.despawnSeconds)
+    if despawnSeconds then
+        despawnSeconds = math.max(1, despawnSeconds)
+    end
+    local containmentBounds = type(options.containmentBounds) == "table"
+            and options.containmentBounds
+        or nil
     local configuredPickup = self._config.currency_pickups
         and self._config.currency_pickups[currencyId]
     local color = self:_colorFor(currencyId)
@@ -424,9 +750,14 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position, optio
             model, part = self:_acquireGem(color, form)
             pickupCfg = nil
         end
+        pcall(function()
+            model:ScaleTo(visualScale)
+        end)
         local ang = ((#self._active + i) % 12) * (math.pi / 6)
-        local hx = position.X + math.cos(ang) * out
-        local hz = position.Z + math.sin(ang) * out
+        local rawX = position.X + math.cos(ang) * out
+        local rawZ = position.Z + math.sin(ang) * out
+        local hx, hz, impactX, impactZ, bounced =
+            containedDropTarget(position.X, position.Z, rawX, rawZ, containmentBounds)
         local groundY = self:_groundY(hx, hz, position.Y, position.Y - 1)
         local apex = position
             + Vector3.new(math.cos(ang) * out * 0.5, pop, math.sin(ang) * out * 0.5)
@@ -448,6 +779,9 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position, optio
         model:SetAttribute("DropCollectRadiusAttribute", collectRadiusAttribute)
         model:SetAttribute("DropUsesPlayerModifiers", usePlayerModifiers)
         model:SetAttribute("DropSource", source)
+        model:SetAttribute("DropVisualScale", visualScale)
+        model:SetAttribute("DropDespawnSeconds", despawnSeconds)
+        model:SetAttribute("DropBouncedInside", bounced)
         local rec = {
             model = model,
             part = part,
@@ -460,21 +794,47 @@ function DropService:SpawnCoinDrop(player, currencyType, amount, position, optio
             usePlayerModifiers = usePlayerModifiers,
             source = source,
             spawnAt = os.clock(),
+            despawnSeconds = despawnSeconds,
             settling = true,
         }
         self._active[#self._active + 1] = rec
 
         local TweenService = game:GetService("TweenService")
-        TweenService:Create(
-            part,
-            TweenInfo.new(
-                self._config.pop_time or 0.35,
-                Enum.EasingStyle.Quad,
-                Enum.EasingDirection.Out
-            ),
-            { CFrame = CFrame.new(rest) * rotation }
-        ):Play()
-        task.delay(self._config.pop_time or 0.35, function()
+        local popTime = math.max(0.05, tonumber(self._config.pop_time) or 0.35)
+        if bounced and impactX and impactZ then
+            local impactGroundY = self:_groundY(impactX, impactZ, position.Y, groundY)
+            local impact = Vector3.new(
+                impactX,
+                math.max(impactGroundY + orientedSize.Y * 0.5, (apex.Y + rest.Y) * 0.5),
+                impactZ
+            )
+            local first = TweenService:Create(
+                part,
+                TweenInfo.new(popTime * 0.55, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+                { CFrame = CFrame.new(impact) * rotation }
+            )
+            first.Completed:Connect(function()
+                if model.Parent and part.Parent then
+                    TweenService:Create(
+                        part,
+                        TweenInfo.new(
+                            popTime * 0.45,
+                            Enum.EasingStyle.Quad,
+                            Enum.EasingDirection.Out
+                        ),
+                        { CFrame = CFrame.new(rest) * rotation }
+                    ):Play()
+                end
+            end)
+            first:Play()
+        else
+            TweenService:Create(
+                part,
+                TweenInfo.new(popTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { CFrame = CFrame.new(rest) * rotation }
+            ):Play()
+        end
+        task.delay(popTime, function()
             rec.settling = false
         end)
     end
@@ -1051,10 +1411,11 @@ function DropService:_collect(rec, _force)
     self:_recycle(rec)
 end
 
--- THE collect radius — ONE source of truth (Jason 2026-07-14: "we should
+-- THE player collect radius — ONE source of truth (Jason 2026-07-14: "we should
 -- have one source of truth... and only ever reference that variable"). This
--- is the ONLY server consumer of the shared formula: base + Magnet power + Auto Collector,
--- floored by pet-ability reach, then multiplied by equipped Magnet enchants. The result is PUBLISHED
+-- is the ONLY server consumer of the shared formula: base + Magnet power, floored by pet-ability
+-- reach, then multiplied by equipped Magnet enchants. Auto Collector is a separate passive actor
+-- and never enters this formula. The result is PUBLISHED
 -- as the CollectRadius attribute; the Active Buffs HUD (and anything else)
 -- displays that attribute VERBATIM — no client-side re-derivation, so the
 -- display can never drift from what the server actually collects with.
@@ -1065,7 +1426,6 @@ function DropService:_effectiveCollectRadius(plr, baseR, nowT)
     local r = MagnetRadius.resolve(
         baseR,
         magnetBonus,
-        plr:GetAttribute("AutoCollectRange"),
         plr:GetAttribute("PetAbilityCollectRange"),
         self:_collectRadiusEnchantBonus(plr)
     )
@@ -1077,6 +1437,9 @@ end
 
 function DropService:_step()
     local now = os.clock()
+    local dt = math.clamp(now - (self._lastStepAt or now), 0, 0.25)
+    self._lastStepAt = now
+    self:_stepAutoCollectors(now, dt)
     local cfg = self._config
     local baseR = cfg.collect_radius or 11
     local pullR = cfg.magnet_pull_radius or 6

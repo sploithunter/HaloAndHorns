@@ -18,7 +18,7 @@ end
 local world = Instance.new("Model")
 world.Name = "MergeEggPrototype"
 world:SetAttribute("MapKind", "AuthoredPrototype")
-world:SetAttribute("Phase", 5)
+world:SetAttribute("Phase", 6)
 world:SetAttribute("UsesTileSystem", false)
 world:SetAttribute("UsesTileStreaming", false)
 -- Workspace streaming still exists globally. Treat the tiny venue as one atomic model so
@@ -53,6 +53,39 @@ local GOLD = Color3.fromRGB(245, 190, 72)
 local BLUE = Color3.fromRGB(86, 180, 216)
 local RED = Color3.fromRGB(197, 82, 72)
 local BORDER = Color3.fromRGB(255, 126, 64)
+
+local function wallButton(name, size, cframe, color, title, subtitle)
+    local value = part(name, size, cframe, color, Enum.Material.Neon)
+    value.CanCollide = false
+
+    local surface = Instance.new("SurfaceGui")
+    surface.Name = name .. "Surface"
+    surface.Face = Enum.NormalId.Front
+    surface.CanvasSize = Vector2.new(720, 280)
+    surface.LightInfluence = 0
+    surface.Parent = value
+
+    local heading = Instance.new("TextLabel")
+    heading.BackgroundTransparency = 1
+    heading.Position = UDim2.fromScale(0.04, 0.08)
+    heading.Size = UDim2.fromScale(0.92, 0.52)
+    heading.Font = Enum.Font.GothamBlack
+    heading.Text = title
+    heading.TextColor3 = Color3.new(1, 1, 1)
+    heading.TextScaled = true
+    heading.Parent = surface
+
+    local detail = Instance.new("TextLabel")
+    detail.BackgroundTransparency = 1
+    detail.Position = UDim2.fromScale(0.04, 0.62)
+    detail.Size = UDim2.fromScale(0.92, 0.24)
+    detail.Font = Enum.Font.GothamBold
+    detail.Text = subtitle
+    detail.TextColor3 = Color3.fromRGB(28, 35, 45)
+    detail.TextScaled = true
+    detail.Parent = surface
+    return value
+end
 
 -- Preserve the complete hatcher/objective end and remove the long empty approach half. The strip
 -- now runs from Z -300 to Z 0, centered at -150.
@@ -110,7 +143,7 @@ local function anchor(name, offset, lookAtOffset)
 end
 
 anchor("PlayerSpawn", Vector3.new(0, 2, -268), Vector3.new(0, 2, -220))
-anchor("HatcherSpawn", Vector3.new(0, 2, -218), Vector3.new(0, 2, -170))
+local hatcherSpawn = anchor("HatcherSpawn", Vector3.new(0, 2, -218), Vector3.new(0, 2, -170))
 -- Every wave emerges from this temporary portal rather than appearing across the whole back edge.
 -- Runtime hides the visual after the final queued enemy is out; the solid end wall remains behind
 -- them as a drive-back surface.
@@ -296,15 +329,152 @@ part(
     STONE,
     Enum.Material.Cobblestone
 )
+
+-- The physical lane always has nine positions. Only the four initially owned positions are
+-- visible/queryable; purchases reveal the center first, then fill symmetrically toward the edges.
+local deploymentPads = Instance.new("Model")
+deploymentPads.Name = "MergeEggDeploymentPads"
+deploymentPads:SetAttribute("MergeEggDeploymentPadCount", 9)
+deploymentPads.Parent = world
+local initialTeamsBySlot = { [2] = 1, [4] = 2, [6] = 3, [8] = 4 }
+for slot = 1, 9 do
+    local teamId = initialTeamsBySlot[slot]
+    local x = (slot - 5) * 8
+    local pad = part(
+        string.format("DeploymentPad%02d", slot),
+        Vector3.new(6.6, 0.12, 6.6),
+        hatcherSpawn.CFrame * CFrame.new(x, 0.06, 3),
+        Color3.fromRGB(82, 145, 190),
+        Enum.Material.Neon,
+        teamId and 0.3 or 1
+    )
+    pad.CanCollide = false
+    pad.CanTouch = false
+    pad.CanQuery = teamId ~= nil
+    pad:SetAttribute("MergeEggDeploymentPad", true)
+    pad:SetAttribute("MergeEggPositionSlot", slot)
+    pad:SetAttribute("MergeEggDeploymentTeamId", teamId)
+    pad:SetAttribute("MergeEggDeploymentAvailable", teamId ~= nil)
+    pad:SetAttribute("MergeEggDeploymentOccupied", false)
+    pad:SetAttribute("MergeEggDeploymentTier", 0)
+    pad.Parent = deploymentPads
+end
+
+-- Literal 4x4 merge board. Empty cells stay neutral. Runtime mirrors the server-owned crafted
+-- inventory into `Eggs` and places a small six-color tier sign only beneath occupied eggs; matching
+-- colors identify a valid merge pair.
+local board = Instance.new("Model")
+board.Name = "MergeBoard"
+board:SetAttribute("MergeEggBoardLayoutVersion", 2)
+board:SetAttribute("Rows", 4)
+board:SetAttribute("Columns", 4)
+board.Parent = world
+
+-- StartPlatform spans Z -286..-214; the board is 29.8 studs deep, so -271.1 makes its rear edge
+-- meet the pedestal's rear edge exactly.
+local boardCenter = CFrame.new(ORIGIN + Vector3.new(0, 2.02, -271.1))
+local boardSlotSize = 6.6
+local boardSlotGap = 0.6
+local boardSpacing = boardSlotSize + boardSlotGap
+local boardBase = part(
+    "Base",
+    Vector3.new(4 * boardSpacing + 1, 0.14, 4 * boardSpacing + 1),
+    boardCenter,
+    Color3.fromRGB(32, 38, 48),
+    Enum.Material.Slate,
+    0.08
+)
+boardBase.CanCollide = false
+boardBase.CanQuery = false
+boardBase.Parent = board
+board.PrimaryPart = boardBase
+
+local boardSlots = Instance.new("Folder")
+boardSlots.Name = "Slots"
+boardSlots.Parent = board
+for row = 1, 4 do
+    for column = 1, 4 do
+        local index = (row - 1) * 4 + column
+        local x = (column - 2.5) * boardSpacing
+        local z = (row - 2.5) * boardSpacing
+        local slot = part(
+            string.format("Slot%02d", index),
+            Vector3.new(boardSlotSize, 0.12, boardSlotSize),
+            boardCenter * CFrame.new(x, 0.13, z),
+            Color3.fromRGB(45, 52, 64),
+            Enum.Material.Slate,
+            0.08
+        )
+        slot.CanCollide = false
+        slot.CanQuery = false
+        slot:SetAttribute("MergeEggSlotIndex", index)
+        slot.Parent = boardSlots
+    end
+end
+local boardSigns = Instance.new("Folder")
+boardSigns.Name = "EggSigns"
+boardSigns.Parent = board
+local boardEggs = Instance.new("Folder")
+boardEggs.Name = "Eggs"
+boardEggs.Parent = board
+
+-- Single-click convenience between the manual 4x4 board and the frontline egg positions. Runtime
+-- replaces this blank host with an interactive top-facing SurfaceGui.
+local equipBestControl = part(
+    "EquipBestControl",
+    Vector3.new(7, 0.16, 12),
+    CFrame.new(ORIGIN + Vector3.new(0, 2.13, -252.2)) * CFrame.Angles(0, math.rad(90), 0),
+    Color3.fromRGB(75, 190, 105),
+    Enum.Material.Neon,
+    0.04
+)
+equipBestControl.CanCollide = false
+equipBestControl.CanTouch = false
+equipBestControl:SetAttribute("MergeEggEquipBestControl", true)
+
 local hatcher = part(
     "HatcherControl",
     Vector3.new(12, 3, 12),
-    CFrame.new(ORIGIN + Vector3.new(0, 3, -230)),
+    CFrame.new(ORIGIN + Vector3.new(-38, 3, -230)),
     GOLD,
     Enum.Material.Neon
 )
 hatcher.Shape = Enum.PartType.Cylinder
 hatcher.CFrame *= CFrame.Angles(0, 0, math.pi / 2)
+
+-- The first timing probe keeps the board deliberately literal and small: buy only base Earth
+-- Eggs on the rear wall, carry the abstract session inventory to a separate side-wall station,
+-- merge two equal tiers per press, then place the result at a captain.
+local legacyCreateControl = wallButton(
+    "EggCreateControl",
+    Vector3.new(22, 8, 1),
+    CFrame.lookAt(ORIGIN + Vector3.new(-20, 6, -299.4), ORIGIN + Vector3.new(-20, 6, -260)),
+    Color3.fromRGB(104, 205, 94),
+    "CREATE EARTH EGG",
+    "100 WAYCOINS"
+)
+legacyCreateControl.Transparency = 1
+legacyCreateControl.CanQuery = false
+legacyCreateControl.EggCreateControlSurface.Enabled = false
+local legacyBaseUpgradeControl = wallButton(
+    "EggBaseUpgradeControl",
+    Vector3.new(22, 8, 1),
+    CFrame.lookAt(ORIGIN + Vector3.new(20, 6, -299.4), ORIGIN + Vector3.new(20, 6, -260)),
+    Color3.fromRGB(238, 158, 58),
+    "UPGRADE BASE EGG",
+    "GRASS → ICE • 1,000 WAYCOINS"
+)
+legacyBaseUpgradeControl.Transparency = 1
+legacyBaseUpgradeControl.CanQuery = false
+legacyBaseUpgradeControl.EggBaseUpgradeControlSurface.Enabled = false
+wallButton(
+    "EggMergeControl",
+    Vector3.new(38, 18, 1),
+    CFrame.lookAt(ORIGIN + Vector3.new(-48.4, 12, -250), ORIGIN + Vector3.new(-10, 12, -250)),
+    Color3.fromRGB(35, 42, 58),
+    "MANAGEMENT",
+    "COMBAT • HATCHERS • EGGS"
+)
 
 part(
     "ExitControl",

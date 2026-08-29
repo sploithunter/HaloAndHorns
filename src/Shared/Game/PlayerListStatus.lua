@@ -43,7 +43,10 @@ local function originLabel(value)
     return nil
 end
 
-function PlayerListStatus.rank(level, veteranLevel)
+function PlayerListStatus.rank(level, veteranLevel, ascensionVisible)
+    if ascensionVisible == false then
+        return ""
+    end
     local veteran = math.max(0, math.floor(tonumber(veteranLevel) or 0))
     if veteran > 0 then
         return "⚔️ " .. tostring(veteran)
@@ -97,6 +100,11 @@ function PlayerListStatus.location(state)
     state = state or {}
     local realm = lower(state.realm)
     local layer = lower(state.layer)
+    local area = lower(state.area)
+
+    if area == "mergeeggprototype" then
+        return "Merge Egg"
+    end
 
     if state.inMission then
         if realm == "heaven" then

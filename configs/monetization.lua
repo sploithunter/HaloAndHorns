@@ -217,20 +217,15 @@ return {
         {
             id = "auto_collect",
             name = "🤖 Auto Collector",
-            description = "Automatically collect resources near you!",
+            description = "A passive pet runs out and collects your dropped resources!",
             price_robux = 29,
             benefits = {
-                -- CONTRACT (Jason 2026-07-14): base range MATCHES the magnet
-                -- power's magnitude (30) and they ADD — pass + magnet power
-                -- = 60-stud automation bubble. The power keeps paying for
-                -- everyone: reach alone for non-buyers, double bubble for
-                -- buyers; slot focus-cost reductions and the magnet runs
-                -- near-free AND big. Verbs stay distinct: power = reach,
-                -- pass = never click again.
+                -- Auto Collector is a manifested, inventory-free passive pet. It never joins
+                -- combat or occupies a squad slot; DropService moves it to physical currency at
+                -- the player's ordinary pet-speed multiplier. It deliberately contributes ZERO
+                -- collect radius to the player: Magnet remains the one reach mechanic.
                 features = {
                     auto_collect_enabled = true,
-                    auto_collect_range = 30, -- = powers.magnet magnitude; stacks additively
-                    auto_collect_rate = 1.0,
                 },
             },
             icon = "rbxassetid://89924974140822", -- live Marketplace thumbnail

@@ -1021,7 +1021,12 @@ if RunService:IsStudio() then
                 "EggService",
                 "DropService",
                 "EconomyService",
+                "DataService",
+                "InventoryService",
+                "PetGrantService",
+                "SettingsService",
                 "AutomationService",
+                "PowerService",
             }
         )
     end

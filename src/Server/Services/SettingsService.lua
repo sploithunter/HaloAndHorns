@@ -25,6 +25,7 @@ local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath)
 local TradeLogic = require(ReplicatedStorage.Shared.Game.TradeLogic)
 local GiftLogic = require(ReplicatedStorage.Shared.Game.GiftLogic)
 local HotbarSize = require(ReplicatedStorage.Shared.Game.HotbarSize)
+local MergeEggPlayerCombat = require(ReplicatedStorage.Shared.Game.MergeEggPlayerCombat)
 
 local SettingsService = {}
 SettingsService.__index = SettingsService
@@ -45,6 +46,7 @@ function SettingsService:Init()
 
     -- Track player settings folders for replication
     self._playerSettingsFolders = {}
+    self._mergeDefenseEligibilityConnections = {}
 
     self._logger:Info("⚙️ SettingsService initializing")
 
@@ -103,6 +105,11 @@ end
 function SettingsService:_onPlayerRemoving(player)
     -- Cleanup folder references
     self._playerSettingsFolders[player] = nil
+    local connections = self._mergeDefenseEligibilityConnections[player]
+    for _, connection in ipairs(connections or {}) do
+        connection:Disconnect()
+    end
+    self._mergeDefenseEligibilityConnections[player] = nil
 
     self._logger:Debug("🧹 SETTINGS - Cleaned up folder references", {
         player = player.Name,
@@ -139,6 +146,7 @@ function SettingsService:_createSettingsFolders(player)
                 nil,
                 (self._missionsConfig.player_tuning or {}).group_scale
             ),
+            MergeDefenseMode = "full",
             TeamInvitePrivacy = "friends",
             -- This initializer is the config-load/profile-repair fallback. Normal new profiles use
             -- DataService's template; saved valid values are never replaced here.
@@ -187,6 +195,19 @@ function SettingsService:_createSettingsFolders(player)
     self:_applyHotbarSize(player)
     self:_applyEnemyLevelOffset(player)
     self:_applyTrialGroupScale(player)
+    self:_applyMergeDefenseMode(player)
+    local priorConnections = self._mergeDefenseEligibilityConnections[player]
+    for _, connection in ipairs(priorConnections or {}) do
+        connection:Disconnect()
+    end
+    self._mergeDefenseEligibilityConnections[player] = {
+        player:GetAttributeChangedSignal("Level"):Connect(function()
+            self:_applyMergeDefenseMode(player)
+        end),
+        player:GetAttributeChangedSignal("CombatTutorialDone"):Connect(function()
+            self:_applyMergeDefenseMode(player)
+        end),
+    }
     self:_applyTeamInvitePrivacy(player)
     self:_applyTradeInvitePrivacy(player)
     self:_applyGiftAcceptance(player)
@@ -784,6 +805,185 @@ function SettingsService:_setTrialGroupScale(player, value)
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════════
+-- MERGE DEFENSE COMBAT MODE (Simple automatic reserve / Full owned squad)
+-- ═══════════════════════════════════════════════════════════════════════════════════
+
+function SettingsService:_mergeDefenseRules()
+    local ok, cfg = pcall(function()
+        return self._configLoader:LoadConfig("merge_egg_prototype")
+    end)
+    local reserve = ok and cfg and cfg.player_reserve or {}
+    return type(reserve.full_mode) == "table" and reserve.full_mode or {}
+end
+
+function SettingsService:_mergeDefenseEligible(player, data)
+    data = data or self._dataService:GetData(player)
+    -- Eligibility follows earned Level, not the sidekick/exemplar EffectiveLevel combat pin.
+    local level = player:GetAttribute("Level")
+    local tutorialDone = data
+        and type(data.CombatTutorial) == "table"
+        and data.CombatTutorial.done == true
+    return MergeEggPlayerCombat.isFullEligible(
+        level,
+        tutorialDone,
+        self:_mergeDefenseRules().minimum_level
+    )
+end
+
+function SettingsService:_mergeDefenseOnboarding(data)
+    if not data then
+        return MergeEggPlayerCombat.normalizeOnboarding(nil)
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    local state = MergeEggPlayerCombat.normalizeOnboarding(data.GameData.MergeDefense)
+    data.GameData.MergeDefense = state
+    return state
+end
+
+function SettingsService:_sendMergeDefenseModeNotice(player, data, eligible)
+    data = data or self._dataService:GetData(player)
+    if eligible == nil then
+        eligible = self:_mergeDefenseEligible(player, data)
+    end
+    local kind = MergeEggPlayerCombat.noticeFor(self:_mergeDefenseOnboarding(data), eligible)
+    if not kind then
+        return nil
+    end
+    local rules = self:_mergeDefenseRules()
+    local copy = type(rules.notices) == "table" and rules.notices[kind] or {}
+    Signals.MergeEggPrototypeModeNotice:FireClient(player, {
+        kind = kind,
+        title = copy.title,
+        body = copy.body,
+        primaryLabel = copy.primary_label,
+        secondaryLabel = copy.secondary_label,
+    })
+    return kind
+end
+
+function SettingsService:_applyMergeDefenseMode(player)
+    local data = self._dataService:GetData(player)
+    local rules = self:_mergeDefenseRules()
+    local eligible = self:_mergeDefenseEligible(player, data)
+    local onboarding = self:_mergeDefenseOnboarding(data)
+    local choicePending = MergeEggPlayerCombat.isUnlockChoicePending(onboarding, eligible)
+    local wasEligible = player:GetAttribute("MergeDefenseFullEligible")
+    local preference = data and data.Settings and data.Settings.MergeDefenseMode
+    preference = MergeEggPlayerCombat.normalizeMode(preference, rules.default_mode)
+    if data then
+        data.Settings = data.Settings or {}
+        data.Settings.MergeDefenseMode = preference
+    end
+    local effective =
+        MergeEggPlayerCombat.resolveMode(preference, eligible, rules.default_mode, choicePending)
+    player:SetAttribute("MergeDefenseFullEligible", eligible)
+    player:SetAttribute("MergeDefenseModeChoicePending", choicePending)
+    player:SetAttribute("MergeDefenseModePreference", preference)
+    player:SetAttribute("MergeDefenseMode", effective)
+    if wasEligible == false and eligible and player:GetAttribute("InMergeEggPrototype") == true then
+        self:_sendMergeDefenseModeNotice(player, data, eligible)
+    end
+    return effective
+end
+
+function SettingsService:_setMergeDefenseMode(player, value)
+    if type(value) == "table" then
+        value = value.mode or value.value
+    end
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+    local rules = self:_mergeDefenseRules()
+    local preference = MergeEggPlayerCombat.normalizeMode(value, rules.default_mode)
+    local eligible = self:_mergeDefenseEligible(player, data)
+    if preference == "full" and not eligible then
+        self:_applyMergeDefenseMode(player)
+        return false, "full_mode_locked"
+    end
+    data.Settings = data.Settings or {}
+    local onboarding = self:_mergeDefenseOnboarding(data)
+    if MergeEggPlayerCombat.isUnlockChoicePending(onboarding, eligible) then
+        onboarding.unlock_choice_resolved = true
+        data.GameData.MergeDefense = onboarding
+    end
+    data.Settings.MergeDefenseMode = preference
+    self:_applyMergeDefenseMode(player)
+    self._dataService:RequestSave(player, "merge_defense_mode", { debounceSeconds = 0 })
+    self._logger:Info("Updated Merge defense combat mode", {
+        player = player.Name,
+        mode = preference,
+    })
+    return true
+end
+
+-- Admin Reset to Beginning owns a whole-profile replay, not a normal preference edit. Rebuild both
+-- the durable Merge onboarding/prestige record and its combat-mode preference, then republish the
+-- effective locked-Simple state expected of a fresh level-one player.
+function SettingsService:ResetMergeDefenseForBeginning(player)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    data.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    data.Settings = type(data.Settings) == "table" and data.Settings or {}
+    data.Settings.MergeDefenseMode =
+        MergeEggPlayerCombat.normalizeMode(nil, self:_mergeDefenseRules().default_mode)
+    self:_applyMergeDefenseMode(player)
+    return true
+end
+
+function SettingsService:RecordMergeDefenseEntry(player)
+    local data = self._dataService:GetData(player)
+    if not data then
+        return nil
+    end
+    local eligible = self:_mergeDefenseEligible(player, data)
+    local state, notice =
+        MergeEggPlayerCombat.recordEntry(self:_mergeDefenseOnboarding(data), eligible)
+    data.GameData.MergeDefense = state
+    self:_applyMergeDefenseMode(player)
+    self._dataService:RequestSave(player, "merge_defense_entry", { debounceSeconds = 0 })
+    if notice then
+        self:_sendMergeDefenseModeNotice(player, data, eligible)
+    end
+    return notice
+end
+
+function SettingsService:ResolveMergeDefenseModeNotice(player, payload)
+    if player:GetAttribute("InMergeEggPrototype") ~= true then
+        return false, "not_in_merge_defense"
+    end
+    local action = type(payload) == "table" and payload.action or payload
+    local data = self._dataService:GetData(player)
+    if not data then
+        return false, "profile_unavailable"
+    end
+    local eligible = self:_mergeDefenseEligible(player, data)
+    local state = self:_mergeDefenseOnboarding(data)
+    local notice = MergeEggPlayerCombat.noticeFor(state, eligible)
+    if
+        (action == "acknowledge_full_intro" and notice ~= "full_intro")
+        or ((action == "stay_simple" or action == "switch_full") and notice ~= "full_unlock_choice")
+    then
+        return false, "notice_not_pending"
+    end
+    local resolved, mode, accepted = MergeEggPlayerCombat.applyNoticeResponse(state, action)
+    if not accepted then
+        return false, "invalid_notice_response"
+    end
+    data.GameData.MergeDefense = resolved
+    if mode then
+        data.Settings = data.Settings or {}
+        data.Settings.MergeDefenseMode = mode
+    end
+    self:_applyMergeDefenseMode(player)
+    self._dataService:RequestSave(player, "merge_defense_notice", { debounceSeconds = 0 })
+    return true
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════════
 -- NETWORK SIGNALS (following InventoryService pattern)
 -- ═══════════════════════════════════════════════════════════════════════════════════
 
@@ -843,6 +1043,14 @@ function SettingsService:_setupNetworkSignals()
 
     Signals.Settings_SetTrialGroupScale.OnServerEvent:Connect(function(player, payload)
         self:_setTrialGroupScale(player, payload)
+    end)
+
+    Signals.Settings_SetMergeDefenseMode.OnServerEvent:Connect(function(player, payload)
+        self:_setMergeDefenseMode(player, payload)
+    end)
+
+    Signals.MergeEggPrototypeModeNoticeResponse.OnServerEvent:Connect(function(player, payload)
+        self:ResolveMergeDefenseModeNotice(player, payload)
     end)
 
     self._logger:Info("📡 Settings network signals configured")
@@ -922,6 +1130,14 @@ end
 
 function SettingsService:GetTrialGroupScale(player)
     return self:_applyTrialGroupScale(player)
+end
+
+function SettingsService:SetMergeDefenseMode(player, value)
+    return self:_setMergeDefenseMode(player, value)
+end
+
+function SettingsService:GetMergeDefenseMode(player)
+    return self:_applyMergeDefenseMode(player)
 end
 
 function SettingsService:_applyTeamInvitePrivacy(player)

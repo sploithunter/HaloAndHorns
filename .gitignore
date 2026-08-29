@@ -90,6 +90,7 @@ coverage/
 /assets/exports/surfboards/
 /assets/ad_labels/
 /assets/model_test/
+/assets/workbench/
 .luaurc
 /assets/ui/imports/manifest_*.txt __pycache__/
 

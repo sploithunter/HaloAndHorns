@@ -28,6 +28,26 @@ return {
     magnet_pull_radius = 6, -- once within this, a drop flies to the player (visual "vacuum")
     magnet_pull_speed = 60, -- studs/s a drop travels while being pulled in
 
+    -- Auto Collector Game Pass: a separate passive pet, never an extension of the player's
+    -- Magnet. It chases only physical currency pickups and credits them when its own fixed-radius
+    -- reach touches one. `trail_pup` is the temporary Wayfinder Hall visual until the dedicated
+    -- collector pet is authored. Travel scales from the published Eff_Speed axis, so VIP, Speed
+    -- Boost, Swift, and speed potions affect it exactly like ordinary pet movement.
+    auto_collector = {
+        enabled = true,
+        entitlement_attribute = "AutoCollectorEnabled",
+        pet = "trail_pup",
+        variant = "basic",
+        collect_radius = 11,
+        base_travel_speed = 26,
+        target_height = 2,
+        target_refresh_seconds = 0.1,
+        replication_seconds = 0.05,
+        catchup_distance = 200,
+        follow_offset = { x = 5, y = 2, back = 6 },
+        render_lerp_rate = 18,
+    },
+
     despawn_seconds = 30, -- a drop auto-collects to its owner after this long (never lost)
     max_active = 90, -- per-server live-drop cap; the oldest auto-collects when exceeded
     min_coins_for_drop = 1, -- awards below this credit instantly (no dust pickups)
@@ -48,6 +68,15 @@ return {
     -- from the mineable node. The uploaded mesh is already horizontal, so its one-time template
     -- orientation is neutral; runtime clones use the exact same pop/rest/spin/Magnet path as gems.
     currency_pickups = {
+        -- Premium Gems use the existing authored amethyst geode mesh instead of the emergency
+        -- neon-ball fallback. This is the same textured asset already shipped with Heaven flora;
+        -- DropService handles its pop, spin, owner visibility, magnet, and collection unchanged.
+        gems = {
+            mesh = "rbxassetid://96648542072137",
+            texture = "rbxassetid://102124881592196",
+            size = 1.5,
+            orientation = { x = 0, y = 0, z = 0 },
+        },
         hall_coins = {
             -- Raw Studio-resolved mesh id. 80390233095046 is the uploaded Model asset and cannot
             -- be passed to CreateMeshPartAsync; doing so silently fell back to the green gem.

@@ -182,6 +182,17 @@ do
     end
 end
 
+-- Auto Collector is a separate passive, inventory-free pet. The server owns its currency target
+-- and movement; this controller only smooths the authored model for each observer.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.AutoCollectorController).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start AutoCollectorController", { error = tostring(err) })
+    end
+end
+
 -- Hall display eggs float locally while their server interaction anchors remain fixed.
 do
     local ok, err = pcall(function()

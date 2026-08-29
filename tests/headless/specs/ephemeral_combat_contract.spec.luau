@@ -2,16 +2,17 @@ return function()
     describe("ephemeral combat runtime contract", function()
         it("gates the complete normal defeat side-effect block by reward policy", function()
             local source = readFile("src/Server/Services/EnemyService.lua")
-            local gate = source:find(
-                "EnemyRewardPolicy.awardsNormalRewards(entry.rewardPolicy) and combat and contrib",
+            local normalization = source:find(
+                "local awardsNormalRewards = EnemyRewardPolicy.awardsNormalRewards(entry.rewardPolicy)",
                 1,
                 true
             )
+            local gate = source:find("if awardsNormalRewards and combat and contrib then", 1, true)
             local award = source:find("combat:AwardLoot(", gate, true)
             local gameEvent = source:find('fireGameEvent(player, "enemy_defeated"', gate, true)
             local callback = source:find("local onDefeated = entry.onDefeated", gate, true)
 
-            expect(gate ~= nil).to.equal(true)
+            expect(normalization ~= nil and gate ~= nil and gate > normalization).to.equal(true)
             expect(award ~= nil and award > gate).to.equal(true)
             expect(gameEvent ~= nil and gameEvent > gate).to.equal(true)
             expect(callback ~= nil and callback > gameEvent).to.equal(true)

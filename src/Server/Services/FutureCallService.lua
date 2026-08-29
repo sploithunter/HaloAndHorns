@@ -55,6 +55,9 @@ function FutureCallService:Start()
             player:GetAttributeChangedSignal("Level"):Connect(function()
                 self:Reconcile(player)
             end),
+            player:GetAttributeChangedSignal("AscensionUnlocked"):Connect(function()
+                self:Reconcile(player)
+            end),
         }
         task.spawn(function()
             if Readiness.awaitAttribute(player, "DataLoaded", true, 15) then
@@ -94,11 +97,17 @@ function FutureCallService:_count(player)
 end
 
 function FutureCallService:IsUnlocked(player)
+    if not player or player:GetAttribute("AscensionUnlocked") ~= true then
+        return false
+    end
     local earned = self._progressionService:GetEarnedLevel(player)
     return FutureCallLogic.isUnlocked(earned, self._config)
 end
 
 function FutureCallService:GetState(player)
+    if not player or player:GetAttribute("AscensionUnlocked") ~= true then
+        return { ok = true, tokens = {} }
+    end
     local token = self._config.token or {}
     local principalName = FutureCallLogic.principalName(player and player.Name, self._config)
     local active = self._npcPrincipalService
@@ -191,6 +200,9 @@ end
 -- auto-bind, hotbar refresh, persistence, and banner behavior as progression entitlements without
 -- consuming any of the Level 5–9 milestone markers.
 function FutureCallService:GrantTokens(player, count, reason)
+    if reason ~= "admin" and player:GetAttribute("AscensionUnlocked") ~= true then
+        return { ok = false, reason = "ascension_locked" }
+    end
     count = math.floor(tonumber(count) or 0)
     if count <= 0 then
         return { ok = false, reason = "invalid_count" }
@@ -252,6 +264,9 @@ function FutureCallService:Reconcile(player)
     local data = self._dataService:GetData(player)
     if not data then
         return { ok = false, reason = "data_not_loaded" }
+    end
+    if player:GetAttribute("AscensionUnlocked") ~= true then
+        return { ok = true, hidden = true, granted = 0 }
     end
     data.GameData = type(data.GameData) == "table" and data.GameData or {}
     local onboarding = self:_reconcileOnboarding(player, data)

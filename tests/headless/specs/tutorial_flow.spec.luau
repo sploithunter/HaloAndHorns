@@ -31,10 +31,19 @@ return function()
             end
         end)
 
-        it("holds level claim until the Homeworld tutorial is done", function()
+        it("hides ascension until either independent tutorial is done", function()
             expect(cfg.hold_level_claim).to.equal(true)
             expect(TutorialFlow.allowsLevelClaim(cfg, { done = false }, {})).to.equal(false)
             expect(TutorialFlow.allowsLevelClaim(cfg, { done = true }, {})).to.equal(true)
+            expect(TutorialFlow.allowsLevelClaim(cfg, { done = false }, {}, { done = true }, 1)).to.equal(
+                true
+            )
+            expect(TutorialFlow.ascensionUnlocked(cfg, { done = false }, { done = false }, {}, 1)).to.equal(
+                false
+            )
+            expect(TutorialFlow.ascensionUnlocked(cfg, { done = false }, { done = false }, {}, 2)).to.equal(
+                true
+            )
             expect(TutorialFlow.allowsLevelClaim(cfg, { done = false }, {
                 TutorialCompleted = true,
             })).to.equal(true)
@@ -44,6 +53,7 @@ return function()
             ).to.equal(true)
             local progression = readFile("src/Server/Services/PlayerProgressionService.lua")
             expect(progression:find("_tutorialAllowsClaim", 1, true)).to.be.ok()
+            expect(progression:find('SetAttribute("AscensionUnlocked"', 1, true)).to.be.ok()
             expect(progression:find("tutorial_in_progress", 1, true)).to.be.ok()
             expect(progression:find("r.canClaim and self:_tutorialAllowsClaim(player)", 1, true)).to.be.ok()
             local tutorial = readFile("src/Server/Services/TutorialService.lua")
@@ -304,10 +314,12 @@ return function()
 
         it("renders the live breadcrumb as flowing 3D chevrons on a direct line", function()
             local client = readFile("src/Client/Systems/TutorialController.lua")
-            expect(client:find('marker.Name = "TutorialChevron"', 1, true)).to.be.ok()
-            expect(client:find('Instance.new("Highlight")', 1, true)).to.be.ok()
-            expect(client:find('arm("LeftArm", leftTail)', 1, true)).to.be.ok()
-            expect(client:find('arm("RightArm", rightTail)', 1, true)).to.be.ok()
+            local chevron = readFile("src/Client/UI/WorldChevron.lua")
+            expect(client:find('name = "TutorialChevron"', 1, true)).to.be.ok()
+            expect(client:find("WorldChevron.create", 1, true)).to.be.ok()
+            expect(chevron:find('Instance.new("Highlight")', 1, true)).to.be.ok()
+            expect(chevron:find('arm("LeftArm", leftTail)', 1, true)).to.be.ok()
+            expect(chevron:find('arm("RightArm", rightTail)', 1, true)).to.be.ok()
             expect(client:find("local travel = (now * TRAIL_TRAVEL_SPEED)", 1, true)).to.be.ok()
             expect(client:find("local point = start:Lerp(target, alpha)", 1, true)).to.be.ok()
             expect(client:find("marker:PivotTo(", 1, true)).to.be.ok()
