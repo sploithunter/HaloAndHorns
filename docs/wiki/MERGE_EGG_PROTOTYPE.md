@@ -241,11 +241,10 @@ team and queue model:
   role and targeting geometry, elemental bolt/area presentation, control, damage-over-time, support
   aura, healing suppression, and configured active ability procs all cross the faction boundary.
   Rank never forces a rolled support, blaster, or controller into the tank role.
-- A camera-facing billboard above each captain shows its current source, required next egg, owned
-  count, and one `PLACE` button. The client requests only the captain id through a Studio-only
-  manifest packet; the server validates session ownership, exact crafted tier, physical captain
-  proximity, rate, and canonical hatch data before consuming the session egg and publishing the
-  new source.
+- The full source, draft, team, production, and pet-endurance presentation lives in the ground
+  roster beside each deployed egg. The only camera-facing display above an installed objective is
+  a compact, non-interactive health bar attached to that egg itself. Placement and merging stay on
+  the physical board/deployment interactions rather than duplicating those actions in a billboard.
 - Each wave stamps a unique `CombatMusicCue`. If combat music is being held across the short
   between-wave aggro gap, `AreaMusicController` immediately rerolls from the active realm pool and
   excludes the current track when another choice exists. If combat fully ended, the next ordinary
@@ -357,8 +356,9 @@ team and queue model:
   2.25× Home HP, 1.5× damage, and 5× Waycoin payout. Teams, egg tiers, balance, queues, and surviving
   pets continue in place. An isolated `{stage = "heaven_1"}` runner remains available for tuning
   that combat model without replaying the continuous path.
-- The observer prefixes the wave banner with the current combat layer and distinguishes selected pets from
-  total draft candidates. Each hatcher billboard shows the current and next number of picks.
+- The observer prefixes the wave banner with the current combat layer and distinguishes selected
+  pets from total draft candidates. The ground roster identifies the installed source and its pick
+  count; the egg billboard is health-only.
 - The first complete Home run cleared Wave 20 with all five reserve eggs and swept to 57,260
   Waycoins after Home egg spending. Carrying that exact balance into Heaven 1 exposed the next
   economy problem: the runner spent 57,600 on Heaven eggs almost immediately and had nearly all
@@ -677,7 +677,8 @@ team and queue model:
   a server-owned claim pad. Empty pads can request that specific bay;
   occupied pads display the owner's name. Claims are released on cancelled entry, exit, character
   cleanup, and player leave. The client resolves all world-space Merge UI through the player's bay
-  id instead of assuming the original top-level Model.
+  id plus the required `HatcherSpawn` gameplay hook instead of assuming the first Model stamped with
+  that id; decorative spawn gates deliberately share the id and are not valid runtime roots.
 - The complete ten-bay footprint is one `MergeEggPrototype` CurrentArea, so walking down the hall or
   visiting another bay does not accidentally end the mode. Enemy movement and physical drops still
   use the selected bay's authored `ArenaBounds`; no combat actor can leak into a neighboring lane.
@@ -878,10 +879,11 @@ clean.
   inventory count; an unusable low-tier egg therefore leaves the control gray rather than promising
   an equip action that the server will refuse.
 - Each floor roster owns a permanent 7.5-stud cross-lane footprint: one eight-stud station cell minus
-  a 0.5-stud gap. A fixed six-slot logical canvas preserves the shared `HudCard` aspect ratio for the
-  Layer-3 maximum rather than stretching when neighboring slots activate. Pet
-  fills remain `current endurance / maximum endurance`; only their world-space presentation becomes
-  narrower. The all-nine density fixture remains a presentation proof, not default ownership.
+  a 0.5-stud gap. A fixed six-slot logical canvas and 6.25-stud minimum rearward footprint keep the
+  Layer-3 maximum readable when neighboring slots activate. Each local anchor raycasts to the actual
+  collidable play-field surface and uses zero `SurfaceGui.ZOffset`; it never inherits the height of
+  a legacy `StartPlatform`. Pet fills remain `current endurance / maximum endurance`. The all-nine
+  density fixture remains a presentation proof, not default ownership.
 - The combat enemy rail uses two columns before density scaling. Gems and Waycoins remain permanently
   visible during a fight because they drive the background management loop; only non-economic menu
   controls may yield screen space to an extreme pull.

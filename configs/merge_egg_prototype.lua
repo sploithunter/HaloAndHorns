@@ -197,6 +197,10 @@ return {
         unlock_position_slots = { 5, 3, 7, 1, 9 },
         roster_panel = {
             gap = 0.5,
+            -- A strict canvas-aspect projection made the six-row roster too shallow to read from
+            -- the management area. Keep the station-cell width fixed, but give the floor panel a
+            -- minimum rearward footprint so its rows remain legible at normal camera angles.
+            minimum_depth = 6.25,
             -- Heaven Layer 3 can field six pets; panels keep that final physical height from the
             -- beginning so a mid-run capacity increase never forces the whole HUD to reflow.
             logical_slots = 6,

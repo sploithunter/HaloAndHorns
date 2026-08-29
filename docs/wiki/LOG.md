@@ -6035,3 +6035,14 @@ first-session cohort rates.
 - Live Heaven-1 validation captured a breached lieutenant with 20 total defenders seeded, including
   eight surviving real player pets; the owned squad then published active enemy targets and stayed
   inside the authored bay during pursuit.
+
+## 2026-08-29 — Merge egg status presentation
+
+- Moved installed source name, draft-pick count, health, and production state into the existing
+  ground team roster. Deployed objectives now receive only a compact, non-interactive health bar;
+  the obsolete camera-facing placement/merge card no longer obscures combat.
+- Ground rosters now raycast to the real collidable play-field surface, sit 0.01 studs above it with
+  zero SurfaceGui offset, and reserve a 6.25-stud readable depth. This removes the prior 2.6-stud
+  visual float caused by combining the elevated legacy StartPlatform with a one-stud GUI offset.
+- Tightened client bay resolution to require the selected bay's HatcherSpawn hook because authored
+  decorative gates also carry MergeEggBayId for ownership/presentation.
