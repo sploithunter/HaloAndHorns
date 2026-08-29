@@ -6070,3 +6070,13 @@ first-session cohort rates.
   Roblox Models. Resolved IDs are recorded in `scripts/merge_cannon_model_ids.json`.
 - Inserted a review-only lineup in the dedicated Merge place under
   `Workspace._PropReview.MergeCannons`; gameplay behavior remains intentionally unwired.
+
+## 2026-08-29 — Original Heal, Rage, and Debuff cannon imports
+
+- Preserved the three supplied cannon concepts in the repo and passed each directly through the
+  same geometry-first Meshy workflow used by Gravity, Repulsor, and Nullifier.
+- Repaired and retextured Heal, Rage, and Debuff into watertight 9,464–9,468-triangle meshes,
+  exported embedded-texture FBXs, and uploaded group-owned Roblox Models. The six-cannon manifest
+  now contains all resolved Model, Mesh, and Texture IDs.
+- Added the original trio to the dedicated Merge place's review lineup, completing the visual set
+  while leaving gameplay placement and firing behavior unwired.

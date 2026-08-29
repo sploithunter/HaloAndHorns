@@ -995,14 +995,13 @@ clean.
 
 ## Edge tower art set
 
-- The first visual family comprises Heal, Rage, and Debuff cannons. On 2026-08-29, Gravity,
-  Repulsor, and Nullifier concepts were added in the same low-poly wheeled-siege silhouette, then
-  rebuilt through the Meshy smart-topology pipeline and retextured from their corresponding concept
-  art.
-- Each new cannon is a single watertight mesh below 9,500 triangles. The group-owned Model, Mesh,
+- The visual family comprises Heal, Rage, Debuff, Gravity, Repulsor, and Nullifier cannons. The
+  first three use the supplied concept art directly; the latter three were generated in the same
+  low-poly wheeled-siege silhouette. All six were rebuilt through the Meshy smart-topology pipeline
+  and retextured from their corresponding concept art.
+- Each cannon is a single watertight mesh below 9,500 triangles. The group-owned Model, Mesh,
   and Texture IDs live in `scripts/merge_cannon_model_ids.json`; the reproducible ImageGen prompts
   live beside the concept art in `assets/concepts/merge_cannons/prompts.json`.
-- The open Merge place contains a review-only lineup at
-  `Workspace._PropReview.MergeCannons` with `GravityCannon`, `RepulsorCannon`, and
-  `NullifierCannon`. Their combat roles, pads, firing behavior, upgrades, and acquisition rules are
-  not wired yet.
+- The open Merge place contains a review-only six-model lineup at
+  `Workspace._PropReview.MergeCannons`. Their combat roles, pads, firing behavior, upgrades, and
+  acquisition rules are not wired yet.
