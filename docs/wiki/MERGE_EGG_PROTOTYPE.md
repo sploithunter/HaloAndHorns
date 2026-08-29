@@ -696,6 +696,12 @@ team and queue model:
   giant yellow Upgrade Base Egg panels are obsolete duplicates: in the dedicated map they are
   invisible, non-queryable compatibility anchors. Coin Value, Damage, Fire Rate, Active Slots, Egg
   HP, Spawn Level, Buy Egg, Auto-Combine, and Rebirth remain visible and interactive.
+- Runtime derives three tall invisible collision barriers from each selected bay's authored
+  `ArenaBounds`: both long sides plus the enemy/portal end. The player entrance stays open for
+  legitimate travel through the mall. These barriers prevent jumping over the intentionally low
+  decorative sightline walls. Waycoin and Gem pops resolve the same occupied-bay bounds through
+  the session record and use DropService's reflected landing animation, keeping wall-edge loot
+  visible and collectible instead of letting it settle beyond the terrace.
 - `GameData.MergeDefense.checkpoint` now stores a compact ProfileStore-safe Wave-10 boundary:
   checkpoint wave, isolated Merge wallet, reserve-objective count, base generator tier, unplaced
   board inventory, and deployed egg tiers. It is written with an immediate critical save whenever

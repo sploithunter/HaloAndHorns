@@ -55,6 +55,14 @@ therefore all resolve the same visible floor geometry. The central nine-card man
 the playable UI. The oversized legacy `EggCreateControl` and `EggBaseUpgradeControl` remain only as
 invisible compatibility anchors and must never render or accept input when the central wall exists.
 
+Each selected bay also derives runtime containment from its authored `ArenaBounds` and
+`LandStrip`. Two 64-stud invisible side walls and one enemy-end wall are collidable, while the
+player-end entrance remains open to the public mall. Their inner faces align with the authored
+play rectangle, so decorative low sightline walls cannot be jumped to escape the terrace. Physical
+currency uses the same per-session `ArenaBounds` with an inset reflected landing path: a pop that
+would cross an edge visibly hits that edge and returns inside. Never call the Merge drop-options
+resolver without its player session record, or it will lose the selected bay reference.
+
 An AI-assisted deployment pass may normalize the Studio-owned map before Rojo sync: quarantine old scripts, regroup art, rename ambiguous imported objects, add invisible helper parts, and stamp tags/attributes. That is considered part of map integration, not a burden on the builder, as long as original art is preserved and the resulting hook contract is documented.
 
 ### Imported landmark visuals

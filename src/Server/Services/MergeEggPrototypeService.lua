@@ -2870,6 +2870,131 @@ function MergeEggPrototypeService:_ensureBreachLine(world)
     return line
 end
 
+-- Keep the raised play field physically readable. The player entrance remains open to the public
+-- mall, but both long edges and the enemy end receive tall invisible collision walls. Currency
+-- drops use these same ArenaBounds through DropService's reflected pop path, so the visual bounce
+-- and the character boundary agree on one rectangle.
+function MergeEggPrototypeService:_ensureContainmentWalls(world)
+    local worldCfg = self._config.world or {}
+    local cfg = type(worldCfg.containment_walls) == "table" and worldCfg.containment_walls or {}
+    local existing = world and world:FindFirstChild("MergeEggContainmentWalls")
+    if cfg.enabled == false then
+        if existing then
+            existing:Destroy()
+        end
+        return nil
+    end
+
+    local bounds = findNamedPart(world, "ArenaBounds")
+    local floor = findNamedPart(world, "LandStrip")
+    local playerSpawn = findNamedPart(world, worldCfg.player_spawn or "PlayerSpawn")
+    local enemySpawn = findNamedPart(world, worldCfg.enemy_spawn_area or "EnemySpawnArea")
+    if not (bounds and floor and playerSpawn and enemySpawn) then
+        return nil
+    end
+
+    if existing and not existing:IsA("Model") then
+        existing:Destroy()
+        existing = nil
+    end
+    local walls = existing or Instance.new("Model")
+    walls.Name = "MergeEggContainmentWalls"
+    walls.Parent = world
+    walls:SetAttribute("MergeEggContainmentWalls", true)
+
+    local height = math.max(16, tonumber(cfg.height) or 64)
+    local thickness = math.max(1, tonumber(cfg.thickness) or 2)
+    local floorTop = floor.Position.Y + floor.Size.Y * 0.5
+    local localEnemy = bounds.CFrame:PointToObjectSpace(enemySpawn.Position)
+    local laneUsesX = math.abs(localEnemy.X) >= math.abs(localEnemy.Z)
+    local enemySign = laneUsesX and (localEnemy.X >= 0 and 1 or -1)
+        or (localEnemy.Z >= 0 and 1 or -1)
+
+    local specs = {}
+    if laneUsesX then
+        specs = {
+            {
+                name = "SideNegative",
+                size = Vector3.new(bounds.Size.X + thickness * 2, height, thickness),
+                offset = Vector3.new(0, 0, -(bounds.Size.Z + thickness) * 0.5),
+            },
+            {
+                name = "SidePositive",
+                size = Vector3.new(bounds.Size.X + thickness * 2, height, thickness),
+                offset = Vector3.new(0, 0, (bounds.Size.Z + thickness) * 0.5),
+            },
+            {
+                name = "EnemyEnd",
+                size = Vector3.new(thickness, height, bounds.Size.Z + thickness * 2),
+                offset = Vector3.new(enemySign * (bounds.Size.X + thickness) * 0.5, 0, 0),
+            },
+        }
+    else
+        specs = {
+            {
+                name = "SideNegative",
+                size = Vector3.new(thickness, height, bounds.Size.Z + thickness * 2),
+                offset = Vector3.new(-(bounds.Size.X + thickness) * 0.5, 0, 0),
+            },
+            {
+                name = "SidePositive",
+                size = Vector3.new(thickness, height, bounds.Size.Z + thickness * 2),
+                offset = Vector3.new((bounds.Size.X + thickness) * 0.5, 0, 0),
+            },
+            {
+                name = "EnemyEnd",
+                size = Vector3.new(bounds.Size.X + thickness * 2, height, thickness),
+                offset = Vector3.new(0, 0, enemySign * (bounds.Size.Z + thickness) * 0.5),
+            },
+        }
+    end
+    if cfg.close_player_entrance == true then
+        local enemyEnd = specs[#specs]
+        specs[#specs + 1] = {
+            name = "PlayerEnd",
+            size = enemyEnd.size,
+            offset = -enemyEnd.offset,
+        }
+    end
+
+    local localY = bounds.CFrame:PointToObjectSpace(Vector3.new(0, floorTop + height * 0.5, 0)).Y
+    for _, spec in ipairs(specs) do
+        local wall = walls:FindFirstChild(spec.name)
+        if wall and not wall:IsA("BasePart") then
+            wall:Destroy()
+            wall = nil
+        end
+        if not wall then
+            wall = Instance.new("Part")
+            wall.Name = spec.name
+            wall.Parent = walls
+        end
+        wall.Anchored = true
+        wall.CanCollide = true
+        wall.CanTouch = false
+        wall.CanQuery = false
+        wall.CastShadow = false
+        wall.Transparency = 1
+        wall.Size = spec.size
+        wall.CFrame = bounds.CFrame * CFrame.new(spec.offset.X, localY, spec.offset.Z)
+        wall:SetAttribute("MergeEggBayBoundary", true)
+        wall:SetAttribute("MergeEggBoundaryRole", spec.name)
+    end
+    for _, child in ipairs(walls:GetChildren()) do
+        local keep = false
+        for _, spec in ipairs(specs) do
+            if child.Name == spec.name then
+                keep = true
+                break
+            end
+        end
+        if not keep then
+            child:Destroy()
+        end
+    end
+    return walls
+end
+
 function MergeEggPrototypeService:_findControlWall(world)
     local gen = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
     local walls = gen and gen:FindFirstChild("PlayFieldWalls")
@@ -3585,6 +3710,7 @@ function MergeEggPrototypeService:_resolveWorld(bayId)
             hatcherControl.CFrame = CFrame.new(position) * hatcherControl.CFrame.Rotation
         end
         self:_ensureBreachLine(world)
+        self:_ensureContainmentWalls(world)
         self:_ensureEggBoardControls(world)
         self:_ensureMergeBoard(world)
         self:_ensureDeploymentPads(world)
@@ -6334,7 +6460,7 @@ function MergeEggPrototypeService:_dropEnemyCoins(record, defeat)
                 currency,
                 amount,
                 defeat.position,
-                self:_prototypeCoinDropOptions()
+                self:_prototypeCoinDropOptions(record)
             )
         end)
         carried = ok and result == true
@@ -6383,7 +6509,7 @@ function MergeEggPrototypeService:_dropEnemyGems(record, defeat)
 
     local amount = math.max(1, math.floor(tonumber(gemCfg.amount) or 1))
     local currency = tostring(gemCfg.currency or "gems")
-    local options = self:_prototypeCoinDropOptions()
+    local options = self:_prototypeCoinDropOptions(record)
     options.source = "merge_egg_prototype_gem"
     options.visualScale = math.max(0.1, tonumber(gemCfg.visual_scale) or 1.5)
     local carried = false
