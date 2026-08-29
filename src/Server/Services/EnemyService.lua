@@ -42,6 +42,7 @@ local PartyMath = require(ReplicatedStorage.Shared.Game.PartyMath) -- team-scale
 local Allegiance = require(ReplicatedStorage.Shared.Game.Allegiance)
 local AggroLeash = require(ReplicatedStorage.Shared.Game.AggroLeash)
 local AggroModel = require(ReplicatedStorage.Shared.Game.AggroModel) -- unified aggro game (configs/aggro.lua)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local PowerIcons = require(ReplicatedStorage.Configs:WaitForChild("power_icons")) -- world debuff disc
 local Sounds = require(ReplicatedStorage.Configs:WaitForChild("sounds")) -- positional hold/freeze SFX
 local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
@@ -194,7 +195,9 @@ function EnemyService:Init()
     -- Movement leash regions resolved from the live map parts (configs/enemy_leash). Each region
     -- is a union of footprint shapes; an enemy spawned inside one is confined to it (hard wall).
     self._leashConfig = self._configLoader:LoadConfig("enemy_leash")
-    self._leashRegions = self:_buildLeashRegions(self._leashConfig)
+    self._placesConfig = self._configLoader:LoadConfig("places")
+    self._leashRegions = PlaceRuntime.isMerge(game.PlaceId, self._placesConfig) and {}
+        or self:_buildLeashRegions(self._leashConfig)
     self._nextId = 0
     self._enemies = {} -- targetId -> { model, enemyId, nextAttack }
     -- pet model -> { lastHit } (weak so dead pets GC). Accumulated damage, the downed

@@ -160,6 +160,12 @@ local SCHEMAS = {
         prefixes = "table",
         look = "table",
     }),
+    places = schema({
+        version = "number",
+        universe_id = "number",
+        default_role = "string",
+        roles = "table",
+    }),
     party = schema({ max_size = "number", loot_rule = "string", mvp_bonus_percent = "number" }),
     pet_follow = schema({ ring_mining = "table", formation = "table", movement = "table" }),
     pet_power = schema({

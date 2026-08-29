@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local HoverboardLogic = require(ReplicatedStorage.Shared.Game.HoverboardLogic)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 
 local PROMPT_NAME = "HoverboardShopPrompt"
@@ -35,9 +36,13 @@ function HoverboardShopService:Init()
         return self._configLoader:LoadConfig("hoverboard")
     end)
     self._config = ok and type(cfg) == "table" and cfg or {}
+    self._placesConfig = self._configLoader:LoadConfig("places")
 end
 
 function HoverboardShopService:Start()
+    if PlaceRuntime.isMerge(game.PlaceId, self._placesConfig) then
+        return
+    end
     local shop = self._config.shop
     if self._config.enabled ~= true or type(shop) ~= "table" or shop.enabled ~= true then
         return

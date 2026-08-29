@@ -17,9 +17,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local Configs = ReplicatedStorage:WaitForChild("Configs")
 local areasConfig = require(Configs:WaitForChild("areas"))
 local currenciesConfig = require(Configs:WaitForChild("currencies"))
+local placesConfig = require(Configs:WaitForChild("places"))
 
 local ZoneUnlockPrompt = {}
 local started = false
@@ -152,6 +154,10 @@ function ZoneUnlockPrompt.start()
     local activeAreaId = nil
 
     local function refresh()
+        if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+            gui.Enabled = false
+            return
+        end
         local areaId = player:GetAttribute("CurrentArea")
         local req = areaId and unlockReq(areaId)
         if

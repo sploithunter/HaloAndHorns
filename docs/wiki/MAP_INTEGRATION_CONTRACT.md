@@ -37,6 +37,24 @@ geometry. To rebuild the blockout deliberately, run the one-bay source pass foll
 closed if that authored root or any contracted bay is missing. See
 [Merge an Egg Prototype](MERGE_EGG_PROTOTYPE.md).
 
+The shipping extraction now also has a dedicated place role: `configs/places.lua` maps the main
+place (`77766176054993`) and Merge place (`84544653387905`) inside universe `10307183003`.
+`PlaceRuntime` is the only code seam that identifies those roles. In the Merge role, unrelated
+Home systems (crystals/breakables, ordinary world binding, zone unlock prompts, egg stands,
+hoverboards, and Home daily-reward fixtures) fail closed rather than inferring behavior from
+coordinates. Entry waits for the player's profile before creating the isolated Merge wallet and
+session; cross-place exit returns to the configured main place.
+
+The dedicated map deliberately separates portable gameplay hooks from finished art. Bay Models
+under `Workspace.Maps.MergeEggRealm.Bays` retain the stable spawn, bounds, lines, controls, and
+session attributes. Finished floor fixtures live in `Workspace.GeneratedMap_MergeEggVoxel`.
+At runtime the matching authored 4×4 board is adopted as the bay's single `MergeBoard`, and
+interaction pads are aligned to the matching authored hatcher stands. The portable hovering board
+is removed for that runtime session; drag/drop, inventory sync, tutorial targets, and Equip Best
+therefore all resolve the same visible floor geometry. The central nine-card management control is
+the playable UI. The oversized legacy `EggCreateControl` and `EggBaseUpgradeControl` remain only as
+invisible compatibility anchors and must never render or accept input when the central wall exists.
+
 An AI-assisted deployment pass may normalize the Studio-owned map before Rojo sync: quarantine old scripts, regroup art, rename ambiguous imported objects, add invisible helper parts, and stamp tags/attributes. That is considered part of map integration, not a burden on the builder, as long as original art is preserved and the resulting hook contract is documented.
 
 ### Imported landmark visuals

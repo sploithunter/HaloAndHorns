@@ -1,7 +1,7 @@
 # Merge an Egg Prototype
 
-Status: Phase 6 endless defense in a verified permanent Studio-authored ten-bay realm; durable Wave-10
-checkpoints and 56 egg tiers await live balance verification
+Status: Phase 6 endless defense running in the dedicated Studio-authored Merge place; durable
+Wave-10 checkpoints and 56 egg tiers await live balance verification
 
 ## Phase 1 contract
 
@@ -677,10 +677,25 @@ team and queue model:
 - The complete ten-bay footprint is one `MergeEggPrototype` CurrentArea, so walking down the hall or
   visiting another bay does not accidentally end the mode. Enemy movement and physical drops still
   use the selected bay's authored `ArenaBounds`; no combat actor can leak into a neighboring lane.
-- The current Home prototype deliberately retains its proven one-active-combat-session service.
-  The ten physical bays and allocation layer are the extraction seam for the future dedicated
-  place; ten simultaneous combat state machines are not simulated by aliasing the singleton
-  `_active`/`_world` state. Multi-owner concurrency remains a separate place-runtime refactor.
+- The dedicated `Halo and Horns: Merge` place is configured as place id `84544653387905` in the
+  same universe as main. Session ownership is per player (`_activeByPlayer` plus per-entry records),
+  and every record owns its claimed bay/world reference. Heartbeat stepping iterates those records;
+  NPC principals and transient folders include the player identity. This replaces the former
+  singleton `_active`/`_world` assumption and is the runtime seam for simultaneous occupied bays.
+- Dedicated-place character entry waits for ProfileStore data before creating the isolated wallet
+  or arming a wave. This prevents a transient `currency_setup_failed` from leaving the player in
+  the map with only fallback art and no working management grid. A veteran whose settings finish
+  loading during entry is reconciled once more after the mode listener is connected, so Full mode
+  restores the real equipped pet folder and cannot coexist with the temporary Simple reserve.
+- Each bay still owns portable gameplay hooks, while the polished 4×4 board and hatcher stands are
+  authored under `Workspace.GeneratedMap_MergeEggVoxel`. Runtime adopts the matching authored board
+  as that bay's only `MergeBoard`, aligns the nine interaction pads and installed eggs to the visible
+  stands, and places Equip Best at the authored floor height. The client and server consequently
+  share one board reference for dragging, snapping, merging, tutorial focus, and inventory display.
+- The central nine-card management grid is authoritative. The giant green Create Earth Egg and
+  giant yellow Upgrade Base Egg panels are obsolete duplicates: in the dedicated map they are
+  invisible, non-queryable compatibility anchors. Coin Value, Damage, Fire Rate, Active Slots, Egg
+  HP, Spawn Level, Buy Egg, Auto-Combine, and Rebirth remain visible and interactive.
 - `GameData.MergeDefense.checkpoint` now stores a compact ProfileStore-safe Wave-10 boundary:
   checkpoint wave, isolated Merge wallet, reserve-objective count, base generator tier, unplaced
   board inventory, and deployed egg tiers. It is written with an immediate critical save whenever
