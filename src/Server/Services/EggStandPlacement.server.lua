@@ -23,6 +23,14 @@ local WorldContext = require(ReplicatedStorage.Shared.Game.WorldContext)
 local EggStandResolver = require(ReplicatedStorage.Shared.Game.EggStandResolver)
 local HallEggStand = require(ReplicatedStorage.Shared.Game.HallEggStand)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local placesConfig = require(ReplicatedStorage.Configs.places)
+
+if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+    BootReadiness.begin("eggs_placed")
+    BootReadiness.signal("eggs_placed")
+    return
+end
 
 local matrix = petConfig.realm_area_eggs
 if type(matrix) ~= "table" or next(matrix) == nil then

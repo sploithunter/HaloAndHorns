@@ -43,6 +43,8 @@ local HallFieldOutline = require(ReplicatedStorage.Shared.Game.HallFieldOutline)
 local BreakableDensity = require(ReplicatedStorage.Shared.Game.BreakableDensity)
 local OverheadBar = require(ReplicatedStorage.Shared.UI.OverheadBar)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local placesConfig = require(ReplicatedStorage.Configs:WaitForChild("places"))
 
 -- Hall rewards arrive as tangible objects rather than popping into existence. Keep the visual
 -- state local to each spawned model so every material/texture can fade to its authored value.
@@ -751,6 +753,17 @@ function BreakableSpawner:SetZoneService(service)
 end
 
 function BreakableSpawner:Start()
+    if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+        -- Keep the boot contract satisfied without constructing crystal worlds or installing
+        -- mining listeners in the dedicated Merge place.
+        BootReadiness.begin("crystals_ready")
+        BootReadiness.signal("crystals_ready")
+        logger:Info("BreakableSpawner skipped for dedicated Merge place", {
+            placeId = game.PlaceId,
+        })
+        return
+    end
+
     if worldBindingService and worldBindingService.AreaEntered then
         worldBindingService.AreaEntered:Connect(function(_, areaId)
             self:_fillAreaWorld(areaId)
@@ -828,6 +841,10 @@ function BreakableSpawner:_zoneService()
 end
 
 function BreakableSpawner:_isWorldActive(worldName)
+    if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+        return false
+    end
+
     -- Spawn (grass) is the free starter zone — always active.
     if worldName == "Spawn" or worldName == "SpawnWorld" then
         return true

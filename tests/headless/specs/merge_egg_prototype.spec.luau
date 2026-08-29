@@ -85,7 +85,7 @@ return function()
                 service:find('player:SetAttribute("InMergeEggPrototype", true)', beginAt, true)
             local locationAt =
                 service:find("self:_setPlayerArea(player, self:_prototypeAreaId())", beginAt, true)
-            expect(service:find("self._enteringRecord = record", beginAt, true)).to.be.ok()
+            expect(service:find("self._enteringRecordByPlayer[player] = record", beginAt, true)).to.be.ok()
             expect(streamAt ~= nil and pivotAt ~= nil and locationAt ~= nil and insideAt ~= nil).to.equal(
                 true
             )
@@ -166,7 +166,7 @@ return function()
             expect(admin:find('playerData.Settings.MergeDefenseMode = "full"', 1, true)).to.be.ok()
             expect(admin:find("ResetMergeDefenseForBeginning(targetPlayer)", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:ResetForBeginning", 1, true)).to.be.ok()
-            expect(service:find("self:_end(self._active, true, false)", 1, true)).to.be.ok()
+            expect(service:find("self:_end(activeRecord, true, false)", 1, true)).to.be.ok()
             expect(service:find('player:SetAttribute("MergeDefenseRebirths", 0)', 1, true)).to.be.ok()
             expect(settings:find("function SettingsService:ResetMergeDefenseForBeginning", 1, true)).to.be.ok()
             expect(

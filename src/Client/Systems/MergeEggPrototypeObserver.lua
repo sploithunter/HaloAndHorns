@@ -19,6 +19,7 @@ local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
 local MergeDefenseModeNotice = require(script.Parent.Parent.UI.Components.MergeDefenseModeNotice)
 local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local EggHatchingService = require(ReplicatedStorage.Shared.Services.EggHatchingService)
@@ -27,6 +28,7 @@ local CONFIG = require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototy
 local COMBAT = require(ReplicatedStorage.Configs:WaitForChild("combat"))
 local PET_ROLES = require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
 local PETS = require(ReplicatedStorage.Configs:WaitForChild("pets"))
+local PLACES = require(ReplicatedStorage.Configs:WaitForChild("places"))
 
 local MergeEggPrototypeObserver = {}
 
@@ -2854,7 +2856,7 @@ local function finishBoardDrag(input)
 end
 
 function MergeEggPrototypeObserver.start()
-    if not RunService:IsStudio() then
+    if not RunService:IsStudio() and not PlaceRuntime.isMerge(game.PlaceId, PLACES) then
         return
     end
 

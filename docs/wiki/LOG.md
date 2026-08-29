@@ -6004,3 +6004,16 @@ first-session cohort rates.
   architectural patches (1,578 vertices), flat low-poly shading, preserved white/gold/cyan UV
   texture, and no voxel inflation. Preview lighting now scales with asset size and uses a blue Heaven
   rim so small normalized Meshy exports are not blown out during review.
+
+## 2026-08-29 — Dedicated Merge place runtime integration
+
+- Added explicit main/Merge place roles for universe `10307183003` and made unrelated Home world,
+  breakable, zone, shop, reward, and egg-stand systems fail closed in the dedicated Merge place.
+- Replaced the Merge singleton session with per-player/per-bay records, added profile-ready entry,
+  and reconciled late-loaded Full-mode settings so real equipped pets do not mix with the temporary
+  Simple reserve.
+- Bound runtime play to the authored floor board and hatcher stands, removed the duplicate hovering
+  board, lowered Equip Best to the authored floor, and aligned installed eggs to visible stands.
+- Restored the interactive nine-card management SurfaceGui. Only the giant green Create Earth Egg
+  and giant yellow Upgrade Base Egg legacy panels are hidden; the central management cards remain
+  the playable controls.

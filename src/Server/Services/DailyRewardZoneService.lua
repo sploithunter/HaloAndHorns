@@ -26,6 +26,7 @@ local RunService = game:GetService("RunService")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 
 -- The authored model's name. Confirmed live in a Studio play session (search
 -- Workspace.Maps for the "Daily Reward" label). The find falls back to a label-text
@@ -72,6 +73,7 @@ function DailyRewardZoneService:Init()
     end
     self._biomes = load("biomes") or {}
     self._archetypes = load("archetypes") or {}
+    self._placesConfig = load("places") or {}
 
     -- Currency id -> display name, with Earth as the canonical name for grass_coins
     -- (DECISIONS "Biome Naming"). The frozen id stays grass_coins; players see "Earth".
@@ -231,6 +233,9 @@ function DailyRewardZoneService:_scan()
 end
 
 function DailyRewardZoneService:Start()
+    if PlaceRuntime.isMerge(game.PlaceId, self._placesConfig) then
+        return
+    end
     Players.PlayerRemoving:Connect(function(player)
         self._inside[player] = nil
     end)

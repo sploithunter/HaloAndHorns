@@ -20,6 +20,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
+local TeleportService = game:GetService("TeleportService")
 local Workspace = game:GetService("Workspace")
 
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
@@ -34,6 +35,7 @@ local MergeEggPlayerCombat = require(ReplicatedStorage.Shared.Game.MergeEggPlaye
 local MergeEggPricing = require(ReplicatedStorage.Shared.Game.MergeEggPricing)
 local MergeEggRebirth = require(ReplicatedStorage.Shared.Game.MergeEggRebirth)
 local MergeEggWaveGenerator = require(ReplicatedStorage.Shared.Game.MergeEggWaveGenerator)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local MergeEggRealmBuilder = require(script.Parent.MergeEggRealmBuilder)
 
@@ -314,6 +316,8 @@ function MergeEggPrototypeService:Init()
     self._worldBindingService = self._modules and self._modules.WorldBindingService
     self._config = (self._configLoader and self._configLoader:LoadConfig("merge_egg_prototype"))
         or require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
+    self._placesConfig = (self._configLoader and self._configLoader:LoadConfig("places"))
+        or require(ReplicatedStorage.Configs:WaitForChild("places"))
     self._realm = MergeEggRealmBuilder.new(self._config.realm_layout, self._logger)
     self._enemiesConfig = (self._configLoader and self._configLoader:LoadConfig("enemies"))
         or require(ReplicatedStorage.Configs:WaitForChild("enemies"))
@@ -323,15 +327,35 @@ function MergeEggPrototypeService:Init()
         or require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
     self._combatConfig = (self._configLoader and self._configLoader:LoadConfig("combat"))
         or require(ReplicatedStorage.Configs:WaitForChild("combat"))
-    self._active = nil
-    self._entering = nil
-    self._enteringRecord = nil
+    self._activeByPlayer = setmetatable({}, { __mode = "k" })
+    self._enteringByPlayer = setmetatable({}, { __mode = "k" })
+    self._enteringRecordByPlayer = setmetatable({}, { __mode = "k" })
     self._world = nil
     self._gatePrompt = nil
     self._upgradeSweepGeneration = 0
     self._upgradeSweepRunning = false
     self._upgradeSweepPhase = nil
     self._upgradeSweepResults = {}
+end
+
+function MergeEggPrototypeService:_isDedicatedMergePlace()
+    return PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
+end
+
+function MergeEggPrototypeService:_allowsGameplayActions()
+    return RunService:IsStudio() or self:_isDedicatedMergePlace()
+end
+
+function MergeEggPrototypeService:_recordFor(player)
+    return player and self._activeByPlayer[player] or nil
+end
+
+function MergeEggPrototypeService:_isRecordActive(record)
+    return record ~= nil and record.player ~= nil and self._activeByPlayer[record.player] == record
+end
+
+function MergeEggPrototypeService:_worldFor(record)
+    return record and record.world or self._world
 end
 
 function MergeEggPrototypeService:_managementUpgradeDefinition(upgradeId)
@@ -442,8 +466,9 @@ function MergeEggPrototypeService:_setTutorialStep(record, step)
     record.tutorialStepChangedAt = os.clock()
     record.tutorialStepReadyAt = record.tutorialStepChangedAt
         + math.max(0, tonumber(self:_tutorialConfig().step_pause_seconds) or 1.25)
+    local world = self:_worldFor(record)
     self:_setWorldState(
-        self._world and self._world:GetAttribute("PrototypeState") or "AwaitingFirstEgg",
+        world and world:GetAttribute("PrototypeState") or "AwaitingFirstEgg",
         record
     )
 end
@@ -474,8 +499,9 @@ function MergeEggPrototypeService:_completeTutorial(record)
             + math.max(0, tonumber(self:_tutorialConfig().resume_wave_delay_seconds) or 3)
         self:_setWorldState("WaveIntermission", record)
     else
+        local world = self:_worldFor(record)
         self:_setWorldState(
-            self._world and self._world:GetAttribute("PrototypeState") or "AwaitingFirstEgg",
+            world and world:GetAttribute("PrototypeState") or "AwaitingFirstEgg",
             record
         )
     end
@@ -516,8 +542,9 @@ function MergeEggPrototypeService:_updateTutorial(record, now, force)
     local usesAutoCollector = self:_tutorialUsesAutoCollector(record)
     if record.tutorialUsesAutoCollector ~= usesAutoCollector then
         record.tutorialUsesAutoCollector = usesAutoCollector
+        local world = self:_worldFor(record)
         self:_setWorldState(
-            self._world and self._world:GetAttribute("PrototypeState") or "AwaitingFirstEgg",
+            world and world:GetAttribute("PrototypeState") or "AwaitingFirstEgg",
             record
         )
     end
@@ -714,9 +741,10 @@ function MergeEggPrototypeService:_applyEggHealthUpgrade(record)
     end
 end
 
-function MergeEggPrototypeService:_portalVisual()
+function MergeEggPrototypeService:_portalVisual(record)
     local name = (self._config.world or {}).enemy_portal_visual or "EnemyPortalVisual"
-    return self._world and self._world:FindFirstChild(tostring(name), true) or nil
+    local world = self:_worldFor(record)
+    return world and world:FindFirstChild(tostring(name), true) or nil
 end
 
 function MergeEggPrototypeService:_setPortalVisible(record, visible)
@@ -724,7 +752,7 @@ function MergeEggPrototypeService:_setPortalVisible(record, visible)
     if record then
         record.portalVisible = visible
     end
-    local portal = self:_portalVisual()
+    local portal = self:_portalVisual(record)
     for _, descendant in ipairs(portal and portal:GetDescendants() or {}) do
         if descendant:IsA("BasePart") then
             descendant.Transparency = visible
@@ -741,8 +769,48 @@ function MergeEggPrototypeService:_setPortalVisible(record, visible)
             descendant.Enabled = visible
         end
     end
-    if self._world then
-        self._world:SetAttribute("EnemyPortalVisible", visible)
+    local world = self:_worldFor(record)
+    if world then
+        world:SetAttribute("EnemyPortalVisible", visible)
+    end
+    self:_syncSpawnGateLighting(record, visible)
+end
+
+function MergeEggPrototypeService:_syncSpawnGateLighting(record, combat)
+    local mode = combat == true and "Combat" or "Idle"
+    local world = (record and record.world) or self._world
+    local function apply(root)
+        if not root then
+            return
+        end
+        root:SetAttribute("LightMode", mode)
+        local combatFolder = root:FindFirstChild("CombatLighting", true)
+        if combatFolder then
+            for _, descendant in ipairs(combatFolder:GetDescendants()) do
+                if descendant:IsA("Light") then
+                    descendant.Enabled = combat == true
+                end
+            end
+        end
+    end
+    if world then
+        apply(world:FindFirstChild("OuterSpawnGate", true))
+        local bayId = world:GetAttribute("MergeEggBayId")
+        if type(bayId) == "string" then
+            local map = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
+            local gates = map
+                and (
+                    string.find(bayId, "hell", 1, true) and map:FindFirstChild("HellGates")
+                    or map:FindFirstChild("HeavenGates")
+                )
+            if gates then
+                for _, gate in ipairs(gates:GetChildren()) do
+                    if gate:GetAttribute("MergeEggBayId") == bayId then
+                        apply(gate)
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -807,7 +875,6 @@ function MergeEggPrototypeService:_progressionStage(context)
     local stages = loop.stages or {}
     local stageId = type(context) == "string" and context
         or type(context) == "table" and context.progressionStageId
-        or self._active and self._active.progressionStageId
         or loop.default_stage
         or "home"
     stageId = tostring(stageId)
@@ -1303,8 +1370,9 @@ function MergeEggPrototypeService:_playerEscortAnchorCFrame(record)
         return root and root.CFrame or nil
     end
     local worldCfg = self._config.world or {}
-    local breachLine = findNamedPart(self._world, worldCfg.breach_line or "BreachLine")
-    local enemySpawn = findNamedPart(self._world, worldCfg.enemy_spawn_area or "EnemySpawnArea")
+    local world = self:_worldFor(record)
+    local breachLine = findNamedPart(world, worldCfg.breach_line or "BreachLine")
+    local enemySpawn = findNamedPart(world, worldCfg.enemy_spawn_area or "EnemySpawnArea")
     if not breachLine then
         return root.CFrame
     end
@@ -1653,9 +1721,9 @@ function MergeEggPrototypeService:_prepareSessionCurrency(record)
     return true
 end
 
-function MergeEggPrototypeService:_prototypeCoinDropOptions()
+function MergeEggPrototypeService:_prototypeCoinDropOptions(record)
     local rewardCfg = self._config.rewards or {}
-    local authoredBounds = findNamedPart(self._world, "ArenaBounds")
+    local authoredBounds = findNamedPart(self:_worldFor(record), "ArenaBounds")
     local fallbackBounds = (self._config.world or {}).bounds or {}
     return {
         -- The merge mode uses the exact same player-owned Magnet as every other world. Auto
@@ -1687,14 +1755,15 @@ function MergeEggPrototypeService:_spawnOpeningCoinDrops(record)
     local offsets = type(opening.pickup_offsets) == "table" and opening.pickup_offsets or {}
     local amount = math.max(1, math.floor(tonumber(opening.pickup_amount) or 120))
     local worldCfg = self._config.world or {}
-    local anchor = findNamedPart(self._world, worldCfg.bulwark_line)
-        or findNamedPart(self._world, worldCfg.player_spawn)
+    local world = self:_worldFor(record)
+    local anchor = findNamedPart(world, worldCfg.bulwark_line)
+        or findNamedPart(world, worldCfg.player_spawn)
     if not anchor or #offsets == 0 then
         return false
     end
 
     local currency = tostring(opening.currency or self:_earthEggPricing(record).currency)
-    local options = self:_prototypeCoinDropOptions()
+    local options = self:_prototypeCoinDropOptions(record)
     local spawned = 0
     local fallbackAmount = 0
     for _, offset in ipairs(offsets) do
@@ -1840,7 +1909,11 @@ function MergeEggPrototypeService:_publishBoardMutation(record)
     for _, team in ipairs(record.teams or {}) do
         self:_publishTeamEggSource(team)
     end
-    self:_setWorldState(self._world:GetAttribute("PrototypeState") or "AwaitingFirstEgg", record)
+    local world = self:_worldFor(record)
+    self:_setWorldState(
+        world and world:GetAttribute("PrototypeState") or "AwaitingFirstEgg",
+        record
+    )
 end
 
 function MergeEggPrototypeService:_autoCombineBoard(record)
@@ -1860,7 +1933,7 @@ function MergeEggPrototypeService:_autoCombineBoard(record)
 end
 
 function MergeEggPrototypeService:_publishEggInventory(record)
-    local world = self._world
+    local world = self:_worldFor(record)
     if not world then
         return
     end
@@ -2012,8 +2085,9 @@ end
 function MergeEggPrototypeService:_canUseHatcher(player, team)
     local root = characterRoot(player)
     local worldCfg = self._config.world or {}
-    local bulwark = findNamedPart(self._world, worldCfg.bulwark_line or "BulwarkLine")
-    local finish = findNamedPart(self._world, worldCfg.enemy_finish_line or "EnemyFinishLine")
+    local world = self:_worldFor(team and team.record or self:_recordFor(player))
+    local bulwark = findNamedPart(world, worldCfg.bulwark_line or "BulwarkLine")
+    local finish = findNamedPart(world, worldCfg.enemy_finish_line or "EnemyFinishLine")
     local hatcherRoot = team
         and team.principalModel
         and team.principalModel:FindFirstChild("HumanoidRootPart")
@@ -2053,7 +2127,7 @@ end
 
 function MergeEggPrototypeService:_canUseEggStation(player, stationName)
     local root = characterRoot(player)
-    local station = findNamedPart(self._world, stationName)
+    local station = findNamedPart(self:_worldFor(self:_recordFor(player)), stationName)
     if not (root and station) then
         return false, "egg_station_unavailable"
     end
@@ -2106,7 +2180,7 @@ function MergeEggPrototypeService:_triggerEggHealDenial(record, team, reason, no
     local objective = team and team.eggObjective
     if
         cfg.enabled ~= true
-        or self._active ~= record
+        or not self:_isRecordActive(record)
         or record.terminal == true
         or not (objective and objective.Parent)
         or math.floor(tonumber(team.eggTier) or 0) <= 0
@@ -2176,7 +2250,7 @@ end
 
 function MergeEggPrototypeService:_applyEggHealDenial(record, now)
     local cfg = self:_healDenialConfig()
-    if cfg.enabled ~= true or self._active ~= record then
+    if cfg.enabled ~= true or not self:_isRecordActive(record) then
         return
     end
     now = tonumber(now) or os.clock()
@@ -2242,10 +2316,11 @@ function MergeEggPrototypeService:_applyEggHealDenial(record, now)
 
     record.healDenialActiveFields = #activeTeams
     record.healDenialSuppressedEnemies = suppressed
-    if self._world then
-        self._world:SetAttribute("HealDenialFieldsActive", #activeTeams)
-        self._world:SetAttribute("HealDenialFieldActivations", record.healDenialActivations or 0)
-        self._world:SetAttribute("HealDenialEnemiesSuppressed", suppressed)
+    local world = self:_worldFor(record)
+    if world then
+        world:SetAttribute("HealDenialFieldsActive", #activeTeams)
+        world:SetAttribute("HealDenialFieldActivations", record.healDenialActivations or 0)
+        world:SetAttribute("HealDenialEnemiesSuppressed", suppressed)
     end
     for _, field in ipairs(activeTeams) do
         self:_publishEggHealDenial(field.team, now)
@@ -2268,7 +2343,8 @@ function MergeEggPrototypeService:_publishTeamEggSource(team)
         team.eggDamageTaken = 0
         team.eggHealth = 0
     end
-    local transaction = self:_deployedEggTransaction(team, self._active or team)
+    local record = team.record
+    local transaction = self:_deployedEggTransaction(team, record or team)
     local tier = transaction.currentTier
     local resultId = transaction.resultEggId
     local resultData = resultId
@@ -2280,8 +2356,7 @@ function MergeEggPrototypeService:_publishTeamEggSource(team)
         and self._petsConfig
         and self._petsConfig.egg_sources
         and self._petsConfig.egg_sources[requiredId]
-    local requiredOwned = resultId
-            and self:_eggInventoryCount(self._active, transaction.requiredTier)
+    local requiredOwned = resultId and self:_eggInventoryCount(record, transaction.requiredTier)
         or 0
     folder:SetAttribute("MergeEggSourceId", team.eggId)
     folder:SetAttribute("MergeEggSourceName", team.eggName)
@@ -2338,7 +2413,11 @@ function MergeEggPrototypeService:_publishTeamEggSource(team)
 end
 
 function MergeEggPrototypeService:_interruptHatcherProduction(record, team, now)
-    if self._active ~= record or not team or math.floor(tonumber(team.eggTier) or 0) <= 0 then
+    if
+        not self:_isRecordActive(record)
+        or not team
+        or math.floor(tonumber(team.eggTier) or 0) <= 0
+    then
         return
     end
     local seconds = math.max(
@@ -2380,7 +2459,7 @@ end
 
 function MergeEggPrototypeService:_spawnHatcherEggObjective(record, team)
     if
-        self._active ~= record
+        not self:_isRecordActive(record)
         or not team
         or math.floor(tonumber(team.eggTier) or 0) <= 0
         or not (team.folder and team.folder.Parent)
@@ -2457,15 +2536,27 @@ function MergeEggPrototypeService:_spawnHatcherEggObjective(record, team)
     model:SetAttribute("NoPetSupport", true)
     model:SetAttribute("NoNaturalRegen", true)
     model:SetAttribute("ObjectiveMaxHealth", maximum)
-    model:PivotTo(
-        root.CFrame
-            * CFrame.new(
-                tonumber(offsetCfg.x) or 0,
-                tonumber(offsetCfg.y) or 3.5,
-                tonumber(offsetCfg.z) or 3
-            )
-    )
     model.Parent = team.folder
+    local _, positionSlot = stationXOffset(self._config, team.config, team.id)
+    local pads = record.world and record.world:FindFirstChild("MergeEggDeploymentPads")
+    local deploymentPad = pads
+        and pads:FindFirstChild(string.format("DeploymentPad%02d", positionSlot))
+    if deploymentPad and deploymentPad:IsA("BasePart") then
+        model:PivotTo(deploymentPad.CFrame)
+        local box, boxSize = model:GetBoundingBox()
+        local standTop = deploymentPad.Position.Y + deploymentPad.Size.Y * 0.5
+        local modelBottom = box.Position.Y - boxSize.Y * 0.5
+        model:PivotTo(model:GetPivot() + Vector3.new(0, standTop - modelBottom, 0))
+    else
+        model:PivotTo(
+            root.CFrame
+                * CFrame.new(
+                    tonumber(offsetCfg.x) or 0,
+                    tonumber(offsetCfg.y) or 3.5,
+                    tonumber(offsetCfg.z) or 3
+                )
+        )
+    end
 
     team.eggObjective = model
     team.eggObjectiveArmed = true
@@ -2474,7 +2565,7 @@ function MergeEggPrototypeService:_spawnHatcherEggObjective(record, team)
     team.eggDamageTaken = 0
     team.eggProductionLockedUntil = nil
     model:GetAttributeChangedSignal("CombatDamageTaken"):Connect(function()
-        if self._active == record and team.eggObjective == model then
+        if self:_isRecordActive(record) and team.eggObjective == model then
             local previousDamage = math.max(0, tonumber(team.eggDamageTaken) or 0)
             local currentDamage =
                 math.max(0, tonumber(model:GetAttribute("CombatDamageTaken")) or 0)
@@ -2497,7 +2588,7 @@ function MergeEggPrototypeService:_spawnHatcherEggObjective(record, team)
         team.eggHealth = math.max(0, maximum - finalDamage)
         if armed then
             task.defer(function()
-                if self._active ~= record or record.terminal == true then
+                if not self:_isRecordActive(record) or record.terminal == true then
                     return
                 end
                 if self:_destroyInstalledHatcherEgg(record, team, "combat") then
@@ -2779,16 +2870,74 @@ function MergeEggPrototypeService:_ensureBreachLine(world)
     return line
 end
 
+function MergeEggPrototypeService:_findControlWall(world)
+    local gen = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
+    local walls = gen and gen:FindFirstChild("PlayFieldWalls")
+    if not (world and walls) then
+        return nil
+    end
+    local side = world:GetAttribute("MergeEggBaySide")
+    local col = tonumber(world:GetAttribute("MergeEggBayColumn"))
+    if type(side) ~= "string" or not col then
+        return nil
+    end
+    local prefix = side == "hell" and "Hell" or "Heaven"
+    -- Right-hand wall when facing the spawn gate: Heaven faces +X (north = WallBoard),
+    -- Hell faces −X (south = WallScore).
+    local wallName = side == "hell" and "WallScore" or "WallBoard"
+    return walls:FindFirstChild(string.format("%s_%02d_%s", prefix, col, wallName))
+end
+
+-- The dedicated place keeps its polished floor geometry in GeneratedMap_MergeEggVoxel while the
+-- portable bay model supplies gameplay hooks. Resolve the matching authored artifact by bay id so
+-- runtime interaction targets sit on the visible map instead of building a second floating copy.
+function MergeEggPrototypeService:_authoredBayArtifact(world, folderName, suffix)
+    local map = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
+    local folder = map and map:FindFirstChild(folderName)
+    if not (world and folder) then
+        return nil
+    end
+    local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
+    local column = tonumber(world:GetAttribute("MergeEggBayColumn"))
+    if (side ~= "heaven" and side ~= "hell") or not column then
+        return nil
+    end
+    local prefix = side == "hell" and "Hell" or "Heaven"
+    return folder:FindFirstChild(string.format("%s_%02d_%s", prefix, column, suffix))
+end
+
+function MergeEggPrototypeService:_authoredHatcherPad(world, slot, expectedPosition)
+    local stations = self:_authoredBayArtifact(world, "HatcherStations", "Hatchers")
+    if not stations then
+        return nil
+    end
+    local best
+    local bestDistance = math.huge
+    for _, candidate in ipairs(stations:GetDescendants()) do
+        if candidate:IsA("BasePart") and string.match(candidate.Name, "^Pad_%d+$") then
+            local distance = expectedPosition and (candidate.Position - expectedPosition).Magnitude
+                or math.abs((tonumber(string.match(candidate.Name, "%d+")) or 0) - slot)
+            if distance < bestDistance then
+                best = candidate
+                bestDistance = distance
+            end
+        end
+    end
+    return best
+end
+
 function MergeEggPrototypeService:_ensureEggBoardControls(world)
     local worldCfg = self._config.world or {}
     local playerSpawn = findNamedPart(world, worldCfg.player_spawn or "PlayerSpawn")
     if not playerSpawn then
         return
     end
+    local controlWall = self:_findControlWall(world)
 
     local function ensureControl(name, position, lookAt, color, title, subtitle)
         local existing = findNamedPart(world, name)
         if existing then
+            existing.CFrame = CFrame.lookAt(position, lookAt)
             return existing
         end
         local control = Instance.new("Part")
@@ -2834,46 +2983,92 @@ function MergeEggPrototypeService:_ensureEggBoardControls(world)
     end
 
     local base = playerSpawn.Position
+    local createPos, createLook, upgradePos, upgradeLook, managePos, manageLook
+    if controlWall then
+        local land = findNamedPart(world, "LandStrip")
+        local bayZ = land and land.Position.Z or 0
+        local inward = Vector3.new(0, 0, bayZ >= controlWall.Position.Z and 1 or -1)
+        local along = Vector3.new(1, 0, 0)
+        local mid = controlWall.Position + inward * 1.6
+        local y = controlWall.Position.Y
+        createPos = mid - along * 13
+        createPos = Vector3.new(createPos.X, y, createPos.Z)
+        createLook = createPos + inward
+        upgradePos = mid + along * 13
+        upgradePos = Vector3.new(upgradePos.X, y, upgradePos.Z)
+        upgradeLook = upgradePos + inward
+        managePos = Vector3.new(mid.X, y, mid.Z)
+        manageLook = managePos + inward
+    else
+        createPos = Vector3.new(base.X - 20, base.Y + 4, base.Z - 31.4)
+        createLook = Vector3.new(base.X - 20, base.Y + 4, base.Z + 8)
+        upgradePos = Vector3.new(base.X + 20, base.Y + 4, base.Z - 31.4)
+        upgradeLook = Vector3.new(base.X + 20, base.Y + 4, base.Z + 8)
+        managePos = Vector3.new(base.X - 48.4, base.Y + 10, base.Z + 18)
+        manageLook = Vector3.new(base.X - 10, base.Y + 10, base.Z + 18)
+    end
+
     local createControl = ensureControl(
         tostring(worldCfg.egg_create_control or "EggCreateControl"),
-        Vector3.new(base.X - 20, base.Y + 4, base.Z - 31.4),
-        Vector3.new(base.X - 20, base.Y + 4, base.Z + 8),
+        createPos,
+        createLook,
         Color3.fromRGB(104, 205, 94),
         "CREATE EARTH EGG",
         "100 WAYCOINS"
     )
     local baseUpgradeControl = ensureControl(
         tostring(worldCfg.egg_base_upgrade_control or "EggBaseUpgradeControl"),
-        Vector3.new(base.X + 20, base.Y + 4, base.Z - 31.4),
-        Vector3.new(base.X + 20, base.Y + 4, base.Z + 8),
+        upgradePos,
+        upgradeLook,
         Color3.fromRGB(238, 158, 58),
         "UPGRADE BASE EGG",
         "GRASS → ICE • 1,000 WAYCOINS"
     )
     local managementControl = ensureControl(
         tostring(worldCfg.egg_merge_control or "EggMergeControl"),
-        Vector3.new(base.X - 48.4, base.Y + 10, base.Z + 18),
-        Vector3.new(base.X - 10, base.Y + 10, base.Z + 18),
+        managePos,
+        manageLook,
         Color3.fromRGB(35, 42, 58),
         "MANAGEMENT",
         "COMBAT • HATCHERS • EGGS"
     )
-    for _, oldControl in ipairs({ createControl, baseUpgradeControl }) do
-        oldControl.Transparency = 1
-        oldControl.CanQuery = false
-        for _, child in ipairs(oldControl:GetChildren()) do
-            if child:IsA("SurfaceGui") then
-                child.Enabled = false
+    if controlWall then
+        -- BUY EGG and SPAWN LEVEL already live inside the central management panel. Retain these
+        -- two parts as invisible server-side proximity anchors, but never render duplicate wall
+        -- buttons beside the real menu.
+        for _, redundantControl in ipairs({ createControl, baseUpgradeControl }) do
+            redundantControl.Transparency = 1
+            redundantControl.CanCollide = false
+            redundantControl.CanTouch = false
+            redundantControl.CanQuery = false
+            for _, child in ipairs(redundantControl:GetChildren()) do
+                if child:IsA("SurfaceGui") then
+                    child.Enabled = false
+                end
             end
         end
+        managementControl.Size = Vector3.new(14, 8, 0.6)
+        managementControl.Material = Enum.Material.Neon
+        for _, child in ipairs(managementControl:GetChildren()) do
+            if child:IsA("SurfaceGui") then
+                child.Enabled = true
+            end
+        end
+    else
+        for _, oldControl in ipairs({ createControl, baseUpgradeControl }) do
+            oldControl.Transparency = 1
+            oldControl.CanQuery = false
+            for _, child in ipairs(oldControl:GetChildren()) do
+                if child:IsA("SurfaceGui") then
+                    child.Enabled = false
+                end
+            end
+        end
+        managementControl.Size = Vector3.new(38, 18, 1)
+        managementControl.CFrame = CFrame.lookAt(managePos, manageLook)
+        managementControl.Color = Color3.fromRGB(35, 42, 58)
+        managementControl.Material = Enum.Material.Slate
     end
-    managementControl.Size = Vector3.new(38, 18, 1)
-    managementControl.CFrame = CFrame.lookAt(
-        Vector3.new(base.X - 48.4, base.Y + 10, base.Z + 18),
-        Vector3.new(base.X - 10, base.Y + 10, base.Z + 18)
-    )
-    managementControl.Color = Color3.fromRGB(35, 42, 58)
-    managementControl.Material = Enum.Material.Slate
 end
 
 function MergeEggPrototypeService:_mergeBoardCapacity()
@@ -2883,7 +3078,7 @@ function MergeEggPrototypeService:_mergeBoardCapacity()
     return rows * columns
 end
 
-function MergeEggPrototypeService:_ensureDeploymentPads(world)
+function MergeEggPrototypeService:_ensureDeploymentPads(world, record)
     local worldCfg = self._config.world or {}
     local spawn = findNamedPart(world, worldCfg.hatcher_spawn or "HatcherSpawn")
     if not spawn then
@@ -2898,7 +3093,7 @@ function MergeEggPrototypeService:_ensureDeploymentPads(world)
     local availableColor = rgbTriplet(padCfg.available_color, { 82, 145, 190 })
     local availableTransparency = math.clamp(tonumber(padCfg.available_transparency) or 0.3, 0, 1)
     local teamsBySlot = {}
-    for order, teamCfg in ipairs(self:_activeTeamConfigs(self._active)) do
+    for order, teamCfg in ipairs(self:_activeTeamConfigs(record)) do
         local _, slot = stationXOffset(self._config, teamCfg, order)
         teamsBySlot[slot] = math.max(1, math.floor(tonumber(teamCfg.id) or order))
     end
@@ -2928,12 +3123,14 @@ function MergeEggPrototypeService:_ensureDeploymentPads(world)
         end
         local stationX = stationXOffset(self._config, { position_slot = slot }, slot)
         local teamId = teamsBySlot[slot]
+        local expectedCFrame = spawn.CFrame * CFrame.new(stationX, 0.06, eggOffset)
+        local authoredPad = self:_authoredHatcherPad(world, slot, expectedCFrame.Position)
         pad.Anchored = true
         pad.CanCollide = false
         pad.CanTouch = false
         pad.CanQuery = teamId ~= nil
         pad.Size = Vector3.new(size, 0.12, size)
-        pad.CFrame = spawn.CFrame * CFrame.new(stationX, 0.06, eggOffset)
+        pad.CFrame = authoredPad and (authoredPad.CFrame * CFrame.new(0, 0.07, 0)) or expectedCFrame
         pad.Color = availableColor
         pad.Material = Enum.Material.Neon
         pad.Transparency = teamId and availableTransparency or 1
@@ -2943,6 +3140,7 @@ function MergeEggPrototypeService:_ensureDeploymentPads(world)
         pad:SetAttribute("MergeEggDeploymentAvailable", teamId ~= nil)
         pad:SetAttribute("MergeEggDeploymentOccupied", false)
         pad:SetAttribute("MergeEggDeploymentTier", 0)
+        pad:SetAttribute("MergeEggAuthoredStand", authoredPad and authoredPad:GetFullName() or nil)
     end
     for _, child in ipairs(pads:GetChildren()) do
         local slot = tonumber(child:GetAttribute("MergeEggPositionSlot"))
@@ -2954,7 +3152,8 @@ function MergeEggPrototypeService:_ensureDeploymentPads(world)
 end
 
 function MergeEggPrototypeService:_syncDeploymentPad(team)
-    local pads = self._world and self._world:FindFirstChild("MergeEggDeploymentPads")
+    local world = self:_worldFor(team and team.record)
+    local pads = world and world:FindFirstChild("MergeEggDeploymentPads")
     if not (pads and team) then
         return
     end
@@ -3118,7 +3317,24 @@ function MergeEggPrototypeService:_ensureMergeBoard(world)
     local center = CFrame.lookAt(centerPosition, centerPosition + toward)
     local neutralColor = rgbTriplet(cfg.empty_slot_color, { 45, 52, 64 })
 
-    local board = world:FindFirstChild(boardName)
+    local worldBoard = world:FindFirstChild(boardName)
+    local authoredBoard = worldBoard
+            and worldBoard:IsA("Model")
+            and worldBoard:GetAttribute("MergeEggAuthoredBoard") == true
+            and worldBoard
+        or self:_authoredBayArtifact(world, "MergeBoards", "MergeBoard")
+    if authoredBoard and worldBoard and worldBoard ~= authoredBoard then
+        -- The portable bay carries a gameplay-hook board, while the dedicated place carries the
+        -- finished visible board. Only one board may exist at runtime: the observer, drag/drop,
+        -- inventory sync, and Equip Best all resolve world.MergeBoard.
+        worldBoard:Destroy()
+        worldBoard = nil
+    end
+    if authoredBoard and authoredBoard.Parent ~= world then
+        authoredBoard.Name = boardName
+        authoredBoard.Parent = world
+    end
+    local board = authoredBoard or worldBoard
     if board and not board:IsA("Model") then
         board:Destroy()
         board = nil
@@ -3129,7 +3345,8 @@ function MergeEggPrototypeService:_ensureMergeBoard(world)
         board.Parent = world
     end
     local layoutChanged = board:GetAttribute("MergeEggBoardLayoutVersion") ~= 2
-    board:SetAttribute("MergeEggRuntimeBoard", true)
+    board:SetAttribute("MergeEggRuntimeBoard", authoredBoard == nil)
+    board:SetAttribute("MergeEggAuthoredBoard", authoredBoard ~= nil)
     board:SetAttribute("MergeEggBoardLayoutVersion", 2)
     board:SetAttribute("Rows", rows)
     board:SetAttribute("Columns", columns)
@@ -3147,8 +3364,10 @@ function MergeEggPrototypeService:_ensureMergeBoard(world)
     base.CanCollide = false
     base.CanTouch = false
     base.CanQuery = false
-    base.Size = Vector3.new(columns * spacing + 1, 0.14, rows * spacing + 1)
-    base.CFrame = center
+    if not authoredBoard then
+        base.Size = Vector3.new(columns * spacing + 1, 0.14, rows * spacing + 1)
+        base.CFrame = center
+    end
     base.Color = Color3.fromRGB(32, 38, 48)
     base.Material = Enum.Material.Slate
     base.Transparency = 0.08
@@ -3163,6 +3382,14 @@ function MergeEggPrototypeService:_ensureMergeBoard(world)
         slots = Instance.new("Folder")
         slots.Name = "Slots"
         slots.Parent = board
+        if authoredBoard then
+            for index = 1, rows * columns do
+                local authoredSlot = board:FindFirstChild(string.format("Slot%02d", index))
+                if authoredSlot and authoredSlot:IsA("BasePart") then
+                    authoredSlot.Parent = slots
+                end
+            end
+        end
     end
     if #slots:GetChildren() ~= rows * columns then
         slots:ClearAllChildren()
@@ -3188,8 +3415,10 @@ function MergeEggPrototypeService:_ensureMergeBoard(world)
             slot.CanCollide = false
             slot.CanTouch = false
             slot.CanQuery = false
-            slot.Size = Vector3.new(slotSize, 0.12, slotSize)
-            slot.CFrame = center * CFrame.new(x, 0.13, z)
+            if not authoredBoard then
+                slot.Size = Vector3.new(slotSize, 0.12, slotSize)
+                slot.CFrame = center * CFrame.new(x, 0.13, z)
+            end
             slot.Color = neutralColor
             slot.Material = Enum.Material.Slate
             slot.Transparency = math.clamp(tonumber(cfg.empty_slot_transparency) or 0.08, 0, 1)
@@ -3216,7 +3445,8 @@ function MergeEggPrototypeService:_ensureMergeBoard(world)
 end
 
 function MergeEggPrototypeService:_syncMergeBoardEggs(record)
-    local board = self._world and self:_ensureMergeBoard(self._world)
+    local world = self:_worldFor(record)
+    local board = world and self:_ensureMergeBoard(world)
     if not board then
         return
     end
@@ -3311,10 +3541,10 @@ function MergeEggPrototypeService:_syncMergeBoardEggs(record)
     board:SetAttribute("OccupiedSlots", math.min(total, capacity))
     board:SetAttribute("Capacity", capacity)
     board:SetAttribute("OverflowEggs", math.max(0, total - capacity))
-    if self._world then
-        self._world:SetAttribute("MergeBoardOccupiedSlots", math.min(total, capacity))
-        self._world:SetAttribute("MergeBoardCapacity", capacity)
-        self._world:SetAttribute("MergeBoardOverflowEggs", math.max(0, total - capacity))
+    if world then
+        world:SetAttribute("MergeBoardOccupiedSlots", math.min(total, capacity))
+        world:SetAttribute("MergeBoardCapacity", capacity)
+        world:SetAttribute("MergeBoardOverflowEggs", math.max(0, total - capacity))
     end
 end
 
@@ -3378,7 +3608,7 @@ function MergeEggPrototypeService:_replacementQueueDepth(record)
 end
 
 function MergeEggPrototypeService:_setWorldState(state, record)
-    local world = self._world
+    local world = self:_worldFor(record)
     if not world then
         return
     end
@@ -3868,7 +4098,8 @@ function MergeEggPrototypeService:_setTeamState(record, team, state)
     if team.folder and team.folder.Parent then
         team.folder:SetAttribute("MergeEggTeamState", state)
     end
-    local worldState = self._world and self._world:GetAttribute("PrototypeState") or "ReadyToHatch"
+    local world = self:_worldFor(record)
+    local worldState = world and world:GetAttribute("PrototypeState") or "ReadyToHatch"
     self:_setWorldState(worldState, record)
 end
 
@@ -4029,7 +4260,10 @@ end
 
 function MergeEggPrototypeService:_captureCheckpoint(record, wave, options)
     options = type(options) == "table" and options or {}
-    if self._active ~= record or (record.terminal == true and options.allowTerminal ~= true) then
+    if
+        not self:_isRecordActive(record)
+        or (record.terminal == true and options.allowTerminal ~= true)
+    then
         return false, "checkpoint_encounter_unavailable"
     end
     local checkpointWave = math.max(0, math.floor(tonumber(wave) or record.waveIndex or 0))
@@ -4222,7 +4456,7 @@ function MergeEggPrototypeService:_restoreDurableCheckpoint(record)
 end
 
 function MergeEggPrototypeService:_canRestartCheckpoint(record)
-    return self._active == record
+    return self:_isRecordActive(record)
         and record ~= nil
         and record.checkpointSnapshot ~= nil
         and (record.terminalState == "ObjectiveLost" or record.terminalState == "DefenseOverrun")
@@ -4734,7 +4968,7 @@ function MergeEggPrototypeService:_allTeamsDefeated(record)
 end
 
 function MergeEggPrototypeService:_finishDefenseOverrun(record)
-    if self._active ~= record or record.terminal == true then
+    if not self:_isRecordActive(record) or record.terminal == true then
         return
     end
     record.terminal = true
@@ -4780,7 +5014,7 @@ function MergeEggPrototypeService:_finishDefenseOverrun(record)
 end
 
 function MergeEggPrototypeService:_finishObjectiveLost(record)
-    if self._active ~= record or record.terminal == true then
+    if not self:_isRecordActive(record) or record.terminal == true then
         return
     end
     record.terminal = true
@@ -4927,6 +5161,40 @@ function MergeEggPrototypeService:_attachPrompt(host, name, actionText, objectTe
     return prompt
 end
 
+function MergeEggPrototypeService:_teleportToRole(player, role)
+    local placeId = PlaceRuntime.placeIdForRole(self._placesConfig, role)
+    if not placeId then
+        return false, "place_role_unconfigured"
+    end
+    local options = Instance.new("TeleportOptions")
+    options:SetTeleportData({
+        sourcePlaceId = game.PlaceId,
+        destinationRole = tostring(role),
+    })
+    local ok, result = pcall(function()
+        return TeleportService:TeleportAsync(placeId, { player }, options)
+    end)
+    if not ok then
+        self:_log("Warn", "Merge place teleport failed", {
+            player = player.Name,
+            destinationRole = tostring(role),
+            destinationPlaceId = placeId,
+            error = tostring(result),
+        })
+        return false, "teleport_failed"
+    end
+    return true, result
+end
+
+function MergeEggPrototypeService:_enterFromHall(player)
+    -- Studio cannot perform an ordinary cross-place playtest. Retain the in-place authored bay
+    -- seam there; published main servers always route through the configured Merge PlaceId.
+    if RunService:IsStudio() then
+        return self:_begin(player)
+    end
+    return self:_teleportToRole(player, "merge")
+end
+
 function MergeEggPrototypeService:_unsealHallGate()
     local gateCfg = self._config.gate or {}
     local hook = Workspace:FindFirstChild(tostring(gateCfg.hook_name or "HallOfWorldsPortal"), true)
@@ -4976,7 +5244,7 @@ function MergeEggPrototypeService:_unsealHallGate()
         tostring(gateCfg.action_text or "Enter Prototype"),
         tostring(gateCfg.object_text or "Merge an Egg — Phase 6"),
         function(player)
-            self:_begin(player)
+            self:_enterFromHall(player)
         end
     )
     return hook
@@ -5066,8 +5334,8 @@ function MergeEggPrototypeService:_setPlayerArea(player, areaId, currentWorldVal
     end
 end
 
-function MergeEggPrototypeService:_reconcileStaleSession()
-    local record = self._active
+function MergeEggPrototypeService:_reconcileStaleSession(player)
+    local record = self:_recordFor(player)
     if not record then
         return false
     end
@@ -5090,10 +5358,9 @@ function MergeEggPrototypeService:_canBegin(player)
     if not (player and player.Parent) then
         return false, "player_left"
     end
-    self:_reconcileStaleSession()
-    if self._active or self._entering then
-        local owner = self._active and self._active.player or self._entering
-        return false, owner == player and "already_inside" or "prototype_occupied"
+    self:_reconcileStaleSession(player)
+    if self:_recordFor(player) or self._enteringByPlayer[player] then
+        return false, "already_inside"
     end
     if
         player:GetAttribute("InMission") ~= nil
@@ -5170,7 +5437,7 @@ function MergeEggPrototypeService:_preparePlayerPets(record)
 end
 
 function MergeEggPrototypeService:_switchPlayerCombatMode(record, requestedMode)
-    if not record or self._active ~= record then
+    if not self:_isRecordActive(record) then
         return false
     end
     local mode = tostring(requestedMode or "")
@@ -5221,13 +5488,12 @@ function MergeEggPrototypeService:_restoreOwnedPets(record)
 end
 
 function MergeEggPrototypeService:_cancelPendingEntry(record, departing)
-    if not record or self._enteringRecord ~= record then
+    local player = record and record.player
+    if not player or self._enteringRecordByPlayer[player] ~= record then
         return
     end
-    self._enteringRecord = nil
-    if self._entering == record.player then
-        self._entering = nil
-    end
+    self._enteringRecordByPlayer[player] = nil
+    self._enteringByPlayer[player] = nil
     self:_setFullModeTargetOpen(record, false)
     if departing then
         if record.parked then
@@ -5449,10 +5715,10 @@ function MergeEggPrototypeService:_clearEncounter(record)
 end
 
 function MergeEggPrototypeService:_end(record, teleportHome, departing)
-    if not record or self._active ~= record then
+    if not self:_isRecordActive(record) then
         return
     end
-    self._active = nil
+    self._activeByPlayer[record.player] = nil
     disconnect(record.characterRemoving)
     disconnect(record.areaChanged)
     disconnect(record.playerCombatModeChanged)
@@ -5508,7 +5774,7 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing)
     if self._realm then
         self._realm:Release(record.player)
     end
-    self:_setWorldState("Idle", nil)
+    self:_setWorldState("Idle", record)
     self:_log("Info", "Merge Egg prototype session ended", {
         player = record.player.Name,
         bay = record.bayId,
@@ -5554,6 +5820,17 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
     else
         world = self._world or self:_resolveWorld()
     end
+    if world then
+        -- Start binds the authoring/default bay. A dedicated-place claim may resolve a different
+        -- authored bay, so bind that bay's controls as part of the claim as well.
+        self:_bindWorldControls(world)
+        if self:_isDedicatedMergePlace() then
+            local baySpawn = world:FindFirstChildWhichIsA("SpawnLocation", true)
+            if baySpawn then
+                player.RespawnLocation = baySpawn
+            end
+        end
+    end
     local spawn = findNamedPart(world, (self._config.world or {}).player_spawn)
     if not (world and spawn and characterRoot(player)) then
         if self._realm then
@@ -5562,9 +5839,9 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
         return false, "world_or_character_unavailable"
     end
 
-    self._entering = player
+    self._enteringByPlayer[player] = true
     local modelsReady = BootReadiness.await("models_ready", 20)
-    if self._entering ~= player then
+    if not self._enteringByPlayer[player] then
         if self._realm then
             self._realm:Release(player)
         end
@@ -5576,7 +5853,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
 
     local character = player.Character
     if not (player.Parent and character and characterRoot(player)) then
-        self._entering = nil
+        self._enteringByPlayer[player] = nil
         if self._realm then
             self._realm:Release(player)
         end
@@ -5786,21 +6063,21 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
         tutorialUsesAutoCollector = false,
     }
     if not self:_preparePlayerPets(record) then
-        self._entering = nil
+        self._enteringByPlayer[player] = nil
         if self._realm then
             self._realm:Release(player)
         end
         return false, "pet_folder_unavailable"
     end
-    self._enteringRecord = record
+    self._enteringRecordByPlayer[player] = record
 
     local target = spawn.CFrame * CFrame.new(0, spawn.Size.Y * 0.5 + 3, 0)
     pcall(function()
         player:RequestStreamAroundAsync(target.Position, tonumber(self._config.stream_timeout) or 8)
     end)
     if
-        self._enteringRecord ~= record
-        or self._entering ~= player
+        self._enteringRecordByPlayer[player] ~= record
+        or not self._enteringByPlayer[player]
         or not player.Parent
         or player.Character ~= character
     then
@@ -5823,9 +6100,9 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
     -- Hall gate can reject a second attempt while the player is still standing in Home.
     character:PivotTo(target)
     self:_setPlayerArea(player, self:_prototypeAreaId())
-    self._enteringRecord = nil
-    self._entering = nil
-    self._active = record
+    self._enteringRecordByPlayer[player] = nil
+    self._enteringByPlayer[player] = nil
+    self._activeByPlayer[player] = record
     local escortAnchor = self:_playerEscortAnchorCFrame(record)
     player:SetAttribute(
         "MergeEggEscortAnchorPosition",
@@ -5851,7 +6128,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
     end)
     record.areaChanged = player:GetAttributeChangedSignal("CurrentArea"):Connect(function()
         if
-            self._active == record
+            self:_isRecordActive(record)
             and player:GetAttribute("CurrentArea") ~= self:_prototypeAreaId()
         then
             if self._worldBindingService then
@@ -5863,10 +6140,14 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
     record.playerCombatModeChanged = player
         :GetAttributeChangedSignal("MergeDefenseMode")
         :Connect(function()
-            if self._active == record then
+            if self:_isRecordActive(record) then
                 self:_switchPlayerCombatMode(record, player:GetAttribute("MergeDefenseMode"))
             end
         end)
+    -- Settings may finish applying while the character is streaming into a dedicated place. Catch
+    -- that one-time edge so an eligible veteran never keeps the temporary Simple roster alongside
+    -- their newly restored Full-mode pets.
+    self:_switchPlayerCombatMode(record, player:GetAttribute("MergeDefenseMode"))
     local armed, armReason = self:_hatch(player)
     if not armed then
         self:_log("Warn", "Merge Egg prototype could not arm on entry", {
@@ -5899,9 +6180,9 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
     return true
 end
 
-function MergeEggPrototypeService:_movementLeash(recovery)
+function MergeEggPrototypeService:_movementLeash(record, recovery)
     local bounds = (self._config.world or {}).bounds or {}
-    local authored = findNamedPart(self._world, "ArenaBounds")
+    local authored = findNamedPart(self:_worldFor(record), "ArenaBounds")
     return {
         shapes = {
             {
@@ -5920,7 +6201,7 @@ function MergeEggPrototypeService:_movementLeash(recovery)
 end
 
 function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
-    if self._active ~= record or targetId == nil or record.resolvedTargets[targetId] then
+    if not self:_isRecordActive(record) or targetId == nil or record.resolvedTargets[targetId] then
         return
     end
     record.resolvedTargets[targetId] = true
@@ -6026,7 +6307,9 @@ function MergeEggPrototypeService:_resolveEnemy(record, outcome, targetId)
 end
 
 function MergeEggPrototypeService:_dropEnemyCoins(record, defeat)
-    if self._active ~= record or not (defeat and typeof(defeat.position) == "Vector3") then
+    if
+        not self:_isRecordActive(record) or not (defeat and typeof(defeat.position) == "Vector3")
+    then
         return false
     end
     local model = defeat.model
@@ -6075,7 +6358,9 @@ function MergeEggPrototypeService:_dropEnemyCoins(record, defeat)
 end
 
 function MergeEggPrototypeService:_dropEnemyGems(record, defeat)
-    if self._active ~= record or not (defeat and typeof(defeat.position) == "Vector3") then
+    if
+        not self:_isRecordActive(record) or not (defeat and typeof(defeat.position) == "Vector3")
+    then
         return false
     end
     local rewardCfg = self._config.rewards or {}
@@ -6139,7 +6424,7 @@ function MergeEggPrototypeService:_onEnemyDefeated(record, defeat)
 end
 
 function MergeEggPrototypeService:_onEnemyReachedFinish(record, arrival)
-    if self._active ~= record or not arrival then
+    if not self:_isRecordActive(record) or not arrival then
         return
     end
     self:_damageInstalledHatcherEgg(record, record.enemyByTargetId[arrival.targetId])
@@ -6166,7 +6451,7 @@ function MergeEggPrototypeService:_spawnWaveEnemy(record, spec)
         ),
         position = position,
         home = position,
-        movementLeash = self:_movementLeash(position),
+        movementLeash = self:_movementLeash(record, position),
         marchGoal = {
             destination = destination,
             speed = math.max(1, tonumber(cfg.march_speed) or 22),
@@ -6187,7 +6472,7 @@ function MergeEggPrototypeService:_spawnWaveEnemy(record, spec)
     if not (result and result.ok and result.model) then
         return false, result and result.reason or "enemy_spawn_failed"
     end
-    if self._active ~= record then
+    if not self:_isRecordActive(record) then
         self._enemyService:DespawnModel(result.model)
         return false, "session_ended"
     end
@@ -6425,8 +6710,8 @@ function MergeEggPrototypeService:_spawnNextWave(record)
         end
     end
     local worldCfg = self._config.world or {}
-    local spawnArea = findNamedPart(self._world, worldCfg.enemy_spawn_area)
-    local finishLine = findNamedPart(self._world, worldCfg.enemy_finish_line)
+    local spawnArea = findNamedPart(record.world, worldCfg.enemy_spawn_area)
+    local finishLine = findNamedPart(record.world, worldCfg.enemy_finish_line)
     if not (spawnArea and finishLine) then
         return false, "enemy_march_anchor_missing"
     end
@@ -6849,7 +7134,7 @@ end
 function MergeEggPrototypeService:_openBulwarkTarget(record, enemy, now)
     local model = enemy and enemy.model
     if
-        self._active ~= record
+        not self:_isRecordActive(record)
         or not (model and model.Parent)
         or model:GetAttribute("MergeEggBulwarkBreached") == true
     then
@@ -6890,7 +7175,7 @@ end
 function MergeEggPrototypeService:_sustainBulwarkTarget(record, enemy, now)
     local model = enemy and enemy.model
     if
-        self._active ~= record
+        not self:_isRecordActive(record)
         or not (model and model.Parent)
         or model:GetAttribute("MergeEggBulwarkBreached") ~= true
         or now < (tonumber(model:GetAttribute("MergeEggNextBulwarkAlertAt")) or 0)
@@ -6945,16 +7230,16 @@ end
 function MergeEggPrototypeService:_alertApproachingEnemies(record)
     local cfg = self._config.enemy or {}
     local finishLine = findNamedPart(
-        self._world,
+        record.world,
         (self._config.world or {}).enemy_finish_line or "EnemyFinishLine"
     )
     if not finishLine then
         return
     end
     local bulwarkLine =
-        findNamedPart(self._world, (self._config.world or {}).bulwark_line or "BulwarkLine")
+        findNamedPart(record.world, (self._config.world or {}).bulwark_line or "BulwarkLine")
     local breachLine =
-        findNamedPart(self._world, (self._config.world or {}).breach_line or "BreachLine")
+        findNamedPart(record.world, (self._config.world or {}).breach_line or "BreachLine")
     local towardFinish = bulwarkLine
             and Vector3.new(
                 finishLine.Position.X - bulwarkLine.Position.X,
@@ -7112,9 +7397,10 @@ function MergeEggPrototypeService:_alertApproachingEnemies(record)
     end
 end
 
-function MergeEggPrototypeService:_step()
-    local record = self._active
-    local now = os.clock()
+function MergeEggPrototypeService:_stepRecord(record, now)
+    if not self:_isRecordActive(record) then
+        return
+    end
     self:_updateTutorial(record, now, false)
     if
         record
@@ -7167,7 +7453,7 @@ function MergeEggPrototypeService:_step()
         return
     end
     local ok, reason = self:_spawnNextWave(record)
-    if not ok and self._active == record then
+    if not ok and self:_isRecordActive(record) then
         record.nextWaveAt = nil
         self:_setWorldState("WaveSpawnFailed", record)
         self:_log("Warn", "Merge Egg prototype wave spawn failed", {
@@ -7177,9 +7463,16 @@ function MergeEggPrototypeService:_step()
     end
 end
 
+function MergeEggPrototypeService:_step()
+    local now = os.clock()
+    for _, record in pairs(self._activeByPlayer) do
+        self:_stepRecord(record, now)
+    end
+end
+
 function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
-    local record = self._active
-    if not record or record.player ~= player then
+    local record = self:_recordFor(player)
+    if not record then
         return false, "not_active_player"
     end
     local appending = appendOwnedSlots == true and record.encounterSpawned == true
@@ -7189,7 +7482,7 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
     if record.hatching then
         return false, "hatch_in_progress"
     end
-    local spawn = findNamedPart(self._world, (self._config.world or {}).hatcher_spawn)
+    local spawn = findNamedPart(record.world, (self._config.world or {}).hatcher_spawn)
     local principal = self._config.principal
     local activeTeamConfigs = self:_activeTeamConfigs(record)
     local teamConfigs = {}
@@ -7237,7 +7530,7 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
         local spawnCFrame = spawn.CFrame * CFrame.new(stationX, 0, tonumber(offset.z) or 0)
         local principalOk, info = self._npcPrincipalService:SpawnStationary(
             player,
-            "merge_egg_hatcher_" .. id,
+            "merge_egg_hatcher_" .. tostring(player.UserId) .. "_" .. id,
             spawnCFrame,
             {
                 definition = definition,
@@ -7280,11 +7573,12 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
             self:_clearEncounter(record)
             return false, tostring(info or "principal_spawn_failed")
         end
-        if self._active ~= record then
+        if not self:_isRecordActive(record) then
             self._npcPrincipalService:Despawn(info.name, "merge_egg_session_ended")
             return false, "session_ended"
         end
         local team = {
+            record = record,
             id = id,
             displayName = tostring(teamCfg.display_name or ("NPC Team " .. id)),
             config = runtimeTeamConfig,
@@ -7377,13 +7671,13 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
 
     record.encounterSpawned = true
     record.hatching = false
-    self:_ensureDeploymentPads(self._world)
+    self:_ensureDeploymentPads(record.world, record)
     self:_syncAllTeams(record)
     if not appending then
         self:_setPortalVisible(record, false)
         self:_setWorldState("AwaitingFirstEgg", record)
     else
-        self:_setWorldState(self._world:GetAttribute("PrototypeState") or "WaveActive", record)
+        self:_setWorldState(record.world:GetAttribute("PrototypeState") or "WaveActive", record)
     end
     self:_log(
         "Info",
@@ -7437,7 +7731,7 @@ end
 
 function MergeEggPrototypeService:_stageOpeningReserve(stageId)
     local pricing = self:_earthEggPricing(stageId)
-    local targetHatchers = self:_activeSlotCount(self._active)
+    local targetHatchers = math.max(1, math.floor(tonumber((self._config.team or {}).count) or 4))
     return MergeEggPricing.totalInitialPositionCost(pricing.baseAmount, targetHatchers),
         pricing.currency
 end
@@ -7640,12 +7934,12 @@ function MergeEggPrototypeService:_nextEmptyHatcher(record)
 end
 
 function MergeEggPrototypeService:_setCoinRunnerState(record, state, target)
-    if self._active ~= record then
+    if not self:_isRecordActive(record) then
         return
     end
     record.coinRunnerState = tostring(state or "Running")
     record.coinRunnerTarget = target and tostring(target) or nil
-    local worldState = self._world and self._world:GetAttribute("PrototypeState")
+    local worldState = record.world and record.world:GetAttribute("PrototypeState")
         or "AwaitingFirstEgg"
     self:_setWorldState(worldState, record)
 end
@@ -7654,7 +7948,7 @@ function MergeEggPrototypeService:_waitForCoinRunnerPoll(record, generation, sec
     local remaining = math.max(0, tonumber(seconds) or 0)
     while
         remaining > 0
-        and self._active == record
+        and self:_isRecordActive(record)
         and record.coinRunnerGeneration == generation
         and record.coinRunnerRunning == true
     do
@@ -7704,7 +7998,7 @@ function MergeEggPrototypeService:_finishCoinRunner(record, generation, reason)
         self._automationService:SetPlayerControlsEnabled(record.player, true)
     end
     if
-        self._active ~= record
+        not self:_isRecordActive(record)
         or record.coinRunnerGeneration ~= generation
         or record.coinRunnerRunning ~= true
     then
@@ -7732,7 +8026,7 @@ function MergeEggPrototypeService:_finishCoinRunner(record, generation, reason)
     record.coinRunnerCoinsDropped = math.max(0, record.progressionCoinsDroppedTotal or 0)
     record.coinRunnerWaveReached = record.waveIndex
     record.coinRunnerElapsedSeconds = math.max(0, os.clock() - record.coinRunnerStartedAt)
-    self:_setWorldState(self._world:GetAttribute("PrototypeState") or "WaveActive", record)
+    self:_setWorldState(record.world:GetAttribute("PrototypeState") or "WaveActive", record)
     self:_log("Info", "Merge Egg coin runner finished", {
         player = record.player.Name,
         result = result,
@@ -7815,7 +8109,7 @@ function MergeEggPrototypeService:_runCoinRunner(record, generation)
     end
 
     while
-        self._active == record
+        self:_isRecordActive(record)
         and record.coinRunnerGeneration == generation
         and record.coinRunnerRunning == true
     do
@@ -7941,7 +8235,7 @@ function MergeEggPrototypeService:_runCoinRunner(record, generation)
             local mergeTier = self:_mergeableEggTier(record)
             if mergeTier then
                 local mergeStation = findNamedPart(
-                    self._world,
+                    record.world,
                     (self._config.world or {}).egg_merge_control or "EggMergeControl"
                 )
                 self:_setCoinRunnerState(
@@ -7973,7 +8267,7 @@ function MergeEggPrototypeService:_runCoinRunner(record, generation)
                     or 0
                 if balance >= pricing.amount then
                     local createStation = findNamedPart(
-                        self._world,
+                        record.world,
                         (self._config.world or {}).egg_create_control or "EggCreateControl"
                     )
                     self:_setCoinRunnerState(
@@ -8062,7 +8356,7 @@ function MergeEggPrototypeService:_captureUpgradeSweepResult(record, phase, outc
         lastNavigationFailure = record.coinRunnerLastNavigationFailure,
     }
     self._upgradeSweepResults[#self._upgradeSweepResults + 1] = result
-    self:_setWorldState(self._world:GetAttribute("PrototypeState") or "ReadyToHatch", record)
+    self:_setWorldState(record.world:GetAttribute("PrototypeState") or "ReadyToHatch", record)
     return result
 end
 
@@ -8070,8 +8364,8 @@ function MergeEggPrototypeService:StartUpgradeSweep(player, options)
     if not RunService:IsStudio() then
         return false, "studio_only"
     end
-    local record = self._active
-    if not record or record.player ~= player or record.terminal == true then
+    local record = self:_recordFor(player)
+    if not record or record.terminal == true then
         return false, "not_active_encounter"
     end
     if self._upgradeSweepRunning == true or record.coinRunnerRunning == true then
@@ -8120,7 +8414,7 @@ function MergeEggPrototypeService:StartUpgradeSweep(player, options)
         while
             self._upgradeSweepRunning == true
             and self._upgradeSweepGeneration == sweepGeneration
-            and self._active == record
+            and self:_isRecordActive(record)
             and phases[phaseIndex] ~= nil
         do
             local phase = phases[phaseIndex]
@@ -8146,7 +8440,7 @@ function MergeEggPrototypeService:StartUpgradeSweep(player, options)
             while
                 self._upgradeSweepRunning == true
                 and self._upgradeSweepGeneration == sweepGeneration
-                and self._active == record
+                and self:_isRecordActive(record)
                 and record.coinRunnerRunning == true
             do
                 RunService.Heartbeat:Wait()
@@ -8154,7 +8448,7 @@ function MergeEggPrototypeService:StartUpgradeSweep(player, options)
             if
                 self._upgradeSweepRunning ~= true
                 or self._upgradeSweepGeneration ~= sweepGeneration
-                or self._active ~= record
+                or not self:_isRecordActive(record)
             then
                 break
             end
@@ -8180,7 +8474,7 @@ function MergeEggPrototypeService:StartUpgradeSweep(player, options)
             if phases[phaseIndex] ~= nil or record.progressionLoopComplete ~= true then
                 self:_clearEncounter(record)
                 local remaining = 1
-                while remaining > 0 and self._active == record do
+                while remaining > 0 and self:_isRecordActive(record) do
                     remaining -= RunService.Heartbeat:Wait()
                 end
             end
@@ -8192,7 +8486,7 @@ function MergeEggPrototypeService:StartUpgradeSweep(player, options)
                 or self._upgradeSweepPhase
             self:_setWorldState(
                 phases[phaseIndex] == nil and "UpgradeSweepComplete" or "UpgradeSweepStopped",
-                self._active == record and record or nil
+                self:_isRecordActive(record) and record or nil
             )
         end
     end)
@@ -8203,8 +8497,8 @@ function MergeEggPrototypeService:StartCoinRunner(player, options)
     if not RunService:IsStudio() then
         return false, "studio_only"
     end
-    local record = self._active
-    if not record or record.player ~= player or record.terminal == true then
+    local record = self:_recordFor(player)
+    if not record or record.terminal == true then
         return false, "not_active_encounter"
     end
     if not (self._automationService and self._economyService) then
@@ -8392,10 +8686,10 @@ function MergeEggPrototypeService:StartCoinRunner(player, options)
 end
 
 function MergeEggPrototypeService:CreateBaseEgg(player, request)
-    if not RunService:IsStudio() then
-        return false, "studio_only"
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
     end
-    local record = self._active
+    local record = self:_recordFor(player)
     if
         not record
         or record.player ~= player
@@ -8441,7 +8735,7 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
         } or {},
         reason = "merge_egg_create_base_egg",
         commit = function()
-            if self._active ~= record or record.terminal == true then
+            if not self:_isRecordActive(record) or record.terminal == true then
                 commitFailure = "board_state_changed"
                 return false
             end
@@ -8488,10 +8782,10 @@ function MergeEggPrototypeService:CreateBaseEgg(player, request)
 end
 
 function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
-    if not RunService:IsStudio() then
-        return false, "studio_only"
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
     end
-    local record = self._active
+    local record = self:_recordFor(player)
     if
         not record
         or record.player ~= player
@@ -8541,7 +8835,7 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
         reason = "merge_egg_upgrade_base_egg",
         commit = function()
             if
-                self._active ~= record
+                not self:_isRecordActive(record)
                 or record.terminal == true
                 or self:_baseEggTier(record) ~= currentTier
             then
@@ -8595,10 +8889,10 @@ function MergeEggPrototypeService:UpgradeBaseEgg(player, request)
 end
 
 function MergeEggPrototypeService:MergeBoardEggs(player, request)
-    if not RunService:IsStudio() then
-        return false, "studio_only"
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
     end
-    local record = self._active
+    local record = self:_recordFor(player)
     if
         not record
         or record.player ~= player
@@ -8647,7 +8941,8 @@ end
 
 function MergeEggPrototypeService:_canUseMergeBoard(player)
     local root = characterRoot(player)
-    local board = self._world and self:_ensureMergeBoard(self._world)
+    local record = self:_recordFor(player)
+    local board = record and record.world and self:_ensureMergeBoard(record.world)
     local boardRoot = board and board.PrimaryPart
     if not (root and boardRoot) then
         return false, "merge_board_unavailable"
@@ -8665,10 +8960,10 @@ function MergeEggPrototypeService:_canUseMergeBoard(player)
 end
 
 function MergeEggPrototypeService:MergeBoardSlots(player, request)
-    if not RunService:IsStudio() then
-        return false, "studio_only"
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
     end
-    local record = self._active
+    local record = self:_recordFor(player)
     if
         not record
         or record.player ~= player
@@ -8716,10 +9011,10 @@ function MergeEggPrototypeService:MergeBoardSlots(player, request)
 end
 
 function MergeEggPrototypeService:ToggleAutoCombine(player)
-    if not RunService:IsStudio() then
-        return false, "studio_only"
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
     end
-    local record = self._active
+    local record = self:_recordFor(player)
     if
         not record
         or record.player ~= player
@@ -8743,10 +9038,10 @@ function MergeEggPrototypeService:ToggleAutoCombine(player)
 end
 
 function MergeEggPrototypeService:PurchaseManagementUpgrade(player, request)
-    if not RunService:IsStudio() then
-        return false, "studio_only"
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
     end
-    local record = self._active
+    local record = self:_recordFor(player)
     if
         not record
         or record.player ~= player
@@ -8796,7 +9091,7 @@ function MergeEggPrototypeService:PurchaseManagementUpgrade(player, request)
         reason = "merge_egg_management_upgrade_" .. upgradeId,
         commit = function()
             if
-                self._active ~= record
+                not self:_isRecordActive(record)
                 or record.terminal == true
                 or self:_managementUpgradeLevel(record, upgradeId) ~= levelBefore
                 or math.max(
@@ -8836,7 +9131,7 @@ function MergeEggPrototypeService:PurchaseManagementUpgrade(player, request)
     if upgradeId == "egg_health" then
         self:_applyEggHealthUpgrade(record)
     elseif upgradeId == "active_slots" then
-        self:_ensureDeploymentPads(self._world)
+        self:_ensureDeploymentPads(record.world, record)
         local activated, activationReason = self:_hatch(player, true)
         if not activated then
             self:_log("Warn", "Merge Egg purchased slot waits for the next deployment", {
@@ -8848,7 +9143,7 @@ function MergeEggPrototypeService:PurchaseManagementUpgrade(player, request)
     else
         self:_stampUpgradeExperiment(record)
     end
-    self:_setWorldState(self._world:GetAttribute("PrototypeState") or "AwaitingFirstEgg", record)
+    self:_setWorldState(record.world:GetAttribute("PrototypeState") or "AwaitingFirstEgg", record)
     self:_log("Info", "Merge Egg management upgrade purchased", {
         player = player.Name,
         upgrade = upgradeId,
@@ -8862,11 +9157,11 @@ function MergeEggPrototypeService:PurchaseManagementUpgrade(player, request)
 end
 
 function MergeEggPrototypeService:PurchaseRebirth(player, request)
-    if not RunService:IsStudio() then
-        return false, "studio_only"
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
     end
-    local record = self._active
-    if not record or record.player ~= player then
+    local record = self:_recordFor(player)
+    if not record then
         return false, "not_active_encounter"
     end
     request = type(request) == "table" and request or {}
@@ -8919,7 +9214,7 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
         reason = "merge_egg_rebirth_" .. tostring(price.rank),
         commit = function()
             if
-                self._active ~= record
+                not self:_isRecordActive(record)
                 or MergeEggRebirth.normalizeCount(record.rebirthCount) ~= countBefore
                 or MergeEggRebirth.normalizeCount(progress.rebirths) ~= countBefore
             then
@@ -8993,10 +9288,10 @@ end
 -- weakest deployed tier first. It deliberately does not merge board eggs or repeatedly advance a
 -- single hatcher; Auto Combine remains a separate future entitlement.
 function MergeEggPrototypeService:EquipBestHatchers(player)
-    if not RunService:IsStudio() then
-        return false, "studio_only"
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
     end
-    local record = self._active
+    local record = self:_recordFor(player)
     if
         not record
         or record.player ~= player
@@ -9079,8 +9374,8 @@ function MergeEggPrototypeService:HandleBoardAction(player, request)
 end
 
 function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
-    if not RunService:IsStudio() then
-        return false, "studio_only"
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
     end
     if type(request) == "table" and request.automation == "upgrade_sweep" then
         return self:StartUpgradeSweep(player, request)
@@ -9088,7 +9383,7 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     if type(request) == "table" and request.automation == "coin_runner" then
         return self:StartCoinRunner(player, request)
     end
-    local record = self._active
+    local record = self:_recordFor(player)
     if
         not record
         or record.player ~= player
@@ -9178,7 +9473,7 @@ function MergeEggPrototypeService:AdvanceHatcherEgg(player, request)
     local wasRebuild = team.needsEggRebuild == true
     team.eggAdvanceInProgress = true
     if
-        self._active ~= record
+        not self:_isRecordActive(record)
         or record.terminal == true
         or (team.initialized == true) ~= wasInitialized
         or math.floor(tonumber(team.eggTier) or 0) ~= tierBefore
@@ -9296,13 +9591,15 @@ end
 -- the arena, restores parked durable pets, clears the isolated session, and removes every live
 -- rebirth/combat attribute that could make the fresh profile look progressed.
 function MergeEggPrototypeService:ResetForBeginning(player)
-    if self._enteringRecord and self._enteringRecord.player == player then
-        self:_cancelPendingEntry(self._enteringRecord, false)
-    elseif self._entering == player then
-        self._entering = nil
+    local enteringRecord = self._enteringRecordByPlayer[player]
+    if enteringRecord then
+        self:_cancelPendingEntry(enteringRecord, false)
+    elseif self._enteringByPlayer[player] then
+        self._enteringByPlayer[player] = nil
     end
-    if self._active and self._active.player == player then
-        self:_end(self._active, true, false)
+    local activeRecord = self:_recordFor(player)
+    if activeRecord then
+        self:_end(activeRecord, true, false)
     end
     if player then
         player:SetAttribute("InMergeEggPrototype", nil)
@@ -9316,8 +9613,8 @@ function MergeEggPrototypeService:ResetForBeginning(player)
 end
 
 function MergeEggPrototypeService:_reset(player)
-    local record = self._active
-    if not record or record.player ~= player then
+    local record = self:_recordFor(player)
+    if not record then
         return false, "not_active_player"
     end
     if record.hatching then
@@ -9349,20 +9646,78 @@ end
 -- Explicit deterministic test seam. Gameplay reset intentionally keeps live progress; balance
 -- automation may call this old snapshot path to replay a known Wave 10/20 checkpoint exactly.
 function MergeEggPrototypeService:RestoreCheckpointSnapshotForTest(player)
-    local record = self._active
-    if not record or record.player ~= player then
+    local record = self:_recordFor(player)
+    if not record then
         return false, "not_active_player"
     end
     return self:_restoreCheckpoint(record, "test_snapshot")
 end
 
 function MergeEggPrototypeService:_exit(player)
-    local record = self._active
-    if not record or record.player ~= player then
+    local record = self:_recordFor(player)
+    if not record then
         return false, "not_active_player"
+    end
+    if self:_isDedicatedMergePlace() then
+        return self:_teleportToRole(player, "main")
     end
     self:_end(record, true, false)
     return true
+end
+
+function MergeEggPrototypeService:_bindMergePlaceJoin()
+    if not self:_isDedicatedMergePlace() then
+        return
+    end
+    local function onCharacter(player)
+        task.spawn(function()
+            local character = player.Character
+            if not (player.Parent and character) then
+                return
+            end
+            if not character:WaitForChild("HumanoidRootPart", 10) then
+                self:_log("Warn", "Merge place character had no root part", {
+                    player = player.Name,
+                })
+                return
+            end
+            local dataDeadline = os.clock() + 30
+            while
+                player.Parent
+                and self._dataService
+                and not self._dataService:IsDataLoaded(player)
+                and os.clock() < dataDeadline
+            do
+                RunService.Heartbeat:Wait()
+            end
+            if self._dataService and not self._dataService:IsDataLoaded(player) then
+                self:_log("Warn", "Merge place profile was not ready before session entry", {
+                    player = player.Name,
+                })
+                return
+            end
+            local began, reason = self:_begin(player)
+            if not began and reason ~= "already_inside" then
+                self:_log("Warn", "Dedicated Merge place could not start player session", {
+                    player = player.Name,
+                    placeId = game.PlaceId,
+                    reason = reason,
+                })
+            end
+        end)
+    end
+    local function onPlayer(player)
+        player.CharacterAdded:Connect(function()
+            onCharacter(player)
+        end)
+        if player.Character then
+            onCharacter(player)
+        end
+    end
+    Players.PlayerAdded:Connect(onPlayer)
+    for _, player in ipairs(Players:GetPlayers()) do
+        onPlayer(player)
+    end
 end
 
 function MergeEggPrototypeService:Start()
@@ -9380,7 +9735,10 @@ function MergeEggPrototypeService:Start()
             self:_begin(player, bayId)
         end)
     end
-    self:_unsealHallGate()
+    if not self:_isDedicatedMergePlace() then
+        self:_unsealHallGate()
+    end
+    self:_bindMergePlaceJoin()
     Signals.MergeEggPrototypeUpgrade.OnServerEvent:Connect(function(player, request)
         self:AdvanceHatcherEgg(player, request)
     end)
@@ -9397,16 +9755,18 @@ function MergeEggPrototypeService:Start()
         self:_step()
     end)
     Players.PlayerRemoving:Connect(function(player)
-        if self._enteringRecord and self._enteringRecord.player == player then
-            self:_cancelPendingEntry(self._enteringRecord, true)
-        elseif self._entering == player then
-            self._entering = nil
+        local enteringRecord = self._enteringRecordByPlayer[player]
+        if enteringRecord then
+            self:_cancelPendingEntry(enteringRecord, true)
+        elseif self._enteringByPlayer[player] then
+            self._enteringByPlayer[player] = nil
             if self._realm then
                 self._realm:Release(player)
             end
         end
-        if self._active and self._active.player == player then
-            self:_end(self._active, false, true)
+        local activeRecord = self:_recordFor(player)
+        if activeRecord then
+            self:_end(activeRecord, false, true)
         end
     end)
 end

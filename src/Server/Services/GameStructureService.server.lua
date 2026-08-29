@@ -10,6 +10,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local placesConfig = require(ReplicatedStorage.Configs:WaitForChild("places"))
 
 local GameStructureService = {}
 
@@ -67,7 +69,20 @@ local function loadGameConfig()
     return {}
 end
 
+local function hasAuthoredMergeRealm()
+    local maps = workspace:FindFirstChild("Maps")
+    local realm = maps and maps:FindFirstChild("MergeEggRealm")
+    return realm ~= nil and realm:GetAttribute("MergeEggAuthoredRealm") == true
+end
+
 local function hasAuthoredMapHooks()
+    if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+        -- A missing Merge map is an integration error, not permission to generate the main game.
+        return true
+    end
+    if hasAuthoredMergeRealm() then
+        return true
+    end
     for _, tagName in ipairs(CONTRACT_TAGS) do
         for _, instance in ipairs(CollectionService:GetTagged(tagName)) do
             if instance:IsDescendantOf(workspace) and not instance:GetAttribute("Synthetic") then

@@ -17,6 +17,8 @@ local PrologueSpawnGate = require(ReplicatedStorage.Shared.Game.PrologueSpawnGat
 local WorldContext = require(ReplicatedStorage.Shared.Game.WorldContext)
 local fireGameEvent = require(ReplicatedStorage.Shared.Network.FireGameEvent)
 local Readiness = require(ReplicatedStorage.Shared.Utils.Readiness)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local placesConfig = require(ReplicatedStorage.Configs:WaitForChild("places"))
 
 local ZoneService = {}
 ZoneService.__index = ZoneService
@@ -610,6 +612,9 @@ end
 function ZoneService:_connectCharacterSpawnSafety(player)
     player.CharacterAdded:Connect(function()
         task.defer(function()
+            if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+                return
+            end
             task.wait(0.2)
             if player:GetAttribute("InMission") ~= nil then
                 return
@@ -628,6 +633,9 @@ function ZoneService:_connectCharacterSpawnSafety(player)
 
     if player.Character then
         task.defer(function()
+            if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+                return
+            end
             if player:GetAttribute("InMission") ~= nil then
                 return
             end

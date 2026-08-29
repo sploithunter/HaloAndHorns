@@ -8,14 +8,17 @@
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WorldBindingService = {}
 WorldBindingService.__index = WorldBindingService
 
 -- zone kind allowlist lives in ZoneSchema (ONE source; the dual-allowlist
 -- drift hard-crashed boot 2026-07-09)
-local ZoneSchema = require(game:GetService("ReplicatedStorage").Shared.Game.ZoneSchema)
-local HallPlayAreas = require(game:GetService("ReplicatedStorage").Shared.Game.HallPlayAreas)
+local ZoneSchema = require(ReplicatedStorage.Shared.Game.ZoneSchema)
+local HallPlayAreas = require(ReplicatedStorage.Shared.Game.HallPlayAreas)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local placesConfig = require(ReplicatedStorage.Configs:WaitForChild("places"))
 
 local function toVector3(value, fallback)
     fallback = fallback or Vector3.zero
@@ -242,6 +245,10 @@ function WorldBindingService:_validateZoneTree()
 end
 
 function WorldBindingService:_hasAuthoredHooks()
+    if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+        return true
+    end
+
     for tagName in pairs(self._markersConfig.tags or {}) do
         for _, instance in ipairs(CollectionService:GetTagged(tagName)) do
             if instance:IsDescendantOf(workspace) and not instance:GetAttribute("Synthetic") then
@@ -389,6 +396,9 @@ function WorldBindingService:_ensureLegacyAreaFolders(areaId)
 end
 
 function WorldBindingService:_createSpawnZone(areaId)
+    if PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+        return nil
+    end
     local _, worldFolder = self:_ensureLegacyAreaFolders(areaId)
     local worldConfig = self._breakablesConfig.worlds and self._breakablesConfig.worlds[areaId]
     local spawnAreaConfig = worldConfig and worldConfig.spawn_area or {}
@@ -721,6 +731,12 @@ function WorldBindingService:_bindInstance(tagName, instance)
     end
     if not instance:IsDescendantOf(workspace) then
         return
+    end
+    if tagName == "SpawnZone" and PlaceRuntime.isMerge(game.PlaceId, placesConfig) then
+        local areaId = instance:GetAttribute("AreaId")
+        if not (self._breakablesConfig.worlds and self._breakablesConfig.worlds[areaId]) then
+            return
+        end
     end
 
     -- Generated mission-instance content is NOT authored map surface: its
