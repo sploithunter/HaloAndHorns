@@ -6191,3 +6191,9 @@ first-session cohort rates.
   level disc on compact) onto `PlayerBar.Capsule`, flush left of the named `Emblem`
   portrait. The pill inherits the capsule ViewportScale so the cluster stays together
   on phone-width bars. Ceremony flight lands on the docked chip.
+
+## 2026-08-30 — Merge place uses the wave bar, not the quest tracker
+
+- Dedicated Merge place hides `QuestTrackerStyle` (no Farm quests). The existing
+  `WaveMeter` now occupies that upper-right chrome slot (`MergeWaveBar`, 397×14px
+  inset) so the old center playfield card is gone.

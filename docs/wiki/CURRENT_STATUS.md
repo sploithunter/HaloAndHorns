@@ -1891,3 +1891,8 @@ Last checked: 2026-08-24
 
 The worn title pill (Novice / Spark → Skilled / leaderboard) docks to the left of
 `PlayerBar.Emblem`, not the quest column. Compact inherits the capsule scale.
+
+## Merge HUD (2026-08-30)
+
+Dedicated Merge place hides the Farm quest tracker. Wave status lives in
+`MergeWaveBar` in that same upper-right chrome slot.

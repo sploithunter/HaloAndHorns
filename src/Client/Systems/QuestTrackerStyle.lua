@@ -13,9 +13,11 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local QuestDisplayMode = require(ReplicatedStorage.Shared.Game.QuestDisplayMode)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local CloseButton = require(script.Parent.Parent.UI.Components.CloseButton)
 
 local QuestTrackerStyle = {}
+local placesConfig
 local started = false
 QuestTrackerStyle._pane = nil
 QuestTrackerStyle._dismissed = false
@@ -37,10 +39,26 @@ local DETAIL_READ_GRACE_SECONDS = 10
 
 -- Tutorial and quest objectives share one upper-right surface. A full menu or the tutorial owns the
 -- corner exclusively; dismissal remains local to the quest tracker itself.
+local function isMergePlace()
+    if placesConfig == nil then
+        local configs = ReplicatedStorage:FindFirstChild("Configs")
+        local places = configs and configs:FindFirstChild("places")
+        if places then
+            local ok, loaded = pcall(require, places)
+            if ok then
+                placesConfig = loaded
+            end
+        end
+    end
+    return placesConfig ~= nil and PlaceRuntime.isMerge(game.PlaceId, placesConfig)
+end
+
 local function applyVisibility()
     if QuestTrackerStyle._pane then
         local player = Players.LocalPlayer
-        QuestTrackerStyle._pane.Visible = not QuestTrackerStyle._dismissed
+        -- Merge has no quests; the wave bar owns this chrome slot.
+        QuestTrackerStyle._pane.Visible = not isMergePlace()
+            and not QuestTrackerStyle._dismissed
             and player:GetAttribute("LargeMenuOpen") ~= true
             and player:GetAttribute("TutorialCornerOwned") ~= true
             and player:GetAttribute("TutorialHandoffOpen") ~= true
