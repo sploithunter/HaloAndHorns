@@ -17,9 +17,11 @@ a routing rollback, not a player-data rollback.
   rewards, and the dormant Hall ledger are untouched.
 - `hall_of_worlds.entry_enabled = false` still rejects Hall travel/guest visits. Production keeps
   the Home Hall arch frosted and sealed; `combat_tutorial.entry.enabled = false`, so it is not the
-  combat-training mission door. In Studio only, the [Merge an Egg prototype](MERGE_EGG_PROTOTYPE.md)
-  temporarily unseals this same `HallOfWorldsPortal` as a direct session route to its authored
-  strip. World Travel follows ordinary Homeworld unlock rules.
+  combat-training mission door. The same `HallOfWorldsPortal` now displays only `COMING SOON` and
+  provides a restricted preview route to the dedicated [Merge place](MERGE_EGG_PROTOTYPE.md). In
+  production, the prompt is visible only to IDs in `configs/internal_accounts.lua` plus Kade
+  (`536245038`); the server repeats the allowlist check before teleporting. Studio retains a bypass
+  for authoring. World Travel follows ordinary Homeworld unlock rules.
 - Tutorial v5 restores the v3 Homeworld order: Earth egg, Home mining, squad, Resonance
   bind/cast/enhancement, then the Earth-cave fight, Berserk Brew, and Rally. The isolated
   combat tutorial will replace that combat tail. Versioned semantic migration keeps an

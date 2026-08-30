@@ -6116,3 +6116,12 @@ first-session cohort rates.
 - Added a shared clone/spawn helper that resolves authored `TowerAnchor` pads, grounds each model,
   preserves pad/bay identity attributes, and leaves permanent Studio maps responsible only for pad
   placement. Added `models.project.json` so `models.rbxl` can be rebuilt as a focused asset place.
+
+## 2026-08-29 — Restricted Coming Soon route to the Merge place
+
+- Rebound the sealed Farm and Fight `HallOfWorldsPortal` to the dedicated Halo and Horns: Merge
+  PlaceId while reducing its public title to `COMING SOON` and preserving the frosted collision wall.
+- Preview access now reuses all canonical leaderboard/analytics-excluded internal account IDs and
+  explicitly includes Kade (`536245038`) without changing his global account classification.
+- Public clients do not see the entry prompt, the server rejects unauthorized door activation, and
+  unauthorized direct joins to the unreleased Merge place are returned to main or fail closed.
