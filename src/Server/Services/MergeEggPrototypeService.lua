@@ -1,5 +1,5 @@
 --[[
-    MergeEggPrototypeService — Studio-only Phase 6 vertical slice.
+    MergeEggPrototypeService — dedicated Merge-place gameplay and cross-place routing.
 
     One player enters through Home's otherwise-disabled Hall gate, is streamed to one authored
     strip under Workspace.Maps, and deploys the player's owned subset across a fixed nine-station
@@ -12,6 +12,8 @@
 
     There is intentionally no tile-kit or mission-instance world generation here. The map is a
     persistent Studio-authored Model and this service owns only session routing and cleanup.
+    Studio adds optional automation controls for balancing runs; published servers use the same
+    production service without that dependency.
 ]]
 
 local CollectionService = game:GetService("CollectionService")

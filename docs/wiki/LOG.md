@@ -6166,3 +6166,11 @@ first-session cohort rates.
   Mountain-time window.
 - Kept Studio reservation overrides disabled and preserved the one-egg level 2/5/10 progression,
   1% Huge chance, immutable award provenance, and explicit Admin regression path.
+
+## 2026-08-30 — Published Merge gate startup restored
+
+- Moved `MergeEggPrototypeService` registration and required-module startup out of the Studio-only
+  bootstrap branch so published Farm and Fight servers create the restricted Merge entry prompt
+  and published Merge servers bind their gameplay and public return door.
+- Kept `AutomationService` as an optional Studio-only dependency for balance runners; production
+  startup no longer requires or registers the automation driver.
