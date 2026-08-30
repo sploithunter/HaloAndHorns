@@ -25,4 +25,9 @@ function MergeTowerBallistics.point(ox, oy, oz, tx, ty, tz, apexHeight, alpha)
     return x, y, z
 end
 
+function MergeTowerBallistics.launchDelta(ox, oy, oz, tx, ty, tz, apexHeight)
+    local height = math.max(0, tonumber(apexHeight) or 0)
+    return (tx - ox), (ty - oy) + 4 * height, (tz - oz)
+end
+
 return MergeTowerBallistics

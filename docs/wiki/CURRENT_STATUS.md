@@ -2,6 +2,12 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Merge edge towers fire a sphere and aim (2026-08-30)
+
+Starter cannons spawn at `tier_1_scale` 0.85 (was full-size Tier 2). Each shot is a metal
+sphere on the same parabola. The cannon yaws and pitches along the launch tangent before
+it fires. Upgrades still later.
+
 ## Merge edge towers loft a spear (2026-08-30)
 
 Claiming a bay clones the current-art Repulsor onto both authored tower pads. Each cannon

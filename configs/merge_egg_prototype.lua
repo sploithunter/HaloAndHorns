@@ -471,17 +471,18 @@ return {
                 "repulsor",
                 "nullifier",
             },
-            -- First combat slice: spawn the current-art cannon on both authored pads and loft a
-            -- spear toward the nearest in-lane enemy, or a gate-side landing point if the lane is
-            -- empty. Upgrades and role acquisition stay unwired.
+            -- First combat slice: spawn the starter-scale chassis on both authored pads and loft a
+            -- sphere toward the nearest in-lane enemy, or a gate-side landing point if the lane is
+            -- empty. The cannon yaws/pitches along the launch tangent. Upgrades stay unwired.
             starter_role = "repulsor",
-            spear = {
+            starter_tier = 1,
+            shot = {
                 interval = 2.4,
                 flight_seconds = 0.85,
                 apex_height = 14,
                 range = 90,
-                length = 4.2,
-                land_seconds = 1.2,
+                diameter = 1.2,
+                land_seconds = 0.55,
             },
         },
         -- The existing camera-facing button is only a presentation surface. The server accepts an

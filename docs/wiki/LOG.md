@@ -6222,3 +6222,9 @@ first-session cohort rates.
   Heartbeat lofts a labeled spear on a 4h t(1-t) parabola toward the nearest
   in-lane enemy, or a gate-side landing point if the lane is empty. The spear
   plants for 1.2s. No damage, upgrades, or cannonball mesh yet.
+
+## 2026-08-30 — Edge towers fire a sphere and aim
+
+- Starter presentation uses `tier_1_scale` 0.85 on the current-art mesh so the
+  pad cannon matches the configured chassis size. The projectile is a sphere.
+  The cannon yaws/pitches to the launch tangent before each shot.
