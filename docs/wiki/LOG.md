@@ -6141,3 +6141,10 @@ first-session cohort rates.
   no longer fall through to live `ViewportFrame` model rendering.
 - Replaced eager full-inventory GuiObject construction with a virtual grid that renders and recycles
   only the visible window plus two overscan rows while retaining the full logical scroll height.
+
+## 2026-08-30 — Hoverboard world-space fallback direction
+
+- Fixed the hoverboard's control fallback in place/controller combinations where PlayerModule does
+  not return a camera-space Vector3. `Humanoid.MoveDirection` is already world-space and is now used
+  directly instead of being camera-transformed a second time, which had rotated W/A by 90 degrees
+  in the dedicated Merge place.
