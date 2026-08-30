@@ -692,7 +692,9 @@ team and queue model:
   presentation and exposes the Merge teleport prompt only to the canonical internal-account IDs
   plus Kade (`536245038`). The client hides the prompt for everyone else, the server validates every
   use, and an unauthorized direct join to the Merge PlaceId is returned to main (or kicked if that
-  teleport fails). Studio bypasses this preview restriction for authoring and local playtests.
+  teleport fails). Studio uses the same ID policy and the same configured PlaceId route. Because
+  Studio cannot complete a normal cross-place teleport, using the door in a local playtest fails
+  visibly instead of silently entering the obsolete embedded prototype.
 - The dedicated place's authored common-area `Workspace.HallOfWorldsPortal` is the reciprocal
   return door. Runtime styles and labels that existing hook, then exposes an unrestricted
   `Return / Farm & Fight` prompt to every player. Return does not require a claimed bay, active

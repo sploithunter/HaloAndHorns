@@ -6148,3 +6148,13 @@ first-session cohort rates.
   not return a camera-space Vector3. `Humanoid.MoveDirection` is already world-space and is now used
   directly instead of being camera-transformed a second time, which had rotated W/A by 90 degrees
   in the dedicated Merge place.
+
+## 2026-08-30 — Merge gate uses the dedicated place in every runtime
+
+- Removed the Farm and Fight gate's Studio-only fallback into the obsolete embedded Merge
+  prototype. Approved players now always route through the configured `merge` place role
+  (`84544653387905`); a Studio playtest reports the unsupported teleport instead of moving the
+  character to the old map.
+- Made preview access ID-only in Studio as well as production: the canonical internal-account
+  registry plus Kade (`536245038`). The dedicated Merge place continues to reject direct joins by
+  anyone else and returns them to main.
