@@ -24,5 +24,12 @@ return function()
             expect(y).to.equal(1)
             expect(z).to.equal(10)
         end)
+
+        it("points the launch tangent up by four times the apex", function()
+            local dx, dy, dz = Ballistics.launchDelta(0, 8, 0, 80, 2, 0, 14)
+            expect(dx).to.equal(80)
+            expect(dy).to.equal(50)
+            expect(dz).to.equal(0)
+        end)
     end)
 end

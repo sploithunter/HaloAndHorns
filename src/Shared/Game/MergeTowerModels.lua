@@ -70,7 +70,7 @@ function MergeTowerModels.Clone(role, tier, rootOverride)
     return clone
 end
 
-function MergeTowerModels.Spawn(role, tier, pad, parent, rootOverride)
+function MergeTowerModels.Spawn(role, tier, pad, parent, rootOverride, scale)
     local anchor = anchorPart(pad)
     if not anchor then
         return nil, "tower_anchor_missing"
@@ -80,11 +80,16 @@ function MergeTowerModels.Spawn(role, tier, pad, parent, rootOverride)
         return nil, reason
     end
     model.Parent = parent or pad.Parent
+    local resolvedScale = tonumber(scale) or 1
+    if resolvedScale > 0 and math.abs(resolvedScale - 1) > 1e-4 then
+        model:ScaleTo(model:GetScale() * resolvedScale)
+    end
     model:PivotTo(anchor.CFrame)
     local boundsCFrame, boundsSize = model:GetBoundingBox()
     local bottomY = boundsCFrame.Position.Y - boundsSize.Y * 0.5
     model:PivotTo(model:GetPivot() + Vector3.new(0, anchor.Position.Y - bottomY, 0))
     model:SetAttribute("MergeTowerSpawned", true)
+    model:SetAttribute("MergeTowerSpawnScale", resolvedScale)
     model:SetAttribute("MergeTowerPadSlot", pad:GetAttribute("MergeTowerPadSlot"))
     model:SetAttribute("MergeEggBayId", pad:GetAttribute("MergeEggBayId"))
     return model

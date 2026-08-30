@@ -1034,6 +1034,7 @@ clean.
   `MergeTowerPadRole`, and bay identity attributes on both the model and invisible `TowerAnchor`,
   and use cyan Heaven accents or ember Hell accents rather than the egg stands' circular language.
   The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Runtime
-  now clones the current-art Repulsor onto both pads and lofts a spear along a parabolic arc
-  toward the nearest in-lane enemy, or a gate-side landing point if the lane is empty. Role
+  now clones the current-art Repulsor onto both pads at `tier_1_scale` (0.85) and lofts a
+  sphere along a parabolic arc toward the nearest in-lane enemy, or a gate-side landing
+  point if the lane is empty. The cannon yaws and pitches along the launch tangent. Role
   upgrades and acquisition remain unwired.
