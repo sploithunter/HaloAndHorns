@@ -18,8 +18,8 @@ return {
         world_pop_seconds = 0.75,
         chip_width = 160,
         chip_height = 36,
-        -- Stay on the 14px rounded-screen top, left of the quest pill.
-        -- Do not follow PeopleListTop (60) — the list sits under the quest bar.
+        -- Fallback only: the live chip docks to PlayerBar.Emblem.
+        -- Kept so ceremony land has a top inset if the bar is not up yet.
         chip_top = 14,
         icon_text_gap = 8,
         nametag_studs = 2.55,

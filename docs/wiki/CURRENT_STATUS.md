@@ -1886,3 +1886,8 @@ Last checked: 2026-08-24
 - Huge pets now differentiate progression: base-single species gain the existing targeted splash;
   base-area species retain AoE and additionally gain a spreading burn with global defaults and an
   optional per-pet `huge_attack_dot` override.
+
+## Status chip (2026-08-30)
+
+The worn title pill (Novice / Spark → Skilled / leaderboard) docks to the left of
+`PlayerBar.Emblem`, not the quest column. Compact inherits the capsule scale.

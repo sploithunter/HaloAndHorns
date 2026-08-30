@@ -50,6 +50,14 @@ return function()
             expect(ranks.ceremony.chip_top).to.equal(14)
         end)
 
+        it("docks the status chip to the PlayerBar portrait", function()
+            local source = readFile("src/Client/Systems/CombatRankController.lua")
+            local playerBar = readFile("src/Client/Systems/PlayerBar.lua")
+            expect(source:find('WaitForChild("PlayerBar"', 1, true)).to.be.ok()
+            expect(source:find("layoutChipDock", 1, true)).to.be.ok()
+            expect(playerBar:find('emblem.Name = "Emblem"', 1, true)).to.be.ok()
+        end)
+
         it("maps every pillar grant_step to a live combat-tutorial step", function()
             for stepId in pairs(PILLARS) do
                 expect(stepIndex(stepId) ~= nil).to.equal(true)
