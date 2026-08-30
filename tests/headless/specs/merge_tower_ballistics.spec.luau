@@ -1,0 +1,28 @@
+local Ballistics = loadModule("src/Shared/Game/MergeTowerBallistics.lua")
+
+return function()
+    describe("Merge tower spear ballistics", function()
+        it("keeps the projectile on the endpoints", function()
+            local x0, y0, z0 = Ballistics.point(10, 4, -2, 100, 2, 8, 14, 0)
+            local x1, y1, z1 = Ballistics.point(10, 4, -2, 100, 2, 8, 14, 1)
+            expect(x0).to.equal(10)
+            expect(y0).to.equal(4)
+            expect(z0).to.equal(-2)
+            expect(x1).to.equal(100)
+            expect(y1).to.equal(2)
+            expect(z1).to.equal(8)
+        end)
+
+        it("peaks at the configured apex on a flat shot", function()
+            local _x, y, _z = Ballistics.point(0, 5, 0, 80, 5, 0, 14, 0.5)
+            expect(y).to.be.near(19, 1e-9)
+        end)
+
+        it("clamps alpha so overshoot still lands on the target", function()
+            local x, y, z = Ballistics.point(0, 3, 0, 40, 1, 10, 12, 4)
+            expect(x).to.equal(40)
+            expect(y).to.equal(1)
+            expect(z).to.equal(10)
+        end)
+    end)
+end

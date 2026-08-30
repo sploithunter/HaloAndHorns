@@ -1033,5 +1033,7 @@ clean.
   `Workspace.GeneratedMap_MergeEggVoxel.TowerStations`, expose `MergeTowerPadSlot`,
   `MergeTowerPadRole`, and bay identity attributes on both the model and invisible `TowerAnchor`,
   and use cyan Heaven accents or ember Hell accents rather than the egg stands' circular language.
-  The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Combat
-  roles, firing behavior, upgrades, and acquisition rules remain unwired.
+  The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Runtime
+  now clones the current-art Repulsor onto both pads and lofts a spear along a parabolic arc
+  toward the nearest in-lane enemy, or a gate-side landing point if the lane is empty. Role
+  upgrades and acquisition remain unwired.

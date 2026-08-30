@@ -1439,6 +1439,35 @@ return function()
             expect(modelsProject:find('"$path": "assets/place/Models.rbxm"', 1, true)).to.be.ok()
         end)
 
+        it("lofts a spear from each authored pad cannon", function()
+            local towers = config.team.edge_towers
+            local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local ballistics = readFile("src/Shared/Game/MergeTowerBallistics.lua")
+
+            expect(towers.starter_role).to.equal("repulsor")
+            expect(towers.spear.interval).to.equal(2.4)
+            expect(towers.spear.flight_seconds).to.equal(0.85)
+            expect(towers.spear.apex_height).to.equal(14)
+            expect(towers.spear.range).to.equal(90)
+            expect(towers.spear.length).to.equal(4.2)
+            expect(towers.spear.land_seconds).to.equal(1.2)
+            expect(ballistics:find("4 * height * alpha * (1 - alpha)", 1, true)).to.be.ok()
+            expect(service:find("MergeTowerBallistics", 1, true)).to.be.ok()
+            expect(service:find("MergeTowerModels", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_ensureBayTowers", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_fireTowerSpear", 1, true)).to.be.ok()
+            expect(
+                service:find(
+                    'self:_authoredBayArtifact(world, "TowerStations", "TowerPads")',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(service:find('"MergeEggTowerSpears"', 1, true)).to.be.ok()
+            expect(service:find("self:_stepTowerSpears(record, now)", 1, true)).to.be.ok()
+            expect(service:find("self:_stepTowerFire(record, now)", 1, true)).to.be.ok()
+        end)
+
         it("activates egg-local anti-heal fields on breaches and damage", function()
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             local powerService = readFile("src/Server/Services/PowerService.lua")

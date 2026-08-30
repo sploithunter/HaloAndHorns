@@ -38,6 +38,8 @@ local MergeEggPlayerCombat = require(ReplicatedStorage.Shared.Game.MergeEggPlaye
 local MergeEggPricing = require(ReplicatedStorage.Shared.Game.MergeEggPricing)
 local MergeEggRebirth = require(ReplicatedStorage.Shared.Game.MergeEggRebirth)
 local MergeEggWaveGenerator = require(ReplicatedStorage.Shared.Game.MergeEggWaveGenerator)
+local MergeTowerBallistics = require(ReplicatedStorage.Shared.Game.MergeTowerBallistics)
+local MergeTowerModels = require(ReplicatedStorage.Shared.Game.MergeTowerModels)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local MergeEggRealmBuilder = require(script.Parent.MergeEggRealmBuilder)
@@ -3133,6 +3135,269 @@ function MergeEggPrototypeService:_ensureHatcherStands(world)
     end
 end
 
+function MergeEggPrototypeService:_edgeTowerConfig()
+    local team = type(self._config.team) == "table" and self._config.team or {}
+    local towers = type(team.edge_towers) == "table" and team.edge_towers or {}
+    local spear = type(towers.spear) == "table" and towers.spear or {}
+    return towers, spear
+end
+
+function MergeEggPrototypeService:_towerFolder(world, name)
+    if not world then
+        return nil
+    end
+    local folder = world:FindFirstChild(name)
+    if folder and not folder:IsA("Folder") then
+        folder:Destroy()
+        folder = nil
+    end
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = name
+        folder.Parent = world
+    end
+    return folder
+end
+
+function MergeEggPrototypeService:_clearTowerSpears(record)
+    local world = record and record.world
+    local folder = world and world:FindFirstChild("MergeEggTowerSpears")
+    if folder then
+        folder:Destroy()
+    end
+    if record then
+        record.towerSpears = {}
+    end
+end
+
+function MergeEggPrototypeService:_towerLook(world, fallback)
+    local worldCfg = self._config.world or {}
+    local spawn = findNamedPart(world, worldCfg.hatcher_spawn or "HatcherSpawn")
+    local look = spawn and Vector3.new(spawn.CFrame.LookVector.X, 0, spawn.CFrame.LookVector.Z)
+        or fallback
+    if look and look.Magnitude > 0.001 then
+        return look.Unit
+    end
+    local side = world and tostring(world:GetAttribute("MergeEggBaySide") or "")
+    if side == "hell" then
+        return Vector3.new(-1, 0, 0)
+    end
+    return Vector3.new(1, 0, 0)
+end
+
+function MergeEggPrototypeService:_towerMuzzle(cannon, look)
+    if not cannon then
+        return nil
+    end
+    local named = cannon:FindFirstChild("Muzzle", true) or cannon:FindFirstChild("Barrel", true)
+    if named and named:IsA("BasePart") then
+        return named.Position
+    end
+    local box, size = cannon:GetBoundingBox()
+    local along = math.max(size.X, size.Z) * 0.35
+    return box.Position + look * along + Vector3.new(0, size.Y * 0.18, 0)
+end
+
+function MergeEggPrototypeService:_towerFireTarget(record, origin, look)
+    local _, spear = self:_edgeTowerConfig()
+    local range = math.max(8, tonumber(spear.range) or 90)
+    local best
+    local bestDistance = math.huge
+    for _, enemy in ipairs(record and record.enemies or {}) do
+        local model = enemy.model
+        if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 1) > 0 then
+            local position = model:GetPivot().Position
+            local planar = Vector3.new(position.X - origin.X, 0, position.Z - origin.Z)
+            local distance = planar.Magnitude
+            if
+                distance > 4
+                and distance <= range
+                and planar.Unit:Dot(look) > 0.12
+                and distance < bestDistance
+            then
+                best = Vector3.new(position.X, position.Y + 1.4, position.Z)
+                bestDistance = distance
+            end
+        end
+    end
+    if best then
+        return best
+    end
+    local worldCfg = self._config.world or {}
+    local spawn = findNamedPart(record and record.world, worldCfg.hatcher_spawn or "HatcherSpawn")
+    local floorY = origin.Y - 3.2
+    if spawn then
+        floorY = spawn.Position.Y - spawn.Size.Y * 0.5 + 0.35
+    end
+    return Vector3.new(origin.X + look.X * range, floorY, origin.Z + look.Z * range)
+end
+
+function MergeEggPrototypeService:_ensureBayTowers(record)
+    local world = record and record.world
+    if not world or record.towersReady == true then
+        return
+    end
+    local pads = self:_authoredBayArtifact(world, "TowerStations", "TowerPads")
+    if not pads then
+        return
+    end
+    local towersCfg = self:_edgeTowerConfig()
+    local role = tostring(towersCfg.starter_role or "repulsor")
+    local tier = math.max(1, math.floor(tonumber(towersCfg.current_art_tier) or 2))
+    local folder = self:_towerFolder(world, "MergeEggTowers")
+    for _, pad in ipairs(pads:GetChildren()) do
+        if pad:IsA("Model") and pad:FindFirstChild("TowerAnchor", true) then
+            local name = pad.Name .. "_Cannon"
+            local existing = folder:FindFirstChild(name)
+            if not existing then
+                local model, reason = MergeTowerModels.Spawn(role, tier, pad, folder)
+                if model then
+                    model.Name = name
+                    model:SetAttribute("MergeTowerPadRole", pad:GetAttribute("MergeTowerPadRole"))
+                    model:SetAttribute("MergeTowerRole", role)
+                    model:SetAttribute("MergeTowerTier", tier)
+                    model:SetAttribute("MergeTowerNextFireAt", 0)
+                elseif record.towerTemplateWarned ~= true then
+                    record.towerTemplateWarned = true
+                    self:_log("Warn", "Merge Egg tower template missing", {
+                        role = role,
+                        tier = tier,
+                        reason = reason,
+                    })
+                end
+            end
+        end
+    end
+    record.towersReady = true
+end
+
+function MergeEggPrototypeService:_fireTowerSpear(record, cannon, now)
+    local world = record and record.world
+    if not (world and cannon) then
+        return
+    end
+    local _, spear = self:_edgeTowerConfig()
+    local look = self:_towerLook(world, cannon:GetPivot().LookVector)
+    local origin = self:_towerMuzzle(cannon, look)
+    if not origin then
+        return
+    end
+    local target = self:_towerFireTarget(record, origin, look)
+    local folder = self:_towerFolder(world, "MergeEggTowerSpears")
+    local length = math.max(2, tonumber(spear.length) or 4.2)
+    local part = Instance.new("Part")
+    part.Name = "MergeEggTowerSpear"
+    part.Anchored = true
+    part.CanCollide = false
+    part.CanTouch = false
+    part.CanQuery = false
+    part.CastShadow = true
+    part.Material = Enum.Material.Metal
+    part.Size = Vector3.new(0.28, 0.28, length)
+    local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
+    part.Color = side == "hell" and Color3.fromRGB(210, 72, 42) or Color3.fromRGB(214, 186, 92)
+    part.CFrame = CFrame.lookAt(origin, origin + look)
+    part.Parent = folder
+    record.towerSpears = record.towerSpears or {}
+    record.towerSpears[#record.towerSpears + 1] = {
+        part = part,
+        origin = origin,
+        target = target,
+        apex = math.max(0, tonumber(spear.apex_height) or 14),
+        startedAt = now,
+        duration = math.max(0.2, tonumber(spear.flight_seconds) or 0.85),
+        landSeconds = math.max(0.2, tonumber(spear.land_seconds) or 1.2),
+    }
+end
+
+function MergeEggPrototypeService:_stepTowerFire(record, now)
+    local world = record and record.world
+    local folder = world and world:FindFirstChild("MergeEggTowers")
+    if not folder then
+        return
+    end
+    local _, spear = self:_edgeTowerConfig()
+    local interval = math.max(0.4, tonumber(spear.interval) or 2.4)
+    local index = 0
+    for _, cannon in ipairs(folder:GetChildren()) do
+        if cannon:IsA("Model") and cannon:GetAttribute("MergeTowerSpawned") == true then
+            index += 1
+            local nextAt = tonumber(cannon:GetAttribute("MergeTowerNextFireAt"))
+            if nextAt == nil then
+                nextAt = now + (index - 1) * (interval * 0.5)
+                cannon:SetAttribute("MergeTowerNextFireAt", nextAt)
+            end
+            if now >= nextAt then
+                cannon:SetAttribute("MergeTowerNextFireAt", now + interval)
+                self:_fireTowerSpear(record, cannon, now)
+            end
+        end
+    end
+end
+
+function MergeEggPrototypeService:_stepTowerSpears(record, now)
+    local remaining = {}
+    for _, flight in ipairs(record and record.towerSpears or {}) do
+        local part = flight.part
+        if part and part.Parent then
+            if flight.landedAt then
+                if now < flight.landedAt + (flight.landSeconds or 1.2) then
+                    remaining[#remaining + 1] = flight
+                else
+                    part:Destroy()
+                end
+            else
+                local duration = math.max(0.05, tonumber(flight.duration) or 0.85)
+                local alpha = (now - flight.startedAt) / duration
+                local origin = flight.origin
+                local target = flight.target
+                if alpha >= 1 then
+                    local look = Vector3.new(target.X - origin.X, 0, target.Z - origin.Z)
+                    if look.Magnitude < 0.001 then
+                        look = Vector3.new(0, -1, 0)
+                    else
+                        look = look.Unit
+                    end
+                    part.CFrame = CFrame.lookAt(target, target + look + Vector3.new(0, -0.45, 0))
+                    flight.landedAt = now
+                    remaining[#remaining + 1] = flight
+                else
+                    local x1, y1, z1 = MergeTowerBallistics.point(
+                        origin.X,
+                        origin.Y,
+                        origin.Z,
+                        target.X,
+                        target.Y,
+                        target.Z,
+                        flight.apex,
+                        alpha
+                    )
+                    local x2, y2, z2 = MergeTowerBallistics.point(
+                        origin.X,
+                        origin.Y,
+                        origin.Z,
+                        target.X,
+                        target.Y,
+                        target.Z,
+                        flight.apex,
+                        math.min(1, alpha + 0.03)
+                    )
+                    local here = Vector3.new(x1, y1, z1)
+                    local ahead = Vector3.new(x2, y2, z2)
+                    if (ahead - here).Magnitude < 1e-3 then
+                        ahead = here + (target - origin)
+                    end
+                    part.CFrame = CFrame.lookAt(here, ahead)
+                    remaining[#remaining + 1] = flight
+                end
+            end
+        end
+    end
+    if record then
+        record.towerSpears = remaining
+    end
+end
+
 function MergeEggPrototypeService:_placeCaptainAtStation(model, world, spawn, slot)
     if not (model and spawn) then
         return
@@ -4756,6 +5021,7 @@ function MergeEggPrototypeService:_restoreCheckpoint(record, cause, options)
     record.enemyByTargetId = {}
     record.resolvedTargets = {}
     record.units = {}
+    self:_clearTowerSpears(record)
     self:_clearPlayerEscortModels(record)
 
     for _, team in ipairs(record.teams or {}) do
@@ -5860,6 +6126,7 @@ function MergeEggPrototypeService:_clearEncounter(record)
             self._enemyService:DespawnModel(enemy.model)
         end
     end
+    self:_clearTowerSpears(record)
     self:_clearPlayerEscortModels(record)
     record.enemies = {}
     record.aliveEnemies = 0
@@ -6210,6 +6477,8 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
         enemies = {},
         enemyByTargetId = {},
         units = {},
+        towerSpears = {},
+        towersReady = false,
         teams = {},
         teamById = {},
         aliveEnemies = 0,
@@ -6422,6 +6691,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
     self._enteringRecordByPlayer[player] = nil
     self._enteringByPlayer[player] = nil
     self._activeByPlayer[player] = record
+    self:_ensureBayTowers(record)
     local escortAnchor = self:_playerEscortAnchorCFrame(record)
     player:SetAttribute(
         "MergeEggEscortAnchorPosition",
@@ -7748,6 +8018,11 @@ function MergeEggPrototypeService:_stepRecord(record, now)
         return
     end
     self:_updateTutorial(record, now, false)
+    self:_ensureBayTowers(record)
+    self:_stepTowerSpears(record, now)
+    if record.terminal ~= true then
+        self:_stepTowerFire(record, now)
+    end
     if
         record
         and record.terminal == true
@@ -8020,6 +8295,7 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
     record.hatching = false
     self:_ensureDeploymentPads(record.world, record)
     self:_ensureHatcherStands(record.world)
+    self:_ensureBayTowers(record)
     self:_syncAllTeams(record)
     if not appending then
         self:_setPortalVisible(record, false)
@@ -8145,6 +8421,7 @@ function MergeEggPrototypeService:_clearProgressionStageActors(record)
     record.enemies = {}
     record.enemyByTargetId = {}
     record.units = {}
+    self:_clearTowerSpears(record)
     record.teams = {}
     record.teamById = {}
     record.aliveEnemies = 0
