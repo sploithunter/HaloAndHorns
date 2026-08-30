@@ -5,8 +5,8 @@ Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2
 ## Merge tower E cycles size previews (2026-08-30)
 
 Walk up to a pad cannon and press E to cycle 0.20–0.85. Both bay cannons take the new
-scale and show `0.40` / studs-wide overhead. Temporary authoring prompt; later E will
-cycle models instead.
+scale and show `0.40` / studs-wide overhead. E does not need a combat session.
+Temporary authoring prompt; later E will cycle models instead.
 
 ## Merge edge towers fire a sphere and aim (2026-08-30)
 

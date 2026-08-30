@@ -6234,3 +6234,8 @@ first-session cohort rates.
 - Temporary pad-cannon E (`MergeEggTowerPreviewPrompt`) walks `size_preview.scales`
   0.20–0.85, applies the scale to both bay cannons, and bills the factor plus
   studs-wide overhead. Same prompt will later cycle models.
+
+## 2026-08-30 — Size-preview E does not need a session
+
+- First handler required `_recordFor` / bay ownership, so E no-op'd when join
+  arming failed. Cycle is now prompt-only.
