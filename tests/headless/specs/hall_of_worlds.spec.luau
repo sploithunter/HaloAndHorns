@@ -65,7 +65,7 @@ return function()
 
         it("labels the disabled Hall entry as coming soon", function()
             local source = readFile("src/Server/Services/ZoneService.lua")
-            expect(source:find("HALL OF WORLDS\\nCOMING SOON", 1, true)).to.be.ok()
+            expect(source:find('descendant.Text = "COMING SOON"', 1, true)).to.be.ok()
         end)
 
         it("keeps the disabled entry barrier inside its round-topped arch", function()

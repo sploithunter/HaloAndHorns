@@ -63,9 +63,19 @@ return {
     gate = {
         hook_name = "HallOfWorldsPortal",
         prompt_name = "MergeEggPrototypeEnterPrompt",
-        action_text = "Enter Prototype",
-        object_text = "Merge an Egg — Phase 6",
-        title = "MERGE AN EGG\nPROTOTYPE",
+        action_text = "Enter",
+        object_text = "Coming Soon",
+        title = "COMING SOON",
+        access = {
+            -- Production preview access is ID-only. Reuse the canonical internal-account registry
+            -- used by leaderboards/retention, then add collaborators without changing their global
+            -- internal-account classification.
+            internal_accounts = true,
+            additional_user_ids = {
+                536245038, -- KadeDevLux
+            },
+            studio_bypass = true,
+        },
     },
 
     world = {

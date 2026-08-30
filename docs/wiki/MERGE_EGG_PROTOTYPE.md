@@ -688,6 +688,11 @@ team and queue model:
   and every record owns its claimed bay/world reference. Heartbeat stepping iterates those records;
   NPC principals and transient folders include the player identity. This replaces the former
   singleton `_active`/`_world` assumption and is the runtime seam for simultaneous occupied bays.
+- While the place remains unreleased, the main/Farm and Fight door keeps its sealed `COMING SOON`
+  presentation and exposes the Merge teleport prompt only to the canonical internal-account IDs
+  plus Kade (`536245038`). The client hides the prompt for everyone else, the server validates every
+  use, and an unauthorized direct join to the Merge PlaceId is returned to main (or kicked if that
+  teleport fails). Studio bypasses this preview restriction for authoring and local playtests.
 - Dedicated-place character entry waits for ProfileStore data before creating the isolated wallet
   or arming a wave. This prevents a transient `currency_setup_failed` from leaving the player in
   the map with only fallback art and no working management grid. A veteran whose settings finish

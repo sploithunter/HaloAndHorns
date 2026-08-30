@@ -1286,7 +1286,7 @@ function ZoneService:_sealDisabledHallEntryHook(hook)
     if title then
         for _, descendant in ipairs(title:GetDescendants()) do
             if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
-                descendant.Text = "HALL OF WORLDS\nCOMING SOON"
+                descendant.Text = "COMING SOON"
             end
         end
     end

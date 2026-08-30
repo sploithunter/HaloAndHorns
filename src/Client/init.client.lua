@@ -444,6 +444,7 @@ do
         require(script.Systems.ZoneUnlockPrompt).start()
         require(script.Systems.HallRouteGates).start()
         require(script.Systems.HallComingSoon).start()
+        require(script.Systems.RestrictedMergeGate).start()
     end)
     if not ok then
         Logger:Warn("Failed to start zone progression presentation", { error = tostring(err) })

@@ -31,6 +31,7 @@ local MergeEggDamageScope = require(ReplicatedStorage.Shared.Game.MergeEggDamage
 local MergeEggDraft = require(ReplicatedStorage.Shared.Game.MergeEggDraft)
 local MergeEggEquipBest = require(ReplicatedStorage.Shared.Game.MergeEggEquipBest)
 local MergeEggEnemyRoster = require(ReplicatedStorage.Shared.Game.MergeEggEnemyRoster)
+local MergeEggGateAccess = require(ReplicatedStorage.Shared.Game.MergeEggGateAccess)
 local MergeEggPlayerCombat = require(ReplicatedStorage.Shared.Game.MergeEggPlayerCombat)
 local MergeEggPricing = require(ReplicatedStorage.Shared.Game.MergeEggPricing)
 local MergeEggRebirth = require(ReplicatedStorage.Shared.Game.MergeEggRebirth)
@@ -318,6 +319,9 @@ function MergeEggPrototypeService:Init()
         or require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
     self._placesConfig = (self._configLoader and self._configLoader:LoadConfig("places"))
         or require(ReplicatedStorage.Configs:WaitForChild("places"))
+    self._internalAccountsConfig = (
+        self._configLoader and self._configLoader:LoadConfig("internal_accounts")
+    ) or require(ReplicatedStorage.Configs:WaitForChild("internal_accounts"))
     self._realm = MergeEggRealmBuilder.new(self._config.realm_layout, self._logger)
     self._enemiesConfig = (self._configLoader and self._configLoader:LoadConfig("enemies"))
         or require(ReplicatedStorage.Configs:WaitForChild("enemies"))
@@ -340,6 +344,14 @@ end
 
 function MergeEggPrototypeService:_isDedicatedMergePlace()
     return PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
+end
+
+function MergeEggPrototypeService:_hasPreviewAccess(player)
+    local access = (self._config.gate or {}).access or {}
+    if RunService:IsStudio() and access.studio_bypass == true then
+        return true
+    end
+    return MergeEggGateAccess.allows(access, self._internalAccountsConfig, player and player.UserId)
 end
 
 function MergeEggPrototypeService:_allowsGameplayActions()
@@ -5302,6 +5314,14 @@ function MergeEggPrototypeService:_teleportToRole(player, role)
 end
 
 function MergeEggPrototypeService:_enterFromHall(player)
+    if not self:_hasPreviewAccess(player) then
+        self:_log("Warn", "Merge place preview access refused", {
+            player = player and player.Name or "unknown",
+            userId = player and player.UserId or 0,
+            reason = "coming_soon",
+        })
+        return false, "coming_soon"
+    end
     -- Studio cannot perform an ordinary cross-place playtest. Retain the in-place authored bay
     -- seam there; published main servers always route through the configured Merge PlaceId.
     if RunService:IsStudio() then
@@ -5310,7 +5330,7 @@ function MergeEggPrototypeService:_enterFromHall(player)
     return self:_teleportToRole(player, "merge")
 end
 
-function MergeEggPrototypeService:_unsealHallGate()
+function MergeEggPrototypeService:_bindRestrictedHallGate()
     local gateCfg = self._config.gate or {}
     local hook = Workspace:FindFirstChild(tostring(gateCfg.hook_name or "HallOfWorldsPortal"), true)
     if not (hook and hook:IsA("BasePart")) then
@@ -5320,16 +5340,9 @@ function MergeEggPrototypeService:_unsealHallGate()
         return nil
     end
 
-    -- ZoneService has already converted this exact hook into the disabled Hall's collision wall.
-    -- Remove only those generated cap strips and make the hook an invisible prompt host.
-    for _, child in ipairs(hook:GetChildren()) do
-        if
-            child:GetAttribute("HallEntryArchCap") == true
-            or string.match(child.Name, "^HallEntryArchCap%d+$")
-        then
-            child:Destroy()
-        end
-    end
+    -- ZoneService owns the frosted Coming Soon barrier. Leave that presentation and collision
+    -- intact; approved preview accounts activate the prompt from the Farm and Fight side and
+    -- teleport across places instead of physically crossing this wall.
     local travelPrompt = hook:FindFirstChild("ZoneTravelPrompt", true)
     if travelPrompt and travelPrompt:IsA("ProximityPrompt") then
         travelPrompt:Destroy()
@@ -5337,10 +5350,7 @@ function MergeEggPrototypeService:_unsealHallGate()
     if CollectionService:HasTag(hook, "MissionDoor") then
         CollectionService:RemoveTag(hook, "MissionDoor")
     end
-    hook:SetAttribute("HallEntryDisabled", nil)
     hook:SetAttribute("MissionId", nil)
-    hook.Transparency = 1
-    hook.CanCollide = false
     hook.CanTouch = false
     hook.CanQuery = true
 
@@ -5348,7 +5358,7 @@ function MergeEggPrototypeService:_unsealHallGate()
     if title then
         for _, descendant in ipairs(title:GetDescendants()) do
             if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
-                descendant.Text = tostring(gateCfg.title or "MERGE AN EGG\nPROTOTYPE")
+                descendant.Text = tostring(gateCfg.title or "COMING SOON")
             end
         end
     end
@@ -5356,8 +5366,8 @@ function MergeEggPrototypeService:_unsealHallGate()
     self._gatePrompt = self:_attachPrompt(
         hook,
         tostring(gateCfg.prompt_name or "MergeEggPrototypeEnterPrompt"),
-        tostring(gateCfg.action_text or "Enter Prototype"),
-        tostring(gateCfg.object_text or "Merge an Egg — Phase 6"),
+        tostring(gateCfg.action_text or "Enter"),
+        tostring(gateCfg.object_text or "Coming Soon"),
         function(player)
             self:_enterFromHall(player)
         end
@@ -9849,6 +9859,22 @@ function MergeEggPrototypeService:_bindMergePlaceJoin()
         end)
     end
     local function onPlayer(player)
+        if not self:_hasPreviewAccess(player) then
+            self:_log("Warn", "Unauthorized player entered unreleased Merge place", {
+                player = player.Name,
+                userId = player.UserId,
+            })
+            task.defer(function()
+                if not player.Parent then
+                    return
+                end
+                local returned = self:_teleportToRole(player, "main")
+                if not returned and player.Parent then
+                    player:Kick("Coming Soon")
+                end
+            end)
+            return
+        end
         player.CharacterAdded:Connect(function()
             onCharacter(player)
         end)
@@ -9878,7 +9904,7 @@ function MergeEggPrototypeService:Start()
         end)
     end
     if not self:_isDedicatedMergePlace() then
-        self:_unsealHallGate()
+        self:_bindRestrictedHallGate()
     end
     self:_bindMergePlaceJoin()
     Signals.MergeEggPrototypeUpgrade.OnServerEvent:Connect(function(player, request)
