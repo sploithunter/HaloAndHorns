@@ -3146,7 +3146,9 @@ function MergeEggPrototypeService:_placeCaptainAtStation(model, world, spawn, sl
     else
         look = look.Unit
     end
-    local front = -look * (tonumber(layout.captain_front_offset) or 4.5)
+    -- Spawn looks at the gate. Stand on that side so the board/work area
+    -- can read the egg without the captain in front of it.
+    local front = look * (tonumber(layout.captain_front_offset) or 4.5)
     local standPoint = padCFrame.Position + front
     local lookAt = CFrame.lookAt(standPoint, standPoint + look)
     model:PivotTo(lookAt)

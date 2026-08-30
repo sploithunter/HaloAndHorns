@@ -339,6 +339,10 @@ return function()
             local server = readFile("src/Server/init.server.lua")
             expect(service:find("SpawnStationary", 1, true)).to.be.ok()
             expect(service:find("_placeCaptainAtStation", 1, true)).to.be.ok()
+            expect(service:find("look * (tonumber(layout.captain_front_offset)", 1, true)).to.be.ok()
+            expect(service:find("-look * (tonumber(layout.captain_front_offset)", 1, true)).to.equal(
+                nil
+            )
             expect(service:find("_ensureHatcherStands", 1, true)).to.be.ok()
             expect(service:find("_authoredHatcherStand", 1, true)).to.be.ok()
             expect(service:find("SpawnGhostSquad", 1, true)).to.be.ok()
