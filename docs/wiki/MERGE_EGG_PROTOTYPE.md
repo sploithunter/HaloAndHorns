@@ -1005,11 +1005,17 @@ clean.
 - Each cannon is a single watertight mesh below 9,500 triangles. The group-owned Model, Mesh,
   and Texture IDs live in `scripts/merge_cannon_model_ids.json`; the reproducible ImageGen prompts
   live beside the concept art in `assets/concepts/merge_cannons/prompts.json`.
-- The open Merge place contains a review-only six-model lineup at
-  `Workspace._PropReview.MergeCannons`. Each authored bay now has two distinct armored tower pads:
-  one immediately outside egg position 1 and one immediately outside position 9. The pads live
-  under `Workspace.GeneratedMap_MergeEggVoxel.TowerStations`, expose `MergeTowerPadSlot`,
+- Cannon visuals are repo-owned spawnable assets under
+  `ReplicatedStorage.Assets.Models.MergeCannons/<Role>/Tier1|Tier2`, prebaked into
+  `assets/place/Models.rbxm` by `scripts/prebake/add_merge_cannon_assets.luau`. The loose
+  Workspace review lineup is removed; maps own mounts, not cannon visuals. Tier 2 is normalized to
+  the corrected 7.95-stud-wide Repulsor reference, and the temporary Tier 1 presentation reuses the
+  same art at 85% size. `src/Shared/Game/MergeTowerModels.lua` clones a requested role/tier and
+  grounds it on a pad's `TowerAnchor`. Tier 3 and Tier 4 remain future distinct art passes.
+- Each authored bay has two distinct armored tower pads: one immediately outside egg position 1
+  and one immediately outside position 9. The pads live under
+  `Workspace.GeneratedMap_MergeEggVoxel.TowerStations`, expose `MergeTowerPadSlot`,
   `MergeTowerPadRole`, and bay identity attributes on both the model and invisible `TowerAnchor`,
   and use cyan Heaven accents or ember Hell accents rather than the egg stands' circular language.
   The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Combat
-  roles, firing behavior, upgrades, acquisition rules, and runtime tower spawning remain unwired.
+  roles, firing behavior, upgrades, and acquisition rules remain unwired.

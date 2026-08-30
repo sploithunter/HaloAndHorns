@@ -62,6 +62,13 @@ local function collectAssetRoots(root)
     addModelChildren(root:FindFirstChild("Eggs"), roots)
     addModelChildren(root:FindFirstChild("Flora"), roots)
 
+    local mergeCannons = root:FindFirstChild("MergeCannons")
+    if mergeCannons then
+        for _, roleFolder in ipairs(mergeCannons:GetChildren()) do
+            addModelChildren(roleFolder, roots)
+        end
+    end
+
     local pets = root:FindFirstChild("Pets")
     if pets then
         for _, petType in ipairs(pets:GetChildren()) do
@@ -97,6 +104,14 @@ local function collectDuplicateAssetPaths(root)
     local duplicates = {}
     findDuplicateChildren(root:FindFirstChild("Eggs"), duplicates)
     findDuplicateChildren(root:FindFirstChild("Flora"), duplicates)
+
+    local mergeCannons = root:FindFirstChild("MergeCannons")
+    findDuplicateChildren(mergeCannons, duplicates)
+    if mergeCannons then
+        for _, roleFolder in ipairs(mergeCannons:GetChildren()) do
+            findDuplicateChildren(roleFolder, duplicates)
+        end
+    end
 
     local pets = root:FindFirstChild("Pets")
     findDuplicateChildren(pets, duplicates)

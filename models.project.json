@@ -1,0 +1,14 @@
+{
+  "name": "HaloAndHornsModels",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Assets": {
+        "$className": "Folder",
+        "Models": {
+          "$path": "assets/place/Models.rbxm"
+        }
+      }
+    }
+  }
+}
