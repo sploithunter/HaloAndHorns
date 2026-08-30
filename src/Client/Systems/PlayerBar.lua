@@ -221,6 +221,7 @@ function PlayerBar.start()
 
     -- emblem circle (overhangs left)
     local emblem = Instance.new("Frame")
+    emblem.Name = "Emblem"
     emblem.Size = UDim2.fromOffset(62, 62)
     emblem.AnchorPoint = Vector2.new(0.5, 0.5)
     emblem.Position = UDim2.new(0, 8, 0.5, 0)

@@ -2,7 +2,7 @@
     CombatRankController — placeholder crest ceremony + list chip + nametag.
 
     Pillar grant fires combat_rank_achieved. A neon disc pops on the body,
-    then a ViewportFrame crest flies to the People-list corner and docks as
+    then a ViewportFrame crest flies to the PlayerBar portrait and docks as
     the current title. Other clients read CombatRank / CombatRankLabel.
 ]]
 
@@ -96,16 +96,81 @@ local function applyChip(badge)
     if type(badge.icon) == "string" and badge.icon ~= "" then
         chipIcon.Image = badge.icon
         chipIcon.Visible = true
+        chipIcon.Size = UDim2.fromOffset(28, 28)
         chipGlyph.Visible = false
+        chipGlyph.Size = UDim2.fromOffset(0, 0)
     else
         -- Leaderboard titles have no crest yet. Gotham has no ✦, so hide
         -- the glyph slot rather than drawing an empty box.
         chipIcon.Image = ""
         chipIcon.Visible = false
+        chipIcon.Size = UDim2.fromOffset(0, 0)
         chipGlyph.Visible = false
+        chipGlyph.Size = UDim2.fromOffset(0, 0)
     end
     chipLabel.Text = tostring(badge.label or "")
     chipLabel.TextColor3 = rgb(badge.color)
+end
+
+-- PlayerBar emblem: center x=8, 62px disc, so the left lip is at -23.
+-- Sit the pill immediately left of that lip (and inherit the capsule scale).
+local CHIP_GAP = 6
+local EMBLEM_FALLBACK_LEFT = 8 - 31
+
+local function chipHeight()
+    return tonumber(ceremonyKnobs().chip_height) or 36
+end
+
+local function emblemLeft(cap)
+    local emblem = cap and cap:FindFirstChild("Emblem")
+    if emblem and emblem:IsA("GuiObject") then
+        return emblem.Position.X.Offset - emblem.Size.X.Offset * emblem.AnchorPoint.X
+    end
+    return EMBLEM_FALLBACK_LEFT
+end
+
+local function layoutChipDock(cap)
+    if not (chip and picker) then
+        return
+    end
+    -- Hug the portrait from the left. The capsule's ViewportScale keeps
+    -- this cluster together on phone-width bars.
+    local rightEdge = emblemLeft(cap) - CHIP_GAP
+    chip.AnchorPoint = Vector2.new(1, 0.5)
+    chip.Position = UDim2.new(0, rightEdge, 0.5, 0)
+    picker.AnchorPoint = Vector2.new(1, 0)
+    picker.Position = UDim2.new(0, rightEdge, 0.5, chipHeight() / 2 + 6)
+end
+
+local function dockChipToPlayerBar()
+    local player = Players.LocalPlayer
+    local pg = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui")
+    local barGui = pg:WaitForChild("PlayerBar", 20)
+    local cap = barGui and barGui:WaitForChild("Capsule", 10)
+    if not (chip and picker and cap) then
+        return
+    end
+    chip.Parent = cap
+    picker.Parent = cap
+    layoutChipDock(cap)
+    if not chip:GetAttribute("DockBound") then
+        chip:SetAttribute("DockBound", true)
+        local function relayout()
+            layoutChipDock(cap)
+        end
+        player:GetAttributeChangedSignal("DisplayClass"):Connect(relayout)
+        player:GetAttributeChangedSignal("HudLayoutResolved"):Connect(relayout)
+    end
+end
+
+local function chipLandTarget()
+    if chip and chip.Parent and chip.AbsoluteSize.X > 0 then
+        local pos = chip.AbsolutePosition
+        local size = chip.AbsoluteSize
+        return Vector2.new(1, 0), UDim2.fromOffset(pos.X + size.X, pos.Y)
+    end
+    local top = tonumber(ceremonyKnobs().chip_top) or 14
+    return Vector2.new(0.5, 0), UDim2.new(0.5, -270, 0, top)
 end
 
 local function hidePicker()
@@ -220,32 +285,31 @@ local function ensureHud()
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     gui.Parent = pg
 
-    -- Sit immediately left of the quest pill on the 14px top. Width/insets
-    -- come from people_list so they stay aligned with that column.
-    -- Scale/anchors cannot express that measured column width.
-    local listWidth = 397
-    local listRight = 4
-    local chipTop = tonumber(knobs.chip_top) or 14
     pcall(function()
         local Locations = require(ReplicatedStorage.Shared.Locations)
         local people = require(Locations.ConfigLoader):LoadConfig("people_list")
-        listWidth = tonumber(people and people.width) or listWidth
-        listRight = tonumber(people and people.right_inset) or listRight
         peopleConfig = people or peopleConfig
     end)
     chip = Instance.new("TextButton")
     chip.Name = "Chip"
     chip.AutoButtonColor = false
-    chip.AnchorPoint = Vector2.new(1, 0)
-    chip.Position = UDim2.new(1, -(listWidth + listRight + 8), 0, chipTop)
+    chip.AnchorPoint = Vector2.new(1, 0.5)
+    -- Temporary screen-space seat until PlayerBar.Capsule exists; dockChipToPlayerBar
+    -- then parents this onto the capsule, left of the portrait.
+    chip.Position = UDim2.new(0.5, -270, 0, tonumber(knobs.chip_top) or 14)
     chip.Size =
         UDim2.fromOffset(tonumber(knobs.chip_width) or 148, tonumber(knobs.chip_height) or 36)
+    chip.AutomaticSize = Enum.AutomaticSize.X
     chip.BackgroundColor3 = Color3.fromRGB(18, 16, 24)
     chip.BackgroundTransparency = 0.08
     chip.BorderSizePixel = 0
     chip.Visible = false
+    chip.ZIndex = 9
     chip.Text = ""
     chip.Parent = gui
+    local chipMax = Instance.new("UISizeConstraint")
+    chipMax.MaxSize = Vector2.new(tonumber(knobs.chip_width) or 160, chipHeight())
+    chipMax.Parent = chip
     chip.Activated:Connect(function()
         if picker and picker.Visible then
             hidePicker()
@@ -296,22 +360,19 @@ local function ensureHud()
     chipLabel.Name = "Label"
     chipLabel.BackgroundTransparency = 1
     chipLabel.LayoutOrder = 2
-    chipLabel.Size = UDim2.new(1, -46, 1, 0)
+    chipLabel.AutomaticSize = Enum.AutomaticSize.X
+    chipLabel.Size = UDim2.new(0, 0, 1, 0)
     chipLabel.Font = Enum.Font.GothamBold
     chipLabel.TextSize = 16
     chipLabel.TextXAlignment = Enum.TextXAlignment.Left
+    chipLabel.TextTruncate = Enum.TextTruncate.AtEnd
     chipLabel.Parent = chip
 
     picker = Instance.new("Frame")
     picker.Name = "Picker"
     picker.Visible = false
     picker.AnchorPoint = Vector2.new(1, 0)
-    picker.Position = UDim2.new(
-        1,
-        -(listWidth + listRight + 8),
-        0,
-        chipTop + (tonumber(knobs.chip_height) or 36) + 6
-    )
+    picker.Position = UDim2.new(0.5, -270, 0, (tonumber(knobs.chip_top) or 14) + chipHeight() + 6)
     picker.Size = UDim2.fromOffset(tonumber(knobs.chip_width) or 160, 0)
     picker.BackgroundColor3 = Color3.fromRGB(16, 18, 26)
     picker.BackgroundTransparency = 0.04
@@ -326,6 +387,8 @@ local function ensureHud()
     pickStroke.Color = Color3.fromRGB(220, 224, 236)
     pickStroke.Transparency = 0.4
     pickStroke.Parent = picker
+
+    task.spawn(dockChipToPlayerBar)
 end
 
 local function attachNametag(player)
@@ -577,14 +640,14 @@ local function playCeremony(rank)
         if generation ~= ceremonyGeneration or not cluster.Parent then
             return
         end
-        -- Land on the chip dock: left of the quest pill, 14px top.
-        local landTop = tonumber(ceremonyKnobs().chip_top) or 14
+        -- Land on the chip dock: left of the PlayerBar portrait.
+        local landAnchor, landPos = chipLandTarget()
         local land = TweenService:Create(
             cluster,
             TweenInfo.new(fly, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
             {
-                AnchorPoint = Vector2.new(1, 0),
-                Position = UDim2.new(1, -(397 + 4 + 8), 0, landTop),
+                AnchorPoint = landAnchor,
+                Position = landPos,
                 Size = UDim2.fromOffset(
                     tonumber(knobs.chip_width) or 148,
                     tonumber(knobs.chip_height) or 36

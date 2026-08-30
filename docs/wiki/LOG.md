@@ -6184,3 +6184,10 @@ first-session cohort rates.
   species/variant serial key and exhausted the universe request budget. Unique Huge serials remain
   atomic and just-in-time at birth; world-first messaging and each player's persisted discoveries
   grow the live collection denominator without a boot-time DataStore fan-out.
+
+## 2026-08-30 — Status chip docks to the PlayerBar portrait
+
+- Moved the Novice/title chip off the quest-column top-right (where it collided with the
+  level disc on compact) onto `PlayerBar.Capsule`, flush left of the named `Emblem`
+  portrait. The pill inherits the capsule ViewportScale so the cluster stays together
+  on phone-width bars. Ceremony flight lands on the docked chip.
