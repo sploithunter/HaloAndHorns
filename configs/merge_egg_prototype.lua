@@ -234,7 +234,8 @@ return {
             available_transparency = 0.3,
             occupied_transparency = 0.14,
         },
-        -- Stand on the board side of the egg (spawn looks at the gate).
+        -- Stand on the gate side of the egg (spawn looks at the gate) so the
+        -- board/work area can see which egg is installed.
         captain_front_offset = 4.5,
         -- Sit the egg on the authored stand rim, not the flush floor pad.
         stand_cup_inset = 0.25,

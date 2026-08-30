@@ -1897,4 +1897,4 @@ The worn title pill (Novice / Spark → Skilled / leaderboard) docks to the left
 Dedicated Merge place hides the Farm quest tracker. Wave status lives in
 `MergeWaveBar` in that same upper-right chrome slot. The People list uses
 `merge_top_inset` 98 so it sits under the wave bar. Hatcher captains stand on
-the floor in front of their egg; new slots get a cloned `EggStand`.
+the floor on the gate side of their egg; new slots get a cloned `EggStand`.

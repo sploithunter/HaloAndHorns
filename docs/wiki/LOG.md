@@ -6207,6 +6207,11 @@ first-session cohort rates.
 
 - Captains were spawned at `HatcherSpawn` Y (HRP ~4.4, feet ~0) so they sank
   through the Y≈2.5 floor and stood inside the authored stand. They now stand
-  `captain_front_offset` toward the board and snap feet to the pad top.
+  `captain_front_offset` toward the gate and snap feet to the pad top.
 - Unlock slots clone a missing `EggStand_*` onto the pad. Eggs sit on the stand
   rim (`stand_cup_inset`) instead of floating on the flush deployment pad.
+
+## 2026-08-30 — Captains move to the gate side of the stands
+
+- First pass put captains on the board side (`-look`). Flip to `+look` so they
+  stand on the gate side and the work area can see which egg is installed.
