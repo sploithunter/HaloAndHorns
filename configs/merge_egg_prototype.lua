@@ -477,11 +477,10 @@ return {
             -- empty. The cannon yaws/pitches along the launch tangent. Upgrades stay unwired.
             starter_role = "repulsor",
             starter_tier = 1,
-            -- Temporary authoring prompt: E on a pad cannon cycles these scales and shows the
-            -- number overhead so the starter chassis can be locked by eye. Later this same E
-            -- becomes a model/role cycle.
+            -- Size-preview cycle is locked; E now fires a cannonball. Keep the scale list so
+            -- we can restore a preview if the chassis needs another pass.
             size_preview = {
-                enabled = true,
+                enabled = false,
                 scales = { 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.85 },
             },
             shot = {

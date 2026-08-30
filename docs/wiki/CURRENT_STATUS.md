@@ -2,6 +2,11 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Merge tower E fires a cannonball (2026-08-30)
+
+Walk-up E on a pad cannon lofts the same arcing sphere. No combat session required.
+Size cycling is off; chassis stays at the locked 0.40 / 0.50 scales.
+
 ## Merge cannon sizes locked (2026-08-30)
 
 Playtest lock: tier 1 is 0.40, tiers 2–4 are 0.50. The E prompt sits on an unscaled
