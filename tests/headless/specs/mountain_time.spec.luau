@@ -90,9 +90,9 @@ return function()
     end)
 
     describe("Mountain-midnight round boundaries", function()
-        it("resolves the Week 3 launch day to midnight MDT", function()
-            expect(MountainTime.startOfDayUtc(1787409863)).to.equal(1787378400)
-            expect(MountainTime.nextStartOfDayUtc(1787378400)).to.equal(1787464800)
+        it("resolves the Week 4 launch day to midnight MDT", function()
+            expect(MountainTime.startOfDayUtc(1788014663)).to.equal(1787983200)
+            expect(MountainTime.nextStartOfDayUtc(1787983200)).to.equal(1788069600)
         end)
 
         it("makes the spring-forward round 23 hours", function()

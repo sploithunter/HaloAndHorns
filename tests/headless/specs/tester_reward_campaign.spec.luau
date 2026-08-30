@@ -91,15 +91,16 @@ return function()
             end
         )
 
-        it("closes prior weeks and ships the Week 3 Patch Phoenix campaign", function()
+        it("closes prior weeks and ships the Week 4 Core Digger campaign", function()
             local config = loadModule("configs/tester_rewards.lua")
             local pets = loadModule("configs/pets.lua")
             local roles = loadModule("configs/pet_roles.lua")
             local weekOne = config.campaigns.beta_week_1_2026
             local weekTwo = config.campaigns.beta_week_2_2026
             local weekThree = config.campaigns.beta_week_3_2026
-            local patchPhoenix = pets.pets.patch_phoenix
-            local patchPhoenixEgg = pets.egg_sources.patch_phoenix_egg
+            local weekFour = config.campaigns.beta_week_4_2026
+            local coreDigger = pets.pets.core_digger
+            local coreDiggerEgg = pets.egg_sources.core_digger_egg
             expect(weekOne.claim.enabled).to.equal(false)
             expect(weekOne.claim.studio_enabled).to.equal(false)
             expect(weekOne.claim.starts_at).to.equal(1786168800)
@@ -121,97 +122,99 @@ return function()
             expect(config.defaults.huge_chance).to.equal(0.01)
             expect(weekThree.egg_id).to.equal("patch_phoenix_egg")
             expect(weekThree.pet_id).to.equal("patch_phoenix")
-            expect(weekThree.claim.enabled).to.equal(true)
+            expect(weekThree.claim.enabled).to.equal(false)
             expect(weekThree.claim.studio_enabled).to.equal(false)
             expect(weekThree.claim.starts_at).to.equal(1787378400)
             expect(weekThree.claim.ends_at).to.equal(1787983200)
-            expect(Campaign.isClaimWindowOpen(weekThree, 1787378399, false)).to.equal(false)
-            expect(Campaign.isClaimWindowOpen(weekThree, 1787378400, false)).to.equal(true)
-            expect(Campaign.isClaimWindowOpen(weekThree, 1787983199, false)).to.equal(true)
-            expect(Campaign.isClaimWindowOpen(weekThree, 1787983200, false)).to.equal(false)
-            expect(patchPhoenix.display_name).to.equal("Patch Phoenix")
-            expect(patchPhoenix.category).to.equal("exclusive")
-            expect(patchPhoenix.origin).to.equal("lava")
-            expect(roles.by_type.patch_phoenix).to.equal("ranged")
-            expect(roles.support_auras.patch_phoenix.kind).to.equal("drop_rate")
-            expect(patchPhoenixEgg.fixed_odds).to.equal(true)
-            expect(patchPhoenixEgg.huge.chance).to.equal(0.01)
-            expect(patchPhoenixEgg.huge.pets.patch_phoenix).to.equal(1)
+            expect(weekFour.egg_id).to.equal("core_digger_egg")
+            expect(weekFour.pet_id).to.equal("core_digger")
+            expect(weekFour.claim.enabled).to.equal(true)
+            expect(weekFour.claim.studio_enabled).to.equal(false)
+            expect(weekFour.claim.starts_at).to.equal(1787983200)
+            expect(weekFour.claim.ends_at).to.equal(1788588000)
+            expect(Campaign.isClaimWindowOpen(weekFour, 1787983199, false)).to.equal(false)
+            expect(Campaign.isClaimWindowOpen(weekFour, 1787983200, false)).to.equal(true)
+            expect(Campaign.isClaimWindowOpen(weekFour, 1788587999, false)).to.equal(true)
+            expect(Campaign.isClaimWindowOpen(weekFour, 1788588000, false)).to.equal(false)
+            expect(coreDigger.display_name).to.equal("Core Digger")
+            expect(coreDigger.category).to.equal("exclusive")
+            expect(roles.by_type.core_digger).to.equal("tank")
+            expect(roles.support_auras.core_digger.kind).to.equal("yield")
+            expect(coreDiggerEgg.fixed_odds).to.equal(true)
+            expect(coreDiggerEgg.huge.chance).to.equal(0.01)
+            expect(coreDiggerEgg.huge.pets.core_digger).to.equal(1)
+        end)
+
+        it("authors tester weeks three through five with only Week 4 open", function()
+            local config = loadModule("configs/tester_rewards.lua")
+            local pets = loadModule("configs/pets.lua")
+            local roles = loadModule("configs/pet_roles.lua")
+            local expected = {
+                {
+                    campaign = "beta_week_3_2026",
+                    pet = "patch_phoenix",
+                    egg = "patch_phoenix_egg",
+                    role = "ranged",
+                    aura = "drop_rate",
+                    starts_at = 1787378400,
+                    ends_at = 1787983200,
+                    enabled = false,
+                },
+                {
+                    campaign = "beta_week_4_2026",
+                    pet = "core_digger",
+                    egg = "core_digger_egg",
+                    role = "tank",
+                    aura = "yield",
+                    starts_at = 1787983200,
+                    ends_at = 1788588000,
+                    enabled = true,
+                },
+                {
+                    campaign = "beta_week_5_2026",
+                    pet = "cache_bandit",
+                    egg = "cache_bandit_egg",
+                    role = "melee",
+                    aura = "xp",
+                    starts_at = 1788588000,
+                    ends_at = 1789192800,
+                    enabled = false,
+                },
+            }
+
+            for _, row in ipairs(expected) do
+                local campaign = config.campaigns[row.campaign]
+                local pet = pets.pets[row.pet]
+                local egg = pets.egg_sources[row.egg]
+                expect(campaign.pet_id).to.equal(row.pet)
+                expect(campaign.egg_id).to.equal(row.egg)
+                expect(campaign.claim.enabled).to.equal(row.enabled)
+                expect(campaign.claim.studio_enabled).to.equal(false)
+                expect(campaign.claim.starts_at).to.equal(row.starts_at)
+                expect(campaign.claim.ends_at).to.equal(row.ends_at)
+                expect(pet.category).to.equal("exclusive")
+                expect(roles.by_type[row.pet]).to.equal(row.role)
+                expect(roles.support_auras[row.pet].kind).to.equal(row.aura)
+                expect(egg.fixed_odds).to.equal(true)
+                expect(egg.huge.chance).to.equal(0.01)
+                expect(egg.huge.pets[row.pet]).to.equal(1)
+                expect(egg.pet_weights[row.pet]).to.equal(1)
+            end
         end)
 
         it(
-            "authors the remaining three tester weeks without opening future public claims",
-            function()
-                local config = loadModule("configs/tester_rewards.lua")
-                local pets = loadModule("configs/pets.lua")
-                local roles = loadModule("configs/pet_roles.lua")
-                local expected = {
-                    {
-                        campaign = "beta_week_3_2026",
-                        pet = "patch_phoenix",
-                        egg = "patch_phoenix_egg",
-                        role = "ranged",
-                        aura = "drop_rate",
-                        starts_at = 1787378400,
-                        ends_at = 1787983200,
-                        enabled = true,
-                    },
-                    {
-                        campaign = "beta_week_4_2026",
-                        pet = "core_digger",
-                        egg = "core_digger_egg",
-                        role = "tank",
-                        aura = "yield",
-                        starts_at = 1787983200,
-                        ends_at = 1788588000,
-                        enabled = false,
-                    },
-                    {
-                        campaign = "beta_week_5_2026",
-                        pet = "cache_bandit",
-                        egg = "cache_bandit_egg",
-                        role = "melee",
-                        aura = "xp",
-                        starts_at = 1788588000,
-                        ends_at = 1789192800,
-                        enabled = false,
-                    },
-                }
-
-                for _, row in ipairs(expected) do
-                    local campaign = config.campaigns[row.campaign]
-                    local pet = pets.pets[row.pet]
-                    local egg = pets.egg_sources[row.egg]
-                    expect(campaign.pet_id).to.equal(row.pet)
-                    expect(campaign.egg_id).to.equal(row.egg)
-                    expect(campaign.claim.enabled).to.equal(row.enabled)
-                    expect(campaign.claim.studio_enabled).to.equal(false)
-                    expect(campaign.claim.starts_at).to.equal(row.starts_at)
-                    expect(campaign.claim.ends_at).to.equal(row.ends_at)
-                    expect(pet.category).to.equal("exclusive")
-                    expect(roles.by_type[row.pet]).to.equal(row.role)
-                    expect(roles.support_auras[row.pet].kind).to.equal(row.aura)
-                    expect(egg.fixed_odds).to.equal(true)
-                    expect(egg.huge.chance).to.equal(0.01)
-                    expect(egg.huge.pets[row.pet]).to.equal(1)
-                    expect(egg.pet_weights[row.pet]).to.equal(1)
-                end
-            end
-        )
-
-        it(
-            "shows the public campaign in Events for the same Saturday-to-Saturday window",
+            "shows the Week 4 public campaign in Events for the same Saturday-to-Saturday window",
             function()
                 local events = loadModule("configs/events.lua")
-                local event = events.global_events.beta_test_week_three
-                local schedule = events.scheduled_global_events.beta_test_week_three
+                local event = events.global_events.beta_test_week_four
+                local schedule = events.scheduled_global_events.beta_test_week_four
                 local eventService = readFile("src/Server/Services/EventService.lua")
 
-                expect(event.display_name).to.equal("Beta Test Week Three")
+                expect(event.display_name).to.equal("Beta Test Week Four")
                 expect(next(event.modifiers)).to.equal(nil)
-                expect(schedule.event_id).to.equal("beta_test_week_three")
-                expect(schedule.starts_at).to.equal(1787378400)
-                expect(schedule.ends_at).to.equal(1787983200)
+                expect(schedule.event_id).to.equal("beta_test_week_four")
+                expect(schedule.starts_at).to.equal(1787983200)
+                expect(schedule.ends_at).to.equal(1788588000)
                 expect(eventService:find("now < startsAt", 1, true)).to.be.ok()
                 expect(eventService:find("now >= endsAt", 1, true)).to.be.ok()
             end

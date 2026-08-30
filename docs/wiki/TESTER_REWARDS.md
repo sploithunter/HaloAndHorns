@@ -1,10 +1,10 @@
 # Beta Tester Reward Campaigns
 
-Status: weeks one and two are closed to new claims. Week-three Patch Phoenix claiming is enabled
-from Saturday 2026-08-22 00:00 through Saturday 2026-08-29 00:00 Mountain time, with the end
-exclusive. The Events panel shows the same explicit window as **Beta Test Week Three**.
+Status: weeks one through three are closed to new claims. Week-four Core Digger claiming is enabled
+from Saturday 2026-08-29 00:00 through Saturday 2026-09-05 00:00 Mountain time, with the end
+exclusive. The Events panel shows the same explicit window as **Beta Test Week Four**.
 Already-reserved and granted awards from earlier campaigns continue to reconcile after public
-claiming closes. Weeks four and five remain closed to production claims until their launch weeks.
+claiming closes. Week five remains closed to production claims until its launch week.
 All `claim.studio_enabled` overrides are false in the release configuration.
 
 ## Player contract
@@ -79,6 +79,15 @@ can resize the same species, but a campaign may name a distinct Huge species.
 - Patch Phoenix provides the deterministic **Windfall** (`drop_rate`) farming aura while deployed.
   `claim.studio_enabled` remains false for release; Admin controls remain the Studio test path.
 
+## Week four: Core Digger
+
+- Campaign id: `beta_week_4_2026`; public claiming runs Saturday 2026-08-29 00:00 through Saturday
+  2026-09-05 00:00 Mountain time, with the end exclusive.
+- One Core Digger Egg at claimed level 2 hatches the exclusive Tank **Core Digger**. The same held
+  egg or resulting pet becomes Golden at 5 and Rainbow at 10, with a 1% same-species Huge roll.
+- Core Digger provides the deterministic **Prospector** (`yield`) farming aura while deployed.
+  `claim.studio_enabled` remains false for release; Admin controls remain the Studio test path.
+
 ## Five-week farming identities
 
 Each tester exclusive carries exactly one authored player-facing Natural farming aura. It is part of
@@ -94,7 +103,7 @@ the five-week collection identity without making the reward a general combat car
 | Core Digger | Prospector | currency earned from crystals |
 | Cache Bandit | XP Surge | all player XP |
 
-Patch Phoenix's campaign is live for week three. Patch Phoenix, Core Digger, and Cache Bandit have
+Core Digger's campaign is live for week four. Patch Phoenix, Core Digger, and Cache Bandit have
 normal/Golden models and transparent card art; Rainbow reuses the normal asset with the standard
 runtime treatment. Their one-pet inventory eggs use distinct art, immutable award provenance, and
 the same level-2/5/10 plus 1% Huge contract. Future public claims and all Studio reservation

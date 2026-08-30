@@ -6158,3 +6158,11 @@ first-session cohort rates.
 - Made preview access ID-only in Studio as well as production: the canonical internal-account
   registry plus Kade (`536245038`). The dedicated Merge place continues to reject direct joins by
   anyone else and returns them to main.
+
+## 2026-08-30 — Week 4 Core Digger campaign enabled
+
+- Closed new Week 3 Patch Phoenix reservations and opened the already-authored Week 4 Core Digger
+  tester campaign for its exclusive Saturday 2026-08-29 00:00 through Saturday 2026-09-05 00:00
+  Mountain-time window.
+- Kept Studio reservation overrides disabled and preserved the one-egg level 2/5/10 progression,
+  1% Huge chance, immutable award provenance, and explicit Admin regression path.

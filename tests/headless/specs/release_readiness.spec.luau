@@ -1,7 +1,7 @@
 local InternalAccounts = loadModule("src/Shared/Game/InternalAccounts.lua")
 
 return function()
-    describe("Week 3 release readiness", function()
+    describe("Week 4 release readiness", function()
         it("uses one DST-aware Mountain calendar day per award round", function()
             local challenge = loadModule("configs/challenge_runs.lua")
             expect(challenge.leaderboard.fixed_rounds).to.equal(true)
@@ -52,7 +52,7 @@ return function()
             expect(pets.test_mode.enabled).to.equal(false)
         end)
 
-        it("opens only Week 3 public claims and no Studio claim overrides", function()
+        it("opens only Week 4 public claims and no Studio claim overrides", function()
             local rewards = loadModule("configs/tester_rewards.lua")
             local enabledCampaign = nil
             for campaignId, campaign in pairs(rewards.campaigns) do
@@ -62,13 +62,13 @@ return function()
                     enabledCampaign = campaignId
                 end
             end
-            expect(enabledCampaign).to.equal("beta_week_3_2026")
+            expect(enabledCampaign).to.equal("beta_week_4_2026")
 
-            local weekThree = rewards.campaigns.beta_week_3_2026
-            expect(weekThree.egg_id).to.equal("patch_phoenix_egg")
-            expect(weekThree.pet_id).to.equal("patch_phoenix")
-            expect(weekThree.claim.starts_at).to.equal(1787378400)
-            expect(weekThree.claim.ends_at).to.equal(1787983200)
+            local weekFour = rewards.campaigns.beta_week_4_2026
+            expect(weekFour.egg_id).to.equal("core_digger_egg")
+            expect(weekFour.pet_id).to.equal("core_digger")
+            expect(weekFour.claim.starts_at).to.equal(1787983200)
+            expect(weekFour.claim.ends_at).to.equal(1788588000)
         end)
 
         it("keeps the diagnostic promo code Studio-only", function()
