@@ -2,6 +2,12 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Merge tower E cycles size previews (2026-08-30)
+
+Walk up to a pad cannon and press E to cycle 0.20–0.85. Both bay cannons take the new
+scale and show `0.40` / studs-wide overhead. Temporary authoring prompt; later E will
+cycle models instead.
+
 ## Merge edge towers fire a sphere and aim (2026-08-30)
 
 Starter cannons spawn at `tier_1_scale` 0.85 (was full-size Tier 2). Each shot is a metal

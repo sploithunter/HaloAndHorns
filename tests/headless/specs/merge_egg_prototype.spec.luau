@@ -1474,6 +1474,23 @@ return function()
             expect(service:find("towersCfg.tier_1_scale", 1, true)).to.be.ok()
         end)
 
+        it("lets E cycle authored cannon size previews", function()
+            local towers = config.team.edge_towers
+            local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+
+            expect(towers.size_preview.enabled).to.equal(true)
+            expect(#towers.size_preview.scales).to.equal(7)
+            expect(towers.size_preview.scales[1]).to.equal(0.20)
+            expect(towers.size_preview.scales[7]).to.equal(0.85)
+            expect(service:find("MergeEggTowerPreviewPrompt", 1, true)).to.be.ok()
+            expect(service:find("MergeEggTowerSizeLabel", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_cycleTowerSize", 1, true)).to.be.ok()
+            expect(service:find("function MergeEggPrototypeService:_setTowerPreviewScale", 1, true)).to.be.ok()
+            expect(service:find("cannon:ScaleTo(scale)", 1, true)).to.be.ok()
+            expect(service:find('"Next Size"', 1, true)).to.be.ok()
+            expect(service:find('string.format("%.2f\\n%.1f studs"', 1, true)).to.be.ok()
+        end)
+
         it("activates egg-local anti-heal fields on breaches and damage", function()
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             local powerService = readFile("src/Server/Services/PowerService.lua")

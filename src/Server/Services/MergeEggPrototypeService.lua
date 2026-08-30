@@ -51,6 +51,8 @@ local CREATE_EGG_PROMPT_NAME = "MergeEggPrototypeCreateEggPrompt"
 local MERGE_EGG_PROMPT_NAME = "MergeEggPrototypeMergeEggPrompt"
 local RESET_PROMPT_NAME = "MergeEggPrototypeResetPrompt"
 local EXIT_PROMPT_NAME = "MergeEggPrototypeExitPrompt"
+local TOWER_SIZE_PROMPT_NAME = "MergeEggTowerPreviewPrompt"
+local TOWER_SIZE_LABEL_NAME = "MergeEggTowerSizeLabel"
 local UPGRADE_EXPERIMENT_CHANNELS = {
     speed = true,
     power = true,
@@ -3345,6 +3347,7 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
                     model:SetAttribute("MergeTowerRestCFrame", rest)
                     local box, size = model:GetBoundingBox()
                     model:SetAttribute("MergeTowerRestBottomY", box.Position.Y - size.Y * 0.5)
+                    model:SetAttribute("MergeTowerPadTopY", box.Position.Y - size.Y * 0.5)
                 elseif record.towerTemplateWarned ~= true then
                     record.towerTemplateWarned = true
                     self:_log("Warn", "Merge Egg tower template missing", {
@@ -3354,9 +3357,161 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
                     })
                 end
             end
+            local live = existing or folder:FindFirstChild(name)
+            if live and live:IsA("Model") then
+                if live:GetAttribute("MergeTowerPadTopY") == nil then
+                    local box, size = live:GetBoundingBox()
+                    live:SetAttribute("MergeTowerPadTopY", box.Position.Y - size.Y * 0.5)
+                end
+                self:_bindTowerSizePreview(live)
+            end
         end
     end
     record.towersReady = true
+end
+
+function MergeEggPrototypeService:_towerSizePreviewScales()
+    local towersCfg = self:_edgeTowerConfig()
+    local preview = type(towersCfg.size_preview) == "table" and towersCfg.size_preview or {}
+    local scales = {}
+    for _, value in ipairs(type(preview.scales) == "table" and preview.scales or {}) do
+        local scale = tonumber(value)
+        if scale and scale > 0 then
+            scales[#scales + 1] = scale
+        end
+    end
+    if #scales == 0 then
+        scales = { 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.85 }
+    end
+    return scales, preview.enabled ~= false
+end
+
+function MergeEggPrototypeService:_towerPromptHost(cannon)
+    if not cannon then
+        return nil
+    end
+    if cannon.PrimaryPart and cannon.PrimaryPart:IsA("BasePart") then
+        return cannon.PrimaryPart
+    end
+    return firstBasePart(cannon)
+end
+
+function MergeEggPrototypeService:_refreshTowerSizeLabel(cannon)
+    local host = self:_towerPromptHost(cannon)
+    if not host then
+        return
+    end
+    local scale = tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 1
+    local _, size = cannon:GetBoundingBox()
+    local label = host:FindFirstChild(TOWER_SIZE_LABEL_NAME)
+    if label and not label:IsA("BillboardGui") then
+        label:Destroy()
+        label = nil
+    end
+    if not label then
+        label = Instance.new("BillboardGui")
+        label.Name = TOWER_SIZE_LABEL_NAME
+        label.AlwaysOnTop = true
+        label.LightInfluence = 0
+        label.MaxDistance = 90
+        label.Size = UDim2.fromOffset(180, 72)
+        label.Parent = host
+        local text = Instance.new("TextLabel")
+        text.Name = "Label"
+        text.BackgroundTransparency = 1
+        text.Size = UDim2.fromScale(1, 1)
+        text.Font = Enum.Font.GothamBlack
+        text.TextColor3 = Color3.new(1, 1, 1)
+        text.TextScaled = true
+        text.TextStrokeColor3 = Color3.fromRGB(18, 28, 48)
+        text.TextStrokeTransparency = 0
+        text.Parent = label
+    end
+    label.Adornee = host
+    label.StudsOffsetWorldSpace = Vector3.new(0, size.Y * 0.5 + 2.2, 0)
+    local text = label:FindFirstChild("Label")
+    if text and text:IsA("TextLabel") then
+        text.Text = string.format("%.2f\n%.1f studs", scale, size.X)
+    end
+    local prompt = host:FindFirstChild(TOWER_SIZE_PROMPT_NAME)
+    if prompt and prompt:IsA("ProximityPrompt") then
+        prompt.ObjectText = string.format("Size %.2f", scale)
+    end
+end
+
+function MergeEggPrototypeService:_setTowerPreviewScale(cannon, scale)
+    if not cannon then
+        return
+    end
+    scale = math.max(0.1, tonumber(scale) or 0.85)
+    local rest = cannon:GetAttribute("MergeTowerRestCFrame")
+    if typeof(rest) ~= "CFrame" then
+        rest = flattenTowerLook(cannon:GetPivot())
+    else
+        rest = flattenTowerLook(rest)
+    end
+    local padTop = tonumber(cannon:GetAttribute("MergeTowerPadTopY"))
+    if not padTop then
+        local box, size = cannon:GetBoundingBox()
+        padTop = box.Position.Y - size.Y * 0.5
+        cannon:SetAttribute("MergeTowerPadTopY", padTop)
+    end
+    cannon:ScaleTo(scale)
+    cannon:SetAttribute("MergeTowerSpawnScale", scale)
+    cannon:PivotTo(rest)
+    local box, size = cannon:GetBoundingBox()
+    local bottom = box.Position.Y - size.Y * 0.5
+    cannon:PivotTo(cannon:GetPivot() + Vector3.new(0, padTop - bottom, 0))
+    local grounded = flattenTowerLook(cannon:GetPivot())
+    cannon:SetAttribute("MergeTowerRestCFrame", grounded)
+    box, size = cannon:GetBoundingBox()
+    cannon:SetAttribute("MergeTowerRestBottomY", box.Position.Y - size.Y * 0.5)
+    self:_refreshTowerSizeLabel(cannon)
+end
+
+function MergeEggPrototypeService:_cycleTowerSize(player, cannon)
+    local record = self:_recordFor(player)
+    if not (record and record.world and cannon and cannon:IsDescendantOf(record.world)) then
+        return
+    end
+    local scales = self:_towerSizePreviewScales()
+    local current = tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 0.85
+    local index = 0
+    for i, value in ipairs(scales) do
+        if math.abs(value - current) < 1e-3 then
+            index = i
+            break
+        end
+    end
+    local nextScale = scales[(index % #scales) + 1]
+    local folder = cannon.Parent
+    for _, sibling in ipairs(folder and folder:GetChildren() or { cannon }) do
+        if sibling:IsA("Model") and sibling:GetAttribute("MergeTowerSpawned") == true then
+            self:_setTowerPreviewScale(sibling, nextScale)
+        end
+    end
+end
+
+function MergeEggPrototypeService:_bindTowerSizePreview(cannon)
+    local _, enabled = self:_towerSizePreviewScales()
+    local host = self:_towerPromptHost(cannon)
+    if not (enabled and host) then
+        return
+    end
+    local prompt = self:_attachPrompt(
+        host,
+        TOWER_SIZE_PROMPT_NAME,
+        "Next Size",
+        string.format("Size %.2f", tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 0.85),
+        function(player)
+            self:_cycleTowerSize(player, cannon)
+        end
+    )
+    if prompt then
+        prompt.HoldDuration = 0
+        prompt.MaxActivationDistance = 16
+    end
+    self:_refreshTowerSizeLabel(cannon)
 end
 
 function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)

@@ -476,6 +476,13 @@ return {
             -- empty. The cannon yaws/pitches along the launch tangent. Upgrades stay unwired.
             starter_role = "repulsor",
             starter_tier = 1,
+            -- Temporary authoring prompt: E on a pad cannon cycles these scales and shows the
+            -- number overhead so the starter chassis can be locked by eye. Later this same E
+            -- becomes a model/role cycle.
+            size_preview = {
+                enabled = true,
+                scales = { 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.85 },
+            },
             shot = {
                 interval = 2.4,
                 flight_seconds = 0.85,

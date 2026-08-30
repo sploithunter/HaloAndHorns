@@ -6228,3 +6228,9 @@ first-session cohort rates.
 - Starter presentation uses `tier_1_scale` 0.85 on the current-art mesh so the
   pad cannon matches the configured chassis size. The projectile is a sphere.
   The cannon yaws/pitches to the launch tangent before each shot.
+
+## 2026-08-30 — Edge-tower E cycles size previews
+
+- Temporary pad-cannon E (`MergeEggTowerPreviewPrompt`) walks `size_preview.scales`
+  0.20–0.85, applies the scale to both bay cannons, and bills the factor plus
+  studs-wide overhead. Same prompt will later cycle models.
