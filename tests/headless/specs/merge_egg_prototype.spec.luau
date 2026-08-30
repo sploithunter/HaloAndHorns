@@ -82,12 +82,25 @@ return function()
             expect(config.gate.title).to.equal("COMING SOON")
             expect(config.gate.access.internal_accounts).to.equal(true)
             expect(config.gate.access.additional_user_ids[1]).to.equal(536245038)
+            expect(config.gate.access.studio_bypass).to.equal(false)
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             expect(service:find("function MergeEggPrototypeService:_hasPreviewAccess", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_bindRestrictedHallGate", 1, true)
             ).to.be.ok()
             expect(service:find('return false, "coming_soon"', 1, true)).to.be.ok()
+            local enterAt =
+                service:find("function MergeEggPrototypeService:_enterFromHall", 1, true)
+            local returnAt = service:find(
+                "function MergeEggPrototypeService:_returnToFarmAndFight",
+                enterAt,
+                true
+            )
+            expect(enterAt ~= nil and returnAt ~= nil and enterAt < returnAt).to.equal(true)
+            local enterBody = service:sub(enterAt, returnAt - 1)
+            expect(enterBody:find('self:_teleportToRole(player, "merge")', 1, true)).to.be.ok()
+            expect(enterBody:find("RunService:IsStudio()", 1, true)).to.equal(nil)
+            expect(enterBody:find("self:_begin(player)", 1, true)).to.equal(nil)
             expect(service:find("player:RequestStreamAroundAsync", 1, true)).to.be.ok()
             local beginAt = service:find("function MergeEggPrototypeService:_begin", 1, true)
             local streamAt =

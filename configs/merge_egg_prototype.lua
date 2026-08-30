@@ -67,14 +67,14 @@ return {
         object_text = "Coming Soon",
         title = "COMING SOON",
         access = {
-            -- Production preview access is ID-only. Reuse the canonical internal-account registry
-            -- used by leaderboards/retention, then add collaborators without changing their global
-            -- internal-account classification.
+            -- Preview access is ID-only in every environment. Reuse the canonical
+            -- internal-account registry used by leaderboards/retention, then add collaborators
+            -- without changing their global internal-account classification.
             internal_accounts = true,
             additional_user_ids = {
                 536245038, -- KadeDevLux
             },
-            studio_bypass = true,
+            studio_bypass = false,
         },
         return_route = {
             -- The dedicated Merge place owns a second HallOfWorldsPortal hook in its common mall.

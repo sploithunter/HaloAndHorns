@@ -5322,11 +5322,9 @@ function MergeEggPrototypeService:_enterFromHall(player)
         })
         return false, "coming_soon"
     end
-    -- Studio cannot perform an ordinary cross-place playtest. Retain the in-place authored bay
-    -- seam there; published main servers always route through the configured Merge PlaceId.
-    if RunService:IsStudio() then
-        return self:_begin(player)
-    end
+    -- Keep one route in every environment. TeleportService rejects cross-place travel from a
+    -- Studio playtest, but entering the obsolete embedded prototype would conceal a broken
+    -- published route and make the gate appear to target the wrong experience.
     return self:_teleportToRole(player, "merge")
 end
 
