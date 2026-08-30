@@ -38,6 +38,28 @@ return function()
             expect(saved.speed_scale).to.equal(0.4)
         end)
 
+        it(
+            "keeps raw camera input and world-space movement fallbacks in separate spaces",
+            function()
+                -- Camera faces -Z: raw W and A remain forward and left.
+                local x, z = HoverboardLogic.planarMoveDirection(0, -1, 1, 0, 0, -1, 0, 0)
+                expect(x).to.equal(0)
+                expect(z).to.equal(-1)
+                x, z = HoverboardLogic.planarMoveDirection(-1, 0, 1, 0, 0, -1, 0, 0)
+                expect(x).to.equal(-1)
+                expect(z).to.equal(0)
+
+                -- Merge's control module can return a non-Vector3. Its Humanoid fallback is already
+                -- world-space and must not be rotated by this +X-facing camera a second time.
+                x, z = HoverboardLogic.planarMoveDirection(nil, nil, 0, 1, 1, 0, 1, 0)
+                expect(x).to.equal(1)
+                expect(z).to.equal(0)
+                x, z = HoverboardLogic.planarMoveDirection(nil, nil, 0, 1, 1, 0, 0, -1)
+                expect(x).to.equal(0)
+                expect(z).to.equal(-1)
+            end
+        )
+
         it("suppresses the board in combat, missions, and precision interactions", function()
             expect(HoverboardLogic.shouldSuppress({ in_combat = true })).to.equal(true)
             expect(HoverboardLogic.shouldSuppress({ in_mission = true })).to.equal(true)

@@ -59,6 +59,47 @@ function HoverboardLogic.skinCruiseSpeed(skin, defaultCruise)
     return base
 end
 
+-- Resolve planar riding input without mixing coordinate spaces. Raw ControlModule input is
+-- camera-relative, but Humanoid.MoveDirection is already world-relative. Some place/controller
+-- combinations do not expose a Vector3 from GetMoveVector; in that case the world fallback must
+-- be used directly or W/A are rotated through the camera a second time.
+function HoverboardLogic.planarMoveDirection(
+    rawX,
+    rawZ,
+    rightX,
+    rightZ,
+    lookX,
+    lookZ,
+    fallbackX,
+    fallbackZ
+)
+    local worldX
+    local worldZ
+    local rawMagnitude = math.sqrt((tonumber(rawX) or 0) ^ 2 + (tonumber(rawZ) or 0) ^ 2)
+    if tonumber(rawX) and tonumber(rawZ) and rawMagnitude >= 0.05 then
+        local rightMagnitude = math.sqrt((tonumber(rightX) or 0) ^ 2 + (tonumber(rightZ) or 0) ^ 2)
+        local lookMagnitude = math.sqrt((tonumber(lookX) or 0) ^ 2 + (tonumber(lookZ) or 0) ^ 2)
+        if rightMagnitude >= 0.05 and lookMagnitude >= 0.05 then
+            local normalizedRightX = rightX / rightMagnitude
+            local normalizedRightZ = rightZ / rightMagnitude
+            local normalizedLookX = lookX / lookMagnitude
+            local normalizedLookZ = lookZ / lookMagnitude
+            worldX = normalizedRightX * rawX - normalizedLookX * rawZ
+            worldZ = normalizedRightZ * rawX - normalizedLookZ * rawZ
+        end
+    end
+
+    if worldX == nil or worldZ == nil then
+        worldX = tonumber(fallbackX) or 0
+        worldZ = tonumber(fallbackZ) or 0
+    end
+    local magnitude = math.sqrt(worldX ^ 2 + worldZ ^ 2)
+    if magnitude < 0.08 then
+        return 0, 0
+    end
+    return worldX / magnitude, worldZ / magnitude
+end
+
 function HoverboardLogic.shouldSuppress(flags)
     flags = type(flags) == "table" and flags or {}
     return flags.in_combat == true

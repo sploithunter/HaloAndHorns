@@ -859,9 +859,6 @@ function HoverboardController.start()
         local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
         local module = loadControls()
         local move = module and module.GetMoveVector and module:GetMoveVector()
-        if typeof(move) ~= "Vector3" then
-            move = humanoid and humanoid.MoveDirection or Vector3.zero
-        end
         local camera = Workspace.CurrentCamera
         if not camera then
             return Vector3.zero
@@ -877,16 +874,20 @@ function HoverboardController.start()
         else
             flatRight = flatLook:Cross(Vector3.new(0, 1, 0))
         end
-        -- ControlModule: W = (0,0,-1) in camera space.
-        local world = flatRight * move.X - flatLook * move.Z
-        if humanoid and move.Magnitude < 0.05 and humanoid.MoveDirection.Magnitude > 0.05 then
-            world = humanoid.MoveDirection
-        end
-        world = Vector3.new(world.X, 0, world.Z)
-        if world.Magnitude < 0.08 then
-            return Vector3.zero
-        end
-        return world.Unit
+        local fallback = humanoid and humanoid.MoveDirection or Vector3.zero
+        local rawX = typeof(move) == "Vector3" and move.X or nil
+        local rawZ = typeof(move) == "Vector3" and move.Z or nil
+        local worldX, worldZ = HoverboardLogic.planarMoveDirection(
+            rawX,
+            rawZ,
+            flatRight.X,
+            flatRight.Z,
+            flatLook.X,
+            flatLook.Z,
+            fallback.X,
+            fallback.Z
+        )
+        return Vector3.new(worldX, 0, worldZ)
     end
 
     local speedGui
