@@ -1040,3 +1040,23 @@ clean.
   temporary E prompt cycles `size_preview.scales` and shows the factor overhead so the
   starter chassis can be locked by eye; that same E will later cycle models. Role
   upgrades and acquisition remain unwired.
+
+## Bulwark defense art set
+
+- The first bulwark catalog has six four-tier visual families: Impaler Palisade, Concertina Line,
+  Land Shark, Saw Blade, Grasping Hedge, and Wardstone Barrier. Every tier is distinct art rather
+  than a resized copy. Their shared material progression is primitive, reinforced, elemental, and
+  soul/void so an upgrade remains readable during combat.
+- All 24 concepts and reproducible prompts live under `assets/concepts/merge_bulwarks/`. Each model
+  was rebuilt geometry-first through Meshy Smart Topology, repaired when necessary, retextured only
+  after approval, and rechecked at 3,984–5,968 watertight triangles. Group-owned Model, Mesh, and
+  Texture IDs plus Meshy task provenance live in `scripts/merge_bulwark_model_ids.json`.
+- Runtime-ready templates are prebaked under
+  `ReplicatedStorage.Assets.Models.MergeBulwarks/<Family>/Tier1|Tier2|Tier3|Tier4` by
+  `scripts/prebake/add_merge_bulwark_assets.luau`; maps should own only placement anchors.
+  `src/Shared/Game/MergeBulwarkModels.lua` supplies clone/spawn access and grounds a template at a
+  supplied CFrame or `BulwarkAnchor`.
+- Land Sharks are complete below-ground bodies and Saw Blades retain recognizable mechanisms, but
+  the current library entries are static presentation meshes. Rigging the sharks and separating or
+  skinning the saw drive parts are later animation passes; this asset pass does not invent their
+  damage, pathing, acquisition, or upgrade economy.

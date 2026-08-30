@@ -1,0 +1,596 @@
+{
+  "_note": "Group-owned Merge bulwark model family. Binary source/export directories are intentionally gitignored; concepts, prompts, task provenance, Roblox IDs, and topology measurements are durable here.",
+  "creatorGroupId": "15872767",
+  "tileReferenceLength": 10,
+  "modelTierCount": 4,
+  "families": {
+    "concertina_line": {
+      "displayName": "Concertina Line",
+      "animationClass": null,
+      "tiers": [
+        {
+          "tier": 1,
+          "modelAssetId": "136599170104983",
+          "meshId": "111330428166791",
+          "textureId": "108189607885632",
+          "triangles": 4180,
+          "rawRobloxSize": [
+            2,
+            0.5234379172325134,
+            0.5351560115814209
+          ],
+          "canonicalSize": [
+            10.0,
+            2.61719,
+            2.67578
+          ],
+          "concept": "assets/concepts/merge_bulwarks/concertina_line/tier1.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/concertina_line/tier1/geometry/model.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/concertina_line/tier1/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/concertina_line/tier1/merge_concertina_line_tier1.fbx",
+          "geometryTaskId": "01a0537b-f499-71ab-8d4c-33ea5f90d3a2",
+          "retextureTaskId": "01a0538c-f785-77d4-b36f-8ebf23167d95"
+        },
+        {
+          "tier": 2,
+          "modelAssetId": "114115802025357",
+          "meshId": "74843098629487",
+          "textureId": "99167815320482",
+          "triangles": 3984,
+          "rawRobloxSize": [
+            2,
+            0.5781240463256836,
+            0.5195320248603821
+          ],
+          "canonicalSize": [
+            10.0,
+            2.89062,
+            2.59766
+          ],
+          "concept": "assets/concepts/merge_bulwarks/concertina_line/tier2.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/concertina_line/tier2/geometry/model_repaired.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/concertina_line/tier2/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/concertina_line/tier2/merge_concertina_line_tier2.fbx",
+          "geometryTaskId": "01a0537b-f868-7731-ab0c-7e80ee08c135",
+          "retextureTaskId": "01a0538c-fbcc-7307-b95e-06ce2329f9bb"
+        },
+        {
+          "tier": 3,
+          "modelAssetId": "97116236163143",
+          "meshId": "80816346293978",
+          "textureId": "99150354324159",
+          "triangles": 5968,
+          "rawRobloxSize": [
+            2,
+            0.5957170724868774,
+            0.46699199080467224
+          ],
+          "canonicalSize": [
+            10.0,
+            2.978585,
+            2.33496
+          ],
+          "concept": "assets/concepts/merge_bulwarks/concertina_line/tier3.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/concertina_line/tier3/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/concertina_line/tier3/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/concertina_line/tier3/merge_concertina_line_tier3.fbx",
+          "geometryTaskId": "01a0537b-fcc0-7412-8bf1-6de5c7ab9887",
+          "retextureTaskId": "01a0538d-0018-764e-9072-49162d02dea6"
+        },
+        {
+          "tier": 4,
+          "modelAssetId": "127236634177361",
+          "meshId": "90707388654221",
+          "textureId": "79948185954313",
+          "triangles": 5962,
+          "rawRobloxSize": [
+            2,
+            0.6323560476303101,
+            0.5876859426498413
+          ],
+          "canonicalSize": [
+            10.0,
+            3.16178,
+            2.93843
+          ],
+          "concept": "assets/concepts/merge_bulwarks/concertina_line/tier4.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/concertina_line/tier4/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/concertina_line/tier4/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/concertina_line/tier4/merge_concertina_line_tier4.fbx",
+          "geometryTaskId": "01a0537c-00e6-7150-af9e-e6a98a3578a4",
+          "retextureTaskId": "01a0538d-051b-70f1-a257-e4413de60f58"
+        }
+      ]
+    },
+    "grasping_hedge": {
+      "displayName": "Grasping Hedge",
+      "animationClass": null,
+      "tiers": [
+        {
+          "tier": 1,
+          "modelAssetId": "124036242227752",
+          "meshId": "115445049845745",
+          "textureId": "84474357651286",
+          "triangles": 4218,
+          "rawRobloxSize": [
+            2,
+            0.6621099710464478,
+            0.4765620231628418
+          ],
+          "canonicalSize": [
+            10.0,
+            3.31055,
+            2.38281
+          ],
+          "concept": "assets/concepts/merge_bulwarks/grasping_hedge/tier1.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/grasping_hedge/tier1/geometry/model.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/grasping_hedge/tier1/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/grasping_hedge/tier1/merge_grasping_hedge_tier1.fbx",
+          "geometryTaskId": "01a0537c-2801-72d5-86d9-193777528af0",
+          "retextureTaskId": "01a0538d-0a5a-74e3-be0c-994ebddc06ff"
+        },
+        {
+          "tier": 2,
+          "modelAssetId": "88689523917752",
+          "meshId": "83916034332808",
+          "textureId": "106584352977376",
+          "triangles": 4152,
+          "rawRobloxSize": [
+            2,
+            0.7382820844650269,
+            0.7480459809303284
+          ],
+          "canonicalSize": [
+            10.0,
+            3.69141,
+            3.74023
+          ],
+          "concept": "assets/concepts/merge_bulwarks/grasping_hedge/tier2.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/grasping_hedge/tier2/geometry/model_repaired.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/grasping_hedge/tier2/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/grasping_hedge/tier2/merge_grasping_hedge_tier2.fbx",
+          "geometryTaskId": "01a0537c-2c76-71c6-9f1f-1517ef6e9bff",
+          "retextureTaskId": "01a0538d-0f21-7470-bf4b-0e7866dd7d22"
+        },
+        {
+          "tier": 3,
+          "modelAssetId": "105129779394582",
+          "meshId": "96072955882186",
+          "textureId": "99733800678351",
+          "triangles": 5960,
+          "rawRobloxSize": [
+            2,
+            0.8636199235916138,
+            0.6478699445724487
+          ],
+          "canonicalSize": [
+            10.0,
+            4.3181,
+            3.23935
+          ],
+          "concept": "assets/concepts/merge_bulwarks/grasping_hedge/tier3.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/grasping_hedge/tier3/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/grasping_hedge/tier3/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/grasping_hedge/tier3/merge_grasping_hedge_tier3.fbx",
+          "geometryTaskId": "01a0537c-3074-7715-9fd2-f0f4ec8ed792",
+          "retextureTaskId": "01a0538d-13b2-738b-9505-8357fbaf2341"
+        },
+        {
+          "tier": 4,
+          "modelAssetId": "95382045660111",
+          "meshId": "78283914955317",
+          "textureId": "112884011715994",
+          "triangles": 5960,
+          "rawRobloxSize": [
+            2,
+            0.7142780423164368,
+            0.5010259747505188
+          ],
+          "canonicalSize": [
+            10.0,
+            3.57139,
+            2.50513
+          ],
+          "concept": "assets/concepts/merge_bulwarks/grasping_hedge/tier4.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/grasping_hedge/tier4/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/grasping_hedge/tier4/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/grasping_hedge/tier4/merge_grasping_hedge_tier4.fbx",
+          "geometryTaskId": "01a0537c-3534-7439-b688-b4247e31c506",
+          "retextureTaskId": "01a0538d-1990-763d-9fe0-fb6c470e97b9"
+        }
+      ]
+    },
+    "impaler_palisade": {
+      "displayName": "Impaler Palisade",
+      "animationClass": null,
+      "tiers": [
+        {
+          "tier": 1,
+          "modelAssetId": "129803988118337",
+          "meshId": "76163496810386",
+          "textureId": "126253121847299",
+          "triangles": 4316,
+          "rawRobloxSize": [
+            2,
+            1.0703120231628418,
+            0.6464840173721313
+          ],
+          "canonicalSize": [
+            10.0,
+            5.35156,
+            3.23242
+          ],
+          "concept": "assets/concepts/merge_bulwarks/impaler_palisade/tier1.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/impaler_palisade/tier1/geometry/model_repaired.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/impaler_palisade/tier1/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/impaler_palisade/tier1/merge_impaler_palisade_tier1.fbx",
+          "geometryTaskId": "01a0537b-e296-72b1-aac6-eceef6e792d1",
+          "retextureTaskId": "01a0538d-1e82-7121-992e-ce19245aa737"
+        },
+        {
+          "tier": 2,
+          "modelAssetId": "98392384350392",
+          "meshId": "102732595920719",
+          "textureId": "134661997604664",
+          "triangles": 5966,
+          "rawRobloxSize": [
+            2,
+            0.9073020219802856,
+            0.5247139930725098
+          ],
+          "canonicalSize": [
+            10.0,
+            4.53651,
+            2.62357
+          ],
+          "concept": "assets/concepts/merge_bulwarks/impaler_palisade/tier2.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/impaler_palisade/tier2/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/impaler_palisade/tier2/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/impaler_palisade/tier2/merge_impaler_palisade_tier2.fbx",
+          "geometryTaskId": "01a0537b-e6fb-73c5-ae62-252fc040436d",
+          "retextureTaskId": "01a0538d-2331-77da-b455-a4ae65bddbf6"
+        },
+        {
+          "tier": 3,
+          "modelAssetId": "102201870134911",
+          "meshId": "74302782582425",
+          "textureId": "100382602593832",
+          "triangles": 5968,
+          "rawRobloxSize": [
+            2,
+            0.846750020980835,
+            0.40174001455307007
+          ],
+          "canonicalSize": [
+            10.0,
+            4.23375,
+            2.0087
+          ],
+          "concept": "assets/concepts/merge_bulwarks/impaler_palisade/tier3.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/impaler_palisade/tier3/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/impaler_palisade/tier3/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/impaler_palisade/tier3/merge_impaler_palisade_tier3.fbx",
+          "geometryTaskId": "01a0537b-eb93-73a0-af8a-5d796e1d4957",
+          "retextureTaskId": "01a0538d-282b-71c5-af78-bf703fd63fcc"
+        },
+        {
+          "tier": 4,
+          "modelAssetId": "125827629437462",
+          "meshId": "94757438630447",
+          "textureId": "86361958044478",
+          "triangles": 5968,
+          "rawRobloxSize": [
+            2,
+            1.0949519872665405,
+            0.569707989692688
+          ],
+          "canonicalSize": [
+            10.0,
+            5.47476,
+            2.84854
+          ],
+          "concept": "assets/concepts/merge_bulwarks/impaler_palisade/tier4.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/impaler_palisade/tier4/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/impaler_palisade/tier4/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/impaler_palisade/tier4/merge_impaler_palisade_tier4.fbx",
+          "geometryTaskId": "01a0537b-efe7-7037-a357-231596b95062",
+          "retextureTaskId": "01a0538d-2cbb-704d-a838-169c7b573d9c"
+        }
+      ]
+    },
+    "land_shark": {
+      "displayName": "Land Shark",
+      "animationClass": "creature",
+      "tiers": [
+        {
+          "tier": 1,
+          "modelAssetId": "93689656194809",
+          "meshId": "128216715877968",
+          "textureId": "132397400798858",
+          "triangles": 4242,
+          "rawRobloxSize": [
+            0.7871099710464478,
+            0.78125,
+            2
+          ],
+          "canonicalSize": [
+            3.93555,
+            3.90625,
+            10.0
+          ],
+          "concept": "assets/concepts/merge_bulwarks/land_shark/tier1.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/land_shark/tier1/geometry/model_repaired.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/land_shark/tier1/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/land_shark/tier1/merge_land_shark_tier1.fbx",
+          "geometryTaskId": "01a0537c-055b-71c7-acc0-707e2044ce41",
+          "retextureTaskId": "01a0538d-317d-7796-9b56-118fafca893a"
+        },
+        {
+          "tier": 2,
+          "modelAssetId": "75537065187935",
+          "meshId": "115036197732596",
+          "textureId": "124669711917497",
+          "triangles": 4342,
+          "rawRobloxSize": [
+            1.3632819652557373,
+            1.320312261581421,
+            2
+          ],
+          "canonicalSize": [
+            6.81641,
+            6.601561,
+            10.0
+          ],
+          "concept": "assets/concepts/merge_bulwarks/land_shark/tier2.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/land_shark/tier2/geometry/model_repaired.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/land_shark/tier2/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/land_shark/tier2/merge_land_shark_tier2.fbx",
+          "geometryTaskId": "01a0537c-0957-74b3-9455-848954fe9302",
+          "retextureTaskId": "01a0538d-35e1-7295-861c-b4e4f54b33a6"
+        },
+        {
+          "tier": 3,
+          "modelAssetId": "104209939997210",
+          "meshId": "104649906954156",
+          "textureId": "116420781292623",
+          "triangles": 4222,
+          "rawRobloxSize": [
+            1.0429680347442627,
+            0.8828120231628418,
+            2
+          ],
+          "canonicalSize": [
+            5.21484,
+            4.41406,
+            10.0
+          ],
+          "concept": "assets/concepts/merge_bulwarks/land_shark/tier3.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/land_shark/tier3/geometry/model_repaired.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/land_shark/tier3/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/land_shark/tier3/merge_land_shark_tier3.fbx",
+          "geometryTaskId": "01a0537c-0dcf-700d-bfff-493a25aba89f",
+          "retextureTaskId": "01a0538d-3a51-74ff-b399-f40ee88315f2"
+        },
+        {
+          "tier": 4,
+          "modelAssetId": "75511812682521",
+          "meshId": "108597500652609",
+          "textureId": "109519840530880",
+          "triangles": 4218,
+          "rawRobloxSize": [
+            1.4531259536743164,
+            1.0624998807907104,
+            2
+          ],
+          "canonicalSize": [
+            7.26563,
+            5.312499,
+            10.0
+          ],
+          "concept": "assets/concepts/merge_bulwarks/land_shark/tier4.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/land_shark/tier4/geometry/model_repaired.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/land_shark/tier4/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/land_shark/tier4/merge_land_shark_tier4.fbx",
+          "geometryTaskId": "01a0537c-128f-72c0-86ce-e8ce3b1b6055",
+          "retextureTaskId": "01a0538d-3f4f-743b-8bcf-ff0927c83695"
+        }
+      ]
+    },
+    "saw_blade": {
+      "displayName": "Saw Blade",
+      "animationClass": "mechanism",
+      "tiers": [
+        {
+          "tier": 1,
+          "modelAssetId": "135106892647800",
+          "meshId": "104093127042296",
+          "textureId": "84458906695568",
+          "triangles": 4058,
+          "rawRobloxSize": [
+            2,
+            0.9023439884185791,
+            0.7773439884185791
+          ],
+          "canonicalSize": [
+            10.0,
+            4.51172,
+            3.88672
+          ],
+          "concept": "assets/concepts/merge_bulwarks/saw_blade/tier1.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/saw_blade/tier1/geometry/model_repaired.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/saw_blade/tier1/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/saw_blade/tier1/merge_saw_blade_tier1.fbx",
+          "geometryTaskId": "01a0537c-172f-74cd-85de-8471ebc3af78",
+          "retextureTaskId": "01a0538d-43cf-714f-8fb8-77fa86e77c64"
+        },
+        {
+          "tier": 2,
+          "modelAssetId": "127121637387172",
+          "meshId": "128921664841893",
+          "textureId": "140701611784496",
+          "triangles": 5968,
+          "rawRobloxSize": [
+            2,
+            0.6526899933815002,
+            0.8275120258331299
+          ],
+          "canonicalSize": [
+            10.0,
+            3.26345,
+            4.13756
+          ],
+          "concept": "assets/concepts/merge_bulwarks/saw_blade/tier2.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/saw_blade/tier2/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/saw_blade/tier2/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/saw_blade/tier2/merge_saw_blade_tier2.fbx",
+          "geometryTaskId": "01a0537c-1b71-7772-9322-584d13c1deae",
+          "retextureTaskId": "01a0538d-4844-713f-8c4d-5022d8b65ec2"
+        },
+        {
+          "tier": 3,
+          "modelAssetId": "95208080901306",
+          "meshId": "77098799705669",
+          "textureId": "98100761815658",
+          "triangles": 5968,
+          "rawRobloxSize": [
+            2,
+            0.7127258777618408,
+            1.0270040035247803
+          ],
+          "canonicalSize": [
+            10.0,
+            3.563629,
+            5.13502
+          ],
+          "concept": "assets/concepts/merge_bulwarks/saw_blade/tier3.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/saw_blade/tier3/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/saw_blade/tier3/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/saw_blade/tier3/merge_saw_blade_tier3.fbx",
+          "geometryTaskId": "01a0537c-1f5c-77fd-8152-4203626a1940",
+          "retextureTaskId": "01a0538d-4cfd-71ab-86bb-ac8f70b5f2e3"
+        },
+        {
+          "tier": 4,
+          "modelAssetId": "75817556345709",
+          "meshId": "119945939136906",
+          "textureId": "131957368405481",
+          "triangles": 4028,
+          "rawRobloxSize": [
+            2,
+            0.7070320248603821,
+            1.0390620231628418
+          ],
+          "canonicalSize": [
+            10.0,
+            3.53516,
+            5.19531
+          ],
+          "concept": "assets/concepts/merge_bulwarks/saw_blade/tier4.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/saw_blade/tier4/geometry/model_repaired.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/saw_blade/tier4/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/saw_blade/tier4/merge_saw_blade_tier4.fbx",
+          "geometryTaskId": "01a0537c-23b9-750a-9522-480868dad9dd",
+          "retextureTaskId": "01a0538d-51bb-745e-b432-ca2501892c14"
+        }
+      ]
+    },
+    "wardstone_barrier": {
+      "displayName": "Wardstone Barrier",
+      "animationClass": null,
+      "tiers": [
+        {
+          "tier": 1,
+          "modelAssetId": "78858133707824",
+          "meshId": "71504920218357",
+          "textureId": "130129100435769",
+          "triangles": 5968,
+          "rawRobloxSize": [
+            2,
+            0.7743959426879883,
+            0.448091983795166
+          ],
+          "canonicalSize": [
+            10.0,
+            3.87198,
+            2.24046
+          ],
+          "concept": "assets/concepts/merge_bulwarks/wardstone_barrier/tier1.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/wardstone_barrier/tier1/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/wardstone_barrier/tier1/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/wardstone_barrier/tier1/merge_wardstone_barrier_tier1.fbx",
+          "geometryTaskId": "01a0537c-3991-706f-b313-b5de5afa84a2",
+          "retextureTaskId": "01a0538f-427b-763f-9bc9-b8f7f3b504a4"
+        },
+        {
+          "tier": 2,
+          "modelAssetId": "130243428103758",
+          "meshId": "118434526595247",
+          "textureId": "131459054840425",
+          "triangles": 5968,
+          "rawRobloxSize": [
+            2,
+            1.038762092590332,
+            0.6310920119285583
+          ],
+          "canonicalSize": [
+            10.0,
+            5.19381,
+            3.15546
+          ],
+          "concept": "assets/concepts/merge_bulwarks/wardstone_barrier/tier2.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/wardstone_barrier/tier2/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/wardstone_barrier/tier2/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/wardstone_barrier/tier2/merge_wardstone_barrier_tier2.fbx",
+          "geometryTaskId": "01a0537c-3d67-77ee-8916-f95aa4a17c46",
+          "retextureTaskId": "01a0538f-470c-7744-ba4f-647a8dd7bfac"
+        },
+        {
+          "tier": 3,
+          "modelAssetId": "111395473839332",
+          "meshId": "107807407106973",
+          "textureId": "82676390051285",
+          "triangles": 5968,
+          "rawRobloxSize": [
+            2,
+            0.7693819999694824,
+            0.4006960093975067
+          ],
+          "canonicalSize": [
+            10.0,
+            3.84691,
+            2.00348
+          ],
+          "concept": "assets/concepts/merge_bulwarks/wardstone_barrier/tier3.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/wardstone_barrier/tier3/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/wardstone_barrier/tier3/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/wardstone_barrier/tier3/merge_wardstone_barrier_tier3.fbx",
+          "geometryTaskId": "01a0537c-4174-74ce-ad20-4ebdbacf8754",
+          "retextureTaskId": "01a0538f-4ba2-764b-9aef-d3b77f9d3c89"
+        },
+        {
+          "tier": 4,
+          "modelAssetId": "82814362109464",
+          "meshId": "95672653521928",
+          "textureId": "91724475662630",
+          "triangles": 5966,
+          "rawRobloxSize": [
+            2,
+            0.8979259729385376,
+            0.470304012298584
+          ],
+          "canonicalSize": [
+            10.0,
+            4.48963,
+            2.35152
+          ],
+          "concept": "assets/concepts/merge_bulwarks/wardstone_barrier/tier4.png",
+          "acceptedGeometry": "assets/source/props/merge_bulwarks/wardstone_barrier/tier4/geometry/model_manifold.glb",
+          "texturedGlb": "assets/source/props/merge_bulwarks/wardstone_barrier/tier4/textured/model.glb",
+          "exportFbx": "assets/exports/props/merge_bulwarks/wardstone_barrier/tier4/merge_wardstone_barrier_tier4.fbx",
+          "geometryTaskId": "01a0537c-45ba-7374-8c69-62265f4efe9c",
+          "retextureTaskId": "01a0538f-5047-71bf-8536-8abd401ab15a"
+        }
+      ]
+    }
+  }
+}
