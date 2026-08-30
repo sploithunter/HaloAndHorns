@@ -6246,6 +6246,12 @@ first-session cohort rates.
   size billboard now live on an unscaled sibling part so activation distance
   stays 16 studs after ScaleTo.
 
+## 2026-08-30 — Pad-cannon E fires a cannonball
+
+- The walk-up prompt is now Fire / Cannon. It calls the existing parabolic
+  sphere shot and does not need a live combat record; Heartbeat steps
+  `self._towerShots` even when no bay is claimed.
+
 ## 2026-08-30 — Six-family Merge bulwark model library
 
 - Created 24 distinct ImageGen concepts across Impaler Palisade, Concertina Line, Land Shark, Saw

@@ -52,6 +52,7 @@ local MERGE_EGG_PROMPT_NAME = "MergeEggPrototypeMergeEggPrompt"
 local RESET_PROMPT_NAME = "MergeEggPrototypeResetPrompt"
 local EXIT_PROMPT_NAME = "MergeEggPrototypeExitPrompt"
 local TOWER_SIZE_PROMPT_NAME = "MergeEggTowerPreviewPrompt"
+local TOWER_FIRE_PROMPT_NAME = "MergeEggTowerFirePrompt"
 local TOWER_SIZE_LABEL_NAME = "MergeEggTowerSizeLabel"
 local UPGRADE_EXPERIMENT_CHANNELS = {
     speed = true,
@@ -338,6 +339,7 @@ function MergeEggPrototypeService:Init()
     self._combatConfig = (self._configLoader and self._configLoader:LoadConfig("combat"))
         or require(ReplicatedStorage.Configs:WaitForChild("combat"))
     self._activeByPlayer = setmetatable({}, { __mode = "k" })
+    self._towerShots = {}
     self._enteringByPlayer = setmetatable({}, { __mode = "k" })
     self._enteringRecordByPlayer = setmetatable({}, { __mode = "k" })
     self._world = nil
@@ -3187,6 +3189,29 @@ function MergeEggPrototypeService:_clearTowerShots(record)
     if record then
         record.towerShots = {}
     end
+    local remaining = {}
+    for _, flight in ipairs(self._towerShots or {}) do
+        if
+            flight.part
+            and flight.part.Parent
+            and (not world or not flight.part:IsDescendantOf(world))
+        then
+            remaining[#remaining + 1] = flight
+        elseif
+            flight.part
+            and flight.part.Parent
+            and world
+            and flight.part:IsDescendantOf(world)
+        then
+            flight.part:Destroy()
+        end
+    end
+    self._towerShots = remaining
+end
+
+function MergeEggPrototypeService:_worldForCannon(cannon)
+    local folder = cannon and cannon.Parent
+    return folder and folder.Parent or nil
 end
 
 local function flattenTowerLook(cframe)
@@ -3377,7 +3402,7 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
                     local box, size = live:GetBoundingBox()
                     live:SetAttribute("MergeTowerPadTopY", box.Position.Y - size.Y * 0.5)
                 end
-                self:_bindTowerSizePreview(live)
+                self:_bindTowerFirePrompt(live)
             end
         end
     end
@@ -3523,38 +3548,62 @@ function MergeEggPrototypeService:_cycleTowerSize(_player, cannon)
     end
 end
 
-function MergeEggPrototypeService:_bindTowerSizePreview(cannon)
-    local _, enabled = self:_towerSizePreviewScales()
-    local host = self:_towerPromptHost(cannon)
-    if not (enabled and host) then
+function MergeEggPrototypeService:_promptFireTower(player, cannon)
+    if not cannon then
         return
     end
+    local record = player and self:_recordFor(player) or nil
+    if not record then
+        for _, active in pairs(self._activeByPlayer or {}) do
+            if active.world and cannon:IsDescendantOf(active.world) then
+                record = active
+                break
+            end
+        end
+    end
+    self:_fireTowerShot(record, cannon, os.clock())
+end
+
+function MergeEggPrototypeService:_bindTowerFirePrompt(cannon)
+    local host = self:_towerPromptHost(cannon)
+    if not host then
+        return
+    end
+    local staleNames = {
+        TOWER_SIZE_PROMPT_NAME,
+        TOWER_FIRE_PROMPT_NAME,
+        TOWER_SIZE_LABEL_NAME,
+    }
     for _, descendant in ipairs(cannon:GetDescendants()) do
-        if
-            descendant.Name == TOWER_SIZE_PROMPT_NAME
-            or descendant.Name == TOWER_SIZE_LABEL_NAME
-        then
-            descendant:Destroy()
+        for _, name in ipairs(staleNames) do
+            if descendant.Name == name then
+                descendant:Destroy()
+            end
+        end
+    end
+    for _, name in ipairs(staleNames) do
+        local stale = host:FindFirstChild(name)
+        if stale then
+            stale:Destroy()
         end
     end
     local prompt = self:_attachPrompt(
         host,
-        TOWER_SIZE_PROMPT_NAME,
-        "Next Size",
-        string.format("Size %.2f", tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 0.4),
+        TOWER_FIRE_PROMPT_NAME,
+        "Fire",
+        "Cannon",
         function(player)
-            self:_cycleTowerSize(player, cannon)
+            self:_promptFireTower(player, cannon)
         end
     )
     if prompt then
         prompt.HoldDuration = 0
         prompt.MaxActivationDistance = 16
     end
-    self:_refreshTowerSizeLabel(cannon)
 end
 
 function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
-    local world = record and record.world
+    local world = (record and record.world) or self:_worldForCannon(cannon)
     if not (world and cannon) then
         return
     end
@@ -3584,8 +3633,7 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
     part.Color = side == "hell" and Color3.fromRGB(210, 72, 42) or Color3.fromRGB(214, 186, 92)
     part.CFrame = CFrame.new(origin)
     part.Parent = folder
-    record.towerShots = record.towerShots or {}
-    record.towerShots[#record.towerShots + 1] = {
+    local flight = {
         part = part,
         origin = origin,
         target = target,
@@ -3594,6 +3642,12 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
         duration = math.max(0.2, tonumber(shot.flight_seconds) or 0.85),
         landSeconds = math.max(0.2, tonumber(shot.land_seconds) or 0.55),
     }
+    self._towerShots = self._towerShots or {}
+    self._towerShots[#self._towerShots + 1] = flight
+    if record then
+        record.towerShots = record.towerShots or {}
+        record.towerShots[#record.towerShots + 1] = flight
+    end
 end
 
 function MergeEggPrototypeService:_stepTowerFire(record, now)
@@ -3621,9 +3675,9 @@ function MergeEggPrototypeService:_stepTowerFire(record, now)
     end
 end
 
-function MergeEggPrototypeService:_stepTowerShots(record, now)
+function MergeEggPrototypeService:_stepTowerShots(now)
     local remaining = {}
-    for _, flight in ipairs(record and record.towerShots or {}) do
+    for _, flight in ipairs(self._towerShots or {}) do
         local part = flight.part
         if part and part.Parent then
             if flight.landedAt then
@@ -3658,9 +3712,7 @@ function MergeEggPrototypeService:_stepTowerShots(record, now)
             end
         end
     end
-    if record then
-        record.towerShots = remaining
-    end
+    self._towerShots = remaining
 end
 
 function MergeEggPrototypeService:_placeCaptainAtStation(model, world, spawn, slot)
@@ -8284,7 +8336,6 @@ function MergeEggPrototypeService:_stepRecord(record, now)
     end
     self:_updateTutorial(record, now, false)
     self:_ensureBayTowers(record)
-    self:_stepTowerShots(record, now)
     if record.terminal ~= true then
         self:_stepTowerFire(record, now)
     end
@@ -8351,6 +8402,7 @@ end
 
 function MergeEggPrototypeService:_step()
     local now = os.clock()
+    self:_stepTowerShots(now)
     for _, record in pairs(self._activeByPlayer) do
         self:_stepRecord(record, now)
     end
