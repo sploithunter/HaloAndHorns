@@ -6239,3 +6239,16 @@ first-session cohort rates.
 
 - First handler required `_recordFor` / bay ownership, so E no-op'd when join
   arming failed. Cycle is now prompt-only.
+
+## 2026-08-30 — Six-family Merge bulwark model library
+
+- Created 24 distinct ImageGen concepts across Impaler Palisade, Concertina Line, Land Shark, Saw
+  Blade, Grasping Hedge, and Wardstone Barrier families, with four readable art tiers per family.
+- Passed every concept through geometry-first Meshy Smart Topology, repaired open geometry before
+  texturing, and finished with 24 watertight textured meshes at 3,984–5,968 triangles. The run used
+  120 Meshy geometry credits and 240 texture credits.
+- Exported embedded-texture FBXs, uploaded all 24 as group-owned Roblox Models, resolved their Mesh
+  and Texture IDs, and recorded complete provenance in `scripts/merge_bulwark_model_ids.json`.
+- Added all 24 spawnable templates to `assets/place/Models.rbxm` and added shared clone/spawn access.
+  Land Shark and Saw Blade animation behavior remains deliberately unwired pending their rigging
+  and part-separation pass.
