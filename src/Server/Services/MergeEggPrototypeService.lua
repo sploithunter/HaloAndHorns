@@ -2469,6 +2469,7 @@ function MergeEggPrototypeService:_spawnHatcherEggObjective(record, team)
     end
 
     self:_removeHatcherEggObjective(team)
+    self:_ensureHatcherStands(record.world)
     local root = team.principalModel and team.principalModel:FindFirstChild("HumanoidRootPart")
     if not root then
         return false
@@ -2545,7 +2546,16 @@ function MergeEggPrototypeService:_spawnHatcherEggObjective(record, team)
     if deploymentPad and deploymentPad:IsA("BasePart") then
         model:PivotTo(deploymentPad.CFrame)
         local box, boxSize = model:GetBoundingBox()
-        local standTop = deploymentPad.Position.Y + deploymentPad.Size.Y * 0.5
+        local stand = self:_authoredHatcherStand(record.world, deploymentPad.Position)
+        local standBox, standSize
+        if stand then
+            standBox, standSize = stand:GetBoundingBox()
+        end
+        local layout = type(self._config.station_layout) == "table" and self._config.station_layout
+            or {}
+        local cupInset = tonumber(layout.stand_cup_inset) or 0.25
+        local standTop = standBox and (standBox.Position.Y + standSize.Y * 0.5 - cupInset)
+            or (deploymentPad.Position.Y + deploymentPad.Size.Y * 0.5)
         local modelBottom = box.Position.Y - boxSize.Y * 0.5
         model:PivotTo(model:GetPivot() + Vector3.new(0, standTop - modelBottom, 0))
     else
@@ -3050,6 +3060,109 @@ function MergeEggPrototypeService:_authoredHatcherPad(world, slot, expectedPosit
         end
     end
     return best
+end
+
+function MergeEggPrototypeService:_authoredHatcherStand(world, padPosition)
+    local stations = self:_authoredBayArtifact(world, "HatcherStations", "Hatchers")
+    if not (stations and padPosition) then
+        return nil
+    end
+    local best
+    local bestDistance = 4
+    for _, candidate in ipairs(stations:GetChildren()) do
+        if candidate:IsA("Model") and string.match(candidate.Name, "^EggStand_") then
+            local distance = (candidate:GetPivot().Position - padPosition).Magnitude
+            if distance < bestDistance then
+                best = candidate
+                bestDistance = distance
+            end
+        end
+    end
+    return best
+end
+
+function MergeEggPrototypeService:_stationPadCFrame(world, slot, spawn)
+    local layout = type(self._config.station_layout) == "table" and self._config.station_layout
+        or {}
+    local padCfg = type(layout.deployment_pads) == "table" and layout.deployment_pads or {}
+    local stationX = stationXOffset(self._config, { position_slot = slot }, slot)
+    local expected = spawn.CFrame * CFrame.new(stationX, 0.06, tonumber(padCfg.egg_offset) or 3)
+    local authored = self:_authoredHatcherPad(world, slot, expected.Position)
+    if authored then
+        return authored.CFrame * CFrame.new(0, 0.07, 0), authored
+    end
+    return expected, nil
+end
+
+function MergeEggPrototypeService:_ensureHatcherStands(world)
+    local stations = self:_authoredBayArtifact(world, "HatcherStations", "Hatchers")
+    local pads = world and world:FindFirstChild("MergeEggDeploymentPads")
+    if not (stations and pads) then
+        return
+    end
+    local template
+    for _, candidate in ipairs(stations:GetChildren()) do
+        if candidate:IsA("Model") and string.match(candidate.Name, "^EggStand_") then
+            template = candidate
+            break
+        end
+    end
+    if not template then
+        return
+    end
+    for _, pad in ipairs(pads:GetChildren()) do
+        if pad:IsA("BasePart") and pad:GetAttribute("MergeEggDeploymentAvailable") == true then
+            if not self:_authoredHatcherStand(world, pad.Position) then
+                local slot =
+                    math.max(0, math.floor(tonumber(pad:GetAttribute("MergeEggPositionSlot")) or 0))
+                local clone = template:Clone()
+                clone.Name = string.format("EggStand_%02d", slot)
+                clone:SetAttribute("MergeEggPositionSlot", slot)
+                clone:SetAttribute("MergeEggRuntimeStand", true)
+                clone.Parent = stations
+                local box, size = clone:GetBoundingBox()
+                local bottom = box.Position.Y - size.Y * 0.5
+                local padTop = pad.Position.Y + pad.Size.Y * 0.5
+                local pivot = clone:GetPivot()
+                clone:PivotTo(
+                    CFrame.new(pad.Position.X, pivot.Position.Y + (padTop - bottom), pad.Position.Z)
+                        * (pivot - pivot.Position)
+                )
+            end
+        end
+    end
+end
+
+function MergeEggPrototypeService:_placeCaptainAtStation(model, world, spawn, slot)
+    if not (model and spawn) then
+        return
+    end
+    local layout = type(self._config.station_layout) == "table" and self._config.station_layout
+        or {}
+    local padCFrame = self:_stationPadCFrame(world, slot, spawn)
+    local look = Vector3.new(spawn.CFrame.LookVector.X, 0, spawn.CFrame.LookVector.Z)
+    if look.Magnitude < 0.001 then
+        look = Vector3.new(1, 0, 0)
+    else
+        look = look.Unit
+    end
+    local front = -look * (tonumber(layout.captain_front_offset) or 4.5)
+    local standPoint = padCFrame.Position + front
+    local lookAt = CFrame.lookAt(standPoint, standPoint + look)
+    model:PivotTo(lookAt)
+    local box, size = model:GetBoundingBox()
+    local bottom = box.Position.Y - size.Y * 0.5
+    local floorTop = padCFrame.Position.Y
+    local pads = world and world:FindFirstChild("MergeEggDeploymentPads")
+    local pad = pads and pads:FindFirstChild(string.format("DeploymentPad%02d", slot))
+    if pad and pad:IsA("BasePart") then
+        floorTop = pad.Position.Y + pad.Size.Y * 0.5
+    end
+    model:PivotTo(model:GetPivot() + Vector3.new(0, floorTop - bottom, 0))
+    local root = model:FindFirstChild("HumanoidRootPart")
+    if root then
+        root.Anchored = true
+    end
 end
 
 function MergeEggPrototypeService:_ensureEggBoardControls(world)
@@ -7804,6 +7917,7 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
             self:_clearEncounter(record)
             return false, tostring(info or "principal_spawn_failed")
         end
+        self:_placeCaptainAtStation(info.model, record.world, spawn, positionSlot)
         if not self:_isRecordActive(record) then
             self._npcPrincipalService:Despawn(info.name, "merge_egg_session_ended")
             return false, "session_ended"
@@ -7903,6 +8017,7 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
     record.encounterSpawned = true
     record.hatching = false
     self:_ensureDeploymentPads(record.world, record)
+    self:_ensureHatcherStands(record.world)
     self:_syncAllTeams(record)
     if not appending then
         self:_setPortalVisible(record, false)
