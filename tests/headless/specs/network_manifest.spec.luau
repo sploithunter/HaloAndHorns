@@ -371,6 +371,16 @@ return function()
                 SignalRegistry.build(networkConfig, transport, { environment = "production" })
             expect(signals.GameAPICommand.name).to.equal("GameAPICommand")
             expect(signals.EggOpened.name).to.equal("EggOpened")
+            expect(signals.MergeEggPrototypeUpgrade.name).to.equal("MergeEggPrototypeUpgrade")
+            expect(signals.MergeEggPrototypeBoardAction.name).to.equal(
+                "MergeEggPrototypeBoardAction"
+            )
+            expect(signals.MergeEggPrototypeBoardResult.name).to.equal(
+                "MergeEggPrototypeBoardResult"
+            )
+            expect(signals.MergeEggPrototypePlayerHatch.name).to.equal(
+                "MergeEggPrototypePlayerHatch"
+            )
             expect(signals.AutomationControl).to.equal(nil)
             expect(signals.RunAutomationSuite).to.equal(nil)
             expect(signals.StudioSmokeTest).to.equal(nil)

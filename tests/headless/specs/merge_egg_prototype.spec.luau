@@ -659,10 +659,22 @@ return function()
             expect(observer:find("surface.Parent = playerGui", 1, true)).to.be.ok()
             expect(observer:find("MergeEggPrototypeBoardResult.OnClientEvent", 1, true)).to.be.ok()
             expect(service:find("MergeEggPrototypeBoardResult:FireClient", 1, true)).to.be.ok()
-            expect(network.packets.MergeEggPrototypeBoardAction.authorization).to.equal("studio")
+            expect(network.packets.MergeEggPrototypeBoardAction.authorization).to.equal("player")
+            expect(network.packets.MergeEggPrototypeBoardAction.environments.production).to.equal(
+                true
+            )
             expect(network.packets.MergeEggPrototypeBoardResult.direction).to.equal(
                 "server_to_client"
             )
+            expect(network.packets.MergeEggPrototypeBoardResult.environments.production).to.equal(
+                true
+            )
+            expect(network.packets.MergeEggPrototypePlayerHatch.environments.production).to.equal(
+                true
+            )
+            expect(pets.serials.census_enabled).to.equal(false)
+            local petIndexService = readFile("src/Server/Services/PetIndexService.lua")
+            expect(petIndexService:find("_rememberDiscoveredHuges", 1, true)).to.be.ok()
         end)
 
         it("uses the entering player's level as the shared combat baseline", function()
@@ -1288,10 +1300,10 @@ return function()
             expect(pets.egg_sources.desert_egg.name).to.equal("Sand Egg")
             expect(packet.transport).to.equal("reliable_event")
             expect(packet.direction).to.equal("client_to_server")
-            expect(packet.authorization).to.equal("studio")
+            expect(packet.authorization).to.equal("player")
+            expect(packet.environments.production).to.equal(true)
             expect(packet.environments.studio).to.equal(true)
             expect(packet.environments.test).to.equal(true)
-            expect(packet.environments.production).to.equal(nil)
             expect(service:find("function MergeEggPrototypeService:AdvanceHatcherEgg", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_spawnInitialTeam", 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_expandTeamForEggTier", 1, true)).to.be.ok()
