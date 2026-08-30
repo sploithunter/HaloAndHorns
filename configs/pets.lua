@@ -187,7 +187,11 @@ local petConfig = {
         -- Studio uses an isolated memory counter by default. A development session must not poll
         -- or mint against production-wide serial state merely because Studio API access is on.
         live_datastore_in_studio = false,
-        census_enabled = true,
+        -- Never fan out one GetAsync per possible Huge species/variant during live-server boot.
+        -- World-first MessagingService events still grow the live index, while a player's already
+        -- discovered Huges are folded into that server's denominator lazily by PetIndexService.
+        -- A future durable registry must use one aggregate read, not hundreds of serial-counter reads.
+        census_enabled = false,
         census_yield_seconds = 0.1,
         read_retry = {
             attempts = 3,

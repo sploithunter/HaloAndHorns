@@ -196,6 +196,27 @@ function PetIndexService:_ensureIndex(data)
     return data.PetIndex
 end
 
+-- The old live census read every possible Huge species/variant serial counter when every server
+-- started. Apart from exhausting the universe DataStore budget, that could delay ordinary profile
+-- loads. Preserve correct local completion for returning Huge owners without any remote reads: their
+-- persisted discoveries are already authoritative for what they have found. Newly minted global
+-- Huges continue to arrive through the PetWorldFirst subscription.
+function PetIndexService:_rememberDiscoveredHuges(discovered)
+    local grew = false
+    for _, entry in pairs(discovered or {}) do
+        if type(entry) == "table" and entry.huge == true and type(entry.id) == "string" then
+            local comboKey = entry.id .. ":" .. tostring(entry.variant or "basic")
+            if not self._globalHuges[comboKey] then
+                self._globalHuges[comboKey] = true
+                grew = true
+            end
+        end
+    end
+    if grew then
+        self._obtainableTotal = nil
+    end
+end
+
 function PetIndexService:_grantReward(player, reward, source)
     if type(reward) ~= "table" or reward.type ~= "currency" then
         return false, "Unsupported reward type"
@@ -362,12 +383,14 @@ end
 -- collection = the full configured bonus, and parking on one egg stops paying
 -- the moment its entries are found.
 function PetIndexService:GetCompletion(player)
-    local total = self:_countObtainable()
     local data = self._dataService:GetData(player)
     local count = 0
     if data then
-        count = countMapEntries(self:_ensureIndex(data).Discovered)
+        local discovered = self:_ensureIndex(data).Discovered
+        self:_rememberDiscoveredHuges(discovered)
+        count = countMapEntries(discovered)
     end
+    local total = self:_countObtainable()
     return {
         count = count,
         total = total,
@@ -387,6 +410,7 @@ function PetIndexService:GetIndex(player)
     end
 
     local index = self:_ensureIndex(data)
+    self:_rememberDiscoveredHuges(index.Discovered)
     return {
         count = countMapEntries(index.Discovered),
         total = self:_countObtainable(),

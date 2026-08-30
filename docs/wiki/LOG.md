@@ -6174,3 +6174,13 @@ first-session cohort rates.
   and published Merge servers bind their gameplay and public return door.
 - Kept `AutomationService` as an optional Studio-only dependency for balance runners; production
   startup no longer requires or registers the automation driver.
+
+## 2026-08-30 — Production Merge remotes and DataStore boot budget restored
+
+- Promoted the four server-authoritative Merge board/hatch remotes to the production network
+  registry. This fixes the shared `MergeEggPrototypeService` critical startup failure in Farm and
+  Fight and the nil `MergeEggPrototypeBoardResult` observer crash in the dedicated Merge place.
+- Disabled the per-server Huge collection census that issued one `GetAsync` for every possible
+  species/variant serial key and exhausted the universe request budget. Unique Huge serials remain
+  atomic and just-in-time at birth; world-first messaging and each player's persisted discoveries
+  grow the live collection denominator without a boot-time DataStore fan-out.

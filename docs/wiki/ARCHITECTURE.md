@@ -141,7 +141,7 @@ filtered out of production registries.
   commit leaves both balance and level unchanged. Economy's legacy item-shop inventory reference is
   installed by the composition root after loader construction, avoiding the former
   Economy-to-Inventory-to-Upgrade dependency cycle.
-- `PetIndexService` owns first-time pet/variant discovery. It writes compact `PetIndex.Discovered` records, syncs the K1 `distinct_pets` counter, and grants `configs/pet_index.lua` milestones once.
+- `PetIndexService` owns first-time pet/variant discovery. It writes compact `PetIndex.Discovered` records, syncs the K1 `distinct_pets` counter, and grants `configs/pet_index.lua` milestones once. Live servers must not scan every Huge serial key at boot: Huge serial allocation remains an atomic just-in-time write at birth, world-first messages grow the live index, and persisted player discoveries restore locally known Huge entries without remote reads.
 - Pet-index milestones grant currency only through injected `EconomyService`; there is no direct
   persistence fallback.
 - `AchievementsService` owns config-tier completion over K1 counters. It listens to `StatsService.CounterChanged`, persists completed tiers under `Achievements.Completed`, and grants rewards once through `RewardService` or the economy-only legacy fallback.
