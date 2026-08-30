@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "pipeline": "ImageGen concept -> Meshy Smart Topology geometry -> integrity/repair -> Meshy retexture -> Blender export -> Roblox group asset -> Models.rbxm",
+  "sharedDirection": "Create one isolated, modular bulwark tile for Halo and Horns: Merge in the same crisp, chunky, low-poly Roblox-ready visual language as the Merge cannon family. Use clean planar geometry, deliberate bevels, a strong readable silhouette, and separated mechanical or organic parts that image-to-3D can reconstruct. The tile spans left-to-right across a defensive line and faces the approaching enemies toward the camera. Show it from a slightly elevated front-left three-quarter view on a pure white studio background, fully visible and centered with only a soft grounding shadow. No environment, terrain slab, characters, text, labels, UI, watermark, photorealism, melted surfaces, tiny filigree, wispy particles, or transparent sheets. Keep the footprint broad and shallow, approximately 16 studs wide by 4 studs deep when normalized in Roblox, and favor a model that can remain attractive below 4,000 triangles.",
+  "families": {
+    "impaler_palisade": {
+      "tier1": "A rough field barricade of seven chunky sharpened timber stakes, alternating heights, tied together by two thick rope rails and supported by compact wooden feet. Warm brown wood, tan rope, a few dark iron nail heads. The points lean slightly toward the enemies but the base remains stable and tileable.",
+      "tier2": "An upgraded palisade of seven sharpened dark timber stakes with broad forged-iron caps, black iron cross braces, riveted foot plates, and restrained red leather bindings. Stronger and heavier than Tier 1 while keeping the same modular footprint.",
+      "tier3": "A poison impaler barricade of seven faceted steel stakes mounted in a dark iron rail, with small sealed green venom reservoirs and thick luminous green channels feeding coated emerald spear tips. No liquid drips or particles; express poison through solid glowing insets.",
+      "tier4": "A soulforged impaler wall of seven obsidian-black spear pylons with violet crystal cores, angular silver armor collars, and restrained magenta runes cut into a massive dark base rail. The center spear is tallest. Epic but clean, physical, and still clearly tileable."
+    },
+    "concertina_line": {
+      "tier1": "A simple defensive line with three low timber X-posts supporting two loose runs of thick dark barbed wire. Use chunky readable barbs and broad rope-like wire rather than thin strands. Rough wood, blackened iron, compact stable feet.",
+      "tier2": "A galvanized concertina barricade with two large interlocking steel razor-wire coils held between three armored steel posts. The coils and razor tabs must be thick, faceted, and readable, not hair-thin. Dark bases with cool silver metal and small blue bolts.",
+      "tier3": "An electrified double concertina line: two thick steel razor coils between three dark armored posts with bright cyan ceramic insulators, solid blue energy nodes, and rigid conductor bars. No floating lightning; show electricity through glowing physical components.",
+      "tier4": "A runic plasma concertina barrier with two massive black-metal segmented coils, violet razor fins, gold-trimmed anchor pylons, and a row of bright magenta crystal capacitors. The shape remains a physical coil barricade, with glow only in solid insets."
+    },
+    "land_shark": {
+      "tier1": "A small stylized land shark designed as an animation-ready creature prop, with a broad dorsal fin, rounded wedge head, short muscular body, and tapered tail, colored sandy tan and muted blue-gray. It is swimming just above an implied ground line but has no terrain slab, dust, wake, or particles. One creature only, all fins and body clearly separated and fully visible.",
+      "tier2": "An armored ironjaw land shark, larger and more aggressive than Tier 1, with a chunky blue-gray shark body, oversized dorsal fin, broad jaw, iron brow plate, riveted side armor, and a few blunt metal teeth. One animation-ready creature only, no terrain slab or effects.",
+      "tier3": "A venomfin land shark with a dark teal muscular body, black armor ridges, luminous green fin membranes, a reinforced jaw, and two compact poison canisters mounted behind the head. One animation-ready creature only; glow is confined to solid fins and canisters.",
+      "tier4": "An apex void megalodon land shark with an enormous black-violet wedge head, layered obsidian armor, tall crystal dorsal fin, silver jaw plating, and restrained magenta rune insets. Powerful boss-like silhouette but still a single clean animation-ready low-poly creature, no terrain or particles."
+    },
+    "saw_blade": {
+      "tier1": "A modular floor trap with one large rusty circular saw blade standing vertically in a short dark wooden guide trough, driven by a simple side crank and two iron brackets. The blade, axle, and base are clearly separated for animation. Broad shallow footprint, no blood or debris.",
+      "tier2": "A reinforced steel floor trap with two offset vertical hardened-steel saw blades in a riveted black-metal track, a protected central axle housing, and compact red drive gears. The blades and base are clean separate-looking parts for animation.",
+      "tier3": "A heated execution track with three staggered serrated black-steel saw blades, orange-hot inner rings, heavy dark rails, and protected bronze gear housings. Solid emissive insets only, no sparks, flame, or particles.",
+      "tier4": "A runic annihilator saw array with four offset obsidian circular blades, violet crystal hubs, silver cutting teeth, and a massive armored track with magenta rune channels. Each blade reads as a distinct animation-ready part; epic but uncluttered."
+    },
+    "grasping_hedge": {
+      "tier1": "A low modular thorn hedge made from three chunky interwoven brown branches, broad dark-green leaves, and large readable thorns, rooted into a narrow earthen-colored wooden planter rail. No loose grass, flowers, or transparent foliage.",
+      "tier2": "An ironwood root barricade with thick dark-brown braided roots, hard bark plates, bronze braces, and oversized ivory thorns. Sparse deep-green leaves preserve a clear silhouette and the broad shallow tile footprint.",
+      "tier3": "A venom briar wall with three thick black-green twisting vines, angular emerald leaves, luminous green thorn tips, and dark iron root clamps on a reinforced base rail. No dripping liquid or particles.",
+      "tier4": "A worldroot grasping wall with massive intertwined midnight-violet roots, obsidian bark armor, silver clamps, large magenta crystal thorns, and one central glowing heartwood core. Ancient and magical but clean, physical, and tileable."
+    },
+    "wardstone_barrier": {
+      "tier1": "A modular ward line with two squat carved gray standing stones on a shared narrow stone base, each bearing one broad pale-blue inset rune, linked by a low physical bronze crossbar. No transparent force field.",
+      "tier2": "A fortified ward barrier with two tall faceted slate obelisks, gold corner bands, bright cyan crystal cores, and two rigid silver energy conductor bars spanning between them. Physical components only, no floating plane.",
+      "tier3": "A polarity ward with two black-metal anchor pylons, rotating-looking cyan crystal disks mounted in their faces, thick gold base armor, and three solid luminous blue segmented bars joining the pylons. Keep every element mechanically plausible and Meshy-readable.",
+      "tier4": "An ascendant null wall with two monumental obsidian-and-silver rune anchors, large violet crystal hearts, crown-like gold fins, and three heavy magenta luminous lattice bars between them. Epic magical technology expressed entirely as solid geometry, no transparent sheet or wispy effects."
+    }
+  }
+}
