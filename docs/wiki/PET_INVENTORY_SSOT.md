@@ -165,6 +165,24 @@ by schema version **7**; the overall player-profile schema is currently version 
   their per-instance `enchantments` list, while stack pets project their saved `enchant` id at the
   config-owned stack strength. The two surfaces must never disagree about whether a pet is enchanted.
 
+### Flat card art and bounded rendering
+
+- Inventory and the shared Trade card renderer are **flat-image-only**. A pet card must never create
+  a `ViewportFrame`, `WorldModel`, camera, or cloned pet model, regardless of the player's global 3D
+  preview preference. Missing registry art uses a glyph; dedicated single-pet preview screens may
+  still choose 3D independently.
+- `scripts/pet_thumbnail_ids.json` is the asset-id SSOT and
+  `configs/pet_thumbnail_assets.lua` is generated. Every configured family must resolve basic,
+  golden, and rainbow card art. Rainbow intentionally reuses basic source art because card chrome
+  supplies its variant treatment. Group ownership (`15872767`) is required for uploaded images.
+- Missing-family source PNGs are converted into tightly framed 256x256 transparent cards by
+  `scripts/build_missing_pet_card_thumbnails.py`. White-background renders use foreground matting so
+  pale pets are not erased; already-transparent source art is preserved.
+- The unequipped inventory is a virtual grid. It retains a logical item list and canvas height, but
+  instantiates only visible rows plus two overscan rows and recycles those slots while scrolling.
+  Category/filter/ownership refreshes may rebuild the logical list; they must not eagerly allocate
+  one GuiObject tree per owned row.
+
 ## Invariants to preserve when extending
 
 1. Never store equip state on an ownership record.

@@ -3,9 +3,9 @@
     scripts/pet_thumbnail_ids.json. DO NOT EDIT BY HAND. Re-run `mise run gen-pet-thumbnails`
     after uploading/resolving thumbnails (scripts/upload_pet_thumbnails.js).
 
-    Resolved flat IMAGE content ids for inventory-card thumbnails. The card prefers these
-    (a texture — no per-frame ViewportFrame render) and falls back to the baked ViewportFrame
-    when an id is absent. pets[petType][variant] / pets[petType][variant__huge] / eggs[eggType].
+    Resolved flat IMAGE content ids for inventory/trade card thumbnails. Those grids never
+    create ViewportFrames; an absent id stays on the cheap glyph placeholder instead.
+    pets[petType][variant] / pets[petType][variant__huge] / eggs[eggType].
 ]]
 
 local function id(n)
@@ -18,6 +18,16 @@ return {
             ["basic"] = id(105394355425851),
             ["golden"] = id(97610625399961),
             ["rainbow"] = id(105394355425851),
+        },
+        ["archon_spark"] = {
+            ["basic"] = id(95052723254986),
+            ["golden"] = id(93623352684524),
+            ["rainbow"] = id(95052723254986),
+        },
+        ["ash_ibis"] = {
+            ["basic"] = id(122648278496857),
+            ["golden"] = id(135493026206437),
+            ["rainbow"] = id(122648278496857),
         },
         ["ash_roc"] = {
             ["basic"] = id(126599530022566),
@@ -33,6 +43,16 @@ return {
             ["basic"] = id(81746669615812),
             ["golden"] = id(133069105234494),
             ["rainbow"] = id(81746669615812),
+        },
+        ["ashwing"] = {
+            ["basic"] = id(124577878521996),
+            ["golden"] = id(72562747255403),
+            ["rainbow"] = id(124577878521996),
+        },
+        ["atlas_golem"] = {
+            ["basic"] = id(76064174828574),
+            ["golden"] = id(85608740278024),
+            ["rainbow"] = id(76064174828574),
         },
         ["aurora_dove"] = {
             ["basic"] = id(79580655558950),
@@ -53,6 +73,16 @@ return {
             ["basic"] = id(99266399523523),
             ["golden"] = id(104956815483275),
             ["rainbow"] = id(99266399523523),
+        },
+        ["banner_hare"] = {
+            ["basic"] = id(119057618405038),
+            ["golden"] = id(122332387583630),
+            ["rainbow"] = id(119057618405038),
+        },
+        ["bastion_ram"] = {
+            ["basic"] = id(125099983415626),
+            ["golden"] = id(129131701625965),
+            ["rainbow"] = id(125099983415626),
         },
         ["beacon_finch"] = {
             ["basic"] = id(138309887653890),
@@ -79,20 +109,40 @@ return {
             ["golden"] = id(75270404867134),
             ["rainbow"] = id(124830786102910),
         },
+        ["blade_lynx"] = {
+            ["basic"] = id(95399190652117),
+            ["golden"] = id(87169066286645),
+            ["rainbow"] = id(95399190652117),
+        },
         ["blightlamb"] = {
             ["basic"] = id(134788157102235),
             ["golden"] = id(128504933441916),
             ["rainbow"] = id(134788157102235),
+        },
+        ["bloom_ibis"] = {
+            ["basic"] = id(70541634979754),
+            ["golden"] = id(110615667248971),
+            ["rainbow"] = id(70541634979754),
         },
         ["bloomlamb"] = {
             ["basic"] = id(105045149735810),
             ["golden"] = id(94807053083344),
             ["rainbow"] = id(105045149735810),
         },
+        ["bloomlight_sprite"] = {
+            ["basic"] = id(113787122092076),
+            ["golden"] = id(116953651150126),
+            ["rainbow"] = id(113787122092076),
+        },
         ["bloomspirit_lamb"] = {
             ["basic"] = id(75557644578840),
             ["golden"] = id(93871476446901),
             ["rainbow"] = id(75557644578840),
+        },
+        ["bolt_hawk"] = {
+            ["basic"] = id(122891830216878),
+            ["golden"] = id(111038644948421),
+            ["rainbow"] = id(122891830216878),
         },
         ["brimstone_salamander"] = {
             ["basic"] = id(74377905542360),
@@ -109,15 +159,60 @@ return {
             ["golden"] = id(131757981611289),
             ["rainbow"] = id(105047601261112),
         },
+        ["camel"] = {
+            ["basic"] = id(96445360749929),
+            ["golden"] = id(87015663327657),
+            ["rainbow"] = id(96445360749929),
+        },
         ["carrion_scarab"] = {
             ["basic"] = id(119013107088989),
             ["golden"] = id(109245649471200),
             ["rainbow"] = id(119013107088989),
         },
+        ["celestial_moth"] = {
+            ["basic"] = id(108499989217083),
+            ["golden"] = id(79467380513798),
+            ["rainbow"] = id(108499989217083),
+        },
+        ["cerberus_pup"] = {
+            ["basic"] = id(83440393707742),
+            ["golden"] = id(122261844256133),
+            ["rainbow"] = id(83440393707742),
+        },
+        ["chain_serpent"] = {
+            ["basic"] = id(81050711640164),
+            ["golden"] = id(118496922222299),
+            ["rainbow"] = id(81050711640164),
+        },
+        ["cinder_golemite"] = {
+            ["basic"] = id(85571076209567),
+            ["golden"] = id(125041025727113),
+            ["rainbow"] = id(85571076209567),
+        },
         ["cinderling_imp"] = {
             ["basic"] = id(98615522952678),
             ["golden"] = id(107018379137294),
             ["rainbow"] = id(98615522952678),
+        },
+        ["clockwork_spider"] = {
+            ["basic"] = id(114462283810177),
+            ["golden"] = id(76270398214053),
+            ["rainbow"] = id(114462283810177),
+        },
+        ["cloudling"] = {
+            ["basic"] = id(105235721811612),
+            ["golden"] = id(72302305620219),
+            ["rainbow"] = id(105235721811612),
+        },
+        ["colorado"] = {
+            ["basic"] = id(111186709900105),
+            ["golden"] = id(132093080089844),
+            ["rainbow"] = id(111186709900105),
+        },
+        ["colorado_creator"] = {
+            ["basic"] = id(111186709900105),
+            ["golden"] = id(132093080089844),
+            ["rainbow"] = id(111186709900105),
         },
         ["compass_fox"] = {
             ["basic"] = id(109378696377160),
@@ -139,6 +234,11 @@ return {
             ["golden"] = id(78400838198119),
             ["rainbow"] = id(102590462907074),
         },
+        ["crownwing_falcon"] = {
+            ["basic"] = id(130295587290642),
+            ["golden"] = id(125343017938806),
+            ["rainbow"] = id(130295587290642),
+        },
         ["crystalbark_stag"] = {
             ["basic"] = id(79652786339903),
             ["golden"] = id(86343124783765),
@@ -158,6 +258,11 @@ return {
             ["basic"] = id(80305773011759),
             ["golden"] = id(128046744698667),
             ["rainbow"] = id(80305773011759),
+        },
+        ["desertiguana"] = {
+            ["basic"] = id(129522761166039),
+            ["golden"] = id(70701263458146),
+            ["rainbow"] = id(129522761166039),
         },
         ["doggy"] = {
             ["basic"] = id(75731963946532),
@@ -184,20 +289,110 @@ return {
             ["golden"] = id(107718256123233),
             ["rainbow"] = id(74033750782847),
         },
+        ["dread_hart"] = {
+            ["basic"] = id(85136136193936),
+            ["golden"] = id(136115234056752),
+            ["rainbow"] = id(85136136193936),
+        },
+        ["dread_mongoose"] = {
+            ["basic"] = id(98883172078727),
+            ["golden"] = id(97474816006165),
+            ["rainbow"] = id(98883172078727),
+        },
         ["dread_owl"] = {
             ["basic"] = id(110005218949980),
             ["golden"] = id(94707096049963),
             ["rainbow"] = id(110005218949980),
+        },
+        ["dread_wisp"] = {
+            ["basic"] = id(88255260790163),
+            ["golden"] = id(90593634981507),
+            ["rainbow"] = id(88255260790163),
+        },
+        ["dreadbloom_sprite"] = {
+            ["basic"] = id(136459759450993),
+            ["golden"] = id(70742914561781),
+            ["rainbow"] = id(136459759450993),
+        },
+        ["dreadcinder_imp"] = {
+            ["basic"] = id(136825792685496),
+            ["golden"] = id(128249739691080),
+            ["rainbow"] = id(136825792685496),
+        },
+        ["dreadfire_hawk"] = {
+            ["basic"] = id(116160488309958),
+            ["golden"] = id(108939348113317),
+            ["rainbow"] = id(116160488309958),
+        },
+        ["dreadglass_dragon"] = {
+            ["basic"] = id(138375221752957),
+            ["golden"] = id(140021773386824),
+            ["rainbow"] = id(138375221752957),
+        },
+        ["dreadguard_bear"] = {
+            ["basic"] = id(78102371317576),
+            ["golden"] = id(92744227829306),
+            ["rainbow"] = id(78102371317576),
+        },
+        ["dreadlance_seraph"] = {
+            ["basic"] = id(103043143221678),
+            ["golden"] = id(134776051940266),
+            ["rainbow"] = id(103043143221678),
+        },
+        ["dreadspire_mammoth"] = {
+            ["basic"] = id(85086154545290),
+            ["golden"] = id(71251220842886),
+            ["rainbow"] = id(85086154545290),
+        },
+        ["dreadthorn_grovekeeper"] = {
+            ["basic"] = id(74387210196494),
+            ["golden"] = id(120521100887427),
+            ["rainbow"] = id(74387210196494),
+        },
+        ["dreadveil_moth"] = {
+            ["basic"] = id(126749277924188),
+            ["golden"] = id(117387388684804),
+            ["rainbow"] = id(126749277924188),
+        },
+        ["duskfrost_seal"] = {
+            ["basic"] = id(132252517653276),
+            ["golden"] = id(82445567698891),
+            ["rainbow"] = id(132252517653276),
         },
         ["dust_camel"] = {
             ["basic"] = id(93017452970741),
             ["golden"] = id(112025343607492),
             ["rainbow"] = id(93017452970741),
         },
+        ["emberfox"] = {
+            ["basic"] = id(83600282928857),
+            ["golden"] = id(108632332832538),
+            ["rainbow"] = id(83600282928857),
+        },
+        ["emberimp"] = {
+            ["basic"] = id(106855356125518),
+            ["golden"] = id(99066360983047),
+            ["rainbow"] = id(106855356125518),
+        },
+        ["emberling"] = {
+            ["basic"] = id(70598794733133),
+            ["golden"] = id(129795365693274),
+            ["rainbow"] = id(70598794733133),
+        },
         ["emberling_cherub"] = {
             ["basic"] = id(100104061128272),
             ["golden"] = id(78898939057620),
             ["rainbow"] = id(100104061128272),
+        },
+        ["emberlion"] = {
+            ["basic"] = id(115365213504840),
+            ["golden"] = id(72155335198458),
+            ["rainbow"] = id(115365213504840),
+        },
+        ["emberowl"] = {
+            ["basic"] = id(105070488457083),
+            ["golden"] = id(92952295163805),
+            ["rainbow"] = id(105070488457083),
         },
         ["empyreal_couatl"] = {
             ["basic"] = id(116808476791394),
@@ -208,6 +403,31 @@ return {
             ["basic"] = id(89883939065664),
             ["golden"] = id(121623796091249),
             ["rainbow"] = id(89883939065664),
+        },
+        ["empyrean_firehawk"] = {
+            ["basic"] = id(118924701130672),
+            ["golden"] = id(100301928112717),
+            ["rainbow"] = id(118924701130672),
+        },
+        ["empyrean_grovekeeper"] = {
+            ["basic"] = id(132160856569990),
+            ["golden"] = id(94981274399893),
+            ["rainbow"] = id(132160856569990),
+        },
+        ["empyrean_mammoth"] = {
+            ["basic"] = id(117577152598974),
+            ["golden"] = id(81291038848924),
+            ["rainbow"] = id(117577152598974),
+        },
+        ["fennec"] = {
+            ["basic"] = id(93636624239985),
+            ["golden"] = id(82387853830965),
+            ["rainbow"] = id(93636624239985),
+        },
+        ["fortune_wisp"] = {
+            ["basic"] = id(112355198130766),
+            ["golden"] = id(132255174255353),
+            ["rainbow"] = id(112355198130766),
         },
         ["frostblight_lamb"] = {
             ["basic"] = id(140411132928255),
@@ -274,6 +494,26 @@ return {
             ["golden"] = id(115078743555329),
             ["rainbow"] = id(140400841991548),
         },
+        ["glory_mongoose"] = {
+            ["basic"] = id(72845652839009),
+            ["golden"] = id(91833376925944),
+            ["rainbow"] = id(72845652839009),
+        },
+        ["gloryleaf_lamb"] = {
+            ["basic"] = id(126283805182540),
+            ["golden"] = id(129066373624814),
+            ["rainbow"] = id(126283805182540),
+        },
+        ["gloryscale_salamander"] = {
+            ["basic"] = id(80199317375431),
+            ["golden"] = id(72549517208285),
+            ["rainbow"] = id(80199317375431),
+        },
+        ["gloryspark_cherub"] = {
+            ["basic"] = id(101488879013772),
+            ["golden"] = id(90320378299246),
+            ["rainbow"] = id(101488879013772),
+        },
         ["goldleaf_stag"] = {
             ["basic"] = id(87498939054141),
             ["golden"] = id(98202750376594),
@@ -294,10 +534,30 @@ return {
             ["golden"] = id(103275018058719),
             ["rainbow"] = id(72973649514259),
         },
+        ["halo_bear"] = {
+            ["basic"] = id(127120683868489),
+            ["golden"] = id(139418703531431),
+            ["rainbow"] = id(127120683868489),
+        },
+        ["halo_fawn"] = {
+            ["basic"] = id(126180960001440),
+            ["golden"] = id(89322316985269),
+            ["rainbow"] = id(126180960001440),
+        },
         ["halo_hare"] = {
             ["basic"] = id(126045475952644),
             ["golden"] = id(105604090481196),
             ["rainbow"] = id(126045475952644),
+        },
+        ["halo_hart"] = {
+            ["basic"] = id(138763834596059),
+            ["golden"] = id(97334420494215),
+            ["rainbow"] = id(138763834596059),
+        },
+        ["halo_wisp"] = {
+            ["basic"] = id(74101462124214),
+            ["golden"] = id(105298391245618),
+            ["rainbow"] = id(74101462124214),
         },
         ["hoarfrost_phoenix"] = {
             ["basic"] = id(87991721985832),
@@ -308,6 +568,21 @@ return {
             ["basic"] = id(97905820660842),
             ["golden"] = id(114765493146860),
             ["rainbow"] = id(97905820660842),
+        },
+        ["ironbark_rhino"] = {
+            ["basic"] = id(133146950352472),
+            ["golden"] = id(86248003330034),
+            ["rainbow"] = id(133146950352472),
+        },
+        ["kade"] = {
+            ["basic"] = id(92686542272874),
+            ["golden"] = id(97575976892597),
+            ["rainbow"] = id(92686542272874),
+        },
+        ["keytail_raccoon"] = {
+            ["basic"] = id(100769327742581),
+            ["golden"] = id(104885983209692),
+            ["rainbow"] = id(100769327742581),
         },
         ["kitty"] = {
             ["basic"] = id(74416019256177),
@@ -324,20 +599,50 @@ return {
             ["golden"] = id(97715068502778),
             ["rainbow"] = id(89677669706810),
         },
+        ["light_tortoise"] = {
+            ["basic"] = id(139281449606584),
+            ["golden"] = id(97603196863351),
+            ["rainbow"] = id(139281449606584),
+        },
+        ["lightbark_rhino"] = {
+            ["basic"] = id(128959850971663),
+            ["golden"] = id(88385243883375),
+            ["rainbow"] = id(128959850971663),
+        },
         ["lightleaf_hare"] = {
             ["basic"] = id(139389852735214),
             ["golden"] = id(80892827935744),
             ["rainbow"] = id(139389852735214),
+        },
+        ["lockbox_imp"] = {
+            ["basic"] = id(107628700493045),
+            ["golden"] = id(120325785527736),
+            ["rainbow"] = id(107628700493045),
+        },
+        ["lumen_dove"] = {
+            ["basic"] = id(125878773206585),
+            ["golden"] = id(114097314851149),
+            ["rainbow"] = id(125878773206585),
         },
         ["lumen_salamander"] = {
             ["basic"] = id(84143492516331),
             ["golden"] = id(92169333930749),
             ["rainbow"] = id(84143492516331),
         },
+        ["lumen_seal"] = {
+            ["basic"] = id(116934588614101),
+            ["golden"] = id(126996052795865),
+            ["rainbow"] = id(116934588614101),
+        },
         ["medal_moth"] = {
             ["basic"] = id(115404562555367),
             ["golden"] = id(100587784667578),
             ["rainbow"] = id(115404562555367),
+        },
+        ["meerkat"] = {
+            ["basic"] = id(103666241450663),
+            ["golden"] = id(138503189501370),
+            ["rainbow"] = id(103666241450663),
         },
         ["mirage_jackal"] = {
             ["basic"] = id(90052768512443),
@@ -349,6 +654,26 @@ return {
             ["golden"] = id(71768088457260),
             ["rainbow"] = id(97681032634157),
         },
+        ["oasis_dragon"] = {
+            ["basic"] = id(100209822051306),
+            ["golden"] = id(126465554884743),
+            ["rainbow"] = id(100209822051306),
+        },
+        ["obsidian_hound"] = {
+            ["basic"] = id(121494242582165),
+            ["golden"] = id(119012206439265),
+            ["rainbow"] = id(121494242582165),
+        },
+        ["obsidian_tortoise"] = {
+            ["basic"] = id(110749776538083),
+            ["golden"] = id(138187101214247),
+            ["rainbow"] = id(110749776538083),
+        },
+        ["obsidian_totem"] = {
+            ["basic"] = id(90931947180147),
+            ["golden"] = id(93585384705549),
+            ["rainbow"] = id(90931947180147),
+        },
         ["pack_tortoise"] = {
             ["basic"] = id(131839188079158),
             ["golden"] = id(122756453248437),
@@ -359,10 +684,25 @@ return {
             ["golden"] = id(122052466356164),
             ["rainbow"] = id(123984266681031),
         },
+        ["penguin"] = {
+            ["basic"] = id(79114916691915),
+            ["golden"] = id(121136979192630),
+            ["rainbow"] = id(79114916691915),
+        },
         ["phantom_jackal"] = {
             ["basic"] = id(87816495826130),
             ["golden"] = id(98737039707791),
             ["rainbow"] = id(87816495826130),
+        },
+        ["polarbear"] = {
+            ["basic"] = id(123538201583411),
+            ["golden"] = id(119541386610090),
+            ["rainbow"] = id(123538201583411),
+        },
+        ["portal_drake"] = {
+            ["basic"] = id(130444931546171),
+            ["golden"] = id(90981944922246),
+            ["rainbow"] = id(130444931546171),
         },
         ["prism_fox"] = {
             ["basic"] = id(140292224862725),
@@ -379,6 +719,11 @@ return {
             ["golden"] = id(136581823639554),
             ["rainbow"] = id(85274024869303),
         },
+        ["radiant_lance_seraph"] = {
+            ["basic"] = id(126587852217218),
+            ["golden"] = id(92406810260134),
+            ["rainbow"] = id(126587852217218),
+        },
         ["radiant_salamander"] = {
             ["basic"] = id(116236822477663),
             ["golden"] = id(101998578414175),
@@ -389,10 +734,20 @@ return {
             ["golden"] = id(105430802613104),
             ["rainbow"] = id(80509064603455),
         },
+        ["radiant_totem"] = {
+            ["basic"] = id(116337633750196),
+            ["golden"] = id(96430468844034),
+            ["rainbow"] = id(116337633750196),
+        },
         ["ribbon_ram"] = {
             ["basic"] = id(90646886535978),
             ["golden"] = id(136669653169737),
             ["rainbow"] = id(90646886535978),
+        },
+        ["rift_panther"] = {
+            ["basic"] = id(137603369765160),
+            ["golden"] = id(79378459396587),
+            ["rainbow"] = id(137603369765160),
         },
         ["rime_scarab"] = {
             ["basic"] = id(79924357335974),
@@ -439,6 +794,31 @@ return {
             ["golden"] = id(81220177210733),
             ["rainbow"] = id(120424701447302),
         },
+        ["ruinmane_lion"] = {
+            ["basic"] = id(109952796753988),
+            ["golden"] = id(101460068135450),
+            ["rainbow"] = id(109952796753988),
+        },
+        ["ruinscale_salamander"] = {
+            ["basic"] = id(109862845660144),
+            ["golden"] = id(139071508404800),
+            ["rainbow"] = id(109862845660144),
+        },
+        ["scorpion"] = {
+            ["basic"] = id(100152327253560),
+            ["golden"] = id(109833596580712),
+            ["rainbow"] = id(100152327253560),
+        },
+        ["seraph_kit"] = {
+            ["basic"] = id(111060029098162),
+            ["golden"] = id(71870506309649),
+            ["rainbow"] = id(111060029098162),
+        },
+        ["seraph_lion"] = {
+            ["basic"] = id(116613276175090),
+            ["golden"] = id(135047394906138),
+            ["rainbow"] = id(116613276175090),
+        },
         ["seraph_owl"] = {
             ["basic"] = id(83432339015268),
             ["golden"] = id(100615512051791),
@@ -449,6 +829,21 @@ return {
             ["golden"] = id(77728909524646),
             ["rainbow"] = id(117359766708193),
         },
+        ["snowflakeowl"] = {
+            ["basic"] = id(88842909933041),
+            ["golden"] = id(86751896596348),
+            ["rainbow"] = id(88842909933041),
+        },
+        ["snowfox"] = {
+            ["basic"] = id(106676931952068),
+            ["golden"] = id(129385062080051),
+            ["rainbow"] = id(106676931952068),
+        },
+        ["snowleopard"] = {
+            ["basic"] = id(77893007135347),
+            ["golden"] = id(74014810868835),
+            ["rainbow"] = id(77893007135347),
+        },
         ["solar_phoenix"] = {
             ["basic"] = id(132304635491245),
             ["golden"] = id(136475446301158),
@@ -458,6 +853,11 @@ return {
             ["basic"] = id(123477410837004),
             ["golden"] = id(112634269821853),
             ["rainbow"] = id(123477410837004),
+        },
+        ["star_moth"] = {
+            ["basic"] = id(104344017586981),
+            ["golden"] = id(81883598150514),
+            ["rainbow"] = id(104344017586981),
         },
         ["starlight_owl"] = {
             ["basic"] = id(84553579808261),
@@ -479,10 +879,20 @@ return {
             ["golden"] = id(140601733762566),
             ["rainbow"] = id(79127150108268),
         },
+        ["thornleaf_lamb"] = {
+            ["basic"] = id(90980046691114),
+            ["golden"] = id(82188073120189),
+            ["rainbow"] = id(90980046691114),
+        },
         ["trail_pup"] = {
             ["basic"] = id(120400295131072),
             ["golden"] = id(104496648833556),
             ["rainbow"] = id(120400295131072),
+        },
+        ["vault_beetle"] = {
+            ["basic"] = id(138296365370783),
+            ["golden"] = id(74780905644586),
+            ["rainbow"] = id(138296365370783),
         },
         ["verdant_sprite"] = {
             ["basic"] = id(139619918066914),
@@ -513,6 +923,11 @@ return {
             ["basic"] = id(101697025544772),
             ["golden"] = id(107349510202334),
             ["rainbow"] = id(101697025544772),
+        },
+        ["wyrmling"] = {
+            ["basic"] = id(115870252809611),
+            ["golden"] = id(134776722707336),
+            ["rainbow"] = id(115870252809611),
         },
     },
     eggs = {
