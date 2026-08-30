@@ -69,9 +69,9 @@ per bay and their invisible `TowerAnchor` parts under
 objects. Rojo owns the cannon templates in `assets/place/Models.rbxm` at
 `Models.MergeCannons/<Role>/<Tier>`. Runtime clones and grounds a selected template through
 `src/Shared/Game/MergeTowerModels.lua`, so changing tower role or tier never mutates or duplicates
-the permanent map. A claimed bay currently grounds the current-art Repulsor at `tier_1_scale`
-and lofts a labeled sphere from each pad; the cannon aims along the launch tangent. Upgrades
-and role acquisition stay later.
+the permanent map. A claimed bay currently grounds the current-art Repulsor at locked
+`tier_scales` (0.40 / 0.50) and lofts a labeled sphere from each pad; the cannon aims
+along the launch tangent. Upgrades and role acquisition stay later.
 
 Each selected bay also derives runtime containment from its authored `ArenaBounds` and
 `LandStrip`. Two 64-stud invisible side walls and one enemy-end wall are collidable, while the

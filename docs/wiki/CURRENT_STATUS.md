@@ -2,6 +2,11 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Merge cannon sizes locked (2026-08-30)
+
+Playtest lock: tier 1 is 0.40, tiers 2–4 are 0.50. The E prompt sits on an unscaled
+preview host so shrinking the mesh no longer shrinks the activation radius.
+
 ## Merge tower E cycles size previews (2026-08-30)
 
 Walk up to a pad cannon and press E to cycle 0.20–0.85. Both bay cannons take the new
