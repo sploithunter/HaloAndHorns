@@ -6106,3 +6106,13 @@ first-session cohort rates.
 - Removed the hidden tier-8 price flattening. Base egg creation follows
   100 → 250 → 500 → 1,000 and then doubles indefinitely; base generator upgrades likewise retain
   strict doubling through the extended prototype-huge ladder.
+
+## 2026-08-29 — Spawnable Merge cannon model library
+
+- Moved Heal, Rage, Debuff, Gravity, Repulsor, and Nullifier out of the dedicated Merge map's loose
+  review lineup and into `assets/place/Models.rbxm` as twelve spawnable role/tier templates.
+- Normalized the six current Tier 2 meshes to the corrected Repulsor footprint and added temporary
+  Tier 1 variants at 85% scale; Tier 3 and Tier 4 remain future distinct model passes.
+- Added a shared clone/spawn helper that resolves authored `TowerAnchor` pads, grounds each model,
+  preserves pad/bay identity attributes, and leaves permanent Studio maps responsible only for pad
+  placement. Added `models.project.json` so `models.rbxl` can be rebuilt as a focused asset place.

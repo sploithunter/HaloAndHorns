@@ -429,6 +429,22 @@ return {
                 { 250, 220, 80 },
             },
         },
+        edge_towers = {
+            model_folder_name = "MergeCannons",
+            model_tier_count = 4,
+            current_art_tier = 2,
+            -- Tier 1 intentionally reads as the starter chassis; Tier 2 is the corrected
+            -- Repulsor-sized reference shared by all six current cannon meshes.
+            tier_1_scale = 0.85,
+            available_roles = {
+                "heal",
+                "rage",
+                "debuff",
+                "gravity",
+                "repulsor",
+                "nullifier",
+            },
+        },
         -- The existing camera-facing button is only a presentation surface. The server accepts an
         -- egg action when the avatar is both safely behind the actual BulwarkLine and physically
         -- beneath the selected captain's button.

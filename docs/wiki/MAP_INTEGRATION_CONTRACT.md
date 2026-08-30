@@ -63,6 +63,14 @@ central nine-card management control is the playable UI. The oversized legacy `E
 and `EggBaseUpgradeControl` remain only as invisible compatibility anchors and must never render or
 accept input when the central wall exists.
 
+Merge edge towers follow the same art-versus-hook boundary. Studio owns the two armored pad Models
+per bay and their invisible `TowerAnchor` parts under
+`Workspace.GeneratedMap_MergeEggVoxel.TowerStations`; it must not retain visible cannon review
+objects. Rojo owns the cannon templates in `assets/place/Models.rbxm` at
+`Models.MergeCannons/<Role>/<Tier>`. Runtime clones and grounds a selected template through
+`src/Shared/Game/MergeTowerModels.lua`, so changing tower role or tier never mutates or duplicates
+the permanent map.
+
 Each selected bay also derives runtime containment from its authored `ArenaBounds` and
 `LandStrip`. Two 64-stud invisible side walls and one enemy-end wall are collidable, while the
 player-end entrance remains open to the public mall. Their inner faces align with the authored

@@ -1,11 +1,18 @@
 {
   "_note": "Group-owned review Models for the six-cannon Merge tower family. The local binary source/export directories are intentionally gitignored; concepts, prompts, resolved Roblox IDs, and topology measurements are durable here.",
   "creatorGroupId": "15872767",
+  "tiering": {
+    "modelTierCount": 4,
+    "currentArtTier": 2,
+    "tier1Scale": 0.85,
+    "tier2ReferenceWidth": 7.953594207763672
+  },
   "heal": {
     "modelAssetId": "139934426250291",
     "meshId": "101416290536855",
     "textureId": "125180760410565",
     "triangles": 9468,
+    "canonicalTier2Size": [7.953594207763672, 6.8637055649483045, 6.665047942707133],
     "concept": "assets/concepts/merge_cannons/heal_cannon.png",
     "sourceGlb": "assets/source/props/merge_cannons/heal/textured/model.glb",
     "exportFbx": "assets/exports/props/merge_cannons/heal/merge_heal_cannon.fbx"
@@ -15,6 +22,7 @@
     "meshId": "122743079797635",
     "textureId": "112130547119678",
     "triangles": 9468,
+    "canonicalTier2Size": [7.953594207763672, 6.860730294364203, 7.626240014340738],
     "concept": "assets/concepts/merge_cannons/rage_cannon.png",
     "sourceGlb": "assets/source/props/merge_cannons/rage/textured/model.glb",
     "exportFbx": "assets/exports/props/merge_cannons/rage/merge_rage_cannon.fbx"
@@ -24,6 +32,7 @@
     "meshId": "79845338311693",
     "textureId": "122268989880172",
     "triangles": 9464,
+    "canonicalTier2Size": [7.953594207763672, 6.737808383951233, 6.7853700468926945],
     "concept": "assets/concepts/merge_cannons/debuff_cannon.png",
     "sourceGlb": "assets/source/props/merge_cannons/debuff/textured/model.glb",
     "exportFbx": "assets/exports/props/merge_cannons/debuff/merge_debuff_cannon.fbx"
@@ -33,6 +42,7 @@
     "meshId": "84216404542389",
     "textureId": "125199654859868",
     "triangles": 9464,
+    "canonicalTier2Size": [7.953594207763672, 7.233683292963438, 7.435465315029953],
     "concept": "assets/concepts/merge_cannons/gravity_cannon.png",
     "sourceGlb": "assets/source/props/merge_cannons/gravity/textured/model.glb",
     "exportFbx": "assets/exports/props/merge_cannons/gravity/merge_gravity_cannon.fbx"
@@ -42,6 +52,7 @@
     "meshId": "123147846691160",
     "textureId": "80442912867791",
     "triangles": 9466,
+    "canonicalTier2Size": [7.953594207763672, 7.255610466003418, 7.391720294952393],
     "concept": "assets/concepts/merge_cannons/repulsor_cannon.png",
     "sourceGlb": "assets/source/props/merge_cannons/repulsor/textured/model.glb",
     "exportFbx": "assets/exports/props/merge_cannons/repulsor/merge_repulsor_cannon.fbx"
@@ -51,6 +62,7 @@
     "meshId": "125200316700851",
     "textureId": "98389823322538",
     "triangles": 9466,
+    "canonicalTier2Size": [7.953594207763672, 6.505625939393733, 6.646858509640619],
     "concept": "assets/concepts/merge_cannons/nullifier_cannon.png",
     "sourceGlb": "assets/source/props/merge_cannons/nullifier/textured/model.glb",
     "exportFbx": "assets/exports/props/merge_cannons/nullifier/merge_nullifier_cannon.fbx"
