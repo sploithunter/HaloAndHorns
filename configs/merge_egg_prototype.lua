@@ -234,6 +234,10 @@ return {
             available_transparency = 0.3,
             occupied_transparency = 0.14,
         },
+        -- Stand on the board side of the egg (spawn looks at the gate).
+        captain_front_offset = 4.5,
+        -- Sit the egg on the authored stand rim, not the flush floor pad.
+        stand_cup_inset = 0.25,
     },
 
     -- Durable balance knobs. Combat/economy upgrade ranks spend the player's real Gems and persist
