@@ -3469,9 +3469,8 @@ function MergeEggPrototypeService:_setTowerPreviewScale(cannon, scale)
     self:_refreshTowerSizeLabel(cannon)
 end
 
-function MergeEggPrototypeService:_cycleTowerSize(player, cannon)
-    local record = self:_recordFor(player)
-    if not (record and record.world and cannon and cannon:IsDescendantOf(record.world)) then
+function MergeEggPrototypeService:_cycleTowerSize(_player, cannon)
+    if not (cannon and cannon.Parent) then
         return
     end
     local scales = self:_towerSizePreviewScales()
