@@ -6125,3 +6125,10 @@ first-session cohort rates.
   explicitly includes Kade (`536245038`) without changing his global account classification.
 - Public clients do not see the entry prompt, the server rejects unauthorized door activation, and
   unauthorized direct joins to the unreleased Merge place are returned to main or fail closed.
+
+## 2026-08-29 — Public Merge return door
+
+- Bound the dedicated Merge place's authored common-area `HallOfWorldsPortal` hook as a visible
+  `RETURN TO FARM & FIGHT` door targeting the configured main-place role.
+- Kept the return route deliberately independent of preview admission and active Merge sessions:
+  any player who can reach the door can leave, while entry into Merge remains ID-restricted.

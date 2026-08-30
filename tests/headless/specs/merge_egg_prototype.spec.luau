@@ -110,6 +110,29 @@ return function()
             expect(service:find('GetAttributeChangedSignal("CurrentArea")', beginAt, true)).to.be.ok()
         end)
 
+        it("keeps the dedicated-place return door public and independent of a session", function()
+            local returnRoute = config.gate.return_route
+            expect(returnRoute.hook_name).to.equal("HallOfWorldsPortal")
+            expect(returnRoute.destination_role).to.equal("main")
+            expect(returnRoute.public).to.equal(true)
+            expect(returnRoute.object_text).to.equal("Farm & Fight")
+
+            local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local returnAt =
+                service:find("function MergeEggPrototypeService:_returnToFarmAndFight", 1, true)
+            local bindAt = service:find(
+                "function MergeEggPrototypeService:_bindPublicReturnGate",
+                returnAt,
+                true
+            )
+            expect(returnAt ~= nil and bindAt ~= nil and returnAt < bindAt).to.equal(true)
+            local returnBody = service:sub(returnAt, bindAt - 1)
+            expect(returnBody:find("self:_recordFor", 1, true)).to.equal(nil)
+            expect(returnBody:find("self:_teleportToRole(player", 1, true)).to.be.ok()
+            expect(service:find('hook:SetAttribute("MergeEggPublicReturnDoor", true)', 1, true)).to.be.ok()
+            expect(service:find("self:_bindPublicReturnGate()", 1, true)).to.be.ok()
+        end)
+
         it("arms on entry and validates five purchases, one merge, and one deployment", function()
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
             local observer = readFile("src/Client/Systems/MergeEggPrototypeObserver.lua")

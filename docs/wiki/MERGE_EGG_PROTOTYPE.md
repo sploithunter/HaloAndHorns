@@ -693,6 +693,10 @@ team and queue model:
   plus Kade (`536245038`). The client hides the prompt for everyone else, the server validates every
   use, and an unauthorized direct join to the Merge PlaceId is returned to main (or kicked if that
   teleport fails). Studio bypasses this preview restriction for authoring and local playtests.
+- The dedicated place's authored common-area `Workspace.HallOfWorldsPortal` is the reciprocal
+  return door. Runtime styles and labels that existing hook, then exposes an unrestricted
+  `Return / Farm & Fight` prompt to every player. Return does not require a claimed bay, active
+  session, internal-account classification, or Kade's explicit preview grant.
 - Dedicated-place character entry waits for ProfileStore data before creating the isolated wallet
   or arming a wave. This prevents a transient `currency_setup_failed` from leaving the player in
   the map with only fallback art and no working management grid. A veteran whose settings finish

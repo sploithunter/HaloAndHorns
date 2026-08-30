@@ -5330,6 +5330,81 @@ function MergeEggPrototypeService:_enterFromHall(player)
     return self:_teleportToRole(player, "merge")
 end
 
+function MergeEggPrototypeService:_returnToFarmAndFight(player)
+    if not self:_isDedicatedMergePlace() then
+        return self:_exit(player)
+    end
+    local returnCfg = ((self._config.gate or {}).return_route or {})
+    return self:_teleportToRole(player, tostring(returnCfg.destination_role or "main"))
+end
+
+function MergeEggPrototypeService:_bindPublicReturnGate()
+    if not self:_isDedicatedMergePlace() then
+        return nil
+    end
+
+    local gateCfg = self._config.gate or {}
+    local returnCfg = gateCfg.return_route or {}
+    if returnCfg.public ~= true then
+        return nil
+    end
+    local hookName = tostring(returnCfg.hook_name or gateCfg.hook_name or "HallOfWorldsPortal")
+    local hook = Workspace:FindFirstChild(hookName, true)
+    if not (hook and hook:IsA("BasePart")) then
+        self:_log("Warn", "Merge return-door hook unavailable", {
+            hook = hookName,
+        })
+        return nil
+    end
+
+    -- This authored hook is the common-area door, not a combat-bay control. Styling it at runtime
+    -- keeps the permanent map responsible for placement while making the route unmistakable.
+    hook:SetAttribute("MergeEggPublicReturnDoor", true)
+    hook.Material = Enum.Material.Neon
+    hook.Color = rgbTriplet(returnCfg.color, { 82, 216, 255 })
+    hook.Transparency = 0.2
+    hook.CanCollide = false
+    hook.CanTouch = false
+    hook.CanQuery = true
+
+    local billboard = hook:FindFirstChild("MergeEggReturnDoorBillboard")
+    if billboard then
+        billboard:Destroy()
+    end
+    billboard = Instance.new("BillboardGui")
+    billboard.Name = "MergeEggReturnDoorBillboard"
+    billboard.Adornee = hook
+    billboard.AlwaysOnTop = true
+    billboard.LightInfluence = 0
+    billboard.MaxDistance = 140
+    billboard.Size = UDim2.fromOffset(420, 86)
+    billboard.StudsOffsetWorldSpace = Vector3.new(0, hook.Size.Y * 0.5 + 2.5, 0)
+    billboard.Parent = hook
+
+    local label = Instance.new("TextLabel")
+    label.Name = "Label"
+    label.BackgroundTransparency = 1
+    label.Size = UDim2.fromScale(1, 1)
+    label.Font = Enum.Font.GothamBlack
+    label.Text = tostring(returnCfg.label or "RETURN TO FARM & FIGHT")
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.TextScaled = true
+    label.TextStrokeColor3 = Color3.fromRGB(18, 28, 48)
+    label.TextStrokeTransparency = 0
+    label.Parent = billboard
+
+    self._returnPrompt = self:_attachPrompt(
+        hook,
+        tostring(returnCfg.prompt_name or EXIT_PROMPT_NAME),
+        tostring(returnCfg.action_text or "Return"),
+        tostring(returnCfg.object_text or "Farm & Fight"),
+        function(player)
+            self:_returnToFarmAndFight(player)
+        end
+    )
+    return hook
+end
+
 function MergeEggPrototypeService:_bindRestrictedHallGate()
     local gateCfg = self._config.gate or {}
     local hook = Workspace:FindFirstChild(tostring(gateCfg.hook_name or "HallOfWorldsPortal"), true)
@@ -5414,15 +5489,19 @@ function MergeEggPrototypeService:_bindWorldControls(world)
             self:_reset(player)
         end
     )
-    self:_attachPrompt(
-        findNamedPart(world, cfg.exit_control),
-        EXIT_PROMPT_NAME,
-        "Return Home",
-        "Hall Gate",
-        function(player)
-            self:_exit(player)
-        end
-    )
+    -- The original in-place Studio prototype retains its local ExitControl. The published Merge
+    -- place instead binds one public common-area return door in `_bindPublicReturnGate`.
+    if not self:_isDedicatedMergePlace() then
+        self:_attachPrompt(
+            findNamedPart(world, cfg.exit_control),
+            EXIT_PROMPT_NAME,
+            "Return Home",
+            "Hall Gate",
+            function(player)
+                self:_exit(player)
+            end
+        )
+    end
 end
 
 function MergeEggPrototypeService:_playerPetFolder(player, create)
@@ -9905,6 +9984,8 @@ function MergeEggPrototypeService:Start()
     end
     if not self:_isDedicatedMergePlace() then
         self:_bindRestrictedHallGate()
+    else
+        self:_bindPublicReturnGate()
     end
     self:_bindMergePlaceJoin()
     Signals.MergeEggPrototypeUpgrade.OnServerEvent:Connect(function(player, request)
