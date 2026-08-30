@@ -84,6 +84,16 @@ return function()
             expect(config.gate.access.additional_user_ids[1]).to.equal(536245038)
             expect(config.gate.access.studio_bypass).to.equal(false)
             local service = readFile("src/Server/Services/MergeEggPrototypeService.lua")
+            local server = readFile("src/Server/init.server.lua")
+            expect(
+                server:find(
+                    'appendIfEnabled(requiredModules, "map_binding", "MergeEggPrototypeService")',
+                    1,
+                    true
+                )
+            ).to.be.ok()
+            expect(server:find("local mergeEggPrototypeDeps = {", 1, true)).to.be.ok()
+            expect(server:find('table.insert(mergeEggPrototypeDeps, "AutomationService")', 1, true)).to.be.ok()
             expect(service:find("function MergeEggPrototypeService:_hasPreviewAccess", 1, true)).to.be.ok()
             expect(
                 service:find("function MergeEggPrototypeService:_bindRestrictedHallGate", 1, true)
@@ -332,7 +342,7 @@ return function()
             expect(service:find("function MergeEggPrototypeService:_rollPrototypeSquad", 1, true)).to.be.ok()
             expect(service:find("variant = tostring(result.variant", 1, true)).to.be.ok()
             expect(service:find("huge = result.huge == true", 1, true)).to.be.ok()
-            expect(server:find('"PetFollowService",\n                "EggService",', 1, true)).to.be.ok()
+            expect(server:find('"PetFollowService",\n        "EggService",', 1, true)).to.be.ok()
             expect(service:find("for index, teamCfg in ipairs(teamConfigs)", 1, true)).to.be.ok()
             expect(service:find("MergeEggPrototypeTeam = true", 1, true)).to.be.ok()
             expect(service:find("local function stationXOffset", 1, true)).to.be.ok()
@@ -1064,7 +1074,7 @@ return function()
             expect(service:find("CombatTargetOpen = true", 1, true)).to.be.ok()
             expect(service:find("MergeEggReserveRosterBench", 1, true)).to.be.ok()
             expect(service:find("checkpoint_player_escort_assets_missing", 1, true)).to.be.ok()
-            expect(server:find('"EconomyService",\n                "DataService",', 1, true)).to.be.ok()
+            expect(server:find('"EconomyService",\n        "DataService",', 1, true)).to.be.ok()
         end)
 
         it("drops Hall Waycoins and rank-scaled Gems with the game-wide player magnet", function()
@@ -1148,7 +1158,7 @@ return function()
             expect(enemyHud:find("moneyStack.Visible = true", 1, true)).to.be.ok()
             expect(
                 server:find(
-                    '"EggService",\n                "DropService",\n                "EconomyService",',
+                    '"EggService",\n        "DropService",\n        "EconomyService",',
                     1,
                     true
                 )

@@ -695,6 +695,11 @@ team and queue model:
   teleport fails). Studio uses the same ID policy and the same configured PlaceId route. Because
   Studio cannot complete a normal cross-place teleport, using the door in a local playtest fails
   visibly instead of silently entering the obsolete embedded prototype.
+- `MergeEggPrototypeService` is a required `map_binding` runtime module in published servers as
+  well as Studio. Only its balancing `AutomationService` dependency remains Studio-only. If the
+  service is placed behind `RunService:IsStudio()`, Farm and Fight retains the sealed door but
+  never creates `MergeEggPrototypeEnterPrompt`, and the dedicated place loses its gameplay/return
+  bindings.
 - The dedicated place's authored common-area `Workspace.HallOfWorldsPortal` is the reciprocal
   return door. Runtime styles and labels that existing hook, then exposes an unrestricted
   `Return / Farm & Fight` prompt to every player. Return does not require a claimed bay, active
