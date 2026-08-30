@@ -21,6 +21,9 @@ return {
     row_height = 22,
     max_body_height = 240,
     top_inset = 60,
+    -- Merge wave bar is 78px under the 14px top. Sit the list under that
+    -- card (14 + 78 + 6) so wave copy is not covered.
+    merge_top_inset = 98,
     -- Tutorial capsule is 124px under the 14px top. Sit the list under that
     -- card so both stay visible (Jason: see the player list with the tutorial).
     tutorial_top_inset = 146,

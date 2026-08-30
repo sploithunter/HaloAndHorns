@@ -22,6 +22,7 @@ return function()
             expect(people.disable_core_player_list).to.equal(true)
             expect(people.width).to.equal(397)
             expect(people.top_inset).to.equal(60)
+            expect(people.merge_top_inset).to.equal(98)
             expect(people.tutorial_top_inset).to.equal(146)
             expect(people.toggle.key).to.equal("Tab")
             expect(people.social.report).to.equal(false)
@@ -182,6 +183,14 @@ return function()
 
         it("drops under the tutorial capsule while that card is up", function()
             expect(PeopleList.topOffset(cfg(), { tutorialOwnsCorner = true })).to.equal(146)
+        end)
+
+        it("drops under the Merge wave bar on the dedicated place", function()
+            expect(PeopleList.topOffset(cfg(), { mergePlace = true })).to.equal(98)
+            expect(PeopleList.topOffset(cfg(), {
+                mergePlace = true,
+                tutorialOwnsCorner = true,
+            })).to.equal(146)
         end)
     end)
 
@@ -348,6 +357,7 @@ return function()
             expect(controller:find("InspectPlayerFromUserId", 1, true)).to.equal(nil)
             expect(controller:find("PeopleListToggle", 1, true)).to.be.ok()
             expect(controller:find("PeopleList.topOffset", 1, true)).to.be.ok()
+            expect(controller:find("mergePlace = isMergePlace()", 1, true)).to.be.ok()
             expect(controller:find("PeopleList.hoverPlacement", 1, true)).to.be.ok()
             expect(controller:find("DisplayOrder = 92", 1, true)).to.be.ok()
             expect(controller:find("HoverTip", 1, true)).to.be.ok()

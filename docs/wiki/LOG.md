@@ -6197,3 +6197,8 @@ first-session cohort rates.
 - Dedicated Merge place hides `QuestTrackerStyle` (no Farm quests). The existing
   `WaveMeter` now occupies that upper-right chrome slot (`MergeWaveBar`, 397×14px
   inset) so the old center playfield card is gone.
+
+## 2026-08-30 — People list sits under the Merge wave bar
+
+- Dedicated Merge place uses `merge_top_inset` 98 (14 + 78 + 6) so the People
+  list starts below the wave bar instead of covering WAVE 1 HELD / hatcher copy.

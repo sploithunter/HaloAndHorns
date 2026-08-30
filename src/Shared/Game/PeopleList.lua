@@ -355,9 +355,13 @@ end
 function PeopleList.topOffset(config, state)
     -- Fixed slot under the quest pill. The tutorial capsule shares this
     -- corner, so drop the list under that card while the lesson is up.
+    -- Merge uses the same corner for the wave bar (taller than the pill).
     state = state or {}
     if state.tutorialOwnsCorner == true then
         return tonumber(config and config.tutorial_top_inset) or 146
+    end
+    if state.mergePlace == true then
+        return tonumber(config and config.merge_top_inset) or 98
     end
     return tonumber(config and config.top_inset) or 60
 end

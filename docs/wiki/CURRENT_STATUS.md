@@ -1895,4 +1895,5 @@ The worn title pill (Novice / Spark → Skilled / leaderboard) docks to the left
 ## Merge HUD (2026-08-30)
 
 Dedicated Merge place hides the Farm quest tracker. Wave status lives in
-`MergeWaveBar` in that same upper-right chrome slot.
+`MergeWaveBar` in that same upper-right chrome slot. The People list uses
+`merge_top_inset` 98 so it sits under the wave bar.

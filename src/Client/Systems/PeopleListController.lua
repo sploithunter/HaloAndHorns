@@ -16,7 +16,9 @@ local UserInputService = game:GetService("UserInputService")
 
 local Locations = require(ReplicatedStorage.Shared.Locations)
 local PeopleList = require(ReplicatedStorage.Shared.Game.PeopleList)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local POWER_ICONS = require(ReplicatedStorage.Configs:WaitForChild("power_icons"))
+local placesConfig
 
 local PeopleListController = {}
 local started = false
@@ -57,6 +59,28 @@ local function disableCoreList()
     end)
 end
 
+local function isMergePlace()
+    if placesConfig == nil then
+        local configs = ReplicatedStorage:FindFirstChild("Configs")
+        local places = configs and configs:FindFirstChild("places")
+        if places then
+            local ok, loaded = pcall(require, places)
+            if ok then
+                placesConfig = loaded
+            end
+        end
+    end
+    return placesConfig ~= nil and PlaceRuntime.isMerge(game.PlaceId, placesConfig)
+end
+
+local function dockState()
+    local player = Players.LocalPlayer
+    return {
+        tutorialOwnsCorner = player:GetAttribute("TutorialCornerOwned") == true,
+        mergePlace = isMergePlace(),
+    }
+end
+
 local function listAllowed()
     local player = Players.LocalPlayer
     return PeopleList.shouldShow({
@@ -88,9 +112,7 @@ local function showTooltip(rowGui, text)
         -- so the difference is the offset from the list top.
         rowMid = (rowGui.AbsolutePosition.Y + rowGui.AbsoluteSize.Y * 0.5) - root.AbsolutePosition.Y
     end
-    local place = PeopleList.hoverPlacement(config, {
-        tutorialOwnsCorner = Players.LocalPlayer:GetAttribute("TutorialCornerOwned") == true,
-    }, rowMid)
+    local place = PeopleList.hoverPlacement(config, dockState(), rowMid)
     tooltip.Position = UDim2.new(1, -place.right, 0, place.top)
     tooltip.Visible = true
 end
@@ -137,7 +159,7 @@ local function slideCard(visible)
     if not card then
         return
     end
-    local place = PeopleList.cardPlacement(config)
+    local place = PeopleList.cardPlacement(config, dockState())
     local shown = UDim2.new(1, -place.right, 0, place.top)
     local tucked = UDim2.new(1, -place.right + place.width + 4, 0, place.top)
     if cardTween then
@@ -708,9 +730,7 @@ local function dockLayout()
         return
     end
     local player = Players.LocalPlayer
-    local state = {
-        tutorialOwnsCorner = player:GetAttribute("TutorialCornerOwned") == true,
-    }
+    local state = dockState()
     local top = PeopleList.topOffset(config, state)
     local right = tonumber(config.right_inset) or 4
     root.Position = UDim2.new(1, -right, 0, top)
@@ -807,7 +827,7 @@ local function build()
     local knobs = look()
     local width = tonumber(config.width) or 397
     local headerH = tonumber(config.header_height) or 24
-    local top = PeopleList.topOffset(config)
+    local top = PeopleList.topOffset(config, dockState())
     local right = tonumber(config.right_inset) or 4
     local maxBody = tonumber(config.max_body_height) or 240
 
@@ -965,7 +985,7 @@ local function build()
     rowList.SortOrder = Enum.SortOrder.LayoutOrder
     rowList.Parent = rowsFrame
 
-    local place = PeopleList.cardPlacement(config)
+    local place = PeopleList.cardPlacement(config, dockState())
     local spec = cardSpec()
     local headshotSize = tonumber(spec.headshot) or 56
     local viewH = tonumber(spec.viewport_height) or 180
