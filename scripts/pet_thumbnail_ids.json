@@ -1,10 +1,20 @@
 {
-  "_comment": "SSOT for pre-uploaded pet/egg inventory-card THUMBNAILS (flat IMAGE asset ids). Consumed by scripts/gen_pet_thumbnails.js -> configs/pet_thumbnail_assets.lua, which the inventory card (InventoryPanel) renders as a flat ImageLabel when present (else the baked ViewportFrame). Keys are the CONFIG petType + variant (configs/pets.lua is authoritative); render filenames map basic->basic and gold->golden (rainbow has no render — it's an inventory background + an in-game outline-recolor script, so it stays on the basic texture/viewport). IMPORTANT: ids MUST be uploaded GROUP-owned (15872767) via Open Cloud — the Studio MCP upload_image uploads to the logged-in USER and greys out for everyone else. Keys starting with _ are ignored by the generator. Pet keys: pets.<petType>.<variant> and pets.<petType>.<variant>__huge. Egg keys: eggs.<eggType>.",
+  "_comment": "SSOT for pre-uploaded pet/egg inventory-card THUMBNAILS (flat IMAGE asset ids). Consumed by scripts/gen_pet_thumbnails.js -> configs/pet_thumbnail_assets.lua. Inventory and trade cards render only flat ImageLabels from this registry; a missing id stays on a cheap glyph placeholder and never creates a ViewportFrame. Keys are the CONFIG petType + variant (configs/pets.lua is authoritative); render filenames map basic->basic and gold->golden (rainbow has no separate render, so it reuses basic art with the inventory variant treatment). IMPORTANT: ids MUST be uploaded GROUP-owned (15872767) via Open Cloud — the Studio MCP upload_image uploads to the logged-in USER and greys out for everyone else. Keys starting with _ are ignored by the generator. Pet keys: pets.<petType>.<variant> and pets.<petType>.<variant>__huge. Egg keys: eggs.<eggType>.",
   "pets": {
     "abyssal_wyrm": {
       "basic": 105394355425851,
       "golden": 97610625399961,
       "rainbow": 105394355425851
+    },
+    "archon_spark": {
+      "basic": 95052723254986,
+      "rainbow": 95052723254986,
+      "golden": 93623352684524
+    },
+    "ash_ibis": {
+      "golden": 135493026206437,
+      "basic": 122648278496857,
+      "rainbow": 122648278496857
     },
     "ash_roc": {
       "basic": 126599530022566,
@@ -20,6 +30,16 @@
       "basic": 81746669615812,
       "golden": 133069105234494,
       "rainbow": 81746669615812
+    },
+    "ashwing": {
+      "basic": 124577878521996,
+      "rainbow": 124577878521996,
+      "golden": 72562747255403
+    },
+    "atlas_golem": {
+      "basic": 76064174828574,
+      "rainbow": 76064174828574,
+      "golden": 85608740278024
     },
     "aurora_dove": {
       "basic": 79580655558950,
@@ -41,6 +61,21 @@
       "golden": 104956815483275,
       "rainbow": 99266399523523
     },
+    "banner_hare": {
+      "basic": 119057618405038,
+      "rainbow": 119057618405038,
+      "golden": 122332387583630
+    },
+    "bastion_ram": {
+      "basic": 125099983415626,
+      "rainbow": 125099983415626,
+      "golden": 129131701625965
+    },
+    "beacon_finch": {
+      "basic": 138309887653890,
+      "golden": 125869163923793,
+      "rainbow": 138309887653890
+    },
     "bear": {
       "basic": 72116634639213,
       "golden": 110568698023011,
@@ -50,11 +85,6 @@
       "basic": 120704677743815,
       "golden": 98558928660074,
       "rainbow": 120704677743815
-    },
-    "cache_bandit": {
-      "basic": 105047601261112,
-      "golden": 131757981611289,
-      "rainbow": 105047601261112
     },
     "black_ice_leviathan": {
       "basic": 75529001594380,
@@ -66,20 +96,40 @@
       "golden": 75270404867134,
       "rainbow": 124830786102910
     },
+    "blade_lynx": {
+      "basic": 95399190652117,
+      "rainbow": 95399190652117,
+      "golden": 87169066286645
+    },
     "blightlamb": {
       "basic": 134788157102235,
       "golden": 128504933441916,
       "rainbow": 134788157102235
+    },
+    "bloom_ibis": {
+      "basic": 70541634979754,
+      "rainbow": 70541634979754,
+      "golden": 110615667248971
     },
     "bloomlamb": {
       "basic": 105045149735810,
       "golden": 94807053083344,
       "rainbow": 105045149735810
     },
+    "bloomlight_sprite": {
+      "basic": 113787122092076,
+      "rainbow": 113787122092076,
+      "golden": 116953651150126
+    },
     "bloomspirit_lamb": {
       "basic": 75557644578840,
       "golden": 93871476446901,
       "rainbow": 75557644578840
+    },
+    "bolt_hawk": {
+      "basic": 122891830216878,
+      "rainbow": 122891830216878,
+      "golden": 111038644948421
     },
     "brimstone_salamander": {
       "basic": 74377905542360,
@@ -91,20 +141,90 @@
       "golden": 128401392113239,
       "rainbow": 100736300063954
     },
+    "cache_bandit": {
+      "basic": 105047601261112,
+      "golden": 131757981611289,
+      "rainbow": 105047601261112
+    },
+    "camel": {
+      "basic": 96445360749929,
+      "rainbow": 96445360749929,
+      "golden": 87015663327657
+    },
     "carrion_scarab": {
       "basic": 119013107088989,
       "golden": 109245649471200,
       "rainbow": 119013107088989
+    },
+    "celestial_moth": {
+      "golden": 79467380513798,
+      "basic": 108499989217083,
+      "rainbow": 108499989217083
+    },
+    "cerberus_pup": {
+      "basic": 83440393707742,
+      "rainbow": 83440393707742,
+      "golden": 122261844256133
+    },
+    "chain_serpent": {
+      "basic": 81050711640164,
+      "rainbow": 81050711640164,
+      "golden": 118496922222299
+    },
+    "cinder_golemite": {
+      "basic": 85571076209567,
+      "rainbow": 85571076209567,
+      "golden": 125041025727113
     },
     "cinderling_imp": {
       "basic": 98615522952678,
       "golden": 107018379137294,
       "rainbow": 98615522952678
     },
+    "clockwork_spider": {
+      "basic": 114462283810177,
+      "rainbow": 114462283810177,
+      "golden": 76270398214053
+    },
+    "cloudling": {
+      "basic": 105235721811612,
+      "rainbow": 105235721811612,
+      "golden": 72302305620219
+    },
+    "colorado": {
+      "basic": 111186709900105,
+      "rainbow": 111186709900105,
+      "golden": 132093080089844
+    },
+    "colorado_creator": {
+      "basic": 111186709900105,
+      "rainbow": 111186709900105,
+      "golden": 132093080089844
+    },
+    "compass_fox": {
+      "basic": 109378696377160,
+      "golden": 79140157917084,
+      "rainbow": 109378696377160
+    },
+    "core_digger": {
+      "basic": 96182978490912,
+      "golden": 85405976680950,
+      "rainbow": 96182978490912
+    },
     "coronal_cherub": {
       "basic": 88767858148542,
       "golden": 81528263606985,
       "rainbow": 88767858148542
+    },
+    "crowned_chimera": {
+      "basic": 102590462907074,
+      "golden": 78400838198119,
+      "rainbow": 102590462907074
+    },
+    "crownwing_falcon": {
+      "basic": 130295587290642,
+      "rainbow": 130295587290642,
+      "golden": 125343017938806
     },
     "crystalbark_stag": {
       "basic": 79652786339903,
@@ -125,6 +245,11 @@
       "basic": 80305773011759,
       "golden": 128046744698667,
       "rainbow": 80305773011759
+    },
+    "desertiguana": {
+      "basic": 129522761166039,
+      "rainbow": 129522761166039,
+      "golden": 70701263458146
     },
     "doggy": {
       "basic": 75731963946532,
@@ -151,20 +276,110 @@
       "golden": 107718256123233,
       "rainbow": 74033750782847
     },
+    "dread_hart": {
+      "basic": 85136136193936,
+      "rainbow": 85136136193936,
+      "golden": 136115234056752
+    },
+    "dread_mongoose": {
+      "golden": 97474816006165,
+      "basic": 98883172078727,
+      "rainbow": 98883172078727
+    },
     "dread_owl": {
       "basic": 110005218949980,
       "golden": 94707096049963,
       "rainbow": 110005218949980
+    },
+    "dread_wisp": {
+      "basic": 88255260790163,
+      "rainbow": 88255260790163,
+      "golden": 90593634981507
+    },
+    "dreadbloom_sprite": {
+      "golden": 70742914561781,
+      "basic": 136459759450993,
+      "rainbow": 136459759450993
+    },
+    "dreadcinder_imp": {
+      "basic": 136825792685496,
+      "golden": 128249739691080,
+      "rainbow": 136825792685496
+    },
+    "dreadfire_hawk": {
+      "golden": 108939348113317,
+      "basic": 116160488309958,
+      "rainbow": 116160488309958
+    },
+    "dreadglass_dragon": {
+      "basic": 138375221752957,
+      "rainbow": 138375221752957,
+      "golden": 140021773386824
+    },
+    "dreadguard_bear": {
+      "golden": 92744227829306,
+      "basic": 78102371317576,
+      "rainbow": 78102371317576
+    },
+    "dreadlance_seraph": {
+      "golden": 134776051940266,
+      "basic": 103043143221678,
+      "rainbow": 103043143221678
+    },
+    "dreadspire_mammoth": {
+      "golden": 71251220842886,
+      "basic": 85086154545290,
+      "rainbow": 85086154545290
+    },
+    "dreadthorn_grovekeeper": {
+      "golden": 120521100887427,
+      "basic": 74387210196494,
+      "rainbow": 74387210196494
+    },
+    "dreadveil_moth": {
+      "golden": 117387388684804,
+      "basic": 126749277924188,
+      "rainbow": 126749277924188
+    },
+    "duskfrost_seal": {
+      "basic": 132252517653276,
+      "rainbow": 132252517653276,
+      "golden": 82445567698891
     },
     "dust_camel": {
       "basic": 93017452970741,
       "golden": 112025343607492,
       "rainbow": 93017452970741
     },
+    "emberfox": {
+      "basic": 83600282928857,
+      "rainbow": 83600282928857,
+      "golden": 108632332832538
+    },
+    "emberimp": {
+      "basic": 106855356125518,
+      "rainbow": 106855356125518,
+      "golden": 99066360983047
+    },
+    "emberling": {
+      "basic": 70598794733133,
+      "rainbow": 70598794733133,
+      "golden": 129795365693274
+    },
     "emberling_cherub": {
       "basic": 100104061128272,
       "golden": 78898939057620,
       "rainbow": 100104061128272
+    },
+    "emberlion": {
+      "basic": 115365213504840,
+      "rainbow": 115365213504840,
+      "golden": 72155335198458
+    },
+    "emberowl": {
+      "basic": 105070488457083,
+      "rainbow": 105070488457083,
+      "golden": 92952295163805
     },
     "empyreal_couatl": {
       "basic": 116808476791394,
@@ -175,6 +390,31 @@
       "basic": 89883939065664,
       "golden": 121623796091249,
       "rainbow": 89883939065664
+    },
+    "empyrean_firehawk": {
+      "golden": 100301928112717,
+      "basic": 118924701130672,
+      "rainbow": 118924701130672
+    },
+    "empyrean_grovekeeper": {
+      "basic": 132160856569990,
+      "rainbow": 132160856569990,
+      "golden": 94981274399893
+    },
+    "empyrean_mammoth": {
+      "golden": 81291038848924,
+      "basic": 117577152598974,
+      "rainbow": 117577152598974
+    },
+    "fennec": {
+      "basic": 93636624239985,
+      "rainbow": 93636624239985,
+      "golden": 82387853830965
+    },
+    "fortune_wisp": {
+      "basic": 112355198130766,
+      "rainbow": 112355198130766,
+      "golden": 132255174255353
     },
     "frostblight_lamb": {
       "basic": 140411132928255,
@@ -241,6 +481,26 @@
       "golden": 115078743555329,
       "rainbow": 140400841991548
     },
+    "glory_mongoose": {
+      "basic": 72845652839009,
+      "rainbow": 72845652839009,
+      "golden": 91833376925944
+    },
+    "gloryleaf_lamb": {
+      "basic": 126283805182540,
+      "rainbow": 126283805182540,
+      "golden": 129066373624814
+    },
+    "gloryscale_salamander": {
+      "basic": 80199317375431,
+      "rainbow": 80199317375431,
+      "golden": 72549517208285
+    },
+    "gloryspark_cherub": {
+      "basic": 101488879013772,
+      "rainbow": 101488879013772,
+      "golden": 90320378299246
+    },
     "goldleaf_stag": {
       "basic": 87498939054141,
       "golden": 98202750376594,
@@ -256,10 +516,35 @@
       "golden": 108620030989512,
       "rainbow": 121598238267038
     },
+    "guide_moth": {
+      "basic": 72973649514259,
+      "golden": 103275018058719,
+      "rainbow": 72973649514259
+    },
+    "halo_bear": {
+      "golden": 139418703531431,
+      "basic": 127120683868489,
+      "rainbow": 127120683868489
+    },
+    "halo_fawn": {
+      "basic": 126180960001440,
+      "rainbow": 126180960001440,
+      "golden": 89322316985269
+    },
     "halo_hare": {
       "basic": 126045475952644,
       "golden": 105604090481196,
       "rainbow": 126045475952644
+    },
+    "halo_hart": {
+      "golden": 97334420494215,
+      "basic": 138763834596059,
+      "rainbow": 138763834596059
+    },
+    "halo_wisp": {
+      "golden": 105298391245618,
+      "basic": 74101462124214,
+      "rainbow": 74101462124214
     },
     "hoarfrost_phoenix": {
       "basic": 87991721985832,
@@ -271,6 +556,21 @@
       "golden": 114765493146860,
       "rainbow": 97905820660842
     },
+    "ironbark_rhino": {
+      "golden": 86248003330034,
+      "basic": 133146950352472,
+      "rainbow": 133146950352472
+    },
+    "kade": {
+      "basic": 92686542272874,
+      "rainbow": 92686542272874,
+      "golden": 97575976892597
+    },
+    "keytail_raccoon": {
+      "basic": 100769327742581,
+      "rainbow": 100769327742581,
+      "golden": 104885983209692
+    },
     "kitty": {
       "basic": 74416019256177,
       "golden": 118103974007378,
@@ -281,15 +581,55 @@
       "golden": 96466354878167,
       "rainbow": 103467096045656
     },
+    "laurel_lynx": {
+      "basic": 89677669706810,
+      "golden": 97715068502778,
+      "rainbow": 89677669706810
+    },
+    "light_tortoise": {
+      "golden": 97603196863351,
+      "basic": 139281449606584,
+      "rainbow": 139281449606584
+    },
+    "lightbark_rhino": {
+      "basic": 128959850971663,
+      "rainbow": 128959850971663,
+      "golden": 88385243883375
+    },
     "lightleaf_hare": {
       "basic": 139389852735214,
       "golden": 80892827935744,
       "rainbow": 139389852735214
     },
+    "lockbox_imp": {
+      "basic": 107628700493045,
+      "rainbow": 107628700493045,
+      "golden": 120325785527736
+    },
+    "lumen_dove": {
+      "basic": 125878773206585,
+      "rainbow": 125878773206585,
+      "golden": 114097314851149
+    },
     "lumen_salamander": {
       "basic": 84143492516331,
       "golden": 92169333930749,
       "rainbow": 84143492516331
+    },
+    "lumen_seal": {
+      "basic": 116934588614101,
+      "rainbow": 116934588614101,
+      "golden": 126996052795865
+    },
+    "medal_moth": {
+      "basic": 115404562555367,
+      "golden": 100587784667578,
+      "rainbow": 115404562555367
+    },
+    "meerkat": {
+      "basic": 103666241450663,
+      "rainbow": 103666241450663,
+      "golden": 138503189501370
     },
     "mirage_jackal": {
       "basic": 90052768512443,
@@ -301,10 +641,55 @@
       "golden": 71768088457260,
       "rainbow": 97681032634157
     },
+    "oasis_dragon": {
+      "basic": 100209822051306,
+      "rainbow": 100209822051306,
+      "golden": 126465554884743
+    },
+    "obsidian_hound": {
+      "basic": 121494242582165,
+      "rainbow": 121494242582165,
+      "golden": 119012206439265
+    },
+    "obsidian_tortoise": {
+      "golden": 138187101214247,
+      "basic": 110749776538083,
+      "rainbow": 110749776538083
+    },
+    "obsidian_totem": {
+      "basic": 90931947180147,
+      "rainbow": 90931947180147,
+      "golden": 93585384705549
+    },
+    "pack_tortoise": {
+      "basic": 131839188079158,
+      "golden": 122756453248437,
+      "rainbow": 131839188079158
+    },
+    "patch_phoenix": {
+      "basic": 123984266681031,
+      "golden": 122052466356164,
+      "rainbow": 123984266681031
+    },
+    "penguin": {
+      "basic": 79114916691915,
+      "rainbow": 79114916691915,
+      "golden": 121136979192630
+    },
     "phantom_jackal": {
       "basic": 87816495826130,
       "golden": 98737039707791,
       "rainbow": 87816495826130
+    },
+    "polarbear": {
+      "basic": 123538201583411,
+      "rainbow": 123538201583411,
+      "golden": 119541386610090
+    },
+    "portal_drake": {
+      "basic": 130444931546171,
+      "rainbow": 130444931546171,
+      "golden": 90981944922246
     },
     "prism_fox": {
       "basic": 140292224862725,
@@ -321,6 +706,11 @@
       "golden": 136581823639554,
       "rainbow": 85274024869303
     },
+    "radiant_lance_seraph": {
+      "golden": 92406810260134,
+      "basic": 126587852217218,
+      "rainbow": 126587852217218
+    },
     "radiant_salamander": {
       "basic": 116236822477663,
       "golden": 101998578414175,
@@ -330,6 +720,21 @@
       "basic": 80509064603455,
       "golden": 105430802613104,
       "rainbow": 80509064603455
+    },
+    "radiant_totem": {
+      "basic": 116337633750196,
+      "rainbow": 116337633750196,
+      "golden": 96430468844034
+    },
+    "ribbon_ram": {
+      "basic": 90646886535978,
+      "golden": 136669653169737,
+      "rainbow": 90646886535978
+    },
+    "rift_panther": {
+      "basic": 137603369765160,
+      "rainbow": 137603369765160,
+      "golden": 79378459396587
     },
     "rime_scarab": {
       "basic": 79924357335974,
@@ -376,6 +781,31 @@
       "golden": 81220177210733,
       "rainbow": 120424701447302
     },
+    "ruinmane_lion": {
+      "basic": 109952796753988,
+      "rainbow": 109952796753988,
+      "golden": 101460068135450
+    },
+    "ruinscale_salamander": {
+      "basic": 109862845660144,
+      "rainbow": 109862845660144,
+      "golden": 139071508404800
+    },
+    "scorpion": {
+      "basic": 100152327253560,
+      "rainbow": 100152327253560,
+      "golden": 109833596580712
+    },
+    "seraph_kit": {
+      "basic": 111060029098162,
+      "rainbow": 111060029098162,
+      "golden": 71870506309649
+    },
+    "seraph_lion": {
+      "basic": 116613276175090,
+      "rainbow": 116613276175090,
+      "golden": 135047394906138
+    },
     "seraph_owl": {
       "basic": 83432339015268,
       "golden": 100615512051791,
@@ -386,15 +816,20 @@
       "golden": 77728909524646,
       "rainbow": 117359766708193
     },
-    "patch_phoenix": {
-      "basic": 123984266681031,
-      "golden": 122052466356164,
-      "rainbow": 123984266681031
+    "snowflakeowl": {
+      "basic": 88842909933041,
+      "rainbow": 88842909933041,
+      "golden": 86751896596348
     },
-    "core_digger": {
-      "basic": 96182978490912,
-      "golden": 85405976680950,
-      "rainbow": 96182978490912
+    "snowfox": {
+      "basic": 106676931952068,
+      "rainbow": 106676931952068,
+      "golden": 129385062080051
+    },
+    "snowleopard": {
+      "basic": 77893007135347,
+      "rainbow": 77893007135347,
+      "golden": 74014810868835
     },
     "solar_phoenix": {
       "basic": 132304635491245,
@@ -405,6 +840,11 @@
       "basic": 123477410837004,
       "golden": 112634269821853,
       "rainbow": 123477410837004
+    },
+    "star_moth": {
+      "basic": 104344017586981,
+      "rainbow": 104344017586981,
+      "golden": 81883598150514
     },
     "starlight_owl": {
       "basic": 84553579808261,
@@ -426,10 +866,30 @@
       "golden": 140601733762566,
       "rainbow": 79127150108268
     },
+    "thornleaf_lamb": {
+      "golden": 82188073120189,
+      "basic": 90980046691114,
+      "rainbow": 90980046691114
+    },
+    "trail_pup": {
+      "basic": 120400295131072,
+      "golden": 104496648833556,
+      "rainbow": 120400295131072
+    },
+    "vault_beetle": {
+      "basic": 138296365370783,
+      "rainbow": 138296365370783,
+      "golden": 74780905644586
+    },
     "verdant_sprite": {
       "basic": 139619918066914,
       "golden": 95516570341344,
       "rainbow": 139619918066914
+    },
+    "victory_gryphon": {
+      "basic": 125880509367648,
+      "golden": 81534776379063,
+      "rainbow": 125880509367648
     },
     "wither_sprite": {
       "basic": 134787295000636,
@@ -451,55 +911,10 @@
       "golden": 107349510202334,
       "rainbow": 101697025544772
     },
-    "trail_pup": {
-      "basic": 120400295131072,
-      "golden": 104496648833556,
-      "rainbow": 120400295131072
-    },
-    "pack_tortoise": {
-      "basic": 131839188079158,
-      "golden": 122756453248437,
-      "rainbow": 131839188079158
-    },
-    "beacon_finch": {
-      "basic": 138309887653890,
-      "golden": 125869163923793,
-      "rainbow": 138309887653890
-    },
-    "guide_moth": {
-      "basic": 72973649514259,
-      "golden": 103275018058719,
-      "rainbow": 72973649514259
-    },
-    "compass_fox": {
-      "basic": 109378696377160,
-      "golden": 79140157917084,
-      "rainbow": 109378696377160
-    },
-    "ribbon_ram": {
-      "basic": 90646886535978,
-      "golden": 136669653169737,
-      "rainbow": 90646886535978
-    },
-    "medal_moth": {
-      "basic": 115404562555367,
-      "golden": 100587784667578,
-      "rainbow": 115404562555367
-    },
-    "laurel_lynx": {
-      "basic": 89677669706810,
-      "golden": 97715068502778,
-      "rainbow": 89677669706810
-    },
-    "victory_gryphon": {
-      "basic": 125880509367648,
-      "golden": 81534776379063,
-      "rainbow": 125880509367648
-    },
-    "crowned_chimera": {
-      "basic": 102590462907074,
-      "golden": 78400838198119,
-      "rainbow": 102590462907074
+    "wyrmling": {
+      "basic": 115870252809611,
+      "rainbow": 115870252809611,
+      "golden": 134776722707336
     }
   },
   "eggs": {

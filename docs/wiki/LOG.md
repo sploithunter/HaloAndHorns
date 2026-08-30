@@ -6132,3 +6132,12 @@ first-session cohort rates.
   `RETURN TO FARM & FIGHT` door targeting the configured main-place role.
 - Kept the return route deliberately independent of preview admission and active Merge sessions:
   any player who can reach the door can leave, while entry into Merge remains ID-restricted.
+
+## 2026-08-29 — Flat and virtualized pet inventory
+
+- Completed flat 256px card-thumbnail coverage for all 183 configured pet families (basic, golden,
+  and rainbow resolution), uploading the 164 new source variants as group-owned Roblox images.
+- Made Inventory and its shared Trade card renderer image-only; missing art remains a glyph and can
+  no longer fall through to live `ViewportFrame` model rendering.
+- Replaced eager full-inventory GuiObject construction with a virtual grid that renders and recycles
+  only the visible window plus two overscan rows while retaining the full logical scroll height.

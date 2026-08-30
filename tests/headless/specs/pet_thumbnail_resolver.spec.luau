@@ -1,5 +1,6 @@
 local Resolver = loadModule("src/Shared/UI/PetThumbnailResolver.lua")
 local realRegistry = loadModule("configs/pet_thumbnail_assets.lua")
+local realPets = loadModule("configs/pets.lua")
 
 return function()
     local registry = {
@@ -54,6 +55,23 @@ return function()
                 expect(Resolver.resolve(realRegistry, petType, "golden", false)).to.equal(ids[2])
                 expect(Resolver.resolve(realRegistry, petType, "rainbow", false)).to.equal(ids[1])
             end
+        end)
+
+        it("has compact flat art for every configured family and ordinary variant", function()
+            local familyCount = 0
+            local missing = {}
+            for petType in pairs(realPets.pets) do
+                familyCount += 1
+                for _, variant in ipairs({ "basic", "golden", "rainbow" }) do
+                    if not Resolver.resolve(realRegistry, petType, variant, false) then
+                        table.insert(missing, ("%s/%s"):format(petType, variant))
+                    end
+                end
+            end
+            if #missing > 0 then
+                error("missing flat thumbnails: " .. table.concat(missing, ", "))
+            end
+            expect(familyCount).to.equal(183)
         end)
     end)
 end
