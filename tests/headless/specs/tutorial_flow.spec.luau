@@ -280,6 +280,12 @@ return function()
             expect(server:find('fireGameEvent(player, "tutorial_hotbar_finished"', 1, true)).to.be.ok()
         end)
 
+        it("hides the quest tracker on the dedicated Merge place", function()
+            local tracker = readFile("src/Client/Systems/QuestTrackerStyle.lua")
+            expect(tracker:find("PlaceRuntime.isMerge", 1, true)).to.be.ok()
+            expect(tracker:find("not isMergePlace()", 1, true)).to.be.ok()
+        end)
+
         it("aligns post-tutorial quests with the upper-right PlayerList", function()
             local tracker = readFile("src/Client/Systems/QuestTrackerStyle.lua")
             local stack = readFile("src/Client/Systems/TopHudStack.lua")

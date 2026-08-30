@@ -3,9 +3,10 @@
 
     The player's ordinary SquadHud remains reserved for their own deployable team. Nine floor-mounted
     SurfaceGuis sit on the player side of the hatcher eggs and render each NPC squad's tier, endurance,
-    target, lifecycle, and wave progress without covering the management HUD. The top wave meter and
-    camera-facing per-captain egg placement controls remain screen-readable. Crafted board eggs rotate
-    locally while their inventory and placement remain server-authoritative.
+    target, lifecycle, and wave progress without covering the management HUD. The wave bar sits in the
+    Farm quest-pill chrome slot (upper-right) and camera-facing per-captain egg placement controls
+    remain screen-readable. Crafted board eggs rotate locally while their inventory and placement
+    remain server-authoritative.
 ]]
 
 local Players = game:GetService("Players")
@@ -23,6 +24,7 @@ local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 local PetEndurance = require(ReplicatedStorage.Shared.Game.PetEndurance)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local EggHatchingService = require(ReplicatedStorage.Shared.Services.EggHatchingService)
+local UIViewportScale = require(script.Parent.Parent.UI.UIViewportScale)
 
 local CONFIG = require(ReplicatedStorage.Configs:WaitForChild("merge_egg_prototype"))
 local COMBAT = require(ReplicatedStorage.Configs:WaitForChild("combat"))
@@ -1001,14 +1003,17 @@ end
 local function createWaveMeter(parent)
     local frame = Instance.new("Frame")
     frame.Name = "WaveMeter"
-    frame.AnchorPoint = Vector2.new(0.5, 0)
-    frame.Position = UDim2.new(0.5, -215, 0, 88)
-    frame.Size = UDim2.fromOffset(430, 82)
+    -- Same upper-right chrome slot as the Farm quest pill (people_list
+    -- 397×4px inset, 14px top). Keeps wave status out of the playfield.
+    frame.AnchorPoint = Vector2.new(1, 0)
+    frame.Position = UDim2.new(1, -4, 0, 14)
+    frame.Size = UDim2.fromOffset(397, 78)
     frame.BackgroundColor3 = Color3.fromRGB(24, 30, 43)
     frame.BackgroundTransparency = 0.05
     frame.BorderSizePixel = 0
     frame.Visible = false
     frame.Parent = parent
+    UIViewportScale.attach(frame)
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 9)
@@ -2762,13 +2767,23 @@ function MergeEggPrototypeObserver.start()
         return
     end
 
+    local pg = localPlayer:WaitForChild("PlayerGui")
     local gui = Instance.new("ScreenGui")
     gui.Name = "MergeEggPrototypeObserver"
     gui.ResetOnSpawn = false
     gui.IgnoreGuiInset = false
     gui.DisplayOrder = 41
     gui.Enabled = false
-    gui.Parent = localPlayer:WaitForChild("PlayerGui")
+    gui.Parent = pg
+    -- Own inset-ignored surface so the wave bar can sit in the quest-pill
+    -- slot (DisplayOrder 90) without shifting the rest of this observer HUD.
+    local waveGui = Instance.new("ScreenGui")
+    waveGui.Name = "MergeWaveBar"
+    waveGui.ResetOnSpawn = false
+    waveGui.IgnoreGuiInset = true
+    waveGui.DisplayOrder = 90
+    waveGui.Enabled = false
+    waveGui.Parent = pg
     local boardActionFeedback, boardActionFeedbackStroke = createBoardActionFeedback(gui)
     local tutorialCard = createTutorialCard(gui)
     local boardActionFeedbackUntil = 0
@@ -2830,7 +2845,7 @@ function MergeEggPrototypeObserver.start()
         end
     end)
 
-    local waveMeter = createWaveMeter(gui)
+    local waveMeter = createWaveMeter(waveGui)
     local eggHealthBillboards = {}
     local lastWave = 0
     local announceUntil = 0
@@ -2877,6 +2892,7 @@ function MergeEggPrototypeObserver.start()
         elapsed = 0
 
         gui.Enabled = observing
+        waveGui.Enabled = observing
         if not boardWallControls or not boardWallControls.world.Parent then
             boardWallControls = createBoardWallControls()
         end
