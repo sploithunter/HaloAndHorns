@@ -471,6 +471,18 @@ return {
                 "repulsor",
                 "nullifier",
             },
+            -- First combat slice: spawn the current-art cannon on both authored pads and loft a
+            -- spear toward the nearest in-lane enemy, or a gate-side landing point if the lane is
+            -- empty. Upgrades and role acquisition stay unwired.
+            starter_role = "repulsor",
+            spear = {
+                interval = 2.4,
+                flight_seconds = 0.85,
+                apex_height = 14,
+                range = 90,
+                length = 4.2,
+                land_seconds = 1.2,
+            },
         },
         -- The existing camera-facing button is only a presentation surface. The server accepts an
         -- egg action when the avatar is both safely behind the actual BulwarkLine and physically

@@ -6215,3 +6215,10 @@ first-session cohort rates.
 
 - First pass put captains on the board side (`-look`). Flip to `+look` so they
   stand on the gate side and the work area can see which egg is installed.
+
+## 2026-08-30 — Edge towers loft a spear
+
+- Claimed bays spawn the current-art Repulsor on both authored `TowerPads`.
+  Heartbeat lofts a labeled spear on a 4h t(1-t) parabola toward the nearest
+  in-lane enemy, or a gate-side landing point if the lane is empty. The spear
+  plants for 1.2s. No damage, upgrades, or cannonball mesh yet.

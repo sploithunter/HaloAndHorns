@@ -2,6 +2,13 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Merge edge towers loft a spear (2026-08-30)
+
+Claiming a bay clones the current-art Repulsor onto both authored tower pads. Each cannon
+lofts a labeled spear on a 14-stud parabola every 2.4s toward the nearest in-lane enemy, or
+a gate-side landing point if the lane is empty. The spear plants for 1.2s. Upgrades and
+cannonball art are still later.
+
 ## Merge Defense permanent ten-bay realm (2026-08-28)
 
 `Workspace.Maps.MergeEggRealm` is now a permanent Studio-authored ten-bay architectural blockout:
