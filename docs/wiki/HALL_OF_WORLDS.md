@@ -21,7 +21,8 @@ a routing rollback, not a player-data rollback.
   provides a restricted preview route to the dedicated [Merge place](MERGE_EGG_PROTOTYPE.md). In
   production, the prompt is visible only to IDs in `configs/internal_accounts.lua` plus Kade
   (`536245038`); the server repeats the allowlist check before teleporting. Studio retains a bypass
-  for authoring. World Travel follows ordinary Homeworld unlock rules.
+  for authoring. The Merge place's common-area return door is unrestricted and sends any user back
+  to the main Farm and Fight place. World Travel follows ordinary Homeworld unlock rules.
 - Tutorial v5 restores the v3 Homeworld order: Earth egg, Home mining, squad, Resonance
   bind/cast/enhancement, then the Earth-cave fight, Berserk Brew, and Rally. The isolated
   combat tutorial will replace that combat tail. Versioned semantic migration keeps an

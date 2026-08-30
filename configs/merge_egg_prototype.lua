@@ -76,6 +76,18 @@ return {
             },
             studio_bypass = true,
         },
+        return_route = {
+            -- The dedicated Merge place owns a second HallOfWorldsPortal hook in its common mall.
+            -- Unlike preview entry, returning to the main Farm and Fight place is public.
+            hook_name = "HallOfWorldsPortal",
+            prompt_name = "MergeEggPrototypeExitPrompt",
+            action_text = "Return",
+            object_text = "Farm & Fight",
+            label = "RETURN TO FARM & FIGHT",
+            destination_role = "main",
+            public = true,
+            color = { 82, 216, 255 },
+        },
     },
 
     world = {
