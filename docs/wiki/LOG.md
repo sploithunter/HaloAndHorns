@@ -6240,6 +6240,12 @@ first-session cohort rates.
 - First handler required `_recordFor` / bay ownership, so E no-op'd when join
   arming failed. Cycle is now prompt-only.
 
+## 2026-08-30 — Cannon chassis sizes locked
+
+- Eye-locked `tier_scales`: 0.40 for tier 1, 0.50 for tiers 2–4. E prompt and
+  size billboard now live on an unscaled sibling part so activation distance
+  stays 16 studs after ScaleTo.
+
 ## 2026-08-30 — Six-family Merge bulwark model library
 
 - Created 24 distinct ImageGen concepts across Impaler Palisade, Concertina Line, Land Shark, Saw

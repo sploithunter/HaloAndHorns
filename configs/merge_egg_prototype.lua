@@ -460,9 +460,10 @@ return {
             model_folder_name = "MergeCannons",
             model_tier_count = 4,
             current_art_tier = 2,
-            -- Tier 1 intentionally reads as the starter chassis; Tier 2 is the corrected
-            -- Repulsor-sized reference shared by all six current cannon meshes.
-            tier_1_scale = 0.85,
+            -- Playtest-locked chassis sizes on the current-art mesh. Tier 1 is the starter;
+            -- tiers 2–4 share 0.50 until those upgrade models exist.
+            tier_1_scale = 0.40,
+            tier_scales = { 0.40, 0.50, 0.50, 0.50 },
             available_roles = {
                 "heal",
                 "rage",

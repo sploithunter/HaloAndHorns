@@ -3145,6 +3145,20 @@ function MergeEggPrototypeService:_edgeTowerConfig()
     return towers, shot
 end
 
+function MergeEggPrototypeService:_towerScaleForTier(tier)
+    local towersCfg = self:_edgeTowerConfig()
+    local index = math.max(1, math.floor(tonumber(tier) or 1))
+    local scales = type(towersCfg.tier_scales) == "table" and towersCfg.tier_scales or {}
+    local configured = tonumber(scales[index])
+    if configured and configured > 0 then
+        return math.max(0.1, configured)
+    end
+    if index <= 1 then
+        return math.max(0.1, tonumber(towersCfg.tier_1_scale) or 0.4)
+    end
+    return 0.5
+end
+
 function MergeEggPrototypeService:_towerFolder(world, name)
     if not world then
         return nil
@@ -3314,7 +3328,7 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
     local role = tostring(towersCfg.starter_role or "repulsor")
     local starterTier = math.max(1, math.floor(tonumber(towersCfg.starter_tier) or 1))
     local artTier = math.max(1, math.floor(tonumber(towersCfg.current_art_tier) or 2))
-    local scale = starterTier <= 1 and math.max(0.1, tonumber(towersCfg.tier_1_scale) or 0.85) or 1
+    local scale = self:_towerScaleForTier(starterTier)
     local folder = self:_towerFolder(world, "MergeEggTowers")
     for _, pad in ipairs(pads:GetChildren()) do
         if pad:IsA("Model") and pad:FindFirstChild("TowerAnchor", true) then
@@ -3387,13 +3401,31 @@ function MergeEggPrototypeService:_towerSizePreviewScales()
 end
 
 function MergeEggPrototypeService:_towerPromptHost(cannon)
-    if not cannon then
+    local folder = cannon and cannon.Parent
+    if not folder then
         return nil
     end
-    if cannon.PrimaryPart and cannon.PrimaryPart:IsA("BasePart") then
-        return cannon.PrimaryPart
+    local name = cannon.Name .. "_Preview"
+    local host = folder:FindFirstChild(name)
+    if host and not host:IsA("BasePart") then
+        host:Destroy()
+        host = nil
     end
-    return firstBasePart(cannon)
+    if not host then
+        host = Instance.new("Part")
+        host.Name = name
+        host.Anchored = true
+        host.CanCollide = false
+        host.CanTouch = false
+        host.CanQuery = true
+        host.CastShadow = false
+        host.Transparency = 1
+        host.Size = Vector3.new(1.2, 1.2, 1.2)
+        host.Parent = folder
+    end
+    local box, size = cannon:GetBoundingBox()
+    host.CFrame = CFrame.new(box.Position + Vector3.new(0, size.Y * 0.5 + 1.6, 0))
+    return host
 end
 
 function MergeEggPrototypeService:_refreshTowerSizeLabel(cannon)
@@ -3443,7 +3475,7 @@ function MergeEggPrototypeService:_setTowerPreviewScale(cannon, scale)
     if not cannon then
         return
     end
-    scale = math.max(0.1, tonumber(scale) or 0.85)
+    scale = math.max(0.1, tonumber(scale) or 0.4)
     local rest = cannon:GetAttribute("MergeTowerRestCFrame")
     if typeof(rest) ~= "CFrame" then
         rest = flattenTowerLook(cannon:GetPivot())
@@ -3474,7 +3506,7 @@ function MergeEggPrototypeService:_cycleTowerSize(_player, cannon)
         return
     end
     local scales = self:_towerSizePreviewScales()
-    local current = tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 0.85
+    local current = tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 0.4
     local index = 0
     for i, value in ipairs(scales) do
         if math.abs(value - current) < 1e-3 then
@@ -3497,11 +3529,19 @@ function MergeEggPrototypeService:_bindTowerSizePreview(cannon)
     if not (enabled and host) then
         return
     end
+    for _, descendant in ipairs(cannon:GetDescendants()) do
+        if
+            descendant.Name == TOWER_SIZE_PROMPT_NAME
+            or descendant.Name == TOWER_SIZE_LABEL_NAME
+        then
+            descendant:Destroy()
+        end
+    end
     local prompt = self:_attachPrompt(
         host,
         TOWER_SIZE_PROMPT_NAME,
         "Next Size",
-        string.format("Size %.2f", tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 0.85),
+        string.format("Size %.2f", tonumber(cannon:GetAttribute("MergeTowerSpawnScale")) or 0.4),
         function(player)
             self:_cycleTowerSize(player, cannon)
         end

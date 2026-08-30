@@ -1034,11 +1034,11 @@ clean.
   `MergeTowerPadRole`, and bay identity attributes on both the model and invisible `TowerAnchor`,
   and use cyan Heaven accents or ember Hell accents rather than the egg stands' circular language.
   The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Runtime
-  now clones the current-art Repulsor onto both pads at `tier_1_scale` (0.85) and lofts a
-  sphere along a parabolic arc toward the nearest in-lane enemy, or a gate-side landing
-  point if the lane is empty. The cannon yaws and pitches along the launch tangent. A
-  temporary E prompt cycles `size_preview.scales` and shows the factor overhead so the
-  starter chassis can be locked by eye; that same E will later cycle models. Role
+  now clones the current-art Repulsor onto both pads at playtest-locked `tier_scales`
+  (0.40 starter, 0.50 for tiers 2–4) and lofts a sphere along a parabolic arc toward
+  the nearest in-lane enemy, or a gate-side landing point if the lane is empty. The
+  cannon yaws and pitches along the launch tangent. A temporary E prompt still cycles
+  preview sizes from an unscaled host; that same E will later cycle models. Role
   upgrades and acquisition remain unwired.
 
 ## Bulwark defense art set
