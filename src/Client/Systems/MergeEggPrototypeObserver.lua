@@ -18,6 +18,7 @@ local Workspace = game:GetService("Workspace")
 local HudCard = require(script.Parent.Parent.UI.HudCard)
 local PetBadge = require(script.Parent.Parent.UI.PetBadge)
 local WorldChevron = require(script.Parent.Parent.UI.WorldChevron)
+local MergeBulwarkMenu = require(script.Parent.Parent.UI.Components.MergeBulwarkMenu)
 local MergeDefenseModeNotice = require(script.Parent.Parent.UI.Components.MergeDefenseModeNotice)
 local MergeEggCostFormat = require(ReplicatedStorage.Shared.Game.MergeEggCostFormat)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
@@ -118,6 +119,11 @@ local BOARD_ACTION_FAILURE_COPY = {
     egg_tier_mismatch = "THOSE EGGS DO NOT MATCH",
     automation_owns_board = "AUTOMATION IS USING THE BOARD",
     automation_owns_hatchers = "AUTOMATION IS USING THE HATCHERS",
+    bulwark_locked = "BULWARK UNLOCKED AT ITS WAVE MILESTONE",
+    bulwark_station_too_far = "MOVE CLOSER TO A BULWARK EDGE",
+    bulwark_already_selected = "THAT BULWARK IS ALREADY INSTALLED",
+    bulwark_not_installed = "INSTALL A BULWARK FIRST",
+    bulwark_maxed = "BULWARK IS ALREADY MAXIMUM TIER",
     automation_owns_upgrades = "AUTOMATION IS USING UPGRADES",
     automation_running = "AUTOMATION IS RUNNING",
     not_active_encounter = "CONTROL UNAVAILABLE RIGHT NOW",
@@ -773,6 +779,16 @@ local function boardActionResultCopy(result)
             return "EGG DEPLOYED"
         elseif action == "rebirth" then
             return string.format("REBIRTH %d ACTIVE", math.max(0, tonumber(result.value) or 0))
+        elseif action == "bulwark" then
+            local value = type(result.value) == "table" and result.value or {}
+            if value.operation == "installed" then
+                return "BULWARK INSTALLED"
+            elseif value.operation == "replaced" then
+                return "BULWARK REPLACED AT TIER 1"
+            elseif value.operation == "upgraded" then
+                return string.format("BULWARK UPGRADED TO TIER %d", tonumber(value.tier) or 1)
+            end
+            return "BULWARK UPDATED"
         end
         return "ACTION COMPLETE"
     end
@@ -2787,11 +2803,22 @@ function MergeEggPrototypeObserver.start()
     local boardActionFeedback, boardActionFeedbackStroke = createBoardActionFeedback(gui)
     local tutorialCard = createTutorialCard(gui)
     local boardActionFeedbackUntil = 0
+    local bulwarkMenu = MergeBulwarkMenu.new(gui, function(action)
+        Signals.MergeEggPrototypeBoardAction:FireServer(action)
+    end)
     Signals.MergeEggPrototypeBoardResult.OnClientEvent:Connect(function(result)
         if localPlayer:GetAttribute("InMergeEggPrototype") ~= true or type(result) ~= "table" then
             return
         end
+        local action = tostring(result.action or "")
+        if action == "open_bulwark_menu" and result.ok == true then
+            bulwarkMenu:show(result.value)
+            return
+        end
         local success = result.ok == true
+        if action == "bulwark" and success and type(result.value) == "table" then
+            bulwarkMenu:show(result.value)
+        end
         boardActionFeedback.Text = boardActionResultCopy(result)
         boardActionFeedback.TextColor3 = success and Color3.fromRGB(190, 255, 205)
             or Color3.fromRGB(255, 205, 105)
@@ -2799,6 +2826,11 @@ function MergeEggPrototypeObserver.start()
             or Color3.fromRGB(245, 170, 60)
         boardActionFeedback.Visible = true
         boardActionFeedbackUntil = os.clock() + 2.5
+    end)
+    localPlayer:GetAttributeChangedSignal("InMergeEggPrototype"):Connect(function()
+        if localPlayer:GetAttribute("InMergeEggPrototype") ~= true then
+            bulwarkMenu:hide()
+        end
     end)
     Signals.MergeEggPrototypePlayerHatch.OnClientEvent:Connect(function(result)
         if

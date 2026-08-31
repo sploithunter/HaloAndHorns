@@ -162,7 +162,7 @@ local function generateProfileTemplate(configLoader)
             -- their later Full unlock requires an explicit stay/switch choice instead of an
             -- automatic combat-mode change.
             MergeDefense = {
-                version = 4,
+                version = 6,
                 visited = false,
                 played_locked_simple = false,
                 full_intro_pending = false,
@@ -175,6 +175,9 @@ local function generateProfileTemplate(configLoader)
                 -- Compact reconstructable checkpoint; runtime pet rolls are deliberately rerolled
                 -- when a player returns, while wave, board, deployments, and wallet survive.
                 checkpoint = {},
+                -- Exact current possessions at logout. Combat resumes from the prior ten-wave
+                -- boundary, but the wallet, board inventory, and deployed egg slots do not rewind.
+                playstate = {},
             },
             Hoverboard = {
                 owned = { black_gold = true },
@@ -752,6 +755,7 @@ function DataService:Init()
     self.PersistenceWarningsIssued = {}
     self.AutoSaveLoopRunning = false
     self.BeforeProfileReleaseHandlers = {}
+    self.BeforeProfileReleaseHandled = {}
 
     -- Connect to player events
     Players.PlayerAdded:Connect(function(player)
@@ -759,15 +763,6 @@ function DataService:Init()
     end)
 
     Players.PlayerRemoving:Connect(function(player)
-        for _, handler in ipairs(self.BeforeProfileReleaseHandlers) do
-            local ok, err = pcall(handler, player)
-            if not ok then
-                self._logger:Error("Before-profile-release handler failed", {
-                    player = player.Name,
-                    error = tostring(err),
-                })
-            end
-        end
         self:ReleaseProfile(player)
     end)
 
@@ -791,6 +786,22 @@ end
 function DataService:RegisterBeforeProfileRelease(handler)
     assert(type(handler) == "function", "before-profile-release handler must be a function")
     table.insert(self.BeforeProfileReleaseHandlers, handler)
+end
+
+function DataService:_runBeforeProfileReleaseHandlers(player)
+    if self.BeforeProfileReleaseHandled[player] then
+        return
+    end
+    self.BeforeProfileReleaseHandled[player] = true
+    for _, handler in ipairs(self.BeforeProfileReleaseHandlers) do
+        local ok, err = pcall(handler, player)
+        if not ok then
+            self._logger:Error("Before-profile-release handler failed", {
+                player = player.Name,
+                error = tostring(err),
+            })
+        end
+    end
 end
 
 function DataService:Start()
@@ -1268,6 +1279,9 @@ function DataService:ReleaseProfile(player)
     local profile = self.Profiles[player]
 
     if profile then
+        -- ReleaseProfile is used by both PlayerRemoving and BindToClose. Run ownership-system
+        -- snapshots here so a server shutdown cannot bypass the final Merge playstate capture.
+        self:_runBeforeProfileReleaseHandlers(player)
         local data = profile.Data
         local sessionDuration = tick() - self.SessionStartTime
         data.Analytics.LastSessionDuration = sessionDuration
@@ -1332,6 +1346,7 @@ function DataService:ReleaseProfile(player)
     self.LoadPromises[player] = nil
     self.SaveRequests[player] = nil
     self.PersistenceWarningsIssued[player] = nil
+    self.BeforeProfileReleaseHandled[player] = nil
     if self.CurrencySignalConnections[player] then
         for _, conn in pairs(self.CurrencySignalConnections[player]) do
             pcall(function()

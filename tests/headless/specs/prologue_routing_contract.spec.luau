@@ -22,5 +22,12 @@ return function()
             expect(service:find('FindFirstChildWhichIsA("SpawnLocation"', 1, true)).to.equal(nil)
             expect(service:find('GetTagged("PlayerSpawn")', 1, true) ~= nil).to.equal(true)
         end)
+
+        it("refuses Begin and Replay on the dedicated Merge place", function()
+            local service = readFile("src/Server/Services/PrologueService.lua")
+            expect(service:find("function PrologueService:_isMergePlace", 1, true)).to.be.ok()
+            expect(service:find('return false, "merge_place"', 1, true)).to.be.ok()
+            expect(service:find("if self:_isMergePlace() then", 1, true)).to.be.ok()
+        end)
     end)
 end

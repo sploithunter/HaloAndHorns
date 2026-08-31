@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bulwark workshop mock-ups</title>
+  <style>
+    :root {
+      --ink: #e8eef6;
+      --muted: #9aabbf;
+      --panel: #141a26;
+      --panel-2: #1c2433;
+      --bar: #0c111a;
+      --gold: #f5be41;
+      --gold-soft: #ffd35f;
+      --stroke: #f5be41;
+      --danger: #8a3d48;
+      --ok: #4baf5f;
+      --ok-off: #444a56;
+      --coin: #e19716;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #0b1220;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
+    }
+    body {
+      padding: 28px 32px 48px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      color: var(--gold-soft);
+    }
+    .lede {
+      margin: 0 0 28px;
+      max-width: 880px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .page {
+      display: grid;
+      gap: 36px;
+    }
+    .mock-block h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .mock-block p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      max-width: 760px;
+      line-height: 1.4;
+    }
+    .stage {
+      position: relative;
+      border: 1px solid #2a3548;
+      background:
+        radial-gradient(1200px 400px at 20% 10%, #2a4a6a 0%, transparent 50%),
+        linear-gradient(#6b8aa8, #c9d6df 45%, #8fb07a 70%, #dce8ef);
+      min-height: 620px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .overlay {
+      width: min(920px, 94%);
+      background: rgba(20, 26, 38, 0.96);
+      border: 4px solid var(--stroke);
+      border-radius: 18px;
+      padding: 16px 20px 20px;
+      box-shadow: none;
+    }
+    .chrome {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .title {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.06em;
+      color: var(--gold-soft);
+    }
+    .close {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--danger);
+      color: white;
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .status {
+      margin: 12px 0 8px;
+      background: #262f3e;
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: #cddceb;
+      font-size: 14px;
+    }
+    .hint {
+      margin: 0 0 14px;
+      color: #afbecf;
+      font-size: 13px;
+    }
+
+    /* A: catalog + detail */
+    .split {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 16px;
+      min-height: 340px;
+    }
+    .preview-pane {
+      background: #0f1622;
+      border: 2px solid #3d4b62;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 320px;
+    }
+    .preview-art {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+    .preview-caption {
+      padding: 10px 14px 14px;
+      border-top: 1px solid #334155;
+    }
+    .preview-caption strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .role {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #2a3344;
+      color: var(--gold-soft);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .preview-caption p {
+      margin: 0;
+      color: #c5d0de;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .family-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .family-row {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      background: var(--panel-2);
+      border: 2px solid #3d4b62;
+      border-radius: 10px;
+      padding: 6px 8px;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .family-row[aria-selected="true"] {
+      border-color: var(--gold);
+      background: #2a2414;
+    }
+    .thumb {
+      width: 56px;
+      height: 44px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+    }
+    .family-row b {
+      display: block;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+    }
+    .family-row small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .cost {
+      background: var(--coin);
+      color: #1a1204;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-weight: 800;
+      font-size: 13px;
+      min-width: 42px;
+      text-align: center;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .btn {
+      border: 3px solid #b4ffc3;
+      border-radius: 14px;
+      min-height: 54px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: white;
+      background: var(--ok);
+    }
+    .btn.idle {
+      background: var(--ok-off);
+      border-color: #6e7684;
+      color: #d5dbe3;
+    }
+    .btn.gold {
+      background: var(--coin);
+      border-color: #ffe56e;
+      color: #1a1204;
+    }
+
+    /* B: stacked cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .card {
+      background: var(--panel-2);
+      border: 2px solid #e8f0ff;
+      border-radius: 13px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 210px;
+      width: 100%;
+      padding: 0;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
+    .card.current {
+      border-color: var(--gold);
+    }
+    .card-name {
+      background: #0d121b;
+      padding: 8px 10px 2px;
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      font-weight: 800;
+    }
+    .card-role {
+      background: #0d121b;
+      color: var(--gold-soft);
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      font-weight: 800;
+      padding: 0 8px 8px;
+      text-transform: uppercase;
+    }
+    .card-art {
+      height: 78px;
+      display: grid;
+      place-items: center;
+    }
+    .readout {
+      margin-top: 12px;
+      background: #0f1622;
+      border: 2px solid #3d4b62;
+      border-radius: 12px;
+      padding: 10px 12px;
+      min-height: 58px;
+    }
+    .readout strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .readout p {
+      margin: 0;
+      color: #c5d0de;
+      font-size: 14px;
+    }
+    .card.selected {
+      border-color: var(--gold);
+    }
+    .card-act {
+      margin: 8px 10px 12px;
+      background: var(--coin);
+      border: 2px solid #ffe56e;
+      border-radius: 999px;
+      color: #1a1204;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 7px 8px;
+      text-align: center;
+    }
+    .wide {
+      margin: 16px auto 0;
+      width: min(420px, 100%);
+      display: block;
+    }
+
+    /* silhouettes */
+    .sil {
+      width: 70%;
+      height: 70%;
+      max-width: 180px;
+      max-height: 120px;
+    }
+    .sil.small { width: 40px; height: 30px; max-width: none; }
+    .c1 { background: #d29137; }
+    .c2 { background: #7d879b; }
+    .c3 { background: #2a91aa; }
+    .c4 { background: #dc464b; }
+    .c5 { background: #46aa5a; }
+    .c6 { background: #7d5acd; }
+    .art {
+      width: 100%;
+      height: 100%;
+      opacity: 0.92;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bulwark workshop — two layouts</h1>
+  <p class="lede">
+    Same six families, same 1 Waycoin install, same “upgrade is a second action.”
+    Combat effects are not in the code yet, so the blurbs below are draft copy
+    from the art briefs: stop, bleed, hunt, shred, hold, and ward the eggs.
+  </p>
+
+  <div class="page">
+    <section class="mock-block">
+      <h2>A — Pick a family, then act</h2>
+      <p>
+        One selected preview on the left, with a full sentence of what it does.
+        The list stays short so names stay readable. Install applies to the
+        selected family. Upgrade stays one footer button.
+      </p>
+      <div class="stage">
+        <div class="overlay" id="layout-a">
+          <div class="chrome">
+            <h3 class="title">BULWARK WORKSHOP</h3>
+            <button class="close" type="button" aria-label="Close">X</button>
+          </div>
+          <div class="status">NO BULWARK INSTALLED • WALLET 12</div>
+          <p class="hint">Select a family, then install Tier 1. Replacing a family starts that family at Tier 1.</p>
+          <div class="split">
+            <div class="preview-pane">
+              <div class="preview-art" id="a-art"></div>
+              <div class="preview-caption">
+                <strong id="a-name">Impaler Palisade</strong>
+                <div class="role" id="a-role">Stop</div>
+                <p id="a-blurb"></p>
+              </div>
+            </div>
+            <div class="family-list" id="a-list"></div>
+          </div>
+          <div class="actions">
+            <button class="btn gold" type="button">INSTALL TIER 1 • 1</button>
+            <button class="btn idle" type="button">INSTALL A BULWARK FIRST</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mock-block">
+      <h2>B — Keep the 3×2 shop, give each layer its own band</h2>
+      <p>
+        Same 3×2 shop, but each card only gets a name and a role tag. The
+        sentence lives in the readout under the grid so six descriptions never
+        stack on six models.
+      </p>
+      <div class="stage">
+        <div class="overlay">
+          <div class="chrome">
+            <h3 class="title">BULWARK WORKSHOP</h3>
+            <button class="close" type="button" aria-label="Close">X</button>
+          </div>
+          <div class="status">NO BULWARK INSTALLED • WALLET 12</div>
+          <p class="hint">Install a family at Tier 1. Replacing a family starts the new family at Tier 1.</p>
+          <div class="grid" id="b-grid"></div>
+          <div class="readout" id="b-readout"></div>
+          <button class="btn idle wide" type="button">INSTALL A BULWARK FIRST</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const FAMILIES = [
+      {
+        id: "impaler_palisade",
+        name: "Impaler Palisade",
+        role: "Stop",
+        blurb: "Stakes the strip. Marchers that hit the line take a burst and get shoved back toward the gate.",
+        cls: "c1",
+        path: "M8 70 L20 18 L32 70 M32 70 L44 22 L56 70 M56 70 L68 20 L80 70 M10 70 H78 M14 78 H74",
+      },
+      {
+        id: "concertina_line",
+        name: "Concertina Line",
+        role: "Bleed",
+        blurb: "Razor wire across the lane. Anything that keeps walking the strip takes damage for as long as it stays on it.",
+        cls: "c2",
+        path: "M10 50 C22 20, 38 80, 50 50 C62 20, 78 80, 90 50 M10 58 C22 28, 38 88, 50 58 C62 28, 78 88, 90 58",
+      },
+      {
+        id: "land_shark",
+        name: "Land Sharks",
+        role: "Hunt",
+        blurb: "Sharks travel the strip and bite the nearest marcher. They chase instead of sitting still.",
+        cls: "c3",
+        path: "M12 78 L40 16 L48 78 Z M52 78 L78 28 L86 78 Z",
+      },
+      {
+        id: "saw_blade",
+        name: "Saw Blades",
+        role: "Shred",
+        blurb: "Spinning blades chew anything on the line. Highest raw damage, no control.",
+        cls: "c4",
+        path: "M50 18 L56 34 L74 30 L62 46 L76 58 L56 56 L50 74 L44 56 L24 58 L38 46 L26 30 L44 34 Z M50 50 m-10 0 a10 10 0 1 0 20 0 a10 10 0 1 0 -20 0",
+      },
+      {
+        id: "grasping_hedge",
+        name: "Grasping Hedge",
+        role: "Hold",
+        blurb: "Thorns grab the front of the wave and slow it so your pets can finish the pile.",
+        cls: "c5",
+        path: "M16 78 Q28 20 40 78 Q52 24 64 78 Q76 30 84 78 M22 48 L12 36 M48 40 L58 26 M70 50 L86 38",
+      },
+      {
+        id: "wardstone_barrier",
+        name: "Wardstone Barrier",
+        role: "Ward",
+        blurb: "Wards the hatcher eggs, not the lane. Cuts damage that gets past the fight and hits an installed egg.",
+        cls: "c6",
+        path: "M38 78 V22 L50 10 L62 22 V78 Z M44 40 H56 M32 78 H68",
+      },
+    ];
+
+    function silhouette(family, small) {
+      const wrap = document.createElement("div");
+      wrap.className = "thumb " + family.cls;
+      if (!small) wrap.className = "sil " + family.cls;
+      wrap.innerHTML = `<svg class="art" viewBox="0 0 100 90" aria-hidden="true"><path d="${family.path}" fill="none" stroke="#f4f7fb" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+      return wrap;
+    }
+
+    const list = document.getElementById("a-list");
+    const art = document.getElementById("a-art");
+    const nameEl = document.getElementById("a-name");
+    const blurbEl = document.getElementById("a-blurb");
+    let selected = FAMILIES[0];
+
+    function renderA() {
+      art.innerHTML = "";
+      art.appendChild(silhouette(selected, false));
+      nameEl.textContent = selected.name;
+      document.getElementById("a-role").textContent = selected.role;
+      blurbEl.textContent = selected.blurb;
+      list.innerHTML = "";
+      FAMILIES.forEach((family) => {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = "family-row";
+        row.setAttribute("aria-selected", family === selected ? "true" : "false");
+        row.appendChild(silhouette(family, true));
+        const copy = document.createElement("div");
+        copy.innerHTML = `<b>${family.name.toUpperCase()}</b><small>${family.role}</small>`;
+        row.appendChild(copy);
+        const cost = document.createElement("span");
+        cost.className = "cost";
+        cost.textContent = "1";
+        row.appendChild(cost);
+        row.addEventListener("click", () => {
+          selected = family;
+          renderA();
+        });
+        list.appendChild(row);
+      });
+    }
+
+    let selectedB = FAMILIES[0];
+    function renderB() {
+      const grid = document.getElementById("b-grid");
+      const readout = document.getElementById("b-readout");
+      grid.innerHTML = "";
+      FAMILIES.forEach((family) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "card" + (family === selectedB ? " selected" : "");
+        const title = document.createElement("div");
+        title.className = "card-name";
+        title.textContent = family.name.toUpperCase();
+        const role = document.createElement("div");
+        role.className = "card-role";
+        role.textContent = family.role;
+        const stage = document.createElement("div");
+        stage.className = "card-art";
+        stage.appendChild(silhouette(family, false));
+        const act = document.createElement("div");
+        act.className = "card-act";
+        act.textContent = "INSTALL TIER 1  •  1";
+        card.append(title, role, stage, act);
+        card.addEventListener("click", () => {
+          selectedB = family;
+          renderB();
+        });
+        grid.appendChild(card);
+      });
+      readout.innerHTML = `<strong>${selectedB.name}</strong><p>${selectedB.blurb}</p>`;
+    }
+
+    renderA();
+    renderB();
+  </script>
+</body>
+</html>

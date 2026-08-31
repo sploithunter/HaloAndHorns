@@ -713,6 +713,7 @@ function GameAPIService:_registerCommands()
                 questDisplayMode = prefs and prefs.questDisplayMode or "full",
                 tutorialLanguage = prefs and prefs.tutorialLanguage or "auto",
                 hideTogglesInBattle = not prefs or prefs.hideTogglesInBattle ~= false,
+                propEffects = not prefs or prefs.propEffects ~= false,
             }
         end,
     })
@@ -745,6 +746,7 @@ function GameAPIService:_registerCommands()
                     oneOf = { "auto", "en" },
                 },
                 hideTogglesInBattle = { type = "boolean", optional = true },
+                propEffects = { type = "boolean", optional = true },
             })
         end,
         handler = function(context, args)
@@ -786,6 +788,9 @@ function GameAPIService:_registerCommands()
             end
             if type(args.hideTogglesInBattle) == "boolean" then
                 data.Settings.ClientPrefs.hideTogglesInBattle = args.hideTogglesInBattle
+            end
+            if type(args.propEffects) == "boolean" then
+                data.Settings.ClientPrefs.propEffects = args.propEffects
             end
             dataSvc:RequestSave(context.player, "client_prefs")
             return { ok = true }

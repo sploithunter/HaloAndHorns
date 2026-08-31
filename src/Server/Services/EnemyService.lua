@@ -4704,6 +4704,18 @@ function EnemyService:_focusEnemy(player)
     return model
 end
 
+-- Authoritative world position for a live enemy. The server never re-pivots the
+-- anchored model after spawn (EnemyMotion interpolates on the client toward
+-- MoveTarget), so model:GetPivot() is the spawn CFrame. Combat, drops, and
+-- Merge cannons must read entry.pos — never the presentation pivot.
+function EnemyService:GetLivePosition(targetId)
+    local entry = targetId and self._enemies[targetId]
+    if entry and typeof(entry.pos) == "Vector3" then
+        return entry.pos
+    end
+    return nil
+end
+
 -- Public shared focus seam for powers, potions, and future enemy-target actions. Keeping resolution
 -- here prevents each feature from drifting into a different idea of which enemy the squad means.
 function EnemyService:GetFocusEnemy(player)

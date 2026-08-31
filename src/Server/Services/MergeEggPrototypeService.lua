@@ -17,6 +17,7 @@
 ]]
 
 local CollectionService = game:GetService("CollectionService")
+local Debris = game:GetService("Debris")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -35,13 +36,16 @@ local MergeEggEquipBest = require(ReplicatedStorage.Shared.Game.MergeEggEquipBes
 local MergeEggEnemyRoster = require(ReplicatedStorage.Shared.Game.MergeEggEnemyRoster)
 local MergeEggGateAccess = require(ReplicatedStorage.Shared.Game.MergeEggGateAccess)
 local MergeEggPlayerCombat = require(ReplicatedStorage.Shared.Game.MergeEggPlayerCombat)
+local MergeEggPlaystate = require(ReplicatedStorage.Shared.Game.MergeEggPlaystate)
 local MergeEggPricing = require(ReplicatedStorage.Shared.Game.MergeEggPricing)
 local MergeEggRebirth = require(ReplicatedStorage.Shared.Game.MergeEggRebirth)
 local MergeEggWaveGenerator = require(ReplicatedStorage.Shared.Game.MergeEggWaveGenerator)
 local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
+local MergeBulwarkProgression = require(ReplicatedStorage.Shared.Game.MergeBulwarkProgression)
 local MergeTowerBallistics = require(ReplicatedStorage.Shared.Game.MergeTowerBallistics)
 local MergeTowerModels = require(ReplicatedStorage.Shared.Game.MergeTowerModels)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
+local SoundGroups = require(ReplicatedStorage.Shared.Effects.SoundGroups)
 local Signals = require(ReplicatedStorage.Shared.Network.Signals)
 local MergeEggRealmBuilder = require(script.Parent.MergeEggRealmBuilder)
 
@@ -55,6 +59,8 @@ local EXIT_PROMPT_NAME = "MergeEggPrototypeExitPrompt"
 local TOWER_SIZE_PROMPT_NAME = "MergeEggTowerPreviewPrompt"
 local TOWER_FIRE_PROMPT_NAME = "MergeEggTowerFirePrompt"
 local TOWER_SIZE_LABEL_NAME = "MergeEggTowerSizeLabel"
+local BULWARK_MENU_PROMPT_NAME = "MergeEggBulwarkMenuPrompt"
+local BULWARK_MENU_HOST_PREFIX = "MergeEggBulwarkMenuHost_"
 local UPGRADE_EXPERIMENT_CHANNELS = {
     speed = true,
     power = true,
@@ -339,6 +345,8 @@ function MergeEggPrototypeService:Init()
         or require(ReplicatedStorage.Configs:WaitForChild("pet_roles"))
     self._combatConfig = (self._configLoader and self._configLoader:LoadConfig("combat"))
         or require(ReplicatedStorage.Configs:WaitForChild("combat"))
+    self._soundsConfig = (self._configLoader and self._configLoader:LoadConfig("sounds"))
+        or require(ReplicatedStorage.Configs:WaitForChild("sounds"))
     self._activeByPlayer = setmetatable({}, { __mode = "k" })
     self._towerShots = {}
     self._enteringByPlayer = setmetatable({}, { __mode = "k" })
@@ -416,6 +424,62 @@ function MergeEggPrototypeService:_durableCheckpoint(player)
         or nil
 end
 
+function MergeEggPrototypeService:_durablePlaystate(player)
+    local progress = self:_mergeDefenseProgress(player)
+    return progress and MergeEggPlaystate.normalize(progress.playstate, self:_checkpointOptions())
+        or nil
+end
+
+-- Logout persistence and combat checkpoints deliberately have different wave semantics. This
+-- snapshot keeps the live wallet and every board/deployment choice, while normalizing only the
+-- wave back to the prior ten-wave boundary. It mutates the loaded profile synchronously so
+-- DataService's before-release hook can include it in ProfileStore's final release save.
+function MergeEggPrototypeService:_persistPlaystate(record, reason, requestSave)
+    if not (record and record.encounterSpawned == true and self._economyService) then
+        return false
+    end
+    local pricing = self:_earthEggPricing(record)
+    local currency = tostring(record.sessionCurrency or pricing.currency)
+    local coins = self._economyService:GetCurrency(record.player, currency)
+    if coins == nil then
+        return false
+    end
+    local progress = self:_mergeDefenseProgress(record.player)
+    if not progress then
+        return false
+    end
+    -- A leftover profile default (hall_coins starts at 100) is not a Merge possession.
+    -- Counting it as one saved a Wave-0 playstate that skipped the 600-Waycoin stacks.
+    local hasBoard = self:_eggInventoryTotal(record) > 0
+        or self:_initializedHatcherCount(record) > 0
+        or math.max(1, math.floor(tonumber(record.baseEggTier) or 1)) > self:_baseEggTier(nil)
+    local hasPossessions = progress.tutorial_completed == true or hasBoard
+    if not hasPossessions then
+        return false
+    end
+    local interval = self:_checkpointOptions().interval
+    local resumeWave = math.max(0, math.floor(tonumber(record.waveIndex) or 0))
+    resumeWave -= resumeWave % interval
+    progress.playstate = MergeEggPlaystate.fromRuntime({
+        wave = resumeWave,
+        currency = currency,
+        coins = coins,
+        objectiveEggsRemaining = record.objectiveEggsRemaining,
+        eggInventory = record.eggInventory,
+        recordState = {
+            baseEggTier = record.baseEggTier,
+        },
+    }, record.teams, self:_checkpointOptions())
+    record.durablePlaystate = progress.playstate
+    if requestSave ~= false and self._dataService and self._dataService.RequestSave then
+        self._dataService:RequestSave(record.player, reason or "merge_defense_playstate", {
+            debounceSeconds = 0,
+            critical = true,
+        })
+    end
+    return true
+end
+
 function MergeEggPrototypeService:_persistCheckpoint(record)
     if not (record and record.checkpointSnapshot) then
         return false
@@ -429,6 +493,7 @@ function MergeEggPrototypeService:_persistCheckpoint(record)
         record.teams,
         self:_checkpointOptions()
     )
+    self:_persistPlaystate(record, "merge_defense_checkpoint", false)
     if self._dataService and self._dataService.RequestSave then
         self._dataService:RequestSave(record.player, "merge_defense_checkpoint", {
             debounceSeconds = 0,
@@ -505,7 +570,8 @@ function MergeEggPrototypeService:_completeTutorial(record)
     if progress then
         progress.tutorial_completed = true
     end
-    if self._dataService and self._dataService.RequestSave then
+    local playstateSaved = self:_persistPlaystate(record, "merge_defense_tutorial_complete", true)
+    if not playstateSaved and self._dataService and self._dataService.RequestSave then
         self._dataService:RequestSave(record.player, "merge_defense_tutorial_complete", {
             debounceSeconds = 0,
             critical = true,
@@ -532,17 +598,24 @@ function MergeEggPrototypeService:_completeTutorial(record)
     })
 end
 
-function MergeEggPrototypeService:_startTutorial(record)
+function MergeEggPrototypeService:_startTutorial(record, force)
     if not record then
         return
     end
     local progress = self:_mergeDefenseProgress(record.player)
     local tutorial = self:_tutorialConfig()
     local reborn = progress and MergeEggRebirth.normalizeCount(progress.rebirths) > 0
+    if tutorial.enabled == false then
+        record.tutorialActive = false
+        record.tutorialStep = nil
+        return
+    end
     if
-        tutorial.enabled == false
-        or (progress and progress.tutorial_completed == true)
-        or (tutorial.disable_after_rebirth == true and reborn)
+        force ~= true
+        and (
+            (progress and progress.tutorial_completed == true)
+            or (tutorial.disable_after_rebirth == true and reborn)
+        )
     then
         record.tutorialActive = false
         record.tutorialStep = nil
@@ -554,6 +627,7 @@ function MergeEggPrototypeService:_startTutorial(record)
     record.tutorialStepChangedAt = nil
     record.tutorialStepReadyAt = nil
     self:_setTutorialStep(record, "collect_setup")
+    self:_ensureOpeningCoinLesson(record)
 end
 
 function MergeEggPrototypeService:_updateTutorial(record, now, force)
@@ -1710,21 +1784,11 @@ function MergeEggPrototypeService:_prepareSessionCurrency(record)
     if original == nil then
         return false, "currency_unavailable"
     end
-    local startingCoins = math.max(0, math.floor(tonumber(opening.wallet_amount) or 0))
-    if
-        not self._economyService:SetCurrency(
-            record.player,
-            currency,
-            startingCoins,
-            "merge_egg_session_setup"
-        )
-    then
-        return false, "currency_setup_failed"
-    end
+    -- Waycoins are the player's durable Merge wallet. Entry must never zero a returning player's
+    -- balance; fresh/rebirth runs receive their authored opening drops separately.
+    local startingCoins = math.max(0, math.floor(tonumber(original) or 0))
     record.sessionCurrency = currency
-    record.sessionOriginalCoins = original
     record.sessionStartingCoins = startingCoins
-    record.sessionCurrencyRestored = false
     return true
 end
 
@@ -1809,52 +1873,54 @@ function MergeEggPrototypeService:_spawnOpeningCoinDrops(record)
     return spawned > 0
 end
 
-function MergeEggPrototypeService:_resetSessionCurrency(record)
-    if
-        not (
-            record
-            and self._economyService
-            and record.sessionCurrency
-            and record.sessionStartingCoins ~= nil
-        )
-    then
+function MergeEggPrototypeService:_playstateHasBoard(playstate)
+    playstate = type(playstate) == "table" and playstate or {}
+    for _, count in ipairs(type(playstate.egg_inventory) == "table" and playstate.egg_inventory or {}) do
+        if math.max(0, math.floor(tonumber(count) or 0)) > 0 then
+            return true
+        end
+    end
+    for _, tier in
+        ipairs(type(playstate.deployed_egg_tiers) == "table" and playstate.deployed_egg_tiers or {})
+    do
+        if math.max(0, math.floor(tonumber(tier) or 0)) > 0 then
+            return true
+        end
+    end
+    return math.max(1, math.floor(tonumber(playstate.base_egg_tier) or 1)) > self:_baseEggTier(nil)
+end
+
+-- First-visit / admin-reset collect beat: wallet at the authored opening amount, then five stacks.
+function MergeEggPrototypeService:_ensureOpeningCoinLesson(record)
+    if not record then
         return false
     end
+    if (record.openingPickupsSpawned or 0) > 0 then
+        return true
+    end
+    if self:_tutorialWallet(record) >= self:_tutorialOpeningCoinTotal() then
+        return true
+    end
+    if self._dropService and self._dropService.DiscardDrops then
+        self._dropService:DiscardDrops(record.player, "merge_egg_prototype")
+    end
+    self:_resetSessionCurrency(record)
+    return self:_spawnOpeningCoinDrops(record)
+end
+
+function MergeEggPrototypeService:_resetSessionCurrency(record)
+    if not (record and self._economyService and record.sessionCurrency) then
+        return false
+    end
+    local opening = type(self._config.opening_economy) == "table" and self._config.opening_economy
+        or {}
+    local resetAmount = math.max(0, math.floor(tonumber(opening.wallet_amount) or 0))
     return self._economyService:SetCurrency(
         record.player,
         record.sessionCurrency,
-        record.sessionStartingCoins,
+        resetAmount,
         "merge_egg_session_reset"
     )
-end
-
-function MergeEggPrototypeService:_restoreSessionCurrency(record)
-    if
-        not (
-            record
-            and self._economyService
-            and record.sessionCurrency
-            and record.sessionOriginalCoins ~= nil
-        ) or record.sessionCurrencyRestored == true
-    then
-        return true
-    end
-    local restored = self._economyService:SetCurrency(
-        record.player,
-        record.sessionCurrency,
-        record.sessionOriginalCoins,
-        "merge_egg_session_restore"
-    )
-    if restored then
-        record.sessionCurrencyRestored = true
-    else
-        self:_log("Warn", "Merge Egg prototype could not restore pre-session currency", {
-            player = record.player.Name,
-            currency = record.sessionCurrency,
-            amount = record.sessionOriginalCoins,
-        })
-    end
-    return restored
 end
 
 function MergeEggPrototypeService:_eggInventoryCount(record, tier)
@@ -3148,6 +3214,11 @@ function MergeEggPrototypeService:_edgeTowerConfig()
     return towers, shot
 end
 
+function MergeEggPrototypeService:_edgeBulwarkConfig()
+    local team = type(self._config.team) == "table" and self._config.team or {}
+    return type(team.edge_bulwarks) == "table" and team.edge_bulwarks or {}
+end
+
 function MergeEggPrototypeService:_towerScaleForTier(tier)
     local towersCfg = self:_edgeTowerConfig()
     local index = math.max(1, math.floor(tonumber(tier) or 1))
@@ -3225,6 +3296,72 @@ local function flattenTowerLook(cframe)
     return CFrame.lookAt(cframe.Position, cframe.Position + look)
 end
 
+function MergeEggPrototypeService:_instanceWorldPosition(inst)
+    if not inst then
+        return nil
+    end
+    if inst:IsA("BasePart") then
+        return inst.Position
+    end
+    if inst:IsA("Model") then
+        return inst:GetPivot().Position
+    end
+    local part = inst:FindFirstChildWhichIsA("BasePart", true)
+    return part and part.Position or nil
+end
+
+-- Dedicated Merge bays use OuterSpawnGate. EnemyPortalVisual only exists on the
+-- older authored prototype world and is absent here, so a name-only lookup
+-- leaves range at 90 and the cannons wait until pets walk into the last third.
+function MergeEggPrototypeService:_towerGatePosition(world)
+    if not world then
+        return nil
+    end
+    local name = (self._config.world or {}).enemy_portal_visual or "EnemyPortalVisual"
+    local portal = world:FindFirstChild(tostring(name), true)
+    local position = self:_instanceWorldPosition(portal)
+    if position then
+        return position
+    end
+    local gate = world:FindFirstChild("OuterSpawnGate", true)
+    position =
+        self:_instanceWorldPosition(gate and (gate:FindFirstChild("GateAnchor", true) or gate))
+    if position then
+        return position
+    end
+    local bayId = world:GetAttribute("MergeEggBayId")
+    if type(bayId) == "string" then
+        local map = Workspace:FindFirstChild("GeneratedMap_MergeEggVoxel")
+        local gates = map
+            and (
+                string.find(bayId, "hell", 1, true) and map:FindFirstChild("HellGates")
+                or map:FindFirstChild("HeavenGates")
+            )
+        if gates then
+            for _, child in ipairs(gates:GetChildren()) do
+                if child:GetAttribute("MergeEggBayId") == bayId then
+                    position = self:_instanceWorldPosition(child)
+                    if position then
+                        return position
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+function MergeEggPrototypeService:_towerGateLook(world, origin)
+    local portalPosition = self:_towerGatePosition(world)
+    if portalPosition and origin then
+        local planar = Vector3.new(portalPosition.X - origin.X, 0, portalPosition.Z - origin.Z)
+        if planar.Magnitude > 0.05 then
+            return planar.Unit
+        end
+    end
+    return self:_towerLook(world, nil)
+end
+
 function MergeEggPrototypeService:_towerLook(world, fallback)
     local worldCfg = self._config.world or {}
     local spawn = findNamedPart(world, worldCfg.hatcher_spawn or "HatcherSpawn")
@@ -3240,6 +3377,93 @@ function MergeEggPrototypeService:_towerLook(world, fallback)
     return Vector3.new(1, 0, 0)
 end
 
+function MergeEggPrototypeService:_cannonFireSoundDef(key)
+    local sounds = self._soundsConfig
+    if type(sounds) ~= "table" then
+        sounds = (self._configLoader and self._configLoader:LoadConfig("sounds"))
+            or require(ReplicatedStorage.Configs:WaitForChild("sounds"))
+        self._soundsConfig = sounds
+    end
+    local def = sounds and sounds[key or "cannon_fire"]
+    if type(def) == "table" and type(def.id) == "string" and def.id ~= "" then
+        return def
+    end
+    return nil
+end
+
+function MergeEggPrototypeService:_playCannonImpact(position, parent)
+    local def = self:_cannonFireSoundDef("cannon_impact")
+    if not (def and parent and typeof(position) == "Vector3") then
+        return
+    end
+    local emitter = Instance.new("Part")
+    emitter.Name = "MergeEggTowerImpactSound"
+    emitter.Anchored = true
+    emitter.CanCollide = false
+    emitter.CanQuery = false
+    emitter.CanTouch = false
+    emitter.Transparency = 1
+    emitter.Size = Vector3.new(0.2, 0.2, 0.2)
+    emitter.CFrame = CFrame.new(position)
+    emitter.Parent = parent
+    local sound = Instance.new("Sound")
+    sound.Name = "MergeTowerImpactSound"
+    sound.SoundId = def.id
+    sound.Volume = tonumber(def.volume) or 0.5
+    sound.PlaybackSpeed = tonumber(def.playback_speed) or 1
+    sound.RollOffMode = Enum.RollOffMode.InverseTapered
+    sound.RollOffMinDistance = math.max(0, tonumber(def.roll_off_min_distance) or 22)
+    sound.RollOffMaxDistance =
+        math.max(sound.RollOffMinDistance, tonumber(def.roll_off_max_distance) or 140)
+    SoundGroups.assign(sound, def.bus or "effects")
+    sound.Parent = emitter
+    sound:Play()
+    Debris:AddItem(emitter, math.max(2, (tonumber(def.duration_seconds) or 1.28) + 0.6))
+end
+
+function MergeEggPrototypeService:_ensureCannonFireSound(cannon)
+    if not cannon then
+        return nil
+    end
+    local existing = cannon:FindFirstChild("MergeTowerFireSound", true)
+    if existing and existing:IsA("Sound") then
+        return existing
+    end
+    local def = self:_cannonFireSoundDef()
+    if not def then
+        return nil
+    end
+    local parent = cannon.PrimaryPart or cannon:FindFirstChildWhichIsA("BasePart", true)
+    if not parent then
+        return nil
+    end
+    local sound = Instance.new("Sound")
+    sound.Name = "MergeTowerFireSound"
+    sound.SoundId = def.id
+    sound.Volume = tonumber(def.volume) or 0.49
+    sound.PlaybackSpeed = tonumber(def.playback_speed) or 1
+    sound.RollOffMode = Enum.RollOffMode.InverseTapered
+    sound.RollOffMinDistance = math.max(0, tonumber(def.roll_off_min_distance) or 28)
+    sound.RollOffMaxDistance =
+        math.max(sound.RollOffMinDistance, tonumber(def.roll_off_max_distance) or 160)
+    SoundGroups.assign(sound, def.bus or "effects")
+    sound.Parent = parent
+    return sound
+end
+
+function MergeEggPrototypeService:_playCannonFire(cannon)
+    local template = self:_ensureCannonFireSound(cannon)
+    if not template then
+        return
+    end
+    local def = self:_cannonFireSoundDef()
+    local shot = template:Clone()
+    shot.Name = "MergeTowerFireSoundPlay"
+    shot.Parent = template.Parent
+    shot:Play()
+    Debris:AddItem(shot, math.max(2, (tonumber(def and def.duration_seconds) or 2) + 0.6))
+end
+
 function MergeEggPrototypeService:_towerMuzzle(cannon, look)
     if not cannon then
         return nil
@@ -3251,7 +3475,8 @@ function MergeEggPrototypeService:_towerMuzzle(cannon, look)
     local box, size = cannon:GetBoundingBox()
     local aim = look
     if not aim or aim.Magnitude < 0.001 then
-        aim = cannon:GetPivot().LookVector
+        -- Authored mesh barrel is local +X.
+        aim = cannon:GetPivot().RightVector
     end
     if aim.Magnitude < 0.001 then
         aim = Vector3.new(1, 0, 0)
@@ -3262,83 +3487,204 @@ function MergeEggPrototypeService:_towerMuzzle(cannon, look)
     return box.Position + aim * along
 end
 
-function MergeEggPrototypeService:_aimTowerCannon(cannon, origin, target, apexHeight)
+function MergeEggPrototypeService:_barrelCFrame(position, tangent)
+    -- Always flatten. Loft belongs on the fireball, never the chassis.
+    local yawX, yawY, yawZ =
+        MergeTowerBallistics.planarYaw(tangent and tangent.X or 1, 0, tangent and tangent.Z or 0)
+    local rx, ry, rz, ux, uy, uz = MergeTowerBallistics.barrelBasis(yawX, yawY, yawZ)
+    return CFrame.fromMatrix(position, Vector3.new(rx, ry, rz), Vector3.new(ux, uy, uz))
+end
+
+function MergeEggPrototypeService:_cannonPad(cannon, world)
+    if not cannon then
+        return nil
+    end
+    local pads = self:_authoredBayArtifact(world, "TowerStations", "TowerPads")
+    if not pads then
+        return nil
+    end
+    local expected = cannon.Name:gsub("_Cannon$", "")
+    local slot = cannon:GetAttribute("MergeTowerPadSlot")
+    local role = cannon:GetAttribute("MergeTowerPadRole")
+    local best
+    local bestDistance = math.huge
+    for _, pad in ipairs(pads:GetChildren()) do
+        if pad:IsA("Model") then
+            if pad.Name == expected then
+                return pad
+            end
+            if
+                (slot ~= nil and pad:GetAttribute("MergeTowerPadSlot") == slot)
+                or (role ~= nil and pad:GetAttribute("MergeTowerPadRole") == role)
+            then
+                local anchor = pad:FindFirstChild("TowerAnchor", true)
+                local origin = cannon:GetPivot().Position
+                local position = anchor and anchor.Position or pad:GetPivot().Position
+                local distance = (Vector3.new(position.X, 0, position.Z) - Vector3.new(
+                    origin.X,
+                    0,
+                    origin.Z
+                )).Magnitude
+                if distance < bestDistance then
+                    best = pad
+                    bestDistance = distance
+                end
+            end
+        end
+    end
+    return best
+end
+
+-- Authored pad plates are CanQuery=false except the foundation. A world raycast therefore
+-- misses the deck and hits the marble floor, which is why the guns sat sunk in the pad.
+function MergeEggPrototypeService:_padSurfaceY(pad)
+    if not pad then
+        return nil
+    end
+    local top
+    for _, part in ipairs(pad:GetDescendants()) do
+        if part:IsA("BasePart") and part.Transparency < 1 then
+            local y = part.Position.Y + part.Size.Y * 0.5
+            if not top or y > top then
+                top = y
+            end
+        end
+    end
+    if top then
+        return top
+    end
+    local anchor = pad:FindFirstChild("TowerAnchor", true)
+    if not (anchor and anchor:IsA("BasePart")) then
+        return nil
+    end
+    return tonumber(anchor:GetAttribute("MergeTowerPadTopY")) or anchor.Position.Y
+end
+
+function MergeEggPrototypeService:_seatCannonOnPad(cannon, world, pad)
+    if not cannon then
+        return
+    end
+    pad = pad or self:_cannonPad(cannon, world)
+    local surfaceY = self:_padSurfaceY(pad)
+    if surfaceY then
+        cannon:SetAttribute("MergeTowerPadTopY", surfaceY + 0.04)
+    elseif cannon:GetAttribute("MergeTowerPadTopY") == nil then
+        local box, size = cannon:GetBoundingBox()
+        cannon:SetAttribute("MergeTowerPadTopY", box.Position.Y - size.Y * 0.5)
+    end
+    self:_groundCannon(cannon)
+end
+
+function MergeEggPrototypeService:_groundCannon(cannon)
+    if not cannon then
+        return
+    end
+    local padTop = tonumber(cannon:GetAttribute("MergeTowerPadTopY"))
+    if not padTop then
+        return
+    end
+    local box, size = cannon:GetBoundingBox()
+    local bottom = box.Position.Y - size.Y * 0.5
+    if math.abs(padTop - bottom) > 1e-3 then
+        cannon:PivotTo(cannon:GetPivot() + Vector3.new(0, padTop - bottom, 0))
+    end
+end
+
+function MergeEggPrototypeService:_faceCannonDownLane(cannon, world)
+    if not cannon then
+        return
+    end
+    local look = self:_towerGateLook(world, cannon:GetPivot().Position)
+    cannon:PivotTo(self:_barrelCFrame(cannon:GetPivot().Position, look))
+    self:_groundCannon(cannon)
+    cannon:SetAttribute("MergeTowerRestCFrame", cannon:GetPivot())
+end
+
+function MergeEggPrototypeService:_aimTowerCannon(cannon, origin, target, _apexHeight)
     if not (cannon and origin and target) then
         return
     end
     local rest = cannon:GetAttribute("MergeTowerRestCFrame")
     if typeof(rest) ~= "CFrame" then
-        rest = flattenTowerLook(cannon:GetPivot())
+        rest = cannon:GetPivot()
         cannon:SetAttribute("MergeTowerRestCFrame", rest)
         local box, size = cannon:GetBoundingBox()
         cannon:SetAttribute("MergeTowerRestBottomY", box.Position.Y - size.Y * 0.5)
     end
-    local dx, dy, dz = MergeTowerBallistics.launchDelta(
-        origin.X,
-        origin.Y,
-        origin.Z,
-        target.X,
-        target.Y,
-        target.Z,
-        apexHeight
-    )
-    local planar = Vector3.new(dx, 0, dz)
-    local horizontal = math.max(planar.Magnitude, 0.001)
-    if planar.Magnitude < 0.001 then
-        planar = Vector3.new(rest.LookVector.X, 0, rest.LookVector.Z)
-        horizontal = 0.001
-    end
-    if planar.Magnitude < 0.001 then
-        planar = Vector3.new(1, 0, 0)
-    else
-        planar = planar.Unit
-    end
-    local pitch = math.clamp(math.atan(dy / horizontal), 0, math.rad(40))
-    local aim = planar * math.cos(pitch) + Vector3.new(0, math.sin(pitch), 0)
-    if aim.Magnitude < 0.001 then
-        aim = planar
-    else
-        aim = aim.Unit
-    end
-    cannon:PivotTo(CFrame.lookAt(rest.Position, rest.Position + aim))
-    local box, size = cannon:GetBoundingBox()
-    local bottom = box.Position.Y - size.Y * 0.5
-    local restBottom = tonumber(cannon:GetAttribute("MergeTowerRestBottomY")) or bottom
-    cannon:PivotTo(cannon:GetPivot() + Vector3.new(0, restBottom - bottom, 0))
+    -- Flat turret: yaw only. The fireball parabola carries any loft.
+    local yawX, yawY, yawZ =
+        MergeTowerBallistics.planarYaw(target.X - origin.X, 0, target.Z - origin.Z)
+    cannon:PivotTo(self:_barrelCFrame(rest.Position, Vector3.new(yawX, yawY, yawZ)))
+    self:_groundCannon(cannon)
 end
 
-function MergeEggPrototypeService:_towerFireTarget(record, origin, look)
+-- Live march position. EnemyService never re-pivots the anchored model after
+-- spawn (only the client interpolates toward MoveTarget), so GetPivot() is the
+-- portal spawn. Prefer entry.pos, then the MoveTarget attribute the rest of
+-- Merge already uses for breach / heal-denial.
+function MergeEggPrototypeService:_enemyLivePosition(enemy)
+    if not enemy then
+        return nil
+    end
+    if self._enemyService and self._enemyService.GetLivePosition and enemy.targetId then
+        local live = self._enemyService:GetLivePosition(enemy.targetId)
+        if typeof(live) == "Vector3" then
+            return live
+        end
+    end
+    local model = enemy.model
+    if not (model and model.Parent) then
+        return nil
+    end
+    local position = model:GetAttribute("MoveTarget")
+    if typeof(position) == "Vector3" then
+        return position
+    end
+    return nil
+end
+
+function MergeEggPrototypeService:_towerLaneRange(record, origin)
     local _, shot = self:_edgeTowerConfig()
     local range = math.max(8, tonumber(shot.range) or 90)
+    local portalPosition = self:_towerGatePosition(record and record.world)
+    if portalPosition and origin then
+        local planar = Vector3.new(portalPosition.X - origin.X, 0, portalPosition.Z - origin.Z)
+        range = math.max(range, planar.Magnitude + 16)
+    end
+    return range
+end
+
+function MergeEggPrototypeService:_towerEnemyTarget(record, origin, look)
+    local range = self:_towerLaneRange(record, origin)
     local best
     local bestDistance = math.huge
     for _, enemy in ipairs(record and record.enemies or {}) do
         local model = enemy.model
-        if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 1) > 0 then
-            local position = model:GetPivot().Position
-            local planar = Vector3.new(position.X - origin.X, 0, position.Z - origin.Z)
-            local distance = planar.Magnitude
-            if
-                distance > 4
-                and distance <= range
-                and planar.Unit:Dot(look) > 0.12
-                and distance < bestDistance
-            then
-                best = Vector3.new(position.X, position.Y + 1.4, position.Z)
-                bestDistance = distance
+        if model and model.Parent and (tonumber(model:GetAttribute("HP")) or 0) > 0 then
+            local position = self:_enemyLivePosition(enemy)
+            if typeof(position) == "Vector3" then
+                local planar = Vector3.new(position.X - origin.X, 0, position.Z - origin.Z)
+                local distance = planar.Magnitude
+                if
+                    distance > 4
+                    and distance <= range
+                    and look
+                    and look.Magnitude > 0.001
+                    and planar.Magnitude > 0.05
+                    and planar.Unit:Dot(look.Unit) > 0.12
+                    and distance < bestDistance
+                then
+                    best = Vector3.new(position.X, position.Y + 1.4, position.Z)
+                    bestDistance = distance
+                end
             end
         end
     end
-    if best then
-        return best
-    end
-    local worldCfg = self._config.world or {}
-    local spawn = findNamedPart(record and record.world, worldCfg.hatcher_spawn or "HatcherSpawn")
-    local floorY = origin.Y - 3.2
-    if spawn then
-        floorY = spawn.Position.Y - spawn.Size.Y * 0.5 + 0.35
-    end
-    return Vector3.new(origin.X + look.X * range, floorY, origin.Z + look.Z * range)
+    return best
+end
+
+function MergeEggPrototypeService:_towerAimTarget(record, origin, look)
+    return self:_towerEnemyTarget(record, origin, look)
 end
 
 function MergeEggPrototypeService:_ensureBayTowers(record)
@@ -3383,11 +3729,8 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
                     model:SetAttribute("MergeTowerTier", starterTier)
                     model:SetAttribute("MergeTowerArtTier", artTier)
                     model:SetAttribute("MergeTowerNextFireAt", 0)
-                    local rest = flattenTowerLook(model:GetPivot())
-                    model:SetAttribute("MergeTowerRestCFrame", rest)
-                    local box, size = model:GetBoundingBox()
-                    model:SetAttribute("MergeTowerRestBottomY", box.Position.Y - size.Y * 0.5)
-                    model:SetAttribute("MergeTowerPadTopY", box.Position.Y - size.Y * 0.5)
+                    self:_seatCannonOnPad(model, world, pad)
+                    self:_faceCannonDownLane(model, world)
                 elseif record.towerTemplateWarned ~= true then
                     record.towerTemplateWarned = true
                     self:_log("Warn", "Merge Egg tower template missing", {
@@ -3399,11 +3742,10 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
             end
             local live = existing or folder:FindFirstChild(name)
             if live and live:IsA("Model") then
-                if live:GetAttribute("MergeTowerPadTopY") == nil then
-                    local box, size = live:GetBoundingBox()
-                    live:SetAttribute("MergeTowerPadTopY", box.Position.Y - size.Y * 0.5)
-                end
-                self:_bindTowerFirePrompt(live)
+                self:_seatCannonOnPad(live, world, pad)
+                self:_faceCannonDownLane(live, world)
+                self:_ensureCannonFireSound(live)
+                self:_clearTowerTestPrompts(live)
             end
         end
     end
@@ -3419,14 +3761,18 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
     if not anchors then
         return
     end
-    local team = type(self._config.team) == "table" and self._config.team or {}
-    local cfg = type(team.edge_bulwarks) == "table" and team.edge_bulwarks or {}
+    local cfg = self:_edgeBulwarkConfig()
     if cfg.enabled == false then
         record.bulwarksReady = true
         return
     end
-    local family = tostring(cfg.starter_family or "impaler_palisade")
-    local tier = math.clamp(math.floor(tonumber(cfg.starter_tier) or 1), 1, 4)
+    local state = MergeBulwarkProgression.normalize({
+        family = record.bulwarkFamily,
+        tier = record.bulwarkTier,
+        owned = record.bulwarkOwned,
+    }, cfg.maximum_tier)
+    local family = state.family
+    local tier = state.tier
     local folder = self:_towerFolder(world, "MergeEggBulwarks")
     local spawned = 0
     for _, anchor in ipairs(anchors:GetChildren()) do
@@ -3438,7 +3784,8 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
             if
                 existing
                 and (
-                    existing:GetAttribute("MergeBulwarkFamily") ~= family
+                    not family
+                    or existing:GetAttribute("MergeBulwarkFamily") ~= family
                     or existing:GetAttribute("MergeBulwarkTier") ~= tier
                     or math.abs(
                             (tonumber(existing:GetAttribute("MergeBulwarkSpawnScale")) or 1)
@@ -3450,7 +3797,7 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
                 existing:Destroy()
                 existing = nil
             end
-            if not existing then
+            if not existing and family then
                 local model, reason =
                     MergeBulwarkModels.Spawn(family, tier, anchor, folder, nil, expectedScale)
                 if model then
@@ -3470,8 +3817,141 @@ function MergeEggPrototypeService:_ensureBayBulwarks(record)
             end
         end
     end
-    local expected = math.max(1, math.floor(tonumber(cfg.tile_count) or 10))
+    self:_ensureBulwarkMenuPrompts(record, anchors, folder)
+    local expected = family and math.max(1, math.floor(tonumber(cfg.tile_count) or 10)) or 0
     record.bulwarksReady = spawned >= expected
+end
+
+function MergeEggPrototypeService:_bulwarkMenuState(record)
+    local cfg = self:_edgeBulwarkConfig()
+    local state = MergeBulwarkProgression.normalize({
+        family = record and record.bulwarkFamily,
+        tier = record and record.bulwarkTier,
+        owned = record and record.bulwarkOwned,
+    }, cfg.maximum_tier)
+    local price = MergeBulwarkProgression.actionCost(cfg)
+    local currentWave = record and math.max(1, math.floor(tonumber(record.waveIndex) or 0)) or 1
+    local wallet = record
+            and self._economyService
+            and self._economyService:GetCurrency(record.player, price.currency)
+        or 0
+    return {
+        family = state.family,
+        tier = state.tier,
+        owned = state.owned,
+        installed = state.family ~= nil,
+        maximumTier = math.max(1, math.floor(tonumber(cfg.maximum_tier) or 4)),
+        families = MergeBulwarkProgression.families(),
+        unlocked = MergeBulwarkProgression.isUnlocked(currentWave, cfg),
+        unlockWave = MergeBulwarkProgression.unlockWave(cfg),
+        productionUnlockWave = math.max(1, math.floor(tonumber(cfg.unlock_wave) or 20)),
+        tutorialIntermissionWave = math.max(
+            1,
+            math.floor(tonumber(cfg.tutorial_intermission_wave) or 20)
+        ),
+        playtestUnlock = cfg.playtest_unlock_enabled == true,
+        currentWave = currentWave,
+        actionCost = price.amount,
+        currency = price.currency,
+        wallet = math.max(0, math.floor(tonumber(wallet) or 0)),
+    }
+end
+
+function MergeEggPrototypeService:_canUseBulwarkMenu(player)
+    local record = self:_recordFor(player)
+    local root = characterRoot(player)
+    local folder = record and record.world and record.world:FindFirstChild("MergeEggBulwarks")
+    if not (record and root and folder) then
+        return false, "bulwark_station_unavailable"
+    end
+    local closest = math.huge
+    for _, child in ipairs(folder:GetChildren()) do
+        if
+            child:IsA("BasePart")
+            and child.Name:sub(1, #BULWARK_MENU_HOST_PREFIX) == BULWARK_MENU_HOST_PREFIX
+        then
+            closest = math.min(closest, (root.Position - child.Position).Magnitude)
+        end
+    end
+    local maximum = math.max(4, tonumber(self:_edgeBulwarkConfig().prompt_distance) or 14) + 4
+    if closest > maximum then
+        return false, "bulwark_station_too_far"
+    end
+    return true, nil, closest
+end
+
+function MergeEggPrototypeService:_openBulwarkMenu(player)
+    local record = self:_recordFor(player)
+    if not (record and record.player == player and record.terminal ~= true) then
+        return false, "not_active_encounter"
+    end
+    local accessOk, accessReason = self:_canUseBulwarkMenu(player)
+    if not accessOk then
+        return false, accessReason
+    end
+    Signals.MergeEggPrototypeBoardResult:FireClient(player, {
+        ok = true,
+        action = "open_bulwark_menu",
+        value = self:_bulwarkMenuState(record),
+    })
+    return true
+end
+
+function MergeEggPrototypeService:_ensureBulwarkMenuPrompts(record, anchors, folder)
+    if not (record and anchors and folder) then
+        return
+    end
+    for _, child in ipairs(folder:GetChildren()) do
+        if
+            child:IsA("BasePart")
+            and child.Name:sub(1, #BULWARK_MENU_HOST_PREFIX) == BULWARK_MENU_HOST_PREFIX
+        then
+            child:Destroy()
+        end
+    end
+    local endpoints = {}
+    for _, anchor in ipairs(anchors:GetChildren()) do
+        if anchor:IsA("BasePart") and string.match(anchor.Name, "^BulwarkAnchor_%d+$") then
+            endpoints[#endpoints + 1] = anchor
+        end
+    end
+    table.sort(endpoints, function(a, b)
+        return (tonumber(a:GetAttribute("MergeBulwarkTileIndex")) or 0)
+            < (tonumber(b:GetAttribute("MergeBulwarkTileIndex")) or 0)
+    end)
+    if #endpoints == 0 then
+        return
+    end
+    local rows = {
+        { suffix = "Left", anchor = endpoints[1] },
+        { suffix = "Right", anchor = endpoints[#endpoints] },
+    }
+    local cfg = self:_edgeBulwarkConfig()
+    for _, row in ipairs(rows) do
+        local host = Instance.new("Part")
+        host.Name = BULWARK_MENU_HOST_PREFIX .. row.suffix
+        host.Size = Vector3.new(2, 4, 2)
+        host.CFrame = row.anchor.CFrame * CFrame.new(0, 2, 0)
+        host.Anchored = true
+        host.CanCollide = false
+        host.CanTouch = false
+        host.CanQuery = false
+        host.Transparency = 1
+        host.Parent = folder
+        local prompt = self:_attachPrompt(
+            host,
+            BULWARK_MENU_PROMPT_NAME,
+            "Manage",
+            "Bulwark",
+            function(player)
+                self:_openBulwarkMenu(player)
+            end
+        )
+        if prompt then
+            prompt.HoldDuration = 0
+            prompt.MaxActivationDistance = math.max(4, tonumber(cfg.prompt_distance) or 14)
+        end
+    end
 end
 
 function MergeEggPrototypeService:_towerSizePreviewScales()
@@ -3613,25 +4093,8 @@ function MergeEggPrototypeService:_cycleTowerSize(_player, cannon)
     end
 end
 
-function MergeEggPrototypeService:_promptFireTower(player, cannon)
+function MergeEggPrototypeService:_clearTowerTestPrompts(cannon)
     if not cannon then
-        return
-    end
-    local record = player and self:_recordFor(player) or nil
-    if not record then
-        for _, active in pairs(self._activeByPlayer or {}) do
-            if active.world and cannon:IsDescendantOf(active.world) then
-                record = active
-                break
-            end
-        end
-    end
-    self:_fireTowerShot(record, cannon, os.clock())
-end
-
-function MergeEggPrototypeService:_bindTowerFirePrompt(cannon)
-    local host = self:_towerPromptHost(cannon)
-    if not host then
         return
     end
     local staleNames = {
@@ -3646,57 +4109,91 @@ function MergeEggPrototypeService:_bindTowerFirePrompt(cannon)
             end
         end
     end
-    for _, name in ipairs(staleNames) do
-        local stale = host:FindFirstChild(name)
-        if stale then
-            stale:Destroy()
-        end
+    local host = cannon.Parent and cannon.Parent:FindFirstChild(cannon.Name .. "_Preview")
+    if host then
+        host:Destroy()
     end
-    local prompt = self:_attachPrompt(
-        host,
-        TOWER_FIRE_PROMPT_NAME,
-        "Fire",
-        "Cannon",
-        function(player)
-            self:_promptFireTower(player, cannon)
+end
+
+function MergeEggPrototypeService:_aimCannonAtLaneTarget(record, cannon)
+    local world = (record and record.world) or self:_worldForCannon(cannon)
+    if not (world and cannon) then
+        return nil
+    end
+    local _, shot = self:_edgeTowerConfig()
+    local origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector)
+    if not origin then
+        return nil
+    end
+    local look = self:_towerGateLook(world, origin)
+    local target = self:_towerAimTarget(record, origin, look)
+    local apex = math.max(0, tonumber(shot.apex_height) or 14)
+    if target then
+        self:_aimTowerCannon(cannon, origin, target, apex)
+        origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector) or origin
+    else
+        self:_faceCannonDownLane(cannon, world)
+    end
+    return world, origin, target, apex
+end
+
+function MergeEggPrototypeService:_stepTowerAim(record)
+    local world = record and record.world
+    local folder = world and world:FindFirstChild("MergeEggTowers")
+    if not folder then
+        return
+    end
+    for _, cannon in ipairs(folder:GetChildren()) do
+        if cannon:IsA("Model") and cannon:GetAttribute("MergeTowerSpawned") == true then
+            self:_aimCannonAtLaneTarget(record, cannon)
         end
-    )
-    if prompt then
-        prompt.HoldDuration = 0
-        prompt.MaxActivationDistance = 16
     end
 end
 
 function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
     local world = (record and record.world) or self:_worldForCannon(cannon)
     if not (world and cannon) then
-        return
+        return false
     end
     local _, shot = self:_edgeTowerConfig()
-    local look = self:_towerLook(world, cannon:GetPivot().LookVector)
-    local origin = self:_towerMuzzle(cannon, look)
+    local origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector)
     if not origin then
-        return
+        return false
     end
-    local target = self:_towerFireTarget(record, origin, look)
+    local look = self:_towerGateLook(world, origin)
+    local target = self:_towerEnemyTarget(record, origin, look)
+    if not target then
+        return false
+    end
     local apex = math.max(0, tonumber(shot.apex_height) or 14)
     self:_aimTowerCannon(cannon, origin, target, apex)
-    origin = self:_towerMuzzle(cannon, cannon:GetPivot().LookVector) or origin
+    origin = self:_towerMuzzle(cannon, cannon:GetPivot().RightVector) or origin
     local folder = self:_towerFolder(world, "MergeEggTowerShots")
     local diameter = math.max(0.4, tonumber(shot.diameter) or 1.2)
     local part = Instance.new("Part")
-    part.Name = "MergeEggTowerShot"
+    part.Name = "MergeEggTowerFireball"
     part.Shape = Enum.PartType.Ball
     part.Anchored = true
     part.CanCollide = false
     part.CanTouch = false
     part.CanQuery = false
-    part.CastShadow = true
-    part.Material = Enum.Material.Metal
+    part.CastShadow = false
+    part.Material = Enum.Material.Neon
     part.Size = Vector3.new(diameter, diameter, diameter)
     local side = tostring(world:GetAttribute("MergeEggBaySide") or "")
-    part.Color = side == "hell" and Color3.fromRGB(210, 72, 42) or Color3.fromRGB(214, 186, 92)
+    part.Color = side == "hell" and Color3.fromRGB(255, 72, 28) or Color3.fromRGB(255, 148, 36)
     part.CFrame = CFrame.new(origin)
+    local light = Instance.new("PointLight")
+    light.Name = "FireballLight"
+    light.Brightness = 2.8
+    light.Range = 18
+    light.Color = part.Color
+    light.Parent = part
+    local fire = Instance.new("Fire")
+    fire.Name = "FireballFlame"
+    fire.Size = math.max(4, diameter * 4)
+    fire.Heat = 10
+    fire.Parent = part
     part.Parent = folder
     local flight = {
         part = part,
@@ -3713,6 +4210,8 @@ function MergeEggPrototypeService:_fireTowerShot(record, cannon, now)
         record.towerShots = record.towerShots or {}
         record.towerShots[#record.towerShots + 1] = flight
     end
+    self:_playCannonFire(cannon)
+    return true
 end
 
 function MergeEggPrototypeService:_stepTowerFire(record, now)
@@ -3733,8 +4232,9 @@ function MergeEggPrototypeService:_stepTowerFire(record, now)
                 cannon:SetAttribute("MergeTowerNextFireAt", nextAt)
             end
             if now >= nextAt then
-                cannon:SetAttribute("MergeTowerNextFireAt", now + interval)
-                self:_fireTowerShot(record, cannon, now)
+                if self:_fireTowerShot(record, cannon, now) then
+                    cannon:SetAttribute("MergeTowerNextFireAt", now + interval)
+                end
             end
         end
     end
@@ -3759,6 +4259,7 @@ function MergeEggPrototypeService:_stepTowerShots(now)
                 if alpha >= 1 then
                     part.CFrame = CFrame.new(target)
                     flight.landedAt = now
+                    self:_playCannonImpact(target, part.Parent)
                     remaining[#remaining + 1] = flight
                 else
                     local x, y, z = MergeTowerBallistics.point(
@@ -4658,6 +5159,15 @@ function MergeEggPrototypeService:_setWorldState(state, record)
     world:SetAttribute("EnemiesCrossedBreachLine", record and record.breached or 0)
     world:SetAttribute("EnemiesPastBulwark", record and record.enemiesPastBulwark or 0)
     world:SetAttribute("PeakEnemiesPastBulwark", record and record.peakEnemiesPastBulwark or 0)
+    local bulwarkState = self:_bulwarkMenuState(record)
+    world:SetAttribute("MergeBulwarkInstalled", bulwarkState.installed)
+    world:SetAttribute("MergeBulwarkFamily", bulwarkState.family)
+    world:SetAttribute("MergeBulwarkTier", bulwarkState.tier)
+    world:SetAttribute("MergeBulwarkUnlocked", bulwarkState.unlocked)
+    world:SetAttribute("MergeBulwarkUnlockWave", bulwarkState.unlockWave)
+    world:SetAttribute("MergeBulwarkProductionUnlockWave", bulwarkState.productionUnlockWave)
+    world:SetAttribute("MergeBulwarkActionCost", bulwarkState.actionCost)
+    world:SetAttribute("MergeBulwarkCurrency", bulwarkState.currency)
     world:SetAttribute("EnemiesPastBreachLine", record and record.enemiesPastBreachLine or 0)
     world:SetAttribute(
         "PeakEnemiesPastBreachLine",
@@ -5264,14 +5774,12 @@ function MergeEggPrototypeService:_captureCheckpoint(record, wave, options)
     return true
 end
 
--- A durable checkpoint stores only reconstructable progression. Returning players keep their
--- board, deployed egg tiers, wallet, and checkpoint wave; temporary NPC rolls are rerolled so the
--- profile never contains Instances or runtime combat definitions.
-function MergeEggPrototypeService:_restoreDurableCheckpoint(record)
-    local checkpoint = record
-        and MergeEggCheckpoint.normalize(record.durableCheckpoint, self:_checkpointOptions())
-    if not (record and checkpoint and checkpoint.wave > 0 and record.encounterSpawned == true) then
-        return false, "durable_checkpoint_unavailable"
+-- Restore only reconstructable progression. Temporary NPC rolls are rerolled so the profile never
+-- contains Instances or runtime combat definitions. A logout playstate may resume at Wave 0;
+-- a combat checkpoint still requires a completed ten-wave boundary.
+function MergeEggPrototypeService:_restoreDurableProgress(record, saved, restoreSource)
+    if not (record and saved and record.encounterSpawned == true) then
+        return false, "durable_progress_unavailable"
     end
     if not (self._economyService and self._economyService.SetCurrency) then
         return false, "currency_unavailable"
@@ -5279,25 +5787,25 @@ function MergeEggPrototypeService:_restoreDurableCheckpoint(record)
     if
         not self._economyService:SetCurrency(
             record.player,
-            checkpoint.currency,
-            checkpoint.coins,
-            "merge_defense_checkpoint_resume"
+            saved.currency,
+            saved.coins,
+            "merge_defense_" .. tostring(restoreSource or "progress") .. "_resume"
         )
     then
-        return false, "checkpoint_currency_restore_failed"
+        return false, "durable_currency_restore_failed"
     end
 
     record.restoringDurableCheckpoint = true
-    record.baseEggTier = checkpoint.base_egg_tier
-    record.baseEggUpgradesPurchased = math.max(0, checkpoint.base_egg_tier - 1)
-    record.eggInventory = table.clone(checkpoint.egg_inventory)
+    record.baseEggTier = saved.base_egg_tier
+    record.baseEggUpgradesPurchased = math.max(0, saved.base_egg_tier - 1)
+    record.eggInventory = table.clone(saved.egg_inventory)
     record.objectiveEggsRemaining = math.max(
         1,
-        checkpoint.objective_eggs > 0 and checkpoint.objective_eggs or record.objectiveEggsStarting
+        saved.objective_eggs > 0 and saved.objective_eggs or record.objectiveEggsStarting
     )
     local restoredTeams = 0
-    local highestTier = checkpoint.base_egg_tier
-    for teamId, tier in pairs(checkpoint.deployed_egg_tiers) do
+    local highestTier = saved.base_egg_tier
+    for teamId, tier in pairs(saved.deployed_egg_tiers) do
         local team = record.teamById[tonumber(teamId)]
         local eggId = self:_eggProgression(record)[tier]
         local source = eggId and self:_buildHatchSource(record, eggId)
@@ -5325,25 +5833,46 @@ function MergeEggPrototypeService:_restoreDurableCheckpoint(record)
     record.restoringDurableCheckpoint = false
     record.maximumEggTier = highestTier
     record.eggsPlaced = restoredTeams
-    record.waveIndex = checkpoint.wave
+    record.waveIndex = saved.wave
     record.pendingCheckpointWave = nil
     record.checkpointSnapshot = nil
     record.nextWaveAt = os.clock()
         + math.max(0, tonumber((self._config.checkpoints or {}).restart_delay_seconds) or 3)
-    local captured, reason = self:_captureCheckpoint(record, checkpoint.wave)
-    if not captured then
-        return false, reason
+    if saved.wave > 0 then
+        local captured, reason = self:_captureCheckpoint(record, saved.wave)
+        if not captured then
+            return false, reason
+        end
     end
     self:_syncAllTeams(record)
-    self:_setWorldState("CheckpointRestarting", record)
-    self:_log("Info", "Merge Egg durable checkpoint resumed", {
+    self:_setWorldState(saved.wave > 0 and "CheckpointRestarting" or "WaveIntermission", record)
+    self:_log("Info", "Merge Egg durable progress resumed", {
         player = record.player.Name,
-        wave = checkpoint.wave,
-        coins = checkpoint.coins,
+        source = restoreSource,
+        wave = saved.wave,
+        coins = saved.coins,
         deployed = restoredTeams,
         boardEggs = self:_eggInventoryTotal(record),
     })
     return true
+end
+
+function MergeEggPrototypeService:_restoreDurablePlaystate(record)
+    local playstate = record
+        and MergeEggPlaystate.normalize(record.durablePlaystate, self:_checkpointOptions())
+    if not (playstate and playstate.saved == true) then
+        return false, "durable_playstate_unavailable"
+    end
+    return self:_restoreDurableProgress(record, playstate, "playstate")
+end
+
+function MergeEggPrototypeService:_restoreDurableCheckpoint(record)
+    local checkpoint = record
+        and MergeEggCheckpoint.normalize(record.durableCheckpoint, self:_checkpointOptions())
+    if not (checkpoint and checkpoint.wave > 0) then
+        return false, "durable_checkpoint_unavailable"
+    end
+    return self:_restoreDurableProgress(record, checkpoint, "checkpoint")
 end
 
 function MergeEggPrototypeService:_canRestartCheckpoint(record)
@@ -6679,12 +7208,16 @@ function MergeEggPrototypeService:_clearEncounter(record)
     record.tutorialStepReadyAt = nil
     record.tutorialUsesAutoCollector = false
     self:_publishPlayerReserve(record)
+    self:_syncMergeBoardEggs(record)
     self:_setWorldState("ReadyToHatch", record)
 end
 
-function MergeEggPrototypeService:_end(record, teleportHome, departing)
+function MergeEggPrototypeService:_end(record, teleportHome, departing, discardProgress)
     if not self:_isRecordActive(record) then
         return
+    end
+    if discardProgress ~= true then
+        self:_persistPlaystate(record, "merge_defense_session_end", true)
     end
     self._activeByPlayer[record.player] = nil
     disconnect(record.characterRemoving)
@@ -6692,7 +7225,6 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing)
     disconnect(record.playerCombatModeChanged)
     self:_setFullModeTargetOpen(record, false)
     self:_clearEncounter(record)
-    self:_restoreSessionCurrency(record)
     record.player:SetAttribute("CombatAssistTarget", record.assistTarget)
     record.player:SetAttribute("CombatAssistUntil", record.assistUntil)
     record.player:SetAttribute("InMergeEggPrototype", nil)
@@ -6750,7 +7282,8 @@ function MergeEggPrototypeService:_end(record, teleportHome, departing)
     })
 end
 
-function MergeEggPrototypeService:_begin(player, requestedBayId)
+function MergeEggPrototypeService:_begin(player, requestedBayId, opts)
+    opts = type(opts) == "table" and opts or {}
     local ok, reason = self:_canBegin(player)
     if not ok then
         self:_log("Warn", "Merge Egg prototype entry refused", {
@@ -6838,7 +7371,9 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
         player = player,
         world = world,
         bayId = bayId,
-        durableCheckpoint = self:_durableCheckpoint(player),
+        durableCheckpoint = opts.ignoreCheckpoint == true and nil
+            or self:_durableCheckpoint(player),
+        durablePlaystate = opts.ignoreCheckpoint == true and nil or self:_durablePlaystate(player),
         playerCombatMode = self:_playerCombatMode(player),
         runId = HttpService:GenerateGUID(false),
         baseCombatLevel = playerCombatLevel(player, (self._config.principal or {}).level),
@@ -7007,6 +7542,14 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
             math.floor(tonumber(mergeDefenseProgress.management_gems_spent) or 0)
         ),
         managementUpgradeInProgress = false,
+        bulwarkFamily = mergeDefenseProgress.bulwark_family,
+        bulwarkTier = mergeDefenseProgress.bulwark_tier,
+        bulwarkOwned = table.clone(mergeDefenseProgress.bulwark_owned or {}),
+        bulwarkActionInProgress = false,
+        bulwarkWaycoinsSpent = math.max(
+            0,
+            math.floor(tonumber(mergeDefenseProgress.bulwark_waycoins_spent) or 0)
+        ),
         rebirthCount = MergeEggRebirth.normalizeCount(mergeDefenseProgress.rebirths),
         rebirthInProgress = false,
         checkpointSnapshot = nil,
@@ -7024,9 +7567,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
         terminalState = nil,
         terminal = false,
         sessionCurrency = nil,
-        sessionOriginalCoins = nil,
         sessionStartingCoins = nil,
-        sessionCurrencyRestored = false,
         tutorialActive = false,
         tutorialStep = nil,
         tutorialStepChangedAt = nil,
@@ -7090,9 +7631,22 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
     if self._settingsService and self._settingsService.RecordMergeDefenseEntry then
         self._settingsService:RecordMergeDefenseEntry(player)
     end
-    local resumeCheckpoint =
-        MergeEggCheckpoint.isUsable(record.durableCheckpoint, self:_checkpointOptions())
-    if not resumeCheckpoint then
+    local progress = self:_mergeDefenseProgress(player)
+    local resumePlaystate = opts.ignoreCheckpoint ~= true
+        and MergeEggPlaystate.isUsable(record.durablePlaystate, self:_checkpointOptions())
+    -- A coins-only Wave-0 playstate (profile default 100, no eggs) must not skip the stacks.
+    if
+        resumePlaystate
+        and (not progress or progress.tutorial_completed ~= true)
+        and not self:_playstateHasBoard(record.durablePlaystate)
+    then
+        resumePlaystate = false
+    end
+    local resumeCheckpoint = not resumePlaystate
+        and opts.ignoreCheckpoint ~= true
+        and MergeEggCheckpoint.isUsable(record.durableCheckpoint, self:_checkpointOptions())
+    if not resumePlaystate and not resumeCheckpoint then
+        self:_resetSessionCurrency(record)
         self:_spawnOpeningCoinDrops(record)
     end
     self:_publishPlayerReserve(record)
@@ -7127,10 +7681,22 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
             player = player.Name,
             reason = armReason,
         })
-        self:_end(record, true, false)
+        self:_end(record, true, false, true)
         return false, armReason
     end
-    if resumeCheckpoint then
+    if resumePlaystate then
+        local restored, restoreReason = self:_restoreDurablePlaystate(record)
+        if not restored then
+            self:_log("Warn", "Merge Egg durable playstate could not resume", {
+                player = player.Name,
+                bay = bayId,
+                reason = restoreReason,
+            })
+            self:_end(record, true, false, true)
+            return false, restoreReason
+        end
+        self:_startTutorial(record, opts.forceTutorial == true)
+    elseif resumeCheckpoint then
         local restored, restoreReason = self:_restoreDurableCheckpoint(record)
         if not restored then
             self:_log("Warn", "Merge Egg durable checkpoint could not resume", {
@@ -7138,16 +7704,17 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
                 bay = bayId,
                 reason = restoreReason,
             })
-            self:_end(record, true, false)
+            self:_end(record, true, false, true)
             return false, restoreReason
         end
     else
-        self:_startTutorial(record)
+        self:_startTutorial(record, opts.forceTutorial == true)
     end
     self:_log("Info", "Merge Egg prototype session began", {
         player = player.Name,
         runId = record.runId,
         bay = bayId,
+        resumedPlaystate = resumePlaystate,
         resumedCheckpoint = resumeCheckpoint,
     })
     return true
@@ -8404,6 +8971,7 @@ function MergeEggPrototypeService:_stepRecord(record, now)
     self:_updateTutorial(record, now, false)
     self:_ensureBayTowers(record)
     self:_ensureBayBulwarks(record)
+    self:_stepTowerAim(record)
     if record.terminal ~= true then
         self:_stepTowerFire(record, now)
     end
@@ -10048,6 +10616,132 @@ function MergeEggPrototypeService:ToggleAutoCombine(player)
     return true, record.autoCombineEnabled and "enabled" or "disabled"
 end
 
+function MergeEggPrototypeService:PurchaseBulwarkAction(player, request)
+    if not self:_allowsGameplayActions() then
+        return false, "merge_place_only"
+    end
+    local record = self:_recordFor(player)
+    if
+        not record
+        or record.player ~= player
+        or not record.encounterSpawned
+        or record.terminal == true
+    then
+        return false, "not_active_encounter"
+    end
+    if record.bulwarkActionInProgress == true then
+        return false, "bulwark_action_in_progress"
+    end
+    local accessOk, accessReason = self:_canUseBulwarkMenu(player)
+    if not accessOk then
+        return false, accessReason
+    end
+    request = type(request) == "table" and request or {}
+    local cfg = self:_edgeBulwarkConfig()
+    local requestedAction = tostring(request.bulwarkAction or "")
+    local before = MergeBulwarkProgression.normalize({
+        family = record.bulwarkFamily,
+        tier = record.bulwarkTier,
+        owned = record.bulwarkOwned,
+    }, cfg.maximum_tier)
+    local nextState, progressionReason = MergeBulwarkProgression.apply(
+        before,
+        requestedAction,
+        request.family,
+        record.waveIndex,
+        cfg
+    )
+    if not nextState then
+        return false, progressionReason
+    end
+    if not (self._economyService and self._economyService.Transact) then
+        return false, "economy_unavailable"
+    end
+    local progress = self:_mergeDefenseProgress(player)
+    if not progress then
+        return false, "profile_unavailable"
+    end
+    local durableBefore = MergeBulwarkProgression.normalize({
+        family = progress.bulwark_family,
+        tier = progress.bulwark_tier,
+        owned = progress.bulwark_owned,
+    }, cfg.maximum_tier)
+    if MergeBulwarkProgression.signature(durableBefore) ~= MergeBulwarkProgression.signature(before) then
+        return false, "bulwark_state_changed"
+    end
+
+    local price = MergeBulwarkProgression.actionCost(cfg)
+    local charged = nextState.charged == true and price.amount or 0
+    record.bulwarkActionInProgress = true
+    local commitFailure
+    local transaction = self._economyService:Transact(player, {
+        debits = charged > 0 and {
+            [price.currency] = charged,
+        } or {},
+        reason = "merge_egg_bulwark_" .. requestedAction,
+        commit = function()
+            if
+                not self:_isRecordActive(record)
+                or record.terminal == true
+                or MergeBulwarkProgression.signature({
+                        family = record.bulwarkFamily,
+                        tier = record.bulwarkTier,
+                        owned = record.bulwarkOwned,
+                    })
+                    ~= MergeBulwarkProgression.signature(before)
+                or MergeBulwarkProgression.signature({
+                        family = progress.bulwark_family,
+                        tier = progress.bulwark_tier,
+                        owned = progress.bulwark_owned,
+                    })
+                    ~= MergeBulwarkProgression.signature(durableBefore)
+            then
+                commitFailure = "bulwark_state_changed"
+                return false
+            end
+            record.bulwarkFamily = nextState.family
+            record.bulwarkTier = nextState.tier
+            record.bulwarkOwned = table.clone(nextState.owned or {})
+            record.bulwarkWaycoinsSpent = (record.bulwarkWaycoinsSpent or 0) + charged
+            progress.bulwark_family = nextState.family
+            progress.bulwark_tier = nextState.tier
+            progress.bulwark_owned = table.clone(nextState.owned or {})
+            progress.bulwark_waycoins_spent = math.max(
+                0,
+                math.floor(tonumber(progress.bulwark_waycoins_spent) or 0)
+            ) + charged
+            return true
+        end,
+    })
+    record.bulwarkActionInProgress = false
+    if not transaction.ok then
+        if transaction.reason == "precondition_failed" then
+            return false, "insufficient_currency"
+        end
+        return false, commitFailure or transaction.reason
+    end
+
+    record.bulwarksReady = false
+    self:_ensureBayBulwarks(record)
+    self:_setWorldState(record.world:GetAttribute("PrototypeState") or "AwaitingFirstEgg", record)
+    if self._dataService and self._dataService.RequestSave then
+        self._dataService:RequestSave(player, "merge_defense_bulwark", {
+            debounceSeconds = 10,
+            critical = false,
+        })
+    end
+    self:_log("Info", "Merge Egg bulwark changed", {
+        player = player.Name,
+        operation = nextState.operation,
+        family = nextState.family,
+        tier = nextState.tier,
+        cost = charged,
+    })
+    local menuState = self:_bulwarkMenuState(record)
+    menuState.operation = nextState.operation
+    return true, menuState
+end
+
 function MergeEggPrototypeService:PurchaseManagementUpgrade(player, request)
     if not self:_allowsGameplayActions() then
         return false, "merge_place_only"
@@ -10234,8 +10928,10 @@ function MergeEggPrototypeService:PurchaseRebirth(player, request)
             end
             progress.rebirths = countBefore + 1
             progress.checkpoint = MergeEggCheckpoint.normalize(nil, self:_checkpointOptions())
+            progress.playstate = MergeEggPlaystate.normalize(nil, self:_checkpointOptions())
             record.rebirthCount = progress.rebirths
             record.durableCheckpoint = progress.checkpoint
+            record.durablePlaystate = progress.playstate
             return true
         end,
     })
@@ -10380,6 +11076,8 @@ function MergeEggPrototypeService:HandleBoardAction(player, request)
         return self:EquipBestHatchers(player)
     elseif action == "toggle_auto" then
         return self:ToggleAutoCombine(player)
+    elseif action == "bulwark" then
+        return self:PurchaseBulwarkAction(player, request)
     end
     return false, "invalid_board_action"
 end
@@ -10597,6 +11295,59 @@ function MergeEggPrototypeService:UpgradeHatcher(player, request)
     return self:AdvanceHatcherEgg(player, request)
 end
 
+function MergeEggPrototypeService:_wipeMergeDefenseProgress(player)
+    local data = self._dataService and self._dataService:GetData(player)
+    if not data then
+        return false
+    end
+    data.GameData = type(data.GameData) == "table" and data.GameData or {}
+    data.GameData.MergeDefense = MergeEggPlayerCombat.normalizeOnboarding(nil)
+    return true
+end
+
+-- Tear down leftover bay chrome that can survive a session end: board visuals, hatcher
+-- teams, and the wave attributes the HUD reads. Passing no record must still zero CurrentWave
+-- or Reset to Beginning leaves WAVE FOURTEEN on screen while only the wallet changes.
+function MergeEggPrototypeService:_forceClearBay(world, player)
+    if world then
+        local board = self:_ensureMergeBoard(world)
+        if board then
+            board:SetAttribute("InventorySignature", nil)
+            local eggs = board:FindFirstChild("Eggs")
+            if eggs then
+                eggs:ClearAllChildren()
+            end
+            local signs = board:FindFirstChild("EggSigns")
+            if signs then
+                signs:ClearAllChildren()
+            end
+            board:SetAttribute("OccupiedSlots", 0)
+            board:SetAttribute("OverflowEggs", 0)
+            world:SetAttribute("MergeBoardOccupiedSlots", 0)
+            world:SetAttribute("MergeBoardOverflowEggs", 0)
+        end
+        self:_setWorldState("Idle", {
+            world = world,
+            player = player,
+            waveIndex = 0,
+            teams = {},
+            eggInventory = {},
+            tutorialActive = false,
+        })
+    end
+    if player and self._npcPrincipalService and self._npcPrincipalService.Despawn then
+        local layout = type(self._config.station_layout) == "table" and self._config.station_layout
+            or {}
+        local maximumTeams = math.max(1, math.floor(tonumber(layout.total_positions) or 9))
+        for id = 1, maximumTeams do
+            self._npcPrincipalService:Despawn(
+                "merge_egg_hatcher_" .. tostring(player.UserId) .. "_" .. id,
+                "merge_egg_beginning_reset"
+            )
+        end
+    end
+end
+
 -- Admin Reset to Beginning must unwind ephemeral Merge state before the profile reset writes its
 -- new wallet/inventory. This is intentionally broader than the gameplay checkpoint reset: it exits
 -- the arena, restores parked durable pets, clears the isolated session, and removes every live
@@ -10609,8 +11360,15 @@ function MergeEggPrototypeService:ResetForBeginning(player)
         self._enteringByPlayer[player] = nil
     end
     local activeRecord = self:_recordFor(player)
+    local world = activeRecord and activeRecord.world
+    -- Dedicated Merge has no Home spawn to stream. Yielding on RequestStreamAroundAsync
+    -- here blocked the profile wipe and left the live wave/eggs on the bay.
     if activeRecord then
-        self:_end(activeRecord, true, false)
+        self:_end(activeRecord, not self:_isDedicatedMergePlace(), false, true)
+    end
+    self:_wipeMergeDefenseProgress(player)
+    if self:_isDedicatedMergePlace() then
+        self:_forceClearBay(world or self:_resolveWorld(), player)
     end
     if player then
         player:SetAttribute("InMergeEggPrototype", nil)
@@ -10621,6 +11379,25 @@ function MergeEggPrototypeService:ResetForBeginning(player)
         player:SetAttribute("MergeDefenseAlliedDamageMultiplier", 1)
     end
     return true
+end
+
+-- Admin Reset to Beginning on the dedicated Merge place ends the session without
+-- respawning, so CharacterAdded never re-enters. Re-run the same join path so the
+-- player sits on the hatcher pad instead of wherever the Farm prologue would warp.
+function MergeEggPrototypeService:ResumeDedicatedEntry(player)
+    if not self:_isDedicatedMergePlace() then
+        return false, "not_merge_place"
+    end
+    if not (player and player.Parent) then
+        return false, "player_unavailable"
+    end
+    local leftover = self:_recordFor(player)
+    if leftover then
+        self:_end(leftover, false, false, true)
+    end
+    self:_wipeMergeDefenseProgress(player)
+    self:_forceClearBay(self:_resolveWorld(), player)
+    return self:_begin(player, nil, { ignoreCheckpoint = true, forceTutorial = true })
 end
 
 function MergeEggPrototypeService:_reset(player)
@@ -10750,6 +11527,17 @@ end
 function MergeEggPrototypeService:Start()
     if self._config.enabled == false then
         return
+    end
+    if self._dataService and self._dataService.RegisterBeforeProfileRelease then
+        self._dataService:RegisterBeforeProfileRelease(function(player)
+            local record = self:_recordFor(player)
+            if record then
+                -- This hook must not yield. Mutating the loaded profile here guarantees the final
+                -- ProfileStore release includes the exact wallet/board/deployments even if the
+                -- DataService PlayerRemoving connection runs before this service's connection.
+                self:_persistPlaystate(record, "merge_defense_profile_release", false)
+            end
+        end)
     end
     local world = self:_resolveWorld()
     if world then

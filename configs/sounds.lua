@@ -301,6 +301,28 @@ return {
         bus = "effects",
     },
 
+    -- Merge pad cannons. WEAPSiege "Three powerful pirate" (ElevenLabs), group-uploaded
+    -- via scripts/upload_audio.js. One clip on every role; play is positional on the gun.
+    cannon_fire = {
+        id = "rbxassetid://77523296675224",
+        volume = 0.49, -- 70% of the first 0.7 playtest level
+        playback_speed = 1.0,
+        duration_seconds = 2,
+        roll_off_min_distance = 28,
+        roll_off_max_distance = 160,
+        bus = "effects",
+    },
+    cannon_impact = {
+        -- EXPLDsgn "big fire bomb" (ElevenLabs), muffled landing for pad cannon shots.
+        id = "rbxassetid://105126690616608",
+        volume = 0.5,
+        playback_speed = 1.0,
+        duration_seconds = 1.28,
+        roll_off_min_distance = 22,
+        roll_off_max_distance = 140,
+        bus = "effects",
+    },
+
     -- LOOPING AREA MUSIC. AreaMusicController plays the track for the player's CURRENT area, looped,
     -- on the "music" SoundGroup bus (so the Music volume slider controls it), crossfading on area
     -- change. New uploads play once Roblox moderation approves them.

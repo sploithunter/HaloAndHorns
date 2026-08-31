@@ -7,6 +7,7 @@
 local MergeEggPlayerCombat = {}
 
 local MergeEggCheckpoint = require(script.Parent.MergeEggCheckpoint)
+local MergeEggPlaystate = require(script.Parent.MergeEggPlaystate)
 local MergeBulwarkProgression = require(script.Parent.MergeBulwarkProgression)
 
 local VALID_MODES = {
@@ -49,9 +50,10 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
     local bulwark = MergeBulwarkProgression.normalize({
         family = raw.bulwark_family,
         tier = raw.bulwark_tier,
+        owned = raw.bulwark_owned,
     })
     return {
-        version = 5,
+        version = 6,
         visited = raw.visited == true,
         played_locked_simple = raw.played_locked_simple == true,
         full_intro_pending = raw.full_intro_pending == true,
@@ -63,8 +65,13 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         management_gems_spent = math.max(0, math.floor(tonumber(raw.management_gems_spent) or 0)),
         bulwark_family = bulwark.family,
         bulwark_tier = bulwark.tier,
+        bulwark_owned = bulwark.owned,
+        bulwark_waycoins_spent = math.max(0, math.floor(tonumber(raw.bulwark_waycoins_spent) or 0)),
         tutorial_completed = raw.tutorial_completed == true,
         checkpoint = MergeEggCheckpoint.normalize(raw.checkpoint),
+        -- Current possessions survive logout independently of the last ten-wave combat boundary.
+        -- Unlike a checkpoint, Wave 0 is a valid saved playstate.
+        playstate = MergeEggPlaystate.normalize(raw.playstate),
     }
 end
 

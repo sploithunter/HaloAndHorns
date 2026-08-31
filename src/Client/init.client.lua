@@ -203,6 +203,16 @@ do
     end
 end
 
+-- Nearby flora rustles on the client only. Rocks stay still; distant plants sleep.
+do
+    local ok, err = pcall(function()
+        require(script.Systems.FloraSway).start()
+    end)
+    if not ok then
+        Logger:Warn("Failed to start FloraSway", { error = tostring(err) })
+    end
+end
+
 -- Hall play-area boundary: the original generated-map marquee, recovered as an explicit Hall-only
 -- effect so generic SpawnZone markers in Crystal World never receive dotted outlines.
 do

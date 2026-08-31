@@ -29,6 +29,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local TileKitBuilder = require(ServerScriptService.Server.World.TileKitBuilder)
 local GrayBoxKit = require(ReplicatedStorage.Shared.Worldgen.GrayBoxKit)
 local BootReadiness = require(ReplicatedStorage.Shared.Boot.BootReadiness)
+local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
 
 local PrologueService = {}
 PrologueService.__index = PrologueService
@@ -41,6 +42,7 @@ function PrologueService:Init()
     self._dataService = self._modules and self._modules.DataService
     self._config = (self._configLoader and self._configLoader:LoadConfig("prologue"))
         or require(ReplicatedStorage.Configs:WaitForChild("prologue"))
+    self._placesConfig = self._configLoader and self._configLoader:LoadConfig("places")
     self._room = nil -- the built mezzanine hall, one per server
     self._active = {} -- player -> { startedAt }
     game:GetService("Workspace"):SetAttribute("PrologueServiceInit", true)
@@ -155,9 +157,18 @@ end
 
 -- ── Run ─────────────────────────────────────────────────────────────────────────────
 
+function PrologueService:_isMergePlace()
+    return PlaceRuntime.isMerge(game.PlaceId, self._placesConfig)
+end
+
 -- Put `player` in the room. Returns ok, reason.
 function PrologueService:Begin(player, opts)
     opts = opts or {}
+    -- The Merge place has no Home mezzanine. A forced Replay would PivotTo a
+    -- missing cave CFrame and drop the player in the mall river.
+    if self:_isMergePlace() then
+        return false, "merge_place"
+    end
     if not opts.force then
         local ok, reason = self:IsEligible(player)
         if not ok then
@@ -561,6 +572,9 @@ end
 -- so we don't have to stop and start Studio"): clear the one-time record and Begin in
 -- place. The ONE code path for the admin reset AND the replay bus command.
 function PrologueService:Replay(player)
+    if self:_isMergePlace() then
+        return false, "merge_place"
+    end
     local data = self._dataService and self._dataService:GetData(player)
     if data then
         data.Prologue = nil

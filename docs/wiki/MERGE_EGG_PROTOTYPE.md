@@ -576,12 +576,15 @@ team and queue model:
   totals as world attributes. Captain controls are inactive until the required tier is actually
   owned; placement itself never spends currency. All Waycoin spending occurs at base-egg creation,
   which preserves the previous exponential material curve exactly.
-- A normal Studio prototype entry snapshots the tester's persistent Waycoin balance and starts its
-  isolated wallet at zero. Five owner-only 120-Waycoin stacks appear beyond the Bulwark, so every
-  Wave-1 start provides 600 Waycoins. This is independent of tutorial completion and also applies
-  to fresh pre-checkpoint resets and rebirths; checkpoint 10+ retries do not recreate the opening.
+- Waycoins are the durable Merge wallet. A returning run with a real board or Wave-10 checkpoint
+  keeps its saved balance. A fresh Wave-1 (no board, no usable checkpoint), an in-game pre-checkpoint
+  reset, a rebirth, or Admin Reset to Beginning sets the wallet to
+  `opening_economy.wallet_amount` (0) and lays five owner-only 120-Waycoin stacks beyond the
+  Bulwark (600 total). `collect_setup` re-arms that lesson if the wallet is below 600 and this
+  session has not spawned the stacks. A leftover `hall_coins` profile default of 100 is not a
+  possession and must not skip the stacks. Checkpoint 10+ retries do not recreate the opening.
   Opening and combat Waycoin drops persist for ten minutes in this management mode; ordinary-game
-  drops remain at 30 seconds. Exit restores the pre-entry balance.
+  drops remain at 30 seconds.
   Entry now arms the encounter and creates the owned empty hatcher positions immediately; the old
   yellow pillar remains only as a Studio scripting seam and has no player prompt. With no installed
   egg, Wave 1 remains sealed exactly as before. A restored run with deployed eggs can therefore
@@ -597,13 +600,22 @@ team and queue model:
   does not require all four hatchers or prescribe whether merging happens before deployment. Wave 1
   remains sealed until those facts are true. Auto Collector owners receive Coin Pup copy instead of
   walking breadcrumbs and advance when that pet has actually placed all 600 Waycoins in the wallet.
-  Completion is stored in `GameData.MergeDefense.tutorial_completed`; later entries keep the same
-  600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an
+  Completion is stored in `GameData.MergeDefense.tutorial_completed` and critically saved together
+  with the current Merge playstate as soon as the final tutorial action completes; later entries
+  keep the same 600-Waycoin opening but are not tutorial-blocked. A positive Merge rebirth count is also an
   independent hard tutorial gate, so legacy or incomplete onboarding state cannot restart it after
   rebirth. Admin **Reset to Beginning** is the deliberate exception: it closes any live/pending
   Merge session before wallet restoration, resets the entire `MergeDefense` record (tutorial,
   onboarding notices, rebirths, management upgrades, and spent gems), restores the default Full
-  preference/locked-Simple effective mode, and therefore re-arms a true first visit.
+  preference/locked-Simple effective mode, and therefore re-arms a true first visit. On the
+  dedicated Merge place it does **not** replay the Farm prologue (that missing mezzanine CFrame
+  lands in the mall river). It ends the live encounter without streaming Home, wipes
+  `MergeDefense` (checkpoint and tutorial flags), clears leftover board/hatcher chrome, then
+  `ResumeDedicatedEntry` re-enters on the next scheduler turn with `ignoreCheckpoint` +
+  `forceTutorial` so the player
+  sits on the hatcher pad at Wave 1 with an empty board and the first-visit lesson. The Farm
+  tutorial capsule stays hidden — Merge's own left-side card and the upper-right wave meter
+  own that HUD.
 - The perfect runner follows the same sequence at actual character walk speed while combat remains
   asynchronous: collect drops → create base egg → repeat/merge as necessary → walk to the selected
   hatcher → place. One merge press always chooses the lowest available equal pair, keeping this
@@ -730,14 +742,16 @@ team and queue model:
   decorative sightline walls. Waycoin and Gem pops resolve the same occupied-bay bounds through
   the session record and use DropService's reflected landing animation, keeping wall-edge loot
   visible and collectible instead of letting it settle beyond the terrace.
-- `GameData.MergeDefense.checkpoint` now stores a compact ProfileStore-safe Wave-10 boundary:
-  checkpoint wave, isolated Merge wallet, reserve-objective count, base generator tier, unplaced
-  board inventory, and deployed egg tiers. It is written with an immediate critical save whenever
-  a checkpoint banks. Re-entry after logout reconstructs full-health hatchers at that boundary,
-  rerolls temporary NPC squads, and schedules the next wave; it never stores Instances or grants a
-  second Full-mode durable hatch while rebuilding. Gem upgrades and Rebirth ranks remain in their
-  existing durable fields. Rebirth and Admin Reset clear the checkpoint; ordinary exit/logout does
-  not.
+- `GameData.MergeDefense.checkpoint` remains the compact ProfileStore-safe Wave-10 boundary used by
+  deterministic tests and banked-wave recovery. `GameData.MergeDefense.playstate` separately stores
+  exact current Merge possessions on normal exit: wallet, reserve-objective count, base generator
+  tier, unplaced board inventory, and deployed egg tiers. Its wave alone is rounded down to the
+  prior ten-wave boundary, and Wave 0 is a valid saved state. Re-entry therefore keeps every egg,
+  placement, and collected Waycoin while rebuilding objectives at full health, rerolling temporary
+  NPC squads, and scheduling only combat again. Tutorial completion writes this playstate
+  immediately. DataService runs the synchronous snapshot hook from `ReleaseProfile`, covering both
+  PlayerRemoving and server shutdown before ProfileStore's final release save. Rebirth and Admin
+  Reset clear both durable records; ordinary exit/logout does not.
 
 ## Source and authoring
 
@@ -745,7 +759,8 @@ team and queue model:
   `src/Server/Services/MergeEggPrototypeService.lua`.
 - Authored layout/allocation: `src/Shared/Game/MergeEggRealmLayout.lua` and
   `src/Server/Services/MergeEggRealmBuilder.lua`.
-- Durable checkpoint normalization: `src/Shared/Game/MergeEggCheckpoint.lua`.
+- Durable checkpoint/playstate normalization: `src/Shared/Game/MergeEggCheckpoint.lua` and
+  `src/Shared/Game/MergeEggPlaystate.lua`.
 - Combat telemetry and Studio-only core egg progression UI:
   `src/Client/Systems/MergeEggPrototypeObserver.lua`.
 - Repeatable Edit-mode passes: `scripts/studio/build_merge_egg_prototype_world.luau` builds the
@@ -938,10 +953,10 @@ clean.
   their placement identity while inactive, then every retained egg/objective and combat roster
   returns at full health before the wave after the checkpoint rolls again. Gameplay recovery is
   automatic after the defeat delay; the rear reset control can trigger it immediately.
-- The last banked boundary is also durable across server restarts and logouts. Re-entry restores the
-  checkpoint wallet, board inventory, base tier, deployed egg tiers, and full-health objectives,
-  then rerolls session-only squads. Progress made after the last completed boundary remains the
-  risk interval and is not silently promoted into a checkpoint on logout.
+- Normal exit/logout saves possessions independently from the last banked boundary. Re-entry keeps
+  the live wallet, board inventory, base tier, deployed egg tiers, and purchased systems exactly as
+  they were, restores objectives at full health, and rerolls only session-only squads. The wave is
+  the sole rollback: Wave 1 returns to Wave 0/next Wave 1, Wave 14 returns to Wave 10, and so on.
 - Deterministic balance automation deliberately retains the former exact-snapshot restore. The coin
   runner and the explicit test restore seam can replay the precise economy/board/roster state banked
   at Wave 10/20, while ordinary play never uses that rollback policy.
@@ -1035,14 +1050,26 @@ clean.
   and use cyan Heaven accents or ember Hell accents rather than the egg stands' circular language.
   The 8.4-stud footprint is sized from the corrected roughly 8×7.4-stud Repulsor cannon. Runtime
   now clones the current-art Repulsor onto both pads at playtest-locked `tier_scales`
-  (0.40 starter, 0.50 for tiers 2–4) and lofts a sphere along a parabolic arc toward
-  the nearest in-lane enemy, or a gate-side landing point if the lane is empty. The
-  cannon yaws and pitches along the launch tangent. Walk-up E fires that shot from
-  an unscaled host and does not need a combat session. Role upgrades and
-  acquisition remain unwired.
+  (0.40 starter, 0.50 for tiers 2–4), raycast-seats the chassis on the pad, and
+  lofts a fireball along a parabolic arc toward the nearest enemy on the gate
+  side of the lane. Aim uses `EnemyService:GetLivePosition` / `MoveTarget`, never
+  the model pivot (that CFrame stays at the portal spawn). Range reaches
+  `OuterSpawnGate` on the dedicated Merge place (the old `EnemyPortalVisual`
+  hook is absent there), so they track from the gate rather than only the last
+  90 studs. The chassis stays flat and only yaws; loft is in the projectile.
+  Auto-fire requires a live incoming enemy. Each shot plays the group-owned
+  `cannon_fire` clip from the cannon and `cannon_impact` at the landing
+  (`configs/sounds.lua`), same pair for every role. The test E Fire prompt
+  is gone (E will later cycle type or upgrade). Hits do not deal damage yet.
 
 ## Bulwark defense art set
 
+- The walk-up workshop is a pick-then-act panel: Currently Owned and Next
+  Upgrade previews on the left, the six families as a list on the right.
+  Buy/Upgrade lives in the next-upgrade card; Install only deploys an owned
+  family onto the strip. Per-tier `upgradeNotes` and draft roles (stop, bleed,
+  hunt, shred, hold, ward) live on `MergeBulwarkProgression` until combat
+  effects exist.
 - The first bulwark catalog has six four-tier visual families: Impaler Palisade, Concertina Line,
   Land Shark, Saw Blade, Grasping Hedge, and Wardstone Barrier. Every tier is distinct art rather
   than a resized copy. Their shared material progression is primitive, reinforced, elemental, and
@@ -1056,6 +1083,12 @@ clean.
   `scripts/prebake/add_merge_bulwark_assets.luau`; maps should own only placement anchors.
   `src/Shared/Game/MergeBulwarkModels.lua` supplies clone/spawn access and grounds a template at a
   supplied CFrame or `BulwarkAnchor`.
+- The lossless Roblox-upload snapshots under
+  `assets/source/props/merge_bulwarks/roblox_originals/` are the authoritative source for all 24
+  runtime templates. Do not reconstruct them from only MeshId, TextureId, or a canonical Size:
+  doing so discards the imported hierarchy and previously produced flattened proportions.
+  Runtime uses uniform `Model:ScaleTo`, clears only the package's 90-degree PrimaryPart import-pivot
+  rotation, and then applies the authored anchor yaw; it must never scale individual axes.
 - `scripts/studio/author_merge_bulwark_anchors.luau` authors 100 permanent hooks: ten per bay for
   all five Heaven and five Hell bays. A 96-stud line uses a 94-stud defense strip (ten 9.4-stud
   tiles) with one-stud wall clearance on each side. Anchors are grounded to `LandStrip`, not the

@@ -6265,6 +6265,102 @@ first-session cohort rates.
   Land Shark and Saw Blade animation behavior remains deliberately unwired pending their rigging
   and part-separation pass.
 
+## 2026-08-31 — Nearby flora rustle
+
+- Client-only sine tilt around each plant's base. `configs/flora.lua` `sway`
+  keeps it inside 80 studs; rocks and hard dressing do not move.
+- `FloraService` stamps `FloraSway` on soft clones so Home/Heaven/Hell
+  anchors and Merge `RealmDecor_` / authored plants can share one observer.
+
+## 2026-08-31 — Prop Effects setting
+
+- Settings → Graphics now has Prop Effects (default on). It persists in
+  `Settings.ClientPrefs.propEffects` and pauses the client rustle without
+  a Play restart.
+
+## 2026-08-31 — Merge cannons sit on the authored pad deck
+
+- The downward raycast missed the pad plates (`CanQuery=false`) and hit the
+  marble floor, so the chassis sat sunk through the mount. Seating now uses
+  the highest opaque pad part (TopPlate / MountingPlate), not a world ray.
+
+## 2026-08-31 — Merge cannons sit on the pad and track the gate
+
+- Raycast-seat each chassis on the pad top (+0.08) instead of the bbox-bottom
+  guess that left them sunk.
+- Aim and auto-fire use the enemy portal as the lane forward. The player is
+  not a track target. The test E Fire prompt is stripped.
+
+## 2026-08-31 — Merge cannons yaw flat and fire only with a target
+
+- Turrets stay level: `planarYaw` plus the fireball parabola. No pitch.
+- They track a live target (enemy, or the player walking the lane). Auto and
+  E fire only when `_towerEnemyTarget` finds an in-range enemy; empty-lane
+  gate shots are gone, and the cooldown does not tick on a dry fire.
+
+## 2026-08-31 — Merge cannons track and fire fireballs
+
+- Authored cannon meshes are longest on local +X. Aim now builds a CFrame from
+  `barrelBasis` so RightVector follows the shot instead of laying the gun on
+  its side with `CFrame.lookAt`.
+- Cannons track the nearest in-lane enemy between shots. The projectile is a
+  neon fireball (`Fire` + point light). No hit damage yet.
+
+## 2026-08-31 — Merge bulwark menu uses the pick-then-act layout
+
+- Replaced the 3×2 overlapping-model grid with a selected preview, role,
+  and description plus a family list. Install fires only from the footer.
+- Draft family copy lives on `MergeBulwarkProgression` until combat effects
+  are specified.
+
+## 2026-08-31 — Merge cannon fireballs play a muffled bomb on impact
+
+- Uploaded `EXPLDsgn-big_fire_bomb_explos-Elevenlabs.mp3` as group-owned
+  `cannon_impact` (`rbxassetid://105126690616608`).
+- `_stepTowerShots` plays it at the landing point on a short-lived emitter
+  so destroying the fireball does not mute the clip.
+
+## 2026-08-31 — Merge cannons play the siege fire clip
+
+- Uploaded `WEAPSiege-Three_powerful_pirat-Elevenlabs.mp3` as group-owned
+  `cannon_fire` (`rbxassetid://77523296675224`).
+- Every spawned pad cannon gets `MergeTowerFireSound`; `_fireTowerShot`
+  plays it positionally on the effects bus.
+
+## 2026-08-31 — Merge cannons range to OuterSpawnGate
+
+- After the live-position fix, cannons still waited until pets walked
+  inside 90 studs. Dedicated bays have no `EnemyPortalVisual`; the
+  authored hook is `OuterSpawnGate` at ~X=370 (~200 studs from the pads).
+- `_towerGatePosition` now prefers that gate (then the old portal visual)
+  so look and range cover the whole march.
+
+## 2026-08-31 — Merge cannons aim at live pet positions
+
+- Pad cannons were reading `model:GetPivot()`, which is the portal spawn:
+  EnemyService never re-pivots anchored wave models; combat uses `entry.pos`
+  / `MoveTarget`.
+- `_towerEnemyTarget` now prefers `EnemyService:GetLivePosition`, then
+  `MoveTarget`, and ranges to the gate so they track the whole march.
+
+## 2026-08-31 — Merge admin reset now restarts the first visit
+
+- Reset to Beginning was only wiping currencies. The live Wave 14 encounter,
+  board eggs, and durable checkpoint survived, so the tutorial never re-armed.
+- Dedicated Merge now ends the session without a Home stream, wipes
+  `MergeDefense`, force-clears the bay HUD/board/hatchers, and re-enters with
+  `ignoreCheckpoint` + `forceTutorial`.
+
+## 2026-08-31 — Merge admin reset no longer runs the Farm prologue
+
+- Reset to Beginning on the dedicated Merge place was replaying `PrologueService`
+  and warping to a missing Home mezzanine, which dropped the player in the mall
+  river at the end of the cutscene. It also re-armed the Farm tutorial card on
+  top of the wave meter.
+- Merge now skips that Replay, re-seats via `ResumeDedicatedEntry` → `_begin`
+  (hatcher pad), and hides the Farm tutorial capsule whenever the place is Merge
+  or `InMergeEggPrototype` is set.
+
 ## 2026-08-31 — Authored Merge bulwark placement
 
 - Measured the dedicated Merge bay in Studio and locked each 96-stud `BulwarkLine` to ten
@@ -6275,3 +6371,63 @@ first-session cohort rates.
   `MergeBulwarkModels` so every family consumes the same anchor orientation.
 - Placement-audited all four tiers of the four stationary families; all 16 variants passed width,
   clearance, centering, and grounding checks. Land Shark and Saw Blade await their motion pass.
+
+## 2026-08-31 — Lossless Merge bulwark model recovery
+
+- Recovered the exact 24 group-owned Roblox Model packages from Studio's asset cache and saved them
+  under `assets/source/props/merge_bulwarks/roblox_originals/` as durable source assets.
+- Replaced the lossy MeshId/TextureId-only prebake with native package embedding so hierarchy,
+  bones, proportions, and import metadata survive `Models.rbxm` generation.
+- Runtime now scales every model uniformly and removes only the duplicated 90-degree import-pivot
+  rotation before applying the map anchor; the corrected Tier 1 preview matches the known-good
+  reference dimensions and floor contact exactly.
+
+## 2026-08-31 — Bulwark workshop preview is the next buy
+
+- One picture, not current-plus-upgrade. Browsing a family shows Tier 1 (install/replace).
+  Looking at the installed family shows the next upgrade tier. At Tier 4 the current model
+  stays and a MAXIMUM stamp covers it. A TIER N caption labels similar meshes.
+
+## 2026-08-31 — Bulwark families stay owned
+
+- Replacing a family no longer wipes its tier. `bulwark_owned` persists each family's
+  highest purchased rank; `bulwark_family` / `bulwark_tier` are only what is on the strip.
+- Select on an unowned family buys Tier 1. Select on an owned family equips that rank for
+  free. Upgrade charges the selected family, not whichever one happens to be installed.
+
+## 2026-08-31 — Bulwark workshop owned vs next
+
+- Workshop layout is now two ViewportFrames: Currently Owned (owned tier) and
+  Next Upgrade (next purchase). Footer Install only deploys; Buy/Upgrade sits
+  in the next card with three `upgradeNotes` bullets per family/tier.
+- Notes describe the authored art step (primitive → reinforced → elemental →
+  soul/void) and the draft role, not fake strip length. Combat numbers still
+  do not exist.
+
+## 2026-08-31 — Merge tutorial reset re-lays the 600-Waycoin stacks
+
+- Durable-wallet entry plus `hall_coins.defaultAmount = 100` saved a coins-only
+  Wave-0 playstate. The next join resumed it, started `collect_setup`, and
+  skipped the five 120 stacks. Wallet read 100 with nothing on the ground.
+- Fresh Wave-1 now zeros the opening wallet before spawn. Incomplete-tutorial
+  empty boards do not resume. `collect_setup` re-arms the stacks if the wallet
+  is below 600. Admin Reset on Merge writes `hall_coins` to 0 after profile defaults.
+
+## 2026-08-31 — Shark CAM 225, wardstone CAM 180
+
+- Preview tumbling (bbox-align + pitch 90) made every shark and wardstone
+  pose wrong. They now stand like strip spawn, then the camera orbits.
+- Locked angles from the Edit GUI: Land Shark yaw 225, Wardstone yaw 180
+  (runes facing the camera). Other families still use the strip pitch.
+
+## 2026-08-31 — Merge logout preserves exact possessions
+
+- Added a durable Merge playstate independent of the Wave-10 checkpoint. Normal exit preserves the
+  live Waycoin wallet, board eggs, base egg tier, and deployed egg tiers; only the wave rewinds to
+  the prior base-10 boundary, including a valid Wave 0 state.
+- Tutorial completion critically saves its completion flag and current playstate immediately.
+  Profile release snapshots run for both PlayerRemoving and server shutdown before ProfileStore
+  ends the session.
+- Removed the old entry/exit wallet swap that zeroed Merge money on entry and restored a pre-session
+  balance on exit. Admin Reset explicitly discards both playstate/checkpoint and now re-enters the
+  dedicated Merge session on the next scheduler turn without requiring a Studio reboot.

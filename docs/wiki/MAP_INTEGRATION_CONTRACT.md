@@ -212,6 +212,14 @@ permission for both objects to survive. Layer 3 removes those linked visuals thr
 inspected with `scripts/studio/preview_layer3_flora.luau`, whose `_Layer3FloraPreview` folders must
 be deleted before saving the place.
 
+Soft flora rustles on the observing client only. `FloraService` stamps
+`FloraSway` on plants/trees/cacti; rocks stay still. The client also
+picks up Merge `RealmDecor_` clones and authored map plants whose names
+match the same soft tokens. Motion is a few degrees around the base and
+sleeps beyond `configs/flora.lua` `sway.radius` (80 studs). Settings →
+Prop Effects is the player opt-out (default on). This is not a skinned
+animation and does not write the server pivot.
+
 Ambient fauna use invisible BaseParts tagged `AmbientFaunaAnchor`. Each anchor supplies
 `ModelName`, `Motion` (`hover` or `ground`), `MoveRadius` (or elliptical `PathRadiusX` and
 `PathRadiusZ`), `HoverHeight`, `BobHeight`, `Speed`, `VisualSize`, and `Phase`;

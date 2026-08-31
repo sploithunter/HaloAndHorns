@@ -51,13 +51,20 @@ return function()
                 },
                 management_gems_spent = 175.9,
                 tutorial_completed = true,
+                playstate = {
+                    saved = true,
+                    wave = 17,
+                    coins = 777,
+                    egg_inventory = { 1, 2 },
+                    deployed_egg_tiers = { 2, 0, 3 },
+                },
                 checkpoint = {
                     wave = 27,
                     coins = 4321,
                     deployed_egg_tiers = { 3, 4, 0, 6 },
                 },
             })
-            expect(state.version).to.equal(5)
+            expect(state.version).to.equal(6)
             expect(state.visited).to.equal(true)
             expect(state.rebirths).to.equal(2)
             expect(state.management_upgrades.damage).to.equal(3)
@@ -67,6 +74,10 @@ return function()
             expect(state.checkpoint.wave).to.equal(20)
             expect(state.checkpoint.coins).to.equal(4321)
             expect(state.checkpoint.deployed_egg_tiers[2]).to.equal(4)
+            expect(state.playstate.saved).to.equal(true)
+            expect(state.playstate.wave).to.equal(10)
+            expect(state.playstate.coins).to.equal(777)
+            expect(state.playstate.deployed_egg_tiers[3]).to.equal(3)
             expect(PlayerCombat.normalizeOnboarding({ rebirths = -4 }).rebirths).to.equal(0)
         end)
 
@@ -74,9 +85,12 @@ return function()
             local state = PlayerCombat.normalizeOnboarding({
                 bulwark_family = "concertina_line",
                 bulwark_tier = 3.8,
+                bulwark_waycoins_spent = 7.9,
             })
             expect(state.bulwark_family).to.equal("concertina_line")
             expect(state.bulwark_tier).to.equal(3)
+            expect(state.bulwark_owned.concertina_line).to.equal(3)
+            expect(state.bulwark_waycoins_spent).to.equal(7)
 
             local invalid = PlayerCombat.normalizeOnboarding({
                 bulwark_family = "not_a_defense",
@@ -84,6 +98,7 @@ return function()
             })
             expect(invalid.bulwark_family).to.equal(nil)
             expect(invalid.bulwark_tier).to.equal(0)
+            expect(invalid.bulwark_waycoins_spent).to.equal(0)
         end)
 
         it("lets a formerly locked player switch to Full exactly once", function()

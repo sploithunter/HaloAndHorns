@@ -2,6 +2,78 @@
 
 Status: current (repo = `sploithunter/HaloAndHorns`, fresh single-commit start 2026-07-02; history + alpha issues live on the predecessor `sploithunter/RBX-Template`)
 
+## Merge first-visit collect re-lays 600 Waycoins (2026-08-31)
+
+Durable-wallet entry kept the `hall_coins` profile default of 100 and skipped
+the five stacks. Fresh Wave-1 / admin reset / incomplete-tutorial empty board
+now zero the Merge wallet and spawn the 600-Waycoin lesson again.
+
+## Merge shark and wardstone previews stay upright (2026-08-31)
+
+Those two families no longer get the palisade 90° pitch. The import pivot
+is cleared like strip spawn, the model sits on XZ, and the camera orbits.
+Locked from the Edit board: Land Shark CAM 225, Wardstone CAM 180.
+
+## Merge bulwark workshop shows owned vs next (2026-08-31)
+
+The workshop is two stacked previews on the left and the family list on
+the right. Currently Owned shows the owned mesh; Next Upgrade shows the
+next rank plus three role-true bullets from `upgradeNotes`. Buy/Upgrade
+lives in that next card. Install only deploys an owned family onto the
+strip. List rows report NOT OWNED / OWNED • TIER N / MAX.
+
+## Merge bulwarks are owned per family (2026-08-31)
+
+The right-hand list is the selector. First purchase unlocks Tier 1
+forever; later visits install the owned tier onto the strip for free.
+Upgrade buys the next owned rank of the selected family, even if another
+family is on the strip.
+
+## Merge bulwark menu is pick-then-act (2026-08-31)
+
+Draft roles (stop/bleed/hunt/shred/hold/ward) live on
+`MergeBulwarkProgression` until combat effects exist.
+
+## Merge cannon shots boom on landing (2026-08-31)
+
+Fireballs play group-owned `cannon_impact` (`rbxassetid://105126690616608`,
+ElevenLabs muffled bomb, 1.28s) at the landing point so the fireball can
+despawn without cutting the clip.
+
+## Merge cannons play the siege fire clip (2026-08-31)
+
+Group-uploaded `cannon_fire` (`rbxassetid://77523296675224`, ElevenLabs
+WEAPSiege pirate siege, 2s) lives on every pad cannon and plays
+positionally on each shot. Same clip for every role.
+
+## Merge cannons track from the outer gate (2026-08-31)
+
+Live Merge has `OuterSpawnGate` (X≈370), not `EnemyPortalVisual`. Range
+was stuck at 90, so cannons only woke when pets entered the last third
+of the lane. Aim and range now use the gate (or the old portal visual
+when that world is present), plus live `MoveTarget` / `GetLivePosition`.
+Still no shot damage.
+
+## Merge cannons aim the barrel and spit fireballs (2026-08-31)
+
+Pad cannons sit on the authored pad deck (highest opaque plate), not a floor
+raycast. They stay flat and only yaw toward gate-side enemies, then auto-fire
+a neon fireball. The test E Fire prompt is gone. No damage yet.
+
+## Merge admin reset stays on the pad (2026-08-31)
+
+Reset to Beginning on the dedicated Merge place skips the Farm prologue,
+tears down the live wave/eggs (not just the wallet), wipes the Merge
+checkpoint, and re-enters Wave 1 on the hatcher pad with the first-visit
+tutorial. The Farm "Hatch your first egg" card stays hidden so it cannot
+cover the wave meter.
+
+## Flora rustle (2026-08-31)
+
+Nearby plants, trees, cacti, and banners tilt a few degrees on the client.
+Rocks stay still. Anything farther than 80 studs from the camera sleeps.
+Settings → Prop Effects turns it off; it defaults on.
+
 ## Merge tower E fires a cannonball (2026-08-30)
 
 Walk-up E on a pad cannon lofts the same arcing sphere. No combat session required.

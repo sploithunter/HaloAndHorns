@@ -153,9 +153,6 @@
   "src/Server/Services/AssetPreloadService.lua": {
    "frame_budget": 1
   },
-  "src/Server/Services/AdminToolsService.lua": {
-   "deadline": 1
-  },
   "src/Server/Services/AutoTargetService.lua": {
    "debounce": 1
   },

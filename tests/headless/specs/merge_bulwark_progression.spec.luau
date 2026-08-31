@@ -24,37 +24,72 @@ return function()
             end
         )
 
-        it("installs and replaces a family at Tier 1", function()
+        it("keeps bought families and switches them onto the strip at the owned tier", function()
             local installed = Progression.apply(nil, "select", "impaler_palisade", 0, config)
             expect(installed.family).to.equal("impaler_palisade")
             expect(installed.tier).to.equal(1)
+            expect(installed.owned.impaler_palisade).to.equal(1)
             expect(installed.operation).to.equal("installed")
+            expect(installed.charged).to.equal(true)
 
-            local replaced = Progression.apply(installed, "select", "land_shark", 1, config)
-            expect(replaced.family).to.equal("land_shark")
-            expect(replaced.tier).to.equal(1)
-            expect(replaced.operation).to.equal("replaced")
+            local upgraded = Progression.apply(installed, "upgrade", "impaler_palisade", 1, config)
+            expect(upgraded.family).to.equal("impaler_palisade")
+            expect(upgraded.tier).to.equal(2)
+            expect(upgraded.owned.impaler_palisade).to.equal(2)
+
+            local switched = Progression.apply(upgraded, "select", "land_shark", 1, config)
+            expect(switched.family).to.equal("land_shark")
+            expect(switched.tier).to.equal(1)
+            expect(switched.owned.impaler_palisade).to.equal(2)
+            expect(switched.owned.land_shark).to.equal(1)
+            expect(switched.operation).to.equal("installed")
+
+            local restored = Progression.apply(switched, "select", "impaler_palisade", 1, config)
+            expect(restored.family).to.equal("impaler_palisade")
+            expect(restored.tier).to.equal(2)
+            expect(restored.operation).to.equal("equipped")
+            expect(restored.charged).to.equal(false)
         end)
 
-        it("upgrades the installed family without passing Tier 4", function()
-            local upgraded = Progression.apply({
+        it("upgrades the selected family even when another family is on the strip", function()
+            local state = {
                 family = "saw_blade",
-                tier = 3,
-            }, "upgrade", nil, 1, config)
+                tier = 2,
+                owned = { saw_blade = 2, concertina_line = 1 },
+            }
+            local upgraded = Progression.apply(state, "upgrade", "concertina_line", 1, config)
             expect(upgraded.family).to.equal("saw_blade")
-            expect(upgraded.tier).to.equal(4)
-            expect(upgraded.operation).to.equal("upgraded")
+            expect(upgraded.tier).to.equal(2)
+            expect(upgraded.owned.concertina_line).to.equal(2)
+            expect(upgraded.upgradedFamily).to.equal("concertina_line")
 
-            local maxed, reason = Progression.apply(upgraded, "upgrade", nil, 1, config)
+            local maxed, reason = Progression.apply({
+                family = "saw_blade",
+                owned = { saw_blade = 4 },
+            }, "upgrade", "saw_blade", 1, config)
             expect(maxed).to.equal(nil)
             expect(reason).to.equal("bulwark_maxed")
+
+            local missing, missingReason = Progression.apply(state, "upgrade", "wardstone_barrier", 1, config)
+            expect(missing).to.equal(nil)
+            expect(missingReason).to.equal("bulwark_not_owned")
         end)
 
         it("charges one configured Waycoin for every mutation", function()
             local price = Progression.actionCost(config)
             expect(price.currency).to.equal("hall_coins")
             expect(price.amount).to.equal(1)
-            expect(#Progression.families()).to.equal(6)
+            local families = Progression.families()
+            expect(#families).to.equal(6)
+            for _, family in ipairs(families) do
+                expect(#family.previewAssetIds).to.equal(4)
+                expect(tonumber(family.previewAssetIds[1]) ~= nil).to.equal(true)
+                expect(type(family.role) == "string" and family.role ~= "").to.equal(true)
+                expect(type(family.description) == "string" and family.description ~= "").to.equal(true)
+                expect(#family.upgradeNotes).to.equal(4)
+                expect(#family.upgradeNotes[1]).to.equal(3)
+                expect(#family.upgradeNotes[2]).to.equal(3)
+            end
         end)
     end)
 end

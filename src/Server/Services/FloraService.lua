@@ -24,6 +24,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local EnvironmentGlow = require(ReplicatedStorage.Shared.Game.EnvironmentGlow)
+local FloraSway = require(ReplicatedStorage.Shared.Game.FloraSway)
 local FloraTheme = require(ReplicatedStorage.Shared.Game.FloraTheme)
 
 local TAG = "FloraAnchor"
@@ -139,6 +140,13 @@ function FloraService:_spawnAt(anchor, floraFolder)
         clone:PivotTo(clone:GetPivot() - Vector3.new(0, drop, 0))
     end
     clone.Name = "Flora_" .. modelName
+    clone:SetAttribute("FloraKind", kind)
+    clone:SetAttribute("FloraVariant", variant)
+    local sway = FloraSway.shouldSway(modelName, kind)
+    clone:SetAttribute("FloraSway", sway)
+    if sway then
+        CollectionService:AddTag(clone, "FloraSway")
+    end
     EnvironmentGlow.apply(clone, self._config.glow_models and self._config.glow_models[modelName])
     clone.Parent = anchor.Parent
     return true

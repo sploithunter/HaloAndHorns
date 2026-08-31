@@ -92,7 +92,18 @@ function MergeBulwarkModels.Spawn(family, tier, anchor, parent, rootOverride, sc
     if scale == nil and anchor and typeof(anchor) == "Instance" then
         scale = tonumber(anchor:GetAttribute("MergeBulwarkScale"))
     end
-    if scale and scale > 0 then
+    local nativePackage = model:GetAttribute("MergeBulwarkNativePackage") == true
+    -- The uploaded package uses a 90-degree PrimaryPart PivotOffset as import metadata. Preserve
+    -- its origin, but normalize that rotation before applying our map anchor orientation. Carrying
+    -- the import rotation into PivotTo turns the otherwise-correct mesh onto its side.
+    if nativePackage and model.PrimaryPart then
+        model.PrimaryPart.PivotOffset = CFrame.new(model.PrimaryPart.PivotOffset.Position)
+    end
+    local sourceUniformScale = tonumber(model:GetAttribute("MergeBulwarkSourceUniformScale")) or 1
+    local placementScale = if scale and scale > 0 then scale else 1
+    if nativePackage then
+        model:ScaleTo(sourceUniformScale * placementScale)
+    elseif scale and scale > 0 then
         model:ScaleTo(scale)
     end
     model.Parent = parent or workspace
@@ -107,7 +118,7 @@ function MergeBulwarkModels.Spawn(family, tier, anchor, parent, rootOverride, sc
     model:SetAttribute("MergeBulwarkSpawned", true)
     model:SetAttribute("MergeBulwarkFamily", normalizedFamily)
     model:SetAttribute("MergeBulwarkTier", math.clamp(math.floor(tonumber(tier) or 1), 1, 4))
-    model:SetAttribute("MergeBulwarkSpawnScale", scale or 1)
+    model:SetAttribute("MergeBulwarkSpawnScale", placementScale)
     return model
 end
 

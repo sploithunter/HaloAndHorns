@@ -1,0 +1,218 @@
+{
+  "concertina_line/tier1": {
+    "family": "concertina_line",
+    "tier": 1,
+    "modelAssetId": "136599170104983",
+    "meshId": "111330428166791",
+    "sourceCacheFile": "10b15c59b955c53664ee8985002fde46",
+    "sha256": "daed34f62b805d46edf140d1bba59033c513248dd0e859c06df7ec38e195673f",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/concertina_line/tier1/model.rbxm"
+  },
+  "concertina_line/tier2": {
+    "family": "concertina_line",
+    "tier": 2,
+    "modelAssetId": "114115802025357",
+    "meshId": "74843098629487",
+    "sourceCacheFile": "a5a73bc6282050d19f28a22cf6077fb4",
+    "sha256": "9122fca130101b14e0c78b12de6e3986c9cc28b903c116cd9481fe7ce66608bb",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/concertina_line/tier2/model.rbxm"
+  },
+  "concertina_line/tier3": {
+    "family": "concertina_line",
+    "tier": 3,
+    "modelAssetId": "97116236163143",
+    "meshId": "80816346293978",
+    "sourceCacheFile": "0bfb35ee0482f96621cb410ea0f5e2f3",
+    "sha256": "c7b1d9bbd2e650bfdc0887c4bc7dbc6194d109570bd3c4825a486b7e63c06551",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/concertina_line/tier3/model.rbxm"
+  },
+  "concertina_line/tier4": {
+    "family": "concertina_line",
+    "tier": 4,
+    "modelAssetId": "127236634177361",
+    "meshId": "90707388654221",
+    "sourceCacheFile": "58cc69e865e06527257317c1ccd2a96d",
+    "sha256": "c49b0ff8b7be69e6015db3789a79f21aa79e3beff3e3ff832a2c6a60fb35c3ba",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/concertina_line/tier4/model.rbxm"
+  },
+  "grasping_hedge/tier1": {
+    "family": "grasping_hedge",
+    "tier": 1,
+    "modelAssetId": "124036242227752",
+    "meshId": "115445049845745",
+    "sourceCacheFile": "97e5fda4a5058264a815579be8b05d5a",
+    "sha256": "603cfb8ae63d68af3886aeb27c0c89a27968cd3200fda46dd5b95f780b961252",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/grasping_hedge/tier1/model.rbxm"
+  },
+  "grasping_hedge/tier2": {
+    "family": "grasping_hedge",
+    "tier": 2,
+    "modelAssetId": "88689523917752",
+    "meshId": "83916034332808",
+    "sourceCacheFile": "dfc5f41921ed5d4ab3144bd1fda1eff9",
+    "sha256": "0e8b9897cd9a0eff4984973336e97c4c9aacfcc9a2da3adf209d4bac869af21e",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/grasping_hedge/tier2/model.rbxm"
+  },
+  "grasping_hedge/tier3": {
+    "family": "grasping_hedge",
+    "tier": 3,
+    "modelAssetId": "105129779394582",
+    "meshId": "96072955882186",
+    "sourceCacheFile": "a1b950254831ca387745e13b110a337f",
+    "sha256": "19a1f50bb7070ad7b9bd5b6b0a618071b7e66167b4c96319aa5e368e8a489cc9",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/grasping_hedge/tier3/model.rbxm"
+  },
+  "grasping_hedge/tier4": {
+    "family": "grasping_hedge",
+    "tier": 4,
+    "modelAssetId": "95382045660111",
+    "meshId": "78283914955317",
+    "sourceCacheFile": "ca2ebaa4ee0855d2723d051e9315ffd5",
+    "sha256": "22831751156f2955e0f931c6d8aa810ac2dec61c8372bbaae1007ba9efca74e1",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/grasping_hedge/tier4/model.rbxm"
+  },
+  "impaler_palisade/tier1": {
+    "family": "impaler_palisade",
+    "tier": 1,
+    "modelAssetId": "129803988118337",
+    "meshId": "76163496810386",
+    "sourceCacheFile": "828b8551bdbd9b5a895d5b4665c2e3ea",
+    "sha256": "840801f52118ace12e297ddc2b541fe948dc0bf8c4e6cab507d269c483d5f840",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/impaler_palisade/tier1/model.rbxm"
+  },
+  "impaler_palisade/tier2": {
+    "family": "impaler_palisade",
+    "tier": 2,
+    "modelAssetId": "98392384350392",
+    "meshId": "102732595920719",
+    "sourceCacheFile": "c3424e46cc881f3f5127fa37e63fce83",
+    "sha256": "73311f13c2df31914e5c3d3ae3d22dc2705faeec1e3ce76e85e6c9ff50617f39",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/impaler_palisade/tier2/model.rbxm"
+  },
+  "impaler_palisade/tier3": {
+    "family": "impaler_palisade",
+    "tier": 3,
+    "modelAssetId": "102201870134911",
+    "meshId": "74302782582425",
+    "sourceCacheFile": "fc1dd3edd2c0024beecca8f4a1e67e43",
+    "sha256": "b31bb4ddccea55d89ba889993af67b02b5de0222a47482f2629ce0459c22a8f0",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/impaler_palisade/tier3/model.rbxm"
+  },
+  "impaler_palisade/tier4": {
+    "family": "impaler_palisade",
+    "tier": 4,
+    "modelAssetId": "125827629437462",
+    "meshId": "94757438630447",
+    "sourceCacheFile": "438c01d7319aa43c62a78c6fa3ec4d5e",
+    "sha256": "6ebe4dee904c869bed44fc7e17084fcf6ceabf675d99de53513db3870c6389ac",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/impaler_palisade/tier4/model.rbxm"
+  },
+  "land_shark/tier1": {
+    "family": "land_shark",
+    "tier": 1,
+    "modelAssetId": "93689656194809",
+    "meshId": "128216715877968",
+    "sourceCacheFile": "59ce9dae9a3701910c97b55630e8b450",
+    "sha256": "bb87c3bc50cae702c92974b490ca979b1f7b91aafc53f133a03daa123450e0f7",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/land_shark/tier1/model.rbxm"
+  },
+  "land_shark/tier2": {
+    "family": "land_shark",
+    "tier": 2,
+    "modelAssetId": "75537065187935",
+    "meshId": "115036197732596",
+    "sourceCacheFile": "8369c68cc50a1f49f05bfad263d14782",
+    "sha256": "5d3fee41d9a1d8e4f998d2c814e88f54d667a1def3e08b120d73b2bf85481264",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/land_shark/tier2/model.rbxm"
+  },
+  "land_shark/tier3": {
+    "family": "land_shark",
+    "tier": 3,
+    "modelAssetId": "104209939997210",
+    "meshId": "104649906954156",
+    "sourceCacheFile": "88538fbfbf0736a9458caa1f3c35aecd",
+    "sha256": "c70b883da78fe214045193aca6da9801e07a1cdbb9424225fa5f548a858e707c",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/land_shark/tier3/model.rbxm"
+  },
+  "land_shark/tier4": {
+    "family": "land_shark",
+    "tier": 4,
+    "modelAssetId": "75511812682521",
+    "meshId": "108597500652609",
+    "sourceCacheFile": "04e72a90f21b383abda2cfff46dc9e26",
+    "sha256": "64e5d9f2a2808fc9916866a954e5c10594a0dfd6534772ecb4da1f3137ddf7e9",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/land_shark/tier4/model.rbxm"
+  },
+  "saw_blade/tier1": {
+    "family": "saw_blade",
+    "tier": 1,
+    "modelAssetId": "135106892647800",
+    "meshId": "104093127042296",
+    "sourceCacheFile": "48b1bc3fc3c848b1d31d9b67dd3119d5",
+    "sha256": "54375568f19cbcbcf0d36124c369068eb722b832fdfbd313caa649426e4b851c",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/saw_blade/tier1/model.rbxm"
+  },
+  "saw_blade/tier2": {
+    "family": "saw_blade",
+    "tier": 2,
+    "modelAssetId": "127121637387172",
+    "meshId": "128921664841893",
+    "sourceCacheFile": "a10093708c446ac2cd4c4ee6c56ed486",
+    "sha256": "9c1d03f285945ac40e53851e90d9d7f3c929b5de5b255ca5b9302e7037f33053",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/saw_blade/tier2/model.rbxm"
+  },
+  "saw_blade/tier3": {
+    "family": "saw_blade",
+    "tier": 3,
+    "modelAssetId": "95208080901306",
+    "meshId": "77098799705669",
+    "sourceCacheFile": "9740fd9714a893c47394d6855edbc2b6",
+    "sha256": "7b2c504cc3a108be61ea97ca3d3b1eea0c24d09aa7e4f17f9c90f9f146ddd11c",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/saw_blade/tier3/model.rbxm"
+  },
+  "saw_blade/tier4": {
+    "family": "saw_blade",
+    "tier": 4,
+    "modelAssetId": "75817556345709",
+    "meshId": "119945939136906",
+    "sourceCacheFile": "b55335eeaeed0b351369a63a4faf9400",
+    "sha256": "2c9a6c9536e89d5bb5ade36d1ac04ae9ab02846d72c00f62ce68de2881cfa7ee",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/saw_blade/tier4/model.rbxm"
+  },
+  "wardstone_barrier/tier1": {
+    "family": "wardstone_barrier",
+    "tier": 1,
+    "modelAssetId": "78858133707824",
+    "meshId": "71504920218357",
+    "sourceCacheFile": "0cff8f211f379ba5b1ae1b7e9f5ca4c1",
+    "sha256": "8d1772be5366a9c70d41f0d4d0e6e8e07c22ca9f0852f0a91843e59de692b0c4",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/wardstone_barrier/tier1/model.rbxm"
+  },
+  "wardstone_barrier/tier2": {
+    "family": "wardstone_barrier",
+    "tier": 2,
+    "modelAssetId": "130243428103758",
+    "meshId": "118434526595247",
+    "sourceCacheFile": "a1a8ab3b8e0f5f7e44bf3118a4203345",
+    "sha256": "352f41fb6f3e62a1b12d72df183168d10637dc308d16192adb15a47df52454f8",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/wardstone_barrier/tier2/model.rbxm"
+  },
+  "wardstone_barrier/tier3": {
+    "family": "wardstone_barrier",
+    "tier": 3,
+    "modelAssetId": "111395473839332",
+    "meshId": "107807407106973",
+    "sourceCacheFile": "8c37f81393f702120a9376bd0e715dd3",
+    "sha256": "6a60d8f3d78fe20a7bf6d1869261292d124ee3b9ebf0f042ca5390a42242c472",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/wardstone_barrier/tier3/model.rbxm"
+  },
+  "wardstone_barrier/tier4": {
+    "family": "wardstone_barrier",
+    "tier": 4,
+    "modelAssetId": "82814362109464",
+    "meshId": "95672653521928",
+    "sourceCacheFile": "38919a346afaf03440f111446e330327",
+    "sha256": "dfe7e76fcbe1cb64e3a47beb911164610ca594b93d3486c84dd7480961cdc3c9",
+    "path": "assets/source/props/merge_bulwarks/roblox_originals/wardstone_barrier/tier4/model.rbxm"
+  }
+}
