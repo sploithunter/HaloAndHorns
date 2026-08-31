@@ -1056,6 +1056,15 @@ clean.
   `scripts/prebake/add_merge_bulwark_assets.luau`; maps should own only placement anchors.
   `src/Shared/Game/MergeBulwarkModels.lua` supplies clone/spawn access and grounds a template at a
   supplied CFrame or `BulwarkAnchor`.
+- `scripts/studio/author_merge_bulwark_anchors.luau` authors 100 permanent hooks: ten per bay for
+  all five Heaven and five Hell bays. A 96-stud line uses a 94-stud defense strip (ten 9.4-stud
+  tiles) with one-stud wall clearance on each side. Anchors are grounded to `LandStrip`, not the
+  yellow marker's center. Runtime currently installs Tier 1 Impaler Palisade visuals on a claimed
+  bay; acquisition, upgrades, and gameplay effects remain later work.
+- All four tiers of Impaler Palisade, Concertina Line, Grasping Hedge, and Wardstone Barrier were
+  placement-audited against the same hooks: every strip spans exactly 94 studs, is laterally
+  centered, and grounds without an offset. Land Shark and Saw Blade remain excluded from this
+  static placement approval until their motion/rigging pass.
 - Land Sharks are complete below-ground bodies and Saw Blades retain recognizable mechanisms, but
   the current library entries are static presentation meshes. Rigging the sharks and separating or
   skinning the saw drive parts are later animation passes; this asset pass does not invent their

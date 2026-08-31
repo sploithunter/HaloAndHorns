@@ -14,6 +14,13 @@ local FAMILY_NAMES = {
     wardstone_barrier = "WardstoneBarrier",
 }
 
+-- Authored BulwarkAnchor parts point along the lane-width axis (local Z). Most source meshes were
+-- authored lengthwise on X; Land Shark is the one catalog family already authored lengthwise on Z.
+-- Keeping this correction here lets every map expose one consistent anchor contract.
+local LONG_AXIS = {
+    land_shark = "Z",
+}
+
 local function templatesRoot(rootOverride)
     if rootOverride then
         return rootOverride
@@ -72,7 +79,7 @@ function MergeBulwarkModels.Clone(family, tier, rootOverride)
     return clone
 end
 
-function MergeBulwarkModels.Spawn(family, tier, anchor, parent, rootOverride)
+function MergeBulwarkModels.Spawn(family, tier, anchor, parent, rootOverride, scaleOverride)
     local target = resolveAnchor(anchor)
     if not target then
         return nil, "bulwark_anchor_missing"
@@ -81,12 +88,26 @@ function MergeBulwarkModels.Spawn(family, tier, anchor, parent, rootOverride)
     if not model then
         return nil, reason
     end
+    local scale = tonumber(scaleOverride)
+    if scale == nil and anchor and typeof(anchor) == "Instance" then
+        scale = tonumber(anchor:GetAttribute("MergeBulwarkScale"))
+    end
+    if scale and scale > 0 then
+        model:ScaleTo(scale)
+    end
     model.Parent = parent or workspace
+    local normalizedFamily = string.lower(tostring(family or ""))
+    if LONG_AXIS[normalizedFamily] ~= "Z" then
+        target *= CFrame.Angles(0, math.rad(90), 0)
+    end
     model:PivotTo(target)
     local boundsCFrame, boundsSize = model:GetBoundingBox()
     local bottomY = boundsCFrame.Position.Y - boundsSize.Y * 0.5
     model:PivotTo(model:GetPivot() + Vector3.new(0, target.Position.Y - bottomY, 0))
     model:SetAttribute("MergeBulwarkSpawned", true)
+    model:SetAttribute("MergeBulwarkFamily", normalizedFamily)
+    model:SetAttribute("MergeBulwarkTier", math.clamp(math.floor(tonumber(tier) or 1), 1, 4))
+    model:SetAttribute("MergeBulwarkSpawnScale", scale or 1)
     return model
 end
 

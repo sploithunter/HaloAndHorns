@@ -73,6 +73,15 @@ the permanent map. A claimed bay currently grounds the current-art Repulsor at l
 `tier_scales` (0.40 / 0.50) and lofts a labeled sphere from each pad; the cannon aims
 along the launch tangent. Upgrades and role acquisition stay later.
 
+Merge bulwark defenses use ten invisible `BulwarkAnchor` parts per bay under
+`Workspace.GeneratedMap_MergeEggVoxel.BulwarkStations/<Side>_<NN>_BulwarkAnchors`. The anchors
+span 94 studs across the authored 96-stud `BulwarkLine`: each represents a 9.4-stud tile and leaves
+one stud of clearance at both retaining walls. Their Y position is the corresponding portable
+bay's authored `LandStrip` top, with `PlayFields` only as an authoring fallback. Runtime clones the
+selected family/tier through `MergeBulwarkModels`; maps must not retain visible review copies.
+All families share the same line-width anchor orientation. The model library owns any source-axis
+correction, so map authors must not rotate individual families differently.
+
 Each selected bay also derives runtime containment from its authored `ArenaBounds` and
 `LandStrip`. Two 64-stud invisible side walls and one enemy-end wall are collidable, while the
 player-end entrance remains open to the public mall. Their inner faces align with the authored
