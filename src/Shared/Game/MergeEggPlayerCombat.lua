@@ -7,6 +7,7 @@
 local MergeEggPlayerCombat = {}
 
 local MergeEggCheckpoint = require(script.Parent.MergeEggCheckpoint)
+local MergeBulwarkProgression = require(script.Parent.MergeBulwarkProgression)
 
 local VALID_MODES = {
     simple = true,
@@ -45,8 +46,12 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
             managementUpgrades[upgradeId] = math.max(0, math.floor(tonumber(level) or 0))
         end
     end
+    local bulwark = MergeBulwarkProgression.normalize({
+        family = raw.bulwark_family,
+        tier = raw.bulwark_tier,
+    })
     return {
-        version = 4,
+        version = 5,
         visited = raw.visited == true,
         played_locked_simple = raw.played_locked_simple == true,
         full_intro_pending = raw.full_intro_pending == true,
@@ -56,6 +61,8 @@ function MergeEggPlayerCombat.normalizeOnboarding(raw)
         rebirths = math.max(0, math.floor(tonumber(raw.rebirths) or 0)),
         management_upgrades = managementUpgrades,
         management_gems_spent = math.max(0, math.floor(tonumber(raw.management_gems_spent) or 0)),
+        bulwark_family = bulwark.family,
+        bulwark_tier = bulwark.tier,
         tutorial_completed = raw.tutorial_completed == true,
         checkpoint = MergeEggCheckpoint.normalize(raw.checkpoint),
     }

@@ -57,7 +57,7 @@ return function()
                     deployed_egg_tiers = { 3, 4, 0, 6 },
                 },
             })
-            expect(state.version).to.equal(4)
+            expect(state.version).to.equal(5)
             expect(state.visited).to.equal(true)
             expect(state.rebirths).to.equal(2)
             expect(state.management_upgrades.damage).to.equal(3)
@@ -68,6 +68,22 @@ return function()
             expect(state.checkpoint.coins).to.equal(4321)
             expect(state.checkpoint.deployed_egg_tiers[2]).to.equal(4)
             expect(PlayerCombat.normalizeOnboarding({ rebirths = -4 }).rebirths).to.equal(0)
+        end)
+
+        it("preserves and sanitizes the durable Merge bulwark selection", function()
+            local state = PlayerCombat.normalizeOnboarding({
+                bulwark_family = "concertina_line",
+                bulwark_tier = 3.8,
+            })
+            expect(state.bulwark_family).to.equal("concertina_line")
+            expect(state.bulwark_tier).to.equal(3)
+
+            local invalid = PlayerCombat.normalizeOnboarding({
+                bulwark_family = "not_a_defense",
+                bulwark_tier = 4,
+            })
+            expect(invalid.bulwark_family).to.equal(nil)
+            expect(invalid.bulwark_tier).to.equal(0)
         end)
 
         it("lets a formerly locked player switch to Full exactly once", function()

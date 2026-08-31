@@ -457,6 +457,11 @@ return {
             },
         },
         edge_towers = {
+            -- Permanent cadence: award the first tower during the Wave-10 intermission. The
+            -- existing spawned cannons remain enabled while their mechanics are prototyped.
+            unlock_wave = 10,
+            tutorial_intermission_wave = 10,
+            playtest_spawn_enabled = true,
             model_folder_name = "MergeCannons",
             model_tier_count = 4,
             current_art_tier = 2,
@@ -494,9 +499,18 @@ return {
         },
         edge_bulwarks = {
             enabled = true,
-            starter_family = "impaler_palisade",
-            starter_tier = 1,
             tile_count = 10,
+            maximum_tier = 4,
+            -- Permanent cadence is Wave 20. For the interaction playtest, expose the exact same
+            -- production transaction/menu from the pending Wave 1 and charge one Waycoin for an
+            -- install, family replacement, or tier upgrade.
+            unlock_wave = 20,
+            tutorial_intermission_wave = 20,
+            playtest_unlock_enabled = true,
+            playtest_unlock_wave = 1,
+            action_cost = 1,
+            currency = "hall_coins",
+            prompt_distance = 14,
         },
         -- The existing camera-facing button is only a presentation surface. The server accepts an
         -- egg action when the avatar is both safely behind the actual BulwarkLine and physically
