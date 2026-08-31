@@ -6264,3 +6264,14 @@ first-session cohort rates.
 - Added all 24 spawnable templates to `assets/place/Models.rbxm` and added shared clone/spawn access.
   Land Shark and Saw Blade animation behavior remains deliberately unwired pending their rigging
   and part-separation pass.
+
+## 2026-08-31 — Authored Merge bulwark placement
+
+- Measured the dedicated Merge bay in Studio and locked each 96-stud `BulwarkLine` to ten
+  9.4-stud defense tiles, leaving one stud at either retaining wall.
+- Authored 100 invisible anchors across the five Heaven and five Hell bays and grounded them to
+  each portable bay's `LandStrip` top.
+- Added runtime spawning for a configurable starter family/tier and normalized source mesh axes in
+  `MergeBulwarkModels` so every family consumes the same anchor orientation.
+- Placement-audited all four tiers of the four stationary families; all 16 variants passed width,
+  clearance, centering, and grounding checks. Land Shark and Saw Blade await their motion pass.

@@ -492,6 +492,12 @@ return {
                 land_seconds = 0.55,
             },
         },
+        edge_bulwarks = {
+            enabled = true,
+            starter_family = "impaler_palisade",
+            starter_tier = 1,
+            tile_count = 10,
+        },
         -- The existing camera-facing button is only a presentation surface. The server accepts an
         -- egg action when the avatar is both safely behind the actual BulwarkLine and physically
         -- beneath the selected captain's button.

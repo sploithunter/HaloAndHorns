@@ -38,6 +38,7 @@ local MergeEggPlayerCombat = require(ReplicatedStorage.Shared.Game.MergeEggPlaye
 local MergeEggPricing = require(ReplicatedStorage.Shared.Game.MergeEggPricing)
 local MergeEggRebirth = require(ReplicatedStorage.Shared.Game.MergeEggRebirth)
 local MergeEggWaveGenerator = require(ReplicatedStorage.Shared.Game.MergeEggWaveGenerator)
+local MergeBulwarkModels = require(ReplicatedStorage.Shared.Game.MergeBulwarkModels)
 local MergeTowerBallistics = require(ReplicatedStorage.Shared.Game.MergeTowerBallistics)
 local MergeTowerModels = require(ReplicatedStorage.Shared.Game.MergeTowerModels)
 local PlaceRuntime = require(ReplicatedStorage.Shared.Game.PlaceRuntime)
@@ -3407,6 +3408,70 @@ function MergeEggPrototypeService:_ensureBayTowers(record)
         end
     end
     record.towersReady = true
+end
+
+function MergeEggPrototypeService:_ensureBayBulwarks(record)
+    local world = record and record.world
+    if not world or record.bulwarksReady == true then
+        return
+    end
+    local anchors = self:_authoredBayArtifact(world, "BulwarkStations", "BulwarkAnchors")
+    if not anchors then
+        return
+    end
+    local team = type(self._config.team) == "table" and self._config.team or {}
+    local cfg = type(team.edge_bulwarks) == "table" and team.edge_bulwarks or {}
+    if cfg.enabled == false then
+        record.bulwarksReady = true
+        return
+    end
+    local family = tostring(cfg.starter_family or "impaler_palisade")
+    local tier = math.clamp(math.floor(tonumber(cfg.starter_tier) or 1), 1, 4)
+    local folder = self:_towerFolder(world, "MergeEggBulwarks")
+    local spawned = 0
+    for _, anchor in ipairs(anchors:GetChildren()) do
+        if anchor:IsA("BasePart") and string.match(anchor.Name, "^BulwarkAnchor_%d+$") then
+            local index = tonumber(anchor:GetAttribute("MergeBulwarkTileIndex")) or spawned + 1
+            local name = string.format("BulwarkTile_%02d", index)
+            local expectedScale = tonumber(anchor:GetAttribute("MergeBulwarkScale")) or 1
+            local existing = folder:FindFirstChild(name)
+            if
+                existing
+                and (
+                    existing:GetAttribute("MergeBulwarkFamily") ~= family
+                    or existing:GetAttribute("MergeBulwarkTier") ~= tier
+                    or math.abs(
+                            (tonumber(existing:GetAttribute("MergeBulwarkSpawnScale")) or 1)
+                                - expectedScale
+                        )
+                        > 1e-3
+                )
+            then
+                existing:Destroy()
+                existing = nil
+            end
+            if not existing then
+                local model, reason =
+                    MergeBulwarkModels.Spawn(family, tier, anchor, folder, nil, expectedScale)
+                if model then
+                    model.Name = name
+                    model:SetAttribute("MergeBulwarkTileIndex", index)
+                    spawned += 1
+                elseif record.bulwarkTemplateWarned ~= true then
+                    record.bulwarkTemplateWarned = true
+                    self:_log("Warn", "Merge Egg bulwark template missing", {
+                        family = family,
+                        tier = tier,
+                        reason = reason,
+                    })
+                end
+            else
+                spawned += 1
+            end
+        end
+    end
+    local expected = math.max(1, math.floor(tonumber(cfg.tile_count) or 10))
+    record.bulwarksReady = spawned >= expected
 end
 
 function MergeEggPrototypeService:_towerSizePreviewScales()
@@ -6796,6 +6861,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
         units = {},
         towerShots = {},
         towersReady = false,
+        bulwarksReady = false,
         teams = {},
         teamById = {},
         aliveEnemies = 0,
@@ -7009,6 +7075,7 @@ function MergeEggPrototypeService:_begin(player, requestedBayId)
     self._enteringByPlayer[player] = nil
     self._activeByPlayer[player] = record
     self:_ensureBayTowers(record)
+    self:_ensureBayBulwarks(record)
     local escortAnchor = self:_playerEscortAnchorCFrame(record)
     player:SetAttribute(
         "MergeEggEscortAnchorPosition",
@@ -8336,6 +8403,7 @@ function MergeEggPrototypeService:_stepRecord(record, now)
     end
     self:_updateTutorial(record, now, false)
     self:_ensureBayTowers(record)
+    self:_ensureBayBulwarks(record)
     if record.terminal ~= true then
         self:_stepTowerFire(record, now)
     end
@@ -8613,6 +8681,7 @@ function MergeEggPrototypeService:_hatch(player, appendOwnedSlots)
     self:_ensureDeploymentPads(record.world, record)
     self:_ensureHatcherStands(record.world)
     self:_ensureBayTowers(record)
+    self:_ensureBayBulwarks(record)
     self:_syncAllTeams(record)
     if not appending then
         self:_setPortalVisible(record, false)
